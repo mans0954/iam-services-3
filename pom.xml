@@ -10,7 +10,7 @@
 
 	<name>OpenIAM Identity Manager</name>
 	<description>openiam is open source Identity and access Management Project</description>
-	<url>http://www.openiam.org</url>
+	<url>http://www.openiam.com</url>
 
 	<inceptionYear>2008</inceptionYear>
 	<developers>
@@ -41,6 +41,33 @@
 				<role>documentation</role>
 			</roles>
 		</developer>
+        <developer>
+            <name>Alexander Duckardt</name>
+            <id>alexander.duckardt</id>
+            <email>alexander.duckardt@openiam.com</email>
+            <roles>
+                <role>developer</role>
+                <role>documentation</role>
+            </roles>
+        </developer>
+        <developer>
+            <name>Lars Nilsen</name>
+            <id>Lars.nilsen</id>
+            <email>lars.nilsent@openiam.com</email>
+            <roles>
+                <role>developer</role>
+                <role>documentation</role>
+            </roles>
+        </developer>
+        <developer>
+            <name>Lev bornovalov</name>
+            <id>lev.bornovalov</id>
+            <email>lev.bornovalov@openiam.com</email>
+            <roles>
+                <role>developer</role>
+                <role>documentation</role>
+            </roles>
+        </developer>
 	</developers>
 
 	<licenses>
@@ -59,7 +86,7 @@
 	<!--  source configuration management system  -->
 	<issueManagement>
 		<system>JIRA</system>
-		<url>http://jira.openiam.org</url>
+		<url>http://jira.openiam.com</url>
 	</issueManagement>
 
 	<scm>
