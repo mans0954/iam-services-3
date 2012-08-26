@@ -139,10 +139,11 @@
             <groupId>com.google.gdata</groupId>
             <artifactId>gdata-core-1.0</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.google.gdata</groupId>
-            <artifactId>gdata-analytics-2.1</artifactId>
-        </dependency>
+		<dependency>
+		    <groupId>com.google.gdata</groupId>
+		    <artifactId>gdata-analytics-2.1</artifactId>
+		</dependency>
+
 
         <dependency>
             <groupId>com.google.gdata</groupId>
@@ -154,10 +155,11 @@
             <artifactId>gdata-client-1.0</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>ch.ethz.ssh2</groupId>
-            <artifactId>ganymed-ssh2</artifactId>
-        </dependency>
+		<dependency>
+		    <groupId>ch.ethz.ssh2</groupId>
+		    <artifactId>ganymed-ssh2</artifactId>
+		</dependency>
+
         
 		<dependency>
 		    <groupId>com.sforce.soap.partner</groupId>
