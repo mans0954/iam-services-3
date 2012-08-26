@@ -628,11 +628,16 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
-        
-		    <repository>
-					<id>bonita</id>
-					<url>http://maven.ow2.org/maven2/org/ow2/bonita</url>
-				</repository>
+	    <repository>
+			<id>bonita</id>
+			<url>http://maven.ow2.org/maven2/org/ow2/bonita</url>
+		</repository>
+		  <repository>
+		      <id>openiam01.managed.contegix.com</id>
+		      <name>openiam01.managed.contegix.com-releases</name>
+		      <url>http://artifactory.openiam.org/artifactory/libs-release-local</url>
+		  </repository>
+
 		
 
 

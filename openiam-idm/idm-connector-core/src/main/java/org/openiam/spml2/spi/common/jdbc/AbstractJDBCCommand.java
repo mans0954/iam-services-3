@@ -28,13 +28,6 @@ public abstract class AbstractJDBCCommand {
     protected ResourceDataService resourceDataService;
     protected JDBCConnectionMgr connectionMgr;
 
-    protected void populateResponse(final ResponseType response, final StatusCodeType status,
-                                    final ErrorCode err, final String msg) {
-        response.setStatus(status);
-        response.setError(err);
-        response.addErrorMessage(msg);
-    }
-
     protected List<AttributeMap> attributeMaps(final Resource resource) {
         return managedSysService.getResourceAttributeMaps(resource.getResourceId());
     }

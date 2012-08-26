@@ -89,7 +89,6 @@ public abstract class AbstractJDBCConnectorImpl extends AbstractSpml2Complete im
         return addCommand.add(reqType);
     }
 
-
     public ModifyResponseType modify(ModifyRequestType reqType) {
         return modifyCommand.modify(reqType);
     }

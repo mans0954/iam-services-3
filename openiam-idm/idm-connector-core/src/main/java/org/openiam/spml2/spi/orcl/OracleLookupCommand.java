@@ -8,6 +8,7 @@ import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.spml2.msg.*;
 import org.openiam.spml2.spi.common.LookupCommand;
+import org.openiam.spml2.util.msg.ResponseBuilder;
 
 import java.sql.*;
 import java.text.ParseException;
@@ -42,18 +43,18 @@ public class OracleLookupCommand extends AbstractOracleCommand implements Lookup
 
         final ManagedSys managedSys = managedSysService.getManagedSys(targetID);
         if(managedSys == null) {
-            populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, String.format("No Managed System with target id: %s", targetID));
+        	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, String.format("No Managed System with target id: %s", targetID));
             return response;
         }
 
         if (StringUtils.isBlank(managedSys.getResourceId())) {
-            populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, "ResourceID is not defined in the ManagedSys Object");
+        	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, "ResourceID is not defined in the ManagedSys Object");
             return response;
         }
 
         final Resource res = resourceDataService.getResource(managedSys.getResourceId());
         if(res == null) {
-            populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, "No resource for managed resource found");
+        	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, "No resource for managed resource found");
             return response;
         }
 
@@ -95,20 +96,20 @@ public class OracleLookupCommand extends AbstractOracleCommand implements Lookup
             }
         } catch (SQLException se) {
             log.error(se);
-            populateResponse(response, StatusCodeType.FAILURE, ErrorCode.SQL_ERROR, se.toString());
+            ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.SQL_ERROR, se.toString());
         } catch (ClassNotFoundException cnfe) {
             log.error(cnfe);
-            populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, cnfe.toString());
+            ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, cnfe.toString());
         } catch(Throwable e) {
             log.error(e);
-            populateResponse(response, StatusCodeType.FAILURE, ErrorCode.OTHER_ERROR, e.toString());
+            ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.OTHER_ERROR, e.toString());
         } finally {
             if (con != null) {
                 try {
                     con.close();
                 } catch (SQLException s) {
                     log.error(s);
-                    populateResponse(response, StatusCodeType.FAILURE, ErrorCode.SQL_ERROR, s.toString());
+                    ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.SQL_ERROR, s.toString());
                 }
             }
         }

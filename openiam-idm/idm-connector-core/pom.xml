@@ -158,6 +158,20 @@
             <groupId>ch.ethz.ssh2</groupId>
             <artifactId>ganymed-ssh2</artifactId>
         </dependency>
+        
+		<dependency>
+		    <groupId>com.sforce.soap.partner</groupId>
+		    <artifactId>salesforce.partner</artifactId>
+		    <version>1.0</version>
+		</dependency>
+
+        
+		<dependency>
+			<groupId>com.force.api</groupId>
+			<artifactId>force-wsc</artifactId>
+			<version>22.0.0</version>
+		</dependency>
+            
 
     </dependencies>
 
