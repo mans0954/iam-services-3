@@ -98,9 +98,10 @@
 
 	<modules>
 		<!--<module>iam-interceptor</module-->
-	   <module>openiam-pojo</module>
+	    <module>openiam-pojo</module>
         <module>openiam-idm</module>
         <module>openiam-am</module>
+        <module>openiam-esb</module>
     </modules>
 
 	<properties>
@@ -193,7 +194,6 @@
                 <artifactId>mule-transport-servlet</artifactId>
                 <version>${mule.version}</version>
              </dependency>
-
             <!-- Spring Dependencies-->
             <dependency>
                 <groupId>org.springframework</groupId>
@@ -272,7 +272,6 @@
                 <groupId>log4j</groupId>
                 <artifactId>log4j</artifactId>
                 <version>${log4j.version}</version>
-                <scope>provided</scope>
                 <exclusions>
                     <exclusion>
                         <artifactId>jms</artifactId>
@@ -330,7 +329,6 @@
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
                 <version>${commons.io.version}</version>
-                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>commons-codec</groupId>
@@ -348,7 +346,6 @@
                 <groupId>com.thoughtworks.xstream</groupId>
                 <artifactId>xstream</artifactId>
                 <version>${xstream.version}</version>
-                <scope>provided</scope>
             </dependency>
             <!-- org.apache.cxf dependencies -->
             <dependency>
@@ -374,6 +371,7 @@
                 <artifactId>cxf-rt-transports-http</artifactId>
                 <version>${cxf.version}</version>
                 <scope>provided</scope>
+
             </dependency>
             <!-- org.apache dependencies -->
             <dependency>
@@ -542,6 +540,11 @@
             </dependency>
             <dependency>
                 <groupId>org.openiam</groupId>
+                <artifactId>openiam-am-services</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.openiam</groupId>
                 <artifactId>openiam-idm-intf</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -557,7 +560,17 @@
             </dependency>
             <dependency>
                 <groupId>org.openiam</groupId>
+                <artifactId>idm-connector-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.openiam</groupId>
                 <artifactId>openiam-idm-ee-intf</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.openiam</groupId>
+                <artifactId>openiam-idm-ee-services</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
