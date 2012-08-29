@@ -80,11 +80,13 @@ public class AttributeListBuilder {
                     continue;
                 }
 
+                boolean scriptExistsForAttr = false;
                 final Policy policy = attr.getAttributePolicy();
                 final String url = policy.getRuleSrcUrl();
                 if (url != null) {
                     Object output = se.execute(bindingMap, url);
                     if (output != null) {
+                    	scriptExistsForAttr = true;
                         final String objectType = attr.getMapForObjectType();
                         if (objectType != null) {
                             if(StringUtils.equalsIgnoreCase("PRINCIPAL", objectType)) {
@@ -121,7 +123,12 @@ public class AttributeListBuilder {
                         }
                     }
                 }
+                
+                if(!scriptExistsForAttr) {
+                	extUser.getAttributes().add(new ExtensibleAttribute(attr.getAttributeName(), attr.getDefaultValue(), 1, attr.getDataType()));
+                }
             }
+            
             identity.setId(loginId);
             identity.setAuthFailCount(0);
             identity.setCreateDate(new Date(System.currentTimeMillis()));

@@ -36,7 +36,12 @@ import org.openiam.spml2.spi.common.ResumeCommand;
 import org.openiam.spml2.spi.common.SuspendCommand;
 import org.openiam.spml2.spi.common.jdbc.AbstractJDBCConnectorImpl;
 import org.openiam.spml2.spi.common.jdbc.JDBCConnectionMgr;
+import org.openiam.spml2.util.msg.ResponseBuilder;
 import org.springframework.beans.factory.annotation.Required;
+
+import com.sforce.soap.partner.PartnerConnection;
+import com.sforce.ws.ConnectionException;
+import com.sforce.ws.ConnectorConfig;
 
 @WebService(endpointInterface="org.openiam.spml2.interf.ConnectorService",
 	targetNamespace="http://www.openiam.org/service/connector",
@@ -67,8 +72,19 @@ public class SalesForceConnectorImpl implements ConnectorService {
 	@Override
 	@WebMethod
 	public ResponseType testConnection(@WebParam(name = "managedSys", targetNamespace = "") ManagedSys managedSys) {
-		// TODO Auto-generated method stub
-		return null;
+		final ResponseType response = new ResponseType();
+		response.setStatus(StatusCodeType.SUCCESS);
+		try {
+			final ConnectorConfig connectorConfig = new ConnectorConfig();
+			connectorConfig.setUsername(managedSys.getUserId());
+			connectorConfig.setPassword(managedSys.getDecryptPassword());
+			connectorConfig.setAuthEndpoint(managedSys.getConnectionString());
+			final PartnerConnection partnerConnection = new PartnerConnection(connectorConfig);
+		} catch (ConnectionException e) {
+			log.error("Connection Exception", e);
+			ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.AUTHENTICATION_FAILED, e.getMessage());
+		}
+		return response;
 	}
 
     public AddResponseType add(AddRequestType reqType) {

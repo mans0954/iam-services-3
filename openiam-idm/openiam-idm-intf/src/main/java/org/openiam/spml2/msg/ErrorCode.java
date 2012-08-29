@@ -14,6 +14,9 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "ErrorCode")
 @XmlEnum
 public enum ErrorCode {
+	
+	@XmlEnumValue("persistException")
+	PERSIST_EXCEPTION("persistException"),
 
     @XmlEnumValue("malformedRequest")
     MALFORMED_REQUEST("malformedRequest"),
@@ -111,6 +114,9 @@ public enum ErrorCode {
 
     @XmlEnumValue("constraintViolation")
     CONSTRAINT_VIOLATION("constraintViolation"),
+    
+    @XmlEnumValue("parseException")
+    PARSE_EXCEPTION("parseException"),
 
     @XmlEnumValue("noSuchAttribute")
     NO_SUCH_ATTRIBUTE("noSuchAttribute"),

@@ -245,6 +245,37 @@
 
     <!-- END Oracle Connector -->
   
+  	<!-- Start SalesForce Connector -->
+  	<bean id="abstractSalesForceCommand" class="org.openiam.spml2.spi.salesforce.AbstractSalesforceCommand" abstract="true">
+  		<property name="managedSysService" ref="managedSysService" />
+		<property name="resourceDataService" ref="resourceDataService" />
+  	</bean>
+  	
+  	<bean id="salesForceConnector" class="org.openiam.spml2.spi.salesforce.SalesForceConnectorImpl">
+  		<property name="addCommand">
+  			<bean class="org.openiam.spml2.spi.salesforce.SalesforceAddCommand" parent="abstractSalesForceCommand" />
+  		</property>
+  		<property name="deleteCommand">
+  			<bean class="org.openiam.spml2.spi.salesforce.SalesForceDeleteCommand" parent="abstractSalesForceCommand" />
+  		</property>
+  		<property name="lookupCommand">
+  			<bean class="org.openiam.spml2.spi.salesforce.SalesForceLookupCommand" parent="abstractSalesForceCommand" />
+  		</property>
+  		<property name="modifyCommand">
+  			<bean class="org.openiam.spml2.spi.salesforce.SalesForceModifyCommand" parent="abstractSalesForceCommand" />
+  		</property>
+  		<property name="resumeCommand">
+  			<bean class="org.openiam.spml2.spi.salesforce.SalesForceResumeCommand" parent="abstractSalesForceCommand" />
+  		</property>
+  		<property name="setPasswordCommand">
+  			<bean class="org.openiam.spml2.spi.salesforce.SalesForceSetPasswordCommand" parent="abstractSalesForceCommand" />
+  		</property>
+  		<property name="suspendCommand">
+  			<bean class="org.openiam.spml2.spi.salesforce.SalesForceSuspendCommand" parent="abstractSalesForceCommand" />
+  		</property>
+  	</bean>
+  	
+  	<!-- END SalesForce Connector -->
   
 
   <!-- ensure that the above transactional advice runs for any execution
