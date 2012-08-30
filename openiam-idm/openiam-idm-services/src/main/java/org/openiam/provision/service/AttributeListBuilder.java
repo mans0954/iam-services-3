@@ -81,11 +81,17 @@ public class AttributeListBuilder {
                     continue;
                 }
 
+                boolean scripExistsForAttr = false;
+
+
                 final Policy policy = attr.getAttributePolicy();
                 final String url = policy.getRuleSrcUrl();
                 if (url != null) {
                     Object output = se.execute(bindingMap, url);
                     if (output != null) {
+
+                        scripExistsForAttr = true;
+
                         final String objectType = attr.getMapForObjectType();
                         if (objectType != null) {
                             if (StringUtils.equalsIgnoreCase("PRINCIPAL", objectType)) {
@@ -132,7 +138,11 @@ public class AttributeListBuilder {
 
                         }
                     }
+                  }
+                if (!scripExistsForAttr) {
+                    extUser.getAttributes().add(new ExtensibleAttribute(attr.getAttributeName(),attr.getDefaultValue(),1,attr.getDataType()));
                 }
+
             }
             identity.setId(loginId);
             identity.setAuthFailCount(0);
