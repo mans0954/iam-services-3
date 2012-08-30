@@ -74,66 +74,7 @@
             <version>1.0</version>
         </dependency>
 
-        <!-- ** Tomcat **  -->
-        <!--
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-entitymanager</artifactId>
-             <version>${hibernate.version}</version>
-            <exclusions>
-            <exclusion>
-               <artifactId>cglib</artifactId>
-               <groupId>cglib</groupId>
-             </exclusion>
-             <exclusion>
-                 <groupId>asm</groupId>
-                 <artifactId>asm</artifactId>
-             </exclusion>
-            </exclusions>
-        </dependency>
-        -->
-
-
-        <!--
-          <dependency>
-             <groupId>org.hibernate</groupId>
-             <artifactId>hibernate-core</artifactId>
-             <version>${hibernate.version}</version>
-             <exclusions>
-             <exclusion>
-               <artifactId>cglib</artifactId>
-               <groupId>cglib</groupId>
-             </exclusion>
-
-             <exclusion>
-                 <groupId>asm</groupId>
-                 <artifactId>asm</artifactId>
-             </exclusion>
-             <exclusion>
-                 <groupId>org.hibernate</groupId>
-                 <artifactId>hibernate-commons-annotations</artifactId>
-             </exclusion>
-
-             </exclusions>
-         </dependency>
-
-             <dependency>
-              <groupId>org.hibernate</groupId>
-              <artifactId>hibernate-commons-annotations</artifactId>
-              <version>3.3.0.ga</version>
-              <exclusions>
-                  <exclusion>
-                      <groupId>asm</groupId>
-                      <artifactId>asm</artifactId>
-                  </exclusion>
-                <exclusion>
-                     <artifactId>cglib</artifactId>
-                     <groupId>cglib</groupId>
-              </exclusion>
-
-              </exclusions>
-         </dependency>
-        -->
+   
 
         <dependency>
             <groupId>org.hibernate</groupId>
@@ -172,7 +113,13 @@
         <dependency>
             <groupId>commons-collections</groupId>
             <artifactId>commons-collections</artifactId>
-            <version>3.2.1</version>
+            <version>${commons.collections.version}</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>${commons.codec.version}</version>
         </dependency>
 
 
