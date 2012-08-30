@@ -1,5 +1,9 @@
 package org.openiam.spml2.spi.salesforce.dao;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -22,18 +26,34 @@ public class CallerDependentSalesForceDao implements SalesForceDao {
 
 	protected static final Log log = LogFactory.getLog(CallerDependentSalesForceDao.class);
 	
-	private static final String FIELDS = "id, EmailEncodingKey, Alias, Email, TimeZoneSidKey, DefaultGroupNotificationFrequency, Username, LanguageLocaleKey, ProfileId, LocaleSidKey, DigestFrequency, LastName";
-	private static final String FIND_BY_ID_SQL = "SELECT " + FIELDS + " FROM User WHERE Id='%s'";
-	private static final String FIND_BY_USERNAME = "SELECT " + FIELDS + " FROM User WHERE Username='%s'";
+	//"id, EmailEncodingKey, Alias, Email, TimeZoneSidKey, DefaultGroupNotificationFrequency, Username, LanguageLocaleKey, ProfileId, LocaleSidKey, DigestFrequency, LastName";
+	
+	private StringBuilder queryFields = null;
+	private static final String FIND_BY_ID_SQL = "SELECT %s FROM User WHERE Id='%s'";
+	private static final String FIND_BY_USERNAME = "SELECT %s FROM User WHERE Username='%s'";
 	
 	private PartnerConnection partnerConnection;
 	
-	public CallerDependentSalesForceDao(final String userName, final String password, final String endPoint) throws ConnectionException {
+	public CallerDependentSalesForceDao(final String userName, final String password, final String endPoint, final Set<String> fields) throws ConnectionException {
 		final ConnectorConfig connectorConfig = new ConnectorConfig();
 		connectorConfig.setUsername(userName);
 		connectorConfig.setPassword(password);
 		connectorConfig.setAuthEndpoint(endPoint);
 		partnerConnection = new PartnerConnection(connectorConfig);
+		if(CollectionUtils.isEmpty(fields)) {
+			throw new ConnectionException("No fields provided");
+		}
+		
+		fields.add("id");
+		
+		queryFields = new StringBuilder();
+		int i = 0;
+		for(final String field : fields) {
+			queryFields.append(field);
+			if(i++ < fields.size() - 1) {
+				queryFields.append(", ");
+			}
+		}
 	}
 
 	@Override
@@ -80,7 +100,7 @@ public class CallerDependentSalesForceDao implements SalesForceDao {
 
 	@Override
 	public User findByUserName(String userName) throws ConnectionException {
-		final String sql = String.format(FIND_BY_USERNAME, StringEscapeUtils.escapeSql(userName));
+		final String sql = String.format(FIND_BY_USERNAME, queryFields, StringEscapeUtils.escapeSql(userName));
 		if(log.isDebugEnabled()) {
 			log.debug(String.format("FindByUserName:%s", sql));
 		}
@@ -90,7 +110,7 @@ public class CallerDependentSalesForceDao implements SalesForceDao {
 
 	@Override
 	public User findById(String id) throws ConnectionException {
-		final String sql = String.format(FIND_BY_ID_SQL, StringEscapeUtils.escapeSql(id));
+		final String sql = String.format(FIND_BY_ID_SQL, queryFields, StringEscapeUtils.escapeSql(id));
 		if(log.isDebugEnabled()) {
 			log.debug(String.format("FindByUserName:%s", sql));
 		}
