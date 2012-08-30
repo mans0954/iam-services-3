@@ -12,7 +12,9 @@ import org.openiam.spml2.spi.salesforce.model.User;
 
 import com.sforce.soap.partner.PartnerConnection;
 import com.sforce.soap.partner.QueryResult;
+import com.sforce.soap.partner.ResetPasswordResult;
 import com.sforce.soap.partner.SaveResult;
+import com.sforce.soap.partner.SetPasswordResult;
 import com.sforce.soap.partner.sobject.SObject;
 import com.sforce.ws.ConnectionException;
 import com.sforce.ws.ConnectorConfig;
@@ -26,7 +28,7 @@ public class CallerDependentSalesForceDao implements SalesForceDao {
 
 	protected static final Log log = LogFactory.getLog(CallerDependentSalesForceDao.class);
 	
-	//"id, EmailEncodingKey, Alias, Email, TimeZoneSidKey, DefaultGroupNotificationFrequency, Username, LanguageLocaleKey, ProfileId, LocaleSidKey, DigestFrequency, LastName";
+	private static final String DEFAULT_SELECT_LIST = "id, IsActive, EmailEncodingKey, Alias, Email, TimeZoneSidKey, DefaultGroupNotificationFrequency, Username, LanguageLocaleKey, ProfileId, LocaleSidKey, DigestFrequency, LastName";
 	
 	private StringBuilder queryFields = null;
 	private static final String FIND_BY_ID_SQL = "SELECT %s FROM User WHERE Id='%s'";
@@ -40,19 +42,19 @@ public class CallerDependentSalesForceDao implements SalesForceDao {
 		connectorConfig.setPassword(password);
 		connectorConfig.setAuthEndpoint(endPoint);
 		partnerConnection = new PartnerConnection(connectorConfig);
-		if(CollectionUtils.isEmpty(fields)) {
-			throw new ConnectionException("No fields provided");
-		}
-		
-		fields.add("id");
-		
 		queryFields = new StringBuilder();
-		int i = 0;
-		for(final String field : fields) {
-			queryFields.append(field);
-			if(i++ < fields.size() - 1) {
-				queryFields.append(", ");
+		if(CollectionUtils.isNotEmpty(fields)) {
+			fields.add("id");
+			fields.add("IsActive");
+			int i = 0;
+			for(final String field : fields) {
+				queryFields.append(field);
+				if(i++ < fields.size() - 1) {
+					queryFields.append(", ");
+				}
 			}
+		} else {
+			queryFields.append(DEFAULT_SELECT_LIST);
 		}
 	}
 
@@ -71,11 +73,7 @@ public class CallerDependentSalesForceDao implements SalesForceDao {
 	@Override
 	public void update(User user) throws ConnectionException, SalesForcePersistException {
 		final SaveResult[] saveResult = partnerConnection.update(new SObject[] {user});
-		for(final SaveResult result : saveResult) {
-			if(!result.getSuccess()) {
-				throw new SalesForcePersistException(result);
-			}
-		}
+		processSaveResult(saveResult);
 	}
 
 	@Override
@@ -119,26 +117,76 @@ public class CallerDependentSalesForceDao implements SalesForceDao {
 	}
 
 	@Override
-	public void deleteByUserName(String userName) {
-		// TODO Auto-generated method stub
-		
+	public void deleteByUserName(String userName) throws ConnectionException, SalesForcePersistException {
+		final User user = findByUserName(userName);
+		if(user != null) {
+			user.setActive(false);
+			final SaveResult[] saveResult = partnerConnection.update(new SObject[] {user});
+			processSaveResult(saveResult);
+		}
 	}
 
 	@Override
-	public void deleteById(String id) {
-		// TODO Auto-generated method stub
-		
+	public void deleteById(String id) throws ConnectionException, SalesForcePersistException {
+		final User user = findById(id);
+		if(user != null) {
+			user.setActive(false);
+			final SaveResult[] saveResult = partnerConnection.update(new SObject[] {user});
+			processSaveResult(saveResult);
+		}
 	}
 
 	@Override
-	public void undeleteByUserName(String userName) {
-		// TODO Auto-generated method stub
-		
+	public void undeleteByUserName(String userName) throws ConnectionException, SalesForcePersistException {
+		final User user = findByUserName(userName);
+		if(user != null) {
+			user.setActive(true);
+			final SaveResult[] saveResult = partnerConnection.update(new SObject[] {user});
+			processSaveResult(saveResult);
+		}
 	}
 
 	@Override
-	public void undeleteById(String id) {
-		// TODO Auto-generated method stub
-		
+	public void undeleteById(String id) throws ConnectionException, SalesForcePersistException {
+		final User user = findById(id);
+		if(user != null) {
+			user.setActive(true);
+			final SaveResult[] saveResult = partnerConnection.update(new SObject[] {user});
+			processSaveResult(saveResult);
+		}
+	}
+	
+	@Override
+	public void resetPasswordById(final String id) throws ConnectionException {
+		final ResetPasswordResult resetPasswordResult =  partnerConnection.resetPassword(id);
+	}
+	
+	@Override
+	public void resetPasswordByUserName(final String userName) throws ConnectionException {
+		final User user = findByUserName(userName);
+		if(user != null) {
+			resetPasswordById(user.getId());
+		}
+	}
+	
+	@Override
+	public void setPasswordById(final String id, final String password) throws ConnectionException {
+		final SetPasswordResult setPasswordResult = partnerConnection.setPassword(id, password);
+	}
+	
+	@Override
+	public void setPasswordByUserName(final String userName, final String password) throws ConnectionException {
+		final User user = findByUserName(userName);
+		if(user != null) {
+			setPasswordById(user.getId(), password);
+		}
+	}
+	
+	private void processSaveResult(final SaveResult[] saveResult) throws SalesForcePersistException {
+		for(final SaveResult result : saveResult) {
+			if(!result.getSuccess()) {
+				throw new SalesForcePersistException(result);
+			}
+		}
 	}
 }

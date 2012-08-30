@@ -15,4 +15,8 @@ public interface SalesForceDao {
 	public void deleteById(final String id) throws ConnectionException, SalesForcePersistException;
 	public void undeleteByUserName(final String userName) throws ConnectionException, SalesForcePersistException;
 	public void undeleteById(final String id) throws ConnectionException, SalesForcePersistException;
+	public void resetPasswordById(final String id) throws ConnectionException;
+	public void resetPasswordByUserName(final String userName) throws ConnectionException;
+	public void setPasswordById(final String id, final String password) throws ConnectionException;
+	public void setPasswordByUserName(final String userName, final String password) throws ConnectionException;
 }

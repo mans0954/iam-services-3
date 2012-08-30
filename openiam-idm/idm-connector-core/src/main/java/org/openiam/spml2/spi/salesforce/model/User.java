@@ -116,4 +116,12 @@ public class User extends SObject {
 		}
 		setField("LocaleSidKey", value);
 	}
+	
+	public boolean isActive() {
+		return Boolean.TRUE.equals(super.getField("IsActive"));
+	}
+	
+	public void setActive(final boolean isActive) {
+		setField("IsActive", isActive);
+	}
 }

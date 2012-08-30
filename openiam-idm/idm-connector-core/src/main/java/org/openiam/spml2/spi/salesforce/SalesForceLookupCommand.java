@@ -2,6 +2,7 @@ package org.openiam.spml2.spi.salesforce;
 
 import java.text.ParseException;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -24,6 +25,7 @@ import org.openiam.spml2.spi.salesforce.model.User;
 import org.openiam.spml2.util.msg.ResponseBuilder;
 
 import com.sforce.ws.ConnectionException;
+import com.sforce.ws.bind.XmlObject;
 
 public class SalesForceLookupCommand extends AbstractSalesforceCommand implements LookupCommand {
 
@@ -66,24 +68,19 @@ public class SalesForceLookupCommand extends AbstractSalesforceCommand implement
 						}
 					}
 				}
+			}
 				
-				final SalesForceDao dao = new CallerDependentSalesForceDao(managedSys.getUserId(), managedSys.getDecryptPassword(),  managedSys.getConnectionString(), fieldNames);
-				final User user = dao.findByUserName(principalName);
-				
+			final SalesForceDao dao = new CallerDependentSalesForceDao(managedSys.getUserId(), managedSys.getDecryptPassword(),  managedSys.getConnectionString(), fieldNames);
+			final User user = dao.findByUserName(principalName);
+			if(user != null) {
 				final ExtensibleObject resultObject = new ExtensibleObject();
-	            resultObject.setObjectId(principalName);
-				for(final String paramName : fieldNames) {
-					final Object paramValue = user.getField(paramName);
-					
-					if(paramValue != null) {
-						final ExtensibleAttribute extAttr = new ExtensibleAttribute();
-						extAttr.setName(paramName);
-						extAttr.setDataType(paramValue.getClass().getSimpleName());
-						extAttr.setValue(paramValue.toString());
-						resultObject.getAttributes().add(extAttr);
-					}
-	            }
-	            response.getAny().add(resultObject);
+				resultObject.setObjectId(principalName);
+				resultObject.getAttributes().add(new ExtensibleAttribute("id", user.getId()));
+				for(final Iterator<XmlObject> it = user.getChildren(); it.hasNext();) {
+					final XmlObject node = it.next();
+					resultObject.getAttributes().add(new ExtensibleAttribute(node.getName().getLocalPart(), (node.getValue() != null) ? node.getValue().toString() : null));
+				}
+				response.getAny().add(resultObject);
 			}
         } catch(SalesForcePersistException e) {
         	log.error("Sales Force Persist Exception", e);
