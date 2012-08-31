@@ -256,9 +256,6 @@
           <property name="dateChallengeRespChanged" type="date">
             <column name="DATE_CHALLENGE_RESP_CHANGED" length="10" />
         </property>  
-  
-          
-
     
        <map name="userAttributes" cascade="all-delete-orphan" lazy="true" >
   			<key>

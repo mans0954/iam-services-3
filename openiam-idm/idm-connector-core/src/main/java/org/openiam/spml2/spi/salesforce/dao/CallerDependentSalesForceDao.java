@@ -33,6 +33,7 @@ public class CallerDependentSalesForceDao implements SalesForceDao {
 	private StringBuilder queryFields = null;
 	private static final String FIND_BY_ID_SQL = "SELECT %s FROM User WHERE Id='%s'";
 	private static final String FIND_BY_USERNAME = "SELECT %s FROM User WHERE Username='%s'";
+	private static final String GET_PROFILE_ID_BY_NAME = "SELECT Id FROM Profile WHERE Name='%s'";
 	
 	private PartnerConnection partnerConnection;
 	
@@ -180,6 +181,17 @@ public class CallerDependentSalesForceDao implements SalesForceDao {
 		if(user != null) {
 			setPasswordById(user.getId(), password);
 		}
+	}
+	
+	@Override
+	public String getProfileIdByName(final String profileName) throws ConnectionException {
+		String id = null;
+		final String sql = String.format(GET_PROFILE_ID_BY_NAME, StringEscapeUtils.escapeSql(profileName));
+		final QueryResult queryResult = partnerConnection.query(sql);
+		for(final SObject profile : queryResult.getRecords()) {
+			id = profile.getId();
+		}
+		return id;
 	}
 	
 	private void processSaveResult(final SaveResult[] saveResult) throws SalesForcePersistException {

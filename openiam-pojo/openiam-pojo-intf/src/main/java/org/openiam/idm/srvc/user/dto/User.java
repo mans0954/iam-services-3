@@ -202,7 +202,6 @@ public class User extends org.openiam.base.BaseObject {
 
     protected Set<EmailAddress> emailAddresses = new HashSet<EmailAddress>(0);
 
-
     //protected Set userAttributes = new HashSet(0);
 
     // Constructors

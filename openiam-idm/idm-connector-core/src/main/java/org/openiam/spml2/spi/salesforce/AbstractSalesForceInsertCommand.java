@@ -45,8 +45,23 @@ public class AbstractSalesForceInsertCommand extends AbstractSalesforceCommand {
 			}
 		}
 		
-		log.info(String.format("Saving user: %s", user));
+		/* sales force has a bug - if the ProfileId attribute is blank when sending the User, the User isn't saved, but no exception is thrown */
+		if(StringUtils.isBlank(user.getProfileId())) {
+			throw new SalesForcePersistException("No ProfileId specified");
+		}  
+		
 		final SalesForceDao dao = new CallerDependentSalesForceDao(managedSys.getUserId(), managedSys.getDecryptPassword(), managedSys.getConnectionString(), fieldNames);
+		
+		/* The UI defines the attribute name as ProfileId.  However, the SOAP UI defines it as a Profile Name.  Up until this point, it is a name, and not an
+		 * ID.  Find the corresponding ID using SF API
+		 */
+		final String profileName = StringUtils.trimToNull(user.getProfileId());
+		final String profileId = dao.getProfileIdByName(profileName);
+		if(StringUtils.isBlank(profileId)) {
+			throw new SalesForcePersistException(String.format("No Profile '%s' exists", profileName));
+		}
+		user.setProfileId(profileId);
+		
 		dao.saveOrUpdate(user);
 	}
 }

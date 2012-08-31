@@ -85,37 +85,25 @@ public class SalesforceAddCommand extends AbstractSalesForceInsertCommand implem
 		return response;
 	}
 
-	
+	/*
     public static void main(String[] args) {
-    	final String sql = "SELECT id, EmailEncodingKey, Alias, Email, TimeZoneSidKey, DefaultGroupNotificationFrequency, Username, LanguageLocaleKey, ProfileId, LocaleSidKey, DigestFrequency, LastName FROM User";
+    	final String sql = "SELECT Id FROM Profile WHERE Name='Standard Platform User'";
     	final String pwd = "foobar";
     	final String uname = "lev.bornovalov@openiam.com";
     	
 		try {
-			final SalesForceDao dao = new CallerDependentSalesForceDao(uname, pwd, "https://login.salesforce.com/services/Soap/u/22.0", new HashSet<String>());
-			
-			final String random = "test_" + RandomStringUtils.randomAlphanumeric(2);
-			final String userName = random + "@email.com";
-			
-			final User user = new User(userName);
-			user.setAlias("foobar");
-			user.setProfileId("00ed0000000xyLc");
-			user.setLastName(random);
-			
-			System.out.println("Saving...");
-			dao.saveOrUpdate(user);
-			
-			System.out.println("Querying...");
-			System.out.println(dao.findByUserName(userName));
-			
-			System.out.println("Updating...");
-			dao.saveOrUpdate(user);
-			
-			System.out.println("Querying...");
-			System.out.println(dao.findByUserName(userName));
-			
+			final ConnectorConfig connectorConfig = new ConnectorConfig();
+			connectorConfig.setUsername(uname);
+			connectorConfig.setPassword(pwd);
+			connectorConfig.setAuthEndpoint("https://login.salesforce.com/services/Soap/u/22.0");
+			final PartnerConnection partnerConnection = new PartnerConnection(connectorConfig);
+			final QueryResult results = partnerConnection.query(sql);
+			for(final SObject obj : results.getRecords()) {
+				System.out.println(obj);
+			}
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}
     }
+    */
 }

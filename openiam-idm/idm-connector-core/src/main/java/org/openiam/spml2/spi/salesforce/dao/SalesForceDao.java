@@ -19,4 +19,5 @@ public interface SalesForceDao {
 	public void resetPasswordByUserName(final String userName) throws ConnectionException;
 	public void setPasswordById(final String id, final String password) throws ConnectionException;
 	public void setPasswordByUserName(final String userName, final String password) throws ConnectionException;
+	public String getProfileIdByName(final String profileName) throws ConnectionException;
 }

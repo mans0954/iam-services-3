@@ -124,4 +124,13 @@ public class User extends SObject {
 	public void setActive(final boolean isActive) {
 		setField("IsActive", isActive);
 	}
+	
+	public String getProfileId() {
+		final Object value = getField("ProfileId");
+		if(value != null) {
+			return value.toString();
+		} else {
+			return null;
+		}
+	}
 }
