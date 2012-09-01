@@ -11,24 +11,6 @@
     <name>openiam-pojo-intf</name>
     <version>2.1.0</version>
     <description>OpenIAM IDM Services Interfaces and DTOs</description>
-    <developers>
-        <developer>
-            <id>Arun_Shah</id>
-            <name>Arun Shah</name>
-            <email>arun_shah@openiam.com</email>
-        </developer>
-        <developer>
-            <id>Suneet_shah</id>
-            <name>Suneet Shah</name>
-            <email>suneet_shah@openiam.com</email>
-        </developer>
-        <developer>
-            <id>ameet_shah</id>
-            <name>Ameet Shah</name>
-            <email>ameet_shah@openiam.com</email>
-        </developer>
-
-    </developers>
 
     <build>
         <resources>
@@ -102,12 +84,12 @@
         <dependency>
             <groupId>javax.xml.bind</groupId>
             <artifactId>jaxb-api</artifactId>
-            <version>2.1</version>
+            <version>${javax.xml.version}</version>
         </dependency>
         <dependency>
             <groupId>javax.xml.ws</groupId>
             <artifactId>jaxws-api</artifactId>
-            <version>2.1</version>
+            <version>${javax.xml.version}</version>
         </dependency>
 
         <dependency>

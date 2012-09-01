@@ -11,18 +11,6 @@
     <name>openiam-pojo-services</name>
     <version>2.1.0</version>
     <description>OPENIAM IDM Services</description>
-    <developers>
-        <developer>
-            <id>Arun_Shah</id>
-            <name>Arun Shah</name>
-            <email>arun_shah@openiam.com</email>
-        </developer>
-        <developer>
-            <id>Suneet_shah</id>
-            <name>Suneet Shah</name>
-            <email>suneet_shah@openiam.com</email>
-        </developer>
-    </developers>
 
     <build>
         <resources>
@@ -197,7 +185,6 @@
             <groupId>org.apache.geronimo.specs</groupId>
             <artifactId>geronimo-ws-metadata_2.0_spec</artifactId>
             <version>1.1.2</version>
-            <!--optional>true</optional-->
             <scope>provided</scope>
         </dependency>
 
@@ -223,6 +210,17 @@
         <dependency>
             <groupId>xalan</groupId>
             <artifactId>serializer</artifactId>
+
+            <exclusions>
+                <exclusion>
+                    <groupId>axerces</groupId>
+                    <artifactId>xercesImpl</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>xml-apis</groupId>
+                    <artifactId>xml-apis</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
 

@@ -149,10 +149,10 @@
             <artifactId>mule-module-client</artifactId>
         </dependency>
 
-        <dependency>
+        <!--dependency>
             <groupId>com.github.groovy-wslite</groupId>
             <artifactId>groovy-wslite</artifactId>
-        </dependency>
+        </dependency -->
 
 
     </dependencies>
