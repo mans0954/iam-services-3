@@ -15,19 +15,6 @@
           http://www.mulesoft.org/schema/mule/cxf http://www.mulesoft.org/schema/mule/cxf/3.3/mule-cxf.xsd" >
 
 
-		<!--model name="BpmServiceModel">
-			<service name="BpmWebService">
-				<inbound>
-						<inbound-endpoint address="${webservice.path}BpmWebService" exchange-pattern="request-response">
-						<cxf:jaxws-service  />
-					</inbound-endpoint>
-				</inbound>
-				<component>
-					<spring-object bean="bpmWS" />
-				</component>
-			</service>
-		</model -->
-
 
 				
 		<!-- Synchronization Objects  -->
