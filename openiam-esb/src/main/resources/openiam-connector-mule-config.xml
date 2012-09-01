@@ -77,6 +77,19 @@
             </component>
         </service>
     </model>
+    
+    <model name="salesForceConnectorServiceModel">
+        <service name="salesForceConnectorService">
+            <inbound>
+                <inbound-endpoint address="${webservice.path}SalesForceConnector" exchange-pattern="request-response">
+                    <cxf:jaxws-service />
+                </inbound-endpoint>
+            </inbound>
+            <component>
+                <spring-object bean="salesForceConnector" />
+            </component>
+        </service>
+    </model>
 
     <model name="scriptConnectorServiceModel">
 
