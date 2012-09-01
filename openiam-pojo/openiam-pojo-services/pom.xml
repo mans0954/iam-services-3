@@ -3,13 +3,13 @@
     <parent>
         <groupId>org.openiam</groupId>
         <artifactId>openiam-pojo</artifactId>
-        <version>2.1.0</version>
+        <version>3.0.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.openiam</groupId>
     <artifactId>openiam-pojo-services</artifactId>
     <name>openiam-pojo-services</name>
-    <version>2.1.0</version>
+    <version>3.0.0</version>
     <description>OPENIAM IDM Services</description>
 
     <build>
