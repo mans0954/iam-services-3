@@ -101,6 +101,7 @@
         <module>openiam-idm</module>
         <module>openiam-am</module>
         <module>openiam-esb</module>
+        <module>openiam-bpm</module>
     </modules>
 
 	<properties>
@@ -671,7 +672,12 @@
 		      <url>http://artifactory.openiam.org/artifactory/libs-release-local</url>
 		  </repository>
 
-		
+
+	<repository>
+		<id>org.activiti</id>
+		<name>Activiti Maven Repo</name>
+		<url>https://maven.alfresco.com/nexus/content/groups/public</url>
+	</repository>		
 
 
     <repository>

@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<parent>
+	    <groupId>org.openiam</groupId>
+	    <artifactId>openiam-bpm</artifactId>
+		<version>3.0.0</version>
+	</parent>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.openiam</groupId>
+    <artifactId>openiam-bpm-activiti</artifactId>
+    <name>openiam-bpm-activiti</name>
+    <packaging>jar</packaging>
+    <version>3.0.0</version>
+    <description>OpenIAM Activiti BPM Module</description>
+
+    <dependencies>
+    	<!-- Activiti -->
+		<dependency>
+		  <groupId>org.activiti</groupId>
+		  <artifactId>activiti-engine</artifactId>
+		  <version>5.9</version>
+		</dependency>
+		<dependency>
+		  <groupId>junit</groupId>
+		  <artifactId>junit</artifactId>
+		</dependency>
+		<dependency>
+		  <groupId>hsqldb</groupId>
+		  <artifactId>hsqldb</artifactId>
+		  <version>1.8.0.7</version>
+		  <scope>test</scope>
+		</dependency>
+		
+		<!-- Spring -->
+		<dependency>
+	      <groupId>org.springframework</groupId>
+	      <artifactId>spring-core</artifactId>
+	    </dependency>
+	    <dependency>
+	      <groupId>org.springframework</groupId>
+	      <artifactId>spring-aop</artifactId>
+	    </dependency>
+	    <dependency>
+	      <groupId>org.springframework</groupId>
+	      <artifactId>spring-context</artifactId>
+	    </dependency>
+	    <dependency>
+	      <groupId>org.springframework</groupId>
+	      <artifactId>spring-context-support</artifactId>
+	    </dependency>
+	    <dependency>
+	      <groupId>org.springframework</groupId>
+	      <artifactId>spring-tx</artifactId>
+	    </dependency>
+	    <dependency>
+	      <groupId>org.springframework</groupId>
+	      <artifactId>spring-jms</artifactId>
+	    </dependency>
+	    <dependency>
+	      <groupId>org.springframework</groupId>
+	      <artifactId>spring-jdbc</artifactId>
+	    </dependency>
+	    <dependency>
+	      <groupId>org.springframework</groupId>
+	      <artifactId>spring-orm</artifactId>
+	    </dependency>
+	    <dependency>
+	      <groupId>org.springframework</groupId>
+	      <artifactId>spring-test</artifactId>
+	    </dependency>
+	    
+        <dependency>
+            <groupId>org.openiam</groupId>
+            <artifactId>openiam-pojo-services</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.openiam</groupId>
+            <artifactId>openiam-idm-intf</artifactId>
+        </dependency>
+    </dependencies>
+
+    <developers>
+        <developer>
+            <id>lev_bornovalov</id>
+            <name>Lev Bornovalov</name>
+            <email>lev.bornovalov@openiam.com</email>
+        </developer>
+    </developers>
+    <reporting>
+
+    </reporting>
+
+    <build>
+        <finalName>openiam-bpm</finalName>
+    </build>
+</project>

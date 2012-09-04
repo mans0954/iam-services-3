@@ -86,6 +86,19 @@
 				</component>
 			</service>
 		</model>
+		
+		<model name="activitiBPMServiceModel">
+			<service name="activitiService">
+				<inbound>
+						<inbound-endpoint address="${webservice.path}ActivitiService" exchange-pattern="request-response">
+						<cxf:jaxws-service />
+					</inbound-endpoint>
+				</inbound>
+				<component>
+					<spring-object bean="activitiBPMService" />
+				</component>
+			</service>
+		</model>
 
 		<model name="provReqServiceModel">
 			<service name="provReqService">
