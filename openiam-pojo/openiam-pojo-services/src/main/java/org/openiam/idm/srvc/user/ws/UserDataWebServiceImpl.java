@@ -29,6 +29,8 @@ import java.util.Set;
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
+
+import org.dozer.DozerBeanMapper;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.srvc.continfo.dto.Address;
@@ -45,6 +47,8 @@ import org.openiam.idm.srvc.continfo.ws.PhoneMapResponse;
 import org.openiam.idm.srvc.continfo.ws.PhoneResponse;
 import org.openiam.idm.srvc.user.dto.*;
 import org.openiam.idm.srvc.user.service.UserDataService;
+import org.openiam.util.DozerMappingType;
+import org.springframework.beans.factory.annotation.Required;
 
 /**
  * @author suneet
@@ -57,6 +61,8 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 
 public class UserDataWebServiceImpl implements UserDataWebService {
 
+	private Map<DozerMappingType, DozerBeanMapper> dozerMap;
+	
 	UserDataService userManager;
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#addAddress(org.openiam.idm.srvc.continfo.dto.Address)
@@ -568,12 +574,13 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getUserWithDependent(java.lang.String, boolean)
 	 */
 	public UserResponse getUserWithDependent(String id, boolean dependants) {
-		UserResponse resp = new UserResponse(ResponseStatus.SUCCESS);
-		User user = userManager.getUserWithDependent(id, dependants);
+		final UserResponse resp = new UserResponse(ResponseStatus.SUCCESS);
+		final User user = userManager.getUserWithDependent(id, dependants);
 		if (user == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
-			resp.setUser(user);
+			final User converted = dozerMap.get(DozerMappingType.DEEP).map(user, User.class);
+			resp.setUser(converted);
 		}
 		return resp;
 	}
@@ -826,5 +833,9 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	public void setUserManager(UserDataService userManager) {
 		this.userManager = userManager;
 	}
-
+	
+	@Required
+	public void setDozerMap(final Map<DozerMappingType, DozerBeanMapper> dozerMap) {
+		this.dozerMap = dozerMap;
+	}
 }

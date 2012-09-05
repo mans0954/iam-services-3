@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mappings xmlns="http://dozer.sourceforge.net"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://dozer.sourceforge.net
+          http://dozer.sourceforge.net/schema/beanmapping.xsd">
+          
+	<mapping>
+		<class-a>org.openiam.idm.srvc.user.dto.User</class-a>
+		<class-b>org.openiam.idm.srvc.user.dto.User</class-b>
+		<field custom-converter="org.openiam.dozer.PersistentListConverter" custom-converter-param="shallowDozerMapper">
+			<a>principalList</a>
+			<b>principalList</b>
+		</field>
+		<field custom-converter="org.openiam.dozer.PersistentObjectConverter" custom-converter-param="shallowDozerMapper">
+			<a>supervisor</a>
+			<b>supervisor</b>
+		</field>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+			<a>userNotes</a>
+			<b>userNotes</b>
+		</field>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+			<a>addresses</a>
+			<b>addresses</b>
+		</field>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+			<a>phone</a>
+			<b>phone</b>
+		</field>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+			<a>emailAddress</a>
+			<b>emailAddress</b>
+		</field>
+	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.auth.dto.Login</class-a>
+		<class-b>org.openiam.idm.srvc.auth.dto.Login</class-b>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+			<a>loginAttributes</a>
+			<b>loginAttributes</b>
+		</field>
+	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.user.dto.Supervisor</class-a>
+		<class-b>org.openiam.idm.srvc.user.dto.Supervisor</class-b>
+		<field custom-converter="org.openiam.dozer.PersistentObjectConverter" custom-converter-param="shallowDozerMapper">
+			<a>supervisor</a>
+			<b>supervisor</b>
+		</field>
+		<field custom-converter="org.openiam.dozer.PersistentObjectConverter" custom-converter-param="shallowDozerMapper">
+			<a>employee</a>
+			<b>employee</b>
+		</field>
+	</mapping>
+</mappings>

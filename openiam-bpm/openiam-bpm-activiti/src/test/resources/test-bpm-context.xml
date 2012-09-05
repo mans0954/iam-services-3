@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xmlns:jee="http://www.springframework.org/schema/jee"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+    					http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
+    					http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
+    					http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-2.5.xsd
+    					http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd">
+	
+	<context:annotation-config />
+	<context:component-scan base-package="org.openiam.bpm.activiti.*" />
+	
+	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>classpath:test.activiti.bpm.properties</value>
+            </list>
+        </property>
+        <property name="ignoreResourceNotFound" value="true"/>
+    </bean>
+    
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" >
+		<property name="driverClassName" value="${org.openiam.bpm.activiti.jdbc.driver}" />
+		<property name="url" value="${org.openiam.bpm.activiti.jdbc.url}" />
+		<property name="username" value="${org.openiam.bpm.activiti.jdbc.username}" />
+		<property name="password" value="${org.openiam.bpm.activiti.jdbc.password}" />
+		<property name="defaultAutoCommit" value="false" />
+	</bean>   
+	
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean> 
+	  
+	<bean id="processEngineConfiguration" class="org.activiti.spring.SpringProcessEngineConfiguration">
+		<property name="dataSource" ref="dataSource" />
+		<property name="transactionManager" ref="transactionManager" />
+		<property name="databaseSchemaUpdate" value="false" />
+		<property name="jobExecutorActivate" value="false" />
+		<property name="deploymentResources" value="classpath:*bpmn20.xml" />
+	</bean>
+	
+	<bean id="processEngine" class="org.activiti.spring.ProcessEngineFactoryBean">
+    	<property name="processEngineConfiguration" ref="processEngineConfiguration" />
+  	</bean>
+  	
+  	<bean id="repositoryService" factory-bean="processEngine" factory-method="getRepositoryService" />
+	<bean id="runtimeService" factory-bean="processEngine" factory-method="getRuntimeService" />
+  	<bean id="taskService" factory-bean="processEngine" factory-method="getTaskService" />
+  	<bean id="historyService" factory-bean="processEngine" factory-method="getHistoryService" />
+  	<bean id="managementService" factory-bean="processEngine" factory-method="getManagementService" />
+	
+	<bean id="activitiBPMService" class="org.openiam.bpm.activiti.ActivitiServiceImpl" />
+</beans>
