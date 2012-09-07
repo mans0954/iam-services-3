@@ -1,3 +1,5 @@
+use activiti;
+
 create table ACT_ID_GROUP (
     ID_ NVARCHAR2(64),
     REV_ INTEGER,

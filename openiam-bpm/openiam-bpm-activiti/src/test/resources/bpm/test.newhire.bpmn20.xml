@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions id="definitions"
+  xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" 
+  xmlns:activiti="http://activiti.org/bpmn" 
+  targetNamespace="NewHire">
+
+  <process id="newHireWithApproval">
+
+    <startEvent id="start" />
+    
+    
+    <sequenceFlow id="flow1" sourceRef="start" targetRef="sendRequests" />
+    <serviceTask id="sendRequests" activiti:class="org.openiam.bpm.activiti.delegate.SendNewHireRequestDelegate" />
+    
+    <sequenceFlow id="flow2" sourceRef="sendRequests" targetRef="assignRequests" />
+    <userTask id="assignRequests">
+    	<extensionElements>
+			<activiti:taskListener event="create" class="org.openiam.bpm.activiti.tasklistener.AddCandidateUsersTaskListener" />
+		</extensionElements>
+    </userTask>
+    
+	<sequenceFlow id="flow3" sourceRef="approveRequest" targetRef="finish" />
+	<userTask id="approveRequest">
+		<extensionElements>
+			<activiti:taskListener event="create" class="org.openiam.bpm.activiti.tasklistener.ApproveOrRejectNewHireRequest" />
+		</extensionElements>
+	</userTask>
+	
+	
+	<endEvent id="finish" />
+	
+  </process>
+
+</definitions>

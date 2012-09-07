@@ -54,5 +54,9 @@
   	<bean id="historyService" factory-bean="processEngine" factory-method="getHistoryService" />
   	<bean id="managementService" factory-bean="processEngine" factory-method="getManagementService" />
 	
+	<bean id="activitiRule" class="org.activiti.engine.test.ActivitiRule">
+	  <property name="processEngine" ref="processEngine" />
+	</bean>
+	
 	<bean id="activitiBPMService" class="org.openiam.bpm.activiti.ActivitiServiceImpl" />
 </beans>

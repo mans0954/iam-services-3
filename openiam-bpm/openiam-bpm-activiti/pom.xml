@@ -19,17 +19,13 @@
 		<dependency>
 		  <groupId>org.activiti</groupId>
 		  <artifactId>activiti-engine</artifactId>
-		  <version>5.9</version>
+		  <version>5.10</version>
 		</dependency>
 		<dependency>
 	    	<groupId>org.activiti</groupId>
 	    	<artifactId>activiti-spring</artifactId>
-	    	<version>5.9</version>
+	    	<version>5.10</version>
 	    </dependency>
-		<dependency>
-		  <groupId>junit</groupId>
-		  <artifactId>junit</artifactId>
-		</dependency>
 		<dependency>
 		  <groupId>hsqldb</groupId>
 		  <artifactId>hsqldb</artifactId>
@@ -121,7 +117,7 @@
         <dependency>
 	     	<groupId>junit</groupId>
 	     	<artifactId>junit</artifactId>
-	     	<version>4.5</version>
+	     	<version>4.9</version>
 	     	<scope>test</scope>
 	   </dependency>
 	   
