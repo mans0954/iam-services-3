@@ -21,6 +21,7 @@
  */
 package org.openiam.idm.srvc.user.ws;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +32,7 @@ import javax.jws.WebParam;
 import javax.jws.WebService;
 
 import org.dozer.DozerBeanMapper;
+import org.mvel2.optimizers.impl.refl.nodes.ArrayLength;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.srvc.continfo.dto.Address;
@@ -713,12 +715,16 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#search(org.openiam.idm.srvc.user.dto.UserSearch)
 	 */
 	public UserListResponse search(UserSearch search) {
-		UserListResponse resp = new UserListResponse(ResponseStatus.SUCCESS);
-		List<User> userList = userManager.search(search);
+		final UserListResponse resp = new UserListResponse(ResponseStatus.SUCCESS);
+		final List<User> userList = userManager.search(search);
 		if (userList == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setUserList(userList);
+		} else {
+			final List<User> convertedList = new ArrayList<User>(userList.size());
+			for(final User user : userList) {
+				convertedList.add(dozerMap.get(DozerMappingType.DEEP).map(user, User.class));
+			}
+			resp.setUserList(convertedList);
 		}
 		return resp;
 	}

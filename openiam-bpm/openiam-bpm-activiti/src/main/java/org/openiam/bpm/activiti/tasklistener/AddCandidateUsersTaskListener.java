@@ -9,6 +9,7 @@ import org.activiti.engine.delegate.TaskListener;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.openiam.idm.srvc.user.dto.User;
 
 public class AddCandidateUsersTaskListener implements TaskListener {
 
@@ -19,17 +20,19 @@ public class AddCandidateUsersTaskListener implements TaskListener {
 	public void notify(DelegateTask delegateTask) {
 		log.info("Add Candidate Users");
 		final Object variable = delegateTask.getExecution().getVariable(CANDIDATE_USERS_VARIABLE);
-		final Collection<String> candidateUsers = new ArrayList<String>();
+		final Collection<User> candidateUsers = new ArrayList<User>();
 		if(variable != null) {
 			if((variable instanceof Collection<?>)) {
-				for(final String candidate : (Collection<String>)variable) {
-					if(StringUtils.isNotBlank(candidate)) {
-						candidateUsers.add(candidate);
+				for(final User candidate : (Collection<User>)variable) {
+					if(candidate != null) {
+						if(StringUtils.isNotBlank(candidate.getUserId())) {
+							candidateUsers.add(candidate);
+						}
 					}
 				}
-			} else if(variable instanceof String) {
-				if(StringUtils.isNotBlank((String)variable)) {
-					candidateUsers.add((String)variable);
+			} else if(variable instanceof User) {
+				if(StringUtils.isNotBlank(((User)variable).getUserId())) {
+					candidateUsers.add(((User)variable));
 				}
 			}
 		}
@@ -38,8 +41,8 @@ public class AddCandidateUsersTaskListener implements TaskListener {
 			throw new ActivitiException(String.format("'%s' variable is empty", CANDIDATE_USERS_VARIABLE));
 		}
 		
-		for(final String candidate : candidateUsers) {
-			delegateTask.addCandidateUser(candidate);
+		for(final User candidate : candidateUsers) {
+			delegateTask.addCandidateUser(candidate.getUserId());
 		}
 	}
 }
