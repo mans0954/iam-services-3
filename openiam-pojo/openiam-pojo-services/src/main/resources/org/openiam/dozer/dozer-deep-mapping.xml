@@ -31,6 +31,10 @@
 			<a>emailAddress</a>
 			<b>emailAddress</b>
 		</field>
+		<field custom-converter="org.openiam.dozer.UserAttributeMapConverter" custom-converter-param="shallowDozerMapper">
+			<a>userAttributes</a>
+			<b>userAttributes</b>
+		</field>
 	</mapping>
 	
 	<mapping>
