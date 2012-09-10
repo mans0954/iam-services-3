@@ -82,7 +82,7 @@ public class TestNewHire {
 		  final HashMap<String, Object> variables = new HashMap<String, Object>();
 		  variables.put(AddCandidateUsersTaskListener.CANDIDATE_USERS_VARIABLE, requestApprovers);
 		  //variables.put(SendNewHireRequestDelegate.REQUESTOR, requestor);
-		  variables.put(SendNewHireRequestDelegate.REQUESTING_FOR, provisionUser);
+		  //variables.put(SendNewHireRequestDelegate.REQUESTING_FOR, provisionUser);
 		  //variables.put(SendNewHireRequestDelegate.APPROVER_LIST, requestApprovers);
 		  final ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("newHireWithApproval", variables);
 		  

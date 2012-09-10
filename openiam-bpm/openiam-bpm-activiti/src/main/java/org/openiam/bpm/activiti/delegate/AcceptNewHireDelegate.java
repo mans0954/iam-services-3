@@ -11,6 +11,8 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.bpm.activiti.util.ActivitiConstants;
+import org.openiam.bpm.request.NewHireRequest;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.auth.ws.LoginResponse;
@@ -45,10 +47,6 @@ public class AcceptNewHireDelegate implements JavaDelegate {
 	private ApproverAssociationDAO approverAssociationDao;
 	
 	@Autowired
-	@Qualifier("defaultProvision")
-	private ProvisionService provisionService;
-	
-	@Autowired
 	private UserDataService userManager;
 	
 	@Autowired
@@ -58,44 +56,25 @@ public class AcceptNewHireDelegate implements JavaDelegate {
 		SpringContextProvider.autowire(this);
 	}
 	
-	public static final String REQUESTING_FOR = "RequestingFor";
-	public static final String PROVISION_REQUEST = "ProvisionRequest";
-	public static final String APPROVER = "ApproverId";
-	
-	private ProvisionRequest provisionRequest;
-	private ProvisionUser provisionUser;
-	private String approverId;
-	
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
 		log.info("Accepted new hire");
 		
-		final Object requestingForObj = execution.getVariable(REQUESTING_FOR);
-		final Object provisionRequestObj = execution.getVariable(PROVISION_REQUEST);
-		final Object approverObj = execution.getVariable(APPROVER);
-		
-		if(requestingForObj == null || !(requestingForObj instanceof ProvisionUser)) {
-			throw new ActivitiException(String.format("No '%s' parameter specified, or object is not of proper type", REQUESTING_FOR));
+		final Object newHireRequestObj = execution.getVariable(ActivitiConstants.NEW_HIRE_BPM_VAR);
+		if(newHireRequestObj == null || !(newHireRequestObj instanceof NewHireRequest)) {
+			throw new ActivitiException(String.format("No '%s' parameter specified, or object is not of proper type", ActivitiConstants.NEW_HIRE_BPM_VAR));
 		}
 		
-		if(provisionRequestObj == null || !(provisionRequestObj instanceof ProvisionRequest)) {
-			throw new ActivitiException(String.format("No '%s' parameter specified, or object is not of proper type", PROVISION_REQUEST));
+		final Object newProvisionedUserObj = execution.getVariable(ActivitiConstants.NEW_PROVISIONED_USER);
+		if(newProvisionedUserObj == null || !(newProvisionedUserObj instanceof User)) {
+			throw new ActivitiException(String.format("No '%s' parameter specified, or object is not of proper type", ActivitiConstants.NEW_PROVISIONED_USER));
 		}
 		
-		if(approverObj == null || !(approverObj instanceof User)) {
-			throw new ActivitiException(String.format("No '%s' parameter specified, or object is not of proper type", APPROVER));
-		}
-		
-		provisionRequest = (ProvisionRequest)provisionRequestObj;
-		provisionUser = (ProvisionUser)requestingForObj;
-		approverId = (String)approverObj;
-		
-		/* provision the user */
-		provisionUser.setUserId(null);
-		provisionUser.setStatus(UserStatusEnum.ACTIVE);
-        ProvisionUserResponse resp = provisionService.addUser(provisionUser);
-        
-        final User newUser = resp.getUser();
+		final User newProvisionedUser = (User)newProvisionedUserObj;
+		final NewHireRequest newHireRequest = (NewHireRequest)newHireRequestObj;
+		final ProvisionRequest provisionRequest = newHireRequest.getProvisionRequest();
+		final ProvisionUser provisionUser = newHireRequest.getProvisionUser();
+		final String approverId = newHireRequest.getRequestorInformation().getCallerUserId();
         
         final String requestType = provisionRequest.getRequestType();
         final List<ApproverAssociation> approverAssociationList = approverAssociationDao.findApproversByRequestType(requestType, 1);
@@ -117,7 +96,7 @@ public class AcceptNewHireDelegate implements JavaDelegate {
                     }
                 } else {
                     if (provisionUser.getEmailAddress() != null) {
-                        notifyUserId = newUser.getUserId();
+                        notifyUserId = newProvisionedUser.getUserId();
                     }
                 }
             }
@@ -139,7 +118,7 @@ public class AcceptNewHireDelegate implements JavaDelegate {
                     }
                 }
 
-                final Login login = loginDS.getPrimaryIdentity(newUser.getUserId());
+                final Login login = loginDS.getPrimaryIdentity(newProvisionedUser.getUserId());
                 if (login != null) {
                     identity = login.getId().getLogin();
                     password = loginDS.decryptPassword(login.getPassword());

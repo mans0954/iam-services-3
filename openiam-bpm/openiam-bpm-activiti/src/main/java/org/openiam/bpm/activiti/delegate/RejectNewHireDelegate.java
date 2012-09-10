@@ -10,6 +10,8 @@ import org.activiti.engine.delegate.JavaDelegate;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.openiam.bpm.activiti.util.ActivitiConstants;
+import org.openiam.bpm.request.NewHireRequest;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
@@ -49,14 +51,6 @@ public class RejectNewHireDelegate implements JavaDelegate {
 	@Autowired
 	private LoginDataService loginDS;
 	
-	public static final String REQUESTING_FOR = "RequestingFor";
-	public static final String PROVISION_REQUEST = "ProvisionRequest";
-	public static final String APPROVER = "ApproverId";
-	
-	private ProvisionRequest provisionRequest;
-	private ProvisionUser provisionUser;
-	private String approverId;
-	
 	public RejectNewHireDelegate() {
 		SpringContextProvider.autowire(this);
 	}
@@ -65,25 +59,15 @@ public class RejectNewHireDelegate implements JavaDelegate {
 	public void execute(DelegateExecution execution) throws Exception {
 		log.info("Rejected new hire");
 		
-		final Object requestingForObj = execution.getVariable(REQUESTING_FOR);
-		final Object provisionRequestObj = execution.getVariable(PROVISION_REQUEST);
-		final Object approverObj = execution.getVariable(APPROVER);
-		
-		if(requestingForObj == null || !(requestingForObj instanceof ProvisionUser)) {
-			throw new ActivitiException(String.format("No '%s' parameter specified, or object is not of proper type", REQUESTING_FOR));
+		final Object newHireRequestObj = execution.getVariable(ActivitiConstants.NEW_HIRE_BPM_VAR);
+		if(newHireRequestObj == null || !(newHireRequestObj instanceof NewHireRequest)) {
+			throw new ActivitiException(String.format("No '%s' parameter specified, or object is not of proper type", ActivitiConstants.NEW_HIRE_BPM_VAR));
 		}
 		
-		if(provisionRequestObj == null || !(provisionRequestObj instanceof ProvisionRequest)) {
-			throw new ActivitiException(String.format("No '%s' parameter specified, or object is not of proper type", PROVISION_REQUEST));
-		}
-		
-		if(approverObj == null || !(approverObj instanceof User)) {
-			throw new ActivitiException(String.format("No '%s' parameter specified, or object is not of proper type", APPROVER));
-		}
-		
-		provisionRequest = (ProvisionRequest)provisionRequestObj;
-		provisionUser = (ProvisionUser)requestingForObj;
-		approverId = (String)approverObj;
+		final NewHireRequest newHireRequest = (NewHireRequest)newHireRequestObj;
+		final ProvisionRequest provisionRequest = newHireRequest.getProvisionRequest();
+		final ProvisionUser provisionUser = newHireRequest.getProvisionUser();
+		final String approverId = newHireRequest.getRequestorInformation().getCallerUserId();
 		
 		final String requestType = provisionRequest.getRequestType();
         final List<ApproverAssociation> approverAssociationList = approverAssociationDao.findApproversByRequestType(requestType, 1);
@@ -109,7 +93,7 @@ public class RejectNewHireDelegate implements JavaDelegate {
                 }
             }
 
-            User approver = userManager.getUserWithDependent(approverId, false);
+            final User approver = userManager.getUserWithDependent(approverId, false);
 
             String targetUserName = null;
             final Set<RequestUser> requestUserSet = provisionRequest.getRequestUsers();

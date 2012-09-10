@@ -9,17 +9,17 @@ import org.activiti.engine.delegate.TaskListener;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.openiam.bpm.activiti.util.ActivitiConstants;
 import org.openiam.idm.srvc.user.dto.User;
 
 public class AddCandidateUsersTaskListener implements TaskListener {
 
-	public static final String CANDIDATE_USERS_VARIABLE = "candidateUsers";
 	private static Logger log = Logger.getLogger(AddCandidateUsersTaskListener.class);
 	
 	@Override
 	public void notify(DelegateTask delegateTask) {
 		log.info("Add Candidate Users");
-		final Object variable = delegateTask.getExecution().getVariable(CANDIDATE_USERS_VARIABLE);
+		final Object variable = delegateTask.getExecution().getVariable(ActivitiConstants.CANDIDATE_USERS);
 		final Collection<User> candidateUsers = new ArrayList<User>();
 		if(variable != null) {
 			if((variable instanceof Collection<?>)) {
@@ -38,7 +38,7 @@ public class AddCandidateUsersTaskListener implements TaskListener {
 		}
 		
 		if(CollectionUtils.isEmpty(candidateUsers)) {
-			throw new ActivitiException(String.format("'%s' variable is empty", CANDIDATE_USERS_VARIABLE));
+			throw new ActivitiException(String.format("'%s' variable is empty", ActivitiConstants.CANDIDATE_USERS));
 		}
 		
 		for(final User candidate : candidateUsers) {

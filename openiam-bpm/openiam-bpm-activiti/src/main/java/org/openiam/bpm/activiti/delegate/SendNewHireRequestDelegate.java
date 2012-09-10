@@ -34,9 +34,6 @@ public class SendNewHireRequestDelegate implements JavaDelegate {
 
 	private static Logger log = Logger.getLogger(SendNewHireRequestDelegate.class);
 
-	//public static final String REQUESTOR = "Requestor";
-	public static final String REQUESTING_FOR = "RequestingFor";
-	public static final String PROVISION_REQUEST = "ProvisionRequest";
 	public static final String DELEGATION_FILTER_SEARCH = "DelegationFilterSearch";
 	
 	@Autowired
@@ -68,7 +65,7 @@ public class SendNewHireRequestDelegate implements JavaDelegate {
 		
 		provisionUser = newHireRequest.getProvisionUser();
 		provisionRequest = newHireRequest.getProvisionRequest();
-		final String callerId = newHireRequest.getCallerUserId();
+		final String callerId = newHireRequest.getRequestorInformation().getCallerUserId();
 		
 		if(CollectionUtils.isNotEmpty(provisionRequest.getRequestApprovers())) {
 			if(callerId == null) {

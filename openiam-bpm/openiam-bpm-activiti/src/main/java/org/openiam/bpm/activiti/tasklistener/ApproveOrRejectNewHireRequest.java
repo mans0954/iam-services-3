@@ -5,14 +5,14 @@ import org.activiti.engine.TaskService;
 import org.activiti.engine.delegate.DelegateTask;
 import org.activiti.engine.delegate.TaskListener;
 import org.apache.log4j.Logger;
+import org.openiam.bpm.activiti.util.ActivitiConstants;
+import org.openiam.bpm.request.NewHireRequest;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.util.SpringContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class ApproveOrRejectNewHireRequest implements TaskListener {
 
-	public static final String IS_NEWHIRE_APPROVED = "IsNewHireApproved";
-	public static final String ASSIGNEE = "Assignee";
 	private static Logger log = Logger.getLogger(ApproveOrRejectNewHireRequest.class);
 	
 	@Autowired
@@ -26,22 +26,22 @@ public class ApproveOrRejectNewHireRequest implements TaskListener {
 	public void notify(DelegateTask delegateTask) {
 		log.info("Approving request");
 		
-		final Object assigneeObj = (delegateTask.getVariable(ASSIGNEE));
-		final Object isNewHireAcceptedObj = delegateTask.getVariable(IS_NEWHIRE_APPROVED);
-		if(assigneeObj == null || !(assigneeObj instanceof User)) {
-			throw new ActivitiException(String.format("Variable '%s' not provied", ASSIGNEE));
+		final Object newHireObj = (delegateTask.getVariable(ActivitiConstants.NEW_HIRE_BPM_VAR));
+		final Object isNewHireAcceptedObj = delegateTask.getVariable(ActivitiConstants.IS_NEW_HIRE_APPROVED);
+		if(newHireObj == null || !(newHireObj instanceof NewHireRequest)) {
+			throw new ActivitiException(String.format("Variable '%s' not provied", ActivitiConstants.NEW_HIRE_BPM_VAR));
 		}
 		
 		if(isNewHireAcceptedObj == null || !(isNewHireAcceptedObj instanceof Boolean)) {
-			throw new ActivitiException(String.format("Variable '%s' not provied", IS_NEWHIRE_APPROVED));
+			throw new ActivitiException(String.format("Variable '%s' not provied", ActivitiConstants.IS_NEW_HIRE_APPROVED));
 		}
 		
 		
-		final User assignee = (User)assigneeObj;
+		final NewHireRequest request = (NewHireRequest)newHireObj;
 		final Boolean isNewHireAccepted = (Boolean)isNewHireAcceptedObj;
 		
-		delegateTask.setAssignee(assignee.getUserId());
-		delegateTask.setVariable("isHireAccepted", isNewHireAccepted);
+		//delegateTask.setAssignee(request.getCallerUserId());
+		delegateTask.setVariable(ActivitiConstants.NEW_HIRE_BPM_VAR, isNewHireAccepted);
 	}
 
 }

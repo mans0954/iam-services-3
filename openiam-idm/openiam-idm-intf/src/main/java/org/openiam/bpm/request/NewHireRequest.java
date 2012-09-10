@@ -13,17 +13,16 @@ import org.openiam.provision.dto.ProvisionUser;
 @XmlType(name = "NewHireRequest", propOrder = {
     "provisionUser",
     "provisionRequest",
-    "callerUserId",
+    "requestorInformation",
     "taskId",
     "comment"
 })
 public class NewHireRequest implements Serializable {
-
 	private String comment;
 	private String taskId;
-	private String callerUserId;
 	private ProvisionUser provisionUser;
 	private ProvisionRequest provisionRequest;
+	private RequestorInformation requestorInformation = new RequestorInformation();
 	
 	public NewHireRequest() {
 		
@@ -35,14 +34,6 @@ public class NewHireRequest implements Serializable {
 
 	public void setTaskId(String taskId) {
 		this.taskId = taskId;
-	}
-
-	public String getCallerUserId() {
-		return callerUserId;
-	}
-
-	public void setCallerUserId(String callerUserId) {
-		this.callerUserId = callerUserId;
 	}
 	
 	public ProvisionUser getProvisionUser() {
@@ -67,5 +58,13 @@ public class NewHireRequest implements Serializable {
 	
 	public void setComment(final String comment) {
 		this.comment = comment;
+	}
+
+	public RequestorInformation getRequestorInformation() {
+		return requestorInformation;
+	}
+
+	public void setRequestorInformation(RequestorInformation requestorInformation) {
+		this.requestorInformation = requestorInformation;
 	}
 }
