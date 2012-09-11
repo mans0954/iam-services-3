@@ -26,6 +26,7 @@ import org.junit.runner.RunWith;
 import org.openiam.bpm.activiti.delegate.SendNewHireRequestDelegate;
 import org.openiam.bpm.activiti.tasklistener.AddCandidateUsersTaskListener;
 import org.openiam.bpm.activiti.tasklistener.ApproveOrRejectNewHireRequest;
+import org.openiam.bpm.activiti.util.ActivitiConstants;
 import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
 import org.openiam.idm.srvc.prov.request.dto.RequestApprover;
 import org.openiam.idm.srvc.user.dto.Supervisor;
@@ -80,7 +81,7 @@ public class TestNewHire {
 		  final Set<User> requestApprovers = createApproverList(requestor.getUserId());
 		  
 		  final HashMap<String, Object> variables = new HashMap<String, Object>();
-		  variables.put(AddCandidateUsersTaskListener.CANDIDATE_USERS_VARIABLE, requestApprovers);
+		  variables.put(ActivitiConstants.CANDIDATE_USERS, requestApprovers);
 		  //variables.put(SendNewHireRequestDelegate.REQUESTOR, requestor);
 		  //variables.put(SendNewHireRequestDelegate.REQUESTING_FOR, provisionUser);
 		  //variables.put(SendNewHireRequestDelegate.APPROVER_LIST, requestApprovers);
@@ -94,7 +95,7 @@ public class TestNewHire {
 			  final User user = new User("foobar");
 			  taskService.claim(task.getId(), user.getUserId());
 			  final HashMap<String, Object> localVariables = new HashMap<String, Object>();
-			  localVariables.put(ApproveOrRejectNewHireRequest.ASSIGNEE, user);
+			  localVariables.put(ActivitiConstants.CANDIDATE_USERS, user);
 			  taskService.complete(task.getId(), localVariables);
 		  }
 		  
