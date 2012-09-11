@@ -8,6 +8,9 @@ create table ACT_GE_PROPERTY (
 );
 
 insert into ACT_GE_PROPERTY
+values ('historyLevel', '2', 1);
+
+insert into ACT_GE_PROPERTY
 values ('schema.version', '5.10', 1);
 
 insert into ACT_GE_PROPERTY
