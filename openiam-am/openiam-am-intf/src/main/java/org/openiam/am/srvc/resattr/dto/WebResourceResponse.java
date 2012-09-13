@@ -3,9 +3,7 @@ package org.openiam.am.srvc.resattr.dto;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,7 +14,8 @@ import java.util.List;
 })
 public class WebResourceResponse  extends Response {
 
-
+    @XmlElementWrapper(name="attributeList")
+    @XmlElement(name = "attribute")
     List<Attribute> attributeList = new ArrayList<Attribute>();
 
 
