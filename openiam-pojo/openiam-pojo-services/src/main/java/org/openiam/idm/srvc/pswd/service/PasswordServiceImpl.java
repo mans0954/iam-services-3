@@ -243,9 +243,9 @@ public class PasswordServiceImpl implements PasswordService {
 		// order of search, type, classification, domain, global
 		
 		// get the user for this principal
-		Login lg = loginManager.getLoginByManagedSys(domainId, principal, managedSysId);
+		final Login lg = loginManager.getLoginByManagedSys(domainId, principal, managedSysId);
 		log.info("login=" + lg);
-		User user = this.userManager.getUserWithDependent(lg.getUserId(), false);
+		final User user = userManager.getUserWithDependent(lg.getUserId(), false);
 		
 		return getPasswordPolicyByUser(domainId, user);
 	}

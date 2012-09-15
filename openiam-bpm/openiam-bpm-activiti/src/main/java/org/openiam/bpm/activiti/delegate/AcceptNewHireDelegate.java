@@ -11,8 +11,9 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.bpm.activiti.util.ActivitiConstants;
+import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.bpm.request.NewHireRequest;
+import org.openiam.bpm.request.RequestorInformation;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.auth.ws.LoginResponse;
@@ -23,9 +24,11 @@ import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.msg.service.MailService;
 import org.openiam.idm.srvc.prov.request.dto.ProvisionRequest;
 import org.openiam.idm.srvc.prov.request.dto.RequestUser;
+import org.openiam.idm.srvc.prov.request.service.RequestDataService;
 import org.openiam.idm.srvc.user.dto.Supervisor;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
+import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.ProvisionUserResponse;
@@ -33,6 +36,8 @@ import org.openiam.provision.service.ProvisionService;
 import org.openiam.util.SpringContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+
+import com.thoughtworks.xstream.XStream;
 
 public class AcceptNewHireDelegate implements JavaDelegate {
 
@@ -43,7 +48,7 @@ public class AcceptNewHireDelegate implements JavaDelegate {
 	private MailService mailService;
 	
 	@Autowired
-	@Qualifier("approverAssociationDao")
+	@Qualifier("approverAssociationDAO")
 	private ApproverAssociationDAO approverAssociationDao;
 	
 	@Autowired
@@ -51,6 +56,14 @@ public class AcceptNewHireDelegate implements JavaDelegate {
 	
 	@Autowired
 	private LoginDataService loginDS;
+	
+	@Autowired
+	@Qualifier("provRequestService")
+	private RequestDataService provRequestService;
+	
+	@Autowired
+	@Qualifier("userDAO")
+	private UserDAO userDAO;
 	
 	public AcceptNewHireDelegate() {
 		SpringContextProvider.autowire(this);
@@ -60,21 +73,27 @@ public class AcceptNewHireDelegate implements JavaDelegate {
 	public void execute(DelegateExecution execution) throws Exception {
 		log.info("Accepted new hire");
 		
-		final Object newHireRequestObj = execution.getVariable(ActivitiConstants.NEW_HIRE_BPM_VAR);
-		if(newHireRequestObj == null || !(newHireRequestObj instanceof NewHireRequest)) {
-			throw new ActivitiException(String.format("No '%s' parameter specified, or object is not of proper type", ActivitiConstants.NEW_HIRE_BPM_VAR));
+		final Object provisionRequestIdObj = execution.getVariable(ActivitiConstants.PROVISION_REQUEST_ID);
+		final Object newHireExecutorIdObj = execution.getVariable(ActivitiConstants.NEW_HIRE_EXECUTOR_ID);
+		if(provisionRequestIdObj == null || !(provisionRequestIdObj instanceof String)) {
+			throw new ActivitiException(String.format("No '%s' parameter specified, or object is not of proper type", ActivitiConstants.PROVISION_REQUEST_ID));
+		}
+		if(newHireExecutorIdObj == null || !(newHireExecutorIdObj instanceof String)) {
+			throw new ActivitiException(String.format("No '%s' parameter specified, or object is not of proper type", ActivitiConstants.NEW_HIRE_EXECUTOR_ID));
 		}
 		
-		final Object newProvisionedUserObj = execution.getVariable(ActivitiConstants.NEW_PROVISIONED_USER);
-		if(newProvisionedUserObj == null || !(newProvisionedUserObj instanceof User)) {
-			throw new ActivitiException(String.format("No '%s' parameter specified, or object is not of proper type", ActivitiConstants.NEW_PROVISIONED_USER));
+		final Object newUserIdObj = execution.getVariable(ActivitiConstants.NEW_USER_ID);
+		if(newUserIdObj == null || !(newUserIdObj instanceof String)) {
+			throw new ActivitiException(String.format("No '%s' parameter specified, or object is not of proper type", ActivitiConstants.NEW_USER_ID));
 		}
 		
-		final User newProvisionedUser = (User)newProvisionedUserObj;
-		final NewHireRequest newHireRequest = (NewHireRequest)newHireRequestObj;
-		final ProvisionRequest provisionRequest = newHireRequest.getProvisionRequest();
-		final ProvisionUser provisionUser = newHireRequest.getProvisionUser();
-		final String approverId = newHireRequest.getRequestorInformation().getCallerUserId();
+		final String provisionRequestId = (String)provisionRequestIdObj;
+		
+		final String newUserId = (String)newUserIdObj;
+		final User newUser = userDAO.findById(newUserId);
+		final ProvisionRequest provisionRequest = provRequestService.getRequest(provisionRequestId);
+		final ProvisionUser provisionUser = (ProvisionUser)new XStream().fromXML(provisionRequest.getRequestXML());
+		final String newHireExecutorId = (String)newHireExecutorIdObj;
         
         final String requestType = provisionRequest.getRequestType();
         final List<ApproverAssociation> approverAssociationList = approverAssociationDao.findApproversByRequestType(requestType, 1);
@@ -86,39 +105,37 @@ public class AcceptNewHireDelegate implements JavaDelegate {
                 typeOfUserToNotify = "USER";
             }
             String notifyUserId = null;
+            //String notifyEmail = null;
             if (StringUtils.equalsIgnoreCase(typeOfUserToNotify, "user")) {
                 notifyUserId = approverAssociation.getNotifyUserOnApprove();
-            } else {
-            	if(StringUtils.equalsIgnoreCase(typeOfUserToNotify, "supervisor")) {
-                   final Supervisor supVisor = provisionUser.getSupervisor();
-                    if (supVisor != null) {
-                        notifyUserId = supVisor.getSupervisor().getUserId();
-                    }
-                } else {
-                    if (provisionUser.getEmailAddress() != null) {
-                        notifyUserId = newProvisionedUser.getUserId();
-                    }
+                /*
+                if(StringUtils.isNotBlank(notifyUserId)) {
+                	final User notifyUser = userDAO.findById(notifyUserId);
+                	if(notifyUser != null && notifyUser.getEmailAddress() != null) {
+                		notifyEmail = notifyUser.getEmail();
+                	}
+                }
+                */
+            } else if(StringUtils.equalsIgnoreCase(typeOfUserToNotify, "supervisor")) {
+               final Supervisor supVisor = provisionUser.getSupervisor();
+                if (supVisor != null) {
+                    notifyUserId = supVisor.getSupervisor().getUserId();
+                    //notifyEmail = supVisor.getSupervisor().getEmail();
                 }
             }
-
+            
+            /* if there's no approver to notify, send it to the original user */
+            if(notifyUserId == null) {
+            	notifyUserId = newUser.getUserId();
+            }
+            
             if (StringUtils.isNotBlank(notifyUserId)) {
                 String identity = null;
                 String password = null;
 
-                final User approver = userManager.getUserWithDependent(approverId, false);
+                final User approver = userManager.getUserWithDependent(newHireExecutorId, false);
 
-                // get the target user
-                String targetUserName = null;
-                final Set<RequestUser> reqUserSet = provisionRequest.getRequestUsers();
-                if (CollectionUtils.isNotEmpty(reqUserSet)) {
-                    final Iterator<RequestUser> userIt = reqUserSet.iterator();
-                    if (userIt.hasNext()) {
-                        final RequestUser targetUser = userIt.next();
-                        targetUserName = String.format("%s %s", targetUser.getFirstName(), targetUser.getLastName());
-                    }
-                }
-
-                final Login login = loginDS.getPrimaryIdentity(newProvisionedUser.getUserId());
+                final Login login = loginDS.getPrimaryIdentity(newUser.getUserId());
                 if (login != null) {
                     identity = login.getId().getLogin();
                     password = loginDS.decryptPassword(login.getPassword());
@@ -132,8 +149,8 @@ public class AcceptNewHireDelegate implements JavaDelegate {
 
                 request.getParamList().add(new NotificationParam("REQUEST_ID", provisionRequest.getRequestId()));
                 request.getParamList().add(new NotificationParam("REQUEST_REASON", provisionRequest.getRequestReason()));
-                request.getParamList().add(new NotificationParam("REQUESTOR", approver.getFirstName() + " " + approver.getLastName()));
-                request.getParamList().add(new NotificationParam("TARGET_USER", targetUserName));
+                request.getParamList().add(new NotificationParam("REQUESTOR", String.format("%s %s", approver.getFirstName(), approver.getLastName())));
+                request.getParamList().add(new NotificationParam("TARGET_USER", String.format("%s %s", provisionUser.getFirstName(), provisionUser.getLastName())));
                 request.getParamList().add(new NotificationParam("IDENTITY", identity));
                 request.getParamList().add(new NotificationParam("PSWD", password));
 

@@ -15,6 +15,9 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class RequestorInformation implements Serializable {
 
+	
+	private static final long serialVersionUID = 4447312981650177367L;
+	
 	private String login;
 	private String domain;
 	private String ip;

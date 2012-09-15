@@ -100,10 +100,6 @@
 	        <version>${spring.version}</version>
 	    </dependency>
 	    
-	    
-	    
-	    
-	    
         <dependency>
             <groupId>org.openiam</groupId>
             <artifactId>openiam-pojo-services</artifactId>

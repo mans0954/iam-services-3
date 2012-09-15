@@ -22,14 +22,6 @@ public class LoginId implements java.io.Serializable {
     private String login;
     private String managedSysId;
 
-
-    public String toString() {
-        String str = "serviceId=" + domainId +
-                "  login=" + login +
-                "  managedSysId=" + managedSysId;
-        return str;
-    }
-
     public LoginId() {
     }
 
@@ -63,25 +55,51 @@ public class LoginId implements java.io.Serializable {
         this.managedSysId = managedSysId;
     }
 
-    public boolean equals(Object other) {
-        if ((this == other)) return true;
-        if ((other == null)) return false;
-        if (!(other instanceof LoginId)) return false;
-        LoginId castOther = (LoginId) other;
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((domainId == null) ? 0 : domainId.hashCode());
+		result = prime * result + ((login == null) ? 0 : login.hashCode());
+		result = prime * result
+				+ ((managedSysId == null) ? 0 : managedSysId.hashCode());
+		return result;
+	}
 
-        return ((this.getDomainId() == castOther.getDomainId()) || (this.getDomainId() != null && castOther.getDomainId() != null && this.getDomainId().equals(castOther.getDomainId())))
-                && ((this.getLogin() == castOther.getLogin()) || (this.getLogin() != null && castOther.getLogin() != null && this.getLogin().equals(castOther.getLogin())));
-    }
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		LoginId other = (LoginId) obj;
+		if (domainId == null) {
+			if (other.domainId != null)
+				return false;
+		} else if (!domainId.equals(other.domainId))
+			return false;
+		if (login == null) {
+			if (other.login != null)
+				return false;
+		} else if (!login.equals(other.login))
+			return false;
+		if (managedSysId == null) {
+			if (other.managedSysId != null)
+				return false;
+		} else if (!managedSysId.equals(other.managedSysId))
+			return false;
+		return true;
+	}
 
-    public int hashCode() {
-        int result = 17;
-
-        result = 37 * result + (getDomainId() == null ? 0 : this.getDomainId().hashCode());
-        result = 37 * result + (getLogin() == null ? 0 : this.getLogin().hashCode());
-        return result;
-    }
-
-
+	@Override
+	public String toString() {
+		return String.format(
+				"LoginId [domainId=%s, login=%s, managedSysId=%s]", domainId,
+				login, managedSysId);
+	}
 }
 
 

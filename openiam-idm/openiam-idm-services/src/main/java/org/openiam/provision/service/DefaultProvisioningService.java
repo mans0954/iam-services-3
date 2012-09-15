@@ -247,7 +247,7 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
         boolean customPassword = false;
         Login primaryLogin = null;
 
-        if (user.getPrincipalList() == null || user.getPrincipalList().isEmpty()) {
+        if (CollectionUtils.isEmpty(user.getPrincipalList())) {
             // build the list
             addUser.buildPrimaryPrincipal(user, bindingMap, se);
 
@@ -266,7 +266,7 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
         }
 
         // check if there is a custom password provided in the request
-        if (user.getPassword() != null && !user.getPassword().trim().isEmpty()) {
+        if (StringUtils.isNotEmpty(user.getPassword())) {
             customPassword = true;
             primaryLogin.setPassword(user.getPassword());
         }
@@ -334,9 +334,36 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
             log.debug("Identity passed duplicate identity check:" + dupId.getManagedSysId() + " - " + dupId.getLogin());
         }
 
+        log.debug("Primary identity=" + primaryLogin);
 
-        List<IdmAuditLog> pendingLogItems = new ArrayList<IdmAuditLog>();
-        /* Create the new user in the openiam repository */
+
+        if (user.isAddInitialPasswordToHistory() || customPassword) {
+            // add the auto generated password to the history so that the user can not use this password as their first password
+            PasswordHistory hist = new PasswordHistory(primaryLogin.getId().getLogin(), primaryLogin.getId().getDomainId(),
+                    primaryLogin.getId().getManagedSysId());
+            hist.setPassword(primaryLogin.getPassword());
+            passwordHistoryDao.add(hist);
+        }
+
+        // Update attributes that will be used by the password policy
+        passwordPolicy = passwordDS.getPasswordPolicyByUser(primaryLogin.getId().getDomainId(), user);
+        //passwordPolicy = passwordDS.getPasswordPolicy(primaryLogin.getId().getDomainId(), primaryLogin.getId().getLogin(), primaryLogin.getId().getManagedSysId());
+        PolicyAttribute policyAttr = getPolicyAttribute("CHNG_PSWD_ON_RESET", passwordPolicy);
+        if (policyAttr != null) {
+            // don't force the user to immediately change it's own password
+            if (policyAttr.getValue1().equalsIgnoreCase("1") && !customPassword) {
+                primaryLogin.setResetPassword(1);
+            } else {
+                primaryLogin.setResetPassword(0);
+            }
+            // determin the password expiration and grace period dates
+            setPasswordExpValues(passwordPolicy, primaryLogin);
+
+            //loginManager.updateLogin(primaryLogin);
+        }
+        
+        /* now that you've fully populated the user - save him */
+        final List<IdmAuditLog> pendingLogItems = new ArrayList<IdmAuditLog>();
         resp = addUser.createUser(user, pendingLogItems);
 
         if (resp.getStatus() == ResponseStatus.SUCCESS) {
@@ -356,8 +383,7 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
                     requestId, resp.getErrorCode().toString(), user.getSessionId(), resp.getErrorText(),
                     user.getRequestClientIP(), primaryLogin.getId().getLogin(), primaryLogin.getId().getDomainId());
         }
-
-
+        
         // need decrypted password for use in the connectors:
         String decPassword = null;
         try {
@@ -378,35 +404,6 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
         }
         bindingMap.put("lg", primaryLogin);
         bindingMap.put("password", decPassword);
-
-        log.debug("Primary identity=" + primaryLogin);
-
-
-        if (user.isAddInitialPasswordToHistory() || customPassword) {
-            // add the auto generated password to the history so that the user can not use this password as their first password
-            PasswordHistory hist = new PasswordHistory(primaryLogin.getId().getLogin(), primaryLogin.getId().getDomainId(),
-                    primaryLogin.getId().getManagedSysId());
-            hist.setPassword(primaryLogin.getPassword());
-            passwordHistoryDao.add(hist);
-        }
-
-
-        // Update attributes that will be used by the password policy
-        passwordPolicy = passwordDS.getPasswordPolicy(primaryLogin.getId().getDomainId(), primaryLogin.getId().getLogin(), primaryLogin.getId().getManagedSysId());
-        PolicyAttribute policyAttr = getPolicyAttribute("CHNG_PSWD_ON_RESET", passwordPolicy);
-        if (policyAttr != null) {
-            // don't force the user to immediately change it's own password
-            if (policyAttr.getValue1().equalsIgnoreCase("1") && !customPassword) {
-                primaryLogin.setResetPassword(1);
-            } else {
-                primaryLogin.setResetPassword(0);
-            }
-            // determin the password expiration and grace period dates
-            setPasswordExpValues(passwordPolicy, primaryLogin);
-
-            loginManager.updateLogin(primaryLogin);
-        }
-
 
         // provision the user into the systems that they should have access to.
 

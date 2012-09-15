@@ -9,7 +9,7 @@ import org.activiti.engine.delegate.TaskListener;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.openiam.bpm.activiti.util.ActivitiConstants;
+import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.user.dto.User;
 
 public class AddCandidateUsersTaskListener implements TaskListener {
@@ -19,30 +19,40 @@ public class AddCandidateUsersTaskListener implements TaskListener {
 	@Override
 	public void notify(DelegateTask delegateTask) {
 		log.info("Add Candidate Users");
-		final Object variable = delegateTask.getExecution().getVariable(ActivitiConstants.CANDIDATE_USERS);
-		final Collection<User> candidateUsers = new ArrayList<User>();
-		if(variable != null) {
-			if((variable instanceof Collection<?>)) {
-				for(final User candidate : (Collection<User>)variable) {
-					if(candidate != null) {
-						if(StringUtils.isNotBlank(candidate.getUserId())) {
-							candidateUsers.add(candidate);
-						}
+		final Object taskOwnerObj = delegateTask.getExecution().getVariable(ActivitiConstants.TASK_OWNER);
+		final Object taskNameObj = delegateTask.getExecution().getVariable(ActivitiConstants.TASK_NAME);
+		final Object candidateUserIdsObj = delegateTask.getExecution().getVariable(ActivitiConstants.CANDIDATE_USERS_IDS);
+		final Collection<String> candidateUsersIds = new ArrayList<String>();
+		if(candidateUserIdsObj != null) {
+			if((candidateUserIdsObj instanceof Collection<?>)) {
+				for(final String candidateId : (Collection<String>)candidateUserIdsObj) {
+					if(candidateId != null) {
+						candidateUsersIds.add(candidateId);
 					}
 				}
-			} else if(variable instanceof User) {
-				if(StringUtils.isNotBlank(((User)variable).getUserId())) {
-					candidateUsers.add(((User)variable));
+			} else if(candidateUserIdsObj instanceof String) {
+				if(StringUtils.isNotBlank(((String)candidateUserIdsObj))) {
+					candidateUsersIds.add(((String)candidateUserIdsObj));
 				}
 			}
 		}
 		
-		if(CollectionUtils.isEmpty(candidateUsers)) {
-			throw new ActivitiException(String.format("'%s' variable is empty", ActivitiConstants.CANDIDATE_USERS));
+		if(CollectionUtils.isEmpty(candidateUsersIds)) {
+			throw new ActivitiException(String.format("'%s' variable is empty", ActivitiConstants.CANDIDATE_USERS_IDS));
 		}
 		
-		for(final User candidate : candidateUsers) {
-			delegateTask.addCandidateUser(candidate.getUserId());
+		for(final String candidateId : candidateUsersIds) {
+			delegateTask.addCandidateUser(candidateId);
+		}
+		
+		if(taskNameObj != null && taskNameObj instanceof String && StringUtils.isNotBlank((String)taskNameObj)) {
+			delegateTask.setName((String)taskNameObj);
+		} else {
+			log.warn(String.format("No task name specified for %s", delegateTask.getId()));
+		}
+		
+		if(taskOwnerObj != null && taskOwnerObj instanceof String && StringUtils.isNotBlank((String)taskOwnerObj)) {
+			delegateTask.setOwner((String)taskOwnerObj);
 		}
 	}
 }

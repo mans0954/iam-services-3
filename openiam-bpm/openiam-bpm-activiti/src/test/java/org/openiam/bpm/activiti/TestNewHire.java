@@ -25,8 +25,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openiam.bpm.activiti.delegate.SendNewHireRequestDelegate;
 import org.openiam.bpm.activiti.tasklistener.AddCandidateUsersTaskListener;
-import org.openiam.bpm.activiti.tasklistener.ApproveOrRejectNewHireRequest;
-import org.openiam.bpm.activiti.util.ActivitiConstants;
 import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
 import org.openiam.idm.srvc.prov.request.dto.RequestApprover;
 import org.openiam.idm.srvc.user.dto.Supervisor;
@@ -44,6 +42,7 @@ import org.springframework.transaction.annotation.Transactional;
 @ContextConfiguration(locations={"classpath:test-bpm-context.xml","classpath:applicationContext.xml", "classpath:idmservice-Context.xml"})
 public class TestNewHire {
 	
+	/*
 	private static Logger log = Logger.getLogger(TestNewHire.class);
 	
 	  @Autowired
@@ -137,4 +136,5 @@ public class TestNewHire {
 	  private String rs() {
 		  return RandomStringUtils.randomAlphabetic(2);
 	  }
+	  */
 }

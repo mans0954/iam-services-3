@@ -467,5 +467,164 @@ public class Login implements java.io.Serializable, Cloneable {
     public void setPswdResetToken(String pswdResetToken) {
         this.pswdResetToken = pswdResetToken;
     }
+
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		return result;
+	}
+
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Login other = (Login) obj;
+		if (authFailCount == null) {
+			if (other.authFailCount != null)
+				return false;
+		} else if (!authFailCount.equals(other.authFailCount))
+			return false;
+		if (canonicalName == null) {
+			if (other.canonicalName != null)
+				return false;
+		} else if (!canonicalName.equals(other.canonicalName))
+			return false;
+		if (createDate == null) {
+			if (other.createDate != null)
+				return false;
+		} else if (!createDate.equals(other.createDate))
+			return false;
+		if (createdBy == null) {
+			if (other.createdBy != null)
+				return false;
+		} else if (!createdBy.equals(other.createdBy))
+			return false;
+		if (currentLoginHost == null) {
+			if (other.currentLoginHost != null)
+				return false;
+		} else if (!currentLoginHost.equals(other.currentLoginHost))
+			return false;
+		if (firstTimeLogin != other.firstTimeLogin)
+			return false;
+		if (gracePeriod == null) {
+			if (other.gracePeriod != null)
+				return false;
+		} else if (!gracePeriod.equals(other.gracePeriod))
+			return false;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		if (isDefault == null) {
+			if (other.isDefault != null)
+				return false;
+		} else if (!isDefault.equals(other.isDefault))
+			return false;
+		if (isLocked != other.isLocked)
+			return false;
+		if (lastAuthAttempt == null) {
+			if (other.lastAuthAttempt != null)
+				return false;
+		} else if (!lastAuthAttempt.equals(other.lastAuthAttempt))
+			return false;
+		if (lastLogin == null) {
+			if (other.lastLogin != null)
+				return false;
+		} else if (!lastLogin.equals(other.lastLogin))
+			return false;
+		if (lastLoginIP == null) {
+			if (other.lastLoginIP != null)
+				return false;
+		} else if (!lastLoginIP.equals(other.lastLoginIP))
+			return false;
+		if (loginAttributes == null) {
+			if (other.loginAttributes != null)
+				return false;
+		} else if (!loginAttributes.equals(other.loginAttributes))
+			return false;
+		if (managedSysName == null) {
+			if (other.managedSysName != null)
+				return false;
+		} else if (!managedSysName.equals(other.managedSysName))
+			return false;
+		if (operation != other.operation)
+			return false;
+		if (origPrincipalName == null) {
+			if (other.origPrincipalName != null)
+				return false;
+		} else if (!origPrincipalName.equals(other.origPrincipalName))
+			return false;
+		if (password == null) {
+			if (other.password != null)
+				return false;
+		} else if (!password.equals(other.password))
+			return false;
+		if (passwordChangeCount == null) {
+			if (other.passwordChangeCount != null)
+				return false;
+		} else if (!passwordChangeCount.equals(other.passwordChangeCount))
+			return false;
+		if (prevLogin == null) {
+			if (other.prevLogin != null)
+				return false;
+		} else if (!prevLogin.equals(other.prevLogin))
+			return false;
+		if (prevLoginIP == null) {
+			if (other.prevLoginIP != null)
+				return false;
+		} else if (!prevLoginIP.equals(other.prevLoginIP))
+			return false;
+		if (pswdResetToken == null) {
+			if (other.pswdResetToken != null)
+				return false;
+		} else if (!pswdResetToken.equals(other.pswdResetToken))
+			return false;
+		if (pswdResetTokenExp == null) {
+			if (other.pswdResetTokenExp != null)
+				return false;
+		} else if (!pswdResetTokenExp.equals(other.pswdResetTokenExp))
+			return false;
+		if (pwdChanged == null) {
+			if (other.pwdChanged != null)
+				return false;
+		} else if (!pwdChanged.equals(other.pwdChanged))
+			return false;
+		if (pwdEquivalentToken == null) {
+			if (other.pwdEquivalentToken != null)
+				return false;
+		} else if (!pwdEquivalentToken.equals(other.pwdEquivalentToken))
+			return false;
+		if (pwdExp == null) {
+			if (other.pwdExp != null)
+				return false;
+		} else if (!pwdExp.equals(other.pwdExp))
+			return false;
+		if (resetPassword != other.resetPassword)
+			return false;
+		if (selected != other.selected)
+			return false;
+		if (status == null) {
+			if (other.status != null)
+				return false;
+		} else if (!status.equals(other.status))
+			return false;
+		if (userId == null) {
+			if (other.userId != null)
+				return false;
+		} else if (!userId.equals(other.userId))
+			return false;
+		return true;
+	}
+    
+    
 }
 

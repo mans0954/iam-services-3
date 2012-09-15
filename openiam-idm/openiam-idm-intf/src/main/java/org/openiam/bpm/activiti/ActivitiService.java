@@ -1,10 +1,16 @@
 package org.openiam.bpm.activiti;
 
+import java.util.List;
+
 import javax.jws.WebMethod;
 import javax.jws.WebService;
 
+import org.openiam.bpm.request.AcceptOrRejectNewHireRequest;
+import org.openiam.bpm.request.ClaimNewHireRequest;
 import org.openiam.bpm.request.NewHireRequest;
 import org.openiam.bpm.response.NewHireResponse;
+import org.openiam.bpm.response.TaskListWrapper;
+import org.openiam.bpm.response.TaskWrapper;
 import org.openiam.idm.srvc.prov.request.dto.ProvisionRequest;
 import org.openiam.provision.dto.ProvisionUser;
 
@@ -18,11 +24,17 @@ public interface ActivitiService {
 	public NewHireResponse initiateNewHireRequest(final NewHireRequest newHireRequest);
 	
 	@WebMethod
-	public NewHireResponse claimNewHireRequest(final NewHireRequest newHireRequest);
+	public NewHireResponse claimNewHireRequest(final ClaimNewHireRequest newHireRequest);
 	
 	@WebMethod
-	public NewHireResponse acceptNewHireRequest(final NewHireRequest newHireRequest);
+	public NewHireResponse acceptNewHireRequest(final AcceptOrRejectNewHireRequest newHireRequest);
 	
 	@WebMethod
-	public NewHireResponse rejectNewHireRequest(final NewHireRequest newHireRequest);
+	public NewHireResponse rejectNewHireRequest(final AcceptOrRejectNewHireRequest newHireRequest);
+	
+	@WebMethod
+	public TaskListWrapper getTasksForUser(final String userId);
+	
+	@WebMethod
+	public TaskWrapper getTask(final String taskId);
 }
