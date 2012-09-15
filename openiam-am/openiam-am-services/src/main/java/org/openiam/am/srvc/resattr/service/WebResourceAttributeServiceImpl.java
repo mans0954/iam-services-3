@@ -173,8 +173,12 @@ public class WebResourceAttributeServiceImpl implements WebResourceAttributeServ
         if(currentMapIndex==map.length-1){
             // get field value
             Object res =  getFieldValue(obj, fieldName);
-            if(res!=null)
+            if(res!=null){
                 result = res.toString();
+                if(fieldName.contains("password")){
+                    result = loginManager.decryptPassword(result);
+                }
+            }
         } else{
             // try to find subfield
             Object subField = getFieldValue(obj, fieldName);
