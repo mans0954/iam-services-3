@@ -77,7 +77,7 @@ public class SecurityDomainDataServiceImpl implements SecurityDomainDataService 
 	  if (id == null)
 		  throw new NullPointerException("Service id is null");
 
-	  SecurityDomain secDom = new SecurityDomain(id);
+	  final SecurityDomain secDom = new SecurityDomain(id);
 	  secDomainDao.remove(secDom);
   }
 
@@ -97,25 +97,25 @@ public class SecurityDomainDataServiceImpl implements SecurityDomainDataService 
  * @see org.openiam.idm.srvc.secdomain.service.SecurityDomainDataService#getAllSecurityDomains()
  */
   public SecurityDomain[] getAllSecurityDomains() {
-	  List<SecurityDomain> domainList = secDomainDao.findAll();
+	  final List<SecurityDomain> domainList = secDomainDao.findAll();
 	  if (domainList == null || domainList.isEmpty())
 		  return null;
 	  
-	  int size = domainList.size();
-	  SecurityDomain[] domainAry = new SecurityDomain[size];
+	  final int size = domainList.size();
+	  final  SecurityDomain[] domainAry = new SecurityDomain[size];
 	  return domainList.toArray(domainAry);
 	  
   }
   
   public SecurityDomain[] getAllDomainsWithExclude(String excludeDomain) {
-	  List<SecurityDomain> domainList = secDomainDao.findAll();
+	  final List<SecurityDomain> domainList = secDomainDao.findAll();
 	  if (domainList == null || domainList.isEmpty())
 		  return null;
-	  int size = (domainList.size()-1);
-	  SecurityDomain[] domainAry = new SecurityDomain[size];
+	  final int size = (domainList.size()-1);
+	  final SecurityDomain[] domainAry = new SecurityDomain[size];
 	  
 	  int ctr = 0;
-	  for (SecurityDomain d : domainList) {
+	  for (final SecurityDomain d : domainList) {
 		  if (!d.getDomainId().equalsIgnoreCase(excludeDomain)) {
 			  domainAry[ctr] = d;
 			  ctr++;

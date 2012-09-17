@@ -7,21 +7,20 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.dozer.ConfigurableCustomConverter;
 import org.dozer.Mapper;
-import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.util.SpringContextProvider;
 
-public class UserAttributeMapConverter implements ConfigurableCustomConverter {
+public class MapConverterWithKeyString implements ConfigurableCustomConverter {
 
 	private Mapper mapper = null;
 	
 	@Override
 	public Object convert(Object destVal, Object sourceVal, Class<?> destClass, Class<?> sourceClass) {
-		Map<String, UserAttribute> userAttributes = null;
+		Map userAttributes = null;
 		if(sourceVal != null) {
-			userAttributes = new HashMap<String, UserAttribute>();
-			final Map<String, UserAttribute> sourceMap = (Map<String, UserAttribute>)sourceVal;
-			for(final String key : sourceMap.keySet()) {
-				final UserAttribute value = sourceMap.get(key);
+			userAttributes = new HashMap();
+			final Map sourceMap = (Map)sourceVal;
+			for(final Object key : sourceMap.keySet()) {
+				final Object value = sourceMap.get(key);
 				if(value != null) {
 					userAttributes.put(key, mapper.map(value, value.getClass()));
 				}

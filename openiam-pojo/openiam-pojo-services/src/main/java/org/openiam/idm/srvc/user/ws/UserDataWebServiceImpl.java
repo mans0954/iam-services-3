@@ -23,6 +23,7 @@ package org.openiam.idm.srvc.user.ws;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,6 +32,8 @@ import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.dozer.DozerBeanMapper;
 import org.mvel2.optimizers.impl.refl.nodes.ArrayLength;
 import org.openiam.base.ws.Response;
@@ -70,9 +73,9 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#addAddress(org.openiam.idm.srvc.continfo.dto.Address)
 	 */
 	public AddressResponse addAddress(Address val) {
-		AddressResponse resp = new AddressResponse(ResponseStatus.SUCCESS);
+		final AddressResponse resp = new AddressResponse(ResponseStatus.SUCCESS);
 		userManager.addAddress(val);
-		if (val.getAddressId() == null || val.getAddressId().isEmpty()) {
+		if (StringUtils.isEmpty(val.getAddressId())) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
 			resp.setAddress(val);
@@ -84,7 +87,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#addAddressSet(java.util.Set)
 	 */
 	public Response addAddressSet(Set<Address> adrList) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
+		final Response resp = new Response(ResponseStatus.SUCCESS);
 		userManager.addAddressSet(adrList);
 		return resp;
 	}
@@ -93,9 +96,9 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#addAttribute(org.openiam.idm.srvc.user.dto.UserAttribute)
 	 */
 	public UserAttributeResponse addAttribute(UserAttribute attribute) {
-		UserAttributeResponse resp = new UserAttributeResponse(ResponseStatus.SUCCESS);
+		final UserAttributeResponse resp = new UserAttributeResponse(ResponseStatus.SUCCESS);
 		userManager.addAttribute(attribute);
-		if (attribute.getId() == null || attribute.getId().isEmpty()) {
+		if (StringUtils.isEmpty(attribute.getId())) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
 			resp.setAttribute(attribute);;
@@ -107,9 +110,9 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#addEmailAddress(org.openiam.idm.srvc.continfo.dto.EmailAddress)
 	 */
 	public EmailAddressResponse addEmailAddress(EmailAddress val) {
-		EmailAddressResponse resp = new EmailAddressResponse(ResponseStatus.SUCCESS);
+		final EmailAddressResponse resp = new EmailAddressResponse(ResponseStatus.SUCCESS);
 		userManager.addEmailAddress(val);
-		if (val.getEmailId() == null || val.getEmailId().isEmpty()) {
+		if (StringUtils.isEmpty(val.getEmailId())) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
 			resp.setEmailAddress(val);
@@ -121,7 +124,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#addEmailAddressSet(java.util.Set)
 	 */
 	public Response addEmailAddressSet(Set<EmailAddress> adrList) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
+		final Response resp = new Response(ResponseStatus.SUCCESS);
 		userManager.addEmailAddressSet(adrList);
 		return resp;
 	}
@@ -130,9 +133,9 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#addNote(org.openiam.idm.srvc.user.dto.UserNote)
 	 */
 	public UserNoteResponse addNote(UserNote note) {
-		UserNoteResponse resp = new UserNoteResponse(ResponseStatus.SUCCESS);
+		final UserNoteResponse resp = new UserNoteResponse(ResponseStatus.SUCCESS);
 		userManager.addNote(note);
-		if (note.getUserNoteId() == null || note.getUserNoteId().isEmpty()) {
+		if (StringUtils.isEmpty(note.getUserNoteId())) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
 			resp.setUserNote(note);
@@ -144,9 +147,9 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#addPhone(org.openiam.idm.srvc.continfo.dto.Phone)
 	 */
 	public PhoneResponse addPhone(Phone val) {
-		PhoneResponse resp = new PhoneResponse(ResponseStatus.SUCCESS);
+		final PhoneResponse resp = new PhoneResponse(ResponseStatus.SUCCESS);
 		userManager.addPhone(val);
-		if (val.getPhoneId() == null || val.getPhoneId().isEmpty()) {
+		if (StringUtils.isEmpty(val.getPhoneId())) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
 			resp.setPhone(val);
@@ -158,7 +161,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#addPhoneSet(java.util.Set)
 	 */
 	public Response addPhoneSet(Set<Phone> phoneList) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
+		final Response resp = new Response(ResponseStatus.SUCCESS);
 		userManager.addPhoneSet(phoneList);
 		return resp;
 	}
@@ -167,9 +170,9 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#addSupervisor(org.openiam.idm.srvc.user.dto.Supervisor)
 	 */
 	public SupervisorResponse addSupervisor(Supervisor supervisor) {
-		SupervisorResponse resp = new SupervisorResponse(ResponseStatus.SUCCESS);
+		final SupervisorResponse resp = new SupervisorResponse(ResponseStatus.SUCCESS);
 		userManager.addSupervisor(supervisor);
-		if (supervisor.getOrgStructureId() == null || supervisor.getOrgStructureId().isEmpty()) {
+		if (StringUtils.isEmpty(supervisor.getOrgStructureId())) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
 			resp.setSupervisor(supervisor);
@@ -183,7 +186,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	public UserResponse addUser(User user) {
 		UserResponse resp = new UserResponse(ResponseStatus.SUCCESS);
 		userManager.addUser(user);
-		if (user.getUserId() == null || user.getUserId().isEmpty()) {
+		if (StringUtils.isEmpty(user.getUserId())) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
 			resp.setUser(user);
@@ -195,9 +198,9 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#addUserWithDependent(org.openiam.idm.srvc.user.dto.User, boolean)
 	 */
 	public UserResponse addUserWithDependent(User user, boolean dependency) {
-		UserResponse resp = new UserResponse(ResponseStatus.SUCCESS);
+		final UserResponse resp = new UserResponse(ResponseStatus.SUCCESS);
 		userManager.addUserWithDependent(user, dependency);
-		if (user.getUserId() == null || user.getUserId().isEmpty()) {
+		if (StringUtils.isEmpty(user.getUserId())) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
 			resp.setUser(user);
@@ -208,13 +211,13 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#findUserByOrganization(java.lang.String)
 	 */
-	public UserListResponse findUserByOrganization(String orgId) {
-		UserListResponse resp = new UserListResponse(ResponseStatus.SUCCESS);
-		List<User> userList = userManager.findUserByOrganization(orgId);
+	public UserListResponse findUserByOrganization(final String orgId) {
+		final UserListResponse resp = new UserListResponse(ResponseStatus.SUCCESS);
+		final List<User> userList = userManager.findUserByOrganization(orgId);
 		if (userList == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
-			resp.setUserList(userList);
+			resp.setUserList(getDozerMappedUserList(userList));
 		}
 		return resp;
 	}
@@ -224,12 +227,12 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 */
 	public UserListResponse findUsersByLastUpdateRange(Date startDate,
 			Date endDate) {
-		UserListResponse resp = new UserListResponse(ResponseStatus.SUCCESS);
-		List<User> userList = userManager.findUsersByLastUpdateRange(startDate, endDate);
+		final UserListResponse resp = new UserListResponse(ResponseStatus.SUCCESS);
+		final List<User> userList = userManager.findUsersByLastUpdateRange(startDate, endDate);
 		if (userList == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
-			resp.setUserList(userList);
+			resp.setUserList(getDozerMappedUserList(userList));
 		}
 		return resp;
 	}
@@ -238,8 +241,8 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#findUsersByStatus(java.lang.String)
 	 */
 	public UserListResponse findUsersByStatus(String status) {
-		UserListResponse resp = new UserListResponse(ResponseStatus.SUCCESS);
-		List<User> userList = userManager.findUsersByStatus(status);
+		final UserListResponse resp = new UserListResponse(ResponseStatus.SUCCESS);
+		final List<User> userList = userManager.findUsersByStatus(status);
 		if (userList == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
@@ -252,8 +255,8 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getAddressById(java.lang.String)
 	 */
 	public AddressResponse getAddressById(String addressId) {
-		AddressResponse resp = new AddressResponse(ResponseStatus.SUCCESS);
-		Address adr = userManager.getAddressById(addressId);
+		final AddressResponse resp = new AddressResponse(ResponseStatus.SUCCESS);
+		final Address adr = userManager.getAddressById(addressId);
 		if (adr == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
@@ -266,8 +269,8 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getAddressByName(java.lang.String, java.lang.String)
 	 */
 	public AddressResponse getAddressByName(String userId, String addressName) {
-		AddressResponse resp = new AddressResponse(ResponseStatus.SUCCESS);
-		Address adr = userManager.getAddressByName(userId, addressName);
+		final AddressResponse resp = new AddressResponse(ResponseStatus.SUCCESS);
+		final Address adr = userManager.getAddressByName(userId, addressName);
 		if (adr == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
@@ -280,8 +283,8 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getAddressList(java.lang.String)
 	 */
 	public AddressListResponse getAddressList(String userId) {
-		AddressListResponse resp = new AddressListResponse(ResponseStatus.SUCCESS);
-		List<Address> adrList = userManager.getAddressList(userId);
+		final AddressListResponse resp = new AddressListResponse(ResponseStatus.SUCCESS);
+		final List<Address> adrList = userManager.getAddressList(userId);
 		if (adrList == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
@@ -294,8 +297,8 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getAddressMap(java.lang.String)
 	 */
 	public AddressMapResponse getAddressMap(String userId) {
-		AddressMapResponse resp = new AddressMapResponse(ResponseStatus.SUCCESS);
-		Map<String, Address> adrMap = userManager.getAddressMap(userId);
+		final AddressMapResponse resp = new AddressMapResponse(ResponseStatus.SUCCESS);
+		final Map<String, Address> adrMap = userManager.getAddressMap(userId);
 		if (adrMap == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
@@ -308,8 +311,8 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getAllNotes(java.lang.String)
 	 */
 	public UserNoteListResponse getAllNotes(String userId) {
-		UserNoteListResponse resp = new UserNoteListResponse(ResponseStatus.SUCCESS);
-		List<UserNote> note = userManager.getAllNotes(userId);
+		final UserNoteListResponse resp = new UserNoteListResponse(ResponseStatus.SUCCESS);
+		final List<UserNote> note = userManager.getAllNotes(userId);
 		if (note == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
@@ -322,8 +325,8 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getAttribute(java.lang.String)
 	 */
 	public UserAttributeResponse getAttribute(String attrId) {
-		UserAttributeResponse resp = new UserAttributeResponse(ResponseStatus.SUCCESS);
-		UserAttribute userAttr = userManager.getAttribute(attrId);
+		final UserAttributeResponse resp = new UserAttributeResponse(ResponseStatus.SUCCESS);
+		final UserAttribute userAttr = userManager.getAttribute(attrId);
 		if (userAttr == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
@@ -336,8 +339,8 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getDefaultAddress(java.lang.String)
 	 */
 	public AddressResponse getDefaultAddress(String userId) {
-		AddressResponse resp = new AddressResponse(ResponseStatus.SUCCESS);
-		Address adr = userManager.getDefaultAddress(userId);
+		final AddressResponse resp = new AddressResponse(ResponseStatus.SUCCESS);
+		final Address adr = userManager.getDefaultAddress(userId);
 		if (adr == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
@@ -350,8 +353,8 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getDefaultEmailAddress(java.lang.String)
 	 */
 	public EmailAddressResponse getDefaultEmailAddress(String userId) {
-		EmailAddressResponse resp = new EmailAddressResponse(ResponseStatus.SUCCESS);
-		EmailAddress adr = userManager.getDefaultEmailAddress(userId);
+		final EmailAddressResponse resp = new EmailAddressResponse(ResponseStatus.SUCCESS);
+		final EmailAddress adr = userManager.getDefaultEmailAddress(userId);
 		if (adr == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
@@ -364,8 +367,8 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getDefaultPhone(java.lang.String)
 	 */
 	public PhoneResponse getDefaultPhone(String userId) {
-		PhoneResponse resp = new PhoneResponse(ResponseStatus.SUCCESS);
-		Phone ph = userManager.getDefaultPhone(userId);
+		final PhoneResponse resp = new PhoneResponse(ResponseStatus.SUCCESS);
+		final Phone ph = userManager.getDefaultPhone(userId);
 		if (ph == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
@@ -378,8 +381,8 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getEmailAddressById(java.lang.String)
 	 */
 	public EmailAddressResponse getEmailAddressById(String addressId) {
-		EmailAddressResponse resp = new EmailAddressResponse(ResponseStatus.SUCCESS);
-		EmailAddress adr = userManager.getEmailAddressById(addressId);
+		final EmailAddressResponse resp = new EmailAddressResponse(ResponseStatus.SUCCESS);
+		final EmailAddress adr = userManager.getEmailAddressById(addressId);
 		if (adr == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
@@ -393,8 +396,8 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 */
 	public EmailAddressResponse getEmailAddressByName(String userId,
 			String addressName) {
-		EmailAddressResponse resp = new EmailAddressResponse(ResponseStatus.SUCCESS);
-		EmailAddress adr = userManager.getEmailAddressByName(userId, addressName);
+		final EmailAddressResponse resp = new EmailAddressResponse(ResponseStatus.SUCCESS);
+		final EmailAddress adr = userManager.getEmailAddressByName(userId, addressName);
 		if (adr == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
@@ -407,8 +410,8 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getEmailAddressList(java.lang.String)
 	 */
 	public EmailAddressListResponse getEmailAddressList(String userId) {
-		EmailAddressListResponse resp = new EmailAddressListResponse(ResponseStatus.SUCCESS);
-		List<EmailAddress> adr = userManager.getEmailAddressList(userId);
+		final EmailAddressListResponse resp = new EmailAddressListResponse(ResponseStatus.SUCCESS);
+		final List<EmailAddress> adr = userManager.getEmailAddressList(userId);
 		if (adr == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
@@ -421,8 +424,8 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getEmailAddressMap(java.lang.String)
 	 */
 	public EmailAddressMapResponse getEmailAddressMap(String userId) {
-		EmailAddressMapResponse resp = new EmailAddressMapResponse(ResponseStatus.SUCCESS);
-		Map<String, EmailAddress> adrMap = userManager.getEmailAddressMap(userId);
+		final EmailAddressMapResponse resp = new EmailAddressMapResponse(ResponseStatus.SUCCESS);
+		final Map<String, EmailAddress> adrMap = userManager.getEmailAddressMap(userId);
 		if (adrMap == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
@@ -435,12 +438,12 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getEmployees(java.lang.String)
 	 */
 	public SupervisorListResponse getEmployees(String supervisorId) {
-		SupervisorListResponse resp = new SupervisorListResponse(ResponseStatus.SUCCESS);
-		List<Supervisor> sup = userManager.getEmployees(supervisorId);
+		final SupervisorListResponse resp = new SupervisorListResponse(ResponseStatus.SUCCESS);
+		final List<Supervisor> sup = userManager.getEmployees(supervisorId);
 		if (sup == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
-			resp.setSupervisorList(sup);
+			resp.setSupervisorList(getDozerMappedSupervisorList(sup));
 		}
 		return resp;
 	}
@@ -449,8 +452,8 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getNote(java.lang.String)
 	 */
 	public UserNoteResponse getNote(String noteId) {
-		UserNoteResponse resp = new UserNoteResponse(ResponseStatus.SUCCESS);
-		UserNote note = userManager.getNote(noteId);
+		final UserNoteResponse resp = new UserNoteResponse(ResponseStatus.SUCCESS);
+		final UserNote note = userManager.getNote(noteId);
 		if (note.getUserNoteId() == null || note.getUserNoteId().isEmpty()) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
@@ -463,8 +466,8 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getPhoneById(java.lang.String)
 	 */
 	public PhoneResponse getPhoneById(String addressId) {
-		PhoneResponse resp = new PhoneResponse(ResponseStatus.SUCCESS);
-		Phone ph = userManager.getPhoneById(addressId);
+		final PhoneResponse resp = new PhoneResponse(ResponseStatus.SUCCESS);
+		final Phone ph = userManager.getPhoneById(addressId);
 		if (ph == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
@@ -477,8 +480,8 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getPhoneByName(java.lang.String, java.lang.String)
 	 */
 	public PhoneResponse getPhoneByName(String userId, String addressName) {
-		PhoneResponse resp = new PhoneResponse(ResponseStatus.SUCCESS);
-		Phone ph = userManager.getPhoneByName(userId, addressName);
+		final PhoneResponse resp = new PhoneResponse(ResponseStatus.SUCCESS);
+		final Phone ph = userManager.getPhoneByName(userId, addressName);
 		if (ph == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
@@ -491,8 +494,8 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getPhoneList(java.lang.String)
 	 */
 	public PhoneListResponse getPhoneList(String userId) {
-		PhoneListResponse resp = new PhoneListResponse(ResponseStatus.SUCCESS);
-		List<Phone> ph = userManager.getPhoneList(userId);
+		final PhoneListResponse resp = new PhoneListResponse(ResponseStatus.SUCCESS);
+		final List<Phone> ph = userManager.getPhoneList(userId);
 		if (ph == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
@@ -505,8 +508,8 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getPhoneMap(java.lang.String)
 	 */
 	public PhoneMapResponse getPhoneMap(String userId) {
-		PhoneMapResponse resp = new PhoneMapResponse(ResponseStatus.SUCCESS);
-		Map<String, Phone> phoneMap = userManager.getPhoneMap(userId);
+		final PhoneMapResponse resp = new PhoneMapResponse(ResponseStatus.SUCCESS);
+		final Map<String, Phone> phoneMap = userManager.getPhoneMap(userId);
 		if (phoneMap == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
@@ -519,7 +522,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getPrimarySupervisor(java.lang.String)
 	 */
 	public SupervisorResponse getPrimarySupervisor(String employeeId) {
-		SupervisorResponse resp = new SupervisorResponse(ResponseStatus.SUCCESS);
+		final SupervisorResponse resp = new SupervisorResponse(ResponseStatus.SUCCESS);
 		Supervisor sup = userManager.getPrimarySupervisor(employeeId);
 		if (sup == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
@@ -533,12 +536,12 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getSupervisor(java.lang.String)
 	 */
 	public SupervisorResponse getSupervisor(String supervisorObjId) {
-		SupervisorResponse resp = new SupervisorResponse(ResponseStatus.SUCCESS);
-		Supervisor sup = userManager.getSupervisor(supervisorObjId);
+		final SupervisorResponse resp = new SupervisorResponse(ResponseStatus.SUCCESS);
+		final Supervisor sup = userManager.getSupervisor(supervisorObjId);
 		if (sup == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
-			resp.setSupervisor(sup);
+			resp.setSupervisor(getDozerMappedSupervisor(sup));
 		}
 		return resp;
 	}
@@ -547,12 +550,12 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getSupervisors(java.lang.String)
 	 */
 	public SupervisorListResponse getSupervisors(String employeeId) {
-		SupervisorListResponse resp = new SupervisorListResponse(ResponseStatus.SUCCESS);
-		List<Supervisor> sup = userManager.getSupervisors(employeeId);
+		final SupervisorListResponse resp = new SupervisorListResponse(ResponseStatus.SUCCESS);
+		final List<Supervisor> sup = userManager.getSupervisors(employeeId);
 		if (sup == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
-			resp.setSupervisorList(sup);
+			resp.setSupervisorList(getDozerMappedSupervisorList(sup));
 		}
 		return resp;
 	}
@@ -561,12 +564,12 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getUserByName(java.lang.String, java.lang.String)
 	 */
 	public UserResponse getUserByName(String firstName, String lastName) {
-		UserResponse resp = new UserResponse(ResponseStatus.SUCCESS);
-		User user = userManager.getUserByName(firstName, lastName);
+		final UserResponse resp = new UserResponse(ResponseStatus.SUCCESS);
+		final User user = userManager.getUserByName(firstName, lastName);
 		if (user == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
-			resp.setUser(user);
+			resp.setUser(getDozerMappedUser(user));
 		}
 		return resp;
 	}
@@ -581,8 +584,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 		if (user == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
-			final User converted = dozerMap.get(DozerMappingType.DEEP).map(user, User.class);
-			resp.setUser(converted);
+			resp.setUser(getDozerMappedUser(user));
 		}
 		return resp;
 	}
@@ -593,12 +595,12 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 			String principal, 
 			String managedSysId, 
 			boolean dependants) {
-		UserResponse resp = new UserResponse(ResponseStatus.SUCCESS);
-		User user = userManager.getUserByPrincipal(securityDomain, principal, managedSysId, dependants);
+		final UserResponse resp = new UserResponse(ResponseStatus.SUCCESS);
+		final User user = userManager.getUserByPrincipal(securityDomain, principal, managedSysId, dependants);
 		if (user == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
-			resp.setUser(user);
+			resp.setUser(getDozerMappedUser(user));
 		}
 		return resp;
 	}
@@ -607,7 +609,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#removeAddress(org.openiam.idm.srvc.continfo.dto.Address)
 	 */
 	public Response removeAddress(Address val) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
+		final Response resp = new Response(ResponseStatus.SUCCESS);
 		userManager.removeAddress(val);
 		return resp;
 	}
@@ -616,7 +618,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#removeAllAddresses(java.lang.String)
 	 */
 	public Response removeAllAddresses(String userId) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
+		final Response resp = new Response(ResponseStatus.SUCCESS);
 		userManager.removeAllAddresses(userId);
 		return resp;
 	}
@@ -625,7 +627,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#removeAllAttributes(java.lang.String)
 	 */
 	public Response removeAllAttributes(String userId) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
+		final Response resp = new Response(ResponseStatus.SUCCESS);
 		userManager.removeAllAttributes(userId);
 		return resp;
 	}
@@ -634,7 +636,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#removeAllEmailAddresses(java.lang.String)
 	 */
 	public Response removeAllEmailAddresses(String userId) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
+		final Response resp = new Response(ResponseStatus.SUCCESS);
 		userManager.removeAllEmailAddresses(userId);
 		return resp;
 	}
@@ -643,7 +645,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#removeAllNotes(java.lang.String)
 	 */
 	public Response removeAllNotes(String userId) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
+		final Response resp = new Response(ResponseStatus.SUCCESS);
 		userManager.removeAllNotes(userId);
 		return resp;
 	}
@@ -652,7 +654,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#removeAllPhones(java.lang.String)
 	 */
 	public Response removeAllPhones(String userId) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
+		final Response resp = new Response(ResponseStatus.SUCCESS);
 		userManager.removeAllPhones(userId);
 		return resp;
 	}
@@ -661,7 +663,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#removeAttribute(org.openiam.idm.srvc.user.dto.UserAttribute)
 	 */
 	public Response removeAttribute(UserAttribute attr) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
+		final Response resp = new Response(ResponseStatus.SUCCESS);
 		userManager.removeAttribute(attr);
 		return resp;
 	}
@@ -670,7 +672,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#removeEmailAddress(org.openiam.idm.srvc.continfo.dto.EmailAddress)
 	 */
 	public Response removeEmailAddress(EmailAddress val) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
+		final Response resp = new Response(ResponseStatus.SUCCESS);
 		userManager.removeEmailAddress(val);
 		return resp;
 	}
@@ -679,7 +681,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#removeNote(org.openiam.idm.srvc.user.dto.UserNote)
 	 */
 	public Response removeNote(UserNote note) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
+		final Response resp = new Response(ResponseStatus.SUCCESS);
 		userManager.removeNote(note);
 		return resp;
 	}
@@ -688,7 +690,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#removePhone(org.openiam.idm.srvc.continfo.dto.Phone)
 	 */
 	public Response removePhone(Phone val) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
+		final Response resp = new Response(ResponseStatus.SUCCESS);
 		userManager.removePhone(val);
 		return resp;
 	}
@@ -697,7 +699,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#removeSupervisor(org.openiam.idm.srvc.user.dto.Supervisor)
 	 */
 	public Response removeSupervisor(Supervisor supervisor) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
+		final Response resp = new Response(ResponseStatus.SUCCESS);
 		userManager.removeSupervisor(supervisor);
 		return resp;
 	}
@@ -706,7 +708,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#removeUser(java.lang.String)
 	 */
 	public Response removeUser(String id) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
+		final Response resp = new Response(ResponseStatus.SUCCESS);
 		userManager.removeUser(id);
 		return resp;
 	}
@@ -720,23 +722,19 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 		if (userList == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		} else {
-			final List<User> convertedList = new ArrayList<User>(userList.size());
-			for(final User user : userList) {
-				convertedList.add(dozerMap.get(DozerMappingType.DEEP).map(user, User.class));
-			}
-			resp.setUserList(convertedList);
+			resp.setUserList(getDozerMappedUserList(userList));
 		}
 		return resp;
 	}
 
     public UserListResponse searchByDelegationProperties(
                                                          DelegationFilterSearch search) {
-        UserListResponse resp = new UserListResponse(ResponseStatus.SUCCESS);
-		List<User> userList = userManager.searchByDelegationProperties(search);
+    	final UserListResponse resp = new UserListResponse(ResponseStatus.SUCCESS);
+    	final List<User> userList = userManager.searchByDelegationProperties(search);
 		if (userList == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
-			resp.setUserList(userList);
+			resp.setUserList(getDozerMappedUserList(userList));
 		}
 		return resp;
 
@@ -748,7 +746,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#updateAddress(org.openiam.idm.srvc.continfo.dto.Address)
 	 */
 	public Response updateAddress(Address val) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
+		final Response resp = new Response(ResponseStatus.SUCCESS);
 		userManager.updateAddress(val);
 		return resp;
 	}
@@ -757,7 +755,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#updateAttribute(org.openiam.idm.srvc.user.dto.UserAttribute)
 	 */
 	public Response updateAttribute(UserAttribute attribute) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
+		final Response resp = new Response(ResponseStatus.SUCCESS);
 		userManager.updateAttribute(attribute);
 		return resp;
 	}
@@ -766,7 +764,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#updateEmailAddress(org.openiam.idm.srvc.continfo.dto.EmailAddress)
 	 */
 	public Response updateEmailAddress(EmailAddress val) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
+		final Response resp = new Response(ResponseStatus.SUCCESS);
 		userManager.updateEmailAddress(val);
 		return resp;
 	}
@@ -775,7 +773,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#updateNote(org.openiam.idm.srvc.user.dto.UserNote)
 	 */
 	public Response updateNote(UserNote note) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
+		final Response resp = new Response(ResponseStatus.SUCCESS);
 		userManager.updateNote(note);
 		return resp;
 	}
@@ -784,7 +782,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#updatePhone(org.openiam.idm.srvc.continfo.dto.Phone)
 	 */
 	public Response updatePhone(Phone val) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
+		final Response resp = new Response(ResponseStatus.SUCCESS);
 		userManager.updatePhone(val);
 		return resp;
 	}
@@ -793,7 +791,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#updateSupervisor(org.openiam.idm.srvc.user.dto.Supervisor)
 	 */
 	public Response updateSupervisor(Supervisor supervisor) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
+		final Response resp = new Response(ResponseStatus.SUCCESS);
 		userManager.updateSupervisor(supervisor);
 		return resp;
 	}
@@ -802,7 +800,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#updateUser(org.openiam.idm.srvc.user.dto.User)
 	 */
 	public Response updateUser(User user) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
+		final Response resp = new Response(ResponseStatus.SUCCESS);
 		userManager.updateUser(user);
 		return resp;
 	}
@@ -811,7 +809,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#updateUserWithDependent(org.openiam.idm.srvc.user.dto.User, boolean)
 	 */
 	public Response updateUserWithDependent(User user, boolean dependency) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
+		final Response resp = new Response(ResponseStatus.SUCCESS);
 		userManager.updateUserWithDependent(user, dependency);
 		return resp;
 	}
@@ -819,9 +817,8 @@ public class UserDataWebServiceImpl implements UserDataWebService {
     public AttributeListResponse getUserAsAttributeList (
             String principalName,
             List<String> attributeList) {
-
-        AttributeListResponse resp = new AttributeListResponse(ResponseStatus.SUCCESS);
-        List<UserAttribute> userAttrList =  userManager.getUserAsAttributeList(principalName, attributeList);
+    	final AttributeListResponse resp = new AttributeListResponse(ResponseStatus.SUCCESS);
+    	final  List<UserAttribute> userAttrList =  userManager.getUserAsAttributeList(principalName, attributeList);
         if (userAttrList == null && userAttrList.isEmpty()) {
             resp.setStatus(ResponseStatus.FAILURE);
         }else {
@@ -843,5 +840,42 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	@Required
 	public void setDozerMap(final Map<DozerMappingType, DozerBeanMapper> dozerMap) {
 		this.dozerMap = dozerMap;
+	}
+	
+	private List<User> getDozerMappedUserList(final List<User> userList) {
+		final List<User> convertedUserList = new LinkedList<User>();
+		if(CollectionUtils.isNotEmpty(userList)) {
+			for(final User user : userList) {
+				final User converted = dozerMap.get(DozerMappingType.DEEP).map(user, User.class);
+				convertedUserList.add(converted);
+			}
+		}
+		return convertedUserList;
+	}
+	
+	public List<Supervisor> getDozerMappedSupervisorList(final List<Supervisor> supervisorList) {
+		final List<Supervisor> convertedSupervisorList = new LinkedList<Supervisor>();
+		if(CollectionUtils.isNotEmpty(supervisorList)) {
+			for(final Supervisor supervisor : supervisorList) {
+				convertedSupervisorList.add(dozerMap.get(DozerMappingType.DEEP).map(supervisor, Supervisor.class));
+			}
+		}
+		return convertedSupervisorList;
+	}
+	
+	private Supervisor getDozerMappedSupervisor(final Supervisor supervisor) {
+		Supervisor retVal = null;
+		if(supervisor != null) {
+			retVal = dozerMap.get(DozerMappingType.DEEP).map(supervisor, Supervisor.class);
+		}
+		return retVal;
+	}
+	
+	private User getDozerMappedUser(final User user) {
+		User retVal = null;
+		if(user != null) {
+			retVal = dozerMap.get(DozerMappingType.DEEP).map(user, User.class);
+		}
+		return retVal;
 	}
 }

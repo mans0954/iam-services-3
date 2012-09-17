@@ -365,6 +365,7 @@
 	<!-- Role Beans -->
 	<bean id="roleWS" class="org.openiam.idm.srvc.role.ws.RoleDataWebServiceImpl" >
 		<property name="roleDataService" ref="roleDataService" />
+		<property name="dozerMap" ref="dozerMap" />
 	</bean>
 	
 	<bean id="roleDataService" class="org.openiam.idm.srvc.role.service.RoleDataServiceImpl" >
@@ -401,6 +402,7 @@
 		<property name="policyDao" ref="policyDAO" />
 		<property name="policyDefParamDao" ref="policyDefParamDAO" />
 		<property name="objectAssoc" ref="policyObjectAssocDAO" />
+		<property name="dozerMap" ref="dozerMap" />
 	</bean>
 		
 	<bean id="policyDefDAO" class="org.openiam.idm.srvc.policy.service.PolicyDefDAOImpl" >

@@ -30,19 +30,6 @@ public class GroupAttribute implements java.io.Serializable {
     protected String metadataElementId;
     protected String groupId;
 
-
-    public String toString() {
-        String str = "id=" + id +
-                " name=" + name +
-                " value=" + value +
-                " groupId=" + groupId +
-                " metadataElementId=" + metadataElementId;
-
-        return str;
-    }
-
-    // Constructors
-
     /**
      * minimal constructor
      */
@@ -112,5 +99,50 @@ public class GroupAttribute implements java.io.Serializable {
         this.groupId = groupId;
     }
 
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		GroupAttribute other = (GroupAttribute) obj;
+		if (groupId == null) {
+			if (other.groupId != null)
+				return false;
+		} else if (!groupId.equals(other.groupId))
+			return false;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		if (metadataElementId == null) {
+			if (other.metadataElementId != null)
+				return false;
+		} else if (!metadataElementId.equals(other.metadataElementId))
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		if (value == null) {
+			if (other.value != null)
+				return false;
+		} else if (!value.equals(other.value))
+			return false;
+		return true;
+	}
 
+	@Override
+	public String toString() {
+		return String
+				.format("GroupAttribute [id=%s, name=%s, value=%s, metadataElementId=%s, groupId=%s]",
+						id, name, value, metadataElementId, groupId);
+	}
+
+
+    
 }

@@ -21,11 +21,15 @@
  */
 package org.openiam.idm.srvc.role.ws;
 
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import javax.jws.WebParam;
 import javax.jws.WebService;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.dozer.DozerBeanMapper;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.srvc.grp.dto.Group;
@@ -39,6 +43,8 @@ import org.openiam.idm.srvc.role.dto.UserRole;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.ws.UserArrayResponse;
+import org.openiam.util.DozerMappingType;
+import org.springframework.beans.factory.annotation.Required;
 
 /**
  * @author suneet
@@ -50,13 +56,14 @@ import org.openiam.idm.srvc.user.ws.UserArrayResponse;
 		serviceName = "RoleDataWebService")
 public class RoleDataWebServiceImpl implements RoleDataWebService {
 
-	RoleDataService roleDataService;
+	private RoleDataService roleDataService;
+	private Map<DozerMappingType, DozerBeanMapper> dozerMap;
 
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#addAttribute(org.openiam.idm.srvc.role.dto.RoleAttribute)
 	 */
 	public RoleAttributeResponse addAttribute(RoleAttribute attribute) {
-		RoleAttributeResponse resp = new RoleAttributeResponse(ResponseStatus.SUCCESS);
+		final RoleAttributeResponse resp = new RoleAttributeResponse(ResponseStatus.SUCCESS);
 		roleDataService.addAttribute(attribute);
 		if (attribute.getRoleAttrId() == null || attribute.getRoleAttrId().isEmpty() ) {
 			resp.setStatus(ResponseStatus.FAILURE);
@@ -72,7 +79,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 	 */
 	public Response addGroupToRole(String serviceId, String roleId,
 			String groupId) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
+		final Response resp = new Response(ResponseStatus.SUCCESS);
 		roleDataService.addGroupToRole(serviceId, roleId, groupId);
 		//if (retval == 0) {
 		//	resp.setStatus(ResponseStatus.FAILURE);
@@ -84,7 +91,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#addRole(org.openiam.idm.srvc.role.dto.Role)
 	 */
 	public RoleResponse addRole(Role role) {
-		RoleResponse resp = new RoleResponse(ResponseStatus.SUCCESS);
+		final RoleResponse resp = new RoleResponse(ResponseStatus.SUCCESS);
 		roleDataService.addRole(role);
 		if (role.getId().getRoleId() != null) {
 			resp.setRole(role);
@@ -99,7 +106,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#addUserToRole(java.lang.String, java.lang.String, java.lang.String)
 	 */
 	public Response addUserToRole(String serviceId, String roleId, String userId) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
+		final Response resp = new Response(ResponseStatus.SUCCESS);
 		roleDataService.addUserToRole(serviceId, roleId, userId);
 		//if (retval == 0) {
 		//	resp.setStatus(ResponseStatus.FAILURE);
@@ -112,13 +119,13 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 	 */
 	public RoleAttributeArrayResponse getAllAttributes(String serviceId,
 			String roleId) {
-		RoleAttributeArrayResponse resp = new RoleAttributeArrayResponse(ResponseStatus.SUCCESS);
-		RoleAttribute[] roleAttrAry = roleDataService.getAllAttributes(serviceId, roleId); 
+		final RoleAttributeArrayResponse resp = new RoleAttributeArrayResponse(ResponseStatus.SUCCESS);
+		final RoleAttribute[] roleAttrAry = roleDataService.getAllAttributes(serviceId, roleId); 
 		if (roleAttrAry == null) {
 			resp.setStatus(ResponseStatus.FAILURE);
-			return resp;
+		} else {
+			resp.setRoleAttrAry(roleAttrAry);
 		}
-		resp.setRoleAttrAry(roleAttrAry);
 		return resp;
 	}
 
@@ -126,13 +133,13 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#getAllRoles()
 	 */
 	public RoleListResponse getAllRoles() {
-		RoleListResponse resp = new RoleListResponse(ResponseStatus.SUCCESS);
-		List<Role> roleList = roleDataService.getAllRoles(); 
+		final RoleListResponse resp = new RoleListResponse(ResponseStatus.SUCCESS);
+		final List<Role> roleList = roleDataService.getAllRoles(); 
 		if (roleList == null) {
 			resp.setStatus(ResponseStatus.FAILURE);
-			return resp;
+		} else {
+			resp.setRoleList(getDozerMappedRoleList(roleList));
 		}
-		resp.setRoleList(roleList);
 		return resp;
 	}
 
@@ -140,13 +147,13 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#getAttribute(java.lang.String)
 	 */
 	public RoleAttributeResponse getAttribute(String attrId) {
-		RoleAttributeResponse resp = new RoleAttributeResponse(ResponseStatus.SUCCESS);
-		RoleAttribute roleAttr = roleDataService.getAttribute(attrId); 
+		final RoleAttributeResponse resp = new RoleAttributeResponse(ResponseStatus.SUCCESS);
+		final RoleAttribute roleAttr = roleDataService.getAttribute(attrId); 
 		if (roleAttr == null) {
 			resp.setStatus(ResponseStatus.FAILURE);
-			return resp;
+		} else {
+			resp.setRoleAttr(roleAttr);
 		}
-		resp.setRoleAttr(roleAttr);
 		return resp;
 	}
 
@@ -154,13 +161,13 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#getGroupsInRole(java.lang.String, java.lang.String)
 	 */
 	public GroupArrayResponse getGroupsInRole(String serviceId, String roleId) {
-		GroupArrayResponse resp = new GroupArrayResponse(ResponseStatus.SUCCESS);
-		Group[] groupAry = roleDataService.getGroupsInRole(serviceId, roleId);
+		final GroupArrayResponse resp = new GroupArrayResponse(ResponseStatus.SUCCESS);
+		final Group[] groupAry = roleDataService.getGroupsInRole(serviceId, roleId);
 		if (groupAry == null) {
 			resp.setStatus(ResponseStatus.FAILURE);
-			return resp;
+		} else {
+			resp.setGroupAry(getDozerMappedGroupArray(groupAry));
 		}
-		resp.setGroupAry(groupAry);
 		return resp;
 	}
 
@@ -168,13 +175,13 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#getRole(java.lang.String, java.lang.String)
 	 */
 	public RoleResponse getRole(String serviceId, String roleId) {
-		RoleResponse resp = new RoleResponse(ResponseStatus.SUCCESS);
-		Role role = roleDataService.getRole(serviceId, roleId);
+		final RoleResponse resp = new RoleResponse(ResponseStatus.SUCCESS);
+		final Role role = roleDataService.getRole(serviceId, roleId);
 		if (role == null) {
 			resp.setStatus(ResponseStatus.FAILURE);
-			return resp;
+		} else {
+			resp.setRole(getDozerMappedRole(role));
 		}
-		resp.setRole(role);
 		return resp;
 	}
 
@@ -182,13 +189,13 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#getRolesInDomain(java.lang.String)
 	 */
 	public RoleListResponse getRolesInDomain(String domainId) {
-		RoleListResponse resp = new RoleListResponse(ResponseStatus.SUCCESS);
-		List<Role> roleAry = roleDataService.getRolesInDomain(domainId); 
-		if (roleAry == null) {
+		final RoleListResponse resp = new RoleListResponse(ResponseStatus.SUCCESS);
+		final List<Role> roleList = roleDataService.getRolesInDomain(domainId); 
+		if (roleList == null) {
 			resp.setStatus(ResponseStatus.FAILURE);
-			return resp;
+		} else {
+			resp.setRoleList(getDozerMappedRoleList(roleList));
 		}
-		resp.setRoleList(roleAry);
 		return resp;
 	}
 
@@ -196,13 +203,13 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#getRolesInGroup(java.lang.String)
 	 */
 	public RoleListResponse getRolesInGroup(String groupId) {
-		RoleListResponse resp = new RoleListResponse(ResponseStatus.SUCCESS);
-		List<Role> roleAry = roleDataService.getRolesInGroup(groupId); 
-		if (roleAry == null) {
+		final RoleListResponse resp = new RoleListResponse(ResponseStatus.SUCCESS);
+		final List<Role> roleList = roleDataService.getRolesInGroup(groupId); 
+		if (roleList == null) {
 			resp.setStatus(ResponseStatus.FAILURE);
-			return resp;
+		} else {
+			resp.setRoleList(getDozerMappedRoleList(roleList));
 		}
-		resp.setRoleList(roleAry);
 		return resp;
 	}
 
@@ -210,24 +217,24 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#getUserRoles(java.lang.String)
 	 */
 	public RoleListResponse getUserRoles(String userId) {
-		RoleListResponse resp = new RoleListResponse(ResponseStatus.SUCCESS);
-		List<Role> roleAry = roleDataService.getUserRoles(userId); 
-		if (roleAry == null) {
+		final RoleListResponse resp = new RoleListResponse(ResponseStatus.SUCCESS);
+		final List<Role> roleList = roleDataService.getUserRoles(userId); 
+		if (roleList == null) {
 			resp.setStatus(ResponseStatus.FAILURE);
-			return resp;
+		} else {
+			resp.setRoleList(getDozerMappedRoleList(roleList));
 		}
-		resp.setRoleList(roleAry);
 		return resp;
 	}
 	
 	public RoleListResponse getUserRolesAsFlatList(	String userId) {
-		RoleListResponse resp = new RoleListResponse(ResponseStatus.SUCCESS);
-		List<Role> roleAry = roleDataService.getUserRolesAsFlatList(userId); 
-		if (roleAry == null) {
+		final RoleListResponse resp = new RoleListResponse(ResponseStatus.SUCCESS);
+		final List<Role> roleList = roleDataService.getUserRolesAsFlatList(userId); 
+		if (roleList == null) {
 			resp.setStatus(ResponseStatus.FAILURE);
-			return resp;
+		} else {
+			resp.setRoleList(getDozerMappedRoleList(roleList));
 		}
-		resp.setRoleList(roleAry);
 		return resp;		
 	}
 
@@ -235,13 +242,13 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#getUserRolesByDomain(java.lang.String, java.lang.String)
 	 */
 	public RoleListResponse getUserRolesByDomain(String domainId, String userId) {
-		RoleListResponse resp = new RoleListResponse(ResponseStatus.SUCCESS);
-		List<Role> roleAry = roleDataService.getUserRolesByDomain(domainId, userId); 
-		if (roleAry == null) {
+		final RoleListResponse resp = new RoleListResponse(ResponseStatus.SUCCESS);
+		final List<Role> roleList = roleDataService.getUserRolesByDomain(domainId, userId); 
+		if (roleList == null) {
 			resp.setStatus(ResponseStatus.FAILURE);
-			return resp;
+		} else {
+			resp.setRoleList(getDozerMappedRoleList(roleList));
 		}
-		resp.setRoleList(roleAry);
 		return resp;
 	}
 
@@ -249,13 +256,13 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#getUserRolesDirect(java.lang.String)
 	 */
 	public RoleListResponse getUserRolesDirect(String userId) {
-		RoleListResponse resp = new RoleListResponse(ResponseStatus.SUCCESS);
-		List<Role> roleAry = roleDataService.getUserRolesDirect(userId); 
-		if (roleAry == null) {
+		final RoleListResponse resp = new RoleListResponse(ResponseStatus.SUCCESS);
+		final List<Role> roleList = roleDataService.getUserRolesDirect(userId); 
+		if (roleList == null) {
 			resp.setStatus(ResponseStatus.FAILURE);
-			return resp;
+		} else {
+			resp.setRoleList(getDozerMappedRoleList(roleList));
 		}
-		resp.setRoleList(roleAry);
 		return resp;
 	}
 
@@ -263,22 +270,21 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#getUsersInRole(java.lang.String, java.lang.String)
 	 */
 	public UserArrayResponse getUsersInRole(String serviceId, String roleId) {
-		UserArrayResponse resp = new UserArrayResponse(ResponseStatus.SUCCESS);
-		User[] userAry = roleDataService.getUsersInRole(serviceId, roleId); 
+		final UserArrayResponse resp = new UserArrayResponse(ResponseStatus.SUCCESS);
+		final User[] userAry = roleDataService.getUsersInRole(serviceId, roleId); 
 		if (userAry == null) {
 			resp.setStatus(ResponseStatus.FAILURE);
-			return resp;
+		} else {
+			resp.setUserAry(getDozerMappedUserArray(userAry));
 		}
-		resp.setUserAry(userAry);
 		return resp;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#isGroupInRole(java.lang.String, java.lang.String, java.lang.String)
 	 */
-	public Response isGroupInRole(String serviceId, String roleId,
-			String groupId) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
+	public Response isGroupInRole(String serviceId, String roleId, String groupId) {
+		final Response resp = new Response(ResponseStatus.SUCCESS);
 		roleDataService.isGroupInRole(serviceId, roleId, groupId);
 		//if (retval == 0) {
 		//	resp.setStatus(ResponseStatus.FAILURE);
@@ -290,10 +296,9 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#isUserInRole(java.lang.String, java.lang.String, java.lang.String)
 	 */
 	public Response isUserInRole(String serviceId, String roleId, String userId) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
-		boolean retval = roleDataService.isUserInRole(serviceId, roleId, userId);
+		final Response resp = new Response(ResponseStatus.SUCCESS);
+		final boolean retval = roleDataService.isUserInRole(serviceId, roleId, userId);
 		resp.setResponseValue(new Boolean(retval));
-
 		return resp;
 	}
 
@@ -301,7 +306,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#removeAllAttributes(java.lang.String, java.lang.String)
 	 */
 	public Response removeAllAttributes(String serviceId, String roleId) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
+		final Response resp = new Response(ResponseStatus.SUCCESS);
 		roleDataService.removeAllAttributes(serviceId, roleId);
 		//if (retval == 0) {
 		//	resp.setStatus(ResponseStatus.FAILURE);
@@ -313,7 +318,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#removeAllGroupsFromRole(java.lang.String, java.lang.String)
 	 */
 	public Response removeAllGroupsFromRole(String serviceId, String roleId) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
+		final Response resp = new Response(ResponseStatus.SUCCESS);
 		roleDataService.removeAllGroupsFromRole(serviceId, roleId);
 		//if (retval == 0) {
 		//	resp.setStatus(ResponseStatus.FAILURE);
@@ -325,7 +330,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#removeAttribute(org.openiam.idm.srvc.role.dto.RoleAttribute)
 	 */
 	public Response removeAttribute(RoleAttribute attr) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
+		final Response resp = new Response(ResponseStatus.SUCCESS);
 		roleDataService.removeAttribute(attr);
 		//if (retval == 0) {
 		//	resp.setStatus(ResponseStatus.FAILURE);
@@ -336,9 +341,8 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#removeGroupFromRole(java.lang.String, java.lang.String, java.lang.String)
 	 */
-	public Response removeGroupFromRole(String serviceId, String roleId,
-			String groupId) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
+	public Response removeGroupFromRole(String serviceId, String roleId, String groupId) {
+		final Response resp = new Response(ResponseStatus.SUCCESS);
 		roleDataService.removeGroupFromRole(serviceId, roleId, groupId);
 		//if (retval == 0) {
 		//	resp.setStatus(ResponseStatus.FAILURE);
@@ -350,23 +354,19 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#removeRole(java.lang.String, java.lang.String)
 	 */
 	public Response removeRole(String serviceId, String roleId) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
-
-		    int retval = roleDataService.removeRole(serviceId, roleId);
-            if (retval == 0) {
-                 resp.setStatus( ResponseStatus.FAILURE);
-                return resp;
-            }
-
+		final Response resp = new Response(ResponseStatus.SUCCESS);
+	    final int retval = roleDataService.removeRole(serviceId, roleId);
+        if (retval == 0) {
+             resp.setStatus( ResponseStatus.FAILURE);
+        }
 		return resp;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#removeUserFromRole(java.lang.String, java.lang.String, java.lang.String)
 	 */
-	public Response removeUserFromRole(String serviceId, String roleId,
-			String userId) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
+	public Response removeUserFromRole(String serviceId, String roleId, String userId) {
+		final Response resp = new Response(ResponseStatus.SUCCESS);
 		roleDataService.removeUserFromRole(serviceId, roleId, userId);
 		//if (retval == 0) {
 		//	resp.setStatus(ResponseStatus.FAILURE);
@@ -378,13 +378,13 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#search(org.openiam.idm.srvc.role.dto.RoleSearch)
 	 */
 	public RoleListResponse search(RoleSearch search) {
-		RoleListResponse resp = new RoleListResponse(ResponseStatus.SUCCESS);
-		List<Role> roleAry = roleDataService.search(search); 
-		if (roleAry == null) {
+		final RoleListResponse resp = new RoleListResponse(ResponseStatus.SUCCESS);
+		final List<Role> roleList = roleDataService.search(search); 
+		if (roleList == null) {
 			resp.setStatus(ResponseStatus.FAILURE);
-			return resp;
+		} else {
+			resp.setRoleList(getDozerMappedRoleList(roleList));
 		}
-		resp.setRoleList(roleAry);
 		return resp;
 	}
 
@@ -392,7 +392,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#updateAttribute(org.openiam.idm.srvc.role.dto.RoleAttribute)
 	 */
 	public Response updateAttribute(RoleAttribute attribute) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
+		final Response resp = new Response(ResponseStatus.SUCCESS);
 		roleDataService.updateAttribute(attribute);
 		//if (retval == 0) {
 		//	resp.setStatus(ResponseStatus.FAILURE);
@@ -404,15 +404,15 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#updateRole(org.openiam.idm.srvc.role.dto.Role)
 	 */
 	public Response updateRole(Role role) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
+		final Response resp = new Response(ResponseStatus.SUCCESS);
 		roleDataService.updateRole(role);
 		return resp;
 	}
 
 
 	public RolePolicyResponse addRolePolicy(RolePolicy rPolicy) {
-		RolePolicyResponse resp = new RolePolicyResponse(ResponseStatus.SUCCESS);
-		RolePolicy rp = roleDataService.addRolePolicy(rPolicy);
+		final RolePolicyResponse resp = new RolePolicyResponse(ResponseStatus.SUCCESS);
+		final RolePolicy rp = roleDataService.addRolePolicy(rPolicy);
 		if (rp == null || rp.getRolePolicyId() == null) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
@@ -422,8 +422,8 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 	}
 
 	public RolePolicyResponse updateRolePolicy(RolePolicy rolePolicy) {
-		RolePolicyResponse resp = new RolePolicyResponse(ResponseStatus.SUCCESS);
-		RolePolicy rp = roleDataService.updateRolePolicy(rolePolicy);
+		final RolePolicyResponse resp = new RolePolicyResponse(ResponseStatus.SUCCESS);
+		final RolePolicy rp = roleDataService.updateRolePolicy(rolePolicy);
 		if (rp == null || rp.getRolePolicyId() == null) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
@@ -433,9 +433,9 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 	}
 
 	public RolePolicyListResponse getAllRolePolicies(String domainId,String roleId) {
-		RolePolicyListResponse resp = new RolePolicyListResponse(ResponseStatus.SUCCESS);
-		List<RolePolicy> rp = roleDataService.getAllRolePolicies(domainId, roleId);
-		if (rp == null || rp.size() == 0) {
+		final RolePolicyListResponse resp = new RolePolicyListResponse(ResponseStatus.SUCCESS);
+		final List<RolePolicy> rp = roleDataService.getAllRolePolicies(domainId, roleId);
+		if (CollectionUtils.isEmpty(rp)) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
 			resp.setRolePolicy(rp);
@@ -444,8 +444,8 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 	}
 
 	public RolePolicyResponse getRolePolicy(String rolePolicyId) {
-		RolePolicyResponse resp = new RolePolicyResponse(ResponseStatus.SUCCESS);
-		RolePolicy rp = roleDataService.getRolePolicy(rolePolicyId);
+		final RolePolicyResponse resp = new RolePolicyResponse(ResponseStatus.SUCCESS);
+		final RolePolicy rp = roleDataService.getRolePolicy(rolePolicyId);
 		if (rp == null || rp.getRolePolicyId() == null) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
@@ -455,42 +455,42 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 	}
 
 	public Response assocUserToRole(UserRole userRole) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
+		final Response resp = new Response(ResponseStatus.SUCCESS);
 		roleDataService.assocUserToRole(userRole);
 		return resp;
 	}
 
 	public Response updateUserRoleAssoc(UserRole userRole) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
+		final Response resp = new Response(ResponseStatus.SUCCESS);
 		roleDataService.updateUserRoleAssoc(userRole);
 		return resp;
 	}
 
 	public UserRoleResponse getUserRoleById(String userRoleId) {
-		UserRoleResponse resp = new UserRoleResponse(ResponseStatus.SUCCESS);
-	 	UserRole ur =  roleDataService.getUserRoleById(userRoleId);
+		final UserRoleResponse resp = new UserRoleResponse(ResponseStatus.SUCCESS);
+		final UserRole ur =  roleDataService.getUserRoleById(userRoleId);
 		if ( ur != null) {
 			resp.setUserRole(ur);
-			return resp;
+		} else {
+			resp.setStatus(ResponseStatus.FAILURE);
 		}
-		resp.setStatus(ResponseStatus.FAILURE);
 	 	return resp;
 	}
 
 	public UserRoleListResponse getUserRolesForUser(String userId) {
-		UserRoleListResponse resp = new UserRoleListResponse(ResponseStatus.SUCCESS);
-	 	List<UserRole> ur =  roleDataService.getUserRolesForUser(userId);
+		final UserRoleListResponse resp = new UserRoleListResponse(ResponseStatus.SUCCESS);
+		final List<UserRole> ur =  roleDataService.getUserRolesForUser(userId);
 		if ( ur != null) {
 			resp.setUserRoleList(ur);
-			return resp;
+		} else {
+			resp.setStatus(ResponseStatus.FAILURE);
 		}
-		resp.setStatus(ResponseStatus.FAILURE);
 	 	return resp;
 	}
 	
 	
 	public Response removeRolePolicy(RolePolicy rolePolicy) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
+		final Response resp = new Response(ResponseStatus.SUCCESS);
 		roleDataService.removeRolePolicy(rolePolicy);
 		return resp;
 	}
@@ -503,6 +503,50 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 	public void setRoleDataService(RoleDataService roleDataService) {
 		this.roleDataService = roleDataService;
 	}
+	
+	@Required
+	public void setDozerMap(final Map<DozerMappingType, DozerBeanMapper> dozerMap) {
+		this.dozerMap = dozerMap;
+	}
 
 
+	private List<Role> getDozerMappedRoleList(final List<Role> roleList) {
+		final List<Role> convertedList = new LinkedList<Role>();
+		if(CollectionUtils.isNotEmpty(roleList)) {
+			for(final Role role : roleList) {
+				convertedList.add(dozerMap.get(DozerMappingType.DEEP).map(role, Role.class));
+			}
+		}
+		return convertedList;
+	}
+	
+	private Group[] getDozerMappedGroupArray(final Group[] groupArray) {
+		Group[] retVal = null;
+		if(groupArray != null) {
+			retVal = new Group[groupArray.length];
+			for(int i = 0; i < groupArray.length; i++) {
+				retVal[i] = dozerMap.get(DozerMappingType.DEEP).map(groupArray[i], Group.class);
+			}
+		}
+		return retVal;
+	}
+	
+	private Role getDozerMappedRole(final Role role) {
+		Role retVal = null;
+		if(role != null) {
+			retVal = dozerMap.get(DozerMappingType.DEEP).map(role, Role.class);
+		}
+		return retVal;
+	}
+	
+	public User[] getDozerMappedUserArray(final User[] userArray) {
+		User[] retVal = null;
+		if(userArray != null) {
+			retVal = new User[userArray.length];
+			for(int i = 0; i < userArray.length; i++) {
+				retVal[i] = dozerMap.get(DozerMappingType.DEEP).map(userArray[i], User.class);
+			}
+		}
+		return retVal;
+	}
 }

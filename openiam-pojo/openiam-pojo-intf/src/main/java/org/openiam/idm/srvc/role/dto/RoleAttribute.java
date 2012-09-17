@@ -63,16 +63,6 @@ public class RoleAttribute implements java.io.Serializable {
         this.metadataElementId = metadataTypeId;
     }
 
-    public String toString() {
-        String str = "roleAttrId=" + roleAttrId +
-                " name=" + name +
-                " value=" + value +
-                " metadataElementId=" + metadataElementId +
-                " serviceId=" + serviceId.toString() +
-                " roleId=" + roleId.toString();
-        return str;
-    }
-
     /**
      * Gets the value of the metadataId property.
      *
@@ -186,4 +176,61 @@ public class RoleAttribute implements java.io.Serializable {
         this.attrGroup = attrGroup;
     }
 
+
+	@Override
+	public String toString() {
+		return String
+				.format("RoleAttribute [roleAttrId=%s, serviceId=%s, roleId=%s, metadataElementId=%s, name=%s, value=%s, attrGroup=%s]",
+						roleAttrId, serviceId, roleId, metadataElementId, name,
+						value, attrGroup);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		RoleAttribute other = (RoleAttribute) obj;
+		if (attrGroup == null) {
+			if (other.attrGroup != null)
+				return false;
+		} else if (!attrGroup.equals(other.attrGroup))
+			return false;
+		if (metadataElementId == null) {
+			if (other.metadataElementId != null)
+				return false;
+		} else if (!metadataElementId.equals(other.metadataElementId))
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		if (roleAttrId == null) {
+			if (other.roleAttrId != null)
+				return false;
+		} else if (!roleAttrId.equals(other.roleAttrId))
+			return false;
+		if (roleId == null) {
+			if (other.roleId != null)
+				return false;
+		} else if (!roleId.equals(other.roleId))
+			return false;
+		if (serviceId == null) {
+			if (other.serviceId != null)
+				return false;
+		} else if (!serviceId.equals(other.serviceId))
+			return false;
+		if (value == null) {
+			if (other.value != null)
+				return false;
+		} else if (!value.equals(other.value))
+			return false;
+		return true;
+	}
+
+    
 }

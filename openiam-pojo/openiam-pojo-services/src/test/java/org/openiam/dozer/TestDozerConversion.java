@@ -26,6 +26,14 @@ import org.openiam.idm.srvc.auth.dto.LoginId;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
+import org.openiam.idm.srvc.grp.dto.Group;
+import org.openiam.idm.srvc.grp.dto.GroupAttribute;
+import org.openiam.idm.srvc.grp.dto.GroupStatus;
+import org.openiam.idm.srvc.role.dto.Role;
+import org.openiam.idm.srvc.role.dto.RoleAttribute;
+import org.openiam.idm.srvc.role.dto.RoleId;
+import org.openiam.idm.srvc.role.dto.RolePolicy;
+import org.openiam.idm.srvc.role.dto.RoleStatus;
 import org.openiam.idm.srvc.user.dto.Supervisor;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
@@ -260,6 +268,7 @@ public class TestDozerConversion {
 		compareLoginId(original, deepDozerMapper.map(original, LoginId.class));
 		compareLoginId(original, shallowDozerMapper.map(original, LoginId.class));
 	}
+
 	
 	@Test
 	public void testConvertUserNote() {

@@ -137,5 +137,65 @@ public class RolePolicy extends BaseObject {
         this.policyScript = policyScript;
     }
 
-
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		RolePolicy other = (RolePolicy) obj;
+		if (action == null) {
+			if (other.action != null)
+				return false;
+		} else if (!action.equals(other.action))
+			return false;
+		if (actionQualifier == null) {
+			if (other.actionQualifier != null)
+				return false;
+		} else if (!actionQualifier.equals(other.actionQualifier))
+			return false;
+		if (executionOrder == null) {
+			if (other.executionOrder != null)
+				return false;
+		} else if (!executionOrder.equals(other.executionOrder))
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		if (policyScript == null) {
+			if (other.policyScript != null)
+				return false;
+		} else if (!policyScript.equals(other.policyScript))
+			return false;
+		if (roleId == null) {
+			if (other.roleId != null)
+				return false;
+		} else if (!roleId.equals(other.roleId))
+			return false;
+		if (rolePolicyId == null) {
+			if (other.rolePolicyId != null)
+				return false;
+		} else if (!rolePolicyId.equals(other.rolePolicyId))
+			return false;
+		if (serviceId == null) {
+			if (other.serviceId != null)
+				return false;
+		} else if (!serviceId.equals(other.serviceId))
+			return false;
+		if (value1 == null) {
+			if (other.value1 != null)
+				return false;
+		} else if (!value1.equals(other.value1))
+			return false;
+		if (value2 == null) {
+			if (other.value2 != null)
+				return false;
+		} else if (!value2.equals(other.value2))
+			return false;
+		return true;
+	}
 }

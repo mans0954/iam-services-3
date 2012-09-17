@@ -83,4 +83,43 @@ public class BaseObject implements java.io.Serializable {
     public void setRequestClientIP(String requestClientIP) {
         this.requestClientIP = requestClientIP;
     }
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		BaseObject other = (BaseObject) obj;
+		if (objectState == null) {
+			if (other.objectState != null)
+				return false;
+		} else if (!objectState.equals(other.objectState))
+			return false;
+		if (requestClientIP == null) {
+			if (other.requestClientIP != null)
+				return false;
+		} else if (!requestClientIP.equals(other.requestClientIP))
+			return false;
+		if (requestorDomain == null) {
+			if (other.requestorDomain != null)
+				return false;
+		} else if (!requestorDomain.equals(other.requestorDomain))
+			return false;
+		if (requestorLogin == null) {
+			if (other.requestorLogin != null)
+				return false;
+		} else if (!requestorLogin.equals(other.requestorLogin))
+			return false;
+		if (selected == null) {
+			if (other.selected != null)
+				return false;
+		} else if (!selected.equals(other.selected))
+			return false;
+		return true;
+	}
+    
+    
 }

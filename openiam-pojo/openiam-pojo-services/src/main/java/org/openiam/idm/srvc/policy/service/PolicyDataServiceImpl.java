@@ -21,14 +21,20 @@
  */
 package org.openiam.idm.srvc.policy.service;
 
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import javax.jws.WebService;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.dozer.DozerBeanMapper;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyDef;
 import org.openiam.idm.srvc.policy.dto.PolicyDefParam;
 import org.openiam.idm.srvc.policy.dto.PolicyObjectAssoc;
+import org.openiam.util.DozerMappingType;
+import org.springframework.beans.factory.annotation.Required;
 
 /**
  * PolicyDataService is used create and manage policies. 
@@ -42,21 +48,22 @@ import org.openiam.idm.srvc.policy.dto.PolicyObjectAssoc;
 		serviceName = "PolicyWebService")
 public class PolicyDataServiceImpl implements PolicyDataService {
 
-	PolicyDefDAO policyDefDao;
-	PolicyDAO policyDao;
-	PolicyDefParamDAO policyDefParamDao;
-	PolicyObjectAssocDAO objectAssoc;
+	private PolicyDefDAO policyDefDao;
+	private PolicyDAO policyDao;
+	private PolicyDefParamDAO policyDefParamDao;
+	private PolicyObjectAssocDAO objectAssoc;
+	private Map<DozerMappingType, DozerBeanMapper> dozerMap;
 	
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.policy.service.PolicyDataService#getPolicyTypes()
 	 */
 	public String[] getPolicyTypes() {
 		// TODO Auto-generated method stub
-		List<String> typeList = policyDefDao.findAllPolicyTypes();
-		if (typeList == null || typeList.isEmpty())
+		final List<String> typeList = policyDefDao.findAllPolicyTypes();
+		if (CollectionUtils.isEmpty(typeList))
 			return null;
-		int size = typeList.size();
-		String[] strAry = new String[size];
+		final int size = typeList.size();
+		final String[] strAry = new String[size];
 		typeList.toArray(strAry);
 		return strAry;
 	}
@@ -73,7 +80,7 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 		if (policyDefId == null) {
 			throw new NullPointerException("policyDefId is null");
 		}
-		return policyDefDao.findById(policyDefId);
+		return getDozerMappedPolicyDef(policyDefDao.findById(policyDefId));
 
 	}
 
@@ -81,7 +88,7 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 		if (definitionId == null) {
 			throw new NullPointerException("definitionId is null");
 		}
-		PolicyDef def = new PolicyDef(definitionId);
+		final PolicyDef def = new PolicyDef(definitionId);
 		policyDefDao.remove(def);
 		
 	}
@@ -98,11 +105,12 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 	 * @return
 	 */
 	public PolicyDef[] getAllPolicyDef() {
-		List<PolicyDef> defList =  policyDefDao.findAllPolicyDef();
-		if (defList == null || defList.isEmpty())
+		final List<PolicyDef> defList =  getDozerMappedPolicyDefList(policyDefDao.findAllPolicyDef());
+		if (CollectionUtils.isEmpty(defList)) {
 			return null;
-		int size = defList.size();
-		PolicyDef[] defAry = new PolicyDef[size];
+		}
+		final int size = defList.size();
+		final PolicyDef[] defAry = new PolicyDef[size];
 		defList.toArray(defAry);
 		return defAry;
 	}
@@ -136,9 +144,9 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 		if (policyDefId == null) {
 			throw new NullPointerException("policyDefId is null");
 		}
-		List<Policy> policyList = policyDao.findAllPolicies(policyDefId);
+		final List<Policy> policyList = getDozerMappedPolicyList(policyDao.findAllPolicies(policyDefId));
 		
-		if (policyList == null || policyList.isEmpty()) {
+		if (CollectionUtils.isEmpty(policyList)) {
 			return null;
 		}
 		return policyList;
@@ -149,7 +157,7 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 		if (policyId == null) {
 			throw new NullPointerException("PolicyId is null");
 		}
-		return policyDao.findById(policyId);
+		return getDozerMappedPolicy(policyDao.findById(policyId));
 	}
 	
 	/**
@@ -161,14 +169,14 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 		if (paramGroup == null) {
 			throw new NullPointerException("paramGroup is null");
 		}
-		return policyDefParamDao.findPolicyDefParamByGroup(defId, paramGroup);
+		return getDozerMappedPolicyDefParamList(policyDefParamDao.findPolicyDefParamByGroup(defId, paramGroup));
 	}
 
 	public void removePolicy(String policyId) {
 		if (policyId == null) {
 			throw new NullPointerException("PolicyId is null");
 		}
-		Policy plcy = new Policy(policyId);
+		final Policy plcy = new Policy(policyId);
 		policyDao.remove(plcy);
 		
 	}
@@ -188,10 +196,8 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 		if (policyName == null) {
 			throw new NullPointerException("policyName is null");
 		}
-		List<Policy> policyList = policyDao.findPolicyByName(policyType, policyName);
-		if (policyList != null && policyList.size() > 0)
-			return true;
-		return false;
+		final List<Policy> policyList = policyDao.findPolicyByName(policyType, policyName);
+		return CollectionUtils.isNotEmpty(policyList);
 	}
 
 	public PolicyDefParamDAO getPolicyDefParamDao() {
@@ -234,5 +240,54 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 	}
 
 
-
+	@Required
+	public void setDozerMap(final Map<DozerMappingType, DozerBeanMapper> dozerMap) {
+		this.dozerMap = dozerMap;
+	}
+	
+	private List<PolicyDef> getDozerMappedPolicyDefList(final List<PolicyDef> policyDefList) {
+		final List<PolicyDef> convertedPolicyDefList = new LinkedList<PolicyDef>();
+		if(CollectionUtils.isNotEmpty(policyDefList)) {
+			for(final PolicyDef policyDef : policyDefList) {
+				convertedPolicyDefList.add(dozerMap.get(DozerMappingType.DEEP).map(policyDef, PolicyDef.class));
+			}
+		}
+		return convertedPolicyDefList;
+	}
+	
+	private List<Policy> getDozerMappedPolicyList(final List<Policy> policyList) {
+		final List<Policy> convertedPolicyList = new LinkedList<Policy>();
+		if(CollectionUtils.isNotEmpty(policyList)) {
+			for(final Policy policy : policyList) {
+				convertedPolicyList.add(dozerMap.get(DozerMappingType.DEEP).map(policy, Policy.class));
+			}
+		}
+		return convertedPolicyList;
+	}
+	
+	private Policy getDozerMappedPolicy(final Policy policy) {
+		Policy retVal = null;
+		if(policy != null) {
+			retVal = dozerMap.get(DozerMappingType.DEEP).map(policy, Policy.class);
+		}
+		return retVal;
+	}
+	
+	private List<PolicyDefParam> getDozerMappedPolicyDefParamList(final List<PolicyDefParam> policyDefParamList) {
+		final List<PolicyDefParam> convertedList = new LinkedList<PolicyDefParam>();
+		if(CollectionUtils.isNotEmpty(policyDefParamList)) {
+			for(final PolicyDefParam param : policyDefParamList) {
+				convertedList.add(dozerMap.get(DozerMappingType.DEEP).map(param, PolicyDefParam.class));
+			}
+		}
+		return convertedList;
+	}
+	
+	private PolicyDef getDozerMappedPolicyDef(final PolicyDef policyDef) {
+		PolicyDef retVal = null;
+		if(policyDef != null) {
+			retVal = dozerMap.get(DozerMappingType.DEEP).map(policyDef, PolicyDef.class);
+		}
+		return retVal;
+	}
 }

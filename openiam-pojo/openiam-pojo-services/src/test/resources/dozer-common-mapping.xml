@@ -39,4 +39,33 @@
 		<class-b>org.openiam.idm.srvc.continfo.dto.EmailAddress</class-b>
 	</mapping>
 	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.role.dto.RoleId</class-a>
+		<class-b>org.openiam.idm.srvc.role.dto.RoleId</class-b>
+	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.role.dto.RoleAttribute</class-a>
+		<class-b>org.openiam.idm.srvc.role.dto.RoleAttribute</class-b>
+	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.role.dto.RolePolicy</class-a>
+		<class-b>org.openiam.idm.srvc.role.dto.RolePolicy</class-b>
+	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.grp.dto.GroupAttribute</class-a>
+		<class-b>org.openiam.idm.srvc.grp.dto.GroupAttribute</class-b>
+	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.policy.dto.PolicyAttribute</class-a>
+		<class-b>org.openiam.idm.srvc.policy.dto.PolicyAttribute</class-b>
+	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.policy.dto.PolicyMembership</class-a>
+		<class-b>org.openiam.idm.srvc.policy.dto.PolicyMembership</class-b>
+	</mapping>
 </mappings>
