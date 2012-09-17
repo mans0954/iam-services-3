@@ -8,13 +8,11 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ClaimNewHireRequest", propOrder = {
-    "taskId",
-    "requestorInformation"
+    "taskId"
 })
-public class ClaimNewHireRequest implements Serializable {
+public class ClaimNewHireRequest extends RequestorInformation {
 
 	private String taskId;
-	private RequestorInformation requestorInformation = new RequestorInformation();
 	
 	public String getTaskId() {
 		return taskId;
@@ -22,13 +20,5 @@ public class ClaimNewHireRequest implements Serializable {
 	
 	public void setTaskId(String taskId) {
 		this.taskId = taskId;
-	}
-
-	public RequestorInformation getRequestorInformation() {
-		return requestorInformation;
-	}
-	
-	public void setRequestorInformation(RequestorInformation requestorInformation) {
-		this.requestorInformation = requestorInformation;
 	}
 }

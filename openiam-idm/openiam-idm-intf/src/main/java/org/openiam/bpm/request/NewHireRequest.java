@@ -11,15 +11,13 @@ import org.openiam.provision.dto.ProvisionUser;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "NewHireRequest", propOrder = {
-    "provisionUser",
-    "requestorInformation"
+    "provisionUser"
 })
-public class NewHireRequest implements Serializable {
+public class NewHireRequest extends RequestorInformation {
 	
 	private static final long serialVersionUID = 6556361291027451888L;
 	
 	private ProvisionUser provisionUser;
-	private RequestorInformation requestorInformation = new RequestorInformation();
 	
 	public NewHireRequest() {
 		
@@ -31,13 +29,5 @@ public class NewHireRequest implements Serializable {
 
 	public void setProvisionUser(ProvisionUser provisionUser) {
 		this.provisionUser = provisionUser;
-	}
-
-	public RequestorInformation getRequestorInformation() {
-		return requestorInformation;
-	}
-
-	public void setRequestorInformation(RequestorInformation requestorInformation) {
-		this.requestorInformation = requestorInformation;
 	}
 }
