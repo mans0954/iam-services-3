@@ -131,4 +131,42 @@
 			<b>policies</b>
 		</field>
 	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.res.dto.Resource</class-a>
+		<class-b>org.openiam.idm.srvc.res.dto.Resource</class-b>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+			<a>resourceRoles</a>
+			<b>resourceRoles</b>
+		</field>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+			<a>resourceProps</a>
+			<b>resourceProps</b>
+		</field>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+			<a>childResources</a>
+			<b>childResources</b>
+		</field>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+			<a>resourceGroups</a>
+			<b>resourceGroups</b>
+		</field>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+			<a>entitlements</a>
+			<b>entitlements</b>
+		</field>
+	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.res.dto.ResourceUser</class-a>
+		<class-b>org.openiam.idm.srvc.res.dto.ResourceUser</class-b>
+		<field custom-converter="org.openiam.dozer.PersistentObjectConverter" custom-converter-param="deepDozerMapper">
+			<a>id</a>
+			<b>id</b>
+		</field>
+		<field custom-converter="org.openiam.dozer.PersistentObjectConverter" custom-converter-param="deepDozerMapper">
+			<a>resource</a>
+			<b>resource</b>
+		</field>
+	</mapping>
 </mappings>
