@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.ResourceBundle;
+import org.openiam.exception.ScriptEngineException;
 
 /**
  * @author suneet
@@ -61,7 +62,7 @@ public class GroovyScriptEngineIntegration implements ScriptIntegration {
     }
 
     @Override
-    public Object execute(Map<String, Object> bindingMap, String scriptName) {
+    public Object execute(Map<String, Object> bindingMap, String scriptName) throws ScriptEngineException {
         init();
 
         try {
@@ -73,11 +74,14 @@ public class GroovyScriptEngineIntegration implements ScriptIntegration {
             gse.run(scriptName, binding);
             return binding.getVariable("output");
         } catch (ScriptException se) {
-            log.error("Could not run script " + scriptName, se);
+            String msg = "Could not run script " + scriptName;
+            log.error(msg, se);
+            throw new ScriptEngineException(msg, se);
         } catch (ResourceException re) {
-            log.error("Resource problem for " + scriptName, re);
+            String msg = "Resource problem for " + scriptName;
+            log.error(msg, re);
+            throw new ScriptEngineException(msg, re);
         }
-        return null;
     }
 
     @Override

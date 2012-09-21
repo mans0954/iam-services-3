@@ -26,7 +26,8 @@
 					 classpath:am-service-Context.xml,
 					 classpath:idmservice-Context.xml,
 					 classpath:connector-coreContext.xml,
-					 classpath:bpm-context.xml
+					 classpath:bpm-context.xml,
+                     classpath:reports-service-Context.xml
 		</param-value>
 	</context-param>
 
