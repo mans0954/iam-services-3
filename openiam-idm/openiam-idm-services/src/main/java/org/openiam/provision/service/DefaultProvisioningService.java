@@ -39,6 +39,8 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.connector.type.*;
+import org.openiam.dozer.DozerUtils;
+import org.openiam.dozer.ProvisionDozerUtils;
 import org.openiam.exception.EncryptionException;
 import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
@@ -97,6 +99,7 @@ import org.openiam.spml2.msg.password.SetPasswordRequestType;
 import org.openiam.spml2.msg.suspend.ResumeRequestType;
 import org.openiam.spml2.msg.suspend.SuspendRequestType;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Required;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -117,7 +120,9 @@ import java.util.*;
         serviceName = "ProvisioningService")
 public class DefaultProvisioningService extends AbstractProvisioningService {
 
+    private static final Log log = LogFactory.getLog(DefaultProvisioningService.class);
 
+    private ProvisionDozerUtils dozerUtils;
 
     public Response testConnectionConfig(String managedSysId) {
         return validateConnection.testConnection(managedSysId, muleContext);
@@ -549,7 +554,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             }
         }
 
-        resp.setUser(user);
+        resp.setUser(dozerUtils.getDozerDeepedMappedProvisionUser(user));
         return resp;
     }
 
@@ -1499,7 +1504,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         log.debug("- role list -> " + activeRoleList);
         log.debug("- Primary Identity : " + primaryIdentity);
 
-        // SAS - Do not change the list of roles
+		// SAS - Do not change the list of roles
         //pUser.setMemberOfRoles(activeRoleList);
         //  bindingMap.put("user", origUser);
 
@@ -1877,7 +1882,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         /* Response object */
         resp.setStatus(ResponseStatus.SUCCESS);
-        resp.setUser(pUser);
+        resp.setUser(dozerUtils.getDozerDeepedMappedProvisionUser(pUser));
         return resp;
 
     }
@@ -3431,38 +3436,26 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     public void setMuleContext(MuleContext ctx) {
         log.debug("Provisioning - setMuleContext called.");
         muleContext = ctx;
-
-    }
-
-    public PasswordHistoryDAO getPasswordHistoryDao() {
-        return passwordHistoryDao;
     }
 
     public void setPasswordHistoryDao(PasswordHistoryDAO passwordHistoryDao) {
         this.passwordHistoryDao = passwordHistoryDao;
     }
 
-    public String getPreProcessor() {
-        return preProcessor;
-    }
-
     public void setPreProcessor(String preProcessor) {
         this.preProcessor = preProcessor;
-    }
-
-    public String getPostProcessor() {
-        return postProcessor;
     }
 
     public void setPostProcessor(String postProcessor) {
         this.postProcessor = postProcessor;
     }
 
-    public DeprovisionSelectedResourceHelper getDeprovisionSelectedResource() {
-        return deprovisionSelectedResource;
-    }
-
     public void setDeprovisionSelectedResource(DeprovisionSelectedResourceHelper deprovisionSelectedResource) {
         this.deprovisionSelectedResource = deprovisionSelectedResource;
     }
+    
+	@Required
+	public void setDozerUtils(final ProvisionDozerUtils dozerUtils) {
+		this.dozerUtils = dozerUtils;
+	}
 }
