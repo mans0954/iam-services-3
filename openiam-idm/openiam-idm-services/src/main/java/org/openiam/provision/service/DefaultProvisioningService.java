@@ -118,61 +118,11 @@ import java.util.*;
         targetNamespace = "http://www.openiam.org/service/provision",
         portName = "DefaultProvisionControllerServicePort",
         serviceName = "ProvisioningService")
-public class DefaultProvisioningService implements MuleContextAware, ProvisionService, ApplicationContextAware {
+public class DefaultProvisioningService extends AbstractProvisioningService {
 
     private static final Log log = LogFactory.getLog(DefaultProvisioningService.class);
 
-    // used to inject the application context into the groovy scripts
-    public static ApplicationContext ac;
     private ProvisionDozerUtils dozerUtils;
-
-    private UserDataService userMgr;
-    private LoginDataService loginManager;
-    private LoginDAO loginDao;
-
-    private IdmAuditLogDataService auditDataService;
-    private ManagedSystemDataService managedSysService;
-    private RoleDataService roleDataService;
-    private GroupDataService groupManager;
-    private String connectorWsdl;
-    private String defaultProvisioningModel;
-    private SysConfiguration sysConfiguration;
-    private ResourceDataService resourceDataService;
-    private String scriptEngine;
-    private OrganizationDataService orgManager;
-    private PasswordService passwordDS;
-    //private AddUser addUser;
-    //private ModifyUser modifyUser;
-    private AuditHelper auditHelper;
-    //private AttributeListBuilder attrListBuilder;
-    private ConnectorAdapter connectorAdapter;
-    private RemoteConnectorAdapter remoteConnectorAdapter;
-    //private DisableUserDelegate disableUser;
-    private ConnectorDataService connectorService;
-    private ValidateConnectionConfig validateConnection;
-    protected PasswordHistoryDAO passwordHistoryDao;
-    private String preProcessor;
-    private String postProcessor;
-    private DeprovisionSelectedResourceHelper deprovisionSelectedResource;
-
-    MuleContext muleContext;
-
-    private static final String MATCH_PARAM = "matchParam";
-    private static final String TARGET_SYSTEM_IDENTITY_STATUS = "targetSystemIdentityStatus";
-    private static final String TARGET_SYSTEM_IDENTITY = "targetSystemIdentity";
-    private static final String TARGET_SYSTEM_ATTRIBUTES = "targetSystemAttributes";
-
-    private static final String TARGET_SYS_RES_ID = "resourceId";
-    private static final String TARGET_SYS_MANAGED_SYS_ID = "managedSysId";
-    private static final String TARGET_SYS_SECURITY_DOMAIN = "securityDomain";
-
-    private static final String IDENTITY_NEW = "NEW";
-    private static final String IDENTITY_EXIST = "EXIST";
-
-    final static private ResourceBundle res = ResourceBundle.getBundle("datasource");
-    final static private String serviceHost = res.getString("openiam.service_base");
-    final static private String serviceContext = res.getString("openiam.idm.ws.path");
-
 
     public Response testConnectionConfig(String managedSysId) {
         return validateConnection.testConnection(managedSysId, muleContext);
@@ -1554,7 +1504,8 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
         log.debug("- role list -> " + activeRoleList);
         log.debug("- Primary Identity : " + primaryIdentity);
 
-        pUser.setMemberOfRoles(activeRoleList);
+		// SAS - Do not change the list of roles
+        //pUser.setMemberOfRoles(activeRoleList);
         //  bindingMap.put("user", origUser);
 
         bindingMap.put("user", pUser);
@@ -3082,170 +3033,7 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
     }
 
 
-    /**
-     * ***** Spring methods ************
-     */
 
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        ac = applicationContext;
-    }
-
-    public UserDataService getUserMgr() {
-        return userMgr;
-    }
-
-    public void setUserMgr(UserDataService userMgr) {
-        this.userMgr = userMgr;
-    }
-
-    public LoginDataService getLoginManager() {
-        return loginManager;
-    }
-
-    public void setLoginManager(LoginDataService loginManager) {
-        this.loginManager = loginManager;
-    }
-
-    public LoginDAO getLoginDao() {
-        return loginDao;
-    }
-
-    public void setLoginDao(LoginDAO loginDao) {
-        this.loginDao = loginDao;
-    }
-
-    public IdmAuditLogDataService getAuditDataService() {
-        return auditDataService;
-    }
-
-    public void setAuditDataService(IdmAuditLogDataService auditDataService) {
-        this.auditDataService = auditDataService;
-    }
-
-
-    public ManagedSystemDataService getManagedSysService() {
-        return managedSysService;
-    }
-
-    public void setManagedSysService(ManagedSystemDataService managedSysService) {
-        this.managedSysService = managedSysService;
-    }
-
-    public RoleDataService getRoleDataService() {
-        return roleDataService;
-    }
-
-    public void setRoleDataService(RoleDataService roleDataService) {
-        this.roleDataService = roleDataService;
-    }
-
-    public GroupDataService getGroupManager() {
-        return groupManager;
-    }
-
-    public void setGroupManager(GroupDataService groupManager) {
-        this.groupManager = groupManager;
-    }
-
-    public String getConnectorWsdl() {
-        return connectorWsdl;
-    }
-
-    public void setConnectorWsdl(String connectorWsdl) {
-        this.connectorWsdl = connectorWsdl;
-    }
-
-    public String getDefaultProvisioningModel() {
-        return defaultProvisioningModel;
-    }
-
-    public void setDefaultProvisioningModel(String defaultProvisioningModel) {
-        this.defaultProvisioningModel = defaultProvisioningModel;
-    }
-
-    public SysConfiguration getSysConfiguration() {
-        return sysConfiguration;
-    }
-
-    public void setSysConfiguration(SysConfiguration sysConfiguration) {
-        this.sysConfiguration = sysConfiguration;
-    }
-
-    public ResourceDataService getResourceDataService() {
-        return resourceDataService;
-    }
-
-    public void setResourceDataService(ResourceDataService resourceDataService) {
-        this.resourceDataService = resourceDataService;
-    }
-
-    public String getScriptEngine() {
-        return scriptEngine;
-    }
-
-    public void setScriptEngine(String scriptEngine) {
-        this.scriptEngine = scriptEngine;
-    }
-
-    public OrganizationDataService getOrgManager() {
-        return orgManager;
-    }
-
-    public void setOrgManager(OrganizationDataService orgManager) {
-        this.orgManager = orgManager;
-    }
-
-    public PasswordService getPasswordDS() {
-        return passwordDS;
-    }
-
-    public void setPasswordDS(PasswordService passwordDS) {
-        this.passwordDS = passwordDS;
-    }
-
-
-    public AuditHelper getAuditHelper() {
-        return auditHelper;
-    }
-
-    public void setAuditHelper(AuditHelper auditHelper) {
-        this.auditHelper = auditHelper;
-    }
-
-
-    public ConnectorAdapter getConnectorAdapter() {
-        return connectorAdapter;
-    }
-
-    public void setConnectorAdapter(ConnectorAdapter connectorAdapter) {
-        this.connectorAdapter = connectorAdapter;
-    }
-
-
-    public RemoteConnectorAdapter getRemoteConnectorAdapter() {
-        return remoteConnectorAdapter;
-    }
-
-    public void setRemoteConnectorAdapter(
-            RemoteConnectorAdapter remoteConnectorAdapter) {
-        this.remoteConnectorAdapter = remoteConnectorAdapter;
-    }
-
-    public ConnectorDataService getConnectorService() {
-        return connectorService;
-    }
-
-    public void setConnectorService(ConnectorDataService connectorService) {
-        this.connectorService = connectorService;
-    }
-
-    public ValidateConnectionConfig getValidateConnection() {
-        return validateConnection;
-    }
-
-    public void setValidateConnection(ValidateConnectionConfig validateConnection) {
-        this.validateConnection = validateConnection;
-    }
 
     /* REMOTE VS LOCAL CONNECTORS */
 
