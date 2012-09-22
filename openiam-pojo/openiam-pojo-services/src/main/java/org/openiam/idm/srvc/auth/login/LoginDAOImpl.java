@@ -441,10 +441,9 @@ public class LoginDAOImpl implements LoginDAO {
     }
 
 
-
     /* (non-Javadoc)
-      * @see org.openiam.idm.srvc.auth.login.LoginDAO#findUserNearPswdExp(int)
-      */
+    * @see org.openiam.idm.srvc.auth.login.LoginDAO#findUserNearPswdExp(int)
+    */
     public List<Login> findUserNearPswdExp(int daysToExpiration) {
         log.debug("findUserNearPswdExp: findUserNearPswdExp called.");
         log.debug("days to password Expiration=" + daysToExpiration);
