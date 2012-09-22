@@ -155,5 +155,26 @@ public class OrganizationAttribute implements java.io.Serializable {
         this.metadataElementId = metadataElementId;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof OrganizationAttribute)) return false;
 
+        OrganizationAttribute that = (OrganizationAttribute) o;
+
+        if (attrId != null ? !attrId.equals(that.attrId) : that.attrId != null) return false;
+        if (metadataElementId != null ? !metadataElementId.equals(that.metadataElementId) : that.metadataElementId != null)
+            return false;
+        if (name != null ? !name.equals(that.name) : that.name != null) return false;
+        if (organizationId != null ? !organizationId.equals(that.organizationId) : that.organizationId != null)
+            return false;
+        if (value != null ? !value.equals(that.value) : that.value != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return attrId != null ? attrId.hashCode() : 0;
+    }
 }
