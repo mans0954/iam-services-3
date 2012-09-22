@@ -25,9 +25,9 @@ import java.math.BigDecimal;
 import java.util.*;
 
 import javax.jws.WebMethod;
-import javax.jws.WebParam;
 import javax.jws.WebService;
 
+import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.srvc.auth.dto.*;
 import org.openiam.idm.srvc.pswd.service.PasswordService;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
@@ -443,9 +443,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 				bindingMap.put("user", user);
 
 				ScriptIntegration se = ScriptFactory.createModule(this.scriptEngine);
-				loginModName = (String)se.execute(bindingMap, selPolicy.getValue1());
+                try {
+                    loginModName = (String)se.execute(bindingMap, selPolicy.getValue1());
+                } catch (ScriptEngineException e) {
+                    log.error(e);
+                }
 
-				log.debug("LoginModName from script =" + loginModName);
+                log.debug("LoginModName from script =" + loginModName);
 
 			}else {
 				log.debug("retrieving default login module for policy");
@@ -686,10 +690,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 				bindingMap.put("login",lg);
 				bindingMap.put("user", user);
 						
-				ScriptIntegration se = ScriptFactory.createModule(this.scriptEngine); 
-				loginModName = (String)se.execute(bindingMap, selPolicy.getValue1());
-				
-				log.debug("LoginModName from script =" + loginModName);
+				ScriptIntegration se = ScriptFactory.createModule(this.scriptEngine);
+                try {
+                    loginModName = (String)se.execute(bindingMap, selPolicy.getValue1());
+                } catch (ScriptEngineException e) {
+                    log.error(e);
+                }
+
+                log.debug("LoginModName from script =" + loginModName);
 				
 			}else {
 				log.debug("retrieving default login module for policy");

@@ -102,6 +102,7 @@
         <module>openiam-am</module>
         <module>openiam-esb</module>
         <module>openiam-bpm</module>
+        <module>openiam-reports</module>
     </modules>
 
 	<properties>
@@ -569,7 +570,16 @@
                 <artifactId>openiam-idm-ee-services</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>org.openiam</groupId>
+                <artifactId>openiam-reports-intf</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.openiam</groupId>
+                <artifactId>openiam-reports-services</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 		</dependencies>
 	</dependencyManagement>
 

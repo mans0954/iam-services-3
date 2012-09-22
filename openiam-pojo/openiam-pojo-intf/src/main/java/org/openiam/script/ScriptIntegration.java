@@ -23,6 +23,7 @@ package org.openiam.script;
 
 import java.io.IOException;
 import java.util.Map;
+import org.openiam.exception.ScriptEngineException;
 
 /**
  * Interface that all script integration modules must implement
@@ -30,7 +31,7 @@ import java.util.Map;
  * @author suneet
  */
 public interface ScriptIntegration {
-    public Object execute(Map<String, Object> bindingMap, String scriptName);
+    public Object execute(Map<String, Object> bindingMap, String scriptName) throws ScriptEngineException;
 
     public Object instantiateClass(Map<String, Object> bindingMap, String scriptName) throws IOException;
 }

@@ -27,19 +27,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.id.UUIDGen;
-import org.openiam.base.ws.ResponseCode;
-import org.openiam.base.ws.ResponseStatus;
+import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.srvc.audit.service.AuditHelper;
 import org.openiam.idm.srvc.auth.ws.LoginDataWebService;
 import org.openiam.idm.srvc.batch.dto.BatchTask;
 import org.openiam.idm.srvc.batch.service.BatchDataService;
-import org.openiam.idm.srvc.org.dto.Organization;
-import org.openiam.idm.srvc.policy.dto.Policy;
-import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.policy.service.PolicyDataService;
-import org.openiam.idm.srvc.secdomain.dto.SecurityDomain;
-import org.openiam.idm.srvc.secdomain.service.SecurityDomainDataService;
-import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.script.ScriptFactory;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.BeansException;
@@ -133,20 +126,24 @@ public class NightlyTask implements ApplicationContextAware {
                         bindingMap.put("taskObj", task);
                         bindingMap.put("lastExecTime", task.getLastExecTime());
                         bindingMap.put("parentRequestId", requestId);
-						
-						Integer output = (Integer)se.execute(bindingMap, task.getTaskUrl());
-						if (output.intValue() == 0 ) {
-							auditHelper.addLog(task.getTaskName(), null,	null,
-									"IDM BATCH TASK", null, "0", "DAILY BATCH", task.getTaskId(), 
-									null,   "FAIL", null,  null, 
-									null, null, null, null, null);
-						}else {
-							auditHelper.addLog(task.getTaskName(), null,	null,
-									"IDM BATCH TASK", null, "0", "DAILY BATCH", task.getTaskId(), 
-									null,   "SUCCESS", null,  null, 
-									null, null, null, null, null);
-						}
-					}
+
+                        try {
+                            Integer output = (Integer)se.execute(bindingMap, task.getTaskUrl());
+                            if (output.intValue() == 0 ) {
+                                auditHelper.addLog(task.getTaskName(), null,	null,
+                                        "IDM BATCH TASK", null, "0", "DAILY BATCH", task.getTaskId(),
+                                        null,   "FAIL", null,  null,
+                                        null, null, null, null, null);
+                            }else {
+                                auditHelper.addLog(task.getTaskName(), null,	null,
+                                        "IDM BATCH TASK", null, "0", "DAILY BATCH", task.getTaskId(),
+                                        null,   "SUCCESS", null,  null,
+                                        null, null, null, null, null);
+                            }
+                        } catch (ScriptEngineException e) {
+                            log.error(e);
+                        }
+                    }
 				}catch(Exception e) {
 					log.error(e);
 				}finally {

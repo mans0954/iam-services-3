@@ -1,0 +1,1 @@
+insert into REPORT_QUERY(report_name, query_script_path, params, required_params) values('testReport', 'reports/test.groovy', 'userId', 'userId');

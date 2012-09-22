@@ -32,6 +32,7 @@ import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.EncryptionException;
+import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditHelper;
 import org.openiam.idm.srvc.auth.dto.Login;
@@ -52,7 +53,6 @@ import org.openiam.idm.srvc.user.dto.Supervisor;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.provision.resp.PasswordResponse;
 import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.idm.srvc.org.dto.Organization;
@@ -275,26 +275,30 @@ public class AddUser {
 					Policy policy = attr.getAttributePolicy();
 					String url = policy.getRuleSrcUrl();
 					if (url != null) {
-						String output = (String)se.execute(bindingMap, url);
-						String objectType = attr.getMapForObjectType();
-						if (objectType != null) {
-							if (objectType.equalsIgnoreCase("PRINCIPAL")) {
-								if (attr.getAttributeName().equalsIgnoreCase("PRINCIPAL")) {
-									primaryID.setLogin(output);
-								}
-								if (attr.getAttributeName().equalsIgnoreCase("PASSWORD")) {
-									primaryIdentity.setPassword(output);
-								}
-								if (attr.getAttributeName().equalsIgnoreCase("DOMAIN")) {
-									primaryID.setDomainId(output);
-								}
-							}
-							if (objectType.equals("EMAIL")) {
-								primaryEmail.setEmailAddress(output);
-								primaryEmail.setIsDefault(1);
-							}
-						}
-					}
+                        try {
+                            String output = (String)se.execute(bindingMap, url);
+                            String objectType = attr.getMapForObjectType();
+                            if (objectType != null) {
+                                if (objectType.equalsIgnoreCase("PRINCIPAL")) {
+                                    if (attr.getAttributeName().equalsIgnoreCase("PRINCIPAL")) {
+                                        primaryID.setLogin(output);
+                                    }
+                                    if (attr.getAttributeName().equalsIgnoreCase("PASSWORD")) {
+                                        primaryIdentity.setPassword(output);
+                                    }
+                                    if (attr.getAttributeName().equalsIgnoreCase("DOMAIN")) {
+                                        primaryID.setDomainId(output);
+                                    }
+                                }
+                                if (objectType.equals("EMAIL")) {
+                                    primaryEmail.setEmailAddress(output);
+                                    primaryEmail.setIsDefault(1);
+                                }
+                            }
+                        } catch (ScriptEngineException e) {
+                            log.error(e);
+                        }
+                    }
 				}
 	 			}catch(Exception e) {
  				log.error(e);
@@ -350,17 +354,21 @@ public class AddUser {
                     Policy policy = attr.getAttributePolicy();
                     String url = policy.getRuleSrcUrl();
                     if (url != null) {
-                        String output = (String)se.execute(bindingMap, url);
-                        String objectType = attr.getMapForObjectType();
-                        if (objectType != null) {
-                            if (objectType.equalsIgnoreCase("PRINCIPAL")) {
+                        try {
+                            String output = (String)se.execute(bindingMap, url);
+                            String objectType = attr.getMapForObjectType();
+                            if (objectType != null) {
+                                if (objectType.equalsIgnoreCase("PRINCIPAL")) {
 
-                                if (attr.getAttributeName().equalsIgnoreCase("PASSWORD")) {
-                                    primaryIdentity.setPassword(output);
+                                    if (attr.getAttributeName().equalsIgnoreCase("PASSWORD")) {
+                                        primaryIdentity.setPassword(output);
+                                    }
+
                                 }
 
                             }
-
+                        } catch (ScriptEngineException e) {
+                            log.error(e);
                         }
                     }
                 }
