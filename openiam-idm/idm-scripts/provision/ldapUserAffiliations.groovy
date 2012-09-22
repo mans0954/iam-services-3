@@ -1,15 +1,25 @@
 import java.util.ArrayList;
 import java.util.List;
 import org.openiam.idm.srvc.org.dto.Organization;
-import org.springframework.context.support.ClassPathXmlApplicationContext
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import org.openiam.base.BaseAttribute;
+import org.openiam.base.BaseAttributeContainer;
+
+
+BaseAttributeContainer attributeContainer = new BaseAttributeContainer();
 
 def orgManager = context.getBean("orgManager")
 
-String orgBaseDN = "ou=affiliations,dc=gtawestdir,dc=com";
+/* Replace base DN with your Base DN */
+String orgBaseDN = "ou=affiliations,dc=openiam,dc=com";
 
 List<String> orgAffiliationList = new ArrayList<String>();
 def List<Organization> affiliationList = user.userAffiliations;
-println("user affilations =" + affiliationList);
+
+println("Executing ldapUserAffiliations.groovy...");
+println(" -- user affilations =" + affiliationList);
+
 
 if (affiliationList != null) {
 	if (affiliationList.size() > 0)  {
@@ -18,16 +28,21 @@ if (affiliationList != null) {
 			
 			Organization affiliationOrg = orgManager.getOrganization(o.orgId)
 			
-			println("- adding affiliation:" + "cn=" + affiliationOrg.organizationName + "," + orgBaseDN);
+
+			String qualifiedAffiliationName = "cn=" + affiliationOrg.organizationName + "," + orgBaseDN;
 			
-			orgAffiliationList.add("cn=" + affiliationOrg.organizationName + "," + orgBaseDN);
+			println("-- Affiliating user to :" + qualifiedAffiliationName);
 			
+			attributeContainer.getAttributeList().add(new BaseAttribute(qualifiedAffiliationName, qualifiedAffiliationName, o.operation));
+			
+		
 		}
-		output = orgAffiliationList;
+		output = attributeContainer;
 	}else {
 		output = null;
 	}
 }else {
 	output = null;
 }
+
 

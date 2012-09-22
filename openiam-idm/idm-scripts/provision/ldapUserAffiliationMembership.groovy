@@ -2,7 +2,7 @@ import org.openiam.idm.srvc.org.dto.Organization;
 import java.util.ArrayList;
 import java.util.List;
 
-String orgBaseDN = "ou=affiliations,dc=gtawestdir,dc=com";
+String orgBaseDN = "ou=affiliations,dc=openiam,dc=org";
 List<String> orgStrList = new ArrayList<String>();
 
 def orgManager = context.getBean("orgManager")
