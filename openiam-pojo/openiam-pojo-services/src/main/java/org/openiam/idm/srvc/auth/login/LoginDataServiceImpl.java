@@ -507,13 +507,17 @@ public class LoginDataServiceImpl implements LoginDataService {
 		return loginDao.findLockedUsers(lastExecTime);
 	}
 
-	public List<Login> getInactiveUsers(int startDays, int endDays) {
-		List<Login> loginList = loginDao.findInactiveUsers(startDays, endDays);
+    public List<Login> getInactiveUsers(int startDays, int endDays) {
 
-		return loginList;
-	}
-	
-	public PasswordService getPasswordManager() {
+        String primaryManagedSys =  sysConfiguration.getDefaultManagedSysId();
+
+
+        List<Login> loginList = loginDao.findInactiveUsers(startDays, endDays, primaryManagedSys);
+
+        return loginList;
+    }
+
+    public PasswordService getPasswordManager() {
 		return passwordManager;
 	}
 
