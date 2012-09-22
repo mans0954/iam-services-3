@@ -74,6 +74,14 @@
 			<a>subGroup</a>
 			<b>subGroup</b>
 		</field-exclude>
+		<field-exclude>
+			<a>parentGroups</a>
+			<b>parentGroups</b>
+		</field-exclude>
+		<field-exclude>
+			<a>childGroups</a>
+			<b>childGroups</b>
+		</field-exclude>
 	</mapping>
 	
 	<mapping>
@@ -142,10 +150,6 @@
 		<field-exclude>
 			<a>resourceProps</a>
 			<b>resourceProps</b>
-		</field-exclude>
-		<field-exclude>
-			<a>childResources</a>
-			<b>childResources</b>
 		</field-exclude>
 		<field-exclude>
 			<a>resourceGroups</a>

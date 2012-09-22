@@ -82,7 +82,6 @@ public class TestGroupConversion {
 		childRoleList.add(createSimpleRole());
 		childRoleList.add(createSimpleRole());
 		childRoleList.add(createSimpleRole());
-		original.setChildRoles(childRoleList);
 		
 		compareRole(original, deepDozerMapper.map(original, Role.class), true);
 		compareRole(original, shallowDozerMapper.map(original, Role.class), false);
@@ -120,14 +119,12 @@ public class TestGroupConversion {
 		group.setGroupStatus(GroupStatus.ACTIVE);
 		group.setGrpId(rs(2));
 		group.setGrpName(rs(2));
-		group.setInheritFromParent(true);
 		group.setInternalGroupId(rs(2));
 		group.setLastUpdate(new Date());
 		group.setLastUpdatedBy(rs(2));
 		group.setMetadataTypeId(rs(2));
 		group.setOperation(AttributeOperationEnum.ADD);
 		group.setOwnerId(rs(2));
-		group.setParentGrpId(rs(2));
 		group.setProvisionMethod(rs(2));
 		group.setProvisionObjName(rs(2));
 		group.setSelected(true);
@@ -152,7 +149,6 @@ public class TestGroupConversion {
 		role.setDescription(rs(2));
 		role.setEndDate(new Date());
 		role.setId(new RoleId(rs(2), rs(2)));
-		role.setInheritFromParent(1);
 		role.setInternalRoleId(rs(2));
 		role.setMetadataTypeId(rs(2));
 		role.setObjectState(rs(2));
@@ -234,13 +230,11 @@ public class TestGroupConversion {
 		Assert.assertEquals(original.getGrpId(), copy.getGrpId());
 		Assert.assertEquals(original.getGrpName(), copy.getGrpName());
 		Assert.assertEquals(original.getInternalGroupId(), copy.getInternalGroupId());
-		Assert.assertEquals(original.getInheritFromParent(), copy.getInheritFromParent());
 		Assert.assertEquals(original.getLastUpdatedBy(), copy.getLastUpdatedBy());
 		Assert.assertEquals(original.getLastUpdate(), copy.getLastUpdate());
 		Assert.assertEquals(original.getMetadataTypeId(), copy.getMetadataTypeId());
 		Assert.assertEquals(original.getOwnerId(), copy.getOwnerId());
 		Assert.assertEquals(original.getOperation(), copy.getOperation());
-		Assert.assertEquals(original.getParentGrpId(), copy.getParentGrpId());
 		Assert.assertEquals(original.getProvisionMethod(), copy.getProvisionMethod());
 		Assert.assertEquals(original.getProvisionObjName(), copy.getProvisionObjName());
 		Assert.assertEquals(original.getStatus(), copy.getStatus());

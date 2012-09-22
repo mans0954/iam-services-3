@@ -81,30 +81,6 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
         this.orgId = companyId;
     }
 
-    /**
-     * full constructor
-     */
-    public Organization(String companyId, String metadataTypeId,
-                        String companyName, Date lstUpdate, String lstUpdatedBy,
-                        String parentId, String status, Date createDate, String createdBy,
-                        String alias, String description, String domainName,
-                        String ldapStr, Map<String, OrganizationAttribute> companyAttributes) {
-        this.orgId = companyId;
-        this.metadataTypeId = metadataTypeId;
-        this.organizationName = companyName;
-        this.lstUpdate = lstUpdate;
-        this.lstUpdatedBy = lstUpdatedBy;
-        this.parentId = parentId;
-        this.status = status;
-        this.createDate = createDate;
-        this.createdBy = createdBy;
-        this.alias = alias;
-        this.description = description;
-        this.domainName = domainName;
-        this.ldapStr = ldapStr;
-        this.attributes = companyAttributes;
-    }
-
     // Property accessors
 
     /**

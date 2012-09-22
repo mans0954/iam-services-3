@@ -38,10 +38,12 @@ public interface GroupDataWebService {
      *                   True tells the system to retrieve dependent objects as well.
      * @return List of Group objects.
      */
+	/*
     @WebMethod
     public GroupListResponse getAllGroupsWithDependents(
             @WebParam(name = "subgroups", targetNamespace = "")
             boolean subgroups);
+	*/
 
     /**
      * Returns a list of Group objects that is flat in structure.
@@ -154,11 +156,12 @@ public interface GroupDataWebService {
      * @param parentGroupId
      * @return The number of entities that were deleted.
      */
+    /*
     @WebMethod
     public Response removeChildGroups(
             @WebParam(name = "parentGroupId", targetNamespace = "")
             String parentGroupId);
-
+	*/
     /**
      * Returns the parent Group object for the groupId that is passed in. If no
      * parent group is found, the system return null.
@@ -169,7 +172,7 @@ public interface GroupDataWebService {
      * @return
      */
     @WebMethod
-    public GroupResponse getParentGroup(
+    public GroupListResponse getParentGroups(
             @WebParam(name = "groupId", targetNamespace = "")
             String groupId,
             @WebParam(name = "dependants", targetNamespace = "")

@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.grp.service;
 
 // Generated Jun 12, 2007 10:46:15 PM by Hibernate Tools 3.2.0.beta8
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -146,8 +147,7 @@ public class GroupDAOImpl implements org.openiam.idm.srvc.grp.service.GroupDAO {
 	
 	public List<Group> findRootGroups() {
 		Session session = sessionFactory.getCurrentSession();
-		Query qry = session.createQuery("from org.openiam.idm.srvc.grp.dto.Group g " +
-				" where g.parentGrpId is null order by g.grpId asc");
+		Query qry = session.createQuery("from org.openiam.idm.srvc.grp.dto.Group g where size(g.parentGroups) = 0 order by g.grpId asc");
 	//	qry.setCacheable(true);
 		List<Group> results = (List<Group>)qry.list();
 		return results;
@@ -173,19 +173,6 @@ public class GroupDAOImpl implements org.openiam.idm.srvc.grp.service.GroupDAO {
 		List<Group> results = (List<Group>)qry.list();
 		return results;		
 	}
-	
-	
-
-
-	
-	public List<Group> findChildGroup(String parentGroupId) {
-		Session session = sessionFactory.getCurrentSession();
-		Query qry = session.createQuery("from org.openiam.idm.srvc.grp.dto.Group g where g.parentGrpId = :parentId order by g.grpId asc");
-		qry.setString("parentId", parentGroupId);
-	//	qry.setCacheable(true);
-		List<Group> results = (List<Group>)qry.list();
-		return results;
-	}
 
 	/**
 	 * Removes the groups specified by the groupIdList. groupIdList is a string containing a concatenated
@@ -200,6 +187,7 @@ public class GroupDAOImpl implements org.openiam.idm.srvc.grp.service.GroupDAO {
 		return qry.executeUpdate();		
 	}	
 	
+	/*
 	public Group findParent(String groupId, boolean dependants) {
 				
 		// get the group object for the groupId
@@ -224,8 +212,8 @@ public class GroupDAOImpl implements org.openiam.idm.srvc.grp.service.GroupDAO {
 		}
 
 		return parentGroup;
-		
 	}
+	*/
 	
 	/**
 	 * Returns a list of Groups that a user is associated with

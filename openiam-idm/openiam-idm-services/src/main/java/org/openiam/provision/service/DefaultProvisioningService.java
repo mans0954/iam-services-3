@@ -39,6 +39,8 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.connector.type.*;
+import org.openiam.dozer.DozerUtils;
+import org.openiam.dozer.ProvisionDozerUtils;
 import org.openiam.exception.EncryptionException;
 import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
@@ -97,6 +99,7 @@ import org.openiam.spml2.msg.password.SetPasswordRequestType;
 import org.openiam.spml2.msg.suspend.ResumeRequestType;
 import org.openiam.spml2.msg.suspend.SuspendRequestType;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Required;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -121,6 +124,7 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
 
     // used to inject the application context into the groovy scripts
     public static ApplicationContext ac;
+    private ProvisionDozerUtils dozerUtils;
 
     private UserDataService userMgr;
     private LoginDataService loginManager;
@@ -600,7 +604,7 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
             }
         }
 
-        resp.setUser(user);
+        resp.setUser(dozerUtils.getDozerDeepedMappedProvisionUser(user));
         return resp;
     }
 
@@ -1927,7 +1931,7 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
 
         /* Response object */
         resp.setStatus(ResponseStatus.SUCCESS);
-        resp.setUser(pUser);
+        resp.setUser(dozerUtils.getDozerDeepedMappedProvisionUser(pUser));
         return resp;
 
     }
@@ -3644,38 +3648,26 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
     public void setMuleContext(MuleContext ctx) {
         log.debug("Provisioning - setMuleContext called.");
         muleContext = ctx;
-
-    }
-
-    public PasswordHistoryDAO getPasswordHistoryDao() {
-        return passwordHistoryDao;
     }
 
     public void setPasswordHistoryDao(PasswordHistoryDAO passwordHistoryDao) {
         this.passwordHistoryDao = passwordHistoryDao;
     }
 
-    public String getPreProcessor() {
-        return preProcessor;
-    }
-
     public void setPreProcessor(String preProcessor) {
         this.preProcessor = preProcessor;
-    }
-
-    public String getPostProcessor() {
-        return postProcessor;
     }
 
     public void setPostProcessor(String postProcessor) {
         this.postProcessor = postProcessor;
     }
 
-    public DeprovisionSelectedResourceHelper getDeprovisionSelectedResource() {
-        return deprovisionSelectedResource;
-    }
-
     public void setDeprovisionSelectedResource(DeprovisionSelectedResourceHelper deprovisionSelectedResource) {
         this.deprovisionSelectedResource = deprovisionSelectedResource;
     }
+    
+	@Required
+	public void setDozerUtils(final ProvisionDozerUtils dozerUtils) {
+		this.dozerUtils = dozerUtils;
+	}
 }

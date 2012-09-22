@@ -1,0 +1,47 @@
+CREATE TABLE res_to_res_membership (
+	RESOURCE_ID varchar(32) NOT NULL,
+	MEMBER_RESOURCE_ID varchar(32) NOT NULL,
+	CREATE_DATE TIMESTAMP NULL,
+	UPDATE_DATE TIMESTAMP NULL,
+	CREATED_BY varchar(32) NULL,
+	UPDATED_BY varchar(32) NULL,
+	UNIQUE(RESOURCE_ID, MEMBER_RESOURCE_ID),
+	FOREIGN KEY (RESOURCE_ID) REFERENCES RES (RESOURCE_ID ),
+	FOREIGN KEY (MEMBER_RESOURCE_ID) REFERENCES RES (RESOURCE_ID )
+)  Engine=InnoDB;
+
+CREATE TRIGGER res_res_mem_insert 
+BEFORE 
+INSERT ON res_to_res_membership 
+	FOR EACH ROW
+	BEGIN
+		SET NEW.CREATE_DATE = NOW();
+		SET NEW.UPDATE_DATE = NOW();
+	END
+
+DROP PROCEDURE IF EXISTS openiam.migrateResources;
+
+CREATE PROCEDURE openiam.migrateResources()
+	BEGIN
+		DECLARE done INT DEFAULT FALSE;
+		DECLARE res_id, parent VARCHAR(32);		
+		DECLARE cur1 CURSOR FOR (SELECT RESOURCE_ID, RESOURCE_PARENT FROM openiam.res WHERE RESOURCE_PARENT IS NOT null);
+		DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+		OPEN cur1;
+		
+		REPEAT 
+			FETCH cur1 INTO res_id, parent;
+			IF (res_id IS NOT NULL AND parent IS NOT NULL) THEN
+				IF ((SELECT RESOURCE_ID FROM openiam.res_to_res_membership WHERE RESOURCE_ID=parent AND MEMBER_RESOURCE_ID=res_id) IS NULL) THEN
+					INSERT INTO openiam.res_to_res_membership (RESOURCE_ID, MEMBER_RESOURCE_ID) VALUES(parent, res_id);
+				END IF;
+			END IF;
+		UNTIL done END REPEAT; 
+				
+		
+		CLOSE cur1;
+	END;
+
+call openiam.migrateResources();
+
+DROP PROCEDURE openiam.migrateResources;

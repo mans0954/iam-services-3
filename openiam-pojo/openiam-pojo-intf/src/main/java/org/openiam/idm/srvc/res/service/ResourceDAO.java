@@ -202,13 +202,6 @@ public interface ResourceDAO {
      */
     List<Resource> getResourcesByBranch(String branchId);
 
-    /**
-     * Gets the child resources.
-     *
-     * @param resourceId the resource id
-     * @return the child resources
-     */
-    List<Resource> getChildResources(String resourceId);
 
     /**
      * Gets the root resources.

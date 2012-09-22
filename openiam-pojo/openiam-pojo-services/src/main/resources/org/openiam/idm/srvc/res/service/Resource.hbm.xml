@@ -19,12 +19,6 @@
         <property name="name" type="string">
             <column name="NAME" length="40" />
         </property>
-         <!-- many-to-one  name="resourceParent" class="org.openiam.idm.srvc.res.dto.Resource" fetch="select">
-            <column name="RESOURCE_PARENT" length="32" />
-        </many-to-one-->
-        <property name="resourceParent" type="string">
-            <column name="RESOURCE_PARENT" length="32" />
-        </property>
         <property name="branchId" type="string">
             <column name="BRANCH_ID" length="20" />
         </property>
@@ -54,8 +48,6 @@
         <property name="resOwnerGroupId" type="string">
             <column name="RES_OWNER_GROUP_ID" />
         </property>
-
-
         
         <set name="resourceRoles" inverse="false" cascade="all" lazy="false" >
             <key>
@@ -63,7 +55,24 @@
             </key>
             <one-to-many class="org.openiam.idm.srvc.res.dto.ResourceRole" />
         </set>
-        
+
+		<set name="parentResources" table="res_to_res_membership" inverse="true" lazy="true" fetch="select" cascade="all">
+			<key>
+                <column name="MEMBER_RESOURCE_ID" not-null="true" />
+            </key>
+            <many-to-many entity-name="org.openiam.idm.srvc.res.dto.Resource">
+                <column name="RESOURCE_ID" not-null="true" />
+            </many-to-many>
+		</set>
+		
+		<set name="childResources" table="res_to_res_membership" inverse="true" lazy="true" fetch="select" cascade="all">
+			<key>
+                <column name="RESOURCE_ID" not-null="true" />
+            </key>
+            <many-to-many entity-name="org.openiam.idm.srvc.res.dto.Resource">
+                <column name="MEMBER_RESOURCE_ID" not-null="true" />
+            </many-to-many>
+		</set>
         
        <set name="resourceProps" inverse="false" cascade="all"  lazy="false" order-by="name asc" >
             <key>
@@ -85,8 +94,6 @@
             </key>
             <one-to-many class="org.openiam.idm.srvc.res.dto.ResourcePrivilege" />
         </set>
-
-
 
 
         <!-- best practice: for bidirectional one to many relationships set inverse as true 

@@ -89,23 +89,37 @@ public class RoleId implements java.io.Serializable {
         return str;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        RoleId roleId1 = (RoleId) o;
-
-        if (roleId != null ? !roleId.equals(roleId1.roleId) : roleId1.roleId != null) return false;
-        if (serviceId != null ? !serviceId.equals(roleId1.serviceId) : roleId1.serviceId != null) return false;
-
-        return true;
-    }
+  
 
     @Override
-    public int hashCode() {
-        int result = roleId != null ? roleId.hashCode() : 0;
-        result = 31 * result + (serviceId != null ? serviceId.hashCode() : 0);
-        return result;
-    }
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		RoleId other = (RoleId) obj;
+		if (roleId == null) {
+			if (other.roleId != null)
+				return false;
+		} else if (!roleId.equals(other.roleId))
+			return false;
+		if (serviceId == null) {
+			if (other.serviceId != null)
+				return false;
+		} else if (!serviceId.equals(other.serviceId))
+			return false;
+		return true;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((roleId == null) ? 0 : roleId.hashCode());
+		result = prime * result
+				+ ((serviceId == null) ? 0 : serviceId.hashCode());
+		return result;
+	}
 }

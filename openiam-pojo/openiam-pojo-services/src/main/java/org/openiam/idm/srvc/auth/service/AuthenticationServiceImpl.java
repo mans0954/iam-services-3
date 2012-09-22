@@ -32,16 +32,20 @@ import org.openiam.idm.srvc.auth.dto.*;
 import org.openiam.idm.srvc.pswd.service.PasswordService;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
+import org.springframework.beans.factory.annotation.Required;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.dozer.DozerBeanMapper;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.BooleanResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.base.ws.StringResponse;
+import org.openiam.dozer.DozerUtils;
 import org.openiam.exception.AuthenticationException;
 import org.openiam.exception.LogoutException;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
@@ -70,6 +74,7 @@ import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.script.ScriptFactory;
 import org.openiam.script.ScriptIntegration;
+import org.openiam.util.DozerMappingType;
 import org.openiam.util.encrypt.Cryptor;
 
 //import edu.emory.mathcs.backport.java.util.Arrays;
@@ -104,9 +109,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 	protected String scriptEngine;
 	protected SysConfiguration sysConfiguration;
     protected PasswordService passwordManager;
+    private DozerUtils dozerUtils;
 	
 	private static final Log log = LogFactory.getLog(AuthenticationServiceImpl.class);
 
+	@Required
+	public void setDozerUtils(final DozerUtils dozerUtils) {
+		this.dozerUtils = dozerUtils;
+	}
 	
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.auth.service.AuthenticationService#authenticate(org.openiam.idm.srvc.auth.context.AuthenticationContext)
@@ -794,14 +804,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 	private void populateSubject(String userId, Subject sub) {
 		log.debug("populateSubject: userId=" + userId);
 		
-		List<Group> groupList = groupManager.getUserInGroups(userId);
-		List<Role> roleAry = roleManager.getUserRoles(userId);
+		final List<Group> groupList = groupManager.getUserInGroups(userId);
+		final List<Role> roleAry = roleManager.getUserRoles(userId);
 		
-		if (groupList != null && !groupList.isEmpty()) {
-			sub.setGroups(groupList);
+		if (CollectionUtils.isNotEmpty(groupList)) {
+			sub.setGroups(dozerUtils.getDozerDeepMappedGroupList(groupList));
 		}
-		if (roleAry != null && !roleAry.isEmpty()) {
-			sub.setRoles(roleAry);
+		if (CollectionUtils.isNotEmpty(roleAry)) {
+			sub.setRoles(dozerUtils.getDozerDeepMappedRoleList(roleAry));
 		}
 		
 	}
@@ -1015,96 +1025,48 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 		
 	}
 
-	public LoginModule getDefaultLoginModule() {
-		return defaultLoginModule;
-	}
-
 	public void setDefaultLoginModule(LoginModule defaultLoginModule) {
 		this.defaultLoginModule = defaultLoginModule;
-	}
-
-	public AuthStateDAO getAuthStateDao() {
-		return authStateDao;
 	}
 
 	public void setAuthStateDao(AuthStateDAO authStateDao) {
 		this.authStateDao = authStateDao;
 	}
 
-	public LoginDataService getLoginManager() {
-		return loginManager;
-	}
-
 	public void setLoginManager(LoginDataService loginManager) {
 		this.loginManager = loginManager;
-	}
-
-	public SecurityDomainDataService getSecDomainService() {
-		return secDomainService;
 	}
 
 	public void setSecDomainService(SecurityDomainDataService secDomainService) {
 		this.secDomainService = secDomainService;
 	}
 
-	public String getAuthContextClass() {
-		return authContextClass;
-	}
-
 	public void setAuthContextClass(String authContextClass) {
 		this.authContextClass = authContextClass;
-	}
-
-	public SSOTokenModule getDefaultToken() {
-		return defaultToken;
 	}
 
 	public void setDefaultToken(SSOTokenModule defaultToken) {
 		this.defaultToken = defaultToken;
 	}
 
-	public UserDataService getUserManager() {
-		return userManager;
-	}
-
 	public void setUserManager(UserDataService userManager) {
 		this.userManager = userManager;
-	}
-
-	public PolicyDAO getPolicyDao() {
-		return policyDao;
 	}
 
 	public void setPolicyDao(PolicyDAO policyDao) {
 		this.policyDao = policyDao;
 	}
 
-	public GroupDataService getGroupManager() {
-		return groupManager;
-	}
-
 	public void setGroupManager(GroupDataService groupManager) {
 		this.groupManager = groupManager;
-	}
-
-	public RoleDataService getRoleManager() {
-		return roleManager;
 	}
 
 	public void setRoleManager(RoleDataService roleManager) {
 		this.roleManager = roleManager;
 	}
 
-	public Cryptor getCryptor() {
-		return cryptor;
-	}
-
 	public void setCryptor(Cryptor cryptor) {
 		this.cryptor = cryptor;
-	}
-
-	public AuditLogUtil getAuditUtil() {
-		return auditUtil;
 	}
 
 	public void setAuditUtil(AuditLogUtil auditUtil) {

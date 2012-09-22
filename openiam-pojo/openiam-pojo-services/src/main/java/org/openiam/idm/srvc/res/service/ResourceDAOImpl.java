@@ -141,7 +141,6 @@ public void setSessionFactory(SessionFactory session) {
 				Hibernate.initialize(instance.getResourceType());
 				Hibernate.initialize(instance.getResourceProps());
 				Hibernate.initialize(instance.getResourceRoles());
-                Hibernate.initialize(instance.getChildResources());
                 Hibernate.initialize(instance.getEntitlements());
                 Hibernate.initialize(instance.getResourceGroups());
 			}	
@@ -167,7 +166,6 @@ public void setSessionFactory(SessionFactory session) {
 				Hibernate.initialize(r.getResourceType());
 				Hibernate.initialize(r.getResourceProps());
 				Hibernate.initialize(r.getResourceRoles());
-                Hibernate.initialize(r.getChildResources());
                 Hibernate.initialize(r.getEntitlements());
                 Hibernate.initialize(r.getResourceGroups());
 			}
@@ -204,7 +202,6 @@ public void setSessionFactory(SessionFactory session) {
             Hibernate.initialize(r.getResourceType());
             Hibernate.initialize(r.getResourceProps());
             Hibernate.initialize(r.getResourceRoles());
-            Hibernate.initialize(r.getChildResources());
             Hibernate.initialize(r.getEntitlements());
             Hibernate.initialize(r.getResourceGroups());
 		}
@@ -225,7 +222,6 @@ public void setSessionFactory(SessionFactory session) {
             Hibernate.initialize(r.getResourceType());
             Hibernate.initialize(r.getResourceProps());
             Hibernate.initialize(r.getResourceRoles());
-            Hibernate.initialize(r.getChildResources());
             Hibernate.initialize(r.getEntitlements());
             Hibernate.initialize(r.getResourceGroups());
         }
@@ -252,7 +248,6 @@ public void setSessionFactory(SessionFactory session) {
             Hibernate.initialize(r.getResourceType());
             Hibernate.initialize(r.getResourceProps());
             Hibernate.initialize(r.getResourceRoles());
-            Hibernate.initialize(r.getChildResources());
             Hibernate.initialize(r.getEntitlements());
             Hibernate.initialize(r.getResourceGroups());
             return r;
@@ -289,7 +284,6 @@ public void setSessionFactory(SessionFactory session) {
             Hibernate.initialize(r.getResourceType());
             Hibernate.initialize(r.getResourceProps());
             Hibernate.initialize(r.getResourceRoles());
-            Hibernate.initialize(r.getChildResources());
             Hibernate.initialize(r.getEntitlements());
             Hibernate.initialize(r.getResourceGroups());
         }
@@ -328,7 +322,6 @@ public void setSessionFactory(SessionFactory session) {
                 Hibernate.initialize(r.getResourceType());
                 Hibernate.initialize(r.getResourceProps());
                 Hibernate.initialize(r.getResourceRoles());
-                Hibernate.initialize(r.getChildResources());
                 Hibernate.initialize(r.getEntitlements());
                 Hibernate.initialize(r.getResourceGroups());
                 return r;
@@ -429,7 +422,6 @@ public List<Resource> getResourcesByType(String resourceTypeId) {
         Hibernate.initialize(r.getResourceType());
         Hibernate.initialize(r.getResourceProps());
         Hibernate.initialize(r.getResourceRoles());
-        Hibernate.initialize(r.getChildResources());
         Hibernate.initialize(r.getEntitlements());
         Hibernate.initialize(r.getResourceGroups());
     }
@@ -456,7 +448,6 @@ public List<Resource> getResourcesByType(String resourceTypeId) {
             Hibernate.initialize(r.getResourceType());
             Hibernate.initialize(r.getResourceProps());
             Hibernate.initialize(r.getResourceRoles());
-            Hibernate.initialize(r.getChildResources());
             Hibernate.initialize(r.getEntitlements());
             Hibernate.initialize(r.getResourceGroups());
         }
@@ -482,40 +473,12 @@ public List<Resource> getResourcesByType(String resourceTypeId) {
             Hibernate.initialize(r.getResourceType());
             Hibernate.initialize(r.getResourceProps());
             Hibernate.initialize(r.getResourceRoles());
-            Hibernate.initialize(r.getChildResources());
             Hibernate.initialize(r.getEntitlements());
             Hibernate.initialize(r.getResourceGroups());
         }
 		
 		return resources;
 	}
-	
-	
-	public List<Resource> getChildResources(String resourceId) {
-		Session session = sessionFactory.getCurrentSession();
-
-		Query qry = session.createQuery( 
-				"select resource from org.openiam.idm.srvc.res.dto.Resource as resource " +
-				"where resource.resourceParent = :resourceId " +
-				"order by resource.displayOrder asc ");
-				
-		qry.setString("resourceId", resourceId);
-		qry.setCacheable(true);
-		qry.setCacheRegion("query.resource.getChildResources");
-		List<Resource> resources = (List<Resource>) qry.list();
-		
-        for (Resource r:resources) {
-            Hibernate.initialize(r.getResourceType());
-            Hibernate.initialize(r.getResourceProps());
-            Hibernate.initialize(r.getResourceRoles());
-            Hibernate.initialize(r.getChildResources());
-            Hibernate.initialize(r.getEntitlements());
-            Hibernate.initialize(r.getResourceGroups());
-        }
-		
-		return resources;
-	}
-
 
 	public List<Resource> getRootResources() {
 		Session session = sessionFactory.getCurrentSession();
@@ -534,7 +497,6 @@ public List<Resource> getResourcesByType(String resourceTypeId) {
             Hibernate.initialize(r.getResourceType());
             Hibernate.initialize(r.getResourceProps());
             Hibernate.initialize(r.getResourceRoles());
-            Hibernate.initialize(r.getChildResources());
             Hibernate.initialize(r.getEntitlements());
             Hibernate.initialize(r.getResourceGroups());
         }
@@ -658,7 +620,6 @@ public List<ResourceRole> findResourceRolesByResource(String resourceId) {
                 Hibernate.initialize(r.getResourceType());
                 Hibernate.initialize(r.getResourceProps());
                 Hibernate.initialize(r.getResourceRoles());
-                Hibernate.initialize(r.getChildResources());
                 Hibernate.initialize(r.getEntitlements());
                 Hibernate.initialize(r.getResourceGroups());
             }

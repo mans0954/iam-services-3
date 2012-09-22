@@ -463,12 +463,12 @@ public class RoleDataServiceImpl implements RoleDataService {
 */
 	
 	private Role getParentRole(Role rl) {
-		RoleId id = new RoleId(rl.getId().getServiceId(), rl.getParentRoleId());
-		Role pRole =  this.roleDao.findById(id);
+		final RoleId id = new RoleId(rl.getId().getServiceId(), rl.getParentRoleId());
+		final Role pRole =  this.roleDao.findById(id);
 		log.info("Got parent role = " + pRole);
 		if (pRole != null) {
 			// add the child role to the parentRole
-			pRole.getChildRoles().add(rl);
+			pRole.addChildRole(rl);
 		}
 		if (pRole.getParentRoleId() != null) {
 			log.info("Found another parent role - make a recursive call. parentId =" + pRole.getParentRoleId());

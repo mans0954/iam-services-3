@@ -37,7 +37,9 @@ public interface GroupDataService {
      *                   True tells the system to retrieve dependent objects as well.
      * @return List of Group objects.
      */
+	/*
     public List<Group> getAllGroupsWithDependents(boolean subgroups);
+	*/
 
     /**
      * Returns a list of Group objects that is flat in structure.
@@ -131,7 +133,9 @@ public interface GroupDataService {
      * @param parentGroupId
      * @return The number of entities that were deleted.
      */
+    /*
     public int removeChildGroups(String parentGroupId);
+    */
 
     /**
      * Returns the parent Group object for the groupId that is passed in. If no
@@ -142,7 +146,9 @@ public interface GroupDataService {
      *                      True indicates that dependant objects will be loaded as well.
      * @return
      */
-    public Group getParentGroup(String groupId, boolean dependants);
+    /*
+    public List<Group> getParentGroup(String groupId, boolean dependants);
+	*/
 
     /**
      * --------------------- Group Methods Related to Users --------------

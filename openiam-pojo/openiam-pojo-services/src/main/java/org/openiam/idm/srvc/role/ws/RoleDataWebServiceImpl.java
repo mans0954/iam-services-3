@@ -32,6 +32,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.dozer.DozerBeanMapper;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.dozer.DozerUtils;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.ws.GroupArrayResponse;
 import org.openiam.idm.srvc.grp.ws.GroupListResponse;
@@ -56,8 +57,8 @@ import org.springframework.beans.factory.annotation.Required;
 		serviceName = "RoleDataWebService")
 public class RoleDataWebServiceImpl implements RoleDataWebService {
 
+	private DozerUtils dozerUtils;
 	private RoleDataService roleDataService;
-	private Map<DozerMappingType, DozerBeanMapper> dozerMap;
 
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#addAttribute(org.openiam.idm.srvc.role.dto.RoleAttribute)
@@ -138,7 +139,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 		if (roleList == null) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		} else {
-			resp.setRoleList(getDozerMappedRoleList(roleList));
+			resp.setRoleList(dozerUtils.getDozerDeepMappedRoleList(roleList));
 		}
 		return resp;
 	}
@@ -166,7 +167,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 		if (groupAry == null) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		} else {
-			resp.setGroupAry(getDozerMappedGroupArray(groupAry));
+			resp.setGroupAry(dozerUtils.getDozerDeepMappedGroupArray(groupAry));
 		}
 		return resp;
 	}
@@ -180,7 +181,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 		if (role == null) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		} else {
-			resp.setRole(getDozerMappedRole(role));
+			resp.setRole(dozerUtils.getDozerDeepMappedRole(role));
 		}
 		return resp;
 	}
@@ -194,7 +195,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 		if (roleList == null) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		} else {
-			resp.setRoleList(getDozerMappedRoleList(roleList));
+			resp.setRoleList(dozerUtils.getDozerDeepMappedRoleList(roleList));
 		}
 		return resp;
 	}
@@ -208,7 +209,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 		if (roleList == null) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		} else {
-			resp.setRoleList(getDozerMappedRoleList(roleList));
+			resp.setRoleList(dozerUtils.getDozerDeepMappedRoleList(roleList));
 		}
 		return resp;
 	}
@@ -222,7 +223,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 		if (roleList == null) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		} else {
-			resp.setRoleList(getDozerMappedRoleList(roleList));
+			resp.setRoleList(dozerUtils.getDozerDeepMappedRoleList(roleList));
 		}
 		return resp;
 	}
@@ -233,7 +234,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 		if (roleList == null) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		} else {
-			resp.setRoleList(getDozerMappedRoleList(roleList));
+			resp.setRoleList(dozerUtils.getDozerDeepMappedRoleList(roleList));
 		}
 		return resp;		
 	}
@@ -247,7 +248,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 		if (roleList == null) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		} else {
-			resp.setRoleList(getDozerMappedRoleList(roleList));
+			resp.setRoleList(dozerUtils.getDozerDeepMappedRoleList(roleList));
 		}
 		return resp;
 	}
@@ -261,7 +262,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 		if (roleList == null) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		} else {
-			resp.setRoleList(getDozerMappedRoleList(roleList));
+			resp.setRoleList(dozerUtils.getDozerDeepMappedRoleList(roleList));
 		}
 		return resp;
 	}
@@ -275,7 +276,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 		if (userAry == null) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		} else {
-			resp.setUserAry(getDozerMappedUserArray(userAry));
+			resp.setUserAry(dozerUtils.getDozerDeepMappedUserArray(userAry));
 		}
 		return resp;
 	}
@@ -383,7 +384,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 		if (roleList == null) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		} else {
-			resp.setRoleList(getDozerMappedRoleList(roleList));
+			resp.setRoleList(dozerUtils.getDozerDeepMappedRoleList(roleList));
 		}
 		return resp;
 	}
@@ -503,50 +504,9 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 	public void setRoleDataService(RoleDataService roleDataService) {
 		this.roleDataService = roleDataService;
 	}
-	
+
 	@Required
-	public void setDozerMap(final Map<DozerMappingType, DozerBeanMapper> dozerMap) {
-		this.dozerMap = dozerMap;
-	}
-
-
-	private List<Role> getDozerMappedRoleList(final List<Role> roleList) {
-		final List<Role> convertedList = new LinkedList<Role>();
-		if(CollectionUtils.isNotEmpty(roleList)) {
-			for(final Role role : roleList) {
-				convertedList.add(dozerMap.get(DozerMappingType.DEEP).map(role, Role.class));
-			}
-		}
-		return convertedList;
-	}
-	
-	private Group[] getDozerMappedGroupArray(final Group[] groupArray) {
-		Group[] retVal = null;
-		if(groupArray != null) {
-			retVal = new Group[groupArray.length];
-			for(int i = 0; i < groupArray.length; i++) {
-				retVal[i] = dozerMap.get(DozerMappingType.DEEP).map(groupArray[i], Group.class);
-			}
-		}
-		return retVal;
-	}
-	
-	private Role getDozerMappedRole(final Role role) {
-		Role retVal = null;
-		if(role != null) {
-			retVal = dozerMap.get(DozerMappingType.DEEP).map(role, Role.class);
-		}
-		return retVal;
-	}
-	
-	public User[] getDozerMappedUserArray(final User[] userArray) {
-		User[] retVal = null;
-		if(userArray != null) {
-			retVal = new User[userArray.length];
-			for(int i = 0; i < userArray.length; i++) {
-				retVal[i] = dozerMap.get(DozerMappingType.DEEP).map(userArray[i], User.class);
-			}
-		}
-		return retVal;
+	public void setDozerUtils(final DozerUtils dozerUtils) {
+		this.dozerUtils = dozerUtils;
 	}
 }

@@ -1,5 +1,7 @@
 package org.openiam.idm.srvc.grp.service;
 
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -9,6 +11,7 @@ import java.util.Iterator;
 import javax.jws.WebService;
 
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.HibernateException;
@@ -18,6 +21,7 @@ import org.openiam.idm.srvc.grp.service.GroupAttributeDAO;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDAO;
 
+import org.openiam.dozer.DozerUtils;
 import org.openiam.exception.data.DataException;
 import org.openiam.exception.data.ObjectNotFoundException;
 
@@ -32,10 +36,10 @@ import org.openiam.exception.data.ObjectNotFoundException;
  */
 
 public class GroupDataServiceImpl implements GroupDataService {
-	protected GroupDAO groupDao;
-	protected GroupAttributeDAO groupAttrDao;
-	protected UserGroupDAO userGroupDao;
-	protected UserDAO userDao;
+	private GroupDAO groupDao;
+	private GroupAttributeDAO groupAttrDao;
+	private UserGroupDAO userGroupDao;
+	private UserDAO userDao;
 	
 	private static final Log log = LogFactory.getLog(GroupDataServiceImpl.class);
 
@@ -53,7 +57,9 @@ public class GroupDataServiceImpl implements GroupDataService {
 	 * 
 	 * @see org.openiam.idm.srvc.grp.service.GroupDataService#getAllGroups(boolean)
 	 */
+	/*
 	public List<Group> getAllGroupsWithDependents(boolean subgroups) {
+		
 		List<Group> groupList = new ArrayList<Group>();
 		if (!subgroups) {
 			groupList = groupDao.findRootGroups();
@@ -65,8 +71,9 @@ public class GroupDataServiceImpl implements GroupDataService {
 			}
 		}
 		return null;
-
 	}
+	*/
+	
 	/**
 	 * Returns a list of Group objects that is flat in structure.
 	 * @return
@@ -157,11 +164,10 @@ public class GroupDataServiceImpl implements GroupDataService {
 		}
 
 
-		Group grp = new Group();
+		final Group grp = new Group();
 		grp.setGrpId(grpId);
 
-		removeChildGroups(grpId);
-		this.groupAttrDao.removeAttributesByParent(grpId);
+		groupAttrDao.removeAttributesByParent(grpId);
 		groupDao.remove(grp);
 
 	}
@@ -173,21 +179,18 @@ public class GroupDataServiceImpl implements GroupDataService {
 	 *      boolean)
 	 */
 	public List<Group> getChildGroups(String parentGroupId, boolean subgroups) {
-		List<Group> groupList = new ArrayList<Group>();
+		Set<Group> visitedGroupSet = new LinkedHashSet<Group>();
 
 		if (!subgroups) {
-			groupList = groupDao.findChildGroup(parentGroupId);
-			return groupList;
+			visitedGroupSet = groupDao.findById(parentGroupId).getChildGroups();
 		} else {
-			if (subgroups) {
-				groupList = getRecursiveChildGroup(parentGroupId, groupList);
-				return groupList;
-			}
+			visitGroups(parentGroupId, visitedGroupSet);
 		}
-		return null;
-
+		
+		return new ArrayList<Group>(visitedGroupSet);
 	}
 
+	/*
 	private List<Group> getRecursiveChildGroup(String parentGroupId,
 			List<Group> groupList) {
 
@@ -207,7 +210,9 @@ public class GroupDataServiceImpl implements GroupDataService {
 		}
 		return groupList;
 	}
+	*/
 
+	/*
 	private String getRecursiveGroupId(String parentGroupId,
 			List<Group> groupList) {
 		StringBuffer groupIdBuf = new StringBuffer();
@@ -237,12 +242,14 @@ public class GroupDataServiceImpl implements GroupDataService {
 		}
 		return groupIdBuf.toString();
 	}
+	*/
 
 	/*
 	 * (non-Javadoc)
 	 * 
 	 * @see org.openiam.idm.srvc.grp.service.GroupDataService#removeChildGroups(java.lang.String)
 	 */
+	/*
 	public int removeChildGroups(String parentGroupId) {
 		
 		if (parentGroupId == null) {
@@ -283,19 +290,23 @@ public class GroupDataServiceImpl implements GroupDataService {
 		return groupDao.removeGroupList(groupIdList);
 
 	}
+	*/
 
 	/*
 	 * (non-Javadoc)
 	 * 
 	 * @see org.openiam.idm.srvc.grp.service.GroupDataService#getParentGroup(java.lang.String)
 	 */
-	public Group getParentGroup(String groupId, boolean dependants) {
+	/*
+	public List<Group> getParentGroup(String groupId, boolean dependants) {
 		if (groupId == null)
 			throw new NullPointerException("parentGroupId id is null");
-
-		return groupDao.findParent(groupId, dependants);
-
+		final Group group = groupDao.findById(groupId);
+		if(group == null) {
+			throw new RuntimeException(String.format("No group with ID: %s exists", groupId));
+		}
 	}
+	*/
 
 
 
@@ -346,6 +357,7 @@ public class GroupDataServiceImpl implements GroupDataService {
 		return groupList;
 	}
 */
+	/*
 	private Group getParentGroup(Group grp) {
 		Group pGroup = groupDao.findById(grp.getParentGrpId());
 		log.info("Got parent group = " + pGroup);
@@ -359,30 +371,15 @@ public class GroupDataServiceImpl implements GroupDataService {
 		}
 		return pGroup;
 	}
+	*/
 	
 	public List<Group> getUserInGroups(String userId) {
 		if (userId == null)
 			throw new NullPointerException("userId id is null");
-
-		List<Group> groupList = groupDao.findGroupsForUser(userId);
-		if (groupList == null || groupList.size() == 0)
-			return null;
-		// Check if these groups have any parent groups that we need to get
-		List<Group> newGroupList = new ArrayList<Group>();
-		for (Group grp : groupList ) {
-			log.info("Group id=" + grp.getGrpId() + " parentId=" + grp.getParentGrpId() );
-			if (grp.getParentGrpId() == null) {
-				newGroupList.add(grp);
-			}else {
-				log.info("Get the parent group for parentId=" + grp.getParentGrpId());
-				newGroupList.add(getParentGroup(grp));
-			}
-		}
-		
-		
-		return newGroupList;
+		return groupDao.findGroupsForUser(userId);
 	}
 
+	/*
 	private List<Group> getParentGroupFlat(Group grp) {
 		List<Group> groupList = new ArrayList<Group>();
 		Group pGroup = groupDao.findById(grp.getParentGrpId());
@@ -398,29 +395,32 @@ public class GroupDataServiceImpl implements GroupDataService {
 		}
 		return groupList;
 	}
+	*/
 	
 	public List<Group> getUserInGroupsAsFlatList(String userId) {
 		if (userId == null)
 			throw new NullPointerException("userId id is null");
 
-		List<Group> groupList = groupDao.findGroupsForUser(userId);
-		if (groupList == null || groupList.size() == 0)
-			return null;
-		// Check if these groups have any parent groups that we need to get
-		List<Group> newGroupList = new ArrayList<Group>();
-		for (Group grp : groupList ) {
-			log.info("Group id=" + grp.getGrpId() + " parentId=" + grp.getParentGrpId() );
-			if (grp.getParentGrpId() == null) {
-				newGroupList.add(grp);
-			}else {
-				log.info("Get the parent group for parentId=" + grp.getParentGrpId());
-				newGroupList.add(grp);
-				newGroupList.addAll(getParentGroupFlat(grp));
+		final List<Group> userGroups = groupDao.findGroupsForUser(userId);
+		final Set<Group> visitedGroupSet = new HashSet<Group>();
+		if(CollectionUtils.isNotEmpty(userGroups)) {
+			for (final Group group : userGroups ) {
+				visitGroups(group.getGrpId(), visitedGroupSet);
 			}
 		}
-		
-		
-		return newGroupList;
+		return new ArrayList<Group>(visitedGroupSet);
+	}
+	
+	private void visitGroups(final String groupId, final Set<Group> visitedGroupSet) {
+		final Group group = groupDao.findById(groupId);
+		if(!visitedGroupSet.contains(group)) {
+			visitedGroupSet.add(group);
+			if(CollectionUtils.isNotEmpty(group.getParentGroups())) {
+				for(final Group parent : group.getParentGroups()) {
+					visitGroups(parent.getGrpId(), visitedGroupSet);
+				}
+			}
+		}
 	}
 	
 	

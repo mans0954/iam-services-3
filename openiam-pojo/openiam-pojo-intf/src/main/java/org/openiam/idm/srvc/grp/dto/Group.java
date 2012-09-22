@@ -28,7 +28,7 @@ import java.util.*;
         "inheritFromParent",
         "lastUpdate",
         "lastUpdatedBy",
-        "parentGrpId",
+        /*"parentGrpId",*/
         "provisionMethod",
         "provisionObjName",
         "status",
@@ -37,7 +37,9 @@ import java.util.*;
         "selected",
         "ownerId",
         "internalGroupId",
-        "operation"
+        "operation",
+        "parentGroups",
+        "childGroups"
 })
 @XmlRootElement(name = "Group")
 @XmlSeeAlso({
@@ -62,7 +64,7 @@ public class Group implements java.io.Serializable {
     protected String createdBy;
     protected String companyId;
     protected String ownerId;
-    protected String parentGrpId;
+    /*protected String parentGrpId;*/
     protected Boolean inheritFromParent;
     protected String provisionMethod;
     protected String provisionObjName;
@@ -76,6 +78,9 @@ public class Group implements java.io.Serializable {
     protected String metadataTypeId;
     protected String internalGroupId = null;
     private Boolean selected = new Boolean(false);
+    
+    private Set<Group> parentGroups;
+    private Set<Group> childGroups;
 
 
     @XmlJavaTypeAdapter(org.openiam.idm.srvc.role.dto.RoleSetAdapter.class)
@@ -101,26 +106,6 @@ public class Group implements java.io.Serializable {
     public Group(String grpId) {
         this.grpId = grpId;
     }
-
-    /**
-     * full constructor
-     */
-
-    public Group(String grpId, String grpName, Date createDate, String createdBy,
-                 String companyId, String parentGrpId, boolean inheritFromParent,
-                 String provisionMethod, String provisionObjName, Set<Role> roles) {
-        this.grpId = grpId;
-        this.grpName = grpName;
-        this.createDate = createDate;
-        this.createdBy = createdBy;
-        this.companyId = companyId;
-        this.parentGrpId = parentGrpId;
-        this.inheritFromParent = inheritFromParent;
-        this.provisionMethod = provisionMethod;
-        this.provisionObjName = provisionObjName;
-        this.roles = roles;
-    }
-
 
     // Property accessors
     public String getGrpId() {
@@ -163,6 +148,7 @@ public class Group implements java.io.Serializable {
         this.companyId = companyId;
     }
 
+    /*
     public String getParentGrpId() {
         return this.parentGrpId;
     }
@@ -170,6 +156,7 @@ public class Group implements java.io.Serializable {
     public void setParentGrpId(String parentGrpId) {
         this.parentGrpId = parentGrpId;
     }
+    */
 
     public Boolean getInheritFromParent() {
         return this.inheritFromParent;
@@ -312,7 +299,6 @@ public class Group implements java.io.Serializable {
                 " grpName=" + grpName +
                 " status=" + status +
                 " description=" + description +
-                " parentId=" + parentGrpId +
                 " subGroup=" + subGroup +
                 " attributes=" + attributes;
 
@@ -364,7 +350,49 @@ public class Group implements java.io.Serializable {
         this.operation = operation;
     }
 
-    @Override
+    public Set<Group> getParentGroups() {
+		return parentGroups;
+	}
+
+    public void setParentGroups(Set<Group> parentGroups) {
+		this.parentGroups = parentGroups;
+	}
+	
+	public void addParentGroup(final Group group) {
+		if(group != null) {
+			if(parentGroups == null) {
+				parentGroups = new LinkedHashSet<Group>();
+			}
+			parentGroups.add(group);
+		}
+	}
+
+	public Set<Group> getChildGroups() {
+		return childGroups;
+	}
+	
+	public void setChildGroups(Set<Group> childGroups) {
+		this.childGroups = childGroups;
+	}
+	
+	public void addChildGroup(final Group group) {
+		if(group != null) {
+			if(childGroups == null) {
+				childGroups = new LinkedHashSet<Group>();
+			}
+			childGroups.add(group);
+		}
+	}
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((grpId == null) ? 0 : grpId.hashCode());
+		return result;
+	}
+
+	@Override
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;

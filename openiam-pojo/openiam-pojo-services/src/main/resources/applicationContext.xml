@@ -30,10 +30,10 @@
 		</property>
 	</bean>
 	
-	<util:map id="dozerMap" map-class="java.util.HashMap"  key-type="org.openiam.util.DozerMappingType" value-type="org.dozer.DozerBeanMapper">
-		<entry key="DEEP" value-ref="deepDozerMapper" />
-		<entry key="SHALLOW" value-ref="shallowDozerMapper" />
-	</util:map>
+	<bean id="dozerUtils" class="org.openiam.dozer.DozerUtils">
+		<property name="deepMapper" ref="deepDozerMapper"/>
+		<property name="shallowMapper" ref="shallowDozerMapper"/>
+	</bean>
 
 	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
 		<property name="locations">
@@ -72,7 +72,7 @@
 		<property name="scriptEngine" value="org.openiam.script.GroovyScriptEngineIntegration" />
         <property name="resourceService" ref="resourceDataService" />
         <property name="passwordManager" ref="passwordManager" />
-		
+		<property name="dozerUtils" ref="dozerUtils" />
 	</bean>
 
 		
@@ -98,6 +98,7 @@
 	<!-- Group Beans -->
 	<bean id="groupWS" class="org.openiam.idm.srvc.grp.ws.GroupDataWebServiceImpl" >
 		<property name="groupManager" ref="groupManager" />
+		<property name="dozerUtils" ref="dozerUtils" />
 	</bean>
 	
 	<bean id="groupManager" class="org.openiam.idm.srvc.grp.service.GroupDataServiceImpl" >
@@ -132,7 +133,7 @@
 
 	<bean id="userWS" class="org.openiam.idm.srvc.user.ws.UserDataWebServiceImpl" >
 		<property name="userManager" ref="userManager" />
-		<property name="dozerMap" ref="dozerMap" />
+		<property name="dozerUtils" ref="dozerUtils" />
 	</bean>
 	
 	<bean id="userManager" class="org.openiam.idm.srvc.user.service.UserMgr" >
@@ -365,7 +366,7 @@
 	<!-- Role Beans -->
 	<bean id="roleWS" class="org.openiam.idm.srvc.role.ws.RoleDataWebServiceImpl" >
 		<property name="roleDataService" ref="roleDataService" />
-		<property name="dozerMap" ref="dozerMap" />
+		<property name="dozerUtils" ref="dozerUtils" />
 	</bean>
 	
 	<bean id="roleDataService" class="org.openiam.idm.srvc.role.service.RoleDataServiceImpl" >
@@ -402,7 +403,7 @@
 		<property name="policyDao" ref="policyDAO" />
 		<property name="policyDefParamDao" ref="policyDefParamDAO" />
 		<property name="objectAssoc" ref="policyObjectAssocDAO" />
-		<property name="dozerMap" ref="dozerMap" />
+		<property name="dozerUtils" ref="dozerUtils" />
 	</bean>
 		
 	<bean id="policyDefDAO" class="org.openiam.idm.srvc.policy.service.PolicyDefDAOImpl" >
@@ -428,8 +429,7 @@
         <property name="userManager" ref="userManager" />
         <property name="roleDataService" ref="roleDataService" />
         <property name="orgManager" ref="orgManager" />
-		<property name="dozerMap" ref="dozerMap" />
-
+		<property name="dozerUtils" ref="dozerUtils" />
     </bean>
 
 	<bean id="resourceDAO" class="org.openiam.idm.srvc.res.service.ResourceDAOImpl" >
@@ -744,7 +744,7 @@
 		<property name="hibernateProperties">
 			<props>
 				<prop key="hibernate.dialect">${openiam.hibernate.dialect}</prop>	
-				<prop key="hibernate.show_sql">${logSQL}</prop>
+				<prop key="hibernate.show_sql">true</prop>
 				<prop key="hibernate.generate_statistics">true</prop>
 				<prop key="hibernate.cache.provider_class">org.hibernate.cache.EhCacheProvider</prop>
 				<prop key="hibernate.cache.use_query_cache">true</prop>

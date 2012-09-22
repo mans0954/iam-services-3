@@ -290,26 +290,17 @@ public interface ResourceDataService {
             String resourceId);
 
     /**
-     * Find a resource and its descendants and return as nested List.
-     *
-     * @param resourceId the resource id
-     * @return list of nested lists of resource objects
-     */
-    @WebMethod
-    List<Resource> getResourceTree(
-            @WebParam(name = "resourceId", targetNamespace = "")
-            String resourceId);
-
-    /**
      * Find a resource and its descendants and return as an xml tree.
      *
      * @param resourceId the resource id
      * @return xml string  of resource and its descendants
      */
+    /*
     @WebMethod
     String getResourceTreeXML(
             @WebParam(name = "resourceId", targetNamespace = "")
             String resourceId);
+	*/
 
     /**
      * Find a resource and all its descendants and put them in a list.

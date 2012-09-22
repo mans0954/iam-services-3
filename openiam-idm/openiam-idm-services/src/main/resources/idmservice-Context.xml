@@ -19,6 +19,30 @@
 	    </property>
 	</bean>
 
+	<bean id="provisionDeepDozerMapper" class="org.dozer.DozerBeanMapper">
+		<property name="mappingFiles">
+			<list>
+				<value>org/openiam/idm/srvc/dozer/provision-dozer-deep-mappings.xml</value>
+				<value>org/openiam/dozer/dozer-common-mapping.xml</value>
+				<value>org/openiam/dozer/dozer-deep-mapping.xml</value>
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="provisionShallowDozerMapper" class="org.dozer.DozerBeanMapper">
+		<property name="mappingFiles">
+			<list>
+				<value>org/openiam/idm/srvc/dozer/provision-dozer-shallow-mappings.xml</value>
+				<value>org/openiam/dozer/dozer-common-mapping.xml</value>
+				<value>org/openiam/dozer/dozer-shallow-mapping.xml</value>
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="provisionDozerUtils" class="org.openiam.dozer.ProvisionDozerUtils">
+		<property name="deepMapper" ref="provisionDeepDozerMapper"/>
+		<property name="shallowMapper" ref="provisionShallowDozerMapper"/>
+	</bean>
 
    <!-- Batch Service -->
 
@@ -99,7 +123,7 @@
             <property name="preProcessor" value="/prov-helper/ProvisionServicePreProcessor.groovy" />
             <property name="postProcessor" value="/prov-helper/ProvisionServicePostProcessor.groovy" />
             <property name="deprovisionSelectedResource" ref="deprovisionSelectedResource" />
-
+			<property name="dozerUtils" ref="provisionDozerUtils" />
     </bean>
 
     <bean id="validateConnectionConfig" class="org.openiam.provision.service.ValidateConnectionConfig" >

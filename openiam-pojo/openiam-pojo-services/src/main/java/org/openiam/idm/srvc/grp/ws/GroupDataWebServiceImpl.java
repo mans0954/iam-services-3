@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.grp.ws;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -11,8 +12,11 @@ import javax.jws.WebParam;
 import javax.jws.WebService;
 
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.dozer.DozerBeanMapper;
 import org.hibernate.HibernateException;
 import org.openiam.idm.srvc.grp.dto.*;
 import org.openiam.idm.srvc.grp.service.*;
@@ -20,11 +24,14 @@ import org.openiam.idm.srvc.grp.service.*;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.ws.UserListResponse;
+import org.openiam.util.DozerMappingType;
 
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.dozer.DozerUtils;
 import org.openiam.exception.data.DataException;
 import org.openiam.exception.data.ObjectNotFoundException;
+import org.springframework.beans.factory.annotation.Required;
 
 /**
  * <code>GroupDataServiceImpl</code> provides a service to manage groups as
@@ -44,13 +51,15 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 	protected GroupDataService groupManager;
 		
 	private static final Log log = LogFactory.getLog(GroupDataWebServiceImpl.class);
+	private DozerUtils dozerUtils;
 
+	@Required
+	public void setDozerUtils(final DozerUtils dozerUtils) {
+		this.dozerUtils = dozerUtils;
+	}
+	
 	public GroupDataWebServiceImpl() {
 
-	}
-
-	public GroupDataService getGroupManager() {
-		return groupManager;
 	}
 
 	public void setGroupManager(GroupDataService groupManager) {
@@ -61,7 +70,7 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 	 * @see org.openiam.idm.srvc.grp.ws.GroupDataWebService#addAttribute(org.openiam.idm.srvc.grp.dto.GroupAttribute)
 	 */
 	public Response addAttribute(GroupAttribute attribute) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
+		final Response resp = new Response(ResponseStatus.SUCCESS);
 		groupManager.addAttribute(attribute);
 		return resp;
 	}
@@ -70,12 +79,13 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 	 * @see org.openiam.idm.srvc.grp.ws.GroupDataWebService#addGroup(org.openiam.idm.srvc.grp.dto.Group)
 	 */
 	public GroupResponse addGroup(Group grp) {
-		GroupResponse resp = new GroupResponse(ResponseStatus.SUCCESS);
+		final GroupResponse resp = new GroupResponse(ResponseStatus.SUCCESS);
 		groupManager.addGroup(grp);
 		if (grp.getGrpId() == null) {
 			resp.setStatus(ResponseStatus.FAILURE);
+		} else {
+			resp.setGroup(grp);
 		}
-		resp.setGroup(grp);
 		return resp;
 	}
 
@@ -83,7 +93,7 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 	 * @see org.openiam.idm.srvc.grp.ws.GroupDataWebService#addUserToGroup(java.lang.String, java.lang.String)
 	 */
 	public Response addUserToGroup(String grpId, String userId) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
+		final Response resp = new Response(ResponseStatus.SUCCESS);
 		groupManager.addUserToGroup(grpId, userId); 
 		return resp;
 	}
@@ -92,13 +102,13 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 	 * @see org.openiam.idm.srvc.grp.ws.GroupDataWebService#getAllAttributes(java.lang.String)
 	 */
 	public GroupAttrMapResponse getAllAttributes(String groupId) {
-		GroupAttrMapResponse resp = new GroupAttrMapResponse(ResponseStatus.SUCCESS);
-		Map<String, GroupAttribute> attrMap = groupManager.getAllAttributes(groupId); 
-		if (attrMap == null || attrMap.isEmpty()) {
+		final GroupAttrMapResponse resp = new GroupAttrMapResponse(ResponseStatus.SUCCESS);
+		final Map<String, GroupAttribute> attrMap = groupManager.getAllAttributes(groupId); 
+		if (MapUtils.isEmpty(attrMap)) {
 			resp.setStatus(ResponseStatus.FAILURE);
-			return resp;
+		} else {
+			resp.setGroupAttrMap(attrMap);
 		}
-		resp.setGroupAttrMap(attrMap);
 		return resp;
 
 	}
@@ -107,40 +117,43 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 	 * @see org.openiam.idm.srvc.grp.ws.GroupDataWebService#getAllGroups()
 	 */
 	public GroupListResponse getAllGroups() {
-		GroupListResponse resp = new GroupListResponse(ResponseStatus.SUCCESS);
-		List<Group> grpList = groupManager.getAllGroups(); 
-		if (grpList == null || grpList.isEmpty()) {
+		final GroupListResponse resp = new GroupListResponse(ResponseStatus.SUCCESS);
+		final List<Group> grpList = groupManager.getAllGroups(); 
+		if (CollectionUtils.isEmpty(grpList)) {
 			resp.setStatus(ResponseStatus.FAILURE);
-			return resp;
+		} else {
+			resp.setGroupList(dozerUtils.getDozerDeepMappedGroupList(grpList));
 		}
-		resp.setGroupList(grpList);
 		return resp;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.grp.ws.GroupDataWebService#getAllGroupsWithDependents(boolean)
 	 */
+	/*
 	public GroupListResponse getAllGroupsWithDependents(boolean subgroups) {
-		GroupListResponse resp = new GroupListResponse(ResponseStatus.SUCCESS);
-		List<Group> grpList = groupManager.getAllGroupsWithDependents(subgroups); 
-		if (grpList == null || grpList.isEmpty()) {
+		final GroupListResponse resp = new GroupListResponse(ResponseStatus.SUCCESS);
+		final List<Group> grpList = groupManager.getAllGroupsWithDependents(subgroups); 
+		if (CollectionUtils.isEmpty(grpList)) {
 			resp.setStatus(ResponseStatus.FAILURE);
-			return resp;
+		} else {
+			resp.setGroupList(dozerUtils.getDozerDeepMappedGroupList(grpList));
 		}
-		resp.setGroupList(grpList);
 		return resp;
 	}
+	*/
 
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.grp.ws.GroupDataWebService#getAttribute(java.lang.String)
 	 */
 	public GroupAttributeResponse getAttribute(String attrId) {
-		GroupAttributeResponse resp = new GroupAttributeResponse(ResponseStatus.SUCCESS);
-		GroupAttribute attr = groupManager.getAttribute(attrId);  
+		final GroupAttributeResponse resp = new GroupAttributeResponse(ResponseStatus.SUCCESS);
+		final GroupAttribute attr = groupManager.getAttribute(attrId);  
 		if (attr == null) {
 			resp.setStatus(ResponseStatus.FAILURE);
+		} else {
+			resp.setGroupAttr(attr);
 		}
-		resp.setGroupAttr(attr);
 		return resp;
 	}
 
@@ -148,13 +161,13 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 	 * @see org.openiam.idm.srvc.grp.ws.GroupDataWebService#getChildGroups(java.lang.String, boolean)
 	 */
 	public GroupListResponse getChildGroups(String parentGroupId,		boolean subgroups) {
-		GroupListResponse resp = new GroupListResponse(ResponseStatus.SUCCESS);
-		List<Group> grpList = groupManager.getChildGroups(parentGroupId, subgroups); 
-		if (grpList == null || grpList.isEmpty()) {
+		final GroupListResponse resp = new GroupListResponse(ResponseStatus.SUCCESS);
+		final List<Group> grpList = groupManager.getChildGroups(parentGroupId, subgroups); 
+		if (CollectionUtils.isEmpty(grpList)) {
 			resp.setStatus(ResponseStatus.FAILURE);
-			return resp;
+		} else {
+			resp.setGroupList(dozerUtils.getDozerDeepMappedGroupList(grpList));
 		}
-		resp.setGroupList(grpList);
 		return resp;
 	}
 
@@ -162,13 +175,13 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 	 * @see org.openiam.idm.srvc.grp.ws.GroupDataWebService#getGroup(java.lang.String)
 	 */
 	public GroupResponse getGroup(String grpId) {
-		GroupResponse resp = new GroupResponse(ResponseStatus.SUCCESS);
-		Group grp = groupManager.getGroup(grpId); 
+		final GroupResponse resp = new GroupResponse(ResponseStatus.SUCCESS);
+		final Group grp = groupManager.getGroup(grpId); 
 		if (grp == null) {
 			resp.setStatus(ResponseStatus.FAILURE);
-			return resp;
+		} else {
+			resp.setGroup(dozerUtils.getDozerDeepMappedGroup(grp));
 		}
-		resp.setGroup(grp);
 		return resp;
 	}
 
@@ -176,13 +189,13 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 	 * @see org.openiam.idm.srvc.grp.ws.GroupDataWebService#getGroupWithDependants(java.lang.String)
 	 */
 	public GroupResponse getGroupWithDependants(String grpId) {
-		GroupResponse resp = new GroupResponse(ResponseStatus.SUCCESS);
-		Group grp = groupManager.getGroupWithDependants(grpId); 
+		final GroupResponse resp = new GroupResponse(ResponseStatus.SUCCESS);
+		final Group grp = groupManager.getGroupWithDependants(grpId); 
 		if (grp == null) {
 			resp.setStatus(ResponseStatus.FAILURE);
-			return resp;
+		} else {
+			resp.setGroup(dozerUtils.getDozerDeepMappedGroup(grp));
 		}
-		resp.setGroup(grp);
 		return resp;
 	}
 
@@ -191,28 +204,27 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 	 */
 	public GroupListResponse getGroupsNotLinkedToUser(String userId,
 			String parentGroupId, boolean nested) {
-		
-		GroupListResponse resp = new GroupListResponse(ResponseStatus.SUCCESS);
-		List<Group> grpList = groupManager.getGroupsNotLinkedToUser(userId, parentGroupId, nested); 
-		if (grpList == null || grpList.isEmpty()) {
+		final GroupListResponse resp = new GroupListResponse(ResponseStatus.SUCCESS);
+		final List<Group> grpList = groupManager.getGroupsNotLinkedToUser(userId, parentGroupId, nested); 
+		if (CollectionUtils.isEmpty(grpList)) {
 			resp.setStatus(ResponseStatus.FAILURE);
-			return resp;
+		} else {
+			resp.setGroupList(dozerUtils.getDozerDeepMappedGroupList(grpList));
 		}
-		resp.setGroupList(grpList);
 		return resp;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.grp.ws.GroupDataWebService#getParentGroup(java.lang.String, boolean)
 	 */
-	public GroupResponse getParentGroup(String groupId, boolean dependants) {
-		GroupResponse resp = new GroupResponse(ResponseStatus.SUCCESS);
-		Group grp = groupManager.getParentGroup(groupId, dependants); 
-		if (grp == null) {
+	public GroupListResponse getParentGroups(String groupId, boolean dependants) {
+		final GroupListResponse resp = new GroupListResponse(ResponseStatus.SUCCESS);
+		final Group group  = groupManager.getGroup(groupId);
+		if (group == null) {
 			resp.setStatus(ResponseStatus.FAILURE);
-			return resp;
+		} else {
+			resp.setGroupList(dozerUtils.getDozerDeepMappedGroupList(group.getParentGroups()));
 		}
-		resp.setGroup(grp);
 		return resp;
 	}
 
@@ -221,26 +233,26 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 	 */
 	public GroupListResponse getUserInGroups(String userId) {
 		log.info("getUserInGroups: userId=" + userId);
-		GroupListResponse resp = new GroupListResponse(ResponseStatus.SUCCESS);
-		List<Group> grpList = groupManager.getUserInGroups(userId); 
-		if (grpList == null || grpList.isEmpty()) {
+		final GroupListResponse resp = new GroupListResponse(ResponseStatus.SUCCESS);
+		final List<Group> grpList = groupManager.getUserInGroups(userId); 
+		if (org.springframework.util.CollectionUtils.isEmpty(grpList)) {
 			resp.setStatus(ResponseStatus.FAILURE);
-			return resp;
+		} else {
+			resp.setGroupList(dozerUtils.getDozerDeepMappedGroupList(grpList));
 		}
-		resp.setGroupList(grpList);
 		return resp;
 	}
 	
 	
 	public GroupListResponse getUserInGroupsAsFlatList(	String userId) {
 		log.info("getUserInGroupsAsFlatList: userId=" + userId);
-		GroupListResponse resp = new GroupListResponse(ResponseStatus.SUCCESS);
-		List<Group> grpList = groupManager.getUserInGroupsAsFlatList(userId); 
-		if (grpList == null || grpList.isEmpty()) {
+		final GroupListResponse resp = new GroupListResponse(ResponseStatus.SUCCESS);
+		final List<Group> grpList = groupManager.getUserInGroupsAsFlatList(userId); 
+		if (CollectionUtils.isEmpty(grpList)) {
 			resp.setStatus(ResponseStatus.FAILURE);
-			return resp;
+		} else {
+			resp.setGroupList(dozerUtils.getDozerDeepMappedGroupList(grpList));
 		}
-		resp.setGroupList(grpList);
 		return resp;		
 	}
 
@@ -248,13 +260,13 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 	 * @see org.openiam.idm.srvc.grp.ws.GroupDataWebService#getUsersByGroup(java.lang.String)
 	 */
 	public UserListResponse getUsersByGroup(String grpId) {
-		UserListResponse resp = new UserListResponse(ResponseStatus.SUCCESS);
-		List<User> userList = groupManager.getUsersByGroup(grpId); 
-		if (userList == null || userList.isEmpty()) {
+		final UserListResponse resp = new UserListResponse(ResponseStatus.SUCCESS);
+		final List<User> userList = groupManager.getUsersByGroup(grpId); 
+		if (CollectionUtils.isEmpty(userList)) {
 			resp.setStatus(ResponseStatus.FAILURE);
-			return resp;
+		} else {
+			resp.setUserList(dozerUtils.getDozerDeepMappedUserList(userList));
 		}
-		resp.setUserList(userList);
 		return resp;
 	}
 
@@ -262,8 +274,8 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 	 * @see org.openiam.idm.srvc.grp.ws.GroupDataWebService#isUserInGroup(java.lang.String, java.lang.String)
 	 */
 	public Response isUserInGroup(String groupId, String userId) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
-		boolean retval = groupManager.isUserInGroup(groupId, userId); 
+		final Response resp = new Response(ResponseStatus.SUCCESS);
+		final boolean retval = groupManager.isUserInGroup(groupId, userId); 
 		resp.setResponseValue(new Boolean(retval));
 		return resp;
 	}
@@ -272,7 +284,7 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 	 * @see org.openiam.idm.srvc.grp.ws.GroupDataWebService#removeAllAttributes(java.lang.String)
 	 */
 	public Response removeAllAttributes(String groupId) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
+		final Response resp = new Response(ResponseStatus.SUCCESS);
 		groupManager.removeAllAttributes(groupId); 
 		return resp;
 	}
@@ -281,26 +293,27 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 	 * @see org.openiam.idm.srvc.grp.ws.GroupDataWebService#removeAttribute(org.openiam.idm.srvc.grp.dto.GroupAttribute)
 	 */
 	public Response removeAttribute(GroupAttribute attr) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
+		final Response resp = new Response(ResponseStatus.SUCCESS);
 		groupManager.removeAttribute(attr); 
-
 		return resp;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.grp.ws.GroupDataWebService#removeChildGroups(java.lang.String)
 	 */
+	/*
 	public Response removeChildGroups(String parentGroupId) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
+		final Response resp = new Response(ResponseStatus.SUCCESS);
 		groupManager.removeChildGroups(parentGroupId); 
 		return resp;
 	}
+	*/
 
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.grp.ws.GroupDataWebService#removeGroup(java.lang.String)
 	 */
 	public Response removeGroup(String grpId) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
+		final Response resp = new Response(ResponseStatus.SUCCESS);
 		groupManager.removeGroup(grpId); 
 		return resp;
 	}
@@ -309,7 +322,7 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 	 * @see org.openiam.idm.srvc.grp.ws.GroupDataWebService#removeUserFromGroup(java.lang.String, java.lang.String)
 	 */
 	public Response removeUserFromGroup(String groupId, String userId) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
+		final Response resp = new Response(ResponseStatus.SUCCESS);
 		groupManager.removeUserFromGroup(groupId, userId); 
 		return resp;
 	}
@@ -319,20 +332,20 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 	 */
 	public Response saveAttributes(GroupAttribute[] groupAttr) {
 		groupManager.saveAttributes(groupAttr);
-		return  new Response(ResponseStatus.SUCCESS);
+		return new Response(ResponseStatus.SUCCESS);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.grp.ws.GroupDataWebService#search(org.openiam.idm.srvc.grp.dto.GroupSearch)
 	 */
 	public GroupListResponse search(GroupSearch search) {
-		GroupListResponse resp = new GroupListResponse(ResponseStatus.SUCCESS);
-		List<Group> grpList = groupManager.search(search); 
-		if (grpList == null || grpList.isEmpty()) {
+		final GroupListResponse resp = new GroupListResponse(ResponseStatus.SUCCESS);
+		final List<Group> grpList = groupManager.search(search); 
+		if (CollectionUtils.isEmpty(grpList)) {
 			resp.setStatus(ResponseStatus.FAILURE);
-			return resp;
+		} else {
+			resp.setGroupList(dozerUtils.getDozerDeepMappedGroupList(grpList));
 		}
-		resp.setGroupList(grpList);
 		return resp;
 	}
 
@@ -341,14 +354,14 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 	 */
 	public Response updateAttribute(GroupAttribute attribute) {
 		groupManager.updateAttribute(attribute); 
-		return  new Response(ResponseStatus.SUCCESS);
+		return new Response(ResponseStatus.SUCCESS);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.grp.ws.GroupDataWebService#updateGroup(org.openiam.idm.srvc.grp.dto.Group)
 	 */
 	public GroupResponse updateGroup(Group grp) {
-		GroupResponse resp = new GroupResponse(ResponseStatus.SUCCESS);	
+		final GroupResponse resp = new GroupResponse(ResponseStatus.SUCCESS);	
 		groupManager.updateGroup(grp); 
 		
 		if (grp.getGrpId() == null) {
@@ -357,9 +370,4 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 		resp.setGroup(grp);
 		return  resp;
 	}
-
-
-
-
-
 }

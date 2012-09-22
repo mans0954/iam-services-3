@@ -62,6 +62,7 @@ import java.util.*;
         "startDate",
         "endDate",
         "rolePolicy"
+        /*"parentRoles"*/
 })
 @XmlRootElement(name = "Role")
 @XmlSeeAlso({
@@ -104,7 +105,11 @@ public class Role extends BaseObject implements Comparable<Role> {
     protected String ownerId;
     protected Integer inheritFromParent;
     protected String internalRoleId;
-    protected List<Role> childRoles = new ArrayList<Role>(0);
+    
+    /*
+    private Set<Role> parentRoles = null;
+    */
+    private Set<Role> childRoles = null;
 
 
     @XmlSchemaType(name = "dateTime")
@@ -344,15 +349,53 @@ public class Role extends BaseObject implements Comparable<Role> {
     public void setInheritFromParent(Integer inheritFromParent) {
         this.inheritFromParent = inheritFromParent;
     }
+    
+    public void addChildRole(final Role role) {
+    	if(role != null) {
+    		if(childRoles == null) {
+    			childRoles = new LinkedHashSet<Role>();
+    		}
+    		childRoles.add(role);
+    	}
+    }
+    
+    /*
+    public void addParentRole(final Role role) {
+    	if(role != null) {
+    		if(parentRoleId == null) {
+    			parentRoles = new LinkedHashSet<Role>();
+    		}
+    		parentRoles.add(role);
+    	}
+    }
 
-    public String toString() {
+    public Set<Role> getParentRoles() {
+		return parentRoles;
+	}
+
+
+	public void setParentRoles(Set<Role> parentRoles) {
+		this.parentRoles = parentRoles;
+	}
+	*/
+
+	public Set<Role> getChildRoles() {
+		return childRoles;
+	}
+
+
+	public void setChildRoles(Set<Role> childRoles) {
+		this.childRoles = childRoles;
+	}
+
+
+	public String toString() {
         String str = "id=" + id +
                 " name=" + roleName +
                 " metadataTypeId=" + metadataTypeId +
                 " ownerId=" + ownerId +
                 " inheritFromParent=" + this.inheritFromParent +
                 " parentRoleId=" + parentRoleId +
-                " childRole=" + childRoles +
                 " startDate=" + startDate +
                 " endDate=" + endDate;
         return str;
@@ -371,16 +414,6 @@ public class Role extends BaseObject implements Comparable<Role> {
 
     public void setRoleStatus(RoleStatus status) {
         this.status = status.toString();
-    }
-
-
-    public List<Role> getChildRoles() {
-        return childRoles;
-    }
-
-
-    public void setChildRoles(List<Role> childRoles) {
-        this.childRoles = childRoles;
     }
 
 
@@ -412,6 +445,53 @@ public class Role extends BaseObject implements Comparable<Role> {
     public void setOperation(AttributeOperationEnum operation) {
         this.operation = operation;
     }
+
+
+    public Set<RolePolicy> getRolePolicy() {
+        return rolePolicy;
+    }
+
+
+    public void setRolePolicy(Set<RolePolicy> rolePolicy) {
+        this.rolePolicy = rolePolicy;
+    }
+
+
+    public Date getStartDate() {
+        return startDate;
+    }
+
+
+    public void setStartDate(Date startDate) {
+        this.startDate = startDate;
+    }
+
+
+    public Date getEndDate() {
+        return endDate;
+    }
+
+
+    public void setEndDate(Date endDate) {
+        this.endDate = endDate;
+    }
+
+
+    public int compareTo(Role o) {
+        if (getRoleName() == null || o == null) {
+            return Integer.MIN_VALUE;
+        }
+        return getRoleName().compareTo(o.getRoleName());
+    }
+
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		return result;
+	}
 
 
     @Override
@@ -478,45 +558,6 @@ public class Role extends BaseObject implements Comparable<Role> {
                 (this.startDate == compareRole.startDate || this.startDate.equals(compareRole.startDate)) &&
                 (this.endDate == compareRole.endDate || this.endDate.equals(compareRole.endDate));
     }
-
-
-    public Set<RolePolicy> getRolePolicy() {
-        return rolePolicy;
-    }
-
-
-    public void setRolePolicy(Set<RolePolicy> rolePolicy) {
-        this.rolePolicy = rolePolicy;
-    }
-
-
-    public Date getStartDate() {
-        return startDate;
-    }
-
-
-    public void setStartDate(Date startDate) {
-        this.startDate = startDate;
-    }
-
-
-    public Date getEndDate() {
-        return endDate;
-    }
-
-
-    public void setEndDate(Date endDate) {
-        this.endDate = endDate;
-    }
-
-
-    public int compareTo(Role o) {
-        if (getRoleName() == null || o == null) {
-            return Integer.MIN_VALUE;
-        }
-        return getRoleName().compareTo(o.getRoleName());
-    }
-
 
 }
 

@@ -5,6 +5,15 @@
           http://dozer.sourceforge.net/schema/beanmapping.xsd">
 
 	<mapping>
+		<class-a>org.openiam.idm.srvc.org.dto.Organization</class-a>
+		<class-b>org.openiam.idm.srvc.org.dto.Organization</class-b>
+		<field-exclude>
+			<a>attributes</a>
+			<b>attributes</b>
+		</field-exclude>
+	</mapping>
+
+	<mapping>
 		<class-a>org.openiam.idm.srvc.user.dto.User</class-a>
 		<class-b>org.openiam.idm.srvc.user.dto.User</class-b>
 		<field-exclude>
@@ -73,6 +82,14 @@
 		<field-exclude>
 			<a>subGroup</a>
 			<b>subGroup</b>
+		</field-exclude>
+		<field-exclude>
+			<a>parentGroups</a>
+			<b>parentGroups</b>
+		</field-exclude>
+		<field-exclude>
+			<a>childGroups</a>
+			<b>childGroups</b>
 		</field-exclude>
 	</mapping>
 	
@@ -144,16 +161,20 @@
 			<b>resourceProps</b>
 		</field-exclude>
 		<field-exclude>
-			<a>childResources</a>
-			<b>childResources</b>
-		</field-exclude>
-		<field-exclude>
 			<a>resourceGroups</a>
 			<b>resourceGroups</b>
 		</field-exclude>
 		<field-exclude>
 			<a>entitlements</a>
 			<b>entitlements</b>
+		</field-exclude>
+		<field-exclude>
+			<a>parentResources</a>
+			<b>parentResources</b>
+		</field-exclude>
+		<field-exclude>
+			<a>childResources</a>
+			<b>childResources</b>
 		</field-exclude>
 	</mapping>
 </mappings>

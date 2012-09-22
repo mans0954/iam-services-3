@@ -69,17 +69,9 @@ public interface GroupDAO {
      * @param groupId
      * @return - null if no parent group is found.
      */
+    /*
     Group findParent(String groupId, boolean dependants);
-
-
-    /**
-     * Returns a List of Group objects that are sub-groups of the specified
-     * parentGroupId. Returns null if no children are found.
-     *
-     * @param parentGroupId
-     * @return
-     */
-    List<Group> findChildGroup(String parentGroupId);
+	*/
 
     /**
      * Return a list of root level group object. Root level group object do not have parent groups.
