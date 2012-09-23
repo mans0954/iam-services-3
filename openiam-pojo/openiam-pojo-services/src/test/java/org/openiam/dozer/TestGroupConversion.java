@@ -45,15 +45,6 @@ public class TestGroupConversion {
 	public void testGroupConversion() {
 		final Group original = createGroupWithNoSubgroups();
 		
-		final List<Group> subGroupSet = new LinkedList<Group>();
-		subGroupSet.add(createGroupWithNoSubgroups());
-		subGroupSet.add(createGroupWithNoSubgroups());
-		subGroupSet.add(createGroupWithNoSubgroups());
-		subGroupSet.add(createGroupWithNoSubgroups());
-		subGroupSet.add(createGroupWithNoSubgroups());
-		subGroupSet.add(createGroupWithNoSubgroups());
-		original.setSubGroup(subGroupSet);
-		
 		compareGroup(original, deepDozerMapper.map(original, Group.class), true);
 		compareGroup(original, shallowDozerMapper.map(original, Group.class), false);
 	}
@@ -243,7 +234,6 @@ public class TestGroupConversion {
 		if(isDeep) {
 			//TODO:  assert
 		} else {
-			Assert.assertTrue(CollectionUtils.isEmpty(copy.getSubGroup()));
 			Assert.assertTrue(CollectionUtils.isEmpty(copy.getRoles()));
 		}
 	}

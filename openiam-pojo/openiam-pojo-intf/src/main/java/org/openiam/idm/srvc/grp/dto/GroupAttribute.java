@@ -1,9 +1,17 @@
 package org.openiam.idm.srvc.grp.dto;
 
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+
+import org.hibernate.annotations.GenericGenerator;
 
 
 /**
@@ -20,6 +28,8 @@ import javax.xml.bind.annotation.XmlType;
         "metadataElementId",
         "groupId"
 })
+@Entity
+@Table(name="GRP_ATTRIBUTES")
 public class GroupAttribute implements java.io.Serializable {
 
     // Fields
@@ -30,42 +40,17 @@ public class GroupAttribute implements java.io.Serializable {
     protected String metadataElementId;
     protected String groupId;
 
-    /**
-     * minimal constructor
-     */
     public GroupAttribute(String id) {
         this.id = id;
     }
 
-    /**
-     * full constructor
-     */
-
-    public GroupAttribute(String id,
-                          String metadataElementId, String name, String value) {
-        this.id = id;
-        this.metadataElementId = metadataElementId;
-        this.name = name;
-        this.value = value;
-    }
-
-
-    /**
-     * default constructor
-     */
     public GroupAttribute() {
     }
-
-    public String getMetadataElementId() {
-        return metadataElementId;
-    }
-
-    public void setMetadataElementId(String metadataElementId) {
-        this.metadataElementId = metadataElementId;
-    }
-
-
-    // Property accessors
+    
+    @Id
+    @GeneratedValue(generator="system-uuid")
+    @GenericGenerator(name="system-uuid", strategy = "uuid")
+    @Column(name="ID",length=32)
     public String getId() {
         return this.id;
     }
@@ -74,7 +59,16 @@ public class GroupAttribute implements java.io.Serializable {
         this.id = id;
     }
 
+    @Column(name="METADATA_ID",length=20)
+    public String getMetadataElementId() {
+        return metadataElementId;
+    }
 
+    public void setMetadataElementId(String metadataElementId) {
+        this.metadataElementId = metadataElementId;
+    }
+
+    @Column(name="NAME",length=20)
     public String getName() {
         return this.name;
     }
@@ -83,6 +77,7 @@ public class GroupAttribute implements java.io.Serializable {
         this.name = name;
     }
 
+    @Column(name="VALUE")
     public String getValue() {
         return this.value;
     }
@@ -91,6 +86,7 @@ public class GroupAttribute implements java.io.Serializable {
         this.value = value;
     }
 
+    @Column(name="GRP_ID",length=32)
     public String getGroupId() {
         return groupId;
     }
