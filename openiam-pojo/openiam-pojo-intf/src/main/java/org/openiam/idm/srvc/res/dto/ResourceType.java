@@ -2,9 +2,17 @@ package org.openiam.idm.srvc.res.dto;
 
 // Generated Mar 8, 2009 12:54:32 PM by Hibernate Tools 3.2.2.GA
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+
+import org.hibernate.annotations.GenericGenerator;
+
 import java.util.Set;
 
 /**
@@ -18,6 +26,8 @@ import java.util.Set;
         "provisionResource",
         "processName"
 })
+@Entity
+@Table(name="RESOURCE_TYPE")
 public class ResourceType implements java.io.Serializable {
 
     private String resourceTypeId;
@@ -33,17 +43,8 @@ public class ResourceType implements java.io.Serializable {
         this.resourceTypeId = resourceTypeId;
     }
 
-    public ResourceType(String resourceTypeId, String description,
-                        String metadataTypeId, Integer provisionResource,
-                        String processName, Set<Resource> resourceses) {
-        this.resourceTypeId = resourceTypeId;
-        this.description = description;
-        this.metadataTypeId = metadataTypeId;
-        this.provisionResource = provisionResource;
-        this.processName = processName;
-
-    }
-
+    @Id
+    @Column(name="RESOURCE_TYPE_ID", length=20)
     public String getResourceTypeId() {
         return this.resourceTypeId;
     }
@@ -52,6 +53,7 @@ public class ResourceType implements java.io.Serializable {
         this.resourceTypeId = resourceTypeId;
     }
 
+    @Column(name="DESCRIPTION",length=100)
     public String getDescription() {
         return this.description;
     }
@@ -60,6 +62,7 @@ public class ResourceType implements java.io.Serializable {
         this.description = description;
     }
 
+    @Column(name="METADATA_TYPE_ID",length=20)
     public String getMetadataTypeId() {
         return this.metadataTypeId;
     }
@@ -68,6 +71,7 @@ public class ResourceType implements java.io.Serializable {
         this.metadataTypeId = metadataTypeId;
     }
 
+    @Column(name="PROVISION_RESOURCE")
     public Integer getProvisionResource() {
         return this.provisionResource;
     }
@@ -76,6 +80,7 @@ public class ResourceType implements java.io.Serializable {
         this.provisionResource = provisionResource;
     }
 
+    @Column(name="PROCESS_NAME",length=80)
     public String getProcessName() {
         return this.processName;
     }

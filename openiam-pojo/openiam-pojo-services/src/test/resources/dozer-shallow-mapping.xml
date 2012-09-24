@@ -71,10 +71,6 @@
 			<b>attributes</b>
 		</field-exclude>
 		<field-exclude>
-			<a>subGroup</a>
-			<b>subGroup</b>
-		</field-exclude>
-		<field-exclude>
 			<a>parentGroups</a>
 			<b>parentGroups</b>
 		</field-exclude>

@@ -1,9 +1,33 @@
 package org.openiam.idm.srvc.grp.dto;
 
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.CollectionOfElements;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.idm.srvc.role.dto.Role;
+import org.openiam.idm.srvc.role.dto.RoleSetAdapter;
 
+import javax.persistence.Cacheable;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.MapKey;
+import javax.persistence.MapKeyColumn;
+import javax.persistence.MappedSuperclass;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.*;
@@ -32,7 +56,6 @@ import java.util.*;
         "provisionMethod",
         "provisionObjName",
         "status",
-        "subGroup",
         "metadataTypeId",
         "selected",
         "ownerId",
@@ -46,6 +69,10 @@ import java.util.*;
         Role.class,
         GroupAttribute.class
 })
+@Entity
+@Table(name="GRP")
+@Cacheable
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class Group implements java.io.Serializable {
 
     // Fields
@@ -83,31 +110,23 @@ public class Group implements java.io.Serializable {
     private Set<Group> childGroups;
 
 
-    @XmlJavaTypeAdapter(org.openiam.idm.srvc.role.dto.RoleSetAdapter.class)
-    protected Set<org.openiam.idm.srvc.role.dto.Role> roles = new HashSet<org.openiam.idm.srvc.role.dto.Role>(0);
+    @XmlJavaTypeAdapter(RoleSetAdapter.class)
+    protected Set<Role> roles = new HashSet<Role>(0);
 
-    @XmlJavaTypeAdapter(org.openiam.idm.srvc.grp.dto.GroupAttributeMapAdapter.class)
-    protected Map<String, org.openiam.idm.srvc.grp.dto.GroupAttribute> attributes = new HashMap<String, GroupAttribute>(0);
+    @XmlJavaTypeAdapter(GroupAttributeMapAdapter.class)
+    protected Map<String, GroupAttribute> attributes = new HashMap<String, GroupAttribute>(0);
 
-    protected List<Group> subGroup = new ArrayList<Group>(0);
-
-
-    // Constructors
-
-    /**
-     * default constructor
-     */
     public Group() {
     }
 
-    /**
-     * minimal constructor
-     */
     public Group(String grpId) {
         this.grpId = grpId;
     }
 
-    // Property accessors
+    @Id
+    @GeneratedValue(generator="system-uuid")
+    @GenericGenerator(name="system-uuid", strategy = "uuid")
+    @Column(name="GRP_ID", length=20)
     public String getGrpId() {
         return this.grpId;
     }
@@ -116,6 +135,7 @@ public class Group implements java.io.Serializable {
         this.grpId = grpId;
     }
 
+    @Column(name="GRP_NAME",length=80)
     public String getGrpName() {
         return this.grpName;
     }
@@ -124,6 +144,7 @@ public class Group implements java.io.Serializable {
         this.grpName = grpName;
     }
 
+    @Column(name="CREATE_DATE",length=19)
     public Date getCreateDate() {
         return this.createDate;
     }
@@ -132,6 +153,7 @@ public class Group implements java.io.Serializable {
         this.createDate = createDate;
     }
 
+    @Column(name="CREATED_BY",length=20)
     public String getCreatedBy() {
         return this.createdBy;
     }
@@ -140,6 +162,7 @@ public class Group implements java.io.Serializable {
         this.createdBy = createdBy;
     }
 
+    @Column(name="COMPANY_ID",length=20)
     public String getCompanyId() {
         return this.companyId;
     }
@@ -148,16 +171,8 @@ public class Group implements java.io.Serializable {
         this.companyId = companyId;
     }
 
-    /*
-    public String getParentGrpId() {
-        return this.parentGrpId;
-    }
-
-    public void setParentGrpId(String parentGrpId) {
-        this.parentGrpId = parentGrpId;
-    }
-    */
-
+    @Column(name="INHERIT_FROM_PARENT")
+    @Type(type="boolean")
     public Boolean getInheritFromParent() {
         return this.inheritFromParent;
     }
@@ -166,6 +181,7 @@ public class Group implements java.io.Serializable {
         this.inheritFromParent = inheritFromParent;
     }
 
+    @Column(name="PROVISION_METHOD",length=20)
     public String getProvisionMethod() {
         return this.provisionMethod;
     }
@@ -174,6 +190,7 @@ public class Group implements java.io.Serializable {
         this.provisionMethod = provisionMethod;
     }
 
+    @Column(name="PROVISION_OBJ_NAME",length=80)
     public String getProvisionObjName() {
         return this.provisionObjName;
     }
@@ -182,16 +199,18 @@ public class Group implements java.io.Serializable {
         this.provisionObjName = provisionObjName;
     }
 
-
-    public Set<org.openiam.idm.srvc.role.dto.Role> getRoles() {
+    @Transient
+    public Set<Role> getRoles() {
         return this.roles;
     }
 
-    public void setRoles(Set<org.openiam.idm.srvc.role.dto.Role> roles) {
+    public void setRoles(Set<Role> roles) {
         this.roles = roles;
     }
 
-
+    @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.EAGER)
+    @JoinColumn(name="GRP_ID", referencedColumnName="GRP_ID")
+    @MapKeyColumn(name="name")
     public Map<String, GroupAttribute> getAttributes() {
         return attributes;
     }
@@ -226,31 +245,14 @@ public class Group implements java.io.Serializable {
      * @param name - The attribute map is keyed on the NAME property.
      * @return
      */
+    @Transient
     public GroupAttribute getAttribute(String name) {
 
         return attributes.get(name);
 
     }
 
-    /**
-     * Returns a list of sub groups that may be associate with this group.  Returns null
-     * if no sub groups are found.
-     *
-     * @return
-     */
-    public List<Group> getSubGroup() {
-        return subGroup;
-    }
-
-    /**
-     * Adds a list of sub groups to the current group.
-     *
-     * @param subGroup
-     */
-    public void setSubGroup(List<Group> subGroup) {
-        this.subGroup = subGroup;
-    }
-
+    @Column(name="GROUP_CLASS",length=40)
     public String getGroupClass() {
         return groupClass;
     }
@@ -259,6 +261,7 @@ public class Group implements java.io.Serializable {
         this.groupClass = groupClass;
     }
 
+    @Column(name="GROUP_DESC",length=80)
     public String getDescription() {
         return description;
     }
@@ -267,7 +270,7 @@ public class Group implements java.io.Serializable {
         this.description = description;
     }
 
-
+    @Column(name="LAST_UPDATE",length=19)
     public Date getLastUpdate() {
         return lastUpdate;
     }
@@ -276,6 +279,7 @@ public class Group implements java.io.Serializable {
         this.lastUpdate = lastUpdate;
     }
 
+    @Column(name="LAST_UPDATED_BY",length=20)
     public String getLastUpdatedBy() {
         return lastUpdatedBy;
     }
@@ -284,7 +288,7 @@ public class Group implements java.io.Serializable {
         this.lastUpdatedBy = lastUpdatedBy;
     }
 
-
+    @Column(name="TYPE_ID",length=20)
     public String getMetadataTypeId() {
         return metadataTypeId;
     }
@@ -299,12 +303,12 @@ public class Group implements java.io.Serializable {
                 " grpName=" + grpName +
                 " status=" + status +
                 " description=" + description +
-                " subGroup=" + subGroup +
                 " attributes=" + attributes;
 
         return str;
     }
 
+    @Column(name="OWNER_ID",length=20)
     public String getOwnerId() {
         return ownerId;
     }
@@ -318,6 +322,7 @@ public class Group implements java.io.Serializable {
         this.status = status.toString();
     }
 
+    @Column(name="STATUS",length=20)
     public String getStatus() {
         return status;
     }
@@ -326,6 +331,7 @@ public class Group implements java.io.Serializable {
         this.status = status;
     }
 
+    @Column(name="INTERNAL_GROUP_ID",length=32)
     public String getInternalGroupId() {
         return internalGroupId;
     }
@@ -334,6 +340,7 @@ public class Group implements java.io.Serializable {
         this.internalGroupId = internalGroupId;
     }
 
+    @Transient
     public Boolean getSelected() {
         return selected;
     }
@@ -342,6 +349,7 @@ public class Group implements java.io.Serializable {
         this.selected = selected;
     }
 
+    @Transient
     public AttributeOperationEnum getOperation() {
         return operation;
     }
@@ -350,6 +358,11 @@ public class Group implements java.io.Serializable {
         this.operation = operation;
     }
 
+    @ManyToMany(cascade={CascadeType.ALL},fetch=FetchType.LAZY)
+    @JoinTable(name="grp_to_grp_membership",
+        joinColumns={@JoinColumn(name="MEMBER_GROUP_ID")},
+        inverseJoinColumns={@JoinColumn(name="GROUP_ID")})
+    @Fetch(FetchMode.SUBSELECT)
     public Set<Group> getParentGroups() {
 		return parentGroups;
 	}
@@ -367,6 +380,11 @@ public class Group implements java.io.Serializable {
 		}
 	}
 
+	@ManyToMany(cascade={CascadeType.ALL},fetch=FetchType.LAZY)
+    @JoinTable(name="grp_to_grp_membership",
+        joinColumns={@JoinColumn(name="GROUP_ID")},
+        inverseJoinColumns={@JoinColumn(name="MEMBER_GROUP_ID")})
+    @Fetch(FetchMode.SUBSELECT)
 	public Set<Group> getChildGroups() {
 		return childGroups;
 	}

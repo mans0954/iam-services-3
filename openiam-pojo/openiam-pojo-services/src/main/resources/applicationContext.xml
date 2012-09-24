@@ -659,9 +659,9 @@
 				<value>org/openiam/idm/srvc/cat/service/CategoryLanguage.hbm.xml</value>
 				<value>org/openiam/idm/srvc/cat/service/CategoryType.hbm.xml</value>
 				<!-- Group Maps -->
-				<value>org/openiam/idm/srvc/grp/service/Group.hbm.xml</value>
-				<value>org/openiam/idm/srvc/grp/service/GroupAttribute.hbm.xml</value>
-				<value>org/openiam/idm/srvc/grp/service/UserGroup.hbm.xml</value>
+				<!-- <value>org/openiam/idm/srvc/grp/service/Group.hbm.xml</value> -->
+				<!-- <value>org/openiam/idm/srvc/grp/service/GroupAttribute.hbm.xml</value> -->
+				<!-- <value>org/openiam/idm/srvc/grp/service/UserGroup.hbm.xml</value> -->
 				<!-- role Maps -->
 				<value>org/openiam/idm/srvc/role/service/Role.hbm.xml</value>
 				<value>org/openiam/idm/srvc/role/service/RoleAttribute.hbm.xml</value>
@@ -688,11 +688,11 @@
 
 				<value>org/openiam/idm/srvc/secdomain/service/SecurityDomain.hbm.xml</value>
 
-				<value>org/openiam/idm/srvc/res/service/ResourceType.hbm.xml</value>
-				<value>org/openiam/idm/srvc/res/service/ResourcePolicy.hbm.xml</value>
-				<value>org/openiam/idm/srvc/res/service/ResourceProp.hbm.xml</value>
+				<!-- <value>org/openiam/idm/srvc/res/service/ResourceType.hbm.xml</value> -->
+				<!-- <value>org/openiam/idm/srvc/res/service/ResourcePolicy.hbm.xml</value> -->
+				<!-- <value>org/openiam/idm/srvc/res/service/ResourceProp.hbm.xml</value> -->
 				<value>org/openiam/idm/srvc/res/service/ResourceRole.hbm.xml</value>
-				<value>org/openiam/idm/srvc/res/service/Resource.hbm.xml</value>
+				<!-- <value>org/openiam/idm/srvc/res/service/Resource.hbm.xml</value> -->
 				<value>org/openiam/idm/srvc/res/service/ResourceUser.hbm.xml</value>
                 <value>org/openiam/idm/srvc/res/service/ResourceGroup.hbm.xml</value>
 				<value>org/openiam/idm/srvc/lang/service/Language.hbm.xml</value>
@@ -740,11 +740,10 @@
                 <value>org/openiam/am/srvc/webres/WebResourceAttribute.hbm.xml</value>
 			</list>
 		</property>
-
 		<property name="hibernateProperties">
 			<props>
 				<prop key="hibernate.dialect">${openiam.hibernate.dialect}</prop>	
-				<prop key="hibernate.show_sql">true</prop>
+				<prop key="hibernate.show_sql">false</prop>
 				<prop key="hibernate.generate_statistics">true</prop>
 				<!--prop key="hibernate.cache.provider_class">org.hibernate.cache.EhCacheProvider</prop-->
                 <prop key="hibernate.cache.use_second_level_cache">false</prop>
@@ -754,7 +753,7 @@
    				<prop key="hibernate.validationQuery">${openiam.hibernate.validationQuery}</prop>
 			</props>
 		</property>
-	    <property name="packagesToScan" value="org.openiam.core.domain*"/>
+	    <property name="packagesToScan" value="org.openiam.core.domain*,org.openiam.idm.srvc.grp.dto*,org.openiam.idm.srvc.res.dto*"/>
 	</bean>
 
   
