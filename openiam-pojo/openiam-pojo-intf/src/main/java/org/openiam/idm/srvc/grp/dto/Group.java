@@ -1,6 +1,8 @@
 package org.openiam.idm.srvc.grp.dto;
 
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.CollectionOfElements;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
@@ -10,6 +12,7 @@ import org.openiam.base.AttributeOperationEnum;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.dto.RoleSetAdapter;
 
+import javax.persistence.Cacheable;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -68,6 +71,8 @@ import java.util.*;
 })
 @Entity
 @Table(name="GRP")
+@Cacheable
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class Group implements java.io.Serializable {
 
     // Fields

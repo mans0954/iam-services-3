@@ -688,11 +688,11 @@
 
 				<value>org/openiam/idm/srvc/secdomain/service/SecurityDomain.hbm.xml</value>
 
-				<value>org/openiam/idm/srvc/res/service/ResourceType.hbm.xml</value>
-				<value>org/openiam/idm/srvc/res/service/ResourcePolicy.hbm.xml</value>
-				<value>org/openiam/idm/srvc/res/service/ResourceProp.hbm.xml</value>
+				<!-- <value>org/openiam/idm/srvc/res/service/ResourceType.hbm.xml</value> -->
+				<!-- <value>org/openiam/idm/srvc/res/service/ResourcePolicy.hbm.xml</value> -->
+				<!-- <value>org/openiam/idm/srvc/res/service/ResourceProp.hbm.xml</value> -->
 				<value>org/openiam/idm/srvc/res/service/ResourceRole.hbm.xml</value>
-				<value>org/openiam/idm/srvc/res/service/Resource.hbm.xml</value>
+				<!-- <value>org/openiam/idm/srvc/res/service/Resource.hbm.xml</value> -->
 				<value>org/openiam/idm/srvc/res/service/ResourceUser.hbm.xml</value>
                 <value>org/openiam/idm/srvc/res/service/ResourceGroup.hbm.xml</value>
 				<value>org/openiam/idm/srvc/lang/service/Language.hbm.xml</value>
@@ -752,7 +752,7 @@
    				<prop key="hibernate.validationQuery">${openiam.hibernate.validationQuery}</prop>
 			</props>
 		</property>
-	    <property name="packagesToScan" value="org.openiam.core.domain*,org.openiam.idm.srvc.grp.dto*"/>
+	    <property name="packagesToScan" value="org.openiam.core.domain*,org.openiam.idm.srvc.grp.dto*,org.openiam.idm.srvc.res.dto*"/>
 	</bean>
 
   

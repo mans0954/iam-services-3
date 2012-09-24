@@ -1,8 +1,15 @@
 package org.openiam.idm.srvc.res.dto;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+
+import org.hibernate.annotations.GenericGenerator;
 
 // Generated Mar 8, 2009 12:54:32 PM by Hibernate Tools 3.2.2.GA
 
@@ -17,6 +24,8 @@ import javax.xml.bind.annotation.XmlType;
         "propValue",
         "name"
 })
+@Entity
+@Table(name="RESOURCE_PROP")
 public class ResourceProp implements java.io.Serializable, Comparable<ResourceProp> {
 
     private String resourcePropId;
@@ -28,22 +37,14 @@ public class ResourceProp implements java.io.Serializable, Comparable<ResourcePr
     public ResourceProp() {
     }
 
-
-    public ResourceProp(String metadataId, String resourceId,
-                        String resourcePropId, String propValue) {
-        super();
-        this.metadataId = metadataId;
-        this.resourceId = resourceId;
-        this.resourcePropId = resourcePropId;
-        this.propValue = propValue;
-    }
-
-
     public ResourceProp(String resourcePropId) {
         this.resourcePropId = resourcePropId;
     }
 
-
+    @Id
+    @GeneratedValue(generator="system-uuid")
+    @GenericGenerator(name="system-uuid", strategy = "uuid")
+    @Column(name="RESOURCE_PROP_ID", length=32)
     public String getResourcePropId() {
         return this.resourcePropId;
     }
@@ -52,6 +53,7 @@ public class ResourceProp implements java.io.Serializable, Comparable<ResourcePr
         this.resourcePropId = resourcePropId;
     }
 
+    @Column(name="RESOURCE_ID",length=32)
     public String getResourceId() {
         return this.resourceId;
     }
@@ -60,7 +62,7 @@ public class ResourceProp implements java.io.Serializable, Comparable<ResourcePr
         this.resourceId = resourceId;
     }
 
-
+    @Column(name="METADATA_ID",length=20)
     public String getMetadataId() {
         return this.metadataId;
     }
@@ -69,6 +71,7 @@ public class ResourceProp implements java.io.Serializable, Comparable<ResourcePr
         this.metadataId = metadataId;
     }
 
+    @Column(name="PROP_VALUE",length=200)
     public String getPropValue() {
         return propValue;
     }
@@ -77,6 +80,7 @@ public class ResourceProp implements java.io.Serializable, Comparable<ResourcePr
         this.propValue = propValue;
     }
 
+    @Column(name="NAME",length=40)
     public String getName() {
         return name;
     }
