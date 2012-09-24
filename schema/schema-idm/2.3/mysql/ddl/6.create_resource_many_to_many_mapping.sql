@@ -1,3 +1,5 @@
+use openiam;
+
 CREATE TABLE res_to_res_membership (
 	RESOURCE_ID varchar(32) NOT NULL,
 	MEMBER_RESOURCE_ID varchar(32) NOT NULL,
@@ -10,22 +12,24 @@ CREATE TABLE res_to_res_membership (
 	FOREIGN KEY (MEMBER_RESOURCE_ID) REFERENCES RES (RESOURCE_ID )
 )  Engine=InnoDB;
 
-CREATE TRIGGER res_res_mem_insert 
-BEFORE 
-INSERT ON res_to_res_membership 
+DELIMITER $$
+
+CREATE TRIGGER res_res_mem_insert
+BEFORE
+INSERT ON res_to_res_membership
 	FOR EACH ROW
 	BEGIN
 		SET NEW.CREATE_DATE = NOW();
 		SET NEW.UPDATE_DATE = NOW();
-	END
+	END$$
 
-DROP PROCEDURE IF EXISTS openiam.migrateResources;
+DROP PROCEDURE IF EXISTS migrateResources$$
 
-CREATE PROCEDURE openiam.migrateResources()
+CREATE PROCEDURE migrateResources()
 	BEGIN
 		DECLARE done INT DEFAULT FALSE;
 		DECLARE res_id, parent VARCHAR(32);		
-		DECLARE cur1 CURSOR FOR (SELECT RESOURCE_ID, RESOURCE_PARENT FROM openiam.res WHERE RESOURCE_PARENT IS NOT null);
+		DECLARE cur1 CURSOR FOR (SELECT RESOURCE_ID, RESOURCE_PARENT FROM RES WHERE RESOURCE_PARENT IS NOT null);
 		DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
 		OPEN cur1;
 		
@@ -40,8 +44,9 @@ CREATE PROCEDURE openiam.migrateResources()
 				
 		
 		CLOSE cur1;
-	END;
+	END$$
+DELIMITER ;
 
-call openiam.migrateResources();
+call migrateResources();
 
-DROP PROCEDURE openiam.migrateResources;
+DROP PROCEDURE migrateResources;
