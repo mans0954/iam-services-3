@@ -737,7 +737,7 @@
 				<value>org/openiam/idm/srvc/rpt/qryobject/dto/UserLoginStatusReport.hbm.xml</value>
 
 
-                <value>org/openiam/am/srvc/webres/WebResourceAttribute.hbm.xml</value>
+                <!--<value>org/openiam/am/srvc/webres/WebResourceAttribute.hbm.xml</value>-->
 			</list>
 		</property>
 		<property name="hibernateProperties">
@@ -753,7 +753,7 @@
    				<prop key="hibernate.validationQuery">${openiam.hibernate.validationQuery}</prop>
 			</props>
 		</property>
-	    <property name="packagesToScan" value="org.openiam.core.domain*,org.openiam.idm.srvc.grp.dto*,org.openiam.idm.srvc.res.dto*"/>
+	    <property name="packagesToScan" value="org.openiam.core.domain*,org.openiam.idm.srvc.grp.dto*,org.openiam.idm.srvc.res.dto*,org.openiam.am.srvc.resattr.domain*"/>
 	</bean>
 
   

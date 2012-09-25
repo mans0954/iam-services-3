@@ -1,6 +1,6 @@
 package org.openiam.am.srvc.resattr.dao;
 
-import org.openiam.am.srvc.webres.dto.WebResourceAttribute;
+import org.openiam.am.srvc.resattr.domain.WebResourceAttribute;
 
 import java.util.List;
 

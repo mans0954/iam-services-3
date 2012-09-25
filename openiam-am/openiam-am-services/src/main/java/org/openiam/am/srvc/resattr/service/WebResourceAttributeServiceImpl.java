@@ -5,7 +5,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.resattr.dao.WebResourceAttributeDao;
 import org.openiam.am.srvc.resattr.dto.Attribute;
 import org.openiam.am.srvc.resattr.dto.AttributeMap;
-import org.openiam.am.srvc.webres.dto.WebResourceAttribute;
+import org.openiam.am.srvc.resattr.domain.WebResourceAttribute;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.user.dto.User;

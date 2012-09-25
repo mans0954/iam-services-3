@@ -1,7 +1,7 @@
 package org.openiam.am.srvc.resattr.dao;
 
 import org.hibernate.Query;
-import org.openiam.am.srvc.webres.dto.WebResourceAttribute;
+import org.openiam.am.srvc.resattr.domain.WebResourceAttribute;
 import org.openiam.exception.data.DataException;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Repository;
