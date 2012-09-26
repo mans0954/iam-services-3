@@ -5,7 +5,6 @@ import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import org.hibernate.annotations.GenericGenerator;
@@ -14,29 +13,32 @@ import org.hibernate.annotations.GenericGenerator;
 @Table(name = "report_query")
 public class ReportQuery {
 
-  @Id
-  @GeneratedValue(generator="system-uuid")
-  @GenericGenerator(name="system-uuid", strategy = "uuid")
-  @Column(name = "report_query_id")
-  private Integer id;
+    @Id
+    @GeneratedValue(generator = "system-uuid")
+    @GenericGenerator(name = "system-uuid", strategy = "uuid")
+    @Column(name = "report_query_id")
+    private String id;
 
-  @Column(name = "report_name")
-  private String reportName;
+    @Column(name = "report_name")
+    private String reportName;
 
-  @Column(name = "query_script_path")
-  private String queryScriptPath;
+    @Column(name = "query_script_path")
+    private String queryScriptPath;
 
-  @Column
-  private String params;
+    @Column
+    private String params;
 
-  @Column(name = "required_params")
-  private String requiredParams;
+    @Column(name = "required_params")
+    private String requiredParams;
 
-    public Integer getId() {
+    @Column(name = "dto_class")
+    private String dtoClass;
+
+    public String getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -73,10 +75,18 @@ public class ReportQuery {
     }
 
     public List<String> getRequiredParamsList() {
-       return Arrays.asList(this.requiredParams.split(","));
+        return Arrays.asList(this.requiredParams.split(","));
     }
 
     public List<String> getParamsList() {
-       return Arrays.asList(this.params.split(","));
+        return Arrays.asList(this.params.split(","));
+    }
+
+    public String getDtoClass() {
+        return dtoClass;
+    }
+
+    public void setDtoClass(String dtoClass) {
+        this.dtoClass = dtoClass;
     }
 }

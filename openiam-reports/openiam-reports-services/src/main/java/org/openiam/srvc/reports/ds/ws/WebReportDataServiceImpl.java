@@ -5,6 +5,7 @@ import javax.jws.WebService;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.srvc.reports.ds.service.ReportDataService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,19 +23,23 @@ public class WebReportDataServiceImpl implements WebReportDataService {
     private ReportDataService reportDataService;
 
     @Override
-    public ReportQueryListResponse executeQuery(final String reportName, final HashMap<String, String> queryParams) {
-        ReportQueryListResponse response;
+    public GetReportByNameResponse executeQuery(final String reportName, final HashMap<String, String> queryParams) {
+        GetReportByNameResponse response = new GetReportByNameResponse();
         if(!StringUtils.isEmpty(reportName)){
-            response = new ReportQueryListResponse(ResponseStatus.SUCCESS);
             try {
-                response.setRowList(reportDataService.getReportData(reportName, queryParams));
+                GetReportByNameResponse.GetInfoByReportNameResult getInfoByReportNameResult = new GetReportByNameResponse.GetInfoByReportNameResult();
+                getInfoByReportNameResult.setContent(reportDataService.getReportData(reportName, queryParams));
+                response.setGetInfoByReportNameResult(getInfoByReportNameResult);
+                response.setStatus(ResponseStatus.SUCCESS);
             } catch(Throwable ex) {
-                response = new ReportQueryListResponse(ResponseStatus.FAILURE);
+                response.setErrorCode(ResponseCode.INVALID_ARGUMENTS);
                 response.setErrorText(ex.getMessage());
+                response.setStatus(ResponseStatus.FAILURE);
             }
         } else {
-            response = new ReportQueryListResponse(ResponseStatus.FAILURE);
+            response.setErrorCode(ResponseCode.INVALID_ARGUMENTS);
             response.setErrorText("Invalid parameter list: reportName="+reportName);
+            response.setStatus(ResponseStatus.SUCCESS);
         }
         return response;
     }

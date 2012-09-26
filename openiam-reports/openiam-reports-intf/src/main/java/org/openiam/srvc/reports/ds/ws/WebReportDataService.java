@@ -11,6 +11,6 @@ import org.openiam.base.ws.PropertyMapAdapter;
 public interface WebReportDataService {
 
     @WebMethod
-    ReportQueryListResponse executeQuery(@WebParam(name = "reportName", targetNamespace = "") String reportName, @WebParam(name = "queryParams", targetNamespace = "") @XmlJavaTypeAdapter(PropertyMapAdapter.class) HashMap<String, String> queryParams);
+    GetReportByNameResponse executeQuery(@WebParam(name = "reportName", targetNamespace = "") String reportName, @WebParam(name = "queryParams", targetNamespace = "") @XmlJavaTypeAdapter(PropertyMapAdapter.class) HashMap<String, String> queryParams);
 
 }
