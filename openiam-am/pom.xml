@@ -18,6 +18,7 @@
   <modules>
         <module>openiam-am-intf</module>
 	<module>openiam-am-services</module>
+	<module>openiam-sso-utils</module>
   </modules>
   
 </project>
