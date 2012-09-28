@@ -1,5 +1,6 @@
 package org.openiam.srvc.reports.ds.dao;
 
+import java.lang.reflect.Field;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -8,24 +9,42 @@ import org.hibernate.SQLQuery;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.domain.reports.ReportQuery;
-import org.openiam.srvc.reports.ds.dto.RowObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public class ReportDataDaoImpl implements ReportDataDao {
     @Autowired
-    protected SessionFactory sessionFactory;
+    private SessionFactory sessionFactory;
+
+    private static final Logger LOG = LoggerFactory.getLogger(ReportDataDaoImpl.class);
 
     @Override
-    public List<RowObject> getReportData(final String sqlQuery) {
-        List<RowObject> result = new LinkedList<RowObject>();
+    public List<Object> getReportData(final String sqlQuery, final Class<?> resultObjectClass) {
+        List<Object> result = new LinkedList<Object>();
         SQLQuery query = sessionFactory.getCurrentSession().createSQLQuery(sqlQuery);
         query.setResultTransformer(Criteria.ALIAS_TO_ENTITY_MAP);
+
         for (Object aList : query.list()) {
-            RowObject row = new RowObject();
-            row.setColumns((Map<String,String>) aList);
-            result.add(row);
+            try {
+                Object resultObj = resultObjectClass.newInstance();
+                for (Map.Entry<String, String> col : ((Map<String, String>) aList).entrySet()) {
+                    try {
+                        Field field = resultObjectClass.getDeclaredField(col.getKey());
+                        field.setAccessible(true);
+                        field.set(resultObj, col.getValue());
+                    } catch (NoSuchFieldException e) {
+                        LOG.warn(e.getMessage());
+                    }
+                }
+                result.add(resultObj);
+            } catch (InstantiationException e) {
+                LOG.warn(e.getMessage());
+            } catch (IllegalAccessException e) {
+                LOG.warn(e.getMessage());
+            }
         }
         return result;
     }
@@ -33,6 +52,6 @@ public class ReportDataDaoImpl implements ReportDataDao {
     @Override
     public ReportQuery getQueryScriptPath(final String reportName) {
         Criteria criteria = sessionFactory.getCurrentSession().createCriteria(ReportQuery.class).add(Restrictions.eq("reportName", reportName));
-        return (ReportQuery)criteria.uniqueResult();
+        return (ReportQuery) criteria.uniqueResult();
     }
 }

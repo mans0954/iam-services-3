@@ -5,7 +5,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.resattr.dao.WebResourceAttributeDao;
 import org.openiam.am.srvc.resattr.dto.Attribute;
 import org.openiam.am.srvc.resattr.dto.AttributeMap;
-import org.openiam.am.srvc.webres.dto.WebResourceAttribute;
+import org.openiam.am.srvc.resattr.domain.WebResourceAttribute;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.user.dto.User;
@@ -112,22 +112,35 @@ public class WebResourceAttributeServiceImpl implements WebResourceAttributeServ
         List<Attribute> resultList = new ArrayList<Attribute>();
         try {
             log.debug("try to get attribute list by resource id:" + resourceId);
+            // get attribute list for resource Id
             List<AttributeMap> attributeMapList = getAttributeMapCollection(resourceId);
-            Login login = loginManager.getLoginByManagedSys(securityDomain, principalName, managedSysId);
-
             if (attributeMapList == null || attributeMapList.isEmpty()) {
                 throw new NullPointerException("Empty attribute map collection");
             }
+            // get default identity object
+            Login identityObject = loginManager.getLoginByManagedSys(securityDomain, principalName, "0");
+            if (identityObject == null) {
+                StringBuilder msg = new StringBuilder();
+                msg.append("Default identity object for { securityDomain: ").append(securityDomain).append(", principalName: ")
+                        .append(principalName).append(", managedSysId:").append(managedSysId)
+                        .append("} has not been found ");
+                throw new NullPointerException(msg.toString());
+            }
+            User user = userManager.getUserWithDependent(identityObject.getUserId(), false);
+            if (user == null)
+                throw new NullPointerException("User object has not been found");
+
+
+            Login login = loginManager.getByUserIdManagedSys(user.getUserId(), managedSysId);
             if (login == null) {
                 StringBuilder msg = new StringBuilder();
                 msg.append("Login object for { securityDomain: ").append(securityDomain).append(", principalName: ")
                    .append(principalName).append(", managedSysId:").append(managedSysId)
-                   .append("} has not been found ");
-                throw new NullPointerException(msg.toString());
+                   .append("} has not been found. Using the default identity object.");
+                log.warn(msg.toString());
+                login= identityObject;
             }
-            User user = userManager.getUserWithDependent(login.getUserId(), false);
 
-            if (user == null) throw new NullPointerException("User object has not been found");
             for (AttributeMap attr : attributeMapList) {
                 resultList.add(parseAttribute(attr, login, user));
             }

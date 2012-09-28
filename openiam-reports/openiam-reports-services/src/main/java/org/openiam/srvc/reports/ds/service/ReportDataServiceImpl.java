@@ -8,7 +8,6 @@ import org.apache.commons.lang.StringUtils;
 import org.openiam.core.domain.reports.ReportQuery;
 import org.openiam.exception.ScriptEngineException;
 import org.openiam.srvc.reports.ds.dao.ReportDataDao;
-import org.openiam.srvc.reports.ds.dto.RowObject;
 import org.openiam.script.ScriptFactory;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,8 +24,8 @@ public class ReportDataServiceImpl implements ReportDataService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<RowObject> getReportData(final String reportName, final Map<String, String> queryParams) throws ClassNotFoundException, ScriptEngineException {
-        List<RowObject> resultData = new LinkedList<RowObject>();
+    public List<Object> getReportData(final String reportName, final Map<String, String> queryParams) throws ClassNotFoundException, ScriptEngineException {
+        List<Object> resultData = new LinkedList<Object>();
 
         ReportQuery reportQuery = reportDao.getQueryScriptPath(reportName);
         if (reportQuery == null) {
@@ -42,7 +41,8 @@ public class ReportDataServiceImpl implements ReportDataService {
         ScriptIntegration se = ScriptFactory.createModule(this.scriptEngine);
         String output = (String) se.execute(objectMap, reportQuery.getQueryScriptPath());
         if (!StringUtils.isEmpty(output)) {
-            resultData = reportDao.getReportData(output);
+            Class clazz = Class.forName(reportQuery.getDtoClass());
+            resultData = reportDao.getReportData(output, clazz);
         }
         return resultData;
     }
