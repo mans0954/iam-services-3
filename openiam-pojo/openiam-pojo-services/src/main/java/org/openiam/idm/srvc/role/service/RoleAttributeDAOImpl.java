@@ -88,17 +88,11 @@ public class RoleAttributeDAOImpl implements RoleAttributeDAO {
         }
     }
     
-    public RoleAttribute findById( java.lang.String id) {
+    public RoleAttribute findById(String id) {
         log.debug("getting RoleAttribute instance with id: " + id);
         try {
             RoleAttribute instance = (RoleAttribute) sessionFactory.getCurrentSession()
                     .get("org.openiam.idm.srvc.role.dto.RoleAttribute", id);
-            if (instance==null) {
-                log.debug("get successful, no instance found");
-            }
-            else {
-                log.debug("get successful, instance found");
-            }
             return instance;
         }
         catch (RuntimeException re) {
@@ -126,11 +120,10 @@ public class RoleAttributeDAOImpl implements RoleAttributeDAO {
         }
     } 
     
-	public void deleteRoleAttributes(String serviceId, String roleId) {
+	public void deleteRoleAttributes(String roleId) {
 		Session session = sessionFactory.getCurrentSession();
 		Query qry = session.createQuery("delete org.openiam.idm.srvc.role.dto.RoleAttribute ra " + 
-					" where ra.id.serviceId = :serviceId and ra.id.roleId = :roleId ");
-		qry.setString("serviceId", serviceId);
+					" where ra.roleId = :roleId ");
 		qry.setString("roleId",roleId);
 		qry.executeUpdate();
 

@@ -7,10 +7,6 @@
             <key-property name="resourceId" type="string">
                 <column name="RESOURCE_ID" length="32" />
             </key-property>
-            <key-property name="domainId" type="string">
-                <column name="SERVICE_ID" length="20" />
-            </key-property>
-            
             <key-property name="roleId" type="string">
                 <column name="ROLE_ID" length="32" />
             </key-property>

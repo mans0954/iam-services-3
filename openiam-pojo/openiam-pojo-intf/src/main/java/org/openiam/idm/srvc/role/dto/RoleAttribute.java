@@ -1,8 +1,15 @@
 package org.openiam.idm.srvc.role.dto;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+
+import org.hibernate.annotations.GenericGenerator;
 
 
 /**
@@ -19,7 +26,6 @@ import javax.xml.bind.annotation.XmlType;
  *         &lt;element name="name" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *         &lt;element name="roleAttrId" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *         &lt;element name="roleId" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *         &lt;element name="serviceId" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *         &lt;element name="value" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
@@ -30,18 +36,17 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "roleAttribute", propOrder = {
         "roleAttrId",
-        "serviceId",
         "roleId",
         "metadataElementId",
         "name",
         "value",
         "attrGroup"
-
 })
+@Entity
+@Table(name="ROLE_ATTRIBUTE")
 public class RoleAttribute implements java.io.Serializable {
 
     protected String roleAttrId;
-    protected String serviceId;
     protected String roleId;
     protected String metadataElementId;
     protected String name;
@@ -56,104 +61,46 @@ public class RoleAttribute implements java.io.Serializable {
         this.roleAttrId = roleAttrId;
     }
 
-    public RoleAttribute(String roleAttrId, String name, String value, String metadataTypeId) {
-        this.roleAttrId = roleAttrId;
-        this.name = name;
-        this.value = value;
-        this.metadataElementId = metadataTypeId;
-    }
-
-    /**
-     * Gets the value of the metadataId property.
-     *
-     * @return possible object is
-     *         {@link String }
-     */
+    @Column(name="METADATA_ID",length=20)
     public String getMetadataElementId() {
         return metadataElementId;
     }
 
-    /**
-     * Sets the value of the metadataId property.
-     *
-     * @param value allowed object is
-     *              {@link String }
-     */
     public void setMetadataElementId(String value) {
         this.metadataElementId = value;
     }
 
-    /**
-     * Gets the value of the name property.
-     *
-     * @return possible object is
-     *         {@link String }
-     */
+    @Column(name="NAME", length=20)
     public String getName() {
         return name;
     }
 
-    /**
-     * Sets the value of the name property.
-     *
-     * @param value allowed object is
-     *              {@link String }
-     */
     public void setName(String value) {
         this.name = value;
     }
 
-    /**
-     * Gets the value of the roleAttrId property.
-     *
-     * @return possible object is
-     *         {@link String }
-     */
+    @Id
+    @GeneratedValue(generator="system-uuid")
+    @GenericGenerator(name="system-uuid", strategy = "uuid")
+    @Column(name="ROLE_ATTR_ID", length=32)
     public String getRoleAttrId() {
         return roleAttrId;
     }
 
-    /**
-     * Sets the value of the roleAttrId property.
-     *
-     * @param value allowed object is
-     *              {@link String }
-     */
     public void setRoleAttrId(String value) {
         this.roleAttrId = value;
     }
 
-
-    /**
-     * Gets the value of the value property.
-     *
-     * @return possible object is
-     *         {@link String }
-     */
+    @Column(name="VALUE")
     public String getValue() {
         return value;
     }
 
-    /**
-     * Sets the value of the value property.
-     *
-     * @param value allowed object is
-     *              {@link String }
-     */
     public void setValue(String value) {
         this.value = value;
     }
 
-
-    public String getServiceId() {
-        return serviceId;
-    }
-
-
-    public void setServiceId(String serviceId) {
-        this.serviceId = serviceId;
-    }
-
+    @Column(name="ROLE_ID", length=32,nullable=false)
     public String getRoleId() {
         return roleId;
     }
@@ -161,12 +108,9 @@ public class RoleAttribute implements java.io.Serializable {
 
     public void setRoleId(String roleId) {
         this.roleId = roleId;
-
-        //this.roleId = role.getId().getRoleId();
-        //this.serviceId = role.getId().getServiceId();
     }
 
-
+    @Column(name="ATTR_GROUP",length=20)
     public String getAttrGroup() {
         return attrGroup;
     }
@@ -180,10 +124,20 @@ public class RoleAttribute implements java.io.Serializable {
 	@Override
 	public String toString() {
 		return String
-				.format("RoleAttribute [roleAttrId=%s, serviceId=%s, roleId=%s, metadataElementId=%s, name=%s, value=%s, attrGroup=%s]",
-						roleAttrId, serviceId, roleId, metadataElementId, name,
+				.format("RoleAttribute [roleAttrId=%s, roleId=%s, metadataElementId=%s, name=%s, value=%s, attrGroup=%s]",
+						roleAttrId, roleId, metadataElementId, name,
 						value, attrGroup);
 	}
+
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((roleAttrId == null) ? 0 : roleAttrId.hashCode());
+		return result;
+	}
+
 
 	@Override
 	public boolean equals(Object obj) {
@@ -219,11 +173,6 @@ public class RoleAttribute implements java.io.Serializable {
 				return false;
 		} else if (!roleId.equals(other.roleId))
 			return false;
-		if (serviceId == null) {
-			if (other.serviceId != null)
-				return false;
-		} else if (!serviceId.equals(other.serviceId))
-			return false;
 		if (value == null) {
 			if (other.value != null)
 				return false;
@@ -232,5 +181,5 @@ public class RoleAttribute implements java.io.Serializable {
 		return true;
 	}
 
-    
+	
 }

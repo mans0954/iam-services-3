@@ -1,8 +1,10 @@
 package org.openiam.idm.srvc.role.service;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Hibernate;
+import org.mvel2.optimizers.impl.refl.nodes.ArrayLength;
 import org.openiam.exception.data.ObjectNotFoundException;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.UserGroupDAO;
@@ -11,7 +13,6 @@ import org.openiam.idm.srvc.res.service.ResourceRoleDAO;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.dto.RoleAttribute;
 import org.openiam.idm.srvc.role.dto.RoleConstant;
-import org.openiam.idm.srvc.role.dto.RoleId;
 import org.openiam.idm.srvc.role.dto.RolePolicy;
 import org.openiam.idm.srvc.role.dto.RoleSearch;
 import org.openiam.idm.srvc.role.dto.UserRole;
@@ -56,11 +57,11 @@ public class RoleDataServiceImpl implements RoleDataService {
 		return role;
 	}
 
-	public Role getRole(String serviceId, String roleId) {
+	public Role getRole(String roleId) {
 		if (roleId == null)
 			throw new IllegalArgumentException("roleId is null");
 
-		Role rl = roleDao.findById(new RoleId(serviceId, roleId));
+		Role rl = roleDao.findById(roleId);
 		
 		//if (!org.hibernate.Hibernate.isInitialized(rl.getUsers())) {
 //		if (rl != null) {
@@ -92,18 +93,16 @@ public class RoleDataServiceImpl implements RoleDataService {
 
 	}
 
-	public int removeRole(String domainId, String roleId) {
+	public int removeRole(String roleId) {
 		if (roleId == null)
 			throw new IllegalArgumentException("roleId is null");
-		if (domainId == null)
-			throw new IllegalArgumentException("serviceId object is null");
 
-		Role rl = new Role(new RoleId(domainId, roleId));
+		Role rl = new Role(roleId);
 
         try {
-            this.roleAttributeDAO.deleteRoleAttributes(domainId, roleId);
-            this.userRoleDao.removeAllUsersInRole(domainId, roleId);
-            this.resRoleDao.removeResourceRole(domainId,roleId);
+            this.roleAttributeDAO.deleteRoleAttributes(roleId);
+            this.userRoleDao.removeAllUsersInRole(roleId);
+            this.resRoleDao.removeResourceRole(roleId);
             this.roleDao.remove(rl);
         }catch (Exception e) {
             log.error(e.toString());
@@ -142,13 +141,13 @@ public class RoleDataServiceImpl implements RoleDataService {
 		return attribute;
 	}
 
-	public RoleAttribute[] getAllAttributes(String serviceId, String roleId) {
+	public RoleAttribute[] getAllAttributes(String roleId) {
 
 		if (roleId == null) {
 			throw new IllegalArgumentException("groupId is null");
 		}
 
-		Role role = roleDao.findById(new RoleId(serviceId, roleId));
+		Role role = roleDao.findById(roleId);
 		Set attrSet = role.getRoleAttributes();
 		if (attrSet != null && attrSet.isEmpty())
 			return null;
@@ -162,11 +161,11 @@ public class RoleDataServiceImpl implements RoleDataService {
 		return roleAttributeDAO.findById(attrId);
 	}
 
-	public void removeAllAttributes(String serviceId, String roleId) {
+	public void removeAllAttributes(String roleId) {
 		if (roleId == null) {
 			throw new IllegalArgumentException("roleId is null");
 		}
-		this.roleAttributeDAO.deleteRoleAttributes(serviceId, roleId);
+		this.roleAttributeDAO.deleteRoleAttributes(roleId);
 
 	}
 
@@ -201,21 +200,19 @@ public class RoleDataServiceImpl implements RoleDataService {
 
 	/* ------------- Group to Role Methods --------------------------------- */
 
-	public void addGroupToRole(String serviceId, String roleId, String groupId) {
+	public void addGroupToRole(String roleId, String groupId) {
 		// TODO Auto-generated method stub
 		if (roleId == null)
 			throw new IllegalArgumentException("roleId is null");
-		if (serviceId == null)
-			throw new IllegalArgumentException("serviceId is null");
 		if (groupId == null)
 			throw new IllegalArgumentException("groupId is null");
 
-		roleDao.addGroupToRole(serviceId, roleId, groupId);
+		roleDao.addGroupToRole(roleId, groupId);
 
 	}
 
-	public Group[] getGroupsInRole(String serviceId, String roleId) {
-		Role rl = roleDao.findById(new RoleId(serviceId, roleId));
+	public Group[] getGroupsInRole(String roleId) {
+		Role rl = roleDao.findById(roleId);
 		if (rl == null) {
 			log.error("Role not found for roleId =" + roleId);
 			throw new ObjectNotFoundException();
@@ -229,9 +226,9 @@ public class RoleDataServiceImpl implements RoleDataService {
 
 	}
 
-	public boolean isGroupInRole(String serviceId, String roleId, String groupId) {
+	public boolean isGroupInRole(String roleId, String groupId) {
 
-		Role rl = roleDao.findById(new RoleId(serviceId, roleId));
+		Role rl = roleDao.findById(roleId);
 		if (rl == null) {
 			log.error("Role not found for roleId =" + roleId);
 			throw new ObjectNotFoundException();
@@ -251,26 +248,20 @@ public class RoleDataServiceImpl implements RoleDataService {
 		return false;
 	}
 
-	public void removeGroupFromRole(String serviceId, String roleId,
-			String groupId) {
+	public void removeGroupFromRole(String roleId, String groupId) {
 		if (roleId == null)
 			throw new IllegalArgumentException("roleId is null");
-		if (serviceId == null)
-			throw new IllegalArgumentException("serviceId object is null");
 		if (groupId == null)
 			throw new IllegalArgumentException("groupId object is null");
 
-		this.roleDao.removeGroupFromRole(serviceId, roleId, groupId);
+		this.roleDao.removeGroupFromRole(roleId, groupId);
 
 	}
 
-	public void removeAllGroupsFromRole(String serviceId, String roleId) {
+	public void removeAllGroupsFromRole(String roleId) {
 		if (roleId == null)
 			throw new IllegalArgumentException("roleId is null");
-		if (serviceId == null)
-			throw new IllegalArgumentException("serviceId object is null");
-
-		roleDao.removeAllGroupsFromRole(serviceId, roleId);
+		roleDao.removeAllGroupsFromRole(roleId);
 	}
 
 	public List<Role> getRolesInGroup(String groupId) {
@@ -297,8 +288,6 @@ public class RoleDataServiceImpl implements RoleDataService {
 	public void assocUserToRole(UserRole ur) {
 		if (ur.getRoleId() == null)
 			throw new IllegalArgumentException("roleId is null");
-		if (ur.getServiceId() == null)
-			throw new IllegalArgumentException("domainId object is null");
 		if (ur.getUserId() == null)
 			throw new IllegalArgumentException("userId object is null");	
 		
@@ -313,8 +302,6 @@ public class RoleDataServiceImpl implements RoleDataService {
 	public void updateUserRoleAssoc(UserRole ur) {
 		if (ur.getRoleId() == null)
 			throw new IllegalArgumentException("roleId is null");
-		if (ur.getServiceId() == null)
-			throw new IllegalArgumentException("domainId object is null");
 		if (ur.getUserId() == null)
 			throw new IllegalArgumentException("userId object is null");		
 		userRoleDao.update(ur);
@@ -336,67 +323,46 @@ public class RoleDataServiceImpl implements RoleDataService {
 	}
 	
 	
-	public void addUserToRole(String domainId, String roleId, String userId) {
+	public void addUserToRole(String roleId, String userId) {
 
 		if (roleId == null)
 			throw new IllegalArgumentException("roleId is null");
-		if (domainId == null)
-			throw new IllegalArgumentException("domainId object is null");
 		if (userId == null)
 			throw new IllegalArgumentException("userId object is null");
 		
-		UserRole ur = new UserRole(userId, domainId, roleId);
+		final UserRole ur = new UserRole();
+		ur.setUserId(userId);
+		ur.setRoleId(roleId);
 		
-		this.userRoleDao.add(ur);
+		userRoleDao.add(ur);
 
 	}
 	
-	public boolean isUserInRole(String serviceId, String roleId, String userId) {
+	public boolean isUserInRole(String roleId, String userId) {
 		if (roleId == null)
 			throw new IllegalArgumentException("roleId is null");
-		if (serviceId == null)
-			throw new IllegalArgumentException("serviceId object is null");
 		if (userId == null)
 			throw new IllegalArgumentException("userIdId object is null");
-		
-		// check if the user is directly linked to a role
-/*		Role rl = roleDao.findDirectRoleForUser(serviceId, roleId, userId);
-		log.info("findDirectRoleForUser = " + rl);
-		if (rl != null) {
-			return true;
-		}
-		// check if the user is linked to a role through a group.
-		List<Role> roleList =  roleDao.findIndirectUserRoles(userId);
-		log.info("findInDirectUserRoles = " + roleList);
-		if (roleList != null)
-			return true;		
-		return false;
-*/
+	
 		List<Role> userRoleList = this.getUserRolesAsFlatList(userId);
 		if (userRoleList == null) {
 			return false;
 		}
 		for (Role rl : userRoleList) {
-			if (rl.getId().getRoleId().equalsIgnoreCase(roleId) &&
-				rl.getId().getServiceId().equalsIgnoreCase(serviceId)) {
+			if (rl.getRoleId().equalsIgnoreCase(roleId)) {
 				return true;
 			}
 		}
 		return false;
 	}
 
-	public void removeUserFromRole(String domainId, String roleId,	String userId) {
+	public void removeUserFromRole(String roleId, String userId) {
 		if (roleId == null)
 			throw new IllegalArgumentException("roleId is null");
-		if (domainId == null)
-			throw new IllegalArgumentException("domainId object is null");
 		if (userId == null)
 			throw new IllegalArgumentException("userId object is null");
 
-		this.userRoleDao.removeUserFromRole(domainId, roleId, userId);
-		
-		
-
+		userRoleDao.removeUserFromRole(roleId, userId);
 	}
 
 	/**
@@ -461,21 +427,6 @@ public class RoleDataServiceImpl implements RoleDataService {
 
 	}
 */
-	
-	private Role getParentRole(Role rl) {
-		final RoleId id = new RoleId(rl.getId().getServiceId(), rl.getParentRoleId());
-		final Role pRole =  this.roleDao.findById(id);
-		log.info("Got parent role = " + pRole);
-		if (pRole != null) {
-			// add the child role to the parentRole
-			pRole.addChildRole(rl);
-		}
-		if (pRole.getParentRoleId() != null) {
-			log.info("Found another parent role - make a recursive call. parentId =" + pRole.getParentRoleId());
-			return getParentRole(pRole);
-		}
-		return pRole;
-	}
 
 	/**
 	 * Returns an array of Role objects that indicate the Roles a user is
@@ -513,39 +464,53 @@ public class RoleDataServiceImpl implements RoleDataService {
 		List<Role> newRoles = new ArrayList<Role>(newRoleSet);
 		// for each of these roles, figure out if there are roles above it in the hierarchy
 		
-		List<Role> newRoleList = new ArrayList<Role>();
-		for (Role rl : newRoles ) {
-			log.info("Role id=" + rl.getId() + " parentId=" + rl.getParentRoleId() );
-			if (rl.getParentRoleId() == null) {
-				newRoleList.add(rl);
-			}else {
-				log.info("Get the parent role for parentId=" + rl.getParentRoleId());
-				newRoleList.add(getParentRole(rl));
-			}
+		Set<Role> compiledSet = new LinkedHashSet<Role>();
+		for (Role rl : newRoleSet ) {
+			visitParentRoles(rl.getRoleId(), compiledSet);
 		}
 		
 		
-		return newRoleList;
+		return new ArrayList<Role>(compiledSet);
 
 		
 		//return newRoles;
 
 	}
-	private List<Role> getParentRoleFlat(Role rl) {
-		List<Role> roleList = new ArrayList<Role>();
-		RoleId id = new RoleId(rl.getId().getServiceId(), rl.getParentRoleId());
-		Role pRole = roleDao.findById(id);
-		log.info("Got parent role = " + pRole);
-		if (pRole != null) {
-			// add the child role to the list of  role
-			roleList.add(pRole);
+	
+	private void visitChildRoles(final String roleId, final Set<Role> visitedSet) {
+		if(roleId != null) {
+			if(visitedSet != null) {
+				final Role role = roleDao.findById(roleId);
+				if(role != null) {
+					if(!visitedSet.contains(role)) {
+						visitedSet.add(role);
+						if(CollectionUtils.isNotEmpty(role.getChildRoles())) {
+							for(final Role child : role.getChildRoles()) {
+								visitChildRoles(child.getRoleId(), visitedSet);
+							}
+						}
+					}
+				}
+			}
 		}
-		if (pRole.getParentRoleId() != null) {
-			log.info("Found another parent role - make a recursive call. parentId =" + pRole.getParentRoleId());
-			roleList.addAll( getParentRoleFlat(pRole) );
-			return roleList;
+	}
+	
+	private void visitParentRoles(final String roleId, final Set<Role> visitedSet) {
+		if(roleId != null) {
+			if(visitedSet != null) {
+				final Role role = roleDao.findById(roleId);
+				if(role != null) {
+					if(!visitedSet.contains(role)) {
+						visitedSet.add(role);
+						if(CollectionUtils.isNotEmpty(role.getParentRoles())) {
+							for(final Role child : role.getParentRoles()) {
+								visitParentRoles(child.getRoleId(), visitedSet);
+							}
+						}
+					}
+				}
+			}
 		}
-		return roleList;
 	}
 	
 	/**
@@ -585,20 +550,8 @@ public class RoleDataServiceImpl implements RoleDataService {
 
         // store the roles in sorted order
         Set<Role> roleSet = new TreeSet<Role>();
-		//List<Role> newRoleList = new ArrayList<Role>();
 		for (Role rl : newRoles ) {
-
-            log.debug("Role id=" + rl.getId() + " parentId=" + rl.getParentRoleId() );
-
-            if (rl.getParentRoleId() == null) {
-                roleSet.add(rl);
-			}else {
-
-                log.debug("Get the parent role for parentId=" + rl.getParentRoleId());
-
-                roleSet.add(rl);
-                roleSet.addAll(getParentRoleFlat(rl));
-			}
+			visitParentRoles(rl.getRoleId(), roleSet);
 		}
 
         List<Role> newRoleList = new ArrayList<Role>(roleSet);
@@ -633,20 +586,18 @@ public class RoleDataServiceImpl implements RoleDataService {
 	
 
 
-	public User[] getUsersInRole(String domainId, String roleId) {
-		if (domainId == null)
-			throw new IllegalArgumentException("domainId is null");
+	public User[] getUsersInRole(String roleId) {
 		if (roleId == null)
 			throw new IllegalArgumentException("roleId is null");
 		
 		/* Get the users that are directly associated */
-		Role rl = getRole(domainId, roleId);
+		Role rl = getRole(roleId);
 		
 		
 		//System.out.println("in getUsersInRole: rl=" + rl);
 		//System.out.println("in getUsersInRole: users =" + rl.getUsers());
 		
-		List<User> userList = userRoleDao.findUserByRole(domainId, roleId);
+		List<User> userList = userRoleDao.findUserByRole(roleId);
 
         // No direct association, continue with indirect
 		if (userList == null || userList.isEmpty())
@@ -848,14 +799,11 @@ public class RoleDataServiceImpl implements RoleDataService {
 
 	}
 	
-	public List<RolePolicy> getAllRolePolicies(String domainId, String roleId) {
-		if (domainId == null) {
-			throw new NullPointerException("domainId is null");
-		}
+	public List<RolePolicy> getAllRolePolicies(String roleId) {
 		if (roleId == null) {
 			throw new NullPointerException("roleId is null");
 		}
-		return rolePolicyDao.findRolePolicies(domainId, roleId);
+		return rolePolicyDao.findRolePolicies(roleId);
 	}
 
 	public RolePolicy getRolePolicy(String rolePolicyId) {
@@ -870,7 +818,11 @@ public class RoleDataServiceImpl implements RoleDataService {
 			throw new NullPointerException("rPolicy is null");
 		}
 		rolePolicyDao.remove(rPolicy);
-		
+	}
+	
+	@Override
+	public Role getRoleByName(String roleName) {
+		return roleDao.getRoleByName(roleName);
 	}
 
 	public RolePolicyDAO getRolePolicyDao() {

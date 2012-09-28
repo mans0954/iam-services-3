@@ -35,7 +35,6 @@ import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.idm.srvc.role.dto.RoleId;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.openiam.idm.srvc.synch.dto.BulkMigrationConfig;
@@ -359,40 +358,34 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
     }
 
-    private UserSearch buildSearchByRole(RoleId roleId) {
+    private UserSearch buildSearchByRole(final String roleId) {
         UserSearch search = new UserSearch();
 
 
         List<String> roleList = new ArrayList<String>();
-        roleList.add(roleId.getRoleId() );
+        roleList.add(roleId);
         search.setRoleIdList(roleList);
-        search.setDomainId(roleId.getServiceId());
 
         return search;
     }
 
 
     private Role parseRole(String roleStr) {
-        String domainId = null;
         String roleId = null;
 
         StringTokenizer st = new StringTokenizer(roleStr, "*");
-        if (st.hasMoreTokens()) {
-            domainId = st.nextToken();
-        }
         if (st.hasMoreElements()) {
             roleId = st.nextToken();
         }
-        RoleId id = new RoleId(domainId , roleId);
         Role r = new Role();
-        r.setId(id);
+        r.setRoleId(roleId);
 
         return r;
     }
 
 
     @Override
-    public Response resynchRole(RoleId roleId) {
+    public Response resynchRole(final String roleId) {
 
         Response resp = new Response(ResponseStatus.SUCCESS);
 
@@ -415,7 +408,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
         // create role object to show role membership
         Role rl = new Role();
-        rl.setId(roleId);
+        rl.setRoleId(roleId);
 
         // all the provisioning service
         for ( User user :  searchResult) {

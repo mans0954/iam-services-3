@@ -1,5 +1,7 @@
 package org.openiam.idm.srvc.menu.dto;
 
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
@@ -8,9 +10,9 @@ import java.io.Serializable;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "PermissionId", propOrder = {
         "menuId",
-        "roleId",
-        "serviceId"
+        "roleId"
 })
+@Embeddable
 public class PermissionId implements Serializable {
 
     /**
@@ -19,18 +21,17 @@ public class PermissionId implements Serializable {
     private static final long serialVersionUID = -2388899255222778128L;
     private String menuId;
     private String roleId;
-    private String serviceId;
 
     public PermissionId() {
 
     }
 
-    public PermissionId(String menuId, String roleId, String serviceId) {
+    public PermissionId(String menuId, String roleId) {
         this.menuId = menuId;
         this.roleId = roleId;
-        this.serviceId = serviceId;
     }
 
+    @Column(name="MENU_ID",length=32,nullable=false)
     public String getMenuId() {
         return menuId;
     }
@@ -39,6 +40,7 @@ public class PermissionId implements Serializable {
         this.menuId = menuId;
     }
 
+    @Column(name="ROLE_ID",length=32,nullable=false)
     public String getRoleId() {
         return roleId;
     }
@@ -47,66 +49,42 @@ public class PermissionId implements Serializable {
         this.roleId = roleId;
     }
 
-    public String getServiceId() {
-        return serviceId;
-    }
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((menuId == null) ? 0 : menuId.hashCode());
+		result = prime * result + ((roleId == null) ? 0 : roleId.hashCode());
+		return result;
+	}
 
-    public void setServiceId(String serviceId) {
-        this.serviceId = serviceId;
-    }
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		PermissionId other = (PermissionId) obj;
+		if (menuId == null) {
+			if (other.menuId != null)
+				return false;
+		} else if (!menuId.equals(other.menuId))
+			return false;
+		if (roleId == null) {
+			if (other.roleId != null)
+				return false;
+		} else if (!roleId.equals(other.roleId))
+			return false;
+		return true;
+	}
 
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((menuId == null) ? 0 : menuId.hashCode());
-        result = prime * result + ((roleId == null) ? 0 : roleId.hashCode());
-        result = prime * result
-                + ((serviceId == null) ? 0 : serviceId.hashCode());
-        return result;
-    }
+	@Override
+	public String toString() {
+		return String.format("PermissionId [menuId=%s, roleId=%s]", menuId,
+				roleId);
+	}
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (!(obj instanceof PermissionId)) {
-            return false;
-        }
-        PermissionId other = (PermissionId) obj;
-        if (menuId == null) {
-            if (other.menuId != null) {
-                return false;
-            }
-        } else if (!menuId.equals(other.menuId)) {
-            return false;
-        }
-        if (roleId == null) {
-            if (other.roleId != null) {
-                return false;
-            }
-        } else if (!roleId.equals(other.roleId)) {
-            return false;
-        }
-        if (serviceId == null) {
-            if (other.serviceId != null) {
-                return false;
-            }
-        } else if (!serviceId.equals(other.serviceId)) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public String toString() {
-        return "PermissionId [menuId=" + menuId + ", roleId=" + roleId
-                + ", serviceId=" + serviceId + "]";
-    }
-
-
+    
 }

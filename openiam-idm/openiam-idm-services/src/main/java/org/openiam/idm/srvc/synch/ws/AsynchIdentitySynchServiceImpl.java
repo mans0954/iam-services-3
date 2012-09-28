@@ -28,7 +28,6 @@ import org.mule.api.MuleContext;
 import org.mule.api.context.MuleContextAware;
 import org.mule.module.client.MuleClient;
 import org.openiam.base.ws.Response;
-import org.openiam.idm.srvc.role.dto.RoleId;
 import org.openiam.idm.srvc.synch.dto.BulkMigrationConfig;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.openiam.idm.srvc.synch.service.IdentitySynchService;
@@ -110,7 +109,7 @@ public class AsynchIdentitySynchServiceImpl implements AsynchIdentitySynchServic
     }
 
     @Override
-    public void resynchRole( RoleId roleId) {
+    public void resynchRole(final String roleId) {
         try {
 
 
@@ -121,7 +120,7 @@ public class AsynchIdentitySynchServiceImpl implements AsynchIdentitySynchServic
 
             //Create the client with the context
             MuleClient client = new MuleClient(muleContext);
-            client.sendAsync("vm://resynchRoleMessage", (RoleId) roleId, msgPropMap);
+            client.sendAsync("vm://resynchRoleMessage", roleId, msgPropMap);
 
 
         } catch (Exception e) {

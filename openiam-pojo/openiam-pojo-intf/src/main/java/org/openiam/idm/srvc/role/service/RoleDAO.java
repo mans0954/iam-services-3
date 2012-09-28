@@ -1,7 +1,6 @@
 package org.openiam.idm.srvc.role.service;
 
 import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.role.dto.RoleId;
 import org.openiam.idm.srvc.role.dto.RoleSearch;
 import org.openiam.idm.srvc.user.dto.User;
 
@@ -21,50 +20,45 @@ public interface RoleDAO {
 
     public void update(Role detachedInstance);
 
-    public Role findById(RoleId id);
+    public Role findById(String id);
 
 
     /**
      * Adds a group to the Role. DAO takes care of the persistence part of this task.
      *
-     * @param serviceId
      * @param roleId
      * @param groupId
      */
-    public void addGroupToRole(String serviceId, String roleId, String groupId);
+    public void addGroupToRole(String roleId, String groupId);
 
     /**
      * Removes all the group associations with this Role.
      *
-     * @param serviceId
      * @param roleId
      */
-    public void removeAllGroupsFromRole(String serviceId, String roleId);
+    public void removeAllGroupsFromRole(String roleId);
 
     /**
      * Removes a groups association with a role.
      *
-     * @param serviceId
      * @param roleId
      * @param groupId
      */
-    public void removeGroupFromRole(String serviceId, String roleId, String groupId);
+    public void removeGroupFromRole(String roleId, String groupId);
 
     /**
      * Adds a user to a Role. DAO takes care of the persistence part of this task.
-     * @param serviceId
      * @param roleId
      * @param userId
      */
-    //public void addUserToRole(String serviceId, String roleId, String userId);
+    //public void addUserToRole(String roleId, String userId);
 
     /**
      * Removes a users association with a role
-     * @param serviceId
      * @param roleId
      * @param userId
      */
-    //public void removeUserFromRole(String serviceId, String roleId, String userId);
+    //public void removeUserFromRole(String roleId, String userId);
 
 
     /**
@@ -98,11 +92,11 @@ public interface RoleDAO {
      * @param roleId
      * @return
      */
-    public List<User> findUsersInRole(String serviceId, String roleId);
+    public List<User> findUsersInRole(String roleId);
 
     /**
      * Returns a list of all Roles regardless of service
-     * The list is sorted by ServiceId, Role
+     * The list is sorted by Role
      *
      * @return
      */
@@ -128,9 +122,9 @@ public interface RoleDAO {
      *
      * @return
      */
-    Role findDirectRoleForUser(String serviceId, String roleId, String userId);
+    Role findDirectRoleForUser(String roleId, String userId);
 
     List<Role> search(RoleSearch search);
 
-
+    public Role getRoleByName(final String roleName);
 }

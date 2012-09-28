@@ -1,5 +1,7 @@
 use openiam;
 
+START TRANSACTION;
+
 CREATE TABLE res_to_res_membership (
 	RESOURCE_ID varchar(32) NOT NULL,
 	MEMBER_RESOURCE_ID varchar(32) NOT NULL,
@@ -36,8 +38,8 @@ CREATE PROCEDURE migrateResources()
 		REPEAT 
 			FETCH cur1 INTO res_id, parent;
 			IF (res_id IS NOT NULL AND parent IS NOT NULL) THEN
-				IF ((SELECT RESOURCE_ID FROM openiam.res_to_res_membership WHERE RESOURCE_ID=parent AND MEMBER_RESOURCE_ID=res_id) IS NULL) THEN
-					INSERT INTO openiam.res_to_res_membership (RESOURCE_ID, MEMBER_RESOURCE_ID) VALUES(parent, res_id);
+				IF ((SELECT RESOURCE_ID FROM res_to_res_membership WHERE RESOURCE_ID=parent AND MEMBER_RESOURCE_ID=res_id) IS NULL) THEN
+					INSERT INTO res_to_res_membership (RESOURCE_ID, MEMBER_RESOURCE_ID) VALUES(parent, res_id);
 				END IF;
 			END IF;
 		UNTIL done END REPEAT; 
@@ -50,3 +52,5 @@ DELIMITER ;
 call migrateResources();
 
 DROP PROCEDURE migrateResources;
+
+COMMIT;

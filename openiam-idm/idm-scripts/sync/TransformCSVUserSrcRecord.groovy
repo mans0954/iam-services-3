@@ -13,7 +13,7 @@ import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum
 import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.role.dto.RoleId;
+import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginId;
 import org.openiam.base.AttributeOperationEnum;
@@ -115,12 +115,10 @@ public class TransformCSVUserSrcRecord extends AbstractTransformScript {
 			List<Role> roleList = new ArrayList<Role>();
 			
 			for (String strR:  roleAry) {
-			
-				RoleId id = new RoleId("USR_SEC_DOMAIN", strR);
 				Role r = new Role();
-				r.setId(id);
+				r.setRoleId(strR);
 				
-				if (!isInRole(userRoleList,  id)) {
+				if (!isInRole(userRoleList,  strR)) {
 				
 					roleList.add(r);
 					
@@ -200,10 +198,10 @@ public class TransformCSVUserSrcRecord extends AbstractTransformScript {
 		return TransformScript.NO_DELETE;
 	}
 	
-	private boolean isInRole(List<Role> currentRoleList, RoleId id) {
+	private boolean isInRole(List<Role> currentRoleList, String roleId) {
 		for (Role r : currentRoleList) {
 
-			if (r.id.roleId.equalsIgnoreCase(id.roleId) && r.id.serviceId.equalsIgnoreCase( id.serviceId)) {
+			if (r.roleId.equalsIgnoreCase(roleId)) {
 				return true;
 			}
 		}

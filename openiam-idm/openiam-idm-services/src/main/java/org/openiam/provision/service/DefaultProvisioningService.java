@@ -74,7 +74,6 @@ import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.role.dto.RoleId;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.dto.Supervisor;
 import org.openiam.idm.srvc.user.dto.User;
@@ -132,6 +131,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
       * @see org.openiam.provision.service.ProvisionService#addUser(org.openiam.provision.dto.ProvisionUser)
       */
     public ProvisionUserResponse addUser(ProvisionUser user) {
+    	populate(user);
         ProvisionUserResponse resp = new ProvisionUserResponse();
 
         ScriptIntegration se = null;
@@ -560,7 +560,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
 
     private boolean provisionUserNow(ProvisionUser user) {
-
         Date curDate = new Date(System.currentTimeMillis());
         Date startDate = user.getStartDate();
 
@@ -1246,8 +1245,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         final List<Role> roleList = roleDataService.getUserRoles(user.getUserId());
         if(CollectionUtils.isNotEmpty(roleList)) {
             for(final Role role : roleList) {
-                final RoleId roleId = role.getId();
-                final List<Resource> resourceList = resourceDataService.getResourcesForRole(roleId.getServiceId(), roleId.getRoleId());
+                final List<Resource> resourceList = resourceDataService.getResourcesForRole(role.getRoleId());
                 if(CollectionUtils.isNotEmpty(resourceList)) {
                     for(final Resource resource : resourceList) {
                         final ManagedSys managedSys = managedSysService.getManagedSys(resource.getManagedSysId());
@@ -1344,6 +1342,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
       * @see org.openiam.provision.service.ProvisionService#modifyUser(org.openiam.provision.dto.ProvisionUser)
       */
     public ProvisionUserResponse modifyUser(ProvisionUser pUser) {
+    	populate(pUser);
         ProvisionUserResponse resp = new ProvisionUserResponse();
         String requestId = "R" + UUIDGen.getUUID();
         ScriptIntegration se = null;
@@ -2830,29 +2829,21 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         log.debug("GetResourcesForRole().....");
         // get the list of ids
-        String domainId = null;
         List<String> roleIdList = new ArrayList<String>();
 
         if (roleList == null || roleList.isEmpty()) {
             return null;
         }
         for (Role rl : roleList) {
-
             if (rl != null) {
-                // handle the situation where an invalid role is passed in
-
-                if (domainId == null) {
-                    domainId = rl.getId().getServiceId();
-                }
-                log.debug("-Adding role id to list of roles:" + rl.getId().getRoleId());
-                roleIdList.add(rl.getId().getRoleId());
+                roleIdList.add(rl.getRoleId());
             }
         }
 
-        if (domainId != null && roleIdList != null) {
+        if (roleIdList != null) {
 
             //getResourceForRoleList(domainId, roleIdList);
-            return resourceDataService.getResourcesForRoles(domainId, roleIdList);
+            return resourceDataService.getResourcesForRoles(roleIdList);
         }
         return null;
     }
@@ -3428,8 +3419,27 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             return ppScript.setPassword(bindingMap, success);
         }
         return 0;
-
-
+    }
+    
+    /* populates any objects that may be required as CRUD operations are called */
+    private void populate(final ProvisionUser provisionUser) {
+    	if(provisionUser != null) {
+    		/* RoleId was deprecated in favor of better DB key.  However,
+    		 * certain groovy scripts still require both the roleId and serviceId
+    		 * The caller only sets the roleId of the Role Object.  We have to set the serviceId 
+    		 */
+    		if(CollectionUtils.isNotEmpty(provisionUser.getMemberOfRoles())) {
+    			for(final Iterator<Role> it = provisionUser.getMemberOfRoles().iterator(); it.hasNext();) {
+    				final Role role = it.next();
+    				final Role found = roleDataService.getRole(role.getRoleId());
+    				if(found == null) {
+    					it.remove();
+    				} else {
+    					role.setServiceId(found.getServiceId());
+    				}
+    			}
+    		}
+    	}
     }
 
 

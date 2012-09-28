@@ -511,15 +511,12 @@ public interface ResourceDataService {
     /**
      * Checks if is role authorized.
      *
-     * @param domainId   the domain id
      * @param roleId     the role id
      * @param resourceId the resource id
      * @return true if is role authorized
      */
     @WebMethod
     boolean isRoleAuthorized(
-            @WebParam(name = "domainId", targetNamespace = "")
-            String domainId,
             @WebParam(name = "roleId", targetNamespace = "")
             String roleId,
             @WebParam(name = "resourceId", targetNamespace = "")
@@ -529,29 +526,23 @@ public interface ResourceDataService {
     /**
      * Returns a list of Resource objects that are linked to a Role.
      *
-     * @param domainId the domain id
      * @param roleId   the role id
      * @return the resources for role
      */
     @WebMethod
     List<Resource> getResourcesForRole(
-            @WebParam(name = "domainId", targetNamespace = "")
-            String domainId,
             @WebParam(name = "roleId", targetNamespace = "")
             String roleId);
 
     /**
      * Returns a list of Resource objects that are linked to the list of Roles.
      *
-     * @param domainId   the domain id
      * @param roleIdList the role id list
      * @return the resources for roles
      */
 
     @WebMethod
     List<Resource> getResourcesForRoles(
-            @WebParam(name = "domainId", targetNamespace = "")
-            String domainId,
             @WebParam(name = "roleIdList", targetNamespace = "")
             List<String> roleIdList);
 
@@ -567,13 +558,6 @@ public interface ResourceDataService {
 
 
     List<Resource> getResourceObjForUser(String userId);
-
-    String attributeString(
-            @WebParam(name = "domainId", targetNamespace = "")
-            String domainId,
-            @WebParam(name = "principal", targetNamespace = "")
-            String principal);
-
 
     ResourcePrivilege addResourcePrivilege(
             @WebParam(name = "resourcePrivilege", targetNamespace = "")

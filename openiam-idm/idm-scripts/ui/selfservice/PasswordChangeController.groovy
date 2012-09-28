@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Set;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.role.dto.RoleId;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.provision.dto.PasswordSync;
 import org.openiam.selfsrvc.pswd.PasswordChangeCommand;

@@ -1,5 +1,8 @@
 package org.openiam.idm.srvc.menu.dto;
 
+import javax.persistence.EmbeddedId;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
@@ -9,6 +12,8 @@ import java.io.Serializable;
 @XmlType(name = "Permission", propOrder = {
         "id"
 })
+@Entity
+@Table(name="PERMISSIONS")
 public class Permission implements Serializable {
 
     /**
@@ -25,11 +30,10 @@ public class Permission implements Serializable {
         this.id = id;
     }
 
-
+    @EmbeddedId
     public PermissionId getId() {
         return id;
     }
-
 
     public void setId(PermissionId id) {
         this.id = id;

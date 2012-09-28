@@ -560,18 +560,17 @@ public List<ResourceRole> findResourceRolesByResource(String resourceId) {
 		return result;
 	}
 
-	public List<Resource> findResourcesForRole(String domainId, String roleId) {
+	public List<Resource> findResourcesForRole(String roleId) {
 		Session session = sessionFactory.getCurrentSession();
 		try{
 			Query qry = session.createQuery( 
 					"SELECT resource  " +
 					"FROM org.openiam.idm.srvc.res.dto.Resource as resource " +
 					"	inner join resource.resourceRoles as rr " +
-					" where rr.id.domainId = :domainId and rr.id.roleId = :roleId " +
+					" where rr.id.roleId = :roleId " +
 					" order by resource.managedSysId, resource.name  "
 					);
 	
-			qry.setString("domainId", domainId);
 			qry.setString("roleId", roleId);
 			
 			qry.setCacheable(true);
@@ -633,18 +632,16 @@ public List<ResourceRole> findResourceRolesByResource(String resourceId) {
 
 
 	
-	public List<Resource> findResourcesForRoles(String domainId, List<String> roleIdList) {
+	public List<Resource> findResourcesForRoles(List<String> roleIdList) {
 		Session session = sessionFactory.getCurrentSession();
 		try{
 			Query qry = session.createQuery( 
 					"SELECT distinct resource  " +
 					"FROM org.openiam.idm.srvc.res.dto.Resource as resource " +
 					"	inner join resource.resourceRoles as rr " +
-					" where rr.id.domainId = :domainId and rr.id.roleId in ( :roleIdList ) " +
+					" where rr.id.roleId in ( :roleIdList ) " +
 					" order by resource.managedSysId, resource.name  "
 					);
-	
-			qry.setString("domainId", domainId);
 			qry.setParameterList("roleIdList", roleIdList);
 			
 			qry.setCacheable(true);
@@ -670,7 +667,6 @@ public List<ResourceRole> findResourceRolesByResource(String resourceId) {
 		ResourceRoleId rrId = new ResourceRoleId();
 		rrId.setResourceId(resourceId);
 		rrId.setRoleId(roleId);
-		rrId.setPrivilegeId(privilegeId);
 
 		ResourceRole p = resourceRoleDao.findById(rrId);
 
@@ -688,7 +684,7 @@ public List<ResourceRole> findResourceRolesByResource(String resourceId) {
 	}
 
 
-	public void removeResourceRolePrivilege(String resourceId, String roleId, String privilegeId) {
+	public void removeResourceRolePrivilege(String resourceId, String roleId) {
 
 		Resource resource = findById(resourceId);				
 
@@ -705,10 +701,7 @@ public List<ResourceRole> findResourceRolesByResource(String resourceId) {
 		for (Iterator<ResourceRole> it = all.iterator(); it.hasNext(); ) {
 			ResourceRole rr = it.next(); 
 
-			if ( (rr.getId().getResourceId().equalsIgnoreCase(resourceId))
-					&& (rr.getId().getRoleId().equalsIgnoreCase(roleId))
-					&& (rr.getId().getPrivilegeId().equalsIgnoreCase(privilegeId))	) {
-
+			if ( (rr.getId().getResourceId().equalsIgnoreCase(resourceId)) && (rr.getId().getRoleId().equalsIgnoreCase(roleId))) {
 				it.remove();
 			}
 		}

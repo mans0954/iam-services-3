@@ -15,12 +15,12 @@ public interface RoleAttributeDAO {
 
     public void remove(RoleAttribute persistentInstance);
 
-    public RoleAttribute findById(java.lang.String id);
+    public RoleAttribute findById(String id);
 
     public RoleAttribute update(RoleAttribute detachedInstance);
 
     public List<RoleAttribute> findByExample(RoleAttribute instance);
 
-    public void deleteRoleAttributes(String serviceId, String roleId);
+    public void deleteRoleAttributes(String roleId);
 
 }

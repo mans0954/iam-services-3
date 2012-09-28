@@ -2,9 +2,17 @@ package org.openiam.idm.srvc.role.dto;
 
 // Generated Jul 18, 2009 8:49:09 AM by Hibernate Tools 3.2.2.GA
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+
+import org.hibernate.annotations.GenericGenerator;
+
 import java.util.Date;
 
 /**
@@ -13,7 +21,6 @@ import java.util.Date;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "userrole", propOrder = {
         "userRoleId",
-        "serviceId",
         "roleId",
         "userId",
         "createDate",
@@ -22,6 +29,8 @@ import java.util.Date;
         "status",
         "createdBy"
 })
+@Entity
+@Table(name="USER_ROLE")
 public class UserRole implements java.io.Serializable {
 
     /**
@@ -30,7 +39,6 @@ public class UserRole implements java.io.Serializable {
     private static final long serialVersionUID = -3785768336629177182L;
     private String userRoleId;
     private String userId;
-    private String serviceId;
     private String roleId;
     private String status;
     private Date createDate;
@@ -40,18 +48,16 @@ public class UserRole implements java.io.Serializable {
 
     public UserRole() {
     }
-
-    public UserRole(String userId, String serviceId, String roleId) {
-        this.userId = userId;
-        this.serviceId = serviceId;
-        this.roleId = roleId;
-        status = "ACTIVE";
-        long curTime = System.currentTimeMillis();
-        createDate = new Date(curTime);
-        startDate = new Date(curTime);
+    
+    public UserRole(final String userId, final String roleId) {
+    	this.userId = userId;
+    	this.roleId = roleId;
     }
 
-
+    @Id
+    @GeneratedValue(generator="system-uuid")
+    @GenericGenerator(name="system-uuid", strategy = "uuid")
+    @Column(name="USER_ROLE_ID", length=32)
     public String getUserRoleId() {
         return this.userRoleId;
     }
@@ -60,15 +66,7 @@ public class UserRole implements java.io.Serializable {
         this.userRoleId = userRoleId;
     }
 
-
-    public String getServiceId() {
-        return this.serviceId;
-    }
-
-    public void setServiceId(String serviceId) {
-        this.serviceId = serviceId;
-    }
-
+    @Column(name="ROLE_ID",length=32,nullable=false)
     public String getRoleId() {
         return this.roleId;
     }
@@ -77,6 +75,7 @@ public class UserRole implements java.io.Serializable {
         this.roleId = roleId;
     }
 
+    @Column(name="STATUS",length=20)
     public String getStatus() {
         return this.status;
     }
@@ -85,6 +84,7 @@ public class UserRole implements java.io.Serializable {
         this.status = status;
     }
 
+    @Column(name="CREATE_DATE",length=19)
     public Date getCreateDate() {
         return this.createDate;
     }
@@ -93,6 +93,7 @@ public class UserRole implements java.io.Serializable {
         this.createDate = createDate;
     }
 
+    @Column(name="CREATED_BY",length=19)
     public String getCreatedBy() {
         return this.createdBy;
     }
@@ -101,6 +102,7 @@ public class UserRole implements java.io.Serializable {
         this.createdBy = createdBy;
     }
 
+    @Column(name="USER_ID",length=32,nullable=false)
     public String getUserId() {
         return userId;
     }
@@ -109,6 +111,7 @@ public class UserRole implements java.io.Serializable {
         this.userId = userId;
     }
 
+    @Column(name="START_DATE",length=19)
     public Date getStartDate() {
         return startDate;
     }
@@ -117,6 +120,7 @@ public class UserRole implements java.io.Serializable {
         this.startDate = startDate;
     }
 
+    @Column(name="END_DATE",length=19)
     public Date getEndDate() {
         return endDate;
     }
@@ -125,4 +129,65 @@ public class UserRole implements java.io.Serializable {
         this.endDate = endDate;
     }
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((userRoleId == null) ? 0 : userRoleId.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		UserRole other = (UserRole) obj;
+		if (createDate == null) {
+			if (other.createDate != null)
+				return false;
+		} else if (!createDate.equals(other.createDate))
+			return false;
+		if (createdBy == null) {
+			if (other.createdBy != null)
+				return false;
+		} else if (!createdBy.equals(other.createdBy))
+			return false;
+		if (endDate == null) {
+			if (other.endDate != null)
+				return false;
+		} else if (!endDate.equals(other.endDate))
+			return false;
+		if (roleId == null) {
+			if (other.roleId != null)
+				return false;
+		} else if (!roleId.equals(other.roleId))
+			return false;
+		if (startDate == null) {
+			if (other.startDate != null)
+				return false;
+		} else if (!startDate.equals(other.startDate))
+			return false;
+		if (status == null) {
+			if (other.status != null)
+				return false;
+		} else if (!status.equals(other.status))
+			return false;
+		if (userId == null) {
+			if (other.userId != null)
+				return false;
+		} else if (!userId.equals(other.userId))
+			return false;
+		if (userRoleId == null) {
+			if (other.userRoleId != null)
+				return false;
+		} else if (!userRoleId.equals(other.userRoleId))
+			return false;
+		return true;
+	}
+
+    
 }

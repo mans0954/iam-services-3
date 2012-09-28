@@ -906,14 +906,11 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 	 * @param roleId
 	 * @return
 	 */
-	public List<Resource> getResourcesForRole(String domainId, String roleId) {
-		if (domainId == null) {
-			throw new IllegalArgumentException("domainId is null");
-		}
+	public List<Resource> getResourcesForRole(String roleId) {
 		if (roleId == null) {
 			throw new IllegalArgumentException("roleId is null");
 		}
-		return dozerUtils.getDozerDeepMappedResourceList(resourceDao.findResourcesForRole(domainId, roleId));
+		return dozerUtils.getDozerDeepMappedResourceList(resourceDao.findResourcesForRole(roleId));
 	}
 
 	/**
@@ -923,15 +920,11 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 	 * @param roleIdList
 	 * @return
 	 */
-	public List<Resource> getResourcesForRoles(String domainId,
-			List<String> roleIdList) {
-		if (domainId == null) {
-			throw new IllegalArgumentException("domainId is null");
-		}
+	public List<Resource> getResourcesForRoles(List<String> roleIdList) {
 		if (roleIdList == null) {
 			throw new IllegalArgumentException("roleIdList is null");
 		}
-		return dozerUtils.getDozerDeepMappedResourceList(resourceDao.findResourcesForRoles(domainId, roleIdList));
+		return dozerUtils.getDozerDeepMappedResourceList(resourceDao.findResourcesForRoles(roleIdList));
 	}
 
 	/**
@@ -966,16 +959,13 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 	 * @param privilegeId
 	 *            the privilege id
 	 */
-	void removeResourceRolePrivilege(String resourceId, String roleId,
-			String privilegeId) {
+	void removeResourceRolePrivilege(String resourceId, String roleId) {
 		if (resourceId == null)
 			throw new IllegalArgumentException("resourceId is null");
 		if (roleId == null)
 			throw new IllegalArgumentException("roleId is null");
-		if (privilegeId == null)
-			throw new IllegalArgumentException("privilegeId is null");
 
-		resourceDao.removeResourceRolePrivilege(resourceId, roleId, privilegeId);
+		resourceDao.removeResourceRolePrivilege(resourceId, roleId);
 	}
 
 	/**
@@ -1099,11 +1089,10 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 
     }
 
-	public boolean isRoleAuthorized(String domainId, String roleId,
-			String resourceId) {
+	public boolean isRoleAuthorized(String roleId, String resourceId) {
 		log.info("isUserAuthorized called.");
 
-		List<Resource> resList = this.getResourcesForRole(domainId, roleId);
+		List<Resource> resList = getResourcesForRole(roleId);
 		log.info("- resList= " + resList);
 		if (resList == null) {
 			log.info("resource list for user is null");
@@ -1117,194 +1106,6 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 		}
 		return false;
 	}
-
-
-
-    /* Temp hack ---------------------  -------------------------*/
-    
-    public String attributeString(String domainId, String principal) {
-
-        List<String> oidList = new ArrayList<String>();
-        String permitOverRide;
-        String orgName = null;
-        Organization org = null;
-
-        Login principalLg =  loginManager.getLoginByManagedSys(domainId, principal, "0");
-
-        if (principalLg == null) {
-            return null;
-        }
-
-        User usr = userManager.getUserWithDependent(principalLg.getUserId(), true);
-        List<Role> roleList =  roleDataService.getUserRoles(principalLg.getUserId());
-
-
-
-
-        if (usr.getCompanyId() != null && usr.getCompanyId().length() > 0) {
-
-            org = orgManager.getOrganization(usr.getCompanyId());
-            if (org != null && org.getOrganizationName() != null) {
-                orgName = org.getOrganizationName();
-                // oid = org.getAlias();
-              //  addOid(oidList, org.getAlias());
-            }else {
-                orgName = "NA";
-            }
-        }
-
-        UserAttribute attrPermitOverride =  usr.getAttribute("permit-override");
-        if (attrPermitOverride == null  ) {
-            permitOverRide = "N";
-        }else {
-            if ( attrPermitOverride.getValue() == null || !attrPermitOverride.getValue().equalsIgnoreCase("Y")) {
-                permitOverRide = "N";
-            }else {
-                permitOverRide = "Y";
-            }
-
-        }
-        List<Organization> affiliationList = null;
-
-        if (roleContains("EMERGENCY_ROLE", roleList)) {
-
-            log.info("Emergency role found");
-
-
-            affiliationList = orgManager.getAllOrganizations();
-        } else {
-
-            affiliationList =  orgManager.getOrganizationsForUser(principalLg.getUserId());
-        }
-
-        if (affiliationList != null && affiliationList.size() > 0) {
-            Set<Organization> orgSet = new TreeSet<Organization>(affiliationList);
-            orgSet.add(org);
-
-            for (Organization o : orgSet) {
-            //for (Organization o : affiliationList) {
-                if ( o.getAlias() != null && !o.getAlias().isEmpty() ) {
-
-                    addOid(oidList, o.getAlias());
-                }
-
-            }
-        }else {
-            if (org != null && org.getAlias() != null) {
-                addOid(oidList, org.getAlias());
-            }
-
-        }
-
-       // sort objects
-       // role
-        Set<Role> roleSet = new TreeSet<Role>(roleList);
-
-       // oidList
-
-
-
-
-
-        String roleStr = null;
-
-        if (roleList != null && !roleList.isEmpty()) {
-
-            for ( Role r : roleSet) {
-            //for ( Role r : roleList) {
-                if (roleStr == null) {
-                    roleStr = r.getId().getRoleId();
-                }else {
-                    roleStr = roleStr + "," + r.getId().getRoleId();
-                }
-
-            }
-        }
-
-
-
-        StringBuffer headerString = new StringBuffer();
-
-        if (usr.getFirstName() != null && usr.getFirstName().length() > 0) {
-            headerString.append("firstname=" + usr.getFirstName());
-        }else {
-            headerString.append("&firstname=NA");
-        }
-        if (usr.getLastName() != null && usr.getLastName().length() > 0) {
-            headerString.append("&secondname=" + usr.getLastName());
-        }else {
-            headerString.append("&secondname=NA");
-        }
-        headerString.append("&fullname=" + usr.getFirstName() + " " + usr.getLastName());
-        if (roleStr != null && roleStr.length() > 0) {
-            headerString.append("&role=" + roleStr );
-        }else {
-            headerString.append("&role=NO_ROLE");
-        }
-        headerString.append("&organization=" + orgName );
-        headerString.append("&organizationoid=" + getOidString(oidList) );
-
-        headerString.append("&permit=" + permitOverRide );
-
-        return headerString.toString();
-    }
-
-    private void addOid(List<String> oidList, String newOid) {
-        for (String oid : oidList) {
-            if (oid.equalsIgnoreCase(newOid)) {
-                // found - its already in the list
-                return;
-            }
-
-        }
-        oidList.add(newOid);
-    }
-
-    private String getOidString(List<String> oidList) {
-        StringBuffer oid = new StringBuffer();
-
-        int ctr = 0;
-        for ( String o : oidList) {
-
-            if (ctr == 0) {
-                oid.append( o );
-            } else {
-                if (o != null && !o.isEmpty())
-                oid.append("," + o);
-            }
-            ctr++;
-
-
-        }
-        if (oidList.isEmpty()) {
-            return "NA";
-        }
-        return oid.toString();
-
-    }
-
-
-    private boolean roleContains(String roleId, List<Role> roleList) {
-
-        if (roleList == null || roleList.isEmpty()) {
-            return false;
-        }
-
-
-
-        for (Role r : roleList) {
-            if (r != null) {
-                log.info("Checking Role name " + r);
-
-                if (r.getId().getRoleId().equalsIgnoreCase(roleId)) {
-                    return true;
-                }
-            }
-
-        }
-        return false;
-
-    }
 
     @Override
     public ResourcePrivilege addResourcePrivilege(ResourcePrivilege resourcePrivilege) {

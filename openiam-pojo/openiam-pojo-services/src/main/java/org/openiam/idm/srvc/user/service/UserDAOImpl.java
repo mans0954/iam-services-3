@@ -240,7 +240,7 @@ public class UserDAOImpl implements UserDAO {
                 "  		LEFT JOIN USER_ATTRIBUTES ua ON ( ua.USER_ID = u.USER_ID) " +
                 "  		LEFT JOIN USER_GRP g ON ( g.USER_ID = u.USER_ID) " +
                 "  		LEFT JOIN COMPANY c ON ( c.COMPANY_ID = u.COMPANY_ID) " +
-                "	 	LEFT JOIN USER_ROLE_VW urv on (u.USER_ID = urv.USER_ID) ";
+                "	 	LEFT JOIN USER_ROLE urv on (u.USER_ID = urv.USER_ID) ";
 
 
         StringBuffer where = new StringBuffer();
@@ -731,7 +731,7 @@ public class UserDAOImpl implements UserDAO {
         // changing outer joins to inner-joins has a big impact on performance
 
         join.append("   JOIN LOGIN lg ON ( lg.USER_ID = u.USER_ID) ");
-        join.append("   LEFT JOIN USER_ROLE_VW urv on (u.USER_ID = urv.USER_ID)");
+        join.append("   LEFT JOIN USER_ROLE urv on (u.USER_ID = urv.USER_ID)");
 
 
 

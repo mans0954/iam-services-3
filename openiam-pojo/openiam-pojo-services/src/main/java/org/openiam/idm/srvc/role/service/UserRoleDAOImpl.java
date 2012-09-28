@@ -87,7 +87,7 @@ public class UserRoleDAOImpl implements UserRoleDAO {
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.role.service.UserRoleDAO#findById(java.lang.String)
 	 */
-	public UserRole findById(java.lang.String id) {
+	public UserRole findById(String id) {
 		log.debug("getting UserRole instance with id: " + id);
 		try {
 			UserRole instance = (UserRole) sessionFactory.getCurrentSession()
@@ -119,17 +119,14 @@ public class UserRoleDAOImpl implements UserRoleDAO {
 		return result;			
 	}
 	
-	public List<User> findUserByRole(String domainId, String roleId) {
-		
-		log.debug("findUserByRole: domainId=" + domainId);
+	public List<User> findUserByRole(String roleId) {
 		log.debug("findUserByRole: roleId=" + roleId);
 		
 		Session session = sessionFactory.getCurrentSession();
 		Query qry = session.createQuery("select usr from org.openiam.idm.srvc.user.dto.User as usr, UserRole ur " +
-						" where ur.serviceId = :domainId and ur.roleId = :roleId and ur.userId = usr.userId " +
+						" where ur.roleId = :roleId and ur.userId = usr.userId " +
 						" order by usr.lastName, usr.firstName ");
 		
-		qry.setString("domainId",domainId);
 		qry.setString("roleId",roleId);
 		List<User> result = (List<User>)qry.list();
 		if (result == null || result.size() == 0)
@@ -137,27 +134,25 @@ public class UserRoleDAOImpl implements UserRoleDAO {
 		return result;			
 	}
 	
-	public void removeUserFromRole(String domainId, String roleId,	String userId) {
+	public void removeUserFromRole(String roleId,	String userId) {
 		log.debug("removeUserFromRole: userId=" + userId);
 		log.debug("removeUserFromRole: roleId=" + roleId);
 		
 		Session session = sessionFactory.getCurrentSession();
 		Query qry = session.createQuery("delete org.openiam.idm.srvc.role.dto.UserRole ur " + 
-					" where ur.roleId = :roleId and ur.serviceId = :domainId and ur.userId = :userId ");
+					" where ur.roleId = :roleId and ur.userId = :userId ");
 		qry.setString("roleId", roleId);
-		qry.setString("domainId", domainId);
 		qry.setString("userId", userId);
 		qry.executeUpdate();	
 	}
 
-	public void removeAllUsersInRole(String domainId, String roleId) {
+	public void removeAllUsersInRole(String roleId) {
 		log.debug("removeUserFromRole: roleId=" + roleId);
 		
 		Session session = sessionFactory.getCurrentSession();
 		Query qry = session.createQuery("delete org.openiam.idm.srvc.role.dto.UserRole ur " + 
-					" where ur.roleId = :roleId and ur.serviceId = :domainId ");
+					" where ur.roleId = :roleId");
 		qry.setString("roleId", roleId);
-		qry.setString("domainId", domainId);
 		qry.executeUpdate();			
 	}
 

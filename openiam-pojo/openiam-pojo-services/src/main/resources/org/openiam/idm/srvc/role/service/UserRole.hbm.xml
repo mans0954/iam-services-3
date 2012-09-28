@@ -10,10 +10,6 @@
         <property name="userId" type="string">
             <column name="USER_ID" length="32" not-null="true" />
         </property>
-        
-        <property name="serviceId" type="string">
-            <column name="SERVICE_ID" length="20" not-null="true" />
-        </property>
         <property name="roleId" type="string">
             <column name="ROLE_ID" length="32" not-null="true" />
         </property>

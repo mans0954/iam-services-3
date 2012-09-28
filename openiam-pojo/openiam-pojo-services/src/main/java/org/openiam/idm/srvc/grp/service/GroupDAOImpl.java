@@ -33,7 +33,7 @@ import org.openiam.idm.srvc.user.service.UserDAO;
  * @see org.openiam.idm.srvc.grp.dto.Group
  * @author Suneet Shah
  */
-public class GroupDAOImpl implements org.openiam.idm.srvc.grp.service.GroupDAO {
+public class GroupDAOImpl implements GroupDAO {
 
 	protected UserDAO userDao;
 
@@ -159,19 +159,6 @@ public class GroupDAOImpl implements org.openiam.idm.srvc.grp.service.GroupDAO {
 	//	qry.setCacheable(true);
 		List<Group> results = (List<Group>)qry.list();
 		return results;
-	}
-	
-	public List<Group> findGroupsInRole(String serviceId, String roleId) {
-		Session session = sessionFactory.getCurrentSession();
-		Query qry = session.createQuery(" from  org.openiam.idm.srvc.grp.dto.Group grp " +
-										" 		inner join grp.groupRoles as groupRole " +
-										" where groupRole.role.serviceId = :serviceId and " +
-										" 		groupRole.role.roleId = :roleId ");
-		qry.setString("serviceId", serviceId);
-		qry.setString("roleId", roleId);
-
-		List<Group> results = (List<Group>)qry.list();
-		return results;		
 	}
 
 	/**

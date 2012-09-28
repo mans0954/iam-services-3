@@ -94,4 +94,55 @@ public class ResourcePolicy implements java.io.Serializable {
         this.applyToChildren = applyToChildren;
     }
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((resourcePolicyId == null) ? 0 : resourcePolicyId.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ResourcePolicy other = (ResourcePolicy) obj;
+		if (applyToChildren == null) {
+			if (other.applyToChildren != null)
+				return false;
+		} else if (!applyToChildren.equals(other.applyToChildren))
+			return false;
+		if (policyEnd == null) {
+			if (other.policyEnd != null)
+				return false;
+		} else if (!policyEnd.equals(other.policyEnd))
+			return false;
+		if (policyStart == null) {
+			if (other.policyStart != null)
+				return false;
+		} else if (!policyStart.equals(other.policyStart))
+			return false;
+		if (resourceId == null) {
+			if (other.resourceId != null)
+				return false;
+		} else if (!resourceId.equals(other.resourceId))
+			return false;
+		if (resourcePolicyId == null) {
+			if (other.resourcePolicyId != null)
+				return false;
+		} else if (!resourcePolicyId.equals(other.resourcePolicyId))
+			return false;
+		if (roleId == null) {
+			if (other.roleId != null)
+				return false;
+		} else if (!roleId.equals(other.roleId))
+			return false;
+		return true;
+	}
+
+    
 }

@@ -23,7 +23,6 @@ import org.openiam.idm.srvc.cat.dto.Category;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.role.dto.RoleId;
 
 /**
  * DAO implementation for MetadataType

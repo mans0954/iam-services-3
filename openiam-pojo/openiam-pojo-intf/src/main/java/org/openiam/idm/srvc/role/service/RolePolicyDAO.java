@@ -20,6 +20,6 @@ public interface RolePolicyDAO {
     public RolePolicy update(RolePolicy detachedInstance);
 
 
-    public List<RolePolicy> findRolePolicies(String serviceId, String roleId);
+    public List<RolePolicy> findRolePolicies(String roleId);
 
 }

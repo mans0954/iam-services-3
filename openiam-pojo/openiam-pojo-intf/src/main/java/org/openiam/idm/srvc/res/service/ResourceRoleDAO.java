@@ -35,9 +35,9 @@ public interface ResourceRoleDAO {
       */
     List<ResourceRole> findAllResourceRoles();
 
-    List<ResourceRole> findResourcesForRole(String domainId, String roleId);
+    List<ResourceRole> findResourcesForRole(String roleId);
 
-    void removeResourceRole(String domainId, String roleId);
+    void removeResourceRole(String roleId);
 
     /* (non-Javadoc)
       * @see org.openiam.idm.srvc.res.service.ResourceRoleDAO#removeAllResourceRoles()

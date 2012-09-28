@@ -1,10 +1,30 @@
 package org.openiam.idm.srvc.role.dto;
 
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+import org.hibernate.annotations.GenericGenerator;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseObject;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupSet;
+import org.openiam.idm.srvc.grp.dto.GroupSetAdapter;
 
+import javax.persistence.Cacheable;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.*;
@@ -26,7 +46,6 @@ import java.util.*;
  *         &lt;element name="groups" type="{urn:idm.openiam.org/srvc/grp/dto}groupSet" minOccurs="0"/>
  *         &lt;element name="id" type="{urn:idm.openiam.org/srvc/role/dto}roleId" minOccurs="0"/>
  *         &lt;element name="provisionObjName" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *         &lt;element name="parentRoleId" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *         &lt;element name="roleAttributes" type="{urn:idm.openiam.org/srvc/role/dto}roleAttributeSet" minOccurs="0"/>
  *         &lt;element name="roleName" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *         &lt;element name="userAssociationMethod" type="{http://www.w3.org/2001/XMLSchema}int" minOccurs="0"/>
@@ -41,19 +60,18 @@ import java.util.*;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "role", propOrder = {
+        "roleId",
         "createDate",
+        "serviceId",
         "createdBy",
         "description",
         "groups",
-        "id",
         "provisionObjName",
-        "parentRoleId",
         "roleAttributes",
         "roleName",
         "userAssociationMethod",
         "metadataTypeId",
         "ownerId",
-        "inheritFromParent",
         "status",
         "childRoles",
         "selected",
@@ -61,16 +79,19 @@ import java.util.*;
         "operation",
         "startDate",
         "endDate",
-        "rolePolicy"
-        /*"parentRoles"*/
+        "rolePolicy",
+        "parentRoles"
 })
 @XmlRootElement(name = "Role")
 @XmlSeeAlso({
-        RoleId.class,
         Group.class,
         RoleAttribute.class,
         RolePolicy.class
 })
+@Entity
+@Table(name="ROLE")
+@Cacheable
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class Role extends BaseObject implements Comparable<Role> {
 
     /**
@@ -84,12 +105,11 @@ public class Role extends BaseObject implements Comparable<Role> {
     protected Date createDate;
     protected String createdBy;
     protected String description;
-    @XmlJavaTypeAdapter(org.openiam.idm.srvc.grp.dto.GroupSetAdapter.class)
+    @XmlJavaTypeAdapter(GroupSetAdapter.class)
     protected Set<Group> groups = new HashSet<Group>(0);
-    protected RoleId id;
+    protected String roleId;
     protected String provisionObjName;
-    protected String parentRoleId;
-    @XmlJavaTypeAdapter(org.openiam.idm.srvc.role.dto.RoleAttributeSetAdapter.class)
+    @XmlJavaTypeAdapter(RoleAttributeSetAdapter.class)
     protected Set<RoleAttribute> roleAttributes = new HashSet<RoleAttribute>(0);
 
     protected Set<RolePolicy> rolePolicy = new HashSet<RolePolicy>();
@@ -103,13 +123,11 @@ public class Role extends BaseObject implements Comparable<Role> {
     protected String metadataTypeId;
 
     protected String ownerId;
-    protected Integer inheritFromParent;
     protected String internalRoleId;
-    
-    /*
-    private Set<Role> parentRoles = null;
-    */
-    private Set<Role> childRoles = null;
+    private String serviceId;
+
+    private Set<Role> parentRoles;
+    private Set<Role> childRoles;
 
 
     @XmlSchemaType(name = "dateTime")
@@ -119,208 +137,110 @@ public class Role extends BaseObject implements Comparable<Role> {
 
     public Role() {
     }
-
-
-    public Role(RoleId id) {
-        this.id = id;
+    
+    public Role(final String roleId) {
+    	this.roleId = roleId;
     }
 
+    @Id
+    @GeneratedValue(generator="system-uuid")
+    @GenericGenerator(name="system-uuid", strategy = "uuid")
+    @Column(name="ROLE_ID", length=32)
+    public String getRoleId() {
+		return roleId;
+	}
 
-    /**
-     * Gets the value of the createDate property.
-     *
-     * @return possible object is
-     *         {@link XMLGregorianCalendar }
-     */
+	public void setRoleId(String roleId) {
+		this.roleId = roleId;
+	}
+
+	@Column(name="SERVICE_ID",length=32)
+	public String getServiceId() {
+		return serviceId;
+	}
+
+	public void setServiceId(String serviceId) {
+		this.serviceId = serviceId;
+	}
+
+	@Column(name="CREATE_DATE",length=19)
     public Date getCreateDate() {
         return createDate;
     }
 
-    /**
-     * Sets the value of the createDate property.
-     *
-     * @param value allowed object is
-     *              {@link XMLGregorianCalendar }
-     */
     public void setCreateDate(Date value) {
         this.createDate = value;
     }
 
-    /**
-     * Gets the value of the createdBy property.
-     *
-     * @return possible object is
-     *         {@link String }
-     */
+    @Column(name="CREATED_BY",length=20)
     public String getCreatedBy() {
         return createdBy;
     }
 
-    /**
-     * Sets the value of the createdBy property.
-     *
-     * @param value allowed object is
-     *              {@link String }
-     */
     public void setCreatedBy(String value) {
         this.createdBy = value;
     }
 
-    /**
-     * Gets the value of the description property.
-     *
-     * @return possible object is
-     *         {@link String }
-     */
+    @Column(name="DESCRIPTION")
     public String getDescription() {
         return description;
     }
 
-    /**
-     * Sets the value of the description property.
-     *
-     * @param value allowed object is
-     *              {@link String }
-     */
     public void setDescription(String value) {
         this.description = value;
     }
 
-    /**
-     * Gets the value of the groups property.
-     *
-     * @return possible object is
-     *         {@link GroupSet }
-     */
-    public Set<org.openiam.idm.srvc.grp.dto.Group> getGroups() {
+	@ManyToMany(cascade=CascadeType.ALL,fetch=FetchType.EAGER)
+    @JoinTable(name="GRP_ROLE",
+	    joinColumns={@JoinColumn(name="ROLE_ID")},
+	    inverseJoinColumns={@JoinColumn(name="GRP_ID")})
+	@Fetch(FetchMode.SELECT)
+    public Set<Group> getGroups() {
         return groups;
     }
 
-    /**
-     * Sets the value of the groups property.
-     *
-     * @param value allowed object is
-     *              {@link GroupSet }
-     */
-    public void setGroups(Set<org.openiam.idm.srvc.grp.dto.Group> value) {
+    public void setGroups(Set<Group> value) {
         this.groups = value;
     }
 
-    /**
-     * Gets the value of the id property.
-     *
-     * @return possible object is
-     *         {@link RoleId }
-     */
-    public RoleId getId() {
-        return id;
-    }
-
-    /**
-     * Sets the value of the id property.
-     *
-     * @param value allowed object is
-     *              {@link RoleId }
-     */
-    public void setId(RoleId value) {
-        this.id = value;
-    }
-
-    /**
-     * Gets the value of the provisionObjName property.
-     *
-     * @return possible object is
-     *         {@link String }
-     */
+    @Column(name="PROVISION_OBJ_NAME",length=80)
     public String getProvisionObjName() {
         return provisionObjName;
     }
 
-    /**
-     * Sets the value of the provisionObjName property.
-     *
-     * @param value allowed object is
-     *              {@link String }
-     */
     public void setProvisionObjName(String value) {
         this.provisionObjName = value;
     }
 
-    /**
-     * Gets the value of the parentRoleId property.
-     *
-     * @return possible object is
-     *         {@link String }
-     */
-    public String getParentRoleId() {
-        return parentRoleId;
-    }
-
-    /**
-     * Sets the value of the parentRoleId property.
-     *
-     * @param value allowed object is
-     *              {@link String }
-     */
-    public void setParentRoleId(String value) {
-        this.parentRoleId = value;
-    }
-
-    /**
-     * Gets the value of the roleAttributes property.
-     *
-     * @return possible object is
-     *         {@link RoleAttributeSet }
-     */
-    public Set<org.openiam.idm.srvc.role.dto.RoleAttribute> getRoleAttributes() {
+	@OneToMany(fetch=FetchType.EAGER,orphanRemoval=true,cascade={CascadeType.ALL})
+	@JoinColumn(name="ROLE_ID")
+    public Set<RoleAttribute> getRoleAttributes() {
         return roleAttributes;
     }
 
-    /**
-     * Sets the value of the roleAttributes property.
-     *
-     * @param value allowed object is
-     *              {@link RoleAttributeSet }
-     */
-    public void setRoleAttributes(Set<org.openiam.idm.srvc.role.dto.RoleAttribute> value) {
+    public void setRoleAttributes(Set<RoleAttribute> value) {
         this.roleAttributes = value;
     }
 
-    /**
-     * Gets the value of the roleName property.
-     *
-     * @return possible object is
-     *         {@link String }
-     */
+    @Column(name="ROLE_NAME",length=80)
     public String getRoleName() {
         return roleName;
     }
 
-    /**
-     * Sets the value of the roleName property.
-     *
-     * @param value allowed object is
-     *              {@link String }
-     */
     public void setRoleName(String value) {
         this.roleName = value;
     }
 
-    /**
-     * Gets the value of the userAssociationMethod property.
-     */
+    @Transient
     public int getUserAssociationMethod() {
         return userAssociationMethod;
     }
 
-    /**
-     * Sets the value of the userAssociationMethod property.
-     */
     public void setUserAssociationMethod(int value) {
         this.userAssociationMethod = value;
     }
 
-
+    @Column(name="TYPE_ID",length=20)
     public String getMetadataTypeId() {
         return metadataTypeId;
     }
@@ -330,7 +250,7 @@ public class Role extends BaseObject implements Comparable<Role> {
         this.metadataTypeId = metadataTypeId;
     }
 
-
+    @Column(name="OWNER_ID",length=32)
     public String getOwnerId() {
         return ownerId;
     }
@@ -339,18 +259,30 @@ public class Role extends BaseObject implements Comparable<Role> {
     public void setOwnerId(String ownerId) {
         this.ownerId = ownerId;
     }
-
-
-    public Integer getInheritFromParent() {
-        return inheritFromParent;
-    }
-
-
-    public void setInheritFromParent(Integer inheritFromParent) {
-        this.inheritFromParent = inheritFromParent;
+    
+    public void addParentRole(final Role role) {
+    	if(role != null) {
+    		if(parentRoles == null) {
+    			parentRoles = new LinkedHashSet<Role>();
+    		}
+    		parentRoles.add(role);
+    	}
     }
     
-    public void addChildRole(final Role role) {
+    @ManyToMany(cascade={CascadeType.ALL},fetch=FetchType.LAZY)
+    @JoinTable(name="role_to_role_membership",
+        joinColumns={@JoinColumn(name="MEMBER_ROLE_ID")},
+        inverseJoinColumns={@JoinColumn(name="ROLE_ID")})
+    @Fetch(FetchMode.SUBSELECT)
+    public Set<Role> getParentRoles() {
+		return parentRoles;
+	}
+
+	public void setParentRoles(Set<Role> parentRoles) {
+		this.parentRoles = parentRoles;
+	}
+
+	public void addChildRole(final Role role) {
     	if(role != null) {
     		if(childRoles == null) {
     			childRoles = new LinkedHashSet<Role>();
@@ -358,27 +290,12 @@ public class Role extends BaseObject implements Comparable<Role> {
     		childRoles.add(role);
     	}
     }
-    
-    /*
-    public void addParentRole(final Role role) {
-    	if(role != null) {
-    		if(parentRoleId == null) {
-    			parentRoles = new LinkedHashSet<Role>();
-    		}
-    		parentRoles.add(role);
-    	}
-    }
 
-    public Set<Role> getParentRoles() {
-		return parentRoles;
-	}
-
-
-	public void setParentRoles(Set<Role> parentRoles) {
-		this.parentRoles = parentRoles;
-	}
-	*/
-
+	@ManyToMany(cascade={CascadeType.ALL},fetch=FetchType.LAZY)
+    @JoinTable(name="role_to_role_membership",
+        joinColumns={@JoinColumn(name="ROLE_ID")},
+        inverseJoinColumns={@JoinColumn(name="MEMBER_ROLE_ID")})
+    @Fetch(FetchMode.SUBSELECT)
 	public Set<Role> getChildRoles() {
 		return childRoles;
 	}
@@ -390,19 +307,17 @@ public class Role extends BaseObject implements Comparable<Role> {
 
 
 	public String toString() {
-        String str = "id=" + id +
+        String str = "id=" + roleId +
                 " name=" + roleName +
                 " metadataTypeId=" + metadataTypeId +
                 " ownerId=" + ownerId +
-                " inheritFromParent=" + this.inheritFromParent +
-                " parentRoleId=" + parentRoleId +
                 " startDate=" + startDate +
                 " endDate=" + endDate;
         return str;
 
     }
 
-
+	@Column(name="STATUS",length=20)
     public String getStatus() {
         return status;
     }
@@ -416,7 +331,7 @@ public class Role extends BaseObject implements Comparable<Role> {
         this.status = status.toString();
     }
 
-
+    @Column(name="INTERNAL_ROLE_ID")
     public String getInternalRoleId() {
         return internalRoleId;
     }
@@ -426,7 +341,7 @@ public class Role extends BaseObject implements Comparable<Role> {
         this.internalRoleId = internalRoleId;
     }
 
-
+    @Transient
     public Boolean getSelected() {
         return selected;
     }
@@ -436,7 +351,7 @@ public class Role extends BaseObject implements Comparable<Role> {
         this.selected = selected;
     }
 
-
+    @Transient
     public AttributeOperationEnum getOperation() {
         return operation;
     }
@@ -446,31 +361,29 @@ public class Role extends BaseObject implements Comparable<Role> {
         this.operation = operation;
     }
 
-
+	@OneToMany(fetch=FetchType.EAGER,orphanRemoval=true,cascade=CascadeType.ALL)
+	@JoinColumn(name="ROLE_ID")
     public Set<RolePolicy> getRolePolicy() {
         return rolePolicy;
     }
-
 
     public void setRolePolicy(Set<RolePolicy> rolePolicy) {
         this.rolePolicy = rolePolicy;
     }
 
-
+    @Transient
     public Date getStartDate() {
         return startDate;
     }
-
 
     public void setStartDate(Date startDate) {
         this.startDate = startDate;
     }
 
-
+    @Transient
     public Date getEndDate() {
         return endDate;
     }
-
 
     public void setEndDate(Date endDate) {
         this.endDate = endDate;
@@ -489,7 +402,7 @@ public class Role extends BaseObject implements Comparable<Role> {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result + ((roleId == null) ? 0 : roleId.hashCode());
 		return result;
 	}
 
@@ -529,11 +442,6 @@ public class Role extends BaseObject implements Comparable<Role> {
             return false;
         }
 
-        if ((this.inheritFromParent == null && compareRole.inheritFromParent != null) ||
-                this.inheritFromParent != null && compareRole.inheritFromParent == null) {
-            return false;
-        }
-
         if ((this.metadataTypeId == null && compareRole.metadataTypeId != null) ||
                 this.metadataTypeId != null && compareRole.metadataTypeId == null) {
             return false;
@@ -549,8 +457,7 @@ public class Role extends BaseObject implements Comparable<Role> {
         }
 
         return (this.description == compareRole.description || this.description.equals(compareRole.description)) &&
-                (this.id.equals(compareRole.id)) &&
-                (this.inheritFromParent == compareRole.inheritFromParent || this.inheritFromParent.equals(compareRole.inheritFromParent)) &&
+                (this.roleId.equals(compareRole.roleId)) &&
                 (this.internalRoleId == compareRole.internalRoleId || this.internalRoleId.equals(compareRole.internalRoleId)) &&
                 (this.metadataTypeId == compareRole.metadataTypeId || this.metadataTypeId.equals(compareRole.metadataTypeId)) &&
                 (this.ownerId == compareRole.ownerId || this.ownerId.equals(compareRole.ownerId)) &&

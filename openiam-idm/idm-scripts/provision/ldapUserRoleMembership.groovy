@@ -12,7 +12,7 @@ println("user roles =" + roleList);
 if (roleList != null) {
 	if (roleList.size() > 0)  {
 		for (Role r : roleList) {
-			roleStrList.add("cn=" + r.id.roleId + "," + roleBaseDN);
+			roleStrList.add("cn=" + r.roleId + "," + roleBaseDN);
 			
 		}
 		output = roleStrList;

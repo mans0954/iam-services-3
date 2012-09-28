@@ -23,20 +23,19 @@ import javax.jws.WebService;
 public interface RoleDataWebService {
 
     /**
-     * Retrieves a role object based on the roleId and the domainId.
+     * Retrieves a role object based on the roleId.
      * Dependent objects include Group and Users collections that are associated with this Role.
      *
-     * @param domainId
      * @param roleId
      * @return
      */
     @WebMethod
     RoleResponse getRole(
-            @WebParam(name = "domainId", targetNamespace = "")
-            String domainId,
             @WebParam(name = "roleId", targetNamespace = "")
             String roleId);
 
+    @WebMethod
+    RoleResponse getRoleByName(@WebParam(name = "roleName", targetNamespace = "") String roleName);
 
     /**
      * Adds a new role to the system
@@ -63,35 +62,23 @@ public interface RoleDataWebService {
     /**
      * Removes a role.
      *
-     * @param domainId
      * @param roleId
      */
     @WebMethod
     Response removeRole(
-            @WebParam(name = "domainId", targetNamespace = "")
-            String domainId,
             @WebParam(name = "roleId", targetNamespace = "")
             String roleId);
 
     /**
-     * Returns an array of roles that are in a security domain.
-     *
-     * @param domainId
-     * @return
-     */
-    @WebMethod
-    RoleListResponse getRolesInDomain(
-            @WebParam(name = "domainId", targetNamespace = "")
-            String domainId);
-
-    /**
-     * Returns a list of all Roles regardless of service The list is sorted by
-     * domainId, Role
+     * Returns a list of all Roles regardless of service The list is sorted by  Role
      *
      * @return
      */
     @WebMethod
     RoleListResponse getAllRoles();
+    
+    @WebMethod
+    public RoleListResponse getRolesInDomain(final String domainId);
 
     /** * Attribute Methods ****** */
 
@@ -118,14 +105,11 @@ public interface RoleDataWebService {
     /**
      * Returns an array of RoleAttributes for the Role.
      *
-     * @param domainId
      * @param roleId
      * @return
      */
     @WebMethod
     RoleAttributeArrayResponse getAllAttributes(
-            @WebParam(name = "domainId", targetNamespace = "")
-            String domainId,
             @WebParam(name = "roleId", targetNamespace = "")
             String roleId);
 
@@ -153,13 +137,10 @@ public interface RoleDataWebService {
     /**
      * Removes all the attributes associated with a role.
      *
-     * @param domainId
      * @param roleId
      */
     @WebMethod
     Response removeAllAttributes(
-            @WebParam(name = "domainId", targetNamespace = "")
-            String domainId,
             @WebParam(name = "roleId", targetNamespace = "")
             String roleId);
 
@@ -183,15 +164,13 @@ public interface RoleDataWebService {
      * For example:
      * <p/>
      * <code>
-     * boolean check = roleService.isGroupInRole(domainId, roleId, groupId);<br>
+     * boolean check = roleService.isGroupInRole( roleId, groupId);<br>
      * </code>
      *
      * @return boolean Returns True if group belongs to that roleId.
      */
     @WebMethod
     Response isGroupInRole(
-            @WebParam(name = "domainId", targetNamespace = "")
-            String domainId,
             @WebParam(name = "roleId", targetNamespace = "")
             String roleId,
             @WebParam(name = "groupId", targetNamespace = "")
@@ -203,7 +182,7 @@ public interface RoleDataWebService {
      * For example:
      * <p/>
      * <code>
-     * roleService.addRoleToGroup(domainId, roleId, groupId);<br>
+     * roleService.addRoleToGroup(roleId, groupId);<br>
      * </code>
      *
      * @param grpId  The group for which the roleId is to be added .
@@ -211,8 +190,6 @@ public interface RoleDataWebService {
      */
     @WebMethod
     Response addGroupToRole(
-            @WebParam(name = "domainId", targetNamespace = "")
-            String domainId,
             @WebParam(name = "roleId", targetNamespace = "")
             String roleId,
             @WebParam(name = "groupId", targetNamespace = "")
@@ -221,14 +198,11 @@ public interface RoleDataWebService {
     /**
      * Removes the association between a single group and role.
      *
-     * @param domainId
      * @param roleId
      * @param groupId
      */
     @WebMethod
     Response removeGroupFromRole(
-            @WebParam(name = "domainId", targetNamespace = "")
-            String domainId,
             @WebParam(name = "roleId", targetNamespace = "")
             String roleId,
             @WebParam(name = "groupId", targetNamespace = "")
@@ -237,13 +211,10 @@ public interface RoleDataWebService {
     /**
      * Removes the association between a role and all the groups linked to it.
      *
-     * @param domainId
      * @param roleId
      */
     @WebMethod
     Response removeAllGroupsFromRole(
-            @WebParam(name = "domainId", targetNamespace = "")
-            String domainId,
             @WebParam(name = "roleId", targetNamespace = "")
             String roleId);
 
@@ -253,17 +224,14 @@ public interface RoleDataWebService {
      * For example:
      * <p/>
      * <code>
-     * roleService.getGroupsInRole(domainId, roleId);<br>
+     * roleService.getGroupsInRole(roleId);<br>
      * </code>
      *
-     * @param domainId
      * @param roleId   The roleId for which groups has to be retrieved .
      */
     // problem generating wsdl with this method
     @WebMethod
     GroupArrayResponse getGroupsInRole(
-            @WebParam(name = "domainId", targetNamespace = "")
-            String domainId,
             @WebParam(name = "roleId", targetNamespace = "")
             String roleId);
 
@@ -316,17 +284,14 @@ public interface RoleDataWebService {
      * For example:
      * <p/>
      * <code>
-     * roleService.addUserToRole(domainId, roleId, userId);<br>
+     * roleService.addUserToRole(roleId, userId);<br>
      * </code>
      *
-     * @param domainId
      * @param roleId   The roleId to which the user will be associated.
      * @param userId   The userId to which the roleId is to be added .
      */
     @WebMethod
     Response addUserToRole(
-            @WebParam(name = "domainId", targetNamespace = "")
-            String domainId,
             @WebParam(name = "roleId", targetNamespace = "")
             String roleId,
             @WebParam(name = "userId", targetNamespace = "")
@@ -335,14 +300,11 @@ public interface RoleDataWebService {
     /**
      * This method removes a particular user directly to a role.
      *
-     * @param domainId
      * @param roleId
      * @param userId
      */
     @WebMethod
     Response removeUserFromRole(
-            @WebParam(name = "domainId", targetNamespace = "")
-            String domainId,
             @WebParam(name = "roleId", targetNamespace = "")
             String roleId,
             @WebParam(name = "userId", targetNamespace = "")
@@ -353,7 +315,7 @@ public interface RoleDataWebService {
      * For example:
      * <p/>
      * <code>
-     * boolean check = roleService.isUserInRole(domainId, roleId, userId);<br>
+     * boolean check = roleService.isUserInRole(roleId, userId);<br>
      * </code>
      *
      * @return boolean Returns True if user belongs to that roleId. False if it does not belong to this role.
@@ -361,8 +323,6 @@ public interface RoleDataWebService {
 
     @WebMethod
     Response isUserInRole(
-            @WebParam(name = "domainId", targetNamespace = "")
-            String domainId,
             @WebParam(name = "roleId", targetNamespace = "")
             String roleId,
             @WebParam(name = "userId", targetNamespace = "")
@@ -371,15 +331,12 @@ public interface RoleDataWebService {
     /**
      * Return an array of users that are in a particular role
      *
-     * @param domainId
      * @param roleId
      * @return
      */
     // problem generating wsdl with this method
     @WebMethod
     UserArrayResponse getUsersInRole(
-            @WebParam(name = "domainId", targetNamespace = "")
-            String domainId,
             @WebParam(name = "roleId", targetNamespace = "")
             String roleId);
 
@@ -462,14 +419,11 @@ public interface RoleDataWebService {
     /**
      * Returns List of RolePolicy for the Role.
      *
-     * @param domainId
      * @param roleId
      * @return
      */
     @WebMethod
     public RolePolicyListResponse getAllRolePolicies(
-            @WebParam(name = "domainId", targetNamespace = "")
-            String domainId,
             @WebParam(name = "roleId", targetNamespace = "")
             String roleId);
 

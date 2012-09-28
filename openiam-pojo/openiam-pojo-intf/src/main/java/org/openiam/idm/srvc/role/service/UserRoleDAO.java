@@ -39,11 +39,11 @@ public interface UserRoleDAO {
 
     public abstract UserRole update(UserRole detachedInstance);
 
-    public abstract UserRole findById(java.lang.String id);
+    public abstract UserRole findById(String id);
 
-    public void removeUserFromRole(String serviceId, String roleId, String userId);
+    public void removeUserFromRole(String roleId, String userId);
 
-    public void removeAllUsersInRole(String domainId, String roleId);
+    public void removeAllUsersInRole(String roleId);
 
     /**
      * Get all the UserRole objects for this user
@@ -59,6 +59,6 @@ public interface UserRoleDAO {
      * @param roleId
      * @return
      */
-    List<User> findUserByRole(String domainId, String roleId);
+    List<User> findUserByRole(String roleId);
 
 }

@@ -1,5 +1,9 @@
 package org.openiam.idm.srvc.res.dto;
 
+import javax.persistence.Column;
+import javax.persistence.EmbeddedId;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSchemaType;
@@ -14,17 +18,16 @@ import java.util.Date;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ResourceRole", propOrder = {
-        "id",
-        "permit",
+		"id",
         "startDate",
         "endDate"
 })
+@Entity
+@Table(name="RESOURCE_ROLE")
 public class ResourceRole implements java.io.Serializable {
 
-    private ResourceRoleId id;
-    //private String resourceId;
-
-    protected boolean permit;
+	private ResourceRoleId id;
+	
     @XmlSchemaType(name = "dateTime")
     protected Date startDate;
     @XmlSchemaType(name = "dateTime")
@@ -32,29 +35,18 @@ public class ResourceRole implements java.io.Serializable {
 
     public ResourceRole() {
     }
+    
+    @EmbeddedId
+	public ResourceRoleId getId() {
+		return id;
+	}
 
-    public ResourceRole(ResourceRoleId id) {
-        this.id = id;
-        //this.resourceId = resourceId;
-    }
+	public void setId(ResourceRoleId id) {
+		this.id = id;
+	}
 
-    public ResourceRoleId getId() {
-        return this.id;
-    }
-
-    public void setId(ResourceRoleId id) {
-        this.id = id;
-    }
-
-    public boolean getPermit() {
-        return permit;
-    }
-
-    public void setPermit(boolean permit) {
-        this.permit = permit;
-    }
-
-    public Date getStartDate() {
+	@Column(name="START_DATE")
+	public Date getStartDate() {
         return startDate;
     }
 
@@ -62,6 +54,7 @@ public class ResourceRole implements java.io.Serializable {
         this.startDate = startDate;
     }
 
+    @Column(name="END_DATE")
     public Date getEndDate() {
         return endDate;
     }
@@ -70,13 +63,47 @@ public class ResourceRole implements java.io.Serializable {
         this.endDate = endDate;
     }
 
-    @Override
-    public String toString() {
-        return "ResourceRole{" +
-                "id=" + id +
-                ", permit=" + permit +
-                ", startDate=" + startDate +
-                ", endDate=" + endDate +
-                '}';
-    }
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ResourceRole other = (ResourceRole) obj;
+		if (endDate == null) {
+			if (other.endDate != null)
+				return false;
+		} else if (!endDate.equals(other.endDate))
+			return false;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		if (startDate == null) {
+			if (other.startDate != null)
+				return false;
+		} else if (!startDate.equals(other.startDate))
+			return false;
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		return String
+				.format("ResourceRole [id=%s, startDate=%s, endDate=%s]",
+						id, startDate, endDate);
+	}
+
+	
 }

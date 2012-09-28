@@ -21,7 +21,6 @@ import org.openiam.idm.srvc.grp.dto.GroupAttribute;
 import org.openiam.idm.srvc.grp.dto.GroupStatus;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.dto.RoleAttribute;
-import org.openiam.idm.srvc.role.dto.RoleId;
 import org.openiam.idm.srvc.role.dto.RolePolicy;
 import org.openiam.idm.srvc.role.dto.RoleStatus;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -139,13 +138,11 @@ public class TestGroupConversion {
 		role.setCreatedBy(rs(2));
 		role.setDescription(rs(2));
 		role.setEndDate(new Date());
-		role.setId(new RoleId(rs(2), rs(2)));
 		role.setInternalRoleId(rs(2));
 		role.setMetadataTypeId(rs(2));
 		role.setObjectState(rs(2));
 		role.setOperation(AttributeOperationEnum.ADD);
 		role.setOwnerId(rs(2));
-		role.setParentRoleId(rs(2));
 		role.setProvisionObjName(rs(2));
 		role.setRequestClientIP(rs(2));
 		role.setRequestorDomain(rs(2));
@@ -183,7 +180,6 @@ public class TestGroupConversion {
 		roleAttribute.setName(rs(2));
 		roleAttribute.setRoleAttrId(rs(2));
 		roleAttribute.setRoleId(rs(2));
-		roleAttribute.setServiceId(rs(2));
 		roleAttribute.setValue(rs(2));
 		return roleAttribute;
 	}
@@ -202,7 +198,6 @@ public class TestGroupConversion {
 		rolePolicy.setRoleId(rs(2));
 		rolePolicy.setRolePolicyId(rs(2));
 		rolePolicy.setSelected(true);
-		rolePolicy.setServiceId(rs(2));
 		rolePolicy.setValue1(rs(2));
 		rolePolicy.setValue2(rs(2));
 		return rolePolicy;
@@ -245,7 +240,6 @@ public class TestGroupConversion {
 		Assert.assertEquals(original.getMetadataTypeId(), copy.getMetadataTypeId());
 		Assert.assertEquals(original.getObjectState(), copy.getObjectState());
 		Assert.assertEquals(original.getOwnerId(), copy.getOwnerId());
-		Assert.assertEquals(original.getParentRoleId(), copy.getParentRoleId());
 		Assert.assertEquals(original.getProvisionObjName(), copy.getProvisionObjName());
 		Assert.assertEquals(original.getRequestClientIP(), copy.getRequestClientIP());
 		Assert.assertEquals(original.getRequestorDomain(), copy.getRequestorDomain());

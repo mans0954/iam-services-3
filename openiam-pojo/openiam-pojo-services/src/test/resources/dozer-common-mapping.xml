@@ -40,11 +40,6 @@
 	</mapping>
 	
 	<mapping>
-		<class-a>org.openiam.idm.srvc.role.dto.RoleId</class-a>
-		<class-b>org.openiam.idm.srvc.role.dto.RoleId</class-b>
-	</mapping>
-	
-	<mapping>
 		<class-a>org.openiam.idm.srvc.role.dto.RoleAttribute</class-a>
 		<class-b>org.openiam.idm.srvc.role.dto.RoleAttribute</class-b>
 	</mapping>

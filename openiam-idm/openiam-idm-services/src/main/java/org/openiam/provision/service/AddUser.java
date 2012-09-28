@@ -186,14 +186,16 @@ public class AddUser {
 		if (roleList != null && roleList.size() > 0) {
 			for (Role r: roleList) {
 				// check if the roleId is valid
-				if (r.getId().getServiceId() == null || r.getId().getRoleId() == null) {
+				if (r.getRoleId() == null) {
 					return ResponseCode.ROLE_ID_NULL;			
 				}
-				if (roleDataService.getRole(r.getId().getServiceId(), r.getId().getRoleId()) == null ) {
+				if (roleDataService.getRole(r.getRoleId()) == null ) {
 					return ResponseCode.ROLE_ID_INVALID;			
 				}
-
-				UserRole ur = new UserRole(newUserId, r.getId().getServiceId(), r.getId().getRoleId());
+				
+				final UserRole ur = new UserRole();
+				ur.setUserId(newUserId);
+				ur.setRoleId(r.getRoleId());
 
 				if ( r.getStartDate() != null) {
 					ur.setStartDate(r.getStartDate());
@@ -402,7 +404,7 @@ public class AddUser {
 
         for (Role r : roleList) {
 
-                String secDomain = r.getId().getServiceId();
+                String secDomain = r.getServiceId();
                 if (!identityInDomain(secDomain,identityList)) {
                     addIdentity(secDomain, primaryIdentity);
                 }
