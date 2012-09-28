@@ -1,5 +1,7 @@
 use openiam;
 
+START TRANSACTION;
+
 CREATE TABLE grp_to_grp_membership (
 	GROUP_ID varchar(32) NOT NULL,
 	MEMBER_GROUP_ID varchar(32) NOT NULL,
@@ -51,3 +53,5 @@ DELIMITER ;
 call migrateGroups();
 
 DROP PROCEDURE migrateGroups;
+
+COMMIT;

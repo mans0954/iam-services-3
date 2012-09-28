@@ -249,17 +249,14 @@ order by DISPLAY_ORDER;
 	}
 
 
-	public Permission addPermission(String menuId, String roleId, String serviceId) {
+	public Permission addPermission(String menuId, String roleId) {
 		if (menuId == null)
 			throw new IllegalArgumentException("menuId is null");
 
 		if (roleId == null)
 			throw new IllegalArgumentException("roleId is null");
 
-		if (serviceId == null)
-			throw new IllegalArgumentException("serviceId is null");
-		
-		Permission permission = new Permission(new PermissionId(menuId, roleId, serviceId));
+		Permission permission = new Permission(new PermissionId(menuId, roleId));
 
 		return permissionDao.add(permission);
 	}
@@ -271,17 +268,14 @@ order by DISPLAY_ORDER;
 		return permissionDao.update(permission);
 	}
 
-	public Permission getPermission(String menuId, String roleId, String serviceId) {
+	public Permission getPermission(String menuId, String roleId) {
 		if (menuId == null)
 			throw new IllegalArgumentException("menuId is null");
 
 		if (roleId == null)
 			throw new IllegalArgumentException("roleId is null");
 
-		if (serviceId == null)
-			throw new IllegalArgumentException("serviceId is null");
-
-		return permissionDao.findById(new PermissionId(menuId, roleId, serviceId));
+		return permissionDao.findById(new PermissionId(menuId, roleId));
 	}
 
 	public List<Permission> getAllPermissions() {
@@ -290,17 +284,14 @@ order by DISPLAY_ORDER;
 		return permissionList;
 	}
 
-	public void removePermission(String menuId, String roleId, String serviceId) {
+	public void removePermission(String menuId, String roleId) {
 		if (menuId == null)
 			throw new IllegalArgumentException("menuId is null");
 
 		if (roleId == null)
 			throw new IllegalArgumentException("roleId is null");
 
-		if (serviceId == null)
-			throw new IllegalArgumentException("serviceId is null");
-
-		Permission obj = this.permissionDao.findById(new PermissionId(menuId, roleId, serviceId));
+		Permission obj = this.permissionDao.findById(new PermissionId(menuId, roleId));
 
 		this.permissionDao.remove(obj);
 	}
@@ -317,14 +308,11 @@ order by DISPLAY_ORDER;
 		return permissionDao.findRolesByMenu(menuId);
 	}
 
-	public List<Menu> getMenusByRole(String roleId, String serviceId) {
+	public List<Menu> getMenusByRole(String roleId) {
 		if (roleId == null)
 			throw new IllegalArgumentException("roleId is null");
 
-		if (serviceId == null)
-			throw new IllegalArgumentException("serviceId is null");
-
-		return permissionDao.findMenusByRole(roleId, serviceId);
+		return permissionDao.findMenusByRole(roleId);
 	}
 
 	public List<Menu> getMenusByUser(String menuGroup, String roleId, String userId) {

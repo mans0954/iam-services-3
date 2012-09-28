@@ -110,13 +110,12 @@ public class RolePolicyDAOImpl implements RolePolicyDAO {
     }
 
 
-	public List<RolePolicy> findRolePolicies(String serviceId, String roleId) {
+	public List<RolePolicy> findRolePolicies(String roleId) {
 		 try {
 			Session session = sessionFactory.getCurrentSession();
 			Query qry = session.createQuery("from org.openiam.idm.srvc.role.dto.RolePolicy rp" +
-					" 	where rp.serviceId = :serviceId and rp.roleId = :roleId " +
+					" 	where rp.roleId = :roleId " +
 					"   order by rp.executionOrder ");
-			qry.setString("serviceId", serviceId);
 			qry.setString("roleId", roleId);
 			List<RolePolicy> results = (List<RolePolicy>)qry.list();
 			return results;

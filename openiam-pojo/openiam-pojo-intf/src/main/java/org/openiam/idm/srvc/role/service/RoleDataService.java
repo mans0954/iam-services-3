@@ -15,6 +15,8 @@ import java.util.List;
 //@XmlSeeAlso({org.openiam.idm.srvc.user.dto.ObjectFactory.class,org.openiam.idm.srvc.org.dto.ObjectFactory.class,org.openiam.idm.srvc.continfo.dto.ObjectFactory.class,org.openiam.idm.srvc.grp.dto.ObjectFactory.class,org.openiam.idm.srvc.role.types.ObjectFactory.class,org.openiam.idm.srvc.role.dto.ObjectFactory.class,org.openiam.idm.srvc.meta.dto.ObjectFactory.class})
 public interface RoleDataService {
 
+	public List<Role> getRolesInDomain(String domainId);
+	
     /**
      * Retrieves a role object based on the roleId and the domainId.
      * Dependent objects include Group and Users collections that are associated with this Role.
@@ -23,8 +25,9 @@ public interface RoleDataService {
      * @param roleId
      * @return
      */
-    org.openiam.idm.srvc.role.dto.Role getRole(String domainId, String roleId);
+    org.openiam.idm.srvc.role.dto.Role getRole(String roleId);
 
+    Role getRoleByName(final String roleName);
 
     /**
      * Adds a new role to the system
@@ -47,15 +50,7 @@ public interface RoleDataService {
      * @param domainId
      * @param roleId
      */
-    int removeRole(String domainId, String roleId);
-
-    /**
-     * Returns an array of roles that are in a security domain.
-     *
-     * @param domainId
-     * @return
-     */
-    List<Role> getRolesInDomain(String domainId);
+    int removeRole(String roleId);
 
     /**
      * Returns a list of all Roles regardless of service The list is sorted by
@@ -85,7 +80,7 @@ public interface RoleDataService {
      * @param roleId
      * @return
      */
-    public List<RolePolicy> getAllRolePolicies(String domainId, String roleId);
+    public List<RolePolicy> getAllRolePolicies(String roleId);
 
     /**
      * Returns a single RolePolicy object based on the attributeId.
@@ -126,7 +121,7 @@ public interface RoleDataService {
      * @param roleId
      * @return
      */
-    public org.openiam.idm.srvc.role.dto.RoleAttribute[] getAllAttributes(String domainId, String roleId);
+    public org.openiam.idm.srvc.role.dto.RoleAttribute[] getAllAttributes(String roleId);
 
     /**
      * Returns a single RoleAttributes object based on the attributeId.
@@ -149,7 +144,7 @@ public interface RoleDataService {
      * @param domainId
      * @param roleId
      */
-    public void removeAllAttributes(String domainId, String roleId);
+    public void removeAllAttributes(String roleId);
 
     /** * Role-Group Methods ****** */
 
@@ -173,7 +168,7 @@ public interface RoleDataService {
      *
      * @return boolean Returns True if group belongs to that roleId.
      */
-    boolean isGroupInRole(String domainId, String roleId, String groupId);
+    boolean isGroupInRole(String roleId, String groupId);
 
 
     /**
@@ -187,7 +182,7 @@ public interface RoleDataService {
      * @param grpId  The group for which the roleId is to be added .
      * @param roleId The roleId which is to be added to the group.
      */
-    void addGroupToRole(String domainId, String roleId, String groupId);
+    void addGroupToRole(String roleId, String groupId);
 
     /**
      * Removes the association between a single group and role.
@@ -196,7 +191,7 @@ public interface RoleDataService {
      * @param roleId
      * @param groupId
      */
-    void removeGroupFromRole(String domainId, String roleId, String groupId);
+    void removeGroupFromRole(String roleId, String groupId);
 
     /**
      * Removes the association between a role and all the groups linked to it.
@@ -204,7 +199,7 @@ public interface RoleDataService {
      * @param domainId
      * @param roleId
      */
-    void removeAllGroupsFromRole(String domainId, String roleId);
+    void removeAllGroupsFromRole(String roleId);
 
     /**
      * This method retrieves all groups for a particular role. Returns null if
@@ -219,7 +214,7 @@ public interface RoleDataService {
      * @param roleId   The roleId for which groups has to be retrieved .
      */
     // problem generating wsdl with this method
-    org.openiam.idm.srvc.grp.dto.Group[] getGroupsInRole(String domainId, String roleId);
+    org.openiam.idm.srvc.grp.dto.Group[] getGroupsInRole(String roleId);
 
     /* ------------- User to Role Methods --------------------------------- */
 
@@ -264,7 +259,7 @@ public interface RoleDataService {
      * @param roleId   The roleId to which the user will be associated.
      * @param userId   The userId to which the roleId is to be added .
      */
-    void addUserToRole(String domainId, String roleId, String userId);
+    void addUserToRole(String roleId, String userId);
 
     /**
      * This method removes a particular user directly to a role.
@@ -273,7 +268,7 @@ public interface RoleDataService {
      * @param roleId
      * @param userId
      */
-    void removeUserFromRole(String domainId, String roleId, String userId);
+    void removeUserFromRole(String roleId, String userId);
 
     /**
      * This method returns true if user belongs to that roleId.<br>
@@ -286,7 +281,7 @@ public interface RoleDataService {
      * @return boolean Returns True if user belongs to that roleId. False if it does not belong to this role.
      */
 
-    boolean isUserInRole(String domainId, String roleId, String userId);
+    boolean isUserInRole(String roleId, String userId);
 
     /**
      * Return an array of users that are in a particular role
@@ -296,7 +291,7 @@ public interface RoleDataService {
      * @return
      */
     // problem generating wsdl with this method
-    User[] getUsersInRole(String domainId, String roleId);
+    User[] getUsersInRole(String roleId);
 
     /**
      * Returns an array of Role objects that indicate the Roles a user is
@@ -333,7 +328,7 @@ public interface RoleDataService {
      * @return
      */
 
-    List<Role> getUserRolesByDomain(String domainId, String userId);
+    List<Role> getUserRolesByDomain(String service, String userId);
 
     List<Role> search(RoleSearch search);
 

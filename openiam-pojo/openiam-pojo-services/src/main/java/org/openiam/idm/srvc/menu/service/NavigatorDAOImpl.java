@@ -201,11 +201,6 @@ public class NavigatorDAOImpl implements NavigatorDAO {
 		return results;
     }
     
-   /*
-    * @deprecated - replaced by findMenuGroupsByUser(menuGroupId, serviceId, userId) in 
-    * PermissionDAO. Deprecated method does not take into account serviceId 
-    */
-    
     public List<Menu> findMenuByUser(String menuGroupId, String userId, String languageCd) {    
     	Session session = sessionFactory.getCurrentSession();
     

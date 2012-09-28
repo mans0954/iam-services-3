@@ -13,7 +13,7 @@ import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum
 import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.role.dto.RoleId;
+import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginId;
 import org.openiam.base.AttributeOperationEnum;
@@ -55,16 +55,9 @@ public class TransformSrcRecord extends AbstractTransformScript {
 		// Set role based on a job code
 		
 		List<Role> roleList = new ArrayList<Role>();
-	/*	if (pUser.jobCode == "100") {
-	/			RoleId id = new RoleId("USR_SEC_DOMAIN", "MANAGER");
-				Role r = new Role();
-				r.setId(id);
-				roleList.add(r);
-		}else {
-	*/	
-			RoleId id = new RoleId("USR_SEC_DOMAIN", "END_USER");
+			String roleId = ((RoleDataService)context.getBean("roleDataService")).getRoleByName("End User").getRoleId();
 			Role r = new Role();
-			r.setId(id);
+			r.setRoleId(roleId);
 			roleList.add(r);
 	//	}		
 		pUser.setMemberOfRoles(roleList);

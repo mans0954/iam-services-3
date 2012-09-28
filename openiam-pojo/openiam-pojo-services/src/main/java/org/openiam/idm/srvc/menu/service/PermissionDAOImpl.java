@@ -149,7 +149,6 @@ public class PermissionDAOImpl implements PermissionDAO {
 		List<Role> result = (List<Role>)qry.list();
 		
 		for (Role instance:result) {
-				Hibernate.initialize(instance.getId());
 				Hibernate.initialize(instance.getGroups());
 				Hibernate.initialize(instance.getRoleAttributes());
 				Hibernate.initialize(instance.getChildRoles());
@@ -158,18 +157,16 @@ public class PermissionDAOImpl implements PermissionDAO {
 		return result;
 	}
 	
-	public List<Menu> findMenusByRole(String roleId, String serviceId) {
+	public List<Menu> findMenusByRole(String roleId) {
 		Session session = sessionFactory.getCurrentSession();
 
 		SQLQuery qry = session.createSQLQuery( 
 		"select distinct m.* from menu m, permissions p " +
 		"where m.MENU_ID = p.MENU_ID " +
-		"and p.ROLE_ID = :roleId " +
-		"and p.SERVICE_ID = :serviceId ");
+		"and p.ROLE_ID = :roleId");
 		
 		qry.addEntity(Menu.class);
 		qry.setString("roleId", roleId);
-		qry.setString("serviceId", serviceId);
 		qry.setCacheable(true);
 		qry.setCacheRegion("query.permission.findMenusByRole");
 		List<Menu> result = (List<Menu>)qry.list();

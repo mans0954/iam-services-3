@@ -1,7 +1,13 @@
 package org.openiam.idm.srvc.role.dto;
 
+import org.hibernate.annotations.GenericGenerator;
 import org.openiam.base.BaseObject;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
@@ -10,7 +16,6 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "RolePolicy", propOrder = {
         "rolePolicyId",
-        "serviceId",
         "roleId",
         "name",
         "value1",
@@ -20,10 +25,11 @@ import javax.xml.bind.annotation.XmlType;
         "policyScript",
         "actionQualifier"
 })
+@Entity
+@Table(name="ROLE_POLICY")
 public class RolePolicy extends BaseObject {
 
     protected String rolePolicyId;
-    protected String serviceId;
     protected String roleId;
     protected String name;
     protected String value1;
@@ -37,37 +43,28 @@ public class RolePolicy extends BaseObject {
     public RolePolicy() {
     }
 
-
+    @Id
+    @GeneratedValue(generator="system-uuid")
+    @GenericGenerator(name="system-uuid", strategy = "uuid")
+    @Column(name="ROLE_POLICY_ID", length=32)
     public String getRolePolicyId() {
         return rolePolicyId;
     }
-
 
     public void setRolePolicyId(String rolePolicyId) {
         this.rolePolicyId = rolePolicyId;
     }
 
-
-    public String getServiceId() {
-        return serviceId;
-    }
-
-
-    public void setServiceId(String serviceId) {
-        this.serviceId = serviceId;
-    }
-
-
+    @Column(name="ROLE_ID", length=32)
     public String getRoleId() {
         return roleId;
     }
-
 
     public void setRoleId(String roleId) {
         this.roleId = roleId;
     }
 
-
+    @Column(name="NAME", length=40)
     public String getName() {
         return name;
     }
@@ -77,7 +74,7 @@ public class RolePolicy extends BaseObject {
         this.name = name;
     }
 
-
+    @Column(name="VALUE1", length=40)
     public String getValue1() {
         return value1;
     }
@@ -87,7 +84,7 @@ public class RolePolicy extends BaseObject {
         this.value1 = value1;
     }
 
-
+    @Column(name="VALUE2", length=40)
     public String getValue2() {
         return value2;
     }
@@ -97,7 +94,7 @@ public class RolePolicy extends BaseObject {
         this.value2 = value2;
     }
 
-
+    @Column(name="ACTION", length=20)
     public String getAction() {
         return action;
     }
@@ -107,7 +104,7 @@ public class RolePolicy extends BaseObject {
         this.action = action;
     }
 
-
+    @Column(name="EXECUTION_ORDER")
     public Integer getExecutionOrder() {
         return executionOrder;
     }
@@ -117,7 +114,7 @@ public class RolePolicy extends BaseObject {
         this.executionOrder = executionOrder;
     }
 
-
+    @Column(name="ACTION_QUALIFIER")
     public String getActionQualifier() {
         return actionQualifier;
     }
@@ -127,7 +124,7 @@ public class RolePolicy extends BaseObject {
         this.actionQualifier = actionQualifier;
     }
 
-
+    @Column(name="POLICY_SCRIPT",length=100)
     public String getPolicyScript() {
         return policyScript;
     }
@@ -138,11 +135,17 @@ public class RolePolicy extends BaseObject {
     }
 
 	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((rolePolicyId == null) ? 0 : rolePolicyId.hashCode());
+		return result;
+	}
+
+	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (!super.equals(obj))
-			return false;
 		if (getClass() != obj.getClass())
 			return false;
 		RolePolicy other = (RolePolicy) obj;
@@ -181,11 +184,6 @@ public class RolePolicy extends BaseObject {
 				return false;
 		} else if (!rolePolicyId.equals(other.rolePolicyId))
 			return false;
-		if (serviceId == null) {
-			if (other.serviceId != null)
-				return false;
-		} else if (!serviceId.equals(other.serviceId))
-			return false;
 		if (value1 == null) {
 			if (other.value1 != null)
 				return false;
@@ -198,4 +196,6 @@ public class RolePolicy extends BaseObject {
 			return false;
 		return true;
 	}
+
+    
 }

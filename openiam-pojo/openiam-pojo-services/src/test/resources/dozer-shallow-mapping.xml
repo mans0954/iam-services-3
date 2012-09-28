@@ -99,6 +99,10 @@
 			<a>childRoles</a>
 			<b>childRoles</b>
 		</field-exclude>
+		<field-exclude>
+			<a>parentRoles</a>
+			<b>parentRoles</b>
+		</field-exclude>
 	</mapping>
 	
 	<mapping>

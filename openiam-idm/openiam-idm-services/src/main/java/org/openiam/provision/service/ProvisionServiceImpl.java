@@ -300,19 +300,19 @@ implements ProvisionService,  ApplicationContextAware  {
 		if (roleList != null && roleList.size() > 0) {
 			for (Role r: roleList) {
 				// check if the roleId is valid
-				if (r.getId().getServiceId() == null || r.getId().getRoleId() == null) {
+				if (r.getRoleId() == null) {
 					ProvisionUserResponse resp = new ProvisionUserResponse();
 					resp.setStatus(ResponseStatus.FAILURE);
 					resp.setErrorCode( ResponseCode.ROLE_ID_NULL);
 					return resp;				
 				}
-				if (roleDataService.getRole(r.getId().getServiceId(), r.getId().getRoleId()) == null ) {
+				if (roleDataService.getRole(r.getRoleId()) == null ) {
 					ProvisionUserResponse resp = new ProvisionUserResponse();
 					resp.setStatus(ResponseStatus.FAILURE);
 					resp.setErrorCode(ResponseCode.ROLE_ID_INVALID);
 					return resp;				
 				}
-				roleDataService.addUserToRole(r.getId().getServiceId(), r.getId().getRoleId(), newUser.getUserId());
+				roleDataService.addUserToRole(r.getRoleId(), newUser.getUserId());
 			}
 		}
 		
@@ -523,22 +523,16 @@ implements ProvisionService,  ApplicationContextAware  {
 		
 		log.info("GetResourcesForRole().....");
 		// get the list of ids
-		String domainId = null;
 		List<String> roleIdList = new ArrayList<String>();
 		
 		if (roleList == null) {
 			return null;
 		}
 		for (Role rl : roleList) {
-			if (domainId == null) {
-				domainId = rl.getId().getServiceId();
-			}
-			log.info("-Adding role." + rl.getId().getRoleId());
-			roleIdList.add( rl.getId().getRoleId() );
+			roleIdList.add( rl.getRoleId() );
 		}
 		
-		List<Resource> roleResources = 
-			resourceDataService.getResourcesForRoles(domainId, roleIdList);
+		List<Resource> roleResources = resourceDataService.getResourcesForRoles(roleIdList);
 			//getResourcesForRoleList(domainId, roleIdList);
 		return roleResources;
 	}
@@ -654,15 +648,6 @@ implements ProvisionService,  ApplicationContextAware  {
 	public ProvisionGroup modifyGroup(ProvisionGroup group) {
 		// TODO Auto-generated method stub
 		return null;
-	}
-
-	private void showRoles(List<Role> activeRoleList) {
-		log.info("show the roles:");
-		if (activeRoleList != null) {
-			for (Role r: activeRoleList) {
-				log.info("-active role id: " + r.getId().getRoleId());
-			}
-		}
 	}
 	
 	
@@ -851,8 +836,6 @@ implements ProvisionService,  ApplicationContextAware  {
 		log.info("User created in openiam repository");
 		
 		List<Role> activeRoleList = this.roleDataService.getUserRolesAsFlatList(origUser.getUserId());  // provUser.getActiveMemberOfRoles();
-		
-		showRoles(activeRoleList);
 		
 		//List<Role> roleList = provUser.getMemberOfRoles();
 		List<Login> rolePrincipalList = new ArrayList<Login>();
@@ -1558,8 +1541,7 @@ implements ProvisionService,  ApplicationContextAware  {
 		}
 		for (Role r : newRoleList) {
 			if (r.getOperation() == AttributeOperationEnum.DELETE) {
-				roleDataService.removeUserFromRole(r.getId().getServiceId(),
-						r.getId().getRoleId(), userId);
+				roleDataService.removeUserFromRole(r.getRoleId(), userId);
 				
 				auditHelper.addLog("MODIFY USER", null,
 						primaryId, "IDM SERVICE",
@@ -1569,9 +1551,8 @@ implements ProvisionService,  ApplicationContextAware  {
 						requestId, null, null, null);
 				
 			}else {
-				if (!roleDataService.isUserInRole(r.getId().getServiceId(), r.getId().getRoleId(), userId)) {
-					roleDataService.addUserToRole(r.getId().getServiceId(),
-							r.getId().getRoleId(), userId);
+				if (!roleDataService.isUserInRole(r.getRoleId(), userId)) {
+					roleDataService.addUserToRole(r.getRoleId(), userId);
 
 					auditHelper.addLog("MODIFY USER", null,
 							primaryId, "IDM SERVICE",

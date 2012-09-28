@@ -13,7 +13,7 @@ import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum
 import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.role.dto.RoleId;
+import org.openiam.idm.srvc.role.service.RoleDataService;
 
 
 public class TransformLDAPRecord extends AbstractTransformScript {
@@ -41,9 +41,9 @@ public class TransformLDAPRecord extends AbstractTransformScript {
 		
 		// Set default role
 		List<Role> roleList = new ArrayList<Role>();
-		RoleId id = new RoleId("USR_SEC_DOMAIN", "END_USER");
+		String roleId = ((RoleDataService)context.getBean("roleDataService")).getRoleByName("End User").getRoleId();
 		Role r = new Role();
-		r.setId(id);
+		r.setRoleId(roleId);
 		roleList.add(r);
 		
 		pUser.setMemberOfRoles(roleList);

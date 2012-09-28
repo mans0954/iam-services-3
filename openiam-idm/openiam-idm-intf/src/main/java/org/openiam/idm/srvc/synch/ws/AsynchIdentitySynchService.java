@@ -1,7 +1,6 @@
 package org.openiam.idm.srvc.synch.ws;
 
 import org.openiam.base.ws.Response;
-import org.openiam.idm.srvc.role.dto.RoleId;
 import org.openiam.idm.srvc.synch.dto.BulkMigrationConfig;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
@@ -44,5 +43,5 @@ public interface AsynchIdentitySynchService {
     @WebMethod
     void resynchRole(
             @WebParam(name = "roleId", targetNamespace = "")
-            RoleId roleId);
+            final String roleId);
 }

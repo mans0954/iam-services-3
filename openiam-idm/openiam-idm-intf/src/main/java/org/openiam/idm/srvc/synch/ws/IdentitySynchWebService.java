@@ -1,14 +1,10 @@
 package org.openiam.idm.srvc.synch.ws;
 
-
-
-
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 
 import org.openiam.base.ws.Response;
-import org.openiam.idm.srvc.role.dto.RoleId;
 import org.openiam.idm.srvc.synch.dto.BulkMigrationConfig;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
@@ -57,7 +53,7 @@ public interface IdentitySynchWebService {
     @WebMethod
     Response resynchRole(
             @WebParam(name = "roleId", targetNamespace = "")
-            RoleId roleId);
+            final String roleId);
 
 	@WebMethod
 	SynchConfigResponse updateConfig(

@@ -2,7 +2,6 @@ package org.openiam.idm.srvc.synch.service;
 
 import org.mule.api.MuleContext;
 import org.openiam.base.ws.Response;
-import org.openiam.idm.srvc.role.dto.RoleId;
 import org.openiam.idm.srvc.synch.dto.BulkMigrationConfig;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
@@ -54,7 +53,7 @@ public interface IdentitySynchService {
      * @param roleId
      * @return
      */
-    Response resynchRole(RoleId roleId);
+    Response resynchRole(final String roleId);
 
 
     public void setMuleContext(MuleContext ctx);

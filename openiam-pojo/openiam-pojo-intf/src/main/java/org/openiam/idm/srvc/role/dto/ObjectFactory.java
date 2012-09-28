@@ -41,13 +41,6 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link RoleId }
-     */
-    public RoleId createRoleId() {
-        return new RoleId();
-    }
-
-    /**
      * Create an instance of {@link RoleSet }
      */
     public RoleSet createRoleSet() {

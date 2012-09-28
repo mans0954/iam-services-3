@@ -245,21 +245,18 @@ public interface ResourceDAO {
     /**
      * Find resources for role.
      *
-     * @param domainId the domain id
      * @param roleId   the role id
      * @return the list
      */
-    List<Resource> findResourcesForRole(String domainId, String roleId);
+    List<Resource> findResourcesForRole(String roleId);
 
     /**
      * Find resources for roles.
      *
-     * @param domainId   the domain id
      * @param roleIdList the role id list
      * @return the list
      */
-    List<Resource> findResourcesForRoles(String domainId,
-                                         List<String> roleIdList);
+    List<Resource> findResourcesForRoles(List<String> roleIdList);
 
     /**
      * Adds the resource role privilege.
@@ -276,10 +273,8 @@ public interface ResourceDAO {
      *
      * @param resourceId  the resource id
      * @param roleId      the role id
-     * @param privilegeId the privilege id
      */
-    void removeResourceRolePrivilege(String resourceId, String roleId,
-                                     String privilegeId);
+    void removeResourceRolePrivilege(String resourceId, String roleId);
 
     /**
      * Removes the resource role privileges.

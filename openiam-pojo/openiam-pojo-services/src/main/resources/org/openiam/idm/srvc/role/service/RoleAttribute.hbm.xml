@@ -9,12 +9,6 @@
             <generator class="uuid" />
         </id>
         
-        <property name="serviceId" type="string">
-            <column name="SERVICE_ID" length="20">
-                <comment></comment>
-            </column>
-        </property>
-        
         <property name="roleId" type="string">
             <column name="ROLE_ID" length="32">
                 <comment></comment>

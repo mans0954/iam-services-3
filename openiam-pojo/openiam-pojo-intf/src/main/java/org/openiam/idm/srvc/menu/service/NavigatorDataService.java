@@ -142,10 +142,9 @@ public interface NavigatorDataService {
      *
      * @param menuId    the menu id
      * @param roleId    the role id
-     * @param serviceId the service id
      * @return the permission
      */
-    Permission addPermission(String menuId, String roleId, String serviceId);
+    Permission addPermission(String menuId, String roleId);
 
     /**
      * Updates permission.
@@ -160,10 +159,9 @@ public interface NavigatorDataService {
      *
      * @param menuId    the menu id
      * @param roleId    the role id
-     * @param serviceId the service id
      * @return the permission
      */
-    Permission getPermission(String menuId, String roleId, String serviceId);
+    Permission getPermission(String menuId, String roleId);
 
     /**
      * Gets the all permissions.
@@ -177,9 +175,8 @@ public interface NavigatorDataService {
      *
      * @param menuId    the menu id
      * @param roleId    the role id
-     * @param serviceId the service id
      */
-    void removePermission(String menuId, String roleId, String serviceId);
+    void removePermission(String menuId, String roleId);
 
     /**
      * Removes the all permissions.
@@ -200,10 +197,9 @@ public interface NavigatorDataService {
      * Gets the menus by role.
      *
      * @param roleId    the role id
-     * @param serviceId the service id
      * @return the menus by role
      */
-    List<Menu> getMenusByRole(String roleId, String serviceId);
+    List<Menu> getMenusByRole(String roleId);
 
     /**
      * Finds menus by user.

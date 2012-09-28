@@ -125,7 +125,7 @@ public class Group implements java.io.Serializable {
     @Id
     @GeneratedValue(generator="system-uuid")
     @GenericGenerator(name="system-uuid", strategy = "uuid")
-    @Column(name="GRP_ID", length=20)
+    @Column(name="GRP_ID", length=32)
     public String getGrpId() {
         return this.grpId;
     }

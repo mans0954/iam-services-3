@@ -19,7 +19,6 @@ import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.role.dto.RoleId;
 import org.openiam.idm.srvc.role.dto.UserRole;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.dto.Supervisor;
@@ -325,9 +324,9 @@ public class ModifyUser {
         return null;
     }
 
-    private Role getRole(RoleId roleId, List<Role> roleList) {
+    private Role getRole(String roleId, List<Role> roleList) {
         for (Role rl : roleList) {
-            if (rl.getId().equals(roleId)) {
+            if (rl.getRoleId().equals(roleId)) {
                 return rl;
             }
         }
@@ -861,8 +860,7 @@ public class ModifyUser {
                 rl.setOperation(AttributeOperationEnum.ADD);
                 roleList.add(rl);
 
-                UserRole ur = new UserRole(userId, rl.getId().getServiceId(),
-                        rl.getId().getRoleId());
+                UserRole ur = new UserRole(userId, rl.getRoleId());
 
                 if (rl.getStartDate() != null) {
                     ur.setStartDate(rl.getStartDate());
@@ -899,17 +897,16 @@ public class ModifyUser {
         // else add with operation 2
         for (Role r : newRoleList) {
             if (r.getOperation() == AttributeOperationEnum.DELETE) {
-                log.debug("removing Role :" + r.getId());
                 // get the email object from the original set of emails so that we can remove it
-                Role rl = getRole(r.getId(), origRoleList);
+                Role rl = getRole(r.getRoleId(), origRoleList);
                 if (rl != null) {
-                    roleDataService.removeUserFromRole(rl.getId().getServiceId(), rl.getId().getRoleId(), userId);
+                    roleDataService.removeUserFromRole(rl.getRoleId(), userId);
 
                     logList.add(auditHelper.createLogObject("REMOVE ROLE", pUser.getRequestorDomain(), pUser.getRequestorLogin(),
                             "IDM SERVICE", user.getCreatedBy(), "0", "USER", user.getUserId(),
                             null, "SUCCESS", null, "USER_STATUS",
                             user.getStatus().toString(),
-                            "NA", null, null, null, rl.getId().getRoleId(),
+                            "NA", null, null, null, rl.getRoleId(),
                             pUser.getRequestClientIP(), primaryIdentity.getId().getLogin(), primaryIdentity.getId().getDomainId()));
 
                 }
@@ -924,9 +921,8 @@ public class ModifyUser {
                 // check if this address is in the current list
                 // if it is - see if it has changed
                 // if it is not - add it.
-                log.debug("evaluate Role" + r.getId());
 
-                Role origRole = getRole(r.getId(), origRoleList);
+                Role origRole = getRole(r.getRoleId(), origRoleList);
 
                 log.debug("OrigRole found=" + origRole);
 
@@ -934,8 +930,7 @@ public class ModifyUser {
                     r.setOperation(AttributeOperationEnum.ADD);
                     roleList.add(r);
 
-                    UserRole ur = new UserRole(userId, r.getId().getServiceId(),
-                            r.getId().getRoleId());
+                    UserRole ur = new UserRole(userId, r.getRoleId());
 
                     if (r.getStartDate() != null) {
                         ur.setStartDate(r.getStartDate());
@@ -958,7 +953,7 @@ public class ModifyUser {
                     log.debug("checking if no_change or replace");
                     //if (r.equals(origRole)) {
                     //UserRole uRole = userRoleAttrEq(r, currentUserRole);
-                    if (r.getId().equals(origRole.getId()) && userRoleAttrEq(r, currentUserRole)) {
+                    if (r.getRoleId().equals(origRole.getRoleId()) && userRoleAttrEq(r, currentUserRole)) {
                         // not changed
                         log.debug("- no_change ");
                         r.setOperation(AttributeOperationEnum.NO_CHANGE);
@@ -984,7 +979,7 @@ public class ModifyUser {
                             }
                             roleDataService.updateUserRoleAssoc(ur);
                         } else {
-                            UserRole usrRl = new UserRole(user.getUserId(), r.getId().getServiceId(), r.getId().getRoleId());
+                            UserRole usrRl = new UserRole(user.getUserId(), r.getRoleId());
                             roleDataService.assocUserToRole(usrRl);
 
                         }
@@ -994,7 +989,7 @@ public class ModifyUser {
         }
         // if a value is in original list and not in the new list - then add it on
         for (Role rl : origRoleList) {
-            Role newRole = getRole(rl.getId(), newRoleList);
+            Role newRole = getRole(rl.getRoleId(), newRoleList);
             if (newRole == null) {
                 rl.setOperation(AttributeOperationEnum.NO_CHANGE);
                 roleList.add(rl);
@@ -1012,8 +1007,7 @@ public class ModifyUser {
 
         // get the user role object
         for (UserRole u : currentUserRole) {
-            if (r.getId().getRoleId().equalsIgnoreCase(u.getRoleId()) &&
-                    r.getId().getServiceId().equalsIgnoreCase(u.getServiceId())) {
+            if (r.getRoleId().equalsIgnoreCase(u.getRoleId())) {
                 return u;
             }
         }
@@ -1031,8 +1025,7 @@ public class ModifyUser {
         UserRole ur = null;
         // get the user role object
         for (UserRole u : currentUserRole) {
-            if (r.getId().getRoleId().equalsIgnoreCase(u.getRoleId()) &&
-                    r.getId().getServiceId().equalsIgnoreCase(u.getServiceId())) {
+            if (r.getRoleId().equalsIgnoreCase(u.getRoleId())) {
                 ur = u;
             }
         }
@@ -1242,7 +1235,7 @@ public class ModifyUser {
                     log.debug("- Evaluating delRl = " + delRl);
                     if (delRl != null) {
 
-                        if (!found && r.getId().getRoleId().equalsIgnoreCase(delRl.getId().getRoleId())) {
+                        if (!found && r.getRoleId().equalsIgnoreCase(delRl.getRoleId())) {
                             found = true;
                         }
 
@@ -1275,7 +1268,7 @@ public class ModifyUser {
         log.debug("Identitylist =" + identityList);
 
         for (Role r : roleList) {
-            String secDomain = r.getId().getServiceId();
+            String secDomain = r.getServiceId();
             if (!identityInDomain(secDomain, managedSysId, identityList)) {
 
                 log.debug("Adding identity to :" + secDomain);
@@ -1289,7 +1282,7 @@ public class ModifyUser {
             if (l.getId().getManagedSysId().equalsIgnoreCase(managedSysId)) {
                 boolean found = false;
                 for (Role r : roleList) {
-                    if (r.getId().getServiceId().equalsIgnoreCase(l.getId().getDomainId())) {
+                    if (r.getServiceId().equalsIgnoreCase(l.getId().getDomainId())) {
                         found = true;
                     }
 

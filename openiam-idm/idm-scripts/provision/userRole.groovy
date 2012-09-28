@@ -19,7 +19,7 @@ if (roleList != null) {
 	if (roleList.size() > 0)  {
 		for (Role r : roleList) {
 			
-			String qualifiedRoleName = "cn=" + r.id.roleId + "," + roleBaseDN;
+			String qualifiedRoleName = "cn=" + r.roleId + "," + roleBaseDN;
 			attributeContainer.getAttributeList().add(new BaseAttribute(qualifiedRoleName, qualifiedRoleName, r.operation));
 			
 		

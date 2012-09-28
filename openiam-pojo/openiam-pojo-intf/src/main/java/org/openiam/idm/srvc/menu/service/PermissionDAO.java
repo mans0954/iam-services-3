@@ -25,7 +25,7 @@ public interface PermissionDAO {
 
     List<Role> findRolesByMenu(String menuId);
 
-    List<Menu> findMenusByRole(String roleId, String serviceId);
+    List<Menu> findMenusByRole(String roleId);
 
     List<Menu> findMenusByUser(String menuGroup, String roleId, String userId);
 

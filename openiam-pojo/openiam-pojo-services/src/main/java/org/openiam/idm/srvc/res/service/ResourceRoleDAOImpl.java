@@ -91,7 +91,6 @@ public class ResourceRoleDAOImpl implements ResourceRoleDAO {
 	}
 
 	public ResourceRole findById(ResourceRoleId id) {
-		log.debug("getting ResourceRole instance with id: " + id.getResourceId() + "-" + id.getRoleId() + "-" + id.getPrivilegeId());
 		try {
 			ResourceRole instance = (ResourceRole) sessionFactory.getCurrentSession()
 					.get("org.openiam.idm.srvc.res.dto.ResourceRole", id);
@@ -179,13 +178,12 @@ public class ResourceRoleDAOImpl implements ResourceRoleDAO {
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.res.service.ResourceRoleDAO#findAllResourceForRole(java.lang.String, java.lang.String)
 	 */
-	public List<ResourceRole> findResourcesForRole(String domainId, String roleId) {
+	public List<ResourceRole> findResourcesForRole(String roleId) {
 		try {
 			Session session = sessionFactory.getCurrentSession();
 			Query qry = session.createQuery("from org.openiam.idm.srvc.res.dto.ResourceRole rr " +
-					" where rr.id.domainId = :domainId and rr.id.roleId = :roleId " +
+					" where rr.id.roleId = :roleId " +
 					" order by rr.id.resourceId asc");
-			qry.setString("domainId", domainId);
 			qry.setString("roleId", roleId);
 			
 			List<ResourceRole> result = (List<ResourceRole>)qry.list();
@@ -209,8 +207,7 @@ public class ResourceRoleDAOImpl implements ResourceRoleDAO {
             String sql = "  SELECT  role " +
                     "       FROM    ResourceRole resourceRole, Role role, Resource resource " +
                     "       WHERE   resource.resourceId = resourceRole.id.resourceId and " +
-                    "        resourceRole.id.roleId = role.id.roleId AND " +
-                    "        resourceRole.id.domainId = role.id.serviceId and " +
+                    "        resourceRole.id.roleId = role.roleId AND " +
                     "        resource.resourceId = :resourceId  ";
             Query qry = session.createQuery(sql);
             qry.setString("resourceId", resourceId);
@@ -224,17 +221,12 @@ public class ResourceRoleDAOImpl implements ResourceRoleDAO {
         }
     }
 
-    public void removeResourceRole(String domainId, String roleId) {
+    public void removeResourceRole(String roleId) {
         //To change body of implemented methods use File | Settings | File Templates.
-
-        log.debug("removeResourceRole: domainId=" + domainId);
-		log.debug("removeResourceRole: roleId=" + roleId);
-
 		Session session = sessionFactory.getCurrentSession();
 		Query qry = session.createQuery("delete org.openiam.idm.srvc.res.dto.ResourceRole rr " +
-					" where rr.id.roleId = :roleId and rr.id.domainId = :domainId ");
+					" where rr.id.roleId = :roleId");
 		qry.setString("roleId", roleId);
-		qry.setString("domainId", domainId);
 		qry.executeUpdate();
     }
 

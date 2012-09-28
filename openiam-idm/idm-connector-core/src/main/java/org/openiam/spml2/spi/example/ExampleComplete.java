@@ -101,7 +101,7 @@ public class ExampleComplete  extends AbstractSpml2Complete implements Connector
 			List<ExtensibleRole> extRoleList =  extUser.getRole();
 			System.out.println("Roles=" + extRoleList);
 			for (ExtensibleRole r : extRoleList) {
-				System.out.println("Role:" + r.getRole().getId());
+				System.out.println("Role:" + r.getRole().getRoleId());
 			}
 			// show the Addresses
 			List<ExtensibleAddress> extAddressList =  (List<ExtensibleAddress>)extUser.getAddress();
@@ -202,7 +202,7 @@ public class ExampleComplete  extends AbstractSpml2Complete implements Connector
 				List<ExtensibleRole> extRoleList =  extUser.getRole();
 				System.out.println("Roles=" + extRoleList);
 				for (ExtensibleRole r : extRoleList) {
-					System.out.println("Role:" + r.getRole().getId() + " OPERATION=" + r.getOperation());
+					System.out.println("Role:" + r.getRole().getRoleId() + " OPERATION=" + r.getOperation());
 				}
 
 				List<ExtensibleAddress> extAddressList =  (List<ExtensibleAddress>)extUser.getAddress();
