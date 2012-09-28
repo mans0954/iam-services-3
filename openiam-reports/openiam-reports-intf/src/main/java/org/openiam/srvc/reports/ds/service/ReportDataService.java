@@ -5,5 +5,5 @@ import java.util.Map;
 import org.openiam.exception.ScriptEngineException;
 
 public interface ReportDataService {
-    List<Object> getReportData(final String reportName, final Map<String, String> queryParams) throws ClassNotFoundException, ScriptEngineException;
+    List<Object> getReportData(final String reportName, final Map<String, String> reportParams) throws ClassNotFoundException, ScriptEngineException;
 }

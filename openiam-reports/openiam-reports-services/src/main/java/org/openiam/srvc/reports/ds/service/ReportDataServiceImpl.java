@@ -24,19 +24,19 @@ public class ReportDataServiceImpl implements ReportDataService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Object> getReportData(final String reportName, final Map<String, String> queryParams) throws ClassNotFoundException, ScriptEngineException {
+    public List<Object> getReportData(final String reportName, final Map<String, String> reportParams) throws ClassNotFoundException, ScriptEngineException {
         List<Object> resultData = new LinkedList<Object>();
 
         ReportQuery reportQuery = reportDao.getQueryScriptPath(reportName);
         if (reportQuery == null) {
             throw new IllegalArgumentException("Invalid parameter list: report with name="+reportName + " was not found in DataBase");
         }
-        if(!validateParams(reportQuery, queryParams)) {
+        if(!validateParams(reportQuery, reportParams)) {
            throw new IllegalArgumentException("Invalid parameter list: required="+reportQuery.getRequiredParams());
         }
         Map<String, Object> objectMap = new HashMap<String, Object>();
-        if (queryParams != null) {
-            objectMap.putAll(queryParams);
+        if (reportParams != null) {
+            objectMap.putAll(reportParams);
         }
         ScriptIntegration se = ScriptFactory.createModule(this.scriptEngine);
         String output = (String) se.execute(objectMap, reportQuery.getQueryScriptPath());
