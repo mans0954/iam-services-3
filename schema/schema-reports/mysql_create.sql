@@ -12,7 +12,7 @@ CREATE TABLE REPORT_QUERY(
 )Engine=InnoDB;
 
 insert into menu(menu_id, language_cd, menu_group, menu_name, menu_desc, url, display_order)
-	values( 'BIRT_REPORT', 'en', 'IDM', 'BIRT Reports', 'BIRT Reports', 'security/birtreport.cnt', '5');
+	values( 'BIRT_REPORT', 'en', 'IDM', 'BIRT Reports', 'BIRT Reports', 'birtReport.cnt', '5');
 
 insert into menu(menu_id, language_cd, menu_group, menu_name, menu_desc, url, display_order)
 	values('TESTREPORT', 'en', 'BIRT_REPORT', 'Test Reports', 'Test reports', 'testReport.cnt', '2');
