@@ -17,4 +17,4 @@ insert into menu(menu_id, language_cd, menu_group, menu_name, menu_desc, url, di
 insert into menu(menu_id, language_cd, menu_group, menu_name, menu_desc, url, display_order)
 	values('TESTREPORT', 'en', 'BIRT_REPORT', 'Test Reports', 'Test reports', 'testReport.cnt', '2');
 
-insert into PERMISSIONS(menu_id,role_id) values('BIRT_REPORT','SUPER_SEC_ADMIN');
+insert into PERMISSIONS(menu_id,role_id) values('BIRT_REPORT','9');

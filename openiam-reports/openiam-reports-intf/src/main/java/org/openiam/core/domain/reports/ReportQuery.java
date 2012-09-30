@@ -24,7 +24,10 @@ public class ReportQuery {
 
     @Column(name = "query_script_path")
     private String queryScriptPath;
-
+    
+    @Column(name = "report_file_path")
+    private String reportFilePath;
+    
     @Column
     private String params;
 
@@ -88,5 +91,13 @@ public class ReportQuery {
 
     public void setDtoClass(String dtoClass) {
         this.dtoClass = dtoClass;
+    }
+
+    public String getReportFilePath() {
+        return reportFilePath;
+    }
+
+    public void setReportFilePath(String reportFilePath) {
+        this.reportFilePath = reportFilePath;
     }
 }
