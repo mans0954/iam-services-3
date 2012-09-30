@@ -1,4 +1,4 @@
-package org.openiam.srvc.reports.ds.ws;
+package org.openiam.core.ws.reports;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,17 +11,16 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
 import org.openiam.base.ws.Response;
-import org.openiam.srvc.reports.ds.dto.TestReportUserDto;
+import org.openiam.core.dto.reports.TestReportUserDto;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
         "getInfoByReportNameResult"
 })
-@XmlRootElement(name = "GetReportByNameResponse")
-public class GetReportByNameResponse extends Response {
+public class GetReportDataResponse extends Response {
 
-    @XmlElement(name = "GetInfoByReportNameResult")
-    protected GetReportByNameResponse.GetInfoByReportNameResult getInfoByReportNameResult;
+    @XmlElement(name = "GetDataByReportNameResult")
+    protected GetReportDataResponse.GetInfoByReportNameResult getInfoByReportNameResult;
 
     public GetInfoByReportNameResult getGetInfoByReportNameResult() {
         return getInfoByReportNameResult;

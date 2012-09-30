@@ -1,4 +1,4 @@
-package org.openiam.srvc.reports.ds.dto;
+package org.openiam.core.dto.reports;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;

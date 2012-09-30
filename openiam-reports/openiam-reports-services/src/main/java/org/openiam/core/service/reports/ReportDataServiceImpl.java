@@ -1,13 +1,13 @@
-package org.openiam.srvc.reports.ds.service;
+package org.openiam.core.service.reports;
 
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang.StringUtils;
+import org.openiam.core.dao.reports.ReportDataDao;
 import org.openiam.core.domain.reports.ReportQuery;
 import org.openiam.exception.ScriptEngineException;
-import org.openiam.srvc.reports.ds.dao.ReportDataDao;
 import org.openiam.script.ScriptFactory;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +27,7 @@ public class ReportDataServiceImpl implements ReportDataService {
     public List<Object> getReportData(final String reportName, final Map<String, String> reportParams) throws ClassNotFoundException, ScriptEngineException {
         List<Object> resultData = new LinkedList<Object>();
 
-        ReportQuery reportQuery = reportDao.getQueryScriptPath(reportName);
+        ReportQuery reportQuery = reportDao.findByName(reportName);
         if (reportQuery == null) {
             throw new IllegalArgumentException("Invalid parameter list: report with name="+reportName + " was not found in DataBase");
         }
@@ -54,5 +54,17 @@ public class ReportDataServiceImpl implements ReportDataService {
             }
         }
         return true;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ReportQuery> getAllReports() {
+        return reportDao.findAll();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ReportQuery getReportByName(String name) {
+        return reportDao.findByName(name);
     }
 }
