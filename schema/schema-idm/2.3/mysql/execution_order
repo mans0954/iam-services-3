@@ -1,0 +1,11 @@
+ddl/1.alter_table_attribute_map.sql
+ddl/2.create_activiti_schema.sql
+ddl/3.activiti.mysql.create.engine.sql
+ddl/4.activiti.mysql.create.history.sql
+ddl/5.activiti.mysql.create.identity.sql
+ddl/6.create_resource_many_to_many_mapping.sql
+ddl/7.create_group_many_to_many_mapping.sql
+ddl/8.migrate_role_id.sql
+ddl/9.migrate_resource_role_mappings.sql
+ddl/10.create_role_many_to_many_mapping.sql
+dml/1.insert_policy.sql
