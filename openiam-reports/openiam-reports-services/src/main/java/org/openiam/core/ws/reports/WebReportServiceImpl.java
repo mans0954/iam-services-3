@@ -1,20 +1,19 @@
 package org.openiam.core.ws.reports;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import javax.jws.WebParam;
 import javax.jws.WebService;
-import javax.xml.bind.annotation.XmlSeeAlso;
-import javax.xml.bind.annotation.XmlType;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.base.ws.ResponseCode;
-import org.openiam.base.ws.ResponseStatus;
 import org.openiam.core.domain.reports.ReportQuery;
+import org.openiam.core.dto.reports.ReportDataDto;
 import org.openiam.core.dto.reports.ReportDto;
 import org.openiam.core.dto.reports.ReportParameterDto;
+import org.openiam.core.dto.reports.ReportRow;
+import org.openiam.core.dto.reports.ReportTable;
 import org.openiam.core.service.reports.ReportDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,7 +24,7 @@ import org.springframework.stereotype.Service;
         portName = "ReportServicePort",
         serviceName = "ReportService")
 public class WebReportServiceImpl implements WebReportService {
-    protected final Log log = LogFactory.getLog(WebReportServiceImpl.class);
+    protected final Log LOG = LogFactory.getLog(WebReportServiceImpl.class);
 
     @Autowired
     private ReportDataService reportDataService;
@@ -33,22 +32,30 @@ public class WebReportServiceImpl implements WebReportService {
     @Override
     public GetReportDataResponse executeQuery(final String reportName, final HashMap<String, String> queryParams) {
         GetReportDataResponse response = new GetReportDataResponse();
-        if (!StringUtils.isEmpty(reportName)) {
-            try {
-                GetReportDataResponse.GetInfoByReportNameResult getInfoByReportNameResult = new GetReportDataResponse.GetInfoByReportNameResult();
-                getInfoByReportNameResult.setContent(reportDataService.getReportData(reportName, queryParams));
-                response.setGetInfoByReportNameResult(getInfoByReportNameResult);
-                response.setStatus(ResponseStatus.SUCCESS);
-            } catch (Throwable ex) {
-                response.setErrorCode(ResponseCode.INVALID_ARGUMENTS);
-                response.setErrorText(ex.getMessage());
-                response.setStatus(ResponseStatus.FAILURE);
+
+        ReportDataDto reportDataDto = new ReportDataDto();
+        for (int n = 0; n < 2; n++) {
+            ReportTable reportTable = new ReportTable();
+            reportTable.setName("Table_"+n);
+            List<ReportRow> reportRowList = new LinkedList<ReportRow>();
+            for (int i = 0; i < 10; i++) {
+                ReportRow reportRow1 = new ReportRow();
+                List<ReportRow.ReportColumn> columns = new LinkedList<ReportRow.ReportColumn>();
+                for (int j = 0; j < 4; j++) {
+                    ReportRow.ReportColumn column1 = new ReportRow.ReportColumn();
+                    column1.setName("column" + j);
+                    column1.setValue("TestValue" + j);
+                    columns.add(column1);
+                }
+
+                reportRow1.setColumn(columns);
+                reportRowList.add(reportRow1);
             }
-        } else {
-            response.setErrorCode(ResponseCode.INVALID_ARGUMENTS);
-            response.setErrorText("Invalid parameter list: reportName=" + reportName);
-            response.setStatus(ResponseStatus.SUCCESS);
+            reportTable.setRow(reportRowList);
+            reportDataDto.getTables().add(reportTable);
         }
+        reportDataDto.getParameters().put("createdDate", new Date().toString());
+        response.setReportDataDto(reportDataDto);
         return response;
     }
 

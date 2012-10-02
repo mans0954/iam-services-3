@@ -7,6 +7,7 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.core.dao.reports.ReportDataDao;
 import org.openiam.core.domain.reports.ReportQuery;
+import org.openiam.core.dto.reports.ReportDataDto;
 import org.openiam.exception.ScriptEngineException;
 import org.openiam.script.ScriptFactory;
 import org.openiam.script.ScriptIntegration;
@@ -24,9 +25,7 @@ public class ReportDataServiceImpl implements ReportDataService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Object> getReportData(final String reportName, final Map<String, String> reportParams) throws ClassNotFoundException, ScriptEngineException {
-        List<Object> resultData = new LinkedList<Object>();
-
+    public ReportDataDto getReportData(final String reportName, final Map<String, String> reportParams) throws ClassNotFoundException, ScriptEngineException {
         ReportQuery reportQuery = reportDao.findByName(reportName);
         if (reportQuery == null) {
             throw new IllegalArgumentException("Invalid parameter list: report with name="+reportName + " was not found in DataBase");
@@ -39,12 +38,9 @@ public class ReportDataServiceImpl implements ReportDataService {
             objectMap.putAll(reportParams);
         }
         ScriptIntegration se = ScriptFactory.createModule(this.scriptEngine);
-        String output = (String) se.execute(objectMap, reportQuery.getQueryScriptPath());
-        if (!StringUtils.isEmpty(output)) {
-            Class clazz = Class.forName(reportQuery.getDtoClass());
-            resultData = reportDao.getReportData(output, clazz);
-        }
-        return resultData;
+        ReportDataDto reportData = (ReportDataDto) se.execute(objectMap, reportQuery.getQueryScriptPath());
+
+        return reportData;
     }
 
     private static boolean validateParams(ReportQuery reportQuery, Map<String, String> queryParams) {
