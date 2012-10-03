@@ -103,6 +103,7 @@
         <module>openiam-esb</module>
         <module>openiam-bpm</module>
         <module>openiam-reports</module>
+	    <module>openiam-km</module>
     </modules>
 
 	<properties>
@@ -143,6 +144,7 @@
         <javassist.version>3.12.1.GA</javassist.version>
         <joda.time.version>1.6.2</joda.time.version>
         <antlr.version>2.7.6</antlr.version>
+        <bouncycastle.version>1.47</bouncycastle.version>
 	</properties>
 
 	<dependencyManagement>
@@ -579,6 +581,16 @@
                 <groupId>org.openiam</groupId>
                 <artifactId>openiam-reports-services</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcprov-jdk15on</artifactId>
+                <version>${bouncycastle.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcpkix-jdk15on</artifactId>
+                <version>${bouncycastle.version}</version>
             </dependency>
 		</dependencies>
 	</dependencyManagement>
