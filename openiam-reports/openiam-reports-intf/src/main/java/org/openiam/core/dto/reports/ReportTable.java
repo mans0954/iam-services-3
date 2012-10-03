@@ -1,5 +1,6 @@
 package org.openiam.core.dto.reports;
 
+import java.util.LinkedList;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -19,6 +20,9 @@ public class ReportTable {
     protected List<ReportRow> row;
 
     public List<ReportRow> getRow() {
+        if(row == null) {
+          row = new LinkedList<ReportRow>();
+        }
         return row;
     }
 

@@ -1,19 +1,19 @@
 package org.openiam.core.ws.reports;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import javax.jws.WebParam;
 import javax.jws.WebService;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.core.domain.reports.ReportQuery;
+import org.openiam.base.ws.ResponseCode;
+import org.openiam.base.ws.ResponseStatus;
+import org.openiam.core.domain.reports.ReportInfo;
 import org.openiam.core.dto.reports.ReportDataDto;
 import org.openiam.core.dto.reports.ReportDto;
 import org.openiam.core.dto.reports.ReportParameterDto;
-import org.openiam.core.dto.reports.ReportRow;
-import org.openiam.core.dto.reports.ReportTable;
 import org.openiam.core.service.reports.ReportDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -32,39 +32,31 @@ public class WebReportServiceImpl implements WebReportService {
     @Override
     public GetReportDataResponse executeQuery(final String reportName, final HashMap<String, String> queryParams) {
         GetReportDataResponse response = new GetReportDataResponse();
+           if (!StringUtils.isEmpty(reportName)) {
+            try {
+            ReportDataDto reportDataDto = reportDataService.getReportData(reportName,queryParams);
 
-        ReportDataDto reportDataDto = new ReportDataDto();
-        for (int n = 0; n < 2; n++) {
-            ReportTable reportTable = new ReportTable();
-            reportTable.setName("Table_"+n);
-            List<ReportRow> reportRowList = new LinkedList<ReportRow>();
-            for (int i = 0; i < 10; i++) {
-                ReportRow reportRow1 = new ReportRow();
-                List<ReportRow.ReportColumn> columns = new LinkedList<ReportRow.ReportColumn>();
-                for (int j = 0; j < 4; j++) {
-                    ReportRow.ReportColumn column1 = new ReportRow.ReportColumn();
-                    column1.setName("column" + j);
-                    column1.setValue("TestValue" + j);
-                    columns.add(column1);
-                }
-
-                reportRow1.setColumn(columns);
-                reportRowList.add(reportRow1);
+            response.setReportDataDto(reportDataDto);
+        } catch (Throwable ex) {
+                response.setErrorCode(ResponseCode.INVALID_ARGUMENTS);
+                response.setErrorText(ex.getMessage());
+                response.setStatus(ResponseStatus.FAILURE);
             }
-            reportTable.setRow(reportRowList);
-            reportDataDto.getTables().add(reportTable);
+        } else {
+            response.setErrorCode(ResponseCode.INVALID_ARGUMENTS);
+            response.setErrorText("Invalid parameter list: reportName=" + reportName);
+            response.setStatus(ResponseStatus.SUCCESS);
         }
-        reportDataDto.getParameters().put("createdDate", new Date().toString());
-        response.setReportDataDto(reportDataDto);
+
         return response;
     }
 
     @Override
     public GetAllReportsResponse getReports() {
-        List<ReportQuery> reports = reportDataService.getAllReports();
+        List<ReportInfo> reports = reportDataService.getAllReports();
         GetAllReportsResponse reportsResponse = new GetAllReportsResponse();
         List<ReportDto> reportDtos = new LinkedList<ReportDto>();
-        for (ReportQuery reportQuery : reports) {
+        for (ReportInfo reportQuery : reports) {
             ReportDto reportDto = new ReportDto();
             reportDto.setReportName(reportQuery.getReportName());
             reportDto.setReportUrl(reportQuery.getReportFilePath());
@@ -78,7 +70,7 @@ public class WebReportServiceImpl implements WebReportService {
 
     @Override
     public GetReportParametersResponse getParametersByReport(@WebParam(name = "reportName", targetNamespace = "") String reportName) {
-        ReportQuery reportQuery = reportDataService.getReportByName(reportName);
+        ReportInfo reportQuery = reportDataService.getReportByName(reportName);
         GetReportParametersResponse getReportParametersResponse = new GetReportParametersResponse();
         List<String> params = reportQuery.getParamsList();
         List<String> requiredParams = reportQuery.getRequiredParamsList();

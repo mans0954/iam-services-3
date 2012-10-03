@@ -1,12 +1,10 @@
 package org.openiam.core.service.reports;
 
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.lang.StringUtils;
 import org.openiam.core.dao.reports.ReportDataDao;
-import org.openiam.core.domain.reports.ReportQuery;
+import org.openiam.core.domain.reports.ReportInfo;
 import org.openiam.core.dto.reports.ReportDataDto;
 import org.openiam.exception.ScriptEngineException;
 import org.openiam.script.ScriptFactory;
@@ -26,24 +24,24 @@ public class ReportDataServiceImpl implements ReportDataService {
     @Override
     @Transactional(readOnly = true)
     public ReportDataDto getReportData(final String reportName, final Map<String, String> reportParams) throws ClassNotFoundException, ScriptEngineException {
-        ReportQuery reportQuery = reportDao.findByName(reportName);
-        if (reportQuery == null) {
+        ReportInfo reportInfo = reportDao.findByName(reportName);
+        if (reportInfo == null) {
             throw new IllegalArgumentException("Invalid parameter list: report with name="+reportName + " was not found in DataBase");
         }
-        if(!validateParams(reportQuery, reportParams)) {
-           throw new IllegalArgumentException("Invalid parameter list: required="+reportQuery.getRequiredParams());
+        if(!validateParams(reportInfo, reportParams)) {
+           throw new IllegalArgumentException("Invalid parameter list: required="+reportInfo.getRequiredParams());
         }
         Map<String, Object> objectMap = new HashMap<String, Object>();
         if (reportParams != null) {
             objectMap.putAll(reportParams);
         }
         ScriptIntegration se = ScriptFactory.createModule(this.scriptEngine);
-        ReportDataDto reportData = (ReportDataDto) se.execute(objectMap, reportQuery.getQueryScriptPath());
+        ReportDataDto reportData = (ReportDataDto) se.execute(objectMap, reportInfo.getGroovyScriptPath());
 
         return reportData;
     }
 
-    private static boolean validateParams(ReportQuery reportQuery, Map<String, String> queryParams) {
+    private static boolean validateParams(ReportInfo reportQuery, Map<String, String> queryParams) {
         for(String requiredParam : reportQuery.getRequiredParamsList()) {
             if(!queryParams.containsKey(requiredParam)) {
                return false;
@@ -54,13 +52,13 @@ public class ReportDataServiceImpl implements ReportDataService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ReportQuery> getAllReports() {
+    public List<ReportInfo> getAllReports() {
         return reportDao.findAll();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public ReportQuery getReportByName(String name) {
+    public ReportInfo getReportByName(String name) {
         return reportDao.findByName(name);
     }
 }
