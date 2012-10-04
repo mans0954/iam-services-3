@@ -103,6 +103,7 @@
         <module>openiam-esb</module>
         <module>openiam-bpm</module>
         <module>openiam-reports</module>
+        <module>openiam-auth-manager</module>
     </modules>
 
 	<properties>
