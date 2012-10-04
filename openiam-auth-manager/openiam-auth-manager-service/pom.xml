@@ -84,7 +84,7 @@
 	    
 	    <dependency>
 	    	<groupId>org.openiam</groupId>
-	    	<artifactId>openiam-auth-manager-common</artifactId>
+	    	<artifactId>openiam-auth-manager-intf</artifactId>
 	    	<version>3.0.0</version>
 	    </dependency>
 	    

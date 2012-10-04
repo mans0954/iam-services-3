@@ -8,7 +8,7 @@
 	</parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.openiam</groupId>
-    <artifactId>openiam-auth-manager-common</artifactId>
+    <artifactId>openiam-auth-manager-intf</artifactId>
     <name>openiam-auth-manager-common</name>
     <packaging>jar</packaging>
     <version>3.0.0</version>
