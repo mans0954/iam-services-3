@@ -5,14 +5,13 @@ import java.util.LinkedList;
 import java.util.List;
 import javax.jws.WebParam;
 import javax.jws.WebService;
-import javax.xml.bind.annotation.XmlSeeAlso;
-import javax.xml.bind.annotation.XmlType;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.core.domain.reports.ReportQuery;
+import org.openiam.core.domain.reports.ReportInfo;
+import org.openiam.core.dto.reports.ReportDataDto;
 import org.openiam.core.dto.reports.ReportDto;
 import org.openiam.core.dto.reports.ReportParameterDto;
 import org.openiam.core.service.reports.ReportDataService;
@@ -25,7 +24,7 @@ import org.springframework.stereotype.Service;
         portName = "ReportServicePort",
         serviceName = "ReportService")
 public class WebReportServiceImpl implements WebReportService {
-    protected final Log log = LogFactory.getLog(WebReportServiceImpl.class);
+    protected final Log LOG = LogFactory.getLog(WebReportServiceImpl.class);
 
     @Autowired
     private ReportDataService reportDataService;
@@ -33,13 +32,12 @@ public class WebReportServiceImpl implements WebReportService {
     @Override
     public GetReportDataResponse executeQuery(final String reportName, final HashMap<String, String> queryParams) {
         GetReportDataResponse response = new GetReportDataResponse();
-        if (!StringUtils.isEmpty(reportName)) {
+           if (!StringUtils.isEmpty(reportName)) {
             try {
-                GetReportDataResponse.GetInfoByReportNameResult getInfoByReportNameResult = new GetReportDataResponse.GetInfoByReportNameResult();
-                getInfoByReportNameResult.setContent(reportDataService.getReportData(reportName, queryParams));
-                response.setGetInfoByReportNameResult(getInfoByReportNameResult);
-                response.setStatus(ResponseStatus.SUCCESS);
-            } catch (Throwable ex) {
+            ReportDataDto reportDataDto = reportDataService.getReportData(reportName,queryParams);
+
+            response.setReportDataDto(reportDataDto);
+        } catch (Throwable ex) {
                 response.setErrorCode(ResponseCode.INVALID_ARGUMENTS);
                 response.setErrorText(ex.getMessage());
                 response.setStatus(ResponseStatus.FAILURE);
@@ -49,15 +47,16 @@ public class WebReportServiceImpl implements WebReportService {
             response.setErrorText("Invalid parameter list: reportName=" + reportName);
             response.setStatus(ResponseStatus.SUCCESS);
         }
+
         return response;
     }
 
     @Override
     public GetAllReportsResponse getReports() {
-        List<ReportQuery> reports = reportDataService.getAllReports();
+        List<ReportInfo> reports = reportDataService.getAllReports();
         GetAllReportsResponse reportsResponse = new GetAllReportsResponse();
         List<ReportDto> reportDtos = new LinkedList<ReportDto>();
-        for (ReportQuery reportQuery : reports) {
+        for (ReportInfo reportQuery : reports) {
             ReportDto reportDto = new ReportDto();
             reportDto.setReportName(reportQuery.getReportName());
             reportDto.setReportUrl(reportQuery.getReportFilePath());
@@ -71,7 +70,7 @@ public class WebReportServiceImpl implements WebReportService {
 
     @Override
     public GetReportParametersResponse getParametersByReport(@WebParam(name = "reportName", targetNamespace = "") String reportName) {
-        ReportQuery reportQuery = reportDataService.getReportByName(reportName);
+        ReportInfo reportQuery = reportDataService.getReportByName(reportName);
         GetReportParametersResponse getReportParametersResponse = new GetReportParametersResponse();
         List<String> params = reportQuery.getParamsList();
         List<String> requiredParams = reportQuery.getRequiredParamsList();

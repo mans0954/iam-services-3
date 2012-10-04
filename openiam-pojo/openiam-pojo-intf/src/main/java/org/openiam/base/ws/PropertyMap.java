@@ -5,6 +5,7 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -27,7 +28,7 @@ public class PropertyMap {
     public static class PropertyEntry {
         @XmlAttribute
         protected String key;
-        @XmlAttribute
+        @XmlElement
         protected String value;
 
         public String getValue() {

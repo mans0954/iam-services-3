@@ -27,7 +27,8 @@
 					 classpath:idmservice-Context.xml,
 					 classpath:connector-coreContext.xml,
 					 classpath:bpm-context.xml,
-                     classpath:reports-service-Context.xml
+                     classpath:reports-service-Context.xml,
+                     classpath:authorizationManagerContext.xml
 		</param-value>
 	</context-param>
 

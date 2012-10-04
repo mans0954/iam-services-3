@@ -10,20 +10,20 @@ import javax.persistence.Table;
 import org.hibernate.annotations.GenericGenerator;
 
 @Entity
-@Table(name = "report_query")
-public class ReportQuery {
+@Table(name = "report_info")
+public class ReportInfo {
 
     @Id
     @GeneratedValue(generator = "system-uuid")
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    @Column(name = "report_query_id")
+    @Column(name = "report_info_id")
     private String id;
 
     @Column(name = "report_name")
     private String reportName;
 
-    @Column(name = "query_script_path")
-    private String queryScriptPath;
+    @Column(name = "groovy_script_path")
+    private String groovyScriptPath;
     
     @Column(name = "report_file_path")
     private String reportFilePath;
@@ -33,9 +33,6 @@ public class ReportQuery {
 
     @Column(name = "required_params")
     private String requiredParams;
-
-    @Column(name = "dto_class")
-    private String dtoClass;
 
     public String getId() {
         return id;
@@ -53,12 +50,12 @@ public class ReportQuery {
         this.reportName = reportName;
     }
 
-    public String getQueryScriptPath() {
-        return queryScriptPath;
+    public String getGroovyScriptPath() {
+        return groovyScriptPath;
     }
 
-    public void setQueryScriptPath(String queryScriptPath) {
-        this.queryScriptPath = queryScriptPath;
+    public void setGroovyScriptPath(String groovyScriptPath) {
+        this.groovyScriptPath = groovyScriptPath;
     }
 
     public String getParams() {
@@ -83,14 +80,6 @@ public class ReportQuery {
 
     public List<String> getParamsList() {
         return Arrays.asList(this.params.split(","));
-    }
-
-    public String getDtoClass() {
-        return dtoClass;
-    }
-
-    public void setDtoClass(String dtoClass) {
-        this.dtoClass = dtoClass;
     }
 
     public String getReportFilePath() {

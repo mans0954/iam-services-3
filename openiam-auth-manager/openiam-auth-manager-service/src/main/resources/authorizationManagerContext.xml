@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:aop="http://www.springframework.org/schema/aop"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xmlns:jee="http://www.springframework.org/schema/jee"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+    					http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
+    					http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
+    					http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-2.5.xsd
+    					http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd">
+	
+	<context:annotation-config />
+	<context:component-scan base-package="org.openiam.authmanager" />
+	<tx:annotation-driven/>
+	
+	<!-- Thread Scheduling - not using annotations since the interval must be configurable -->
+	<bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+    	<property name="triggers">
+        	<list>
+        		<bean class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+        			 <property name="startDelay" value="${org.openiam.authorization.manager.threadsweep}" />
+        			 <property name="repeatInterval" value="${org.openiam.authorization.manager.threadsweep}" />
+        			 <property name="jobDetail">
+						<bean class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+							<property name="targetObject" ref="authorizationManagerService" />
+						  	<property name="targetMethod" value="sweep" />
+						  	<property name="concurrent" value="false" />
+						</bean>
+        			 </property>
+        		</bean>
+        	</list>
+     	</property>
+	</bean>
+	
+  	<bean id="authManagerCacheManager" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
+		<property name="configLocation">
+	  		<value>classpath:authorization.manager.ehcache.xml</value>
+	  	</property>
+  	</bean>
+  	
+  	<bean id="authManagerUserCache" class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+  		<property name="cacheManager">
+  			<ref local="authManagerCacheManager"/>
+  		</property>
+  		<property name="cacheName">
+  			<value>org.openiam.authorization.manager.USER_CACHE</value>
+  		</property>
+  	</bean>
+  	
+  	<bean id="userLoginCache" class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+  		<property name="cacheManager">
+  			<ref local="authManagerCacheManager"/>
+  		</property>
+  		<property name="cacheName">
+  			<value>org.openiam.authorization.manager.LOGIN_CACHE</value>
+  		</property>
+  	</bean>
+  	
+  	<!--
+  	<bean id="authorizationManagerExporter" class="org.springframework.jmx.export.MBeanExporter" lazy-init="false">
+  		<property name="autodetect" value="true"></property>
+  		<property name="namingStrategy" ref="namingStrategy"></property>
+  		<property name="assembler" ref="assembler"></property>
+	</bean>
+	
+	<bean id="authorizationManagerJMXattributeSource" class="org.springframework.jmx.export.annotation.AnnotationJmxAttributeSource"/>
+
+	<bean id="assembler" class="org.springframework.jmx.export.assembler.MetadataMBeanInfoAssembler">
+  		<property name="attributeSource" ref="authorizationManagerJMXattributeSource"/>
+	</bean>
+
+	<bean id="namingStrategy" class="org.springframework.jmx.export.naming.MetadataNamingStrategy">
+  		<property name="attributeSource" ref="authorizationManagerJMXattributeSource"/>
+	</bean>
+	-->
+</beans>
