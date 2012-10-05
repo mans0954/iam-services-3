@@ -68,6 +68,15 @@
                 <role>documentation</role>
             </roles>
         </developer>
+        <developer>
+            <name>Vitaly Yakunin</name>
+            <id>vitaly.yakunin</id>
+            <email>vitaly.yakunin@openiam.com</email>
+            <roles>
+                <role>developer</role>
+                <role>documentation</role>
+            </roles>
+        </developer>
 	</developers>
 
 	<licenses>
@@ -102,7 +111,6 @@
         <module>openiam-am</module>
         <module>openiam-esb</module>
         <module>openiam-bpm</module>
-        <module>openiam-reports</module>
     </modules>
 
 	<properties>

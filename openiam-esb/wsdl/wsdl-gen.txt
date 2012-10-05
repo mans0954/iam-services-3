@@ -31,3 +31,6 @@ Reconcilation
 BPM Integration
 
 /devtool/apache-cxf-2.3.3/bin/java2ws -wsdl -cp /workspace/idm-ee/openiam-pojo-intf/target/classes/ -d /workspace/idm-ee/openiam-idm-esb/wsdl/ -o AuthorizationService.wsdl  org.openiam.idm.srvc.auth.service.AuthorizationService
+
+// add services for Reporting
+/devtool/apache-cxf-2.3.3/bin/java2ws -wsdl -cp /git-projects/openiam-idm-ce/idm/openiam-idm-esb/target/classes/ -d /git-projects/openiam-idm-ce/idm/openiam-idm-esb/wsdl/ -o ReportService.wsdl  org.openiam.idm.srvc.report.ws.WebReportService

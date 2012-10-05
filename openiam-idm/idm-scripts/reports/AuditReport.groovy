@@ -1,9 +1,9 @@
 import groovy.sql.*
-import org.openiam.core.dto.reports.ReportRow
-import org.openiam.core.dto.reports.ReportRow.ReportColumn
+import org.openiam.idm.srvc.report.dto.ReportRow
+import org.openiam.idm.srvc.report.dto.ReportRow.ReportColumn
 import org.openiam.base.id.UUIDGen
-import org.openiam.core.dto.reports.ReportDataDto
-import org.openiam.core.dto.reports.ReportTable;
+import org.openiam.idm.srvc.report.dto.ReportDataDto
+import org.openiam.idm.srvc.report.dto.ReportTable;
 
 
 def db='jdbc:mysql://localhost:3306/openiam'
@@ -17,14 +17,14 @@ def sql = Sql.newInstance(db,user, password, driver)
 //
 GroovyRowResult groovyRowScript = sql.firstRow("select count(*) as count from REPORT_INFO where report_name='AUDIT_REPORT'");
 if(((Integer)groovyRowScript.get('count')) == 0) {
-    sql.call("insert into REPORT_INFO(report_info_id, report_name, groovy_script_path, params, required_params) values('"+UUIDGen.getUUID()+"', 'AUDIT_REPORT', 'reports/AuditReport.groovy', 'ACTION_ID,ACTION_DATETIME_START,ACTION_DATETIME_END', 'ACTION_ID,ACTION_DATETIME_START,ACTION_DATETIME_END'); ")
+    sql.call("insert into REPORT_INFO(report_info_id, report_name, groovy_script_path, report_file_path, params, required_params) values('"+UUIDGen.getUUID()+"', 'AUDIT_REPORT', 'reports/AuditReport.groovy', 'reports/AuditReport.rptdesign', 'ACTION_ID,ACTION_DATETIME_START,ACTION_DATETIME_END', 'ACTION_ID,ACTION_DATETIME_START,ACTION_DATETIME_END');")
 }
 
-def action = 'AUTHENTICATION';
-def actionStartDate = '2012-08-29 23:28:44';
-def actionEndDate = '2012-10-29 23:28:44';
+//def action = 'AUTHENTICATION';
+//def actionStartDate = '2012-08-29 23:28:44';
+//def actionEndDate = '2012-10-29 23:28:44';
 
-org.openiam.core.dto.reports.ReportTable reportTable = new org.openiam.core.dto.reports.ReportTable();
+org.openiam.idm.srvc.report.dto.reports.ReportTable reportTable = new org.openiam.idm.srvc.report.dto.reports.ReportTable();
 reportTable.setName("AuditReportResultSet");
 
 String query = 'SELECT IDM_AUDIT_LOG.LOG_ID, IDM_AUDIT_LOG.OBJECT_TYPE_ID, IDM_AUDIT_LOG.OBJECT_ID,'+
@@ -82,5 +82,5 @@ List<ReportTable> reportTables = new ArrayList<ReportTable>();
 reportTables.add(reportTable);
 reportDataDto.setTables(reportTables)
 output = reportDataDto;
-println('Groovy script testReport.groovy has been executed');
+println('Groovy script AuditReport.groovy has been executed');
 
