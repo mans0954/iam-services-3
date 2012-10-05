@@ -1,4 +1,4 @@
-package org.openiam.km.key.generator;
+package org.openiam.core.key.generator;
 
 import org.bouncycastle.asn1.x509.*;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -10,7 +10,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.math.BigInteger;
 import java.security.*;
-import java.security.Certificate;
 import java.security.cert.*;
 import java.util.Date;
 

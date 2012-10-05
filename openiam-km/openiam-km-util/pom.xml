@@ -37,7 +37,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>org.openiam.km.key.generator.KeyGenerator</mainClass>
+                            <mainClass>org.openiam.core.key.generator.KeyGenerator</mainClass>
                             <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                         </manifest>
                     </archive>
@@ -184,12 +184,10 @@
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk15on</artifactId>
-            <!--<version>1.47</version>-->
         </dependency>
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcpkix-jdk15on</artifactId>
-            <!--<version>1.47</version>-->
         </dependency>
     </dependencies>
 
