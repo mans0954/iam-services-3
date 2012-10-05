@@ -31,7 +31,7 @@ public class UserKey implements Serializable {
     private String key;
 
     @ManyToOne(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
-    @JoinColumn(name = "userId", referencedColumnName = "userId")
+    @JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID", insertable = false, updatable = false)
     private User user;
 
     public String getUserKeyId() {
