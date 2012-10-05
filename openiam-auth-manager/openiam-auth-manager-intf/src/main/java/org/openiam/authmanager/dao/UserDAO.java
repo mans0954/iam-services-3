@@ -4,7 +4,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.openiam.authmanager.common.model.InternalAuthroizationUser;
-import org.openiam.authmanager.common.model.LoginId;
+import org.openiam.authmanager.common.model.AuthorizationManagerLoginId;
 import org.openiam.authmanager.common.model.AuthorizationUser;
 
 public interface UserDAO extends AbstractDAO<AuthorizationUser> {
@@ -18,7 +18,7 @@ public interface UserDAO extends AbstractDAO<AuthorizationUser> {
 	 * @param date - the earliest last login timestamp
 	 * @return all LoginIds for users who have logged in after <p>date</p>
 	 */
-	public List<LoginId> getLoginIdsForUsersLoggedInAfter(final Date date);
+	public List<AuthorizationManagerLoginId> getLoginIdsForUsersLoggedInAfter(final Date date);
 	
 	/**
 	 * @param userId - userId
@@ -30,5 +30,5 @@ public interface UserDAO extends AbstractDAO<AuthorizationUser> {
 	 * @param loginId - LoginId object
 	 * @return the fully populatedUser
 	 */
-	public InternalAuthroizationUser getFullUser(final LoginId loginId);
+	public InternalAuthroizationUser getFullUser(final AuthorizationManagerLoginId loginId);
 }

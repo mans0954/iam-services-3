@@ -2,6 +2,11 @@ package org.openiam.authmanager.common.model;
 
 import java.io.Serializable;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlType;
+
 /**
  * @author Lev Bornovalov
  * This class serves two purposes:
@@ -9,9 +14,15 @@ import java.io.Serializable;
  * 2) All Entities have a String ID.  Using a bitSet as the hashCode key eliminates
  *    this possibility (since the bit is unique for each entity instance)
  */
-public abstract class AbstractEntity {
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "AbstractAuthorizationEntity", propOrder = {
+        "id"
+})
+public abstract class AbstractAuthorizationEntity {
 
 	private String id;
+	
+	@XmlTransient
 	private int bitSetIdx = -1;
 	
 	public String getId() {
@@ -48,7 +59,7 @@ public abstract class AbstractEntity {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		AbstractEntity other = (AbstractEntity) obj;
+		AbstractAuthorizationEntity other = (AbstractAuthorizationEntity) obj;
 		if (id == null) {
 			if (other.id != null)
 				return false;

@@ -6,7 +6,7 @@ import java.util.Set;
 public class InternalAuthroizationUser {
 
 	private String userId;
-	private Set<LoginId> loginIds;
+	private Set<AuthorizationManagerLoginId> loginIds;
 	private Set<String> resourceIds;
 	private Set<String> roleIds;
 	private Set<String> groupIds;
@@ -23,7 +23,7 @@ public class InternalAuthroizationUser {
 		return userId;
 	}
 
-	public Set<LoginId> getLoginIds() {
+	public Set<AuthorizationManagerLoginId> getLoginIds() {
 		return loginIds;
 	}
 
@@ -39,9 +39,9 @@ public class InternalAuthroizationUser {
 		return groupIds;
 	}
 	
-	public void addLoginId(final LoginId loginId) {
+	public void addLoginId(final AuthorizationManagerLoginId loginId) {
 		if(loginIds == null) {
-			loginIds = new HashSet<LoginId>();
+			loginIds = new HashSet<AuthorizationManagerLoginId>();
 		}
 		loginIds.add(loginId);
 	}

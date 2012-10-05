@@ -15,6 +15,11 @@
     <description>OpenIAM Authorization Manager Common</description>
 
     <dependencies>
+    	<dependency>
+    		<groupId>org.openiam</groupId>
+        	<artifactId>openiam-pojo-intf</artifactId>
+		</dependency>
+    
         <dependency>
 	     	<groupId>junit</groupId>
 	     	<artifactId>junit</artifactId>

@@ -8,12 +8,27 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class AuthorizationRole extends AbstractEntity implements Serializable  {
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlType;
+
+
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "AuthorizationRole", propOrder = {
+        "name"
+})
+public class AuthorizationRole extends AbstractAuthorizationEntity implements Serializable  {
 	
 	private static final long serialVersionUID = 1L;
 	
+	@XmlTransient
 	private Set<AuthorizationRole> directParentRoles;
+	
+	@XmlTransient
 	private Set<AuthorizationResource> directResources;
+	
+	
 	private String name;
 
 	/*

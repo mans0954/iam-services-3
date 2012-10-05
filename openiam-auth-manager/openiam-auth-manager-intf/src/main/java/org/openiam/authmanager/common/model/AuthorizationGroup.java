@@ -8,12 +8,26 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class AuthorizationGroup extends AbstractEntity implements Serializable  {
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlType;
+
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "AuthorizationGroup", propOrder = {
+        "name"
+})
+public class AuthorizationGroup extends AbstractAuthorizationEntity implements Serializable  {
 
 	private static final long serialVersionUID = 1L;
 	
+	@XmlTransient
 	private Set<AuthorizationGroup> groups = null;
+	
+	@XmlTransient
 	private Set<AuthorizationRole> roles = null;
+	
+	@XmlTransient
 	private Set<AuthorizationResource> resources = null;
 	private String name;
 	

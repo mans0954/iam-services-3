@@ -2,20 +2,33 @@ package org.openiam.authmanager.common.model;
 
 import java.io.Serializable;
 
-public class LoginId implements Serializable {
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlType;
+
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "AuthorizationManagerLoginId", propOrder = {
+        "login",
+        "domain",
+        "managedSysId"
+})
+public class AuthorizationManagerLoginId implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	
+	@XmlTransient
 	private String userId;
+	
 	private String login;
 	private String domain;
 	private String managedSysId;
 	
-	public LoginId() {
+	public AuthorizationManagerLoginId() {
 		
 	}
 	
-	public LoginId(final String domain, final String login, final String managedSysId) {
+	public AuthorizationManagerLoginId(final String domain, final String login, final String managedSysId) {
 		this.domain = domain;
 		this.login = login;
 		this.managedSysId = managedSysId;
@@ -73,7 +86,7 @@ public class LoginId implements Serializable {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		LoginId other = (LoginId) obj;
+		AuthorizationManagerLoginId other = (AuthorizationManagerLoginId) obj;
 		if (domain == null) {
 			if (other.domain != null)
 				return false;

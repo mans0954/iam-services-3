@@ -12,7 +12,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.authmanager.common.model.InternalAuthroizationUser;
-import org.openiam.authmanager.common.model.LoginId;
+import org.openiam.authmanager.common.model.AuthorizationManagerLoginId;
 import org.openiam.authmanager.common.model.AuthorizationUser;
 import org.openiam.authmanager.dao.UserDAO;
 import org.springframework.dao.DataAccessException;
@@ -49,7 +49,7 @@ public class JDBCUserDAOImpl extends AbstractJDBCDao implements UserDAO {
 	
 	private static final ResultSetExtractor<InternalAuthroizationUser> internalAuthorizationuserMapper = new InternalAuthroizationUserMapper();
 	private static final RowMapper<AuthorizationUser> userMapper = new UserMapper();
-	private static final RowMapper<LoginId> loginMapper = new LoginIdMapper();
+	private static final RowMapper<AuthorizationManagerLoginId> loginMapper = new LoginIdMapper();
 	
 	@Override
 	public void initSqlStatements() {
@@ -70,7 +70,7 @@ public class JDBCUserDAOImpl extends AbstractJDBCDao implements UserDAO {
 	}
 	
 	@Override
-	public List<LoginId> getLoginIdsForUsersLoggedInAfter(Date date) {
+	public List<AuthorizationManagerLoginId> getLoginIdsForUsersLoggedInAfter(Date date) {
 		if(log.isDebugEnabled()) {
 			log.debug(String.format("Query: %s", GET_ALL_LOGINS_WITH_LAST_LOGIN_AFTER));
 			log.debug(String.format("Params: %s", date));
@@ -88,7 +88,7 @@ public class JDBCUserDAOImpl extends AbstractJDBCDao implements UserDAO {
 	}
 
 	@Override
-	public InternalAuthroizationUser getFullUser(LoginId loginId) {
+	public InternalAuthroizationUser getFullUser(AuthorizationManagerLoginId loginId) {
 		final Object[] params = new Object[] {
 			StringUtils.lowerCase(loginId.getDomain()),
 			StringUtils.lowerCase(loginId.getLogin()),
@@ -127,7 +127,7 @@ public class JDBCUserDAOImpl extends AbstractJDBCDao implements UserDAO {
 				final String resourceId = rs.getString("RESM_RESOURCE_ID");
 				
 				user.setUserId(userId);
-				user.addLoginId(new LoginId(domain, login, managedSysId));
+				user.addLoginId(new AuthorizationManagerLoginId(domain, login, managedSysId));
 				user.addGroupId(groupId);
 				user.addRoleId(roleId);
 				user.addResourceId(resourceId);
@@ -139,15 +139,15 @@ public class JDBCUserDAOImpl extends AbstractJDBCDao implements UserDAO {
 	
 	
 	
-	private static class LoginIdMapper implements RowMapper<LoginId> {
+	private static class LoginIdMapper implements RowMapper<AuthorizationManagerLoginId> {
 		@Override
-		public LoginId mapRow(ResultSet rs, int rowNum) throws SQLException {
+		public AuthorizationManagerLoginId mapRow(ResultSet rs, int rowNum) throws SQLException {
 			final String serviceId = rs.getString("SERVICE_ID");
 			final String login = rs.getString("LOGIN");
 			final String managedSysId = rs.getString("MANAGED_SYS_ID");
 			final String userId = rs.getString("USER_ID");
 			
-			final LoginId loginId = new LoginId();
+			final AuthorizationManagerLoginId loginId = new AuthorizationManagerLoginId();
 			loginId.setDomain(serviceId);
 			loginId.setLogin(login);
 			loginId.setManagedSysId(managedSysId);

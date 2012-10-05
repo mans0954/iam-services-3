@@ -7,7 +7,11 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
 
-public class AuthorizationUser extends AbstractEntity implements Serializable  {
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlType;
+
+public class AuthorizationUser extends AbstractAuthorizationEntity implements Serializable  {
 
 	private static final long serialVersionUID = 1L;
 	

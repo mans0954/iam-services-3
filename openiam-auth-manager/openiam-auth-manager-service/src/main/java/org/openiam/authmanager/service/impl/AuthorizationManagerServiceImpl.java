@@ -47,7 +47,7 @@ import org.openiam.authmanager.dao.RoleRoleXrefDAO;
 import org.openiam.authmanager.dao.RoleUserXrefDAO;
 import org.openiam.authmanager.dao.UserDAO;
 import org.openiam.authmanager.service.AuthorizationManagerService;
-import org.openiam.authmanager.common.model.LoginId;
+import org.openiam.authmanager.common.model.AuthorizationManagerLoginId;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,11 +70,11 @@ import org.springframework.util.StopWatch;
  */
 @Service("authorizationManagerService")
 @ManagedResource(objectName="org.openiam.authorization.manager:name=authorizationManagerService")
-public class AuthroizationManagerServiceImpl implements AuthorizationManagerService, InitializingBean, ApplicationContextAware {
+public class AuthorizationManagerServiceImpl implements AuthorizationManagerService, InitializingBean, ApplicationContextAware {
 
 	private ApplicationContext ctx;
 	
-	private static final Log log = LogFactory.getLog(AuthroizationManagerServiceImpl.class);
+	private static final Log log = LogFactory.getLog(AuthorizationManagerServiceImpl.class);
 	
 	@Value("${org.openiam.authorization.manager.login.hours.threshold}")
 	private Long numOfLoggedInHoursThreshold;
@@ -176,7 +176,7 @@ public class AuthroizationManagerServiceImpl implements AuthorizationManagerServ
 			final long millisecLoginThreshold = new java.util.Date().getTime() - (numOfLoggedInHoursThreshold.longValue() * 60 * 60 * 1000);
 			final Date loginThreshold = new Date(millisecLoginThreshold);
 			
-			final List<LoginId> tempLoginIdList = userDAO.getLoginIdsForUsersLoggedInAfter(loginThreshold);
+			final List<AuthorizationManagerLoginId> tempLoginIdList = userDAO.getLoginIdsForUsersLoggedInAfter(loginThreshold);
 			final List<AuthorizationUser> tempUserList = userDAO.getAllUsersLoggedInAfter(loginThreshold);
 			final List<AuthorizationRole> tempRoleList = roleDAO.getList();
 			final List<AuthorizationResource> tempResourceList = resourceDAO.getList();
@@ -311,8 +311,8 @@ public class AuthroizationManagerServiceImpl implements AuthorizationManagerServ
 			/* create a map of LoginId cache Key ->LoginId */
 			/* use case insensitive verions.  Log an error if case-insensitive duplicates occur */
 			final Set<String> duplicateLoginIdsCaseIgnore = new HashSet<String>();
-			final Map<String, LoginId> tempLoginIdMap = new HashMap<String, LoginId>();
-			for(final LoginId loginId : tempLoginIdList) {
+			final Map<String, AuthorizationManagerLoginId> tempLoginIdMap = new HashMap<String, AuthorizationManagerLoginId>();
+			for(final AuthorizationManagerLoginId loginId : tempLoginIdList) {
 				final String loginIdKey = createLoginIdKey(loginId);
 				if(!tempLoginIdMap.containsKey(loginIdKey)) {
 					tempLoginIdMap.put(loginIdKey, loginId);
@@ -427,15 +427,15 @@ public class AuthroizationManagerServiceImpl implements AuthorizationManagerServ
 	}
 	
 	private String createLoginIdKey(final String domainId, final String login, final String managedSysId) {
-		return createLoginIdKey(new LoginId(domainId, login, managedSysId));
+		return createLoginIdKey(new AuthorizationManagerLoginId(domainId, login, managedSysId));
 	}
 	
-	private String createLoginIdKey(final LoginId loginId) {
+	private String createLoginIdKey(final AuthorizationManagerLoginId loginId) {
 		clean(loginId);
 		return String.format("%s:%s:%s", loginId.getDomain(), loginId.getLogin(), loginId.getManagedSysId());
 	}
 	
-	private void clean(final LoginId loginId) {
+	private void clean(final AuthorizationManagerLoginId loginId) {
 		loginId.setDomain(StringUtils.trimToNull(StringUtils.lowerCase(loginId.getDomain())));
 		loginId.setLogin(StringUtils.trimToNull(StringUtils.lowerCase(loginId.getLogin())));
 		loginId.setManagedSysId(StringUtils.trimToNull(StringUtils.lowerCase(loginId.getManagedSysId())));
@@ -484,7 +484,7 @@ public class AuthroizationManagerServiceImpl implements AuthorizationManagerServ
 		return retVal;
 	}
 	
-	private AuthorizationUser fetchUser(final LoginId loginId) {
+	private AuthorizationUser fetchUser(final AuthorizationManagerLoginId loginId) {
 		AuthorizationUser retVal = getCachedUser(loginId);
 		if(retVal == null) {
 			final InternalAuthroizationUser internalUser = userDAO.getFullUser(loginId);
@@ -521,7 +521,7 @@ public class AuthroizationManagerServiceImpl implements AuthorizationManagerServ
 			
 			if(CollectionUtils.isNotEmpty(internalUser.getLoginIds())) {
 				final Set<String> duplicateLoginIds = new HashSet<String>();
-				for(final LoginId loginId : internalUser.getLoginIds()) {
+				for(final AuthorizationManagerLoginId loginId : internalUser.getLoginIds()) {
 					final String loginIdKey = createLoginIdKey(loginId);
 					if(loginCache.get(loginIdKey) == null) {
 						loginCache.put(new Element(createLoginIdKey(loginId), internalUser.getUserId()));
@@ -551,7 +551,7 @@ public class AuthroizationManagerServiceImpl implements AuthorizationManagerServ
 		return retVal;
 	}
 	
-	private AuthorizationUser getCachedUser(final LoginId loginId) {
+	private AuthorizationUser getCachedUser(final AuthorizationManagerLoginId loginId) {
 		AuthorizationUser retVal = null;
 		final Element cachedLoginId = loginCache.get(createLoginIdKey(loginId));
 		if(cachedLoginId != null) {
@@ -570,14 +570,20 @@ public class AuthroizationManagerServiceImpl implements AuthorizationManagerServ
 	}
 
 	@Override
-	public boolean isEntitled(final LoginId loginId, final AuthorizationResource resource) {
+	public boolean isEntitled(final AuthorizationManagerLoginId loginId, final AuthorizationResource resource) {
 		return isEntitled(fetchUser(loginId), resource);
 	}
 	
 	private boolean isEntitled(final AuthorizationUser user, final AuthorizationResource resource) {
 		boolean retVal = false;
 		if(user != null && resource != null) {
-			retVal = user.isEntitledTo(resource);
+			AuthorizationResource toCheck = null;
+			if(resource.getId() != null) {
+				toCheck = resourceIdCache.get(resource.getId());
+			} else if(resource.getName() != null) {
+				toCheck = resourceNameCache.get(resource.getName());
+			}
+			retVal = user.isEntitledTo(toCheck);
 		}
 		return retVal;
 	}
@@ -588,14 +594,20 @@ public class AuthroizationManagerServiceImpl implements AuthorizationManagerServ
 	}
 
 	@Override
-	public boolean isMemberOf(final LoginId loginId, final AuthorizationGroup group) {
+	public boolean isMemberOf(final AuthorizationManagerLoginId loginId, final AuthorizationGroup group) {
 		return isMemberOf(fetchUser(loginId), group);
 	}
 	
 	private boolean isMemberOf(final AuthorizationUser user, final AuthorizationGroup group) {
 		boolean retVal = false;
 		if(user != null && group != null) {
-			retVal = user.isMemberOf(group);
+			AuthorizationGroup toCheck = null;
+			if(group.getId() != null) {
+				toCheck = groupIdCache.get(group.getId());
+			} else if(group.getName() != null) {
+				toCheck = groupNameCache.get(group.getName());
+			}
+			retVal = user.isMemberOf(toCheck);
 		}
 		return retVal;
 	}
@@ -606,14 +618,20 @@ public class AuthroizationManagerServiceImpl implements AuthorizationManagerServ
 	}
 
 	@Override
-	public boolean isMemberOf(final LoginId loginId, final AuthorizationRole role) {
+	public boolean isMemberOf(final AuthorizationManagerLoginId loginId, final AuthorizationRole role) {
 		return isMemberOf(fetchUser(loginId), role);
 	}
 	
 	private boolean isMemberOf(final AuthorizationUser user, final AuthorizationRole role) {
 		boolean retVal = false;
 		if(user != null && role != null) {
-			retVal = user.isMemberOf(role);
+			AuthorizationRole toCheck = null;
+			if(role.getId() != null) {
+				toCheck = roleIdCache.get(role.getId());
+			} else if(role.getName() != null) {
+				toCheck = roleNameCache.get(role.getName());
+			}
+			retVal = user.isMemberOf(toCheck);
 		}
 		return retVal;
 	}
@@ -624,7 +642,7 @@ public class AuthroizationManagerServiceImpl implements AuthorizationManagerServ
 	}
 
 	@Override
-	public Set<AuthorizationResource> getResourcesFor(final LoginId loginId) {
+	public Set<AuthorizationResource> getResourcesFor(final AuthorizationManagerLoginId loginId) {
 		return getResorucesFor(fetchUser(loginId));
 	}
 	
@@ -656,7 +674,7 @@ public class AuthroizationManagerServiceImpl implements AuthorizationManagerServ
 	}
 
 	@Override
-	public Set<AuthorizationGroup> getGroupsFor(final LoginId loginId) {
+	public Set<AuthorizationGroup> getGroupsFor(final AuthorizationManagerLoginId loginId) {
 		return getGroupsFor(fetchUser(loginId));
 	}
 	
@@ -688,7 +706,7 @@ public class AuthroizationManagerServiceImpl implements AuthorizationManagerServ
 	}
 
 	@Override
-	public Set<AuthorizationRole> getRolesFor(final LoginId loginId) {
+	public Set<AuthorizationRole> getRolesFor(final AuthorizationManagerLoginId loginId) {
 		return getRolesFor(fetchUser(loginId));
 	}
 	
