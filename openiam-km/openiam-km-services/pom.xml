@@ -2,17 +2,17 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
-        <artifactId>am-core</artifactId>
+        <artifactId>km-core</artifactId>
         <groupId>org.openiam</groupId>
         <version>3.0.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.openiam</groupId>
-    <artifactId>openiam-am-services</artifactId>
+    <artifactId>openiam-km-services</artifactId>
     <packaging>jar</packaging>
-    <name>openiam-am-services</name>
+    <name>openiam-km-services</name>
     <version>3.0.0</version>
-    <description>OpenIAM Access Manager sepcific service</description>
+    <description>OpenIAM Key Manager sepcific service</description>
     <ciManagement>
         <system>idm</system>
         <url>http://build.openiam.org:8085/idm/</url>
@@ -26,8 +26,7 @@
         </notifiers>
     </ciManagement>
     <build>
-        <finalName>openiam-am-services</finalName>
-
+        <finalName>openiam-km-services</finalName>
     </build>
 
     <dependencies>
@@ -154,11 +153,7 @@
             <artifactId>mule-module-client</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk16</artifactId>
-            <version>1.46</version>
-        </dependency>
+
     </dependencies>
 
 </project>
