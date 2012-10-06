@@ -5,11 +5,11 @@ import java.util.List;
 
 public interface BaseDao<T> {
 
-  T findById(Long id);
+  T findById(String id);
 
-  T findById(Long id, String ... fetchFields);
+  T findById(String id, String ... fetchFields);
 
-  Collection<T> findByIds(Collection<Long> ids, String ... fetchFields);
+  Collection<T> findByIds(Collection<String> ids, String ... fetchFields);
 
   public List<T> findAll();
 

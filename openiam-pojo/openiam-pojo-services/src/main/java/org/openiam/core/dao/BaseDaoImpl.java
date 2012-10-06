@@ -57,7 +57,7 @@ public abstract class BaseDaoImpl<T> implements BaseDao<T> {
     }
 
     @SuppressWarnings({"unchecked"})
-    public T findById(Long id) {
+    public T findById(String id) {
         if (id == null) {
             return null;
         }
@@ -65,7 +65,7 @@ public abstract class BaseDaoImpl<T> implements BaseDao<T> {
     }
 
     @SuppressWarnings({"unchecked"})
-    public T findById(Long id, String... fetchFields) {
+    public T findById(String id, String... fetchFields) {
         if (id == null) {
             return null;
         }
@@ -83,7 +83,7 @@ public abstract class BaseDaoImpl<T> implements BaseDao<T> {
     }
 
     @SuppressWarnings("unchecked")
-    public Collection<T> findByIds(Collection<Long> ids, String... fetchFields) {
+    public Collection<T> findByIds(Collection<String> ids, String... fetchFields) {
         if (ids == null || ids.isEmpty()) {
             return emptyList();
         }
@@ -99,19 +99,19 @@ public abstract class BaseDaoImpl<T> implements BaseDao<T> {
         }
         Method method = null;
         List<T> entities = criteria.list();
-        Map<Long, T> mapById = new HashMap<Long, T>(entities.size());
+        Map<String, T> mapById = new HashMap<String, T>(entities.size());
         for (T entity : entities) {
             try {
                 if (method == null) {
                     method = entity.getClass().getMethod("getId");
                 }
-                mapById.put((Long) method.invoke(entity), entity);
+                mapById.put((String) method.invoke(entity), entity);
             } catch (Throwable t) {
                 return entities;
             }
         }
         List<T> sortedResult = new ArrayList<T>(entities.size());
-        for (Long id : ids) {
+        for (String id : ids) {
             T entity = mapById.get(id);
             if (entity != null) {
                 sortedResult.add(mapById.get(id));
