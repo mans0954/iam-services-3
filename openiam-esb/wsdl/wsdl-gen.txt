@@ -34,3 +34,5 @@ BPM Integration
 
 // add services for Reporting
 /devtool/apache-cxf-2.3.3/bin/java2ws -wsdl -cp /git-projects/openiam-idm-ce/idm/openiam-idm-esb/target/classes/ -d /git-projects/openiam-idm-ce/idm/openiam-idm-esb/wsdl/ -o ReportService.wsdl  org.openiam.idm.srvc.report.ws.WebReportService
+
+/devtool/apache-cxf-2.3.3/bin/java2ws -wsdl -cp /git-projects/openiam-idm-ce/idm/openiam-idm-esb/target/classes/ -d /git-projects/openiam-idm-ce/idm/openiam-idm-esb/wsdl/ -o WebResourceService.wsdl  org.openiam.am.srvc.resattr.ws.WebResourceService

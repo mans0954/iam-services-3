@@ -1,0 +1,506 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<con:soapui-project activeEnvironment="Default" name="AM-WebResourceService" resourceRoot="" soapui-version="4.5.1" xmlns:con="http://eviware.com/soapui/config"><con:settings><con:setting id="IncludeOverview">true</con:setting><con:setting id="IncludeResults">true</con:setting><con:setting id="FlowLayout">false</con:setting><con:setting id="ErrorDetails">true</con:setting><con:setting id="IncludeCoverage">true</con:setting></con:settings><con:interface xsi:type="con:WsdlInterface" wsaVersion="NONE" name="WebResourceServiceSoapBinding" type="wsdl" bindingName="{urn:idm.openiam.org/srvc/res/service}WebResourceServiceSoapBinding" soapVersion="1_1" anonymous="optional" definition="http://localhost:8080/openiam-am-esb/idmsrvc/WebResourceService?wsdl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:settings/><con:definitionCache type="TEXT" rootPart="http://localhost:8080/openiam-am-esb/idmsrvc/WebResourceService?wsdl"><con:part><con:url>http://localhost:8080/openiam-am-esb/idmsrvc/WebResourceService?wsdl</con:url><con:content><![CDATA[<wsdl:definitions name="WebResourceService" targetNamespace="urn:idm.openiam.org/srvc/res/service" xmlns:ns1="http://schemas.xmlsoap.org/soap/http" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="urn:idm.openiam.org/srvc/res/service" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <wsdl:types>
+    <xs:schema attributeFormDefault="unqualified" elementFormDefault="unqualified" targetNamespace="urn:idm.openiam.org/srvc/res/service" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+      <xs:element name="addAttributeMap" type="tns:addAttributeMap"/>
+      <xs:element name="addAttributeMapCollection" type="tns:addAttributeMapCollection"/>
+      <xs:element name="addAttributeMapCollectionResponse" type="tns:addAttributeMapCollectionResponse"/>
+      <xs:element name="addAttributeMapResponse" type="tns:addAttributeMapResponse"/>
+      <xs:element name="getAttributeMap" type="tns:getAttributeMap"/>
+      <xs:element name="getAttributeMapCollection" type="tns:getAttributeMapCollection"/>
+      <xs:element name="getAttributeMapCollectionResponse" type="tns:getAttributeMapCollectionResponse"/>
+      <xs:element name="getAttributeMapResponse" type="tns:getAttributeMapResponse"/>
+      <xs:element name="getSSOAttributes" type="tns:getSSOAttributes"/>
+      <xs:element name="getSSOAttributesResponse" type="tns:getSSOAttributesResponse"/>
+      <xs:element name="removeAttributeMap" type="tns:removeAttributeMap"/>
+      <xs:element name="removeAttributeMapResponse" type="tns:removeAttributeMapResponse"/>
+      <xs:element name="removeResourceAttributeMaps" type="tns:removeResourceAttributeMaps"/>
+      <xs:element name="removeResourceAttributeMapsResponse" type="tns:removeResourceAttributeMapsResponse"/>
+      <xs:element name="updateAttributeMap" type="tns:updateAttributeMap"/>
+      <xs:element name="updateAttributeMapResponse" type="tns:updateAttributeMapResponse"/>
+      <xs:complexType name="getSSOAttributes">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="resourceId" type="xs:string"/>
+          <xs:element minOccurs="0" name="principalName" type="xs:string"/>
+          <xs:element minOccurs="0" name="securityDomain" type="xs:string"/>
+          <xs:element minOccurs="0" name="managedSysId" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="getSSOAttributesResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="return" type="tns:WebResourceResponse"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="WebResourceResponse">
+        <xs:complexContent>
+          <xs:extension base="tns:Response">
+            <xs:sequence>
+              <xs:element maxOccurs="unbounded" minOccurs="0" name="attributeList" nillable="true" type="tns:Attribute"/>
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:complexType name="Response">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="errorCode" type="tns:ResponseErrorCode"/>
+          <xs:element minOccurs="0" name="responseValue" type="xs:anyType"/>
+          <xs:element minOccurs="0" name="errorText" type="xs:string"/>
+        </xs:sequence>
+        <xs:attribute name="status" type="tns:ResponseStatus" use="required"/>
+      </xs:complexType>
+      <xs:complexType name="Attribute">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="targetAttributeName" type="xs:string"/>
+          <xs:element minOccurs="0" name="attributeValue" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="addAttributeMapCollection">
+        <xs:sequence>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="attributeList" type="tns:AttributeMap"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="AttributeMap">
+        <xs:complexContent>
+          <xs:extension base="tns:Attribute">
+            <xs:sequence>
+              <xs:element minOccurs="0" name="attributeMapId" type="xs:string"/>
+              <xs:element minOccurs="0" name="resourceId" type="xs:string"/>
+              <xs:element minOccurs="0" name="accessManagerAttributeName" type="xs:string"/>
+              <xs:element minOccurs="0" name="policyUrl" type="xs:string"/>
+            </xs:sequence>
+          </xs:extension>
+        </xs:complexContent>
+      </xs:complexType>
+      <xs:complexType name="addAttributeMapCollectionResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="return" type="tns:Response"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="removeResourceAttributeMaps">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="resourceId" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="removeResourceAttributeMapsResponse">
+        <xs:sequence>
+          <xs:element name="return" type="xs:int"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="addAttributeMap">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="attribute" type="tns:AttributeMap"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="addAttributeMapResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="return" type="tns:AttributeMap"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="getAttributeMapCollection">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="resourceId" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="getAttributeMapCollectionResponse">
+        <xs:sequence>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="return" type="tns:AttributeMap"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="removeAttributeMap">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="attributeId" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="removeAttributeMapResponse">
+        <xs:sequence/>
+      </xs:complexType>
+      <xs:complexType name="getAttributeMap">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="attributeId" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="getAttributeMapResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="return" type="tns:AttributeMap"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="updateAttributeMap">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="attribute" type="tns:AttributeMap"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="updateAttributeMapResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="return" type="tns:AttributeMap"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:simpleType name="ResponseStatus">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="success"/>
+          <xs:enumeration value="failure"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType name="ResponseErrorCode">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="objectNotFound"/>
+          <xs:enumeration value="classNotFound"/>
+          <xs:enumeration value="principalNotFound"/>
+          <xs:enumeration value="userNotFound"/>
+          <xs:enumeration value="userStatus"/>
+          <xs:enumeration value="supervisorlNotFound"/>
+          <xs:enumeration value="DUPLICATE_PRINCIPAL"/>
+          <xs:enumeration value="failPasswordPolicy"/>
+          <xs:enumeration value="groupIdNull"/>
+          <xs:enumeration value="groupIdInvalid"/>
+          <xs:enumeration value="roleIdNull"/>
+          <xs:enumeration value="roleIdInvalid"/>
+          <xs:enumeration value="objectIdInvalid"/>
+          <xs:enumeration value="success"/>
+          <xs:enumeration value="FAIL_SQL_ERORR"/>
+          <xs:enumeration value="FAIL_CONNECTION"/>
+          <xs:enumeration value="FAIL_ALPHA_CHAR_RULE"/>
+          <xs:enumeration value="FAIL_LOWER_CASE_RULE"/>
+          <xs:enumeration value="FAIL_UPPER_CASE_RULE"/>
+          <xs:enumeration value="FAIL_NON_APHANUMERIC_RULE"/>
+          <xs:enumeration value="FAIL_NUMERIC_CHAR_RULE"/>
+          <xs:enumeration value="FAIL_HISTORY_RULE"/>
+          <xs:enumeration value="FAIL_LENGTH_RULE"/>
+          <xs:enumeration value="FAIL_NEQ_NAME"/>
+          <xs:enumeration value="FAIL_NEQ_PASSWORD"/>
+          <xs:enumeration value="FAIL_NEQ_PRINCIPAL"/>
+          <xs:enumeration value="FAIL_PASSWORD_CHANGE_FREQUENCY"/>
+          <xs:enumeration value="PASSWORD_POLICY_NOT_FOUND"/>
+          <xs:enumeration value="FAIL_PASSWORD_CHANGE_ALLOW"/>
+          <xs:enumeration value="FAIL_REJECT_CHARS_IN_PSWD"/>
+          <xs:enumeration value="FAIL_ENCRYPTION"/>
+          <xs:enumeration value="FAIL_DECRYPTION"/>
+          <xs:enumeration value="DIRECTORY_NAMING_EXCEPTION"/>
+          <xs:enumeration value="COMMUNICATION_EXCEPTION"/>
+          <xs:enumeration value="FAIL_CONNECTOR"/>
+          <xs:enumeration value="IO_EXCEPTION"/>
+          <xs:enumeration value="FILE_EXCEPTION"/>
+          <xs:enumeration value="SQL_EXCEPTION"/>
+          <xs:enumeration value="WS_SERVICE_EXCEPTION"/>
+          <xs:enumeration value="SYNCHRONIZATION_EXCEPTION"/>
+          <xs:enumeration value="LIMIT_EXCEEDED_EXCEPTION"/>
+          <xs:enumeration value="AUTHENTICATION_EXCEPTION"/>
+          <xs:enumeration value="PERMISSION_EXCEPTION"/>
+          <xs:enumeration value="SERVICE_UNAVAILABLE_EXCEPTION"/>
+          <xs:enumeration value="SCHEMA_VIOLATION_EXCEPTION"/>
+          <xs:enumeration value="FAIL_PREPROCESSOR"/>
+          <xs:enumeration value="FAIL_POSTPROCESSOR"/>
+          <xs:enumeration value="FAIL_OTHER"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:element name="Exception" type="tns:Exception"/>
+      <xs:complexType name="Exception">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="message" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+    </xs:schema>
+  </wsdl:types>
+  <wsdl:message name="updateAttributeMapResponse">
+    <wsdl:part element="tns:updateAttributeMapResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="Exception">
+    <wsdl:part element="tns:Exception" name="Exception"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="addAttributeMap">
+    <wsdl:part element="tns:addAttributeMap" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getAttributeMapResponse">
+    <wsdl:part element="tns:getAttributeMapResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="removeResourceAttributeMaps">
+    <wsdl:part element="tns:removeResourceAttributeMaps" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="addAttributeMapCollection">
+    <wsdl:part element="tns:addAttributeMapCollection" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getAttributeMapCollection">
+    <wsdl:part element="tns:getAttributeMapCollection" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="updateAttributeMap">
+    <wsdl:part element="tns:updateAttributeMap" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getAttributeMap">
+    <wsdl:part element="tns:getAttributeMap" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getAttributeMapCollectionResponse">
+    <wsdl:part element="tns:getAttributeMapCollectionResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="addAttributeMapResponse">
+    <wsdl:part element="tns:addAttributeMapResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="removeAttributeMapResponse">
+    <wsdl:part element="tns:removeAttributeMapResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="removeResourceAttributeMapsResponse">
+    <wsdl:part element="tns:removeResourceAttributeMapsResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getSSOAttributes">
+    <wsdl:part element="tns:getSSOAttributes" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="addAttributeMapCollectionResponse">
+    <wsdl:part element="tns:addAttributeMapCollectionResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="removeAttributeMap">
+    <wsdl:part element="tns:removeAttributeMap" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getSSOAttributesResponse">
+    <wsdl:part element="tns:getSSOAttributesResponse" name="parameters"></wsdl:part>
+  </wsdl:message>
+  <wsdl:portType name="WebResourceService">
+    <wsdl:operation name="getSSOAttributes">
+      <wsdl:input message="tns:getSSOAttributes" name="getSSOAttributes"></wsdl:input>
+      <wsdl:output message="tns:getSSOAttributesResponse" name="getSSOAttributesResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="addAttributeMapCollection">
+      <wsdl:input message="tns:addAttributeMapCollection" name="addAttributeMapCollection"></wsdl:input>
+      <wsdl:output message="tns:addAttributeMapCollectionResponse" name="addAttributeMapCollectionResponse"></wsdl:output>
+      <wsdl:fault message="tns:Exception" name="Exception"></wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="removeResourceAttributeMaps">
+      <wsdl:input message="tns:removeResourceAttributeMaps" name="removeResourceAttributeMaps"></wsdl:input>
+      <wsdl:output message="tns:removeResourceAttributeMapsResponse" name="removeResourceAttributeMapsResponse"></wsdl:output>
+      <wsdl:fault message="tns:Exception" name="Exception"></wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="addAttributeMap">
+      <wsdl:input message="tns:addAttributeMap" name="addAttributeMap"></wsdl:input>
+      <wsdl:output message="tns:addAttributeMapResponse" name="addAttributeMapResponse"></wsdl:output>
+      <wsdl:fault message="tns:Exception" name="Exception"></wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getAttributeMapCollection">
+      <wsdl:input message="tns:getAttributeMapCollection" name="getAttributeMapCollection"></wsdl:input>
+      <wsdl:output message="tns:getAttributeMapCollectionResponse" name="getAttributeMapCollectionResponse"></wsdl:output>
+      <wsdl:fault message="tns:Exception" name="Exception"></wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="removeAttributeMap">
+      <wsdl:input message="tns:removeAttributeMap" name="removeAttributeMap"></wsdl:input>
+      <wsdl:output message="tns:removeAttributeMapResponse" name="removeAttributeMapResponse"></wsdl:output>
+      <wsdl:fault message="tns:Exception" name="Exception"></wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getAttributeMap">
+      <wsdl:input message="tns:getAttributeMap" name="getAttributeMap"></wsdl:input>
+      <wsdl:output message="tns:getAttributeMapResponse" name="getAttributeMapResponse"></wsdl:output>
+      <wsdl:fault message="tns:Exception" name="Exception"></wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="updateAttributeMap">
+      <wsdl:input message="tns:updateAttributeMap" name="updateAttributeMap"></wsdl:input>
+      <wsdl:output message="tns:updateAttributeMapResponse" name="updateAttributeMapResponse"></wsdl:output>
+      <wsdl:fault message="tns:Exception" name="Exception"></wsdl:fault>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="WebResourceServiceSoapBinding" type="tns:WebResourceService">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="getSSOAttributes">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="getSSOAttributes">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getSSOAttributesResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="addAttributeMapCollection">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="addAttributeMapCollection">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="addAttributeMapCollectionResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="Exception">
+        <soap:fault name="Exception" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="removeResourceAttributeMaps">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="removeResourceAttributeMaps">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="removeResourceAttributeMapsResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="Exception">
+        <soap:fault name="Exception" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="addAttributeMap">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="addAttributeMap">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="addAttributeMapResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="Exception">
+        <soap:fault name="Exception" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getAttributeMapCollection">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="getAttributeMapCollection">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getAttributeMapCollectionResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="Exception">
+        <soap:fault name="Exception" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="removeAttributeMap">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="removeAttributeMap">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="removeAttributeMapResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="Exception">
+        <soap:fault name="Exception" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="getAttributeMap">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="getAttributeMap">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getAttributeMapResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="Exception">
+        <soap:fault name="Exception" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+    <wsdl:operation name="updateAttributeMap">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="updateAttributeMap">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="updateAttributeMapResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+      <wsdl:fault name="Exception">
+        <soap:fault name="Exception" use="literal"/>
+      </wsdl:fault>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="WebResourceService">
+    <wsdl:port binding="tns:WebResourceServiceSoapBinding" name="WebResourceServicePort">
+      <soap:address location="http://localhost:8080/openiam-am-esb/idmsrvc/WebResourceService"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>]]></con:content><con:type>http://schemas.xmlsoap.org/wsdl/</con:type></con:part></con:definitionCache><con:endpoints><con:endpoint>http://localhost:8080/openiam-esb/idmsrvc/WebResourceService</con:endpoint></con:endpoints><con:operation isOneWay="false" action="" name="addAttributeMap" bindingOperationName="addAttributeMap" type="Request-Response" outputName="addAttributeMapResponse" inputName="addAttributeMap" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call name="Request 1"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost:8080/openiam-esb/idmsrvc/WebResourceService</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="urn:idm.openiam.org/srvc/res/service">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <ser:addAttributeMap>
+         <!--Optional:-->
+         <attribute>
+            <!--Optional:-->
+            
+            <!--Optional:-->
+            
+            <!--Optional:-->
+            
+            <!--Optional:-->
+            
+            <!--Optional:-->
+            
+            <!--Optional:-->
+            <targetAttributeName>principal</targetAttributeName><resourceId>103</resourceId>
+            <accessManagerAttributeName>Login.id.login</accessManagerAttributeName>
+         </attribute>
+      </ser:addAttributeMap>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:credentials><con:authType>Global HTTP Settings</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:wsaConfig mustUnderstand="NONE" version="200508" action="urn:idm.openiam.org/srvc/res/service/WebResourceService/addAttributeMap"/><con:wsrmConfig version="1.2"/></con:call></con:operation><con:operation isOneWay="false" action="" name="addAttributeMapCollection" bindingOperationName="addAttributeMapCollection" type="Request-Response" outputName="addAttributeMapCollectionResponse" inputName="addAttributeMapCollection" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call name="Request 1"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost:8080/openiam-esb/idmsrvc/WebResourceService</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="urn:idm.openiam.org/srvc/res/service">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <ser:addAttributeMapCollection>
+         <!--Zero or more repetitions:-->
+         <attributeList>
+            <!--Optional:-->
+            
+            <!--Optional:-->
+            
+            <!--Optional:-->
+            
+            <!--Optional:-->
+            
+            <!--Optional:-->
+            <targetAttributeName>domainId</targetAttributeName><resourceId>103</resourceId><accessManagerAttributeName>Login.id.domainId</accessManagerAttributeName>
+            <!--Optional:-->
+            
+         </attributeList><attributeList><targetAttributeName>securityPhrase</targetAttributeName><resourceId>103</resourceId><accessManagerAttributeName>Login.password</accessManagerAttributeName></attributeList>
+      </ser:addAttributeMapCollection>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:credentials><con:authType>Global HTTP Settings</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:wsaConfig mustUnderstand="NONE" version="200508" action="urn:idm.openiam.org/srvc/res/service/WebResourceService/addAttributeMapCollection"/><con:wsrmConfig version="1.2"/></con:call></con:operation><con:operation isOneWay="false" action="" name="getAttributeMap" bindingOperationName="getAttributeMap" type="Request-Response" outputName="getAttributeMapResponse" inputName="getAttributeMap" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call name="Request 1"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost:8080/openiam-esb/idmsrvc/WebResourceService</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="urn:idm.openiam.org/srvc/res/service">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <ser:getAttributeMap>
+         <!--Optional:-->
+         
+      <attributeId>ff80818139b707b20139b70901210000</attributeId></ser:getAttributeMap>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:credentials><con:authType>Global HTTP Settings</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:wsaConfig mustUnderstand="NONE" version="200508" action="urn:idm.openiam.org/srvc/res/service/WebResourceService/getAttributeMap"/><con:wsrmConfig version="1.2"/></con:call></con:operation><con:operation isOneWay="false" action="" name="getAttributeMapCollection" bindingOperationName="getAttributeMapCollection" type="Request-Response" outputName="getAttributeMapCollectionResponse" inputName="getAttributeMapCollection" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call name="Request 1"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost:8080/openiam-esb/idmsrvc/WebResourceService</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="urn:idm.openiam.org/srvc/res/service">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <ser:getAttributeMapCollection>
+         <!--Optional:-->
+         
+      <resourceId>103</resourceId></ser:getAttributeMapCollection>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:credentials><con:authType>Global HTTP Settings</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:wsaConfig mustUnderstand="NONE" version="200508" action="urn:idm.openiam.org/srvc/res/service/WebResourceService/getAttributeMapCollection"/><con:wsrmConfig version="1.2"/></con:call></con:operation><con:operation isOneWay="false" action="" name="getSSOAttributes" bindingOperationName="getSSOAttributes" type="Request-Response" outputName="getSSOAttributesResponse" inputName="getSSOAttributes" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call name="Request 1"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost:8080/openiam-esb/idmsrvc/WebResourceService</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="urn:idm.openiam.org/srvc/res/service">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <ser:getSSOAttributes>
+         <!--Optional:-->
+         <resourceId>103</resourceId>
+         <!--Optional:-->
+         <principalName>sysadmin</principalName>
+         <!--Optional:-->
+         <securityDomain>USR_SEC_DOMAIN</securityDomain>
+         <!--Optional:-->
+         <managedSysId>0</managedSysId>
+      </ser:getSSOAttributes>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:credentials><con:authType>Global HTTP Settings</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:wsaConfig mustUnderstand="NONE" version="200508" action="urn:idm.openiam.org/srvc/res/service/WebResourceService/getSSOAttributes"/><con:wsrmConfig version="1.2"/></con:call></con:operation><con:operation isOneWay="false" action="" name="removeAttributeMap" bindingOperationName="removeAttributeMap" type="Request-Response" outputName="removeAttributeMapResponse" inputName="removeAttributeMap" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call name="Request 1"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost:8080/openiam-esb/idmsrvc/WebResourceService</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="urn:idm.openiam.org/srvc/res/service">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <ser:removeAttributeMap>
+         <!--Optional:-->
+         
+      <attributeId>ff80818139fe8b930139fe8de1670000</attributeId></ser:removeAttributeMap>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:credentials><con:authType>Global HTTP Settings</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:wsaConfig mustUnderstand="NONE" version="200508" action="urn:idm.openiam.org/srvc/res/service/WebResourceService/removeAttributeMap"/><con:wsrmConfig version="1.2"/></con:call></con:operation><con:operation isOneWay="false" action="" name="removeResourceAttributeMaps" bindingOperationName="removeResourceAttributeMaps" type="Request-Response" outputName="removeResourceAttributeMapsResponse" inputName="removeResourceAttributeMaps" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call name="Request 1"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost:8080/openiam-esb/idmsrvc/WebResourceService</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="urn:idm.openiam.org/srvc/res/service">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <ser:removeResourceAttributeMaps>
+         <!--Optional:-->
+         
+      <resourceId>103</resourceId></ser:removeResourceAttributeMaps>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:credentials><con:authType>Global HTTP Settings</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:wsaConfig mustUnderstand="NONE" version="200508" action="urn:idm.openiam.org/srvc/res/service/WebResourceService/removeResourceAttributeMaps"/><con:wsrmConfig version="1.2"/></con:call></con:operation><con:operation isOneWay="false" action="" name="updateAttributeMap" bindingOperationName="updateAttributeMap" type="Request-Response" outputName="updateAttributeMapResponse" inputName="updateAttributeMap" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call name="Request 1"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost:8080/openiam-esb/idmsrvc/WebResourceService</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="urn:idm.openiam.org/srvc/res/service">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <ser:updateAttributeMap>
+         <!--Optional:-->
+         <attribute>
+            <!--Optional:-->
+            
+            <!--Optional:-->
+            
+            <!--Optional:-->
+            
+            <!--Optional:-->
+            
+            <!--Optional:-->
+            <targetAttributeName>name</targetAttributeName><attributeMapId>ff80818139c0a03d0139c0ba1ddb0001</attributeMapId><resourceId>103</resourceId>
+            <!--Optional:-->
+            <accessManagerAttributeName>User.firstName</accessManagerAttributeName>
+         </attribute>
+      </ser:updateAttributeMap>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:credentials><con:authType>Global HTTP Settings</con:authType></con:credentials><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:wsaConfig mustUnderstand="NONE" version="200508" action="urn:idm.openiam.org/srvc/res/service/WebResourceService/updateAttributeMap"/><con:wsrmConfig version="1.2"/></con:call></con:operation></con:interface><con:requirements/><con:properties/><con:wssContainer/><con:databaseConnectionContainer/><con:reporting><con:reportTemplates/><con:xmlTemplates/><con:parameters/></con:reporting><con:sensitiveInformation/></con:soapui-project>
