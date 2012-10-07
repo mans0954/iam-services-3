@@ -13,7 +13,7 @@
     					http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd">
 
     <context:annotation-config />
-    <context:component-scan base-package="org.openiam.core,	org.openiam.idm.srvc" />
+    <context:component-scan base-package="org.openiam.core.dao*,org.openiam.idm.srvc" />
 
 	<bean id="springContextProvider" class="org.openiam.util.SpringContextProvider" />
 	
