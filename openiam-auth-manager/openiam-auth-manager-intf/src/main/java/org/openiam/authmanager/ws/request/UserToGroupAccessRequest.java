@@ -32,10 +32,11 @@ public class UserToGroupAccessRequest extends UserRequest implements Serializabl
 
 	@Override
 	public String toString() {
-		return String.format(
-				"AuthorizationManagerUserToGroupAccessRequest [group=%s]",
-				group);
+		return String
+				.format("UserToGroupAccessRequest [group=%s, getUserId()=%s, getLoginId()=%s]",
+						group, getUserId(), getLoginId());
 	}
+
 	
 	
 }

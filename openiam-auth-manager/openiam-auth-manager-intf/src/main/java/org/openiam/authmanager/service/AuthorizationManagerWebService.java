@@ -22,31 +22,55 @@ import org.openiam.authmanager.ws.response.RolesForUserResponse;
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/authorizationmanager/service", name = "AuthorizationManagerWebService")
 public interface AuthorizationManagerWebService {
 
+	/**
+	 * @param request 
+	 * @return - answers the question "Is User A entitled to resource B, either directly or through recursive membership to other entities
+	 */
 	@WebMethod
 	public AccessResponse isUserEntitledTo(
 			@WebParam(name = "request", targetNamespace = "") final UserToResourceAccessRequest request
 			);
 	
+	/**
+	 * @param request
+	 * @return answers the question "Is User A a member of group B, either directly or through recursive membership to other groups
+	 */
 	@WebMethod
 	public AccessResponse isMemberOfGroup(
 			@WebParam(name = "request", targetNamespace = "") final UserToGroupAccessRequest request
 		);
 	
+	/**
+	 * @param request
+	 * @return answer the question "Is User A a member of role B, either directly or through recursive membership to other entities
+	 */
 	@WebMethod
 	public AccessResponse isMemberOfRole(
 			@WebParam(name = "request", targetNamespace = "") final UserToRoleAccessRequest request
 		);
 	
+	/**
+	 * @param request
+	 * @return all resources for the requested user.  No distinction is made between direct or hierarchial membership
+	 */
 	@WebMethod
 	public ResourcesForUserResponse getResourcesFor(
 			@WebParam(name = "request", targetNamespace = "") final UserRequest request
 			);
 	
+	/**
+	 * @param request
+	 * @return all groups for the requested user.  No distinction is made between direct or hierarchial membership
+	 */
 	@WebMethod
 	public GroupsForUserResponse getGroupsFor(
 			@WebParam(name = "request", targetNamespace = "") final UserRequest request
 			);
 	
+	/**
+	 * @param request
+	 * @return all roles for the requested user.  No distinction is made between direct or hierarchial membership
+	 */
 	@WebMethod
 	public RolesForUserResponse getRolesFor(
 			@WebParam(name = "request", targetNamespace = "") final UserRequest request

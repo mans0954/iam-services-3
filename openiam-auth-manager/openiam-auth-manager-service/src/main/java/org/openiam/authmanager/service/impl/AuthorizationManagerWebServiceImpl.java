@@ -90,7 +90,7 @@ public class AuthorizationManagerWebServiceImpl implements AuthorizationManagerW
 	public ResourcesForUserResponse getResourcesFor(final UserRequest request) {
 		final ResourcesForUserResponse response = new ResourcesForUserResponse(ResponseStatus.SUCCESS);
 		try {
-			checkNulls(request);
+			checkUserIdNull(request);
 			final Set<AuthorizationResource> authResources = (request.getUserId() != null) ? 
 																authManagerService.getResourcesFor(request.getUserId()) : 
 																authManagerService.getResourcesFor(request.getLoginId());
@@ -106,7 +106,7 @@ public class AuthorizationManagerWebServiceImpl implements AuthorizationManagerW
 	public GroupsForUserResponse getGroupsFor(final UserRequest request) {
 		final GroupsForUserResponse response = new GroupsForUserResponse(ResponseStatus.SUCCESS);
 		try {
-			checkNulls(request);
+			checkUserIdNull(request);
 			final Set<AuthorizationGroup> authGroups = (request.getUserId() != null) ? 
 														authManagerService.getGroupsFor(request.getUserId()) : 
 														authManagerService.getGroupsFor(request.getLoginId());
@@ -122,7 +122,7 @@ public class AuthorizationManagerWebServiceImpl implements AuthorizationManagerW
 	public RolesForUserResponse getRolesFor(final UserRequest request) {
 		final RolesForUserResponse response = new RolesForUserResponse(ResponseStatus.SUCCESS);
 		try {
-			checkNulls(request);
+			checkUserIdNull(request);
 			final Set<AuthorizationRole> authorizationRoles = (request.getUserId() != null) ? 
 																authManagerService.getRolesFor(request.getUserId()) : 
 																authManagerService.getRolesFor(request.getLoginId());
@@ -147,7 +147,7 @@ public class AuthorizationManagerWebServiceImpl implements AuthorizationManagerW
 		if(StringUtils.isBlank(resource.getId()) && StringUtils.isBlank(resource.getName())) {
 			throw new AuthorizationManagerRuntimeException("Authorization Resource has no ID or Name set");
 		}
-		checkNulls((UserRequest)request);
+		checkUserIdNull(request);
 	}
 	
 	private void checkNulls(final UserToGroupAccessRequest request) {
@@ -163,7 +163,7 @@ public class AuthorizationManagerWebServiceImpl implements AuthorizationManagerW
 		if(StringUtils.isBlank(authorizationGroup.getId()) && StringUtils.isBlank(authorizationGroup.getName())) {
 			throw new AuthorizationManagerRuntimeException("Authorization Group has no ID or Name set");
 		}
-		checkNulls((UserRequest)request);
+		checkUserIdNull(request);
 	}
 	
 	private void checkNulls(final UserToRoleAccessRequest request) {
@@ -179,15 +179,15 @@ public class AuthorizationManagerWebServiceImpl implements AuthorizationManagerW
 		if(StringUtils.isBlank(role.getId()) && StringUtils.isBlank(role.getName())) {
 			throw new AuthorizationManagerRuntimeException("Authorization Role has no ID or Name set");
 		}
-		checkNulls((UserRequest)request);
+		checkUserIdNull(request);
 	}
 	
-	private void checkNulls(final UserRequest request) {
+	private void checkUserIdNull(final UserRequest request) {
 		if(request == null) {
 			throw new AuthorizationManagerRuntimeException("No User Information Specified");
 		}
 		
-		if(StringUtils.isBlank(request.getUserId()) || request.getLoginId() == null) {
+		if(StringUtils.isBlank(request.getUserId()) && request.getLoginId() == null) {
 			throw new AuthorizationManagerRuntimeException("No User Id and Login Id Specified on the User Object");	
 		}
 	}

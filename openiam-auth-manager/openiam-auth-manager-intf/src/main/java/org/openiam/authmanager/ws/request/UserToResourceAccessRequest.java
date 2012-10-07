@@ -32,9 +32,11 @@ public class UserToResourceAccessRequest extends UserRequest implements Serializ
 
 	@Override
 	public String toString() {
-		return String.format("UserToResourceAccessRequest [resource=%s]",
-				resource);
+		return String
+				.format("UserToResourceAccessRequest [resource=%s, getUserId()=%s, getLoginId()=%s]",
+						resource, getUserId(), getLoginId());
 	}
+
 	
 	
 }

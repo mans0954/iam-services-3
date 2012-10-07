@@ -204,6 +204,19 @@
 			</service>
 		</model>
 		
+		<model name="authManagerServiceModel">
+			<service name="authManagerService">
+				<inbound>
+						<inbound-endpoint address="${webservice.path}AuthorizationManagerWebService" exchange-pattern="request-response">
+						<cxf:jaxws-service />
+					</inbound-endpoint>
+				</inbound>
+				<component>
+					<spring-object bean="authorizationManagerWebService" />
+				</component>
+			</service>
+		</model>
+		
 		<model name="challengeServiceModel">
 			<service name="challengeService">
 				<inbound>

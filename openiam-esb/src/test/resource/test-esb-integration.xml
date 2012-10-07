@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:jaxws="http://cxf.apache.org/jaxws"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:http-conf="http://cxf.apache.org/transports/http/configuration"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-2.5.xsd
+        http://cxf.apache.org/transports/http/configuration
+        http://cxf.apache.org/schemas/configuration/http-conf.xsd
+        http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd ">
+        
+	<context:annotation-config />
+	<context:component-scan base-package="org.openiam.authmanager.service.integration" />
+	
+     <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
+        <property name="driverClass" value="${openiam.driver_classname}" />
+        <property name="jdbcUrl" value="${openiam.driver_url}" />
+        <property name="user" value="${openiam.username}" />
+        <property name="password" value="${openiam.password}"/>
+
+        <property name="minPoolSize" value="${openiam.hibernate.minPoolSize}"/>
+        <property name="maxPoolSize" value="${openiam.hibernate.maxPoolSize}"/>
+        <property name="maxStatements" value="${openiam.hibernate.max_statement}"/>
+        <property name="idleConnectionTestPeriod" value="${openiam.hibernate.idle_test_period}"/>
+        <property name="loginTimeout" value="300"/>
+        <property name="acquireIncrement" value="${openiam.hibernate.acquireIncrement}" />
+        <property name="acquireRetryAttempts" value="${openiam.hibernate.acquireRetryAttempts}"/>
+        <property name="acquireRetryDelay" value="${openiam.hibernate.acquireRetryDelay}"/>
+        <property name="breakAfterAcquireFailure" value="${openiam.hibernate.breakAfterAcquireFailure}"/>
+        <property name="automaticTestTable" value="${openiam.hibernate.automaticTestTable}"/>
+        <property name="testConnectionOnCheckin" value="${openiam.hibernate.testConnectionOnCheckin}"/>
+     </bean>
+     
+     <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+     	<property name="dataSource" ref="dataSource" />
+     </bean>
+	
+   	<bean id="authorizationManagerServiceClient" 
+   		  class="org.openiam.authmanager.service.AuthorizationManagerWebService" 
+   		  factory-bean="authorizationManagerServiceFactory" 
+   		  factory-method="create"/>
+
+
+	<bean id="authorizationManagerServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
+	  <property name="serviceClass" value="org.openiam.authmanager.service.AuthorizationManagerWebService"/>
+	  <property name="address" value="${openiam.service_host}${openiam.idm.ws.path}AuthorizationManagerWebService"/>
+	</bean>
+	
+   <bean id="userServiceClient" class="org.openiam.idm.srvc.user.ws.UserDataWebService" 
+      factory-bean="userServiceFactory" factory-method="create"/>
+
+
+	<bean id="userServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
+	  <property name="serviceClass" value="org.openiam.idm.srvc.user.ws.UserDataWebService"/>
+	  <property name="address" value="${openiam.service_host}${openiam.idm.ws.path}UserDataService"/>
+	</bean>
+	
+   <bean id="roleServiceClient" class="org.openiam.idm.srvc.role.ws.RoleDataWebService" 
+      factory-bean="roleServiceFactory" factory-method="create"/>
+
+
+	<bean id="roleServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
+	  <property name="serviceClass" value="org.openiam.idm.srvc.role.ws.RoleDataWebService"/>
+	  <property name="address" value="${openiam.service_host}${openiam.idm.ws.path}RoleDataWebService"/>
+	</bean>	
+	
+   <bean id="groupServiceClient" class="org.openiam.idm.srvc.grp.ws.GroupDataWebService" 
+      factory-bean="groupServiceFactory" factory-method="create"/>
+
+
+	<bean id="groupServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
+	  <property name="serviceClass" value="org.openiam.idm.srvc.grp.ws.GroupDataWebService"/>
+	  <property name="address" value="${openiam.service_host}${openiam.idm.ws.path}GroupDataWebService"/>
+	</bean>
+	
+   <bean id="resourceServiceClient" class="org.openiam.idm.srvc.res.service.ResourceDataService" 
+      factory-bean="resourceServiceFactory" factory-method="create"/>
+
+
+	<bean id="resourceServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
+	  <property name="serviceClass" value="org.openiam.idm.srvc.res.service.ResourceDataService"/>
+	  <property name="address" value="${openiam.service_host}${openiam.idm.ws.path}ResourceDataWebService"/>
+	</bean>
+	
+	<bean id="managedSysServiceClient" class="org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService" 
+      factory-bean="managedSysServiceFactory" factory-method="create"/>
+
+
+	<bean id="managedSysServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
+	  <property name="serviceClass" value="org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService"/>
+	  <property name="address" value="${openiam.service_host}${openiam.idm.ws.path}ManagedSystemWebService"/>
+	</bean>
+	
+	<bean id="loginServiceClient" class="org.openiam.idm.srvc.auth.ws.LoginDataWebService" 
+      factory-bean="loginServiceFactory" factory-method="create"/>
+
+
+	<bean id="loginServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
+	  <property name="serviceClass" value="org.openiam.idm.srvc.auth.ws.LoginDataWebService"/>
+	  <property name="address" value="${openiam.service_host}${openiam.idm.ws.path}LoginDataWebService"/>
+	</bean>
+</beans>
