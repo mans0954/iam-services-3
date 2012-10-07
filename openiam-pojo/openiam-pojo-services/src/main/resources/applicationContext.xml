@@ -45,8 +45,8 @@
   			<list>
 				<value>classpath:datasource.properties</value>
 				<value>classpath:iam-plugin.properties</value>
-				<value>/data/openiam/conf/datasource.properties</value>
-		        <value>/data/openiam/conf/iam-plugin.properties</value>
+				<value>file:/data/openiam/conf/datasource.properties</value>
+		        <value>file:/data/openiam/conf/iam-plugin.properties</value>
 			</list>
 		</property>
 		<property name="ignoreResourceNotFound" value="true" />
@@ -239,10 +239,7 @@
 
 	<bean id="seqGenDAO" class="org.openiam.base.id.SequenceGenDAOImpl">
 		<property name="sessionFactory" ref="sessionFactory"></property>		
-	</bean>	
-	<bean id="oracleSeqGenDAO" class="org.openiam.base.id.OracleSequenceGenDAOImpl">
-		
-	</bean>	
+	</bean>
 	
 	<!-- Menu Beans -->
 	<bean id="navigatorWS" class="org.openiam.idm.srvc.menu.ws.NavigatorDataWebServiceImpl" >
