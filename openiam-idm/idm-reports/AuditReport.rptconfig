@@ -11,7 +11,7 @@
         </structure>
         <structure>
             <property name="name">__isdisplay__rpt_lastDate_247_2</property>
-            <property name="value">2012-09-29 23:28:44</property>
+            <property name="value">2012-10-29 23:28:44</property>
         </structure>
         <structure>
             <property name="name">rpt_startDate_246_3</property>
@@ -23,11 +23,11 @@
         </structure>
         <structure>
             <property name="name">rpt_lastDate_247_4</property>
-            <property name="value">2012-09-29 23:28:44.000</property>
+            <property name="value">2012-10-29 23:28:44</property>
         </structure>
         <structure>
             <property name="name">rpt_lastDate_247_type_</property>
-            <property name="value">dateTime</property>
+            <property name="value">string</property>
         </structure>
         <structure>
             <property name="name">rpt_actionType_45_5</property>

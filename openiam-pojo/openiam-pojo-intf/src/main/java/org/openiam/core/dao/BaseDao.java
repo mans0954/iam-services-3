@@ -9,15 +9,13 @@ public interface BaseDao<T> {
 
   T findById(String id, String ... fetchFields);
 
-  Collection<T> findByIds(Collection<String> ids, String ... fetchFields);
+  List<T> findAll();
 
-  public List<T> findAll();
+  Long countAll();
 
-  public Long countAll();
+  void save(T t);
 
-  public void save(T t);
+  void delete(T t);
 
-  public void delete(T t);
-
-  public void save(Collection<T> entities);
+  void save(Collection<T> entities);
 }

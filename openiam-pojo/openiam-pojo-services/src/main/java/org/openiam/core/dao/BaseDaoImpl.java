@@ -1,22 +1,15 @@
 package org.openiam.core.dao;
 
-import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import static java.util.Collections.emptyList;
-import static org.hibernate.criterion.Projections.projectionList;
 import static org.hibernate.criterion.Projections.rowCount;
 import static org.hibernate.criterion.Restrictions.eq;
 
@@ -26,7 +19,7 @@ public abstract class BaseDaoImpl<T> implements BaseDao<T> {
     @Autowired
     protected SessionFactory sessionFactory;
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public BaseDaoImpl() {
         Type t = getClass().getGenericSuperclass();
         Type arg;
@@ -72,7 +65,7 @@ public abstract class BaseDaoImpl<T> implements BaseDao<T> {
         Criteria criteria = sessionFactory
                 .getCurrentSession()
                 .createCriteria(domainClass)
-                .add(eq("id", id))
+                .add(eq(getPKfieldName(), id))
                 .setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
         if (fetchFields != null) {
             for (String field : fetchFields) {
@@ -82,43 +75,7 @@ public abstract class BaseDaoImpl<T> implements BaseDao<T> {
         return (T) criteria.uniqueResult();
     }
 
-    @SuppressWarnings("unchecked")
-    public Collection<T> findByIds(Collection<String> ids, String... fetchFields) {
-        if (ids == null || ids.isEmpty()) {
-            return emptyList();
-        }
-        Criteria criteria = sessionFactory
-                .getCurrentSession()
-                .createCriteria(domainClass)
-                .add(Restrictions.in("id", ids))
-                .setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
-        if (fetchFields != null) {
-            for (String field : fetchFields) {
-                criteria.setFetchMode(field, FetchMode.JOIN);
-            }
-        }
-        Method method = null;
-        List<T> entities = criteria.list();
-        Map<String, T> mapById = new HashMap<String, T>(entities.size());
-        for (T entity : entities) {
-            try {
-                if (method == null) {
-                    method = entity.getClass().getMethod("getId");
-                }
-                mapById.put((String) method.invoke(entity), entity);
-            } catch (Throwable t) {
-                return entities;
-            }
-        }
-        List<T> sortedResult = new ArrayList<T>(entities.size());
-        for (String id : ids) {
-            T entity = mapById.get(id);
-            if (entity != null) {
-                sortedResult.add(mapById.get(id));
-            }
-        }
-        return sortedResult;
-    }
+    protected abstract String getPKfieldName();
 
     @SuppressWarnings({"unchecked"})
     public List<T> findAll() {
@@ -155,11 +112,5 @@ public abstract class BaseDaoImpl<T> implements BaseDao<T> {
         }
     }
 
-    public int count(Criteria criteria) {
-        return ((Number) criteria.setProjection(
-                projectionList()
-                        .add(rowCount())
-        ).uniqueResult()).intValue();
-    }
 }
 

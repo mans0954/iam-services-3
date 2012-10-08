@@ -20,4 +20,9 @@ public class ReportDataDaoImpl extends BaseDaoImpl<ReportInfo> implements Report
         Criteria criteria = getSession().createCriteria(ReportInfo.class).add(Restrictions.eq("reportName", name));
         return (ReportInfo) criteria.uniqueResult();
     }
+
+    @Override
+    protected String getPKfieldName() {
+        return "id";
+    }
 }

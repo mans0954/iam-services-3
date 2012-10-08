@@ -47,7 +47,7 @@
             <text-property name="promptText">Last Date</text-property>
             <property name="valueType">static</property>
             <property name="isRequired">true</property>
-            <property name="dataType">dateTime</property>
+            <property name="dataType">string</property>
             <property name="distinct">true</property>
             <simple-property-list name="defaultValue">
                 <value type="constant">2012-10-29 23:28:44</value>
@@ -674,7 +674,7 @@
                     <property name="nativeDataType">12</property>
                 </structure>
             </list-property>
-            <xml-property name="queryText"><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="urn:idm.openiam.org/core/ws/reports/service">
+            <xml-property name="queryText"><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="urn:idm.openiam.org/idm/srvc/report/ws/service">
    <soapenv:Header/>
    <soapenv:Body>
       <ser:executeQuery>
@@ -685,15 +685,15 @@
             <!--Zero or more repetitions:-->
             <entry key="ACTION_ID">
                <!--Optional:-->
-               <value>&amp;?actionType?&amp;</value>
+               <value>&amp;?ACTION_ID?&amp;</value>
             </entry>
-             <entry key="ACTION_DATETIME_START">
+            <entry key="ACTION_DATETIME_START">
                <!--Optional:-->
-               <value>&amp;?startDate?&amp;</value>
+               <value>&amp;?ACTION_DATETIME_START?&amp;</value>
             </entry>
-             <entry key="ACTION_DATETIME_END">
+            <entry key="ACTION_DATETIME_END">
                <!--Optional:-->
-               <value>&amp;?endDate?&amp;</value>
+               <value>&amp;?ACTION_DATETIME_END?&amp;</value>
             </entry>
          </queryParams>
       </ser:executeQuery>
@@ -1277,7 +1277,7 @@
             <list-property name="privateDriverProperties">
                 <ex-property>
                     <name>xmlQueryText</name>
-                    <value>table0#-TNAME-#table0#:#[/soap:Envelope/soap:Body/ns2:executeQueryResponse/return/ReportData/ns2:reportTable/row]#:#{LOG_ID;STRING;/column[@name='LOG_ID']/value},{OBJECT_TYPE_ID;STRING;/column[@name='OBJECT_TYPE_ID']/value},{OBJECT_ID;STRING;/column[@name='OBJECT_ID']/value},{ACTION_ID;STRING;/column[@name='ACTION_ID']/value},{ACTION_STATUS;STRING;/column[@name='ACTION_STATUS']/value},{REASON;STRING;/column[@name='REASON']/value},{REASON_DETAIL;STRING;/column[@name='REASON_DETAIL']/value},{ACTION_DATETIME;STRING;/column[@name='ACTION_DATETIME']/value},{OBJECT_NAME;STRING;/column[@name='OBJECT_NAME']/value},{RESOURCE_NAME;STRING;/column[@name='RESOURCE_NAME']/value},{USER_ID;STRING;/column[@name='USER_ID']/value},{SERVICE_ID;STRING;/column[@name='SERVICE_ID']/value},{LOGIN_ID;STRING;/column[@name='LOGIN_ID']/value},{HOST;STRING;/column[@name='HOST']/value},{CLIENT_ID;STRING;/column[@name='CLIENT_ID']/value},{REQ_URL;STRING;/column[@name='REQ_URL']/value},{LINKED_LOG_ID;STRING;/column[@name='LINKED_LOG_ID']/value},{LINK_SEQUENCE;STRING;/column[@name='LINK_SEQUENCE']/value},{ORIG_OBJECT_STATE;STRING;/column[@name='ORIG_OBJECT_STATE']/value},{NEW_OBJECT_STATE;STRING;/column[@name='NEW_OBJECT_STATE']/value},{SRC_SYSTEM_ID;STRING;/column[@name='SRC_SYSTEM_ID']/value},{TARGET_SYSTEM_ID;STRING;/column[@name='TARGET_SYSTEM_ID']/value},{REQUEST_ID;STRING;/column[@name='REQUEST_ID']/value},{SESSION_ID;STRING;/column[@name='SESSION_ID']/value},{CUSTOM_ATTRNAME1;STRING;/column[@name='CUSTOM_ATTRNAME1']/value},{CUSTOM_ATTRNAME2;STRING;/column[@name='CUSTOM_ATTRNAME2']/value},{FIRST_NAME;STRING;/column[@name='FIRST_NAME']/value},{MIDDLE_INIT;STRING;/column[@name='MIDDLE_INIT']/value},{LAST_NAME;STRING;/column[@name='LAST_NAME']/value},{DEPT_CD;STRING;/column[@name='DEPT_CD']/value},{DEPT_NAME;STRING;/column[@name='DEPT_NAME']/value}#:#&lt;"ns2","urn:idm.openiam.org%core%ws%reports%service";"soap","http:%%schemas.xmlsoap.org%soap%envelope%"></value>
+                    <value>table0#-TNAME-#table0#:#[/soap:Envelope/soap:Body/ns2:executeQueryResponse/return/ReportData/ns2:reportTable/row]#:#{LOG_ID;STRING;/column[@name='LOG_ID']/value},{OBJECT_TYPE_ID;STRING;/column[@name='OBJECT_TYPE_ID']/value},{OBJECT_ID;STRING;/column[@name='OBJECT_ID']/value},{ACTION_ID;STRING;/column[@name='ACTION_ID']/value},{ACTION_STATUS;STRING;/column[@name='ACTION_STATUS']/value},{REASON;STRING;/column[@name='REASON']/value},{REASON_DETAIL;STRING;/column[@name='REASON_DETAIL']/value},{ACTION_DATETIME;STRING;/column[@name='ACTION_DATETIME']/value},{OBJECT_NAME;STRING;/column[@name='OBJECT_NAME']/value},{RESOURCE_NAME;STRING;/column[@name='RESOURCE_NAME']/value},{USER_ID;STRING;/column[@name='USER_ID']/value},{SERVICE_ID;STRING;/column[@name='SERVICE_ID']/value},{LOGIN_ID;STRING;/column[@name='LOGIN_ID']/value},{HOST;STRING;/column[@name='HOST']/value},{CLIENT_ID;STRING;/column[@name='CLIENT_ID']/value},{REQ_URL;STRING;/column[@name='REQ_URL']/value},{LINKED_LOG_ID;STRING;/column[@name='LINKED_LOG_ID']/value},{LINK_SEQUENCE;STRING;/column[@name='LINK_SEQUENCE']/value},{ORIG_OBJECT_STATE;STRING;/column[@name='ORIG_OBJECT_STATE']/value},{NEW_OBJECT_STATE;STRING;/column[@name='NEW_OBJECT_STATE']/value},{SRC_SYSTEM_ID;STRING;/column[@name='SRC_SYSTEM_ID']/value},{TARGET_SYSTEM_ID;STRING;/column[@name='TARGET_SYSTEM_ID']/value},{REQUEST_ID;STRING;/column[@name='REQUEST_ID']/value},{SESSION_ID;STRING;/column[@name='SESSION_ID']/value},{CUSTOM_ATTRNAME1;STRING;/column[@name='CUSTOM_ATTRNAME1']/value},{CUSTOM_ATTRNAME2;STRING;/column[@name='CUSTOM_ATTRNAME2']/value},{FIRST_NAME;STRING;/column[@name='FIRST_NAME']/value},{MIDDLE_INIT;STRING;/column[@name='MIDDLE_INIT']/value},{LAST_NAME;STRING;/column[@name='LAST_NAME']/value},{DEPT_CD;STRING;/column[@name='DEPT_CD']/value},{DEPT_NAME;STRING;/column[@name='DEPT_NAME']/value}#:#&lt;"ns2","urn:idm.openiam.org%idm%srvc%report%ws%service";"soap","http:%%schemas.xmlsoap.org%soap%envelope%"></value>
                 </ex-property>
                 <ex-property>
                     <name>operationTrace</name>
@@ -1392,7 +1392,7 @@
                 <structure>
                     <property name="name">ACTION_ID</property>
                     <text-property name="displayName">ACTION_ID</text-property>
-                    <expression name="expression" type="javascript">dataSetRow["ACTION_ID"]</expression>
+                    <expression name="expression" type="javascript">dataSetRow["ACTION_STATUS"]</expression>
                     <property name="dataType">string</property>
                 </structure>
                 <structure>
@@ -1653,7 +1653,7 @@
             </header>
             <group id="599">
                 <property name="groupName">ActionId</property>
-                <expression name="keyExpr" type="javascript">row["ACTION_ID"]</expression>
+                <expression name="keyExpr" type="javascript">dataSetRow["ACTION_ID"]</expression>
                 <property name="hideDetail">false</property>
                 <header>
                     <row id="600">
