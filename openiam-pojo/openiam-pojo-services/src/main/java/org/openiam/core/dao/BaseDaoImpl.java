@@ -45,10 +45,6 @@ public abstract class BaseDaoImpl<T> implements BaseDao<T> {
         return sessionFactory.getCurrentSession();
     }
 
-    protected BaseDaoImpl(Class<T> domainClass) {
-        this.domainClass = domainClass;
-    }
-
     @SuppressWarnings({"unchecked"})
     public T findById(String id) {
         if (id == null) {
