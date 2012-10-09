@@ -1,6 +1,7 @@
 package org.openiam.authmanager.ws.response;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -18,7 +19,7 @@ public class RolesForUserResponse extends AbstractResponse implements Serializab
 
 	private static final long serialVersionUID = -1L;
 	
-	private Set<AuthorizationRole> roles;
+	private Set<AuthorizationRole> roles = new HashSet<AuthorizationRole>();
 	
 	public RolesForUserResponse() {
 		

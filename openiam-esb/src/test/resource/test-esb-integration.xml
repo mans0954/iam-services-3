@@ -103,4 +103,9 @@
 	  <property name="serviceClass" value="org.openiam.idm.srvc.auth.ws.LoginDataWebService"/>
 	  <property name="address" value="${openiam.service_host}${openiam.idm.ws.path}LoginDataWebService"/>
 	</bean>
+	
+	<bean id="authorizationManagerHessianClient" class="org.openiam.authmanager.AuthorizationManagerHessianClient" init-method="init">
+		<property name="url" value="${openiam.service_host}openiam-idm-esb/iamauthmgr" />
+		<property name="timingEnabled" value="true" />
+	</bean>
 </beans>

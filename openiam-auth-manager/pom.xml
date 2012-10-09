@@ -20,6 +20,7 @@
      <module>openiam-auth-manager-intf</module>
 	 <module>openiam-auth-manager-service</module>
 	 <module>openiam-auth-manager-client</module>
+	 <module>openiam-auth-manager-web</module>
   </modules>
 
     <developers>

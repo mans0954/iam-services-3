@@ -15,6 +15,16 @@
     <description>OpenIAM Authorization Manager Client</description>
 
     <dependencies>
+	    <dependency>
+	    	<groupId>org.openiam</groupId>
+	    	<artifactId>openiam-auth-manager-intf</artifactId>
+	    	<version>3.0.0</version>
+	    </dependency>
+		<dependency>
+			<groupId>com.caucho</groupId>
+			<artifactId>hessian</artifactId>
+			<version>4.0.7</version>
+		</dependency>
         <dependency>
 	     	<groupId>junit</groupId>
 	     	<artifactId>junit</artifactId>

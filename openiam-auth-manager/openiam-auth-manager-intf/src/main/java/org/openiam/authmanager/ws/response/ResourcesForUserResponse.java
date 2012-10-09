@@ -1,6 +1,7 @@
 package org.openiam.authmanager.ws.response;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -18,7 +19,7 @@ public class ResourcesForUserResponse extends AbstractResponse implements Serial
 	
 	private static final long serialVersionUID = -1L;
 	
-	private Set<AuthorizationResource> resources;
+	private Set<AuthorizationResource> resources = new HashSet<AuthorizationResource>();
 	
 	public ResourcesForUserResponse() {
 		
