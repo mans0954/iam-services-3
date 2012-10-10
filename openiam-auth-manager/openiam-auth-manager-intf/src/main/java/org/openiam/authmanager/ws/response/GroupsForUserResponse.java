@@ -1,6 +1,7 @@
 package org.openiam.authmanager.ws.response;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -18,7 +19,7 @@ public class GroupsForUserResponse extends AbstractResponse implements Serializa
 
 	private static final long serialVersionUID = -1L;
 	
-	private Set<AuthorizationGroup> groups;
+	private Set<AuthorizationGroup> groups = new HashSet<AuthorizationGroup>();
 	
 	public GroupsForUserResponse() {
 		
