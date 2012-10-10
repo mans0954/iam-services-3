@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.report.service;
 
-import java.util.HashMap;
+import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.openiam.core.dao.ReportDataDao;
@@ -23,20 +24,18 @@ public class ReportDataServiceImpl implements ReportDataService {
 
     @Override
     @Transactional(readOnly = true)
-    public ReportDataDto getReportData(final String reportName, final Map<String, String> reportParams) throws ClassNotFoundException, ScriptEngineException {
+    public ReportDataDto getReportData(final String reportName, final Map<String, String> reportParams) throws ClassNotFoundException, ScriptEngineException, IOException {
         ReportInfo reportInfo = reportDao.findByName(reportName);
         if (reportInfo == null) {
-            throw new IllegalArgumentException("Invalid parameter list: report with name="+reportName + " was not found in DataBase");
+            throw new IllegalArgumentException("Invalid parameter list: report with name="+reportName + " was not found in Database");
         }
         if(!validateParams(reportInfo, reportParams)) {
            throw new IllegalArgumentException("Invalid parameter list: required="+reportInfo.getRequiredParams());
         }
-        Map<String, Object> objectMap = new HashMap<String, Object>();
-        if (reportParams != null) {
-            objectMap.putAll(reportParams);
-        }
-        ScriptIntegration se = ScriptFactory.createModule(this.scriptEngine);
-        ReportDataDto reportData = (ReportDataDto) se.execute(objectMap, reportInfo.getGroovyScriptPath());
+
+        ScriptIntegration se = ScriptFactory.createModule(scriptEngine);
+        ReportDataSetBuilder dataSourceBuilder = (ReportDataSetBuilder) se.instantiateClass(Collections.EMPTY_MAP, reportInfo.getGroovyScriptPath());
+        ReportDataDto reportData = dataSourceBuilder.getReportData(reportParams);
 
         return reportData;
     }
