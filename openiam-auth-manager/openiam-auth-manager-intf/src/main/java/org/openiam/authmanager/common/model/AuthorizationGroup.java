@@ -70,6 +70,30 @@ public class AuthorizationGroup extends AbstractAuthorizationEntity implements S
 		resources.add(resource);
 	}
 	
+	public Set<AuthorizationResource> getResources() {
+		Set<AuthorizationResource> retVal = null;
+		if(resources != null) {
+			retVal = new HashSet<AuthorizationResource>(resources);
+		}
+		return retVal;
+	}
+	
+	public Set<AuthorizationRole> getRoles() {
+		Set<AuthorizationRole> retVal = null;
+		if(roles != null) {
+			retVal = new HashSet<AuthorizationRole>(roles);
+		}
+		return retVal;
+	}
+	
+	public Set<AuthorizationGroup> getGroups() {
+		Set<AuthorizationGroup> retVal = null;
+		if(groups != null) {
+			retVal = new HashSet<AuthorizationGroup>(groups);
+		}
+		return retVal;
+	}
+	
 	/**
 	 * Compiles this Group against it's Role, Group, and Resource Membership
 	 */

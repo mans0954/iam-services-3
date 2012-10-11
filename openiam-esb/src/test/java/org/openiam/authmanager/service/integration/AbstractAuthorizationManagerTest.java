@@ -51,6 +51,8 @@ public abstract class AbstractAuthorizationManagerTest {
 	@Qualifier("managedSysServiceClient")
 	protected ManagedSystemDataService managedSysServiceClient;
 	
+	private static final int MAX_ITERS = 200;
+	
 	@Test
 	public void isUserEntitledToResource() {
 		final List<Map<String, Object>> resourceUserMap = jdbcTemplate.queryForList("SELECT RESOURCE_ID AS RESOURCE_ID, USER_ID AS USER_ID FROM RESOURCE_USER");
@@ -81,6 +83,7 @@ public abstract class AbstractAuthorizationManagerTest {
 	@Test
 	public void testGetResourcesForUser() {
 		final List<String> userIds = jdbcTemplate.queryForList("SELECT USER_ID FROM USERS", String.class);
+		int i = 0;
 		for(final String userId : userIds) {
 			final Set<String> resourceIdSet = getAllResorucesForUser(userId);
 			final User user = userDataWebService.getUserWithDependent(userId, true).getUser();
@@ -90,11 +93,15 @@ public abstract class AbstractAuthorizationManagerTest {
 			for(final AuthorizationManagerLoginId loginId : loginIdList) {
 				confirmUserResources(null, loginId, resourceIdSet);
 			}
+			if(i++ > MAX_ITERS) {
+				break;
+			}
 		}
 	}
 	
 	@Test
 	public void testGetGroupsFor() {
+		int i = 0;
 		final List<String> userIds = jdbcTemplate.queryForList("SELECT USER_ID FROM USERS", String.class);
 		for(final String userId : userIds) {
 			final Set<String> groupIdSet = getAllGroupsForUser(userId);
@@ -106,11 +113,15 @@ public abstract class AbstractAuthorizationManagerTest {
 			for(final AuthorizationManagerLoginId loginId : loginIdList) {
 				confirmUserGroups(null, loginId, groupIdSet);
 			}
+			if(i++ > MAX_ITERS) {
+				break;
+			}
 		}
 	}
 	
 	@Test
 	public void testGetRolesFor() {
+		int i = 0;
 		final List<String> userIds = jdbcTemplate.queryForList("SELECT USER_ID FROM USERS", String.class);
 		for(final String userId : userIds) {
 			
@@ -122,6 +133,9 @@ public abstract class AbstractAuthorizationManagerTest {
 			confirmUserRoles(user.getUserId(), null, roleIdSet);
 			for(final AuthorizationManagerLoginId loginId : loginIdList) {
 				confirmUserRoles(null, loginId, roleIdSet);
+			}
+			if(i++ > MAX_ITERS) {
+				break;
 			}
 		}
 	}

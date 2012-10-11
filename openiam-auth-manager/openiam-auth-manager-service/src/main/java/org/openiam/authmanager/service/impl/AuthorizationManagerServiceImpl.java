@@ -176,11 +176,14 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 			final long millisecLoginThreshold = new java.util.Date().getTime() - (numOfLoggedInHoursThreshold.longValue() * 60 * 60 * 1000);
 			final Date loginThreshold = new Date(millisecLoginThreshold);
 			
+			log.debug("Fetching main objects from the database");
+			log.debug(String.format("Login threashold date: %s.  Property was: %s", loginThreshold, numOfLoggedInHoursThreshold));
 			final List<AuthorizationManagerLoginId> tempLoginIdList = userDAO.getLoginIdsForUsersLoggedInAfter(loginThreshold);
 			final List<AuthorizationUser> tempUserList = userDAO.getAllUsersLoggedInAfter(loginThreshold);
 			final List<AuthorizationRole> tempRoleList = roleDAO.getList();
 			final List<AuthorizationResource> tempResourceList = resourceDAO.getList();
 			final List<AuthorizationGroup> tempGroupList = groupDAO.getList();
+			log.debug("Done fetching main objects");
 			
 			/* create Maps of the above objects for fast access.  Id->Object
 			 * Set the bitSets of each object 
@@ -310,6 +313,7 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 			
 			/* create a map of LoginId cache Key ->LoginId */
 			/* use case insensitive verions.  Log an error if case-insensitive duplicates occur */
+			log.debug("Creating Login cache");
 			final Set<String> duplicateLoginIdsCaseIgnore = new HashSet<String>();
 			final Map<String, AuthorizationManagerLoginId> tempLoginIdMap = new HashMap<String, AuthorizationManagerLoginId>();
 			for(final AuthorizationManagerLoginId loginId : tempLoginIdList) {
@@ -326,29 +330,42 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 			for(final String badLoginId : duplicateLoginIdsCaseIgnore) {
 				tempLoginIdMap.remove(badLoginId);
 			}
+			log.debug("Done creating login cache");
 			
 			/* compile the entities */
+			log.debug("Compiling resources...");
 			for(final AuthorizationResource resource : tempResourceIdMap.values()) {
 				resource.compile();
 			}
+			log.debug("Done compiling resources...");
 			
+			log.info("Compiling roles");
 			for(final AuthorizationRole role : tempRoleIdMap.values()) {
 				role.compile();
 			}
+			log.debug("Done compiling roles");
 			
+			log.debug("Compiling groups");
 			for(final AuthorizationGroup group : tempGroupIdMap.values()) {
 				group.compile();
 			}
+			log.debug("Done compiling groups");
 			
+			log.debug("Compiling users");
+			final StopWatch userCompilationSW = new StopWatch();
+			userCompilationSW.start();
 			for(final AuthorizationUser user : tempUserMap.values()) {
 				user.compile();
 			}
+			userCompilationSW.stop();
+			log.debug(String.format("Done compiling users.  Done in: %s ms", userCompilationSW.getTotalTimeMillis()));
 			
 			synchronized (this) {
 				/* CRITICAL SECTION - don't allow reads during write operation */
 				//writeLock = readWriteLock.writeLock();
 				
 				/* find stale keys in User Cache */
+				log.debug("In critical section - refreshing user cache");
 				final Set<String> userKeysToRemove = new HashSet<String>();
 				final List<?> userCacheKeys = userCache.getKeys();
 				if(CollectionUtils.isNotEmpty(userCacheKeys)) {
@@ -372,8 +389,10 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 				for(final String userId : tempUserMap.keySet()) {
 					userCache.put(new Element(userId, tempUserMap.get(userId)));
 				}
+				log.debug("Done refreshing user cache");
 				
 				/* find stale keys in Login Cache */
+				log.debug("Refreshing login cache");
 				final Set<String> loginIdKeysToRemove = new HashSet<String>();
 				final List<?> loginIdCacheKeys = loginCache.getKeys();
 				if(CollectionUtils.isNotEmpty(loginIdCacheKeys)) {
@@ -396,6 +415,7 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 				for(final String loginIdKey : tempLoginIdMap.keySet()) {
 					loginCache.put(new Element(loginIdKey, tempLoginIdMap.get(loginIdKey).getUserId()));
 				}
+				log.info("Done refreshing the login cache");
 				
 				
 				userBitSet = tempUserBitSet;

@@ -23,10 +23,10 @@ public class AuthorizationRole extends AbstractAuthorizationEntity implements Se
 	private static final long serialVersionUID = 1L;
 	
 	@XmlTransient
-	private Set<AuthorizationRole> directParentRoles;
+	private Set<AuthorizationRole> roles;
 	
 	@XmlTransient
-	private Set<AuthorizationResource> directResources;
+	private Set<AuthorizationResource> resources;
 	
 	
 	private String name;
@@ -49,17 +49,33 @@ public class AuthorizationRole extends AbstractAuthorizationEntity implements Se
 	}
 	
 	public void addParentRole(final AuthorizationRole role) {
-		if(directParentRoles == null) {
-			directParentRoles = new HashSet<AuthorizationRole>();
+		if(roles == null) {
+			roles = new HashSet<AuthorizationRole>();
 		}
-		directParentRoles.add(role);
+		roles.add(role);
+	}
+	
+	public Set<AuthorizationRole> getRoles() {
+		Set<AuthorizationRole> retVal = null;
+		if(roles != null) {
+			retVal = new HashSet<AuthorizationRole>(roles);
+		}
+		return retVal;
+	}
+	
+	public Set<AuthorizationResource> getResources() {
+		Set<AuthorizationResource> retVal = null;
+		if(resources != null) {
+			retVal = new HashSet<AuthorizationResource>(resources);
+		}
+		return retVal;
 	}
 	
 	public void addResource(final AuthorizationResource resource) {
-		if(directResources == null) {
-			directResources = new HashSet<AuthorizationResource>();
+		if(resources == null) {
+			resources = new HashSet<AuthorizationResource>();
 		}
-		directResources.add(resource);
+		resources.add(resource);
 	}
 	
 	/**
@@ -84,8 +100,8 @@ public class AuthorizationRole extends AbstractAuthorizationEntity implements Se
 		final Set<AuthorizationRole> compiledRoles = new HashSet<AuthorizationRole>();
 		if(!visitedSet.contains(this)) {
 			visitedSet.add(this);
-			if(directParentRoles != null) {
-				for(final AuthorizationRole parent : directParentRoles) {
+			if(roles != null) {
+				for(final AuthorizationRole parent : roles) {
 					compiledRoles.add(parent);
 					compiledRoles.addAll(parent.visitRoles(visitedSet));
 				}
@@ -99,14 +115,14 @@ public class AuthorizationRole extends AbstractAuthorizationEntity implements Se
 		if(!visitedRoles.contains(this)) {
 			visitedRoles.add(this);
 			
-			if(directParentRoles != null) {
-				for(final AuthorizationRole role : directParentRoles) {
+			if(roles != null) {
+				for(final AuthorizationRole role : roles) {
 					compiledResources.addAll(role.visitResources(visitedRoles));
 				}
 			}
 			
-			if(directResources != null) {
-				for(final AuthorizationResource resource : directResources) {
+			if(resources != null) {
+				for(final AuthorizationResource resource : resources) {
 					compiledResources.add(resource);
 					compiledResources.addAll(resource.visitResources(new HashSet<AuthorizationResource>()));
 				}

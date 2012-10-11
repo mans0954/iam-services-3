@@ -22,8 +22,8 @@
         <property name="user" value="${openiam.username}" />
         <property name="password" value="${openiam.password}"/>
 
-        <property name="minPoolSize" value="${openiam.hibernate.minPoolSize}"/>
-        <property name="maxPoolSize" value="${openiam.hibernate.maxPoolSize}"/>
+        <property name="minPoolSize" value="1"/>
+        <property name="maxPoolSize" value="2"/>
         <property name="maxStatements" value="${openiam.hibernate.max_statement}"/>
         <property name="idleConnectionTestPeriod" value="${openiam.hibernate.idle_test_period}"/>
         <property name="loginTimeout" value="300"/>
@@ -105,7 +105,7 @@
 	</bean>
 	
 	<bean id="authorizationManagerHessianClient" class="org.openiam.authmanager.AuthorizationManagerHessianClient" init-method="init">
-		<property name="url" value="${openiam.service_host}openiam-idm-esb/iamauthmgr" />
-		<property name="timingEnabled" value="true" />
+		<property name="url" value="${openiam.service_host}openiam-esb/iamauthmgr" />
+		<property name="timingEnabled" value="false" />
 	</bean>
 </beans>

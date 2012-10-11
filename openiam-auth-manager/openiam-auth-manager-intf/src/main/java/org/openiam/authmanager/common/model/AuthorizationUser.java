@@ -11,8 +11,15 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.util.StopWatch;
+
 public class AuthorizationUser extends AbstractAuthorizationEntity implements Serializable  {
 
+	private static final Log log = LogFactory.getLog(AuthorizationUser.class);
+	
 	private static final long serialVersionUID = 1L;
 	
 	private Set<AuthorizationGroup> directParentGroups = null;
@@ -57,20 +64,32 @@ public class AuthorizationUser extends AbstractAuthorizationEntity implements Se
 	 * Compiles this Group against it's Role, Group, and Resource Membership
 	 */
 	public void compile() {
+		//final StopWatch sw1 = new StopWatch();
+		//sw1.start();
 		final Set<AuthorizationGroup> compiledGroupSet = visitGroups();
 		for(final AuthorizationGroup group : compiledGroupSet) {
 			linearGroupBitSet.set(group.getBitSetIdx());
 		}
+		//sw1.stop();
+		//log.info(String.format("Group compilation: %s", sw1.getTotalTimeMillis()));
 		
-		final Set<AuthorizationRole> compiledRoleSet = visitRoles();
+		//final StopWatch sw2 = new StopWatch();
+		//sw2.start();
+		final Set<AuthorizationRole> compiledRoleSet = visitRoles(compiledGroupSet);
 		for(final AuthorizationRole role : compiledRoleSet) {
 			linearRoleBitSet.set(role.getBitSetIdx());
 		}
+		//sw2.stop();
+		//log.info(String.format("Role compilation: %s", sw2.getTotalTimeMillis()));
 		
-		final Set<AuthorizationResource> compiledResourceSet = visitResources();
+		//final StopWatch sw3 = new StopWatch();
+		//sw3.start();
+		final Set<AuthorizationResource> compiledResourceSet = visitResources(compiledGroupSet, compiledRoleSet);
 		for(final AuthorizationResource resource : compiledResourceSet) {
 			linearResourceBitSet.set(resource.getBitSetIdx());
 		}
+		//sw3.stop();
+		//log.info(String.format("Resource compilation: %s", sw3.getTotalTimeMillis()));
 	}
 	
 	private Set<AuthorizationGroup> visitGroups() {
@@ -84,45 +103,101 @@ public class AuthorizationUser extends AbstractAuthorizationEntity implements Se
 		return compiledGroupSet;
 	}
 	
-	private Set<AuthorizationRole> visitRoles() {
-		final Set<AuthorizationRole> compiledRoleSet = new HashSet<AuthorizationRole>();
-		if(directParentGroups != null) {
-			for(final AuthorizationGroup group : directParentGroups) {
-				compiledRoleSet.addAll(group.visitRoles(new HashSet<AuthorizationGroup>()));
-			}
-		}
-			
+	private Set<AuthorizationRole> visitRoles(final Set<AuthorizationGroup> compiledGroups) {
+		final Set<AuthorizationRole> tempCompiledRoleSet = new HashSet<AuthorizationRole>();
 		if(directParentRoles != null) {
-			for(final AuthorizationRole role : directParentRoles) {
-				compiledRoleSet.add(role);
-				compiledRoleSet.addAll(role.visitRoles(new HashSet<AuthorizationRole>()));
+			tempCompiledRoleSet.addAll(directParentRoles);
+		}
+		
+		for(final AuthorizationGroup group : compiledGroups) {
+			final Set<AuthorizationRole> roles = group.getRoles();
+			if(roles != null) {
+				tempCompiledRoleSet.addAll(roles);
 			}
 		}
+		
+		final Set<AuthorizationRole> visitedSet = new HashSet<AuthorizationRole>();
+		final Set<AuthorizationRole> compiledRoleSet = new HashSet<AuthorizationRole>();
+		for(final AuthorizationRole role : tempCompiledRoleSet) {
+			compiledRoleSet.addAll(role.visitRoles(visitedSet));
+			visitedSet.addAll(compiledRoleSet);
+		}
+		compiledRoleSet.addAll(tempCompiledRoleSet);
+		
 		return compiledRoleSet;
 	}
 	
+	private Set<AuthorizationResource> visitResources(final Set<AuthorizationGroup> compiledGroups, final Set<AuthorizationRole> compiledRoles) {
+		final Set<AuthorizationResource> tempCompiledResourceSet = new HashSet<AuthorizationResource>();
+		if(directResources != null) {
+			tempCompiledResourceSet.addAll(directResources);
+		}
+		
+		if(CollectionUtils.isNotEmpty(compiledGroups)) {
+			for(final AuthorizationGroup group : compiledGroups) {
+				final Set<AuthorizationResource> resources = group.getResources();
+				if(resources != null) {
+					tempCompiledResourceSet.addAll(resources);
+				}
+			}
+		}
+		
+		if(CollectionUtils.isNotEmpty(compiledRoles)) {
+			for(final AuthorizationRole role : compiledRoles) {
+				final Set<AuthorizationResource> resources = role.getResources();
+				if(resources != null) {
+					tempCompiledResourceSet.addAll(resources);
+				}
+			}
+		}
+
+		final Set<AuthorizationResource> compiledResourceSet = new HashSet<AuthorizationResource>();
+		final Set<AuthorizationResource> visitedSet = new HashSet<AuthorizationResource>();
+		for(final AuthorizationResource resource : tempCompiledResourceSet) {
+			compiledResourceSet.addAll(resource.visitResources(visitedSet));
+			visitedSet.addAll(compiledResourceSet);
+		}
+		compiledResourceSet.addAll(tempCompiledResourceSet);
+		return compiledResourceSet;
+	}
+	
+	/*
 	private Set<AuthorizationResource> visitResources() {
+		final StopWatch sw1 = new StopWatch();
+		sw1.start();
 		final Set<AuthorizationResource> compiledResourceSet = new HashSet<AuthorizationResource>();
 		if(directParentGroups != null) {
 			for(final AuthorizationGroup group : directParentGroups) {
 				compiledResourceSet.addAll(group.visitResources(new HashSet<AuthorizationGroup>()));
 			}
 		}
+		sw1.stop();
+		log.info(String.format("Time to compile resources from groups: %s", sw1.getTotalTimeMillis()));
 		
+		final StopWatch sw2 = new StopWatch();
+		sw2.start();
 		if(directParentRoles != null) {
 			for(final AuthorizationRole role : directParentRoles) {
 				compiledResourceSet.addAll(role.visitResources(new HashSet<AuthorizationRole>()));
 			}
 		}
+		sw2.stop();
+		log.info(String.format("Time to compile resources from roles: %s", sw2.getTotalTimeMillis()));
 		
+		final StopWatch sw3 = new StopWatch();
+		sw3.start();
 		if(directResources != null) {
 			for(final AuthorizationResource resource : directResources) {
 				compiledResourceSet.add(resource);
 				compiledResourceSet.addAll(resource.visitResources(new HashSet<AuthorizationResource>()));
 			}
 		}
+		sw3.stop();
+		log.info(String.format("Time to compile resources from resources: %s", sw3.getTotalTimeMillis()));
+		
 		return compiledResourceSet;
 	}
+	*/
 
 	public boolean isEntitledTo(final AuthorizationResource resource) {
 		return (resource != null) ? linearResourceBitSet.get(resource.getBitSetIdx()) : false;

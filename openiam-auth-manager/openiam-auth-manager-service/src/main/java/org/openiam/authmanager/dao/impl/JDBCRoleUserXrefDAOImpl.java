@@ -23,6 +23,9 @@ public class JDBCRoleUserXrefDAOImpl extends AbstractJDBCDao implements RoleUser
 	
 	@Override
 	public List<RoleUserXref> getList() {
+		if(log.isDebugEnabled()) {
+			log.info(String.format("Query: %s", GET_ALL));
+		}
 		return getJdbcTemplate().query(GET_ALL, rowMapper);
 	}
 	
