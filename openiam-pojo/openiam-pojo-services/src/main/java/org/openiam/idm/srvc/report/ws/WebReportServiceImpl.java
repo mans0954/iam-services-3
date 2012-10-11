@@ -32,12 +32,12 @@ public class WebReportServiceImpl implements WebReportService {
     @Override
     public GetReportDataResponse executeQuery(final String reportName, final HashMap<String, String> queryParams) {
         GetReportDataResponse response = new GetReportDataResponse();
-           if (!StringUtils.isEmpty(reportName)) {
+        if (!StringUtils.isEmpty(reportName)) {
             try {
-            ReportDataDto reportDataDto = reportDataService.getReportData(reportName,queryParams);
+                ReportDataDto reportDataDto = reportDataService.getReportData(reportName, queryParams);
 
-            response.setReportDataDto(reportDataDto);
-        } catch (Throwable ex) {
+                response.setReportDataDto(reportDataDto);
+            } catch (Throwable ex) {
                 response.setErrorCode(ResponseCode.INVALID_ARGUMENTS);
                 response.setErrorText(ex.getMessage());
                 response.setStatus(ResponseStatus.FAILURE);

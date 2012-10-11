@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
 
 
 @Repository
-public class ReportDataDaoImpl extends BaseDaoImpl<ReportInfo> implements ReportDataDao {
+public class ReportDataDaoImpl extends BaseDaoImpl<ReportInfo, String> implements ReportDataDao {
 
     private static final Logger LOG = LoggerFactory.getLogger(ReportDataDaoImpl.class);
 

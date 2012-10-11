@@ -1,13 +1,14 @@
 package org.openiam.core.dao;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 
-public interface BaseDao<T> {
+public interface BaseDao<T, PrimaryKey extends Serializable> {
 
-  T findById(String id);
+  T findById(PrimaryKey id);
 
-  T findById(String id, String ... fetchFields);
+  T findById(PrimaryKey id, String ... fetchFields);
 
   List<T> findAll();
 
