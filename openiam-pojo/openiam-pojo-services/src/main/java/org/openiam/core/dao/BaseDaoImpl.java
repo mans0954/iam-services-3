@@ -1,5 +1,6 @@
 package org.openiam.core.dao;
 
+import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collection;
@@ -13,7 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import static org.hibernate.criterion.Projections.rowCount;
 import static org.hibernate.criterion.Restrictions.eq;
 
-public abstract class BaseDaoImpl<T> implements BaseDao<T> {
+public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> implements BaseDao<T, PrimaryKey> {
     protected final Class<T> domainClass;
 
     @Autowired
@@ -46,7 +47,7 @@ public abstract class BaseDaoImpl<T> implements BaseDao<T> {
     }
 
     @SuppressWarnings({"unchecked"})
-    public T findById(String id) {
+    public T findById(PrimaryKey id) {
         if (id == null) {
             return null;
         }
@@ -54,7 +55,7 @@ public abstract class BaseDaoImpl<T> implements BaseDao<T> {
     }
 
     @SuppressWarnings({"unchecked"})
-    public T findById(String id, String... fetchFields) {
+    public T findById(PrimaryKey id, String... fetchFields) {
         if (id == null) {
             return null;
         }
