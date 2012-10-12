@@ -29,9 +29,6 @@ public class ReportDataServiceImpl implements ReportDataService {
         if (reportInfo == null) {
             throw new IllegalArgumentException("Invalid parameter list: report with name="+reportName + " was not found in Database");
         }
-        if(!validateParams(reportInfo, reportParams)) {
-           throw new IllegalArgumentException("Invalid parameter list: required="+reportInfo.getRequiredParams());
-        }
 
         ScriptIntegration se = ScriptFactory.createModule(scriptEngine);
         ReportDataSetBuilder dataSourceBuilder = (ReportDataSetBuilder) se.instantiateClass(Collections.EMPTY_MAP, reportInfo.getGroovyScriptPath());

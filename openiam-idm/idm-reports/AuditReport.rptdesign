@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <report xmlns="http://www.eclipse.org/birt/2005/design" version="3.2.23" id="1">
-    <property name="createdBy">Eclipse BIRT Designer Version 4.2.0.v20120611 Build &lt;4.2.0.v20120612-1721></property>
+    <property name="createdBy">Eclipse BIRT Designer Version 4.2.1.v201209101448 Build &lt;4.2.1.v20120912-1721></property>
     <property name="units">in</property>
     <property name="iconFile">/templates/grouped_listing.gif</property>
     <property name="bidiLayoutOrientation">ltr</property>
     <property name="imageDPI">96</property>
     <parameters>
-        <scalar-parameter name="rpt_actionType" id="45">
+        <scalar-parameter name="ACTION_ID" id="45">
             <text-property name="helpText">Audit Log action id</text-property>
             <text-property name="promptText">Action Type</text-property>
             <property name="valueType">static</property>
@@ -14,7 +14,7 @@
             <property name="dataType">string</property>
             <property name="distinct">true</property>
             <simple-property-list name="defaultValue">
-                <value type="constant">AUTHENTICATION</value>
+                <value type="constant">CustomData value: AUTHENTICATION, displayValue: null</value>
             </simple-property-list>
             <list-property name="selectionList"/>
             <property name="paramType">simple</property>
@@ -24,16 +24,13 @@
                 <property name="category">Unformatted</property>
             </structure>
         </scalar-parameter>
-        <scalar-parameter name="rpt_startDate" id="246">
-            <text-property name="helpText">Please set end period</text-property>
+        <scalar-parameter name="ACTION_DATETIME_START" id="246">
+            <text-property name="helpText">Please set start period</text-property>
             <text-property name="promptText">Start Date</text-property>
             <property name="valueType">static</property>
             <property name="isRequired">true</property>
             <property name="dataType">string</property>
             <property name="distinct">true</property>
-            <simple-property-list name="defaultValue">
-                <value type="constant">2012-08-29 23:28:44</value>
-            </simple-property-list>
             <list-property name="selectionList"/>
             <property name="paramType">simple</property>
             <property name="concealValue">false</property>
@@ -42,15 +39,30 @@
                 <property name="category">Unformatted</property>
             </structure>
         </scalar-parameter>
-        <scalar-parameter name="rpt_lastDate" id="247">
+        <scalar-parameter name="ACTION_DATETIME_END" id="247">
             <text-property name="helpText">Please set end period</text-property>
             <text-property name="promptText">Last Date</text-property>
             <property name="valueType">static</property>
             <property name="isRequired">true</property>
             <property name="dataType">string</property>
             <property name="distinct">true</property>
+            <list-property name="selectionList"/>
+            <property name="paramType">simple</property>
+            <property name="concealValue">false</property>
+            <property name="controlType">text-box</property>
+            <structure name="format">
+                <property name="category">Unformatted</property>
+            </structure>
+        </scalar-parameter>
+        <scalar-parameter name="REPORT_NAME" id="703">
+            <property name="hidden">true</property>
+            <text-property name="helpText">Set by default</text-property>
+            <property name="valueType">static</property>
+            <property name="isRequired">true</property>
+            <property name="dataType">string</property>
+            <property name="distinct">true</property>
             <simple-property-list name="defaultValue">
-                <value type="constant">2012-10-29 23:28:44</value>
+                <value type="constant">AUDIT_REPORT</value>
             </simple-property-list>
             <list-property name="selectionList"/>
             <property name="paramType">simple</property>
@@ -259,37 +271,49 @@
             </list-property>
             <list-property name="parameters">
                 <structure>
-                    <property name="name">actionType</property>
-                    <property name="paramName">rpt_actionType</property>
-                    <property name="nativeName">actionType</property>
+                    <property name="name">REPORT_NAME</property>
+                    <property name="paramName">REPORT_NAME</property>
+                    <property name="nativeName">REPORT_NAME</property>
                     <property name="dataType">string</property>
                     <property name="nativeDataType">1</property>
                     <property name="position">1</property>
-                    <expression name="defaultValue" type="constant">AUTHENTICATION</expression>
+                    <expression name="defaultValue" type="constant">AUDIT_REPORT</expression>
                     <property name="isOptional">false</property>
                     <property name="isInput">true</property>
                     <property name="isOutput">false</property>
                 </structure>
                 <structure>
-                    <property name="name">startDate</property>
-                    <property name="paramName">rpt_startDate</property>
-                    <property name="nativeName">startDate</property>
+                    <property name="name">ACTION_ID</property>
+                    <property name="paramName">ACTION_ID</property>
+                    <property name="nativeName">ACTION_ID</property>
                     <property name="dataType">string</property>
                     <property name="nativeDataType">1</property>
                     <property name="position">2</property>
-                    <expression name="defaultValue" type="constant">2012-08-29 23:28:44</expression>
+                    <expression name="defaultValue" type="constant">CustomData value: AUTHENTICATION, displayValue: null</expression>
                     <property name="isOptional">false</property>
                     <property name="isInput">true</property>
                     <property name="isOutput">false</property>
                 </structure>
                 <structure>
-                    <property name="name">endDate</property>
-                    <property name="paramName">rpt_lastDate</property>
-                    <property name="nativeName">endDate</property>
+                    <property name="name">ACTION_DATETIME_START</property>
+                    <property name="paramName">ACTION_DATETIME_START</property>
+                    <property name="nativeName">ACTION_DATETIME_START</property>
                     <property name="dataType">string</property>
                     <property name="nativeDataType">1</property>
                     <property name="position">3</property>
-                    <expression name="defaultValue" type="constant">2012-10-29 23:28:44</expression>
+                    <expression name="defaultValue" type="constant">CustomData value: 20012-10-01, displayValue: null</expression>
+                    <property name="isOptional">false</property>
+                    <property name="isInput">true</property>
+                    <property name="isOutput">false</property>
+                </structure>
+                <structure>
+                    <property name="name">ACTION_DATETIME_END</property>
+                    <property name="paramName">ACTION_DATETIME_END</property>
+                    <property name="nativeName">ACTION_DATETIME_END</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">1</property>
+                    <property name="position">4</property>
+                    <expression name="defaultValue" type="constant">CustomData value: 2012-10-29, displayValue: null</expression>
                     <property name="isOptional">false</property>
                     <property name="isInput">true</property>
                     <property name="isOutput">false</property>
@@ -679,7 +703,7 @@
    <soapenv:Body>
       <ser:executeQuery>
          <!--Optional:-->
-         <reportName>AUDIT_REPORT</reportName>
+         <reportName>&amp;?REPORT_NAME?&amp;</reportName>
          <!--Optional:-->
          <queryParams>
             <!--Zero or more repetitions:-->
@@ -708,7 +732,7 @@
         <design:inOutMode>In</design:inOutMode>
         <design:attributes>
           <design:identifier>
-            <design:name>actionType</design:name>
+            <design:name>REPORT_NAME</design:name>
             <design:position>1</design:position>
           </design:identifier>
           <design:nativeDataTypeCode>1</design:nativeDataTypeCode>
@@ -719,7 +743,7 @@
         <design:inputAttributes>
           <design:elementAttributes>
             <design:defaultValues>
-              <design:values>AUTHENTICATION</design:values>
+              <design:values>AUDIT_REPORT</design:values>
             </design:defaultValues>
           </design:elementAttributes>
         </design:inputAttributes>
@@ -730,7 +754,7 @@
         <design:inOutMode>In</design:inOutMode>
         <design:attributes>
           <design:identifier>
-            <design:name>startDate</design:name>
+            <design:name>ACTION_ID</design:name>
             <design:position>2</design:position>
           </design:identifier>
           <design:nativeDataTypeCode>1</design:nativeDataTypeCode>
@@ -741,7 +765,7 @@
         <design:inputAttributes>
           <design:elementAttributes>
             <design:defaultValues>
-              <design:values>2012-08-29 23:28:44</design:values>
+              <design:values>CustomData value: AUTHENTICATION, displayValue: null</design:values>
             </design:defaultValues>
           </design:elementAttributes>
         </design:inputAttributes>
@@ -752,7 +776,7 @@
         <design:inOutMode>In</design:inOutMode>
         <design:attributes>
           <design:identifier>
-            <design:name>endDate</design:name>
+            <design:name>ACTION_DATETIME_START</design:name>
             <design:position>3</design:position>
           </design:identifier>
           <design:nativeDataTypeCode>1</design:nativeDataTypeCode>
@@ -763,7 +787,29 @@
         <design:inputAttributes>
           <design:elementAttributes>
             <design:defaultValues>
-              <design:values>2012-10-29 23:28:44</design:values>
+              <design:values>CustomData value: 20012-10-01, displayValue: null</design:values>
+            </design:defaultValues>
+          </design:elementAttributes>
+        </design:inputAttributes>
+      </design:ParameterDefinition>
+    </parameter>
+    <parameter>
+      <design:ParameterDefinition>
+        <design:inOutMode>In</design:inOutMode>
+        <design:attributes>
+          <design:identifier>
+            <design:name>ACTION_DATETIME_END</design:name>
+            <design:position>4</design:position>
+          </design:identifier>
+          <design:nativeDataTypeCode>1</design:nativeDataTypeCode>
+          <design:precision>-1</design:precision>
+          <design:scale>-1</design:scale>
+          <design:nullability>Unknown</design:nullability>
+        </design:attributes>
+        <design:inputAttributes>
+          <design:elementAttributes>
+            <design:defaultValues>
+              <design:values>CustomData value: 2012-10-29, displayValue: null</design:values>
             </design:defaultValues>
           </design:elementAttributes>
         </design:inputAttributes>
@@ -1392,7 +1438,7 @@
                 <structure>
                     <property name="name">ACTION_ID</property>
                     <text-property name="displayName">ACTION_ID</text-property>
-                    <expression name="expression" type="javascript">dataSetRow["ACTION_STATUS"]</expression>
+                    <expression name="expression" type="javascript">dataSetRow["ACTION_ID"]</expression>
                     <property name="dataType">string</property>
                 </structure>
                 <structure>

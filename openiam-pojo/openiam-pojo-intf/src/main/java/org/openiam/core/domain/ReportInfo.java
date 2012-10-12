@@ -10,28 +10,28 @@ import javax.persistence.Table;
 import org.hibernate.annotations.GenericGenerator;
 
 @Entity
-@Table(name = "report_info")
+@Table(name = "REPORT_INFO")
 public class ReportInfo {
 
     @Id
     @GeneratedValue(generator = "system-uuid")
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    @Column(name = "report_info_id")
+    @Column(name = "REPORT_INFO_ID")
     private String id;
 
-    @Column(name = "report_name")
+    @Column(name = "REPORT_NAME")
     private String reportName;
 
-    @Column(name = "groovy_script_path")
+    @Column(name = "GROOVY_SCRIPT_PATH")
     private String groovyScriptPath;
 
-    @Column(name = "report_file_path")
+    @Column(name = "REPORT_FILE_PATH")
     private String reportFilePath;
 
     @Column
     private String params;
 
-    @Column(name = "required_params")
+    @Column(name = "REQUIRED_PARAMS")
     private String requiredParams;
 
     public String getId() {
