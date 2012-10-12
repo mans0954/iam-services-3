@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 @Repository("jdbcGroupDAO")
 public class JDBCGroupDAOImpl extends AbstractJDBCDao implements GroupDAO {
 
+	
 	private static final RowMapper<AuthorizationGroup> rowMapper = new GroupMapper();
 	
 	private String GET_ALL_GROUPS = "SELECT GRP_ID AS GROUP_ID, GRP_NAME AS NAME FROM %s.GRP";
@@ -23,6 +24,9 @@ public class JDBCGroupDAOImpl extends AbstractJDBCDao implements GroupDAO {
 	
 	@Override
 	public List<AuthorizationGroup> getList() {
+		if(log.isDebugEnabled()) {
+			log.info(String.format("Query: %s", GET_ALL_GROUPS));
+		}
 		return getJdbcTemplate().query(GET_ALL_GROUPS, rowMapper);
 	}
 	

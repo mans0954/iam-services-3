@@ -3,6 +3,8 @@ package org.openiam.authmanager.dao.impl;
 import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,6 +13,8 @@ import org.springframework.jdbc.core.support.JdbcDaoSupport;
 
 public abstract class AbstractJDBCDao extends JdbcDaoSupport {
 
+	protected static final Log log = LogFactory.getLog(AbstractJDBCDao.class);
+	
 	@Autowired
 	@Qualifier("dataSource") 
 	private DataSource dataSource;

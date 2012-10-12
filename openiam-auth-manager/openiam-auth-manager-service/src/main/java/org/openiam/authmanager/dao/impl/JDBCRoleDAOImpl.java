@@ -25,6 +25,9 @@ public class JDBCRoleDAOImpl extends AbstractJDBCDao implements RoleDAO {
 	
 	@Override
 	public List<AuthorizationRole> getList() {
+		if(log.isDebugEnabled()) {
+			log.info(String.format("Query: %s", GET_ALL_ROLES));
+		}
 		return getJdbcTemplate().query(GET_ALL_ROLES, rowMapper);
 	}
 

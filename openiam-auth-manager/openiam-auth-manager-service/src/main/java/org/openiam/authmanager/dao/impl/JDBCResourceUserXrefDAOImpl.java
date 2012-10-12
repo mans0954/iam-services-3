@@ -23,6 +23,9 @@ public class JDBCResourceUserXrefDAOImpl extends AbstractJDBCDao implements Reso
 	
 	@Override
 	public List<ResourceUserXref> getList() {
+		if(log.isDebugEnabled()) {
+			log.info(String.format("Query: %s", GET_ALL));
+		}
 		return getJdbcTemplate().query(GET_ALL, rowMapper);
 	}
 	
