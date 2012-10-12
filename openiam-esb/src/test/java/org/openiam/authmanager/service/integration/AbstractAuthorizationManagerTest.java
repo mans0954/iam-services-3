@@ -1,5 +1,6 @@
 package org.openiam.authmanager.service.integration;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -51,41 +52,112 @@ public abstract class AbstractAuthorizationManagerTest {
 	@Qualifier("managedSysServiceClient")
 	protected ManagedSystemDataService managedSysServiceClient;
 	
-	private static final int MAX_ITERS = 200;
+	private static final int MAX_ITERS = 10;
 	
 	@Test
 	public void isUserEntitledToResource() {
-		final List<Map<String, Object>> resourceUserMap = jdbcTemplate.queryForList("SELECT RESOURCE_ID AS RESOURCE_ID, USER_ID AS USER_ID FROM RESOURCE_USER");
-		checkResourceMembership(resourceUserMap);
+		final List<Map<String, Object>> resourceUserMap = jdbcTemplate.queryForList("SELECT RESOURCE_ID AS RESOURCE_ID, USER_ID AS USER_ID FROM RESOURCE_USER LIMIT " + MAX_ITERS);
+		final List<Map<String, Object>> resourceUserMapThroughGroupMembership = jdbcTemplate.queryForList("SELECT ug.USER_ID AS USER_ID, rg.RESOURCE_ID AS RESOURCE_ID FROM USER_GRP ug, RESOURCE_GROUP rg WHERE ug.GRP_ID=rg.GRP_ID LIMIT " + MAX_ITERS);
+		final List<Map<String, Object>> resourceUserMapThroughRoleMembership = jdbcTemplate.queryForList("SELECT ur.USER_ID AS USER_ID, rr.RESOURCE_ID AS RESOURCE_ID FROM USER_ROLE ur, RESOURCE_ROLE rr WHERE ur.ROLE_ID=rr.ROLE_ID LIMIT " + MAX_ITERS);
 		
-		final List<Map<String, Object>> resourceUserMapThroughGroupMembership = jdbcTemplate.queryForList("SELECT ug.USER_ID AS USER_ID, rg.RESOURCE_ID AS RESOURCE_ID FROM USER_GRP ug, RESOURCE_GROUP rg WHERE ug.GRP_ID=rg.GRP_ID");
-		checkResourceMembership(resourceUserMapThroughGroupMembership);
+		final Map<String, Set<String>> user2ResourceMap = new HashMap<String, Set<String>>();
+		for(final Map<String, Object> map : resourceUserMap) {
+			final String userId = (String)map.get("USER_ID");
+			final String resourceId = (String)map.get("RESOURCE_ID");
+			if(!user2ResourceMap.containsKey(userId)) {
+				user2ResourceMap.put(userId, new HashSet<String>());
+			}
+			user2ResourceMap.get(userId).add(resourceId);
+		}
 		
-		final List<Map<String, Object>> resourceUserMapThroughRoleMembership = jdbcTemplate.queryForList("SELECT ur.USER_ID AS USER_ID, rr.RESOURCE_ID AS RESOURCE_ID FROM USER_ROLE ur, RESOURCE_ROLE rr WHERE ur.ROLE_ID=rr.ROLE_ID");
-		checkResourceMembership(resourceUserMapThroughRoleMembership);
+		for(final Map<String, Object> map : resourceUserMapThroughGroupMembership) {
+			final String userId = (String)map.get("USER_ID");
+			final String resourceId = (String)map.get("RESOURCE_ID");
+			if(!user2ResourceMap.containsKey(userId)) {
+				user2ResourceMap.put(userId, new HashSet<String>());
+			}
+			user2ResourceMap.get(userId).add(resourceId);
+		}
+		
+		for(final Map<String, Object> map : resourceUserMapThroughRoleMembership) {
+			final String userId = (String)map.get("USER_ID");
+			final String resourceId = (String)map.get("RESOURCE_ID");
+			if(!user2ResourceMap.containsKey(userId)) {
+				user2ResourceMap.put(userId, new HashSet<String>());
+			}
+			user2ResourceMap.get(userId).add(resourceId);
+		}
+		
+		int i = 0;
+		for(final String userId : user2ResourceMap.keySet()) {
+			checkResourceMembership(userId, user2ResourceMap.get(userId));
+			if(i++ > MAX_ITERS) {
+				break;
+			}
+		}
 	}
 	
 	@Test
 	public void isUserMemberOfGroups() {
-		final List<Map<String, Object>> groupUserMap = jdbcTemplate.queryForList("SELECT GRP_ID AS GROUP_ID, USER_ID AS USER_ID FROM USER_GRP");
-		checkGroupMembership(groupUserMap);
+		final Map<String, Set<String>> userId2GroupMap = new HashMap<String, Set<String>>();
+		final List<Map<String, Object>> groupUserMap = jdbcTemplate.queryForList("SELECT GRP_ID AS GROUP_ID, USER_ID AS USER_ID FROM USER_GRP LIMIT " + MAX_ITERS);
+		for(final Map<String, Object> map : groupUserMap) {
+			final String userId = (String)map.get("USER_ID");
+			final String groupId = (String)map.get("GROUP_ID");
+			if(!userId2GroupMap.containsKey(userId)) {
+				userId2GroupMap.put(userId, new HashSet<String>());
+			}
+			userId2GroupMap.get(userId).add(groupId);
+		}
+		
+		int i = 0;
+		for(final String userId : userId2GroupMap.keySet()) {
+			checkGroupMembership(userId, userId2GroupMap.get(userId));
+			if(i++ > MAX_ITERS) {
+				break;
+			}
+		}
 	}
 	
 	@Test
 	public void isUserMemberOfRoles() {
-		final List<Map<String, Object>> roleUserMap = jdbcTemplate.queryForList("SELECT USER_ID AS USER_ID, ROLE_ID AS ROLE_ID FROM USER_ROLE");
-		checkRoleMembership(roleUserMap);
+		final Map<String, Set<String>> userId2RoleMap = new HashMap<String, Set<String>>();
+		final List<Map<String, Object>> roleUserMap = jdbcTemplate.queryForList("SELECT USER_ID AS USER_ID, ROLE_ID AS ROLE_ID FROM USER_ROLE LIMIT " + MAX_ITERS);
+		final List<Map<String, Object>> roleUserMapThroughGroupMembership = jdbcTemplate.queryForList("SELECT ug.USER_ID AS USER_ID, gr.ROLE_ID AS ROLE_ID FROM USER_GRP ug, GRP_ROLE gr WHERE ug.GRP_ID=gr.GRP_ID LIMIT " + MAX_ITERS);
+		for(final Map<String, Object> map : roleUserMap) {
+			final String userId = (String)map.get("USER_ID");
+			final String roleId = (String)map.get("ROLE_ID");
+			if(!userId2RoleMap.containsKey(userId)) {
+				userId2RoleMap.put(userId, new HashSet<String>());
+			}
+			userId2RoleMap.get(userId).add(roleId);
+		}
 		
-		final List<Map<String, Object>> roleUserMapThroughGroupMembership = jdbcTemplate.queryForList("SELECT ug.USER_ID AS USER_ID, gr.ROLE_ID AS ROLE_ID FROM USER_GRP ug, GRP_ROLE gr WHERE ug.GRP_ID=gr.GRP_ID");
-		checkRoleMembership(roleUserMapThroughGroupMembership);
+		for(final Map<String, Object> map : roleUserMapThroughGroupMembership) {
+			final String userId = (String)map.get("USER_ID");
+			final String roleId = (String)map.get("ROLE_ID");
+			if(!userId2RoleMap.containsKey(userId)) {
+				userId2RoleMap.put(userId, new HashSet<String>());
+			}
+			userId2RoleMap.get(userId).add(roleId);
+		}
+		
+		int i = 0;
+		for(final String userId : userId2RoleMap.keySet()) {
+			checkDirectRoleMembership(userId, userId2RoleMap.get(userId));
+			
+			if(i++ > MAX_ITERS) {
+				break;
+			}
+		}
 	}
 	
 	@Test
 	public void testGetResourcesForUser() {
-		final List<String> userIds = jdbcTemplate.queryForList("SELECT USER_ID FROM USERS", String.class);
+		final List<String> userIds = jdbcTemplate.queryForList("SELECT USER_ID FROM USERS LIMIT " + MAX_ITERS, String.class);
 		int i = 0;
 		for(final String userId : userIds) {
-			final Set<String> resourceIdSet = getAllResorucesForUser(userId);
+			final Set<String> resourceIdSet = getAllDirectResorucesForUser(userId);
 			final User user = userDataWebService.getUserWithDependent(userId, true).getUser();
 			final List<AuthorizationManagerLoginId> loginIdList = getLoginIdList(user);
 			
@@ -102,9 +174,9 @@ public abstract class AbstractAuthorizationManagerTest {
 	@Test
 	public void testGetGroupsFor() {
 		int i = 0;
-		final List<String> userIds = jdbcTemplate.queryForList("SELECT USER_ID FROM USERS", String.class);
+		final List<String> userIds = jdbcTemplate.queryForList("SELECT USER_ID FROM USERS LIMIT " + MAX_ITERS, String.class);
 		for(final String userId : userIds) {
-			final Set<String> groupIdSet = getAllGroupsForUser(userId);
+			final Set<String> groupIdSet = getAllDirectGroupsForUser(userId);
 			
 			final User user = userDataWebService.getUserWithDependent(userId, true).getUser();
 			final List<AuthorizationManagerLoginId> loginIdList = getLoginIdList(user);
@@ -122,10 +194,10 @@ public abstract class AbstractAuthorizationManagerTest {
 	@Test
 	public void testGetRolesFor() {
 		int i = 0;
-		final List<String> userIds = jdbcTemplate.queryForList("SELECT USER_ID FROM USERS", String.class);
+		final List<String> userIds = jdbcTemplate.queryForList("SELECT USER_ID FROM USERS LIMIT " + MAX_ITERS, String.class);
 		for(final String userId : userIds) {
 			
-			final Set<String> roleIdSet = getAllRolesForUser(userId);
+			final Set<String> roleIdSet = getAllDirectRolesForUser(userId);
 			
 			final User user = userDataWebService.getUserWithDependent(userId, true).getUser();
 			final List<AuthorizationManagerLoginId> loginIdList = getLoginIdList(user);
@@ -146,57 +218,30 @@ public abstract class AbstractAuthorizationManagerTest {
 			for(final Login login : user.getPrincipalList()) {
 				final LoginId loginId = login.getId();
 				final AuthorizationManagerLoginId authManagerLoginId = new AuthorizationManagerLoginId(loginId.getDomainId(), loginId.getLogin(), loginId.getManagedSysId());
+				loginIdList.add(authManagerLoginId);
 			}
 		}
 		return loginIdList;
 	}
 	
-	private Set<String> getAllRolesForUser(final String userId) {
-		final List<String> groupIds = jdbcTemplate.queryForList("SELECT GRP_ID FROM USER_GRP WHERE USER_ID=?", String.class, userId);
-		final Set<String> groupIdSet = new HashSet<String>();
-		groupIdSet.addAll(groupIds);
-		final Set<String> parentGroups = new HashSet<String>();
-		for(final String groupId : groupIdSet) {
-			visitParentGroups(groupId, parentGroups);
-		}
-		groupIdSet.addAll(parentGroups);
+	private Set<String> getAllDirectRolesForUser(final String userId) {
+		final Set<String> groupIds = getAllDirectGroupsForUser(userId);
 		
 		final List<String> roleIds = jdbcTemplate.queryForList("SELECT ROLE_ID FROM USER_ROLE WHERE USER_ID=?", String.class, userId);
 		final Set<String> roleIdSet = new HashSet<String>();
 		roleIdSet.addAll(roleIds);
-		for(final String groupId : groupIdSet) {
+		for(final String groupId : groupIds) {
 			roleIdSet.addAll(jdbcTemplate.queryForList("SELECT ROLE_ID FROM GRP_ROLE WHERE GRP_ID=?", String.class, groupId));
 		}
-		
-		final Set<String> parentRoles = new HashSet<String>();
-		for(final String roleId : roleIdSet) {
-			visitParentRoles(roleId, parentRoles);
-		}
-		roleIdSet.addAll(parentRoles);
 		return roleIdSet;
 	}
 	
-	private Set<String> getAllGroupsForUser(final String userId) {
-		final List<String> groupIds = jdbcTemplate.queryForList("SELECT GRP_ID FROM USER_GRP WHERE USER_ID=?", String.class, userId);
-		final Set<String> groupIdSet = new HashSet<String>();
-		groupIdSet.addAll(groupIds);
-		final Set<String> parentGroups = new HashSet<String>();
-		for(final String groupId : groupIdSet) {
-			visitParentGroups(groupId, parentGroups);
-		}
-		groupIdSet.addAll(parentGroups);
-		return groupIdSet;
+	private Set<String> getAllDirectGroupsForUser(final String userId) {
+		return new HashSet<String>(jdbcTemplate.queryForList("SELECT GRP_ID FROM USER_GRP WHERE USER_ID=?", String.class, userId));
 	}
 	
-	private Set<String> getAllResorucesForUser(final String userId) {
-		final List<String> groupIds = jdbcTemplate.queryForList("SELECT GRP_ID FROM USER_GRP WHERE USER_ID=?", String.class, userId);
-		final Set<String> groupIdSet = new HashSet<String>();
-		groupIdSet.addAll(groupIds);
-		final Set<String> parentGroups = new HashSet<String>();
-		for(final String groupId : groupIdSet) {
-			visitParentGroups(groupId, parentGroups);
-		}
-		groupIdSet.addAll(parentGroups);
+	private Set<String> getAllDirectResorucesForUser(final String userId) {
+		final Set<String> groupIdSet = new HashSet<String>(getAllDirectGroupsForUser(userId));
 		
 		final List<String> roleIds = jdbcTemplate.queryForList("SELECT ROLE_ID FROM USER_ROLE WHERE USER_ID=?", String.class, userId);
 		final Set<String> roleIdSet = new HashSet<String>();
@@ -204,12 +249,6 @@ public abstract class AbstractAuthorizationManagerTest {
 		for(final String groupId : groupIdSet) {
 			roleIdSet.addAll(jdbcTemplate.queryForList("SELECT ROLE_ID FROM GRP_ROLE WHERE GRP_ID=?", String.class, groupId));
 		}
-		
-		final Set<String> parentRoles = new HashSet<String>();
-		for(final String roleId : roleIdSet) {
-			visitParentRoles(roleId, parentRoles);
-		}
-		roleIdSet.addAll(parentRoles);
 		
 		final List<String> resourceIds = jdbcTemplate.queryForList("SELECT RESOURCE_ID FROM RESOURCE_USER WHERE USER_ID=?", String.class, userId);
 		final Set<String> resourceIdSet = new HashSet<String>();
@@ -240,87 +279,24 @@ public abstract class AbstractAuthorizationManagerTest {
 			sql.append(")");
 			resourceIdSet.addAll(jdbcTemplate.queryForList(sql.toString(), String.class, roleIdSet.toArray()));
 		}
-		
-		final Set<String> parentResourceIds = new HashSet<String>();
-		for(final String id : resourceIdSet) {
-			visitParentResources(id, parentResourceIds);
-		}
-		resourceIdSet.addAll(parentResourceIds);
 		return resourceIdSet;
 	}
 	
-	private void visitParentRoles(final String roleId, final Set<String> visitedEntities) {
-		if(!visitedEntities.contains(roleId)) {
-			visitedEntities.add(roleId);
-			final List<String> parentRoles = jdbcTemplate.queryForList("SELECT ROLE_ID FROM role_to_role_membership WHERE MEMBER_ROLE_ID=?", String.class, roleId);
-			if(CollectionUtils.isNotEmpty(parentRoles)) {
-				for(final String parentRoleId : parentRoles) {
-					visitParentRoles(parentRoleId, visitedEntities);
-				}
-			}
+	private void checkResourceMembership(final String userId, final Set<String> resourceIds) {
+		for(final String id : resourceIds) {
+			checkResourceMembership(userId, id);
 		}
 	}
 	
-	private void visitParentGroups(final String groupId, final Set<String> visitedEntities) {
-		if(!visitedEntities.contains(groupId)) {
-			visitedEntities.add(groupId);
-			final List<String> parentGroups = jdbcTemplate.queryForList("SELECT GROUP_ID FROM grp_to_grp_membership WHERE MEMBER_GROUP_ID=?", String.class, groupId);
-			if(CollectionUtils.isNotEmpty(parentGroups)) {
-				for(final String parentGroupId : parentGroups) {
-					visitParentGroups(parentGroupId, visitedEntities);
-				}
-			}
+	private void checkGroupMembership(final String userId, final Set<String> groupIdSet) {
+		for(final String groupId : groupIdSet) {
+			checkGroupMembership(userId, groupId);
 		}
 	}
 	
-	private void visitParentResources(final String resourceId, final Set<String> visitedEntities) {
-		if(!visitedEntities.contains(resourceId)) {
-			visitedEntities.add(resourceId);
-			final List<String> parentResources = jdbcTemplate.queryForList("SELECT RESOURCE_ID FROM res_to_res_membership WHERE MEMBER_RESOURCE_ID=?", String.class, resourceId);
-			if(CollectionUtils.isNotEmpty(parentResources)) {
-				for(final String parentResourceId : parentResources) {
-					visitParentResources(parentResourceId, visitedEntities);
-				}
-			}
-		}
-	}
-	
-	private void checkResourceMembership(final List<Map<String, Object>> resourceUserMap) {
-		for(final Map<String, Object> row : resourceUserMap) {
-			final String userId = (String)row.get("USER_ID");
-			final String resourceId = (String)row.get("RESOURCE_ID");
-			
-			final Set<String> visitedEntities = new HashSet<String>();
-			visitParentResources(resourceId, visitedEntities);
-			for(final String id : visitedEntities) {
-				checkResourceMembership(userId, id);
-			}
-		}
-	}
-	
-	private void checkGroupMembership(final List<Map<String, Object>> groupUserMap) {
-		for(final Map<String, Object> row : groupUserMap) {
-			final String userId = (String)row.get("USER_ID");
-			final String groupId = (String)row.get("GROUP_ID");
-			
-			final Set<String> visitedEntities = new HashSet<String>();
-			visitParentGroups(groupId, visitedEntities);
-			for(final String id : visitedEntities) {
-				checkGroupMembership(userId, id);
-			}
-		}
-	}
-	
-	private void checkRoleMembership(final List<Map<String, Object>> roleUserMap) {
-		for(final Map<String, Object> row : roleUserMap) {
-			final String userId = (String)row.get("USER_ID");
-			final String roleId = (String)row.get("ROLE_ID");
-			
-			final Set<String> visitedEntities = new HashSet<String>();
-			visitParentRoles(roleId, visitedEntities);
-			for(final String id : visitedEntities) {
-				checkRoleMembership(userId, id);
-			}
+	private void checkDirectRoleMembership(final String userId, final Set<String> roleIdSet) {
+		for(final String roleId : roleIdSet) {
+			checkRoleMembership(userId, roleId);
 		}
 	}
 	
@@ -348,8 +324,8 @@ public abstract class AbstractAuthorizationManagerTest {
 		checkUser2GroupMembership(user.getUserId(), null, null, group.getGrpName());
 		
 		for(final AuthorizationManagerLoginId loginId : loginIdList) {
-			checkUser2ResourceEntitlement(null, loginId, group.getGrpId(), null);
-			checkUser2ResourceEntitlement(null, loginId, null, group.getGrpName());
+			checkUser2GroupMembership(null, loginId, group.getGrpId(), null);
+			checkUser2GroupMembership(null, loginId, null, group.getGrpName());
 		}
 	}
 	

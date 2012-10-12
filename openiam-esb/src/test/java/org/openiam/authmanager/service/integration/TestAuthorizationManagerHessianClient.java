@@ -106,7 +106,7 @@ public class TestAuthorizationManagerHessianClient extends AbstractAuthorization
 				result = authClient.isUserWithLoginEntitledToResourceWithName(loginId.getDomain(), loginId.getLogin(), loginId.getManagedSysId(), resourceName);
 			}
 		}
-		String failMessage = String.format("User is not entitled to resource.  %s", resourceId);
+		String failMessage = String.format("User %s:%s is not entitled to resource.  %s", userId, loginId, resourceId);
 		Assert.assertTrue(failMessage, result);
 	}
 

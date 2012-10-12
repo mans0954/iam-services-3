@@ -129,10 +129,16 @@ public class AuthorizationUser extends AbstractAuthorizationEntity implements Se
 	
 	private Set<AuthorizationResource> visitResources(final Set<AuthorizationGroup> compiledGroups, final Set<AuthorizationRole> compiledRoles) {
 		final Set<AuthorizationResource> tempCompiledResourceSet = new HashSet<AuthorizationResource>();
+		//final StopWatch sw1 = new StopWatch();
+		//sw1.start();
 		if(directResources != null) {
 			tempCompiledResourceSet.addAll(directResources);
 		}
+		//sw1.stop();
+		//log.debug(String.format("Got direct Resources.  Size: %s.  Time: %s", tempCompiledResourceSet.size(), sw1.getTotalTimeMillis()));
 		
+		//final StopWatch sw2 = new StopWatch();
+		//sw2.start();
 		if(CollectionUtils.isNotEmpty(compiledGroups)) {
 			for(final AuthorizationGroup group : compiledGroups) {
 				final Set<AuthorizationResource> resources = group.getResources();
@@ -141,7 +147,12 @@ public class AuthorizationUser extends AbstractAuthorizationEntity implements Se
 				}
 			}
 		}
+		//sw2.stop();
+		//log.debug(String.format("Got Group Resources.  Size: %s.  Time: %s", tempCompiledResourceSet.size(), sw2.getTotalTimeMillis()));
 		
+		
+		//final StopWatch sw3 = new StopWatch();
+		//sw3.start();
 		if(CollectionUtils.isNotEmpty(compiledRoles)) {
 			for(final AuthorizationRole role : compiledRoles) {
 				final Set<AuthorizationResource> resources = role.getResources();
@@ -150,7 +161,11 @@ public class AuthorizationUser extends AbstractAuthorizationEntity implements Se
 				}
 			}
 		}
+		//sw3.stop();
+		//log.debug(String.format("Got Role Resources.  Size: %s.  Time: %s", tempCompiledResourceSet.size(), sw3.getTotalTimeMillis()));
 
+		//final StopWatch sw4 = new StopWatch();
+		//sw4.start();
 		final Set<AuthorizationResource> compiledResourceSet = new HashSet<AuthorizationResource>();
 		final Set<AuthorizationResource> visitedSet = new HashSet<AuthorizationResource>();
 		for(final AuthorizationResource resource : tempCompiledResourceSet) {
@@ -158,6 +173,8 @@ public class AuthorizationUser extends AbstractAuthorizationEntity implements Se
 			visitedSet.addAll(compiledResourceSet);
 		}
 		compiledResourceSet.addAll(tempCompiledResourceSet);
+		//sw4.stop();
+		//log.debug(String.format("Got Resource Resources.  Size: %s.  Time: %s", tempCompiledResourceSet.size(), sw4.getTotalTimeMillis()));
 		return compiledResourceSet;
 	}
 	
