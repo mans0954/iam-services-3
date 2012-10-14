@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<con:soapui-project activeEnvironment="Default" name="ReportService" resourceRoot="" soapui-version="4.5.0" abortOnError="false" runType="SEQUENTIAL" xmlns:con="http://eviware.com/soapui/config"><con:settings/><con:interface xsi:type="con:WsdlInterface" wsaVersion="NONE" name="WebReportServiceServiceSoapBinding" type="wsdl" bindingName="{urn:idm.openiam.org/idm/srvc/report/ws/service}WebReportServiceServiceSoapBinding" soapVersion="1_1" anonymous="optional" definition="file:/C:/work/openIAM/iam-services/openiam-esb/wsdl/ReportService.wsdl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:settings/><con:definitionCache type="TEXT" rootPart="file:\C:\work\openIAM\iam-services\openiam-esb\wsdl\ReportService.wsdl"><con:part><con:url>file:\C:\work\openIAM\iam-services\openiam-esb\wsdl\ReportService.wsdl</con:url><con:content><![CDATA[<wsdl:definitions name="WebReportServiceService" targetNamespace="urn:idm.openiam.org/idm/srvc/report/ws/service" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:tns="urn:idm.openiam.org/idm/srvc/report/ws/service" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
+<con:soapui-project activeEnvironment="Default" name="ReportService" resourceRoot="" soapui-version="4.5.0" xmlns:con="http://eviware.com/soapui/config"><con:settings/><con:interface xsi:type="con:WsdlInterface" wsaVersion="NONE" name="WebReportServiceServiceSoapBinding" type="wsdl" bindingName="{urn:idm.openiam.org/idm/srvc/report/ws/service}WebReportServiceServiceSoapBinding" soapVersion="1_1" anonymous="optional" definition="file:/C:/work/openIAM/iam-services/openiam-esb/wsdl/ReportService.wsdl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:settings/><con:definitionCache type="TEXT" rootPart="file:\C:\work\openIAM\iam-services\openiam-esb\wsdl\ReportService.wsdl"><con:part><con:url>file:\C:\work\openIAM\iam-services\openiam-esb\wsdl\ReportService.wsdl</con:url><con:content><![CDATA[<wsdl:definitions name="WebReportServiceService" targetNamespace="urn:idm.openiam.org/idm/srvc/report/ws/service" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:tns="urn:idm.openiam.org/idm/srvc/report/ws/service" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
   <wsdl:types>
     <xs:schema elementFormDefault="unqualified" targetNamespace="urn:idm.openiam.org/idm/srvc/report/ws/service" version="1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema">
       <xs:element name="executeQuery" type="tns:executeQuery"/>
       <xs:element name="executeQueryResponse" type="tns:executeQueryResponse"/>
-      <xs:element name="getParametersByReport" type="tns:getParametersByReport"/>
-      <xs:element name="getParametersByReportResponse" type="tns:getParametersByReportResponse"/>
       <xs:element name="getReportDataResponse">
         <xs:complexType>
           <xs:complexContent>
@@ -84,29 +82,6 @@
           </xs:element>
         </xs:sequence>
       </xs:complexType>
-      <xs:complexType name="getParametersByReport">
-        <xs:sequence>
-          <xs:element minOccurs="0" name="reportName" type="xs:string"/>
-        </xs:sequence>
-      </xs:complexType>
-      <xs:complexType name="getParametersByReportResponse">
-        <xs:sequence>
-          <xs:element minOccurs="0" name="return">
-            <xs:complexType>
-              <xs:sequence>
-                <xs:element maxOccurs="unbounded" minOccurs="0" name="parameters" nillable="true" type="tns:ReportParameterDto"/>
-              </xs:sequence>
-            </xs:complexType>
-          </xs:element>
-        </xs:sequence>
-      </xs:complexType>
-      <xs:complexType name="ReportParameterDto">
-        <xs:sequence>
-          <xs:element minOccurs="0" name="name" type="xs:string"/>
-          <xs:element minOccurs="0" name="label" type="xs:string"/>
-          <xs:element name="required" type="xs:boolean"/>
-        </xs:sequence>
-      </xs:complexType>
       <xs:complexType name="getReports">
         <xs:sequence/>
       </xs:complexType>
@@ -127,9 +102,9 @@
       </xs:complexType>
       <xs:complexType name="ReportDto">
         <xs:sequence>
+          <xs:element minOccurs="0" name="reportId" type="xs:string"/>
           <xs:element minOccurs="0" name="reportName" type="xs:string"/>
-          <xs:element maxOccurs="unbounded" minOccurs="0" name="params" nillable="true" type="xs:string"/>
-          <xs:element maxOccurs="unbounded" minOccurs="0" name="requiredParams" nillable="true" type="xs:string"/>
+          <xs:element minOccurs="0" name="reportDataSource" type="xs:string"/>
           <xs:element minOccurs="0" name="reportUrl" type="xs:string"/>
         </xs:sequence>
       </xs:complexType>
@@ -198,14 +173,8 @@
   <wsdl:message name="getReportsResponse">
     <wsdl:part name="parameters" element="tns:getReportsResponse"></wsdl:part>
   </wsdl:message>
-  <wsdl:message name="getParametersByReport">
-    <wsdl:part name="parameters" element="tns:getParametersByReport"></wsdl:part>
-  </wsdl:message>
   <wsdl:message name="executeQuery">
     <wsdl:part name="parameters" element="tns:executeQuery"></wsdl:part>
-  </wsdl:message>
-  <wsdl:message name="getParametersByReportResponse">
-    <wsdl:part name="parameters" element="tns:getParametersByReportResponse"></wsdl:part>
   </wsdl:message>
   <wsdl:message name="executeQueryResponse">
     <wsdl:part name="parameters" element="tns:executeQueryResponse"></wsdl:part>
@@ -217,10 +186,6 @@
     <wsdl:operation name="executeQuery">
       <wsdl:input name="executeQuery" message="tns:executeQuery"></wsdl:input>
       <wsdl:output name="executeQueryResponse" message="tns:executeQueryResponse"></wsdl:output>
-    </wsdl:operation>
-    <wsdl:operation name="getParametersByReport">
-      <wsdl:input name="getParametersByReport" message="tns:getParametersByReport"></wsdl:input>
-      <wsdl:output name="getParametersByReportResponse" message="tns:getParametersByReportResponse"></wsdl:output>
     </wsdl:operation>
     <wsdl:operation name="getReports">
       <wsdl:input name="getReports" message="tns:getReports"></wsdl:input>
@@ -235,15 +200,6 @@
         <soap:body use="literal"/>
       </wsdl:input>
       <wsdl:output name="executeQueryResponse">
-        <soap:body use="literal"/>
-      </wsdl:output>
-    </wsdl:operation>
-    <wsdl:operation name="getParametersByReport">
-      <soap:operation soapAction="" style="document"/>
-      <wsdl:input name="getParametersByReport">
-        <soap:body use="literal"/>
-      </wsdl:input>
-      <wsdl:output name="getParametersByReportResponse">
         <soap:body use="literal"/>
       </wsdl:output>
     </wsdl:operation>
@@ -262,7 +218,7 @@
       <soap:address location="http://localhost:9090/ReportServicePort"/>
     </wsdl:port>
   </wsdl:service>
-</wsdl:definitions>]]></con:content><con:type>http://schemas.xmlsoap.org/wsdl/</con:type></con:part></con:definitionCache><con:endpoints><con:endpoint>http://localhost:9090/idmsrvc/ReportService</con:endpoint></con:endpoints><con:operation isOneWay="false" action="" name="executeQuery" bindingOperationName="executeQuery" type="Request-Response" outputName="executeQueryResponse" inputName="executeQuery" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call name="Request 1"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost:9090/idmsrvc/ReportService</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="urn:idm.openiam.org/idm/srvc/report/ws/service">
+</wsdl:definitions>]]></con:content><con:type>http://schemas.xmlsoap.org/wsdl/</con:type></con:part></con:definitionCache><con:endpoints><con:endpoint>http://localhost:9090/idmsrvc/ReportServicePort</con:endpoint></con:endpoints><con:operation isOneWay="false" action="" name="executeQuery" bindingOperationName="executeQuery" type="Request-Response" outputName="executeQueryResponse" inputName="executeQuery" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call name="Request 1"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost:9090/idmsrvc/ReportServicePort</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="urn:idm.openiam.org/idm/srvc/report/ws/service">
    <soapenv:Header/>
    <soapenv:Body>
       <ser:executeQuery>
@@ -286,15 +242,7 @@
          </queryParams>
       </ser:executeQuery>
    </soapenv:Body>
-</soapenv:Envelope>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:wsaConfig mustUnderstand="NONE" version="200508" action="urn:idm.openiam.org/idm/srvc/report/ws/service/ReportService/executeQuery"/><con:wsrmConfig version="1.2"/></con:call></con:operation><con:operation isOneWay="false" action="" name="getParametersByReport" bindingOperationName="getParametersByReport" type="Request-Response" outputName="getParametersByReportResponse" inputName="getParametersByReport" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call name="Request 1"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost:9090/idmsrvc/ReportService</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="urn:idm.openiam.org/idm/srvc/report/ws/service">
-   <soapenv:Header/>
-   <soapenv:Body>
-      <ser:getParametersByReport>
-         <!--Optional:-->
-         <reportName>AUDIT_REPORT</reportName>
-      </ser:getParametersByReport>
-   </soapenv:Body>
-</soapenv:Envelope>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:wsaConfig mustUnderstand="NONE" version="200508" action="urn:idm.openiam.org/idm/srvc/report/ws/service/ReportService/getParametersByReport"/><con:wsrmConfig version="1.2"/></con:call></con:operation><con:operation isOneWay="false" action="" name="getReports" bindingOperationName="getReports" type="Request-Response" outputName="getReportsResponse" inputName="getReports" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call name="Request 1"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost:9090/idmsrvc/ReportService</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="urn:idm.openiam.org/idm/srvc/report/ws/service">
+</soapenv:Envelope>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:wsaConfig mustUnderstand="NONE" version="200508" action="urn:idm.openiam.org/idm/srvc/report/ws/service/ReportService/executeQuery"/><con:wsrmConfig version="1.2"/></con:call></con:operation><con:operation isOneWay="false" action="" name="getReports" bindingOperationName="getReports" type="Request-Response" outputName="getReportsResponse" inputName="getReports" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call name="Request 1"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost:9090/idmsrvc/ReportServicePort</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="urn:idm.openiam.org/idm/srvc/report/ws/service">
    <soapenv:Header/>
    <soapenv:Body>
       <ser:getReports/>

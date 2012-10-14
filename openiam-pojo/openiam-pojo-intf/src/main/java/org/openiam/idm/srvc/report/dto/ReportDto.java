@@ -1,22 +1,21 @@
 package org.openiam.idm.srvc.report.dto;
 
-import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ReportDto", propOrder = {
+        "reportId",
         "reportName",
-        "params",
-        "requiredParams",
+        "reportDataSource",
         "reportUrl"
 })
 public class ReportDto {
-     protected String reportName;
-     protected List<String> params;
-     protected List<String> requiredParams;
-     protected String reportUrl;
+    private String reportId;
+    private String reportName;
+    private String reportDataSource;
+    private String reportUrl;
 
     public String getReportName() {
         return reportName;
@@ -26,20 +25,20 @@ public class ReportDto {
         this.reportName = reportName;
     }
 
-    public List<String> getParams() {
-        return params;
+    public String getReportId() {
+        return reportId;
     }
 
-    public void setParams(List<String> params) {
-        this.params = params;
+    public void setReportId(String reportId) {
+        this.reportId = reportId;
     }
 
-    public List<String> getRequiredParams() {
-        return requiredParams;
+    public String getReportDataSource() {
+        return reportDataSource;
     }
 
-    public void setRequiredParams(List<String> requiredParams) {
-        this.requiredParams = requiredParams;
+    public void setReportDataSource(String reportDataSource) {
+        this.reportDataSource = reportDataSource;
     }
 
     public String getReportUrl() {

@@ -2,10 +2,10 @@
 <wsdl:definitions name="WebReportServiceService" targetNamespace="urn:idm.openiam.org/idm/srvc/report/ws/service" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:tns="urn:idm.openiam.org/idm/srvc/report/ws/service" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
   <wsdl:types>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="urn:idm.openiam.org/idm/srvc/report/ws/service" elementFormDefault="unqualified" targetNamespace="urn:idm.openiam.org/idm/srvc/report/ws/service" version="1.0">
+<xs:element name="createOrUpdateReportInfo" type="tns:createOrUpdateReportInfo"/>
+<xs:element name="createOrUpdateReportInfoResponse" type="tns:createOrUpdateReportInfoResponse"/>
 <xs:element name="executeQuery" type="tns:executeQuery"/>
 <xs:element name="executeQueryResponse" type="tns:executeQueryResponse"/>
-<xs:element name="getParametersByReport" type="tns:getParametersByReport"/>
-<xs:element name="getParametersByReportResponse" type="tns:getParametersByReportResponse"/>
 <xs:element name="getReportDataResponse">
 <xs:complexType>
 <xs:complexContent>
@@ -20,6 +20,26 @@
 <xs:element name="getReports" type="tns:getReports"/>
 <xs:element name="getReportsResponse" type="tns:getReportsResponse"/>
 <xs:element name="reportTable" type="tns:ReportTable"/>
+<xs:complexType name="createOrUpdateReportInfo">
+<xs:sequence>
+<xs:element minOccurs="0" name="reportName" type="xs:string"/>
+<xs:element minOccurs="0" name="reportDataSource" type="xs:string"/>
+<xs:element minOccurs="0" name="reportUrl" type="xs:string"/>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="createOrUpdateReportInfoResponse">
+<xs:sequence>
+<xs:element minOccurs="0" name="return" type="tns:Response"/>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="Response">
+<xs:sequence>
+<xs:element minOccurs="0" name="errorCode" type="tns:ResponseErrorCode"/>
+<xs:element minOccurs="0" name="responseValue" type="xs:anyType"/>
+<xs:element minOccurs="0" name="errorText" type="xs:string"/>
+</xs:sequence>
+<xs:attribute name="status" type="tns:ResponseStatus" use="required"/>
+</xs:complexType>
 <xs:complexType name="executeQuery">
 <xs:sequence>
 <xs:element minOccurs="0" name="reportName" type="xs:string"/>
@@ -52,14 +72,6 @@
 </xs:element>
 </xs:sequence>
 </xs:complexType>
-<xs:complexType name="Response">
-<xs:sequence>
-<xs:element minOccurs="0" name="errorCode" type="tns:ResponseErrorCode"/>
-<xs:element minOccurs="0" name="responseValue" type="xs:anyType"/>
-<xs:element minOccurs="0" name="errorText" type="xs:string"/>
-</xs:sequence>
-<xs:attribute name="status" type="tns:ResponseStatus" use="required"/>
-</xs:complexType>
 <xs:complexType name="ReportData">
 <xs:sequence>
 <xs:element minOccurs="0" name="parameters" type="tns:Property"/>
@@ -84,29 +96,6 @@
 </xs:element>
 </xs:sequence>
 </xs:complexType>
-<xs:complexType name="getParametersByReport">
-<xs:sequence>
-<xs:element minOccurs="0" name="reportName" type="xs:string"/>
-</xs:sequence>
-</xs:complexType>
-<xs:complexType name="getParametersByReportResponse">
-<xs:sequence>
-<xs:element minOccurs="0" name="return">
-<xs:complexType>
-<xs:sequence>
-<xs:element maxOccurs="unbounded" minOccurs="0" name="parameters" nillable="true" type="tns:ReportParameterDto"/>
-</xs:sequence>
-</xs:complexType>
-</xs:element>
-</xs:sequence>
-</xs:complexType>
-<xs:complexType name="ReportParameterDto">
-<xs:sequence>
-<xs:element minOccurs="0" name="name" type="xs:string"/>
-<xs:element minOccurs="0" name="label" type="xs:string"/>
-<xs:element name="required" type="xs:boolean"/>
-</xs:sequence>
-</xs:complexType>
 <xs:complexType name="getReports">
 <xs:sequence/>
 </xs:complexType>
@@ -127,9 +116,9 @@
 </xs:complexType>
 <xs:complexType name="ReportDto">
 <xs:sequence>
+<xs:element minOccurs="0" name="reportId" type="xs:string"/>
 <xs:element minOccurs="0" name="reportName" type="xs:string"/>
-<xs:element maxOccurs="unbounded" minOccurs="0" name="params" nillable="true" type="xs:string"/>
-<xs:element maxOccurs="unbounded" minOccurs="0" name="requiredParams" nillable="true" type="xs:string"/>
+<xs:element minOccurs="0" name="reportDataSource" type="xs:string"/>
 <xs:element minOccurs="0" name="reportUrl" type="xs:string"/>
 </xs:sequence>
 </xs:complexType>
@@ -195,20 +184,16 @@
 </xs:simpleType>
 </xs:schema>
   </wsdl:types>
+  <wsdl:message name="createOrUpdateReportInfo">
+    <wsdl:part name="parameters" element="tns:createOrUpdateReportInfo">
+    </wsdl:part>
+  </wsdl:message>
   <wsdl:message name="getReportsResponse">
     <wsdl:part name="parameters" element="tns:getReportsResponse">
     </wsdl:part>
   </wsdl:message>
-  <wsdl:message name="getParametersByReport">
-    <wsdl:part name="parameters" element="tns:getParametersByReport">
-    </wsdl:part>
-  </wsdl:message>
   <wsdl:message name="executeQuery">
     <wsdl:part name="parameters" element="tns:executeQuery">
-    </wsdl:part>
-  </wsdl:message>
-  <wsdl:message name="getParametersByReportResponse">
-    <wsdl:part name="parameters" element="tns:getParametersByReportResponse">
     </wsdl:part>
   </wsdl:message>
   <wsdl:message name="executeQueryResponse">
@@ -219,17 +204,21 @@
     <wsdl:part name="parameters" element="tns:getReports">
     </wsdl:part>
   </wsdl:message>
+  <wsdl:message name="createOrUpdateReportInfoResponse">
+    <wsdl:part name="parameters" element="tns:createOrUpdateReportInfoResponse">
+    </wsdl:part>
+  </wsdl:message>
   <wsdl:portType name="ReportService">
+    <wsdl:operation name="createOrUpdateReportInfo">
+      <wsdl:input name="createOrUpdateReportInfo" message="tns:createOrUpdateReportInfo">
+    </wsdl:input>
+      <wsdl:output name="createOrUpdateReportInfoResponse" message="tns:createOrUpdateReportInfoResponse">
+    </wsdl:output>
+    </wsdl:operation>
     <wsdl:operation name="executeQuery">
       <wsdl:input name="executeQuery" message="tns:executeQuery">
     </wsdl:input>
       <wsdl:output name="executeQueryResponse" message="tns:executeQueryResponse">
-    </wsdl:output>
-    </wsdl:operation>
-    <wsdl:operation name="getParametersByReport">
-      <wsdl:input name="getParametersByReport" message="tns:getParametersByReport">
-    </wsdl:input>
-      <wsdl:output name="getParametersByReportResponse" message="tns:getParametersByReportResponse">
     </wsdl:output>
     </wsdl:operation>
     <wsdl:operation name="getReports">
@@ -241,21 +230,21 @@
   </wsdl:portType>
   <wsdl:binding name="WebReportServiceServiceSoapBinding" type="tns:ReportService">
     <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="createOrUpdateReportInfo">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="createOrUpdateReportInfo">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="createOrUpdateReportInfoResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
     <wsdl:operation name="executeQuery">
       <soap:operation soapAction="" style="document"/>
       <wsdl:input name="executeQuery">
         <soap:body use="literal"/>
       </wsdl:input>
       <wsdl:output name="executeQueryResponse">
-        <soap:body use="literal"/>
-      </wsdl:output>
-    </wsdl:operation>
-    <wsdl:operation name="getParametersByReport">
-      <soap:operation soapAction="" style="document"/>
-      <wsdl:input name="getParametersByReport">
-        <soap:body use="literal"/>
-      </wsdl:input>
-      <wsdl:output name="getParametersByReportResponse">
         <soap:body use="literal"/>
       </wsdl:output>
     </wsdl:operation>

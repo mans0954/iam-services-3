@@ -25,4 +25,16 @@ public class ReportDataDaoImpl extends BaseDaoImpl<ReportInfo, String> implement
     protected String getPKfieldName() {
         return "id";
     }
+
+    @Override
+    public void createOrUpdateReportInfo(String reportName, String reportDataSource, String reportUrl) {
+        ReportInfo reportInfo = findByName(reportName);
+        if(reportInfo == null) {
+           reportInfo = new ReportInfo();
+           reportInfo.setReportName(reportName);
+        }
+        reportInfo.setDatasourceFilePath(reportDataSource);
+        reportInfo.setReportFilePath(reportUrl);
+        getSession().saveOrUpdate(reportInfo);
+    }
 }

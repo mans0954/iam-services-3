@@ -31,19 +31,9 @@ public class ReportDataServiceImpl implements ReportDataService {
         }
 
         ScriptIntegration se = ScriptFactory.createModule(scriptEngine);
-        ReportDataSetBuilder dataSourceBuilder = (ReportDataSetBuilder) se.instantiateClass(Collections.EMPTY_MAP, reportInfo.getGroovyScriptPath());
-        ReportDataDto reportData = dataSourceBuilder.getReportData(reportParams);
+        ReportDataSetBuilder dataSourceBuilder = (ReportDataSetBuilder) se.instantiateClass(Collections.EMPTY_MAP, "/reports/"+reportInfo.getDatasourceFilePath());
 
-        return reportData;
-    }
-
-    private static boolean validateParams(ReportInfo reportQuery, Map<String, String> queryParams) {
-        for(String requiredParam : reportQuery.getRequiredParamsList()) {
-            if(!queryParams.containsKey(requiredParam)) {
-               return false;
-            }
-        }
-        return true;
+        return dataSourceBuilder.getReportData(reportParams);
     }
 
     @Override
@@ -56,5 +46,11 @@ public class ReportDataServiceImpl implements ReportDataService {
     @Transactional(readOnly = true)
     public ReportInfo getReportByName(String name) {
         return reportDao.findByName(name);
+    }
+
+    @Override
+    @Transactional
+    public void createOrUpdateReportInfo(String reportName, String reportDataSource, String reportUrl) {
+       reportDao.createOrUpdateReportInfo(reportName, reportDataSource, reportUrl);
     }
 }
