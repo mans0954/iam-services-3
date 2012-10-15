@@ -7,14 +7,14 @@
     <property name="imageDPI">96</property>
     <parameters>
         <scalar-parameter name="ACTION_ID" id="45">
-            <text-property name="helpText">Audit Log action id</text-property>
+            <text-property name="helpText">Please set action</text-property>
             <text-property name="promptText">Action Type</text-property>
             <property name="valueType">static</property>
             <property name="isRequired">true</property>
             <property name="dataType">string</property>
             <property name="distinct">true</property>
             <simple-property-list name="defaultValue">
-                <value type="constant">CustomData value: AUTHENTICATION, displayValue: null</value>
+                <value type="constant">AUTHENTICATION</value>
             </simple-property-list>
             <list-property name="selectionList"/>
             <property name="paramType">simple</property>
@@ -31,6 +31,9 @@
             <property name="isRequired">true</property>
             <property name="dataType">string</property>
             <property name="distinct">true</property>
+            <simple-property-list name="defaultValue">
+                <value type="constant">2012-10-01</value>
+            </simple-property-list>
             <list-property name="selectionList"/>
             <property name="paramType">simple</property>
             <property name="concealValue">false</property>
@@ -46,6 +49,9 @@
             <property name="isRequired">true</property>
             <property name="dataType">string</property>
             <property name="distinct">true</property>
+            <simple-property-list name="defaultValue">
+                <value type="constant">2012-10-30</value>
+            </simple-property-list>
             <list-property name="selectionList"/>
             <property name="paramType">simple</property>
             <property name="concealValue">false</property>
@@ -76,6 +82,10 @@
     <data-sources>
         <oda-data-source extensionID="org.eclipse.datatools.enablement.oda.ws" name="Data Source" id="255">
             <property name="wsdlURI">http://localhost:9090/idmsrvc/ReportService?wsdl</property>
+        </oda-data-source>
+        <oda-data-source extensionID="org.eclipse.datatools.enablement.oda.ws" name="Data Source1" id="704">
+            <text-property name="displayName"></text-property>
+            <property name="wsdlURI">http://lnx06.openiamdemo.com:8080/openiam-esb/idmsrvc/ReportService?wsdl</property>
         </oda-data-source>
     </data-sources>
     <data-sets>
@@ -478,7 +488,7 @@
                     </structure>
                 </list-property>
             </structure>
-            <property name="dataSource">Data Source</property>
+            <property name="dataSource">Data Source1</property>
             <list-property name="resultSet">
                 <structure>
                     <property name="position">1</property>
