@@ -9,6 +9,7 @@ import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Sort;
 import org.hibernate.annotations.SortType;
+import org.hibernate.annotations.Type;
 import org.openiam.base.BaseObject;
 
 import javax.persistence.Cacheable;
@@ -55,7 +56,11 @@ import java.util.Set;
         "resOwnerUserId",
         "resOwnerGroupId",
         "childResources",
-        "parentResources"
+        "parentResources",
+        "minAuthLevel",
+        "domain",
+        "isPublic",
+        "isSSL"
 })
 @Entity
 @Table(name="RES")
@@ -88,6 +93,11 @@ public class Resource extends BaseObject {
     private Set<ResourceGroup> resourceGroups = new HashSet<ResourceGroup>(0);
 
     private Set<ResourcePrivilege> entitlements = new HashSet<ResourcePrivilege>(0);
+    
+    private String minAuthLevel;
+    private String domain;
+    private boolean isPublic = true;
+    private boolean isSSL = false;
 
 
     public Resource() {
@@ -220,6 +230,44 @@ public class Resource extends BaseObject {
         }
         return null;
     }
+    
+    @Column(name="MIN_AUTH_LEVEL")
+	public String getMinAuthLevel() {
+		return minAuthLevel;
+	}
+
+	public void setMinAuthLevel(String minAuthLevel) {
+		this.minAuthLevel = minAuthLevel;
+	}
+
+	@Column(name="DOMAIN")
+	public String getDomain() {
+		return domain;
+	}
+
+	public void setDomain(String domain) {
+		this.domain = domain;
+	}
+
+	@Column(name="IS_PUBLIC")
+	@Type(type="yes_no")
+	public boolean getIsPublic() {
+		return isPublic;
+	}
+
+	public void setIsPublic(boolean isPublic) {
+		this.isPublic = isPublic;
+	}
+	
+	@Column(name="IS_SSL")
+	@Type(type="yes_no")
+	public boolean getIsSSL() {
+		return this.isSSL;
+	}
+	
+	public void setIsSSL(final boolean isSSL) {
+		this.isSSL = isSSL;
+	}
 
 	@Override
     public String toString() {

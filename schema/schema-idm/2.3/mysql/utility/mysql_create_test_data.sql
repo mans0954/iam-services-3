@@ -1,6 +1,6 @@
-DELIMITER $$
+/* not meant to be imported via command line - just a utility script for testing */
 
-DROP PROCEDURE IF EXISTS createTestAuthorizationData$$
+DROP PROCEDURE IF EXISTS createTestAuthorizationData;
 
 CREATE PROCEDURE createTestAuthorizationData(IN numUsers INT, IN numResources INT, IN numGroups INT, IN numRoles INT, IN numXrefs INT)
 	BEGIN
@@ -115,12 +115,118 @@ CREATE PROCEDURE createTestAuthorizationData(IN numUsers INT, IN numResources IN
 		END LOOP create_users;
 		
 		SET cnt = 0;
-	END$$
-DELIMITER ;
+	END;
+
+DROP PROCEDURE IF EXISTS createSelfJoinXrefTestData;
+
+CREATE PROCEDURE createSelfJoinXrefTestData(IN numResources INT, IN numGroups INT, IN numRoles INT)
+	BEGIN
+		DECLARE lowerCnt INT DEFAULT 0;
+		DECLARE upperCnt INT DEFAULT 0;
+		DECLARE id VARCHAR(32);
+		DECLARE memberId VARCHAR(32);
+		
+		SET lowerCnt = 0;
+		SET upperCnt = numRoles - 1;
+		create_role_role_xrefs : LOOP
+			IF (lowerCnt >= upperCnt) THEN
+				LEAVE create_role_role_xrefs;
+			END IF;
+			
+			SET id = concat("STRESS", lowerCnt);
+			SET memberId = concat("STRESS", upperCnt);
+			
+			INSERT INTO role_to_role_membership (ROLE_ID, MEMBER_ROLE_ID) VALUES(id, memberId);
+			SET lowerCnt = lowerCnt + 1;
+			SET upperCnt = upperCnt - 1;
+		END LOOP create_role_role_xrefs;
+		
+		SET lowerCnt = 0;
+		SET upperCnt = numRoles - 1;
+		randomize_roles : LOOP
+			IF (lowerCnt >= numRoles) THEN
+				LEAVE randomize_roles;
+			END IF;
+			
+			SET id = concat("STRESS", lowerCnt);
+			SET memberId = concat("STRESS", upperCnt);
+			IF((SELECT ROLE_ID FROM role_to_role_membership WHERE ROLE_ID=id AND MEMBER_ROLE_ID=memberId) IS NULL) THEN
+				INSERT INTO role_to_role_membership (ROLE_ID, MEMBER_ROLE_ID) VALUES(id, memberId);
+			END IF;
+			SET lowerCnt = lowerCnt + 4;
+			SET upperCnt = upperCnt - 2;
+		END LOOP randomize_roles;
+		
+		SET lowerCnt = 0;
+		SET upperCnt = numGroups - 1;
+		create_group_group_xref : LOOP
+			IF (lowerCnt >= upperCnt) THEN
+				LEAVE create_group_group_xref;
+			END IF;
+			
+			SET id = concat("STRESS", lowerCnt);
+			SET memberId = concat("STRESS", upperCnt);
+			
+			INSERT INTO grp_to_grp_membership (GROUP_ID, MEMBER_GROUP_ID) VALUES(id, memberId);
+			SET lowerCnt = lowerCnt + 1;
+			SET upperCnt = upperCnt - 1;
+		END LOOP create_group_group_xref;
+		
+		SET lowerCnt = 0;
+		SET upperCnt = numGroups - 1;
+		randomize_groups : LOOP
+			IF (lowerCnt >= numGroups) THEN
+				LEAVE randomize_groups;
+			END IF;
+			
+			SET id = concat("STRESS", lowerCnt);
+			SET memberId = concat("STRESS", upperCnt);
+			IF((SELECT GROUP_ID FROM grp_to_grp_membership WHERE GROUP_ID=id AND MEMBER_GROUP_ID=memberId) IS NULL) THEN
+				INSERT INTO grp_to_grp_membership (GROUP_ID, MEMBER_GROUP_ID) VALUES(id, memberId);
+			END IF;
+			SET lowerCnt = lowerCnt + 4;
+			SET upperCnt = upperCnt - 2;
+		END LOOP randomize_groups;
+		
+		SET lowerCnt = 0;
+		SET upperCnt = numResources - 1;
+		create_res_res_xref : LOOP
+			IF (lowerCnt >= upperCnt) THEN
+				LEAVE create_res_res_xref;
+			END IF;
+			
+			SET id = concat("STRESS", lowerCnt);
+			SET memberId = concat("STRESS", upperCnt);
+			INSERT INTO res_to_res_membership (RESOURCE_ID, MEMBER_RESOURCE_ID) VALUES(id, memberId);
+			SET lowerCnt = lowerCnt + 1;
+			SET upperCnt = upperCnt - 1;
+		END LOOP create_res_res_xref;
+		
+		SET lowerCnt = 0;
+		SET upperCnt = numResources - 1;
+		randomize_resources : LOOP
+			IF (lowerCnt >= numResources) THEN
+				LEAVE randomize_resources;
+			END IF;
+			
+			SET id = concat("STRESS", lowerCnt);
+			SET memberId = concat("STRESS", upperCnt);
+			IF((SELECT RESOURCE_ID FROM res_to_res_membership WHERE RESOURCE_ID=id AND MEMBER_RESOURCE_ID=memberId) IS NULL) THEN
+				INSERT INTO res_to_res_membership (RESOURCE_ID, MEMBER_RESOURCE_ID) VALUES(id, memberId);
+			END IF;
+			SET lowerCnt = lowerCnt + 4;
+			SET upperCnt = upperCnt - 2;
+		END LOOP randomize_resources;
+	END;
+
+
 	
 call createTestAuthorizationData(30000, 5000, 500, 1000, 20);
-	
+call createSelfJoinXrefTestData(5000, 500, 1000);
 
+DELETE FROM grp_to_grp_membership WHERE GROUP_ID LIKE '%STRESS%';
+DELETE FROM res_to_res_membership WHERE RESOURCE_ID LIKE '%STRESS%';
+DELETE FROM role_to_role_membership WHERE ROLE_ID LIKE '%STRESS%';
 DELETE FROM USER_GRP WHERE USER_ID LIKE '%STRESS%';
 DELETE FROM USER_ROLE WHERE USER_ID LIKE '%STRESS%';
 DELETE FROM RESOURCE_USER WHERE USER_ID LIKE '%STRESS%';

@@ -1,9 +1,13 @@
 package org.openiam.authmanager.service.impl;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.sql.Date;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -48,6 +52,8 @@ import org.openiam.authmanager.dao.RoleUserXrefDAO;
 import org.openiam.authmanager.dao.UserDAO;
 import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.authmanager.common.model.AuthorizationManagerLoginId;
+import org.openiam.authmanager.common.model.url.AuthorizationDomain;
+import org.openiam.authmanager.common.model.url.AuthorizationURIPattern;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,6 +95,8 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 	
 	/* used to prevent reads when a cache refresh takes place */
 	//private ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+	
+	private Set<AuthorizationDomain> domainSet;
 	
 	private Map<String, AuthorizationGroup> groupIdCache;
 	private Map<String, AuthorizationResource> resourceIdCache;
@@ -360,6 +368,8 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 			userCompilationSW.stop();
 			log.debug(String.format("Done compiling users.  Done in: %s ms", userCompilationSW.getTotalTimeMillis()));
 			
+			final Set<AuthorizationDomain> tempDomainSet = resourceDAO.getAuthorizationDomains(tempResourceIdMap);
+			
 			synchronized (this) {
 				/* CRITICAL SECTION - don't allow reads during write operation */
 				//writeLock = readWriteLock.writeLock();
@@ -425,6 +435,7 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 				groupNameCache = tempGroupNameMap;
 				roleNameCache = tempRoleNameMap;
 				resourceNameCache = tempResourceNameMap;
+				domainSet = tempDomainSet;
 				
 				/* END CRITICAL SECTION */
 			}
@@ -473,7 +484,35 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 	}
 	
 	@ManagedOperation
-	public String getCachedContents() {
+	public void purgeUser(final String userId) {
+		final List<Object> keysToRemove = new LinkedList<Object>();
+		for(final Object key : userCache.getKeys()) {
+			keysToRemove.add((String)loginCache.get(key).getValue());
+		}
+		for(final Object key : keysToRemove) {
+			loginCache.remove(key);
+		}
+		userCache.remove(userId);
+	}
+	
+	@ManagedOperation
+	public String getURLAuthorizationTree() {
+		final String lineSeparator = System.getProperty("line.separator");
+		final StringBuilder sb = new StringBuilder();
+		final Iterator<AuthorizationDomain> it = domainSet.iterator();
+		while(it.hasNext()) {
+			final AuthorizationDomain domain = it.next();
+			sb.append(domain);
+			sb.append(lineSeparator);
+			sb.append(domain.getTree());
+			sb.append(lineSeparator);
+			sb.append(lineSeparator);
+		}
+		return sb.toString();
+	}
+	
+	@ManagedOperation
+	public String getCachedUserContents() {
 		final String lineSeparator = System.getProperty("line.separator");
 		final StringBuilder sb = new StringBuilder();
 		
@@ -746,6 +785,78 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 					copy.setId(role.getId());
 					copy.setName(role.getName());
 					retVal.add(copy);
+				}
+			}
+		}
+		return retVal;
+	}
+	
+	@ManagedOperation
+	public boolean isUserEntitledToURL(final String userId, final String url) throws MalformedURLException {
+		return isUserEntitledToURL(userId, new URL(url));
+	}
+	
+	@Override
+	public boolean isUserEntitledToURL(final String userId, final URL url) {
+		return isUserEntitledToURL(fetchUser(userId), url);
+	}
+
+	@Override
+	public boolean isUserEntitledToURL(final AuthorizationManagerLoginId loginId, final URL url) {
+		return isUserEntitledToURL(fetchUser(loginId), url);
+	}
+	
+	private boolean isUserEntitledToURL(final AuthorizationUser user, final URL url) {
+		boolean retVal = false;
+		if(user != null) {
+			final AuthorizationDomain domain = getDomainByURL(url);
+			if(domain != null) {
+				final Set<AuthorizationURIPattern> patterns = domain.find(url.getPath());
+				if(CollectionUtils.isNotEmpty(patterns)) {
+					for(final AuthorizationURIPattern pattern : patterns) {
+						retVal = pattern.isPublic() || isEntitled(user, pattern.getResource());
+						if(!retVal) {
+							break;
+						}
+					}
+				}
+			}
+		}
+		return retVal;
+	}
+	
+	@ManagedOperation
+	public String getResourcesForURL(final String url) throws MalformedURLException {
+		return String.format("%s", getResourcesForURL(new URL(url)));
+	}
+
+	@Override
+	public Set<AuthorizationResource> getResourcesForURL(final URL url) {
+		final Set<AuthorizationResource> retVal = new HashSet<AuthorizationResource>();
+		final AuthorizationDomain domain = getDomainByURL(url);
+		if(domain != null) {
+			final Set<AuthorizationURIPattern> patterns = domain.find(url.getPath());
+			if(CollectionUtils.isNotEmpty(patterns)) {
+				for(final AuthorizationURIPattern pattern : patterns) {
+					final AuthorizationResource resource = new AuthorizationResource();
+					resource.setId(pattern.getResource().getId());
+					resource.setName(pattern.getResource().getName());
+					retVal.add(resource);
+				}
+			}
+		}
+		return retVal;
+	}
+	
+	private AuthorizationDomain getDomainByURL(final URL url) {
+		AuthorizationDomain retVal = null;
+		if(url != null) {
+			final Iterator<AuthorizationDomain> domainIterator = domainSet.iterator();
+			while(domainIterator.hasNext()) {
+				final AuthorizationDomain domain = domainIterator.next();
+				if(domain.matches(url)) {
+					retVal = domain;
+					break;
 				}
 			}
 		}

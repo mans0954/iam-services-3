@@ -1,6 +1,7 @@
 package org.openiam.authmanager.service;
 
 
+import java.net.URL;
 import java.util.Set;
 
 import org.openiam.authmanager.common.model.AuthorizationGroup;
@@ -22,4 +23,10 @@ public interface AuthorizationManagerService {
 	public Set<AuthorizationGroup> getGroupsFor(final AuthorizationManagerLoginId loginId);
 	public Set<AuthorizationRole> getRolesFor(final String userId);
 	public Set<AuthorizationRole> getRolesFor(final AuthorizationManagerLoginId loginId);
+	
+	
+	/* URI Entitlements */
+	public boolean isUserEntitledToURL(final String userId, final URL url);
+	public boolean isUserEntitledToURL(final AuthorizationManagerLoginId loginId, final URL url);
+	public Set<AuthorizationResource> getResourcesForURL(final URL url);
 }
