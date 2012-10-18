@@ -1,5 +1,7 @@
 package org.openiam.authmanager.web;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Set;
 
 import javax.servlet.ServletConfig;
@@ -515,6 +517,54 @@ public class AuthorizationManagerHessianServlet extends HessianServlet implement
 			log.debug(String.format("getRoleNamesForUser: domain: %s, login: %s, managedSysId: %s, ThreadId: %s. Took %s ms", 
 					domain, login, managedSysId, Thread.currentThread().getId(), sw.getTime()));
 		}
+		return retval;
+	}
+
+	@Override
+	public boolean isUserWithIdEntitledToURL(final String userId, final String url) {
+		StopWatch sw = null;
+		if(log.isDebugEnabled()) {
+			sw = new StopWatch();
+			sw.start();
+		}
+		boolean retval = false;
+		try {
+			retval = authManagerService.isUserEntitledToURL(userId, new URL(url));
+		} catch (MalformedURLException e) {
+			log.warn(String.format("URL '%s' is invalid", url));
+		} catch(Throwable e) {
+			log.error("Error during URL authorization", e);
+		}
+		if(log.isDebugEnabled()) {
+			sw.stop();
+			log.debug(String.format("isUserWithIdEntitledToURL: userId: %s,  url: %s, ThreadId: %s. Took %s ms", 
+					userId, url, Thread.currentThread().getId(), sw.getTime()));
+		}
+		
+		return retval;
+	}
+
+	@Override
+	public boolean isUserWithLoginEntitledToURL(final String domain, final String login, final String managedSysId, final String url) {
+		StopWatch sw = null;
+		if(log.isDebugEnabled()) {
+			sw = new StopWatch();
+			sw.start();
+		}
+		boolean retval = false;
+		try {
+			retval = authManagerService.isUserEntitledToURL(new AuthorizationManagerLoginId(domain, login, managedSysId), new URL(url));
+		} catch (MalformedURLException e) {
+			log.warn(String.format("URL '%s' is invalid", url));
+		} catch(Throwable e) {
+			log.error("Error during URL authorization", e);
+		}
+		if(log.isDebugEnabled()) {
+			sw.stop();
+			log.debug(String.format("isUserEntitledToURL: domain: %s, login: %s, managedSysId: %s, url: %s, ThreadId: %s. Took %s ms", 
+					domain, login, managedSysId, url, Thread.currentThread().getId(), sw.getTime()));
+		}
+		
 		return retval;
 	}
 

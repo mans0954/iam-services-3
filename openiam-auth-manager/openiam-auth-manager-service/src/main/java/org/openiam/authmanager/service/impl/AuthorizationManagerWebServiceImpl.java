@@ -1,7 +1,10 @@
 package org.openiam.authmanager.service.impl;
 
+import java.net.URL;
 import java.util.Set;
 
+import javax.jws.WebMethod;
+import javax.jws.WebParam;
 import javax.jws.WebService;
 
 import org.apache.commons.lang.StringUtils;
@@ -11,6 +14,7 @@ import org.openiam.authmanager.common.model.AuthorizationRole;
 import org.openiam.authmanager.exception.AuthorizationManagerRuntimeException;
 import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.authmanager.service.AuthorizationManagerWebService;
+import org.openiam.authmanager.ws.request.URLRequest;
 import org.openiam.authmanager.ws.request.UserRequest;
 import org.openiam.authmanager.ws.request.UserToGroupAccessRequest;
 import org.openiam.authmanager.ws.request.UserToResourceAccessRequest;
@@ -132,6 +136,36 @@ public class AuthorizationManagerWebServiceImpl implements AuthorizationManagerW
 			response.setStatusMessage(e.getMessage());
 		}
 		return response;
+	}
+	
+	@Override
+	public AccessResponse isUserEntitledToURL(final URLRequest request) {
+		final AccessResponse response =  new AccessResponse(ResponseStatus.SUCCESS);
+		try {
+			checkNulls(request);
+		
+			final String url = request.getUrl();
+			final boolean result = (request.getUserId() != null) ? 
+					authManagerService.isUserEntitledToURL(request.getUserId(), new URL(url)) : 
+					authManagerService.isUserEntitledToURL(request.getLoginId(), new URL(url));
+			response.setResult(result);
+		} catch(Throwable e) {
+			response.setResponseStatus(ResponseStatus.FAILURE);
+			response.setStatusMessage(e.getMessage());
+		}
+		return response;
+	}
+	
+	private void checkNulls(final URLRequest request) {
+		if(request == null) {
+			throw new AuthorizationManagerRuntimeException("No request");
+		}
+		
+		if(StringUtils.isBlank(request.getUrl())) {
+			throw new AuthorizationManagerRuntimeException("No URL Specified");
+		}
+		
+		checkUserIdNull(request);
 	}
 	
 	private void checkNulls(final UserToResourceAccessRequest request) {

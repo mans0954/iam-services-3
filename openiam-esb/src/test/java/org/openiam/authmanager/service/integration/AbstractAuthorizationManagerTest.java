@@ -1,5 +1,7 @@
 package org.openiam.authmanager.service.integration;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -8,8 +10,15 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.junit.Test;
 import org.openiam.authmanager.common.model.AuthorizationManagerLoginId;
+import org.openiam.authmanager.common.model.AuthorizationResource;
+import org.openiam.authmanager.common.model.url.AuthorizationDomain;
+import org.openiam.authmanager.common.model.url.AuthorizationURIPattern;
+import org.openiam.authmanager.common.model.url.InvalidPatternException;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginId;
 import org.openiam.idm.srvc.grp.dto.Group;
@@ -23,10 +32,13 @@ import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.ws.UserDataWebService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.ResultSetExtractor;
 
 public abstract class AbstractAuthorizationManagerTest {
 
+	protected static final Log log = LogFactory.getLog(AbstractAuthorizationManagerTest.class);
 	
 	@Autowired
 	@Qualifier("jdbcTemplate")
@@ -53,6 +65,46 @@ public abstract class AbstractAuthorizationManagerTest {
 	protected ManagedSystemDataService managedSysServiceClient;
 	
 	private static final int MAX_ITERS = 10;
+	/*
+	private String GET_RESOURCE_DOMAINS_WITH_PATTERNS = "SELECT r.RESOURCE_ID AS RESOURCE_ID, prop.PROP_VALUE AS PATTERN, r.MIN_AUTH_LEVEL AS MIN_AUTH_LEVEL, r.DOMAIN AS DOMAIN, r.IS_PUBLIC AS IS_PUBLIC, r.IS_SSL AS IS_SSL" +
+			"	FROM " +
+			"		%s.RES r " +
+			"		JOIN %s.RESOURCE_PROP prop " +
+			"			ON  r.RESOURCE_ID=prop.RESOURCE_ID " +
+			"			AND prop.NAME IN('URL_PATTERN')";
+	*/
+	
+	final String[] urlpatterns = new String[] {
+		"http://www.google.com/foo/bar.html",
+		"http://www.google.com/openiam/selfservice",
+		"http://www.google.com/openiam/selfservice.html",
+		"http://www.facebook.com/foo/bar.html",
+		"http://www.facebook.com/openiam/selfservice",
+		"http://www.facebook.com/openiam/selfservice.html",
+		"https://www.facebook.com/foo/bar.html",
+		"https://www.facebook.com/openiam/selfservice",
+		"https://www.facebook.com/openiam/selfservice.html",
+		"https://www.google.com/foo/bar.html",
+		"https://www.google.com/openiam/selfservice",
+		"https://www.google.com/openiam/selfservice.html"
+	};
+	
+	@Test
+	public void isUserEntitledToUrls() {
+		final List<String> userIds = jdbcTemplate.queryForList("SELECT USER_ID FROM USERS LIMIT " + MAX_ITERS, String.class);
+		for(final String userId : userIds) {
+			for(final String url : urlpatterns) {
+				final User user = userDataWebService.getUserWithDependent(userId, true).getUser();
+				
+				final List<AuthorizationManagerLoginId> loginIdList = getLoginIdList(user);
+				
+				checkUserURLEntitlements(userId, null, url);
+				for(final AuthorizationManagerLoginId loginId : loginIdList) {
+					checkUserURLEntitlements(null, loginId, url);
+				}
+			}
+		}
+	}
 	
 	@Test
 	public void isUserEntitledToResource() {
@@ -152,6 +204,7 @@ public abstract class AbstractAuthorizationManagerTest {
 		}
 	}
 	
+	/*
 	@Test
 	public void testGetResourcesForUser() {
 		final List<String> userIds = jdbcTemplate.queryForList("SELECT USER_ID FROM USERS LIMIT " + MAX_ITERS, String.class);
@@ -211,6 +264,7 @@ public abstract class AbstractAuthorizationManagerTest {
 			}
 		}
 	}
+	*/
 	
 	private List<AuthorizationManagerLoginId> getLoginIdList(final User user) {
 		final List<AuthorizationManagerLoginId> loginIdList = new LinkedList<AuthorizationManagerLoginId>();
@@ -349,4 +403,5 @@ public abstract class AbstractAuthorizationManagerTest {
 	protected abstract void checkUser2ResourceEntitlement(final String userId, final AuthorizationManagerLoginId loginId, final String resourceId, final String resourceName);
 	protected abstract void checkUser2GroupMembership(final String userId, final AuthorizationManagerLoginId loginId, final String groupId, final String groupName);
 	protected abstract void checkUser2RoleMembership(final String userId, final AuthorizationManagerLoginId loginId, final String roleId, final String roleName);
+	protected abstract void checkUserURLEntitlements(final String userId, final AuthorizationManagerLoginId loginId, final String url);
 }

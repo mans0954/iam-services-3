@@ -430,4 +430,36 @@ public class AuthorizationManagerHessianClient implements AuthorizationManagerHe
 			throw new NullPointerException("Client not initialized (did you call init())?");
 		}
 	}
+
+	@Override
+	public boolean isUserWithIdEntitledToURL(final String userId, final String url) {
+		preflightCheck();
+		long start = 0L;
+		if(isTimingEnabled) {
+			start = System.currentTimeMillis();
+		}
+		boolean retval = client.isUserWithIdEntitledToURL(userId, url);
+		if(isTimingEnabled) {
+			long time = System.currentTimeMillis() - start;
+			final String logMessage = String.format("isUserWithIdEntitledToURL: userId: %s, url: %s, time: %s ms", userId, url, time);
+			log.debug(logMessage);
+		}
+		return retval;
+	}
+
+	@Override
+	public boolean isUserWithLoginEntitledToURL(final String domain, final String login, final String managedSysId, final String url) {
+		preflightCheck();
+		long start = 0L;
+		if(isTimingEnabled) {
+			start = System.currentTimeMillis();
+		}
+		boolean retval = client.isUserWithLoginEntitledToURL(domain, login, managedSysId, url);
+		if(isTimingEnabled) {
+			long time = System.currentTimeMillis() - start;
+			final String logMessage = String.format("isUserWithLoginEntitledToURL: domain: %s, login: %s, managedSysId: %s, time: %s ms", domain, login, managedSysId, time);
+			log.debug(logMessage);
+		}
+		return retval;
+	}
 }

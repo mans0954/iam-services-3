@@ -186,4 +186,20 @@ public interface AuthorizationManagerHessianService {
 	 * @return the Role Names that this User is a member of
 	 */
 	public String[] getRoleNamesForUserWithLogin(final String domain, final String login, final String managedSysId);
+	
+	/**
+	 * @param userId - ID of the User
+	 * @param url - the request URL
+	 * @return true if the user is entitled to the requested URL.  False otherwise
+	 */
+	public boolean isUserWithIdEntitledToURL(final String userId, final String url);
+	
+	/**
+	 * @param domain - domain of this login
+	 * @param login - login used by the user
+	 * @param managedSysId - managedSysId of this login
+	 * @param url - the request URL
+	 * @return true if the user is entitled to the requested URL.  False otherwise
+	 */
+	public boolean isUserWithLoginEntitledToURL(final String domain, final String login, final String managedSysId, final String url);
 }

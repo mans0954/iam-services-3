@@ -10,6 +10,7 @@ import org.openiam.authmanager.common.model.AuthorizationGroup;
 import org.openiam.authmanager.common.model.AuthorizationResource;
 import org.openiam.authmanager.common.model.AuthorizationRole;
 import org.openiam.authmanager.common.model.AuthorizationManagerLoginId;
+import org.openiam.authmanager.ws.request.URLRequest;
 import org.openiam.authmanager.ws.request.UserRequest;
 import org.openiam.authmanager.ws.request.UserToGroupAccessRequest;
 import org.openiam.authmanager.ws.request.UserToResourceAccessRequest;
@@ -74,5 +75,14 @@ public interface AuthorizationManagerWebService {
 	@WebMethod
 	public RolesForUserResponse getRolesFor(
 			@WebParam(name = "request", targetNamespace = "") final UserRequest request
+			);
+	
+	/**
+	 * @param request
+	 * @return  answers the question "Is User A entitled to this URL
+	 */
+	@WebMethod
+	public AccessResponse isUserEntitledToURL(
+			@WebParam(name = "request", targetNamespace = "") final URLRequest request
 			);
 }

@@ -23,6 +23,15 @@ public class TestAuthorizationManagerHessianClient extends AbstractAuthorization
 	private AuthorizationManagerHessianClient authClient;
 	
 	@Override
+	protected void checkUserURLEntitlements(final String userId, final AuthorizationManagerLoginId loginId, final String url) {
+		if(userId != null) {
+			authClient.isUserWithIdEntitledToURL(userId, url);
+		} else {
+			authClient.isUserWithLoginEntitledToURL(loginId.getDomain(), loginId.getLogin(), loginId.getManagedSysId(), url);
+		}
+	}
+	
+	@Override
 	protected void confirmUserRoles(String userId,
 			AuthorizationManagerLoginId loginId, Set<String> roleIds) {
 		final Set<String> result = new HashSet<String>();
@@ -152,5 +161,4 @@ public class TestAuthorizationManagerHessianClient extends AbstractAuthorization
 		String failMessage = String.format("User not member of role.  %s", roleName);
 		Assert.assertTrue(failMessage, result);	
 	}
-
 }

@@ -19,6 +19,7 @@ import org.openiam.authmanager.common.model.AuthorizationManagerLoginId;
 import org.openiam.authmanager.common.model.AuthorizationResource;
 import org.openiam.authmanager.common.model.AuthorizationRole;
 import org.openiam.authmanager.service.AuthorizationManagerWebService;
+import org.openiam.authmanager.ws.request.URLRequest;
 import org.openiam.authmanager.ws.request.UserRequest;
 import org.openiam.authmanager.ws.request.UserToGroupAccessRequest;
 import org.openiam.authmanager.ws.request.UserToResourceAccessRequest;
@@ -61,6 +62,17 @@ public class TestAuthorizationManagerWebService extends AbstractAuthorizationMan
 	@Autowired
 	@Qualifier("authorizationManagerServiceClient")
 	private AuthorizationManagerWebService authorizationManagerServiceClient;
+	
+	@Override
+	protected void checkUserURLEntitlements(final String userId, final AuthorizationManagerLoginId loginId, final String url) {
+		final URLRequest request = new URLRequest();
+		request.setUserId(userId);
+		request.setLoginId(loginId);
+		request.setUrl(url);
+		
+		final AccessResponse response = authorizationManagerServiceClient.isUserEntitledToURL(request);
+		Assert.assertTrue(ResponseStatus.SUCCESS.equals(response.getResponseStatus()));
+	}
 	
 	@Override
 	protected void confirmUserRoles(final String userId, final AuthorizationManagerLoginId loginId, final Set<String> roleIds) {
