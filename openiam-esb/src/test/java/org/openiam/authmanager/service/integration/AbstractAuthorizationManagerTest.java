@@ -90,7 +90,7 @@ public abstract class AbstractAuthorizationManagerTest {
 	};
 	
 	@Test
-	public void isUserEntitledToUrls() {
+	public void isUserEntitledToUrlsTest() {
 		final List<String> userIds = jdbcTemplate.queryForList("SELECT USER_ID FROM USERS LIMIT " + MAX_ITERS, String.class);
 		for(final String userId : userIds) {
 			for(final String url : urlpatterns) {
@@ -107,7 +107,7 @@ public abstract class AbstractAuthorizationManagerTest {
 	}
 	
 	@Test
-	public void isUserEntitledToResource() {
+	public void isUserEntitledToResourceTest() {
 		final List<Map<String, Object>> resourceUserMap = jdbcTemplate.queryForList("SELECT RESOURCE_ID AS RESOURCE_ID, USER_ID AS USER_ID FROM RESOURCE_USER LIMIT " + MAX_ITERS);
 		final List<Map<String, Object>> resourceUserMapThroughGroupMembership = jdbcTemplate.queryForList("SELECT ug.USER_ID AS USER_ID, rg.RESOURCE_ID AS RESOURCE_ID FROM USER_GRP ug, RESOURCE_GROUP rg WHERE ug.GRP_ID=rg.GRP_ID LIMIT " + MAX_ITERS);
 		final List<Map<String, Object>> resourceUserMapThroughRoleMembership = jdbcTemplate.queryForList("SELECT ur.USER_ID AS USER_ID, rr.RESOURCE_ID AS RESOURCE_ID FROM USER_ROLE ur, RESOURCE_ROLE rr WHERE ur.ROLE_ID=rr.ROLE_ID LIMIT " + MAX_ITERS);
@@ -150,7 +150,7 @@ public abstract class AbstractAuthorizationManagerTest {
 	}
 	
 	@Test
-	public void isUserMemberOfGroups() {
+	public void isUserMemberOfGroupsTest() {
 		final Map<String, Set<String>> userId2GroupMap = new HashMap<String, Set<String>>();
 		final List<Map<String, Object>> groupUserMap = jdbcTemplate.queryForList("SELECT GRP_ID AS GROUP_ID, USER_ID AS USER_ID FROM USER_GRP LIMIT " + MAX_ITERS);
 		for(final Map<String, Object> map : groupUserMap) {
@@ -172,7 +172,7 @@ public abstract class AbstractAuthorizationManagerTest {
 	}
 	
 	@Test
-	public void isUserMemberOfRoles() {
+	public void isUserMemberOfRolesTest() {
 		final Map<String, Set<String>> userId2RoleMap = new HashMap<String, Set<String>>();
 		final List<Map<String, Object>> roleUserMap = jdbcTemplate.queryForList("SELECT USER_ID AS USER_ID, ROLE_ID AS ROLE_ID FROM USER_ROLE LIMIT " + MAX_ITERS);
 		final List<Map<String, Object>> roleUserMapThroughGroupMembership = jdbcTemplate.queryForList("SELECT ug.USER_ID AS USER_ID, gr.ROLE_ID AS ROLE_ID FROM USER_GRP ug, GRP_ROLE gr WHERE ug.GRP_ID=gr.GRP_ID LIMIT " + MAX_ITERS);

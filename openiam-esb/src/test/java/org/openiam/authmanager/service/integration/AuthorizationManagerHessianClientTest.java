@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.junit.Assert;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openiam.authmanager.AuthorizationManagerHessianClient;
 import org.openiam.authmanager.common.model.AuthorizationManagerLoginId;
@@ -16,7 +17,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations={"classpath:test-integration-environment.xml","classpath:test-esb-integration.xml"})
-public class TestAuthorizationManagerHessianClient extends AbstractAuthorizationManagerTest {
+public class AuthorizationManagerHessianClientTest extends AbstractAuthorizationManagerTest {
 
 	@Autowired
 	@Qualifier("authorizationManagerHessianClient")

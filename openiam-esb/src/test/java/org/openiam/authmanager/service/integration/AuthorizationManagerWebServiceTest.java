@@ -55,9 +55,9 @@ import com.sun.mail.iap.Response;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations={"classpath:test-integration-environment.xml","classpath:test-esb-integration.xml"})
-public class TestAuthorizationManagerWebService extends AbstractAuthorizationManagerTest {
+public class AuthorizationManagerWebServiceTest extends AbstractAuthorizationManagerTest {
 
-	private static final Log log = LogFactory.getLog(TestAuthorizationManagerWebService.class);
+	private static final Log log = LogFactory.getLog(AuthorizationManagerWebServiceTest.class);
 	
 	@Autowired
 	@Qualifier("authorizationManagerServiceClient")
