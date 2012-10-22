@@ -1,6 +1,5 @@
 package org.openiam.spml2.spi.orcl;
 
-import groovy.json.StringEscapeUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
@@ -17,7 +16,6 @@ import org.openiam.spml2.util.msg.ResponseBuilder;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.text.ParseException;
 import java.util.List;
 
 /**

@@ -9,6 +9,7 @@ import org.openiam.am.srvc.resattr.dto.WebResourceResponse;
 import org.openiam.am.srvc.resattr.service.WebResourceAttributeService;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,8 +23,6 @@ import java.util.List;
             serviceName = "WebResourceService")
 public class WebResourceServiceImpl implements WebResourceService {
     protected final Log log = LogFactory.getLog(this.getClass());
-    @Autowired
-    private WebResourceAttributeDao webResourceAttributeDao;
     @Autowired
     private WebResourceAttributeService webResourceAttributeService;
 

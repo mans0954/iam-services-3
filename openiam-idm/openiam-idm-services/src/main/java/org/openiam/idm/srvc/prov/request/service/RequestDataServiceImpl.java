@@ -1,26 +1,20 @@
 package org.openiam.idm.srvc.prov.request.service;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.base.ws.ResponseCode;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
 import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService;
 import org.openiam.idm.srvc.msg.service.MailService;
 import org.openiam.idm.srvc.prov.request.dto.ProvisionRequest;
 import org.openiam.idm.srvc.prov.request.dto.RequestApprover;
-import org.openiam.idm.srvc.prov.request.dto.RequestUser;
 import org.openiam.idm.srvc.prov.request.dto.SearchRequest;
 import org.openiam.idm.srvc.user.dto.Supervisor;
-import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDataService;
 
 /*

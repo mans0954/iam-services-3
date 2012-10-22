@@ -189,7 +189,8 @@ public class WebResourceAttributeServiceImpl implements WebResourceAttributeServ
             if(res!=null){
                 result = res.toString();
                 if(fieldName.contains("password")){
-                    result = loginManager.decryptPassword(result);
+                    String userId =  (String)getFieldValue(obj, "userId");
+                    result = loginManager.decryptPassword(userId,result);
                 }
             }
         } else{

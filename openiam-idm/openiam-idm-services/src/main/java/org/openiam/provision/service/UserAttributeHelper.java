@@ -307,7 +307,7 @@ public class UserAttributeHelper {
 					extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY.PRINCIPAL.", lg.getId().getLogin(),0, "String"));
 					String p = lg.getPassword();
 					if (p != null && p.length()> 12) {
-						p = loginManager.decryptPassword(p);
+						p = loginManager.decryptPassword(lg.getUserId(),p);
 						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_PSWD.PRINCIPAL",   p ,0, "String"));
 					}else {
 						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_PSWD.PRINCIPAL", p ,0, "String"));
@@ -317,7 +317,7 @@ public class UserAttributeHelper {
 					extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY." + lg.getId().getManagedSysId(), lg.getId().getLogin(),0, "String"));
 					String p = lg.getPassword();
 					if (p != null && p.length()> 12) {
-						p = loginManager.decryptPassword(p);
+						p = loginManager.decryptPassword(lg.getUserId(),p);
 						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_PSWD."+lg.getId().getManagedSysId(), p,0, "String"));
 					}else {
 						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_PSWD."+lg.getId().getManagedSysId(), p,0, "String"));

@@ -94,12 +94,12 @@ public interface AuthenticationService {
             @WebParam(name = "principal", targetNamespace = "")
             String principal,
             @WebParam(name = "password", targetNamespace = "")
-            String password);
+            String password) throws Exception;
 
     @WebMethod
     AuthenticationResponse login(
             @WebParam(name = "request", targetNamespace = "")
-            AuthenticationRequest request);
+            AuthenticationRequest request) throws Exception;
 
     /**
      * For Single Sign On, takes the token and type of token and authenticates the user based on the token.
@@ -119,10 +119,12 @@ public interface AuthenticationService {
      */
     @WebMethod
     Subject authenticateByToken(
+            @WebParam(name = "userId", targetNamespace = "")
+            String userId,
             @WebParam(name = "token", targetNamespace = "")
             String token,
             @WebParam(name = "tokenType", targetNamespace = "")
-            String tokenType) throws AuthenticationException;
+            String tokenType) throws Exception;
 
     @WebMethod
     BooleanResponse validateToken(
@@ -131,7 +133,7 @@ public interface AuthenticationService {
             @WebParam(name = "token", targetNamespace = "")
             String token,
             @WebParam(name = "tokenType", targetNamespace = "")
-            String tokenType);
+            String tokenType) throws Exception;
 
     @WebMethod
     Response renewToken(
@@ -140,7 +142,7 @@ public interface AuthenticationService {
             @WebParam(name = "token", targetNamespace = "")
             String token,
             @WebParam(name = "tokenType", targetNamespace = "")
-            String tokenType);
+            String tokenType) throws Exception;
 
     @WebMethod
     BooleanResponse validateTokenByUser(
@@ -149,7 +151,7 @@ public interface AuthenticationService {
             @WebParam(name = "token", targetNamespace = "")
             String token,
             @WebParam(name = "tokenType", targetNamespace = "")
-            String tokenType);
+            String tokenType) throws Exception;
 
     @WebMethod
     void updateAppStatus(

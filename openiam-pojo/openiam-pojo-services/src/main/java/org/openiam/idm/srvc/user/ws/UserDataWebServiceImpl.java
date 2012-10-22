@@ -183,7 +183,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#addUser(org.openiam.idm.srvc.user.dto.User)
 	 */
-	public UserResponse addUser(User user) {
+	public UserResponse addUser(User user) throws Exception {
 		UserResponse resp = new UserResponse(ResponseStatus.SUCCESS);
 		userManager.addUser(user);
 		if (StringUtils.isEmpty(user.getUserId())) {
@@ -197,7 +197,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#addUserWithDependent(org.openiam.idm.srvc.user.dto.User, boolean)
 	 */
-	public UserResponse addUserWithDependent(User user, boolean dependency) {
+	public UserResponse addUserWithDependent(User user, boolean dependency) throws Exception {
 		final UserResponse resp = new UserResponse(ResponseStatus.SUCCESS);
 		userManager.addUserWithDependent(user, dependency);
 		if (StringUtils.isEmpty(user.getUserId())) {

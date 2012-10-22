@@ -127,7 +127,7 @@ public class LDAPLoginModule extends AbstractLoginModule {
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.auth.spi.LoginModule#login(org.openiam.idm.srvc.auth.context.AuthenticationContext)
 	 */
-	public Subject login(AuthenticationContext authContext) throws AuthenticationException {
+	public Subject login(AuthenticationContext authContext) throws Exception {
 
 
 		Subject sub = new Subject();
@@ -513,7 +513,7 @@ public class LDAPLoginModule extends AbstractLoginModule {
 
 	/* supporting methods */
 	
-    private SSOToken token(String userId, Map tokenParam) {
+    private SSOToken token(String userId, Map tokenParam) throws Exception {
 
         log.debug("Generating Security Token");
 

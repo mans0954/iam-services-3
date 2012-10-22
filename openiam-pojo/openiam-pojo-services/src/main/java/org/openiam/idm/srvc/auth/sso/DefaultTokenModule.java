@@ -31,7 +31,10 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.exception.EncryptionException;
 import org.openiam.idm.srvc.auth.dto.SSOToken;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
+import org.openiam.idm.srvc.key.constant.KeyName;
+import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.util.encrypt.Cryptor;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Module to create and manage the default token structure used by OpenIAM
@@ -44,6 +47,8 @@ public class DefaultTokenModule implements SSOTokenModule {
 	private static final Log log = LogFactory.getLog(DefaultTokenModule.class);
 	
 	protected Cryptor cryptor;
+    @Autowired
+    private KeyManagementService keyManagementService;
 	protected int tokenLife;
 
     static final int MIN_AS_MILLIS = 60000;
@@ -51,7 +56,7 @@ public class DefaultTokenModule implements SSOTokenModule {
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.auth.sso.SSOToken#createToken(java.util.Map)
 	 */
-	public SSOToken createToken(Map tokenParam) {
+	public SSOToken createToken(Map tokenParam) throws Exception {
 		long curTime = System.currentTimeMillis();
 		long expTime = getExpirationTime(curTime);
 		String token = null;
@@ -66,7 +71,7 @@ public class DefaultTokenModule implements SSOTokenModule {
 		buf.append( expirationTime  );
 		
 		try {
-			token = cryptor.encrypt(buf.toString());
+			token = cryptor.encrypt(keyManagementService.getUserKey((String)tokenParam.get("USER_ID"), KeyName.token.name()), buf.toString());
 		}catch(EncryptionException encExcep) {
 			return null;
 		}
@@ -80,7 +85,7 @@ public class DefaultTokenModule implements SSOTokenModule {
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.auth.sso.SSOToken#isTokenValid(java.lang.String, java.lang.String)
 	 */
-	public boolean isTokenValid(String userId,String principal, String token) {
+	public boolean isTokenValid(String userId,String principal, String token) throws Exception {
 		String decUserId;		// decrypted userid
 		String decTime;			// decrypted time
 
@@ -92,7 +97,7 @@ public class DefaultTokenModule implements SSOTokenModule {
 			log.debug("Token=" + token);
 			log.debug("cryptor =" + cryptor);
 			
-			decString = cryptor.decrypt(token);
+			decString = cryptor.decrypt(keyManagementService.getUserKey(userId, KeyName.token.name()),token);
 		}catch(EncryptionException encExcep) {
 			return false;
 		}
@@ -143,10 +148,10 @@ public class DefaultTokenModule implements SSOTokenModule {
 		return true;
 	}
 
-    public String getDecryptedToken(String token) {
+    public String getDecryptedToken(String userId, String token) throws Exception{
         try {
 
-            return cryptor.decrypt(token);
+            return cryptor.decrypt(keyManagementService.getUserKey(userId, KeyName.token.name()), token);
         }catch(EncryptionException encExcep) {
             return null;
         }
@@ -155,7 +160,7 @@ public class DefaultTokenModule implements SSOTokenModule {
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.auth.sso.SSOToken#refreshToken(java.lang.String, java.lang.String)
 	 */
-	public SSOToken refreshToken(Map tokenParam) {
+	public SSOToken refreshToken(Map tokenParam) throws Exception{
 		return createToken(tokenParam);
 		
 	}

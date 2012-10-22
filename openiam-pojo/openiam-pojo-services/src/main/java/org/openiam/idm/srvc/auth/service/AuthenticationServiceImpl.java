@@ -122,7 +122,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 	 * @see org.openiam.idm.srvc.auth.service.AuthenticationService#authenticate(org.openiam.idm.srvc.auth.context.AuthenticationContext)
 	 */
 	//public Subject authenticate(AuthenticationContext ctx)	throws AuthenticationException {
-	public AuthenticationResponse authenticate(AuthenticationContext ctx) {
+	public AuthenticationResponse authenticate(AuthenticationContext ctx) throws Exception {
 		AuthenticationResponse authResp = new AuthenticationResponse(ResponseStatus.FAILURE);
 		
 		AbstractLoginModule loginModule = null;
@@ -224,9 +224,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 	 * @see org.openiam.idm.srvc.auth.service.AuthenticationService#authenticateByToken(java.lang.String, java.lang.String, java.lang.String)
 	 */
     @ManagedAttribute
-	public Subject authenticateByToken(String token,	String tokenType) throws AuthenticationException {
+	public Subject authenticateByToken(String userId, String token,	String tokenType) throws Exception {
 
-        String userId = null;
+        String tokenUserId = null;
         SSOTokenModule tkModule = SSOTokenFactory.createModule(tokenType);
         tkModule.setCryptor(cryptor);
 
@@ -238,13 +238,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
         
 
-        String tkString = tkModule.getDecryptedToken(token);
+        String tkString = tkModule.getDecryptedToken(userId, token);
 
         log.debug("authenticateByToken: Decrypted token=" + tkString);
 
         StringTokenizer tokenizer = new StringTokenizer(tkString,":");
         if (tokenizer.hasMoreTokens()) {
-            userId =  tokenizer.nextToken();
+            tokenUserId =  tokenizer.nextToken();
         }else {
             log.debug("authenticateByToken: no userId in the token");
 
@@ -253,7 +253,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             return sub;
         }
 
-        Login lg = loginManager.getPrimaryIdentity(userId);
+        Login lg = loginManager.getPrimaryIdentity(tokenUserId);
 
         Response resp = renewToken(lg.getId().getLogin(), token, tokenType);
 
@@ -266,13 +266,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 		}
 		
 
-		AuthState authSt = authStateDao.findById(userId);
-		Subject sub = new Subject(userId);
+		AuthState authSt = authStateDao.findById(tokenUserId);
+		Subject sub = new Subject(tokenUserId);
         sub.setPrincipal(lg.getId().getLogin());
 		sub.setExpirationTime(authSt.getExpiration());
 		sub.setResultCode(AuthenticationConstants.RESULT_SUCCESS);
 				
-		populateSubject(userId, sub);
+		populateSubject(tokenUserId, sub);
 		
 		return sub;
 		
@@ -301,7 +301,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 	}
 
 
-    public AuthenticationResponse login( AuthenticationRequest request) {
+    public AuthenticationResponse login( AuthenticationRequest request) throws Exception {
         log.debug("*** login called...");
 
         String secDomainId;
@@ -568,7 +568,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
       */
 	//public AuthenticationResponse passwordAuth(String secDomainId, String principal, String password) throws AuthenticationException {
 	@ManagedAttribute
-    public AuthenticationResponse passwordAuth(String secDomainId, String principal, String password) {
+    public AuthenticationResponse passwordAuth(String secDomainId, String principal, String password) throws Exception {
 
         log.debug("*** PasswordAuth called...");
 
@@ -827,7 +827,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.auth.service.AuthenticationService#validateToken(java.lang.String, java.lang.String, java.lang.String)
 	 */
-	public BooleanResponse validateToken(String loginId, String token, String tokenType) {
+	public BooleanResponse validateToken(String loginId, String token, String tokenType) throws Exception {
 			
 		if (loginId == null) {
 			throw new IllegalArgumentException("loginId is null");
@@ -863,7 +863,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 	
 	@WebMethod
 	public Response renewToken(
-			String principal,  String token, String tokenType) {
+			String principal,  String token, String tokenType) throws Exception {
         
         log.debug("RenewToken called.");
 		
@@ -980,7 +980,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.auth.service.AuthenticationService#validateTokenByUser(java.lang.String, java.lang.String, java.lang.String)
 	 */
-	public BooleanResponse validateTokenByUser(String userId, String token, 	String tokenType) {
+	public BooleanResponse validateTokenByUser(String userId, String token, 	String tokenType) throws Exception {
 		if (userId == null) {
 			throw new IllegalArgumentException("userId is null");
 		}
@@ -1081,7 +1081,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 		this.auditUtil = auditUtil;
 	}
 	
-	private SSOToken token(String userId, Map tokenParam) {
+	private SSOToken token(String userId, Map tokenParam) throws Exception {
 
 		tokenParam.put("USER_ID",userId);
 		

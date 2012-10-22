@@ -56,13 +56,13 @@ public interface UserDataService {
       * @see org.openiam.idm.srvc.user.service.UserDataService#addUser(org.openiam.idm.srvc.user.dto.User)
       */
 
-    public User addUser(User user);
+    public User addUser(User user) throws Exception;
 
     /* (non-Javadoc)
       * @see org.openiam.idm.srvc.user.service.UserDataService#addUser(org.openiam.idm.srvc.user.dto.User, boolean)
       */
 
-    public User addUserWithDependent(User user, boolean dependency);
+    public User addUserWithDependent(User user, boolean dependency) throws Exception;
 
     public void updateUser(User user);
 

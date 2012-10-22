@@ -74,7 +74,7 @@ public class LdapV3 implements Directory{
                     ldapName,
                     targetID);
             String encPassword = login.getPassword();
-            String decPassword = loginManager.decryptPassword(encPassword);
+            String decPassword = loginManager.decryptPassword(login.getUserId(),encPassword);
 
             ModificationItem[] mods = new ModificationItem[1];
             mods[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("userPassword", decPassword));

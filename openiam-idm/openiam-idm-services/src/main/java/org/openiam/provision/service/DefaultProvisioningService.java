@@ -24,44 +24,31 @@ package org.openiam.provision.service;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.cxf.frontend.ClientProxyFactoryBean;
-import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
 import org.mule.api.MuleContext;
 import org.mule.api.MuleException;
-import org.mule.api.context.MuleContextAware;
 import org.mule.module.client.MuleClient;
 import org.mule.util.StringUtils;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseObject;
-import org.openiam.base.SysConfiguration;
 import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.connector.type.*;
-import org.openiam.dozer.DozerUtils;
 import org.openiam.dozer.ProvisionDozerUtils;
 import org.openiam.exception.EncryptionException;
 import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
-import org.openiam.idm.srvc.audit.service.AuditHelper;
-import org.openiam.idm.srvc.audit.service.IdmAuditLogDataService;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginId;
-import org.openiam.idm.srvc.auth.login.LoginDAO;
-import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnector;
-import org.openiam.idm.srvc.mngsys.service.ConnectorDataService;
-import org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.org.dto.Organization;
-import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.pswd.dto.Password;
@@ -69,16 +56,12 @@ import org.openiam.idm.srvc.pswd.dto.PasswordHistory;
 import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
 import org.openiam.idm.srvc.pswd.service.PasswordGenerator;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
-import org.openiam.idm.srvc.pswd.service.PasswordService;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
-import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.dto.Supervisor;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
-import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.AccountLockEnum;
 import org.openiam.provision.dto.PasswordSync;
 import org.openiam.provision.dto.ProvisionUser;
@@ -91,19 +74,14 @@ import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptFactory;
 import org.openiam.script.ScriptIntegration;
-import org.openiam.spml2.interf.ConnectorService;
 import org.openiam.spml2.msg.*;
 import org.openiam.spml2.msg.ResponseType;
 import org.openiam.spml2.msg.password.SetPasswordRequestType;
 import org.openiam.spml2.msg.suspend.ResumeRequestType;
 import org.openiam.spml2.msg.suspend.SuspendRequestType;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Required;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
 import javax.jws.WebMethod;
-import javax.jws.WebParam;
 import javax.jws.WebService;
 import java.util.*;
 
@@ -341,7 +319,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         // need decrypted password for use in the connectors:
         String decPassword = null;
         try {
-            decPassword = loginManager.decryptPassword(primaryLogin.getPassword());
+            decPassword = loginManager.decryptPassword(primaryLogin.getUserId(),primaryLogin.getPassword());
         } catch (EncryptionException e) {
 
             auditHelper.addLog("CREATE", user.getRequestorDomain(), user.getRequestorLogin(),
@@ -1485,7 +1463,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             if (password != null) {
                 try {
 
-                    decPassword = loginManager.decryptPassword(password);
+                    decPassword = loginManager.decryptPassword(primaryIdentity.getUserId(),password);
                     bindingMap.put("password", decPassword);
 
                 } catch (EncryptionException e) {
@@ -1930,7 +1908,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     // change the password to a random scrambled passwor
                     String scrambledPassword = PasswordGenerator.generatePassword(10);
                     try {
-                        mLg.setPassword(loginManager.encryptPassword(scrambledPassword));
+                        mLg.setPassword(loginManager.encryptPassword(mLg.getUserId(),scrambledPassword));
                     } catch (EncryptionException ee) {
                         log.error(ee);
                         // put the password in a clean state so that he operation continues
@@ -2093,7 +2071,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         }
         String encPassword = null;
         try {
-            encPassword = loginManager.encryptPassword(password);
+            encPassword = loginManager.encryptPassword(userId, password);
         } catch (EncryptionException e) {
             auditHelper.addLog("RESET PASSWORD", passwordSync.getRequestorDomain(), passwordSync.getRequestorLogin(),
                     "IDM SERVICE", passwordSync.getRequestorId(), passwordSync.getManagedSystemId(), "PASSWORD", userId, null, "FAILURE", null, null,
@@ -2401,7 +2379,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         String encPassword = null;
         try {
-            encPassword = loginManager.encryptPassword(passwordSync.getPassword());
+            encPassword = loginManager.encryptPassword(usr.getUserId(),passwordSync.getPassword());
         } catch (EncryptionException e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(ResponseCode.FAIL_ENCRYPTION);
@@ -2671,7 +2649,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         String encPassword = null;
         try {
-            encPassword = loginManager.encryptPassword(passwordSync.getPassword());
+            encPassword = loginManager.encryptPassword(userId,passwordSync.getPassword());
         } catch (EncryptionException e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(ResponseCode.FAIL_ENCRYPTION);

@@ -2,6 +2,8 @@ package org.openiam.idm.srvc.prov.request.dto;
 
 // Generated Jan 9, 2009 5:33:58 PM by Hibernate Tools 3.2.2.GA
 
+import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
+
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -11,7 +13,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
 /**
  * Domain object for a provisioning request
  */

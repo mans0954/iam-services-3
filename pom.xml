@@ -380,7 +380,16 @@
                 <artifactId>cxf-rt-transports-http</artifactId>
                 <version>${cxf.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-tools-common</artifactId>
+                <version>${cxf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-frontend-simple</artifactId>
+                <version>${cxf.version}</version>
+            </dependency>
             <!-- org.apache dependencies -->
             <dependency>
                 <groupId>org.apache.geronimo.specs</groupId>
@@ -452,6 +461,10 @@
                     <exclusion>
                         <groupId>xml-apis</groupId>
                         <artifactId>xml-apis</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.bouncycastle</groupId>
+                        <artifactId>bcprov-jdk15</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -578,6 +591,11 @@
             <dependency>
                 <groupId>org.openiam</groupId>
                 <artifactId>openiam-idm-ee-services</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.openiam</groupId>
+                <artifactId>openiam-jks</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

@@ -71,7 +71,6 @@ import javax.jws.WebParam;
 import javax.jws.WebService;
 import javax.naming.*;
 import javax.naming.directory.BasicAttribute;
-import javax.naming.directory.DirContext;
 import javax.naming.directory.ModificationItem;
 import javax.naming.directory.SearchControls;
 import javax.naming.ldap.InitialLdapContext;
@@ -112,7 +111,7 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements Connecto
 
     static String keystore;
 
-    public AuthenticationResponse login(AuthenticationContext authContext) {
+    public AuthenticationResponse login(AuthenticationContext authContext) throws Exception {
 
         AuthenticationResponse resp = new AuthenticationResponse();
 

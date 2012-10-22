@@ -694,8 +694,8 @@ public class ModifyUser {
 
                             Login newLg = (Login) origLogin.clone();
                             try {
-                                newLg.setPassword(loginManager.encryptPassword(l.getPassword()));
-                            } catch (EncryptionException e) {
+                                newLg.setPassword(loginManager.encryptPassword(l.getUserId(),l.getPassword()));
+                            } catch (Exception e) {
                                 log.error(e);
                                 e.printStackTrace();
                             }
@@ -735,7 +735,7 @@ public class ModifyUser {
                             newLg.setPassword(null);
                         } else {
                             try {
-                                newLg.setPassword(loginManager.encryptPassword(newPassword));
+                                newLg.setPassword(loginManager.encryptPassword(l.getUserId(), newPassword));
                             } catch (EncryptionException e) {
                                 log.error(e);
                                 e.printStackTrace();

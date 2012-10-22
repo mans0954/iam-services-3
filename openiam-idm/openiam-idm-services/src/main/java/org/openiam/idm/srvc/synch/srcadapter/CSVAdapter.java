@@ -237,6 +237,17 @@ public class CSVAdapter extends  AbstractSrcAdapter  {
                         SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
                         resp.setErrorCode(ResponseCode.CLASS_NOT_FOUND);
                         return resp;
+                    }  catch (Exception e) {
+
+
+                        log.error(e);
+
+                        synchStartLog.updateSynchAttributes("FAIL", ResponseCode.FAIL_OTHER.toString(), e.toString());
+                        auditHelper.logEvent(synchStartLog);
+
+                        SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
+                        resp.setErrorCode(ResponseCode.FAIL_OTHER);
+                        return resp;
                     }
 
                 }

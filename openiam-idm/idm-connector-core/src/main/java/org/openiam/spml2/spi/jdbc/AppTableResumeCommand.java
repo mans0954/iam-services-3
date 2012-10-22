@@ -55,7 +55,7 @@ public class AppTableResumeCommand extends AbstractAppTableCommand implements Re
 
             final Login login = loginList.get(0);
             final String encPassword = login.getPassword();
-            final String decPassword = loginManager.decryptPassword(encPassword);
+            final String decPassword = loginManager.decryptPassword(login.getUserId(),encPassword);
 
             final ManagedSys managedSys = managedSysService.getManagedSys(targetID);
             if(managedSys == null) {

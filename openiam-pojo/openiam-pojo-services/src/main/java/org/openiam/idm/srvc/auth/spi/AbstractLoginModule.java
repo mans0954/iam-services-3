@@ -35,6 +35,8 @@ import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
 import org.openiam.idm.srvc.auth.sso.SSOTokenModule;
+import org.openiam.idm.srvc.key.constant.KeyName;
+import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.service.PolicyDAO;
 import org.openiam.idm.srvc.pswd.service.PasswordService;
@@ -44,6 +46,7 @@ import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.util.encrypt.Cryptor;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author suneet
@@ -65,7 +68,8 @@ public abstract class AbstractLoginModule implements LoginModule {
 	protected User user;
 	protected Login lg;
     protected String authPolicyId;
-
+    @Autowired
+    protected KeyManagementService keyManagementService;
 
 	static protected ResourceBundle res = ResourceBundle.getBundle("securityconf");
 	private static final Log log = LogFactory.getLog(AbstractLoginModule.class);
@@ -101,10 +105,10 @@ public abstract class AbstractLoginModule implements LoginModule {
 		this.securityDomain = secDom;
 	}
 	
-	public String decryptPassword(String encPassword) {
+	public String decryptPassword(String userId, String encPassword) throws Exception{
 		if ( encPassword != null) {
 			try {
-			return cryptor.decrypt(encPassword ) ;
+			return cryptor.decrypt(keyManagementService.getUserKey(userId, KeyName.password.name()),encPassword ) ;
 			}catch(EncryptionException e) {
 				return null;
 			}

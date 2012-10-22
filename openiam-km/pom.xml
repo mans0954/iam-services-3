@@ -16,8 +16,7 @@
   </properties>
 
   <modules>
-    <module>openiam-km-intf</module>
-	<module>openiam-km-services</module>
+ 	<module>openiam-jks</module>
 	<module>openiam-km-util</module>
   </modules>
   

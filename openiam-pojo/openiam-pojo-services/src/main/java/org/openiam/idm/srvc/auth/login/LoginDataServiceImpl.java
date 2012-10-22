@@ -8,6 +8,8 @@ import org.openiam.exception.EncryptionException;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginId;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
+import org.openiam.idm.srvc.key.constant.KeyName;
+import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.policy.service.PolicyDAO;
@@ -20,6 +22,7 @@ import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.util.encrypt.*;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
 
@@ -40,28 +43,34 @@ public class LoginDataServiceImpl implements LoginDataService {
 	protected SysConfiguration sysConfiguration;
 		
 	protected Cryptor cryptor;
+    @Autowired
+    private KeyManagementService keyManagementService;
 
 	static protected ResourceBundle res = ResourceBundle.getBundle("securityconf");
 	boolean encrypt = true;	// default encryption setting
 	private static final Log log = LogFactory.getLog(LoginDataServiceImpl.class);
 	
 	public Login addLogin(Login login) {
-		if (login == null)
-			throw new NullPointerException("Login is null");
-		      
-        if (login.getCreateDate() == null)
-        	login.setCreateDate(new Date(System.currentTimeMillis()));
+        if(login == null) {
+            throw new NullPointerException("Login is null");
+        }
+
+        if(login.getCreateDate() == null) {
+            login.setCreateDate(new Date(System.currentTimeMillis()));
+        }
 	
 		return loginDao.add(login);
 
 	}
 
 	public Login getLogin(String secDomainId, String login) throws AuthenticationException {
-		if (secDomainId == null)
-			throw new NullPointerException("service is null");
-		
-		if (login == null)
-			throw new NullPointerException("Login is null");
+        if(secDomainId == null) {
+            throw new NullPointerException("service is null");
+        }
+
+        if(login == null) {
+            throw new NullPointerException("Login is null");
+        }
 		
 		SecurityDomain secDomain = secDomainService.getSecurityDomain(secDomainId);
 		if (secDomain == null) {
@@ -76,10 +85,12 @@ public class LoginDataServiceImpl implements LoginDataService {
 	}
 
 	public Login getLoginByManagedSys(String domainId, String login,String sysId) {
-		if (domainId == null)
-			throw new NullPointerException("domainId is null");
-		if (login == null)
-			throw new NullPointerException("Login is null");
+        if(domainId == null) {
+            throw new NullPointerException("domainId is null");
+        }
+        if(login == null) {
+            throw new NullPointerException("Login is null");
+        }
 		
 		log.debug("getLoginByManagedSys(): Params = domainId=" + domainId + " login=" + login + " AuthSysId=" + sysId);
 		
@@ -95,21 +106,23 @@ public class LoginDataServiceImpl implements LoginDataService {
 	}
 
     public List<Login> getLoginByManagedSys(String principalName, String managedSysId) {
-        if (principalName == null)
-			throw new NullPointerException("principalName is null");
-		if (managedSysId == null)
-			throw new NullPointerException("manaagedSysId is null");
+        if(principalName == null) {
+            throw new NullPointerException("principalName is null");
+        }
+        if(managedSysId == null) {
+            throw new NullPointerException("manaagedSysId is null");
+        }
 
 		return loginDao.findLoginByManagedSys(principalName,managedSysId);
     }
 
 
-    public String getPassword(String domainId, String login, String sysId ) {
+    public String getPassword(String domainId, String login, String sysId ) throws Exception{
 		
 		Login lg = getLoginByManagedSys(domainId, login, sysId);
 		if (lg != null && lg.getPassword() != null) {
 			try {
-				return cryptor.decrypt(lg.getPassword()) ; 
+				return cryptor.decrypt(keyManagementService.getUserKey(lg.getUserId(), KeyName.password.name()), lg.getPassword()) ;
 			}catch(EncryptionException e) {
 				throw new IllegalArgumentException("Unable to decrypt the password. ");
 			}
@@ -146,7 +159,7 @@ public class LoginDataServiceImpl implements LoginDataService {
 	 * @param newPassword
 	 * @return
 	 */
-	public boolean isPasswordEq(String domainId, String principal, String sysId, String newPassword) {
+	public boolean isPasswordEq(String domainId, String principal, String sysId, String newPassword) throws Exception{
 		if (domainId == null) {
 			throw new NullPointerException("domainId is null");
 		}
@@ -287,16 +300,16 @@ public class LoginDataServiceImpl implements LoginDataService {
 		return false;		
 	}
 	
-	public String encryptPassword(String password ) throws EncryptionException {
+	public String encryptPassword(String userId, String password ) throws EncryptionException {
 		if (password != null) {
-			return cryptor.encrypt(password);
+			return cryptor.encrypt(keyManagementService.getUserKey(userId, KeyName.password.name()), password);
 		}
 		return null;
 	}
 
-	public String decryptPassword(String password ) throws EncryptionException {
+	public String decryptPassword(String userId, String password ) throws EncryptionException {
 		if (password != null) {
-			return cryptor.decrypt(password);
+			return cryptor.decrypt(keyManagementService.getUserKey(userId, KeyName.password.name()), password);
 		}
 		return null;
 	}
@@ -304,12 +317,14 @@ public class LoginDataServiceImpl implements LoginDataService {
 	public List<Login> getLoginByUser(String userId) {
 		
 		log.info("LoginDataService: getLoginByUser userId=" + userId);
-		
-		if (userId == null)
-			throw new NullPointerException("userId is null");
+
+        if(userId == null) {
+            throw new NullPointerException("userId is null");
+        }
 		List<Login> loginList = loginDao.findUser(userId);
-		if (loginList == null || loginList.size() == 0)
-			return null;
+        if(loginList == null || loginList.size() == 0) {
+            return null;
+        }
 		return loginList;
 		
 		
@@ -318,11 +333,13 @@ public class LoginDataServiceImpl implements LoginDataService {
 	}
 	
 	public List<Login> getLoginByDomain(String domain) {
-		if (domain == null)
-			throw new NullPointerException("domain is null");
+        if(domain == null) {
+            throw new NullPointerException("domain is null");
+        }
 		List<Login> loginList = loginDao.findLoginByDomain(domain);
-		if (loginList == null || loginList.size() == 0)
-			return null;
+        if(loginList == null || loginList.size() == 0) {
+            return null;
+        }
 		return loginList;
 
 		
@@ -359,8 +376,9 @@ public class LoginDataServiceImpl implements LoginDataService {
 	
 
 	public void removeLogin(String serviceId, String login, String managedSysId) {
-		if (login == null)
-			throw new NullPointerException("Login is null");
+        if(login == null) {
+            throw new NullPointerException("Login is null");
+        }
 		
 		LoginId id = new LoginId(serviceId, login, managedSysId);
 		
@@ -370,10 +388,12 @@ public class LoginDataServiceImpl implements LoginDataService {
 	
 	public int changeIdentityName(String newPrincipalName, String newPassword, 
 			String userId, String managedSysId,  String domainId) {
-		if (userId == null)
-			throw new NullPointerException("userId is null");
-		if (managedSysId == null)
-			throw new NullPointerException("managedSysId is null");
+        if(userId == null) {
+            throw new NullPointerException("userId is null");
+        }
+        if(managedSysId == null) {
+            throw new NullPointerException("managedSysId is null");
+        }
 	
 		return loginDao.changeIdentity(newPrincipalName, newPassword, userId, managedSysId);
 	
@@ -382,8 +402,9 @@ public class LoginDataServiceImpl implements LoginDataService {
 
 
 	public void updateLogin(Login login) {
-		if (login == null)
-			throw new NullPointerException("Login is null");
+        if(login == null) {
+            throw new NullPointerException("Login is null");
+        }
 
         log.debug("Updating Identity" + login);
         
@@ -471,8 +492,8 @@ public class LoginDataServiceImpl implements LoginDataService {
 		org.hibernate.Hibernate.initialize(usr.getEmailAddress());
 		org.hibernate.Hibernate.initialize(usr.getAddresses());
 		org.hibernate.Hibernate.initialize(usr.getUserAttributes());
-		
-		
+
+
 		return null;
 	}
 

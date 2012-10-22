@@ -208,7 +208,7 @@
 	</bean>	
 
 	<bean id="managedSysService" class="org.openiam.idm.srvc.mngsys.service.ManagedSystemDataServiceImpl" >
-		<property name="managedSysDao" ref="managedSysDAO" />
+		<!--<property name="managedSysDao" ref="managedSysDAO" />-->
 		<property name="managedSysObjectMatchDao" ref="managedSysObjectMatchDAO" />
 		<property name="approverAssociationDao" ref="approverAssociationDAO" />
 		<property name="userManager" ref="userManager" />
@@ -216,12 +216,6 @@
 		<property name="cryptor" ref="cryptor" />
 	</bean>
 	
-	<bean id="managedSysDAO" class="org.openiam.idm.srvc.mngsys.service.ManagedSysDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"></property>
-	</bean>	
-	<bean id="managedSysObjectMatchDAO" class="org.openiam.idm.srvc.mngsys.service.ManagedSystemObjectMatchDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"></property>
-	</bean>	
 	<bean id="approverAssociationDAO" class="org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAOImpl" >
 		<property name="sessionFactory" ref="sessionFactory"></property>
 	</bean>	

@@ -27,6 +27,7 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.exception.EncryptionException;
+import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.pswd.dto.Password;
 import org.openiam.idm.srvc.pswd.dto.PasswordHistory;
@@ -78,13 +79,15 @@ public class PasswordHistoryRule extends AbstractPasswordRule {
 				return retval;
 			}
 			// check the list.
-			log.info("Found " + historyList.size() + " passwords in the history");
+            String userId = (user==null)?lg.getUserId():user.getUserId();
+
+            log.info("Found " + historyList.size() + " passwords in the history");
 			for ( PasswordHistory hist  : historyList) {
 				String pwd = hist.getPassword();
 				String decrypt = null;
 				try {
-					decrypt =  cryptor.decrypt(pwd);
-				}catch(EncryptionException e) {
+					decrypt =  cryptor.decrypt(keyManagementService.getUserKey(userId, KeyName.password.name()), pwd);
+				}catch(Exception e) {
 					log.error("PasswordHistoryRule failed due to decrption error. ");
 					return PasswordValidationCode.FAIL_HISTORY_RULE;
 				}

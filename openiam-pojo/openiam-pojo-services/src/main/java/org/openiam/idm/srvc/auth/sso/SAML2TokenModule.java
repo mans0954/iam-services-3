@@ -304,7 +304,7 @@ private Subject buildSubject(String userId, String principal, String issuer) {
 
 	}
 
-    public String getDecryptedToken(String token) {
+    public String getDecryptedToken(String userId,String token)throws Exception {
         return null;
     }
 

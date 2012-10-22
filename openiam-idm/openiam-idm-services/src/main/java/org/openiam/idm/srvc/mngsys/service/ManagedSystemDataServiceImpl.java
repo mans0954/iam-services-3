@@ -3,31 +3,33 @@ package org.openiam.idm.srvc.mngsys.service;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import javax.jws.WebParam;
 import javax.jws.WebService;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.exception.EncryptionException;
+import org.openiam.idm.srvc.key.constant.KeyName;
+import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
-import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.util.encrypt.Cryptor;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @WebService(endpointInterface = "org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService", 
 		targetNamespace = "urn:idm.openiam.org/srvc/mngsys/service", 
 		portName = "ManagedSystemWebServicePort",
 		serviceName = "ManagedSystemWebService")
 public class ManagedSystemDataServiceImpl implements ManagedSystemDataService {
-
+    @Autowired
 	protected ManagedSysDAO managedSysDao;
-	protected ManagedSystemObjectMatchDAO managedSysObjectMatchDao;	
+	protected ManagedSystemObjectMatchDAO managedSysObjectMatchDao;
 	protected ApproverAssociationDAO approverAssociationDao;
 	protected UserDataService userManager;
 	protected AttributeMapDAO attributeMapDao;
+    @Autowired
+    protected KeyManagementService keyManagementService;
 	
 
 	private static final Log log = LogFactory.getLog(ManagedSystemDataServiceImpl.class);
@@ -45,8 +47,8 @@ public class ManagedSystemDataServiceImpl implements ManagedSystemDataService {
 		
         if (encrypt && sys.getPswd() != null) {
         	try {
-        		sys.setPswd(cryptor.encrypt(sys.getPswd()));
-        	}catch(EncryptionException e) {
+        		sys.setPswd(cryptor.encrypt(keyManagementService.getUserKey(sys.getUserId(), KeyName.password.name()),sys.getPswd()));
+        	}catch(Exception e) {
         		log.error(e);
         	}
         };
@@ -64,8 +66,8 @@ public class ManagedSystemDataServiceImpl implements ManagedSystemDataService {
 		
 		if (sys != null && sys.getPswd() != null) {
 			try {
-				sys.setDecryptPassword(cryptor.decrypt(sys.getPswd()));
-        	}catch(EncryptionException e) {
+				sys.setDecryptPassword(cryptor.decrypt(keyManagementService.getUserKey(sys.getUserId(), KeyName.password.name()),sys.getPswd()));
+        	}catch(Exception e) {
         		log.error(e);
         	}
 		}
@@ -78,8 +80,9 @@ public class ManagedSystemDataServiceImpl implements ManagedSystemDataService {
 			throw new NullPointerException("providerId is null");
 		}
 		List<ManagedSys> sysList= managedSysDao.findbyConnectorId(providerId);
-		if (sysList == null)
-			return null;
+        if(sysList == null) {
+            return null;
+        }
 		int size = sysList.size();
 		ManagedSys[] sysAry = new ManagedSys[size];
 		sysList.toArray(sysAry);
@@ -96,8 +99,9 @@ public class ManagedSystemDataServiceImpl implements ManagedSystemDataService {
 			throw new NullPointerException("domainId is null");
 		}
 		List<ManagedSys> sysList= managedSysDao.findbyDomain(domainId);
-		if (sysList == null)
-			return null;
+        if(sysList == null) {
+            return null;
+        }
 		int size = sysList.size();
 		ManagedSys[] sysAry = new ManagedSys[size];
 		sysList.toArray(sysAry);
@@ -107,8 +111,9 @@ public class ManagedSystemDataServiceImpl implements ManagedSystemDataService {
 	
 	public ManagedSys[] getAllManagedSys() {
 		List<ManagedSys> sysList= managedSysDao.findAllManagedSys();
-		if (sysList == null)
-			return null;
+        if(sysList == null) {
+            return null;
+        }
 		int size = sysList.size();
 		ManagedSys[] sysAry = new ManagedSys[size];
 		sysList.toArray(sysAry);
@@ -130,8 +135,8 @@ public class ManagedSystemDataServiceImpl implements ManagedSystemDataService {
 		}
         if (encrypt && sys.getPswd() != null) {
         	try {
-        		sys.setPswd(cryptor.encrypt(sys.getPswd()));
-        	}catch(EncryptionException e) {
+        		sys.setPswd(cryptor.encrypt(keyManagementService.getUserKey(sys.getUserId(), KeyName.password.name()), sys.getPswd()));
+        	}catch(Exception e) {
         		log.error(e);
         	}
         };
@@ -252,29 +257,33 @@ public class ManagedSystemDataServiceImpl implements ManagedSystemDataService {
 
 
 	public ApproverAssociation addApproverAssociation(ApproverAssociation approverAssociation) {
-		if (approverAssociation == null)
-			throw new IllegalArgumentException("approverAssociation object is null");
+        if(approverAssociation == null) {
+            throw new IllegalArgumentException("approverAssociation object is null");
+        }
 
 		return approverAssociationDao.add(approverAssociation);
 	}
 
 	public ApproverAssociation updateApproverAssociation(ApproverAssociation approverAssociation) {
-		if (approverAssociation == null)
-			throw new IllegalArgumentException("approverAssociation object is null");
+        if(approverAssociation == null) {
+            throw new IllegalArgumentException("approverAssociation object is null");
+        }
 
 		return approverAssociationDao.update(approverAssociation);
 	}
 
 	public ApproverAssociation getApproverAssociation(String approverAssociationId) {
-		if (approverAssociationId == null)
-			throw new IllegalArgumentException("approverAssociationId is null");
+        if(approverAssociationId == null) {
+            throw new IllegalArgumentException("approverAssociationId is null");
+        }
 
 		return approverAssociationDao.findById(approverAssociationId);
 	}
 
 	public void removeApproverAssociation(String approverAssociationId) {
-		if (approverAssociationId == null)
-			throw new IllegalArgumentException("approverAssociationId is null");
+        if(approverAssociationId == null) {
+            throw new IllegalArgumentException("approverAssociationId is null");
+        }
 		ApproverAssociation obj = this.approverAssociationDao.findById(approverAssociationId);
 		this.approverAssociationDao.remove(obj);
 	}
@@ -285,60 +294,69 @@ public class ManagedSystemDataServiceImpl implements ManagedSystemDataService {
 
 	
 	public List<ApproverAssociation> getApproverByRequestType(String requestType, int level) {
-		if (requestType == null)
-			throw new IllegalArgumentException("requestType is null");
+        if(requestType == null) {
+            throw new IllegalArgumentException("requestType is null");
+        }
 		return this.approverAssociationDao.findApproversByRequestType(requestType, level);
 	}
 	
 	public List<ApproverAssociation> getAllApproversByRequestType(String requestType) {
-		if (requestType == null)
-			throw new IllegalArgumentException("requestType is null");
+        if(requestType == null) {
+            throw new IllegalArgumentException("requestType is null");
+        }
 		return approverAssociationDao.findAllApproversByRequestType(requestType);		
 	}
 	
 	public List<ApproverAssociation> getApproversByObjectId (String associationObjId) {
-		if (associationObjId == null)
-			throw new IllegalArgumentException("associationObjId is null");
+        if(associationObjId == null) {
+            throw new IllegalArgumentException("associationObjId is null");
+        }
 		return this.approverAssociationDao.findApproversByObjectId(associationObjId);
 	}
 
 	public int removeApproversByObjectId(String associationObjId) {
-		if (associationObjId == null)
-			throw new IllegalArgumentException("associationObjId is null");
+        if(associationObjId == null) {
+            throw new IllegalArgumentException("associationObjId is null");
+        }
 		return this.approverAssociationDao.removeApproversByObjectId(associationObjId);
 	}
 
 	// find by RESOURCE, GROUP, ROLE, SUPERVISOR,INDIVIDUAL
 	List<ApproverAssociation> getApproversByObjectType(String associationType) {
-		if (associationType == null)
-			throw new IllegalArgumentException("associationType is null");
+        if(associationType == null) {
+            throw new IllegalArgumentException("associationType is null");
+        }
 		return this.approverAssociationDao.findApproversByObjectType(associationType);
 	}
 	
 	public int removeApproversByObjectType(String associationType) {
-		if (associationType == null)
-			throw new IllegalArgumentException("associationType is null");
+        if(associationType == null) {
+            throw new IllegalArgumentException("associationType is null");
+        }
 		return this.approverAssociationDao.removeApproversByObjectType(associationType);
 	}
 	
 	
 	List<ApproverAssociation> getApproversByAction(String associationObjId,
 			String action, int level) {
-		if (associationObjId == null)
-			throw new IllegalArgumentException("associationObjId is null");
+        if(associationObjId == null) {
+            throw new IllegalArgumentException("associationObjId is null");
+        }
 		return this.approverAssociationDao.findApproversByAction(associationObjId, action, level);
 	}
 
 	
 	List<ApproverAssociation> getApproversByUser(String userId) {
-		if (userId == null)
-			throw new IllegalArgumentException("userId is null");
+        if(userId == null) {
+            throw new IllegalArgumentException("userId is null");
+        }
 		return this.approverAssociationDao.findApproversByUser(userId);
 	}
 	
 	public int removeApproversByUser(String userId) {
-		if (userId == null)
-			throw new IllegalArgumentException("userId is null");
+        if(userId == null) {
+            throw new IllegalArgumentException("userId is null");
+        }
 		return this.approverAssociationDao.removeApproversByUser(userId);
 	}
 
@@ -363,8 +381,9 @@ public class ManagedSystemDataServiceImpl implements ManagedSystemDataService {
 	}
 
 	public AttributeMap getAttributeMap(String attributeMapId) {
-		if (attributeMapId == null)
-			throw new IllegalArgumentException("attributeMapId is null");
+        if(attributeMapId == null) {
+            throw new IllegalArgumentException("attributeMapId is null");
+        }
 
 		AttributeMap obj = attributeMapDao.findById(attributeMapId);
 
@@ -372,15 +391,17 @@ public class ManagedSystemDataServiceImpl implements ManagedSystemDataService {
 	}
 
 	public AttributeMap addAttributeMap(AttributeMap attributeMap) {
-		if (attributeMap == null)
-			throw new IllegalArgumentException("AttributeMap object is null");
+        if(attributeMap == null) {
+            throw new IllegalArgumentException("AttributeMap object is null");
+        }
 
 		return attributeMapDao.add(attributeMap);
 	}
 
 	public AttributeMap updateAttributeMap(AttributeMap attributeMap) {
-		if (attributeMap == null)
-			throw new IllegalArgumentException("attributeMap object is null");
+        if(attributeMap == null) {
+            throw new IllegalArgumentException("attributeMap object is null");
+        }
 
 		return attributeMapDao.update(attributeMap);
 	}
@@ -395,8 +416,9 @@ public class ManagedSystemDataServiceImpl implements ManagedSystemDataService {
 	}
 
 	public int removeResourceAttributeMaps(String resourceId) {
-		if (resourceId == null)
-			throw new IllegalArgumentException("resourceId is null");
+        if(resourceId == null) {
+            throw new IllegalArgumentException("resourceId is null");
+        }
 
 		return this.attributeMapDao.removeResourceAttributeMaps(resourceId);
 	}

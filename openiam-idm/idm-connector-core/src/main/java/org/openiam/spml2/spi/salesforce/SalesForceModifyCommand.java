@@ -8,7 +8,6 @@ import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.spml2.msg.AddResponseType;
 import org.openiam.spml2.msg.ErrorCode;
 import org.openiam.spml2.msg.ModificationType;
 import org.openiam.spml2.msg.ModifyRequestType;

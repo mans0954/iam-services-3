@@ -3,7 +3,6 @@ package org.openiam.spml2.spi.orcl;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
 import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.spml2.msg.*;
@@ -11,7 +10,6 @@ import org.openiam.spml2.spi.common.LookupCommand;
 import org.openiam.spml2.util.msg.ResponseBuilder;
 
 import java.sql.*;
-import java.text.ParseException;
 
 /**
  * Created with IntelliJ IDEA.

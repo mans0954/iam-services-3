@@ -1,7 +1,5 @@
 package org.openiam.spml2.spi.salesforce;
 
-import java.text.ParseException;
-
 import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
 import org.openiam.idm.srvc.res.dto.Resource;
@@ -13,7 +11,6 @@ import org.openiam.spml2.spi.common.SuspendCommand;
 import org.openiam.spml2.spi.salesforce.dao.CallerDependentSalesForceDao;
 import org.openiam.spml2.spi.salesforce.dao.SalesForceDao;
 import org.openiam.spml2.spi.salesforce.exception.SalesForceDataIntegrityException;
-import org.openiam.spml2.spi.salesforce.exception.SalesForcePersistException;
 import org.openiam.spml2.util.msg.ResponseBuilder;
 
 import com.sforce.ws.ConnectionException;

@@ -2,7 +2,6 @@ package org.openiam.idm.srvc.recon.command;
 
 import org.mule.api.MuleContext;
 import org.mule.api.context.MuleContextAware;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
 import org.openiam.idm.srvc.mngsys.service.ConnectorDataService;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;

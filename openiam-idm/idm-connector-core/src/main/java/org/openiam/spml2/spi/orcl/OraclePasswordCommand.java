@@ -3,7 +3,6 @@ package org.openiam.spml2.spi.orcl;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
 import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.spml2.msg.ErrorCode;
 import org.openiam.spml2.msg.PSOIdentifierType;
 import org.openiam.spml2.msg.ResponseType;
@@ -13,9 +12,7 @@ import org.openiam.spml2.spi.common.PasswordCommand;
 import org.openiam.spml2.util.msg.ResponseBuilder;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.text.ParseException;
 
 /**
  * Created with IntelliJ IDEA.

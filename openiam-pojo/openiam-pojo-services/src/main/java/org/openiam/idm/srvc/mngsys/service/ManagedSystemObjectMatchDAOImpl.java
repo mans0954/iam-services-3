@@ -2,18 +2,19 @@ package org.openiam.idm.srvc.mngsys.service;
 
 // Generated Dec 20, 2008 7:54:59 PM by Hibernate Tools 3.2.2.GA
 
-import java.util.List;
-import javax.naming.InitialContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.HibernateException;
-import org.hibernate.LockMode;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
+
+import javax.naming.InitialContext;
+import java.util.List;
+
 import static org.hibernate.criterion.Example.create;
 
-import org.openiam.idm.srvc.mngsys.dto.*;
 /**
  * Home object for domain model class MngSysObjectMatch.
  * @see org.openiam.idm.srvc.meta.service.MngSysObjectMatch
@@ -90,7 +91,7 @@ public class ManagedSystemObjectMatchDAOImpl implements ManagedSystemObjectMatch
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.mngsys.service.ManagedSystemObjectMatchDAO#findById(java.lang.String)
 	 */
-	public ManagedSystemObjectMatch findById(java.lang.String id) {
+	public ManagedSystemObjectMatch findById(String id) {
 		log.debug("getting MngSysObjectMatch instance with id: " + id);
 		try {
 			ManagedSystemObjectMatch instance = (ManagedSystemObjectMatch) sessionFactory

@@ -1,6 +1,5 @@
 package org.openiam.provision.service;
 
-import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -11,24 +10,15 @@ import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.exception.EncryptionException;
-import org.openiam.exception.ObjectNotFoundException;
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditHelper;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
-import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService;
-import org.openiam.idm.srvc.pswd.dto.Password;
-import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
-import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.spml2.msg.PSOIdentifierType;
-import org.openiam.spml2.msg.password.SetPasswordRequestType;
 import org.openiam.spml2.msg.suspend.ResumeRequestType;
 import org.openiam.spml2.msg.suspend.SuspendRequestType;
 

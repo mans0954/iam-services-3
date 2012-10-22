@@ -1,6 +1,5 @@
 package org.openiam.spml2.spi.salesforce;
 
-import java.text.ParseException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;

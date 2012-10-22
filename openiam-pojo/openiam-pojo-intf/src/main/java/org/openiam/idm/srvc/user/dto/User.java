@@ -3,13 +3,16 @@ package org.openiam.idm.srvc.user.dto;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.annotations.GenericGenerator;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseConstants;
+import org.openiam.core.domain.UserKey;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 
+import javax.persistence.*;
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.*;
@@ -101,6 +104,8 @@ import java.util.*;
         EmailAddress.class,
         UserAttribute.class
 })
+@Entity
+@Table(name = "USERS")
 public class User extends org.openiam.base.BaseObject {
 
 
@@ -174,7 +179,8 @@ public class User extends org.openiam.base.BaseObject {
     protected String phoneExt;
     protected Integer showInSearch;
     protected Integer delAdmin;
-
+    @XmlTransient
+    protected String systemFlag;
     protected List<Login> principalList;
     protected Supervisor supervisor;
     protected String alternateContactId;
@@ -189,7 +195,7 @@ public class User extends org.openiam.base.BaseObject {
 
 
     @XmlJavaTypeAdapter(UserNoteSetAdapter.class)
-    protected Set<UserNote> userNotes = new HashSet(0);
+    protected Set<UserNote> userNotes = new HashSet<UserNote>(0);
     //protected Set<Group> groups = new HashSet<Group>(0);
 
 
@@ -201,6 +207,9 @@ public class User extends org.openiam.base.BaseObject {
     protected Set<Phone> phones = new HashSet<Phone>(0);
 
     protected Set<EmailAddress> emailAddresses = new HashSet<EmailAddress>(0);
+    @XmlTransient
+    protected Set<UserKey> userKeys = new HashSet<UserKey>(0);
+
 
     //protected Set userAttributes = new HashSet(0);
 
@@ -222,6 +231,10 @@ public class User extends org.openiam.base.BaseObject {
 
 
     // Property accessors
+    @Id
+    @GeneratedValue(generator="system-uuid")
+    @GenericGenerator(name="system-uuid", strategy = "uuid")
+    @Column(name="USER_ID", length=32)
     public String getUserId() {
         return this.userId;
     }
@@ -230,7 +243,7 @@ public class User extends org.openiam.base.BaseObject {
 
         this.userId = userId;
     }
-
+    @Column(name="FIRST_NAME", length = 50)
     public String getFirstName() {
         return this.firstName;
     }
@@ -238,7 +251,7 @@ public class User extends org.openiam.base.BaseObject {
     public void setFirstName(String firstName) {
         this.firstName = firstName;
     }
-
+    @Column(name="LAST_NAME", length = 50)
     public String getLastName() {
         return this.lastName;
     }
@@ -246,7 +259,7 @@ public class User extends org.openiam.base.BaseObject {
     public void setLastName(String lastName) {
         this.lastName = lastName;
     }
-
+    @Column(name="MIDDLE_INIT", length = 50)
     public String getMiddleInit() {
         return this.middleInit;
     }
@@ -254,7 +267,7 @@ public class User extends org.openiam.base.BaseObject {
     public void setMiddleInit(String middleInit) {
         this.middleInit = middleInit;
     }
-
+    @Column(name="TITLE",length = 100)
     public String getTitle() {
         return this.title;
     }
@@ -262,7 +275,7 @@ public class User extends org.openiam.base.BaseObject {
     public void setTitle(String title) {
         this.title = title;
     }
-
+    @Column(name="DEPT_CD",length = 50)
     public String getDeptCd() {
         return this.deptCd;
     }
@@ -271,7 +284,8 @@ public class User extends org.openiam.base.BaseObject {
         this.deptCd = dept;
     }
 
-
+    @Column(name="BIRTHDATE",length = 19)
+    @Temporal(TemporalType.TIMESTAMP)
     public Date getBirthdate() {
         return this.birthdate;
     }
@@ -280,6 +294,8 @@ public class User extends org.openiam.base.BaseObject {
         this.birthdate = birthdate;
     }
 
+
+    @Column(name="SEX",length = 1)
     public String getSex() {
         return this.sex;
     }
@@ -287,7 +303,8 @@ public class User extends org.openiam.base.BaseObject {
     public void setSex(String sex) {
         this.sex = sex;
     }
-
+    @Column(name="CREATE_DATE",length = 19)
+    @Temporal(TemporalType.TIMESTAMP)
     public Date getCreateDate() {
         return this.createDate;
     }
@@ -295,7 +312,7 @@ public class User extends org.openiam.base.BaseObject {
     public void setCreateDate(Date createDate) {
         this.createDate = createDate;
     }
-
+    @Column(name="CREATED_BY",length = 32)
     public String getCreatedBy() {
         return this.createdBy;
     }
@@ -303,7 +320,8 @@ public class User extends org.openiam.base.BaseObject {
     public void setCreatedBy(String createdBy) {
         this.createdBy = createdBy;
     }
-
+    @Column(name="LAST_UPDATE",length = 19)
+    @Temporal(TemporalType.TIMESTAMP)
     public Date getLastUpdate() {
         return this.lastUpdate;
     }
@@ -311,7 +329,7 @@ public class User extends org.openiam.base.BaseObject {
     public void setLastUpdate(Date lastUpdate) {
         this.lastUpdate = lastUpdate;
     }
-
+    @Column(name="LAST_UPDATED_BY",length = 32)
     public String getLastUpdatedBy() {
         return this.lastUpdatedBy;
     }
@@ -319,7 +337,7 @@ public class User extends org.openiam.base.BaseObject {
     public void setLastUpdatedBy(String lastUpdatedBy) {
         this.lastUpdatedBy = lastUpdatedBy;
     }
-
+    @Column(name="PREFIX", length = 4)
     public String getPrefix() {
         return this.prefix;
     }
@@ -328,6 +346,7 @@ public class User extends org.openiam.base.BaseObject {
         this.prefix = prefix;
     }
 
+    @Column(name="SUFFIX", length = 20)
     public String getSuffix() {
         return this.suffix;
     }
@@ -336,6 +355,7 @@ public class User extends org.openiam.base.BaseObject {
         this.suffix = suffix;
     }
 
+    @Column(name="USER_TYPE_IND", length = 20)
     public String getUserTypeInd() {
         return this.userTypeInd;
     }
@@ -343,7 +363,7 @@ public class User extends org.openiam.base.BaseObject {
     public void setUserTypeInd(String userTypeInd) {
         this.userTypeInd = userTypeInd;
     }
-
+    @Column(name="EMPLOYEE_ID", length = 32)
     public String getEmployeeId() {
         return this.employeeId;
     }
@@ -351,7 +371,7 @@ public class User extends org.openiam.base.BaseObject {
     public void setEmployeeId(String employeeId) {
         this.employeeId = employeeId;
     }
-
+    @Column(name="EMPLOYEE_TYPE", length = 20)
     public String getEmployeeType() {
         return this.employeeType;
     }
@@ -359,15 +379,14 @@ public class User extends org.openiam.base.BaseObject {
     public void setEmployeeType(String employeeType) {
         this.employeeType = employeeType;
     }
-
+    @Column(name="LOCATION_CD", length = 50)
     public String getLocationCd() {
         return this.locationCd;
     }
-
     public void setLocationCd(String locationId) {
         this.locationCd = locationId;
     }
-
+    @Column(name="LOCATION_NAME", length = 100)
     public String getLocationName() {
         return locationName;
     }
@@ -375,7 +394,7 @@ public class User extends org.openiam.base.BaseObject {
     public void setLocationName(String locationName) {
         this.locationName = locationName;
     }
-
+    @Column(name="COMPANY_ID", length = 32)
     public String getCompanyId() {
         return this.companyId;
     }
@@ -383,7 +402,7 @@ public class User extends org.openiam.base.BaseObject {
     public void setCompanyId(String companyId) {
         this.companyId = companyId;
     }
-
+    @Column(name="COMPANY_OWNER_ID", length = 32)
     public String getCompanyOwnerId() {
         return this.companyOwnerId;
     }
@@ -392,7 +411,7 @@ public class User extends org.openiam.base.BaseObject {
         this.companyOwnerId = companyOwnerId;
     }
 
-
+    @Column(name="MANAGER_ID", length = 32)
     public String getManagerId() {
         return this.managerId;
     }
@@ -400,7 +419,7 @@ public class User extends org.openiam.base.BaseObject {
     public void setManagerId(String managerId) {
         this.managerId = managerId;
     }
-
+    @Column(name="JOB_CODE", length = 50)
     public String getJobCode() {
         return this.jobCode;
     }
@@ -408,7 +427,7 @@ public class User extends org.openiam.base.BaseObject {
     public void setJobCode(String jobCode) {
         this.jobCode = jobCode;
     }
-
+    @Column(name="COST_CENTER", length = 20)
     public String getCostCenter() {
         return this.costCenter;
     }
@@ -416,7 +435,8 @@ public class User extends org.openiam.base.BaseObject {
     public void setCostCenter(String costCenter) {
         this.costCenter = costCenter;
     }
-
+    @Column(name="START_DATE", length = 10)
+    @Temporal(TemporalType.DATE)
     public Date getStartDate() {
         return this.startDate;
     }
@@ -424,7 +444,8 @@ public class User extends org.openiam.base.BaseObject {
     public void setStartDate(Date startDate) {
         this.startDate = startDate;
     }
-
+    @Column(name="LAST_DATE", length = 10)
+    @Temporal(TemporalType.DATE)
     public Date getLastDate() {
         return this.lastDate;
     }
@@ -433,8 +454,9 @@ public class User extends org.openiam.base.BaseObject {
         this.lastDate = lastDate;
     }
 
-
-    public Set getUserNotes() {
+    @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
+    @JoinColumn(name="USER_ID", referencedColumnName="USER_ID")
+    public Set<UserNote> getUserNotes() {
         return this.userNotes;
     }
 
@@ -480,7 +502,9 @@ public class User extends org.openiam.base.BaseObject {
         return nt;
     }
 
-
+    @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
+    @JoinColumn(name="USER_ID", referencedColumnName="USER_ID")
+    @MapKeyColumn(name="NAME")
     public Map<String, UserAttribute> getUserAttributes() {
         return this.userAttributes;
     }
@@ -529,6 +553,8 @@ public class User extends org.openiam.base.BaseObject {
      *
      * @return
      */
+    @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
+    @JoinColumn(name="PARENT_ID", referencedColumnName="USER_ID")
     public Set<Address> getAddresses() {
         return addresses;
     }
@@ -552,13 +578,23 @@ public class User extends org.openiam.base.BaseObject {
         }
         return null;
     }
-
+    @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
+    @JoinColumn(name="PARENT_ID", referencedColumnName="USER_ID")
     public Set<EmailAddress> getEmailAddress() {
         return emailAddresses;
     }
 
     public void setEmailAddress(Set<EmailAddress> emailAddresses) {
         this.emailAddresses = emailAddresses;
+    }
+    @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
+    @JoinColumn(name="USER_ID", referencedColumnName="USER_ID")
+    public Set<UserKey> getUserKeys() {
+        return userKeys;
+    }
+
+    public void setUserKeys(Set<UserKey> userKeys) {
+        this.userKeys = userKeys;
     }
 
     public EmailAddress getEmailByName(String name) {
@@ -571,7 +607,8 @@ public class User extends org.openiam.base.BaseObject {
         }
         return null;
     }
-
+    @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
+    @JoinColumn(name="PARENT_ID", referencedColumnName="USER_ID")
     public Set<Phone> getPhone() {
         return phones;
     }
@@ -624,7 +661,7 @@ public class User extends org.openiam.base.BaseObject {
         return null;
     }
 
-
+   @Column(name = "DIVISION", length = 50)
     public String getDivision() {
         return division;
     }
@@ -632,7 +669,7 @@ public class User extends org.openiam.base.BaseObject {
     public void setDivision(String division) {
         this.division = division;
     }
-
+    @Column(name="MAIL_CODE",length = 50)
     public String getMailCode() {
         return mailCode;
     }
@@ -640,7 +677,7 @@ public class User extends org.openiam.base.BaseObject {
     public void setMailCode(String mailCode) {
         this.mailCode = mailCode;
     }
-
+     @Column(name="DEPT_NAME",length = 100)
     public String getDeptName() {
         return deptName;
     }
@@ -648,7 +685,7 @@ public class User extends org.openiam.base.BaseObject {
     public void setDeptName(String deptName) {
         this.deptName = deptName;
     }
-
+    @Column(name="COUNTRY",length = 30)
     public String getCountry() {
         return country;
     }
@@ -656,7 +693,7 @@ public class User extends org.openiam.base.BaseObject {
     public void setCountry(String country) {
         this.country = country;
     }
-
+    @Column(name="BLDG_NUM",length = 10)
     public String getBldgNum() {
         return bldgNum;
     }
@@ -664,7 +701,7 @@ public class User extends org.openiam.base.BaseObject {
     public void setBldgNum(String bldgNum) {
         this.bldgNum = bldgNum;
     }
-
+    @Column(name="STREET_DIRECTION",length = 20)
     public String getStreetDirection() {
         return streetDirection;
     }
@@ -672,7 +709,7 @@ public class User extends org.openiam.base.BaseObject {
     public void setStreetDirection(String streetDirection) {
         this.streetDirection = streetDirection;
     }
-
+    @Column(name="ADDRESS1",length = 45)
     public String getAddress1() {
         return address1;
     }
@@ -680,7 +717,7 @@ public class User extends org.openiam.base.BaseObject {
     public void setAddress1(String address1) {
         this.address1 = address1;
     }
-
+    @Column(name="ADDRESS2",length = 45)
     public String getAddress2() {
         return address2;
     }
@@ -688,7 +725,7 @@ public class User extends org.openiam.base.BaseObject {
     public void setAddress2(String address2) {
         this.address2 = address2;
     }
-
+    @Column(name="ADDRESS3",length = 45)
     public String getAddress3() {
         return address3;
     }
@@ -696,7 +733,7 @@ public class User extends org.openiam.base.BaseObject {
     public void setAddress3(String address3) {
         this.address3 = address3;
     }
-
+    @Column(name="ADDRESS4",length = 45)
     public String getAddress4() {
         return address4;
     }
@@ -704,7 +741,7 @@ public class User extends org.openiam.base.BaseObject {
     public void setAddress4(String address4) {
         this.address4 = address4;
     }
-
+    @Column(name="ADDRESS5",length = 45)
     public String getAddress5() {
         return address5;
     }
@@ -712,7 +749,7 @@ public class User extends org.openiam.base.BaseObject {
     public void setAddress5(String address5) {
         this.address5 = address5;
     }
-
+    @Column(name="ADDRESS6",length = 45)
     public String getAddress6() {
         return address6;
     }
@@ -720,7 +757,7 @@ public class User extends org.openiam.base.BaseObject {
     public void setAddress6(String address6) {
         this.address6 = address6;
     }
-
+    @Column(name="ADDRESS7",length = 45)
     public String getAddress7() {
         return address7;
     }
@@ -728,7 +765,7 @@ public class User extends org.openiam.base.BaseObject {
     public void setAddress7(String address7) {
         this.address7 = address7;
     }
-
+    @Column(name="CITY",length = 30)
     public String getCity() {
         return city;
     }
@@ -736,7 +773,7 @@ public class User extends org.openiam.base.BaseObject {
     public void setCity(String city) {
         this.city = city;
     }
-
+    @Column(name="STATE",length = 15)
     public String getState() {
         return state;
     }
@@ -744,7 +781,7 @@ public class User extends org.openiam.base.BaseObject {
     public void setState(String state) {
         this.state = state;
     }
-
+    @Column(name="POSTAL_CD",length = 10)
     public String getPostalCd() {
         return postalCd;
     }
@@ -752,7 +789,7 @@ public class User extends org.openiam.base.BaseObject {
     public void setPostalCd(String postalCd) {
         this.postalCd = postalCd;
     }
-
+    @Column(name="AREA_CD",length = 10)
     public String getAreaCd() {
         return areaCd;
     }
@@ -760,7 +797,7 @@ public class User extends org.openiam.base.BaseObject {
     public void setAreaCd(String areaCd) {
         this.areaCd = areaCd;
     }
-
+    @Column(name="COUNTRY_CD",length = 10)
     public String getCountryCd() {
         return countryCd;
     }
@@ -768,7 +805,7 @@ public class User extends org.openiam.base.BaseObject {
     public void setCountryCd(String countryCd) {
         this.countryCd = countryCd;
     }
-
+    @Column(name="PHONE_NBR",length = 50)
     public String getPhoneNbr() {
         return phoneNbr;
     }
@@ -776,7 +813,7 @@ public class User extends org.openiam.base.BaseObject {
     public void setPhoneNbr(String phoneNbr) {
         this.phoneNbr = phoneNbr;
     }
-
+    @Column(name="PHONE_EXT",length = 20)
     public String getPhoneExt() {
         return phoneExt;
     }
@@ -803,7 +840,7 @@ public class User extends org.openiam.base.BaseObject {
             this.emailAddresses = emailAddresses;
         }
     */
-
+     @Column(name="EMAIL_ADDRESS",length = 320)
     public String getEmail() {
         return email;
     }
@@ -811,7 +848,8 @@ public class User extends org.openiam.base.BaseObject {
     public void setEmail(String email) {
         this.email = email;
     }
-
+     @Enumerated(EnumType.STRING)
+     @Column(name="STATUS",length = 40)
     public UserStatusEnum getStatus() {
         return status;
     }
@@ -819,7 +857,8 @@ public class User extends org.openiam.base.BaseObject {
     public void setStatus(UserStatusEnum status) {
         this.status = status;
     }
-
+    @Enumerated(EnumType.STRING)
+    @Column(name="SECONDARY_STATUS",length = 40)
     public UserStatusEnum getSecondaryStatus() {
         return secondaryStatus;
     }
@@ -827,7 +866,7 @@ public class User extends org.openiam.base.BaseObject {
     public void setSecondaryStatus(UserStatusEnum secondaryStatus) {
         this.secondaryStatus = secondaryStatus;
     }
-
+    @Column(name="CLASSIFICATION",length = 20)
     public String getClassification() {
         return classification;
     }
@@ -836,7 +875,7 @@ public class User extends org.openiam.base.BaseObject {
         this.classification = classification;
     }
 
-
+    @Column(name="TYPE_ID",length = 20)
     public String getMetadataTypeId() {
         return metadataTypeId;
     }
@@ -844,7 +883,7 @@ public class User extends org.openiam.base.BaseObject {
     public void setMetadataTypeId(String metadataTypeId) {
         this.metadataTypeId = metadataTypeId;
     }
-
+    @Column(name="PASSWORD_THEME", length =20 )
     public String getPasswordTheme() {
         return passwordTheme;
     }
@@ -852,7 +891,7 @@ public class User extends org.openiam.base.BaseObject {
     public void setPasswordTheme(String passwordTheme) {
         this.passwordTheme = passwordTheme;
     }
-
+    @Column(name="NICKNAME", length =40 )
     public String getNickname() {
         return nickname;
     }
@@ -860,7 +899,7 @@ public class User extends org.openiam.base.BaseObject {
     public void setNickname(String nickname) {
         this.nickname = nickname;
     }
-
+    @Column(name="MAIDEN_NAME", length =40 )
     public String getMaidenName() {
         return maidenName;
     }
@@ -868,7 +907,7 @@ public class User extends org.openiam.base.BaseObject {
     public void setMaidenName(String maidenName) {
         this.maidenName = maidenName;
     }
-
+    @Column(name="SHOW_IN_SEARCH", nullable =true )
     public Integer getShowInSearch() {
         return showInSearch;
     }
@@ -876,7 +915,8 @@ public class User extends org.openiam.base.BaseObject {
     public void setShowInSearch(Integer showInSearch) {
         this.showInSearch = showInSearch;
     }
-
+    @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
+    @JoinColumn(name="USER_ID", referencedColumnName="USER_ID")
     public List<Login> getPrincipalList() {
         return principalList;
     }
@@ -884,7 +924,7 @@ public class User extends org.openiam.base.BaseObject {
     public void setPrincipalList(List<Login> principalList) {
         this.principalList = principalList;
     }
-
+    @Transient
     public Supervisor getSupervisor() {
         return supervisor;
     }
@@ -892,7 +932,7 @@ public class User extends org.openiam.base.BaseObject {
     public void setSupervisor(Supervisor supervisor) {
         this.supervisor = supervisor;
     }
-
+    @Column(name="ALTERNATE_ID",length = 32)
     public String getAlternateContactId() {
         return alternateContactId;
     }
@@ -900,7 +940,7 @@ public class User extends org.openiam.base.BaseObject {
     public void setAlternateContactId(String alternateContactId) {
         this.alternateContactId = alternateContactId;
     }
-
+    @Transient
     public String getSecurityDomain() {
         return securityDomain;
     }
@@ -908,7 +948,7 @@ public class User extends org.openiam.base.BaseObject {
     public void setSecurityDomain(String securityDomain) {
         this.securityDomain = securityDomain;
     }
-
+    @Column(name="SUITE",length = 20)
     public String getSuite() {
         return suite;
     }
@@ -1345,7 +1385,7 @@ public class User extends org.openiam.base.BaseObject {
 
         }
     }
-
+    @Column(name="DEL_ADMIN",nullable = true)
     public Integer getDelAdmin() {
         return delAdmin;
     }
@@ -1353,7 +1393,7 @@ public class User extends org.openiam.base.BaseObject {
     public void setDelAdmin(Integer delAdmin) {
         this.delAdmin = delAdmin;
     }
-
+    @Column(name="USER_OWNER_ID")
     public String getUserOwnerId() {
         return userOwnerId;
     }
@@ -1361,7 +1401,8 @@ public class User extends org.openiam.base.BaseObject {
     public void setUserOwnerId(String userOwnerId) {
         this.userOwnerId = userOwnerId;
     }
-
+    @Column(name="DATE_PASSWORD_CHANGED",length = 10)
+    @Temporal(TemporalType.DATE)
     public Date getDatePasswordChanged() {
         return datePasswordChanged;
     }
@@ -1369,13 +1410,22 @@ public class User extends org.openiam.base.BaseObject {
     public void setDatePasswordChanged(Date datePasswordChanged) {
         this.datePasswordChanged = datePasswordChanged;
     }
-
+    @Column(name="DATE_CHALLENGE_RESP_CHANGED",length = 10)
+    @Temporal(TemporalType.DATE)
     public Date getDateChallengeRespChanged() {
         return dateChallengeRespChanged;
     }
 
     public void setDateChallengeRespChanged(Date dateChallengeRespChanged) {
         this.dateChallengeRespChanged = dateChallengeRespChanged;
+    }
+     @Column(name = "SYSTEM_FLAG",length = 1)
+    public String getSystemFlag() {
+        return systemFlag;
+    }
+
+    public void setSystemFlag(String systemFlag) {
+        this.systemFlag = systemFlag;
     }
 
     @Override

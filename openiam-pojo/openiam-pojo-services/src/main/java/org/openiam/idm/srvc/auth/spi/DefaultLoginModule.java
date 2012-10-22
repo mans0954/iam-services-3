@@ -38,6 +38,7 @@ import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
 import org.openiam.idm.srvc.auth.sso.SSOTokenFactory;
 import org.openiam.idm.srvc.auth.sso.SSOTokenModule;
+import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.user.dto.User;
@@ -53,7 +54,7 @@ public class DefaultLoginModule extends AbstractLoginModule  {
 	
 	private static final Log log = LogFactory.getLog(DefaultLoginModule.class);
 
-	
+
 	public DefaultLoginModule() {	
 	}
 	
@@ -68,8 +69,7 @@ public class DefaultLoginModule extends AbstractLoginModule  {
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.auth.spi.LoginModule#login(org.openiam.idm.srvc.auth.context.AuthenticationContext)
 	 */
-	public Subject login(AuthenticationContext authContext)
-			throws AuthenticationException {
+	public Subject login(AuthenticationContext authContext) throws Exception {
 		
 		Subject sub = new Subject();
 
@@ -124,7 +124,7 @@ public class DefaultLoginModule extends AbstractLoginModule  {
 		tokenParam.put("PRINCIPAL", principal);
 		
 		// check the password
-		String decryptPswd = this.decryptPassword(lg.getPassword());
+		String decryptPswd = this.decryptPassword(lg.getUserId(), lg.getPassword());
 		if (decryptPswd != null && !decryptPswd.equals(password)) {
 
 			// if failed auth count is part of the polices, then do the following processing		
@@ -320,7 +320,7 @@ public class DefaultLoginModule extends AbstractLoginModule  {
 
 	/* supporting methods */
 	
-	private SSOToken token(String userId, Map tokenParam) {
+	private SSOToken token(String userId, Map tokenParam) throws Exception {
 		
 		log.debug("Generating Security Token");
 

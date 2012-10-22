@@ -8,17 +8,17 @@ package org.openiam.util.encrypt;
  */
 public class AESCryptor implements Cryptor {
 
-	public String decrypt(String input) {
+	public String decrypt(byte[] key,String input) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public String encrypt(String input) {
+	public String encrypt(byte[] key,String input) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public byte[] encryptTobyte(String input) {
+	public byte[] encryptTobyte(byte[] key,String input) {
 		// TODO Auto-generated method stub
 		return null;
 	}

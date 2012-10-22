@@ -1,15 +1,19 @@
 package org.openiam.idm.srvc.key.service;
 
+import org.openiam.exception.EncryptionException;
+import org.openiam.idm.srvc.user.dto.User;
+
 /**
  * Created by: Alexander Duckardt
  * Date: 09.10.12
  */
 public interface KeyManagementService {
-    String getUserKey(String userId, String keyName) throws Exception;
+    public  byte[] getUserKey(String userId, String keyName) throws EncryptionException;
 
-    Long refreshKeys()throws Exception;;
+    public Long refreshKeys()throws Exception;;
 
-    Long refreshUserKey(String userId)throws Exception;;
+    public Long generateUserKeys(String userId)throws Exception;
 
-    void generateUserKeys(String userId)throws Exception;;
+    public Long generateUserKeys(User user) throws Exception;
+
 }

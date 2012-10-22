@@ -34,8 +34,6 @@ import org.openiam.spml2.spi.common.ModifyCommand;
 import org.openiam.spml2.spi.common.PasswordCommand;
 import org.openiam.spml2.spi.common.ResumeCommand;
 import org.openiam.spml2.spi.common.SuspendCommand;
-import org.openiam.spml2.spi.common.jdbc.AbstractJDBCConnectorImpl;
-import org.openiam.spml2.spi.common.jdbc.JDBCConnectionMgr;
 import org.openiam.spml2.util.msg.ResponseBuilder;
 import org.springframework.beans.factory.annotation.Required;
 

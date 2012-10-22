@@ -11,7 +11,6 @@ import org.openiam.spml2.spi.common.PasswordCommand;
 import org.openiam.spml2.spi.salesforce.dao.CallerDependentSalesForceDao;
 import org.openiam.spml2.spi.salesforce.dao.SalesForceDao;
 import org.openiam.spml2.spi.salesforce.exception.SalesForceDataIntegrityException;
-import org.openiam.spml2.spi.salesforce.exception.SalesForcePersistException;
 import org.openiam.spml2.util.msg.ResponseBuilder;
 
 import com.sforce.ws.ConnectionException;

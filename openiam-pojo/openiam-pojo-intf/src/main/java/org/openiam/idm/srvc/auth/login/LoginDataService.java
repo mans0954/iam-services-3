@@ -80,7 +80,7 @@ public interface LoginDataService {
      * @param sysId
      * @return
      */
-    public String getPassword(String domainId, String principal, String sysId);
+    public String getPassword(String domainId, String principal, String sysId) throws Exception;
 
     /**
      * determines if the new passowrd is equal to the current password that is associated with this principal
@@ -91,7 +91,7 @@ public interface LoginDataService {
      * @param newPassword
      * @return
      */
-    public boolean isPasswordEq(String domainId, String principal, String sysId, String newPassword);
+    public boolean isPasswordEq(String domainId, String principal, String sysId, String newPassword) throws Exception;
 
     /**
      * Checks to see if a login exists for a user - domain - managed system combination
@@ -133,9 +133,9 @@ public interface LoginDataService {
      * @param password
      * @return
      */
-    public String encryptPassword(String password) throws EncryptionException;
+    public String encryptPassword(String userId, String password ) throws EncryptionException;
 
-    public String decryptPassword(String password) throws EncryptionException;
+    public String decryptPassword(String userId, String password ) throws EncryptionException;
 
     public List<Login> getLoginByUser(String userId);
 

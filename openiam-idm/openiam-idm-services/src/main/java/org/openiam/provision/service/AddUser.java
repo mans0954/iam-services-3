@@ -83,9 +83,14 @@ public class AddUser {
         ProvisionUserResponse resp = new ProvisionUserResponse();
         resp.setStatus(ResponseStatus.SUCCESS);
 		ResponseCode code;
-		
-		User newUser = userMgr.addUser(user.getUser());
-		if (newUser == null || newUser.getUserId() == null) {
+
+        User newUser = null;
+        try {
+            newUser = userMgr.addUser(user.getUser());
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+        }
+        if (newUser == null || newUser.getUserId() == null) {
 			resp.setStatus(ResponseStatus.FAILURE);
 			return resp;
 		}	
@@ -142,7 +147,7 @@ public class AddUser {
 	 			// encrypt the password
 	 			if (lg.getPassword() != null) {
 	 				String pswd = lg.getPassword();
-	 				lg.setPassword(loginManager.encryptPassword(pswd));
+	 				lg.setPassword(loginManager.encryptPassword(u.getUserId(), pswd));
 	 			}
 	 			loginManager.addLogin(lg);
 	 		}

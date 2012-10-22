@@ -22,6 +22,7 @@
 package org.openiam.idm.srvc.pswd.rule;
 
 import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
@@ -43,6 +44,7 @@ public abstract class AbstractPasswordRule {
 	protected Login lg;
 	protected PasswordHistoryDAO passwordHistoryDao;
 	protected Cryptor cryptor;
+    protected KeyManagementService keyManagementService;
 
 	public abstract PasswordValidationCode isValid(); 
 	
@@ -110,5 +112,11 @@ public abstract class AbstractPasswordRule {
 		this.cryptor = cryptor;
 	}
 
+    public KeyManagementService getKeyManagementService() {
+        return keyManagementService;
+    }
 
+    public void setKeyManagementService(KeyManagementService keyManagementService) {
+        this.keyManagementService = keyManagementService;
+    }
 }

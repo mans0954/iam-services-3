@@ -147,5 +147,31 @@ public class PasswordHistoryDAOImpl implements PasswordHistoryDAO {
 		}
 	}
 
+    /* (non-Javadoc)
+	 * @see org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO#findPasswordHistoryByPrincipal(java.lang.String, java.lang.String, java.lang.String)
+	 */
+    public List<PasswordHistory> findAllPasswordHistoryByPrincipal(
+            String domainId, String principal, String managedSys) {
+        log.debug("getting PwdHistoryByPrinciPal instance with id: " + principal);
+        try {
+            Session session = sessionFactory.getCurrentSession();
+            Query qry = session.createQuery("from PasswordHistory ph "
+                                            + " where ph.serviceId = :domainId and " +
+                                            " ph.managedSysId = :managedSys and " +
+                                            " ph.login = :principal " +
+                                            " order by ph.dateCreated desc ");
+            qry.setString("domainId", domainId);
+            qry.setString("managedSys", managedSys);
+            qry.setString("principal", principal);
 
+            List<PasswordHistory> result = (List<PasswordHistory>) qry.list();
+            if (result == null || result.size() == 0)
+                return null;
+            return result;
+
+        }catch (HibernateException re) {
+            log.error("get failed", re);
+            throw re;
+        }
+    }
 }

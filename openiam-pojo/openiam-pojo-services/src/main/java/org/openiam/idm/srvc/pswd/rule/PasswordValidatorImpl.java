@@ -32,6 +32,7 @@ import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginId;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
+import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.policy.dto.PolicyDefParam;
@@ -46,6 +47,7 @@ import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.script.ScriptFactory;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.util.encrypt.Cryptor;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * PasswordValidator validates a password against the password policy.
@@ -61,6 +63,8 @@ public class PasswordValidatorImpl implements PasswordValidator {
 	protected PasswordHistoryDAO passwordHistoryDao;
 	protected Cryptor cryptor;
 	protected String scriptEngine;
+    @Autowired
+    protected KeyManagementService keyManagementService;
 	
 	private static final Log log = LogFactory.getLog(PasswordValidatorImpl.class);
 	
@@ -143,6 +147,7 @@ public class PasswordValidatorImpl implements PasswordValidator {
                     rule.setPolicy(pswdPolicy);
                     rule.setPasswordHistoryDao(passwordHistoryDao);
                     rule.setCryptor(cryptor);
+                    rule.setKeyManagementService(keyManagementService);
                     // -- check if valid
                     PasswordValidationCode retval = rule.isValid();
 

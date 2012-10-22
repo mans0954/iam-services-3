@@ -260,7 +260,7 @@ public class SAML1TokenModule implements SSOTokenModule {
 		return null;
 	}
 
-    public String getDecryptedToken(String token) {
+    public String getDecryptedToken(String userId,String token)throws Exception {
         return null;
     }
 
@@ -291,5 +291,6 @@ public class SAML1TokenModule implements SSOTokenModule {
 	public void setTokenLife(int tokenLife) {
 		
 	}
+
 
 }

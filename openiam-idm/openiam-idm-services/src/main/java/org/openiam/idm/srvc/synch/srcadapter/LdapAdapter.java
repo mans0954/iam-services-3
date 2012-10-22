@@ -342,6 +342,24 @@ public class LdapAdapter implements SourceAdapter {
                     return resp;
 
 
+                } catch (Exception e ) {
+
+                    if(runningTask.contains(config.getSynchConfigId())) {
+                        runningTask.remove(config.getSynchConfigId());
+                    }
+
+                    log.error(e);
+
+                    synchStartLog.updateSynchAttributes("FAIL",ResponseCode.FAIL_OTHER.toString() , e.toString());
+                    auditHelper.logEvent(synchStartLog);
+
+
+                    SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
+                    resp.setErrorCode(ResponseCode.FAIL_OTHER);
+                    resp.setErrorText(e.toString());
+                    return resp;
+
+
                 }
             }
 

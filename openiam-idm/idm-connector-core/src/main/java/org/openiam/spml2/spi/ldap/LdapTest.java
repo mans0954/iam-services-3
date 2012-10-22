@@ -1,7 +1,5 @@
 package org.openiam.spml2.spi.ldap;
 
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
-
 import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
@@ -9,13 +7,11 @@ import javax.naming.directory.BasicAttribute;
 import javax.naming.directory.BasicAttributes;
 import javax.naming.ldap.InitialLdapContext;
 import javax.naming.ldap.LdapContext;
-import javax.naming.ldap.LdapName;
 import java.io.UnsupportedEncodingException;
 import java.util.Hashtable;
 import javax.naming.directory.SearchControls;
 import javax.naming.NamingEnumeration;
 import javax.naming.directory.Attributes;
-import javax.naming.ldap.*;
 import javax.naming.directory.SearchResult;
 /**
  * Created by IntelliJ IDEA.

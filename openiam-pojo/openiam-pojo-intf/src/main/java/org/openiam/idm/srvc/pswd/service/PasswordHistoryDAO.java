@@ -41,5 +41,6 @@ public interface PasswordHistoryDAO {
     List<PasswordHistory> findPasswordHistoryByPrincipal(String domainId,
                                                          String principal, String managedSys,
                                                          int versions);
-
+    List<PasswordHistory> findAllPasswordHistoryByPrincipal(String domainId,
+                                                         String principal, String managedSys);
 }

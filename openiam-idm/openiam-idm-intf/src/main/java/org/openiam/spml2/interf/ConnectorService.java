@@ -27,8 +27,7 @@ public interface ConnectorService {
 
     @WebMethod
     public ResponseType testConnection(
-            @WebParam(name = "managedSys", targetNamespace = "")
-            ManagedSys managedSys);
+            @WebParam(name = "managedSys", targetNamespace = "") ManagedSys managedSys);
 
 
     /**

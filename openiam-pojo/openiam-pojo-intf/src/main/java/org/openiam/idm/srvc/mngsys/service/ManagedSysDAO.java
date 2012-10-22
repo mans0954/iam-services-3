@@ -1,8 +1,8 @@
 package org.openiam.idm.srvc.mngsys.service;
 
-import java.util.List;
-
 import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
+
+import java.util.List;
 
 public interface ManagedSysDAO {
 
@@ -12,7 +12,7 @@ public interface ManagedSysDAO {
 
 	 ManagedSys update(ManagedSys detachedInstance);
 
-	 ManagedSys findById(java.lang.String id);
+	 ManagedSys findById(String id);
 
 	 List<ManagedSys> findByExample(ManagedSys instance);
 	 

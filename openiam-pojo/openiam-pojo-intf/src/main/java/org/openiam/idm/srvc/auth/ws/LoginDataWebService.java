@@ -35,7 +35,7 @@ public interface LoginDataWebService {
      * loginDataService.addLogin(lv);<br>
      * </code>
      *
-     * @param loginValue
+     * @param principal
      */
     @WebMethod
     public LoginResponse addLogin(
@@ -97,8 +97,8 @@ public interface LoginDataWebService {
      * Returns a decrypted password.
      *
      * @param domainId
-     * @param login
-     * @param sysId
+     * @param principal
+     * @param managedSysId
      * @return
      */
     @WebMethod
@@ -108,15 +108,15 @@ public interface LoginDataWebService {
             @WebParam(name = "principal", targetNamespace = "")
             String principal,
             @WebParam(name = "managedSysId", targetNamespace = "")
-            String managedSysId);
+            String managedSysId) throws Exception;
 
     /**
      * Sets the password for a login. The password needs to be encrypted externally. this allow for flexiblity in
      * supporting alternate approaches to encryption.
      *
      * @param domainId
-     * @param login
-     * @param sysId
+     * @param principal
+     * @param managedSysId
      * @param password
      * @return
      */
@@ -135,8 +135,8 @@ public interface LoginDataWebService {
      * Sets a new password for the identity and updates the support attributes such as locked account flag.
      *
      * @param domainId
-     * @param login
-     * @param sysId
+     * @param principal
+     * @param managedSysId
      * @param password
      * @return
      */
@@ -158,12 +158,12 @@ public interface LoginDataWebService {
      * @return
      */
     @WebMethod
-    public Response encryptPassword(
+    public Response encryptPassword( @WebParam(name = "userId", targetNamespace = "")String userId,
             @WebParam(name = "password", targetNamespace = "")
             String password);
 
     @WebMethod
-    public Response decryptPassword(
+    public Response decryptPassword( @WebParam(name = "userId", targetNamespace = "")String userId,
             @WebParam(name = "password", targetNamespace = "")
             String password);
 
@@ -209,7 +209,7 @@ public interface LoginDataWebService {
      *
      * @param domainId
      * @param principal
-     * @param sysId
+     * @param managedSysId
      * @param newPassword
      * @return
      */
@@ -222,14 +222,14 @@ public interface LoginDataWebService {
             @WebParam(name = "managedSysId", targetNamespace = "")
             String managedSysId,
             @WebParam(name = "newPassword", targetNamespace = "")
-            String newPassword);
+            String newPassword) throws Exception;
 
     /**
      * Checks to see if a login exists for a user - domain - managed system combination
      *
      * @param domainId
      * @param principal
-     * @param sysId
+     * @param managedSysId
      * @return
      */
     @WebMethod

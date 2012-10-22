@@ -39,7 +39,7 @@ public class CreateIdmAccountCommand implements ReconciliationCommand {
         this.config = config;
     }
 
-    public boolean execute(Login login, User user, List<ExtensibleAttribute> attributes) {
+    public boolean execute(Login login, User user, List<ExtensibleAttribute> attributes)  {
         log.debug("Entering CreateIdmAccountCommand");
         if(attributes == null){
             log.debug("Can't create IDM user without attributes");
@@ -71,6 +71,8 @@ public class CreateIdmAccountCommand implements ReconciliationCommand {
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             } catch (IOException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            } catch (Exception e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
         }

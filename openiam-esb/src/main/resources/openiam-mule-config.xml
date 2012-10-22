@@ -374,4 +374,16 @@
         </service>
     </model>
 
+    <model name="keyManagementServiceModel">
+        <service name="keyManagementWebService">
+            <inbound>
+                <inbound-endpoint address="${webservice.path}KeyManagementWS" 		exchange-pattern="request-response">
+                    <cxf:jaxws-service />
+                </inbound-endpoint>
+            </inbound>
+            <component>
+                <spring-object bean="keyManagementWS" />
+            </component>
+        </service>
+    </model>
 </mule>

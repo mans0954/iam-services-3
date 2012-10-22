@@ -95,8 +95,7 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule  {
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.auth.spi.LoginModule#login(org.openiam.idm.srvc.auth.context.AuthenticationContext)
 	 */
-	public Subject login(AuthenticationContext authContext)
-			throws AuthenticationException {
+	public Subject login(AuthenticationContext authContext) throws Exception {
 
         String clientIP = authContext.getClientIP();
         String nodeIP = authContext.getNodeIP();
@@ -342,7 +341,7 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule  {
 
 	/* supporting methods */
 	
-	private SSOToken token(String userId, Map tokenParam) {
+	private SSOToken token(String userId, Map tokenParam) throws Exception {
 
 		tokenParam.put("USER_ID",userId);
 		

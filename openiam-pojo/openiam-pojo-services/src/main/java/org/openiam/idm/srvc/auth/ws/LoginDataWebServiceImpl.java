@@ -44,13 +44,13 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#decryptPassword(java.lang.String)
 	 */
-	public Response decryptPassword(String password) {
+	public Response decryptPassword(String userId, String password) {
 		String pswd = null;
 		
 		Response resp = new Response(ResponseStatus.SUCCESS);
 		try {
-			pswd = loginDS.decryptPassword(password);
-		}catch(EncryptionException e) {
+			pswd = loginDS.decryptPassword(userId, password);
+		}catch(Exception e) {
 			resp.setStatus(ResponseStatus.FAILURE);
 			return resp;			
 		}
@@ -65,12 +65,12 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#encryptPassword(java.lang.String)
 	 */
-	public Response encryptPassword(String password) {
+	public Response encryptPassword(String userId, String password) {
 		Response resp = new Response(ResponseStatus.SUCCESS);
 		String pswd = null;
 		try {
-			pswd = loginDS.encryptPassword(password);
-		}catch(EncryptionException e) {
+			pswd = loginDS.encryptPassword(userId, password);
+		}catch(Exception e) {
 			resp.setStatus(ResponseStatus.FAILURE);
 			return resp;			
 		}
@@ -162,7 +162,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#getPassword(java.lang.String, java.lang.String, java.lang.String)
 	 */
 	public Response getPassword(String domainId, String principal,
-			String managedSysId) {
+			String managedSysId) throws Exception {
 		
 		Response resp = new Response(ResponseStatus.SUCCESS);
 		String pswd = loginDS.getPassword(domainId, principal, managedSysId);
@@ -275,7 +275,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	
 	public Response isPasswordEq( 
 			String domainId, String principal, 
-			String managedSysId ,  String newPassword) {
+			String managedSysId ,  String newPassword) throws Exception {
 		
 		Response resp = new Response(ResponseStatus.SUCCESS);
 		boolean retval = loginDS.isPasswordEq(domainId, principal, managedSysId, newPassword);
@@ -290,7 +290,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	 * Checks to see if a login exists for a user - domain - managed system combination
 	 * @param domainId
 	 * @param principal
-	 * @param sysId
+	 * @param managedSysId
 	 * @return
 	 */
 	public Response loginExists( String domainId, String principal, String managedSysId ) {

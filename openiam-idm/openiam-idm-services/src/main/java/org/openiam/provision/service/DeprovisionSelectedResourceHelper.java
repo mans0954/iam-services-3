@@ -11,14 +11,12 @@ import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnector;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.spml2.msg.PSOIdentifierType;
 import org.openiam.spml2.msg.ResponseType;
 import org.openiam.spml2.msg.StatusCodeType;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

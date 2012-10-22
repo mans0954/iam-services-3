@@ -138,7 +138,7 @@ public class AcceptNewHireDelegate implements JavaDelegate {
                 final Login login = loginDS.getPrimaryIdentity(newUser.getUserId());
                 if (login != null) {
                     identity = login.getId().getLogin();
-                    password = loginDS.decryptPassword(login.getPassword());
+                    password = loginDS.decryptPassword(login.getUserId(),login.getPassword());
                 }
 
 

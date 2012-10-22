@@ -1,12 +1,9 @@
 package org.openiam.spml2.spi.orcl;
 
 import org.apache.commons.lang.StringUtils;
-import org.openiam.exception.EncryptionException;
-import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
 import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.spml2.msg.ErrorCode;
 import org.openiam.spml2.msg.PSOIdentifierType;
 import org.openiam.spml2.msg.ResponseType;
@@ -16,11 +13,7 @@ import org.openiam.spml2.spi.common.ResumeCommand;
 import org.openiam.spml2.util.msg.ResponseBuilder;
 import org.springframework.beans.factory.annotation.Required;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.text.ParseException;
-import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.

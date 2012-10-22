@@ -10,7 +10,6 @@ import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
-import org.openiam.idm.srvc.user.dto.User;
 
 /**
  * Interface for <code>ManagedSystemDataService</code>
@@ -28,7 +27,7 @@ public interface ManagedSystemDataService {
 	 * @return the managed sys
 	 */
 	@WebMethod
-	ManagedSys getManagedSys(
+    ManagedSys getManagedSys(
 			@WebParam(name = "sysId", targetNamespace = "")
 			String sysId);
 

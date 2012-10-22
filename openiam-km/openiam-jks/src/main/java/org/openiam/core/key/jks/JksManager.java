@@ -1,47 +1,86 @@
-package org.openiam.core.key.manager;
+package org.openiam.core.key.jks;
 
 import org.bouncycastle.asn1.bc.BCObjectIdentifiers;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
-import javax.crypto.*;
-import javax.crypto.spec.DESedeKeySpec;
+import javax.crypto.Cipher;
+import javax.crypto.EncryptedPrivateKeyInfo;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.PBEParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.security.*;
-import java.security.cert.Certificate;
-import java.security.spec.KeySpec;
-import java.util.Random;
 
 /**
  * Created by: Alexander Duckardt
  * Date: 11.10.12
  */
-public class KeyManager {
-    private static final String PRIVATE_KEY_ALGORITHM = BCObjectIdentifiers.bc_pbe_sha256_pkcs12_aes256_cbc.getId();
+public class JksManager {
+    public static final String KEYSTORE_FILE_NAME = ".openiam.jks";
+    public static final String KEYSTORE_DEFAULT_PASSWORD = "openiam";
+    public static final String KEYSTORE_DEFAULT_LOCATION = System.getProperty("user.home")+System.getProperty("file.separator");
+
+    private  static final String PRIVATE_KEY_ALGORITHM = BCObjectIdentifiers.bc_pbe_sha256_pkcs12_aes256_cbc.getId();
     private static final String KEYSTORE_TYPE = "JCEKS";    //
-    private static final String KEYSTORE_ALIAS = "openiam";
+    public static final String KEYSTORE_ALIAS = "openiam";
+    public static final String TMP_KEYSTORE_ALIAS = "openiam_tmp";
     private static final int KEY_SIZE_IN_BITS = 192; //24 bytes
-    private static final int MIN_INERATION_COUNT = 20; //24 bytes
+    public static final int MIN_INERATION_COUNT = 20;
     private int inerationCount = 0;
     private String keyStoreName;
 
-    public KeyManager(String keyStoreName, int inerationCount){
-        this.inerationCount=inerationCount;
-        this.keyStoreName = keyStoreName;
-
+    public JksManager(){
         if (Security.getProvider("BC") == null){
             Security.addProvider(new BouncyCastleProvider());
         }else{
             System.out.println("BC is installed.");
         }
     }
-    public KeyManager(String keyStoreName){
+
+    public JksManager(String keyStoreName, int inerationCount){
+        this();
+        this.inerationCount=inerationCount;
+        this.keyStoreName = keyStoreName;
+    }
+    public JksManager(String keyStoreName){
         this(keyStoreName, MIN_INERATION_COUNT);
+    }
+
+    public void generateKey(char[] password, char[] pkPassword) throws Exception {
+        KeyStore ks = getKeyStore(password);
+        byte[] rawKey = getNewPrivateKey();
+        System.out.println("RAW KEY: " + new String(rawKey, "UTF-8"));
+        byte[] key =  encryptPrivateKey(pkPassword, rawKey);
+        System.out.println("ENCRYPTED KEY: " + new String(key, "UTF-8"));
+        // check if there is already key
+        KeyStore.Entry entry = ks.getEntry(KEYSTORE_ALIAS, new KeyStore.PasswordProtection(password));
+        if(entry!=null){
+            // entry is exists, store it. it is necessary to decode ald security data
+            ks.setEntry(TMP_KEYSTORE_ALIAS, entry, new KeyStore.PasswordProtection(password));
+        }
+        // add new key to jks
+        ks.setEntry(KEYSTORE_ALIAS, new KeyStore.SecretKeyEntry(new SecretKeySpec(key,PRIVATE_KEY_ALGORITHM)), new KeyStore.PasswordProtection(password));
+        ks.store(new FileOutputStream(keyStoreName), password);
+    }
+
+    public byte[] getPrimaryKeyFromJKS(char[] password, char[] pkPassword)throws Exception{
+        return getPrimaryKeyFromJKS(KEYSTORE_ALIAS,  password,  pkPassword);
+    }
+    public byte[] getPrimaryKeyFromJKS(String alias, char[] password, char[] pkPassword)throws Exception{
+        KeyStore ks = getKeyStore(password);
+
+        KeyStore.SecretKeyEntry secretKey= (KeyStore.SecretKeyEntry)ks.getEntry(alias, new KeyStore.PasswordProtection(password));
+        if(secretKey==null)
+            return null;
+        byte[] encryptedKey = secretKey.getSecretKey().getEncoded();
+        System.out.println("ENCRYPTED KEY FROM JSK: " + new String(encryptedKey, "UTF-8"));
+        byte[] rawKey = decryptKey(pkPassword,encryptedKey);
+        System.out.println("RAW KEY FROM JSK: " + new String(rawKey, "UTF-8"));
+        return rawKey;
     }
 
     private KeyStore getKeyStore(char[] password) throws Exception {
@@ -58,7 +97,7 @@ public class KeyManager {
         return keyStore;
     }
 
-    private byte[] getNewPrivateKey() throws Exception {
+    public byte[] getNewPrivateKey() throws Exception {
         byte[] privateKey = new byte[KEY_SIZE_IN_BITS/8];
 
         SecureRandom random = new SecureRandom();
@@ -116,27 +155,5 @@ public class KeyManager {
         return cipher.doFinal(ePKInfo.getEncryptedData());
     }
 
-    public void generateKey(char[] password) throws Exception {
-        KeyStore ks = getKeyStore(password);
-        byte[] rawKey = getNewPrivateKey();
-        System.out.println("RAW KEY: " + new String(rawKey, "UTF-8"));
-        byte[] key =  encryptPrivateKey(password, rawKey);
-        System.out.println("ENCRYPTED KEY: " + new String(key, "UTF-8"));
 
-        ks.setEntry(KEYSTORE_ALIAS, new KeyStore.SecretKeyEntry(new SecretKeySpec(key,PRIVATE_KEY_ALGORITHM)), new KeyStore.PasswordProtection(password));
-        ks.store(new FileOutputStream(keyStoreName), password);
-
-    }
-
-    public byte[] getPrimaryKeyFromJKS(char[] password)throws Exception{
-        KeyStore ks = getKeyStore(password);
-
-        KeyStore.SecretKeyEntry secretKey= (KeyStore.SecretKeyEntry)ks.getEntry(KEYSTORE_ALIAS, new KeyStore.PasswordProtection(password));
-
-        byte[] encryptedKey = secretKey.getSecretKey().getEncoded();
-        System.out.println("ENCRYPTED KEY FROM JSK: " + new String(encryptedKey, "UTF-8"));
-        byte[] rawKey = decryptKey(password,encryptedKey);
-        System.out.println("RAW KEY FROM JSK: " + new String(rawKey, "UTF-8"));
-        return rawKey;
-    }
 }

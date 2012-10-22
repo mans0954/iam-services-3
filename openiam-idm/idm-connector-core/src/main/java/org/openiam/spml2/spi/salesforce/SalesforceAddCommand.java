@@ -1,37 +1,22 @@
 package org.openiam.spml2.spi.salesforce;
 
 import java.text.ParseException;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
 import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.spml2.msg.AddRequestType;
 import org.openiam.spml2.msg.AddResponseType;
 import org.openiam.spml2.msg.ErrorCode;
 import org.openiam.spml2.msg.StatusCodeType;
 import org.openiam.spml2.spi.common.AddCommand;
-import org.openiam.spml2.spi.salesforce.dao.CallerDependentSalesForceDao;
-import org.openiam.spml2.spi.salesforce.dao.SalesForceDao;
 import org.openiam.spml2.spi.salesforce.exception.SalesForceDataIntegrityException;
 import org.openiam.spml2.spi.salesforce.exception.SalesForcePersistException;
-import org.openiam.spml2.spi.salesforce.model.User;
 import org.openiam.spml2.util.msg.ResponseBuilder;
 
-import com.sforce.soap.partner.DeleteResult;
-import com.sforce.soap.partner.PartnerConnection;
-import com.sforce.soap.partner.QueryResult;
-import com.sforce.soap.partner.SaveResult;
-import com.sforce.soap.partner.UndeleteResult;
-import com.sforce.soap.partner.sobject.SObject;
 import com.sforce.ws.ConnectionException;
-import com.sforce.ws.ConnectorConfig;
 
 public class SalesforceAddCommand extends AbstractSalesForceInsertCommand implements AddCommand {
 

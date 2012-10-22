@@ -38,25 +38,25 @@ public interface SSOTokenModule {
 	 * @param tokenParam
 	 * @return
 	 */
-	SSOToken createToken(Map tokenParam);
+	SSOToken createToken(Map tokenParam) throws Exception;
 	/**
 	 * Updates the token
 	 * @param userId
 	 * @param token
 	 * @return
 	 */
-	SSOToken refreshToken(Map tokenParam);
+	SSOToken refreshToken(Map tokenParam)throws Exception;
 	/**
 	 * Determines if a token is still valid
 	 * @param userId
 	 * @param token
 	 * @return
 	 */
-	boolean isTokenValid(String userId, String principal, String token);
+	boolean isTokenValid(String userId, String principal, String token) throws Exception;
 
 	void setCryptor(Cryptor cryptor);
 	
 	void setTokenLife(int tokenLife) ;
 
-    String getDecryptedToken(String token);
+    String getDecryptedToken(String userId,String token)throws Exception;
 }

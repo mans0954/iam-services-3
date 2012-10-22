@@ -2,19 +2,18 @@ package org.openiam.idm.srvc.mngsys.service;
 
 // Generated Nov 3, 2008 12:14:44 AM by Hibernate Tools 3.2.2.GA
 
-import java.util.List;
-import javax.naming.InitialContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.HibernateException;
-import org.hibernate.LockMode;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import static org.hibernate.criterion.Example.create;
-
 import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
-import org.openiam.idm.srvc.user.dto.UserAttribute;
+
+import javax.naming.InitialContext;
+import java.util.List;
+
+import static org.hibernate.criterion.Example.create;
 
 /**
  * Home object for domain model class ManagedSys.
@@ -92,7 +91,7 @@ public class ManagedSysDAOImpl implements ManagedSysDAO {
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.mngsys.service.ManagedSysDAO#findById(java.lang.String)
 	 */
-	public ManagedSys findById(java.lang.String id) {
+	public ManagedSys findById(String id) {
 		log.debug("getting ManagedSys instance with id: " + id);
 		try {
 			ManagedSys instance = (ManagedSys) sessionFactory

@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions name="KeyManagementWS" targetNamespace="urn:idm.openiam.org/srvc/res/service" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:tns="urn:idm.openiam.org/srvc/res/service" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
+  <wsdl:types>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="urn:idm.openiam.org/srvc/res/service" elementFormDefault="unqualified" targetNamespace="urn:idm.openiam.org/srvc/res/service" version="1.0">
+<xs:element name="refreshUserKeys" type="tns:refreshUserKeys"/>
+<xs:element name="refreshUserKeysResponse" type="tns:refreshUserKeysResponse"/>
+<xs:complexType name="refreshUserKeys">
+<xs:sequence/>
+</xs:complexType>
+<xs:complexType name="refreshUserKeysResponse">
+<xs:sequence>
+<xs:element minOccurs="0" name="return" type="tns:Response"/>
+</xs:sequence>
+</xs:complexType>
+<xs:complexType name="Response">
+<xs:sequence>
+<xs:element minOccurs="0" name="errorCode" type="tns:ResponseErrorCode"/>
+<xs:element minOccurs="0" name="responseValue" type="xs:anyType"/>
+<xs:element minOccurs="0" name="errorText" type="xs:string"/>
+</xs:sequence>
+<xs:attribute name="status" type="tns:ResponseStatus" use="required"/>
+</xs:complexType>
+<xs:simpleType name="ResponseStatus">
+<xs:restriction base="xs:string">
+<xs:enumeration value="success"/>
+<xs:enumeration value="failure"/>
+</xs:restriction>
+</xs:simpleType>
+<xs:simpleType name="ResponseErrorCode">
+<xs:restriction base="xs:string">
+<xs:enumeration value="objectNotFound"/>
+<xs:enumeration value="classNotFound"/>
+<xs:enumeration value="principalNotFound"/>
+<xs:enumeration value="userNotFound"/>
+<xs:enumeration value="userStatus"/>
+<xs:enumeration value="supervisorlNotFound"/>
+<xs:enumeration value="DUPLICATE_PRINCIPAL"/>
+<xs:enumeration value="failPasswordPolicy"/>
+<xs:enumeration value="groupIdNull"/>
+<xs:enumeration value="groupIdInvalid"/>
+<xs:enumeration value="roleIdNull"/>
+<xs:enumeration value="roleIdInvalid"/>
+<xs:enumeration value="objectIdInvalid"/>
+<xs:enumeration value="success"/>
+<xs:enumeration value="FAIL_SQL_ERORR"/>
+<xs:enumeration value="FAIL_CONNECTION"/>
+<xs:enumeration value="FAIL_ALPHA_CHAR_RULE"/>
+<xs:enumeration value="FAIL_LOWER_CASE_RULE"/>
+<xs:enumeration value="FAIL_UPPER_CASE_RULE"/>
+<xs:enumeration value="FAIL_NON_APHANUMERIC_RULE"/>
+<xs:enumeration value="FAIL_NUMERIC_CHAR_RULE"/>
+<xs:enumeration value="FAIL_HISTORY_RULE"/>
+<xs:enumeration value="FAIL_LENGTH_RULE"/>
+<xs:enumeration value="FAIL_NEQ_NAME"/>
+<xs:enumeration value="FAIL_NEQ_PASSWORD"/>
+<xs:enumeration value="FAIL_NEQ_PRINCIPAL"/>
+<xs:enumeration value="FAIL_PASSWORD_CHANGE_FREQUENCY"/>
+<xs:enumeration value="PASSWORD_POLICY_NOT_FOUND"/>
+<xs:enumeration value="FAIL_PASSWORD_CHANGE_ALLOW"/>
+<xs:enumeration value="FAIL_REJECT_CHARS_IN_PSWD"/>
+<xs:enumeration value="FAIL_ENCRYPTION"/>
+<xs:enumeration value="FAIL_DECRYPTION"/>
+<xs:enumeration value="DIRECTORY_NAMING_EXCEPTION"/>
+<xs:enumeration value="COMMUNICATION_EXCEPTION"/>
+<xs:enumeration value="FAIL_CONNECTOR"/>
+<xs:enumeration value="INVALID_ARGUMENTS"/>
+<xs:enumeration value="IO_EXCEPTION"/>
+<xs:enumeration value="FILE_EXCEPTION"/>
+<xs:enumeration value="SQL_EXCEPTION"/>
+<xs:enumeration value="WS_SERVICE_EXCEPTION"/>
+<xs:enumeration value="SYNCHRONIZATION_EXCEPTION"/>
+<xs:enumeration value="LIMIT_EXCEEDED_EXCEPTION"/>
+<xs:enumeration value="AUTHENTICATION_EXCEPTION"/>
+<xs:enumeration value="PERMISSION_EXCEPTION"/>
+<xs:enumeration value="SERVICE_UNAVAILABLE_EXCEPTION"/>
+<xs:enumeration value="SCHEMA_VIOLATION_EXCEPTION"/>
+<xs:enumeration value="FAIL_PREPROCESSOR"/>
+<xs:enumeration value="FAIL_POSTPROCESSOR"/>
+<xs:enumeration value="FAIL_PROCESS_ALREADY_RUNNING"/>
+<xs:enumeration value="FAIL_OTHER"/>
+</xs:restriction>
+</xs:simpleType>
+</xs:schema>
+  </wsdl:types>
+  <wsdl:message name="refreshUserKeys">
+    <wsdl:part name="parameters" element="tns:refreshUserKeys">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="refreshUserKeysResponse">
+    <wsdl:part name="parameters" element="tns:refreshUserKeysResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:portType name="KeyManagementWS">
+    <wsdl:operation name="refreshUserKeys">
+      <wsdl:input name="refreshUserKeys" message="tns:refreshUserKeys">
+    </wsdl:input>
+      <wsdl:output name="refreshUserKeysResponse" message="tns:refreshUserKeysResponse">
+    </wsdl:output>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="KeyManagementWSSoapBinding" type="tns:KeyManagementWS">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="refreshUserKeys">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="refreshUserKeys">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="refreshUserKeysResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="KeyManagementWS">
+    <wsdl:port name="KeyManagementWSPort" binding="tns:KeyManagementWSSoapBinding">
+      <soap:address location="http://localhost:9090/KeyManagementWSPort"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

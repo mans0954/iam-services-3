@@ -2,20 +2,16 @@ package org.openiam.spml2.spi.ldap;
 
 
 import javax.naming.NamingException;
-import javax.naming.directory.BasicAttribute;
-import javax.naming.directory.DirContext;
 import javax.naming.directory.ModificationItem;
 import javax.naming.ldap.LdapContext;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.SysConfiguration;
-import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemObjectMatchDAO;
-import org.openiam.idm.srvc.pswd.service.PasswordGenerator;
 import org.openiam.spml2.msg.ErrorCode;
 import org.openiam.spml2.msg.PSOIdentifierType;
 import org.openiam.spml2.msg.ResponseType;

@@ -57,7 +57,7 @@ public class DESedeCryptor implements Cryptor {
 	/* (non-Javadoc)
 	 * @see org.openiam.util.encrypt.Cryptor#encrypt(java.lang.String)
 	 */
-	public String encrypt(String input) throws EncryptionException {
+	public String encrypt(byte[] key,String input) throws EncryptionException {
 		if (key == null) {
 			readKey();
 		}
@@ -85,10 +85,10 @@ public class DESedeCryptor implements Cryptor {
 	/* (non-Javadoc)
 	 * @see org.openiam.util.encrypt.Cryptor#encryptTobyte(java.lang.String)
 	 */
-	public byte[] encryptTobyte(String input) {
-		if (key == null) {
-			readKey();
-		}
+	public byte[] encryptTobyte(byte[] key, String input) {
+//		if (key == null) {
+//			readKey();
+//		}
 
 		KeyParameter kp = new KeyParameter(key);
 		cipher = new PaddedBufferedBlockCipher(	new CBCBlockCipher(new DESedeEngine()));
@@ -112,14 +112,14 @@ public class DESedeCryptor implements Cryptor {
 	/* (non-Javadoc)
 	 * @see org.openiam.util.encrypt.Cryptor#decrypt(java.lang.String)
 	 */
-	public String decrypt(String input) throws EncryptionException {
+	public String decrypt(byte[] key, String input) throws EncryptionException {
 		byte[] result = null;
 		byte[] inputByteAry = null;
-		 int len = 0;
+		int len = 0;
 		 
-		if (key == null) {
-			readKey();
-		}
+//		if (key == null) {
+//			readKey();
+//		}
 		KeyParameter kp = new KeyParameter(key);
 		cipher = new PaddedBufferedBlockCipher(	new CBCBlockCipher(new DESedeEngine()));
 		cipher.init(false, kp);

@@ -40,6 +40,8 @@ import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginId;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
+import org.openiam.idm.srvc.key.constant.KeyName;
+import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.policy.dto.PolicyObjectAssoc;
@@ -54,6 +56,7 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.util.encrypt.Cryptor;
 import org.openiam.util.encrypt.HashDigest;
 import org.openiam.idm.srvc.pswd.dto.ValidatePasswordResetTokenResponse;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 /**
@@ -74,6 +77,8 @@ public class PasswordServiceImpl implements PasswordService {
 	protected Cryptor cryptor;
 	protected PasswordHistoryDAO passwordHistoryDao;
     protected HashDigest hash;
+    @Autowired
+    protected KeyManagementService keyManagementService;
 	
 	
 	private static final Log log = LogFactory.getLog(PasswordServiceImpl.class);
@@ -323,8 +328,9 @@ public class PasswordServiceImpl implements PasswordService {
 		for ( PasswordHistory hist  : historyList) {
 			String pwd = hist.getPassword();
 			try {
-				decrypt =  cryptor.decrypt(pwd);
-			}catch(EncryptionException e) {
+                Login login = loginManager.getLoginByManagedSys(hist.getServiceId(), hist.getLogin(),hist.getManagedSysId());
+				decrypt =  cryptor.decrypt(keyManagementService.getUserKey(login.getUserId(), KeyName.password.name()), pwd);
+			}catch(Exception e) {
 				log.error("Unable to decrypt password in history: " + pwd);
 				throw new IllegalArgumentException("Unable to decrypt password in password history list");
 			}

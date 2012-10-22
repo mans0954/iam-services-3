@@ -3,13 +3,11 @@ package org.openiam.spml2.interf;
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
-import javax.naming.ldap.LdapContext;
 
 import org.openiam.connector.type.*;
 import org.openiam.connector.type.ResponseType;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
-import org.openiam.spml2.msg.*;
 
 
 /**
@@ -119,8 +117,7 @@ public interface RemoteConnectorService {
 
         @WebMethod
     public ResponseType testConnection(
-            @WebParam(name = "managedSys", targetNamespace = "")
-            ManagedSys managedSys);
+            @WebParam(name = "managedSys", targetNamespace = "") ManagedSys managedSys);
 
     @WebMethod
     public ResponseType reconcileResource(

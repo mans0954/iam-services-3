@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.user.service;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.SysConfiguration;
+import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.user.dto.*;
 import org.openiam.idm.srvc.user.ws.AttributeListResponse;
@@ -17,6 +18,7 @@ import org.openiam.idm.srvc.continfo.service.EmailAddressDAO;
 import org.openiam.idm.srvc.continfo.service.PhoneDAO;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
 
@@ -43,7 +45,10 @@ public class UserMgr implements UserDataService {
 	private SupervisorDAO supervisorDao;
 	protected LoginDAO loginDao;
     protected SysConfiguration sysConfiguration;
-	
+    @Autowired
+    protected KeyManagementService keyManagementService;
+
+
 	private static final Log log = LogFactory.getLog(UserMgr.class);
 
 	// protected UserMsgProducer userMsgProducer;
@@ -111,7 +116,7 @@ public class UserMgr implements UserDataService {
 	 * 
 	 * @see org.openiam.idm.srvc.user.service.UserDataService#addUser(org.openiam.idm.srvc.user.dto.User)
 	 */
-	public User addUser(User user) {
+	public User addUser(User user) throws Exception {
 		if (user == null)
 			throw new NullPointerException("user object is null");
 
@@ -126,6 +131,8 @@ public class UserMgr implements UserDataService {
 		
 		userDao.add(user);
 
+        keyManagementService.generateUserKeys(user.getUserId());
+
 		return user;
 	}
 
@@ -135,7 +142,7 @@ public class UserMgr implements UserDataService {
 	 * @see org.openiam.idm.srvc.user.service.UserDataService#addUser(org.openiam.idm.srvc.user.dto.User,
 	 *      boolean)
 	 */
-	public User addUserWithDependent(User user, boolean dependency) {
+	public User addUserWithDependent(User user, boolean dependency) throws Exception {
 		if (user == null)
 			throw new NullPointerException("user object is null");
 
@@ -153,6 +160,7 @@ public class UserMgr implements UserDataService {
         log.debug("User Object before addUser: " + user);
 
 		userDao.add(user);
+        keyManagementService.generateUserKeys(user.getUserId());
 
 		if (!dependency)
 			return user;

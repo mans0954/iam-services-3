@@ -6,17 +6,12 @@ import java.util.List;
 import javax.naming.InitialContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.Hibernate;
 import org.hibernate.HibernateException;
-import org.hibernate.LockMode;
 import org.hibernate.Query;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
-
-import static org.hibernate.criterion.Example.create;
 
 /**
  * DAO implementation for  domain model class AttributeMap.

@@ -11,7 +11,6 @@ import org.openiam.spml2.msg.password.*;
 import org.openiam.spml2.msg.suspend.ResumeRequestType;
 import org.openiam.spml2.msg.suspend.SuspendRequestType;
 import org.openiam.spml2.spi.common.*;
-import org.openiam.spml2.spi.jdbc.*;
 import org.springframework.beans.factory.annotation.Required;
 
 import javax.jws.WebParam;

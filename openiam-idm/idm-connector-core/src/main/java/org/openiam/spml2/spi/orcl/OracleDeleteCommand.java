@@ -3,17 +3,12 @@ package org.openiam.spml2.spi.orcl;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
 import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.idm.srvc.res.dto.ResourceProp;
-import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.spml2.msg.*;
 import org.openiam.spml2.spi.common.DeleteCommand;
 import org.openiam.spml2.util.msg.ResponseBuilder;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.text.ParseException;
-import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.

@@ -1,0 +1,154 @@
+
+package org.openiam.idm.srvc.res.service;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlType;
+import org.apache.cxf.jaxb.JAXBToStringBuilder;
+import org.apache.cxf.jaxb.JAXBToStringStyle;
+
+
+/**
+ * <p>Java class for Response complex type.
+ * 
+ * <p>The following schema fragment specifies the expected content contained within this class.
+ * 
+ * <pre>
+ * &lt;complexType name="Response">
+ *   &lt;complexContent>
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
+ *       &lt;sequence>
+ *         &lt;element name="errorCode" type="{urn:idm.openiam.org/srvc/res/service}ResponseErrorCode" minOccurs="0"/>
+ *         &lt;element name="responseValue" type="{http://www.w3.org/2001/XMLSchema}anyType" minOccurs="0"/>
+ *         &lt;element name="errorText" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
+ *       &lt;/sequence>
+ *       &lt;attribute name="status" use="required" type="{urn:idm.openiam.org/srvc/res/service}ResponseStatus" />
+ *     &lt;/restriction>
+ *   &lt;/complexContent>
+ * &lt;/complexType>
+ * </pre>
+ * 
+ * 
+ */
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "Response", propOrder = {
+    "errorCode",
+    "responseValue",
+    "errorText"
+})
+public class Response {
+
+    protected ResponseErrorCode errorCode;
+    protected Object responseValue;
+    protected String errorText;
+    @XmlAttribute(name = "status", required = true)
+    protected ResponseStatus status;
+
+    /**
+     * Gets the value of the errorCode property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link ResponseErrorCode }
+     *     
+     */
+    public ResponseErrorCode getErrorCode() {
+        return errorCode;
+    }
+
+    /**
+     * Sets the value of the errorCode property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link ResponseErrorCode }
+     *     
+     */
+    public void setErrorCode(ResponseErrorCode value) {
+        this.errorCode = value;
+    }
+
+    /**
+     * Gets the value of the responseValue property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link Object }
+     *     
+     */
+    public Object getResponseValue() {
+        return responseValue;
+    }
+
+    /**
+     * Sets the value of the responseValue property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link Object }
+     *     
+     */
+    public void setResponseValue(Object value) {
+        this.responseValue = value;
+    }
+
+    /**
+     * Gets the value of the errorText property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getErrorText() {
+        return errorText;
+    }
+
+    /**
+     * Sets the value of the errorText property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setErrorText(String value) {
+        this.errorText = value;
+    }
+
+    /**
+     * Gets the value of the status property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link ResponseStatus }
+     *     
+     */
+    public ResponseStatus getStatus() {
+        return status;
+    }
+
+    /**
+     * Sets the value of the status property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link ResponseStatus }
+     *     
+     */
+    public void setStatus(ResponseStatus value) {
+        this.status = value;
+    }
+
+    /**
+     * Generates a String representation of the contents of this type.
+     * This is an extension method, produced by the 'ts' xjc plugin
+     * 
+     */
+    @Override
+    public String toString() {
+        return JAXBToStringBuilder.valueOf(this, JAXBToStringStyle.DEFAULT_STYLE);
+    }
+
+}

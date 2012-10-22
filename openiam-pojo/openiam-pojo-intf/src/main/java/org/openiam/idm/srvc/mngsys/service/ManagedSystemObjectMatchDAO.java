@@ -1,8 +1,8 @@
 package org.openiam.idm.srvc.mngsys.service;
 
-import java.util.List;
-
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
+
+import java.util.List;
 
 public interface ManagedSystemObjectMatchDAO {
 
@@ -20,9 +20,8 @@ public interface ManagedSystemObjectMatchDAO {
 	 */
 	public List<ManagedSystemObjectMatch> findBySystemId(String managedSystemId, String objectType);
 	
-	public ManagedSystemObjectMatch findById(java.lang.String id);
+	public ManagedSystemObjectMatch findById(String id);
 
-	public abstract List<ManagedSystemObjectMatch> findByExample(
-			ManagedSystemObjectMatch instance);
+	public abstract List<ManagedSystemObjectMatch> findByExample(ManagedSystemObjectMatch instance);
 
 }

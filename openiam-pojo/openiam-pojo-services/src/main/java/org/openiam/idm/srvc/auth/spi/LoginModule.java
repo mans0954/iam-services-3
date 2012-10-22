@@ -42,7 +42,7 @@ public interface LoginModule {
 	 * @return
 	 * @throws AuthenticationException
 	 */
-	Subject login(AuthenticationContext authContext) throws AuthenticationException;
+	Subject login(AuthenticationContext authContext) throws Exception;
 	
 	/**
 	 * Logs out the user associate with the principal from the managed system specified.

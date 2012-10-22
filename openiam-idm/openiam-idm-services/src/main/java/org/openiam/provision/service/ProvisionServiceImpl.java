@@ -21,7 +21,6 @@
  */
 package org.openiam.provision.service;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -44,7 +43,6 @@ import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.exception.EncryptionException;
 import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.srvc.audit.service.AuditHelper;
@@ -150,7 +148,7 @@ implements ProvisionService,  ApplicationContextAware  {
 	/* (non-Javadoc)
 	 * @see org.openiam.provision.service.ProvisionService#addUser(org.openiam.provision.dto.ProvisionUser)
 	 */
-	public ProvisionUserResponse addUser(ProvisionUser provUser) {
+	public ProvisionUserResponse addUser(ProvisionUser provUser) throws Exception {
 		Organization org = null;
 		Map<String, ManagedSysAttributes> managedSysMap = new HashMap<String, ManagedSysAttributes>();
 	
@@ -378,8 +376,8 @@ implements ProvisionService,  ApplicationContextAware  {
 				String pswd = lg.getPassword();
 				if (pswd != null) {
 					try {
-						newLg.setPassword(loginManager.encryptPassword(pswd));
-					}catch(EncryptionException e) {
+						newLg.setPassword(loginManager.encryptPassword(newUser.getUserId(),pswd));
+					}catch(Exception e) {
 						ProvisionUserResponse resp = new ProvisionUserResponse();
 						resp.setStatus(ResponseStatus.FAILURE);
 						resp.setErrorCode(ResponseCode.FAIL_ENCRYPTION);
@@ -1642,8 +1640,8 @@ implements ProvisionService,  ApplicationContextAware  {
 			// update the connector directly
 			String encPassword = null;
 			try {
-				encPassword = loginManager.encryptPassword(password);
-			}catch(EncryptionException e) {
+				encPassword = loginManager.encryptPassword(usr.getUserId(),password);
+			}catch(Exception e) {
 				PasswordResponse resp = new PasswordResponse();
 				resp.setStatus(ResponseStatus.FAILURE);
 				resp.setErrorCode(ResponseCode.FAIL_ENCRYPTION);
@@ -1727,8 +1725,8 @@ implements ProvisionService,  ApplicationContextAware  {
 		}else {
 		String encPassword = null;
 		try{
-			encPassword =loginManager.encryptPassword(password);
-		}catch(EncryptionException e) {
+			encPassword =loginManager.encryptPassword(usr.getUserId(),password);
+		}catch(Exception e) {
 			PasswordResponse resp = new PasswordResponse();
 			resp.setStatus(ResponseStatus.FAILURE);
 			resp.setErrorCode(ResponseCode.FAIL_ENCRYPTION);
@@ -1944,8 +1942,8 @@ implements ProvisionService,  ApplicationContextAware  {
 			// update the connector directly
 			String encPassword = null;
 			try {
-				encPassword = loginManager.encryptPassword(passwordSync.getPassword());
-			}catch(EncryptionException e) {
+				encPassword = loginManager.encryptPassword(userId, passwordSync.getPassword());
+			}catch(Exception e) {
 				PasswordResponse resp = new PasswordResponse();
 				resp.setStatus(ResponseStatus.FAILURE);
 				resp.setErrorCode(ResponseCode.FAIL_ENCRYPTION);
@@ -2035,8 +2033,8 @@ implements ProvisionService,  ApplicationContextAware  {
 		}else {
 		String encPassword = null;
 		try { 
-			encPassword =loginManager.encryptPassword(passwordSync.getPassword());
-		}catch(EncryptionException e) {
+			encPassword =loginManager.encryptPassword(userId, passwordSync.getPassword());
+		}catch(Exception e) {
 			PasswordResponse resp = new PasswordResponse();
 			resp.setStatus(ResponseStatus.FAILURE);
 			resp.setErrorCode(ResponseCode.FAIL_ENCRYPTION);

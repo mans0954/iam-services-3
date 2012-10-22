@@ -2,16 +2,19 @@ package org.openiam.idm.srvc.mngsys.dto;
 
 // Generated Nov 3, 2008 12:14:43 AM by Hibernate Tools 3.2.2.GA
 
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.GenericGenerator;
 
+import javax.persistence.*;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
-
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 
 /**
@@ -52,44 +55,82 @@ import javax.xml.bind.annotation.XmlType;
     "handler4",
     "handler5"
 })
+@Entity
+@Table(name = "MANAGED_SYS")
+@Cacheable
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class ManagedSys implements java.io.Serializable {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -648884785253890053L;
+    @Id
+    @GeneratedValue(generator="system-uuid")
+    @GenericGenerator(name="system-uuid", strategy = "uuid")
+    @Column(name="MANAGED_SYS_ID", length=32, nullable = false)
 	private String managedSysId;
+    @Column(name="NAME", length=40)
 	private String name;
+    @Column(name="DESCRIPTION", length=80)
 	private String description;
+    @Column(name="DESCRIPTION", length=20)
 	private String status;
+    @Column(name="CONNECTOR_ID", length=32, nullable = false)
 	private String connectorId;
+    @Column(name="DOMAIN_ID", length=20, nullable = false)
 	private String domainId;
+    @Column(name="HOST_URL",length =80)
 	private String hostUrl;
+    @Column(name="PORT")
 	private Integer port;
+    @Column(name="COMM_PROTOCOL",length =20)
 	private String commProtocol;
+    @Column(name="USER_ID",length =150)
 	private String userId;
+    @Column(name="PSWD",length =100)
 	private String pswd;
+    @Transient
 	private String decryptPassword;
     @XmlSchemaType(name = "dateTime")
+    @Column(name="START_DATE",length =10)
+    @Temporal(TemporalType.DATE)
 	private Date startDate;
     @XmlSchemaType(name = "dateTime")
+    @Column(name="END_DATE",length =10)
+    @Temporal(TemporalType.DATE)
 	private Date endDate;
+    @Column(name="RESOURCE_ID",length =32)
 	private String resourceId;
+    @Column(name="PRIMARY_REPOSITORY")
 	private Integer primaryRepository;
+    @Column(name="SECONDARY_REPOSITORY_ID",length =32)
 	private String secondaryRepositoryId;
+    @Column(name="ALWAYS_UPDATE_SECONDARY")
 	private Integer updateSecondary;
-
+    @Column(name="DRIVER_URL",length =100)
     private  String driverUrl;
+    @Column(name="CONNECTION_STRING",length =100)
     private  String connectionString;
+    @Column(name="ADD_HNDLR",length =100)
     private  String addHandler;
+    @Column(name="MODIFY_HNDLR",length =100)
     private  String modifyHandler;
+    @Column(name="DELETE_HNDLR",length =100)
     private  String deleteHandler;
+    @Column(name="SETPASS_HNDLR",length =100)
     private  String passwordHandler;
+    @Column(name="SUSPEND_HNDLR",length =100)
     private  String suspendHandler;
+    @Column(name="HNDLR_1",length =100)
     private  String handler1;
+    @Column(name="HNDLR_2",length =100)
     private  String handler2;
+    @Column(name="HNDLR_3",length =100)
     private  String handler3;
+    @Column(name="HNDLR_4",length =100)
     private  String handler4;
+    @Column(name="HNDLR_5",length =100)
     private  String handler5;
 
 	
@@ -98,6 +139,8 @@ public class ManagedSys implements java.io.Serializable {
 	/*
 	private Set<AttributeMap> systemAttributeMap = new HashSet<AttributeMap>(0);
 	*/
+    @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.EAGER)
+    @JoinColumn(name="MANAGED_SYS_ID", referencedColumnName="MANAGED_SYS_ID")
 	private Set<ManagedSystemObjectMatch> mngSysObjectMatchs = new HashSet<ManagedSystemObjectMatch>(0);
 
 	public ManagedSys() {
@@ -109,10 +152,7 @@ public class ManagedSys implements java.io.Serializable {
 		this.domainId = domainId;
 	}
 
-	public ManagedSys(String managedSysId, String name, String description,
-			String status, String connectorId, String domainId, String hostUrl,
-			Integer port, String commProtocol, String userId, String pswd,
-			Date startDate, Date endDate) {
+	public ManagedSys(String managedSysId, String name, String description, String status, String connectorId, String domainId, String hostUrl, Integer port, String commProtocol, String userId, String pswd, Date startDate, Date endDate) {
 		this.managedSysId = managedSysId;
 		this.name = name;
 		this.description = description;
