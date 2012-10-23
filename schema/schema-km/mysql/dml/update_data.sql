@@ -1,5 +1,5 @@
 
-commit;
+use openiam;
 
 insert into USERS (PASSWORD,FIRST_NAME, LAST_NAME, STATUS, COMPANY_ID, SYSTEM_FLAG ) values('0001','system','system','ACTIVE','100','1');
 
