@@ -1,5 +1,6 @@
 package org.openiam.authmanager.common.model.url;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -10,6 +11,7 @@ import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.Assert;
@@ -27,7 +29,7 @@ public class URIPatternTreeTest {
 		List<AuthorizationToken> patternList = new LinkedList<AuthorizationToken>();
 
 		patternList.add(new AuthorizationToken("/openiam/*", new String[] {"/openiam/login"}, new String[] {"/openiam", "/openiam/selfservice", "/openiam/userroles", "/openiam/userroles/add", "/openiam/selfservice/index.html"}));
-		patternList.add(new AuthorizationToken("/openiam/selfservice", new String[] {"/openiam/selfservice"}, new String[] {"/openiam/self", "openiam/self/service"}));
+		patternList.add(new AuthorizationToken("/openiam/selfservice", new String[] {"/openiam/selfservice/"}, new String[] {"/openiam/self", "openiam/self/service"}));
 		patternList.add(new AuthorizationToken("/openiam/selfservice/*", new String[] {"/openiam/selfservice/index.html"}, new String[] {"/openiam/selfservice"}));
 		patternList.add(new AuthorizationToken("/openiam/userroles", new String[] {"/openiam/userroles"}, new String[] {"/openiam/userroles/access"}));
 		patternList.add(new AuthorizationToken("/openiam/userroles*", new String[] {"/openiam/userroles/add", "/openiam/userroles/delete"}, new String[] {"/openiam/userroles"}));

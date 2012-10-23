@@ -24,6 +24,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.authmanager.common.model.AuthorizationGroup;
+import org.openiam.authmanager.common.model.AuthorizationMenu;
 import org.openiam.authmanager.common.model.AuthorizationResource;
 import org.openiam.authmanager.common.model.AuthorizationRole;
 import org.openiam.authmanager.common.model.AuthorizationUser;
@@ -42,6 +43,7 @@ import org.openiam.authmanager.dao.GroupGroupXrefDAO;
 import org.openiam.authmanager.dao.GroupUserXrefDAO;
 import org.openiam.authmanager.dao.ResourceDAO;
 import org.openiam.authmanager.dao.ResourceGroupXrefDAO;
+import org.openiam.authmanager.dao.ResourcePropDAO;
 import org.openiam.authmanager.dao.ResourceResourceXrefDAO;
 import org.openiam.authmanager.dao.ResourceRoleXrefDAO;
 import org.openiam.authmanager.dao.ResourceUserXrefDAO;
@@ -54,6 +56,7 @@ import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.authmanager.common.model.AuthorizationManagerLoginId;
 import org.openiam.authmanager.common.model.url.AuthorizationDomain;
 import org.openiam.authmanager.common.model.url.AuthorizationURIPattern;
+import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -157,6 +160,10 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 	@Autowired
 	@Qualifier("jdbcRoleUserXrefDAO")
 	private RoleUserXrefDAO roleUserXrefDAO;
+	
+	@Autowired
+	@Qualifier("jdbcResourcePropDAO")
+	private ResourcePropDAO resourcePropDAO;
 	
 	@Override
 	public void afterPropertiesSet() throws Exception {

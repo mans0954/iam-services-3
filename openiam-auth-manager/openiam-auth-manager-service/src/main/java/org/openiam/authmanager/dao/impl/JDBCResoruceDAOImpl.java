@@ -10,10 +10,12 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+import org.openiam.authmanager.common.model.AuthorizationMenu;
 import org.openiam.authmanager.common.model.AuthorizationResource;
 import org.openiam.authmanager.common.model.url.AuthorizationDomain;
 import org.openiam.authmanager.common.model.url.InvalidPatternException;
 import org.openiam.authmanager.dao.ResourceDAO;
+import org.openiam.authmanager.util.AuthorizationConstants;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
@@ -23,6 +25,7 @@ import org.springframework.stereotype.Repository;
 public class JDBCResoruceDAOImpl extends AbstractJDBCDao implements ResourceDAO  {
 
 	private static final RowMapper<AuthorizationResource> rowMapper = new ResourceMapper();
+	private static final RowMapper<AuthorizationMenu> menuMapper = new MenuMapper();
 	
 	private String GET_ALL = "SELECT RESOURCE_ID AS RESOURCE_ID, NAME AS NAME FROM %s.RES";
 	private String GET_RESOURCE_DOMAINS_WITH_PATTERNS = "SELECT r.RESOURCE_ID AS RESOURCE_ID, prop.PROP_VALUE AS PATTERN, r.MIN_AUTH_LEVEL AS MIN_AUTH_LEVEL, r.DOMAIN AS DOMAIN, r.IS_PUBLIC AS IS_PUBLIC, r.IS_SSL AS IS_SSL" +
@@ -31,11 +34,13 @@ public class JDBCResoruceDAOImpl extends AbstractJDBCDao implements ResourceDAO 
 														"		JOIN %s.RESOURCE_PROP prop " +
 														"			ON  r.RESOURCE_ID=prop.RESOURCE_ID " +
 														"			AND prop.NAME IN('URL_PATTERN')";
+	private String GET_ALL_MENUS = "SELECT RESOURCE_ID AS RESOURCE_ID, URL AS MENU_URL, NAME AS MENU_NAME, DISPLAY_ORDER AS DISPLAY_ORDER FROM %s.RES WHERE RESOURCE_TYPE_ID = ?";
 	
 	@Override
 	protected void initSqlStatements() {
 		GET_ALL = String.format(GET_ALL, getSchemaName());
 		GET_RESOURCE_DOMAINS_WITH_PATTERNS = String.format(GET_RESOURCE_DOMAINS_WITH_PATTERNS,  getSchemaName(), getSchemaName());
+		GET_ALL_MENUS = String.format(GET_ALL_MENUS, getSchemaName());
 	}
 	
 	@Override
@@ -44,6 +49,36 @@ public class JDBCResoruceDAOImpl extends AbstractJDBCDao implements ResourceDAO 
 			log.debug(String.format("Query: %s", GET_ALL));
 		}
 		return getJdbcTemplate().query(GET_ALL, rowMapper);
+	}
+	
+	@Override
+	public Set<AuthorizationDomain> getAuthorizationDomains(final Map<String, AuthorizationResource> resourceMap) {
+		if(log.isDebugEnabled()) {
+			log.debug(String.format("Query: %s", GET_RESOURCE_DOMAINS_WITH_PATTERNS));
+		}
+		return getJdbcTemplate().query(GET_RESOURCE_DOMAINS_WITH_PATTERNS, new AuthorizationDomainRSE(resourceMap));
+	}
+	
+	@Override
+	public List<AuthorizationMenu> getAuthorizationMenus() {
+		if(log.isDebugEnabled()) {
+			log.debug(String.format("Query: %s", GET_ALL_MENUS));
+		}
+		return getJdbcTemplate().query(GET_ALL_MENUS, menuMapper, new Object[] {AuthorizationConstants.MENU_ITEM_RESOURCE_TYPE});
+	}
+	
+	private static class MenuMapper implements RowMapper<AuthorizationMenu> {
+
+		@Override
+		public AuthorizationMenu mapRow(final ResultSet rs, final int rowNum) throws SQLException {
+			final AuthorizationMenu menu = new AuthorizationMenu();
+			menu.setId(rs.getString("RESOURCE_ID"));
+			menu.setUrl(rs.getString("MENU_URL"));
+			menu.setName(rs.getString("MENU_NAME"));
+			menu.setDisplayOrder(rs.getInt("DISPLAY_ORDER"));
+			return menu;
+		}
+		
 	}
 	
 	private static class ResourceMapper implements RowMapper<AuthorizationResource> {
@@ -56,14 +91,6 @@ public class JDBCResoruceDAOImpl extends AbstractJDBCDao implements ResourceDAO 
 			return resource;
 		}
 		
-	}
-
-	@Override
-	public Set<AuthorizationDomain> getAuthorizationDomains(final Map<String, AuthorizationResource> resourceMap) {
-		if(log.isDebugEnabled()) {
-			log.debug(String.format("Query: %s", GET_RESOURCE_DOMAINS_WITH_PATTERNS));
-		}
-		return getJdbcTemplate().query(GET_RESOURCE_DOMAINS_WITH_PATTERNS, new AuthorizationDomainRSE(resourceMap));
 	}
 	
 	private class AuthorizationDomainRSE implements ResultSetExtractor<Set<AuthorizationDomain>> {

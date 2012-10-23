@@ -1,5 +1,7 @@
 package org.openiam.authmanager.dao.impl;
 
+import java.sql.SQLException;
+
 import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 
