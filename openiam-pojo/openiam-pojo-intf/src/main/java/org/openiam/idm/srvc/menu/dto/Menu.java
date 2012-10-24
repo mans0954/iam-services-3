@@ -23,6 +23,7 @@ import javax.xml.bind.annotation.XmlType;
         "selected",
         "subMenus"
 })
+@Deprecated
 public class Menu implements java.io.Serializable {
 
 

@@ -190,9 +190,7 @@ public class AuthorizationManagerMenuServiceImpl implements AuthorizationManager
 		final Map<String, AuthorizationMenu> menuTreeMap = new HashMap<String, AuthorizationMenu>();
 		for(final String menuId : menuMap.keySet()) {
 			final AuthorizationMenu menu = menuMap.get(menuId);
-			if(!childResource2ParentResourceMap.containsKey(menu.getId())) { /* has no parent - is root */
-				menuTreeMap.put(menu.getName(), menu);
-			}
+			menuTreeMap.put(menu.getName(), menu);
 		}
 		
 		return menuTreeMap;

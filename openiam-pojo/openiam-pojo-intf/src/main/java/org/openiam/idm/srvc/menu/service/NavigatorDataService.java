@@ -47,6 +47,7 @@ import java.util.List;
  * }
  * </pre>
  */
+@Deprecated
 public interface NavigatorDataService {
 
 

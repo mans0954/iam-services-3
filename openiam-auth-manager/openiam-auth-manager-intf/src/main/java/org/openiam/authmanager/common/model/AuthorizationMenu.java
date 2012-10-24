@@ -1,12 +1,31 @@
 package org.openiam.authmanager.common.model;
 
+import java.io.Serializable;
 import java.util.List;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlType;
 
 import org.apache.commons.lang.StringUtils;
 import org.openiam.authmanager.util.AuthorizationConstants;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 
-public class AuthorizationMenu {
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "AuthorizationMenu", propOrder = {
+        "id",
+        "name",
+        "url",
+        "displayName",
+        "displayOrder",
+        "isPublic",
+        "firstChild",
+        "nextSibling"
+})
+public class AuthorizationMenu implements Serializable {
+	
+	private static final long serialVersionUID = 1L;
 
 	private String id;
 	private String name;
@@ -14,6 +33,9 @@ public class AuthorizationMenu {
 	private String displayName;
 	private Integer displayOrder;
 	private boolean isPublic = false;
+	
+	/* XMLTransient b/c otherwould would cause infinite loop */
+	@XmlTransient
 	private AuthorizationMenu parent;
 	private AuthorizationMenu firstChild;
 	private AuthorizationMenu nextSibling;

@@ -28,6 +28,7 @@ import org.openiam.idm.srvc.role.dto.Role;
  * @version 2
  */
 
+@Deprecated
 public class NavigatorDataServiceImpl implements NavigatorDataService{
 
 	NavigatorDAO navigatorDao;
