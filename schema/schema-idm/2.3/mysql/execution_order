@@ -10,3 +10,5 @@ ddl/9.migrate_resource_role_mappings.sql
 ddl/10.create_role_many_to_many_mapping.sql
 dml/1.insert_policy.sql
 ddl/11.create_group_and_role_name_constraints.sql
+ddl/12.add_authorization_data_to_resources.sql
+dml/2.migrate_menus_to_resources.sql
