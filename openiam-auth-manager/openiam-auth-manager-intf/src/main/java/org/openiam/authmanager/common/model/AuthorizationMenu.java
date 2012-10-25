@@ -9,6 +9,8 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 import org.apache.commons.lang.StringUtils;
+import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.annotate.JsonProperty;
 import org.openiam.authmanager.util.AuthorizationConstants;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 
@@ -19,6 +21,7 @@ import org.openiam.idm.srvc.res.dto.ResourceProp;
         "url",
         "displayName",
         "displayOrder",
+        "icon",
         "isPublic",
         "firstChild",
         "nextSibling"
@@ -27,17 +30,36 @@ public class AuthorizationMenu implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 
+	@JsonProperty("id")
 	private String id;
+	
+	@JsonProperty("name")
 	private String name;
+	
+	@JsonProperty("url")
 	private String url;
+	
+	@JsonProperty("displayName")
 	private String displayName;
+	
+	@JsonProperty("order")
 	private Integer displayOrder;
+	
+	@JsonProperty("icon")
+	private String icon;
+	
+	@JsonProperty("isPublic")
 	private boolean isPublic = false;
 	
 	/* XMLTransient b/c otherwould would cause infinite loop */
 	@XmlTransient
+	@JsonIgnore
 	private AuthorizationMenu parent;
+	
+	@JsonProperty("firstChild")
 	private AuthorizationMenu firstChild;
+	
+	@JsonProperty("nextSibling")
 	private AuthorizationMenu nextSibling;
 	
 	public String getId() {
@@ -92,6 +114,10 @@ public class AuthorizationMenu implements Serializable {
 		return displayName;
 	}
 	
+	public String getIcon() {
+		return icon;
+	}
+	
 	public Integer getDisplayOrder() {
 		return displayOrder;
 	}
@@ -112,6 +138,9 @@ public class AuthorizationMenu implements Serializable {
 				   StringUtils.equalsIgnoreCase(Boolean.TRUE.toString(), prop.getPropValue())) {
 					isPublic = true;
 				}
+				if(icon == null && StringUtils.equalsIgnoreCase(prop.getName(), AuthorizationConstants.MENU_ITEM_ICON_PROPERTY)) {
+					icon = StringUtils.trimToNull(prop.getPropValue());
+				}
 			}
 		}
 	}
@@ -123,8 +152,8 @@ public class AuthorizationMenu implements Serializable {
 	@Override
 	public String toString() {
 		return String
-				.format("AuthorizationMenu [id=%s, name=%s, url=%s, displayName=%s, isPublic: %s, parent=%s, firstChild=%s, nextSibling=%s]",
-						id, name, url, displayName, isPublic,
+				.format("AuthorizationMenu [id=%s, name=%s, url=%s, displayName=%s, icon: %s, isPublic: %s, parent=%s, firstChild=%s, nextSibling=%s]",
+						id, name, url, displayName, icon, isPublic,
 						(parent != null) ? parent.getId() : null, 
 						(firstChild != null) ? firstChild.getId() : null, 
 						(nextSibling != null) ? nextSibling.getId() : null);
