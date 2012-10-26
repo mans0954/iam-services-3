@@ -1,6 +1,5 @@
 package org.openiam.core.dao;
 
-import java.beans.Transient;
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
