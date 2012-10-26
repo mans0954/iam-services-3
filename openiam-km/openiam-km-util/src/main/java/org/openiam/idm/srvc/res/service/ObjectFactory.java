@@ -35,6 +35,14 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link Response }
+     * 
+     */
+    public Response createResponse() {
+        return new Response();
+    }
+
+    /**
      * Create an instance of {@link GenerateMasterKey }
      * 
      */
@@ -48,14 +56,6 @@ public class ObjectFactory {
      */
     public GenerateMasterKeyResponse createGenerateMasterKeyResponse() {
         return new GenerateMasterKeyResponse();
-    }
-
-    /**
-     * Create an instance of {@link Response }
-     * 
-     */
-    public Response createResponse() {
-        return new Response();
     }
 
     /**

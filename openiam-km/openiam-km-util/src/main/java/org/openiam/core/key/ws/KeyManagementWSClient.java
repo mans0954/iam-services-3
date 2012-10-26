@@ -33,7 +33,7 @@ public class KeyManagementWSClient {
 
 
     private KeyManagementWS createService() throws Exception {
-       URL wsdlURL = KeyManagementWS_Service.getWsdlLocation();
+       URL wsdlURL = KeyManagementWS_Service.WSDL_LOCATION;
        if (wsdlLocation!=null && !wsdlLocation.isEmpty()) {
             File wsdlFile = new File(wsdlLocation);
             try {

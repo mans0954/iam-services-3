@@ -40,7 +40,7 @@ public class Response {
     protected ResponseErrorCode errorCode;
     protected Object responseValue;
     protected String errorText;
-    @XmlAttribute(name = "status", required = true)
+    @XmlAttribute(required = true)
     protected ResponseStatus status;
 
     /**
