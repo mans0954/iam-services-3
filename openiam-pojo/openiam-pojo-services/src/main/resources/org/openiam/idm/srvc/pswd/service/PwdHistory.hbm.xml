@@ -20,7 +20,7 @@
             <column name="DATE_CREATED" length="19" not-null="true" />
         </property>
         <property name="password" type="string">
-            <column name="PASSWORD" length="80" />
+            <column name="PASSWORD" length="255" />
         </property>
     </class>
 </hibernate-mapping>

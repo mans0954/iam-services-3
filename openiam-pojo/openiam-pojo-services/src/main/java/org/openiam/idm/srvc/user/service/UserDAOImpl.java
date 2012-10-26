@@ -1350,7 +1350,7 @@ public class UserDAOImpl implements UserDAO {
     @Override
     public List<User> getAllWithSecurityInfo() {
         StringBuilder sql = new StringBuilder();
-        sql.append("SELECT usr from ").append(User.class.getName()).append(" usr ")
+        sql.append("SELECT distinct usr from ").append(User.class.getName()).append(" usr ")
            .append(" left join fetch usr.principalList l ").append(" left join fetch usr.userKeys uk ");
         return (List<User>)sessionFactory.getCurrentSession().createQuery(sql.toString()).list();
     }
@@ -1358,7 +1358,7 @@ public class UserDAOImpl implements UserDAO {
     @Override
     public User getWithSecurityInfo(String userId) {
         StringBuilder sql = new StringBuilder();
-        sql.append("SELECT usr from ").append(User.class.getName()).append(" usr ")
+        sql.append("SELECT distinct usr from ").append(User.class.getName()).append(" usr ")
            .append(" left join fetch usr.principalList l ").append(" left join fetch usr.userKeys uk where usr.userId=?1");
         List<User> result =  (List<User>)sessionFactory.getCurrentSession().createQuery(sql.toString()).setParameter(1, userId).list();
         if(result==null || result.isEmpty())

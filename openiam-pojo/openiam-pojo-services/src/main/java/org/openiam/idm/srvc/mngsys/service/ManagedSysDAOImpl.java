@@ -17,7 +17,7 @@ import static org.hibernate.criterion.Example.create;
 
 /**
  * Home object for domain model class ManagedSys.
- * @see org.openiam.idm.srvc.ManagedSys
+ * @see org.openiam.idm.srvc.mngsys.service
  * @author Hibernate Tools
  */
 public class ManagedSysDAOImpl implements ManagedSysDAO {
@@ -95,7 +95,7 @@ public class ManagedSysDAOImpl implements ManagedSysDAO {
 		log.debug("getting ManagedSys instance with id: " + id);
 		try {
 			ManagedSys instance = (ManagedSys) sessionFactory
-					.getCurrentSession().get("org.openiam.idm.srvc.mngsys.dto.ManagedSys",
+					.getCurrentSession().get(ManagedSys.class.getName(),
 							id);
 			if (instance == null) {
 				log.debug("get successful, no instance found");
@@ -111,8 +111,8 @@ public class ManagedSysDAOImpl implements ManagedSysDAO {
 	
 	public List<ManagedSys> findbyConnectorId(String connectorId) {
 		Session session = sessionFactory.getCurrentSession();
-		Query qry = session.createQuery("from org.openiam.idm.srvc.mngsys.dto.ManagedSys ms " +
-				" where ms.connectorId = :conId order by ms.managedSysId asc");
+		Query qry = session.createQuery("from " +  ManagedSys.class.getName()+
+				" ms where ms.connectorId = :conId order by ms.managedSysId asc");
 		qry.setString("conId", connectorId);
 		List<ManagedSys> results = (List<ManagedSys>)qry.list();
 		return results;	
@@ -120,8 +120,8 @@ public class ManagedSysDAOImpl implements ManagedSysDAO {
 	
 	public List<ManagedSys> findbyDomain(String domainId) {
 		Session session = sessionFactory.getCurrentSession();
-		Query qry = session.createQuery("from org.openiam.idm.srvc.mngsys.dto.ManagedSys ms " +
-				" where ms.domainId = :domainId order by ms.managedSysId asc");
+		Query qry = session.createQuery("from " +  ManagedSys.class.getName()+
+				" ms where ms.domainId = :domainId order by ms.managedSysId asc");
 		qry.setString("domainId", domainId);
 		List<ManagedSys> results = (List<ManagedSys>)qry.list();
 		return results;			
@@ -129,8 +129,8 @@ public class ManagedSysDAOImpl implements ManagedSysDAO {
 	
 	 public List<ManagedSys> findAllManagedSys() {
 			Session session = sessionFactory.getCurrentSession();
-			Query qry = session.createQuery("from org.openiam.idm.srvc.mngsys.dto.ManagedSys ms " +
-					" order by ms.name asc");
+			Query qry = session.createQuery("from " +  ManagedSys.class.getName()+
+					" ms order by ms.name asc");
 			List<ManagedSys> results = (List<ManagedSys>)qry.list();
 			return results;				 
 	 }
@@ -140,8 +140,8 @@ public class ManagedSysDAOImpl implements ManagedSysDAO {
 	 */
 	public ManagedSys findByName(String name) {
 		Session session = sessionFactory.getCurrentSession();
-		Query qry = session.createQuery("from org.openiam.idm.srvc.mngsys.dto.ManagedSys ms " +
-				" where ms.name = :name order by ms.name, ms.managedSysId ");
+		Query qry = session.createQuery("from " +  ManagedSys.class.getName()+
+				" ms where ms.name = :name order by ms.name, ms.managedSysId ");
 		qry.setString("name", name);
 		List<ManagedSys> results = (List<ManagedSys>)qry.list();
 
@@ -157,8 +157,8 @@ public class ManagedSysDAOImpl implements ManagedSysDAO {
 
 	public ManagedSys findByResource(String resourceId, String status) {
 		Session session = sessionFactory.getCurrentSession();
-		Query qry = session.createQuery("from org.openiam.idm.srvc.mngsys.dto.ManagedSys ms " +
-				" where ms.resourceId = :resourceId and  " +
+		Query qry = session.createQuery("from " +  ManagedSys.class.getName()+
+				" ms where ms.resourceId = :resourceId and  " +
 				"		ms.status = :status " +
 				" order by ms.name ");
 		qry.setString("resourceId", resourceId);
@@ -183,7 +183,7 @@ public class ManagedSysDAOImpl implements ManagedSysDAO {
 		try {
 			List<ManagedSys> results = (List<ManagedSys>) sessionFactory
 					.getCurrentSession().createCriteria(
-							"org.openiam.idm.srvc.mngsys.dto.ManagedSys").add(
+                            ManagedSys.class.getName()).add(
 							create(instance)).list();
 			log.debug("find by example successful, result size: "
 					+ results.size());

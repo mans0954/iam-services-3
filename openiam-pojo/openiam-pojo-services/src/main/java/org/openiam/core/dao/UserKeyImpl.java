@@ -21,15 +21,15 @@ public class UserKeyImpl extends BaseDaoImpl<UserKey, String> implements UserKey
     @Transactional
     public void deleteByUserId(String userId) throws Exception {
         sessionFactory.getCurrentSession()
-                      .createQuery("delete from " + this.domainClass.getName() + " obj where obj.userId=?1")
-                      .setParameter(1, userId).executeUpdate();
+                      .createQuery("delete from " + this.domainClass.getName() + " obj where obj.userId=?")
+                      .setParameter(0, userId).executeUpdate();
     }
 
     @Override
     public UserKey getByUserIdKeyName(String userId, String keyName) throws Exception {
         List<UserKey> result = (List<UserKey>) sessionFactory.getCurrentSession().createQuery(
                 "select from " + this.domainClass.getName() + " obj where obj.userId=?1 and obj.name=?2")
-                                                             .setParameter(1, userId).setParameter(2, keyName).list();
+                                                             .setParameter(0, userId).setParameter(1, keyName).list();
 
         if(result == null || result.isEmpty()) {
             return null;

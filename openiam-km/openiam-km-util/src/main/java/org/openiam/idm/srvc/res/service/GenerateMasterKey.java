@@ -7,12 +7,12 @@ import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java class for refreshUserKeys complex type.
+ * <p>Java class for generateMasterKey complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="refreshUserKeys">
+ * &lt;complexType name="generateMasterKey">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
@@ -25,8 +25,8 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "refreshUserKeys")
-public class RefreshUserKeys {
+@XmlType(name = "generateMasterKey")
+public class GenerateMasterKey {
 
 
 }

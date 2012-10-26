@@ -74,7 +74,7 @@ public class ManagedSys implements java.io.Serializable {
 	private String name;
     @Column(name="DESCRIPTION", length=80)
 	private String description;
-    @Column(name="DESCRIPTION", length=20)
+    @Column(name="STATUS", length=20)
 	private String status;
     @Column(name="CONNECTOR_ID", length=32, nullable = false)
 	private String connectorId;
@@ -88,7 +88,7 @@ public class ManagedSys implements java.io.Serializable {
 	private String commProtocol;
     @Column(name="USER_ID",length =150)
 	private String userId;
-    @Column(name="PSWD",length =100)
+    @Column(name="PSWD",length =255)
 	private String pswd;
     @Transient
 	private String decryptPassword;

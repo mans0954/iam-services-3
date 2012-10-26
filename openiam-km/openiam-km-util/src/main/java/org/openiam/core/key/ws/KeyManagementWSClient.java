@@ -33,7 +33,7 @@ public class KeyManagementWSClient {
 
 
     private KeyManagementWS createService() throws Exception {
-       URL wsdlURL = KeyManagementWS_Service.WSDL_LOCATION;
+       URL wsdlURL = KeyManagementWS_Service.getWsdlLocation();
        if (wsdlLocation!=null && !wsdlLocation.isEmpty()) {
             File wsdlFile = new File(wsdlLocation);
             try {
@@ -50,7 +50,7 @@ public class KeyManagementWSClient {
        return ss.getKeyManagementWSPort();
     }
 
-    public Response refreshUserKeys() throws Exception{
-        return this.getService().refreshUserKeys();
+    public Response generateMasterKey() throws Exception{
+        return this.getService().generateMasterKey();
     }
 }

@@ -24,8 +24,8 @@ import javax.xml.namespace.QName;
 @XmlRegistry
 public class ObjectFactory {
 
-    private final static QName _RefreshUserKeys_QNAME = new QName("urn:idm.openiam.org/srvc/res/service", "refreshUserKeys");
-    private final static QName _RefreshUserKeysResponse_QNAME = new QName("urn:idm.openiam.org/srvc/res/service", "refreshUserKeysResponse");
+    private final static QName _GenerateMasterKeyResponse_QNAME = new QName("urn:idm.openiam.org/srvc/res/service", "generateMasterKeyResponse");
+    private final static QName _GenerateMasterKey_QNAME = new QName("urn:idm.openiam.org/srvc/res/service", "generateMasterKey");
 
     /**
      * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: org.openiam.idm.srvc.res.service
@@ -35,19 +35,19 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link RefreshUserKeys }
+     * Create an instance of {@link GenerateMasterKey }
      * 
      */
-    public RefreshUserKeys createRefreshUserKeys() {
-        return new RefreshUserKeys();
+    public GenerateMasterKey createGenerateMasterKey() {
+        return new GenerateMasterKey();
     }
 
     /**
-     * Create an instance of {@link RefreshUserKeysResponse }
+     * Create an instance of {@link GenerateMasterKeyResponse }
      * 
      */
-    public RefreshUserKeysResponse createRefreshUserKeysResponse() {
-        return new RefreshUserKeysResponse();
+    public GenerateMasterKeyResponse createGenerateMasterKeyResponse() {
+        return new GenerateMasterKeyResponse();
     }
 
     /**
@@ -59,21 +59,21 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link RefreshUserKeys }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link GenerateMasterKeyResponse }{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "urn:idm.openiam.org/srvc/res/service", name = "refreshUserKeys")
-    public JAXBElement<RefreshUserKeys> createRefreshUserKeys(RefreshUserKeys value) {
-        return new JAXBElement<RefreshUserKeys>(_RefreshUserKeys_QNAME, RefreshUserKeys.class, null, value);
+    @XmlElementDecl(namespace = "urn:idm.openiam.org/srvc/res/service", name = "generateMasterKeyResponse")
+    public JAXBElement<GenerateMasterKeyResponse> createGenerateMasterKeyResponse(GenerateMasterKeyResponse value) {
+        return new JAXBElement<GenerateMasterKeyResponse>(_GenerateMasterKeyResponse_QNAME, GenerateMasterKeyResponse.class, null, value);
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link RefreshUserKeysResponse }{@code >}}
+     * Create an instance of {@link JAXBElement }{@code <}{@link GenerateMasterKey }{@code >}}
      * 
      */
-    @XmlElementDecl(namespace = "urn:idm.openiam.org/srvc/res/service", name = "refreshUserKeysResponse")
-    public JAXBElement<RefreshUserKeysResponse> createRefreshUserKeysResponse(RefreshUserKeysResponse value) {
-        return new JAXBElement<RefreshUserKeysResponse>(_RefreshUserKeysResponse_QNAME, RefreshUserKeysResponse.class, null, value);
+    @XmlElementDecl(namespace = "urn:idm.openiam.org/srvc/res/service", name = "generateMasterKey")
+    public JAXBElement<GenerateMasterKey> createGenerateMasterKey(GenerateMasterKey value) {
+        return new JAXBElement<GenerateMasterKey>(_GenerateMasterKey_QNAME, GenerateMasterKey.class, null, value);
     }
 
 }

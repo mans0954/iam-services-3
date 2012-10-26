@@ -10,10 +10,10 @@ import org.openiam.idm.srvc.user.dto.User;
 public interface KeyManagementService {
     public  byte[] getUserKey(String userId, String keyName) throws EncryptionException;
 
-    public Long refreshKeys()throws Exception;;
-
     public Long generateUserKeys(String userId)throws Exception;
 
     public Long generateUserKeys(User user) throws Exception;
+
+    public void generateMasterKey() throws Exception;
 
 }

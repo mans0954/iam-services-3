@@ -13,5 +13,5 @@ import javax.jws.WebService;
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/res/service", name = "KeyManagementWS")
 public interface KeyManagementWS {
     @WebMethod
-    public Response refreshUserKeys();
+    public Response generateMasterKey();
 }

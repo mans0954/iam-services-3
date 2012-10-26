@@ -783,6 +783,7 @@
 											   org.openiam.idm.srvc.res.dto*,
 											   org.openiam.idm.srvc.role.dto*,
 											   org.openiam.idm.srvc.user.dto*,
+											   org.openiam.idm.srvc.mngsys.dto*,
 											   org.openiam.am.srvc.resattr.domain*"/>
 	</bean>
 

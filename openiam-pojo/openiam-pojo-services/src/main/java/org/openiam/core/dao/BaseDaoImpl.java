@@ -1,5 +1,6 @@
 package org.openiam.core.dao;
 
+import java.beans.Transient;
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -10,6 +11,7 @@ import org.hibernate.FetchMode;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.hibernate.criterion.Projections.rowCount;
 import static org.hibernate.criterion.Restrictions.eq;
@@ -109,5 +111,9 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> implements
         }
     }
 
+    @Transactional
+    public void deleteAll() throws Exception{
+        sessionFactory.getCurrentSession().createQuery("delete from "+this.domainClass.getName()).executeUpdate();
+    }
 }
 

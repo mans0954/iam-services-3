@@ -27,7 +27,7 @@ public class UserKey implements Serializable {
     private String userId;
     @Column(name="NAME", length=40, nullable = false)
     private String name;
-    @Column(name="KEY", length=80, nullable = false)
+    @Column(name="KEY_VALUE", length=255, nullable = false)
     private String key;
 
     @ManyToOne(cascade=CascadeType.ALL,fetch=FetchType.LAZY)

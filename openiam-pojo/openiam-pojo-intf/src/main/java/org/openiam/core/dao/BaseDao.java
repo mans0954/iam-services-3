@@ -19,4 +19,6 @@ public interface BaseDao<T, PrimaryKey extends Serializable> {
   void delete(T t);
 
   void save(Collection<T> entities);
+
+  void deleteAll()  throws Exception;
 }

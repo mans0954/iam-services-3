@@ -23,12 +23,13 @@ public class KeyManagementWSImpl implements KeyManagementWS {
     @Autowired
     private KeyManagementService keyManagementService;
 
+
     @Override
-    public Response refreshUserKeys() {
-        log.debug("Got refreshUserKeys request. ");
+    public Response generateMasterKey() {
+        log.debug("Got generateMasterKey request. ");
         Response resp = new Response(ResponseStatus.SUCCESS);
         try {
-            keyManagementService.refreshKeys();
+            keyManagementService.generateMasterKey();
         } catch(Exception e) {
             log.error(e.getMessage(), e);
             resp.setStatus(ResponseStatus.FAILURE);

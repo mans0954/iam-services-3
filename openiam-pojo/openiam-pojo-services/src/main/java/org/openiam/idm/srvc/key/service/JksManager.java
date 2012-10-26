@@ -1,7 +1,8 @@
-package org.openiam.core.key.jks;
+package org.openiam.idm.srvc.key.service;
 
 import org.bouncycastle.asn1.bc.BCObjectIdentifiers;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.util.encoders.Hex;
 
 import javax.crypto.Cipher;
 import javax.crypto.EncryptedPrivateKeyInfo;
@@ -51,20 +52,26 @@ public class JksManager {
         this(keyStoreName, MIN_ITERATION_COUNT);
     }
 
-    public void generateKey(char[] password, char[] pkPassword) throws Exception {
+    public void generatePrimaryKey(char[] password, char[] pkPassword) throws Exception {
         KeyStore ks = getKeyStore(password);
         byte[] rawKey = getNewPrivateKey();
-        System.out.println("RAW KEY: " + new String(rawKey, "UTF-8"));
+        System.out.println("RAW KEY: " + encodeKey(rawKey));
         byte[] key =  encryptPrivateKey(pkPassword, rawKey);
-        System.out.println("ENCRYPTED KEY: " + new String(key, "UTF-8"));
-        // check if there is already key
-        KeyStore.Entry entry = ks.getEntry(KEYSTORE_ALIAS, new KeyStore.PasswordProtection(password));
-        if(entry!=null){
-            // entry is exists, store it. it is necessary to decode ald security data
-            ks.setEntry(TMP_KEYSTORE_ALIAS, entry, new KeyStore.PasswordProtection(password));
-        }
+        System.out.println("ENCRYPTED KEY: " + encodeKey(key));
+//        // check if there is already key
+//        KeyStore.Entry entry = ks.getEntry(KEYSTORE_ALIAS, new KeyStore.PasswordProtection(password));
+//        if(entry!=null){
+//            // entry is exists, store it. it is necessary to decode ald security data
+//            ks.setEntry(TMP_KEYSTORE_ALIAS, entry, new KeyStore.PasswordProtection(password));
+//        }
         // add new key to jks
         ks.setEntry(KEYSTORE_ALIAS, new KeyStore.SecretKeyEntry(new SecretKeySpec(key,PRIVATE_KEY_ALGORITHM)), new KeyStore.PasswordProtection(password));
+        ks.store(new FileOutputStream(keyStoreName), password);
+    }
+
+    public void deletePrimaryKey(String alias, char[] password) throws Exception{
+        KeyStore ks = getKeyStore(password);
+        ks.deleteEntry(alias);
         ks.store(new FileOutputStream(keyStoreName), password);
     }
 
@@ -73,14 +80,13 @@ public class JksManager {
     }
     public byte[] getPrimaryKeyFromJKS(String alias, char[] password, char[] pkPassword)throws Exception{
         KeyStore ks = getKeyStore(password);
-
         KeyStore.SecretKeyEntry secretKey= (KeyStore.SecretKeyEntry)ks.getEntry(alias, new KeyStore.PasswordProtection(password));
         if(secretKey==null)
             return null;
         byte[] encryptedKey = secretKey.getSecretKey().getEncoded();
-        System.out.println("ENCRYPTED KEY FROM JSK: " + new String(encryptedKey, "UTF-8"));
+        System.out.println("ENCRYPTED KEY FROM JSK: " + encodeKey(encryptedKey));
         byte[] rawKey = decryptKey(pkPassword,encryptedKey);
-        System.out.println("RAW KEY FROM JSK: " + new String(rawKey, "UTF-8"));
+        System.out.println("RAW KEY FROM JSK: " + encodeKey(rawKey));
         return rawKey;
     }
 
@@ -151,11 +157,19 @@ public class JksManager {
         AlgorithmParameters algParams = ePKInfo.getAlgParameters();
         cipher.init(Cipher.DECRYPT_MODE, pbeKey, algParams);
 
-        System.out.println("ePKInfo.getEncoded():       " + new String(ePKInfo.getEncoded(), "UTF-8"));
-        System.out.println("ePKInfo.getEncryptedData(): " + new String(ePKInfo.getEncryptedData(), "UTF-8"));
+        System.out.println("ePKInfo.getEncoded():       " + encodeKey(ePKInfo.getEncoded()));
+        System.out.println("ePKInfo.getEncryptedData(): " + encodeKey(ePKInfo.getEncryptedData()));
 
         return cipher.doFinal(ePKInfo.getEncryptedData());
     }
 
+
+
+    public String encodeKey(byte[] data) {
+        return new String(Hex.encode(data));
+    }
+    public byte[] decodeKey(String data) {
+        return Hex.decode(data);
+    }
 
 }

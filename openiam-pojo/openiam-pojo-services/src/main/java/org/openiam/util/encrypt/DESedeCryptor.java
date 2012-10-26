@@ -58,9 +58,9 @@ public class DESedeCryptor implements Cryptor {
 	 * @see org.openiam.util.encrypt.Cryptor#encrypt(java.lang.String)
 	 */
 	public String encrypt(byte[] key,String input) throws EncryptionException {
-		if (key == null) {
-			readKey();
-		}
+//		if (key == null) {
+//			readKey();
+//		}
 
 		KeyParameter kp = new KeyParameter(key);
 		cipher = new PaddedBufferedBlockCipher(	new CBCBlockCipher(new DESedeEngine()));
@@ -104,9 +104,6 @@ public class DESedeCryptor implements Cryptor {
 			e.printStackTrace();
 		}
 		return result;
-		
-
-		
 	}
 	
 	/* (non-Javadoc)
