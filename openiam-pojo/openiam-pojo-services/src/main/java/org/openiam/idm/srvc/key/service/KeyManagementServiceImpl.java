@@ -113,7 +113,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void generateMasterKey() throws Exception {
         log.warn("Start generating new master key...");
 
@@ -125,11 +125,11 @@ public class KeyManagementServiceImpl implements KeyManagementService {
 
         byte[] oldMasterKey = this.getMasterKey(JksManager.KEYSTORE_ALIAS);
         if(oldMasterKey != null && oldMasterKey.length > 0) {
-            log.warn("OLD MASTER KEY IS: " + jksManager.encodeKey(oldMasterKey));
-            log.warn("Decrypting user data ...");
+//            log.warn("OLD MASTER KEY IS: " + jksManager.encodeKey(oldMasterKey));
+//            log.warn("Decrypting user data ...");
             decryptData(oldMasterKey, userList, pwdHistoryMap, managedSysMap);
         } else {
-            log.warn("OLD MASTER KEY IS NULL");
+//            log.warn("OLD MASTER KEY IS NULL");
         }
 
 
@@ -141,7 +141,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
             throw new NullPointerException("Cannot get master key to encrypt user keys");
         }
 
-        log.warn("NEW MASTER KEY IS: " + jksManager.encodeKey(masterKey));
+//        log.warn("NEW MASTER KEY IS: " + jksManager.encodeKey(masterKey));
 
         log.warn("Ecrypting user data ...");
         encryptData(masterKey, userList, pwdHistoryMap, managedSysMap, newUserKeyList);
@@ -153,7 +153,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public Long generateUserKeys(String userId) throws Exception {
         User user = userDAO.getWithSecurityInfo(userId);
         if(user != null) {
@@ -163,7 +163,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public Long generateUserKeys(User user) throws Exception {
         byte[] masterKey = getMasterKey(JksManager.KEYSTORE_ALIAS);
         if(masterKey == null || masterKey.length == 0) {
@@ -183,7 +183,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         return 2L;
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     private void encryptData(byte[] masterKey, List<User> userList, HashMap<String, List<PasswordHistory>> pwdHistoryMap, HashMap<String, List<ManagedSys>> managedSysMap, List<UserKey> newUserKeyList) throws Exception {
         if(userList != null && !userList.isEmpty()) {
             for(User user : userList) {
@@ -191,7 +191,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
             }
         }
     }
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     private void encryptUserData(User user, byte[] masterKey, HashMap<String, List<PasswordHistory>> pwdHistoryMap, HashMap<String, List<ManagedSys>> managedSysMap, List<UserKey> newUserKeyList) throws Exception {
         byte[] pwdKey = jksManager.getNewPrivateKey();
         byte[] tokenKey = jksManager.getNewPrivateKey();
@@ -208,8 +208,8 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         uk.setUserId(user.getUserId());
         newUserKeyList.add(uk);
 
-        log.warn("NEW USER KEYS ARE: [USER_ID: " + user.getUserId() + "; PWD_KEY: " + jksManager.encodeKey(pwdKey) + "; TKN_KEY: "
-                 + jksManager.encodeKey(tokenKey) + "]");
+//        log.warn("NEW USER KEYS ARE: [USER_ID: " + user.getUserId() + "; PWD_KEY: " + jksManager.encodeKey(pwdKey) + "; TKN_KEY: "
+//                 + jksManager.encodeKey(tokenKey) + "]");
 
         // encrypt user data
         if(user.getPrincipalList() != null && !user.getPrincipalList().isEmpty()) {
@@ -234,11 +234,11 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                 managedSysDAO.update(ms);
             }
         }
-        log.warn("Printing ecrypted data...");
-        printUserData(user, pwdHistoryMap, managedSysMap);
+//        log.warn("Printing ecrypted data...");
+//        printUserData(user, pwdHistoryMap, managedSysMap);
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     private void decryptData(byte[] masterKey, List<User> userList, HashMap<String, List<PasswordHistory>> pwdHistoryMap, HashMap<String, List<ManagedSys>> managedSysMap)throws Exception  {
         if(userList != null && !userList.isEmpty()) {
             for(User user : userList) {
@@ -246,7 +246,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
             }
         }
     }
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     private void decryptUserData(User user, byte[] masterKey, HashMap<String, List<PasswordHistory>> pwdHistoryMap, HashMap<String, List<ManagedSys>> managedSysMap)throws Exception  {
         if(user.getUserKeys() != null && !user.getUserKeys().isEmpty()) {
             // the keys exist, it is necessary to refresh them
@@ -264,8 +264,8 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                     tokenKey = cryptor.decrypt(masterKey, key);
                 }
             }
-            log.warn("OLD USER KEYS ARE: [USER_ID: " + user.getUserId() + "; PWD_KEY: " + pwdKey + "; TKN_KEY: "
-                     + tokenKey + "]");
+//            log.warn("OLD USER KEYS ARE: [USER_ID: " + user.getUserId() + "; PWD_KEY: " + pwdKey + "; TKN_KEY: "
+//                     + tokenKey + "]");
             // decypt user data with keys
 
             if(user.getPrincipalList() != null && !user.getPrincipalList().isEmpty()) {
@@ -288,8 +288,8 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                     }
                 }
             }
-            log.warn("Printing decrypted data...");
-            printUserData(user, pwdHistoryMap, managedSysMap);
+//            log.warn("Printing decrypted data...");
+//            printUserData(user, pwdHistoryMap, managedSysMap);
         }
     }
 

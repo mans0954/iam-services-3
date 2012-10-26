@@ -25,7 +25,6 @@ public class KeyGenerator {
         try {
 
             File f = new File("km-util.properties");
-//            File f = new File("/home/alexander/km-util.properties");
             if(f!=null && f.exists()){
                 System.out.println("Properties are found. loading...");
                 Properties jksProperties = new Properties();
