@@ -99,7 +99,7 @@ public interface AuthenticationService {
     @WebMethod
     AuthenticationResponse login(
             @WebParam(name = "request", targetNamespace = "")
-            AuthenticationRequest request) throws Exception;
+            AuthenticationRequest request);
 
     /**
      * For Single Sign On, takes the token and type of token and authenticates the user based on the token.
@@ -142,7 +142,7 @@ public interface AuthenticationService {
             @WebParam(name = "token", targetNamespace = "")
             String token,
             @WebParam(name = "tokenType", targetNamespace = "")
-            String tokenType) throws Exception;
+            String tokenType);
 
     @WebMethod
     BooleanResponse validateTokenByUser(

@@ -43,6 +43,7 @@ import org.dozer.DozerBeanMapper;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.BooleanResponse;
 import org.openiam.base.ws.Response;
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.base.ws.StringResponse;
 import org.openiam.dozer.DozerUtils;
@@ -301,7 +302,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 	}
 
 
-    public AuthenticationResponse login( AuthenticationRequest request) throws Exception {
+    public AuthenticationResponse login( AuthenticationRequest request) {
         log.debug("*** login called...");
 
         String secDomainId;
@@ -546,6 +547,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 					authResp.setAuthErrorCode(AuthenticationConstants.INTERNAL_ERROR);
 				}
 				return authResp;
+			} catch(Throwable e) {
+				authResp.setStatus(ResponseStatus.FAILURE);
+				authResp.setAuthErrorCode(AuthenticationConstants.INTERNAL_ERROR);
+				authResp.setAuthErrorMessage(e.getMessage());
 			}
 
 		}else {
@@ -863,7 +868,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 	
 	@WebMethod
 	public Response renewToken(
-			String principal,  String token, String tokenType) throws Exception {
+			String principal,  String token, String tokenType) {
         
         log.debug("RenewToken called.");
 		
@@ -919,15 +924,18 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         tkModule.setCryptor(this.cryptor);
         tkModule.setTokenLife(Integer.parseInt( tokenLife));
 		
-		if (!tkModule.isTokenValid(lg.getUserId(), principal, token))  {
-			resp.setStatus(ResponseStatus.FAILURE);
-			return resp;
-		}
+        try {
+        	if (!tkModule.isTokenValid(lg.getUserId(), principal, token))  {
+        		resp.setStatus(ResponseStatus.FAILURE);
+        		return resp;
+        	}
 		
-		SSOToken ssoToken = tkModule.createToken(tokenParam);
-
-
-		resp.setResponseValue(ssoToken);
+        	SSOToken ssoToken = tkModule.createToken(tokenParam);
+        	resp.setResponseValue(ssoToken);
+        } catch(Throwable e) {
+        	resp.setStatus(ResponseStatus.FAILURE);
+        	resp.setErrorText(e.getMessage());
+        }
 		return resp;
 		
 		
