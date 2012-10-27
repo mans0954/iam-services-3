@@ -3,7 +3,10 @@ package org.openiam.idm.srvc.user.dto;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.ParamDef;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseConstants;
 import org.openiam.core.domain.UserKey;
@@ -105,6 +108,7 @@ import java.util.*;
         UserAttribute.class
 })
 @Entity
+@FilterDef(name="parentTypeFilter", parameters=@ParamDef(type="string", name="parentFilter"))
 @Table(name = "USERS")
 public class User extends org.openiam.base.BaseObject {
 
@@ -555,6 +559,7 @@ public class User extends org.openiam.base.BaseObject {
      */
     @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
     @JoinColumn(name="PARENT_ID", referencedColumnName="USER_ID")
+    @Filter(name="parentTypeFilter", condition=":parentFilter = PARENT_TYPE")
     public Set<Address> getAddresses() {
         return addresses;
     }
@@ -580,6 +585,7 @@ public class User extends org.openiam.base.BaseObject {
     }
     @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
     @JoinColumn(name="PARENT_ID", referencedColumnName="USER_ID")
+    @Filter(name="parentTypeFilter", condition=":parentFilter = PARENT_TYPE")
     public Set<EmailAddress> getEmailAddress() {
         return emailAddresses;
     }
@@ -609,6 +615,7 @@ public class User extends org.openiam.base.BaseObject {
     }
     @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
     @JoinColumn(name="PARENT_ID", referencedColumnName="USER_ID")
+    @Filter(name="parentTypeFilter", condition=":parentFilter = PARENT_TYPE")
     public Set<Phone> getPhone() {
         return phones;
     }
