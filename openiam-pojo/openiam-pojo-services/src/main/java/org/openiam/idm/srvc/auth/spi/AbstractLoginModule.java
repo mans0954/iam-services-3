@@ -104,8 +104,12 @@ public abstract class AbstractLoginModule implements LoginModule {
 	public void setSecurityDomain(SecurityDomain secDom) {
 		this.securityDomain = secDom;
 	}
-	
-	public String decryptPassword(String userId, String encPassword) throws Exception{
+
+    public void setKeyManagementService(KeyManagementService keyManagementService) {
+        this.keyManagementService = keyManagementService;
+    }
+
+    public String decryptPassword(String userId, String encPassword) throws Exception{
 		if ( encPassword != null) {
 			try {
 			return cryptor.decrypt(keyManagementService.getUserKey(userId, KeyName.password.name()),encPassword ) ;

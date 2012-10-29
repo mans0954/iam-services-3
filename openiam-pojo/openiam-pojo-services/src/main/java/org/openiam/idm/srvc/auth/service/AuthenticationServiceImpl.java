@@ -29,9 +29,11 @@ import javax.jws.WebService;
 
 import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.srvc.auth.dto.*;
+import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.pswd.service.PasswordService;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
@@ -111,6 +113,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 	protected SysConfiguration sysConfiguration;
     protected PasswordService passwordManager;
     private DozerUtils dozerUtils;
+    @Autowired
+    protected KeyManagementService keyManagementService;
 	
 	private static final Log log = LogFactory.getLog(AuthenticationServiceImpl.class);
 
@@ -484,6 +488,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 loginModule.setAuthPolicyId(authPolicyId);
                 loginModule.setResourceService(resourceService);
                 loginModule.setPasswordManager(passwordManager);
+                loginModule.setKeyManagementService(keyManagementService);
 			}
 
 

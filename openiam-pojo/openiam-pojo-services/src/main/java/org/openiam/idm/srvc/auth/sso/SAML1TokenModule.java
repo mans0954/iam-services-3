@@ -28,6 +28,7 @@ import java.util.Map;
 
 import org.openiam.base.id.UUIDGen;
 import org.openiam.idm.srvc.auth.dto.SSOToken;
+import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.util.encrypt.Cryptor;
 
 import javax.xml.namespace.QName;
@@ -291,6 +292,11 @@ public class SAML1TokenModule implements SSOTokenModule {
 	public void setTokenLife(int tokenLife) {
 		
 	}
+
+    @Override
+    public void setKeyManagementService(KeyManagementService keyManagementService) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
 
 
 }
