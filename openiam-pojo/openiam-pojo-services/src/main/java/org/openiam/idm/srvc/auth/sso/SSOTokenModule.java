@@ -24,6 +24,7 @@ package org.openiam.idm.srvc.auth.sso;
 import java.util.Map;
 
 import org.openiam.idm.srvc.auth.dto.SSOToken;
+import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.util.encrypt.Cryptor;
 
 /**
@@ -57,6 +58,8 @@ public interface SSOTokenModule {
 	void setCryptor(Cryptor cryptor);
 	
 	void setTokenLife(int tokenLife) ;
+
+    void setKeyManagementService(KeyManagementService keyManagementService);
 
     String getDecryptedToken(String userId,String token)throws Exception;
 }

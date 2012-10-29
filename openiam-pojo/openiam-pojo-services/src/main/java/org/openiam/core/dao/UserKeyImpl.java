@@ -28,8 +28,8 @@ public class UserKeyImpl extends BaseDaoImpl<UserKey, String> implements UserKey
     @Override
     public UserKey getByUserIdKeyName(String userId, String keyName) throws Exception {
         List<UserKey> result = (List<UserKey>) sessionFactory.getCurrentSession().createQuery(
-                "select from " + this.domainClass.getName() + " obj where obj.userId=?1 and obj.name=?2")
-                                                             .setParameter(0, userId).setParameter(1, keyName).list();
+                "select obj from " + this.domainClass.getName() + " obj where obj.userId=:userId and obj.name=:keyName")
+                                                             .setParameter("userId", userId).setParameter("keyName", keyName).list();
 
         if(result == null || result.isEmpty()) {
             return null;

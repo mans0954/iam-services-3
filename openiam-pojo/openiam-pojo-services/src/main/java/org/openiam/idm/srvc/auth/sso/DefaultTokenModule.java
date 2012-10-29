@@ -193,4 +193,9 @@ public class DefaultTokenModule implements SSOTokenModule {
 	public void setTokenLife(int tokenLife) {
 		this.tokenLife = tokenLife;
 	}
+
+    @Override
+    public void setKeyManagementService(KeyManagementService keyManagementService) {
+        this.keyManagementService=keyManagementService;
+    }
 }
