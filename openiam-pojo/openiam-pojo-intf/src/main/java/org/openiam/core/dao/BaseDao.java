@@ -13,6 +13,10 @@ public interface BaseDao<T, PrimaryKey extends Serializable> {
   List<T> findAll();
 
   Long countAll();
+  
+  void update(T t);
+  
+  void merge(T t);
 
   void save(T t);
 
@@ -21,4 +25,8 @@ public interface BaseDao<T, PrimaryKey extends Serializable> {
   void save(Collection<T> entities);
 
   void deleteAll()  throws Exception;
+  
+  List<T> getByExample(T t, int startAt, int size);
+  List<T> getByExample(T t);
+  int count(T t);
 }

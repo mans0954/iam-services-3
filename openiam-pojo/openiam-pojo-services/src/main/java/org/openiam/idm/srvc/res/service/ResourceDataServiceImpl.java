@@ -2,16 +2,19 @@ package org.openiam.idm.srvc.res.service;
 
 import java.util.*;
 
+import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dozer.DozerBeanMapper;
 import org.mvel2.optimizers.impl.refl.nodes.ArrayLength;
 import org.openiam.dozer.DozerUtils;
 import org.openiam.exception.data.ObjectNotFoundException;
+import org.openiam.idm.searchbeans.ResourceSearchBean;
 //import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 //import org.openiam.idm.srvc.mngsys.service.AttributeMapDAO;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
@@ -26,7 +29,9 @@ import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.role.dto.Role;
+import org.openiam.idm.srvc.searchbean.converter.ResourceSearchBeanConverter;
 import org.openiam.util.DozerMappingType;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
 
 @WebService(endpointInterface = "org.openiam.idm.srvc.res.service.ResourceDataService", targetNamespace = "urn:idm.openiam.org/srvc/res/service", portName = "ResourceDataWebServicePort", serviceName = "ResourceDataWebService")
@@ -46,6 +51,9 @@ public class ResourceDataServiceImpl implements ResourceDataService {
     private OrganizationDataService orgManager;
 
 	private static final Log log = LogFactory.getLog(ResourceDataServiceImpl.class);
+	
+	@Autowired
+	private ResourceSearchBeanConverter resourceSearchBeanConverter;
 
 	@Required
 	public void setResourceDao(ResourceDAO resourceDao) {
@@ -114,7 +122,8 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 		if (resource == null)
 			throw new IllegalArgumentException("Resource object is null");
 
-		return resourceDao.add(resource);
+		resourceDao.save(resource);
+		return resource;
 	}
 
 	/**
@@ -169,64 +178,31 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 		if (resourceName == null)
 			throw new IllegalArgumentException("resourceName is null");
 
-		return dozerUtils.getDozerDeepMappedResource(resourceDao.findResourceByName(resourceName));
+		return dozerUtils.getDozerDeepMappedResource(resourceDao.findByName(resourceName));
 
 	}
-	
-    /**
-     * Find resources by name
-     *
-     * @return list of resources
-     */
-    public List<Resource> getResourcesByName(String resourceName) {
-        if (resourceName == null)
-            throw new IllegalArgumentException("resourceName is null");
 
-        return dozerUtils.getDozerDeepMappedResourceList(resourceDao.findResourcesByName(resourceName));
-    }
+ 	@WebMethod
+    public int count(final ResourceSearchBean searchBean) {
+		final Resource resource = new Resource();
+		resource.setResourceId(searchBean.getKey());
+		resource.setName(searchBean.getName());
+		
+		if(StringUtils.isNotBlank(searchBean.getResourceTypeId())) {
+			final ResourceType type = new ResourceType();
+			type.setResourceTypeId(searchBean.getResourceTypeId());
+			resource.setResourceType(type);
+		}
+		
+		return resourceDao.count(resourceSearchBeanConverter.convert(searchBean));
+ 	}
 
-
-    /**
-      * Find resources by example
-      *
-      * @return list of resources
-      */
-    public List<Resource> getResourcesByExample(Resource resource) {
-    	return dozerUtils.getDozerDeepMappedResourceList(resourceDao.findByExample(resource));
-    }
-
-
-    /**
-     * Find resources which have a specified property
-     *
-     * @param propName
-     * @param propValue
-     * @return
-     */
-    public List<Resource> getResourcesByProperty (String propName, String propValue) {
-        if (propName == null)
-            throw new IllegalArgumentException("propName is null");
-        if (propValue == null)
-            throw new IllegalArgumentException("propValue is null");
-
-        return dozerUtils.getDozerDeepMappedResourceList(resourceDao.findResourcesByProperty(propName, propValue));
-
-    }
-
-    /**
-     * Find resource which has a specified set of unique properties
-     *
-     * @param propList
-     * @return
-     */
-    public Resource getResourceByProperties(List<ResourceProp> propList) {
-        if (propList == null)
-            throw new IllegalArgumentException("propList is null");
-
-        return dozerUtils.getDozerDeepMappedResource(resourceDao.findResourceByProperties(propList));
-
-    }
-
+    @Override
+	public List<Resource> findBeans(final ResourceSearchBean searchBean, final int from, final int size) {
+		final List<Resource> results = resourceDao.getByExample(resourceSearchBeanConverter.convert(searchBean), from, size);
+		final DozerMappingType mappingType = (searchBean.isDeepCopy()) ? DozerMappingType.DEEP : DozerMappingType.SHALLOW;
+		return dozerUtils.getDozerDeepMappedResourceList(results, mappingType);
+	}
 
 	/**
 	 * Update a resource.
@@ -238,7 +214,8 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 		if (resource == null)
 			throw new IllegalArgumentException("resource object is null");
 
-		return resourceDao.update(resource);
+		resourceDao.update(resource);
+		return resource;
 	}
 
 	/**
@@ -247,7 +224,7 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 	 * @return list of resources
 	 */
 	public List<Resource> getAllResources() {
-		return dozerUtils.getDozerDeepMappedResourceList(resourceDao.findAllResources());
+		return dozerUtils.getDozerDeepMappedResourceList(resourceDao.findAll());
 	}
 
 	/**
@@ -258,15 +235,8 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 	public void removeResource(String resourceId) {
 		if (resourceId == null)
 			throw new IllegalArgumentException("resourceId is null");
-		Resource obj = this.resourceDao.findById(resourceId);
-		this.resourceDao.remove(obj);
-	}
-
-	/**
-	 * Remove all resources
-	 */
-	public int removeAllResources() {
-		return this.resourceDao.removeAllResources();
+		Resource obj = resourceDao.findById(resourceId);
+		resourceDao.delete(obj);
 	}
 
 	// ResourceType -----------------------------------
@@ -339,49 +309,7 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 	public int removeAllResourceTypes() {
 		return this.resourceTypeDao.removeAllResourceTypes();
 	}
-
-	/**
-	 * Find type of a resource
-	 * 
-	 * @param resourceId
-	 * @return
-	 */
-	public ResourceType findTypeOfResource(String resourceId) {
-		if (resourceId == null)
-			throw new IllegalArgumentException("resourceId is null");
-
-		return resourceDao.findTypeOfResource(resourceId);
-	}
-
-	// /**
-	// * Link metadata type to a resource
-	// *
-	// * @param resourceTypeId
-	// * @param resourceId
-	// */
-	// public void linkTypeToResource(String resourceId, String resourceTypeId)
-	// {
-	// if (resourceTypeId == null)
-	// throw new IllegalArgumentException("resourceTypeId is null");
-	// if (resourceId == null)
-	// throw new IllegalArgumentException("resourceId is null");
-	// this.resourceDao.linkTypeToResource(resourceId, resourceTypeId);
-	// }
-	//
-	// /**
-	// * Unlink type from resource
-	// *
-	// * @param resourceId
-	// */
-	// public void unlinkTypeFromResource(String resourceId) {
-	// if (resourceId == null)
-	// throw new IllegalArgumentException("resourceId is null");
-	//
-	// this.resourceDao.unlinkTypeFromResource(resourceId);
-	// }
-
-	// ResourceProp ---------------------------------------
-
+	
 	/**
 	 * Add a resource property.
 	 * 
@@ -482,79 +410,6 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 	}
 
 	/**
-	 * Remove properties with a specified resourceId
-	 * 
-	 * @param resourceId
-	 * @return
-	 */
-	public int removePropertiesByResource(String resourceId) {
-		if (resourceId == null)
-			throw new IllegalArgumentException("resourceId is null");
-
-		return resourceDao.removePropertiesByResource(resourceId);
-	}
-
-	/**
-	 * Find resource properties
-	 * 
-	 * @param resourceId
-	 * @return
-	 */
-	public List<ResourceProp> findResourceProperties(String resourceId) {
-		if (resourceId == null)
-			throw new IllegalArgumentException("resourceId is null");
-
-		return resourceDao.findResourceProperties(resourceId);
-	}
-
-	// /**
-	// * Add a property to a resource
-	// *
-	// * @param resourcePropId
-	// * @param resourceId
-	// */
-	// public void linkPropertyToResource(String resourcePropId, String
-	// resourceId) {
-	// if (resourcePropId == null)
-	// throw new IllegalArgumentException("resourcePropId is null");
-	// if (resourceId == null)
-	// throw new IllegalArgumentException("resourceId is null");
-	//
-	// this.resourceDao.linkPropertyToResource(resourcePropId, resourceId);
-	// }
-	//
-	// /**
-	// * Remove a property from a resource
-	// *
-	// * @param resourcePropId
-	// * @param resourceId
-	// */
-	// public void unlinkPropertyFromResource(String resourcePropId,
-	// String resourceId) {
-	// if (resourcePropId == null)
-	// throw new IllegalArgumentException("resourcePropId is null");
-	// if (resourceId == null)
-	// throw new IllegalArgumentException("resourceId is null");
-	//
-	// this.resourceDao.unlinkPropertyFromResource(resourcePropId, resourceId);
-	// }
-	//
-	// /**
-	// * Remove all properties from a resource
-	// *
-	// * @param resourceId
-	// */
-	// public void unlinkAllPropertiesFromResource(String resourceId) {
-	// if (resourceId == null)
-	// throw new IllegalArgumentException("resourceId is null");
-	//
-	// this.resourceDao.unlinkAllPropertiesFromResource(resourceId);
-	//
-	// }
-
-	// ResourceParent ------------------------------------------------
-
-	/**
 	 * Find resource children
 	 * 
 	 * @param resourceId
@@ -571,36 +426,6 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 		return dozerUtils.getDozerDeepMappedResourceList(resource.getChildResources());
 	}
 
-	// /**
-	// * Set a parent resource
-	// *
-	// * @param parentResourceId
-	// * @param childResourceId
-	// */
-	// public void linkResourceToParent(String childResourceId,
-	// String parentResourceId) {
-	// if (parentResourceId == null)
-	// throw new IllegalArgumentException("parentResourceId is null");
-	// if (childResourceId == null)
-	// throw new IllegalArgumentException("childResourceId is null");
-	// this.resourceDao
-	// .linkResourceToParent(childResourceId, parentResourceId);
-	// }
-	//
-	// /**
-	// * Remove a resource parent relationship
-	// *
-	// * @param childResourceId
-	// */
-	// public void unlinkResourceFromParent(String childResourceId) {
-	// if (childResourceId == null)
-	// throw new IllegalArgumentException("childResourceId is null");
-	// this.resourceDao.unlinkResourceFromParent(childResourceId);
-	// }
-	//
-	// resource hierarchy methods
-	// -------------------------------------------------
-
 	private String getResourceType(Resource r) {
 		String rt = "";
 		ResourceType resType = r.getResourceType();
@@ -608,78 +433,6 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 			rt = resType.getResourceTypeId() + ":";
 		return rt;
 	}
-
-	/**
-	 * Find a resource and its descendants and return as an xml tree.
-	 * 
-	 * @param resourceId
-	 *            the resource id
-	 * 
-	 * @return xml string
-	 */
-	
-	/*
-	public String getResourceTreeXML(String resourceId) {
-		StringBuffer xml = new StringBuffer();
-
-		Resource mainResource = resourceDao.findById(resourceId);
-
-		xml.append("<Resource label='" + getResourceType(mainResource)
-				+ mainResource.getName() + "' resourceId='"
-				+ mainResource.getResourceId() + "'>");
-		List<Resource> resourceTree = resourceDao.getChildResources(resourceId);
-		for (Iterator<Resource> it = resourceTree.iterator(); it.hasNext();) {
-			Resource r = (Resource) it.next();
-
-			xml.append("<Resource label='" + getResourceType(r) + r.getName()
-					+ "' resourceId='" + r.getResourceId() + "'>");
-			getResourceTreeXmlHelper(r.getResourceId(), xml);
-
-			xml.append("</Resource>");
-		}
-
-		// xml.append("</Resources>");
-		xml.append("</Resource>");
-
-		return xml.toString();
-	}
-	*/
-
-	/**
-	 * Recursive helper method to get nested resource descendants as xml.
-	 * 
-	 * @param resourceId
-	 *            the resource id
-	 * @param xml
-	 *            the xml
-	 * 
-	 * @return the resource tree xml helper
-	 */
-	/*
-	private StringBuffer getResourceTreeXmlHelper(String resourceId,
-			StringBuffer xml) {
-
-		List<Resource> descendents = resourceDao.getChildResources(resourceId);
-
-		// xml.append("<Resources label='child'>");
-		for (Iterator<Resource> it = descendents.iterator(); it.hasNext();) {
-			Resource r = (Resource) it.next();
-
-			xml.append("<Resource label='" + getResourceType(r) + r.getName()
-					+ "' resourceId='" + r.getResourceId() + "'>");
-			// xml.append("<ResourceId label='id'>" + r.getResourceId() +
-			// "</ResourceId>");
-			// xml.append("<ResourceDescription label='desc'>" +
-			// r.getDescription()+ "</ResourceDescription>");
-			getResourceTreeXmlHelper(r.getResourceId(), xml);
-			xml.append("</Resource>");
-		}
-		// xml.append("</Resources>");
-
-		return xml;
-
-	}
-	*/
 
 	/**
 	 * Find a resource and all its descendants and put them in a list.
@@ -740,77 +493,6 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 		if (resourceTypeId == null)
 			throw new IllegalArgumentException("resourceTypeId is null");
 		return dozerUtils.getDozerDeepMappedResourceList(resourceDao.getResourcesByType(resourceTypeId));
-	}
-
-	/**
-	 * Find root resources i.e. resources with null or blank value for parent
-	 * 
-	 * @return
-	 */
-	public List<Resource> getRootResources() {
-		return dozerUtils.getDozerDeepMappedResourceList(resourceDao.getRootResources());
-	}
-
-	/**
-	 * Find all resources for a specified category.
-	 * 
-	 * @param categoryId
-	 * @return
-	 */
-	public List<Resource> getResourcesByCategory(String categoryId) {
-		if (categoryId == null)
-			throw new IllegalArgumentException("categoryId is null");
-		return dozerUtils.getDozerDeepMappedResourceList(resourceDao.getResourcesByCategory(categoryId));
-	}
-
-	/**
-	 * Find all resources with a specified branch
-	 * 
-	 * @param branchId
-	 * @return
-	 */
-	public List<Resource> getResourcesByBranch(String branchId) {
-		if (branchId == null)
-			throw new IllegalArgumentException("branchId is null");
-		return dozerUtils.getDozerDeepMappedResourceList(resourceDao.getResourcesByBranch(branchId));
-
-	}
-
-	/**
-	 * Remove resources having a specified metadata type
-	 * 
-	 * @param resourceTypeId
-	 * @return rows affected
-	 */
-	public int removeResourcesByType(String resourceTypeId) {
-		if (resourceTypeId == null)
-			throw new IllegalArgumentException("resourceTypeId is null");
-		return resourceDao.removeResourcesByType(resourceTypeId);
-	}
-
-	/**
-	 * Remove all resources for a specified category.
-	 * 
-	 * @param categoryId
-	 * @return rows affected
-	 */
-	public int removeResourcesByCategory(String categoryId) {
-		if (categoryId == null)
-			throw new IllegalArgumentException("categoryId is null");
-		return resourceDao.removeResourcesByCategory(categoryId);
-	}
-
-	/**
-	 * Remove all resources with a specified branch
-	 * 
-	 * @param branchId
-	 * @return rows affected
-	 */
-	public int removeResourcesByBranch(String branchId) {
-		if (branchId == null)
-			throw new IllegalArgumentException("branchId is null");
-		return resourceDao.removeResourcesByBranch(branchId);
-
 	}
 
 	/**
@@ -892,13 +574,6 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 		this.resourceRoleDao.removeAllResourceRoles();
 	}
 
-	public List<ResourceRole> getResourceRolesByResource(String resourceId) {
-		if (resourceId == null) {
-			throw new IllegalArgumentException("resourceId is null");
-		}
-		return resourceDao.findResourceRolesByResource(resourceId);
-	}
-
 	/**
 	 * Returns a list of Resource objects that are linked to a Role.
 	 * 
@@ -925,60 +600,6 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 			throw new IllegalArgumentException("roleIdList is null");
 		}
 		return dozerUtils.getDozerDeepMappedResourceList(resourceDao.findResourcesForRoles(roleIdList));
-	}
-
-	/**
-	 * Add a resource role privilege
-	 * 
-	 * @param resourceId
-	 *            the resource id
-	 * @param roleId
-	 *            the role id
-	 * @param privilegeId
-	 *            the privilege id
-	 */
-	public void addResourceRolePrivilege(String resourceId, String roleId,
-			String privilegeId) {
-		if (resourceId == null)
-			throw new IllegalArgumentException("resourceId is null");
-		if (roleId == null)
-			throw new IllegalArgumentException("roleId is null");
-		if (privilegeId == null)
-			throw new IllegalArgumentException("privilegeId is null");
-
-		resourceDao.addResourceRolePrivilege(resourceId, roleId, privilegeId);
-	}
-
-	/**
-	 * Removes the resource role privilege.
-	 * 
-	 * @param resourceId
-	 *            the resource id
-	 * @param roleId
-	 *            the role id
-	 * @param privilegeId
-	 *            the privilege id
-	 */
-	void removeResourceRolePrivilege(String resourceId, String roleId) {
-		if (resourceId == null)
-			throw new IllegalArgumentException("resourceId is null");
-		if (roleId == null)
-			throw new IllegalArgumentException("roleId is null");
-
-		resourceDao.removeResourceRolePrivilege(resourceId, roleId);
-	}
-
-	/**
-	 * Removes the all role privileges from resource.
-	 * 
-	 * @param resourceId
-	 *            the resource id
-	 */
-	void removeResourceRolePrivileges(String resourceId) {
-		if (resourceId == null)
-			throw new IllegalArgumentException("resourceId is null");
-
-		resourceDao.removeResourceRolePrivileges(resourceId);
 	}
 
 	/*

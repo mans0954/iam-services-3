@@ -42,9 +42,43 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> implements
             throw new RuntimeException("Problem determining generic class for '" + getClass() + "'! ");
         }
     }
+    
+    protected Criteria getExampleCriteria(T t) {
+    	return getCriteria();
+    }
 
-    protected Session getSession() {
+    @Override
+	public List<T> getByExample(T t, int startAt, int size) {
+		final Criteria criteria = getExampleCriteria(t);
+		if(startAt > -1) {
+			criteria.setFirstResult(startAt);
+		}
+		
+		if(size > -1) {
+			criteria.setMaxResults(size);
+		}
+		
+		return (List<T>)criteria.list();
+	}
+
+
+
+	@Override
+	public List<T> getByExample(T t) {
+		return getByExample(t, -1, -1);
+	}
+
+	@Override
+	public int count(T t) {
+		return getExampleCriteria(t).list().size();
+	}
+
+	protected Session getSession() {
         return sessionFactory.getCurrentSession();
+    }
+    
+    protected Criteria getCriteria() {
+    	return sessionFactory.getCurrentSession().createCriteria(domainClass);
     }
 
     @SuppressWarnings({"unchecked"})
@@ -109,8 +143,21 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> implements
             session.saveOrUpdate(entity);
         }
     }
+    
+    
+    
 
-    @Transactional
+    @Override
+	public void update(T t) {
+		sessionFactory.getCurrentSession().update(t);
+	}
+
+	@Override
+	public void merge(T t) {
+		sessionFactory.getCurrentSession().merge(t);
+	}
+
+	@Transactional
     public void deleteAll() throws Exception{
         sessionFactory.getCurrentSession().createQuery("delete from "+this.domainClass.getName()).executeUpdate();
     }
