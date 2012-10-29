@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.res.service;
 
+import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.srvc.res.dto.*;
 import org.openiam.idm.srvc.role.dto.Role;
 
@@ -48,48 +49,14 @@ public interface ResourceDataService {
             @WebParam(name = "resourceName", targetNamespace = "")
             String resourceName);
 
-
-    /**
-     * Find resources by resource name.
-     *
-     * @return list of resources
-     */
     @WebMethod
-    List<Resource> getResourcesByName(
-            @WebParam(name = "resourceName", targetNamespace = "")
-            String resourceName);
-
-    /**
-     * Find resources by example
-     *
-     * @return list of resources
-     */
+    List<Resource> findBeans(@WebParam(name = "searchBean", targetNamespace = "")  ResourceSearchBean searchBean,
+    						 @WebParam(name = "from", targetNamespace = "") int from,
+    						 @WebParam(name = "size", targetNamespace = "") int size);
+    
     @WebMethod
-    List<Resource> getResourcesByExample(
-            @WebParam(name = "resource", targetNamespace = "")
-            Resource resource);
-
-    /**
-     * Find resources which have a specified property
-     *
-     * @param propName
-     * @param propValue
-     * @return list of resources
-     */
-    @WebMethod
-    List<Resource> getResourcesByProperty(String propName, String propValue);
-
-    /**
-     * Find resource which has a specified set of unique properties
-     *
-     * @param propList
-     * @return resource
-     */
-    @WebMethod
-    Resource getResourceByProperties(
-            @WebParam(name = "propList", targetNamespace = "")
-            List<ResourceProp> propList);
-
+    int count(@WebParam(name="searchBean", targetNamespace="") ResourceSearchBean searchBean);
+    
     /**
      * Update a resource.
      *
@@ -118,14 +85,6 @@ public interface ResourceDataService {
     void removeResource(
             @WebParam(name = "resourceId", targetNamespace = "")
             String resourceId);
-
-    /**
-     * Remove all resources.
-     *
-     * @return the int count
-     */
-    @WebMethod
-    int removeAllResources();
 
     /**
      * Add a new resource type.
@@ -187,17 +146,6 @@ public interface ResourceDataService {
     int removeAllResourceTypes();
 
     /**
-     * Find type of a resource.
-     *
-     * @param resourceId the resource id
-     * @return the resource type
-     */
-    @WebMethod
-    ResourceType findTypeOfResource(
-            @WebParam(name = "resourceId", targetNamespace = "")
-            String resourceId);
-
-    /**
      * Add a resource property.
      *
      * @param resourceProp the resource prop
@@ -257,28 +205,6 @@ public interface ResourceDataService {
     int removeAllResourceProps();
 
     /**
-     * Remove all properties belonging a resource
-     *
-     * @param resourceId the resource id
-     * @return the int count
-     */
-    @WebMethod
-    int removePropertiesByResource(
-            @WebParam(name = "resourceId", targetNamespace = "")
-            String resourceId);
-
-    /**
-     * Find resource properties
-     *
-     * @param resourceId the resource id
-     * @return the list of resources
-     */
-    @WebMethod
-    List<ResourceProp> findResourceProperties(
-            @WebParam(name = "resourceId", targetNamespace = "")
-            String resourceId);
-
-    /**
      * Find resource children.
      *
      * @param resourceId the resource id
@@ -324,69 +250,6 @@ public interface ResourceDataService {
     List<Resource> getResourcesByType(
             @WebParam(name = "resourceTypeId", targetNamespace = "")
             String resourceTypeId);
-
-    /**
-     * Find root resources i.e. resources with null or blank value for parent
-     *
-     * @return the root resources
-     */
-    @WebMethod
-    List<Resource> getRootResources();
-
-    /**
-     * Find all resources for a specified category.
-     *
-     * @param categoryId the category id
-     * @return the resources by category
-     */
-    @WebMethod
-    List<Resource> getResourcesByCategory(
-            @WebParam(name = "categoryId", targetNamespace = "")
-            String categoryId);
-
-    /**
-     * Find all resources with a specified branch.
-     *
-     * @param branchId the branch id
-     * @return the resources by branch
-     */
-    @WebMethod
-    List<Resource> getResourcesByBranch(
-            @WebParam(name = "branchId", targetNamespace = "")
-            String branchId);
-
-    /**
-     * Remove resources having a specified metadata type.
-     *
-     * @param resourceTypeId the resource type id
-     * @return rows affected
-     */
-    @WebMethod
-    int removeResourcesByType(
-            @WebParam(name = "resourceTypeId", targetNamespace = "")
-            String resourceTypeId);
-
-    /**
-     * Remove all resources for a specified category.
-     *
-     * @param categoryId the category id
-     * @return rows affected
-     */
-    @WebMethod
-    int removeResourcesByCategory(
-            @WebParam(name = "categoryId", targetNamespace = "")
-            String categoryId);
-
-    /**
-     * Remove all resources with a specified branch.
-     *
-     * @param branchId the branch id
-     * @return rows affected
-     */
-    @WebMethod
-    int removeResourcesByBranch(
-            @WebParam(name = "branchId", targetNamespace = "")
-            String branchId);
 
     /**
      * Add a resource role.

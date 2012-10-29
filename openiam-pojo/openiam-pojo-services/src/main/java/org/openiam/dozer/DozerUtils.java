@@ -167,6 +167,20 @@ public class DozerUtils {
     	return retVal;
     }
     
+    public List<Resource> getDozerDeepMappedResourceList(final Collection<Resource> resourceList, final DozerMappingType type) {
+    	final List<Resource> convertedList = new LinkedList<Resource>();
+    	if(CollectionUtils.isNotEmpty(resourceList)) {
+    		for(final Resource resource : resourceList) {
+    			if(type == null || DozerMappingType.DEEP.ordinal() == type.ordinal()) {
+    				convertedList.add(deepMapper.map(resource, Resource.class));
+    			} else {
+    				convertedList.add(shallowMapper.map(resource, Resource.class));
+    			}
+    		}
+    	}
+    	return convertedList;
+    }
+    
     public List<Resource> getDozerDeepMappedResourceList(final Collection<Resource> resourceList) {
     	final List<Resource> convertedList = new LinkedList<Resource>();
     	if(CollectionUtils.isNotEmpty(resourceList)) {

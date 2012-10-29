@@ -438,13 +438,6 @@
         <property name="orgManager" ref="orgManager" />
 		<property name="dozerUtils" ref="dozerUtils" />
     </bean>
-
-	<bean id="resourceDAO" class="org.openiam.idm.srvc.res.service.ResourceDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"></property>		
-		<property name="resourceTypeDao" ref="resourceTypeDAO" />
-		<property name="resourcePropDao" ref="resourcePropDAO" />
-		<property name="resourceRoleDao" ref="resourceRoleDAO" />
-	</bean>	
 	
 	<bean id="resourceTypeDAO" class="org.openiam.idm.srvc.res.service.ResourceTypeDAOImpl" >
 		<property name="sessionFactory" ref="sessionFactory"></property>		
