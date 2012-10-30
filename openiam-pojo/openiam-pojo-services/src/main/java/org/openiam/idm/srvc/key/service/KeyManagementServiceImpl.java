@@ -7,8 +7,10 @@ import org.openiam.core.dao.UserKeyDao;
 import org.openiam.core.domain.UserKey;
 import org.openiam.exception.EncryptionException;
 import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.idm.srvc.auth.dto.LoginId;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
 import org.openiam.idm.srvc.key.constant.KeyName;
+import org.openiam.idm.srvc.key.dto.UserSecurityWrapper;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
 import org.openiam.idm.srvc.pswd.dto.PasswordHistory;
@@ -32,6 +34,7 @@ import java.util.*;
 public class KeyManagementServiceImpl implements KeyManagementService {
     protected final Log log = LogFactory.getLog(this.getClass());
     private static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
+    private static final int FETCH_COUNT=1000;
     private String             jksFile;
     private String             jksPassword;
     private String             keyPassword;
@@ -118,16 +121,16 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         log.warn("Start generating new master key...");
 
         log.warn("Loading user data ...");
-        List<User> userList = userDAO.getAllWithSecurityInfo();
-        HashMap<String, List<PasswordHistory>> pwdHistoryMap = getPasswordHistoryMap(userList);
-        HashMap<String, List<ManagedSys>> managedSysMap = getManagedSysMap();
+
+        HashMap<String, UserSecurityWrapper> userSecurityMap = getSecurityMap();
         List<UserKey> newUserKeyList = new ArrayList<UserKey>();
+
         log.warn("Try to get old salt ...");
         byte[] oldMasterKey = this.getMasterKey(JksManager.KEYSTORE_ALIAS);
         if(oldMasterKey != null && oldMasterKey.length > 0) {
             log.warn("OLD MASTER KEY IS: " + jksManager.encodeKey(oldMasterKey));
             log.warn("Decrypting user data ...");
-            decryptData(oldMasterKey, userList, pwdHistoryMap, managedSysMap);
+            decryptData(oldMasterKey, userSecurityMap);
             log.warn("Decrypting user data finished successfully");
         } else {
             log.warn("OLD MASTER KEY IS NULL");
@@ -145,7 +148,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         log.warn("NEW MASTER KEY IS: " + jksManager.encodeKey(masterKey));
 
         log.warn("Ecrypting user data ...");
-        encryptData(masterKey, userList, pwdHistoryMap, managedSysMap, newUserKeyList);
+        encryptData(masterKey, userSecurityMap, newUserKeyList);
         log.warn("Ecrypting user data finished successfully");
 
         log.warn("Refreshing user keys...");
@@ -157,7 +160,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long generateUserKeys(String userId) throws Exception {
-        User user = userDAO.getWithSecurityInfo(userId);
+        User user = userDAO.findById(userId);
         if(user != null) {
             return generateUserKeys(user);
         }
@@ -173,12 +176,25 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         }
         List<User> userList = new ArrayList<User>();
         userList.add(user);
-
-        HashMap<String, List<PasswordHistory>> pwdHistoryMap = getPasswordHistoryMap(userList);
+        List<Login> lgList = loginDAO.findUser(user.getUserId());
+        List<UserKey> keyList = userKeyDao.getByUserId(user.getUserId());
+        List<PasswordHistory> pwdList = new ArrayList<PasswordHistory>();
+        for (Login lg: lgList){
+            pwdList.addAll(passwordHistoryDao.findAllPasswordHistoryByPrincipal(lg.getId().getDomainId(), lg.getId().getLogin(),lg.getId().getManagedSysId()));
+        }
         HashMap<String, List<ManagedSys>> managedSysMap = getManagedSysMap();
         List<UserKey> newUserKeyList = new ArrayList<UserKey>();
 
-        encryptUserData(user, masterKey, pwdHistoryMap, managedSysMap, newUserKeyList);
+
+
+        UserSecurityWrapper usw = new UserSecurityWrapper();
+        usw.setUserId(user.getUserId());
+        usw.setLoginList(lgList);
+        usw.setManagedSysList(managedSysMap.get(user.getUserId()));
+        usw.setPasswordHistoryList(pwdList);
+        usw.setUserKeyList(keyList);
+
+        encryptUserData(masterKey, usw, newUserKeyList);
         // replace user key for given user
         userKeyDao.deleteByUserId(user.getUserId());
         addUserKeys(newUserKeyList);
@@ -187,9 +203,8 @@ public class KeyManagementServiceImpl implements KeyManagementService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void migrateData(String oldSecretKey)throws Exception{
-        List<User> userList = userDAO.getAllWithSecurityInfo();
-        HashMap<String, List<PasswordHistory>> pwdHistoryMap = getPasswordHistoryMap(userList);
-        HashMap<String, List<ManagedSys>> managedSysMap = getManagedSysMap();
+
+        HashMap<String, UserSecurityWrapper> userSecurityMap = getSecurityMap();
         List<UserKey> newUserKeyList = new ArrayList<UserKey>();
 
         jksManager.generatePrimaryKey(this.jksPassword.toCharArray(), this.keyPassword.toCharArray());
@@ -199,14 +214,14 @@ public class KeyManagementServiceImpl implements KeyManagementService {
             throw new NullPointerException("Cannot generate master key to encrypt user keys");
         }
 
-        if(userList!=null && !userList.isEmpty()){
-            for(User user:userList){
+        if(userSecurityMap!=null && !userSecurityMap.isEmpty()){
+            for(String userId : userSecurityMap.keySet()){
                 // decrypt user data
-                if(!"0001".equals(user.getUserId())) {
-                    decryptSecurityDataForUser(user, jksManager.decodeKey(oldSecretKey), pwdHistoryMap, managedSysMap);
+                if(!"0001".equals(userId)) {
+                    decryptSecurityDataForUser(jksManager.decodeKey(oldSecretKey), userSecurityMap.get(userId));
                 }
                 // reencrypt user data
-                encryptUserData(user, masterKey, pwdHistoryMap, managedSysMap, newUserKeyList);
+                encryptUserData(masterKey, userSecurityMap.get(userId), newUserKeyList);
 
             }
         }
@@ -216,28 +231,28 @@ public class KeyManagementServiceImpl implements KeyManagementService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    private void encryptData(byte[] masterKey, List<User> userList, HashMap<String, List<PasswordHistory>> pwdHistoryMap, HashMap<String, List<ManagedSys>> managedSysMap, List<UserKey> newUserKeyList) throws Exception {
-        if(userList != null && !userList.isEmpty()) {
-            for(User user : userList) {
-                encryptUserData(user, masterKey, pwdHistoryMap, managedSysMap, newUserKeyList);
+    private void encryptData(byte[] masterKey, HashMap<String, UserSecurityWrapper> userSecurityMap, List<UserKey> newUserKeyList) throws Exception {
+        if(userSecurityMap != null && !userSecurityMap.isEmpty()) {
+            for(String userId : userSecurityMap.keySet()) {
+                encryptUserData(masterKey, userSecurityMap.get(userId), newUserKeyList);
             }
         }
     }
     @Transactional(rollbackFor = Exception.class)
-    private void encryptUserData(User user, byte[] masterKey, HashMap<String, List<PasswordHistory>> pwdHistoryMap, HashMap<String, List<ManagedSys>> managedSysMap, List<UserKey> newUserKeyList) throws Exception {
+    private void encryptUserData(byte[] masterKey, UserSecurityWrapper userSecurityWrapper, List<UserKey> newUserKeyList) throws Exception {
         byte[] pwdKey = jksManager.getNewPrivateKey();
         byte[] tokenKey = jksManager.getNewPrivateKey();
         // create new USER KEYS
         UserKey uk = new UserKey();
         uk.setKey(cryptor.encrypt(masterKey, jksManager.encodeKey(pwdKey)));
         uk.setName(KeyName.password.name());
-        uk.setUserId(user.getUserId());
+        uk.setUserId(userSecurityWrapper.getUserId());
         newUserKeyList.add(uk);
 
         uk = new UserKey();
         uk.setKey(cryptor.encrypt(masterKey, jksManager.encodeKey(tokenKey)));
         uk.setName(KeyName.token.name());
-        uk.setUserId(user.getUserId());
+        uk.setUserId(userSecurityWrapper.getUserId());
         newUserKeyList.add(uk);
 
 //        log.warn("NEW USER KEYS ARE: [USER_ID: " + user.getUserId() + "; PWD_KEY: " + jksManager.encodeKey(pwdKey) + "; TKN_KEY: "
@@ -245,24 +260,23 @@ public class KeyManagementServiceImpl implements KeyManagementService {
 
         // encrypt user data
         log.warn("Encrypt user passwords ...");
-        if(user.getPrincipalList() != null && !user.getPrincipalList().isEmpty()) {
-            Set<Login> loginSet = new HashSet<Login>(user.getPrincipalList());
-            for(Login login : loginSet) {
+        if(userSecurityWrapper.getLoginList() != null && !userSecurityWrapper.getLoginList().isEmpty()) {
+            for(Login login : userSecurityWrapper.getLoginList()) {
                 login.setPassword(cryptor.encrypt(pwdKey, login.getPassword()));
                 loginDAO.update(login);
             }
         }
         log.warn("Encrypt user passwords history...");
-        if(pwdHistoryMap.containsKey(user.getUserId())) {
-            for(PasswordHistory pwd : pwdHistoryMap.get(user.getUserId())) {
+        if(userSecurityWrapper.getPasswordHistoryList() != null && !userSecurityWrapper.getPasswordHistoryList().isEmpty()) {
+            for(PasswordHistory pwd : userSecurityWrapper.getPasswordHistoryList()) {
                 pwd.setPassword(cryptor.encrypt(pwdKey, pwd.getPassword()));
                 passwordHistoryDao.update(pwd);
             }
         }
 
-        if(managedSysMap.containsKey(user.getUserId())) {
+        if(userSecurityWrapper.getManagedSysList() != null && !userSecurityWrapper.getManagedSysList().isEmpty()) {
             log.warn("Encrypt manages sys...");
-            for(ManagedSys ms : managedSysMap.get(user.getUserId())) {
+            for(ManagedSys ms : userSecurityWrapper.getManagedSysList()) {
                 if(ms.getPswd() != null) {
                     ms.setPswd(cryptor.encrypt(pwdKey, ms.getPswd()));
                 }
@@ -275,16 +289,16 @@ public class KeyManagementServiceImpl implements KeyManagementService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    private void decryptData(byte[] masterKey, List<User> userList, HashMap<String, List<PasswordHistory>> pwdHistoryMap, HashMap<String, List<ManagedSys>> managedSysMap)throws Exception  {
-        if(userList != null && !userList.isEmpty()) {
-            for(User user : userList) {
-                decryptUserData(user, masterKey, pwdHistoryMap, managedSysMap);
+    private void decryptData(byte[] masterKey, HashMap<String, UserSecurityWrapper> userSecurityMap)throws Exception  {
+        if(userSecurityMap != null && !userSecurityMap.isEmpty()) {
+            for(String userId : userSecurityMap.keySet()) {
+                decryptUserData(masterKey, userSecurityMap.get(userId));
             }
         }
     }
     @Transactional(rollbackFor = Exception.class)
-    private void decryptUserData(User user, byte[] masterKey, HashMap<String, List<PasswordHistory>> pwdHistoryMap, HashMap<String, List<ManagedSys>> managedSysMap)throws Exception  {
-        if(user.getUserKeys() != null && !user.getUserKeys().isEmpty()) {
+    private void decryptUserData(byte[] masterKey, UserSecurityWrapper userSecurityWrapper)throws Exception  {
+        if(userSecurityWrapper.getUserKeyList() != null && !userSecurityWrapper.getUserKeyList().isEmpty()) {
             // the keys exist, it is necessary to refresh them
             if(masterKey == null || masterKey.length == 0) {
                 throw new NullPointerException("Cannot read master key for decrypting user keys.");
@@ -292,7 +306,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
             // try to decrypt each key
             String pwdKey = null;
             String tokenKey = null;
-            for(UserKey uk : user.getUserKeys()) {
+            for(UserKey uk : userSecurityWrapper.getUserKeyList()) {
                 String key = uk.getKey();
                 if(KeyName.password.name().equals(uk.getName())) {
                     pwdKey = cryptor.decrypt(masterKey, key);
@@ -300,10 +314,10 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                     tokenKey = cryptor.decrypt(masterKey, key);
                 }
             }
-            log.warn("OLD USER KEYS ARE: [USER_ID: " + user.getUserId() + "; PWD_KEY: " + pwdKey + "; TKN_KEY: "
+            log.warn("OLD USER KEYS ARE: [USER_ID: " + userSecurityWrapper.getUserId() + "; PWD_KEY: " + pwdKey + "; TKN_KEY: "
                      + tokenKey + "]");
             // decypt user data with keys
-            decryptSecurityDataForUser(user, jksManager.decodeKey(pwdKey), pwdHistoryMap, managedSysMap);
+            decryptSecurityDataForUser(jksManager.decodeKey(pwdKey), userSecurityWrapper);
 
 
 //            log.warn("Printing decrypted data...");
@@ -311,24 +325,23 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         }
     }
     @Transactional(rollbackFor = Exception.class)
-    private void decryptSecurityDataForUser(User user, byte[] key, HashMap<String,List<PasswordHistory>> pwdHistoryMap, HashMap<String,List<ManagedSys>> managedSysMap) throws Exception{
+    private void decryptSecurityDataForUser(byte[] key, UserSecurityWrapper userSecurityWrapper) throws Exception{
         log.warn("Decrypting user passwords ...");
-        if(user.getPrincipalList() != null && !user.getPrincipalList().isEmpty()) {
-            Set<Login> loginSet = new HashSet<Login>(user.getPrincipalList());
-            for(Login login : loginSet) {
+        if(userSecurityWrapper.getLoginList() != null && !userSecurityWrapper.getLoginList().isEmpty()) {
+            for(Login login : userSecurityWrapper.getLoginList()) {
                 login.setPassword(cryptor.decrypt(key, login.getPassword()));
             }
-            user.setPrincipalList(new ArrayList<Login>(loginSet));
         }
-        log.warn("Decrypting user passwords history ...");
-        if(pwdHistoryMap.containsKey(user.getUserId())) {
-            for(PasswordHistory pwd : pwdHistoryMap.get(user.getUserId())) {
+        if(userSecurityWrapper.getPasswordHistoryList()!=null && !userSecurityWrapper.getPasswordHistoryList().isEmpty()){
+            log.warn("Decrypting user passwords history ...");
+            for(PasswordHistory pwd : userSecurityWrapper.getPasswordHistoryList()) {
                 pwd.setPassword(cryptor.decrypt(key, pwd.getPassword()));
             }
         }
-        if(managedSysMap.containsKey(user.getUserId())) {
+
+        if(userSecurityWrapper.getManagedSysList()!=null && !userSecurityWrapper.getManagedSysList().isEmpty()) {
             log.warn("Decrypting manages sys ...");
-            for(ManagedSys ms : managedSysMap.get(user.getUserId())) {
+            for(ManagedSys ms : userSecurityWrapper.getManagedSysList()) {
                 if(ms.getPswd() != null) {
                     ms.setPswd(cryptor.decrypt(key, ms.getPswd()));
                 }
@@ -389,6 +402,88 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         return jksManager.getPrimaryKeyFromJKS(alias, jksPassword.toCharArray(), keyPassword.toCharArray());
     }
 
+
+    private HashMap<String,UserSecurityWrapper> getSecurityMap() throws Exception {
+        HashMap<String,UserSecurityWrapper> result= new HashMap<String, UserSecurityWrapper>();
+
+        Long userCount = userDAO.getUserCount();
+        if(userCount!=null && userCount>0){
+            long fetchedDataCount = 0l;
+            Set<String> userIdList = new HashSet<String>();
+            int pageNum=0;
+            do{
+                userIdList.addAll(userDAO.getUserIdList(pageNum*FETCH_COUNT, FETCH_COUNT));
+                fetchedDataCount = (long)userIdList.size();
+                pageNum++;
+            }while(fetchedDataCount<userCount);
+
+            HashMap<String, List<ManagedSys>> managedSysMap = getManagedSysMap();
+            HashMap<String, List<Login>> loginMap = getLoginMap();
+            HashMap<String, List<UserKey>> userKeyMap = getUserKeyMap();
+            HashMap<String, List<PasswordHistory>> pwdHistoryMap = getPasswordHistoryMap(loginMap);
+
+            for (String userId : userIdList){
+                UserSecurityWrapper usw = new UserSecurityWrapper();
+                usw.setUserId(userId);
+                usw.setLoginList(loginMap.get(userId));
+                usw.setManagedSysList(managedSysMap.get(userId));
+                usw.setPasswordHistoryList(pwdHistoryMap.get(userId));
+                usw.setUserKeyList(userKeyMap.get(userId));
+
+                result.put(userId, usw);
+            }
+        }
+        return result;
+    }
+
+    private HashMap<String, List<UserKey>> getUserKeyMap() throws Exception {
+        HashMap<String, List<UserKey>> keyMap = new HashMap<String, List<UserKey>>();
+
+        Long keyCount = userKeyDao.countAll();
+        if(keyCount!=null && keyCount>0){
+            long fetchedDataCount = 0l;
+            Set<UserKey> keyList = new HashSet<UserKey>();
+            int pageNum=0;
+            do{
+                keyList.addAll(userKeyDao.getSublist(pageNum * FETCH_COUNT, FETCH_COUNT));
+                fetchedDataCount = (long)keyList.size();
+                pageNum++;
+            }while(fetchedDataCount<keyCount);
+
+            for(UserKey key : keyList) {
+                if(!keyMap.containsKey(key.getUserId())) {
+                    keyMap.put(key.getUserId(), new ArrayList<UserKey>());
+                }
+                keyMap.get(key.getUserId()).add(key);
+            }
+        }
+        return keyMap;
+    }
+
+    private HashMap<String, List<Login>> getLoginMap() {
+        HashMap<String, List<Login>> lgMap = new HashMap<String, List<Login>>();
+
+        Long lgCount = loginDAO.getLoginCount();
+        if(lgCount!=null && lgCount>0){
+            long fetchedDataCount = 0l;
+            Set<Login> loginList = new HashSet<Login>();
+            int pageNum=0;
+            do{
+                loginList.addAll(loginDAO.getLoginSublist(pageNum*FETCH_COUNT, FETCH_COUNT));
+                fetchedDataCount = (long)loginList.size();
+                pageNum++;
+            }while(fetchedDataCount<lgCount);
+
+            for(Login lg : loginList) {
+                if(!lgMap.containsKey(lg.getUserId())) {
+                    lgMap.put(lg.getUserId(), new ArrayList<Login>());
+                }
+                lgMap.get(lg.getUserId()).add(lg);
+            }
+        }
+        return lgMap;
+    }
+
     private HashMap<String, List<ManagedSys>> getManagedSysMap() {
         HashMap<String, List<ManagedSys>> managedSysMap = new HashMap<String, List<ManagedSys>>();
         List<ManagedSys> mngSysList = managedSysDAO.findAllManagedSys();
@@ -403,21 +498,44 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         return managedSysMap;
     }
 
-    private HashMap<String, List<PasswordHistory>> getPasswordHistoryMap(List<User> userList) {
+    private HashMap<String, List<PasswordHistory>> getPasswordHistoryMap(HashMap<String, List<Login>> loginMap) {
         HashMap<String, List<PasswordHistory>> pwdHistoryMap = new HashMap<String, List<PasswordHistory>>();
-        if(userList != null && !userList.isEmpty()) {
-            for(User usr : userList) {
-                if(usr.getPrincipalList() != null && !usr.getPrincipalList().isEmpty()) {
-                    for(Login login : usr.getPrincipalList()) {
-                        List<PasswordHistory> historyList = passwordHistoryDao
-                                .findAllPasswordHistoryByPrincipal(login.getId().getDomainId(),
-                                                                   login.getId().getLogin(),
-                                                                   login.getId().getManagedSysId());
-                        if(historyList != null && !historyList.isEmpty()) {
-                            if(!pwdHistoryMap.containsKey(usr.getUserId())) {
-                                pwdHistoryMap.put(usr.getUserId(), new ArrayList<PasswordHistory>());
+
+        if(loginMap != null && !loginMap.isEmpty()) {
+
+            Long pwdCount = passwordHistoryDao.getCount();
+            if(pwdCount!=null && pwdCount>0){
+                long fetchedDataCount = 0l;
+                Set<PasswordHistory> pwdList = new HashSet<PasswordHistory>();
+                HashMap<LoginId, List<PasswordHistory>> pwdMap = new HashMap<LoginId, List<PasswordHistory>>();
+
+                int pageNum=0;
+                do{
+                    pwdList.addAll(passwordHistoryDao.getSublist(pageNum * FETCH_COUNT, FETCH_COUNT));
+                    fetchedDataCount = (long)pwdList .size();
+                    pageNum++;
+                }while(fetchedDataCount<pwdCount);
+
+                for(PasswordHistory ph : pwdList) {
+                    LoginId lgId = new  LoginId();
+                    lgId.setDomainId(ph.getServiceId());
+                    lgId.setLogin(ph.getLogin());
+                    lgId.setManagedSysId(ph.getManagedSysId());
+
+                    if(!pwdMap.containsKey(lgId)) {
+                        pwdMap.put(lgId, new ArrayList<PasswordHistory>());
+                    }
+                    pwdMap.get(lgId).add(ph);
+                }
+
+                // map to userId
+                for (String userId:loginMap.keySet()){
+                    for(Login lg: loginMap.get(userId)){
+                        if(pwdMap.containsKey(lg.getId())){
+                            if(!pwdHistoryMap.containsKey(userId)) {
+                                pwdHistoryMap.put(userId, new ArrayList<PasswordHistory>());
                             }
-                            pwdHistoryMap.get(usr.getUserId()).addAll(historyList);
+                            pwdHistoryMap.get(userId).addAll(pwdMap.get(lg.getId()));
                         }
                     }
                 }
@@ -425,4 +543,6 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         }
         return pwdHistoryMap;
     }
+
+
 }
