@@ -321,7 +321,7 @@ public class User extends org.openiam.base.BaseObject {
     protected String systemFlag;
     @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
     @JoinColumn(name="USER_ID", referencedColumnName="USER_ID")
-    protected List<Login> principalList;
+    protected List<Login> principalList = new LinkedList<Login>();
     @Transient
     protected Supervisor supervisor;
 
