@@ -122,14 +122,15 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         HashMap<String, List<PasswordHistory>> pwdHistoryMap = getPasswordHistoryMap(userList);
         HashMap<String, List<ManagedSys>> managedSysMap = getManagedSysMap();
         List<UserKey> newUserKeyList = new ArrayList<UserKey>();
-
+        log.warn("Try to get old salt ...");
         byte[] oldMasterKey = this.getMasterKey(JksManager.KEYSTORE_ALIAS);
         if(oldMasterKey != null && oldMasterKey.length > 0) {
-//            log.warn("OLD MASTER KEY IS: " + jksManager.encodeKey(oldMasterKey));
-//            log.warn("Decrypting user data ...");
+            log.warn("OLD MASTER KEY IS: " + jksManager.encodeKey(oldMasterKey));
+            log.warn("Decrypting user data ...");
             decryptData(oldMasterKey, userList, pwdHistoryMap, managedSysMap);
+            log.warn("Decrypting user data finished successfully");
         } else {
-//            log.warn("OLD MASTER KEY IS NULL");
+            log.warn("OLD MASTER KEY IS NULL");
         }
 
 
@@ -141,10 +142,11 @@ public class KeyManagementServiceImpl implements KeyManagementService {
             throw new NullPointerException("Cannot get master key to encrypt user keys");
         }
 
-//        log.warn("NEW MASTER KEY IS: " + jksManager.encodeKey(masterKey));
+        log.warn("NEW MASTER KEY IS: " + jksManager.encodeKey(masterKey));
 
         log.warn("Ecrypting user data ...");
         encryptData(masterKey, userList, pwdHistoryMap, managedSysMap, newUserKeyList);
+        log.warn("Ecrypting user data finished successfully");
 
         log.warn("Refreshing user keys...");
         userKeyDao.deleteAll();
