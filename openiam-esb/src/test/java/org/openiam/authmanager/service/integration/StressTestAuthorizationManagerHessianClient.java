@@ -5,22 +5,19 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.math.RandomUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.openiam.authmanager.AuthorizationManagerHessianClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
+import org.testng.Assert;
+import org.testng.annotations.Test;
 
-@RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations={"classpath:test-integration-environment.xml","classpath:test-esb-integration.xml"})
-public class StressTestAuthorizationManagerHessianClient {
+public class StressTestAuthorizationManagerHessianClient extends AbstractTestNGSpringContextTests {
 
 	private static final Log log = LogFactory.getLog(StressTestAuthorizationManagerHessianClient.class);
 	

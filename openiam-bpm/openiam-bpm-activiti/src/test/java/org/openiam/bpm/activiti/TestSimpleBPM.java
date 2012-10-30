@@ -3,42 +3,25 @@ package org.openiam.bpm.activiti;
 import java.util.List;
 
 import org.activiti.engine.HistoryService;
-import org.activiti.engine.ManagementService;
-import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.task.Task;
-import org.activiti.engine.test.ActivitiRule;
 import org.activiti.engine.test.Deployment;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
+import org.testng.annotations.Test;
 
-@RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration("classpath:test-bpm-context.xml")
-public class TestSimpleBPM {
+public class TestSimpleBPM extends AbstractTestNGSpringContextTests {
 
 	  @Autowired
 	  private RuntimeService runtimeService;
 	  
 	  @Autowired
 	  private TaskService taskService;
-	  
-	  @Autowired
-	  @Rule
-	  public ActivitiRule activitiSpringRule;
-	  
-	  @Autowired
-	  private RepositoryService repositoryService;
-	  
-	  @Autowired
-	  private ManagementService managementService;
-	  
+
 	  @Autowired
 	  private HistoryService historyService;
 	  

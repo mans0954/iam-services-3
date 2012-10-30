@@ -120,12 +120,13 @@
             <artifactId>openiam-idm-services</artifactId>
         </dependency>
         
+        <!-- Testing -->
         <dependency>
-	     	<groupId>junit</groupId>
-	     	<artifactId>junit</artifactId>
-	     	<version>4.9</version>
-	     	<scope>test</scope>
-	   </dependency>
+		    <groupId>org.testng</groupId>
+			<artifactId>testng</artifactId>
+			<version>6.1.1</version>
+			<scope>test</scope>
+		</dependency>
 	   
 	   <dependency>
 		   <groupId>org.apache.openejb</groupId>

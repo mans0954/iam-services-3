@@ -1,46 +1,10 @@
 package org.openiam.bpm.activiti;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.sql.DataSource;
-
-import org.activiti.engine.ManagementService;
-import org.activiti.engine.RepositoryService;
-import org.activiti.engine.RuntimeService;
-import org.activiti.engine.TaskService;
-import org.activiti.engine.runtime.ProcessInstance;
-import org.activiti.engine.task.Task;
-import org.activiti.engine.test.ActivitiRule;
-import org.activiti.engine.test.Deployment;
-import org.apache.bcel.classfile.LocalVariable;
-import org.apache.commons.lang.RandomStringUtils;
-import org.apache.log4j.Logger;
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.openiam.bpm.activiti.delegate.SendNewHireRequestDelegate;
-import org.openiam.bpm.activiti.tasklistener.AddCandidateUsersTaskListener;
-import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
-import org.openiam.idm.srvc.prov.request.dto.RequestApprover;
-import org.openiam.idm.srvc.user.dto.Supervisor;
-import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.user.service.UserDAO;
-import org.openiam.provision.dto.ProvisionUser;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 
-@RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations={"classpath:test-bpm-context.xml","classpath:applicationContext.xml", "classpath:idmservice-Context.xml"})
-public class TestNewHire {
+public class TestNewHire extends AbstractTestNGSpringContextTests {
 	
 	/*
 	private static Logger log = Logger.getLogger(TestNewHire.class);

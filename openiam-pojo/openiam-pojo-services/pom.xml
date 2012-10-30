@@ -20,15 +20,51 @@
                     <exclude>**/*.properties</exclude>
                 </excludes>
             </resource>
-            <resource>
+            <!--resource>
                 <directory>src/test/resources</directory>
                 <excludes>
                     <exclude>**/*.properties</exclude>
                 </excludes>
-            </resource>
+            </resource-->
         </resources>
 
+        <plugins>
+        <plugin>
+        <groupId>org.apache.cxf</groupId>
+        <artifactId>cxf-java2ws-plugin</artifactId>
+        <version>${cxf.version}</version>
+        <dependencies>
+        <dependency>
+        <groupId>org.apache.cxf</groupId>
+        <artifactId>cxf-rt-frontend-jaxws</artifactId>
+        <version>${cxf.version}</version>
+        </dependency>
 
+        <dependency>
+        <groupId>org.apache.cxf</groupId>
+        <artifactId>cxf-rt-frontend-simple</artifactId>
+        <version>${cxf.version}</version>
+        </dependency>
+
+        </dependencies>
+        <executions>
+        <execution>
+        <id>process-classes</id>
+        <phase>process-classes</phase>
+        <configuration>
+        <className>org.openiam.idm.srvc.key.ws.KeyManagementWSImpl</className>
+        <genWsdl>true</genWsdl>
+        <verbose>true</verbose>
+        <outputFile>${project.build.outputDirectory}/KeyManagementWS.wsdl</outputFile>
+        </configuration>
+
+        <goals>
+        <goal>java2ws</goal>
+        </goals>
+        </execution>
+        </executions>
+        </plugin>
+        </plugins>
 
     </build>
 
@@ -67,13 +103,6 @@
             <artifactId>aspectjweaver</artifactId>
         </dependency>
 
-
-        <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
         <dependency>
             <groupId>asm</groupId>
             <artifactId>asm</artifactId>
@@ -103,12 +132,6 @@
         <dependency>
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.5</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>commons-pool</groupId>
@@ -161,11 +184,6 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-orm</artifactId>
-            <version>${spring.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
             <version>${spring.version}</version>
         </dependency>
 
@@ -247,6 +265,33 @@
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcpkix-jdk15on</artifactId>
+        </dependency>
+
+        <!-- Testing -->
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+		    <groupId>org.testng</groupId>
+			<artifactId>testng</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+		    <groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
+			<scope>test</scope>
+		</dependency>
+        <dependency>
+		    <groupId>org.springframework</groupId>
+			<artifactId>spring-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+        <dependency>
+            <groupId>hsqldb</groupId>
+            <artifactId>hsqldb</artifactId>
+			<scope>test</scope>
         </dependency>
     </dependencies>
 

@@ -16,7 +16,9 @@
   </properties>
 
   <modules>
+        <module>openiam-km-common</module>
  	<module>openiam-km-util</module>
+	<module>openiam-km-migrate-tool</module>
   </modules>
   
 </project>

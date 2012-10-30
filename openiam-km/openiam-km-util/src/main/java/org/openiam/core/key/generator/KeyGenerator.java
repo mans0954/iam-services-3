@@ -1,5 +1,6 @@
 package org.openiam.core.key.generator;
 
+import org.openiam.core.key.util.KmUtil;
 import org.openiam.core.key.ws.KeyManagementWSClient;
 import org.openiam.idm.srvc.res.service.Response;
 import org.openiam.idm.srvc.res.service.ResponseStatus;
@@ -30,14 +31,14 @@ public class KeyGenerator {
                 Properties jksProperties = new Properties();
                 jksProperties.load(new FileInputStream(f));
 
-                wsdlLocation = jksProperties.getProperty("km.ws.wsdl.location", "http://localhost:8080/openiam-esb/idmsrvc/KeyManagementWS?wsdl");
+                wsdlLocation = jksProperties.getProperty("km.ws.wsdl.location", KmUtil.DEFAULT_WSDL_LOCATION);
             } else{
                 System.out.println("Properties not found. Prompt required data...");
 
-                wsdlLocation =  promtParameter(scanner, "Please enter a valid KeyManagementWS url (wsdl location):", "http://localhost:8080/openiam-esb/idmsrvc/KeyManagementWS?wsdl");
+                wsdlLocation = KmUtil.promtParameter(scanner, "Please enter a valid KeyManagementWS url (wsdl location):", KmUtil.DEFAULT_WSDL_LOCATION);
             }
             if(wsdlLocation==null || wsdlLocation.trim().isEmpty()){
-                wsdlLocation="http://localhost:8080/openiam-esb/idmsrvc/KeyManagementWS?wsdl";
+                wsdlLocation=KmUtil.DEFAULT_WSDL_LOCATION;
             }
             System.out.println("Generating master key...");
             KeyManagementWSClient client = new  KeyManagementWSClient(wsdlLocation);
@@ -54,25 +55,6 @@ public class KeyGenerator {
         }
     }
 
-    private static String promtParameter(Scanner scanner, String promtString) {
-         return promtParameter(scanner,promtString,null);
-    }
-    private static String promtParameter(Scanner scanner, String promtString, String defaultValue) {
-        String value = null;
-        do{
-           System.out.println(promtString);
-           value =scanner.nextLine();
 
-           if(defaultValue!=null && !defaultValue.isEmpty() && (value==null || value.trim().isEmpty())){
-               System.out.println("You did not set value. It will be set by default.");
-               value=defaultValue;
-           }
-           if(value==null || value.trim().isEmpty()){
-             System.out.println("You did not set value. Please enter not empty value.");
-             value=null;
-           }
-        } while(value == null);
-        return value;
-    }
 
 }

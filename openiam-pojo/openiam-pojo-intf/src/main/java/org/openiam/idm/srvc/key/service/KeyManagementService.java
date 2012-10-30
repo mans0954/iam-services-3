@@ -15,5 +15,5 @@ public interface KeyManagementService {
     public Long generateUserKeys(User user) throws Exception;
 
     public void generateMasterKey() throws Exception;
-
+    public void migrateData(String oldSecretKey)throws Exception;
 }
