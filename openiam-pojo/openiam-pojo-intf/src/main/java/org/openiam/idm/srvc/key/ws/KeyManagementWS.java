@@ -14,4 +14,6 @@ import javax.jws.WebService;
 public interface KeyManagementWS {
     @WebMethod
     public Response generateMasterKey();
+    @WebMethod
+    public Response migrateData(@WebParam(name = "secretKey")String secretKey);
 }

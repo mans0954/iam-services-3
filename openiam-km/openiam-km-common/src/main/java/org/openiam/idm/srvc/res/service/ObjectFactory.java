@@ -25,6 +25,8 @@ import javax.xml.namespace.QName;
 public class ObjectFactory {
 
     private final static QName _GenerateMasterKeyResponse_QNAME = new QName("urn:idm.openiam.org/srvc/res/service", "generateMasterKeyResponse");
+    private final static QName _MigrateData_QNAME = new QName("urn:idm.openiam.org/srvc/res/service", "migrateData");
+    private final static QName _MigrateDataResponse_QNAME = new QName("urn:idm.openiam.org/srvc/res/service", "migrateDataResponse");
     private final static QName _GenerateMasterKey_QNAME = new QName("urn:idm.openiam.org/srvc/res/service", "generateMasterKey");
 
     /**
@@ -32,6 +34,14 @@ public class ObjectFactory {
      * 
      */
     public ObjectFactory() {
+    }
+
+    /**
+     * Create an instance of {@link MigrateDataResponse }
+     * 
+     */
+    public MigrateDataResponse createMigrateDataResponse() {
+        return new MigrateDataResponse();
     }
 
     /**
@@ -59,12 +69,38 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link MigrateData }
+     * 
+     */
+    public MigrateData createMigrateData() {
+        return new MigrateData();
+    }
+
+    /**
      * Create an instance of {@link JAXBElement }{@code <}{@link GenerateMasterKeyResponse }{@code >}}
      * 
      */
     @XmlElementDecl(namespace = "urn:idm.openiam.org/srvc/res/service", name = "generateMasterKeyResponse")
     public JAXBElement<GenerateMasterKeyResponse> createGenerateMasterKeyResponse(GenerateMasterKeyResponse value) {
         return new JAXBElement<GenerateMasterKeyResponse>(_GenerateMasterKeyResponse_QNAME, GenerateMasterKeyResponse.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link MigrateData }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "urn:idm.openiam.org/srvc/res/service", name = "migrateData")
+    public JAXBElement<MigrateData> createMigrateData(MigrateData value) {
+        return new JAXBElement<MigrateData>(_MigrateData_QNAME, MigrateData.class, null, value);
+    }
+
+    /**
+     * Create an instance of {@link JAXBElement }{@code <}{@link MigrateDataResponse }{@code >}}
+     * 
+     */
+    @XmlElementDecl(namespace = "urn:idm.openiam.org/srvc/res/service", name = "migrateDataResponse")
+    public JAXBElement<MigrateDataResponse> createMigrateDataResponse(MigrateDataResponse value) {
+        return new JAXBElement<MigrateDataResponse>(_MigrateDataResponse_QNAME, MigrateDataResponse.class, null, value);
     }
 
     /**

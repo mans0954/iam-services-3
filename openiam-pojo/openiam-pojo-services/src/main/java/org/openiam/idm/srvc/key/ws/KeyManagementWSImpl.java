@@ -37,4 +37,18 @@ public class KeyManagementWSImpl implements KeyManagementWS {
         }
         return resp;
     }
+
+    @Override
+    public Response migrateData(String secretKey) {
+        log.debug("Got migrateData request. ");
+        Response resp = new Response(ResponseStatus.SUCCESS);
+        try {
+            keyManagementService.migrateData(secretKey);
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+            resp.setStatus(ResponseStatus.FAILURE);
+            resp.setErrorText(e.getMessage());
+        }
+        return resp;
+    }
 }

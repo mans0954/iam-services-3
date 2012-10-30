@@ -2,6 +2,7 @@
 package org.openiam.idm.srvc.res.service;
 
 import javax.jws.WebMethod;
+import javax.jws.WebParam;
 import javax.jws.WebResult;
 import javax.jws.WebService;
 import javax.xml.bind.annotation.XmlSeeAlso;
@@ -21,6 +22,20 @@ import javax.xml.ws.ResponseWrapper;
 })
 public interface KeyManagementWS {
 
+
+    /**
+     * 
+     * @param secretKey
+     * @return
+     *     returns org.openiam.idm.srvc.res.service.Response
+     */
+    @WebMethod
+    @WebResult(targetNamespace = "")
+    @RequestWrapper(localName = "migrateData", targetNamespace = "urn:idm.openiam.org/srvc/res/service", className = "org.openiam.idm.srvc.res.service.MigrateData")
+    @ResponseWrapper(localName = "migrateDataResponse", targetNamespace = "urn:idm.openiam.org/srvc/res/service", className = "org.openiam.idm.srvc.res.service.MigrateDataResponse")
+    public Response migrateData(
+        @WebParam(name = "secretKey", targetNamespace = "")
+        String secretKey);
 
     /**
      * 

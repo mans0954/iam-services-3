@@ -8,9 +8,9 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.openiam</groupId>
-    <artifactId>openiam-km-util</artifactId>
+    <artifactId>openiam-km-migrate-tool</artifactId>
     <packaging>jar</packaging>
-    <name>openiam-km-util</name>
+    <name>openiam-km-migrate-tool</name>
     <version>3.0.0</version>
     <description>OpenIAM Access Manager sepcific service</description>
     <ciManagement>
@@ -26,7 +26,7 @@
         </notifiers>
     </ciManagement>
     <build>
-        <finalName>openiam-km-util</finalName>
+        <finalName>openiam-km-migrate-tool</finalName>
 
         <plugins>
             <plugin>
@@ -37,7 +37,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>org.openiam.core.key.generator.KeyGenerator</mainClass>
+                            <mainClass>org.openiam.core.key.migrate.MigrateTool</mainClass>
                             <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                         </manifest>
                     </archive>
@@ -96,6 +96,10 @@
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
         </dependency>
         <dependency>
             <groupId>org.openiam</groupId>
