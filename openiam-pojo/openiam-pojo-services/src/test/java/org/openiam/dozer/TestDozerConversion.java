@@ -9,16 +9,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import junit.framework.Assert;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.RandomStringUtils;
 import org.dozer.Mapper;
-import org.hibernate.collection.PersistentList;
-import org.hibernate.collection.PersistentSet;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginAttribute;
@@ -26,27 +20,20 @@ import org.openiam.idm.srvc.auth.dto.LoginId;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
-import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.grp.dto.GroupAttribute;
-import org.openiam.idm.srvc.grp.dto.GroupStatus;
-import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.role.dto.RoleAttribute;
-import org.openiam.idm.srvc.role.dto.RolePolicy;
-import org.openiam.idm.srvc.role.dto.RoleStatus;
 import org.openiam.idm.srvc.user.dto.Supervisor;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.dto.UserNote;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
-import org.openiam.idm.srvc.user.service.UserDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
+import org.testng.Assert;
+import org.testng.annotations.Test;
 
-@RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration("classpath:test-application-context.xml")
-public class TestDozerConversion {
+public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 
 	@Autowired
 	@Qualifier("deepDozerMapper")

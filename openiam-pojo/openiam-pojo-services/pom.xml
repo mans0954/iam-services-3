@@ -20,12 +20,12 @@
                     <exclude>**/*.properties</exclude>
                 </excludes>
             </resource>
-            <resource>
+            <!--resource>
                 <directory>src/test/resources</directory>
                 <excludes>
                     <exclude>**/*.properties</exclude>
                 </excludes>
-            </resource>
+            </resource-->
         </resources>
 
 
@@ -67,13 +67,6 @@
             <artifactId>aspectjweaver</artifactId>
         </dependency>
 
-
-        <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
         <dependency>
             <groupId>asm</groupId>
             <artifactId>asm</artifactId>
@@ -103,12 +96,6 @@
         <dependency>
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.5</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>commons-pool</groupId>
@@ -161,11 +148,6 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-orm</artifactId>
-            <version>${spring.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
             <version>${spring.version}</version>
         </dependency>
 
@@ -247,6 +229,33 @@
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcpkix-jdk15on</artifactId>
+        </dependency>
+
+        <!-- Testing -->
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+		    <groupId>org.testng</groupId>
+			<artifactId>testng</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+		    <groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
+			<scope>test</scope>
+		</dependency>
+        <dependency>
+		    <groupId>org.springframework</groupId>
+			<artifactId>spring-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+        <dependency>
+            <groupId>hsqldb</groupId>
+            <artifactId>hsqldb</artifactId>
+			<scope>test</scope>
         </dependency>
     </dependencies>
 

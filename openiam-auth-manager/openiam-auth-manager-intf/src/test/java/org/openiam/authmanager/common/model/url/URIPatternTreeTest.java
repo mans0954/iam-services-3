@@ -1,23 +1,17 @@
 package org.openiam.authmanager.common.model.url;
 
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.RandomStringUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.junit.Assert;
-import org.junit.Test;
 import org.openiam.authmanager.common.model.AuthorizationResource;
-import org.springframework.util.StopWatch;
+import org.testng.Assert;
+import org.testng.annotations.Test;
 
 public class URIPatternTreeTest {
 
@@ -52,11 +46,11 @@ public class URIPatternTreeTest {
 		log.info(tree);
 		for(final AuthorizationToken token : patternList) {
 			for(final String uri : token.URIs) {
-				Assert.assertEquals(String.format("Can't match for %s, uri: %s", token.pattern.getPattern(), uri), token.patterns, tree.find(uri));
+				Assert.assertEquals(token.patterns, tree.find(uri), String.format("Can't match for %s, uri: %s", token.pattern.getPattern(), uri));
 			}
 		
 			for(final String uri : token.badURIs) {
-				Assert.assertFalse(String.format("URI returned resources when it should not have.  Pattern: %s, URI: %s", token.pattern.getPattern(), uri), token.patterns.equals(tree.find(uri)));
+				Assert.assertFalse(token.patterns.equals(tree.find(uri)), String.format("URI returned resources when it should not have.  Pattern: %s, URI: %s", token.pattern.getPattern(), uri));
 			}
 		}
 	}
@@ -90,11 +84,11 @@ public class URIPatternTreeTest {
 		
 		for(final AuthorizationToken token : patternList) {
 			for(final String uri : token.URIs) {
-				Assert.assertEquals(String.format("Can't match for %s, uri: %s", token.pattern.getPattern(), uri), token.patterns, tree.find(uri));
+				Assert.assertEquals(token.patterns, tree.find(uri), String.format("Can't match for %s, uri: %s", token.pattern.getPattern(), uri));
 			}
 		
 			for(final String uri : token.badURIs) {
-				Assert.assertFalse(String.format("URI returned resources when it should not have.  Pattern: %s, URI: %s", token.pattern.getPattern(), uri), token.patterns.equals(tree.find(uri)));
+				Assert.assertFalse(token.patterns.equals(tree.find(uri)), String.format("URI returned resources when it should not have.  Pattern: %s, URI: %s", token.pattern.getPattern(), uri));
 			}
 		}
 	}

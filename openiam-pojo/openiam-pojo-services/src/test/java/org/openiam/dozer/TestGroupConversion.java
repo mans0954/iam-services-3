@@ -8,13 +8,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import junit.framework.Assert;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.RandomStringUtils;
 import org.dozer.Mapper;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupAttribute;
@@ -26,11 +22,12 @@ import org.openiam.idm.srvc.role.dto.RoleStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
+import org.testng.Assert;
+import org.testng.annotations.Test;
 
-@RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration("classpath:test-application-context.xml")
-public class TestGroupConversion {
+public class TestGroupConversion extends AbstractTestNGSpringContextTests {
 	
 	@Autowired
 	@Qualifier("deepDozerMapper")

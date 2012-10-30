@@ -1,7 +1,5 @@
 package org.openiam.authmanager.service.integration;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -10,15 +8,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.junit.Test;
 import org.openiam.authmanager.common.model.AuthorizationManagerLoginId;
-import org.openiam.authmanager.common.model.AuthorizationResource;
-import org.openiam.authmanager.common.model.url.AuthorizationDomain;
-import org.openiam.authmanager.common.model.url.AuthorizationURIPattern;
-import org.openiam.authmanager.common.model.url.InvalidPatternException;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginId;
 import org.openiam.idm.srvc.grp.dto.Group;
@@ -32,11 +24,11 @@ import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.ws.UserDataWebService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.ResultSetExtractor;
+import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
+import org.testng.annotations.Test;
 
-public abstract class AbstractAuthorizationManagerTest {
+public abstract class AbstractAuthorizationManagerTest extends AbstractTestNGSpringContextTests {
 
 	protected static final Log log = LogFactory.getLog(AbstractAuthorizationManagerTest.class);
 	

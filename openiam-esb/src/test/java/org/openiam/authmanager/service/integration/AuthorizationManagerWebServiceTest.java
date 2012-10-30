@@ -1,19 +1,11 @@
 package org.openiam.authmanager.service.integration;
 
-import java.net.ResponseCache;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.bouncycastle.asn1.cms.AuthenticatedData;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.openiam.authmanager.common.model.AuthorizationGroup;
 import org.openiam.authmanager.common.model.AuthorizationManagerLoginId;
 import org.openiam.authmanager.common.model.AuthorizationResource;
@@ -29,31 +21,11 @@ import org.openiam.authmanager.ws.response.GroupsForUserResponse;
 import org.openiam.authmanager.ws.response.ResourcesForUserResponse;
 import org.openiam.authmanager.ws.response.RolesForUserResponse;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.auth.dto.LoginId;
-import org.openiam.idm.srvc.auth.ws.LoginDataWebService;
-import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
-import org.openiam.idm.srvc.grp.ws.GroupListResponse;
-import org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService;
-import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.idm.srvc.res.service.ResourceDataService;
-import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.role.ws.RoleDataWebService;
-import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.user.ws.UserDataWebService;
-import org.openiam.idm.srvc.user.ws.UserResponse;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.testng.Assert;
 
-import com.google.gdata.client.appsforyourdomain.UserService;
-import com.sun.mail.iap.Response;
-
-@RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations={"classpath:test-integration-environment.xml","classpath:test-esb-integration.xml"})
 public class AuthorizationManagerWebServiceTest extends AbstractAuthorizationManagerTest {
 
@@ -92,15 +64,14 @@ public class AuthorizationManagerWebServiceTest extends AbstractAuthorizationMan
 			resultRoleIds.add(role.getId());
 		}
 		
-		Assert.assertEquals(String.format("The number of DB groups and groups returned from the WS are not equal for user '%s", (userId != null) ? userId : loginId), 
-				CollectionUtils.size(roleIds), CollectionUtils.size(resultRoleIds));
+		Assert.assertEquals(CollectionUtils.size(roleIds), CollectionUtils.size(resultRoleIds), String.format("The number of DB groups and groups returned from the WS are not equal for user '%s", (userId != null) ? userId : loginId));
 		
 		for(final String resourceId : roleIds) {
-			Assert.assertTrue(String.format("Groups returned from WS did not contain '%s'", resourceId), resultRoleIds.contains(resourceId));
+			Assert.assertTrue(resultRoleIds.contains(resourceId), String.format("Groups returned from WS did not contain '%s'", resourceId));
 		}
 		
 		for(final String resourceId : resultRoleIds) {
-			Assert.assertTrue(String.format("Groups returned from DB did not contain '%s'", resourceId), roleIds.contains(resourceId));
+			Assert.assertTrue(roleIds.contains(resourceId), String.format("Groups returned from DB did not contain '%s'", resourceId));
 		}
 	}
 	
@@ -122,15 +93,14 @@ public class AuthorizationManagerWebServiceTest extends AbstractAuthorizationMan
 			resultGroupIds.add(group.getId());
 		}
 		
-		Assert.assertEquals(String.format("The number of DB groups and groups returned from the WS are not equal for user '%s", (userId != null) ? userId : loginId), 
-				CollectionUtils.size(groupIds), CollectionUtils.size(resultGroupIds));
+		Assert.assertEquals(CollectionUtils.size(groupIds), CollectionUtils.size(resultGroupIds), String.format("The number of DB groups and groups returned from the WS are not equal for user '%s", (userId != null) ? userId : loginId));
 		
 		for(final String resourceId : groupIds) {
-			Assert.assertTrue(String.format("Groups returned from WS did not contain '%s'", resourceId), resultGroupIds.contains(resourceId));
+			Assert.assertTrue(resultGroupIds.contains(resourceId), String.format("Groups returned from WS did not contain '%s'", resourceId));
 		}
 		
 		for(final String resourceId : resultGroupIds) {
-			Assert.assertTrue(String.format("Groups returned from DB did not contain '%s'", resourceId), groupIds.contains(resourceId));
+			Assert.assertTrue(groupIds.contains(resourceId), String.format("Groups returned from DB did not contain '%s'", resourceId));
 		}
 	}
 	
@@ -152,15 +122,14 @@ public class AuthorizationManagerWebServiceTest extends AbstractAuthorizationMan
 			resultResourceIds.add(resource.getId());
 		}
 		
-		Assert.assertEquals(String.format("The number of DB resoruces and resources returned from the WS are not equal for user '%s", (userId != null) ? userId : loginId), 
-				CollectionUtils.size(resourceIds), CollectionUtils.size(resultResourceIds));
+		Assert.assertEquals(CollectionUtils.size(resourceIds), CollectionUtils.size(resultResourceIds), String.format("The number of DB resoruces and resources returned from the WS are not equal for user '%s", (userId != null) ? userId : loginId));
 		
 		for(final String resourceId : resourceIds) {
-			Assert.assertTrue(String.format("Resources returned from WS did not contain '%s'", resourceId), resultResourceIds.contains(resourceId));
+			Assert.assertTrue(resultResourceIds.contains(resourceId), String.format("Resources returned from WS did not contain '%s'", resourceId));
 		}
 		
 		for(final String resourceId : resultResourceIds) {
-			Assert.assertTrue(String.format("Resources returned from DB did not contain '%s'", resourceId), resourceIds.contains(resourceId));
+            Assert.assertTrue(resourceIds.contains(resourceId), String.format("Resources returned from DB did not contain '%s'", resourceId));
 		}
 	}
 	
@@ -186,7 +155,7 @@ public class AuthorizationManagerWebServiceTest extends AbstractAuthorizationMan
 		Assert.assertEquals(ResponseStatus.SUCCESS, response.getResponseStatus());
 		final boolean result = response.getResult();
 		String failMessage = String.format("User is not entitled to resource.  %s", request);
-		Assert.assertTrue(failMessage, result);
+		Assert.assertTrue(result, failMessage);
 	}
 	
 	@Override
@@ -211,7 +180,7 @@ public class AuthorizationManagerWebServiceTest extends AbstractAuthorizationMan
 		final boolean result = response.getResult();
 		Assert.assertEquals(ResponseStatus.SUCCESS, response.getResponseStatus());
 		final String failMessage = String.format("User not part of group: %s", request);
-		Assert.assertTrue(failMessage, result);
+		Assert.assertTrue(result, failMessage);
 	}
 	
 	@Override
@@ -236,6 +205,6 @@ public class AuthorizationManagerWebServiceTest extends AbstractAuthorizationMan
 		final boolean result = response.getResult();
 		Assert.assertEquals(ResponseStatus.SUCCESS, response.getResponseStatus());
 		final String failMessage = String.format("User not part of role: %s", request);
-		Assert.assertTrue(failMessage, result);
+		Assert.assertTrue(result, failMessage);
 	}
 }
