@@ -48,14 +48,6 @@ public interface ResourceDataService {
     Resource getResourceByName(
             @WebParam(name = "resourceName", targetNamespace = "")
             String resourceName);
-
-    @WebMethod
-    List<Resource> findBeans(@WebParam(name = "searchBean", targetNamespace = "")  ResourceSearchBean searchBean,
-    						 @WebParam(name = "from", targetNamespace = "") int from,
-    						 @WebParam(name = "size", targetNamespace = "") int size);
-    
-    @WebMethod
-    int count(@WebParam(name="searchBean", targetNamespace="") ResourceSearchBean searchBean);
     
     /**
      * Update a resource.
@@ -445,5 +437,11 @@ public interface ResourceDataService {
             @WebParam(name = "type", targetNamespace = "")
             String type);
 
-
+    @WebMethod
+    List<Resource> findBeans(@WebParam(name = "searchBean", targetNamespace = "")  ResourceSearchBean searchBean,
+    						 @WebParam(name = "from", targetNamespace = "") int from,
+    						 @WebParam(name = "size", targetNamespace = "") int size);
+    
+    @WebMethod
+    int count(@WebParam(name="searchBean", targetNamespace="") ResourceSearchBean searchBean);
 }
