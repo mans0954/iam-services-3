@@ -244,6 +244,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
 //                 + jksManager.encodeKey(tokenKey) + "]");
 
         // encrypt user data
+        log.warn("Encrypt user passwords ...");
         if(user.getPrincipalList() != null && !user.getPrincipalList().isEmpty()) {
             Set<Login> loginSet = new HashSet<Login>(user.getPrincipalList());
             for(Login login : loginSet) {
@@ -251,14 +252,16 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                 loginDAO.update(login);
             }
         }
-
+        log.warn("Encrypt user passwords history...");
         if(pwdHistoryMap.containsKey(user.getUserId())) {
             for(PasswordHistory pwd : pwdHistoryMap.get(user.getUserId())) {
                 pwd.setPassword(cryptor.encrypt(pwdKey, pwd.getPassword()));
                 passwordHistoryDao.update(pwd);
             }
         }
+
         if(managedSysMap.containsKey(user.getUserId())) {
+            log.warn("Encrypt manages sys...");
             for(ManagedSys ms : managedSysMap.get(user.getUserId())) {
                 if(ms.getPswd() != null) {
                     ms.setPswd(cryptor.encrypt(pwdKey, ms.getPswd()));
@@ -266,6 +269,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                 managedSysDAO.update(ms);
             }
         }
+        log.warn("Encrypt user data FINISHED...");
 //        log.warn("Printing ecrypted data...");
 //        printUserData(user, pwdHistoryMap, managedSysMap);
     }
@@ -296,8 +300,8 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                     tokenKey = cryptor.decrypt(masterKey, key);
                 }
             }
-//            log.warn("OLD USER KEYS ARE: [USER_ID: " + user.getUserId() + "; PWD_KEY: " + pwdKey + "; TKN_KEY: "
-//                     + tokenKey + "]");
+            log.warn("OLD USER KEYS ARE: [USER_ID: " + user.getUserId() + "; PWD_KEY: " + pwdKey + "; TKN_KEY: "
+                     + tokenKey + "]");
             // decypt user data with keys
             decryptSecurityDataForUser(user, jksManager.decodeKey(pwdKey), pwdHistoryMap, managedSysMap);
 
@@ -308,6 +312,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
     }
     @Transactional(rollbackFor = Exception.class)
     private void decryptSecurityDataForUser(User user, byte[] key, HashMap<String,List<PasswordHistory>> pwdHistoryMap, HashMap<String,List<ManagedSys>> managedSysMap) throws Exception{
+        log.warn("Decrypting user passwords ...");
         if(user.getPrincipalList() != null && !user.getPrincipalList().isEmpty()) {
             Set<Login> loginSet = new HashSet<Login>(user.getPrincipalList());
             for(Login login : loginSet) {
@@ -315,20 +320,21 @@ public class KeyManagementServiceImpl implements KeyManagementService {
             }
             user.setPrincipalList(new ArrayList<Login>(loginSet));
         }
-
+        log.warn("Decrypting user passwords history ...");
         if(pwdHistoryMap.containsKey(user.getUserId())) {
             for(PasswordHistory pwd : pwdHistoryMap.get(user.getUserId())) {
                 pwd.setPassword(cryptor.decrypt(key, pwd.getPassword()));
             }
         }
         if(managedSysMap.containsKey(user.getUserId())) {
+            log.warn("Decrypting manages sys ...");
             for(ManagedSys ms : managedSysMap.get(user.getUserId())) {
                 if(ms.getPswd() != null) {
                     ms.setPswd(cryptor.decrypt(key, ms.getPswd()));
                 }
             }
         }
-
+        log.warn("Decrypting user data FINISHED...");
     }
 
     private void printUserData(User user, HashMap<String, List<PasswordHistory>> pwdHistoryMap, HashMap<String, List<ManagedSys>> managedSysMap) {
