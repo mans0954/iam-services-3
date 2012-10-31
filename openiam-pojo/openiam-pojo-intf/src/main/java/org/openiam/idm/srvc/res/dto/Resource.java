@@ -197,8 +197,9 @@ public class Resource extends BaseObject {
         this.sensitiveApp = sensitiveApp;
     }
 
-	@OneToMany(fetch=FetchType.EAGER,cascade=CascadeType.ALL)
+	@OneToMany(fetch=FetchType.LAZY,cascade=CascadeType.ALL)
 	@JoinColumn(name="RESOURCE_ID")
+	@Fetch(FetchMode.SUBSELECT)
     public Set<ResourceRole> getResourceRoles() {
         return this.resourceRoles;
     }
@@ -207,9 +208,10 @@ public class Resource extends BaseObject {
         this.resourceRoles = resourceRoles;
     }
 
-	@OneToMany(fetch=FetchType.EAGER,cascade=CascadeType.ALL)
+	@OneToMany(fetch=FetchType.LAZY,cascade=CascadeType.ALL)
 	@OrderBy("name asc")
 	@JoinColumn(name="RESOURCE_ID")
+	@Fetch(FetchMode.SUBSELECT)
     public Set<ResourceProp> getResourceProps() {
         return resourceProps;
     }
@@ -319,8 +321,9 @@ public class Resource extends BaseObject {
         this.selected = selected;
     }
 
-	@OneToMany(fetch=FetchType.EAGER,cascade=CascadeType.ALL)
+	@OneToMany(fetch=FetchType.LAZY,cascade=CascadeType.ALL)
 	@JoinColumn(name="RESOURCE_ID")
+	@Fetch(FetchMode.SUBSELECT)
     public Set<ResourceGroup> getResourceGroups() {
         return resourceGroups;
     }
@@ -347,8 +350,9 @@ public class Resource extends BaseObject {
         this.resOwnerGroupId = resOwnerGroupId;
     }
 
-	@OneToMany(fetch=FetchType.EAGER,cascade=CascadeType.ALL)
+	@OneToMany(fetch=FetchType.LAZY,cascade=CascadeType.ALL)
 	@JoinColumn(name="RESOURCE_ID")
+	@Fetch(FetchMode.SUBSELECT)
     public Set<ResourcePrivilege> getEntitlements() {
         return entitlements;
     }
