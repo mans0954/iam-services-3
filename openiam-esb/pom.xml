@@ -259,7 +259,7 @@
 	        <version>2.4.2</version>
 	        <configuration>
 	          <additionalClasspathElements>
-	          	<additionalClasspathElement>${basedir}/src/test/resource</additionalClasspathElement>
+	          	<additionalClasspathElement>${basedir}/src/test/resources</additionalClasspathElement>
 	          </additionalClasspathElements>
 	          <skipTests>${skipTests}</skipTests>
 	        </configuration>
