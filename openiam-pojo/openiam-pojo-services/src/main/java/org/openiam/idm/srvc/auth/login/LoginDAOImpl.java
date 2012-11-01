@@ -6,6 +6,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.*;
 import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 
 import javax.naming.InitialContext;
@@ -193,6 +194,18 @@ public class LoginDAOImpl implements LoginDAO {
         qry.setString("managedSysId", managedSysId);
         return (List<Login>) qry.list();
 
+    }
+
+    public List<Login> getLoginSublist(int startPos, int size){
+        StringBuilder sql = new StringBuilder();
+        sql.append("from ").append(Login.class.getName()).append(" l");
+        return (List<Login>)sessionFactory.getCurrentSession().createQuery(sql.toString()).setFirstResult(startPos).setMaxResults(size).list();
+    }
+
+    public Long getLoginCount(){
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT count(l.password) from ").append(Login.class.getName()).append(" l");
+        return (Long)sessionFactory.getCurrentSession().createQuery(sql.toString()).uniqueResult();
     }
 
     public List<Login> findUser(String userId) {

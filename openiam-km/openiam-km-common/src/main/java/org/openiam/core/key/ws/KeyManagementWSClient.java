@@ -53,4 +53,8 @@ public class KeyManagementWSClient {
     public Response generateMasterKey() throws Exception{
         return this.getService().generateMasterKey();
     }
+
+    public Response migrateData(String secretKey) throws Exception{
+        return this.getService().migrateData(secretKey);
+    }
 }

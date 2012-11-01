@@ -97,7 +97,10 @@
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>org.openiam</groupId>
+            <artifactId>openiam-km-common</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

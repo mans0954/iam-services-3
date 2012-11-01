@@ -123,7 +123,7 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 			throw new IllegalArgumentException("Resource object is null");
 
 		resourceDao.save(resource);
-		return resource;
+		return dozerUtils.getDozerDeepMappedResource(resource);
 	}
 
 	/**

@@ -43,4 +43,8 @@ public interface PasswordHistoryDAO {
                                                          int versions);
     List<PasswordHistory> findAllPasswordHistoryByPrincipal(String domainId,
                                                          String principal, String managedSys);
+
+    List<PasswordHistory> getSublist(int startPos,int size);
+
+    Long getCount();
 }

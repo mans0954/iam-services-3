@@ -4,10 +4,14 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="urn:idm.openiam.org/srvc/res/service" elementFormDefault="unqualified" targetNamespace="urn:idm.openiam.org/srvc/res/service" version="1.0">
 <xs:element name="generateMasterKey" type="tns:generateMasterKey"/>
 <xs:element name="generateMasterKeyResponse" type="tns:generateMasterKeyResponse"/>
-<xs:complexType name="generateMasterKey">
-<xs:sequence/>
+<xs:element name="migrateData" type="tns:migrateData"/>
+<xs:element name="migrateDataResponse" type="tns:migrateDataResponse"/>
+<xs:complexType name="migrateData">
+<xs:sequence>
+<xs:element minOccurs="0" name="secretKey" type="xs:string"/>
+</xs:sequence>
 </xs:complexType>
-<xs:complexType name="generateMasterKeyResponse">
+<xs:complexType name="migrateDataResponse">
 <xs:sequence>
 <xs:element minOccurs="0" name="return" type="tns:Response"/>
 </xs:sequence>
@@ -19,6 +23,14 @@
 <xs:element minOccurs="0" name="errorText" type="xs:string"/>
 </xs:sequence>
 <xs:attribute name="status" type="tns:ResponseStatus" use="required"/>
+</xs:complexType>
+<xs:complexType name="generateMasterKey">
+<xs:sequence/>
+</xs:complexType>
+<xs:complexType name="generateMasterKeyResponse">
+<xs:sequence>
+<xs:element minOccurs="0" name="return" type="tns:Response"/>
+</xs:sequence>
 </xs:complexType>
 <xs:simpleType name="ResponseStatus">
 <xs:restriction base="xs:string">
@@ -86,11 +98,25 @@
     <wsdl:part name="parameters" element="tns:generateMasterKeyResponse">
     </wsdl:part>
   </wsdl:message>
+  <wsdl:message name="migrateDataResponse">
+    <wsdl:part name="parameters" element="tns:migrateDataResponse">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="migrateData">
+    <wsdl:part name="parameters" element="tns:migrateData">
+    </wsdl:part>
+  </wsdl:message>
   <wsdl:message name="generateMasterKey">
     <wsdl:part name="parameters" element="tns:generateMasterKey">
     </wsdl:part>
   </wsdl:message>
   <wsdl:portType name="KeyManagementWS">
+    <wsdl:operation name="migrateData">
+      <wsdl:input name="migrateData" message="tns:migrateData">
+    </wsdl:input>
+      <wsdl:output name="migrateDataResponse" message="tns:migrateDataResponse">
+    </wsdl:output>
+    </wsdl:operation>
     <wsdl:operation name="generateMasterKey">
       <wsdl:input name="generateMasterKey" message="tns:generateMasterKey">
     </wsdl:input>
@@ -100,6 +126,15 @@
   </wsdl:portType>
   <wsdl:binding name="KeyManagementWSSoapBinding" type="tns:KeyManagementWS">
     <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="migrateData">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="migrateData">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="migrateDataResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
     <wsdl:operation name="generateMasterKey">
       <soap:operation soapAction="" style="document"/>
       <wsdl:input name="generateMasterKey">

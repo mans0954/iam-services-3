@@ -1348,24 +1348,17 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
-    public List<User> getAllWithSecurityInfo() {
+    public List<String> getUserIdList(int startPos, int count) {
         StringBuilder sql = new StringBuilder();
-        sql.append("SELECT distinct usr from ").append(User.class.getName()).append(" usr ")
-           .append(" left join fetch usr.principalList l ").append(" left join fetch usr.userKeys uk ");
-        return (List<User>)sessionFactory.getCurrentSession().createQuery(sql.toString()).list();
+        sql.append("SELECT distinct usr.userId from ").append(User.class.getName()).append(" usr");
+        return (List<String>)sessionFactory.getCurrentSession().createQuery(sql.toString()).setFirstResult(startPos).setMaxResults(count).list();
     }
-
     @Override
-    public User getWithSecurityInfo(String userId) {
+    public Long getUserCount(){
         StringBuilder sql = new StringBuilder();
-        sql.append("SELECT distinct usr from ").append(User.class.getName()).append(" usr ")
-           .append(" left join fetch usr.principalList l ").append(" left join fetch usr.userKeys uk where usr.userId=?1");
-        List<User> result =  (List<User>)sessionFactory.getCurrentSession().createQuery(sql.toString()).setParameter(1, userId).list();
-        if(result==null || result.isEmpty())
-            return null;
-        return result.get(0);
+        sql.append("SELECT count(usr.userId) from ").append(User.class.getName()).append(" usr");
+        return (Long)sessionFactory.getCurrentSession().createQuery(sql.toString()).uniqueResult();
     }
-
 
     public SequenceGenDAO getSeqGenDao() {
         return seqGenDao;

@@ -65,4 +65,40 @@ public class UserKey implements Serializable {
     public void setKey(String key) {
         this.key = key;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if(this == o) {
+            return true;
+        }
+        if(o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        UserKey userKey = (UserKey) o;
+
+        if(key != null ? !key.equals(userKey.key) : userKey.key != null) {
+            return false;
+        }
+        if(name != null ? !name.equals(userKey.name) : userKey.name != null) {
+            return false;
+        }
+        if(userId != null ? !userId.equals(userKey.userId) : userKey.userId != null) {
+            return false;
+        }
+        if(userKeyId != null ? !userKeyId.equals(userKey.userKeyId) : userKey.userKeyId != null) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = userKeyId != null ? userKeyId.hashCode() : 0;
+        result = 31 * result + (userId != null ? userId.hashCode() : 0);
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (key != null ? key.hashCode() : 0);
+        return result;
+    }
 }

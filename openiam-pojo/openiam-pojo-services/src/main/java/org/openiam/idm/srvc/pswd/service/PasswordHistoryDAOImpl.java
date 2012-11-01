@@ -12,6 +12,7 @@ import org.hibernate.LockMode;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.pswd.dto.PasswordHistory;
 import org.openiam.idm.srvc.pswd.dto.UserIdentityAnswer;
 
@@ -173,5 +174,19 @@ public class PasswordHistoryDAOImpl implements PasswordHistoryDAO {
             log.error("get failed", re);
             throw re;
         }
+    }
+
+    @Override
+    public List<PasswordHistory> getSublist(int startPos, int size) {
+        StringBuilder sql = new StringBuilder();
+        sql.append("from ").append(PasswordHistory.class.getName()).append(" pwd");
+        return (List<PasswordHistory>)sessionFactory.getCurrentSession().createQuery(sql.toString()).setFirstResult(startPos).setMaxResults(size).list();
+    }
+
+    @Override
+    public Long getCount() {
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT count(pwd.pwdHistoryId) from ").append(PasswordHistory.class.getName()).append(" pwd");
+        return (Long)sessionFactory.getCurrentSession().createQuery(sql.toString()).uniqueResult();
     }
 }

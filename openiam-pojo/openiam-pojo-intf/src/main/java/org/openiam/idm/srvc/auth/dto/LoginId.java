@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.auth.dto;
 
+import javax.persistence.Column;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
@@ -17,9 +18,11 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class LoginId implements java.io.Serializable {
 
-
+    @Column(name="SERVICE_ID",length=20)
     private String domainId;
+    @Column(name="LOGIN",length=320)
     private String login;
+    @Column(name="MANAGED_SYS_ID",length=50)
     private String managedSysId;
 
     public LoginId() {

@@ -1,0 +1,1 @@
+update LOGIN set PASSWORD='passwd00';

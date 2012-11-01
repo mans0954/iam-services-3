@@ -1,6 +1,7 @@
 package org.openiam.core.dao;
 
 import org.openiam.core.domain.UserKey;
+import org.openiam.idm.srvc.auth.dto.Login;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,5 +36,19 @@ public class UserKeyImpl extends BaseDaoImpl<UserKey, String> implements UserKey
             return null;
         }
         return result.get(0);
+    }
+
+    @Override
+    public List<UserKey> getByUserId(String userId)throws Exception {
+        return (List<UserKey>) sessionFactory.getCurrentSession().createQuery(
+                "select obj from " + this.domainClass.getName() + " obj where obj.userId=:userId")
+                                                             .setParameter("userId", userId).list();
+    }
+
+    @Override
+    public List<UserKey> getSublist(int startPos, int size)throws Exception{
+        StringBuilder sql = new StringBuilder();
+        sql.append("from ").append(this.domainClass.getName()).append(" uk");
+        return (List<UserKey>)sessionFactory.getCurrentSession().createQuery(sql.toString()).setFirstResult(startPos).setMaxResults(size).list();
     }
 }

@@ -40,8 +40,7 @@ public interface UserDAO {
 
     public List<User> findByDelegationProperties(DelegationFilterSearch search);
 
+    public List<String> getUserIdList(int startPos, int count);
 
-    public List<User> getAllWithSecurityInfo();
-
-    public User getWithSecurityInfo(String userId);
+    public Long getUserCount();
 }

@@ -23,8 +23,7 @@ public class KeyManagementWS_Service
 {
 
     public final static URL WSDL_LOCATION;
-    public final static QName SERVICE = new QName("urn:idm.openiam.org/srvc/res/service", "KeyManagementWS");
-
+    public final static QName SERVICE_NAME = new QName("urn:idm.openiam.org/srvc/res/service", "KeyManagementWS");
     private final static Logger logger = Logger.getLogger(org.openiam.idm.srvc.res.service.KeyManagementWS_Service.class.getName());
 
     static {
@@ -45,10 +44,11 @@ public class KeyManagementWS_Service
     }
 
     public KeyManagementWS_Service(URL wsdlLocation) {
-        super(wsdlLocation, SERVICE);
+        super(wsdlLocation, SERVICE_NAME);
     }
+
     public KeyManagementWS_Service() {
-        super(WSDL_LOCATION, SERVICE);
+        super(WSDL_LOCATION, SERVICE_NAME);
     }
 
     /**

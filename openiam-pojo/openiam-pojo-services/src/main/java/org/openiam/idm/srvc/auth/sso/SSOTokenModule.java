@@ -42,8 +42,7 @@ public interface SSOTokenModule {
 	SSOToken createToken(Map tokenParam) throws Exception;
 	/**
 	 * Updates the token
-	 * @param userId
-	 * @param token
+	 * @param tokenParam
 	 * @return
 	 */
 	SSOToken refreshToken(Map tokenParam)throws Exception;
