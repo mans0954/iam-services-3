@@ -2,6 +2,11 @@ package org.openiam.idm.srvc.org.dto;
 
 // Generated Jul 18, 2009 8:49:09 AM by Hibernate Tools 3.2.2.GA
 
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.ParamDef;
+
+import javax.persistence.*;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
@@ -21,19 +26,42 @@ import java.util.Date;
         "status",
         "createdBy"
 })
+@Entity
+@Table(name = "USER_AFFILIATION")
 public class UserAffiliation implements java.io.Serializable {
 
     /**
      *
      */
     private static final long serialVersionUID = -3785768336629177182L;
+    @Id
+    @GeneratedValue(generator="system-uuid")
+    @GenericGenerator(name="system-uuid", strategy = "uuid")
+    @Column(name="USER_AFFILIATION_ID", length=32, nullable = false)
     private String userAffiliationId;
+
+    @Column(name="USER_ID",length = 32, nullable = false)
     private String userId;
+
+    @Column(name="COMPANY_ID",length = 32, nullable = false)
     private String organizationId;
+
+    @Column(name="STATUS",length = 20)
     private String status;
+
+    @Column(name="CREATE_DATE",length = 19)
+    @Temporal(TemporalType.TIMESTAMP)
     private Date createDate;
+
+    @Column(name="START_DATE",length = 19)
+    @Temporal(TemporalType.TIMESTAMP)
     private Date startDate;
+
+    @Column(name="END_DATE",length = 19)
+    @Temporal(TemporalType.TIMESTAMP)
     private Date endDate;
+
+    @Column(name="CREATED_BY",length = 20)
     private String createdBy;
 
     public UserAffiliation() {

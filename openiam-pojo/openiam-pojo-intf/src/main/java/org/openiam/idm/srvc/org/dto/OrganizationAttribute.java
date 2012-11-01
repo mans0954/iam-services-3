@@ -1,5 +1,8 @@
 package org.openiam.idm.srvc.org.dto;
 
+import org.hibernate.annotations.GenericGenerator;
+
+import javax.persistence.*;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
@@ -34,17 +37,26 @@ import javax.xml.bind.annotation.XmlType;
         "organizationId",
         "value"
 })
+@Entity
+@Table(name = "COMPANY_ATTRIBUTE")
 public class OrganizationAttribute implements java.io.Serializable {
-
-    /**
-     *
-     */
     private static final long serialVersionUID = -231974705360001659L;
+    @Id
+    @GeneratedValue(generator="system-uuid")
+    @GenericGenerator(name="system-uuid", strategy = "uuid")
+    @Column(name="COMPANY_ATTR_ID", length=32, nullable = false)
     protected String attrId;
     // protected MetadataElement metadataElement;
+    @Column(name="METADATA_ID", length=20)
     protected String metadataElementId;
+
+    @Column(name="NAME", length=20)
     protected String name;
+
+    @Column(name="COMPANY_ID", length=32)
     protected String organizationId;
+
+    @Column(name="VALUE", length=32, nullable = false)
     protected String value;
 
     // Constructors

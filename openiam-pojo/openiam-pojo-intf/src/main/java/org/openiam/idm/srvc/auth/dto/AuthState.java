@@ -2,6 +2,9 @@ package org.openiam.idm.srvc.auth.dto;
 
 // Generated May 22, 2009 10:08:00 AM by Hibernate Tools 3.2.2.GA
 
+import org.hibernate.annotations.Type;
+
+import javax.persistence.*;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSchemaType;
@@ -22,16 +25,26 @@ import java.util.Date;
         "lastLogin",
         "ipAddress"
 })
+@Entity
+@Table(name = "AUTH_STATE")
 public class AuthState implements java.io.Serializable {
 
-
+    @Id
+    @Column(name = "USER_ID",length = 32)
     private String userId;
+    @Column(name="AUTH_STATE", precision =5, scale = 1)
     private BigDecimal authState;
+    @Column(name="TOKEN",length = 100)
     private String token;
+    @Column(name="AA",length = 20)
     private String aa;
+    @Column(name = "EXPIRATION",precision = 18, scale = 0)
     private Long expiration;
     @XmlSchemaType(name = "dateTime")
+    @Column(name = "LAST_LOGIN",length = 19)
+    @Temporal(TemporalType.TIMESTAMP)
     private Date lastLogin;
+    @Column(name="IP_ADDRESS",length = 20)
     private String ipAddress;
 
     public AuthState() {
