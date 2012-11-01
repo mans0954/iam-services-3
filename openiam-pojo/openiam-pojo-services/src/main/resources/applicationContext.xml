@@ -195,14 +195,14 @@
 	
 	<!-- Org Beans -->
 	<bean id="orgManager" class="org.openiam.idm.srvc.org.service.OrganizationDataServiceImpl" >
-		<property name="orgDao" ref="orgDAO" />
+		<!--<property name="orgDao" ref="orgDAO" />-->
 		<property name="orgAttrDao" ref="orgAttrDAO" />
         <property name="orgAffiliationDao" ref="orgAffiliationDAO" />
 	</bean>
 
-	<bean id="orgDAO" class="org.openiam.idm.srvc.org.service.OrganizationDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"></property>		
-	</bean>	
+	<!--<bean id="orgDAO" class="org.openiam.idm.srvc.org.service.OrganizationDAOImpl" >-->
+		<!--<property name="sessionFactory" ref="sessionFactory"></property>		-->
+	<!--</bean>	-->
 
 	<bean id="orgAttrDAO" class="org.openiam.idm.srvc.org.service.OrganizationAttributeDAOImpl" >
 		<property name="sessionFactory" ref="sessionFactory"></property>		

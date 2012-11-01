@@ -3,6 +3,8 @@ package org.openiam.idm.srvc.org.service;
 
 import java.util.List;
 import javax.naming.InitialContext;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
@@ -10,61 +12,93 @@ import org.hibernate.LockMode;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.Example;
-
-import org.hibernate.criterion.Expression;
-import org.hibernate.criterion.Restrictions;
-import org.hibernate.criterion.Order;
+import org.hibernate.criterion.*;
 
 
+import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.srvc.org.dto.*;
+import org.openiam.idm.srvc.res.dto.Resource;
+import org.openiam.idm.srvc.res.dto.ResourceType;
+import org.springframework.stereotype.Repository;
 
 /**
  * Data access object implementation for Organization. 
  */
-public class OrganizationDAOImpl implements OrganizationDAO {
-
+@Repository("organizationDAO")
+public class OrganizationDAOImpl extends BaseDaoImpl<Organization, String> implements OrganizationDAO {
 	private static final Log log = LogFactory.getLog(OrganizationDAOImpl.class);
 
-	private SessionFactory sessionFactory;
+//	private SessionFactory sessionFactory;
 
 	
-	public void setSessionFactory(SessionFactory session) {
-		   this.sessionFactory = session;
-	}
-	
-	protected SessionFactory getSessionFactory() {
-		try {
-			return (SessionFactory) new InitialContext()
-					.lookup("SessionFactory");
-		} catch (Exception e) {
-			log.error("Could not locate SessionFactory in JNDI", e);
-			throw new IllegalStateException(
-					"Could not locate SessionFactory in JNDI");
-		}
-	}
+//	public void setSessionFactory(SessionFactory session) {
+//		   this.sessionFactory = session;
+//	}
+//
+//	protected SessionFactory getSessionFactory() {
+//		try {
+//			return (SessionFactory) new InitialContext()
+//					.lookup("SessionFactory");
+//		} catch (Exception e) {
+//			log.error("Could not locate SessionFactory in JNDI", e);
+//			throw new IllegalStateException(
+//					"Could not locate SessionFactory in JNDI");
+//		}
+//	}
+//
+//	public Organization findById(java.lang.String id) {
+//		log.debug("getting Organization instance with id: " + id);
+//		try {
+//			Organization instance = (Organization) sessionFactory.getCurrentSession()
+//					.get("org.openiam.idm.srvc.org.dto.Organization", id);
+//			if (instance == null) {
+//				log.debug("get successful, no instance found");
+//			} else {
+//				log.debug("get successful, instance found");
+//			}
+//			return instance;
+//		} catch (RuntimeException re) {
+//			log.error("get failed", re);
+//			throw re;
+//		}
+//	}
 
+    @Override
+    protected Criteria getExampleCriteria(final Organization organization) {
+        final Criteria criteria = getCriteria();
+        if(StringUtils.isNotBlank(organization.getOrgId())) {
+            criteria.add(Restrictions.eq(getPKfieldName(), organization.getOrgId()));
+        } else {
+            if(StringUtils.isNotEmpty(organization.getOrganizationName())) {
+                String organizationName = organization.getOrganizationName();
+                MatchMode matchMode = null;
+                if(StringUtils.indexOf(organizationName, "*") == 0) {
+                    matchMode = MatchMode.START;
+                    organizationName = organizationName.substring(1);
+                }
+                if(StringUtils.isNotEmpty(organizationName) && StringUtils.indexOf(organizationName, "*") == organizationName.length() - 1) {
+                    organizationName = organizationName.substring(0, organizationName.length() - 1);
+                    matchMode = (matchMode == MatchMode.START) ? MatchMode.ANYWHERE : MatchMode.END;
+                }
 
+                if(StringUtils.isNotEmpty(organizationName)) {
+                    if(matchMode != null) {
+                        criteria.add(Restrictions.ilike("organizationName", organizationName, matchMode));
+                    } else {
+                        criteria.add(Restrictions.eq("organizationName", organizationName));
+                    }
+                }
+            }
+        }
+        return criteria;
+    }
 
-
-	public Organization findById(java.lang.String id) {
-		log.debug("getting Organization instance with id: " + id);
-		try {
-			Organization instance = (Organization) sessionFactory.getCurrentSession()
-					.get("org.openiam.idm.srvc.org.dto.Organization", id);
-			if (instance == null) {
-				log.debug("get successful, no instance found");
-			} else {
-				log.debug("get successful, instance found");
-			}
-			return instance;
-		} catch (RuntimeException re) {
-			log.error("get failed", re);
-			throw re;
-		}
-	}
-
-	public List findByExample(Organization instance) {
+    @Override
+    protected String getPKfieldName() {
+        return "orgId";
+    }
+    @Deprecated
+    public List findByExample(Organization instance) {
 		log.debug("finding Company instance by example");
 		try {
 			List results = sessionFactory.getCurrentSession().createCriteria(
@@ -78,7 +112,7 @@ public class OrganizationDAOImpl implements OrganizationDAO {
 			throw re;
 		}
 	}
-
+    @Deprecated
 	public Organization add(Organization instance) {
 		log.debug("persisting Organization instance");
 		try {
@@ -89,7 +123,6 @@ public class OrganizationDAOImpl implements OrganizationDAO {
 			log.error("persist failed", re);
 			throw re;
 		}
-		
 	}
 
 	public List<Organization> findChildOrganization(String orgId) {
@@ -112,10 +145,9 @@ public class OrganizationDAOImpl implements OrganizationDAO {
 		if (curOrg != null && curOrg.getParentId() != null) {
 			return findById(curOrg.getParentId());
 		}
-		
 		return null;
 	}
-
+    @Deprecated
 	public void remove(Organization instance) {
 		log.debug("deleting Address instance");
 		try {
@@ -124,18 +156,18 @@ public class OrganizationDAOImpl implements OrganizationDAO {
 		} catch (RuntimeException re) {
 			log.error("delete failed", re);
 			throw re;
-		}			
+		}
 	}
 
-	public Organization update(Organization instance) {
-		log.debug("merging Organization instance");
-		try {
-			return (Organization)sessionFactory.getCurrentSession().merge(instance);
-		} catch (RuntimeException re) {
-			log.error("merge failed", re);
-			throw re;
-		}		
-	}
+//	public Organization update(Organization instance) {
+//		log.debug("merging Organization instance");
+//		try {
+//			return (Organization)sessionFactory.getCurrentSession().merge(instance);
+//		} catch (RuntimeException re) {
+//			log.error("merge failed", re);
+//			throw re;
+//		}
+//	}
 	
 	/**
 	 * Returns a list of Organization objects that are root level entities; ie. they 
