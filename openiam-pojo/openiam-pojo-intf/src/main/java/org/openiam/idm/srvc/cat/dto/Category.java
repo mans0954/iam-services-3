@@ -1,9 +1,23 @@
 package org.openiam.idm.srvc.cat.dto;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
+
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+import org.hibernate.annotations.GenericGenerator;
+
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashSet;
@@ -22,6 +36,8 @@ import java.util.Set;
         "childCategories",
         "categoryLanguages"
 })
+@Entity
+@Table(name="CATEGORY")
 public class Category implements Serializable {
     private String categoryId;
     private String createdBy;
@@ -40,6 +56,10 @@ public class Category implements Serializable {
         super();
     }
 
+    @Id
+    @GeneratedValue(generator="system-uuid")
+    @GenericGenerator(name="system-uuid", strategy = "uuid")
+    @Column(name="CATEGORY_ID", length=20)
     public String getCategoryId() {
         return this.categoryId;
     }
@@ -48,6 +68,7 @@ public class Category implements Serializable {
         this.categoryId = categoryId;
     }
 
+    @Column(name="CREATED_BY", length=20)
     public String getCreatedBy() {
         return this.createdBy;
     }
@@ -56,6 +77,7 @@ public class Category implements Serializable {
         this.createdBy = createdBy;
     }
 
+    @Column(name="CATEGORY_NAME", length=40)
     public String getCategoryName() {
         return this.categoryName;
     }
@@ -64,6 +86,7 @@ public class Category implements Serializable {
         this.categoryName = categoryName;
     }
 
+    @Column(name="CATEGORY_DESC", length=80)
     public String getCategoryDesc() {
         return this.categoryDesc;
     }
@@ -72,6 +95,7 @@ public class Category implements Serializable {
         this.categoryDesc = categoryDesc;
     }
 
+    @Column(name="CREATE_DATE", length=19)
     public Date getCreateDate() {
         return this.createDate;
     }
@@ -80,6 +104,7 @@ public class Category implements Serializable {
         this.createDate = createDate;
     }
 
+    @Column(name="PARENT_ID", length=20)
     public String getParentId() {
         return this.parentId;
     }
@@ -88,6 +113,7 @@ public class Category implements Serializable {
         this.parentId = parentId;
     }
 
+    @Column(name="SHOW_LIST")
     public int getShowList() {
         return this.showList;
     }
@@ -96,6 +122,7 @@ public class Category implements Serializable {
         this.showList = showList;
     }
 
+    @Column(name="DISPLAY_ORDER")
     public int getDisplayOrder() {
         return this.displayOrder;
     }
@@ -104,7 +131,9 @@ public class Category implements Serializable {
         this.displayOrder = displayOrder;
     }
 
-
+    @OneToMany(mappedBy = "id.categoryId",cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @Fetch(FetchMode.JOIN)
+    //@Transient
     public Set<CategoryLanguage> getCategoryLanguages() {
         return categoryLanguages;
     }
@@ -113,6 +142,7 @@ public class Category implements Serializable {
         this.categoryLanguages = categoryLanguages;
     }
 
+    @Transient
     public Category[] getChildCategories() {
         return childCategories;
     }

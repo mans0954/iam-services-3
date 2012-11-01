@@ -1,10 +1,14 @@
 package org.openiam.idm.srvc.cat.dto;
 
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
+
 // Generated Nov 22, 2008 1:32:51 PM by Hibernate Tools 3.2.2.GA
 
 /**
  * CategoryLanguageId is the PrimaryKey for the CategoryLanguage object
  */
+@Embeddable
 public class CategoryLanguageId implements java.io.Serializable {
 
     private String categoryId;
@@ -13,11 +17,7 @@ public class CategoryLanguageId implements java.io.Serializable {
     public CategoryLanguageId() {
     }
 
-    public CategoryLanguageId(String categoryId, String languageCd) {
-        this.categoryId = categoryId;
-        this.languageCd = languageCd;
-    }
-
+    @Column(name="CATEGORY_ID",length=20,nullable=false)
     public String getCategoryId() {
         return this.categoryId;
     }
@@ -26,6 +26,7 @@ public class CategoryLanguageId implements java.io.Serializable {
         this.categoryId = categoryId;
     }
 
+    @Column(name="LANGUAGE_CD",length=5,nullable=false)
     public String getLanguageCd() {
         return this.languageCd;
     }

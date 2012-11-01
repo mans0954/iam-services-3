@@ -1,5 +1,7 @@
 package org.openiam.idm.srvc.cat.dto;
 
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
@@ -10,6 +12,7 @@ import java.io.Serializable;
         "categoryId",
         "typeId"
 })
+@Embeddable
 public class CategoryTypeId implements Serializable {
     private String categoryId;
     private String typeId;
@@ -19,7 +22,7 @@ public class CategoryTypeId implements Serializable {
         super();
     }
 
-
+    @Column(name="CATEGORY_ID",length=20,nullable=false)
     public String getCategoryId() {
         return categoryId;
     }
@@ -29,7 +32,7 @@ public class CategoryTypeId implements Serializable {
         this.categoryId = categoryId;
     }
 
-
+    @Column(name="TYPE_ID",length=20,nullable=false)
     public String getTypeId() {
         return typeId;
     }
