@@ -46,7 +46,7 @@
                 <prop key="hibernate.connection.password"/>
             </props>
         </property>
-        <property name="mappingResources">
+       <!-- <property name="mappingResources">
             <list>
                 <value>org/openiam/idm/srvc/grp/service/Group.hbm.xml</value>
                 <value>org/openiam/idm/srvc/grp/service/GroupAttribute.hbm.xml</value>
@@ -56,15 +56,15 @@
                 <value>org/openiam/idm/srvc/role/service/UserRole.hbm.xml</value>
                 <value>org/openiam/idm/srvc/role/service/RolePolicy.hbm.xml</value>
             </list>
-        </property>
-        <property name="packagesToScan" value="org.openiam.core.domain*,
-											   org.openiam.idm.srvc.grp.dto*,
-											   org.openiam.idm.srvc.res.dto*,
-											   org.openiam.idm.srvc.role.dto*,
-											   org.openiam.idm.srvc.user.dto*,
-											   org.openiam.idm.srvc.continfo.dto*,
-											   org.openiam.am.srvc.resattr.domain*,
-											   org.openiam.idm.srvc.org.dto*"/>
+        </property>-->
+        <property name="packagesToScan" value="org.openiam.idm.srvc.role.dto*,
+                                               org.openiam.idm.srvc.grp.dto*,
+                                               org.openiam.core.domain*,
+                                               org.openiam.idm.srvc.auth.dto*,
+                                               org.openiam.idm.srvc.user.domain*,
+                                               org.openiam.am.srvc.resattr.domain*,
+                                               org.openiam.idm.srvc.org.domain*,
+                                               org.openiam.idm.srvc.continfo.domain*"/>
     </bean>
 
     <!--tx begin-->

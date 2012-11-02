@@ -1,6 +1,6 @@
 package org.openiam.idm.srvc.org.service;
 
-import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
+import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTransactionalTestNGSpringContextTests;
@@ -26,12 +26,12 @@ public class OrganizationAttributeDAOTouchTest extends AbstractTransactionalTest
 
     @Test
     public void touchAdd() {
-        orgAttrDAO.add(new OrganizationAttribute());
+        orgAttrDAO.add(new OrganizationAttributeEntity());
     }
 
     @Test
     public void touchRemove() {
-        OrganizationAttribute organizationAttribute = new OrganizationAttribute();
+        OrganizationAttributeEntity organizationAttribute = new OrganizationAttributeEntity();
         orgAttrDAO.add(organizationAttribute);
         orgAttrDAO.remove(organizationAttribute);
     }
@@ -43,7 +43,7 @@ public class OrganizationAttributeDAOTouchTest extends AbstractTransactionalTest
 
     @Test
     public void touchUpdate() {
-        OrganizationAttribute organizationAttribute = new OrganizationAttribute();
+        OrganizationAttributeEntity organizationAttribute = new OrganizationAttributeEntity();
         orgAttrDAO.add(organizationAttribute);
         orgAttrDAO.update(organizationAttribute);
     }

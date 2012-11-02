@@ -33,12 +33,12 @@
 			<b>addresses</b>
 		</field>
 		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
-			<a>phone</a>
-			<b>phone</b>
+			<a>phones</a>
+			<b>phones</b>
 		</field>
 		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
-			<a>emailAddress</a>
-			<b>emailAddress</b>
+			<a>emailAddresses</a>
+			<b>emailAddresses</b>
 		</field>
 		<field custom-converter="org.openiam.dozer.MapConverterWithKeyString" custom-converter-param="shallowDozerMapper">
 			<a>userAttributes</a>

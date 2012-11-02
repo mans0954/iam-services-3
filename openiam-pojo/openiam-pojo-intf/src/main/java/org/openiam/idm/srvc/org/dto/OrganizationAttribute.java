@@ -1,18 +1,9 @@
 package org.openiam.idm.srvc.org.dto;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
-import org.hibernate.annotations.GenericGenerator;
+import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 
 
 /**
@@ -44,8 +35,7 @@ import org.hibernate.annotations.GenericGenerator;
         "organizationId",
         "value"
 })
-@Entity
-@Table(name = "COMPANY_ATTRIBUTE")
+
 public class OrganizationAttribute implements java.io.Serializable {
 
     /**
@@ -53,28 +43,15 @@ public class OrganizationAttribute implements java.io.Serializable {
      */
     private static final long serialVersionUID = -231974705360001659L;
 
-    @Id
-    @GeneratedValue(generator="system-uuid")
-    @GenericGenerator(name="system-uuid", strategy = "uuid")
-    @Column(name="COMPANY_ATTR_ID", length=32, nullable = false)
     protected String attrId;
 
     // protected MetadataElement metadataElement;
-    @Column(name="METADATA_ID", length=20)
     protected String metadataElementId;
 
-    @Column(name="NAME", length=20)
     protected String name;
 
-    @XmlTransient
-    @ManyToOne
-    @JoinColumn(name="COMPANY_ID")
-    private Organization organization;
-
-    @Transient
     protected String organizationId;
 
-    @Column(name="VALUE")
     protected String value;
 
     // Constructors
@@ -103,6 +80,15 @@ public class OrganizationAttribute implements java.io.Serializable {
         this.organizationId = organizationId;
         this.name = name;
         this.value = value;
+    }
+
+    public OrganizationAttribute(OrganizationAttributeEntity attributeEntity) {
+        this.attrId = attributeEntity.getAttrId();
+        this.metadataElementId = attributeEntity.getMetadataElementId();
+        this.name = attributeEntity.getName();
+        this.organizationId = attributeEntity.getOrganization() != null ? attributeEntity.getOrganization().getOrgId() : "";
+        this.value = attributeEntity.getValue();
+
     }
 
     // Property accessors
@@ -150,7 +136,7 @@ public class OrganizationAttribute implements java.io.Serializable {
 
 
     public String getOrganizationId() {
-        return organization != null ? organization.getOrgId() : "";
+        return this.organizationId;
     }
 
     /**
@@ -181,19 +167,14 @@ public class OrganizationAttribute implements java.io.Serializable {
         this.metadataElementId = metadataElementId;
     }
 
-    public Organization getOrganization() {
-        return organization;
-    }
-
-    public void setOrganization(Organization organization) {
-        this.organization = organization;
-        this.organizationId = organization != null ? organization.getOrgId() : "";
+    public void setOrganizationId(String organizationId) {
+        this.organizationId = organizationId;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof OrganizationAttribute)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
 
         OrganizationAttribute that = (OrganizationAttribute) o;
 
@@ -210,6 +191,11 @@ public class OrganizationAttribute implements java.io.Serializable {
 
     @Override
     public int hashCode() {
-        return attrId != null ? attrId.hashCode() : 0;
+        int result = attrId != null ? attrId.hashCode() : 0;
+        result = 31 * result + (metadataElementId != null ? metadataElementId.hashCode() : 0);
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (organizationId != null ? organizationId.hashCode() : 0);
+        result = 31 * result + (value != null ? value.hashCode() : 0);
+        return result;
     }
 }

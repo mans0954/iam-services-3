@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.org.service;
 
+import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.service.OrganizationDAO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +18,7 @@ public class OrganizationDAOTouchTest extends AbstractTransactionalTestNGSpringC
 
     @Test
     private void touchAdd() {
-        orgDAO.add(new Organization());
+        orgDAO.add(new OrganizationEntity());
     }
 
     @Test
@@ -37,7 +38,7 @@ public class OrganizationDAOTouchTest extends AbstractTransactionalTestNGSpringC
 
     @Test
     private void touchFindOrganizationByClassification() {
-        orgDAO.findOrganizationByClassification("", "");
+        orgDAO.findOrganizationByClassification("", null);
     }
 
     @Test
@@ -62,19 +63,19 @@ public class OrganizationDAOTouchTest extends AbstractTransactionalTestNGSpringC
 
     @Test
     private void touchRemove() {
-        Organization organization = new Organization();
+        OrganizationEntity organization = new OrganizationEntity();
         orgDAO.add(organization);
         orgDAO.remove(organization);
     }
 
     @Test
     private void touchSearch() {
-        orgDAO.search("", "", "", "");
+        orgDAO.search("", "", null, "");
     }
 
     @Test
     private void touchUpdate() {
-        Organization organization = new Organization();
+        OrganizationEntity organization = new OrganizationEntity();
         orgDAO.add(organization);
         orgDAO.update(organization);
     }

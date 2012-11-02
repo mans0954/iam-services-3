@@ -313,7 +313,7 @@ public class AddUser {
 			primaryIdentity.setId(primaryID);
 			principalList.add(primaryIdentity);
 			user.setPrincipalList(principalList);
-			user.getEmailAddress().add(primaryEmail);
+			user.getEmailAddresses().add(primaryEmail);
  			
  		}else {
  			log.debug("- policyAttrMap IS null");

@@ -21,21 +21,15 @@
  */
 package org.openiam.idm.srvc.user.ws;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.jws.WebMethod;
-import javax.jws.WebParam;
 import javax.jws.WebService;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.dozer.DozerBeanMapper;
-import org.mvel2.optimizers.impl.refl.nodes.ArrayLength;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.DozerUtils;
@@ -53,7 +47,6 @@ import org.openiam.idm.srvc.continfo.ws.PhoneMapResponse;
 import org.openiam.idm.srvc.continfo.ws.PhoneResponse;
 import org.openiam.idm.srvc.user.dto.*;
 import org.openiam.idm.srvc.user.service.UserDataService;
-import org.openiam.util.DozerMappingType;
 import org.springframework.beans.factory.annotation.Required;
 
 /**
@@ -242,7 +235,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	 */
 	public UserListResponse findUsersByStatus(String status) {
 		final UserListResponse resp = new UserListResponse(ResponseStatus.SUCCESS);
-		final List<User> userList = userManager.findUsersByStatus(status);
+		final List<User> userList = userManager.findUsersByStatus(UserStatusEnum.valueOf(status));
 		if (userList == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {

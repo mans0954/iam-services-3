@@ -1322,11 +1322,11 @@ implements ProvisionService,  ApplicationContextAware  {
 		
 	}
 	private void updateUserEmail(User origUser, User newUser) {
-		Set<EmailAddress> origEmailSet = origUser.getEmailAddress();
+		Set<EmailAddress> origEmailSet = origUser.getEmailAddresses();
 		if (origEmailSet == null) {
 			origEmailSet = new HashSet<EmailAddress>();
 		}
-		Set<EmailAddress> newEmailSet = newUser.getEmailAddress();
+		Set<EmailAddress> newEmailSet = newUser.getEmailAddresses();
 		if (newEmailSet == null) {
 			return;
 		}
@@ -1361,11 +1361,11 @@ implements ProvisionService,  ApplicationContextAware  {
 	
 	
 	private void  updateUserPhone(User origUser, User newUser) {
-		Set<Phone> origPhoneSet = origUser.getPhone();
+		Set<Phone> origPhoneSet = origUser.getPhones();
 		if (origPhoneSet == null) {
 			origPhoneSet = new HashSet<Phone>();
 		}
-		Set<Phone> newPhoneSet = newUser.getPhone();
+		Set<Phone> newPhoneSet = newUser.getPhones();
 		if (newPhoneSet == null) {
 			return;
 		}

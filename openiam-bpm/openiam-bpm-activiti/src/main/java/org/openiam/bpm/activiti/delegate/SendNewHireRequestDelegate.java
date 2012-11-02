@@ -23,6 +23,7 @@ import org.openiam.idm.srvc.msg.service.MailService;
 import org.openiam.idm.srvc.prov.request.dto.ProvisionRequest;
 import org.openiam.idm.srvc.prov.request.dto.RequestApprover;
 import org.openiam.idm.srvc.prov.request.service.RequestDataService;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDAO;
@@ -59,7 +60,7 @@ public class SendNewHireRequestDelegate implements JavaDelegate {
 
 	private ProvisionUser provisionUser;
 	private ProvisionRequest provisionRequest;
-	private User requestor;
+	private UserEntity requestor;
 	
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {

@@ -15,6 +15,7 @@ import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
 import org.openiam.idm.srvc.pswd.dto.PasswordHistory;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.util.encrypt.Cryptor;
@@ -160,9 +161,9 @@ public class KeyManagementServiceImpl implements KeyManagementService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long generateUserKeys(String userId) throws Exception {
-        User user = userDAO.findById(userId);
-        if(user != null) {
-            return generateUserKeys(user);
+        UserEntity userEntity = userDAO.findById(userId);
+        if(userEntity != null) {
+            return generateUserKeys(new User(userEntity));
         }
         return 0L;
     }

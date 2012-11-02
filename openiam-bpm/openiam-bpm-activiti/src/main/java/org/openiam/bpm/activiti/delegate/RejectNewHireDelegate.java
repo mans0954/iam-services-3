@@ -22,6 +22,7 @@ import org.openiam.idm.srvc.msg.service.MailService;
 import org.openiam.idm.srvc.prov.request.dto.ProvisionRequest;
 import org.openiam.idm.srvc.prov.request.dto.RequestUser;
 import org.openiam.idm.srvc.prov.request.service.RequestDataService;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.Supervisor;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDAO;
@@ -100,8 +101,8 @@ public class RejectNewHireDelegate implements JavaDelegate {
             if (StringUtils.equalsIgnoreCase(typeOfUserToNotify, "user")) {
                 notifyUserId = approverAssociation.getNotifyUserOnReject();
                 if(StringUtils.isNotBlank(notifyUserId)) {
-                	final User notifyUser = userDAO.findById(notifyUserId);
-                	if(notifyUser != null && notifyUser.getEmailAddress() != null) {
+                	final UserEntity notifyUser = userDAO.findById(notifyUserId);
+                	if(notifyUser != null && notifyUser.getEmailAddresses() != null) {
                 		notifyEmail = notifyUser.getEmail();
                 	}
                 }
@@ -117,8 +118,8 @@ public class RejectNewHireDelegate implements JavaDelegate {
             } else { /* send back to original requestor if none of the above */ 
             	notifyUserId = provisionRequest.getRequestorId();
             	if(notifyUserId != null) {
-            		final User requestor = userDAO.findById(notifyUserId);
-            		if(requestor != null && requestor.getEmailAddress() != null) {
+            		final UserEntity requestor = userDAO.findById(notifyUserId);
+            		if(requestor != null && requestor.getEmailAddresses() != null) {
             			notifyEmail = requestor.getEmail();
             		}
             	}

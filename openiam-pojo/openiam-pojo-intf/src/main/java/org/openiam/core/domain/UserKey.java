@@ -3,6 +3,7 @@ package org.openiam.core.domain;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 
 import javax.persistence.*;
@@ -32,7 +33,7 @@ public class UserKey implements Serializable {
 
     @ManyToOne(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
     @JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID", insertable = false, updatable = false)
-    private User user;
+    private UserEntity user;
 
     public String getUserKeyId() {
         return userKeyId;

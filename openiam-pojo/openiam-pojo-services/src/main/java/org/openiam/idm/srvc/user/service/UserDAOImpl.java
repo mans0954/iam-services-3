@@ -4,19 +4,24 @@ package org.openiam.idm.srvc.user.service;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.*;
+
+import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.base.id.SequenceGenDAO;
-import org.openiam.idm.srvc.key.service.KeyManagementService;
+
+import org.openiam.idm.srvc.user.domain.SupervisorEntity;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
-import org.openiam.idm.srvc.user.dto.SearchAttribute;
-import org.openiam.idm.srvc.user.dto.User;
+
 import org.openiam.idm.srvc.user.dto.UserSearch;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.openiam.idm.srvc.user.dto.SearchAttribute;
 
 import javax.naming.InitialContext;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.ArrayList;
+import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 
 /**
  * Data access implementation for domain model class User and UserWS. UserWS is similar to User,
@@ -32,10 +37,10 @@ public class UserDAOImpl implements UserDAO {
 
     private SessionFactory sessionFactory;
     private SequenceGenDAO seqGenDao;
-    private String         emailSearchVal;
-    private String         phoneSearchVal;
-    private Integer        maxResultSetSize;
-    private String         dbType;
+    private String emailSearchVal;
+    private String phoneSearchVal;
+    private Integer maxResultSetSize;
+    private String dbType;
 
 
     public void setSessionFactory(SessionFactory session) {
@@ -45,14 +50,16 @@ public class UserDAOImpl implements UserDAO {
 
     protected SessionFactory getSessionFactory() {
         try {
-            return (SessionFactory) new InitialContext().lookup("SessionFactory");
-        } catch(Exception e) {
+            return (SessionFactory) new InitialContext()
+                    .lookup("SessionFactory");
+        } catch (Exception e) {
             log.error("Could not locate SessionFactory in JNDI", e);
-            throw new IllegalStateException("Could not locate SessionFactory in JNDI");
+            throw new IllegalStateException(
+                    "Could not locate SessionFactory in JNDI");
         }
     }
 
-    public void add(User usr) {
+    public void add(UserEntity usr) {
         log.debug("persisting User instance");
         try {
             // If the object has not been assigned an id, we should automatically assign one
@@ -67,99 +74,101 @@ public class UserDAOImpl implements UserDAO {
 
             sessionFactory.getCurrentSession().persist(usr);
             log.debug("persist successful");
-        } catch(HibernateException re) {
+        } catch (HibernateException re) {
             log.error("persist failed", re);
             throw re;
         }
     }
 
-    public void remove(User persistentInstance) {
+    public void remove(UserEntity persistentInstance) {
         log.debug("deleting User instance");
         try {
             sessionFactory.getCurrentSession().delete(persistentInstance);
             log.debug("delete successful");
-        } catch(HibernateException re) {
+        } catch (HibernateException re) {
             log.error("delete failed", re);
             throw re;
         }
     }
 
-    public User update(User detachedInstance) {
+    public UserEntity update(UserEntity detachedInstance) {
         log.debug("merging User instance");
         try {
-            User result = (User) sessionFactory.getCurrentSession().merge(detachedInstance);
+            UserEntity result = (UserEntity) sessionFactory.getCurrentSession().merge(detachedInstance);
             log.debug("merge successful");
             return result;
-        } catch(HibernateException re) {
+        } catch (HibernateException re) {
             log.error("merge failed", re);
             throw re;
         }
     }
 
-    public User findById(java.lang.String id) {
+    public UserEntity findById(java.lang.String id) {
         log.debug("getting User instance with id: " + id);
         try {
             Session session = sessionFactory.getCurrentSession();
 
             // Since contact info objects can be shared between users and other entities, the
             // filters will help ensure that we only see the User related object.
+            Filter filter = session.enableFilter("parentTypeFilter");
+            filter.setParameter("parentFilter", "USER");
 
-            session.enableFilter("parentTypeFilter").setParameter("parentFilter", "USER");
-
-            User instance = (User) session.get("org.openiam.idm.srvc.user.dto.User", id);
-
-            if(instance == null) {
+            UserEntity instance = (UserEntity) session.get(UserEntity.class, id);
+            session.disableFilter("parentTypeFilter");
+            if (instance == null) {
                 log.debug("get successful, no instance found");
             } else {
                 log.debug("get successful, instance found");
             }
             return instance;
-        } catch(HibernateException re) {
+        } catch (HibernateException re) {
             log.error("get failed", re);
             throw re;
         }
     }
 
 
-    public User findByName(String firstName, String lastName) {
+    public UserEntity findByName(String firstName, String lastName) {
         try {
             Session session = sessionFactory.getCurrentSession();
-            Query qry = session.createQuery("from org.openiam.idm.srvc.user.dto.User u "
-                                            + " where u.lastName = :lastName and u.firstName = :firstName");
-            qry.setString("firstName", firstName);
-            qry.setString("lastName", lastName);
-            List<User> results = (List<User>) qry.list();
+            Criteria criteria = session.createCriteria(UserEntity.class)
+                    .add(Restrictions.eq("lastName",lastName))
+                    .add(Restrictions.eq("firstName",firstName));
 
-            if(results != null && !results.isEmpty()) {
+            List<UserEntity> results = (List<UserEntity>) criteria.list();
+
+            if (results != null && !results.isEmpty()) {
                 return results.get(0);
             } else {
                 return null;
             }
-        } catch(HibernateException re) {
+        } catch (HibernateException re) {
             log.error("get failed", re);
             throw re;
         }
     }
 
-    public List findByStatus(String status) {
+    public List findByStatus(UserStatusEnum status) {
         Session session = sessionFactory.getCurrentSession();
-        Query qry = session.createQuery(
-                "from org.openiam.idm.srvc.user.dto.User u " + " where u.systemFlag<>:systemFlag and  u.status = :status order by u.lastName asc");
-        qry.setString("systemFlag","1").setString("status", status);
-        List<User> results = (List<User>) qry.list();
+        Criteria criteria = session.createCriteria(UserEntity.class)
+                .add(Restrictions.ne("systemFlag","1"))
+                .add(Restrictions.eq("status", status))
+                .addOrder(Order.asc("lastName"));
+
+        List<UserEntity> results = (List<UserEntity>) criteria.list();
         return results;
     }
 
-    public List findByLastUpdateRange(Date startDate, Date endDate) {
+    public List<UserEntity> findByLastUpdateRange(Date startDate, Date endDate) {
         log.debug("finding User based on the lastUpdate date range that is provided");
         try {
 
             Session session = sessionFactory.getCurrentSession();
-            Criteria criteria = session.createCriteria(org.openiam.idm.srvc.user.dto.User.class);
+            Criteria criteria = session.createCriteria(UserEntity.class);
             criteria.add(Restrictions.between("lastUpdate", startDate, endDate));
             return criteria.list();
 
-        } catch(HibernateException re) {
+        } catch (HibernateException re) {
             re.printStackTrace();
             log.error("findByLastUpdateRange failed.", re);
             throw re;
@@ -167,14 +176,14 @@ public class UserDAOImpl implements UserDAO {
     }
 
 
-    public List<User> search(UserSearch search) {
-        if(dbType != null && dbType.equalsIgnoreCase("ORACLE_INSENSITIVE")) {
+    public List<UserEntity> search(UserSearch search) {
+        if (dbType != null && dbType.equalsIgnoreCase("ORACLE_INSENSITIVE")) {
             return searchOracleInsensitive(search);
         }
         return defaultSearch(search);
     }
 
-    private List<User> searchOracleInsensitive(UserSearch search) {
+    private List<UserEntity> searchOracleInsensitive(UserSearch search) {
 
         boolean firstName = false;
         boolean lastName = false;
@@ -475,8 +484,8 @@ public class UserDAOImpl implements UserDAO {
         }
 
         if(search.getDomainId() != null) {
-            if(where.length() > 0) {
-                where.append(" and ");
+             if(where.length() > 0) {
+               where.append(" and ");
             }
             where.append(" lg.SERVICE_ID = :domainId ");
             domainId = true;
@@ -528,7 +537,7 @@ public class UserDAOImpl implements UserDAO {
         Session session = sessionFactory.getCurrentSession();
 
         SQLQuery qry = session.createSQLQuery(select);
-        qry.addEntity(User.class);
+        qry.addEntity(UserEntity.class);
         qry.setString("systemFlag", "1");
 
         if(userId) {
@@ -557,101 +566,101 @@ public class UserDAOImpl implements UserDAO {
         if(startDate) {
             qry.setDate("startDate", search.getStartDate());
         }
-        if(lastDate) {
+        if (lastDate) {
             qry.setDate("lastDate", search.getLastDate());
         }
-        if(dateOfBirth) {
+        if (dateOfBirth) {
             qry.setDate("dateOfBirth", search.getDateOfBirth());
         }
 
-        if(zipCode) {
+        if (zipCode) {
             qry.setString("zipCode", search.getZipCode());
         }
 
 
-        if(deptCd) {
+        if (deptCd) {
             qry.setString("deptCd", search.getDeptCd());
         }
-        if(division) {
+        if (division) {
             qry.setString("division", search.getDivision());
         }
-        if(locationId) {
+        if (locationId) {
             qry.setString("locationCd", search.getLocationCd());
         }
 
-        if(employeeId) {
+        if (employeeId) {
             qry.setString("employeeId", search.getEmployeeId());
         }
-        if(orgId) {
+        if (orgId) {
             qry.setString("orgId", search.getOrgId());
         }
-        if(orgName) {
+        if (orgName) {
             qry.setString("orgName", search.getOrgName().toUpperCase());
         }
-        if(phoneAreaCd) {
+        if (phoneAreaCd) {
             qry.setString("phoneAreaCd", search.getPhoneAreaCd());
         }
-        if(phoneNbr) {
+        if (phoneNbr) {
             qry.setString("phoneNbr", search.getPhoneNbr());
         }
-        if(emailAddress) {
+        if (emailAddress) {
             qry.setString("emailAddress", search.getEmailAddress().toUpperCase());
         }
-        if(principal) {
+        if (principal) {
             qry.setString("principal", search.getPrincipal().toUpperCase());
         }
-        if(domainId) {
+        if (domainId) {
             qry.setString("domainId", search.getDomainId());
         }
-        if(attributeName) {
+        if (attributeName) {
             qry.setString("attributeName", search.getAttributeName().toUpperCase());
         }
-        if(attributeValue) {
+        if (attributeValue) {
             qry.setString("attributeValue", search.getAttributeValue().toUpperCase());
         }
-        if(metadataElementId) {
+        if (metadataElementId) {
             qry.setString("elementId", search.getAttributeElementId());
         }
-        if(showInSearch) {
+        if (showInSearch) {
             qry.setInteger("showInSearch", search.getShowInSearch());
         }
-        if(groupId) {
+        if (groupId) {
             qry.setParameterList("groupList", search.getGroupIdList());
             //qry.setString("groupId", search.getGroupId());
         }
-        if(roleId) {
+        if (roleId) {
             qry.setParameterList("roleList", search.getRoleIdList());
             //qry.setString("role", search.getRoleId());
         }
-        if(classification) {
+        if (classification) {
             qry.setString("classification", search.getClassification());
         }
-        if(userTypeInd) {
+        if (userTypeInd) {
             qry.setString("userTypeInd", search.getUserTypeInd());
         }
 
-        if(bOrgIdList) {
+        if (bOrgIdList) {
             qry.setParameterList("orgList", search.getOrgIdList());
 
         }
-        if(bDeptIdList) {
-            qry.setParameterList("deptList", search.getDeptIdList());
+        if (bDeptIdList) {
+            qry.setParameterList("deptList", search.getDeptIdList() );
 
         }
 
-        if(bDivIdList) {
+        if (bDivIdList) {
             qry.setParameterList("divisionList", search.getDivisionIdList());
 
         }
 
-        if(bAttrIdList) {
+        if (bAttrIdList)  {
             qry.setParameterList("nameList", nameList);
             qry.setParameterList("valueList", valueList);
 
         }
 
 
-        if(search.getMaxResultSize() != null && search.getMaxResultSize().intValue() > 0) {
+        if (search.getMaxResultSize() != null && search.getMaxResultSize().intValue() > 0) {
             qry.setFetchSize(search.getMaxResultSize().intValue());
             qry.setMaxResults(search.getMaxResultSize().intValue());
         } else {
@@ -659,14 +668,14 @@ public class UserDAOImpl implements UserDAO {
             qry.setMaxResults(this.maxResultSetSize);
         }
         try {
-            List<User> result = (List<User>) qry.list();
-            if(result == null || result.size() == 0) {
+            List<UserEntity> result = (List<UserEntity>) qry.list();
+            if (result == null || result.size() == 0) {
                 log.debug("search result is null");
                 return null;
             }
             log.debug("search resultset size=" + result.size());
             return result;
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
@@ -674,7 +683,7 @@ public class UserDAOImpl implements UserDAO {
 
     }
 
-    private List<User> defaultSearch(UserSearch search) {
+    private List<UserEntity> defaultSearch(UserSearch search) {
 
         boolean firstName = false;
         boolean lastName = false;
@@ -741,8 +750,8 @@ public class UserDAOImpl implements UserDAO {
 
         StringBuilder where = new StringBuilder();
         where.append(" SYSTEM_FLAG<>:systemFlag ");
-        if(search.getShowInSearch() != null) {
-            if(where.length() > 0) {
+        if (search.getShowInSearch() != null) {
+            if (where.length() > 0) {
                 where.append(" and ");
             }
             where.append(" u.SHOW_IN_SEARCH = :showInSearch ");
@@ -750,92 +759,92 @@ public class UserDAOImpl implements UserDAO {
         }
 
 
-        if(search.getUserId() != null) {
-            if(where.length() > 0) {
+        if (search.getUserId() != null) {
+            if (where.length() > 0) {
                 where.append(" and ");
             }
             where.append(" u.USER_ID = :userId ");
             userId = true;
         }
 
-        if(search.getUserTypeInd() != null) {
-            if(where.length() > 0) {
+        if (search.getUserTypeInd() != null) {
+            if (where.length() > 0) {
                 where.append(" and ");
             }
             where.append(" u.USER_TYPE_IND = :userTypeInd ");
             userTypeInd = true;
         }
 
-        if(search.getClassification() != null) {
-            if(where.length() > 0) {
+        if (search.getClassification() != null) {
+            if (where.length() > 0) {
                 where.append(" and ");
             }
             where.append(" u.CLASSIFICATION = :classification ");
             classification = true;
         }
 
-        if(search.getLocationCd() != null) {
-            if(where.length() > 0) {
+        if (search.getLocationCd() != null) {
+            if (where.length() > 0) {
                 where.append(" and ");
             }
             where.append(" u.LOCATION_CD = :locationCd ");
             locationCd = true;
         }
 
-        if(search.getFirstName() != null) {
-            if(where.length() > 0) {
+        if (search.getFirstName() != null) {
+            if (where.length() > 0) {
                 where.append(" and ");
             }
             where.append(" u.FIRST_NAME like :firstName ");
             firstName = true;
         }
-        if(search.getLastName() != null) {
-            if(where.length() > 0) {
+        if (search.getLastName() != null) {
+            if (where.length() > 0) {
                 where.append(" and ");
             }
             where.append(" u.LAST_NAME like :lastName ");
             lastName = true;
         }
-        if(search.getNickName() != null) {
-            if(where.length() > 0) {
+        if (search.getNickName() != null) {
+            if (where.length() > 0) {
                 where.append(" and ");
             }
             where.append(" u.NICKNAME like :nickName ");
             nickName = true;
         }
 
-        if(search.getStatus() != null) {
-            if(where.length() > 0) {
+        if (search.getStatus() != null) {
+            if (where.length() > 0) {
                 where.append(" and ");
             }
             where.append(" u.STATUS = :status ");
             status = true;
         }
 
-        if(search.getSecondaryStatus() != null) {
-            if(where.length() > 0) {
+        if (search.getSecondaryStatus() != null) {
+            if (where.length() > 0) {
                 where.append(" and ");
             }
             where.append(" u.SECONDARY_STATUS = :secondaryStatus ");
             secondaryStatus = true;
         }
 
-        if(search.getStartDate() != null) {
-            if(where.length() > 0) {
+        if (search.getStartDate() != null) {
+            if (where.length() > 0) {
                 where.append(" and ");
             }
             where.append(" u.START_DATE = :startDate ");
             startDate = true;
         }
-        if(search.getLastDate() != null) {
-            if(where.length() > 0) {
+        if (search.getLastDate() != null) {
+            if (where.length() > 0) {
                 where.append(" and ");
             }
             where.append(" u.LAST_DATE = :lastDate ");
             lastDate = true;
         }
-        if(search.getDateOfBirth() != null) {
-            if(where.length() > 0) {
+        if (search.getDateOfBirth() != null) {
+            if (where.length() > 0) {
                 where.append(" and ");
             }
             where.append(" u.BIRTHDATE = :dateOfBirth ");
@@ -843,46 +852,46 @@ public class UserDAOImpl implements UserDAO {
         }
 
 
-        if(search.getZipCode() != null) {
-            if(where.length() > 0) {
+        if (search.getZipCode() != null) {
+            if (where.length() > 0) {
                 where.append(" and ");
             }
             where.append(" u.POSTAL_CD = :zipCode ");
             zipCode = true;
         }
 
-        if(search.getDeptCd() != null) {
-            if(where.length() > 0) {
+        if (search.getDeptCd() != null) {
+            if (where.length() > 0) {
                 where.append(" and ");
             }
             where.append(" u.DEPT_CD = :deptCd ");
             deptCd = true;
         }
-        if(search.getDivision() != null) {
-            if(where.length() > 0) {
+        if (search.getDivision() != null) {
+            if (where.length() > 0) {
                 where.append(" and ");
             }
             where.append(" u.DIVISION = :division ");
             division = true;
         }
 
-        if(search.getEmployeeId() != null) {
-            if(where.length() > 0) {
+        if (search.getEmployeeId() != null) {
+            if (where.length() > 0) {
                 where.append(" and ");
             }
             where.append(" u.EMPLOYEE_ID = :employeeId ");
             employeeId = true;
         }
-        if(search.getOrgId() != null) {
-            if(where.length() > 0) {
+        if (search.getOrgId() != null) {
+            if (where.length() > 0) {
                 where.append(" and ");
             }
             where.append(" u.COMPANY_ID = :orgId ");
             orgId = true;
         }
 
-        if(search.getOrgName() != null) {
-            if(where.length() > 0) {
+        if (search.getOrgName() != null) {
+            if (where.length() > 0) {
                 where.append(" and ");
             }
             where.append(" c.COMPANY_NAME like :orgName ");
@@ -895,32 +904,32 @@ public class UserDAOImpl implements UserDAO {
         }
 
 
-        if(search.getPhoneAreaCd() != null) {
-            if(where.length() > 0) {
+        if (search.getPhoneAreaCd() != null) {
+            if (where.length() > 0) {
                 where.append(" and ");
             }
             where.append(" p.AREA_CD = :phoneAreaCd ");
             phoneAreaCd = true;
         }
-        if(search.getPhoneNbr() != null) {
-            if(where.length() > 0) {
+        if (search.getPhoneNbr() != null) {
+            if (where.length() > 0) {
                 where.append(" and ");
             }
             where.append(" p.PHONE_NBR = :phoneNbr ");
             phoneNbr = true;
         }
 
-        if(phoneNbr || phoneAreaCd) {
+        if (phoneNbr || phoneAreaCd) {
             join.append("   JOIN PHONE p ON ( p.PARENT_ID = u.USER_ID) ");
-        } else {
+        }else {
 
             join.append("   LEFT JOIN PHONE p ON ( p.PARENT_ID = u.USER_ID) ");
 
 
         }
 
-        if(search.getEmailAddress() != null) {
-            if(where.length() > 0) {
+        if (search.getEmailAddress() != null) {
+            if (where.length() > 0) {
                 where.append(" and ");
             }
             //where.append(" u.EMAIL_ADDRESS = :emailAddress ");
@@ -932,19 +941,19 @@ public class UserDAOImpl implements UserDAO {
             join.append("   LEFT JOIN EMAIL_ADDRESS em ON ( em.PARENT_ID = u.USER_ID)");
 
         }
-        if(!search.getGroupIdList().isEmpty()) {
-            if(where.length() > 0) {
+        if (!search.getGroupIdList().isEmpty()) {
+            if (where.length() > 0) {
                 where.append(" and ");
             }
             where.append(" g.GRP_ID in (:groupList) ");
             join.append("   JOIN USER_GRP g ON ( g.USER_ID = u.USER_ID) ");
             groupId = true;
-        } else {
+        }else {
             join.append("   LEFT JOIN USER_GRP g ON ( g.USER_ID = u.USER_ID) ");
         }
 
-        if(!search.getRoleIdList().isEmpty()) {
-            if(where.length() > 0) {
+        if (!search.getRoleIdList().isEmpty()) {
+            if (where.length() > 0) {
                 where.append(" and ");
             }
             where.append(" urv.ROLE_ID in (:roleList) ");
@@ -953,9 +962,9 @@ public class UserDAOImpl implements UserDAO {
         }
 
         /* org list */
-        if(!search.getOrgIdList().isEmpty()) {
-            if(where.length() > 0) {
-                where.append(" and ");
+        if (!search.getOrgIdList().isEmpty()) {
+            if (where.length() > 0 ) {
+             where.append(" and ");
             }
             where.append(" u.COMPANY_ID in (:orgList)  ");
             bOrgIdList = true;
@@ -963,9 +972,9 @@ public class UserDAOImpl implements UserDAO {
 
         /* dept list */
 
-        if(!search.getDeptIdList().isEmpty()) {
-            if(where.length() > 0) {
-                where.append(" and ");
+        if (!search.getDeptIdList().isEmpty()) {
+            if (where.length() > 0 ) {
+             where.append(" and ");
             }
             where.append(" u.DEPT_CD in (:deptList)  ");
             bDeptIdList = true;
@@ -974,9 +983,9 @@ public class UserDAOImpl implements UserDAO {
         /* division list  */
 
 
-        if(!search.getDivisionIdList().isEmpty()) {
-            if(where.length() > 0) {
-                where.append(" and ");
+        if (!search.getDivisionIdList().isEmpty()) {
+            if (where.length() > 0 ) {
+             where.append(" and ");
             }
             where.append(" u.DIVISION in (:divisionList)  ");
             bDivIdList = true;
@@ -985,61 +994,61 @@ public class UserDAOImpl implements UserDAO {
 
         /* attribute list */
 
-        List<String> nameList = new ArrayList<String>();
-        List<String> valueList = new ArrayList<String>();
+        List<String> nameList = new ArrayList<String>() ;
+        List<String> valueList = new ArrayList<String>() ;
 
-        if(!search.getAttributeList().isEmpty()) {
+        if (!search.getAttributeList().isEmpty()) {
             // create a list for each set of values
 
             log.debug("Building query parameters for attributes");
 
-            for(SearchAttribute atr : search.getAttributeList()) {
-                if(atr.getAttributeName() != null) {
-                    nameList.add(atr.getAttributeName());
+            for ( SearchAttribute atr  : search.getAttributeList()) {
+                if (atr.getAttributeName() != null) {
+                 nameList.add(atr.getAttributeName());
                 }
-                if(atr.getAttributeValue() != null) {
+                if (atr.getAttributeValue() != null) {
                     valueList.add(atr.getAttributeValue());
                 }
             }
 
-            if(where.length() > 0) {
-                where.append(" and ");
+            if (where.length() > 0 ) {
+             where.append(" and ");
             }
-            if(nameList.size() > 0) {
+            if (nameList.size() > 0)  {
                 where.append(" ua.NAME in (:nameList)  ");
             }
 
-            if(where.length() > 0) {
-                where.append(" and ");
+            if (where.length() > 0 ) {
+             where.append(" and ");
             }
-            if(nameList.size() > 0) {
+            if (nameList.size() > 0)  {
                 where.append(" ua.VALUE in (:valueList)  ");
             }
             bAttrIdList = true;
 
         }
 
-        if(bAttrIdList) {
+        if (bAttrIdList) {
 
-            join.append(" JOIN USER_ATTRIBUTES ua ON ( ua.USER_ID = u.USER_ID)");
+            join.append(" JOIN USER_ATTRIBUTES ua ON ( ua.USER_ID = u.USER_ID)" );
 
-        } else {
+        }else {
 
-            join.append(" LEFT JOIN USER_ATTRIBUTES ua ON ( ua.USER_ID = u.USER_ID)");
+            join.append(" LEFT JOIN USER_ATTRIBUTES ua ON ( ua.USER_ID = u.USER_ID)" ) ;
 
         }
 
 
         /* Login  */
-        if(search.getPrincipal() != null) {
-            if(where.length() > 0) {
+        if (search.getPrincipal() != null) {
+            if (where.length() > 0) {
                 where.append(" and ");
             }
             where.append(" lg.LOGIN like :principal ");
             principal = true;
         }
-        if(search.getDomainId() != null) {
-            if(where.length() > 0) {
+        if (search.getDomainId() != null) {
+            if (where.length() > 0) {
                 where.append(" and ");
             }
             where.append(" lg.SERVICE_ID = :domainId ");
@@ -1047,11 +1056,11 @@ public class UserDAOImpl implements UserDAO {
         }
 
 
-        if(search.getLoggedIn() != null) {
-            if(where.length() > 0) {
+        if (search.getLoggedIn() != null) {
+            if (where.length() > 0) {
                 where.append(" and ");
             }
-            if(search.getLoggedIn().equalsIgnoreCase("Yes")) {
+            if (search.getLoggedIn().equalsIgnoreCase("Yes")) {
                 where.append(" lg.LAST_LOGIN IS NOT NULL");
             } else {
                 where.append(" lg.LAST_LOGIN IS NULL");
@@ -1061,29 +1070,29 @@ public class UserDAOImpl implements UserDAO {
 
 
         /* User Attributes fields */
-        if(search.getAttributeName() != null) {
-            if(where.length() > 0) {
+        if (search.getAttributeName() != null) {
+            if (where.length() > 0) {
                 where.append(" and ");
             }
             where.append(" ua.NAME = :attributeName ");
             attributeName = true;
         }
-        if(search.getAttributeValue() != null) {
-            if(where.length() > 0) {
+        if (search.getAttributeValue() != null) {
+            if (where.length() > 0) {
                 where.append(" and ");
             }
             where.append(" ua.VALUE like :attributeValue ");
             attributeValue = true;
         }
-        if(search.getAttributeElementId() != null) {
-            if(where.length() > 0) {
+        if (search.getAttributeElementId() != null) {
+            if (where.length() > 0) {
                 where.append(" and ");
             }
             where.append(" ua.METADATA_ID = :elementId ");
             metadataElementId = true;
         }
 
-        if(where.length() > 0) {
+        if (where.length() > 0) {
             select = select + join.toString() + " WHERE " + where.toString();
         }
 
@@ -1096,125 +1105,125 @@ public class UserDAOImpl implements UserDAO {
         Session session = sessionFactory.getCurrentSession();
 
         SQLQuery qry = session.createSQLQuery(select);
-        qry.addEntity(User.class);
+        qry.addEntity(UserEntity.class);
         qry.setString("systemFlag", "1");
-        if(userId) {
+        if (userId) {
             qry.setString("userId", search.getUserId());
         }
-        if(firstName) {
+        if (firstName) {
             qry.setString("firstName", search.getFirstName());
         }
-        if(lastName) {
+        if (lastName) {
             qry.setString("lastName", search.getLastName());
         }
-        if(nickName) {
+        if (nickName) {
             qry.setString("nickName", search.getNickName());
         }
-        if(status) {
+        if (status) {
             qry.setString("status", search.getStatus());
         }
-        if(secondaryStatus) {
+        if (secondaryStatus) {
             qry.setString("secondaryStatus", search.getSecondaryStatus());
         }
 
-        if(startDate) {
+        if (startDate) {
             qry.setDate("startDate", search.getStartDate());
         }
-        if(lastDate) {
+        if (lastDate) {
             qry.setDate("lastDate", search.getLastDate());
         }
-        if(dateOfBirth) {
+        if (dateOfBirth) {
             qry.setDate("dateOfBirth", search.getDateOfBirth());
         }
-        if(zipCode) {
+        if (zipCode) {
             qry.setString("zipCode", search.getZipCode());
         }
 
-        if(deptCd) {
+        if (deptCd) {
             qry.setString("deptCd", search.getDeptCd());
         }
 
-        if(locationCd) {
+        if (locationCd) {
             qry.setString("locationCd", search.getLocationCd());
         }
 
-        if(division) {
+        if (division) {
             qry.setString("division", search.getDivision());
         }
 
-        if(employeeId) {
+        if (employeeId) {
             qry.setString("employeeId", search.getEmployeeId());
         }
-        if(orgId) {
+        if (orgId) {
             qry.setString("orgId", search.getOrgId());
         }
-        if(orgName) {
+        if (orgName) {
             qry.setString("orgName", search.getOrgName());
         }
-        if(phoneAreaCd) {
+        if (phoneAreaCd) {
             qry.setString("phoneAreaCd", search.getPhoneAreaCd());
         }
-        if(phoneNbr) {
+        if (phoneNbr) {
             qry.setString("phoneNbr", search.getPhoneNbr());
         }
-        if(emailAddress) {
+        if (emailAddress) {
             qry.setString("emailAddress", search.getEmailAddress());
         }
-        if(principal) {
+        if (principal) {
             qry.setString("principal", search.getPrincipal());
         }
-        if(domainId) {
+        if (domainId) {
             qry.setString("domainId", search.getDomainId());
         }
-        if(attributeName) {
+        if (attributeName) {
             qry.setString("attributeName", search.getAttributeName());
         }
-        if(attributeValue) {
+        if (attributeValue) {
             qry.setString("attributeValue", search.getAttributeValue());
         }
-        if(metadataElementId) {
+        if (metadataElementId) {
             qry.setString("elementId", search.getAttributeElementId());
         }
-        if(showInSearch) {
+        if (showInSearch) {
             qry.setInteger("showInSearch", search.getShowInSearch());
         }
-        if(groupId) {
+        if (groupId) {
             qry.setParameterList("groupList", search.getGroupIdList());
             //qry.setString("groupId", search.getGroupId());
         }
-        if(roleId) {
+        if (roleId) {
             qry.setParameterList("roleList", search.getRoleIdList());
             //qry.setString("role", search.getRoleId());
         }
-        if(classification) {
+        if (classification) {
             qry.setString("classification", search.getClassification());
         }
-        if(userTypeInd) {
+        if (userTypeInd) {
             qry.setString("userTypeInd", search.getUserTypeInd());
         }
 
-        if(bOrgIdList) {
+        if (bOrgIdList) {
             qry.setParameterList("orgList", search.getOrgIdList());
 
         }
-        if(bDeptIdList) {
-            qry.setParameterList("deptList", search.getDeptIdList());
+        if (bDeptIdList) {
+            qry.setParameterList("deptList", search.getDeptIdList() );
 
         }
 
-        if(bDivIdList) {
+        if (bDivIdList) {
             qry.setParameterList("divisionList", search.getDivisionIdList());
 
         }
 
-        if(bAttrIdList) {
-            qry.setParameterList("nameList", nameList);
-            qry.setParameterList("valueList", valueList);
+        if (bAttrIdList)  {
+           qry.setParameterList("nameList", nameList);
+           qry.setParameterList("valueList", valueList);
 
         }
 
 
-        if(search.getMaxResultSize() != null && search.getMaxResultSize().intValue() > 0) {
+        if (search.getMaxResultSize() != null && search.getMaxResultSize().intValue() > 0) {
             qry.setFetchSize(search.getMaxResultSize().intValue());
             qry.setMaxResults(search.getMaxResultSize().intValue());
         } else {
@@ -1222,14 +1231,14 @@ public class UserDAOImpl implements UserDAO {
             qry.setMaxResults(this.maxResultSetSize);
         }
         try {
-            List<User> result = (List<User>) qry.list();
-            if(result == null || result.size() == 0) {
+            List<UserEntity> result = (List<UserEntity>) qry.list();
+            if (result == null || result.size() == 0) {
                 log.debug("search result is null");
                 return null;
             }
             log.debug("search resultset size=" + result.size());
             return result;
-        } catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
@@ -1238,38 +1247,34 @@ public class UserDAOImpl implements UserDAO {
     }
 
 
-    public List<User> findByOrganization(String orgId) {
+    public List<UserEntity> findByOrganization(String orgId) {
         Session session = sessionFactory.getCurrentSession();
         Query qry = session.createQuery(
-                "from org.openiam.idm.srvc.user.dto.User u " + " where u.systemFlag<>:systemFlag and  u.companyId = :orgId order by u.lastName asc");
+                "from org.openiam.idm.srvc.user.domain.UserEntity u " + " where u.systemFlag<>:systemFlag and  u.companyId = :orgId order by u.lastName asc");
         qry.setString("orgId", orgId);
         qry.setString("systemFlag", "1");
-        List<User> results = (List<User>) qry.list();
+        List<UserEntity> results = (List<UserEntity>) qry.list();
         return results;
 
     }
 
-    public List<User> findStaff(String supervisorId) {
+    public List<UserEntity> findStaff(String supervisorId) {
         Session session = sessionFactory.getCurrentSession();
-        Query qry = session.createQuery("from org.openiam.idm.srvc.user.dto.Supervisor s " +
-                                        " inner join org.openiam.idm.srvc.user.dto.User u " +
-                                        " where s.supervisor = :supervisorId and  s.staff = u.userId order by u.userId asc");
-        qry.setString("supervisor", supervisorId);
-        List<User> results = (List<User>) qry.list();
+        Query qry = session.createQuery("from SupervisorEntity as s inner join s.employee as staff left outer join s.supervisor as supervisor where supervisor.userId = :supervisorId order by supervisor.userId asc");
+        qry.setString("supervisorId", supervisorId);
+        List<UserEntity> results = (List<UserEntity>) qry.list();
         return results;
     }
 
-    public List<User> findSupervisors(String staffId) {
+    public List<UserEntity> findSupervisors(String staffId) {
         Session session = sessionFactory.getCurrentSession();
-        Query qry = session.createQuery("from org.openiam.idm.srvc.user.dto.Supervisor s " +
-                                        " inner join org.openiam.idm.srvc.user.dto.User u " +
-                                        " where s.staff = :staffId and  s.supervisor = u.userId order by u.userId asc");
-        qry.setString("supervisor", staffId);
-        List<User> results = (List<User>) qry.list();
+        Query qry = session.createQuery("from SupervisorEntity as s inner join s.supervisor as supervisor left join s.employee as staff where staff.userId = :staffId order by staff.userId asc");
+        qry.setString("staffId", staffId);
+        List<UserEntity> results = (List<UserEntity>) qry.list();
         return results;
     }
 
-    public List<User> findByDelegationProperties(DelegationFilterSearch search) {
+    public List<UserEntity> findByDelegationProperties(DelegationFilterSearch search) {
         boolean rl = false;
         boolean orgFilter = false;
 
@@ -1302,14 +1307,14 @@ public class UserDAOImpl implements UserDAO {
         }
 
 
-        if(search.getDelAdmin() == 1) {
-            if(whereBuf.length() > 0) {
+        if (search.getDelAdmin() == 1) {
+            if (whereBuf.length() > 0)  {
                 whereBuf.append(" and ");
             }
             whereBuf.append(" u.DEL_ADMIN = 1");
 
-            if(search.getOrgFilter() != null) {
-                if(whereBuf.length() > 0) {
+            if (search.getOrgFilter() != null) {
+                if (whereBuf.length() > 0)  {
                     whereBuf.append(" and ");
                 }
                 whereBuf.append(" ua.NAME = 'DLG_FLT_ORG' and ua.VALUE LIKE :orgFilter ");
@@ -1320,8 +1325,8 @@ public class UserDAOImpl implements UserDAO {
         }
 
 
-        if(whereBuf.length() > 0) {
-            bufSql.append(" WHERE u.SYSTEM_FLAG<>:systemFlag ");
+        if (whereBuf.length() > 0) {
+            bufSql.append(" WHERE ");
             bufSql.append(whereBuf);
         }
         bufSql.append("order by u.LAST_NAME asc");
@@ -1333,31 +1338,34 @@ public class UserDAOImpl implements UserDAO {
         Session session = sessionFactory.getCurrentSession();
 
         SQLQuery qry = session.createSQLQuery(sql);
-        qry.addEntity(User.class);
+        qry.addEntity(UserEntity.class);
         qry.setString("systemFlag", "1");
-        if(rl) {
+        if ( rl) {
             qry.setString("role", search.getRole());
         }
-        if(orgFilter) {
-            qry.setString("orgFilter", search.getOrgFilter());
+        if (orgFilter) {
+            qry.setString("orgFilter",search.getOrgFilter()) ;
         }
 
-        List<User> results = (List<User>) qry.list();
+        List<UserEntity> results = (List<UserEntity>) qry.list();
         return results;
 
     }
 
     @Override
     public List<String> getUserIdList(int startPos, int count) {
-        StringBuilder sql = new StringBuilder();
-        sql.append("SELECT distinct usr.userId from ").append(User.class.getName()).append(" usr");
-        return (List<String>)sessionFactory.getCurrentSession().createQuery(sql.toString()).setFirstResult(startPos).setMaxResults(count).list();
+         return (List<String>) sessionFactory.getCurrentSession().createCriteria(UserEntity.class)
+                .setProjection(Projections.property("userId"))
+                .setFirstResult(startPos)
+                .setMaxResults(count)
+                .list();
     }
+
     @Override
-    public Long getUserCount(){
-        StringBuilder sql = new StringBuilder();
-        sql.append("SELECT count(usr.userId) from ").append(User.class.getName()).append(" usr");
-        return (Long)sessionFactory.getCurrentSession().createQuery(sql.toString()).uniqueResult();
+    public Long getUserCount() {
+        return (Long)sessionFactory.getCurrentSession().createCriteria(UserEntity.class)
+                .setProjection(Projections.count("userId"))
+                .uniqueResult();
     }
 
     public SequenceGenDAO getSeqGenDao() {

@@ -56,13 +56,13 @@ public interface UserDataService {
       * @see org.openiam.idm.srvc.user.service.UserDataService#addUser(org.openiam.idm.srvc.user.dto.User)
       */
 
-    public User addUser(User user) throws Exception;
+    public User addUser(User user);
 
     /* (non-Javadoc)
       * @see org.openiam.idm.srvc.user.service.UserDataService#addUser(org.openiam.idm.srvc.user.dto.User, boolean)
       */
 
-    public User addUserWithDependent(User user, boolean dependency) throws Exception;
+    public User addUserWithDependent(User user, boolean dependency);
 
     public void updateUser(User user);
 
@@ -87,7 +87,7 @@ public interface UserDataService {
 
     public List<User> findUserByOrganization(String orgId);
 
-    public List<User> findUsersByStatus(String status);
+    public List<User> findUsersByStatus(UserStatusEnum status);
 
     public List<User> search(UserSearch search);
 

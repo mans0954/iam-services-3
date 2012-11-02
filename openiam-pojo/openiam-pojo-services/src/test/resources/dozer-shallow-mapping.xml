@@ -24,12 +24,12 @@
 			<b>addresses</b>
 		</field-exclude>
 		<field-exclude>
-			<a>phone</a>
-			<b>phone</b>
+			<a>phones</a>
+			<b>phones</b>
 		</field-exclude>
 		<field-exclude>
-			<a>emailAddress</a>
-			<b>emailAddress</b>
+			<a>emailAddresses</a>
+			<b>emailAddresses</b>
 		</field-exclude>
 		<field-exclude>
 			<a>userAttributes</a>

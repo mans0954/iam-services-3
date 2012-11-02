@@ -85,7 +85,7 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		emailAddresses.add(new EmailAddress(rs(2), rs(2), rs(2), 1));
 		emailAddresses.add(new EmailAddress(rs(2), rs(2), rs(2), 1));
 		emailAddresses.add(new EmailAddress(rs(2), rs(2), rs(2), 1));
-		user.setEmailAddress(emailAddresses);
+		user.setEmailAddresses(emailAddresses);
 		user.setEmployeeId(rs(2));
 		user.setEmployeeType(rs(2));
 		user.setFirstName(rs(2));
@@ -110,7 +110,7 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		phones.add(new Phone(rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), 1, rs(2)));
 		phones.add(new Phone(rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), 1, rs(2)));
 		phones.add(new Phone(rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), 1, rs(2)));
-		user.setPhone(phones);
+		user.setPhones(phones);
 		user.setPhoneExt(rs(2));
 		user.setPhoneNbr(rs(2));
 		user.setPostalCd(rs(2));
@@ -161,7 +161,7 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		user.setUserOwnerId(rs(2));
 		user.setUserTypeInd(rs(2));
 		
-		final Map<String, UserAttribute> userAttributeMap = new HashMap<String, UserAttribute>();
+		final HashMap<String, UserAttribute> userAttributeMap = new HashMap<String, UserAttribute>();
 		userAttributeMap.put(rs(2), new UserAttribute(rs(2), rs(2)));
 		userAttributeMap.put(rs(2), new UserAttribute(rs(2), rs(2)));
 		userAttributeMap.put(rs(2), new UserAttribute(rs(2), rs(2)));
@@ -383,7 +383,7 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		if(isDeep) {
 			//Assert.assertEquals(original.getEmailAddress(), copy.getEmailAddress());
 		} else {
-			Assert.assertTrue(CollectionUtils.isEmpty(copy.getEmailAddress()));
+			Assert.assertTrue(CollectionUtils.isEmpty(copy.getEmailAddresses()));
 		}
 		Assert.assertEquals(original.getEmployeeId(), copy.getEmployeeId());
 		Assert.assertEquals(original.getEmployeeType(), copy.getEmployeeType());
@@ -408,7 +408,7 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		if(isDeep) {
 			//Assert.assertEquals(original.getPhone(), copy.getPhone());
 		} else {
-			Assert.assertTrue(CollectionUtils.isEmpty(copy.getPhone()));
+			Assert.assertTrue(CollectionUtils.isEmpty(copy.getPhones()));
 		}
 		Assert.assertEquals(original.getPhoneExt(), copy.getPhoneExt());
 		Assert.assertEquals(original.getPhoneNbr(), copy.getPhoneNbr());

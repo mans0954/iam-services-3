@@ -25,6 +25,7 @@ import org.openiam.idm.srvc.msg.service.MailService;
 import org.openiam.idm.srvc.prov.request.dto.ProvisionRequest;
 import org.openiam.idm.srvc.prov.request.dto.RequestUser;
 import org.openiam.idm.srvc.prov.request.service.RequestDataService;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.Supervisor;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
@@ -90,7 +91,7 @@ public class AcceptNewHireDelegate implements JavaDelegate {
 		final String provisionRequestId = (String)provisionRequestIdObj;
 		
 		final String newUserId = (String)newUserIdObj;
-		final User newUser = userDAO.findById(newUserId);
+		final UserEntity newUser = userDAO.findById(newUserId);
 		final ProvisionRequest provisionRequest = provRequestService.getRequest(provisionRequestId);
 		final ProvisionUser provisionUser = (ProvisionUser)new XStream().fromXML(provisionRequest.getRequestXML());
 		final String newHireExecutorId = (String)newHireExecutorIdObj;
