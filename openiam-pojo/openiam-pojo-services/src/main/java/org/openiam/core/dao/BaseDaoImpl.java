@@ -9,6 +9,7 @@ import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Projections;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -70,8 +71,9 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> implements
 
 	@Override
 	public int count(T t) {
-		return getExampleCriteria(t).list().size();
-	}
+		return ((Number)getExampleCriteria(t).setProjection(rowCount())
+                .uniqueResult()).intValue();
+    }
 
 	protected Session getSession() {
         return sessionFactory.getCurrentSession();
@@ -143,9 +145,6 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> implements
             session.saveOrUpdate(entity);
         }
     }
-    
-    
-    
 
     @Override
 	public void update(T t) {

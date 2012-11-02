@@ -8,6 +8,7 @@ import java.util.List;
 import org.apache.commons.collections.CollectionUtils;
 import org.dozer.DozerBeanMapper;
 import org.openiam.idm.srvc.grp.dto.Group;
+import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyDef;
 import org.openiam.idm.srvc.policy.dto.PolicyDefParam;
@@ -35,7 +36,13 @@ public class DozerUtils {
 	public void setShallowMapper(final DozerBeanMapper shallowMapper) {
 		this.shallowMapper = shallowMapper;
 	}
-	
+
+    /**
+     * This method is deprecated. Please use getDozerMappedObject() instead
+     * @param supervisor
+     * @return
+     */
+    @Deprecated
 	public Supervisor getDozerDeepMappedSupervisor(final Supervisor supervisor) {
 		Supervisor retVal = null;
 		if(supervisor != null) {
@@ -43,7 +50,12 @@ public class DozerUtils {
 		}
 		return retVal;
 	}
-	
+    /**
+     * This method is deprecated. Please use getDozerMappedObject() instead
+     * @param user
+     * @return
+     */
+    @Deprecated
 	public User getDozerDeepMappedUser(final User user) {
 		User retVal = null;
 		if(user != null) {
@@ -51,7 +63,12 @@ public class DozerUtils {
 		}
 		return retVal;
 	}
-	
+    /**
+     * This method is deprecated. Please use getDozerMappedList() instead
+     * @param userList
+     * @return
+     */
+    @Deprecated
 	public List<User> getDozerDeepMappedUserList(final Collection<User> userList) {
 		final List<User> convertedUserList = new LinkedList<User>();
 		if(CollectionUtils.isNotEmpty(userList)) {
@@ -62,7 +79,12 @@ public class DozerUtils {
 		}
 		return convertedUserList;
 	}
-	
+    /**
+     * This method is deprecated. Please use getDozerMappedList() instead
+     * @param supervisorList
+     * @return
+     */
+    @Deprecated
 	public List<Supervisor> getDozerDeepMappedSupervisorList(final Collection<Supervisor> supervisorList) {
 		final List<Supervisor> convertedSupervisorList = new LinkedList<Supervisor>();
 		if(CollectionUtils.isNotEmpty(supervisorList)) {
@@ -72,7 +94,12 @@ public class DozerUtils {
 		}
 		return convertedSupervisorList;
 	}
-	
+    /**
+     * This method is deprecated. Please use getDozerMappedList() instead
+     * @param roleList
+     * @return
+     */
+    @Deprecated
 	public List<Role> getDozerDeepMappedRoleList(final Collection<Role> roleList) {
 		final List<Role> convertedList = new LinkedList<Role>();
 		if(CollectionUtils.isNotEmpty(roleList)) {
@@ -82,7 +109,12 @@ public class DozerUtils {
 		}
 		return convertedList;
 	}
-	
+    /**
+     * This method is deprecated. Please use getDozerMappedList() instead
+     * @param groupArray
+     * @return
+     */
+    @Deprecated
 	public Group[] getDozerDeepMappedGroupArray(final Group[] groupArray) {
 		Group[] retVal = null;
 		if(groupArray != null) {
@@ -93,7 +125,12 @@ public class DozerUtils {
 		}
 		return retVal;
 	}
-	
+    /**
+     * This method is deprecated. Please use getDozerMappedObject() instead
+     * @param role
+     * @return
+     */
+    @Deprecated
 	public Role getDozerDeepMappedRole(final Role role) {
 		Role retVal = null;
 		if(role != null) {
@@ -101,7 +138,12 @@ public class DozerUtils {
 		}
 		return retVal;
 	}
-	
+    /**
+     * This method is deprecated. Please use getDozerMappedList() instead
+     * @param userArray
+     * @return
+     */
+    @Deprecated
 	public User[] getDozerDeepMappedUserArray(final User[] userArray) {
 		User[] retVal = null;
 		if(userArray != null) {
@@ -112,7 +154,12 @@ public class DozerUtils {
 		}
 		return retVal;
 	}
-	
+    /**
+     * This method is deprecated. Please use getDozerMappedList() instead
+     * @param policyDefList
+     * @return
+     */
+    @Deprecated
 	public List<PolicyDef> getDozerDeepMappedPolicyDefList(final Collection<PolicyDef> policyDefList) {
 		final List<PolicyDef> convertedPolicyDefList = new LinkedList<PolicyDef>();
 		if(CollectionUtils.isNotEmpty(policyDefList)) {
@@ -122,7 +169,12 @@ public class DozerUtils {
 		}
 		return convertedPolicyDefList;
 	}
-	
+    /**
+     * This method is deprecated. Please use getDozerMappedList() instead
+     * @param policyList
+     * @return
+     */
+    @Deprecated
 	public List<Policy> getDozerDeepMappedPolicyList(final Collection<Policy> policyList) {
 		final List<Policy> convertedPolicyList = new LinkedList<Policy>();
 		if(CollectionUtils.isNotEmpty(policyList)) {
@@ -132,7 +184,12 @@ public class DozerUtils {
 		}
 		return convertedPolicyList;
 	}
-	
+    /**
+     * This method is deprecated. Please use getDozerMappedObject() instead
+     * @param policy
+     * @return
+     */
+    @Deprecated
 	public Policy getDozerDeepMappedPolicy(final Policy policy) {
 		Policy retVal = null;
 		if(policy != null) {
@@ -140,7 +197,12 @@ public class DozerUtils {
 		}
 		return retVal;
 	}
-	
+    /**
+     * This method is deprecated. Please use getDozerMappedList() instead
+     * @param policyDefParamList
+     * @return
+     */
+    @Deprecated
 	public List<PolicyDefParam> getDozerDeepMappedPolicyDefParamList(final Collection<PolicyDefParam> policyDefParamList) {
 		final List<PolicyDefParam> convertedList = new LinkedList<PolicyDefParam>();
 		if(CollectionUtils.isNotEmpty(policyDefParamList)) {
@@ -150,7 +212,12 @@ public class DozerUtils {
 		}
 		return convertedList;
 	}
-	
+    /**
+     * This method is deprecated. Please use getDozerMappedObject() instead
+     * @param policyDef
+     * @return
+     */
+    @Deprecated
 	public PolicyDef getDozerDeepMappedPolicyDef(final PolicyDef policyDef) {
 		PolicyDef retVal = null;
 		if(policyDef != null) {
@@ -158,7 +225,12 @@ public class DozerUtils {
 		}
 		return retVal;
 	}
-	
+    /**
+     * This method is deprecated. Please use getDozerMappedObject() instead
+     * @param resource
+     * @return
+     */
+    @Deprecated
     public Resource getDozerDeepMappedResource(final Resource resource) {
     	Resource retVal = null;
     	if(resource != null) {
@@ -166,7 +238,12 @@ public class DozerUtils {
     	}
     	return retVal;
     }
-    
+    /**
+     * This method is deprecated. Please use getDozerMappedList() instead
+     * @param resourceList
+     * @return
+     */
+    @Deprecated
     public List<Resource> getDozerDeepMappedResourceList(final Collection<Resource> resourceList, final DozerMappingType type) {
     	final List<Resource> convertedList = new LinkedList<Resource>();
     	if(CollectionUtils.isNotEmpty(resourceList)) {
@@ -180,7 +257,12 @@ public class DozerUtils {
     	}
     	return convertedList;
     }
-    
+    /**
+     * This method is deprecated. Please use getDozerMappedList() instead
+     * @param resourceList
+     * @return
+     */
+    @Deprecated
     public List<Resource> getDozerDeepMappedResourceList(final Collection<Resource> resourceList) {
     	final List<Resource> convertedList = new LinkedList<Resource>();
     	if(CollectionUtils.isNotEmpty(resourceList)) {
@@ -190,7 +272,12 @@ public class DozerUtils {
     	}
     	return convertedList;
     }
-	
+    /**
+     * This method is deprecated. Please use getDozerMappedObject() instead
+     * @param resourceUser
+     * @return
+     */
+    @Deprecated
     public ResourceUser getDozerDeepMappedResourceUser(final ResourceUser resourceUser) {
 		ResourceUser retVal = null;
 		if(resourceUser != null) {
@@ -198,7 +285,12 @@ public class DozerUtils {
 		}
 		return retVal;
 	}
-	
+    /**
+     * This method is deprecated. Please use getDozerMappedList() instead
+     * @param resourceUserList
+     * @return
+     */
+    @Deprecated
     public List<ResourceUser> getDozerDeepMappedResourceUserList(final Collection<ResourceUser> resourceUserList) {
 		final List<ResourceUser> convertedList = new LinkedList<ResourceUser>();
 		if(CollectionUtils.isNotEmpty(resourceUserList)) {
@@ -208,7 +300,12 @@ public class DozerUtils {
 		}
 		return convertedList;
 	}
-    
+    /**
+     * This method is deprecated. Please use getDozerMappedList() instead
+     * @param groupList
+     * @return
+     */
+    @Deprecated
 	public List<Group> getDozerDeepMappedGroupList(final Collection<Group> groupList) {
 		final List<Group> convertedGroupList = new LinkedList<Group>();
 		if(CollectionUtils.isNotEmpty(groupList)) {
@@ -218,7 +315,12 @@ public class DozerUtils {
 		}
 		return convertedGroupList;
 	}
-	
+    /**
+     * This method is deprecated. Please use getDozerMappedObject() instead
+     * @param group
+     * @return
+     */
+	@Deprecated
 	public Group getDozerDeepMappedGroup(final Group group) {
 		Group retVal = null;
 		if(group != null) {
@@ -226,4 +328,44 @@ public class DozerUtils {
 		}
 		return retVal;
 	}
+
+
+
+    public <T> T getDozerMappedObject(final T t) {
+        return getDozerMappedObject(t, DozerMappingType.DEEP);
+    }
+
+    public <T> T getDozerMappedObject(final T t, final DozerMappingType type) {
+        T retVal = null;
+        if(t != null) {
+            Class<T> clazz  = (Class<T>)t.getClass();
+
+            if(type == null || DozerMappingType.DEEP == type) {
+                retVal = deepMapper.map(t, clazz);
+            } else {
+                retVal = shallowMapper.map(t, clazz);
+            }
+        }
+        return retVal;
+    }
+
+    public <T> List<T> getDozerMappedList(final Collection<T> list) {
+        return getDozerMappedList(list, DozerMappingType.DEEP);
+    }
+
+    public <T> List<T> getDozerMappedList(final Collection<T> collection, final DozerMappingType type) {
+        final List<T> convertedList = new LinkedList<T>();
+        if(CollectionUtils.isNotEmpty(collection)) {
+            Class<T> clazz  = (Class<T>)collection.iterator().next().getClass();
+
+            for(final T t : collection) {
+                if(type == null || DozerMappingType.DEEP == type) {
+                    convertedList.add(deepMapper.map(t, clazz));
+                } else {
+                    convertedList.add(shallowMapper.map(t, clazz));
+                }
+            }
+        }
+        return convertedList;
+    }
 }

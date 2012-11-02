@@ -3,6 +3,8 @@ package org.openiam.idm.srvc.org.service;
 
 import java.util.List;
 import javax.naming.InitialContext;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
@@ -14,14 +16,20 @@ import org.hibernate.criterion.Example;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 
-
+import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
+
+import org.hibernate.criterion.*;
+
 import org.openiam.idm.srvc.org.dto.*;
+import org.springframework.stereotype.Repository;
 
 /**
- * Data access object implementation for Organization.
+ * Data access object implementation for OrganizationEntity.
  */
-public class OrganizationDAOImpl implements OrganizationDAO {
+@Repository("organizationDAO")
+public class OrganizationDAOImpl extends BaseDaoImpl<OrganizationEntity, String> implements OrganizationDAO {
+
 
     private static final Log log = LogFactory.getLog(OrganizationDAOImpl.class);
 
@@ -126,16 +134,6 @@ public class OrganizationDAOImpl implements OrganizationDAO {
             log.debug("delete successful");
         } catch (RuntimeException re) {
             log.error("delete failed", re);
-            throw re;
-        }
-    }
-
-    public OrganizationEntity update(OrganizationEntity instance) {
-        log.debug("merging Organization instance");
-        try {
-            return (OrganizationEntity) sessionFactory.getCurrentSession().merge(instance);
-        } catch (RuntimeException re) {
-            log.error("merge failed", re);
             throw re;
         }
     }
@@ -259,5 +257,39 @@ public class OrganizationDAOImpl implements OrganizationDAO {
 
     }
 
+    @Override
+    protected Criteria getExampleCriteria(final OrganizationEntity organization) {
+        final Criteria criteria = getCriteria();
+        if(StringUtils.isNotBlank(organization.getOrgId())) {
+            criteria.add(Restrictions.eq(getPKfieldName(), organization.getOrgId()));
+        } else {
+            if(StringUtils.isNotEmpty(organization.getOrganizationName())) {
+                String organizationName = organization.getOrganizationName();
+                MatchMode matchMode = null;
+                if(StringUtils.indexOf(organizationName, "*") == 0) {
+                    matchMode = MatchMode.START;
+                    organizationName = organizationName.substring(1);
+                }
+                if(StringUtils.isNotEmpty(organizationName) && StringUtils.indexOf(organizationName, "*") == organizationName.length() - 1) {
+                    organizationName = organizationName.substring(0, organizationName.length() - 1);
+                    matchMode = (matchMode == MatchMode.START) ? MatchMode.ANYWHERE : MatchMode.END;
+                }
+
+                if(StringUtils.isNotEmpty(organizationName)) {
+                    if(matchMode != null) {
+                        criteria.add(Restrictions.ilike("organizationName", organizationName, matchMode));
+                    } else {
+                        criteria.add(Restrictions.eq("organizationName", organizationName));
+                    }
+                }
+            }
+        }
+        return criteria;
+    }
+
+    @Override
+    protected String getPKfieldName() {
+        return "orgId";
+    }
 
 }

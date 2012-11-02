@@ -10,6 +10,7 @@ import java.rmi.*;
 
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Hibernate;
+import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.dto.*;
@@ -18,9 +19,9 @@ import org.openiam.idm.srvc.org.dto.*;
  * <code>OrganizationManager</code> provides a service level interface to the
  * Organization components and its dependant objects as well as search
  * capability.<br>
- * 
+ *
  * Note: The spring configuration file defines MetadataTypes are used to identify Departments and Divisions in the org list.
- * 
+ *
  * @author OpenIAm
  * @version 2
  */
@@ -35,14 +36,14 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 
 	protected OrganizationAttributeDAO orgAttrDao;
     protected UserAffiliationDAO orgAffiliationDao;
-	
-	
-	
+
+
+
 
 
 	/**
 	 * Returns a list of companies that match the search criteria.
-	 * 
+	 *
 	 * @param orgId
 	 * @return
 	 * @throws RemoteException
@@ -82,10 +83,10 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 		return orgList;
 		//return testOrgList("myTopLevelOrg");
 	}
-	
+
 	/**
-	 * Returns a list of all organizations based on a metadataType. The parentId parameter can be used to get 
-	 * values that are nested further in the hierarchy. If parentId is null, the method will search only on the typeId and parentId 
+	 * Returns a list of all organizations based on a metadataType. The parentId parameter can be used to get
+	 * values that are nested further in the hierarchy. If parentId is null, the method will search only on the typeId and parentId
 	 * will be ignored.
 	 * @param typeId
 	 * @param parentId
@@ -94,7 +95,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
    public List<Organization> getOrganizationByType(String typeId, String parentId) {
 		if (typeId == null)
 			throw new NullPointerException("typeId is null");
-		
+
 	   List<OrganizationEntity> orgEntityList = orgDao.findOrganizationByType(typeId, parentId);
 	   if (orgEntityList == null) {
 		   return null;
@@ -110,7 +111,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
    public List<Organization> getOrganizationByClassification(String parentId, OrgClassificationEnum classification) {
 		if (classification == null)
 			throw new NullPointerException("classification is null");
-		
+
 	   List<OrganizationEntity> orgEntityList = orgDao.findOrganizationByClassification(parentId, classification);
 	   if (orgEntityList == null) {
 		   return null;
@@ -122,14 +123,14 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 	   }
 	   return orgList;
   }
-   
+
    public List<Organization> allDepartments(String parentId) {
 	   return getOrganizationByClassification(parentId, OrgClassificationEnum.DEPARTMENT);
    }
    public List<Organization> allDivisions(String parentId) {
 	   return getOrganizationByClassification(parentId, OrgClassificationEnum.DIVISION);
    }
-   
+
 
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.org.service.OrganizationDataService#addOrganization(org.openiam.idm.srvc.org.dto.Organization)
@@ -203,17 +204,17 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 	public Organization getOrganization(String orgId) {
 		if (orgId == null)
 			throw new NullPointerException("orgId object is null");
-		
+
 		System.out.println("In Organization: orgDao=" + orgDao );
-		
+
 		OrganizationEntity org = orgDao.findById(orgId);
 		if (org != null) {
-			Hibernate.initialize( org.getAttributes() ); 
+			Hibernate.initialize( org.getAttributes() );
 		}else {
 			return null;
 		}
 		return new Organization(org);
-		
+
 	}
 
 	/* -------- Methods for Attributes ---------- */
@@ -261,9 +262,9 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 		if (orgId == null) {
 			throw new NullPointerException("orgId is null");
 		}
-		
+
 		OrganizationEntity org = this.orgDao.findById(orgId);
-		
+
 		HashMap<String, OrganizationAttributeEntity> attrEntityMap = (HashMap<String, OrganizationAttributeEntity>)org.getAttributes();
 		if (attrEntityMap != null && attrEntityMap.isEmpty())
 			return null;
@@ -273,7 +274,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
            attrMap.put(entityEntry.getKey(), new OrganizationAttribute(entityEntry.getValue()));
         }
         return attrMap;
-		
+
 		//return this.attribMap(orgId);
 
 	}
@@ -428,7 +429,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 	public void setOrgDao(OrganizationDAO orgDao) {
 		this.orgDao = orgDao;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.org.service.OrganizationDataService#search(java.lang.String, java.lang.String)
 	 */
@@ -440,7 +441,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
         }
         return organizationList;
 	}
-	
+
 	public List<Organization> getAllOrganizations() {
 		List<OrganizationEntity> organizationEntities = orgDao.findAllOrganization();
         List<Organization> organizationList = new LinkedList<Organization>();
@@ -470,5 +471,15 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 
     public void setOrgAffiliationDao(UserAffiliationDAO orgAffiliationDao) {
         this.orgAffiliationDao = orgAffiliationDao;
+    }
+
+    @Override
+    public List<Organization> findBeans(@WebParam(name = "searchBean", targetNamespace = "") OrganizationSearchBean searchBean, @WebParam(name = "from", targetNamespace = "") int from, @WebParam(name = "size", targetNamespace = "") int size) {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public int count(@WebParam(name = "searchBean", targetNamespace = "") OrganizationSearchBean searchBean) {
+        return 0;  //To change body of implemented methods use File | Settings | File Templates.
     }
 }

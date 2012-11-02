@@ -1,7 +1,10 @@
 package org.openiam.idm.srvc.org.service;
 
+import org.openiam.core.dao.BaseDao;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.dto.OrgClassificationEnum;
+import org.openiam.idm.srvc.org.dto.Organization;
+
 
 import java.util.List;
 
@@ -11,20 +14,13 @@ import java.util.List;
  *
  * @author Suneet Shah
  */
-public interface OrganizationDAO {
 
-    /**
-     * Return an Organization object for the id.
-     *
-     * @param id
-     */
-    OrganizationEntity findById(java.lang.String id);
-
+public interface OrganizationDAO extends BaseDao<OrganizationEntity, String> {
+    @Deprecated
     OrganizationEntity add(OrganizationEntity instance);
-
-    OrganizationEntity update(OrganizationEntity instace);
-
+    @Deprecated
     void remove(OrganizationEntity instance);
+
 
 
     /**

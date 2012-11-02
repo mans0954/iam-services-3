@@ -1,20 +1,10 @@
 package org.openiam.idm.srvc.org.dto;
 
 import java.util.HashMap;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.MapKey;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-import javax.persistence.Transient;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.base.AttributeOperationEnum;
 
+import javax.persistence.*;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSchemaType;
@@ -74,9 +64,6 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
     @XmlJavaTypeAdapter(OrganizationAttributeMapAdapter.class)
     protected Map<String, OrganizationAttribute> attributes = new HashMap<String, OrganizationAttribute>(0);
 
-    @XmlSchemaType(name = "dateTime")
-    protected Date createDate;
-
     protected String createdBy;
 
     protected String description;
@@ -87,6 +74,9 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
 
     @XmlSchemaType(name = "dateTime")
     protected Date lstUpdate;
+
+    @XmlSchemaType(name = "dateTime")
+    protected Date createDate;
 
     protected String lstUpdatedBy;
 

@@ -22,5 +22,4 @@ public class ResourceSearchBeanConverter implements SearchBeanConverter<Resource
 		}
 		return resource;
 	}
-
 }

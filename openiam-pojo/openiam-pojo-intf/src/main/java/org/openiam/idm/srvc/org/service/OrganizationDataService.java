@@ -4,6 +4,7 @@
 
 package org.openiam.idm.srvc.org.service;
 
+import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
 import org.openiam.idm.srvc.org.dto.OrganizationAttributeMapAdapter;
@@ -304,4 +305,11 @@ public interface OrganizationDataService {
             @WebParam(name = "userId", targetNamespace = "")
             String userId);
 
+    @WebMethod
+    List<Organization> findBeans(@WebParam(name = "searchBean", targetNamespace = "") OrganizationSearchBean searchBean,
+                             @WebParam(name = "from", targetNamespace = "") int from,
+                             @WebParam(name = "size", targetNamespace = "") int size);
+
+    @WebMethod
+    int count(@WebParam(name="searchBean", targetNamespace="") OrganizationSearchBean searchBean);
 }

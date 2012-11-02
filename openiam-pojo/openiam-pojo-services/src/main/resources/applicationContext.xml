@@ -64,6 +64,7 @@
     <bean id="heartBeat" class="org.openiam.idm.srvc.health.HeartBeatWebServiceImpl">
     </bean>
 
+<<<<<<< HEAD
     <!-- Authentication Beans -->
     <bean id="authenticate" class="org.openiam.idm.srvc.auth.service.AuthenticationServiceImpl">
         <property name="defaultLoginModule" ref="defaultLoginModuleManager"/>
@@ -453,6 +454,400 @@
     </bean>
 
     <bean id="resourcePrivilegeDAO" class="org.openiam.idm.srvc.res.service.ResourcePrivilegeDAOImpl">
+=======
+	<!-- Authentication Beans -->
+	<bean id="authenticate" class="org.openiam.idm.srvc.auth.service.AuthenticationServiceImpl">
+		<property name="defaultLoginModule" ref="defaultLoginModuleManager" />
+		<property name="authStateDao" ref="authStateDAO" />
+		<property name="loginManager" ref="loginManager" />
+		<property name="secDomainService" ref="secDomainService" />
+		<property name="authContextClass" value="org.openiam.idm.srvc.auth.context.AuthenticationContextImpl" />
+		<property name="defaultToken" ref="defaultSSOToken" />
+		<property name="userManager" ref="userManager" />
+		<property name="policyDao" ref="policyDAO" />
+		<property name="groupManager" ref="groupManager" />
+		<property name="roleManager" ref="roleDataService" />
+		<property name="cryptor" ref="cryptor" />
+		<property name="auditUtil" ref="auditUtil" />
+		<property name="sysConfiguration" ref="sysConfiguration" />
+		<property name="scriptEngine" value="org.openiam.script.GroovyScriptEngineIntegration" />
+        <property name="resourceService" ref="resourceDataService" />
+        <property name="passwordManager" ref="passwordManager" />
+		<property name="dozerUtils" ref="dozerUtils" />
+	</bean>
+
+		
+	<bean id="defaultLoginModuleManager" class="org.openiam.idm.srvc.auth.spi.DefaultLoginModule" >
+	</bean>
+
+	<bean id="defaultSSOToken" class="org.openiam.idm.srvc.auth.sso.DefaultTokenModule" >
+        <property name="cryptor" ref="cryptor" />
+	</bean>
+
+
+			
+	<!-- Service Beans -->
+	<bean id="serviceManager" class="org.openiam.idm.srvc.service.service.ServiceMgr">
+		<constructor-arg ref="serviceDAO"></constructor-arg>
+	</bean>
+	
+	<bean id="serviceDAO" class="org.openiam.idm.srvc.service.service.ServiceDAOImpl">
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>
+
+	
+	<!-- Group Beans -->
+	<bean id="groupWS" class="org.openiam.idm.srvc.grp.ws.GroupDataWebServiceImpl" >
+		<property name="groupManager" ref="groupManager" />
+		<property name="dozerUtils" ref="dozerUtils" />
+	</bean>
+	
+	<bean id="groupManager" class="org.openiam.idm.srvc.grp.service.GroupDataServiceImpl" >
+		<property name="groupDao" ref="groupDAO" />
+		<property name="groupAttrDao" ref="groupAttrDAO" />
+		<property name="userDao" ref="userDAO" />
+		<property name="userGroupDao" ref="userGroupDAO" />
+	</bean>
+
+	<bean id="groupDAO" class="org.openiam.idm.srvc.grp.service.GroupDAOImpl" >
+		<property name="userDao" ref="userDAO" />
+		<property name="sessionFactory" ref="sessionFactory"></property>
+		<property name="maxResultSetSize" value="100" />			
+	</bean>	
+	<bean id="groupAttrDAO" class="org.openiam.idm.srvc.grp.service.GroupAttributeDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>	
+	<bean id="userGroupDAO" class="org.openiam.idm.srvc.grp.service.UserGroupDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>		
+
+ <!-- QueryDataService  -->
+	<bean id="queryWS" class="org.openiam.idm.srvc.qry.ws.QueryDataWebServiceImpl" >
+		<property name="queryService" ref="queryDataService" />
+	</bean>
+	
+	<bean id="queryDataService" class="org.openiam.idm.srvc.qry.service.QueryDataServiceImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>	
+	</bean>	
+	
+	<!-- User Beans -->
+
+	<bean id="userWS" class="org.openiam.idm.srvc.user.ws.UserDataWebServiceImpl" >
+		<property name="userManager" ref="userManager" />
+		<property name="dozerUtils" ref="dozerUtils" />
+	</bean>
+	
+	<bean id="userManager" class="org.openiam.idm.srvc.user.service.UserMgr" >
+		<property name="userDao" ref="userDAO" />
+		<property name="userAttributeDao" ref="userAttributeDAO" />
+		<property name="userNoteDao" ref="userNoteDAO" />
+		<property name="addressDao" ref="addressDAO" />
+		<property name="emailAddressDao" ref="emailAddressDAO" />
+		<property name="phoneDao" ref="phoneDAO" />
+		<property name="supervisorDao" ref="supervisorDAO" />
+		<property name="loginDao" ref="loginDAO" />
+        <property name="sysConfiguration" ref="sysConfiguration" />
+	</bean>
+
+
+
+	<bean id="userDAO" class="org.openiam.idm.srvc.user.service.UserDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>	
+		<property name="seqGenDao" ref="seqGenDAO"></property>
+		<property name="emailSearchVal" value="EMAIL1" />
+		<property name="phoneSearchVal" value="Desk Phone" />	
+		<property name="maxResultSetSize" value="${fetch.size}" />	
+		<property name="dbType" value="${openiam.dbType}" />
+	</bean>	
+
+	<bean id="userAttributeDAO" class="org.openiam.idm.srvc.user.service.UserAttributeDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>	
+
+	<bean id="userNoteDAO" class="org.openiam.idm.srvc.user.service.UserNoteDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>	
+
+	<bean id="addressDAO" class="org.openiam.idm.srvc.continfo.service.AddressDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>	
+
+	<bean id="emailAddressDAO" class="org.openiam.idm.srvc.continfo.service.EmailAddressDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>	
+
+	<bean id="phoneDAO" class="org.openiam.idm.srvc.continfo.service.PhoneDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>	
+
+	<bean id="supervisorDAO" class="org.openiam.idm.srvc.user.service.SupervisorDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>	
+	
+	<!-- Org Beans -->
+	<bean id="orgManager" class="org.openiam.idm.srvc.org.service.OrganizationDataServiceImpl" >
+		<!--<property name="orgDao" ref="orgDAO" />-->
+		<property name="orgAttrDao" ref="orgAttrDAO" />
+        <property name="orgAffiliationDao" ref="orgAffiliationDAO" />
+	</bean>
+
+	<!--<bean id="orgDAO" class="org.openiam.idm.srvc.org.service.OrganizationDAOImpl" >-->
+		<!--<property name="sessionFactory" ref="sessionFactory"></property>		-->
+	<!--</bean>	-->
+
+	<bean id="orgAttrDAO" class="org.openiam.idm.srvc.org.service.OrganizationAttributeDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>	
+
+    <bean id="orgAffiliationDAO" class="org.openiam.idm.srvc.org.service.UserAffiliationDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
+
+	
+	<!-- Metadata Beans -->
+	
+	<!-- Idm Audit Beans -->
+	<bean id="auditWS" class="org.openiam.idm.srvc.audit.ws.IdmAuditLogWebDataServiceImpl" >
+		<property name="auditDataService" ref="auditDataService" />
+	</bean>
+
+
+	<bean id="auditUtil" class="org.openiam.idm.srvc.audit.service.AuditLogUtil" >
+		<property name="auditDataService" ref="auditDataService" />
+	</bean>
+
+
+			
+	<bean id="auditDataService" class="org.openiam.idm.srvc.audit.service.IdmAuditLogDataServiceImpl" >
+		<property name="auditDao" ref="auditDAO" />
+		<property name="hash" ref="hash" />
+
+        <property name="loginDS" ref="loginManager" />
+        <property name="sysConfiguration" ref="sysConfiguration" />
+	</bean>
+
+	<bean id="auditDAO" class="org.openiam.idm.srvc.audit.service.IdmAuditLogDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>	
+
+	<bean id="seqGenDAO" class="org.openiam.base.id.SequenceGenDAOImpl">
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>
+	
+	<!-- Menu Beans -->
+	<bean id="navigatorWS" class="org.openiam.idm.srvc.menu.ws.NavigatorDataWebServiceImpl" >
+		<property name="navigatorDataService" ref="navigatorDataService" />
+	</bean>
+	
+	<bean id="navigatorDataService" class="org.openiam.idm.srvc.menu.service.NavigatorDataServiceImpl" >
+		<property name="navigatorDao" ref="navigatorDAO" />
+		<property name="permissionDao" ref="permissionDAO" />
+	</bean>
+
+	<bean id="navigatorDAO" class="org.openiam.idm.srvc.menu.service.NavigatorDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>	
+
+	<bean id="permissionDAO" class="org.openiam.idm.srvc.menu.service.PermissionDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>	
+
+	
+	<!-- Login Beans -->
+	<bean id="loginManager" class="org.openiam.idm.srvc.auth.login.LoginDataServiceImpl" >
+		<property name="loginDao" ref="loginDAO" />
+		<property name="loginAttrDao" ref="loginAttrDAO" />
+		<property name="cryptor" ref="cryptor" />
+		<property name="secDomainService" ref="secDomainService" />
+		<property name="userDao" ref="userDAO" />
+		<property name="policyDao" ref="policyDAO" />
+		<property name="passwordManager" ref="passwordManager" />
+		<property name="passwordHistoryDao" ref="passwordHistoryDAO" />	
+		<property name="sysConfiguration" ref="sysConfiguration" />
+	</bean>
+	<bean id="loginWS" class="org.openiam.idm.srvc.auth.ws.LoginDataWebServiceImpl" >
+		<property name="loginDS" ref="loginManager" />
+	</bean>
+	
+
+	<bean id="loginDAO" class="org.openiam.idm.srvc.auth.login.LoginDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>
+        <property name="dbType" value="${openiam.dbType}" />
+	</bean>	
+
+	<bean id="loginAttrDAO" class="org.openiam.idm.srvc.auth.login.LoginAttributeDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>	
+
+	<bean id="authStateDAO" class="org.openiam.idm.srvc.auth.login.AuthStateDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>	
+	
+	<!-- Password Beans -->
+	<bean id="challengeResponse" class="org.openiam.idm.srvc.pswd.service.ChallengeResponseServiceImpl" >
+		<property name="cryptor" ref="cryptor" />
+		<property name="policyDataService" ref="policyDataService" />
+		<property name="identityQuestGroupDao" ref="identityQuestGroupDAO" />
+		<property name="identityQuestDao" ref="identityQuestDAO" />
+		<property name="identityAnswerDao" ref="identityAnswerDAO" />	
+		<property name="loginManager" ref="loginManager" />	
+		
+		<property name="respValidatorFactory" ref="validatorFactory" />
+		<property name="respValidatorObjName" value="${challengeResponse.respValidatorObjName}" />
+		<property name="respValidatorObjType" value="${challengeResponse.respValidatorObjType}" />
+		
+		<property name="auditHelper" ref="auditHelper" />	
+		<property name="userMgr" ref="userManager" />	
+		<property name="passwordMgr" ref="passwordManager" />	
+		
+		
+	</bean>
+	
+	<bean id="validatorFactory" class="org.openiam.idm.srvc.pswd.service.ValidatorFactory" >
+		<property name="scriptEngine" value="org.openiam.script.GroovyScriptEngineIntegration" />
+	</bean>
+	
+	<bean id="challengeResponseValidator" class="org.openiam.idm.srvc.pswd.service.DefaultChallengeResponseValidator" >
+		<property name="identityQuestDao" ref="identityQuestDAO" />
+		<property name="identityAnswerDao" ref="identityAnswerDAO" />
+		<property name="cryptor" ref="cryptor" />	
+		<property name="loginManager" ref="loginManager" />	
+		
+	</bean>
+
+	<bean id="passwordWS" class="org.openiam.idm.srvc.pswd.ws.PasswordWebServiceImpl" >
+		<property name="passwordDS" ref="passwordManager" />
+	</bean>
+		
+	<bean id="passwordManager" class="org.openiam.idm.srvc.pswd.service.PasswordServiceImpl" >
+		<property name="secDomainService" ref="secDomainService" />
+		<property name="passwordValidator" ref="passwordValidator" />	
+		<property name="userManager" ref="userManager" />
+		<property name="loginManager" ref="loginManager" />
+		<property name="policyAssocDao" ref="policyObjectAssocDAO" />
+		<property name="policyDataService" ref="policyDataService" />
+		<property name="cryptor" ref="cryptor" />	
+		<property name="passwordHistoryDao" ref="passwordHistoryDAO" />
+        <property name="hash" ref="hash" />
+		
+	</bean>	
+
+	<bean id="passwordHistoryDAO" class="org.openiam.idm.srvc.pswd.service.PasswordHistoryDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>	
+	</bean>	
+
+	<bean id="policyObjectAssocDAO" class="org.openiam.idm.srvc.policy.service.PolicyObjectAssocDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>	
+
+	<bean id="identityQuestGroupDAO" class="org.openiam.idm.srvc.pswd.service.IdentityQuestGroupDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>	
+	<bean id="identityQuestDAO" class="org.openiam.idm.srvc.pswd.service.IdentityQuestionDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>	
+	<bean id="identityAnswerDAO" class="org.openiam.idm.srvc.pswd.service.UserIdentityAnswerDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>		
+
+	<bean id="passwordValidator" class="org.openiam.idm.srvc.pswd.rule.PasswordValidatorImpl" >
+		<property name="policyDataService" ref="policyDataService" />
+		<property name="secDomainService" ref="secDomainService" />
+		<property name="userDao" ref="userDAO" />
+		<property name="loginDao" ref="loginDAO" />
+		<property name="passwordHistoryDao" ref="passwordHistoryDAO" />	
+		<property name="cryptor" ref="cryptor" />	
+		<property name="scriptEngine" value="org.openiam.script.GroovyScriptEngineIntegration" />
+			
+	</bean>	
+	
+	<!-- Role Beans -->
+	<bean id="roleWS" class="org.openiam.idm.srvc.role.ws.RoleDataWebServiceImpl" >
+		<property name="roleDataService" ref="roleDataService" />
+		<property name="dozerUtils" ref="dozerUtils" />
+	</bean>
+	
+	<bean id="roleDataService" class="org.openiam.idm.srvc.role.service.RoleDataServiceImpl" >
+		<property name="roleDao" ref="roleDAO" />
+		<property name="roleAttributeDAO" ref="roleAttributeDAO" />
+		<property name="userManager" ref="userManager" />
+		<property name="userRoleDao" ref="userRoleDAO" />
+		<property name="userGroupDao" ref="userGroupDAO" />
+		<property name="rolePolicyDao" ref="rolePolicyDAO" />
+        <property name="resRoleDao" ref="resourceRoleDAO" />
+	</bean>
+
+	<bean id="roleDAO" class="org.openiam.idm.srvc.role.service.RoleDAOImpl" >
+		<property name="groupDao" ref="groupDAO" />
+		<property name="userDao" ref="userDAO" />
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>	
+
+	<bean id="roleAttributeDAO" class="org.openiam.idm.srvc.role.service.RoleAttributeDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>	
+
+	<bean id="userRoleDAO" class="org.openiam.idm.srvc.role.service.UserRoleDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>	
+
+	<bean id="rolePolicyDAO" class="org.openiam.idm.srvc.role.service.RolePolicyDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>	
+	
+	<!-- Policy Beans -->
+	<bean id="policyDataService" class="org.openiam.idm.srvc.policy.service.PolicyDataServiceImpl" >
+		<property name="policyDefDao" ref="policyDefDAO" />
+		<property name="policyDao" ref="policyDAO" />
+		<property name="policyDefParamDao" ref="policyDefParamDAO" />
+		<property name="objectAssoc" ref="policyObjectAssocDAO" />
+		<property name="dozerUtils" ref="dozerUtils" />
+	</bean>
+		
+	<bean id="policyDefDAO" class="org.openiam.idm.srvc.policy.service.PolicyDefDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>	
+	<bean id="policyDefParamDAO" class="org.openiam.idm.srvc.policy.service.PolicyDefParamDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>	
+	<bean id="policyDAO" class="org.openiam.idm.srvc.policy.service.PolicyDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>	
+	
+	<!-- Resource Beans -->
+	<bean id="resourceDataService" class="org.openiam.idm.srvc.res.service.ResourceDataServiceImpl" >
+		<property name="resourceDao" ref="resourceDAO" />
+		<property name="resourceTypeDao" ref="resourceTypeDAO" />
+		<property name="resourcePropDao" ref="resourcePropDAO" />
+		<property name="resourceRoleDao" ref="resourceRoleDAO" />
+		<property name="resourceUserDao" ref="resourceUserDAO" />
+        <property name="resourcePrivilegeDao" ref="resourcePrivilegeDAO" />
+
+        <property name="loginManager" ref="loginManager" />
+        <property name="userManager" ref="userManager" />
+        <property name="roleDataService" ref="roleDataService" />
+        <property name="orgManager" ref="orgManager" />
+		<property name="dozerUtils" ref="dozerUtils" />
+    </bean>
+	
+	<bean id="resourceTypeDAO" class="org.openiam.idm.srvc.res.service.ResourceTypeDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>	
+		
+	<bean id="resourcePropDAO" class="org.openiam.idm.srvc.res.service.ResourcePropDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>	
+	
+	<bean id="resourceRoleDAO" class="org.openiam.idm.srvc.res.service.ResourceRoleDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>	
+
+	<bean id="resourceUserDAO" class="org.openiam.idm.srvc.res.service.ResourceUserDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>
+
+    <bean id="resourcePrivilegeDAO" class="org.openiam.idm.srvc.res.service.ResourcePrivilegeDAOImpl" >
+>>>>>>> 343ede863a6caabc03e3bfbb7db516a71e54b26c
         <property name="sessionFactory" ref="sessionFactory"></property>
     </bean>
 
@@ -631,6 +1026,7 @@
     <!--<property name="jksPassword"  value="${iam.jks.password}"  />-->
     <!--<property name="keyPassword"  value="${iam.jks.key.password}"  />-->
     <!--</bean>-->
+<<<<<<< HEAD
     <!-- Messaging Beans -->
 
     <!-- ========================= RESOURCE DEFINITIONS ========================= -->
@@ -679,6 +1075,75 @@
                 <value>org/openiam/idm/srvc/secdomain/service/SecurityDomain.hbm.xml</value>
 
                 <value>org/openiam/idm/srvc/res/service/ResourceUser.hbm.xml</value>
+=======
+	<!-- Messaging Beans -->
+
+	<!-- ========================= RESOURCE DEFINITIONS ========================= -->
+<!-- 
+	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+	    <property name="locations">
+	        <value>classpath:datasource.properties</value>
+	    </property>
+	</bean>
+-->	
+	
+	<!-- Hibernate SessionFactory -->
+	<bean id="sessionFactory" class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+		<property name="dataSource" ref="dataSource"/>
+		<property name="mappingResources">
+			<list>
+				<value>org/openiam/idm/srvc/service/service/Service.hbm.xml</value>
+				<value>org/openiam/idm/srvc/service/service/ServiceConfig.hbm.xml</value>
+				<value>org/openiam/idm/srvc/service/service/RequestForm.hbm.xml</value>
+				<value>org/openiam/idm/srvc/service/service/RequestApprover.hbm.xml</value>
+				<!-- Organization Maps -->
+				<!--<value>org/openiam/idm/srvc/org/service/Organization.hbm.xml</value>-->
+				<!--<value>org/openiam/idm/srvc/org/service/OrganizationAttribute.hbm.xml</value>-->
+                <!--<value>org/openiam/idm/srvc/org/service/UserAffiliation.hbm.xml</value>-->
+				<!-- Metadata Maps -->
+				<value>org/openiam/idm/srvc/meta/service/MetadataElement.hbm.xml</value>
+				<value>org/openiam/idm/srvc/meta/service/MetadataType.hbm.xml</value>
+				<!-- Category Maps -->
+				<value>org/openiam/idm/srvc/cat/service/Category.hbm.xml</value>
+				<value>org/openiam/idm/srvc/cat/service/CategoryLanguage.hbm.xml</value>
+				<value>org/openiam/idm/srvc/cat/service/CategoryType.hbm.xml</value>
+				<!-- Group Maps -->
+				<!-- <value>org/openiam/idm/srvc/grp/service/Group.hbm.xml</value> -->
+				<!-- <value>org/openiam/idm/srvc/grp/service/GroupAttribute.hbm.xml</value> -->
+				<!-- <value>org/openiam/idm/srvc/grp/service/UserGroup.hbm.xml</value> -->
+				<!-- role Maps -->
+				<!-- <value>org/openiam/idm/srvc/role/service/Role.hbm.xml</value> -->
+				<!-- <value>org/openiam/idm/srvc/role/service/RoleAttribute.hbm.xml</value> -->
+		        <!-- <value>org/openiam/idm/srvc/role/service/UserRole.hbm.xml</value> -->
+		        <!-- <value>org/openiam/idm/srvc/role/service/RolePolicy.hbm.xml</value> -->
+				<!-- Audit log Maps -->
+				<value>org/openiam/idm/srvc/audit/service/IdmAuditLog.hbm.xml</value>
+				<!-- Menu Maps -->
+				<value>org/openiam/idm/srvc/menu/service/Menu.hbm.xml</value>
+				<!-- <value>org/openiam/idm/srvc/menu/service/Permission.hbm.xml</value> -->
+				<!-- Util Maps -->
+				<value>org/openiam/base/id/SequenceGen.hbm.xml</value>
+				<value>org/openiam/idm/srvc/cd/service/ReferenceData.hbm.xml</value>
+				<!-- Audit log Maps -->
+				<!--<value>org/openiam/idm/srvc/auth/login/Login.hbm.xml</value>-->
+				<!--<value>org/openiam/idm/srvc/auth/login/LoginAttribute.hbm.xml</value>-->
+				<value>org/openiam/idm/srvc/auth/login/AuthState.hbm.xml</value>
+				<!--  Policy Maps -->
+				<value>org/openiam/idm/srvc/policy/service/Policy.hbm.xml</value>
+				<value>org/openiam/idm/srvc/policy/service/PolicyAttribute.hbm.xml</value>
+				<value>org/openiam/idm/srvc/policy/service/PolicyDef.hbm.xml</value>
+				<value>org/openiam/idm/srvc/policy/service/PolicyDefParam.hbm.xml</value>
+				<value>org/openiam/idm/srvc/policy/service/PolicyObjectAssoc.hbm.xml</value>
+
+				<value>org/openiam/idm/srvc/secdomain/service/SecurityDomain.hbm.xml</value>
+
+				<!-- <value>org/openiam/idm/srvc/res/service/ResourceType.hbm.xml</value> -->
+				<!-- <value>org/openiam/idm/srvc/res/service/ResourcePolicy.hbm.xml</value> -->
+				<!-- <value>org/openiam/idm/srvc/res/service/ResourceProp.hbm.xml</value> -->
+				<!-- <value>org/openiam/idm/srvc/res/service/ResourceRole.hbm.xml</value> -->
+				<!-- <value>org/openiam/idm/srvc/res/service/Resource.hbm.xml</value> -->
+				<value>org/openiam/idm/srvc/res/service/ResourceUser.hbm.xml</value>
+>>>>>>> 343ede863a6caabc03e3bfbb7db516a71e54b26c
                 <value>org/openiam/idm/srvc/res/service/ResourceGroup.hbm.xml</value>
                 <value>org/openiam/idm/srvc/lang/service/Language.hbm.xml</value>
                 <value>org/openiam/idm/srvc/loc/service/Location.hbm.xml</value>
@@ -751,6 +1216,7 @@
 											   org.openiam.idm.srvc.org.dto*,
                                                org.openiam.idm.srvc.org.domain*,
 											   org.openiam.idm.srvc.auth.dto*,
+											   org.openiam.idm.srvc.org.dto*,
 											   org.openiam.am.srvc.resattr.domain*,
 											   org.openiam.idm.srvc.cat.dto*,
                                                org.openiam.idm.srvc.continfo.domain*"/>
