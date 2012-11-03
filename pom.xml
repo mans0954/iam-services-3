@@ -156,6 +156,8 @@
         <bouncycastle.version>1.47</bouncycastle.version>
         <mockito.version>1.9.0</mockito.version>
         <hsqldb.version>1.8.0.10</hsqldb.version>
+        
+    	<skipTests>true</skipTests>
 	</properties>
 
 	<dependencyManagement>
@@ -669,6 +671,7 @@
                <includes>
                  <include>**/*Test.java</include>
                </includes>
+               <skipTests>${skipTests}</skipTests>
              </configuration>
            </plugin>
            <plugin>
