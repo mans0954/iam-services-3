@@ -46,17 +46,7 @@
                 <prop key="hibernate.connection.password"/>
             </props>
         </property>
-       <!-- <property name="mappingResources">
-            <list>
-                <value>org/openiam/idm/srvc/grp/service/Group.hbm.xml</value>
-                <value>org/openiam/idm/srvc/grp/service/GroupAttribute.hbm.xml</value>
-                <value>org/openiam/idm/srvc/grp/service/UserGroup.hbm.xml</value>
-                <value>org/openiam/idm/srvc/role/service/Role.hbm.xml</value>
-                <value>org/openiam/idm/srvc/role/service/RoleAttribute.hbm.xml</value>
-                <value>org/openiam/idm/srvc/role/service/UserRole.hbm.xml</value>
-                <value>org/openiam/idm/srvc/role/service/RolePolicy.hbm.xml</value>
-            </list>
-        </property>-->
+
         <property name="packagesToScan" value="org.openiam.idm.srvc.role.dto*,
                                                org.openiam.idm.srvc.grp.dto*,
                                                org.openiam.core.domain*,
@@ -115,7 +105,7 @@
 		<property name="sessionFactory" ref="sessionFactory"/>
 	</bean>
 
-	<bean id="orgDAO" class="org.openiam.idm.srvc.org.service.OrganizationDAOImpl" >
+    <bean id="userAffiliationDAO" class="org.openiam.idm.srvc.org.service.UserAffiliationDAOImpl" >
 		<property name="sessionFactory" ref="sessionFactory"/>
 	</bean>
 </beans>

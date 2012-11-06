@@ -30,15 +30,7 @@ import org.springframework.stereotype.Repository;
 @Repository("organizationDAO")
 public class OrganizationDAOImpl extends BaseDaoImpl<OrganizationEntity, String> implements OrganizationDAO {
 
-
     private static final Log log = LogFactory.getLog(OrganizationDAOImpl.class);
-
-    private SessionFactory sessionFactory;
-
-
-    public void setSessionFactory(SessionFactory session) {
-        this.sessionFactory = session;
-    }
 
     protected SessionFactory getSessionFactory() {
         try {

@@ -14,8 +14,11 @@ import org.openiam.dozer.DozerUtils;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
+import org.openiam.idm.srvc.org.domain.UserAffiliationEntity;
 import org.openiam.idm.srvc.org.dto.*;
 import org.openiam.idm.srvc.searchbean.converter.OrganizationSearchBeanConverter;
+import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.util.DozerMappingType;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -39,7 +42,8 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     private DozerUtils dozerUtils;
     @Autowired
     protected OrganizationDAO orgDao;
-
+    @Autowired
+    protected UserDAO userDAO;
 
     protected OrganizationAttributeDAO orgAttrDao;
     protected UserAffiliationDAO orgAffiliationDao;
@@ -64,9 +68,12 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
             throw new NullPointerException("orgId is null");
         }
         List<OrganizationEntity> organizationEntityList = orgDao.findChildOrganization(orgId);
-        List<Organization> organizationList = new LinkedList<Organization>();
-        for (OrganizationEntity entity : organizationEntityList) {
-            organizationList.add(new Organization(entity));
+        List<Organization> organizationList = null;
+        if (organizationEntityList != null) {
+            organizationList = new LinkedList<Organization>();
+            for (OrganizationEntity entity : organizationEntityList) {
+                organizationList.add(new Organization(entity));
+            }
         }
         //return testOrgList(orgId);
         return organizationList;
@@ -169,9 +176,8 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
         if (orgId == null)
             throw new NullPointerException("orgId is null");
 
-        Organization instance = new Organization();
-        instance.setOrgId(orgId);  // dont need if new Organization(orgId) constructor available
-        orgDao.remove(new OrganizationEntity(instance));
+        OrganizationEntity entity = orgDao.findById(orgId);
+        orgDao.remove(entity);
 
     }
 
@@ -338,7 +344,9 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
             throw new IllegalArgumentException("userId object is null");
 
         userorg.setUserAffiliationId(null);
-        this.orgAffiliationDao.add(userorg);
+        UserEntity user = userDAO.findById(userorg.getUserId());
+        OrganizationEntity org = orgDao.findById(userorg.getOrganizationId());
+        this.orgAffiliationDao.add(new UserAffiliationEntity(userorg, user, org));
 
     }
 
@@ -349,8 +357,9 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 
         if (userorg.getUserId() == null)
             throw new IllegalArgumentException("userId object is null");
-
-        orgAffiliationDao.update(userorg);
+        UserEntity user = userDAO.findById(userorg.getUserId());
+        OrganizationEntity org = orgDao.findById(userorg.getOrganizationId());
+        orgAffiliationDao.update(new UserAffiliationEntity(userorg, user, org));
 
     }
 
@@ -360,8 +369,15 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
             throw new IllegalArgumentException("userId is null");
         }
 
-        return orgAffiliationDao.findOrgAffiliationsByUser(userId);
-
+        List<OrganizationEntity> ogranizationEntity = orgAffiliationDao.findOrgAffiliationsByUser(userId);
+        List<Organization> organizationList = null;
+        if (ogranizationEntity != null) {
+            organizationList = new LinkedList<Organization>();
+            for (OrganizationEntity entity : ogranizationEntity) {
+                organizationList.add(new Organization(entity));
+            }
+        }
+        return organizationList;
     }
 
 
@@ -372,11 +388,10 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 
         if (userId == null)
             throw new IllegalArgumentException("userId object is null");
-
-        UserAffiliation ua = new UserAffiliation(userId, orgId);
+        UserEntity user = userDAO.findById(userId);
+        OrganizationEntity org = orgDao.findById(orgId);
+        UserAffiliationEntity ua = new UserAffiliationEntity(user, org);
         orgAffiliationDao.add(ua);
-
-
     }
 
     public boolean isUserAffilatedWithOrg(String orgId, String userId) {
@@ -387,12 +402,12 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
         if (userId == null)
             throw new IllegalArgumentException("userId object is null");
 
-        List<Organization> orgList = orgAffiliationDao.findOrgAffiliationsByUser(userId);
-
-
-        for (Organization org : orgList) {
-            if (org.getOrgId().equals(orgId)) {
-                return true;
+        List<OrganizationEntity> orgListEntity = orgAffiliationDao.findOrgAffiliationsByUser(userId);
+        if (orgListEntity != null) {
+            for (OrganizationEntity org : orgListEntity) {
+                if (org.getOrgId().equals(orgId)) {
+                    return true;
+                }
             }
         }
         return false;
@@ -442,10 +457,13 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
       * @see org.openiam.idm.srvc.org.service.OrganizationDataService#search(java.lang.String, java.lang.String)
       */
     public List<Organization> search(String name, String type, String classification, String internalOrgId) {
-        List<OrganizationEntity> organizationEntities = orgDao.search(name, type, OrgClassificationEnum.valueOf(classification), internalOrgId);
-        List<Organization> organizationList = new LinkedList<Organization>();
-        for (OrganizationEntity entity : organizationEntities) {
-            organizationList.add(new Organization(entity));
+        List<OrganizationEntity> organizationEntities = orgDao.search(name, type, StringUtils.isNotEmpty(classification) ? OrgClassificationEnum.valueOf(classification) : null, internalOrgId);
+        List<Organization> organizationList = null;
+        if (organizationEntities != null) {
+            organizationList = new LinkedList<Organization>();
+            for (OrganizationEntity entity : organizationEntities) {
+                organizationList.add(new Organization(entity));
+            }
         }
         return organizationList;
     }
