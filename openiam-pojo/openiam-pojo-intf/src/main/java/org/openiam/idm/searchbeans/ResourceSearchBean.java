@@ -11,7 +11,8 @@ import org.openiam.idm.srvc.res.dto.Resource;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ResourceSearchBean", propOrder = {
         "name",
-        "resourceTypeId"
+        "resourceTypeId",
+        "rootsOnly"
 })
 public class ResourceSearchBean extends AbstractSearchBean<Resource, String> implements SearchBean<Resource, String>, Serializable {
 
@@ -19,6 +20,7 @@ public class ResourceSearchBean extends AbstractSearchBean<Resource, String> imp
 
 	private String name;
 	private String resourceTypeId;
+	private Boolean rootsOnly;
 	
 	public String getName() {
 		return name;
@@ -35,6 +37,12 @@ public class ResourceSearchBean extends AbstractSearchBean<Resource, String> imp
 	public void setResourceTypeId(String resourceTypeId) {
 		this.resourceTypeId = resourceTypeId;
 	}
-	
-	
+
+	public Boolean getRootsOnly() {
+		return rootsOnly;
+	}
+
+	public void setRootsOnly(Boolean rootsOnly) {
+		this.rootsOnly = rootsOnly;
+	}
 }

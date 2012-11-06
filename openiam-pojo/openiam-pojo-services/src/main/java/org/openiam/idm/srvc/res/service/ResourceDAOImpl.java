@@ -31,6 +31,23 @@ public class ResourceDAOImpl extends BaseDaoImpl<Resource, String> implements Re
 																	 " order by resource.managedSysId, resource.name ", Resource.class.getCanonicalName());
 	
 	@Override
+	public List<Resource> getRootResources(Resource resource, int startAt, int size) {
+		final Criteria criteria = getExampleCriteria(resource);
+		//criteria.add(Restrictions.isNull("parentResources"));
+		
+		if(startAt > -1) {
+			criteria.setFirstResult(startAt);
+		}
+		
+		if(size > -1) {
+			criteria.setMaxResults(size);
+		}
+		criteria.add(Restrictions.isEmpty("parentResources"));
+		
+		return (List<Resource>)criteria.list();
+	}
+	
+	@Override
 	protected Criteria getExampleCriteria(final Resource resource) {
 		final Criteria criteria = getCriteria();
 		if(StringUtils.isNotBlank(resource.getResourceId())) {

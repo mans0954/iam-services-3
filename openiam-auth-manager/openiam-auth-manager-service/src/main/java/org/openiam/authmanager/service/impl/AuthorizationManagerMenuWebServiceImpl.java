@@ -29,9 +29,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 	private AuthorizationManagerMenuService menuService;
 	
 	@Override
-	@WebMethod
-	public AuthorizationMenu getMenuTreeForUserId(
-			@WebParam(name = "request", targetNamespace = "") MenuRequest request) {
+	public AuthorizationMenu getMenuTreeForUserId(final MenuRequest request) {
 		final StopWatch sw = new StopWatch();
 		sw.start();
 		AuthorizationMenu retVal = null;
@@ -50,4 +48,8 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 		return retVal;
 	}
 
+	@Override
+	public AuthorizationMenu getMenuTree(final String menuId) {
+		return menuService.getMenuTree(menuId);
+	}
 }

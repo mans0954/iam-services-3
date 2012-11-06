@@ -17,6 +17,7 @@ import org.openiam.authmanager.common.model.url.InvalidPatternException;
 import org.openiam.authmanager.dao.ResourceDAO;
 import org.openiam.authmanager.util.AuthorizationConstants;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -35,12 +36,14 @@ public class JDBCResoruceDAOImpl extends AbstractJDBCDao implements ResourceDAO 
 														"			ON  r.RESOURCE_ID=prop.RESOURCE_ID " +
 														"			AND prop.NAME IN('URL_PATTERN')";
 	private String GET_ALL_MENUS = "SELECT RESOURCE_ID AS RESOURCE_ID, URL AS MENU_URL, NAME AS MENU_NAME, DISPLAY_ORDER AS DISPLAY_ORDER FROM %s.RES WHERE RESOURCE_TYPE_ID = ?";
+	private String GET_AUTH_MENU_BY_ID = "SELECT RESOURCE_ID AS RESOURCE_ID, URL AS MENU_URL, NAME AS MENU_NAME, DISPLAY_ORDER AS DISPLAY_ORDER FROM %s.RES WHERE RESOURCE_TYPE_ID = ? AND RESOURCE_ID = ?";
 	
 	@Override
 	protected void initSqlStatements() {
 		GET_ALL = String.format(GET_ALL, getSchemaName());
 		GET_RESOURCE_DOMAINS_WITH_PATTERNS = String.format(GET_RESOURCE_DOMAINS_WITH_PATTERNS,  getSchemaName(), getSchemaName());
 		GET_ALL_MENUS = String.format(GET_ALL_MENUS, getSchemaName());
+		GET_AUTH_MENU_BY_ID = String.format(GET_AUTH_MENU_BY_ID, getSchemaName());
 	}
 	
 	@Override
@@ -65,6 +68,18 @@ public class JDBCResoruceDAOImpl extends AbstractJDBCDao implements ResourceDAO 
 			log.debug(String.format("Query: %s", GET_ALL_MENUS));
 		}
 		return getJdbcTemplate().query(GET_ALL_MENUS, menuMapper, new Object[] {AuthorizationConstants.MENU_ITEM_RESOURCE_TYPE});
+	}
+	
+	@Override
+	public AuthorizationMenu getAuthorizationMenu(final String menuId) {
+		if(log.isDebugEnabled()) {
+			log.debug(String.format("Query: %s", GET_AUTH_MENU_BY_ID));
+		}
+		try {
+			return getJdbcTemplate().queryForObject(GET_AUTH_MENU_BY_ID, new Object[] {AuthorizationConstants.MENU_ITEM_RESOURCE_TYPE, menuId}, menuMapper);
+		} catch(EmptyResultDataAccessException e) {
+			return null;
+		}
 	}
 	
 	private static class MenuMapper implements RowMapper<AuthorizationMenu> {

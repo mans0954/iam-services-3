@@ -23,7 +23,10 @@ import org.openiam.authmanager.dao.ResourcePropDAO;
 import org.openiam.authmanager.dao.ResourceResourceXrefDAO;
 import org.openiam.authmanager.service.AuthorizationManagerMenuService;
 import org.openiam.authmanager.service.AuthorizationManagerService;
+import org.openiam.idm.searchbeans.ResourceSearchBean;
+import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
+import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -101,14 +104,15 @@ public class AuthorizationManagerMenuServiceImpl implements AuthorizationManager
 		return sb.toString();
 	}
 	
-	@ManagedOperation(description="sweep the Menu Cache")
-	public void sweep() {
+	@Override
+	public AuthorizationMenu getMenuTree(final String menuId) {
+		return getAllMenuTress().get(menuId);
+	}
+	
+	private final Map<String, AuthorizationMenu> getAllMenuTress() {
 		final List<ResourceProp> tempResourcePropertyList = resourcePropDAO.getList();
 		final List<AuthorizationMenu> tempMenuList = resourceDAO.getAuthorizationMenus();
 		
-		final StopWatch sw = new StopWatch();
-		sw.start();
-		log.debug("Creating menu trees");
 		final Map<String, List<ResourceProp>> tempResourcePropMap = new HashMap<String, List<ResourceProp>>();
 		for(final ResourceProp prop : tempResourcePropertyList) {
 			if(!tempResourcePropMap.containsKey(prop.getResourceId())) {
@@ -123,6 +127,14 @@ public class AuthorizationManagerMenuServiceImpl implements AuthorizationManager
 			menu.afterPropertiesSet(tempResourcePropMap.get(menu.getId()));
 		}
 		final Map<String, AuthorizationMenu> tempMenuTreeMap = createMenuTrees(tempMenuMap);
+		return tempMenuTreeMap;
+	}
+	
+	@ManagedOperation(description="sweep the Menu Cache")
+	public void sweep() {
+		final StopWatch sw = new StopWatch();
+		sw.start();
+		final Map<String, AuthorizationMenu> tempMenuTreeMap = getAllMenuTress();
 		synchronized(this) {
 			menuCache = tempMenuTreeMap;
 		}

@@ -66,6 +66,7 @@ public interface ResourceDataService {
      * @return list of resources
      */
     @WebMethod
+    @Deprecated
     List<Resource> getAllResources();
 
     /**
@@ -130,14 +131,6 @@ public interface ResourceDataService {
             String resourceTypeId);
 
     /**
-     * Remove all resource types.
-     *
-     * @return the int count
-     */
-    @WebMethod
-    int removeAllResourceTypes();
-
-    /**
      * Add a resource property.
      *
      * @param resourceProp the resource prop
@@ -169,14 +162,6 @@ public interface ResourceDataService {
     ResourceProp updateResourceProp(
             @WebParam(name = "resourceProp", targetNamespace = "")
             ResourceProp resourceProp);
-
-    /**
-     * Find all resource properties.
-     *
-     * @return all resource props
-     */
-    @WebMethod
-    List<ResourceProp> getAllResourceProps();
 
     /**
      * Remove a resource property.
@@ -219,18 +204,6 @@ public interface ResourceDataService {
             @WebParam(name = "resourceId", targetNamespace = "")
             String resourceId);
 	*/
-
-    /**
-     * Find a resource and all its descendants and put them in a list.
-     *
-     * @param resourceId the resource id
-     * @return resource list
-     */
-
-    @WebMethod
-    List<Resource> getResourceFamily(
-            @WebParam(name = "resourceId", targetNamespace = "")
-            String resourceId);
 
     /**
      * Find resources having a specified metadata type.
@@ -343,37 +316,6 @@ public interface ResourceDataService {
     boolean isUserAuthorized(
             @WebParam(name = "userId", targetNamespace = "")
             String userId,
-            @WebParam(name = "resourceId", targetNamespace = "")
-            String resourceId);
-
-    /**
-     * Check if user is authorized based on a resource's property
-     *
-     * @param userId
-     * @param propertyName
-     * @param propertyValue
-     * @return <code>true</code> if user is authorized
-     */
-    @WebMethod
-    boolean isUserAuthorizedByProperty(
-            @WebParam(name = "userId", targetNamespace = "")
-            String userId,
-            @WebParam(name = "propertyName", targetNamespace = "")
-            String propertyName,
-            @WebParam(name = "propertyValue", targetNamespace = "")
-            String propertyValue);
-
-    /**
-     * Checks if is role authorized.
-     *
-     * @param roleId     the role id
-     * @param resourceId the resource id
-     * @return true if is role authorized
-     */
-    @WebMethod
-    boolean isRoleAuthorized(
-            @WebParam(name = "roleId", targetNamespace = "")
-            String roleId,
             @WebParam(name = "resourceId", targetNamespace = "")
             String resourceId);
 

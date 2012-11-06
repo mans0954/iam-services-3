@@ -14,4 +14,7 @@ public interface AuthorizationManagerMenuWebService {
 	public AuthorizationMenu getMenuTreeForUserId(
 			@WebParam(name = "request", targetNamespace = "") final MenuRequest request
 	);
+	
+	@WebMethod
+	public AuthorizationMenu getMenuTree(@WebParam(name = "menuId", targetNamespace = "") final String menuId);
 }

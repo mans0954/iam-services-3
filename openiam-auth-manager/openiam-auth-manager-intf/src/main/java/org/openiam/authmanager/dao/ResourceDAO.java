@@ -11,4 +11,5 @@ import org.openiam.authmanager.common.model.url.AuthorizationDomain;
 public interface ResourceDAO extends AbstractDAO<AuthorizationResource> {
 	public Set<AuthorizationDomain> getAuthorizationDomains(final Map<String, AuthorizationResource> resourceMap);
 	public List<AuthorizationMenu> getAuthorizationMenus();
+	public AuthorizationMenu getAuthorizationMenu(final String menuId);
 }

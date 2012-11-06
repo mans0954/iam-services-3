@@ -45,11 +45,6 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 	private ResourceUserDAO resourceUserDao;
 	private ResourcePrivilegeDAO resourcePrivilegeDao;
 
-	private LoginDataService loginManager;
-	private UserDataService userManager;
-	private RoleDataService roleDataService;
-    private OrganizationDataService orgManager;
-
 	private static final Log log = LogFactory.getLog(ResourceDataServiceImpl.class);
 	
 	@Autowired
@@ -74,11 +69,6 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 	public void setResourceRoleDao(ResourceRoleDAO resourceRoleDao) {
 		this.resourceRoleDao = resourceRoleDao;
 	}
-	
-    @Required
-    public void setOrgManager(OrganizationDataService orgManager) {
-        this.orgManager = orgManager;
-    }
 
     @Required
     public void setResourcePrivilegeDao(ResourcePrivilegeDAO resourcePrivilegeDao) {
@@ -94,21 +84,6 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 	public void setResourceUserDao(ResourceUserDAO resourceUserDao) {
 		this.resourceUserDao = resourceUserDao;
 	}
-	
-    @Required
-    public void setLoginManager(LoginDataService loginManager) {
-        this.loginManager = loginManager;
-    }
-
-    @Required
-    public void setUserManager(UserDataService userManager) {
-        this.userManager = userManager;
-    }
-
-    @Required
-    public void setRoleDataService(RoleDataService roleDataService) {
-        this.roleDataService = roleDataService;
-    }
 
 
 	/**
@@ -199,9 +174,16 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 
     @Override
 	public List<Resource> findBeans(final ResourceSearchBean searchBean, final int from, final int size) {
-		final List<Resource> results = resourceDao.getByExample(resourceSearchBeanConverter.convert(searchBean), from, size);
-		final DozerMappingType mappingType = (searchBean.isDeepCopy()) ? DozerMappingType.DEEP : DozerMappingType.SHALLOW;
-		return dozerUtils.getDozerDeepMappedResourceList(results, mappingType);
+    	final Resource resource = resourceSearchBeanConverter.convert(searchBean);
+    	final DozerMappingType mappingType = (searchBean.isDeepCopy()) ? DozerMappingType.DEEP : DozerMappingType.SHALLOW;
+    	List<Resource> results = null;
+    	if(Boolean.TRUE.equals(searchBean.getRootsOnly())) {
+    		results = resourceDao.getRootResources(resource, from, size);
+    	} else {
+    		results = resourceDao.getByExample(resourceSearchBeanConverter.convert(searchBean), from, size);
+    	}
+		return dozerUtils.getDozerMappedList(results, mappingType);
+		//return dozerUtils.getDozerDeepMappedResourceList(results, mappingType);
 	}
 
 	/**
@@ -223,6 +205,7 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 	 * 
 	 * @return list of resources
 	 */
+	@Deprecated
 	public List<Resource> getAllResources() {
 		return dozerUtils.getDozerDeepMappedResourceList(resourceDao.findAll());
 	}
@@ -300,15 +283,6 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 		ResourceType obj = this.resourceTypeDao.findById(resourceTypeId);
 		this.resourceTypeDao.remove(obj);
 	}
-
-	/**
-	 * Remove all resource types
-	 * 
-	 * @return
-	 */
-	public int removeAllResourceTypes() {
-		return this.resourceTypeDao.removeAllResourceTypes();
-	}
 	
 	/**
 	 * Add a resource property.
@@ -377,18 +351,6 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 	}
 
 	/**
-	 * Find all resource properties
-	 * 
-	 * @return
-	 */
-	public List<ResourceProp> getAllResourceProps() {
-		List<ResourceProp> resourcePropList = resourcePropDao
-				.findAllResourceProps();
-
-		return resourcePropList;
-	}
-
-	/**
 	 * Remove a resource property
 	 * 
 	 * @param resourcePropId
@@ -424,36 +386,6 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 		}
 
 		return dozerUtils.getDozerDeepMappedResourceList(resource.getChildResources());
-	}
-
-	private String getResourceType(Resource r) {
-		String rt = "";
-		ResourceType resType = r.getResourceType();
-		if (resType != null)
-			rt = resType.getResourceTypeId() + ":";
-		return rt;
-	}
-
-	/**
-	 * Find a resource and all its descendants and put them in a list.
-	 * 
-	 * @param resourceId
-	 *            the resource id
-	 * 
-	 * @return resource list
-	 */
-
-	public List<Resource> getResourceFamily(String resourceId) {
-		final Resource resource = resourceDao.findById(resourceId);
-		final Set<Resource> visitedSet = new LinkedHashSet<Resource>();
-		visitedSet.add(resource);
-		if(CollectionUtils.isNotEmpty(resource.getChildResources())) {
-			for (final Iterator<Resource> it = resource.getChildResources().iterator(); it.hasNext();) {
-				final Resource r = it.next();
-				visitChildren(r.getResourceId(), visitedSet);
-			}
-		}
-		return dozerUtils.getDozerDeepMappedResourceList(visitedSet);
 	}
 
 	/**
@@ -709,24 +641,6 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 		return false;
 
     }
-
-	public boolean isRoleAuthorized(String roleId, String resourceId) {
-		log.info("isUserAuthorized called.");
-
-		List<Resource> resList = getResourcesForRole(roleId);
-		log.info("- resList= " + resList);
-		if (resList == null) {
-			log.info("resource list for user is null");
-			return false;
-		}
-		for (Resource r : resList) {
-			log.info("resource id = " + r.getResourceId());
-			if (r.getResourceId().equalsIgnoreCase(resourceId)) {
-				return true;
-			}
-		}
-		return false;
-	}
 
     @Override
     public ResourcePrivilege addResourcePrivilege(ResourcePrivilege resourcePrivilege) {
