@@ -9,11 +9,9 @@ import org.apache.commons.logging.LogFactory;
 import org.hibernate.*;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Projections;
+
 import org.hibernate.criterion.Restrictions;
 
-import org.hibernate.transform.DistinctRootEntityResultTransformer;
-import org.hibernate.transform.ResultTransformer;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.dto.*;
@@ -63,6 +61,23 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String> impleme
         }
         return criteria;
     }
+
+	@Override
+	public List<ResourceEntity> getRootResources(ResourceEntity resource, int startAt, int size) {
+		final Criteria criteria = getExampleCriteria(resource);
+		//criteria.add(Restrictions.isNull("parentResources"));
+
+		if(startAt > -1) {
+			criteria.setFirstResult(startAt);
+		}
+
+		if(size > -1) {
+			criteria.setMaxResults(size);
+		}
+		criteria.add(Restrictions.isEmpty("parentResources"));
+
+		return (List<ResourceEntity>)criteria.list();
+	}
 
     @Override
     public ResourceEntity findByName(String name) {

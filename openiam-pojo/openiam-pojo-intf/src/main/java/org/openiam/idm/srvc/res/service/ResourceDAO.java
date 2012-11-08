@@ -36,5 +36,5 @@ public interface ResourceDAO extends BaseDao<ResourceEntity, String> {
 
     List<ResourceEntity> findResourcesForUserRole(String userId);
 
-
+    List<ResourceEntity> getRootResources(ResourceEntity resource, int startAt, int size);
 }

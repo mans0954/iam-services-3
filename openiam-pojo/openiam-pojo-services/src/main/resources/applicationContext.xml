@@ -427,11 +427,6 @@
 		<property name="resourceRoleDao" ref="resourceRoleDAO" />
 		<property name="resourceUserDao" ref="resourceUserDAO" />
         <property name="resourcePrivilegeDao" ref="resourcePrivilegeDAO" />
-
-        <property name="loginManager" ref="loginManager" />
-        <property name="userManager" ref="userManager" />
-        <property name="roleDataService" ref="roleDataService" />
-        <property name="orgManager" ref="orgManager" />
 		<property name="dozerUtils" ref="dozerUtils" />
     </bean>
 	
