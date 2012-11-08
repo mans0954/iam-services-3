@@ -5,14 +5,17 @@ import java.util.List;
 import javax.naming.InitialContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.Hibernate;
+import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
-import org.hibernate.LockMode;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import static org.hibernate.criterion.Example.create;
 
+import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Restrictions;
+import org.openiam.idm.srvc.res.domain.ResourceRoleEmbeddableId;
+import org.openiam.idm.srvc.res.domain.ResourceRoleEntity;
 import org.openiam.idm.srvc.res.dto.*;
 import org.openiam.idm.srvc.role.dto.Role;
 
@@ -42,7 +45,7 @@ public class ResourceRoleDAOImpl implements ResourceRoleDAO {
 		}
 	}
 
-	public void persist(ResourceRole transientInstance) {
+	public void persist(ResourceRoleEntity transientInstance) {
 		log.debug("persisting ResourceRole instance");
 		try {
 			sessionFactory.getCurrentSession().persist(transientInstance);
@@ -60,7 +63,7 @@ public class ResourceRoleDAOImpl implements ResourceRoleDAO {
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.res.service.ResourceRoleDAO#remove(org.openiam.idm.srvc.res.dto.ResourceRole)
 	 */
-	public void remove(ResourceRole persistentInstance) {
+	public void remove(ResourceRoleEntity persistentInstance) {
 		log.debug("deleting ResourceRole instance");
 		try {
 			sessionFactory.getCurrentSession().delete(persistentInstance);
@@ -77,10 +80,10 @@ public class ResourceRoleDAOImpl implements ResourceRoleDAO {
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.res.service.ResourceRoleDAO#update(org.openiam.idm.srvc.res.dto.ResourceRole)
 	 */
-	public ResourceRole update(ResourceRole detachedInstance) {
+	public ResourceRoleEntity update(ResourceRoleEntity detachedInstance) {
 		log.debug("merging ResourceRole instance");
 		try {
-			ResourceRole result = (ResourceRole) sessionFactory.getCurrentSession()
+			ResourceRoleEntity result = (ResourceRoleEntity) sessionFactory.getCurrentSession()
 					.merge(detachedInstance);
 			log.debug("merge successful");
 			return result;
@@ -90,10 +93,10 @@ public class ResourceRoleDAOImpl implements ResourceRoleDAO {
 		}
 	}
 
-	public ResourceRole findById(ResourceRoleId id) {
+	public ResourceRoleEntity findById(ResourceRoleEmbeddableId id) {
 		try {
-			ResourceRole instance = (ResourceRole) sessionFactory.getCurrentSession()
-					.get("org.openiam.idm.srvc.res.dto.ResourceRole", id);
+			ResourceRoleEntity instance = (ResourceRoleEntity) sessionFactory.getCurrentSession()
+					.get(ResourceRoleEntity.class, id);
 			if (instance == null) {
 				log.debug("get successful, no instance found");
 			} else {
@@ -112,12 +115,11 @@ public class ResourceRoleDAOImpl implements ResourceRoleDAO {
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.res.service.ResourceRoleDAO#findByExample(org.openiam.idm.srvc.res.dto.ResourceRole)
 	 */
-	public List<ResourceRole> findByExample(ResourceRole instance) {
+	public List<ResourceRoleEntity> findByExample(ResourceRoleEntity instance) {
 		log.debug("finding ResourceRole instance by example");
 		try {
-			List<ResourceRole> results = (List<ResourceRole>) sessionFactory
-					.getCurrentSession().createCriteria(
-							"org.openiam.idm.srvc.res.dto.ResourceRole").add(
+			List<ResourceRoleEntity> results = (List<ResourceRoleEntity>) sessionFactory
+					.getCurrentSession().createCriteria(ResourceRoleEntity.class).add(
 							create(instance)).list();
 			log.debug("find by example successful, result size: "
 					+ results.size());
@@ -137,7 +139,7 @@ public class ResourceRoleDAOImpl implements ResourceRoleDAO {
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.res.service.ResourceRoleDAO#add(org.openiam.idm.srvc.res.dto.ResourceRole)
 	 */
-	public ResourceRole add(ResourceRole instance) {
+	public ResourceRoleEntity add(ResourceRoleEntity instance) {
 		log.debug("persisting instance");
 		try {
 			sessionFactory.getCurrentSession().persist(instance);
@@ -155,11 +157,9 @@ public class ResourceRoleDAOImpl implements ResourceRoleDAO {
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.res.service.ResourceRoleDAO#findAllResourceRoles()
 	 */
-	public List<ResourceRole> findAllResourceRoles() {
+	public List<ResourceRoleEntity> findAllResourceRoles() {
 		Session session = sessionFactory.getCurrentSession();
-		Query qry = session.createQuery("from org.openiam.idm.srvc.res.dto.ResourceRole");
-		List<ResourceRole> result = (List<ResourceRole>)qry.list();
-		
+		List<ResourceRoleEntity> result = (List<ResourceRoleEntity>)session.createCriteria(ResourceRoleEntity.class).list();
 		return result;
 	}
 	
@@ -171,22 +171,21 @@ public class ResourceRoleDAOImpl implements ResourceRoleDAO {
 	 */
 	public void removeAllResourceRoles() {
 		Session session = sessionFactory.getCurrentSession();
-		Query qry = session.createQuery("delete from org.openiam.idm.srvc.res.dto.ResourceRole");
+		Query qry = session.createQuery("delete from org.openiam.idm.srvc.res.domain.ResourceRoleEntity");
 		qry.executeUpdate();
 	}
 
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.res.service.ResourceRoleDAO#findAllResourceForRole(java.lang.String, java.lang.String)
 	 */
-	public List<ResourceRole> findResourcesForRole(String roleId) {
+	public List<ResourceRoleEntity> findResourcesForRole(String roleId) {
 		try {
 			Session session = sessionFactory.getCurrentSession();
-			Query qry = session.createQuery("from org.openiam.idm.srvc.res.dto.ResourceRole rr " +
-					" where rr.id.roleId = :roleId " +
-					" order by rr.id.resourceId asc");
-			qry.setString("roleId", roleId);
+            Criteria criteria = session.createCriteria(ResourceRoleEntity.class)
+                    .add(Restrictions.eq("id.roleId",roleId))
+                    .addOrder(Order.asc("id.resourceId"));
 			
-			List<ResourceRole> result = (List<ResourceRole>)qry.list();
+			List<ResourceRoleEntity> result = (List<ResourceRoleEntity>)criteria.list();
 			if (result == null) {
 				log.debug("get successful, no instance found");
 			} else {
@@ -205,7 +204,7 @@ public class ResourceRoleDAOImpl implements ResourceRoleDAO {
             Session session = sessionFactory.getCurrentSession();
 
             String sql = "  SELECT  role " +
-                    "       FROM    ResourceRole resourceRole, Role role, Resource resource " +
+                    "       FROM    ResourceRoleEntity resourceRole, Role role, ResourceEntity resource " +
                     "       WHERE   resource.resourceId = resourceRole.id.resourceId and " +
                     "        resourceRole.id.roleId = role.roleId AND " +
                     "        resource.resourceId = :resourceId  ";
@@ -224,7 +223,7 @@ public class ResourceRoleDAOImpl implements ResourceRoleDAO {
     public void removeResourceRole(String roleId) {
         //To change body of implemented methods use File | Settings | File Templates.
 		Session session = sessionFactory.getCurrentSession();
-		Query qry = session.createQuery("delete org.openiam.idm.srvc.res.dto.ResourceRole rr " +
+		Query qry = session.createQuery("delete org.openiam.idm.srvc.res.domain.ResourceRoleEntity rr " +
 					" where rr.id.roleId = :roleId");
 		qry.setString("roleId", roleId);
 		qry.executeUpdate();

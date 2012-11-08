@@ -3,7 +3,9 @@ package org.openiam.idm.srvc.res.service;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.*;
-import org.openiam.idm.srvc.res.dto.ResourcePrivilege;
+import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Restrictions;
+import org.openiam.idm.srvc.res.domain.ResourcePrivilegeEntity;
 
 import javax.naming.InitialContext;
 import java.util.List;
@@ -13,14 +15,16 @@ import java.util.List;
  * User: arun
  */
 public class ResourcePrivilegeDAOImpl implements ResourcePrivilegeDAO {
-    
-    /** The Constant log. */
+
+    /**
+     * The Constant log.
+     */
     private static final Log log = LogFactory.getLog(ResourcePrivilegeDAOImpl.class);
-	
-    private SessionFactory sessionFactory;	
-	
+
+    private SessionFactory sessionFactory;
+
     public void setSessionFactory(SessionFactory session) {
-          this.sessionFactory = session;
+        this.sessionFactory = session;
     }
 
 
@@ -35,16 +39,11 @@ public class ResourcePrivilegeDAOImpl implements ResourcePrivilegeDAO {
         }
     }
 
-	
 
-
-
-
-	
     //==================================================================
-	
-	
-    public ResourcePrivilege add(ResourcePrivilege instance) {
+
+
+    public ResourcePrivilegeEntity add(ResourcePrivilegeEntity instance) {
         log.debug("persisting instance");
         try {
             sessionFactory.getCurrentSession().persist(instance);
@@ -53,10 +52,10 @@ public class ResourcePrivilegeDAOImpl implements ResourcePrivilegeDAO {
         } catch (RuntimeException re) {
             log.error("persist failed", re);
             throw re;
-        }		
+        }
     }
 
-    public void remove(ResourcePrivilege instance) {
+    public void remove(ResourcePrivilegeEntity instance) {
         log.debug("deleting instance");
         try {
             sessionFactory.getCurrentSession().delete(instance);
@@ -64,10 +63,10 @@ public class ResourcePrivilegeDAOImpl implements ResourcePrivilegeDAO {
         } catch (HibernateException re) {
             log.error("delete failed", re);
             throw re;
-        }			
+        }
     }
 
-    public ResourcePrivilege update(ResourcePrivilege instance) {
+    public ResourcePrivilegeEntity update(ResourcePrivilegeEntity instance) {
 
         try {
             sessionFactory.getCurrentSession().merge(instance);
@@ -76,34 +75,32 @@ public class ResourcePrivilegeDAOImpl implements ResourcePrivilegeDAO {
         } catch (HibernateException re) {
             log.error("merge failed", re);
             throw re;
-        }		
+        }
     }
 
-    public List<ResourcePrivilege> findAllPrivileges() {
+    public List<ResourcePrivilegeEntity> findAllPrivileges() {
         Session session = sessionFactory.getCurrentSession();
-        Query qry = session.createQuery("from ResourcePrivilege a " +
-                " order by a.ResourcePrivilege asc");
-        qry.setCacheable(true);
-        qry.setCacheRegion("query.resource.findAllPrivileges");
-        List<ResourcePrivilege> result = (List<ResourcePrivilege>)qry.list();
-		
-		
+        Criteria criteria = session.createCriteria(ResourcePrivilegeEntity.class).addOrder(Order.asc("resourcePrivilegeId"));
+        criteria.setCacheable(true);
+        criteria.setCacheRegion("query.resource.findAllPrivileges");
+        List<ResourcePrivilegeEntity> result = (List<ResourcePrivilegeEntity>) criteria.list();
+
         return result;
     }
-	
+
     public int removeAllPrivileges() {
         Session session = sessionFactory.getCurrentSession();
-        Query qry = session.createQuery("delete from ResourcePrivilege");
+        Query qry = session.createQuery("delete from ResourcePrivilegeEntity");
         return qry.executeUpdate();
     }
 
 
     @Override
-    public ResourcePrivilege findById(String id) {
+    public ResourcePrivilegeEntity findById(String id) {
         log.debug("getting ResourceProp instance with id: " + id);
         try {
-            ResourcePrivilege instance = (ResourcePrivilege) sessionFactory.getCurrentSession()
-                    .get("org.openiam.idm.srvc.res.dto.ResourcePrivilege", id);
+            ResourcePrivilegeEntity instance = (ResourcePrivilegeEntity) sessionFactory.getCurrentSession()
+                    .get(ResourcePrivilegeEntity.class, id);
             if (instance == null) {
                 log.debug("get successful, no instance found");
             } else {
@@ -120,16 +117,14 @@ public class ResourcePrivilegeDAOImpl implements ResourcePrivilegeDAO {
     }
 
     @Override
-    public List<ResourcePrivilege> findPrivilegesByResourceId(String resourceId) {
+    public List<ResourcePrivilegeEntity> findPrivilegesByResourceId(String resourceId) {
         try {
             Session session = sessionFactory.getCurrentSession();
-            Query qry = session.createQuery("from org.openiam.idm.srvc.res.dto.ResourcePrivilege rp " +
-                    " where rp.resourceId = :resourceId " +
-                    " order by rp.name asc");
-            qry.setString("resourceId", resourceId);
+            Criteria criteria = session.createCriteria(ResourcePrivilegeEntity.class)
+                    .add(Restrictions.eq("resourceId", resourceId))
+                    .addOrder(Order.asc("name"));
 
-
-            List<ResourcePrivilege> result = (List<ResourcePrivilege>)qry.list();
+            List<ResourcePrivilegeEntity> result = (List<ResourcePrivilegeEntity>) criteria.list();
             if (result == null) {
                 log.debug("get successful, no instance found");
             } else {
@@ -144,17 +139,15 @@ public class ResourcePrivilegeDAOImpl implements ResourcePrivilegeDAO {
     }
 
     @Override
-    public List<ResourcePrivilege> findPrivilegesByEntitlementType(String resourceId, String type) {
+    public List<ResourcePrivilegeEntity> findPrivilegesByEntitlementType(String resourceId, String type) {
         try {
             Session session = sessionFactory.getCurrentSession();
-            Query qry = session.createQuery("from org.openiam.idm.srvc.res.dto.ResourcePrivilege rp " +
-                    " where rp.resourceId = :resourceId and rp.privilegeType = :type" +
-                    " order by rp.name asc");
-            qry.setString("resourceId", resourceId);
-            qry.setString("type", type);
+            Criteria criteria = session.createCriteria(ResourcePrivilegeEntity.class)
+                    .add(Restrictions.eq("resourceId", resourceId))
+                    .add(Restrictions.eq("privilegeType", type))
+                    .addOrder(Order.asc("name"));
 
-
-            List<ResourcePrivilege> result = (List<ResourcePrivilege>)qry.list();
+            List<ResourcePrivilegeEntity> result = (List<ResourcePrivilegeEntity>) criteria.list();
             if (result == null) {
                 log.debug("get successful, no instance found");
             } else {

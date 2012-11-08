@@ -2,36 +2,18 @@ package org.openiam.idm.srvc.res.dto;
 
 // Generated Mar 8, 2009 12:54:32 PM by Hibernate Tools 3.2.2.GA
 
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Sort;
-import org.hibernate.annotations.SortType;
-import org.hibernate.annotations.Type;
 import org.openiam.base.BaseObject;
 
-import javax.persistence.Cacheable;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OrderBy;
-import javax.persistence.Table;
-import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 import java.util.HashSet;
 import java.util.Set;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.domain.ResourceGroupEntity;
+import org.openiam.idm.srvc.res.domain.ResourcePrivilegeEntity;
+import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
+import org.openiam.idm.srvc.res.domain.ResourceRoleEntity;
 
 /**
  * Resources are items that need to be managed or protected. These can be both logic and physical in nature.
@@ -62,10 +44,7 @@ import java.util.Set;
         "isPublic",
         "isSSL"
 })
-@Entity
-@Table(name="RES")
-@Cacheable
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+
 public class Resource extends BaseObject {
 
     private String resourceId;
@@ -83,8 +62,8 @@ public class Resource extends BaseObject {
     private String resOwnerUserId;
     private String resOwnerGroupId;
 
-    private Set<Resource> parentResources;
-    private Set<Resource> childResources;
+    private Set<Resource> parentResources = new HashSet<Resource>(0);
+    private Set<Resource> childResources = new HashSet<Resource>(0);
 
     private Set<ResourceRole> resourceRoles = new HashSet<ResourceRole>(0);
 
@@ -112,10 +91,44 @@ public class Resource extends BaseObject {
         this.managedSysId = managedSysId;
     }
 
-    @Id
-    @GeneratedValue(generator="system-uuid")
-    @GenericGenerator(name="system-uuid", strategy = "uuid")
-    @Column(name="RESOURCE_ID", length=32)
+    public Resource(ResourceEntity entity) {
+               this.resourceId = entity.getResourceId();
+        this.resourceType = entity.getResourceType();
+        this.name = entity.getName();
+        this.description = entity.getDescription();
+        this.branchId = entity.getBranchId();
+        this.categoryId = entity.getCategoryId();
+        this.displayOrder = entity.getDisplayOrder();
+        this.nodeLevel = entity.getNodeLevel();
+        this.sensitiveApp = entity.getSensitiveApp();
+        this.managedSysId = entity.getManagedSysId();
+        this.URL = entity.getURL();
+        this.resOwnerUserId = entity.getResOwnerUserId();
+        this.resOwnerGroupId = entity.getResOwnerGroupId();
+        for (ResourceEntity res : entity.getParentResources()) {
+            this.parentResources.add(new Resource(res));
+        }
+        for (ResourceEntity res : entity.getChildResources()) {
+            this.childResources.add(new Resource(res));
+        }
+        for (ResourceRoleEntity resourceRole : entity.getResourceRoles()) {
+            this.resourceRoles.add(new ResourceRole(resourceRole));
+        }
+        for (ResourcePropEntity prop : entity.getResourceProps()) {
+            this.resourceProps.add(new ResourceProp(prop));
+        }
+        for (ResourceGroupEntity group : entity.getResourceGroups()) {
+            this.resourceGroups.add(new ResourceGroup(group));
+        }
+        for (ResourcePrivilegeEntity privilege : entity.getEntitlements()) {
+            this.entitlements.add(new ResourcePrivilege(privilege));
+        }
+        this.minAuthLevel = entity.getMinAuthLevel();
+        this.domain = entity.getDomain();
+        this.isPublic = entity.isPublic();
+        this.isSSL = entity.isSSL();
+    }
+
     public String getResourceId() {
         return this.resourceId;
     }
@@ -124,8 +137,6 @@ public class Resource extends BaseObject {
         this.resourceId = resourceId;
     }
 
-	@ManyToOne(fetch=FetchType.EAGER)
-	@JoinColumn(name="RESOURCE_TYPE_ID")
     public ResourceType getResourceType() {
         return this.resourceType;
     }
@@ -134,7 +145,6 @@ public class Resource extends BaseObject {
         this.resourceType = resourceType;
     }
 
-    @Column(name="DESCRIPTION",length=100)
     public String getDescription() {
         return this.description;
     }
@@ -143,7 +153,6 @@ public class Resource extends BaseObject {
         this.description = description;
     }
 
-    @Column(name="NAME",length=40)
     public String getName() {
         return this.name;
     }
@@ -152,7 +161,6 @@ public class Resource extends BaseObject {
         this.name = name;
     }
 
-    @Column(name="BRANCH_ID",length=20)
     public String getBranchId() {
         return this.branchId;
     }
@@ -161,7 +169,6 @@ public class Resource extends BaseObject {
         this.branchId = branchId;
     }
 
-    @Column(name="CATEGORY_ID",length=20)
     public String getCategoryId() {
         return this.categoryId;
     }
@@ -170,7 +177,6 @@ public class Resource extends BaseObject {
         this.categoryId = categoryId;
     }
 
-    @Column(name="DISPLAY_ORDER")
     public Integer getDisplayOrder() {
         return this.displayOrder;
     }
@@ -179,7 +185,6 @@ public class Resource extends BaseObject {
         this.displayOrder = displayOrder;
     }
     
-    @Column(name="NODE_LEVEL")
     public Integer getNodeLevel() {
         return this.nodeLevel;
     }
@@ -188,7 +193,6 @@ public class Resource extends BaseObject {
         this.nodeLevel = nodeLevel;
     }
 
-    @Column(name="SENSITIVE_APP")
     public Integer getSensitiveApp() {
         return this.sensitiveApp;
     }
@@ -197,9 +201,6 @@ public class Resource extends BaseObject {
         this.sensitiveApp = sensitiveApp;
     }
 
-	@OneToMany(fetch=FetchType.LAZY,cascade=CascadeType.ALL)
-	@JoinColumn(name="RESOURCE_ID")
-	@Fetch(FetchMode.SUBSELECT)
     public Set<ResourceRole> getResourceRoles() {
         return this.resourceRoles;
     }
@@ -208,10 +209,6 @@ public class Resource extends BaseObject {
         this.resourceRoles = resourceRoles;
     }
 
-	@OneToMany(fetch=FetchType.LAZY,cascade=CascadeType.ALL)
-	@OrderBy("name asc")
-	@JoinColumn(name="RESOURCE_ID")
-	@Fetch(FetchMode.SUBSELECT)
     public Set<ResourceProp> getResourceProps() {
         return resourceProps;
     }
@@ -220,7 +217,6 @@ public class Resource extends BaseObject {
         this.resourceProps = resourceProps;
     }
 
-    @Transient
     public ResourceProp getResourceProperty(String propName) {
         if (resourceProps == null) {
             return null;
@@ -233,7 +229,6 @@ public class Resource extends BaseObject {
         return null;
     }
     
-    @Column(name="MIN_AUTH_LEVEL")
 	public String getMinAuthLevel() {
 		return minAuthLevel;
 	}
@@ -242,7 +237,6 @@ public class Resource extends BaseObject {
 		this.minAuthLevel = minAuthLevel;
 	}
 
-	@Column(name="DOMAIN")
 	public String getDomain() {
 		return domain;
 	}
@@ -251,8 +245,6 @@ public class Resource extends BaseObject {
 		this.domain = domain;
 	}
 
-	@Column(name="IS_PUBLIC")
-	@Type(type="yes_no")
 	public boolean getIsPublic() {
 		return isPublic;
 	}
@@ -261,8 +253,6 @@ public class Resource extends BaseObject {
 		this.isPublic = isPublic;
 	}
 	
-	@Column(name="IS_SSL")
-	@Type(type="yes_no")
 	public boolean getIsSSL() {
 		return this.isSSL;
 	}
@@ -294,7 +284,6 @@ public class Resource extends BaseObject {
                 '}';
     }
 
-	@Column(name="MANAGED_SYS_ID")
     public String getManagedSysId() {
         return managedSysId;
     }
@@ -303,7 +292,6 @@ public class Resource extends BaseObject {
         this.managedSysId = managedSysId;
     }
 
-    @Column(name="URL",length=255)
     public String getURL() {
         return URL;
     }
@@ -312,7 +300,6 @@ public class Resource extends BaseObject {
         URL = uRL;
     }
 
-    @Transient
     public Boolean getSelected() {
         return selected;
     }
@@ -321,9 +308,6 @@ public class Resource extends BaseObject {
         this.selected = selected;
     }
 
-	@OneToMany(fetch=FetchType.LAZY,cascade=CascadeType.ALL)
-	@JoinColumn(name="RESOURCE_ID")
-	@Fetch(FetchMode.SUBSELECT)
     public Set<ResourceGroup> getResourceGroups() {
         return resourceGroups;
     }
@@ -332,7 +316,6 @@ public class Resource extends BaseObject {
         this.resourceGroups = resourceGroups;
     }
 
-    @Column(name="RES_OWNER_USER_ID")
     public String getResOwnerUserId() {
         return resOwnerUserId;
     }
@@ -341,7 +324,6 @@ public class Resource extends BaseObject {
         this.resOwnerUserId = resOwnerUserId;
     }
 
-    @Column(name="RES_OWNER_GROUP_ID")
     public String getResOwnerGroupId() {
         return resOwnerGroupId;
     }
@@ -350,9 +332,6 @@ public class Resource extends BaseObject {
         this.resOwnerGroupId = resOwnerGroupId;
     }
 
-	@OneToMany(fetch=FetchType.LAZY,cascade=CascadeType.ALL)
-	@JoinColumn(name="RESOURCE_ID")
-	@Fetch(FetchMode.SUBSELECT)
     public Set<ResourcePrivilege> getEntitlements() {
         return entitlements;
     }
@@ -361,11 +340,6 @@ public class Resource extends BaseObject {
         this.entitlements = entitlements;
     }
 
-	@ManyToMany(cascade={CascadeType.ALL},fetch=FetchType.LAZY)
-	@JoinTable(name="res_to_res_membership",
-	    joinColumns={@JoinColumn(name="MEMBER_RESOURCE_ID")},
-	    inverseJoinColumns={@JoinColumn(name="RESOURCE_ID")})
-	@Fetch(FetchMode.SUBSELECT)
 	public Set<Resource> getParentResources() {
 		return parentResources;
 	}
@@ -374,11 +348,6 @@ public class Resource extends BaseObject {
 		this.parentResources = parentResources;
 	}
 
-	@ManyToMany(cascade={CascadeType.ALL},fetch=FetchType.LAZY)
-    @JoinTable(name="res_to_res_membership",
-        joinColumns={@JoinColumn(name="RESOURCE_ID")},
-        inverseJoinColumns={@JoinColumn(name="MEMBER_RESOURCE_ID")})
-    @Fetch(FetchMode.SUBSELECT)
 	public Set<Resource> getChildResources() {
 		return childResources;
 	}
