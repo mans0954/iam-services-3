@@ -14,7 +14,7 @@ import org.hibernate.criterion.Restrictions;
 
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
-import org.openiam.idm.srvc.res.dto.*;
+import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -53,7 +53,7 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String> impleme
             }
 
             if (resource.getResourceType() != null) {
-                final ResourceType type = resource.getResourceType();
+                final ResourceTypeEntity type = resource.getResourceType();
                 if (StringUtils.isNotBlank(type.getResourceTypeId())) {
                     criteria.add(Restrictions.eq("resourceType.resourceTypeId", type.getResourceTypeId()));
                 }
@@ -151,7 +151,6 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String> impleme
 
 
     public List<ResourceEntity> findResourcesForRoles(List<String> roleIdList) {
-        Session session = sessionFactory.getCurrentSession();
         try {
             Criteria criteria = getCriteria()
                     .createAlias("resourceRoles", "rr")

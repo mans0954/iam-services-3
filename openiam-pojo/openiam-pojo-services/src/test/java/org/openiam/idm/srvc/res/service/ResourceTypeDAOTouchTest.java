@@ -1,6 +1,6 @@
 package org.openiam.idm.srvc.res.service;
 
-import org.openiam.idm.srvc.res.dto.ResourceType;
+import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTransactionalTestNGSpringContextTests;
@@ -14,40 +14,40 @@ public class ResourceTypeDAOTouchTest extends AbstractTransactionalTestNGSpringC
     private ResourceTypeDAO resourceTypeDAO;
 
     @Test
-    private void touchAdd() {
-        resourceTypeDAO.add(new ResourceType());
+    public void touchAdd() {
+        resourceTypeDAO.add(new ResourceTypeEntity());
     }
 
     @Test
-    private void touchFindAllResourceTypes() {
+    public void touchFindAllResourceTypes() {
         resourceTypeDAO.findAllResourceTypes();
     }
 
     @Test
-    private void touchFindByExample() {
-        resourceTypeDAO.findByExample(new ResourceType());
+    public void touchFindByExample() {
+        resourceTypeDAO.findByExample(new ResourceTypeEntity());
     }
 
     @Test
-    private void touchFindById() {
+    public void touchFindById() {
         resourceTypeDAO.findById("");
     }
 
     @Test
-    private void touchRemove() {
-        ResourceType resourceType = new ResourceType();
+    public void touchRemove() {
+        ResourceTypeEntity resourceType = new ResourceTypeEntity();
         resourceTypeDAO.add(resourceType);
         resourceTypeDAO.remove(resourceType);
     }
 
     @Test
-    private void touchRemoveAllResourceTypes() {
+    public void touchRemoveAllResourceTypes() {
         resourceTypeDAO.removeAllResourceTypes();
     }
 
     @Test
-    private void touchUpdate() {
-        resourceTypeDAO.update(new ResourceType());
+    public void touchUpdate() {
+        resourceTypeDAO.update(new ResourceTypeEntity());
     }
 
 }

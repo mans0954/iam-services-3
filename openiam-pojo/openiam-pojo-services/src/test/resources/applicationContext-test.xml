@@ -56,8 +56,6 @@
                                                org.openiam.am.srvc.resattr.domain*,
                                                org.openiam.idm.srvc.org.domain*,
                                                org.openiam.idm.srvc.continfo.domain*,
-                                               org.openiam.idm.srvc.res.domain*,
-                                               org.openiam.idm.srvc.res.dto*,
                                                org.openiam.idm.srvc.res.domain*"/>
     </bean>
 

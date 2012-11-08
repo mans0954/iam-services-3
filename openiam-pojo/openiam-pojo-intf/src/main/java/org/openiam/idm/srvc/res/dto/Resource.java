@@ -93,7 +93,7 @@ public class Resource extends BaseObject {
 
     public Resource(ResourceEntity entity) {
                this.resourceId = entity.getResourceId();
-        this.resourceType = entity.getResourceType();
+        this.resourceType = new ResourceType(entity.getResourceType());
         this.name = entity.getName();
         this.description = entity.getDescription();
         this.branchId = entity.getBranchId();

@@ -11,17 +11,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.dozer.DozerUtils;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
-import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePrivilegeEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.domain.ResourceRoleEmbeddableId;
 import org.openiam.idm.srvc.res.domain.ResourceRoleEntity;
+import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 import org.openiam.idm.srvc.res.domain.ResourceUserEntity;
 import org.openiam.idm.srvc.res.dto.*;
-import org.openiam.idm.srvc.role.service.RoleDataService;
-import org.openiam.idm.srvc.user.service.UserDataService;
-import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.searchbean.converter.ResourceSearchBeanConverter;
 import org.openiam.util.DozerMappingType;
@@ -166,26 +163,26 @@ public class ResourceDataServiceImpl implements ResourceDataService {
     }
 
     @Override
-	public List<Resource> findBeans(final ResourceSearchBean searchBean, final int from, final int size) {
-    	final Resource resource = resourceSearchBeanConverter.convert(searchBean);
-    	final DozerMappingType mappingType = (searchBean.isDeepCopy()) ? DozerMappingType.DEEP : DozerMappingType.SHALLOW;
-    	List<ResourceEntity> resultsEntities = null;
-    	if(Boolean.TRUE.equals(searchBean.getRootsOnly())) {
-    		resultsEntities = resourceDao.getRootResources(new ResourceEntity(resource), from, size);
-    	} else {
+    public List<Resource> findBeans(final ResourceSearchBean searchBean, final int from, final int size) {
+        final Resource resource = resourceSearchBeanConverter.convert(searchBean);
+        final DozerMappingType mappingType = (searchBean.isDeepCopy()) ? DozerMappingType.DEEP : DozerMappingType.SHALLOW;
+        List<ResourceEntity> resultsEntities = null;
+        if (Boolean.TRUE.equals(searchBean.getRootsOnly())) {
+            resultsEntities = resourceDao.getRootResources(new ResourceEntity(resource), from, size);
+        } else {
             Resource res = resourceSearchBeanConverter.convert(searchBean);
-    		resultsEntities = resourceDao.getByExample(new ResourceEntity(res), from, size);
-    	}
+            resultsEntities = resourceDao.getByExample(new ResourceEntity(res), from, size);
+        }
         List<Resource> results = null;
-        if(resultsEntities != null) {
+        if (resultsEntities != null) {
             results = new LinkedList<Resource>();
-            for(ResourceEntity resourceEntity : resultsEntities){
-               results.add(new Resource(resourceEntity));
+            for (ResourceEntity resourceEntity : resultsEntities) {
+                results.add(new Resource(resourceEntity));
             }
         }
-		return dozerUtils.getDozerMappedList(results, mappingType);
-		//return dozerUtils.getDozerDeepMappedResourceList(results, mappingType);
-	}
+        return dozerUtils.getDozerMappedList(results, mappingType);
+        //return dozerUtils.getDozerDeepMappedResourceList(results, mappingType);
+    }
 
     /**
      * Update a resource.
@@ -242,7 +239,8 @@ public class ResourceDataServiceImpl implements ResourceDataService {
         if (val == null)
             throw new IllegalArgumentException("ResourcType is null");
 
-        return resourceTypeDao.add(val);
+        ResourceTypeEntity resourceTypeEntity = resourceTypeDao.add(new ResourceTypeEntity(val));
+        return new ResourceType(resourceTypeEntity);
     }
 
     /**
@@ -255,7 +253,8 @@ public class ResourceDataServiceImpl implements ResourceDataService {
         if (resourceTypeId == null)
             throw new IllegalArgumentException("resourceTypeId is null");
 
-        return resourceTypeDao.findById(resourceTypeId);
+        ResourceTypeEntity resourceTypeEntity = resourceTypeDao.findById(resourceTypeId);
+        return new ResourceType(resourceTypeEntity);
     }
 
     /**
@@ -268,7 +267,8 @@ public class ResourceDataServiceImpl implements ResourceDataService {
         if (resourceType == null)
             throw new IllegalArgumentException("resourceType object is null");
 
-        return resourceTypeDao.update(resourceType);
+        ResourceTypeEntity resourceTypeEntity = resourceTypeDao.update(new ResourceTypeEntity(resourceType));
+        return new ResourceType(resourceTypeEntity);
     }
 
     /**
@@ -277,7 +277,15 @@ public class ResourceDataServiceImpl implements ResourceDataService {
      * @return
      */
     public List<ResourceType> getAllResourceTypes() {
-        return resourceTypeDao.findAllResourceTypes();
+        List<ResourceTypeEntity> resourceTypeEntities = resourceTypeDao.findAllResourceTypes();
+        List<ResourceType> resourceTypes = null;
+        if (resourceTypeEntities != null) {
+            resourceTypes = new LinkedList<ResourceType>();
+            for (ResourceTypeEntity resourceTypeEntity : resourceTypeEntities) {
+                resourceTypes.add(new ResourceType(resourceTypeEntity));
+            }
+        }
+        return resourceTypes;
     }
 
     /**
@@ -288,7 +296,7 @@ public class ResourceDataServiceImpl implements ResourceDataService {
     public void removeResourceType(String resourceTypeId) {
         if (resourceTypeId == null)
             throw new IllegalArgumentException("resourceTypeId is null");
-        ResourceType obj = this.resourceTypeDao.findById(resourceTypeId);
+        ResourceTypeEntity obj = this.resourceTypeDao.findById(resourceTypeId);
         this.resourceTypeDao.remove(obj);
     }
 

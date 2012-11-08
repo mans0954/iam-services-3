@@ -43,7 +43,7 @@ public class ResourceEntity {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "RESOURCE_TYPE_ID")
-    private ResourceType resourceType;
+    private ResourceTypeEntity resourceType;
 
     @Column(name = "NAME", length = 40)
     private String name;
@@ -132,7 +132,7 @@ public class ResourceEntity {
 
     public ResourceEntity(Resource resource) {
         this.resourceId = resource.getResourceId();
-        this.resourceType = resource.getResourceType();
+        this.resourceType = new ResourceTypeEntity(resource.getResourceType());
         this.name = resource.getName();
         this.description = resource.getDescription();
         this.branchId = resource.getBranchId();
@@ -176,11 +176,11 @@ public class ResourceEntity {
         this.resourceId = resourceId;
     }
 
-    public ResourceType getResourceType() {
+    public ResourceTypeEntity getResourceType() {
         return resourceType;
     }
 
-    public void setResourceType(ResourceType resourceType) {
+    public void setResourceType(ResourceTypeEntity resourceType) {
         this.resourceType = resourceType;
     }
 

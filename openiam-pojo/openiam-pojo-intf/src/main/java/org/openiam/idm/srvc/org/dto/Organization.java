@@ -1,10 +1,8 @@
 package org.openiam.idm.srvc.org.dto;
 
 import java.util.HashMap;
-import org.hibernate.annotations.GenericGenerator;
 import org.openiam.base.AttributeOperationEnum;
 
-import javax.persistence.*;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSchemaType;
@@ -14,7 +12,6 @@ import java.util.Date;
 import java.util.Map;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
-import org.openiam.idm.srvc.user.dto.UserAttributeMapAdapter;
 
 /**
  * <p/>

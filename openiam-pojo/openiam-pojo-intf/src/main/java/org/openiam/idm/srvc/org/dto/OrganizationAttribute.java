@@ -1,8 +1,5 @@
 package org.openiam.idm.srvc.org.dto;
 
-import org.hibernate.annotations.GenericGenerator;
-
-import javax.persistence.*;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
@@ -40,6 +37,10 @@ import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 })
 
 public class OrganizationAttribute implements java.io.Serializable {
+
+    /**
+     *
+     */
     private static final long serialVersionUID = -231974705360001659L;
 
     protected String attrId;
