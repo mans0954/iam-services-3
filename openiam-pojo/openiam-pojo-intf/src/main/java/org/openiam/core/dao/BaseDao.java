@@ -9,6 +9,8 @@ public interface BaseDao<T, PrimaryKey extends Serializable> {
   T findById(PrimaryKey id);
 
   T findById(PrimaryKey id, String ... fetchFields);
+  
+  List<T> findByIds(Collection<PrimaryKey> idCollection);
 
   List<T> findAll();
 

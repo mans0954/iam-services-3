@@ -34,8 +34,8 @@ public class JDBCResoruceDAOImpl extends AbstractJDBCDao implements ResourceDAO 
 														"		%s.RES r " +
 														"		JOIN %s.RESOURCE_PROP prop " +
 														"			ON  r.RESOURCE_ID=prop.RESOURCE_ID " +
-														"			AND prop.NAME IN('URL_PATTERN')";
-	private String GET_ALL_MENUS = "SELECT RESOURCE_ID AS RESOURCE_ID, URL AS MENU_URL, NAME AS MENU_NAME, DISPLAY_ORDER AS DISPLAY_ORDER FROM %s.RES WHERE RESOURCE_TYPE_ID = ?";
+														"			AND prop.NAME = ?";
+	private String GET_ALL_MENUS = "SELECT RESOURCE_ID AS RESOURCE_ID, URL AS MENU_URL, NAME AS MENU_NAME, DISPLAY_ORDER AS DISPLAY_ORDER, IS_PUBLIC AS IS_PUBLIC FROM %s.RES WHERE RESOURCE_TYPE_ID = ?";
 	private String GET_AUTH_MENU_BY_ID = "SELECT RESOURCE_ID AS RESOURCE_ID, URL AS MENU_URL, NAME AS MENU_NAME, DISPLAY_ORDER AS DISPLAY_ORDER FROM %s.RES WHERE RESOURCE_TYPE_ID = ? AND RESOURCE_ID = ?";
 	
 	@Override
@@ -59,7 +59,7 @@ public class JDBCResoruceDAOImpl extends AbstractJDBCDao implements ResourceDAO 
 		if(log.isDebugEnabled()) {
 			log.debug(String.format("Query: %s", GET_RESOURCE_DOMAINS_WITH_PATTERNS));
 		}
-		return getJdbcTemplate().query(GET_RESOURCE_DOMAINS_WITH_PATTERNS, new AuthorizationDomainRSE(resourceMap));
+		return getJdbcTemplate().query(GET_RESOURCE_DOMAINS_WITH_PATTERNS, new Object[] {AuthorizationConstants.URL_PATTERN_PROPERTY}, new AuthorizationDomainRSE(resourceMap));
 	}
 	
 	@Override
@@ -91,6 +91,7 @@ public class JDBCResoruceDAOImpl extends AbstractJDBCDao implements ResourceDAO 
 			menu.setUrl(rs.getString("MENU_URL"));
 			menu.setName(rs.getString("MENU_NAME"));
 			menu.setDisplayOrder(rs.getInt("DISPLAY_ORDER"));
+			menu.setIsPublic("Y".equals(rs.getString("IS_PUBLIC")));
 			return menu;
 		}
 		

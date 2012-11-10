@@ -16,6 +16,12 @@ public class ResourceResourceXref {
 	public void setMemberResourceId(String memberResourceId) {
 		this.memberResourceId = memberResourceId;
 	}
+	@Override
+	public String toString() {
+		return String.format(
+				"ResourceResourceXref [resourceId=%s, memberResourceId=%s]",
+				resourceId, memberResourceId);
+	}
 	
 	
 }

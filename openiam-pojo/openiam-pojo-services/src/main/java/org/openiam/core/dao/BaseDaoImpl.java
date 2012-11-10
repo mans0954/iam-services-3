@@ -4,14 +4,17 @@ import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import static org.hibernate.criterion.Projections.rowCount;
 import static org.hibernate.criterion.Restrictions.eq;
@@ -89,6 +92,17 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> implements
             return null;
         }
         return (T) this.getSession().get(domainClass, id);
+    }
+    
+    @SuppressWarnings("unchecked")
+	public List<T> findByIds(Collection<PrimaryKey> idCollection) {
+    	if(CollectionUtils.isEmpty(idCollection)) {
+    		return (List<T>)Collections.EMPTY_LIST;
+    	}
+    	
+    	final Criteria criteria = getSession().createCriteria(domainClass)
+    							.add(Restrictions.in(getPKfieldName(), idCollection));
+    	return criteria.list();
     }
 
     @SuppressWarnings({"unchecked"})

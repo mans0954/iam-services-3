@@ -31,6 +31,8 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -215,6 +217,15 @@ public class Resource extends BaseObject {
     public Set<ResourceProp> getResourceProps() {
         return resourceProps;
     }
+	
+	public void addResourceProp(final ResourceProp prop) {
+		if(prop != null) {
+			if(resourceProps == null) {
+				resourceProps = new LinkedHashSet<ResourceProp>();
+			}
+			resourceProps.add(prop);
+		}
+	}
 
     public void setResourceProps(Set<ResourceProp> resourceProps) {
         this.resourceProps = resourceProps;
@@ -361,7 +372,7 @@ public class Resource extends BaseObject {
         this.entitlements = entitlements;
     }
 
-	@ManyToMany(cascade={CascadeType.ALL},fetch=FetchType.LAZY)
+	@ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
 	@JoinTable(name="res_to_res_membership",
 	    joinColumns={@JoinColumn(name="MEMBER_RESOURCE_ID")},
 	    inverseJoinColumns={@JoinColumn(name="RESOURCE_ID")})
@@ -385,6 +396,35 @@ public class Resource extends BaseObject {
 
 	public void setChildResources(Set<Resource> childResources) {
 		this.childResources = childResources;
+	}
+	
+	public void addChildResource(final Resource resource) {
+		if(resource != null) {
+			if(this.childResources == null) {
+				this.childResources = new LinkedHashSet<Resource>();
+			}
+			this.childResources.add(resource);
+		}
+	}
+	
+	public void removeChildResource(final String resourceId) {
+		if(resourceId != null && childResources != null) {
+			for(final Iterator<Resource> it = childResources.iterator(); it.hasNext();) {
+				final Resource resource = it.next();
+				if(resource.getResourceId().equals(resourceId)) {
+					it.remove();
+					break;
+				}
+			}
+		}
+	}
+	
+	public void removeChildResource(final Resource resource) {
+		if(resource != null) {
+			if(this.childResources != null) {
+				this.childResources.remove(resource);
+			}
+		}
 	}
 	
 	@Override

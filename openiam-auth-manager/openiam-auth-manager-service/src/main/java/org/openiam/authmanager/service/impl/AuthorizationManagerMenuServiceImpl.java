@@ -48,6 +48,7 @@ public class AuthorizationManagerMenuServiceImpl implements AuthorizationManager
 	private static final Comparator<AuthorizationMenu> menuOrderComparator = new AuthorizationMenuOrderComparator();
 	
 	private Map<String, AuthorizationMenu> menuCache;
+	private Map<String, AuthorizationMenu> menuNameCache;
 	
 	@Autowired
 	@Qualifier("jdbcResourceResourceXrefDAO")
@@ -135,8 +136,14 @@ public class AuthorizationManagerMenuServiceImpl implements AuthorizationManager
 		final StopWatch sw = new StopWatch();
 		sw.start();
 		final Map<String, AuthorizationMenu> tempMenuTreeMap = getAllMenuTress();
+		
+		final Map<String, AuthorizationMenu> tempMenuNameMap = new HashMap<String, AuthorizationMenu>();
+		for(final AuthorizationMenu menu : tempMenuTreeMap.values()) {
+			tempMenuNameMap.put(menu.getName(), menu);
+		}
 		synchronized(this) {
 			menuCache = tempMenuTreeMap;
+			menuNameCache = tempMenuNameMap;
 		}
 		sw.stop();
 		log.debug(String.format("Done creating menu trees. Took: %s ms", sw.getTime()));
@@ -202,7 +209,7 @@ public class AuthorizationManagerMenuServiceImpl implements AuthorizationManager
 		final Map<String, AuthorizationMenu> menuTreeMap = new HashMap<String, AuthorizationMenu>();
 		for(final String menuId : menuMap.keySet()) {
 			final AuthorizationMenu menu = menuMap.get(menuId);
-			menuTreeMap.put(menu.getName(), menu);
+			menuTreeMap.put(menu.getId(), menu);
 		}
 		
 		return menuTreeMap;
@@ -216,6 +223,14 @@ public class AuthorizationManagerMenuServiceImpl implements AuthorizationManager
 	@Override
 	public AuthorizationMenu getMenuTree(final String menuRoot, final String domain, final String login, final String managedSysId) {
 		return getMenu(menuCache.get(menuRoot), null, new AuthorizationManagerLoginId(domain, login, managedSysId));
+	}
+	
+	public AuthorizationMenu getMenuTreeByName(final String menuRoot, final String userId) {
+		return getMenu(menuNameCache.get(menuRoot), userId, null);
+	}
+	
+	public AuthorizationMenu getMenuTreeByName(final String menuRoot, final String domain, final String login, final String managedSysId) {
+		return getMenu(menuNameCache.get(menuRoot), null, new AuthorizationManagerLoginId(domain, login, managedSysId));
 	}
 	
 	private AuthorizationMenu getMenu(final AuthorizationMenu menu, final String userId, final AuthorizationManagerLoginId loginId) {
@@ -295,13 +310,17 @@ public class AuthorizationManagerMenuServiceImpl implements AuthorizationManager
 			}
 			
 			if(o1.getDisplayOrder() == null && o2.getDisplayOrder() == null) {
-				return o1.getDisplayName().compareTo(o2.getDisplayName());
+				return o1.getName().compareTo(o2.getName());
 			} else if(o1.getDisplayOrder() != null && o2.getDisplayOrder() == null) {
 				return 1;
-			} else if(o1.getDisplayName() == null && o2.getDisplayOrder() != null) {
+			} else if(o1.getDisplayOrder() == null && o2.getDisplayOrder() != null) {
 				return -1;
+			/* having this return '0' will override a particular menu - guard against this */
+			} else if(o1.getDisplayOrder().compareTo(o2.getDisplayOrder()) != 0) {
+				return o1.getDisplayOrder().compareTo(o2.getDisplayOrder());
+			/* display orders are equal - just place at end of DS */
 			} else {
-				return o1.getDisplayName().compareTo(o2.getDisplayName());
+				return -1;
 			}
 		}
 		

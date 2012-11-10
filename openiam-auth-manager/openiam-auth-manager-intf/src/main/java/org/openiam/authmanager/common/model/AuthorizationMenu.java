@@ -133,11 +133,6 @@ public class AuthorizationMenu implements Serializable {
 				   StringUtils.equalsIgnoreCase(prop.getName(), AuthorizationConstants.MENU_ITEM_DISPLAY_NAME_PROPERTY)) {
 					displayName = StringUtils.trimToNull(prop.getPropValue());
 				}
-				if(isPublic == false && 
-				   StringUtils.equalsIgnoreCase(prop.getName(), AuthorizationConstants.MENU_ITEM_IS_PUBLIC_PROPERTY) &&  
-				   StringUtils.equalsIgnoreCase(Boolean.TRUE.toString(), prop.getPropValue())) {
-					isPublic = true;
-				}
 				if(icon == null && StringUtils.equalsIgnoreCase(prop.getName(), AuthorizationConstants.MENU_ITEM_ICON_PROPERTY)) {
 					icon = StringUtils.trimToNull(prop.getPropValue());
 				}
@@ -147,6 +142,10 @@ public class AuthorizationMenu implements Serializable {
 	
 	public boolean getIsPublic() {
 		return isPublic;
+	}
+	
+	public void setIsPublic(final boolean isPublic) {
+		this.isPublic = isPublic;
 	}
 
 	@Override
@@ -203,8 +202,14 @@ public class AuthorizationMenu implements Serializable {
 		if(firstChild != null && other.firstChild == null) {
 			return false;
 		}
-		if(firstChild != null && other.firstChild != null && !firstChild.getId().equals(other.firstChild.getId())) {
-			return false;
+		if(firstChild != null && other.firstChild != null) {
+			if(firstChild.getId() != null && other.firstChild.getId() == null) {
+				return false;
+			} else if(firstChild.getId() == null && other.firstChild.getId() != null) {
+				return false;
+			} else if(!firstChild.getId().equals(other.firstChild.getId())) {
+				return false;
+			}
 		}
 		
 		if(nextSibling == null && other.nextSibling != null) {
@@ -213,8 +218,14 @@ public class AuthorizationMenu implements Serializable {
 		if(nextSibling != null && other.nextSibling == null) {
 			return false;
 		}
-		if(nextSibling != null && other.nextSibling != null && !nextSibling.getId().equals(other.nextSibling.getId())) {
-			return false;
+		if(nextSibling != null && other.nextSibling != null) {
+			if(nextSibling.getId() != null && other.nextSibling.getId() == null) {
+				return false;
+			} else if(nextSibling.getId() == null && other.nextSibling.getId() != null) {
+				return false;
+			} else if(!nextSibling.getId().equals(other.nextSibling.getId())) {
+				return false;
+			}
 		}
 		
 		if(parent == null && other.parent != null) {
@@ -223,14 +234,30 @@ public class AuthorizationMenu implements Serializable {
 		if(parent != null && other.parent == null) {
 			return false;
 		}
-		if(parent != null && other.parent != null && !parent.getId().equals(other.parent.getId())) {
-			return false;
+		if(parent != null && other.parent != null) {
+			if(parent.getId() != null && other.parent.getId() == null) {
+				return false;
+			} else if(parent.getId() == null && other.parent.getId() != null) {
+				return false;
+			} else if(!parent.getId().equals(other.parent.getId())) {
+				return false;
+			}
 		}
 		if (url == null) {
 			if (other.url != null)
 				return false;
 		} else if (!url.equals(other.url))
 			return false;
+
+		if (icon == null) {
+			if (other.icon != null)
+				return false;
+		} else if (!icon.equals(other.icon))
+			return false;
+		
+		if(isPublic != other.isPublic) {
+			return false;
+		}
 		return true;
 	}
 	
