@@ -61,7 +61,6 @@ public class UserEntity {
     @Column(name = "COMPANY_OWNER_ID", length = 32)
     private String companyOwnerId;
 
-    @XmlSchemaType(name = "dateTime")
     @Column(name = "CREATE_DATE", length = 19)
     private Date createDate;
 

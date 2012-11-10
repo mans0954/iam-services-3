@@ -11,7 +11,8 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import static org.hibernate.criterion.Example.create;
-import org.openiam.idm.srvc.res.dto.*;
+
+import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 
 /**
  * DAO Implementation for ResourceType
@@ -38,7 +39,7 @@ public class ResourceTypeDAOImpl implements ResourceTypeDAO  {
 
 
 
-	public void persist(ResourceType transientInstance) {
+	public void persist(ResourceTypeEntity transientInstance) {
 		log.debug("persisting ResourceType instance");
 		try {
 			sessionFactory.getCurrentSession().persist(transientInstance);
@@ -49,7 +50,7 @@ public class ResourceTypeDAOImpl implements ResourceTypeDAO  {
 		}
 	}
 
-	public void remove(ResourceType persistentInstance) {
+	public void remove(ResourceTypeEntity persistentInstance) {
 		log.debug("deleting ResourceType instance");
 		try {
 			sessionFactory.getCurrentSession().delete(persistentInstance);
@@ -60,10 +61,10 @@ public class ResourceTypeDAOImpl implements ResourceTypeDAO  {
 		}
 	}
 
-	public ResourceType update(ResourceType detachedInstance) {
+	public ResourceTypeEntity update(ResourceTypeEntity detachedInstance) {
 		log.debug("merging ResourceType instance");
 		try {
-			ResourceType result = (ResourceType) sessionFactory
+			ResourceTypeEntity result = (ResourceTypeEntity) sessionFactory
 					.getCurrentSession().merge(detachedInstance);
 			log.debug("merge successful");
 			return result;
@@ -73,12 +74,11 @@ public class ResourceTypeDAOImpl implements ResourceTypeDAO  {
 		}
 	}
 
-	public ResourceType findById(java.lang.String id) {
+	public ResourceTypeEntity findById(java.lang.String id) {
 		log.debug("getting ResourceType instance with id: " + id);
 		try {
-			ResourceType instance = (ResourceType) sessionFactory
-					.getCurrentSession().get(
-							"org.openiam.idm.srvc.res.dto.ResourceType",
+			ResourceTypeEntity instance = (ResourceTypeEntity) sessionFactory
+					.getCurrentSession().get(ResourceTypeEntity.class,
 							id);
 			if (instance == null) {
 				log.debug("get successful, no instance found");
@@ -92,12 +92,11 @@ public class ResourceTypeDAOImpl implements ResourceTypeDAO  {
 		}
 	}
 
-	public List<ResourceType> findByExample(ResourceType instance) {
+	public List<ResourceTypeEntity> findByExample(ResourceTypeEntity instance) {
 		log.debug("finding ResourceType instance by example");
 		try {
-			List<ResourceType> results = (List<ResourceType>) sessionFactory
-					.getCurrentSession().createCriteria(
-							"org.openiam.idm.srvc.res.dto.ResourceType")
+			List<ResourceTypeEntity> results = (List<ResourceTypeEntity>) sessionFactory
+					.getCurrentSession().createCriteria(ResourceTypeEntity.class)
 					.add(create(instance)).list();
 			log.debug("find by example successful, result size: "
 					+ results.size());
@@ -108,7 +107,7 @@ public class ResourceTypeDAOImpl implements ResourceTypeDAO  {
 		}
 	}
 	
-	public ResourceType add(ResourceType instance) {
+	public ResourceTypeEntity add(ResourceTypeEntity instance) {
 		log.debug("persisting ResourceType instance");		
 		try {
 			sessionFactory.getCurrentSession().persist(instance);
@@ -120,18 +119,15 @@ public class ResourceTypeDAOImpl implements ResourceTypeDAO  {
 		}
 	}
 
-	public List<ResourceType> findAllResourceTypes() {
+	public List<ResourceTypeEntity> findAllResourceTypes() {
 		Session session = sessionFactory.getCurrentSession();
-		Query qry = session.createQuery("from org.openiam.idm.srvc.res.dto.ResourceType a " +
-				" order by a.resourceTypeId asc");
-		List<ResourceType> result = (List<ResourceType>)qry.list();
-		
+        List<ResourceTypeEntity> result = (List<ResourceTypeEntity>)session.createCriteria(ResourceTypeEntity.class).list();
 		return result;
 	}
 	
 	public int removeAllResourceTypes() {
 		Session session = sessionFactory.getCurrentSession();
-		Query qry = session.createQuery("delete from org.openiam.idm.srvc.res.dto.ResourceType");
+		Query qry = session.createQuery("delete from org.openiam.idm.srvc.res.domain.ResourceTypeEntity");
 		return qry.executeUpdate();
 	}
 	

@@ -3,12 +3,9 @@ package org.openiam.idm.srvc.role.service;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.Hibernate;
-import org.mvel2.optimizers.impl.refl.nodes.ArrayLength;
 import org.openiam.exception.data.ObjectNotFoundException;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.UserGroupDAO;
-import org.openiam.idm.srvc.res.dto.ResourceRole;
 import org.openiam.idm.srvc.res.service.ResourceRoleDAO;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.dto.RoleAttribute;
@@ -22,8 +19,6 @@ import org.openiam.idm.srvc.user.dto.UserConstant;
 import org.openiam.idm.srvc.user.service.UserDataService;
 
 import java.util.*;
-
-import javax.jws.WebService;
 
 //Note: as per spec serviceName goes in impl class and name goes in interface
 		

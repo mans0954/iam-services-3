@@ -1,14 +1,11 @@
 package org.openiam.idm.srvc.res.dto;
 
-import javax.persistence.Column;
-import javax.persistence.EmbeddedId;
-import javax.persistence.Entity;
-import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 import java.util.Date;
+import org.openiam.idm.srvc.res.domain.ResourceRoleEntity;
 
 // Generated Mar 8, 2009 12:54:32 PM by Hibernate Tools 3.2.2.GA
 
@@ -22,8 +19,6 @@ import java.util.Date;
         "startDate",
         "endDate"
 })
-@Entity
-@Table(name="RESOURCE_ROLE")
 public class ResourceRole implements java.io.Serializable {
 
 	private ResourceRoleId id;
@@ -35,8 +30,13 @@ public class ResourceRole implements java.io.Serializable {
 
     public ResourceRole() {
     }
-    
-    @EmbeddedId
+
+    public ResourceRole(ResourceRoleEntity resourceRoleEntity) {
+        this.id = new ResourceRoleId(resourceRoleEntity.getId());
+        this.startDate = resourceRoleEntity.getStartDate();
+        this.endDate = resourceRoleEntity.getEndDate();
+    }
+
 	public ResourceRoleId getId() {
 		return id;
 	}
@@ -45,7 +45,6 @@ public class ResourceRole implements java.io.Serializable {
 		this.id = id;
 	}
 
-	@Column(name="START_DATE")
 	public Date getStartDate() {
         return startDate;
     }
@@ -54,7 +53,6 @@ public class ResourceRole implements java.io.Serializable {
         this.startDate = startDate;
     }
 
-    @Column(name="END_DATE")
     public Date getEndDate() {
         return endDate;
     }

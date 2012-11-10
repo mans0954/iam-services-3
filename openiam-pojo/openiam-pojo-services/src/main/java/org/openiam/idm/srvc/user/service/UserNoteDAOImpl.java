@@ -132,8 +132,7 @@ public class UserNoteDAOImpl implements UserNoteDAO {
 
 	public List<UserNoteEntity> findUserNotes(String userId) {
 		Criteria criteria = sessionFactory.getCurrentSession().createCriteria(UserNoteEntity.class)
-                .createAlias("user","u")
-                .add(Restrictions.eq("u.userId",userId))
+                .add(Restrictions.eq("user.userId",userId))
                 .addOrder(Order.asc("userNoteId"));
 		List<UserNoteEntity> results = (List<UserNoteEntity>)criteria.list();
 		return results;

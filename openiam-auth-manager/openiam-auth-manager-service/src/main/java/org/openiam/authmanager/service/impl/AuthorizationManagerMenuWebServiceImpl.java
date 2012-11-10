@@ -28,6 +28,8 @@ import org.openiam.authmanager.ws.request.MenuRequest;
 import org.openiam.authmanager.ws.response.MenuError;
 import org.openiam.authmanager.ws.response.MenuSaveResponse;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
@@ -93,7 +95,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 		final MenuSaveResponse response = new MenuSaveResponse();
 		response.setResponseStatus(ResponseStatus.SUCCESS);
 		try {
-			final Resource resource = resourceDAO.findById(rootId);
+			final ResourceEntity resource = resourceDAO.findById(rootId);
 			
 			if(resource == null) {
 				throw new AuthorizationMenuException(MenuError.MENU_DOES_NOT_EXIST, rootId);
@@ -193,15 +195,15 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 					}
 				}
 				
-				final List<Resource> resourcesToCreate = new LinkedList<Resource>();
-				final List<Resource> resourcesToUpdate = new LinkedList<Resource>();
-				final List<Resource> resourcesToDelete = new LinkedList<Resource>();
+				final List<ResourceEntity> resourcesToCreate = new LinkedList<ResourceEntity>();
+				final List<ResourceEntity> resourcesToUpdate = new LinkedList<ResourceEntity>();
+				final List<ResourceEntity> resourcesToDelete = new LinkedList<ResourceEntity>();
 				
 				/* mark menus for deletion */
 				if(CollectionUtils.isNotEmpty(deletedMenus)) {
-					final List<Resource> deletedResourceList = new LinkedList<Resource>();
+					final List<ResourceEntity> deletedResourceList = new LinkedList<ResourceEntity>();
 					for(final AuthorizationMenu menu : deletedMenus) {
-						final Resource resource = resourceDAO.findById(menu.getId());
+						final ResourceEntity resource = resourceDAO.findById(menu.getId());
 						if(resource != null) {
 							deletedResourceList.add(resource);
 						}
@@ -211,7 +213,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 				
 				/* return error if Resource has Collections on it */
 				if(CollectionUtils.isNotEmpty(resourcesToDelete)) {
-					for(final Resource resource : resourcesToDelete) {
+					for(final ResourceEntity resource : resourcesToDelete) {
 						if(CollectionUtils.isNotEmpty(resource.getChildResources())) {
 							throw new AuthorizationMenuException(MenuError.HANGING_CHILDREN, resource.getName());
 						}
@@ -236,11 +238,11 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 					for(final AuthorizationMenu menu : changedMenus) {
 						changedMenuMap.put(menu.getId(), menu);
 					}
-					final List<Resource> resourceList = resourceDAO.findByIds(changedMenuMap.keySet());
-					for(final Resource resource : resourceList) {
+					final List<ResourceEntity> resourceList = resourceDAO.findByIds(changedMenuMap.keySet());
+					for(final ResourceEntity resource : resourceList) {
 						final AuthorizationMenu menu = changedMenuMap.get(resource.getResourceId());	
 						
-						final Resource existingResource = resourceDAO.findByName(menu.getName());
+						final ResourceEntity existingResource = resourceDAO.findByName(menu.getName());
 						/* check that, if the user changed the name of the menu, it doesn't conflict with another resource with the same name */
 						if(existingResource != null && !existingResource.getResourceId().equals(resource.getResourceId())) {
 							throw new AuthorizationMenuException(MenuError.MENU_NAME_EXISTS, resource.getName());
@@ -253,12 +255,12 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 				
 				/* find Menus to create */
 				if(CollectionUtils.isNotEmpty(newMenus)) {
-					final List<Resource> newResourceList = new LinkedList<Resource>();
+					final List<ResourceEntity> newResourceList = new LinkedList<ResourceEntity>();
 					for(final AuthorizationMenu menu : newMenus) {
-						final Resource resource = createResource(menu);
+						final ResourceEntity resource = createResource(menu);
 						newResourceList.add(resource);
 						
-						final Resource existingResource = resourceDAO.findByName(resource.getName());
+						final ResourceEntity existingResource = resourceDAO.findByName(resource.getName());
 						/* check that, if the user changed the name of the menu, it doesn't conflict with another resource with the same name */
 						if(existingResource != null) {
 							throw new AuthorizationMenuException(MenuError.MENU_NAME_EXISTS, resource.getName());
@@ -268,28 +270,28 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 				}
 				
 				/* create the maps */
-				final Map<String, Resource> resourcesToUpdateMap = new HashMap<String, Resource>();
-				final Map<String, Resource> resourceToCreateMap = new HashMap<String, Resource>();
-				final Map<String, Resource> resourceToDeleteMap = new HashMap<String, Resource>();
-				for(final Resource resource : resourcesToUpdate) {
+				final Map<String, ResourceEntity> resourcesToUpdateMap = new HashMap<String, ResourceEntity>();
+				final Map<String, ResourceEntity> resourceToCreateMap = new HashMap<String, ResourceEntity>();
+				final Map<String, ResourceEntity> resourceToDeleteMap = new HashMap<String, ResourceEntity>();
+				for(final ResourceEntity resource : resourcesToUpdate) {
 					resourcesToUpdateMap.put(resource.getResourceId(), resource);
 				}
-				for(final Resource resource : resourcesToCreate) {
+				for(final ResourceEntity resource : resourcesToCreate) {
 					resourceToCreateMap.put(resource.getResourceId(), resource);
 				}
-				for(final Resource resource : resourcesToDelete) {
+				for(final ResourceEntity resource : resourcesToDelete) {
 					resourceToDeleteMap.put(resource.getResourceId(), resource);
 				}
 				
 				/* set new xrefs, if any */
 				if(CollectionUtils.isNotEmpty(resourcesToCreate)) {
-					for(final Resource resource : resourcesToCreate) {
+					for(final ResourceEntity resource : resourcesToCreate) {
 						final String parentId = newResourceName2ParentIdMap.get(resource.getName());
 						if(!resourcesToUpdateMap.containsKey(parentId)) {
-							final Resource parent = resourceDAO.findById(parentId);
+							final ResourceEntity parent = resourceDAO.findById(parentId);
 							resourcesToUpdateMap.put(parentId, parent);
 						}
-						final Resource parent = resourcesToUpdateMap.get(parentId);
+						final ResourceEntity parent = resourcesToUpdateMap.get(parentId);
 						parent.addChildResource(resource);
 					}
 				}
@@ -298,11 +300,11 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 				if(CollectionUtils.isNotEmpty(deletedXrefs)) {
 					for(final ResourceResourceXref xref : deletedXrefs) {
 						if(!resourcesToUpdateMap.containsKey(xref.getResourceId())) {
-							final Resource resource = resourceDAO.findById(xref.getResourceId());
+							final ResourceEntity resource = resourceDAO.findById(xref.getResourceId());
 							resourcesToUpdateMap.put(resource.getResourceId(), resource);
 						}
-						final Resource resource = resourcesToUpdateMap.get(xref.getResourceId());
-						final Resource toDelete = resourceToDeleteMap.get(xref.getMemberResourceId());
+						final ResourceEntity resource = resourcesToUpdateMap.get(xref.getResourceId());
+						final ResourceEntity toDelete = resourceToDeleteMap.get(xref.getMemberResourceId());
 						resource.removeChildResource(toDelete);
 					}
 				}
@@ -316,7 +318,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 				}
 				
 				if(CollectionUtils.isNotEmpty(resourcesToDelete)) {
-					for(final Resource resource : resourcesToDelete) {
+					for(final ResourceEntity resource : resourcesToDelete) {
 						resourceDAO.delete(resource);
 					}
 				}
@@ -331,73 +333,73 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 		return response;
 	}
 	
-	private Resource createResource(final AuthorizationMenu menu) {
-		final Resource resource = new Resource();
+	private ResourceEntity createResource(final AuthorizationMenu menu) {
+		final ResourceEntity resource = new ResourceEntity();
 		resource.setURL(menu.getUrl());
 		resource.setName(menu.getName());
 		resource.setDisplayOrder(menu.getDisplayOrder());
-		resource.setIsPublic(menu.getIsPublic());
+		resource.setPublic(menu.getIsPublic());
 		resource.setResourceType(resourceTypeDAO.findById(AuthorizationConstants.MENU_ITEM_RESOURCE_TYPE));
 		
-		final ResourceProp displayNameProp = new ResourceProp();
+		final ResourcePropEntity displayNameProp = new ResourcePropEntity();
 		displayNameProp.setResourceId(resource.getResourceId());
 		displayNameProp.setName(AuthorizationConstants.MENU_ITEM_DISPLAY_NAME_PROPERTY);
 		displayNameProp.setPropValue(menu.getDisplayName());
-		resource.addResourceProp(displayNameProp);
+		resource.addResourceProperty(displayNameProp);
 		
-		final ResourceProp iconProp = new ResourceProp();
+		final ResourcePropEntity iconProp = new ResourcePropEntity();
 		iconProp.setResourceId(resource.getResourceId());
 		iconProp.setName(AuthorizationConstants.MENU_ITEM_ICON_PROPERTY);
 		iconProp.setPropValue(menu.getIcon());
-		resource.addResourceProp(iconProp);
+		resource.addResourceProperty(iconProp);
 		
-		final ResourceProp urlProp = new ResourceProp();
+		final ResourcePropEntity urlProp = new ResourcePropEntity();
 		urlProp.setResourceId(resource.getResourceId());
 		urlProp.setName(AuthorizationConstants.URL_PATTERN_PROPERTY);
 		urlProp.setPropValue(menu.getUrl());
-		resource.addResourceProp(urlProp);
+		resource.addResourceProperty(urlProp);
 		
 		return resource;
 	}
 	
-	private void merge(final Resource resource, final AuthorizationMenu menu) {
+	private void merge(final ResourceEntity resource, final AuthorizationMenu menu) {
 		resource.setURL(menu.getUrl());
 		resource.setName(menu.getName());
 		resource.setDisplayOrder(menu.getDisplayOrder());
-		resource.setIsPublic(menu.getIsPublic());
+		resource.setPublic(menu.getIsPublic());
 		
-		ResourceProp displayNameProp = resource.getResourceProperty(AuthorizationConstants.MENU_ITEM_DISPLAY_NAME_PROPERTY);
-		ResourceProp iconProp = resource.getResourceProperty(AuthorizationConstants.MENU_ITEM_ICON_PROPERTY);
-		ResourceProp urlProp = resource.getResourceProperty(AuthorizationConstants.URL_PATTERN_PROPERTY);
+		ResourcePropEntity displayNameProp = resource.getResourceProperty(AuthorizationConstants.MENU_ITEM_DISPLAY_NAME_PROPERTY);
+		ResourcePropEntity iconProp = resource.getResourceProperty(AuthorizationConstants.MENU_ITEM_ICON_PROPERTY);
+		ResourcePropEntity urlProp = resource.getResourceProperty(AuthorizationConstants.URL_PATTERN_PROPERTY);
 		
 		if(displayNameProp != null) {
 			displayNameProp.setPropValue(menu.getDisplayName());
 		} else {
-			displayNameProp = new ResourceProp();
+			displayNameProp = new ResourcePropEntity();
 			displayNameProp.setResourceId(resource.getResourceId());
 			displayNameProp.setName(AuthorizationConstants.MENU_ITEM_DISPLAY_NAME_PROPERTY);
 			displayNameProp.setPropValue(menu.getDisplayName());
-			resource.addResourceProp(displayNameProp);
+			resource.addResourceProperty(displayNameProp);
 		}
 		
 		if(iconProp != null) {
 			iconProp.setPropValue(menu.getIcon());
 		} else {
-			iconProp = new ResourceProp();
+			iconProp = new ResourcePropEntity();
 			iconProp.setResourceId(resource.getResourceId());
 			iconProp.setName(AuthorizationConstants.MENU_ITEM_ICON_PROPERTY);
 			iconProp.setPropValue(menu.getIcon());
-			resource.addResourceProp(iconProp);
+			resource.addResourceProperty(iconProp);
 		}
 		
 		if(urlProp != null) {
 			urlProp.setPropValue(menu.getUrl());
 		} else {
-			urlProp = new ResourceProp();
+			urlProp = new ResourcePropEntity();
 			urlProp.setResourceId(resource.getResourceId());
 			urlProp.setName(AuthorizationConstants.URL_PATTERN_PROPERTY);
 			urlProp.setPropValue(menu.getUrl());
-			resource.addResourceProp(urlProp);
+			resource.addResourceProperty(urlProp);
 		}
 	}
 	

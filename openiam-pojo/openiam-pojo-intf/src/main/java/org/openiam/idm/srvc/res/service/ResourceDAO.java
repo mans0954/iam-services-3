@@ -1,18 +1,13 @@
 package org.openiam.idm.srvc.res.service;
 
-import org.hibernate.SessionFactory;
-import org.openiam.base.BaseDAO;
 import org.openiam.core.dao.BaseDao;
-import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.idm.srvc.res.dto.ResourceProp;
-import org.openiam.idm.srvc.res.dto.ResourceRole;
-import org.openiam.idm.srvc.res.dto.ResourceType;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
 
 import java.util.List;
 
-public interface ResourceDAO extends BaseDao<Resource, String> {
+public interface ResourceDAO extends BaseDao<ResourceEntity, String> {
 
-    Resource findByName(String resourceName);
+    ResourceEntity findByName(String resourceName);
 
 
     /**
@@ -21,7 +16,7 @@ public interface ResourceDAO extends BaseDao<Resource, String> {
      * @param resourceTypeId the resource type id
      * @return the resources by type
      */
-    List<Resource> getResourcesByType(String resourceTypeId);
+    List<ResourceEntity> getResourcesByType(String resourceTypeId);
 
     /**
      * Find resources for role.
@@ -29,7 +24,7 @@ public interface ResourceDAO extends BaseDao<Resource, String> {
      * @param roleId   the role id
      * @return the list
      */
-    List<Resource> findResourcesForRole(String roleId);
+    List<ResourceEntity> findResourcesForRole(String roleId);
 
     /**
      * Find resources for roles.
@@ -37,9 +32,9 @@ public interface ResourceDAO extends BaseDao<Resource, String> {
      * @param roleIdList the role id list
      * @return the list
      */
-    List<Resource> findResourcesForRoles(List<String> roleIdList);
+    List<ResourceEntity> findResourcesForRoles(List<String> roleIdList);
 
-    List<Resource> findResourcesForUserRole(String userId);
+    List<ResourceEntity> findResourcesForUserRole(String userId);
 
-    List<Resource> getRootResources(Resource resource, int startAt, int size);
+    List<ResourceEntity> getRootResources(ResourceEntity resource, int startAt, int size);
 }

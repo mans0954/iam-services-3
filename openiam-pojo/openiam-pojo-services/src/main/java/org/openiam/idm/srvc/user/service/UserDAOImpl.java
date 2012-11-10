@@ -255,7 +255,7 @@ public class UserDAOImpl implements UserDAO {
 
 
         StringBuffer where = new StringBuffer();
-        where.append(" SYSTEM_FLAG<>:systemFlag ");
+        where.append(" (u.SYSTEM_FLAG is null or u.SYSTEM_FLAG<>:systemFlag) ");
         if(search.getShowInSearch() != null) {
             if(where.length() > 0) {
                 where.append(" and ");
@@ -749,7 +749,7 @@ public class UserDAOImpl implements UserDAO {
 
 
         StringBuilder where = new StringBuilder();
-        where.append(" SYSTEM_FLAG<>:systemFlag ");
+        where.append(" (u.SYSTEM_FLAG is null or u.SYSTEM_FLAG<>:systemFlag) ");
         if (search.getShowInSearch() != null) {
             if (where.length() > 0) {
                 where.append(" and ");
@@ -957,7 +957,7 @@ public class UserDAOImpl implements UserDAO {
                 where.append(" and ");
             }
             where.append(" urv.ROLE_ID in (:roleList) ");
-            where.append(" and urv.SERVICE_ID = :domainId ");
+           // where.append(" and urv.SERVICE_ID = :domainId ");
             roleId = true;
         }
 
@@ -1300,7 +1300,7 @@ public class UserDAOImpl implements UserDAO {
                       "	 	LEFT JOIN USER_ROLE ur on (u.USER_ID = ur.USER_ID) ");
 
         StringBuffer whereBuf = new StringBuffer();
-        whereBuf.append(" u.SYSTEM_FLAG<>:systemFlag ");
+        whereBuf.append(" (u.SYSTEM_FLAG is null or u.SYSTEM_FLAG<>:systemFlag) ");
         if(search.getRole() != null) {
             whereBuf.append(" ur.ROLE_ID = :role ");
             rl = true;

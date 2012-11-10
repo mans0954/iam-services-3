@@ -1,23 +1,28 @@
 package org.openiam.idm.srvc.res.dto;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+import org.openiam.idm.srvc.res.domain.ResourceRoleEmbeddableId;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ResourceRoleId", propOrder = {
         "roleId",
         "resourceId"
 })
-@Embeddable
 public class ResourceRoleId implements java.io.Serializable {
 	private String roleId;
 	private String resourceId;
-	
-	@Column(name="ROLE_ID",length=32,nullable=false)
-	public String getRoleId() {
+
+    public ResourceRoleId() {
+    }
+
+    public ResourceRoleId(ResourceRoleEmbeddableId embeddableId) {
+        this.roleId = embeddableId.getRoleId();
+        this.resourceId = embeddableId.getResourceId();
+    }
+
+    public String getRoleId() {
 		return roleId;
 	}
 	
@@ -25,7 +30,6 @@ public class ResourceRoleId implements java.io.Serializable {
 		this.roleId = roleId;
 	}
 	
-	@Column(name="RESOURCE_ID",length=32,nullable=false)
 	public String getResourceId() {
 		return resourceId;
 	}

@@ -42,6 +42,7 @@ import org.openiam.idm.srvc.prov.request.dto.ProvisionRequest;
 import org.openiam.idm.srvc.prov.request.dto.RequestApprover;
 import org.openiam.idm.srvc.prov.request.service.ProvisionRequestDAO;
 import org.openiam.idm.srvc.prov.request.service.RequestDataService;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
@@ -197,7 +198,7 @@ public class ActivitiServiceImpl implements ActivitiService {
 			/* populate the provision request with required values */
 			final Date currentDate = new Date();
 			final String xml = new XStream().toXML(provisionUser);
-			final Resource newUserResource = resourceDao.findById(NEW_HIRE_REQUEST_TYPE);
+			final ResourceEntity newUserResource = resourceDao.findById(NEW_HIRE_REQUEST_TYPE);
 			provisionRequest.setRequestXML(xml);
 			provisionRequest.setStatus("PENDING");
 			provisionRequest.setStatusDate(currentDate);

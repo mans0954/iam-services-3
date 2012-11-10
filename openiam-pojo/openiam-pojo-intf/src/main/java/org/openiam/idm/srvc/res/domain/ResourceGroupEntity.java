@@ -1,47 +1,45 @@
-package org.openiam.idm.srvc.res.dto;
+package org.openiam.idm.srvc.res.domain;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlType;
 import java.util.Date;
-import org.openiam.idm.srvc.res.domain.ResourceGroupEntity;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import org.hibernate.annotations.GenericGenerator;
+import org.openiam.idm.srvc.res.dto.ResourceGroup;
 
-// Generated Mar 8, 2009 12:54:32 PM by Hibernate Tools 3.2.2.GA
+@Entity
+@Table(name = "RESOURCE_GROUP")
+public class ResourceGroupEntity {
 
-/**
- * ResourceUser is the association of resource and a user
- */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "ResourceGroup", propOrder = {
-        "resGroupId",
-        "resourceId",
-        "groupId",
-        "startDate",
-        "endDate"
-})
-public class ResourceGroup implements java.io.Serializable {
+    @Id
+    @GeneratedValue(generator = "system-uuid")
+    @GenericGenerator(name = "system-uuid", strategy = "uuid")
+    @Column(name = "RES_GROUP_ID", length = 32)
+    private String resGroupId;
 
-    String resGroupId;
-    String resourceId;
-    String groupId;
-    Date startDate;
-    Date endDate;
+    @Column(name = "RESOURCE_ID", length = 32)
+    private String resourceId;
 
+    @Column(name = "GRP_ID", length = 32)
+    private String groupId;
 
-    public ResourceGroup() {
+    @Column(name = "START_DATE", length = 19)
+    private Date startDate;
+
+    @Column(name = "END_DATE", length = 19)
+    private Date endDate;
+
+    public ResourceGroupEntity() {
     }
 
-    public ResourceGroup(ResourceGroupEntity groupEntity) {
-        this.resGroupId = groupEntity.getResGroupId();
-        this.resourceId = groupEntity.getResourceId();
-        this.groupId = groupEntity.getGroupId();
-        this.startDate = groupEntity.getStartDate();
-        this.endDate = groupEntity.getEndDate();
-    }
-
-    public ResourceGroup(String resourceId, String groupId) {
-        this.resourceId = resourceId;
-        this.groupId = groupId;
+    public ResourceGroupEntity(ResourceGroup resourceGroup) {
+        this.resGroupId = resourceGroup.getGroupId();
+        this.resourceId = resourceGroup.getResourceId();
+        this.groupId = resourceGroup.getGroupId();
+        this.startDate = resourceGroup.getStartDate();
+        this.endDate = resourceGroup.getEndDate();
     }
 
     public String getResGroupId() {
@@ -89,7 +87,7 @@ public class ResourceGroup implements java.io.Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        ResourceGroup that = (ResourceGroup) o;
+        ResourceGroupEntity that = (ResourceGroupEntity) o;
 
         if (endDate != null ? !endDate.equals(that.endDate) : that.endDate != null) return false;
         if (groupId != null ? !groupId.equals(that.groupId) : that.groupId != null) return false;
