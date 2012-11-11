@@ -16,7 +16,7 @@ public class PersistentObjectConverter  implements ConfigurableCustomConverter {
 	public Object convert(Object destVal, Object sourceVal, Class<?> destClass, Class<?> sourceClass) {
 		Object retVal = null;
 		if(sourceVal != null && mapper != null) {
-			retVal = mapper.map(sourceVal, sourceVal.getClass());
+			retVal = mapper.map(sourceVal, destClass);
 		}
 		return retVal;
 	}

@@ -165,10 +165,6 @@
 			<b>resourceGroups</b>
 		</field-exclude>
 		<field-exclude>
-			<a>entitlements</a>
-			<b>entitlements</b>
-		</field-exclude>
-		<field-exclude>
 			<a>parentResources</a>
 			<b>parentResources</b>
 		</field-exclude>

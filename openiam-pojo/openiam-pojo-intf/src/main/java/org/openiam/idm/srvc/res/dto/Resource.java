@@ -34,7 +34,6 @@ import org.openiam.idm.srvc.res.domain.ResourceRoleEntity;
         "resourceRoles",
         "resourceProps",
         "resourceGroups",
-        "entitlements",
         "resOwnerUserId",
         "resOwnerGroupId",
         "childResources",
@@ -71,7 +70,7 @@ public class Resource extends BaseObject {
 
     private Set<ResourceGroup> resourceGroups = new HashSet<ResourceGroup>(0);
 
-    private Set<ResourcePrivilege> entitlements = new HashSet<ResourcePrivilege>(0);
+    //private Set<ResourcePrivilege> entitlements = new HashSet<ResourcePrivilege>(0);
     
     private String minAuthLevel;
     private String domain;
@@ -91,7 +90,7 @@ public class Resource extends BaseObject {
         this.managedSysId = managedSysId;
     }
 
-    public Resource(ResourceEntity entity) {
+    public Resource(final ResourceEntity entity, final boolean includeCollections) {
                this.resourceId = entity.getResourceId();
         this.resourceType = new ResourceType(entity.getResourceType());
         this.name = entity.getName();
@@ -105,28 +104,42 @@ public class Resource extends BaseObject {
         this.URL = entity.getURL();
         this.resOwnerUserId = entity.getResOwnerUserId();
         this.resOwnerGroupId = entity.getResOwnerGroupId();
-        for (ResourceEntity res : entity.getParentResources()) {
-            this.parentResources.add(new Resource(res));
+        if(includeCollections) {
+        	if(entity.getParentResources() != null) {
+        		for (ResourceEntity res : entity.getParentResources()) {
+        			this.parentResources.add(new Resource(res, false));
+        		}
+        	}
+        	if(entity.getChildResources() != null) {
+        		for (ResourceEntity res : entity.getChildResources()) {
+        			this.childResources.add(new Resource(res, false));
+        		}
+        	}
+        	if(entity.getResourceRoles() != null) {
+        		for (ResourceRoleEntity resourceRole : entity.getResourceRoles()) {
+        			this.resourceRoles.add(new ResourceRole(resourceRole));
+        		}
+        	}
+        	if(entity.getResourceProps() != null) {
+        		for (ResourcePropEntity prop : entity.getResourceProps()) {
+        			this.resourceProps.add(new ResourceProp(prop));
+        		}
+        	}
+        	if(entity.getResourceGroups() != null) {
+        		for (ResourceGroupEntity group : entity.getResourceGroups()) {
+        			this.resourceGroups.add(new ResourceGroup(group));
+        		}
+        	}
         }
-        for (ResourceEntity res : entity.getChildResources()) {
-            this.childResources.add(new Resource(res));
-        }
-        for (ResourceRoleEntity resourceRole : entity.getResourceRoles()) {
-            this.resourceRoles.add(new ResourceRole(resourceRole));
-        }
-        for (ResourcePropEntity prop : entity.getResourceProps()) {
-            this.resourceProps.add(new ResourceProp(prop));
-        }
-        for (ResourceGroupEntity group : entity.getResourceGroups()) {
-            this.resourceGroups.add(new ResourceGroup(group));
-        }
+        /*
         for (ResourcePrivilegeEntity privilege : entity.getEntitlements()) {
             this.entitlements.add(new ResourcePrivilege(privilege));
         }
+        */
         this.minAuthLevel = entity.getMinAuthLevel();
         this.domain = entity.getDomain();
-        this.isPublic = entity.isPublic();
-        this.isSSL = entity.isSSL();
+        this.isPublic = entity.getIsPublic();
+        this.isSSL = entity.getIsSSL();
     }
 
     public String getResourceId() {
@@ -280,7 +293,7 @@ public class Resource extends BaseObject {
                 ", resourceRoles=" + resourceRoles +
                 ", resourceProps=" + resourceProps +
                 ", resourceGroups=" + resourceGroups +
-                ", entitlements=" + entitlements +
+                /*", entitlements=" + entitlements +*/
                 '}';
     }
 
@@ -332,6 +345,7 @@ public class Resource extends BaseObject {
         this.resOwnerGroupId = resOwnerGroupId;
     }
 
+    /*
     public Set<ResourcePrivilege> getEntitlements() {
         return entitlements;
     }
@@ -339,6 +353,7 @@ public class Resource extends BaseObject {
     public void setEntitlements(Set<ResourcePrivilege> entitlements) {
         this.entitlements = entitlements;
     }
+    */
 
 	public Set<Resource> getParentResources() {
 		return parentResources;

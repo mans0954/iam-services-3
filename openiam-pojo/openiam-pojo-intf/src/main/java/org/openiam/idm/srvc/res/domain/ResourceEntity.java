@@ -112,10 +112,12 @@ public class ResourceEntity {
     @Fetch(FetchMode.SUBSELECT)
     private Set<ResourceGroupEntity> resourceGroups = new HashSet<ResourceGroupEntity>(0);
 
+    /*
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "RESOURCE_ID")
     @Fetch(FetchMode.SUBSELECT)
     private Set<ResourcePrivilegeEntity> entitlements = new HashSet<ResourcePrivilegeEntity>(0);
+    */
 
     @Column(name = "MIN_AUTH_LEVEL")
     private String minAuthLevel;
@@ -133,8 +135,8 @@ public class ResourceEntity {
 
     public ResourceEntity() {
     }
-
-    public ResourceEntity(Resource resource) {
+    
+    public ResourceEntity(Resource resource, final boolean includeCollections) {
         this.resourceId = resource.getResourceId();
         if(resource.getResourceType() != null) {
         	this.resourceType = new ResourceTypeEntity(resource.getResourceType());
@@ -150,35 +152,33 @@ public class ResourceEntity {
         this.URL = resource.getURL();
         this.resOwnerUserId = resource.getResOwnerUserId();
         this.resOwnerGroupId = resource.getResOwnerGroupId();
-        if(resource.getParentResources() != null) {
-        	for (Resource res : resource.getParentResources()) {
-        		this.parentResources.add(new ResourceEntity(res));
-        	}
-        }
-        if(resource.getChildResources() != null) {
-	        for (Resource res : resource.getChildResources()) {
-	            this.childResources.add(new ResourceEntity(res));
+        
+        if(includeCollections) {
+	        if(resource.getParentResources() != null) {
+	        	for (Resource res : resource.getParentResources()) {
+	        		this.parentResources.add(new ResourceEntity(res, false));
+	        	}
 	        }
-        }
-        if(resource.getResourceRoles() != null) {
-        	for (ResourceRole resourceRole : resource.getResourceRoles()) {
-        		this.resourceRoles.add(new ResourceRoleEntity(resourceRole));
-        	}
-        }
-        if(resource.getResourceProps() != null) {
-        	for (ResourceProp prop : resource.getResourceProps()) {
-        		this.resourceProps.add(new ResourcePropEntity(prop));
-        	}
-        }
-        if(resource.getResourceGroups() != null) {
-        	for (ResourceGroup group : resource.getResourceGroups()) {
-        		this.resourceGroups.add(new ResourceGroupEntity(group));
-        	}
-        }
-        if(resource.getEntitlements() != null) {
-        	for (ResourcePrivilege privilege : resource.getEntitlements()) {
-        		this.entitlements.add(new ResourcePrivilegeEntity(privilege));
-        	}
+	        if(resource.getChildResources() != null) {
+		        for (Resource res : resource.getChildResources()) {
+		            this.childResources.add(new ResourceEntity(res, false));
+		        }
+	        }
+	        if(resource.getResourceRoles() != null) {
+	        	for (ResourceRole resourceRole : resource.getResourceRoles()) {
+	        		this.resourceRoles.add(new ResourceRoleEntity(resourceRole));
+	        	}
+	        }
+	        if(resource.getResourceProps() != null) {
+	        	for (ResourceProp prop : resource.getResourceProps()) {
+	        		this.resourceProps.add(new ResourcePropEntity(prop));
+	        	}
+	        }
+	        if(resource.getResourceGroups() != null) {
+	        	for (ResourceGroup group : resource.getResourceGroups()) {
+	        		this.resourceGroups.add(new ResourceGroupEntity(group));
+	        	}
+	        }
         }
         this.minAuthLevel = resource.getMinAuthLevel();
         this.domain = resource.getDomain();
@@ -330,6 +330,7 @@ public class ResourceEntity {
         this.resourceGroups = resourceGroups;
     }
 
+    /*
     public Set<ResourcePrivilegeEntity> getEntitlements() {
         return entitlements;
     }
@@ -337,6 +338,7 @@ public class ResourceEntity {
     public void setEntitlements(Set<ResourcePrivilegeEntity> entitlements) {
         this.entitlements = entitlements;
     }
+    */
 
     public String getMinAuthLevel() {
         return minAuthLevel;
@@ -354,19 +356,19 @@ public class ResourceEntity {
         this.domain = domain;
     }
 
-    public boolean isPublic() {
+    public boolean getIsPublic() {
         return isPublic;
     }
 
-    public void setPublic(boolean aPublic) {
+    public void setIsPublic(boolean aPublic) {
         isPublic = aPublic;
     }
 
-    public boolean isSSL() {
+    public boolean getIsSSL() {
         return isSSL;
     }
 
-    public void setSSL(boolean SSL) {
+    public void setIsSSL(boolean SSL) {
         isSSL = SSL;
     }
     
@@ -437,7 +439,7 @@ public class ResourceEntity {
                 ", resourceRoles=" + resourceRoles +
                 ", resourceProps=" + resourceProps +
                 ", resourceGroups=" + resourceGroups +
-                ", entitlements=" + entitlements +
+                /*", entitlements=" + entitlements*/ +
                 '}';
     }
 

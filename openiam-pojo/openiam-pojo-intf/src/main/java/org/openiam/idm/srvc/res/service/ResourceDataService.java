@@ -35,19 +35,6 @@ public interface ResourceDataService {
     Resource getResource(
             @WebParam(name = "resourceId", targetNamespace = "")
             String resourceId);
-
-    /**
-     * Find resources by resource name.
-     * Then pick the first one and return that value
-     * Use getResourcesByName to return the full list
-     * of resources for a name
-     *
-     * @return resource
-     */
-    @WebMethod
-    Resource getResourceByName(
-            @WebParam(name = "resourceName", targetNamespace = "")
-            String resourceName);
     
     /**
      * Update a resource.
@@ -59,15 +46,6 @@ public interface ResourceDataService {
     Resource updateResource(
             @WebParam(name = "resource", targetNamespace = "")
             Resource resource);
-
-    /**
-     * Find all resources.
-     *
-     * @return list of resources
-     */
-    @WebMethod
-    @Deprecated
-    List<Resource> getAllResources();
 
     /**
      * Remove a resource.
@@ -180,41 +158,6 @@ public interface ResourceDataService {
      */
     @WebMethod
     int removeAllResourceProps();
-
-    /**
-     * Find resource children.
-     *
-     * @param resourceId the resource id
-     * @return the child resources
-     */
-    @WebMethod
-    List<Resource> getChildResources(
-            @WebParam(name = "resourceId", targetNamespace = "")
-            String resourceId);
-
-    /**
-     * Find a resource and its descendants and return as an xml tree.
-     *
-     * @param resourceId the resource id
-     * @return xml string  of resource and its descendants
-     */
-    /*
-    @WebMethod
-    String getResourceTreeXML(
-            @WebParam(name = "resourceId", targetNamespace = "")
-            String resourceId);
-	*/
-
-    /**
-     * Find resources having a specified metadata type.
-     *
-     * @param resourceTypeId the resource type id
-     * @return the resources by type
-     */
-    @WebMethod
-    List<Resource> getResourcesByType(
-            @WebParam(name = "resourceTypeId", targetNamespace = "")
-            String resourceTypeId);
 
     /**
      * Add a resource role.

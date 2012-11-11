@@ -105,9 +105,11 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 				throw new AuthorizationMenuException(MenuError.HANGING_CHILDREN, resource.getName());
 			}
 			
+			/*
 			if(CollectionUtils.isNotEmpty(resource.getEntitlements())) {
 				throw new AuthorizationMenuException(MenuError.HANGING_ENTITLEMENTS, resource.getName());
 			}
+			*/
 			
 			if(CollectionUtils.isNotEmpty(resource.getResourceGroups())) {
 				throw new AuthorizationMenuException(MenuError.HANGING_GROUPS, resource.getName());
@@ -218,9 +220,11 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 							throw new AuthorizationMenuException(MenuError.HANGING_CHILDREN, resource.getName());
 						}
 						
+						/*
 						if(CollectionUtils.isNotEmpty(resource.getEntitlements())) {
 							throw new AuthorizationMenuException(MenuError.HANGING_ENTITLEMENTS, resource.getName());
 						}
+						*/
 						
 						if(CollectionUtils.isNotEmpty(resource.getResourceGroups())) {
 							throw new AuthorizationMenuException(MenuError.HANGING_GROUPS, resource.getName());
@@ -338,7 +342,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 		resource.setURL(menu.getUrl());
 		resource.setName(menu.getName());
 		resource.setDisplayOrder(menu.getDisplayOrder());
-		resource.setPublic(menu.getIsPublic());
+		resource.setIsPublic(menu.getIsPublic());
 		resource.setResourceType(resourceTypeDAO.findById(AuthorizationConstants.MENU_ITEM_RESOURCE_TYPE));
 		
 		final ResourcePropEntity displayNameProp = new ResourcePropEntity();
@@ -366,7 +370,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 		resource.setURL(menu.getUrl());
 		resource.setName(menu.getName());
 		resource.setDisplayOrder(menu.getDisplayOrder());
-		resource.setPublic(menu.getIsPublic());
+		resource.setIsPublic(menu.getIsPublic());
 		
 		ResourcePropEntity displayNameProp = resource.getResourceProperty(AuthorizationConstants.MENU_ITEM_DISPLAY_NAME_PROPERTY);
 		ResourcePropEntity iconProp = resource.getResourceProperty(AuthorizationConstants.MENU_ITEM_ICON_PROPERTY);

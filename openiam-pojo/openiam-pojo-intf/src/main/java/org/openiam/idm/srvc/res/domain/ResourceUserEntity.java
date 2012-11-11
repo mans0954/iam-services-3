@@ -23,7 +23,7 @@ public class ResourceUserEntity {
 
     public ResourceUserEntity(ResourceUser resourceUser) {
         this.id = new ResourceUserEmbeddableId(resourceUser.getId().getResourceId(), resourceUser.getId().getUserId(), resourceUser.getId().getPrivilegeId());
-        this.resource = new ResourceEntity(resourceUser.getResource());
+        this.resource = new ResourceEntity(resourceUser.getResource(), false);
     }
 
     public ResourceUserEmbeddableId getId() {

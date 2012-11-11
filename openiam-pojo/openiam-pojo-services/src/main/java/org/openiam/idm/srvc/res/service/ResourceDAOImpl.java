@@ -138,7 +138,7 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String> impleme
                 Hibernate.initialize(r.getResourceType());
                 Hibernate.initialize(r.getResourceProps());
                 Hibernate.initialize(r.getResourceRoles());
-                Hibernate.initialize(r.getEntitlements());
+                //Hibernate.initialize(r.getEntitlements());
                 Hibernate.initialize(r.getResourceGroups());
             }
 
