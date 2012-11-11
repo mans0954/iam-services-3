@@ -25,7 +25,7 @@ public class ResourceUser implements java.io.Serializable {
 
     public ResourceUser(ResourceUserEntity entity) {
       this.id = new ResourceUserId(entity.getId().getResourceId(), entity.getId().getUserId(), entity.getId().getPrivilegeId());
-      this.resource = new Resource(entity.getResource());
+      this.resource = new Resource(entity.getResource(), false);
     }
 
     public ResourceUser(ResourceUserId id, Resource resource) {
