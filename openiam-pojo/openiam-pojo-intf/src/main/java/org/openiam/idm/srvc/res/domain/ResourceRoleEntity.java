@@ -5,10 +5,13 @@ import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+
+import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.res.dto.ResourceRole;
 
 @Entity
 @Table(name="RESOURCE_ROLE")
+@DozerDTOCorrespondence(ResourceRole.class)
 public class ResourceRoleEntity {
 
     @EmbeddedId

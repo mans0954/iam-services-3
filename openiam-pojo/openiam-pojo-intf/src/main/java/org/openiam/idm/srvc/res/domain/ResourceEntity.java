@@ -26,6 +26,7 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
+import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceGroup;
 import org.openiam.idm.srvc.res.dto.ResourcePrivilege;
@@ -37,6 +38,7 @@ import org.openiam.idm.srvc.res.dto.ResourceType;
 @Table(name = "RES")
 @Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@DozerDTOCorrespondence(Resource.class)
 public class ResourceEntity {
 
     @Id
@@ -136,6 +138,7 @@ public class ResourceEntity {
     public ResourceEntity() {
     }
     
+    /*
     public ResourceEntity(Resource resource, final boolean includeCollections) {
         this.resourceId = resource.getResourceId();
         if(resource.getResourceType() != null) {
@@ -185,6 +188,7 @@ public class ResourceEntity {
         this.isPublic = resource.getIsPublic();
         this.isSSL = resource.getIsSSL();
     }
+    */
 
     public String getResourceId() {
         return resourceId;

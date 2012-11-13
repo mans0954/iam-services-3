@@ -4,6 +4,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
+import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 
 // Generated Mar 8, 2009 12:54:32 PM by Hibernate Tools 3.2.2.GA
@@ -19,7 +20,7 @@ import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
         "propValue",
         "name"
 })
-
+@DozerDTOCorrespondence(ResourcePropEntity.class)
 public class ResourceProp implements java.io.Serializable, Comparable<ResourceProp> {
 
     private String resourcePropId;

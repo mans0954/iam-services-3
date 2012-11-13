@@ -10,6 +10,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.dozer.DozerUtils;
+import org.openiam.dozer.converter.ResourceDozerConverter;
+import org.openiam.dozer.converter.ResourceUserDozerConverter;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePrivilegeEntity;
@@ -28,18 +30,24 @@ import org.springframework.beans.factory.annotation.Required;
 @WebService(endpointInterface = "org.openiam.idm.srvc.res.service.ResourceDataService", targetNamespace = "urn:idm.openiam.org/srvc/res/service", portName = "ResourceDataWebServicePort", serviceName = "ResourceDataWebService")
 public class ResourceDataServiceImpl implements ResourceDataService {
 
-    private DozerUtils dozerUtils;
+	@Autowired
+	private ResourceDozerConverter resourceConverter;
+	
     private ResourceDAO resourceDao;
     private ResourceTypeDAO resourceTypeDao;
     private ResourcePropDAO resourcePropDao;
     private ResourceRoleDAO resourceRoleDao;
     private ResourceUserDAO resourceUserDao;
     private ResourcePrivilegeDAO resourcePrivilegeDao;
+    private DozerUtils dozerUtils;
 
     private static final Log log = LogFactory.getLog(ResourceDataServiceImpl.class);
 
     @Autowired
     private ResourceSearchBeanConverter resourceSearchBeanConverter;
+    
+    @Autowired
+    private ResourceUserDozerConverter resourceUserConverter;
 
     @Required
     public void setResourceDao(ResourceDAO resourceDao) {
@@ -67,13 +75,13 @@ public class ResourceDataServiceImpl implements ResourceDataService {
     }
 
     @Required
-    public void setDozerUtils(final DozerUtils dozerUtils) {
-        this.dozerUtils = dozerUtils;
-    }
-
-    @Required
     public void setResourceUserDao(ResourceUserDAO resourceUserDao) {
         this.resourceUserDao = resourceUserDao;
+    }
+    
+    @Required
+    public void setDozerUtils(final DozerUtils dozerUtils) {
+    	this.dozerUtils = dozerUtils;
     }
 
     /**
@@ -86,7 +94,7 @@ public class ResourceDataServiceImpl implements ResourceDataService {
     public Resource addResource(Resource resource) {
         if (resource == null)
             throw new IllegalArgumentException("Resource object is null");
-        ResourceEntity resourceEntity = new ResourceEntity(resource, true);
+        final ResourceEntity resourceEntity = resourceConverter.convertToEntity(resource, true);
         resourceDao.save(resourceEntity);
         resource.setResourceId(resourceEntity.getResourceId());
         return resource;
@@ -137,7 +145,7 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 
         final ResourceEntity entity = resourceDao.findById(resourceId);
         if(entity != null) {
-        	return new Resource(entity, true);
+        	return resourceConverter.convertToDTO(entity, true);
         } else {
         	return null;
         }
@@ -161,13 +169,7 @@ public class ResourceDataServiceImpl implements ResourceDataService {
             resultsEntities = resourceDao.getByExample(resource, from, size);
         }
         
-        final List<Resource> retVal = new LinkedList<Resource>();
-        if(CollectionUtils.isNotEmpty(resultsEntities)) {
-        	for(final ResourceEntity entity : resultsEntities) {
-        		retVal.add(new Resource(entity, (DozerMappingType.DEEP.equals(mappingType))));
-        	}
-        }
-        return retVal;
+        return resourceConverter.convertToDTOList(resultsEntities, DozerMappingType.DEEP.equals(mappingType));
     }
 
     /**
@@ -180,7 +182,7 @@ public class ResourceDataServiceImpl implements ResourceDataService {
         if (resource == null)
             throw new IllegalArgumentException("resource object is null");
 
-        resourceDao.update(new ResourceEntity(resource, false));
+        resourceDao.update(resourceConverter.convertToEntity(resource, true));
         return resource;
     }
 
@@ -477,13 +479,7 @@ public class ResourceDataServiceImpl implements ResourceDataService {
             throw new IllegalArgumentException("roleId is null");
         }
         List<ResourceEntity> resourceEntities = resourceDao.findResourcesForRole(roleId);
-        List<Resource> resources = new LinkedList<Resource>();
-        if (resourceEntities != null) {
-            for (ResourceEntity entity : resourceEntities) {
-                resources.add(new Resource(entity, false));
-            }
-        }
-        return resources;
+        return resourceConverter.convertToDTOList(resourceEntities, false);
     }
 
     /**
@@ -497,13 +493,7 @@ public class ResourceDataServiceImpl implements ResourceDataService {
             throw new IllegalArgumentException("roleIdList is null");
         }
         List<ResourceEntity> resourceEntities = resourceDao.findResourcesForRoles(roleIdList);
-        List<Resource> resources = new LinkedList<Resource>();
-        if (resourceEntities != null) {
-            for (ResourceEntity entity : resourceEntities) {
-                resources.add(new Resource(entity, false));
-            }
-        }
-        return resources;
+        return resourceConverter.convertToDTOList(resourceEntities, false);
     }
 
     /*
@@ -517,8 +507,9 @@ public class ResourceDataServiceImpl implements ResourceDataService {
         if (resourceUser == null) {
             throw new IllegalArgumentException("ResourceUser object is null");
         }
-        ResourceUserEntity resourceUserEntity = resourceUserDao.add(new ResourceUserEntity(resourceUser));
-        return new ResourceUser(resourceUserEntity);
+        final ResourceUserEntity entity = resourceUserConverter.convertToEntity(resourceUser, false);
+        ResourceUserEntity resourceUserEntity = resourceUserDao.add(entity);
+        return resourceUserConverter.convertToDTO(resourceUserEntity, false);
     }
 
     /*
@@ -533,14 +524,7 @@ public class ResourceDataServiceImpl implements ResourceDataService {
             throw new IllegalArgumentException("UserId object is null");
         }
         List<ResourceUserEntity> resourceUserEntityList = resourceUserDao.findAllResourceForUsers(userId);
-        List<ResourceUser> resourceUserList = null;
-        if (resourceUserEntityList != null) {
-            resourceUserList = new LinkedList<ResourceUser>();
-            for (ResourceUserEntity resourceUserEntity : resourceUserEntityList) {
-                resourceUserList.add(new ResourceUser(resourceUserEntity));
-            }
-        }
-        return dozerUtils.getDozerDeepMappedResourceUserList(resourceUserList);
+        return resourceUserConverter.convertToDTOList(resourceUserEntityList, false);
     }
 
     public List<Resource> getResourceObjForUser(String userId) {
@@ -549,13 +533,7 @@ public class ResourceDataServiceImpl implements ResourceDataService {
         }
 
         List<ResourceEntity> entities = resourceDao.findResourcesForUserRole(userId);
-        List<Resource> resources = new LinkedList<Resource>();
-        if (entities != null) {
-            for (ResourceEntity entity : entities) {
-                resources.add(new Resource(entity, false));
-            }
-        }
-        return resources;
+        return resourceConverter.convertToDTOList(entities, false);
     }
 
 

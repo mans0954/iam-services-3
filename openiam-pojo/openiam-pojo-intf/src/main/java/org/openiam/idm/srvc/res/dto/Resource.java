@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.res.dto;
 // Generated Mar 8, 2009 12:54:32 PM by Hibernate Tools 3.2.2.GA
 
 import org.openiam.base.BaseObject;
+import org.openiam.dozer.DozerDTOCorrespondence;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -43,7 +44,7 @@ import org.openiam.idm.srvc.res.domain.ResourceRoleEntity;
         "isPublic",
         "isSSL"
 })
-
+@DozerDTOCorrespondence(ResourceEntity.class)
 public class Resource extends BaseObject {
 
     private String resourceId;
@@ -90,6 +91,7 @@ public class Resource extends BaseObject {
         this.managedSysId = managedSysId;
     }
 
+    /*
     public Resource(final ResourceEntity entity, final boolean includeCollections) {
                this.resourceId = entity.getResourceId();
         this.resourceType = new ResourceType(entity.getResourceType());
@@ -131,16 +133,12 @@ public class Resource extends BaseObject {
         		}
         	}
         }
-        /*
-        for (ResourcePrivilegeEntity privilege : entity.getEntitlements()) {
-            this.entitlements.add(new ResourcePrivilege(privilege));
-        }
-        */
         this.minAuthLevel = entity.getMinAuthLevel();
         this.domain = entity.getDomain();
         this.isPublic = entity.getIsPublic();
         this.isSSL = entity.getIsSSL();
     }
+    */
 
     public String getResourceId() {
         return this.resourceId;

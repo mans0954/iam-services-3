@@ -3,6 +3,8 @@ package org.openiam.idm.srvc.res.dto;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+
+import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.res.domain.ResourceRoleEmbeddableId;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -10,6 +12,7 @@ import org.openiam.idm.srvc.res.domain.ResourceRoleEmbeddableId;
         "roleId",
         "resourceId"
 })
+@DozerDTOCorrespondence(ResourceRoleEmbeddableId.class)
 public class ResourceRoleId implements java.io.Serializable {
 	private String roleId;
 	private String resourceId;

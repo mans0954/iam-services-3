@@ -3,9 +3,12 @@ package org.openiam.idm.srvc.res.domain;
 import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
+
+import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.res.dto.ResourceRoleId;
 
 @Embeddable
+@DozerDTOCorrespondence(ResourceRoleId.class)
 public class ResourceRoleEmbeddableId implements Serializable {
 
     @Column(name = "ROLE_ID", length = 32, nullable = false)

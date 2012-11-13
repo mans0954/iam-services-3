@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mappings xmlns="http://dozer.sourceforge.net"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://dozer.sourceforge.net
+          http://dozer.sourceforge.net/schema/beanmapping.xsd">
+
+	<mapping>
+		<class-a>org.openiam.idm.srvc.res.domain.ResourceEntity</class-a>
+		<class-b>org.openiam.idm.srvc.res.dto.Resource</class-b>
+		<field-exclude>
+			<a>parentResources</a>
+			<b>parentResources</b>
+		</field-exclude>
+		<field-exclude>
+			<a>childResources</a>
+			<b>childResources</b>
+		</field-exclude>
+		<field-exclude>
+			<a>resourceRoles</a>
+			<b>resourceRoles</b>
+		</field-exclude>
+		<field-exclude>
+			<a>resourceProps</a>
+			<b>resourceProps</b>
+		</field-exclude>
+		<field-exclude>
+			<a>resourceGroups</a>
+			<b>resourceGroups</b>
+		</field-exclude>
+	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.res.domain.ResourceUserEntity</class-a>
+		<class-b>org.openiam.idm.srvc.res.dto.ResourceUser</class-b>
+		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="dto2entityShallowDozerMapper">
+			<a>resource</a>
+			<b>resource</b>
+		</field>
+	</mapping>
+</mappings>

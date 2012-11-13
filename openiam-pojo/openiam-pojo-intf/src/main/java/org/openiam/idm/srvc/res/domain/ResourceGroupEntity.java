@@ -7,10 +7,12 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import org.hibernate.annotations.GenericGenerator;
+import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.res.dto.ResourceGroup;
 
 @Entity
 @Table(name = "RESOURCE_GROUP")
+@DozerDTOCorrespondence(ResourceGroup.class)
 public class ResourceGroupEntity {
 
     @Id

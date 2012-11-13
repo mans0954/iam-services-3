@@ -3,6 +3,8 @@ package org.openiam.idm.srvc.res.dto;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+
+import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.res.domain.ResourceUserEntity;
 
 // Generated Mar 8, 2009 12:54:32 PM by Hibernate Tools 3.2.2.GA
@@ -15,6 +17,7 @@ import org.openiam.idm.srvc.res.domain.ResourceUserEntity;
         "id",
         "resource"
 })
+@DozerDTOCorrespondence(ResourceUserEntity.class)
 public class ResourceUser implements java.io.Serializable {
 
     private ResourceUserId id;
@@ -23,10 +26,12 @@ public class ResourceUser implements java.io.Serializable {
     public ResourceUser() {
     }
 
+    /*
     public ResourceUser(ResourceUserEntity entity) {
       this.id = new ResourceUserId(entity.getId().getResourceId(), entity.getId().getUserId(), entity.getId().getPrivilegeId());
       this.resource = new Resource(entity.getResource(), false);
     }
+    */
 
     public ResourceUser(ResourceUserId id, Resource resource) {
         this.id = id;
