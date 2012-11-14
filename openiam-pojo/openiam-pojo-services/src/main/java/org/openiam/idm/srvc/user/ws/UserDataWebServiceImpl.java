@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.jws.WebMethod;
+import javax.jws.WebParam;
 import javax.jws.WebService;
 
 import org.apache.commons.lang.StringUtils;
@@ -821,8 +822,20 @@ public class UserDataWebServiceImpl implements UserDataWebService {
         
 
     }
-    
-	public void setUserManager(UserDataService userManager) {
+
+    @Override
+    public List<User> findBeans(@WebParam(name = "searchBean", targetNamespace = "") UserSearch searchBean,
+                                @WebParam(name = "from", targetNamespace = "") int from,
+                                @WebParam(name = "size", targetNamespace = "") int size) {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public int count(@WebParam(name = "searchBean", targetNamespace = "") UserSearch searchBean) {
+        return 0;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public void setUserManager(UserDataService userManager) {
 		this.userManager = userManager;
 	}
 	

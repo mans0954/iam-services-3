@@ -25,7 +25,7 @@ public class UserDAOTouchTest extends AbstractTransactionalTestNGSpringContextTe
 
   @Test
   public void touchAdd() {
-      userDAO.add(new UserEntity());
+      userDAO.save(new UserEntity());
   }
 
   @Test
@@ -70,7 +70,7 @@ public class UserDAOTouchTest extends AbstractTransactionalTestNGSpringContextTe
 
   @Test
   public void touchRemove() {
-      userDAO.remove(new UserEntity());
+      userDAO.delete(new UserEntity());
   }
 
   @Test
@@ -81,7 +81,7 @@ public class UserDAOTouchTest extends AbstractTransactionalTestNGSpringContextTe
   @Test
   public void touchUpdate() {
       UserEntity user = new UserEntity();
-      userDAO.add(user);
+      userDAO.save(user);
       userDAO.update(user);
   }
 

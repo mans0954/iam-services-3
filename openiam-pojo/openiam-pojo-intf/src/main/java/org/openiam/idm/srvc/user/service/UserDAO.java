@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.user.service;
 
+import org.openiam.core.dao.BaseDao;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
 import org.openiam.idm.srvc.user.dto.UserSearch;
@@ -14,15 +15,15 @@ import org.openiam.idm.srvc.user.dto.UserStatusEnum;
  * @author Suneet Shah
  * @see org.openiam.idm.srvc.user
  */
-public interface UserDAO {
+public interface UserDAO extends BaseDao<UserEntity, String> {
 
-    public void add(UserEntity transientInstance);
+//    public void add(UserEntity transientInstance);
 
-    public void remove(UserEntity persistentInstance);
+//    public void remove(UserEntity persistentInstance);
 
-    public UserEntity update(UserEntity detachedInstance);
-
-    public UserEntity findById(String id);
+//    public UserEntity update(UserEntity detachedInstance);
+//
+//    public UserEntity findById(String id);
 
     public UserEntity findByName(String firstName, String lastName);
 

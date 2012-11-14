@@ -10,6 +10,7 @@ import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.base.id.SequenceGenDAO;
 
+import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
@@ -30,7 +31,7 @@ import org.openiam.idm.srvc.user.dto.UserStatusEnum;
  * @author Suneet Shah
  * @see org.openiam.idm.srvc.user
  */
-public class UserDAOImpl implements UserDAO {
+public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements UserDAO {
 
 
     private static final Log log = LogFactory.getLog(UserDAOImpl.class);
@@ -59,49 +60,49 @@ public class UserDAOImpl implements UserDAO {
         }
     }
 
-    public void add(UserEntity usr) {
-        log.debug("persisting User instance");
-        try {
-            // If the object has not been assigned an id, we should automatically assign one
-            // based on the predefined id generator. Hibernate ID generator does not give us
-            // the flexibility to let the user assign the id.
-            /*
-                if (usr.getUserId() == null ||
-                   usr.getUserId().length() == 0) {
-                   usr.setUserId( this.seqGenDao.getNextId("USER_ID"));
-               }
-               */
+//    public void add(UserEntity usr) {
+//        log.debug("persisting User instance");
+//        try {
+//            // If the object has not been assigned an id, we should automatically assign one
+//            // based on the predefined id generator. Hibernate ID generator does not give us
+//            // the flexibility to let the user assign the id.
+//            /*
+//                if (usr.getUserId() == null ||
+//                   usr.getUserId().length() == 0) {
+//                   usr.setUserId( this.seqGenDao.getNextId("USER_ID"));
+//               }
+//               */
+//
+//            sessionFactory.getCurrentSession().persist(usr);
+//            log.debug("persist successful");
+//        } catch (HibernateException re) {
+//            log.error("persist failed", re);
+//            throw re;
+//        }
+//    }
 
-            sessionFactory.getCurrentSession().persist(usr);
-            log.debug("persist successful");
-        } catch (HibernateException re) {
-            log.error("persist failed", re);
-            throw re;
-        }
-    }
+//    public void remove(UserEntity persistentInstance) {
+//        log.debug("deleting User instance");
+//        try {
+//            sessionFactory.getCurrentSession().delete(persistentInstance);
+//            log.debug("delete successful");
+//        } catch (HibernateException re) {
+//            log.error("delete failed", re);
+//            throw re;
+//        }
+//    }
 
-    public void remove(UserEntity persistentInstance) {
-        log.debug("deleting User instance");
-        try {
-            sessionFactory.getCurrentSession().delete(persistentInstance);
-            log.debug("delete successful");
-        } catch (HibernateException re) {
-            log.error("delete failed", re);
-            throw re;
-        }
-    }
-
-    public UserEntity update(UserEntity detachedInstance) {
-        log.debug("merging User instance");
-        try {
-            UserEntity result = (UserEntity) sessionFactory.getCurrentSession().merge(detachedInstance);
-            log.debug("merge successful");
-            return result;
-        } catch (HibernateException re) {
-            log.error("merge failed", re);
-            throw re;
-        }
-    }
+//    public UserEntity update(UserEntity detachedInstance) {
+//        log.debug("merging User instance");
+//        try {
+//            UserEntity result = (UserEntity) sessionFactory.getCurrentSession().merge(detachedInstance);
+//            log.debug("merge successful");
+//            return result;
+//        } catch (HibernateException re) {
+//            log.error("merge failed", re);
+//            throw re;
+//        }
+//    }
 
     public UserEntity findById(java.lang.String id) {
         log.debug("getting User instance with id: " + id);
@@ -125,6 +126,11 @@ public class UserDAOImpl implements UserDAO {
             log.error("get failed", re);
             throw re;
         }
+    }
+
+    @Override
+    protected String getPKfieldName() {
+        return "userId";
     }
 
 

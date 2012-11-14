@@ -1,10 +1,12 @@
 package org.openiam.idm.srvc.user.ws;
 
 import org.openiam.base.ws.Response;
+import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.continfo.ws.*;
+import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.user.dto.*;
 
 import javax.jws.WebMethod;
@@ -527,4 +529,11 @@ public interface UserDataWebService {
             @WebParam(name = "attributeList", targetNamespace = "")
             List<String> attributeList);
 
+    @WebMethod
+    List<User> findBeans(@WebParam(name = "searchBean", targetNamespace = "") UserSearch searchBean,
+                                 @WebParam(name = "from", targetNamespace = "") int from,
+                                 @WebParam(name = "size", targetNamespace = "") int size);
+
+    @WebMethod
+    int count(@WebParam(name="searchBean", targetNamespace="") UserSearch searchBean);
 }

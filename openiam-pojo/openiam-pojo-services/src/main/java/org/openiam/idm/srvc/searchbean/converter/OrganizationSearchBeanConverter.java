@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.searchbean.converter;
 
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
+import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceType;
@@ -11,10 +12,10 @@ import org.springframework.stereotype.Component;
  * Date: 02.11.12
  */
 @Component("organizationSearchBeanConverter")
-public class OrganizationSearchBeanConverter implements SearchBeanConverter<Organization, OrganizationSearchBean>{
+public class OrganizationSearchBeanConverter implements SearchBeanConverter<OrganizationEntity, OrganizationSearchBean>{
     @Override
-    public Organization convert(OrganizationSearchBean searchBean) {
-        final Organization organization = new Organization();
+    public OrganizationEntity convert(OrganizationSearchBean searchBean) {
+        final OrganizationEntity organization = new OrganizationEntity();
         organization.setOrgId(searchBean.getKey());
         organization.setOrganizationName(searchBean.getOrganizationName());
 

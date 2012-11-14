@@ -504,25 +504,25 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
             targetNamespace = "") OrganizationSearchBean searchBean, @WebParam(
             name = "from", targetNamespace = "") int from, @WebParam(name = "size", targetNamespace = "") int size) {
 
-        final List<OrganizationEntity> results =
-                orgDao.getByExample(new OrganizationEntity(organizationSearchBeanConverter.convert(searchBean)), from, size);
+        List<OrganizationEntity> results =
+                orgDao.getByExample(organizationSearchBeanConverter.convert(searchBean), from, size);
 
         List<Organization> organizations = null;
         if (results != null) {
+            final DozerMappingType mappingType =
+                    (searchBean.isDeepCopy()) ? DozerMappingType.DEEP : DozerMappingType.SHALLOW;
+            results = dozerUtils.getDozerMappedList(results, mappingType);
+
             organizations = new LinkedList<Organization>();
             for (OrganizationEntity entity : results) {
                 organizations.add(new Organization(entity));
             }
-
-            final DozerMappingType mappingType =
-                    (searchBean.isDeepCopy()) ? DozerMappingType.DEEP : DozerMappingType.SHALLOW;
-            organizations = dozerUtils.getDozerMappedList(organizations, mappingType);
         }
         return organizations;
     }
 
     @Override
     public int count(@WebParam(name = "searchBean", targetNamespace = "") OrganizationSearchBean searchBean) {
-        return orgDao.count(new OrganizationEntity(organizationSearchBeanConverter.convert(searchBean)));
+        return orgDao.count(organizationSearchBeanConverter.convert(searchBean));
     }
 }

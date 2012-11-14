@@ -128,7 +128,7 @@ public class UserMgr implements UserDataService {
 
         validateEmailAddress(user, user.getEmailAddresses());
         UserEntity userEntity = new UserEntity(user);
-        userDao.add(userEntity);
+        userDao.save(userEntity);
 
         return new User(userEntity);
     }
@@ -156,7 +156,7 @@ public class UserMgr implements UserDataService {
 
         log.debug("User Object before addUser: " + user);
         UserEntity entity = new UserEntity(user);
-        userDao.add(entity);
+        userDao.save(entity);
 
         /*if (!dependency)
             return user;*/
@@ -291,7 +291,7 @@ public class UserMgr implements UserDataService {
         removeAllNotes(id);
         removeAllEmailAddresses(id);
 
-        userDao.remove(new UserEntity(user));
+        userDao.delete(new UserEntity(user));
 
         // / this.userMsgProducer.sendMessage(user.getUserId(),"DELETE");
 
