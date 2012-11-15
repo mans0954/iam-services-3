@@ -25,8 +25,8 @@ import org.openiam.authmanager.service.AuthorizationManagerMenuService;
 import org.openiam.authmanager.service.AuthorizationManagerMenuWebService;
 import org.openiam.authmanager.util.AuthorizationConstants;
 import org.openiam.authmanager.ws.request.MenuRequest;
-import org.openiam.authmanager.ws.response.MenuError;
 import org.openiam.authmanager.ws.response.MenuSaveResponse;
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
@@ -93,16 +93,16 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 	@Transactional
 	public MenuSaveResponse deleteMenuTree(final String rootId) {
 		final MenuSaveResponse response = new MenuSaveResponse();
-		response.setResponseStatus(ResponseStatus.SUCCESS);
+		response.setStatus(ResponseStatus.SUCCESS);
 		try {
 			final ResourceEntity resource = resourceDAO.findById(rootId);
 			
 			if(resource == null) {
-				throw new AuthorizationMenuException(MenuError.MENU_DOES_NOT_EXIST, rootId);
+				throw new AuthorizationMenuException(ResponseCode.MENU_DOES_NOT_EXIST, rootId);
 			}
 			
 			if(CollectionUtils.isNotEmpty(resource.getChildResources())) {
-				throw new AuthorizationMenuException(MenuError.HANGING_CHILDREN, resource.getName());
+				throw new AuthorizationMenuException(ResponseCode.HANGING_CHILDREN, resource.getName());
 			}
 			
 			/*
@@ -112,20 +112,20 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 			*/
 			
 			if(CollectionUtils.isNotEmpty(resource.getResourceGroups())) {
-				throw new AuthorizationMenuException(MenuError.HANGING_GROUPS, resource.getName());
+				throw new AuthorizationMenuException(ResponseCode.HANGING_GROUPS, resource.getName());
 			}
 			
 			if(CollectionUtils.isNotEmpty(resource.getResourceRoles())) {
-				throw new AuthorizationMenuException(MenuError.HANGING_ROLES, resource.getName());
+				throw new AuthorizationMenuException(ResponseCode.HANGING_ROLES, resource.getName());
 			}
 			
 			resourceDAO.delete(resource);
 		} catch(AuthorizationMenuException e) {
-			response.setResponseStatus(ResponseStatus.FAILURE);
-			response.setMenuError(e.getMenuError());
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getResponseCode());
 			response.setProblematicMenuName(e.getMenuName());
 		} catch(Throwable e) {
-			response.setResponseStatus(ResponseStatus.FAILURE);
+			response.setStatus(ResponseStatus.FAILURE);
 		}
 		return response;
 	}
@@ -134,7 +134,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 	@Transactional
 	public MenuSaveResponse saveMenuTree(final AuthorizationMenu root) {
 		final MenuSaveResponse response = new MenuSaveResponse();
-		response.setResponseStatus(ResponseStatus.SUCCESS);
+		response.setStatus(ResponseStatus.SUCCESS);
 		
 		try {
 			setParents(null, root);
@@ -217,7 +217,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 				if(CollectionUtils.isNotEmpty(resourcesToDelete)) {
 					for(final ResourceEntity resource : resourcesToDelete) {
 						if(CollectionUtils.isNotEmpty(resource.getChildResources())) {
-							throw new AuthorizationMenuException(MenuError.HANGING_CHILDREN, resource.getName());
+							throw new AuthorizationMenuException(ResponseCode.HANGING_CHILDREN, resource.getName());
 						}
 						
 						/*
@@ -227,11 +227,11 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 						*/
 						
 						if(CollectionUtils.isNotEmpty(resource.getResourceGroups())) {
-							throw new AuthorizationMenuException(MenuError.HANGING_GROUPS, resource.getName());
+							throw new AuthorizationMenuException(ResponseCode.HANGING_GROUPS, resource.getName());
 						}
 						
 						if(CollectionUtils.isNotEmpty(resource.getResourceRoles())) {
-							throw new AuthorizationMenuException(MenuError.HANGING_ROLES, resource.getName());
+							throw new AuthorizationMenuException(ResponseCode.HANGING_ROLES, resource.getName());
 						}
 					}
 				}
@@ -249,7 +249,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 						final ResourceEntity existingResource = resourceDAO.findByName(menu.getName());
 						/* check that, if the user changed the name of the menu, it doesn't conflict with another resource with the same name */
 						if(existingResource != null && !existingResource.getResourceId().equals(resource.getResourceId())) {
-							throw new AuthorizationMenuException(MenuError.MENU_NAME_EXISTS, resource.getName());
+							throw new AuthorizationMenuException(ResponseCode.MENU_NAME_EXISTS, resource.getName());
 						}
 						
 						merge(resource, menu);
@@ -267,7 +267,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 						final ResourceEntity existingResource = resourceDAO.findByName(resource.getName());
 						/* check that, if the user changed the name of the menu, it doesn't conflict with another resource with the same name */
 						if(existingResource != null) {
-							throw new AuthorizationMenuException(MenuError.MENU_NAME_EXISTS, resource.getName());
+							throw new AuthorizationMenuException(ResponseCode.MENU_NAME_EXISTS, resource.getName());
 						}
 					}
 					resourcesToCreate.addAll(newResourceList);
@@ -328,11 +328,11 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 				}
 			}
 		} catch(AuthorizationMenuException e) {
-			response.setResponseStatus(ResponseStatus.FAILURE);
-			response.setMenuError(e.getMenuError());
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getResponseCode());
 			response.setProblematicMenuName(e.getMenuName());
 		} catch(Throwable e) {
-			response.setResponseStatus(ResponseStatus.FAILURE);
+			response.setStatus(ResponseStatus.FAILURE);
 		}
 		return response;
 	}

@@ -32,14 +32,6 @@ public class ResourceProp implements java.io.Serializable, Comparable<ResourcePr
     public ResourceProp() {
     }
 
-    public ResourceProp(ResourcePropEntity propEntity) {
-        this.resourcePropId = propEntity.getResourcePropId();
-        this.resourceId = propEntity.getResourceId();
-        this.metadataId = propEntity.getMetadataId();
-        this.propValue = propEntity.getPropValue();
-        this.name = propEntity.getName();
-    }
-
     public ResourceProp(String resourcePropId) {
         this.resourcePropId = resourcePropId;
     }

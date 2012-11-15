@@ -453,10 +453,6 @@
 	<bean id="resourceTypeDAO" class="org.openiam.idm.srvc.res.service.ResourceTypeDAOImpl" >
 		<property name="sessionFactory" ref="sessionFactory"></property>		
 	</bean>	
-		
-	<bean id="resourcePropDAO" class="org.openiam.idm.srvc.res.service.ResourcePropDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"></property>		
-	</bean>	
 	
 	<bean id="resourceRoleDAO" class="org.openiam.idm.srvc.res.service.ResourceRoleDAOImpl" >
 		<property name="sessionFactory" ref="sessionFactory"></property>		

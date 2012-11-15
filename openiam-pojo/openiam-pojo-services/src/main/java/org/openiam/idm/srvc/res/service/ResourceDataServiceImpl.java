@@ -3,14 +3,20 @@ package org.openiam.idm.srvc.res.service;
 import java.util.*;
 
 import javax.jws.WebMethod;
+import javax.jws.WebParam;
 import javax.jws.WebService;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.ws.Response;
+import org.openiam.base.ws.ResponseCode;
+import org.openiam.base.ws.ResponseStatus;
+import org.openiam.base.ws.exception.BasicDataServiceException;
 import org.openiam.dozer.DozerUtils;
 import org.openiam.dozer.converter.ResourceDozerConverter;
+import org.openiam.dozer.converter.ResourcePropDozerConverter;
 import org.openiam.dozer.converter.ResourceUserDozerConverter;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
@@ -32,6 +38,9 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 
 	@Autowired
 	private ResourceDozerConverter resourceConverter;
+	
+	@Autowired
+	private ResourcePropDozerConverter resourcePropConverter;
 	
     private ResourceDAO resourceDao;
     private ResourceTypeDAO resourceTypeDao;
@@ -85,55 +94,6 @@ public class ResourceDataServiceImpl implements ResourceDataService {
     }
 
     /**
-     * Add a new resource from a transient resource object and sets resourceId
-     * in the returned object.
-     *
-     * @param resource
-     * @return
-     */
-    public Resource addResource(Resource resource) {
-        if (resource == null)
-            throw new IllegalArgumentException("Resource object is null");
-        final ResourceEntity resourceEntity = resourceConverter.convertToEntity(resource, true);
-        resourceDao.save(resourceEntity);
-        resource.setResourceId(resourceEntity.getResourceId());
-        return resource;
-    }
-
-    /**
-     * Add a new resource from a transient resource object. Sets resourceId and
-     * associates resource with a resource type. Sets category and branch from
-     * parent.
-     *
-     * @param resource
-     * @param resourceTypeId
-     * @return
-     */
-    // public Resource addChildResource(Resource resource, Resource
-    // resourceParent) {
-    // resource.setResourceParent(resourceParent);
-    // resource.setResourceType(resourceParent.getResourceType());
-    // resource.setCategoryId(resourceParent.getCategoryId());
-    // resource.setBranchId(resourceParent.getBranchId());
-    // return addResource(resource);
-    // }
-
-    /**
-     * Add a new resource from a transient resource object. Sets resourceId and
-     * associates resource with a resource type.
-     *
-     * @param resource
-     * @param resourceTypeId
-     * @return
-     */
-    // public Resource addTypedResource(Resource resource, String
-    // resourceTypeId) {
-    // ResourceType resourceType = this.getResourceType(resourceTypeId);
-    // resource.setResourceType(resourceType);
-    // return addResource(resource);
-    // }
-
-    /**
      * Find a resource.
      *
      * @param resourceId
@@ -171,6 +131,17 @@ public class ResourceDataServiceImpl implements ResourceDataService {
         
         return resourceConverter.convertToDTOList(resultsEntities, DozerMappingType.DEEP.equals(mappingType));
     }
+    
+    /**
+     * Add a new resource from a transient resource object and sets resourceId
+     * in the returned object.
+     *
+     * @param resource
+     * @return
+     */
+    public Response addResource(Resource resource) {
+    	return saveOrUpdateResource(resource);
+    }
 
     /**
      * Update a resource.
@@ -178,12 +149,67 @@ public class ResourceDataServiceImpl implements ResourceDataService {
      * @param resource
      * @return
      */
-    public Resource updateResource(Resource resource) {
-        if (resource == null)
-            throw new IllegalArgumentException("resource object is null");
-
-        resourceDao.update(resourceConverter.convertToEntity(resource, true));
-        return resource;
+    public Response updateResource(Resource resource) {
+        return saveOrUpdateResource(resource);
+    }
+    
+    private Response saveOrUpdateResource(final Resource resource) {
+    	final Response response = new Response(ResponseStatus.SUCCESS);
+    	try {
+    		if(resource == null) {
+    			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+    		}
+    		
+    		ResourceEntity entity = resourceConverter.convertToEntity(resource, true);
+    		if(StringUtils.isEmpty(entity.getName())) {
+    			throw new BasicDataServiceException(ResponseCode.NO_RESOURCE_NAME);
+    		}
+    		
+    		
+    		/* duplicate name check */
+    		final ResourceEntity nameCheck = resourceDao.findByName(entity.getName());
+    		if(nameCheck != null) {
+    			if(StringUtils.isBlank(entity.getResourceId())) {
+    				throw new BasicDataServiceException(ResponseCode.RESOURCE_NAME_EXISTS);
+    			} else  if(!nameCheck.getResourceId().equals(entity.getResourceId())) {
+    				throw new BasicDataServiceException(ResponseCode.RESOURCE_NAME_EXISTS);
+    			}
+    		}
+    		
+    		if(entity.getResourceType() == null) {
+    			throw new BasicDataServiceException(ResponseCode.INVALID_RESOURCE_TYPE);
+    		}
+    		
+    		/* merge */
+    		if(StringUtils.isNotBlank(entity.getResourceId())) {
+    			final ResourceEntity dbObject = resourceDao.findById(resource.getResourceId());
+    			if(dbObject == null) {
+    				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+    			}
+    			//TODO: extend this merge
+    			dbObject.setResourceType(entity.getResourceType());
+    			dbObject.setDescription(entity.getDescription());
+    			dbObject.setDomain(entity.getDomain());
+    			dbObject.setIsPublic(entity.getIsPublic());
+    			dbObject.setIsSSL(entity.getIsSSL());
+    			dbObject.setManagedSysId(entity.getManagedSysId());
+    			dbObject.setName(entity.getName());
+    			dbObject.setURL(entity.getURL());
+    			resourceDao.update(dbObject);
+    		} else {
+    			resourceDao.save(entity);
+    		}
+    		
+    		response.setResponseValue(entity.getResourceId());
+    	} catch(BasicDataServiceException e) {
+    		response.setErrorCode(e.getCode());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	} catch(Throwable e) {
+    		log.error("Can't save or update resource", e);
+    		response.setErrorText(e.getMessage());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	}
+    	return response;
     }
 
     /**
@@ -277,54 +303,8 @@ public class ResourceDataServiceImpl implements ResourceDataService {
      * @param resourceProp
      * @return
      */
-    public ResourceProp addResourceProp(ResourceProp resourceProp) {
-        if (resourceProp == null)
-            throw new IllegalArgumentException("ResourceProp object is null");
-
-        ResourcePropEntity resourcePropEntity = resourcePropDao.add(new ResourcePropEntity(resourceProp));
-        resourceProp.setResourcePropId(resourcePropEntity.getResourcePropId());
-        return resourceProp;
-    }
-
-    // /**
-    // * Add a new resource Property from a transient resource Property object.
-    // * Sets resourcePropId and associates resourceProp with a resource.
-    // *
-    // * @param resourceProp
-    // * @param resourceId
-    // * @return
-    // */
-    // public ResourceProp addLinkedResourceProp(ResourceProp resourceProp,
-    // String resourceId) {
-    // if (resourceId == null)
-    // throw new IllegalArgumentException("resourceId is null");
-    // Resource resource = resourceDao.findById(resourceId);
-    //
-    // if (resource == null) {
-    // log.error("Resource not found for resourceId =" + resourceId);
-    // throw new ObjectNotFoundException();
-    // }
-    //
-    // resourceProp.setResource(resource);
-    // Set<ResourceProp> props = resource.getResourceProps();
-    // if (props == null)
-    // props = new HashSet<ResourceProp>();
-    // props.add(resourceProp);
-    // return resourcePropDao.add(resourceProp);
-    // }
-
-    /**
-     * Find a resource property.
-     *
-     * @param resourcePropId
-     * @return
-     */
-    public ResourceProp getResourceProp(String resourcePropId) {
-        if (resourcePropId == null)
-            throw new IllegalArgumentException("resourcePropId is null");
-
-        ResourcePropEntity propEntity = resourcePropDao.findById(resourcePropId);
-        return new ResourceProp(propEntity);
+    public Response addResourceProp(final ResourceProp resourceProp) {
+    	return saveOrUpdateResourceProperty(resourceProp);
     }
 
     /**
@@ -332,54 +312,76 @@ public class ResourceDataServiceImpl implements ResourceDataService {
      *
      * @param resourceProp
      */
-    public ResourceProp updateResourceProp(ResourceProp resourceProp) {
-        if (resourceProp == null)
-            throw new IllegalArgumentException("resourceProp object is null");
-
-        ResourcePropEntity propEntity = resourcePropDao.update(new ResourcePropEntity(resourceProp));
-        return new ResourceProp(propEntity);
+    public Response updateResourceProp(final ResourceProp resourceProp) {
+        return saveOrUpdateResourceProperty(resourceProp);
+    }
+    
+    private Response saveOrUpdateResourceProperty(final ResourceProp prop) {
+    	final Response response = new Response(ResponseStatus.SUCCESS);
+    	try {
+    		if(prop == null) {
+    			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+    		}
+    		
+    		final ResourcePropEntity entity = resourcePropConverter.convertToEntity(prop, false);
+    		if(StringUtils.isNotBlank(prop.getResourcePropId())) {
+    			final ResourcePropEntity dbObject = resourcePropDao.findById(prop.getResourcePropId());
+    			if(dbObject == null) {
+    				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+    			}
+    		}
+    		
+    		if(StringUtils.isBlank(entity.getName())) {
+    			throw new BasicDataServiceException(ResponseCode.RESOURCE_PROP_NAME_MISSING);
+    		}
+    		
+    		if(StringUtils.isBlank(entity.getPropValue())) {
+    			throw new BasicDataServiceException(ResponseCode.RESOURCE_PROP_VALUE_MISSING);
+    		}
+    		
+    		if(StringUtils.isBlank(entity.getResourceId())) {
+    			throw new BasicDataServiceException(ResponseCode.RESOURCE_PROP_RESOURCE_ID_MISSING);
+    		}
+    		
+    		if(StringUtils.isNotBlank(entity.getResourcePropId())) {
+    			resourcePropDao.update(entity);
+    		} else {
+    			resourcePropDao.save(entity);
+    		}
+    		response.setResponseValue(entity.getResourcePropId());
+    	} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			log.error("Can't save or update resource property", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+    	return response;
     }
 
-    /**
-     * Remove a resource property
-     *
-     * @param resourcePropId
-     */
-    public void removeResourceProp(String resourcePropId) {
-        if (resourcePropId == null)
-            throw new IllegalArgumentException("resourcePropId is null");
-        final ResourcePropEntity obj = this.resourcePropDao.findById(resourcePropId);
-        resourcePropDao.remove(obj);
-    }
-
-    /**
-     * Remove all resource properties
-     *
-     * @param
-     */
-    public int removeAllResourceProps() {
-        return resourcePropDao.removeAllResourceProps();
-    }
-
-    /**
-     * Recursive method to get resource descendants in a single non nested list.
-     *
-     * @param resourceId the resource id
-     * @param visitedSet the descendents
-     * @return the resource family helper
-     */
-    private void visitChildren(final String resourceId, final Set<ResourceEntity> visitedSet) {
-        final ResourceEntity resource = resourceDao.findById(resourceId);
-        if (!visitedSet.contains(resource)) {
-            visitedSet.add(resource);
-            final Set<ResourceEntity> children = resource.getChildResources();
-            if (CollectionUtils.isNotEmpty(children)) {
-                for (final Iterator<ResourceEntity> it = children.iterator(); it.hasNext(); ) {
-                    final ResourceEntity r = it.next();
-                    visitChildren(r.getResourceId(), visitedSet);
-                }
-            }
-        }
+    public Response removeResourceProp(String resourcePropId) {
+    	final Response response = new Response(ResponseStatus.SUCCESS);
+    	try {
+    		if(StringUtils.isBlank(resourcePropId)) {
+    			throw new BasicDataServiceException(ResponseCode.RESOURCE_PROP_MISSING);
+    		}
+    		
+    		final ResourcePropEntity entity = resourcePropDao.findById(resourcePropId);
+    		if(entity == null) {
+    			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+    		}
+    		
+    		resourcePropDao.delete(entity);
+    	} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			log.error("Can't delete resource property", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+    	return response;
     }
 
     /**
@@ -669,4 +671,37 @@ public class ResourceDataServiceImpl implements ResourceDataService {
         }
         return privilegeList;
     }
+
+	@Override
+	public Response deleteResource(final String resourceId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			final ResourceEntity entity = resourceDao.findById(resourceId);
+			if(entity == null) {
+				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+			}
+			
+			if(CollectionUtils.isNotEmpty(entity.getChildResources())) {
+				throw new BasicDataServiceException(ResponseCode.HANGING_CHILDREN);
+			}
+			
+			if(CollectionUtils.isNotEmpty(entity.getResourceGroups())) {
+				throw new BasicDataServiceException(ResponseCode.HANGING_GROUPS);
+			}
+			
+			if(CollectionUtils.isNotEmpty(entity.getResourceRoles())) {
+				throw new BasicDataServiceException(ResponseCode.HANGING_ROLES);
+			}
+			
+			resourceDao.delete(entity);
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			log.error("Can't delete resource", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+		return response;
+	}
 }

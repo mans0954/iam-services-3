@@ -6,25 +6,17 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
+import org.openiam.base.ws.Response;
+
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "MenuSaveResponse", propOrder = {
-	"menuError",
 	"problematicMenuName"
 })
-public class MenuSaveResponse extends AbstractResponse implements Serializable {
+public class MenuSaveResponse extends Response implements Serializable {
 	
-	private MenuError menuError;
 	private String problematicMenuName;
 	
 	private static final long serialVersionUID = 1L;
-
-	public MenuError getMenuError() {
-		return menuError;
-	}
-
-	public void setMenuError(MenuError menuError) {
-		this.menuError = menuError;
-	}
 
 	public String getProblematicMenuName() {
 		return problematicMenuName;

@@ -34,14 +34,6 @@ public class ResourcePropEntity {
     public ResourcePropEntity() {
     }
 
-    public ResourcePropEntity(ResourceProp resourceProp) {
-        this.resourcePropId = resourceProp.getResourcePropId();
-        this.resourceId = resourceProp.getResourceId();
-        this.metadataId = resourceProp.getMetadataId();
-        this.propValue = resourceProp.getPropValue();
-        this.name = resourceProp.getName();
-    }
-
     public String getResourcePropId() {
         return resourcePropId;
     }

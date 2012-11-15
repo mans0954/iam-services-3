@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.res.service;
 
+import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.srvc.res.dto.*;
 import org.openiam.idm.srvc.role.dto.Role;
@@ -12,6 +13,9 @@ import java.util.List;
 
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/res/service", name = "ResourceDataWebService")
 public interface ResourceDataService {
+	
+	@WebMethod
+	Response deleteResource(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId);
 
     /**
      * Add a new resource from a transient resource object and sets resourceId
@@ -21,7 +25,7 @@ public interface ResourceDataService {
      * @return
      */
     @WebMethod
-    Resource addResource(
+    Response addResource(
             @WebParam(name = "resource", targetNamespace = "")
             Resource resource);
 
@@ -43,7 +47,7 @@ public interface ResourceDataService {
      * @return the resource
      */
     @WebMethod
-    Resource updateResource(
+    Response updateResource(
             @WebParam(name = "resource", targetNamespace = "")
             Resource resource);
 
@@ -115,20 +119,9 @@ public interface ResourceDataService {
      * @return the resource prop
      */
     @WebMethod
-    ResourceProp addResourceProp(
+    Response addResourceProp(
             @WebParam(name = "resourceProp", targetNamespace = "")
             ResourceProp resourceProp);
-
-    /**
-     * Find a resource property.
-     *
-     * @param resourcePropId the resource prop id
-     * @return the resource prop
-     */
-    @WebMethod
-    ResourceProp getResourceProp(
-            @WebParam(name = "resourcePropId", targetNamespace = "")
-            String resourcePropId);
 
     /**
      * Update a resource property.
@@ -137,7 +130,7 @@ public interface ResourceDataService {
      * @return the resource prop
      */
     @WebMethod
-    ResourceProp updateResourceProp(
+    Response updateResourceProp(
             @WebParam(name = "resourceProp", targetNamespace = "")
             ResourceProp resourceProp);
 
@@ -147,17 +140,9 @@ public interface ResourceDataService {
      * @param resourcePropId the resource prop id
      */
     @WebMethod
-    void removeResourceProp(
+    Response removeResourceProp(
             @WebParam(name = "resourcePropId", targetNamespace = "")
             String resourcePropId);
-
-    /**
-     * Remove all resource properties.
-     *
-     * @return the int count
-     */
-    @WebMethod
-    int removeAllResourceProps();
 
     /**
      * Add a resource role.
