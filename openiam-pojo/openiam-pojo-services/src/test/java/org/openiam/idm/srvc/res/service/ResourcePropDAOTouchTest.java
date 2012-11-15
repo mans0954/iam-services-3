@@ -14,48 +14,8 @@ public class ResourcePropDAOTouchTest extends AbstractTransactionalTestNGSpringC
     private ResourcePropDAO resourcePropDAO;
 
     @Test
-    public void touchAdd() {
-        resourcePropDAO.add(new ResourcePropEntity());
-    }
-
-    @Test
-    public void touchFindAllResourceProps() {
-        resourcePropDAO.findAllResourceProps();
-    }
-
-    @Test
-    public void touchFindByExample() {
-        ResourcePropEntity propEntity = new ResourcePropEntity();
-        resourcePropDAO.findByExample(propEntity);
-    }
-
-    @Test
     public void touchFindById() {
         resourcePropDAO.findById("");
-    }
-
-    @Test
-    public void touchPersist() {
-        resourcePropDAO.persist(new ResourcePropEntity());
-    }
-
-    @Test
-    public void touchRemove() {
-        ResourcePropEntity propEntity = new ResourcePropEntity();
-        resourcePropDAO.add(propEntity);
-        resourcePropDAO.remove(propEntity);
-    }
-
-    @Test
-    public void touchRemoveAllResourceProps() {
-        resourcePropDAO.removeAllResourceProps();
-    }
-
-    @Test
-    public void touchUpdate() {
-        ResourcePropEntity propEntity = new ResourcePropEntity();
-        resourcePropDAO.add(propEntity);
-        resourcePropDAO.update(propEntity);
     }
 
 }
