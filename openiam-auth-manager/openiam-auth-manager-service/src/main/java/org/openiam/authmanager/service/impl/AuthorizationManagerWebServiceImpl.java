@@ -11,6 +11,8 @@ import org.apache.commons.lang.StringUtils;
 import org.openiam.authmanager.common.model.AuthorizationGroup;
 import org.openiam.authmanager.common.model.AuthorizationResource;
 import org.openiam.authmanager.common.model.AuthorizationRole;
+import org.openiam.authmanager.common.model.url.AuthorizationURIPattern;
+import org.openiam.authmanager.common.model.url.URIPatternNode;
 import org.openiam.authmanager.exception.AuthorizationManagerRuntimeException;
 import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.authmanager.service.AuthorizationManagerWebService;
@@ -23,6 +25,7 @@ import org.openiam.authmanager.ws.response.AccessResponse;
 import org.openiam.authmanager.ws.response.GroupsForUserResponse;
 import org.openiam.authmanager.ws.response.ResourcesForUserResponse;
 import org.openiam.authmanager.ws.response.RolesForUserResponse;
+import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -152,6 +155,21 @@ public class AuthorizationManagerWebServiceImpl implements AuthorizationManagerW
 		} catch(Throwable e) {
 			response.setResponseStatus(ResponseStatus.FAILURE);
 			response.setStatusMessage(e.getMessage());
+		}
+		return response;
+	}
+	
+	@Override
+	public Response isValidURL(final String url) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			final AuthorizationURIPattern pattern = new AuthorizationURIPattern();
+			pattern.setPattern(url);
+			final URIPatternNode node = new URIPatternNode();
+			node.addURI(pattern);
+		} catch(Throwable e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
 		}
 		return response;
 	}

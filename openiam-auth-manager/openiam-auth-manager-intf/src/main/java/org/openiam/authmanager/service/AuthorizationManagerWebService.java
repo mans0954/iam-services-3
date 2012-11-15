@@ -19,6 +19,7 @@ import org.openiam.authmanager.ws.response.AccessResponse;
 import org.openiam.authmanager.ws.response.GroupsForUserResponse;
 import org.openiam.authmanager.ws.response.ResourcesForUserResponse;
 import org.openiam.authmanager.ws.response.RolesForUserResponse;
+import org.openiam.base.ws.Response;
 
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/authorizationmanager/service", name = "AuthorizationManagerWebService")
 public interface AuthorizationManagerWebService {
@@ -84,5 +85,10 @@ public interface AuthorizationManagerWebService {
 	@WebMethod
 	public AccessResponse isUserEntitledToURL(
 			@WebParam(name = "request", targetNamespace = "") final URLRequest request
+			);
+	
+	@WebMethod
+	public Response isValidURL(
+			@WebParam(name = "url", targetNamespace = "") final String url
 			);
 }
