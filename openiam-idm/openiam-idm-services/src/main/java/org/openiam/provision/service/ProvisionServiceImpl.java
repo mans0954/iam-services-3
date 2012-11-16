@@ -43,10 +43,12 @@ import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.dozer.converter.LoginDozerConverter;
 import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.srvc.audit.service.AuditHelper;
 import org.openiam.idm.srvc.audit.service.IdmAuditLogDataService;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginId;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
@@ -96,6 +98,7 @@ import org.openiam.spml2.msg.ResponseType;
 import org.openiam.spml2.msg.StatusCodeType;
 import org.openiam.spml2.msg.password.SetPasswordRequestType;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -135,7 +138,8 @@ implements ProvisionService,  ApplicationContextAware  {
 	protected OrganizationDataService orgManager;
 	protected PasswordService passwordDS;
 	protected AuditHelper auditHelper;
-
+    @Autowired
+    private LoginDozerConverter loginDozerConverter;
 	
 	/* (non-Javadoc)
 	 * @see org.openiam.provision.service.ProvisionService#addGroup(org.openiam.provision.dto.ProvisionGroup)
@@ -1150,7 +1154,7 @@ implements ProvisionService,  ApplicationContextAware  {
 		for (Login lg: principalList) {
 			// check if its new / updated or to be removed
 
-				Login l = loginDao.findLoginByManagedSys(lg.getId().getDomainId(), lg.getId().getManagedSysId(), newUser.getUserId());
+				LoginEntity l = loginDao.findLoginByManagedSys(lg.getId().getDomainId(), lg.getId().getManagedSysId(), newUser.getUserId());
 				//List<Login> currentPrincipalList = loginManager.getLoginByUser(newUser.getUserId());
 				//int result = checkPrincipal(lg, currentPrincipalList);
 				
@@ -1166,7 +1170,7 @@ implements ProvisionService,  ApplicationContextAware  {
 					if (!l.getId().getManagedSysId().equalsIgnoreCase("1")) {
 						// update
 						log.info("removed Identity");
-						loginDao.remove(l);
+						loginDao.delete(l);
 						log.info("adding newidentity");
 						Login newIdentity = new Login();
 						LoginId newIdentityId = new LoginId();

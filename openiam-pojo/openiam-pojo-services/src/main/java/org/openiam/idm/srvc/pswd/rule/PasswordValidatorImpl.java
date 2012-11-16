@@ -28,7 +28,11 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.dozer.converter.LoginDozerConverter;
+import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.exception.ObjectNotFoundException;
+import org.openiam.idm.srvc.auth.domain.LoginEmbeddableId;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginId;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
@@ -66,7 +70,7 @@ public class PasswordValidatorImpl implements PasswordValidator {
 	protected String scriptEngine;
     @Autowired
     protected KeyManagementService keyManagementService;
-	
+
 	private static final Log log = LogFactory.getLog(PasswordValidatorImpl.class);
 	
 	public PasswordValidatorImpl() {
@@ -80,14 +84,14 @@ public class PasswordValidatorImpl implements PasswordValidator {
 	 */
 	public PasswordValidationCode validate(Policy pswdPolicy, Password password) throws ObjectNotFoundException, IOException {
 		// get the user object for the principal
-		Login lg = loginDao.findById(new LoginId(password.getDomainId(), password.getPrincipal(), password.getManagedSysId()));
+		LoginEntity lg = loginDao.findById(new LoginEmbeddableId(password.getDomainId(), password.getPrincipal(), password.getManagedSysId()));
 		UserEntity usr = userDao.findById(lg.getUserId());
 
-        return validateForUser(pswdPolicy, password, new User(usr), lg);
+        return validateForUser(pswdPolicy, password, usr, lg);
 	}
 
     @Override
-    public PasswordValidationCode validateForUser(Policy pswdPolicy, Password password, User user, Login login) throws ObjectNotFoundException, IOException {
+    public PasswordValidationCode validateForUser(Policy pswdPolicy, Password password, UserEntity user, LoginEntity login) throws ObjectNotFoundException, IOException {
         Class cls = null;
         AbstractPasswordRule rule  = null;
         ScriptIntegration se = null;
@@ -99,13 +103,13 @@ public class PasswordValidatorImpl implements PasswordValidator {
         List<PolicyDefParam> defParam = policyDataService.getPolicyDefParamByGroup(pswdPolicy.getPolicyDefId(),"PSWD_COMPOSITION");
 
         // get the user object for the principal if they are null
-        Login lg = login;
+        LoginEntity lg = login;
         if(lg == null) {
-            lg = loginDao.findById(new LoginId(password.getDomainId(), password.getPrincipal(), password.getManagedSysId()));
+            lg = loginDao.findById(new LoginEmbeddableId(password.getDomainId(), password.getPrincipal(), password.getManagedSysId()));
         }
-        User usr = user;
+        UserEntity usr = user;
         if(usr == null) {
-            usr = new User(userDao.findById(lg.getUserId()));
+            usr = userDao.findById(lg.getUserId());
         }
 
         // for each rule

@@ -3,8 +3,11 @@ package org.openiam.idm.srvc.auth.login;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.SysConfiguration;
+import org.openiam.dozer.converter.LoginDozerConverter;
 import org.openiam.exception.AuthenticationException;
 import org.openiam.exception.EncryptionException;
+import org.openiam.idm.srvc.auth.domain.LoginEmbeddableId;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginId;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
@@ -47,6 +50,9 @@ public class LoginDataServiceImpl implements LoginDataService {
     @Autowired
     private KeyManagementService keyManagementService;
 
+    @Autowired
+    protected LoginDozerConverter loginDozerConverter;
+
 	static protected ResourceBundle res = ResourceBundle.getBundle("securityconf");
 	boolean encrypt = true;	// default encryption setting
 	private static final Log log = LogFactory.getLog(LoginDataServiceImpl.class);
@@ -60,8 +66,8 @@ public class LoginDataServiceImpl implements LoginDataService {
             login.setCreateDate(new Date(System.currentTimeMillis()));
         }
 	
-		return loginDao.add(login);
-
+		loginDao.save(loginDozerConverter.convertToEntity(login,false));
+        return login;
 	}
 
 	public Login getLogin(String secDomainId, String login) throws AuthenticationException {
@@ -78,11 +84,10 @@ public class LoginDataServiceImpl implements LoginDataService {
 			throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_DOMAIN);
 		}
 		
-		LoginId id = new LoginId(secDomainId, login, secDomain.getAuthSysId());
-		
-		Login lg = loginDao.findById(id);
+		LoginEmbeddableId id = new LoginEmbeddableId(secDomainId, login, secDomain.getAuthSysId());
+		LoginEntity lg = loginDao.findById(id);
 
-		return lg;
+		return loginDozerConverter.convertToDTO(lg,true);
 	}
 
 	public Login getLoginByManagedSys(String domainId, String login,String sysId) {
@@ -95,15 +100,14 @@ public class LoginDataServiceImpl implements LoginDataService {
 		
 		log.debug("getLoginByManagedSys(): Params = domainId=" + domainId + " login=" + login + " AuthSysId=" + sysId);
 		
-		LoginId id = new LoginId(domainId, login, sysId);
-		
-		Login lg = loginDao.findById(id);
+		LoginEmbeddableId id = new LoginEmbeddableId(domainId, login, sysId);
+		LoginEntity lg = loginDao.findById(id);
 		
 		log.debug("getLoginByManagedSys(): login =" + lg);
 		
 		
 
-		return lg;
+		return loginDozerConverter.convertToDTO(lg, true);
 	}
 
     public List<Login> getLoginByManagedSys(String principalName, String managedSysId) {
@@ -113,8 +117,7 @@ public class LoginDataServiceImpl implements LoginDataService {
         if(managedSysId == null) {
             throw new NullPointerException("manaagedSysId is null");
         }
-
-		return loginDao.findLoginByManagedSys(principalName,managedSysId);
+		return loginDozerConverter.convertToDTOList(loginDao.findLoginByManagedSys(principalName,managedSysId), true);
     }
 
 
@@ -234,13 +237,14 @@ public class LoginDataServiceImpl implements LoginDataService {
 				cal.add(Calendar.DATE, Integer.parseInt(gracePeriod) );
 				lg.setGracePeriod(cal.getTime());
 			}
-		}		
-		
+		}
 
 
 
-		
-		if (loginDao.update(lg) != null) {
+        LoginEntity loginEntity = loginDozerConverter.convertToEntity(lg, false);
+        loginDao.update(loginEntity);
+
+		if (loginEntity != null) {
 			// add the password to the history table
 			PasswordHistory hist = new PasswordHistory(lg.getId().getLogin() , lg.getId().getDomainId(),
 					lg.getId().getManagedSysId());
@@ -293,9 +297,10 @@ public class LoginDataServiceImpl implements LoginDataService {
 			lg.setGracePeriod(cal.getTime());
 		}
 
+        LoginEntity loginEntity = loginDozerConverter.convertToEntity(lg, false);
+        loginDao.update(loginEntity);
 		
-		
-		if (loginDao.update(lg) != null) {
+		if (loginEntity != null) {
 			return true;
 		}
 		return false;		
@@ -322,11 +327,11 @@ public class LoginDataServiceImpl implements LoginDataService {
         if(userId == null) {
             throw new NullPointerException("userId is null");
         }
-		List<Login> loginList = loginDao.findUser(userId);
+		List<LoginEntity> loginList = loginDao.findUser(userId);
         if(loginList == null || loginList.size() == 0) {
             return null;
         }
-		return loginList;
+		return loginDozerConverter.convertToDTOList(loginList, true);
 		
 		
 	
@@ -337,14 +342,11 @@ public class LoginDataServiceImpl implements LoginDataService {
         if(domain == null) {
             throw new NullPointerException("domain is null");
         }
-		List<Login> loginList = loginDao.findLoginByDomain(domain);
+		List<LoginEntity> loginList = loginDao.findLoginByDomain(domain);
         if(loginList == null || loginList.size() == 0) {
             return null;
         }
-		return loginList;
-
-		
-		
+        return loginDozerConverter.convertToDTOList(loginList, true);
 	}
 
 	public void lockLogin(String domainId, String principal, String sysId) {
@@ -381,10 +383,10 @@ public class LoginDataServiceImpl implements LoginDataService {
             throw new NullPointerException("Login is null");
         }
 		
-		LoginId id = new LoginId(serviceId, login, managedSysId);
+		LoginEmbeddableId id = new LoginEmbeddableId(serviceId, login, managedSysId);
 		
-		Login loginDTO = loginDao.findById(id);
-		loginDao.remove(loginDTO);				
+		LoginEntity loginEntity = loginDao.findById(id);
+		loginDao.delete(loginEntity);
 	}
 	
 	public int changeIdentityName(String newPrincipalName, String newPassword, 
@@ -409,7 +411,7 @@ public class LoginDataServiceImpl implements LoginDataService {
 
         log.debug("Updating Identity" + login);
         
-       loginDao.update(login);
+       loginDao.update(loginDozerConverter.convertToEntity(login, true));
 	}
 
 	public LoginDAO getLoginDao() {
@@ -526,17 +528,15 @@ public class LoginDataServiceImpl implements LoginDataService {
 	}
 	
 	public List<Login> getLockedUserSince(Date lastExecTime) {
-		return loginDao.findLockedUsers(lastExecTime);
+		return loginDozerConverter.convertToDTOList(loginDao.findLockedUsers(lastExecTime),true);
 	}
 
     public List<Login> getInactiveUsers(int startDays, int endDays) {
-
         String primaryManagedSys =  sysConfiguration.getDefaultManagedSysId();
 
+        List<LoginEntity> loginList = loginDao.findInactiveUsers(startDays, endDays, primaryManagedSys);
 
-        List<Login> loginList = loginDao.findInactiveUsers(startDays, endDays, primaryManagedSys);
-
-        return loginList;
+        return loginDozerConverter.convertToDTOList(loginList,true);
     }
 
     public PasswordService getPasswordManager() {
@@ -559,13 +559,13 @@ public class LoginDataServiceImpl implements LoginDataService {
 	 * @see org.openiam.idm.srvc.auth.login.LoginDataService#getUserNearPswdExpiration(int)
 	 */
 	public List<Login> getUserNearPswdExpiration(int expDays) {
-		List<Login> loginList = loginDao.findUserNearPswdExp(expDays);
-		return loginList;
+		List<LoginEntity> loginList = loginDao.findUserNearPswdExp(expDays);
+		return loginDozerConverter.convertToDTOList(loginList,true);
 	}
 
     public List<Login> usersWithPasswordExpYesterday() {
-        List<Login> loginList = loginDao.findUserPswdExpYesterday();
-		return loginList;
+        List<LoginEntity> loginList = loginDao.findUserPswdExpYesterday();
+		return loginDozerConverter.convertToDTOList(loginList,true);
     }
 
     /* (non-Javadoc)
@@ -618,12 +618,10 @@ public class LoginDataServiceImpl implements LoginDataService {
         if (managedSysId == null) {
 			throw new NullPointerException("managedSysId is null");
 		}
-        return loginDao.findAllLoginByManagedSys(managedSysId);
-
+        return loginDozerConverter.convertToDTOList(loginDao.findAllLoginByManagedSys(managedSysId),true);
     }
 
     public Login getPasswordResetToken(String token) {
-
-        return loginDao.findByPasswordResetToken(token);
+        return loginDozerConverter.convertToDTO(loginDao.findByPasswordResetToken(token),true);
     }
 }

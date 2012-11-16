@@ -6,6 +6,7 @@ import org.bouncycastle.util.encoders.Hex;
 import org.openiam.core.dao.UserKeyDao;
 import org.openiam.core.domain.UserKey;
 import org.openiam.exception.EncryptionException;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginId;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
@@ -163,24 +164,24 @@ public class KeyManagementServiceImpl implements KeyManagementService {
     public Long generateUserKeys(String userId) throws Exception {
         UserEntity userEntity = userDAO.findById(userId);
         if(userEntity != null) {
-            return generateUserKeys(new User(userEntity));
+            return generateUserKeys(userEntity);
         }
         return 0L;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Long generateUserKeys(User user) throws Exception {
+    public Long generateUserKeys(UserEntity user) throws Exception {
         byte[] masterKey = getMasterKey(JksManager.KEYSTORE_ALIAS);
         if(masterKey == null || masterKey.length == 0) {
             throw new NullPointerException("Cannot get master key to encrypt user keys");
         }
-        List<User> userList = new ArrayList<User>();
+        List<UserEntity> userList = new ArrayList<UserEntity>();
         userList.add(user);
-        List<Login> lgList = loginDAO.findUser(user.getUserId());
+        List<LoginEntity> lgList = loginDAO.findUser(user.getUserId());
         List<UserKey> keyList = userKeyDao.getByUserId(user.getUserId());
         List<PasswordHistory> pwdList = new ArrayList<PasswordHistory>();
-        for (Login lg: lgList){
+        for (LoginEntity lg: lgList){
             pwdList.addAll(passwordHistoryDao.findAllPasswordHistoryByPrincipal(lg.getId().getDomainId(), lg.getId().getLogin(),lg.getId().getManagedSysId()));
         }
         HashMap<String, List<ManagedSys>> managedSysMap = getManagedSysMap();
@@ -262,7 +263,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         // encrypt user data
         log.warn("Encrypt user passwords ...");
         if(userSecurityWrapper.getLoginList() != null && !userSecurityWrapper.getLoginList().isEmpty()) {
-            for(Login login : userSecurityWrapper.getLoginList()) {
+            for(LoginEntity login : userSecurityWrapper.getLoginList()) {
                 login.setPassword(cryptor.encrypt(pwdKey, login.getPassword()));
                 loginDAO.update(login);
             }
@@ -329,7 +330,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
     private void decryptSecurityDataForUser(byte[] key, UserSecurityWrapper userSecurityWrapper) throws Exception{
         log.warn("Decrypting user passwords ...");
         if(userSecurityWrapper.getLoginList() != null && !userSecurityWrapper.getLoginList().isEmpty()) {
-            for(Login login : userSecurityWrapper.getLoginList()) {
+            for(LoginEntity login : userSecurityWrapper.getLoginList()) {
                 login.setPassword(cryptor.decrypt(key, login.getPassword()));
             }
         }
@@ -419,7 +420,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
             }while(fetchedDataCount<userCount);
 
             HashMap<String, List<ManagedSys>> managedSysMap = getManagedSysMap();
-            HashMap<String, List<Login>> loginMap = getLoginMap();
+            HashMap<String, List<LoginEntity>> loginMap = getLoginMap();
             HashMap<String, List<UserKey>> userKeyMap = getUserKeyMap();
             HashMap<String, List<PasswordHistory>> pwdHistoryMap = getPasswordHistoryMap(loginMap);
 
@@ -461,13 +462,13 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         return keyMap;
     }
 
-    private HashMap<String, List<Login>> getLoginMap() {
-        HashMap<String, List<Login>> lgMap = new HashMap<String, List<Login>>();
+    private HashMap<String, List<LoginEntity>> getLoginMap() {
+        HashMap<String, List<LoginEntity>> lgMap = new HashMap<String, List<LoginEntity>>();
 
         Long lgCount = loginDAO.getLoginCount();
         if(lgCount!=null && lgCount>0){
             long fetchedDataCount = 0l;
-            Set<Login> loginList = new HashSet<Login>();
+            Set<LoginEntity> loginList = new HashSet<LoginEntity>();
             int pageNum=0;
             do{
                 loginList.addAll(loginDAO.getLoginSublist(pageNum*FETCH_COUNT, FETCH_COUNT));
@@ -475,9 +476,9 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                 pageNum++;
             }while(fetchedDataCount<lgCount);
 
-            for(Login lg : loginList) {
+            for(LoginEntity lg : loginList) {
                 if(!lgMap.containsKey(lg.getUserId())) {
-                    lgMap.put(lg.getUserId(), new ArrayList<Login>());
+                    lgMap.put(lg.getUserId(), new ArrayList<LoginEntity>());
                 }
                 lgMap.get(lg.getUserId()).add(lg);
             }
@@ -499,7 +500,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         return managedSysMap;
     }
 
-    private HashMap<String, List<PasswordHistory>> getPasswordHistoryMap(HashMap<String, List<Login>> loginMap) {
+    private HashMap<String, List<PasswordHistory>> getPasswordHistoryMap(HashMap<String, List<LoginEntity>> loginMap) {
         HashMap<String, List<PasswordHistory>> pwdHistoryMap = new HashMap<String, List<PasswordHistory>>();
 
         if(loginMap != null && !loginMap.isEmpty()) {
@@ -531,7 +532,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
 
                 // map to userId
                 for (String userId:loginMap.keySet()){
-                    for(Login lg: loginMap.get(userId)){
+                    for(LoginEntity lg: loginMap.get(userId)){
                         if(pwdMap.containsKey(lg.getId())){
                             if(!pwdHistoryMap.containsKey(userId)) {
                                 pwdHistoryMap.put(userId, new ArrayList<PasswordHistory>());

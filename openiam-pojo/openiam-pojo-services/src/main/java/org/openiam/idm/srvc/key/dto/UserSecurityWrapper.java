@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.key.dto;
 
 import org.openiam.core.domain.UserKey;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
 import org.openiam.idm.srvc.pswd.dto.PasswordHistory;
@@ -14,7 +15,7 @@ import java.util.Set;
  */
 public class UserSecurityWrapper {
     private String userId;
-    private List<Login> loginList;
+    private List<LoginEntity> loginList;
     private List<UserKey> userKeyList;
     private List<PasswordHistory> passwordHistoryList;
     private List<ManagedSys>  managedSysList;
@@ -27,11 +28,11 @@ public class UserSecurityWrapper {
         this.userId = userId;
     }
 
-    public List<Login> getLoginList() {
+    public List<LoginEntity> getLoginList() {
         return loginList;
     }
 
-    public void setLoginList(List<Login> loginList) {
+    public void setLoginList(List<LoginEntity> loginList) {
         this.loginList = loginList;
     }
 

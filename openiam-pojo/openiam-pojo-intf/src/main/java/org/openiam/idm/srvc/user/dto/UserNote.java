@@ -7,6 +7,8 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 import java.util.Date;
+
+import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.user.domain.UserNoteEntity;
 
 
@@ -23,7 +25,7 @@ import org.openiam.idm.srvc.user.domain.UserNoteEntity;
         "userId",
         "userNoteId"
 })
-
+@DozerDTOCorrespondence(UserNoteEntity.class)
 public class UserNote implements java.io.Serializable {
 
     // Fields
@@ -55,14 +57,14 @@ public class UserNote implements java.io.Serializable {
         createDate = new Date(System.currentTimeMillis());
 
     }
-    public UserNote(UserNoteEntity userNoteEntity) {
-        this.userNoteId = userNoteEntity.getUserNoteId();
-        this.createDate = userNoteEntity.getCreateDate();
-        this.createdBy = userNoteEntity.getCreatedBy();
-        this.description = userNoteEntity.getDescription();
-        this.noteType = userNoteEntity.getNoteType();
-        this.userId = userNoteEntity.getUser() != null ? userNoteEntity.getUser().getUserId() : "";
-    }
+//    public UserNote(UserNoteEntity userNoteEntity) {
+//        this.userNoteId = userNoteEntity.getUserNoteId();
+//        this.createDate = userNoteEntity.getCreateDate();
+//        this.createdBy = userNoteEntity.getCreatedBy();
+//        this.description = userNoteEntity.getDescription();
+//        this.noteType = userNoteEntity.getNoteType();
+//        this.userId = userNoteEntity.getUser() != null ? userNoteEntity.getUser().getUserId() : "";
+//    }
      /**
      * full constructor
      */

@@ -8,12 +8,14 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import org.hibernate.annotations.GenericGenerator;
+import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 
 @Entity
 @Table(name = "EMAIL_ADDRESS")
+@DozerDTOCorrespondence(EmailAddress.class)
 public class EmailAddressEntity {
     @Id
     @GeneratedValue(generator = "system-uuid")
@@ -46,15 +48,15 @@ public class EmailAddressEntity {
     public EmailAddressEntity() {
     }
 
-    public EmailAddressEntity(final EmailAddress emailAddress, final UserEntity parent) {
-        this.emailId = emailAddress.getEmailId();
-        this.isActive = emailAddress.isActive();
-        this.description = emailAddress.getDescription();
-        this.isDefault = emailAddress.getIsDefault();
-        this.parentType = emailAddress.getParentType();
-        this.name = emailAddress.getName();
-        this.parent = parent;
-    }
+//    public EmailAddressEntity(final EmailAddress emailAddress, final UserEntity parent) {
+//        this.emailId = emailAddress.getEmailId();
+//        this.isActive = emailAddress.isActive();
+//        this.description = emailAddress.getDescription();
+//        this.isDefault = emailAddress.getIsDefault();
+//        this.parentType = emailAddress.getParentType();
+//        this.name = emailAddress.getName();
+//        this.parent = parent;
+//    }
 
     public String getEmailId() {
         return emailId;

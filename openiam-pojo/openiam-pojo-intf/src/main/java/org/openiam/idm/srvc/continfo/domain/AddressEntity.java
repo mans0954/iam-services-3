@@ -11,11 +11,13 @@ import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlTransient;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.base.AttributeOperationEnum;
+import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 
 @Entity
 @Table(name = "ADDRESS")
+@DozerDTOCorrespondence(Address.class)
 public class AddressEntity {
     @Id
     @GeneratedValue(generator = "system-uuid")
@@ -84,28 +86,28 @@ public class AddressEntity {
     public AddressEntity() {
     }
 
-    public AddressEntity(Address address, UserEntity parent) {
-        this.addressId = address.getAddressId();
-        this.isActive = address.isActive();
-        this.bldgNumber = address.getBldgNumber();
-        this.streetDirection = address.getStreetDirection();
-        this.suite = address.getSuite();
-        this.address1 = address.getAddress1();
-        this.address2 = address.getAddress2();
-        this.address3 = address.getAddress3();
-        this.address4 = address.getAddress4();
-        this.address5 = address.getAddress5();
-        this.address6 = address.getAddress6();
-        this.address7 = address.getAddress7();
-        this.city = address.getCity();
-        this.country = address.getCountry();
-        this.description = address.getDescription();
-        this.parent = parent;
-        this.parentType = address.getParentType();
-        this.postalCd = address.getPostalCd();
-        this.state = address.getState();
-        this.name = address.getName();
-    }
+//    public AddressEntity(Address address, UserEntity parent) {
+//        this.addressId = address.getAddressId();
+//        this.isActive = address.isActive();
+//        this.bldgNumber = address.getBldgNumber();
+//        this.streetDirection = address.getStreetDirection();
+//        this.suite = address.getSuite();
+//        this.address1 = address.getAddress1();
+//        this.address2 = address.getAddress2();
+//        this.address3 = address.getAddress3();
+//        this.address4 = address.getAddress4();
+//        this.address5 = address.getAddress5();
+//        this.address6 = address.getAddress6();
+//        this.address7 = address.getAddress7();
+//        this.city = address.getCity();
+//        this.country = address.getCountry();
+//        this.description = address.getDescription();
+//        this.parent = parent;
+//        this.parentType = address.getParentType();
+//        this.postalCd = address.getPostalCd();
+//        this.state = address.getState();
+//        this.name = address.getName();
+//    }
 
     public String getAddressId() {
         return addressId;

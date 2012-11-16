@@ -1,112 +1,93 @@
-package org.openiam.idm.srvc.auth.dto;
+package org.openiam.idm.srvc.auth.domain;
 // Generated Feb 18, 2008 3:56:06 PM by Hibernate Tools 3.2.0.b11
 
 
-import org.hibernate.annotations.*;
 import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.idm.srvc.auth.domain.LoginEntity;
+import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.idm.srvc.auth.dto.LoginId;
+import org.openiam.idm.srvc.auth.dto.SSOToken;
+import org.openiam.idm.srvc.auth.dto.Subject;
 
 import javax.persistence.*;
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.Table;
 import javax.xml.bind.annotation.*;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * Login domain object
- */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "Login", propOrder = {
-        "id",
-        "userId",
-        "password",
-        "pwdEquivalentToken",
-        "pwdChanged",
-        "pwdExp",
-        "firstTimeLogin",
-        "resetPassword",
-        "isLocked",
-        "status",
-        "gracePeriod",
-        "createDate",
-        "createdBy",
-        "currentLoginHost",
-        "authFailCount",
-        "lastAuthAttempt",
-        "canonicalName",
-        "lastLogin",
-        "isDefault",
-        "selected",
-        "loginAttributes",
-        "passwordChangeCount",
-        "operation",
-        "origPrincipalName",
-        "managedSysName",
-        "lastLoginIP",
-        "prevLoginIP",
-        "prevLogin",
-        "pswdResetToken",
-        "pswdResetTokenExp"
-})
-@XmlSeeAlso({
-        Subject.class,
-        SSOToken.class
-})
-@DozerDTOCorrespondence(LoginEntity.class)
-public class Login implements java.io.Serializable, Cloneable {
-
-    /**
-     *
-     */
+@Entity
+@Table(name="LOGIN")
+@Cacheable
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@DozerDTOCorrespondence(Login.class)
+public class LoginEntity implements java.io.Serializable, Cloneable {
     private static final long serialVersionUID = -1972779170001619759L;
-    protected AttributeOperationEnum operation;
-    protected LoginId id;
+    @EmbeddedId
+    protected LoginEmbeddableId id;
 
+    @Column(name="USER_ID",length=32)
     protected String userId;
 
+    @Column(name="PASSWORD",length=255)
     protected String password;
 
+    @Column(name="PWD_EQUIVALENT_TOKEN",length=255)
     protected String pwdEquivalentToken;
 
     @XmlSchemaType(name = "dateTime")
+    @Column(name="PWD_CHANGED",length=19)
+    @Temporal(TemporalType.TIMESTAMP)
     protected Date pwdChanged;
 
     @XmlSchemaType(name = "dateTime")
+    @Column(name="PWD_EXP",length=19)
+    @Temporal(TemporalType.TIMESTAMP)
     protected Date pwdExp;
 
+    @Column(name="FIRST_TIME_LOGIN",nullable = false)
     protected int firstTimeLogin;
 
+    @Column(name="RESET_PWD",nullable = false)
     protected int resetPassword;
 
+    @Column(name="IS_LOCKED",nullable = false)
     protected int isLocked;
 
+    @Column(name="STATUS",length = 20)
     protected String status;
 
     @XmlSchemaType(name = "dateTime")
+    @Column(name="GRACE_PERIOD",length=19)
+    @Temporal(TemporalType.TIMESTAMP)
     protected Date gracePeriod;
 
     @XmlSchemaType(name = "dateTime")
+    @Column(name="CREATE_DATE",length=19)
+    @Temporal(TemporalType.TIMESTAMP)
     protected Date createDate;
 
+    @Column(name="CREATED_BY",length = 32)
     protected String createdBy;
 
+    @Column(name="CURRENT_LOGIN_HOST",length = 40)
     protected String currentLoginHost;
 
     @Column(name="AUTH_FAIL_COUNT")
     protected Integer authFailCount = new Integer(0);
 
     @XmlSchemaType(name = "dateTime")
+    @Column(name="LAST_AUTH_ATTEMPT",length = 19)
+    @Temporal(TemporalType.TIMESTAMP)
     protected Date lastAuthAttempt;
 
     @Column(name="CANONICAL_NAME",length = 100)
     protected String canonicalName;
 
     @XmlSchemaType(name = "dateTime")
+    @Column(name="LAST_LOGIN",length = 19)
+    @Temporal(TemporalType.TIMESTAMP)
     protected Date lastLogin;
 
     @Column(name="IS_DEFAULT")
@@ -119,6 +100,8 @@ public class Login implements java.io.Serializable, Cloneable {
     protected String lastLoginIP;
 
     @XmlSchemaType(name = "dateTime")
+    @Column(name="PREV_LOGIN",length = 19)
+    @Temporal(TemporalType.TIMESTAMP)
     protected Date prevLogin;
 
     @Column(name="PREV_LOGIN_IP")
@@ -128,27 +111,27 @@ public class Login implements java.io.Serializable, Cloneable {
     protected String pswdResetToken;
 
     @XmlSchemaType(name = "dateTime")
+    @Column(name="PSWD_RESET_TOKEN_EXP",length = 19)
+    @Temporal(TemporalType.TIMESTAMP)
     protected Date pswdResetTokenExp;
-    @OneToMany(mappedBy = "principal",cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    protected Set<LoginAttribute> loginAttributes = new HashSet<LoginAttribute>(0);
-    @Transient
-    protected boolean selected;
-    @Transient
-    protected String origPrincipalName;
-    @Transient
-    protected String managedSysName;
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumns({@JoinColumn(name = "SERVICE_ID", referencedColumnName = "SERVICE_ID", insertable = false, updatable = false),
+                  @JoinColumn(name = "LOGIN", referencedColumnName = "LOGIN", insertable = false, updatable = false),
+                  @JoinColumn(name = "MANAGED_SYS_ID", referencedColumnName = "MANAGED_SYS_ID", insertable = false, updatable = false)})
+    protected Set<LoginAttributeEntity> loginAttributes = new HashSet<LoginAttributeEntity>(0);
 
 
-    public Login() {
+    public LoginEntity() {
     }
 
-    public Login(LoginId id, int resetPwd, int isLocked) {
+    public LoginEntity(LoginEmbeddableId id, int resetPwd, int isLocked) {
         this.id = id;
         this.firstTimeLogin = resetPwd;
         this.isLocked = isLocked;
     }
 
-    public Login(LoginId id, String userId, String password, String pwdEquivalentToken, Date pwdChanged, Date pwdExp, int resetPwd, int isLocked, String status, Date gracePeriod, Date createDate, String createdBy, String currentLoginHost, Integer authFailCount, Date lastAuthAttempt, Set<LoginAttribute> loginAttributes) {
+    public LoginEntity(LoginEmbeddableId id, String userId, String password, String pwdEquivalentToken, Date pwdChanged, Date pwdExp, int resetPwd, int isLocked, String status, Date gracePeriod, Date createDate, String createdBy, String currentLoginHost, Integer authFailCount, Date lastAuthAttempt, Set<LoginAttributeEntity> loginAttributes) {
         this.id = id;
         this.userId = userId;
         this.password = password;
@@ -170,8 +153,8 @@ public class Login implements java.io.Serializable, Cloneable {
 
     @Override
     public Object clone() {
-        Login l = new Login();
-        LoginId lgId = new LoginId(id.getDomainId(), id.getLogin(), id.getManagedSysId());
+        LoginEntity l = new LoginEntity();
+        LoginEmbeddableId lgId = new LoginEmbeddableId(id.getDomainId(), id.getLogin(), id.getManagedSysId());
         l.setId(lgId);
 
         l.setAuthFailCount(authFailCount);
@@ -185,13 +168,11 @@ public class Login implements java.io.Serializable, Cloneable {
         l.setLastAuthAttempt(lastAuthAttempt);
         l.setLastLogin(lastLogin);
         l.setLoginAttributes(loginAttributes);
-        l.setOperation(operation);
         l.setPassword(password);
         l.setPasswordChangeCount(passwordChangeCount);
         l.setPwdChanged(pwdChanged);
         l.setPwdExp(pwdExp);
         l.setResetPassword(resetPassword);
-        l.setSelected(selected);
         l.setStatus(status);
         l.setUserId(userId);
         return l;
@@ -199,11 +180,11 @@ public class Login implements java.io.Serializable, Cloneable {
     }
 
 
-    public LoginId getId() {
+    public LoginEmbeddableId getId() {
         return this.id;
     }
 
-    public void setId(LoginId id) {
+    public void setId(LoginEmbeddableId id) {
         this.id = id;
     }
 
@@ -415,27 +396,18 @@ public class Login implements java.io.Serializable, Cloneable {
         this.isDefault = isDefault;
     }
 
-    public Set<LoginAttribute> getLoginAttributes() {
+    public Set<LoginAttributeEntity> getLoginAttributes() {
         return this.loginAttributes;
     }
 
-    public void setLoginAttributes(Set<LoginAttribute> loginAttributes) {
+    public void setLoginAttributes(Set<LoginAttributeEntity> loginAttributes) {
         this.loginAttributes = loginAttributes;
     }
 
-    public boolean isSelected() {
-        return selected;
-    }
-
-
-    public void setSelected(boolean selected) {
-        this.selected = selected;
-    }
 
     @Override
     public String toString() {
         return "Login{" +
-                "operation=" + operation +
                 ", id=" + id +
                 ", userId='" + userId + '\'' +
                 ", password='" + password + '\'' +
@@ -456,42 +428,13 @@ public class Login implements java.io.Serializable, Cloneable {
                 ", lastLogin=" + lastLogin +
                 ", isDefault=" + isDefault +
                 ", passwordChangeCount=" + passwordChangeCount +
-                ", selected=" + selected +
                 ", loginAttributes=" + loginAttributes +
-                ", origPrincipalName='" + origPrincipalName + '\'' +
-                ", managedSysName='" + managedSysName + '\'' +
                 ", lastLoginIP='" + lastLoginIP + '\'' +
                 ", prevLogin=" + prevLogin +
                 ", prevLoginIP='" + prevLoginIP + '\'' +
                 '}';
     }
 
-    public AttributeOperationEnum getOperation() {
-        return operation;
-    }
-
-
-    public void setOperation(AttributeOperationEnum operation) {
-        this.operation = operation;
-    }
-
-    public String getOrigPrincipalName() {
-        return origPrincipalName;
-    }
-
-
-    public void setOrigPrincipalName(String origPrincipalName) {
-        this.origPrincipalName = origPrincipalName;
-    }
-
-    public String getManagedSysName() {
-        return managedSysName;
-    }
-
-
-    public void setManagedSysName(String managedSysName) {
-        this.managedSysName = managedSysName;
-    }
 
 	@Override
 	public int hashCode() {
@@ -510,7 +453,7 @@ public class Login implements java.io.Serializable, Cloneable {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		Login other = (Login) obj;
+		LoginEntity other = (LoginEntity) obj;
 		if (authFailCount == null) {
 			if (other.authFailCount != null)
 				return false;
@@ -575,18 +518,6 @@ public class Login implements java.io.Serializable, Cloneable {
 				return false;
 		} else if (!loginAttributes.equals(other.loginAttributes))
 			return false;
-		if (managedSysName == null) {
-			if (other.managedSysName != null)
-				return false;
-		} else if (!managedSysName.equals(other.managedSysName))
-			return false;
-		if (operation != other.operation)
-			return false;
-		if (origPrincipalName == null) {
-			if (other.origPrincipalName != null)
-				return false;
-		} else if (!origPrincipalName.equals(other.origPrincipalName))
-			return false;
 		if (password == null) {
 			if (other.password != null)
 				return false;
@@ -633,8 +564,6 @@ public class Login implements java.io.Serializable, Cloneable {
 		} else if (!pwdExp.equals(other.pwdExp))
 			return false;
 		if (resetPassword != other.resetPassword)
-			return false;
-		if (selected != other.selected)
 			return false;
 		if (status == null) {
 			if (other.status != null)

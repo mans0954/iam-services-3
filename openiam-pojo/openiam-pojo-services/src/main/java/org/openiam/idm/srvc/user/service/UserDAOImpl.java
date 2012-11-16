@@ -36,7 +36,6 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 
     private static final Log log = LogFactory.getLog(UserDAOImpl.class);
 
-    private SessionFactory sessionFactory;
     private SequenceGenDAO seqGenDao;
     private String emailSearchVal;
     private String phoneSearchVal;

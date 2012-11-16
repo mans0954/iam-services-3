@@ -36,6 +36,8 @@ import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.connector.type.*;
 import org.openiam.dozer.ProvisionDozerUtils;
+import org.openiam.dozer.converter.LoginDozerConverter;
+import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.exception.EncryptionException;
 import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
@@ -79,6 +81,7 @@ import org.openiam.spml2.msg.ResponseType;
 import org.openiam.spml2.msg.password.SetPasswordRequestType;
 import org.openiam.spml2.msg.suspend.ResumeRequestType;
 import org.openiam.spml2.msg.suspend.SuspendRequestType;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
 
 import javax.jws.WebMethod;
@@ -100,6 +103,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     private static final Log log = LogFactory.getLog(DefaultProvisioningService.class);
 
     private ProvisionDozerUtils dozerUtils;
+    @Autowired
+    private UserDozerConverter userDozerConverter;
+    @Autowired
+    private LoginDozerConverter loginDozerConverter;
 
     public Response testConnectionConfig(String managedSysId) {
         return validateConnection.testConnection(managedSysId, muleContext);
@@ -205,7 +212,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         Policy passwordPolicy = user.getPasswordPolicy();
         if (passwordPolicy == null) {
-            passwordPolicy = passwordDS.getPasswordPolicyByUser(primaryLogin.getId().getDomainId(), user.getUser());
+            passwordPolicy = passwordDS.getPasswordPolicyByUser(primaryLogin.getId().getDomainId(), userDozerConverter.convertToEntity(user.getUser(),true));
         }
 
         // if the password of the primaryIdentity is a custom password validate the password
@@ -217,7 +224,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             password.setPrincipal(primaryLogin.getId().getLogin());
 
             try {
-                PasswordValidationCode valCode = passwordDS.isPasswordValidForUserAndPolicy(password, user.getUser(), primaryLogin, passwordPolicy);
+                PasswordValidationCode valCode = passwordDS.isPasswordValidForUserAndPolicy(password, userDozerConverter.convertToEntity(user.getUser(), true), loginDozerConverter.convertToEntity(primaryLogin,true), passwordPolicy);
                 if (valCode == null || valCode != PasswordValidationCode.SUCCESS) {
                     auditHelper.addLog("CREATE", user.getRequestorDomain(), user.getRequestorLogin(),
                             "IDM SERVICE", user.getCreatedBy(), "0", "USER", user.getUserId(),
@@ -278,7 +285,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         }
 
         // Update attributes that will be used by the password policy
-        passwordPolicy = passwordDS.getPasswordPolicyByUser(primaryLogin.getId().getDomainId(), user);
+        passwordPolicy = passwordDS.getPasswordPolicyByUser(primaryLogin.getId().getDomainId(), userDozerConverter.convertToEntity(user,true));
         //passwordPolicy = passwordDS.getPasswordPolicy(primaryLogin.getId().getDomainId(), primaryLogin.getId().getLogin(), primaryLogin.getId().getManagedSysId());
         PolicyAttribute policyAttr = getPolicyAttribute("CHNG_PSWD_ON_RESET", passwordPolicy);
         if (policyAttr != null) {

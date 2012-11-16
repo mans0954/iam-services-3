@@ -9,6 +9,8 @@ import org.openiam.base.BaseObject;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+
+import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 
 /**
@@ -29,7 +31,7 @@ import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
         "operation",
         "required"
 })
-
+@DozerDTOCorrespondence(UserAttributeEntity.class)
 public class UserAttribute extends BaseObject {
 
     protected String id;
@@ -62,13 +64,13 @@ public class UserAttribute extends BaseObject {
         this.id = id;
     }
 
-    public UserAttribute(UserAttributeEntity userAtributeEntity) {
-        this.id = userAtributeEntity.getId();
-        this.metadataElementId = userAtributeEntity.getMetadataElementId();
-        this.name = userAtributeEntity.getName();
-        this.value = userAtributeEntity.getValue();
-        this.userId = userAtributeEntity.getUser() != null ? userAtributeEntity.getUser().getUserId() : "";
-    }
+//    public UserAttribute(UserAttributeEntity userAtributeEntity) {
+//        this.id = userAtributeEntity.getId();
+//        this.metadataElementId = userAtributeEntity.getMetadataElementId();
+//        this.name = userAtributeEntity.getName();
+//        this.value = userAtributeEntity.getValue();
+//        this.userId = userAtributeEntity.getUser() != null ? userAtributeEntity.getUser().getUserId() : "";
+//    }
 
     public UserAttribute(String name, String value) {
         this.name = name;

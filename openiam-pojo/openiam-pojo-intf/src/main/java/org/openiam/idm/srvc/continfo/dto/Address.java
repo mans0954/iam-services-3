@@ -13,6 +13,8 @@ import org.openiam.base.AttributeOperationEnum;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+
+import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 
@@ -47,7 +49,7 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
         "name",
         "operation"
 })
-
+@DozerDTOCorrespondence(AddressEntity.class)
 public class Address implements java.io.Serializable {
 
 
@@ -104,28 +106,28 @@ public class Address implements java.io.Serializable {
     public Address() {
     }
 
-    public Address(AddressEntity addressEntity) {
-        this.addressId = addressEntity.getAddressId();
-        this.isActive = addressEntity.getActive();
-        this.bldgNumber = addressEntity.getBldgNumber();
-        this.streetDirection = addressEntity.getStreetDirection();
-        this.suite = addressEntity.getSuite();
-        this.address1 = addressEntity.getAddress1();
-        this.address2 = addressEntity.getAddress2();
-        this.address3 = addressEntity.getAddress3();
-        this.address4 = addressEntity.getAddress4();
-        this.address5 = addressEntity.getAddress5();
-        this.address6 = addressEntity.getAddress6();
-        this.address7 = addressEntity.getAddress7();
-        this.city = addressEntity.getCity();
-        this.country = addressEntity.getCountry();
-        this.description = addressEntity.getDescription();
-        this.parentType = addressEntity.getParentType();
-        this.postalCd = addressEntity.getPostalCd();
-        this.state = addressEntity.getState();
-        this.name = addressEntity.getName();
-        this.parentId = addressEntity.getParent() != null ? addressEntity.getParent().getUserId() : "";
-    }
+//    public Address(AddressEntity addressEntity) {
+//        this.addressId = addressEntity.getAddressId();
+//        this.isActive = addressEntity.getActive();
+//        this.bldgNumber = addressEntity.getBldgNumber();
+//        this.streetDirection = addressEntity.getStreetDirection();
+//        this.suite = addressEntity.getSuite();
+//        this.address1 = addressEntity.getAddress1();
+//        this.address2 = addressEntity.getAddress2();
+//        this.address3 = addressEntity.getAddress3();
+//        this.address4 = addressEntity.getAddress4();
+//        this.address5 = addressEntity.getAddress5();
+//        this.address6 = addressEntity.getAddress6();
+//        this.address7 = addressEntity.getAddress7();
+//        this.city = addressEntity.getCity();
+//        this.country = addressEntity.getCountry();
+//        this.description = addressEntity.getDescription();
+//        this.parentType = addressEntity.getParentType();
+//        this.postalCd = addressEntity.getPostalCd();
+//        this.state = addressEntity.getState();
+//        this.name = addressEntity.getName();
+//        this.parentId = addressEntity.getParent() != null ? addressEntity.getParent().getUserId() : "";
+//    }
 
     /**
      * minimal constructor

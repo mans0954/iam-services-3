@@ -34,8 +34,10 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.exception.EncryptionException;
 import org.openiam.exception.ObjectNotFoundException;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginId;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
@@ -51,6 +53,7 @@ import org.openiam.idm.srvc.pswd.dto.*;
 import org.openiam.idm.srvc.pswd.rule.PasswordValidator;
 import org.openiam.idm.srvc.secdomain.dto.SecurityDomain;
 import org.openiam.idm.srvc.secdomain.service.SecurityDomainDataService;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.util.encrypt.Cryptor;
@@ -79,6 +82,8 @@ public class PasswordServiceImpl implements PasswordService {
     protected HashDigest hash;
     @Autowired
     protected KeyManagementService keyManagementService;
+    @Autowired
+    protected UserDozerConverter userDozerConverter;
 	
 	
 	private static final Log log = LogFactory.getLog(PasswordServiceImpl.class);
@@ -109,7 +114,7 @@ public class PasswordServiceImpl implements PasswordService {
 	}
 
     @Override
-    public PasswordValidationCode isPasswordValidForUser(Password pswd, User user, Login lg) throws ObjectNotFoundException {
+    public PasswordValidationCode isPasswordValidForUser(Password pswd, UserEntity user, LoginEntity lg) throws ObjectNotFoundException {
 
         Policy pswdPolicy = getPasswordPolicyByUser(pswd.getDomainId(), user);
 
@@ -129,7 +134,7 @@ public class PasswordServiceImpl implements PasswordService {
     }
 
     @Override
-    public PasswordValidationCode isPasswordValidForUserAndPolicy(Password pswd, User user, Login lg, Policy policy) throws ObjectNotFoundException {
+    public PasswordValidationCode isPasswordValidForUserAndPolicy(Password pswd, UserEntity user, LoginEntity lg, Policy policy) throws ObjectNotFoundException {
 
         Policy pswdPolicy = policy;
         if(pswdPolicy == null) {
@@ -252,11 +257,11 @@ public class PasswordServiceImpl implements PasswordService {
 		log.info("login=" + lg);
 		final User user = userManager.getUserWithDependent(lg.getUserId(), false);
 		
-		return getPasswordPolicyByUser(domainId, user);
+		return getPasswordPolicyByUser(domainId, userDozerConverter.convertToEntity(user, false));
 	}
 
     @Override
-    public Policy getPasswordPolicyByUser(String domainId, User user) {
+    public Policy getPasswordPolicyByUser(String domainId, UserEntity user) {
         // Find a password policy for this user
         // order of search, type, classification, domain, global
 

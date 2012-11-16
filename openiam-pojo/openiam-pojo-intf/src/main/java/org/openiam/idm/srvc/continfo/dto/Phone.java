@@ -15,6 +15,8 @@ import org.openiam.base.AttributeOperationEnum;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+
+import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 
@@ -40,7 +42,7 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
         "name",
         "operation"
 })
-
+@DozerDTOCorrespondence(PhoneEntity.class)
 public class Phone implements java.io.Serializable {
 
     // Fields
@@ -85,19 +87,19 @@ public class Phone implements java.io.Serializable {
     }
 
 
-    public Phone(PhoneEntity phoneEntity) {
-        this.phoneId = phoneEntity.getPhoneId();
-        this.isActive = phoneEntity.getActive();
-        this.areaCd = phoneEntity.getAreaCd();
-        this.countryCd = phoneEntity.getCountryCd();
-        this.description = phoneEntity.getDescription();
-        this.isDefault = phoneEntity.getDefault();
-        this.parentType = phoneEntity.getParentType();
-        this.phoneExt = phoneEntity.getPhoneExt();
-        this.name = phoneEntity.getName();
-        this.phoneType = phoneEntity.getPhoneType();
-        this.parentId = phoneEntity.getParent() != null ? phoneEntity.getParent().getUserId() : "";
-    }
+//    public Phone(PhoneEntity phoneEntity) {
+//        this.phoneId = phoneEntity.getPhoneId();
+//        this.isActive = phoneEntity.getActive();
+//        this.areaCd = phoneEntity.getAreaCd();
+//        this.countryCd = phoneEntity.getCountryCd();
+//        this.description = phoneEntity.getDescription();
+//        this.isDefault = phoneEntity.getDefault();
+//        this.parentType = phoneEntity.getParentType();
+//        this.phoneExt = phoneEntity.getPhoneExt();
+//        this.name = phoneEntity.getName();
+//        this.phoneType = phoneEntity.getPhoneType();
+//        this.parentId = phoneEntity.getParent() != null ? phoneEntity.getParent().getUserId() : "";
+//    }
 
     /**
      * full constructor

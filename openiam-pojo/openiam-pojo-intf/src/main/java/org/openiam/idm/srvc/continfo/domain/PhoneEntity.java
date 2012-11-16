@@ -9,11 +9,13 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlTransient;
 import org.hibernate.annotations.GenericGenerator;
+import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 
 @Entity
 @Table(name = "PHONE")
+@DozerDTOCorrespondence(Phone.class)
 public class PhoneEntity {
      @Id
     @GeneratedValue(generator = "system-uuid")
@@ -59,14 +61,14 @@ public class PhoneEntity {
     public PhoneEntity() {
     }
 
-    public PhoneEntity(Phone phone, UserEntity parent) {
-      this.phoneId = phone.getPhoneId();
-      this.parentType = phone.getParentType();
-      this.phoneExt = phone.getPhoneExt();
-      this.name = phone.getName();
-      this.phoneType = phone.getPhoneType();
-      this.parent = parent;
-    }
+//    public PhoneEntity(Phone phone, UserEntity parent) {
+//      this.phoneId = phone.getPhoneId();
+//      this.parentType = phone.getParentType();
+//      this.phoneExt = phone.getPhoneExt();
+//      this.name = phone.getName();
+//      this.phoneType = phone.getPhoneType();
+//      this.parent = parent;
+//    }
 
     public String getPhoneId() {
         return phoneId;
