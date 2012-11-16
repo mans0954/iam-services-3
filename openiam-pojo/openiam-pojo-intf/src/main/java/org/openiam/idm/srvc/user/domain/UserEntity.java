@@ -28,6 +28,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.ParamDef;
 import org.openiam.core.domain.UserKey;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
@@ -269,7 +270,7 @@ public class UserEntity {
 
     @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
     @JoinColumn(name="USER_ID", referencedColumnName="USER_ID")
-    private List<Login> principalList = new LinkedList<Login>();
+    private List<LoginEntity> principalList = new LinkedList<LoginEntity>();
 
     @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
     @JoinColumn(name="USER_ID", referencedColumnName="USER_ID")
@@ -896,11 +897,11 @@ public class UserEntity {
         this.systemFlag = systemFlag;
     }
 
-    public List<Login> getPrincipalList() {
+    public List<LoginEntity> getPrincipalList() {
         return principalList;
     }
 
-    public void setPrincipalList(List<Login> principalList) {
+    public void setPrincipalList(List<LoginEntity> principalList) {
         this.principalList = principalList;
     }
 

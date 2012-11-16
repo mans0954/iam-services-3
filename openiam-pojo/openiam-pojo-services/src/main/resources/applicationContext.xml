@@ -736,6 +736,7 @@
 											   org.openiam.idm.srvc.org.dto*,
                                                org.openiam.idm.srvc.org.domain*,
 											   org.openiam.idm.srvc.auth.dto*,
+											   org.openiam.idm.srvc.auth.domain*,
 											   org.openiam.idm.srvc.org.dto*,
 											   org.openiam.am.srvc.resattr.domain*,
 											   org.openiam.idm.srvc.cat.dto*,
