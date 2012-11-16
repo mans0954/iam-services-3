@@ -410,8 +410,9 @@ public class LoginDataServiceImpl implements LoginDataService {
         }
 
         log.debug("Updating Identity" + login);
-        
-       loginDao.update(loginDozerConverter.convertToEntity(login, true));
+
+       loginDao.merge(loginDozerConverter.convertToEntity(login, true));
+       //loginDao.update(loginDozerConverter.convertToEntity(login, true));
 	}
 
 	public LoginDAO getLoginDao() {
