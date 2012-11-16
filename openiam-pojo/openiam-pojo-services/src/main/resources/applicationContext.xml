@@ -438,12 +438,6 @@
 	<bean id="policyDAO" class="org.openiam.idm.srvc.policy.service.PolicyDAOImpl" >
 		<property name="sessionFactory" ref="sessionFactory"></property>		
 	</bean>	
-	
-	<!-- Resource Beans -->
-
-    <bean id="resourcePrivilegeDAO" class="org.openiam.idm.srvc.res.service.ResourcePrivilegeDAOImpl" >
-        <property name="sessionFactory" ref="sessionFactory"></property>
-    </bean>
 
     <!-- Reference Data Beans -->
 	<bean id="refDataService" class="org.openiam.idm.srvc.cd.service.ReferenceDataServiceImpl" >

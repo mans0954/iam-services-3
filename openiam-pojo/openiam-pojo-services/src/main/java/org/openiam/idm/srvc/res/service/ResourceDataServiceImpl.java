@@ -155,6 +155,7 @@ public class ResourceDataServiceImpl implements ResourceDataService {
     			dbObject.setManagedSysId(entity.getManagedSysId());
     			dbObject.setName(entity.getName());
     			dbObject.setURL(entity.getURL());
+    			dbObject.setIsUrlProtector(entity.getIsUrlProtector());
     			resourceDao.update(dbObject);
     		} else {
     			resourceDao.save(entity);
@@ -438,5 +439,24 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 			response.setErrorText(e.getMessage());
 		}
 		return response;
+	}
+
+	@Override
+	public List<Resource> getChildResources(final String resourceId, final int from, final int size) {
+		final ResourceEntity example = new ResourceEntity();
+		final ResourceEntity parent = new ResourceEntity();
+		parent.setResourceId(resourceId);
+		example.addParentResource(parent);
+		final List<ResourceEntity> resultList = resourceDao.getByExample(example, from, size);
+		return resourceConverter.convertToDTOList(resultList, false);
+	}
+
+	@Override
+	public int getNumOfChildResources(final String resourceId) {
+		final ResourceEntity example = new ResourceEntity();
+		final ResourceEntity parent = new ResourceEntity();
+		parent.setResourceId(resourceId);
+		example.addParentResource(parent);
+		return resourceDao.count(example);
 	}
 }

@@ -1,6 +1,8 @@
 package org.openiam.idm.srvc.res.service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -15,6 +17,7 @@ import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
+import org.openiam.idm.srvc.res.dto.Resource;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -57,6 +60,19 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String> impleme
                 if (StringUtils.isNotBlank(type.getResourceTypeId())) {
                     criteria.add(Restrictions.eq("resourceType.resourceTypeId", type.getResourceTypeId()));
                 }
+            }
+            
+            if(CollectionUtils.isNotEmpty(resource.getParentResources())) {
+            	final Set<String> parentResourceIds = new HashSet<String>();
+            	for(final ResourceEntity parent : resource.getParentResources()) {
+            		if(parent != null && StringUtils.isNotBlank(parent.getResourceId())) {
+            			parentResourceIds.add(parent.getResourceId());
+            		}
+            	}
+            	
+            	if(CollectionUtils.isNotEmpty(parentResourceIds)) {
+            		criteria.createAlias("parentResources", "parent").add( Restrictions.in("parent.resourceId", parentResourceIds));
+            	}
             }
         }
         return criteria;

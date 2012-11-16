@@ -29,7 +29,6 @@ import org.hibernate.annotations.Type;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceGroup;
-import org.openiam.idm.srvc.res.dto.ResourcePrivilege;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.res.dto.ResourceRole;
 import org.openiam.idm.srvc.res.dto.ResourceType;
@@ -134,62 +133,14 @@ public class ResourceEntity {
     @Column(name = "IS_SSL")
     @Type(type = "yes_no")
     private boolean isSSL = false;
+    
+    @Column(name = "IS_URL_PROTECTOR")
+    @Type(type = "yes_no")
+    private boolean isUrlProtector = false;
 
     public ResourceEntity() {
     }
-    
-    /*
-    public ResourceEntity(Resource resource, final boolean includeCollections) {
-        this.resourceId = resource.getResourceId();
-        if(resource.getResourceType() != null) {
-        	this.resourceType = new ResourceTypeEntity(resource.getResourceType());
-        }
-        this.name = resource.getName();
-        this.description = resource.getDescription();
-        this.branchId = resource.getBranchId();
-        this.categoryId = resource.getCategoryId();
-        this.displayOrder = resource.getDisplayOrder();
-        this.nodeLevel = resource.getNodeLevel();
-        this.sensitiveApp = resource.getSensitiveApp();
-        this.managedSysId = resource.getManagedSysId();
-        this.URL = resource.getURL();
-        this.resOwnerUserId = resource.getResOwnerUserId();
-        this.resOwnerGroupId = resource.getResOwnerGroupId();
-        
-        if(includeCollections) {
-	        if(resource.getParentResources() != null) {
-	        	for (Resource res : resource.getParentResources()) {
-	        		this.parentResources.add(new ResourceEntity(res, false));
-	        	}
-	        }
-	        if(resource.getChildResources() != null) {
-		        for (Resource res : resource.getChildResources()) {
-		            this.childResources.add(new ResourceEntity(res, false));
-		        }
-	        }
-	        if(resource.getResourceRoles() != null) {
-	        	for (ResourceRole resourceRole : resource.getResourceRoles()) {
-	        		this.resourceRoles.add(new ResourceRoleEntity(resourceRole));
-	        	}
-	        }
-	        if(resource.getResourceProps() != null) {
-	        	for (ResourceProp prop : resource.getResourceProps()) {
-	        		this.resourceProps.add(new ResourcePropEntity(prop));
-	        	}
-	        }
-	        if(resource.getResourceGroups() != null) {
-	        	for (ResourceGroup group : resource.getResourceGroups()) {
-	        		this.resourceGroups.add(new ResourceGroupEntity(group));
-	        	}
-	        }
-        }
-        this.minAuthLevel = resource.getMinAuthLevel();
-        this.domain = resource.getDomain();
-        this.isPublic = resource.getIsPublic();
-        this.isSSL = resource.getIsSSL();
-    }
-    */
-
+  
     public String getResourceId() {
         return resourceId;
     }
@@ -374,6 +325,23 @@ public class ResourceEntity {
 
     public void setIsSSL(boolean SSL) {
         isSSL = SSL;
+    }
+    
+    public boolean getIsUrlProtector() {
+    	return isUrlProtector;
+    }
+    
+    public void setIsUrlProtector(final boolean isUrlProtector) {
+    	this.isUrlProtector = isUrlProtector;
+    }
+    
+    public void addParentResource(final ResourceEntity resource) {
+    	if(resource != null) {
+    		if(this.parentResources == null) {
+    			this.parentResources = new LinkedHashSet<ResourceEntity>();
+    		}
+    		this.parentResources.add(resource);
+    	}
     }
     
 	public void addChildResource(final ResourceEntity resource) {

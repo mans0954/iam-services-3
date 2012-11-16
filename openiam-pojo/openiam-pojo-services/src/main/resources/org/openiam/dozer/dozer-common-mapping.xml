@@ -65,11 +65,6 @@
 	</mapping>
 	
 	<mapping>
-		<class-a>org.openiam.idm.srvc.res.dto.ResourcePrivilege</class-a>
-		<class-b>org.openiam.idm.srvc.res.dto.ResourcePrivilege</class-b>
-	</mapping>
-	
-	<mapping>
 		<class-a>org.openiam.idm.srvc.res.dto.ResourceGroup</class-a>
 		<class-b>org.openiam.idm.srvc.res.dto.ResourceGroup</class-b>
 	</mapping>

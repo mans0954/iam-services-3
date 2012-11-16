@@ -12,14 +12,12 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ResourceUserId", propOrder = {
         "resourceId",
-        "userId",
-        "privilegeId"
+        "userId"
 })
 public class ResourceUserId implements java.io.Serializable {
 
     private String resourceId;
     private String userId;
-    private String privilegeId;
 
     public ResourceUserId() {
     }
@@ -27,7 +25,6 @@ public class ResourceUserId implements java.io.Serializable {
     public ResourceUserId(String resourceId, String userId, String privilegeId) {
         this.resourceId = resourceId;
         this.userId = userId;
-        this.privilegeId = privilegeId;
     }
 
     public String getResourceId() {
@@ -46,51 +43,37 @@ public class ResourceUserId implements java.io.Serializable {
         this.userId = userId;
     }
 
-    public String getPrivilegeId() {
-        return this.privilegeId;
-    }
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((resourceId == null) ? 0 : resourceId.hashCode());
+		result = prime * result + ((userId == null) ? 0 : userId.hashCode());
+		return result;
+	}
 
-    public void setPrivilegeId(String privilegeId) {
-        this.privilegeId = privilegeId;
-    }
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ResourceUserId other = (ResourceUserId) obj;
+		if (resourceId == null) {
+			if (other.resourceId != null)
+				return false;
+		} else if (!resourceId.equals(other.resourceId))
+			return false;
+		if (userId == null) {
+			if (other.userId != null)
+				return false;
+		} else if (!userId.equals(other.userId))
+			return false;
+		return true;
+	}
 
-    public boolean equals(Object other) {
-        if ((this == other))
-            return true;
-        if ((other == null))
-            return false;
-        if (!(other instanceof ResourceUserId))
-            return false;
-        ResourceUserId castOther = (ResourceUserId) other;
-
-        return ((this.getResourceId() == castOther.getResourceId()) || (this
-                .getResourceId() != null
-                && castOther.getResourceId() != null && this.getResourceId()
-                .equals(castOther.getResourceId())))
-                && ((this.getUserId() == castOther.getUserId()) || (this
-                .getUserId() != null
-                && castOther.getUserId() != null && this.getUserId()
-                .equals(castOther.getUserId())))
-                && ((this.getPrivilegeId() == castOther.getPrivilegeId()) || (this
-                .getPrivilegeId() != null
-                && castOther.getPrivilegeId() != null && this
-                .getPrivilegeId().equals(castOther.getPrivilegeId())));
-    }
-
-    public int hashCode() {
-        int result = 17;
-
-        result = 37
-                * result
-                + (getResourceId() == null ? 0 : this.getResourceId()
-                .hashCode());
-        result = 37 * result
-                + (getUserId() == null ? 0 : this.getUserId().hashCode());
-        result = 37
-                * result
-                + (getPrivilegeId() == null ? 0 : this.getPrivilegeId()
-                .hashCode());
-        return result;
-    }
-
+    
 }

@@ -29,7 +29,7 @@ public class JDBCResoruceDAOImpl extends AbstractJDBCDao implements ResourceDAO 
 	private static final RowMapper<AuthorizationMenu> menuMapper = new MenuMapper();
 	
 	private String GET_ALL = "SELECT RESOURCE_ID AS RESOURCE_ID, NAME AS NAME FROM %s.RES";
-	private String GET_RESOURCE_DOMAINS_WITH_PATTERNS = "SELECT r.RESOURCE_ID AS RESOURCE_ID, prop.PROP_VALUE AS PATTERN, r.MIN_AUTH_LEVEL AS MIN_AUTH_LEVEL, r.DOMAIN AS DOMAIN, r.IS_PUBLIC AS IS_PUBLIC, r.IS_SSL AS IS_SSL" +
+	private String GET_RESOURCE_DOMAINS_WITH_PATTERNS = "SELECT r.RESOURCE_ID AS RESOURCE_ID, r.IS_URL_PROTECTOR AS IS_URL_PROTECTOR, prop.PROP_VALUE AS PATTERN, r.MIN_AUTH_LEVEL AS MIN_AUTH_LEVEL, r.DOMAIN AS DOMAIN, r.IS_PUBLIC AS IS_PUBLIC, r.IS_SSL AS IS_SSL" +
 														"	FROM " +
 														"		%s.RES r " +
 														"		JOIN %s.RESOURCE_PROP prop " +
@@ -129,7 +129,8 @@ public class JDBCResoruceDAOImpl extends AbstractJDBCDao implements ResourceDAO 
 				final String domain = StringUtils.trimToNull(StringUtils.lowerCase(rs.getString("DOMAIN")));
 				final boolean isPublic = StringUtils.equalsIgnoreCase("y", rs.getString("IS_PUBLIC"));
 				final boolean isSSL = StringUtils.equalsIgnoreCase("y", rs.getString("IS_SSL"));
-				if(pattern != null && domain != null && resource != null) {
+				final boolean isUrlProtector = StringUtils.equalsIgnoreCase("y", rs.getString("IS_URL_PROTECTOR"));
+				if(pattern != null && domain != null && resource != null && isUrlProtector) {
 					AuthorizationDomain authDomain = new AuthorizationDomain();
 					authDomain.setDomain(domain);
 					authDomain.setMinAuthLevel(minAuthLevel);

@@ -9,10 +9,10 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourceGroupEntity;
-import org.openiam.idm.srvc.res.domain.ResourcePrivilegeEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.domain.ResourceRoleEntity;
 
@@ -42,7 +42,8 @@ import org.openiam.idm.srvc.res.domain.ResourceRoleEntity;
         "minAuthLevel",
         "domain",
         "isPublic",
-        "isSSL"
+        "isSSL",
+        "isUrlProtector"
 })
 @DozerDTOCorrespondence(ResourceEntity.class)
 public class Resource extends BaseObject {
@@ -77,7 +78,7 @@ public class Resource extends BaseObject {
     private String domain;
     private boolean isPublic = true;
     private boolean isSSL = false;
-
+    private boolean isUrlProtector = false;
 
     public Resource() {
     }
@@ -90,55 +91,6 @@ public class Resource extends BaseObject {
         this.resourceId = resourceId;
         this.managedSysId = managedSysId;
     }
-
-    /*
-    public Resource(final ResourceEntity entity, final boolean includeCollections) {
-               this.resourceId = entity.getResourceId();
-        this.resourceType = new ResourceType(entity.getResourceType());
-        this.name = entity.getName();
-        this.description = entity.getDescription();
-        this.branchId = entity.getBranchId();
-        this.categoryId = entity.getCategoryId();
-        this.displayOrder = entity.getDisplayOrder();
-        this.nodeLevel = entity.getNodeLevel();
-        this.sensitiveApp = entity.getSensitiveApp();
-        this.managedSysId = entity.getManagedSysId();
-        this.URL = entity.getURL();
-        this.resOwnerUserId = entity.getResOwnerUserId();
-        this.resOwnerGroupId = entity.getResOwnerGroupId();
-        if(includeCollections) {
-        	if(entity.getParentResources() != null) {
-        		for (ResourceEntity res : entity.getParentResources()) {
-        			this.parentResources.add(new Resource(res, false));
-        		}
-        	}
-        	if(entity.getChildResources() != null) {
-        		for (ResourceEntity res : entity.getChildResources()) {
-        			this.childResources.add(new Resource(res, false));
-        		}
-        	}
-        	if(entity.getResourceRoles() != null) {
-        		for (ResourceRoleEntity resourceRole : entity.getResourceRoles()) {
-        			this.resourceRoles.add(new ResourceRole(resourceRole));
-        		}
-        	}
-        	if(entity.getResourceProps() != null) {
-        		for (ResourcePropEntity prop : entity.getResourceProps()) {
-        			this.resourceProps.add(new ResourceProp(prop));
-        		}
-        	}
-        	if(entity.getResourceGroups() != null) {
-        		for (ResourceGroupEntity group : entity.getResourceGroups()) {
-        			this.resourceGroups.add(new ResourceGroup(group));
-        		}
-        	}
-        }
-        this.minAuthLevel = entity.getMinAuthLevel();
-        this.domain = entity.getDomain();
-        this.isPublic = entity.getIsPublic();
-        this.isSSL = entity.getIsSSL();
-    }
-    */
 
     public String getResourceId() {
         return this.resourceId;
@@ -240,6 +192,13 @@ public class Resource extends BaseObject {
         return null;
     }
     
+    public void addParentResource(final Resource resource) {
+    	if(this.parentResources == null) {
+    		this.parentResources = new LinkedHashSet<Resource>();
+    	}
+    	this.parentResources.add(resource);
+    }
+    
 	public String getMinAuthLevel() {
 		return minAuthLevel;
 	}
@@ -271,6 +230,14 @@ public class Resource extends BaseObject {
 	public void setIsSSL(final boolean isSSL) {
 		this.isSSL = isSSL;
 	}
+	
+    public boolean getIsUrlProtector() {
+    	return isUrlProtector;
+    }
+    
+    public void setIsUrlProtector(final boolean isUrlProtector) {
+    	this.isUrlProtector = isUrlProtector;
+    }
 
 	@Override
     public String toString() {

@@ -187,4 +187,12 @@ public interface ResourceDataService {
     
     @WebMethod
     int count(@WebParam(name="searchBean", targetNamespace="") ResourceSearchBean searchBean);
+    
+    @WebMethod
+    List<Resource> getChildResources(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,
+    								@WebParam(name = "from", targetNamespace = "") int from,
+    								@WebParam(name = "size", targetNamespace = "") int size);
+    
+    @WebMethod
+    int getNumOfChildResources(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId);
 }

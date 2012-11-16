@@ -15,8 +15,6 @@ public class ResourceUserEmbeddableId implements Serializable {
     private String resourceId;
     @Column(name = "USER_ID", length = 32, nullable = false)
     private String userId;
-    @Column(name = "PRIVILEGE_ID", length = 32, nullable = false)
-    private String privilegeId;
 
     public ResourceUserEmbeddableId() {
     }
@@ -24,7 +22,6 @@ public class ResourceUserEmbeddableId implements Serializable {
     public ResourceUserEmbeddableId(String resourceId, String userId, String privilegeId) {
         this.resourceId = resourceId;
         this.userId = userId;
-        this.privilegeId = privilegeId;
     }
 
     public String getResourceId() {
@@ -43,33 +40,37 @@ public class ResourceUserEmbeddableId implements Serializable {
         this.userId = userId;
     }
 
-    public String getPrivilegeId() {
-        return privilegeId;
-    }
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((resourceId == null) ? 0 : resourceId.hashCode());
+		result = prime * result + ((userId == null) ? 0 : userId.hashCode());
+		return result;
+	}
 
-    public void setPrivilegeId(String privilegeId) {
-        this.privilegeId = privilegeId;
-    }
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ResourceUserEmbeddableId other = (ResourceUserEmbeddableId) obj;
+		if (resourceId == null) {
+			if (other.resourceId != null)
+				return false;
+		} else if (!resourceId.equals(other.resourceId))
+			return false;
+		if (userId == null) {
+			if (other.userId != null)
+				return false;
+		} else if (!userId.equals(other.userId))
+			return false;
+		return true;
+	}
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        ResourceUserEmbeddableId that = (ResourceUserEmbeddableId) o;
-
-        if (privilegeId != null ? !privilegeId.equals(that.privilegeId) : that.privilegeId != null) return false;
-        if (resourceId != null ? !resourceId.equals(that.resourceId) : that.resourceId != null) return false;
-        if (userId != null ? !userId.equals(that.userId) : that.userId != null) return false;
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = resourceId != null ? resourceId.hashCode() : 0;
-        result = 31 * result + (userId != null ? userId.hashCode() : 0);
-        result = 31 * result + (privilegeId != null ? privilegeId.hashCode() : 0);
-        return result;
-    }
+    
 }

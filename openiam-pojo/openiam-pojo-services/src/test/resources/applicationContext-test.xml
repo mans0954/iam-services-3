@@ -111,26 +111,6 @@
 		<property name="sessionFactory" ref="sessionFactory"/>
 	</bean>
 
-    <bean id="resourcePrivilegeDAO" class="org.openiam.idm.srvc.res.service.ResourcePrivilegeDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"/>
-	</bean>
-
-    <bean id="resourcePropDAO" class="org.openiam.idm.srvc.res.service.ResourcePropDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"/>
-	</bean>
-
-    <bean id="resourceRoleDAO" class="org.openiam.idm.srvc.res.service.ResourceRoleDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"/>
-	</bean>
-
-    <bean id="resourceTypeDAO" class="org.openiam.idm.srvc.res.service.ResourceTypeDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"/>
-	</bean>
-
-    <bean id="resourceUserDAO" class="org.openiam.idm.srvc.res.service.ResourceUserDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"/>
-	</bean>
-
     <bean id="userPrivilegeDAO" class="org.openiam.idm.srvc.res.service.UserPrivilegeDAOImpl" >
 		<property name="sessionFactory" ref="sessionFactory"/>
 	</bean>
