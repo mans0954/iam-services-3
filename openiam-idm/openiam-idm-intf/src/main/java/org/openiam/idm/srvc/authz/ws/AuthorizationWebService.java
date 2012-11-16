@@ -13,17 +13,8 @@ import java.util.List;
  * Interface for  <code>IdmAuditLogDataService</code>. All audit logging activities 
  * persisted through this service.
  */
+@Deprecated
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/authz/service", name = "AuthorizationWebService")
 public interface AuthorizationWebService {
-
-
-
-    @WebMethod
-    AuthzResponse isAuthorized(
-            @WebParam(name = "request", targetNamespace = "")
-            AuthzRequest request);
-
-
-
 
 }

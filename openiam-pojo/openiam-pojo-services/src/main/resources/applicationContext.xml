@@ -440,27 +440,6 @@
 	</bean>	
 	
 	<!-- Resource Beans -->
-	<bean id="resourceDataService" class="org.openiam.idm.srvc.res.service.ResourceDataServiceImpl" >
-		<property name="resourceDao" ref="resourceDAO" />
-		<property name="resourceTypeDao" ref="resourceTypeDAO" />
-		<property name="resourcePropDao" ref="resourcePropDAO" />
-		<property name="resourceRoleDao" ref="resourceRoleDAO" />
-		<property name="resourceUserDao" ref="resourceUserDAO" />
-        <property name="resourcePrivilegeDao" ref="resourcePrivilegeDAO" />
-        <property name="dozerUtils" ref="dozerUtils" />
-    </bean>
-	
-	<bean id="resourceTypeDAO" class="org.openiam.idm.srvc.res.service.ResourceTypeDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"></property>		
-	</bean>	
-	
-	<bean id="resourceRoleDAO" class="org.openiam.idm.srvc.res.service.ResourceRoleDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"></property>		
-	</bean>	
-
-	<bean id="resourceUserDAO" class="org.openiam.idm.srvc.res.service.ResourceUserDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"></property>		
-	</bean>
 
     <bean id="resourcePrivilegeDAO" class="org.openiam.idm.srvc.res.service.ResourcePrivilegeDAOImpl" >
         <property name="sessionFactory" ref="sessionFactory"></property>

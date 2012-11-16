@@ -18,50 +18,11 @@ public class ResourceRoleDAOTouchTest extends AbstractTransactionalTestNGSpringC
     public void touchAdd() {
        ResourceRoleEntity entity = new ResourceRoleEntity();
        entity.setId(new ResourceRoleEmbeddableId("",""));
-       resourceRoleDAO.add(entity);
-    }
-
-    @Test
-    public void touchFindAllResourceRoles() {
-       resourceRoleDAO.findAllResourceRoles();
-    }
-
-    @Test
-    public void touchFindByExample() {
-       ResourceRoleEntity roleEntity = new ResourceRoleEntity();
-       resourceRoleDAO.findByExample(roleEntity);
+       resourceRoleDAO.save(entity);
     }
 
     @Test
     public void touchFindById() {
        resourceRoleDAO.findById(new ResourceRoleEmbeddableId("",""));
-    }
-
-    @Test
-    public void touchFindResourcesForRole() {
-       resourceRoleDAO.findResourcesForRole("1");
-    }
-
-    @Test
-    public void touchFindRolesForResource() {
-       resourceRoleDAO.findRolesForResource("");
-    }
-
-    @Test
-    public void touchRemove() {
-       ResourceRoleEntity roleEntity = new ResourceRoleEntity();
-       roleEntity.setId(new ResourceRoleEmbeddableId("",""));
-       resourceRoleDAO.add(roleEntity);
-       resourceRoleDAO.remove(roleEntity);
-    }
-
-    @Test
-    public void touchRemoveAllResourceRoles() {
-       resourceRoleDAO.removeAllResourceRoles();
-    }
-
-    @Test
-    public void touchRemoveResourceRole() {
-       resourceRoleDAO.removeResourceRole("");
     }
 }

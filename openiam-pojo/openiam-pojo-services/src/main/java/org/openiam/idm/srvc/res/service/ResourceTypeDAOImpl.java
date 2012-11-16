@@ -12,125 +12,20 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import static org.hibernate.criterion.Example.create;
 
+import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
+import org.springframework.stereotype.Repository;
 
 /**
  * DAO Implementation for ResourceType
  */
-public class ResourceTypeDAOImpl implements ResourceTypeDAO  {
+@Repository("resourceTypeDAO")
+public class ResourceTypeDAOImpl extends BaseDaoImpl<ResourceTypeEntity, String>  implements ResourceTypeDAO  {
 
-	private static final Log log = LogFactory.getLog(ResourceTypeDAOImpl.class);
-
-	private SessionFactory sessionFactory;
-
-	public void setSessionFactory(SessionFactory session) {
-		this.sessionFactory = session;
-	}
-	protected SessionFactory getSessionFactory() {
-		try {
-			return (SessionFactory) new InitialContext()
-					.lookup("SessionFactory");
-		} catch (Exception e) {
-			log.error("Could not locate SessionFactory in JNDI", e);
-			throw new IllegalStateException(
-					"Could not locate SessionFactory in JNDI");
-		}
+	@Override
+	protected String getPKfieldName() {
+		return "resourceTypeId";
 	}
 
-
-
-	public void persist(ResourceTypeEntity transientInstance) {
-		log.debug("persisting ResourceType instance");
-		try {
-			sessionFactory.getCurrentSession().persist(transientInstance);
-			log.debug("persist successful");
-		} catch (HibernateException re) {
-			log.error("persist failed", re);
-			throw re;
-		}
-	}
-
-	public void remove(ResourceTypeEntity persistentInstance) {
-		log.debug("deleting ResourceType instance");
-		try {
-			sessionFactory.getCurrentSession().delete(persistentInstance);
-			log.debug("delete successful");
-		} catch (HibernateException re) {
-			log.error("delete failed", re);
-			throw re;
-		}
-	}
-
-	public ResourceTypeEntity update(ResourceTypeEntity detachedInstance) {
-		log.debug("merging ResourceType instance");
-		try {
-			ResourceTypeEntity result = (ResourceTypeEntity) sessionFactory
-					.getCurrentSession().merge(detachedInstance);
-			log.debug("merge successful");
-			return result;
-		} catch (HibernateException re) {
-			log.error("merge failed", re);
-			throw re;
-		}
-	}
-
-	public ResourceTypeEntity findById(java.lang.String id) {
-		log.debug("getting ResourceType instance with id: " + id);
-		try {
-			ResourceTypeEntity instance = (ResourceTypeEntity) sessionFactory
-					.getCurrentSession().get(ResourceTypeEntity.class,
-							id);
-			if (instance == null) {
-				log.debug("get successful, no instance found");
-			} else {
-				log.debug("get successful, instance found");
-			}
-			return instance;
-		} catch (HibernateException re) {
-			log.error("get failed", re);
-			throw re;
-		}
-	}
-
-	public List<ResourceTypeEntity> findByExample(ResourceTypeEntity instance) {
-		log.debug("finding ResourceType instance by example");
-		try {
-			List<ResourceTypeEntity> results = (List<ResourceTypeEntity>) sessionFactory
-					.getCurrentSession().createCriteria(ResourceTypeEntity.class)
-					.add(create(instance)).list();
-			log.debug("find by example successful, result size: "
-					+ results.size());
-			return results;
-		} catch (HibernateException re) {
-			log.error("find by example failed", re);
-			throw re;
-		}
-	}
-	
-	public ResourceTypeEntity add(ResourceTypeEntity instance) {
-		log.debug("persisting ResourceType instance");		
-		try {
-			sessionFactory.getCurrentSession().persist(instance);
-			log.debug("persist successful");
-			return instance;
-		} catch (HibernateException re) {
-			log.error("persist failed", re);
-			throw re;
-		}
-	}
-
-	public List<ResourceTypeEntity> findAllResourceTypes() {
-		Session session = sessionFactory.getCurrentSession();
-        List<ResourceTypeEntity> result = (List<ResourceTypeEntity>)session.createCriteria(ResourceTypeEntity.class).list();
-		return result;
-	}
-	
-	public int removeAllResourceTypes() {
-		Session session = sessionFactory.getCurrentSession();
-		Query qry = session.createQuery("delete from org.openiam.idm.srvc.res.domain.ResourceTypeEntity");
-		return qry.executeUpdate();
-	}
-	
-	
-	
 }

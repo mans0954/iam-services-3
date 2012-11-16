@@ -15,58 +15,8 @@ public class ResourceUserDAOTouchTest extends AbstractTransactionalTestNGSpringC
     private ResourceUserDAO resourceUserDAO;
 
     @Test
-    public void touchAdd() {
-        ResourceUserEntity resourceUserEntity = new ResourceUserEntity();
-        resourceUserEntity.setId(new ResourceUserEmbeddableId("", "", ""));
-        resourceUserDAO.add(resourceUserEntity);
-    }
-
-    @Test
-    public void touchFindAllResourceForUsers() {
-        resourceUserDAO.findAllResourceForUsers("");
-    }
-
-    @Test
-    public void touchFindAllResourceUsers() {
-        resourceUserDAO.findAllResourceUsers();
-    }
-
-    @Test
-    public void touchFindByExample() {
-        ResourceUserEntity resourceUserEntity = new ResourceUserEntity();
-        resourceUserEntity.setId(new ResourceUserEmbeddableId("", "", ""));
-        resourceUserDAO.findByExample(resourceUserEntity);
-    }
-
-    @Test
     public void touchFindById() {
         resourceUserDAO.findById(new ResourceUserEmbeddableId("", "", ""));
-    }
-
-    @Test
-    public void touchRemove() {
-        ResourceUserEntity resourceUserEntity = new ResourceUserEntity();
-        resourceUserEntity.setId(new ResourceUserEmbeddableId("", "", ""));
-        resourceUserDAO.add(resourceUserEntity);
-        resourceUserDAO.remove(resourceUserEntity);
-    }
-
-    @Test
-    public void touchRemoveAllResourceUsers() {
-        resourceUserDAO.removeAllResourceUsers();
-    }
-
-    @Test
-    public void touchRemoveUserFromAllResources() {
-        resourceUserDAO.removeUserFromAllResources("");
-    }
-
-    @Test
-    public void touchUpdate() {
-        ResourceUserEntity resourceUserEntity = new ResourceUserEntity();
-        resourceUserEntity.setId(new ResourceUserEmbeddableId("", "", ""));
-        resourceUserDAO.add(resourceUserEntity);
-        resourceUserDAO.update(resourceUserEntity);
     }
 
 }

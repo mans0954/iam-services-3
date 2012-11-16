@@ -97,7 +97,7 @@ public class RoleDataServiceImpl implements RoleDataService {
         try {
             this.roleAttributeDAO.deleteRoleAttributes(roleId);
             this.userRoleDao.removeAllUsersInRole(roleId);
-            this.resRoleDao.removeResourceRole(roleId);
+            this.resRoleDao.deleteByRoleId(roleId);
             this.roleDao.remove(rl);
         }catch (Exception e) {
             log.error(e.toString());

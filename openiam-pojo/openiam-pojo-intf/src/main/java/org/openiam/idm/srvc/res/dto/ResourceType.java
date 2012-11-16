@@ -29,14 +29,6 @@ public class ResourceType implements java.io.Serializable {
     public ResourceType() {
     }
 
-    public ResourceType(ResourceTypeEntity typeEntity) {
-        this.resourceTypeId = typeEntity.getResourceTypeId();
-        this.description = typeEntity.getDescription();
-        this.metadataTypeId = typeEntity.getMetadataTypeId();
-        this.provisionResource = typeEntity.getProvisionResource();
-        this.processName = typeEntity.getProcessName();
-    }
-
     public ResourceType(String resourceTypeId) {
         this.resourceTypeId = resourceTypeId;
     }

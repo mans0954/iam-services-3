@@ -26,11 +26,13 @@ public class ResourceRoleEntity {
     public ResourceRoleEntity() {
     }
 
+    /*
     public ResourceRoleEntity(ResourceRole resourceRole) {
         this.id = new ResourceRoleEmbeddableId(resourceRole.getId());
         this.startDate = resourceRole.getStartDate();
         this.endDate = resourceRole.getEndDate();
     }
+    */
 
     public ResourceRoleEmbeddableId getId() {
         return id;

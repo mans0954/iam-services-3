@@ -17,10 +17,11 @@ import org.openiam.base.ws.exception.BasicDataServiceException;
 import org.openiam.dozer.DozerUtils;
 import org.openiam.dozer.converter.ResourceDozerConverter;
 import org.openiam.dozer.converter.ResourcePropDozerConverter;
+import org.openiam.dozer.converter.ResourceRoleDozerConverter;
+import org.openiam.dozer.converter.ResourceTypeDozerConverter;
 import org.openiam.dozer.converter.ResourceUserDozerConverter;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
-import org.openiam.idm.srvc.res.domain.ResourcePrivilegeEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.domain.ResourceRoleEmbeddableId;
 import org.openiam.idm.srvc.res.domain.ResourceRoleEntity;
@@ -32,7 +33,9 @@ import org.openiam.idm.srvc.searchbean.converter.ResourceSearchBeanConverter;
 import org.openiam.util.DozerMappingType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
+import org.springframework.stereotype.Service;
 
+@Service("resourceDataService")
 @WebService(endpointInterface = "org.openiam.idm.srvc.res.service.ResourceDataService", targetNamespace = "urn:idm.openiam.org/srvc/res/service", portName = "ResourceDataWebServicePort", serviceName = "ResourceDataWebService")
 public class ResourceDataServiceImpl implements ResourceDataService {
 
@@ -40,15 +43,28 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 	private ResourceDozerConverter resourceConverter;
 	
 	@Autowired
+	private ResourceRoleDozerConverter resourceRoleConverter;
+	
+	@Autowired
 	private ResourcePropDozerConverter resourcePropConverter;
 	
+	@Autowired
     private ResourceDAO resourceDao;
+	
+	@Autowired
     private ResourceTypeDAO resourceTypeDao;
+	
+	@Autowired
     private ResourcePropDAO resourcePropDao;
+	
+	@Autowired
     private ResourceRoleDAO resourceRoleDao;
+    
+    @Autowired
     private ResourceUserDAO resourceUserDao;
-    private ResourcePrivilegeDAO resourcePrivilegeDao;
-    private DozerUtils dozerUtils;
+    
+    @Autowired
+    private ResourceTypeDozerConverter resourceTypeConverter;
 
     private static final Log log = LogFactory.getLog(ResourceDataServiceImpl.class);
 
@@ -58,58 +74,15 @@ public class ResourceDataServiceImpl implements ResourceDataService {
     @Autowired
     private ResourceUserDozerConverter resourceUserConverter;
 
-    @Required
-    public void setResourceDao(ResourceDAO resourceDao) {
-        this.resourceDao = resourceDao;
-    }
-
-    @Required
-    public void setResourceTypeDao(ResourceTypeDAO resourceTypeDao) {
-        this.resourceTypeDao = resourceTypeDao;
-    }
-
-    @Required
-    public void setResourcePropDao(ResourcePropDAO resourcePropDao) {
-        this.resourcePropDao = resourcePropDao;
-    }
-
-    @Required
-    public void setResourceRoleDao(ResourceRoleDAO resourceRoleDao) {
-        this.resourceRoleDao = resourceRoleDao;
-    }
-
-    @Required
-    public void setResourcePrivilegeDao(ResourcePrivilegeDAO resourcePrivilegeDao) {
-        this.resourcePrivilegeDao = resourcePrivilegeDao;
-    }
-
-    @Required
-    public void setResourceUserDao(ResourceUserDAO resourceUserDao) {
-        this.resourceUserDao = resourceUserDao;
-    }
-    
-    @Required
-    public void setDozerUtils(final DozerUtils dozerUtils) {
-    	this.dozerUtils = dozerUtils;
-    }
-
-    /**
-     * Find a resource.
-     *
-     * @param resourceId
-     * @return resource
-     */
     public Resource getResource(String resourceId) {
-        if (resourceId == null)
-            throw new IllegalArgumentException("resourceId is null");
-
-        final ResourceEntity entity = resourceDao.findById(resourceId);
-        if(entity != null) {
-        	return resourceConverter.convertToDTO(entity, true);
-        } else {
-        	return null;
-        }
-        //return dozerUtils.getDozerDeepMappedResource(new Resource(resourceDao.findById(resourceId)));
+    	Resource resource = null;
+    	if(resourceId != null) {
+    		 final ResourceEntity entity = resourceDao.findById(resourceId);
+    		 if(entity != null) {
+    			 resource = resourceConverter.convertToDTO(entity, true);
+    		 }
+    	}
+    	return resource;
     }
 
     @WebMethod
@@ -132,23 +105,10 @@ public class ResourceDataServiceImpl implements ResourceDataService {
         return resourceConverter.convertToDTOList(resultsEntities, DozerMappingType.DEEP.equals(mappingType));
     }
     
-    /**
-     * Add a new resource from a transient resource object and sets resourceId
-     * in the returned object.
-     *
-     * @param resource
-     * @return
-     */
     public Response addResource(Resource resource) {
     	return saveOrUpdateResource(resource);
     }
 
-    /**
-     * Update a resource.
-     *
-     * @param resource
-     * @return
-     */
     public Response updateResource(Resource resource) {
         return saveOrUpdateResource(resource);
     }
@@ -212,106 +172,67 @@ public class ResourceDataServiceImpl implements ResourceDataService {
     	return response;
     }
 
-    /**
-     * Remove a resource
-     *
-     * @param resourceId
-     */
-    public void removeResource(String resourceId) {
-        if (resourceId == null)
-            throw new IllegalArgumentException("resourceId is null");
-        ResourceEntity obj = resourceDao.findById(resourceId);
-        resourceDao.delete(obj);
+    public Response addResourceType(ResourceType val) {
+    	final Response response = new Response(ResponseStatus.SUCCESS);
+    	try {
+    		if(val == null) {
+    			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+    		}
+    		
+    		final ResourceTypeEntity entity = resourceTypeConverter.convertToEntity(val, true);
+    		resourceTypeDao.save(entity);
+    		response.setResponseValue(entity.getResourceTypeId());
+    	} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			log.error("Can't save resource type", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+    	return response;
     }
 
-    // ResourceType -----------------------------------
-
-    /**
-     * Add a new resource type
-     *
-     * @param val
-     * @return
-     */
-    public ResourceType addResourceType(ResourceType val) {
-        if (val == null)
-            throw new IllegalArgumentException("ResourcType is null");
-
-        ResourceTypeEntity resourceTypeEntity = resourceTypeDao.add(new ResourceTypeEntity(val));
-        return new ResourceType(resourceTypeEntity);
-    }
-
-    /**
-     * Find a resource type
-     *
-     * @param resourceTypeId
-     * @return
-     */
     public ResourceType getResourceType(String resourceTypeId) {
-        if (resourceTypeId == null)
-            throw new IllegalArgumentException("resourceTypeId is null");
-
-        ResourceTypeEntity resourceTypeEntity = resourceTypeDao.findById(resourceTypeId);
-        return new ResourceType(resourceTypeEntity);
+    	ResourceType retVal = null;
+    	if(resourceTypeId != null) {
+    		final ResourceTypeEntity entity = resourceTypeDao.findById(resourceTypeId);
+    		if(entity != null) {
+    			retVal = resourceTypeConverter.convertToDTO(entity, false);
+    		}
+    	}
+    	return retVal;
     }
 
-    /**
-     * Update a resource type
-     *
-     * @param resourceType
-     * @return
-     */
-    public ResourceType updateResourceType(ResourceType resourceType) {
-        if (resourceType == null)
-            throw new IllegalArgumentException("resourceType object is null");
-
-        ResourceTypeEntity resourceTypeEntity = resourceTypeDao.update(new ResourceTypeEntity(resourceType));
-        return new ResourceType(resourceTypeEntity);
+    public Response updateResourceType(ResourceType resourceType) {
+    	final Response response = new Response(ResponseStatus.SUCCESS);
+    	try {
+    		if(resourceType == null) {
+    			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+    		}
+    		
+    		final ResourceTypeEntity entity = resourceTypeConverter.convertToEntity(resourceType, false);
+    		resourceTypeDao.update(entity);
+    	} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			log.error("Can't save resource type", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+    	return response;
     }
 
-    /**
-     * Find all resource types
-     *
-     * @return
-     */
     public List<ResourceType> getAllResourceTypes() {
-        List<ResourceTypeEntity> resourceTypeEntities = resourceTypeDao.findAllResourceTypes();
-        List<ResourceType> resourceTypes = null;
-        if (resourceTypeEntities != null) {
-            resourceTypes = new LinkedList<ResourceType>();
-            for (ResourceTypeEntity resourceTypeEntity : resourceTypeEntities) {
-                resourceTypes.add(new ResourceType(resourceTypeEntity));
-            }
-        }
-        return resourceTypes;
+        final List<ResourceTypeEntity> resourceTypeEntities = resourceTypeDao.findAll();
+        return resourceTypeConverter.convertToDTOList(resourceTypeEntities, false);
     }
 
-    /**
-     * Remove a resource type
-     *
-     * @param resourceTypeId
-     */
-    public void removeResourceType(String resourceTypeId) {
-        if (resourceTypeId == null)
-            throw new IllegalArgumentException("resourceTypeId is null");
-        ResourceTypeEntity obj = this.resourceTypeDao.findById(resourceTypeId);
-        this.resourceTypeDao.remove(obj);
-    }
-
-    /**
-     * Add a resource property.
-     *
-     * @param resourceProp
-     * @return
-     */
     public Response addResourceProp(final ResourceProp resourceProp) {
     	return saveOrUpdateResourceProperty(resourceProp);
     }
 
-    /**
-     * Update a resource property
-     *
-     * @param resourceProp
-     */
     public Response updateResourceProp(final ResourceProp resourceProp) {
         return saveOrUpdateResourceProperty(resourceProp);
     }
@@ -320,7 +241,7 @@ public class ResourceDataServiceImpl implements ResourceDataService {
     	final Response response = new Response(ResponseStatus.SUCCESS);
     	try {
     		if(prop == null) {
-    			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+    			throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
     		}
     		
     		final ResourcePropEntity entity = resourcePropConverter.convertToEntity(prop, false);
@@ -364,7 +285,7 @@ public class ResourceDataServiceImpl implements ResourceDataService {
     	final Response response = new Response(ResponseStatus.SUCCESS);
     	try {
     		if(StringUtils.isBlank(resourcePropId)) {
-    			throw new BasicDataServiceException(ResponseCode.RESOURCE_PROP_MISSING);
+    			throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
     		}
     		
     		final ResourcePropEntity entity = resourcePropDao.findById(resourcePropId);
@@ -390,84 +311,51 @@ public class ResourceDataServiceImpl implements ResourceDataService {
      * @param resourceRole
      * @return
      */
-    public ResourceRole addResourceRole(ResourceRole resourceRole) {
-
-        if (resourceRole == null)
-            throw new IllegalArgumentException("ResourceRole object is null");
-
-        ResourceRoleEntity propEntity = resourceRoleDao.add(new ResourceRoleEntity(resourceRole));
-        return new ResourceRole(propEntity);
+    public Response addResourceRole(ResourceRole resourceRole) {
+    	final Response response = new Response(ResponseStatus.SUCCESS);
+    	try {
+    		if(resourceRole == null || resourceRole.getId() == null || resourceRole.getId().getResourceId() == null || resourceRole.getId().getRoleId() == null) {
+    			throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+    		}
+    		
+    		final ResourceRoleEntity entity = resourceRoleConverter.convertToEntity(resourceRole, true);
+    		resourceRoleDao.save(entity);
+    		response.setResponseValue(resourceRoleConverter.convertToDTO(entity, true));
+    	} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			log.error("Can't save resource type", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+    	return response;
     }
 
-    /**
-     * Find resource role
-     *
-     * @param resourceRoleId
-     * @return
-     */
-    public ResourceRole getResourceRole(ResourceRoleId resourceRoleId) {
-        if (resourceRoleId == null)
-            throw new IllegalArgumentException("resourceRoleId is null");
-
-        ResourceRoleEntity roleEntity = resourceRoleDao.findById(new ResourceRoleEmbeddableId(resourceRoleId));
-        return new ResourceRole(roleEntity);
-    }
-
-    public List<Role> getRolesForResource(String resourceId) {
-        if (resourceId == null)
-            throw new IllegalArgumentException("resourceRoleId is null");
-
-        return dozerUtils.getDozerDeepMappedRoleList(resourceRoleDao.findRolesForResource(resourceId));
-    }
-
-    /**
-     * Update resource role.
-     *
-     * @param resourceRole
-     * @return
-     */
-    public ResourceRole updateResourceRole(ResourceRole resourceRole) {
-        if (resourceRole == null)
-            throw new IllegalArgumentException("resourceRole object is null");
-
-        ResourceRoleEntity resourceRoleEntity = resourceRoleDao.update(new ResourceRoleEntity(resourceRole));
-        return new ResourceRole(resourceRoleEntity);
-    }
-
-    /**
-     * Find all resource roles
-     *
-     * @return
-     */
-    public List<ResourceRole> getAllResourceRoles() {
-        final List<ResourceRoleEntity> resourceRoleEntityList = resourceRoleDao.findAllResourceRoles();
-        List<ResourceRole> resourceRoleList = null;
-        if (resourceRoleEntityList != null) {
-            resourceRoleList = new LinkedList<ResourceRole>();
-            for (ResourceRoleEntity resourceRoleEntity : resourceRoleEntityList) {
-                resourceRoleList.add(new ResourceRole(resourceRoleEntity));
-            }
-        }
-        return resourceRoleList;
-    }
-
-    /**
-     * Remove resource role.
-     *
-     * @param resourceRoleId
-     */
-    public void removeResourceRole(ResourceRoleId resourceRoleId) {
-        if (resourceRoleId == null)
-            throw new IllegalArgumentException("resourceRoleId is null");
-        final ResourceRoleEntity obj = this.resourceRoleDao.findById(new ResourceRoleEmbeddableId(resourceRoleId));
-        resourceRoleDao.remove(obj);
-    }
-
-    /**
-     * Remove all resource roles
-     */
-    public void removeAllResourceRoles() {
-        this.resourceRoleDao.removeAllResourceRoles();
+    public Response removeResourceRole(ResourceRoleId resourceRoleId) {
+    	final Response response = new Response(ResponseStatus.SUCCESS);
+    	try {
+    		if(resourceRoleId == null) {
+    			throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+    		}
+    		
+    		final ResourceRoleEmbeddableId id = new ResourceRoleEmbeddableId(resourceRoleId);
+    		
+    		final ResourceRoleEntity entity = resourceRoleDao.findById(id);
+    		if(entity == null) {
+    			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+    		}
+    		
+    		resourceRoleDao.delete(entity);
+    	} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			log.error("Can't delete resource", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+		return response;
     }
 
     /**
@@ -498,178 +386,25 @@ public class ResourceDataServiceImpl implements ResourceDataService {
         return resourceConverter.convertToDTOList(resourceEntities, false);
     }
 
-    /*
-      * (non-Javadoc)
-      *
-      * @see
-      * org.openiam.idm.srvc.res.service.ResourceDataService#addUserToResource
-      * (org.openiam.idm.srvc.res.dto.ResourceUser)
-      */
-    public ResourceUser addUserToResource(ResourceUser resourceUser) {
-        if (resourceUser == null) {
-            throw new IllegalArgumentException("ResourceUser object is null");
-        }
-        final ResourceUserEntity entity = resourceUserConverter.convertToEntity(resourceUser, false);
-        ResourceUserEntity resourceUserEntity = resourceUserDao.add(entity);
-        return resourceUserConverter.convertToDTO(resourceUserEntity, false);
-    }
-
-    /*
-      * (non-Javadoc)
-      *
-      * @see
-      * org.openiam.idm.srvc.res.service.ResourceDataService#getUserResources
-      * (java.lang.String)
-      */
-    public List<ResourceUser> getUserResources(String userId) {
-        if (userId == null) {
-            throw new IllegalArgumentException("UserId object is null");
-        }
-        List<ResourceUserEntity> resourceUserEntityList = resourceUserDao.findAllResourceForUsers(userId);
-        return resourceUserConverter.convertToDTOList(resourceUserEntityList, false);
-    }
-
-    public List<Resource> getResourceObjForUser(String userId) {
-        if (userId == null) {
-            throw new IllegalArgumentException("UserId object is null");
-        }
-
-        List<ResourceEntity> entities = resourceDao.findResourcesForUserRole(userId);
-        return resourceConverter.convertToDTOList(entities, false);
-    }
-
-
-    /*
-      * (non-Javadoc)
-      *
-      * @seeorg.openiam.idm.srvc.res.service.ResourceDataService#
-      * removeUserFromAllResources(java.lang.String)
-      */
-    public void removeUserFromAllResources(String userId) {
-        if (userId == null) {
-            throw new IllegalArgumentException("UserId object is null");
-        }
-        resourceUserDao.removeUserFromAllResources(userId);
-    }
-
-    public boolean isUserAuthorized(String userId, String resourceId) {
-        log.info("isUserAuthorized called.");
-        final List<ResourceUser> resList = getUserResources(userId);
-        log.info("- resList= " + resList);
-        if (resList == null) {
-            log.info("resource list for user is null");
-            return false;
-        }
-        for (final ResourceUser ru : resList) {
-            log.info("resource id = " + ru.getId().getResourceId());
-            if (ru.getId().getResourceId().equalsIgnoreCase(resourceId)) {
-                return true;
-            }
-        }
-        return false;
-
-    }
-
-
-    public boolean isUserAuthorizedByProperty(String userId, String propertyName, String propertyValue) {
-        log.info("isUserAuthorized called.");
-
-        if (propertyName == null || propertyName.length() == 0) {
-            return false;
-        }
-        if (propertyValue == null || propertyValue.length() == 0) {
-            return false;
-        }
-
-        List<Resource> resList = getResourceObjForUser(userId);
-
-        log.info("- resList= " + resList);
-        if (resList == null) {
-            log.info("resource list for user is null");
-            return false;
-        }
-        for (Resource res : resList) {
-
-            ResourceProp prop = res.getResourceProperty(propertyName);
-            if (prop != null) {
-                String val = prop.getPropValue();
-                if (val != null && val.length() > 0) {
-                    val = val.toLowerCase();
-                    propertyValue = propertyValue.toLowerCase();
-
-                    if (propertyValue.contains(val)) {
-                        return true;
-                    }
-
-                }
-            }
-        }
-
-        return false;
-
-    }
-
-    @Override
-    public ResourcePrivilege addResourcePrivilege(ResourcePrivilege resourcePrivilege) {
-        if (resourcePrivilege == null) {
-            throw new IllegalArgumentException("ResourcePrivilege object is null");
-        }
-        ResourcePrivilegeEntity resourcePrivilegeEntity = resourcePrivilegeDao.add(new ResourcePrivilegeEntity(resourcePrivilege));
-
-        return new ResourcePrivilege(resourcePrivilegeEntity);
-    }
-
-    @Override
-    public void removeResourcePrivilege(String resourcePrivilegeId) {
-        if (resourcePrivilegeId == null) {
-            throw new IllegalArgumentException("resourcePrivilegeId object is null");
-        }
-        ResourcePrivilegeEntity privilegeEntity = resourcePrivilegeDao.findById(resourcePrivilegeId);
-        resourcePrivilegeDao.remove(privilegeEntity);
-    }
-
-    @Override
-    public ResourcePrivilege updateResourcePrivilege(ResourcePrivilege resourcePrivilege) {
-        if (resourcePrivilege == null) {
-            throw new IllegalArgumentException("ResourcePrivilege object is null");
-        }
-        ResourcePrivilegeEntity privilegeEntity = resourcePrivilegeDao.update(new ResourcePrivilegeEntity(resourcePrivilege));
-        return new ResourcePrivilege(privilegeEntity);
-    }
-
-    @Override
-    public List<ResourcePrivilege> getPrivilegesByResourceId(String resourceId) {
-        if (resourceId == null) {
-            throw new IllegalArgumentException("resourceId object is null");
-        }
-        List<ResourcePrivilegeEntity> privilegeEntities = resourcePrivilegeDao.findPrivilegesByResourceId(resourceId);
-        List<ResourcePrivilege> privilegeList = null;
-        if (privilegeEntities != null) {
-            privilegeList = new LinkedList<ResourcePrivilege>();
-            for (ResourcePrivilegeEntity privilegeEntity : privilegeEntities) {
-                privilegeList.add(new ResourcePrivilege(privilegeEntity));
-            }
-        }
-        return privilegeList;
-    }
-
-    @Override
-    public List<ResourcePrivilege> getPrivilegesByEntitlementType(String resourceId, String type) {
-        if (resourceId == null) {
-            throw new IllegalArgumentException("resourceId object is null");
-        }
-        if (type == null) {
-            throw new IllegalArgumentException("type object is null");
-        }
-        List<ResourcePrivilegeEntity> privilegeEntities = resourcePrivilegeDao.findPrivilegesByEntitlementType(resourceId, type);
-        List<ResourcePrivilege> privilegeList = null;
-        if (privilegeEntities != null) {
-            privilegeList = new LinkedList<ResourcePrivilege>();
-            for (ResourcePrivilegeEntity privilegeEntity : privilegeEntities) {
-                privilegeList.add(new ResourcePrivilege(privilegeEntity));
-            }
-        }
-        return privilegeList;
+    public Response addUserToResource(ResourceUser resourceUser) {
+    	final Response response = new Response(ResponseStatus.SUCCESS);
+    	try {
+    		if(resourceUser == null || resourceUser.getId() == null || resourceUser.getId().getResourceId() == null || resourceUser.getId().getUserId() == null) {
+    			throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+    		}
+    		
+    		final ResourceUserEntity entity = resourceUserConverter.convertToEntity(resourceUser, true);
+    		resourceUserDao.save(entity);
+    		response.setResponseValue(resourceUserConverter.convertToDTO(entity, true));
+    	} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			log.error("Can't delete resource", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+		return response;
     }
 
 	@Override

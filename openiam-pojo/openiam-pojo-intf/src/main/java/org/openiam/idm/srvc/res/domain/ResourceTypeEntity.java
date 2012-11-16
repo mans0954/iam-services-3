@@ -33,14 +33,6 @@ public class ResourceTypeEntity {
     public ResourceTypeEntity() {
     }
 
-    public ResourceTypeEntity(ResourceType resourceType) {
-        this.resourceTypeId = resourceType.getResourceTypeId();
-        this.description = resourceType.getDescription();
-        this.metadataTypeId = resourceType.getMetadataTypeId();
-        this.provisionResource = resourceType.getProvisionResource();
-        this.processName = resourceType.getProcessName();
-    }
-
     public String getResourceTypeId() {
         return resourceTypeId;
     }

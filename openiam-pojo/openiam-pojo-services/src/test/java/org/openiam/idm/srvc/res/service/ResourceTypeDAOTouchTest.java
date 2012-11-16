@@ -14,35 +14,8 @@ public class ResourceTypeDAOTouchTest extends AbstractTransactionalTestNGSpringC
     private ResourceTypeDAO resourceTypeDAO;
 
     @Test
-    public void touchAdd() {
-        resourceTypeDAO.add(new ResourceTypeEntity());
-    }
-
-    @Test
-    public void touchFindAllResourceTypes() {
-        resourceTypeDAO.findAllResourceTypes();
-    }
-
-    @Test
-    public void touchFindByExample() {
-        resourceTypeDAO.findByExample(new ResourceTypeEntity());
-    }
-
-    @Test
     public void touchFindById() {
         resourceTypeDAO.findById("");
-    }
-
-    @Test
-    public void touchRemove() {
-        ResourceTypeEntity resourceType = new ResourceTypeEntity();
-        resourceTypeDAO.add(resourceType);
-        resourceTypeDAO.remove(resourceType);
-    }
-
-    @Test
-    public void touchRemoveAllResourceTypes() {
-        resourceTypeDAO.removeAllResourceTypes();
     }
 
     @Test

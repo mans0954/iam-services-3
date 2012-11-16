@@ -34,11 +34,13 @@ public class ResourceRole implements java.io.Serializable {
     public ResourceRole() {
     }
 
+    /*
     public ResourceRole(ResourceRoleEntity resourceRoleEntity) {
         this.id = new ResourceRoleId(resourceRoleEntity.getId());
         this.startDate = resourceRoleEntity.getStartDate();
         this.endDate = resourceRoleEntity.getEndDate();
     }
+    */
 
 	public ResourceRoleId getId() {
 		return id;

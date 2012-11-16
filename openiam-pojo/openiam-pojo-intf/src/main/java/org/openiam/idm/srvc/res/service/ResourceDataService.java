@@ -52,23 +52,13 @@ public interface ResourceDataService {
             Resource resource);
 
     /**
-     * Remove a resource.
-     *
-     * @param resourceId the resource id
-     */
-    @WebMethod
-    void removeResource(
-            @WebParam(name = "resourceId", targetNamespace = "")
-            String resourceId);
-
-    /**
      * Add a new resource type.
      *
      * @param resourceType the resourceType
      * @return the resource type
      */
     @WebMethod
-    ResourceType addResourceType(
+    Response addResourceType(
             @WebParam(name = "resourceType", targetNamespace = "")
             ResourceType resourceType);
 
@@ -90,7 +80,7 @@ public interface ResourceDataService {
      * @return the resource type
      */
     @WebMethod
-    ResourceType updateResourceType(
+    Response updateResourceType(
             @WebParam(name = "resourceType", targetNamespace = "")
             ResourceType resourceType);
 
@@ -101,16 +91,6 @@ public interface ResourceDataService {
      */
     @WebMethod
     List<ResourceType> getAllResourceTypes();
-
-    /**
-     * Remove a resource type.
-     *
-     * @param resourceTypeId the resource type id
-     */
-    @WebMethod
-    void removeResourceType(
-            @WebParam(name = "resourceTypeId", targetNamespace = "")
-            String resourceTypeId);
 
     /**
      * Add a resource property.
@@ -151,39 +131,9 @@ public interface ResourceDataService {
      * @return the resource role
      */
     @WebMethod
-    ResourceRole addResourceRole(
+    Response addResourceRole(
             @WebParam(name = "resourceRole", targetNamespace = "")
             ResourceRole resourceRole);
-
-    /**
-     * Find resource role.
-     *
-     * @param resourceRoleId the resource role id
-     * @return the resource role
-     */
-    @WebMethod
-    ResourceRole getResourceRole(
-            @WebParam(name = "resourceRoleId", targetNamespace = "")
-            ResourceRoleId resourceRoleId);
-
-    /**
-     * Update resource role.
-     *
-     * @param resourceRole the resource role
-     * @return the resource role
-     */
-    @WebMethod
-    ResourceRole updateResourceRole(
-            @WebParam(name = "resourceRole", targetNamespace = "")
-            ResourceRole resourceRole);
-
-    /**
-     * Find all resource roles.
-     *
-     * @return the all resource roles
-     */
-    @WebMethod
-    List<ResourceRole> getAllResourceRoles();
 
     /**
      * Remove resource role.
@@ -191,15 +141,9 @@ public interface ResourceDataService {
      * @param resourceRoleId the resource role id
      */
     @WebMethod
-    void removeResourceRole(
+    Response removeResourceRole(
             @WebParam(name = "resourceRoleId", targetNamespace = "")
             ResourceRoleId resourceRoleId);
-
-    /**
-     * Remove all resource roles.
-     */
-    @WebMethod
-    void removeAllResourceRoles();
 
     /**
      * Adds the user to resource.
@@ -208,45 +152,9 @@ public interface ResourceDataService {
      * @return the resource user
      */
     @WebMethod
-    ResourceUser addUserToResource(
+    Response addUserToResource(
             @WebParam(name = "user", targetNamespace = "")
             ResourceUser user);
-
-    /**
-     * Gets the user resources.
-     *
-     * @param userId the user id
-     * @return the user resources
-     */
-    @WebMethod
-    List<ResourceUser> getUserResources(
-            @WebParam(name = "userId", targetNamespace = "")
-            String userId);
-
-    /**
-     * Removes the user from all resources.
-     *
-     * @param userId the user id
-     */
-    @WebMethod
-    void removeUserFromAllResources(
-            @WebParam(name = "userId", targetNamespace = "")
-            String userId);
-
-    /**
-     * Check if is user authorized.
-     *
-     * @param userId     the user id
-     * @param resourceId the resource id
-     * @return true, if is user authorized
-     */
-    @WebMethod
-    boolean isUserAuthorized(
-            @WebParam(name = "userId", targetNamespace = "")
-            String userId,
-            @WebParam(name = "resourceId", targetNamespace = "")
-            String resourceId);
-
 
     /**
      * Returns a list of Resource objects that are linked to a Role.
@@ -271,41 +179,6 @@ public interface ResourceDataService {
             @WebParam(name = "roleIdList", targetNamespace = "")
             List<String> roleIdList);
 
-    /**
-     *
-     * @param resourceId
-     * @return
-     */
-    @WebMethod
-    List<Role> getRolesForResource(
-            @WebParam(name = "resourceId", targetNamespace = "")
-            String resourceId);
-
-
-    List<Resource> getResourceObjForUser(String userId);
-
-    ResourcePrivilege addResourcePrivilege(
-            @WebParam(name = "resourcePrivilege", targetNamespace = "")
-            ResourcePrivilege resourcePrivilege);
-
-    void removeResourcePrivilege(
-            @WebParam(name = "resourcePrivilegeId", targetNamespace = "")
-            String resourcePrivilegeId);
-
-    ResourcePrivilege updateResourcePrivilege(
-            @WebParam(name = "resourcePrivilege", targetNamespace = "")
-            ResourcePrivilege instance);
-
-
-    List<ResourcePrivilege> getPrivilegesByResourceId(
-            @WebParam(name = "resourceId", targetNamespace = "")
-            String resourceId);
-
-    List<ResourcePrivilege> getPrivilegesByEntitlementType(
-            @WebParam(name = "resourceId", targetNamespace = "")
-            String resourceId,
-            @WebParam(name = "type", targetNamespace = "")
-            String type);
 
     @WebMethod
     List<Resource> findBeans(@WebParam(name = "searchBean", targetNamespace = "")  ResourceSearchBean searchBean,
