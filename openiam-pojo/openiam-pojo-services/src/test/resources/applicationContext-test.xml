@@ -15,7 +15,9 @@
     <context:annotation-config/>
 
     <context:component-scan base-package="org.openiam.idm.srvc.user.service,
-    org.openiam.idm.srvc.res.service"/>
+                                          org.openiam.idm.srvc.res.service,
+                                          org.openiam.idm.srvc.searchbean.converter,
+    								      org.openiam.dozer*"/>
     <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
         <property name="locations">
             <list>

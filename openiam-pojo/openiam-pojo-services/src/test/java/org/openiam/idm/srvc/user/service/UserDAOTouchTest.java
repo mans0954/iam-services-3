@@ -12,7 +12,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 
-@ContextConfiguration(locations={"classpath:applicationContext-test.xml"})
+@ContextConfiguration(locations={"classpath:applicationContext-test.xml","classpath:test-application-context.xml"})
 @TransactionConfiguration(transactionManager = "transactionManager", defaultRollback = true)
 public class UserDAOTouchTest extends AbstractTransactionalTestNGSpringContextTests {
   @Autowired
