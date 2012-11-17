@@ -725,6 +725,7 @@
 		</property>
 	    <property name="packagesToScan" value="org.openiam.core.domain*,
 											   org.openiam.idm.srvc.grp.dto*,
+											   org.openiam.idm.srvc.grp.domain*,
 											   org.openiam.idm.srvc.res.dto*,
 											   org.openiam.idm.srvc.role.dto*,
 											   org.openiam.idm.srvc.user.dto*,

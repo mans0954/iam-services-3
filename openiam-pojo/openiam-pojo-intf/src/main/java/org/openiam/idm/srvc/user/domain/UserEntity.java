@@ -36,6 +36,9 @@ import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
+import org.openiam.idm.srvc.grp.domain.UserGroupEntity;
+import org.openiam.idm.srvc.grp.dto.UserGroup;
+import org.openiam.idm.srvc.role.domain.UserRoleEntity;
 import org.openiam.idm.srvc.user.dto.Supervisor;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
@@ -277,89 +280,17 @@ public class UserEntity {
     protected Set<UserKey> userKeys = new HashSet<UserKey>(0);
 
 
+    @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
+    @JoinColumn(name="USER_ID", referencedColumnName="USER_ID")
+    private Set<UserGroupEntity> userGroups = new HashSet<UserGroupEntity>(0);
+
+    @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
+    @JoinColumn(name="USER_ID", referencedColumnName="USER_ID")
+    private Set<UserRoleEntity> userRoles = new HashSet<UserRoleEntity>(0);
+
+
     public UserEntity() {
     }
-
-//    public UserEntity(User user) {
-//        this.userId = user.getUserId();
-//        this.birthdate = user.getBirthdate();
-//        this.companyId = user.getCompanyId();
-//        this.companyOwnerId = user.getCompanyOwnerId();
-//        this.createDate = user.getCreateDate();
-//        this.createdBy = user.getCreatedBy();
-//        this.deptCd = user.getDeptCd();
-//        this.deptName = user.getDeptName();
-//        this.employeeId = user.getEmployeeId();
-//        this.employeeType = user.getEmployeeType();
-//        this.firstName = user.getFirstName();
-//        this.lastName = user.getLastName();
-//        this.jobCode = user.getJobCode();
-//        this.lastUpdate = user.getLastUpdate();
-//        this.lastUpdatedBy = user.getLastUpdatedBy();
-//        this.locationCd = user.getLocationCd();
-//        this.locationName = user.getLocationName();
-//        this.managerId = user.getManagerId();
-//        this.metadataTypeId = user.getMetadataTypeId();
-//        this.classification = user.getClassification();
-//        this.middleInit = user.getMiddleInit();
-//        this.prefix = user.getPrefix();
-//        this.sex = user.getSex();
-//        this.status = user.getStatus();
-//        this.secondaryStatus = user.getSecondaryStatus();
-//        this.suffix = user.getSuffix();
-//        this.title = user.getTitle();
-//        this.userTypeInd = user.getUserTypeInd();
-//        this.division = user.getDivision();
-//        this.mailCode = user.getMailCode();
-//        this.costCenter = user.getCostCenter();
-//        this.startDate = user.getStartDate();
-//        this.lastDate = user.getLastDate();
-//        this.nickname = user.getNickname();
-//        this.maidenName = user.getMaidenName();
-//        this.passwordTheme = user.getPasswordTheme();
-//        this.country = user.getCountry();
-//        this.bldgNum = user.getBldgNum();
-//        this.streetDirection = user.getStreetDirection();
-//        this.suite = user.getSuite();
-//        this.address1 = user.getAddress1();
-//        this.address2 = user.getAddress2();
-//        this.address3 = user.getAddress3();
-//        this.address4 = user.getAddress4();
-//        this.address5 = user.getAddress5();
-//        this.address6 = user.getAddress6();
-//        this.address7 = user.getAddress7();
-//        this.city = user.getCity();
-//        this.state = user.getState();
-//        this.postalCd = user.getPostalCd();
-//        this.email = user.getEmail();
-//        this.areaCd = user.getAreaCd();
-//        this.countryCd = user.getCountryCd();
-//        this.phoneNbr = user.getPhoneNbr();
-//        this.phoneExt = user.getPhoneExt();
-//        this.showInSearch = user.getShowInSearch();
-//        this.delAdmin = user.getDelAdmin();
-//        this.alternateContactId = user.getAlternateContactId();
-//        this.userOwnerId = user.getUserOwnerId();
-//        this.datePasswordChanged = user.getDatePasswordChanged();
-//        this.dateChallengeRespChanged = user.getDateChallengeRespChanged();
-//        for (UserNote une : user.getUserNotes()) {
-//            this.userNotes.add(new UserNoteEntity(une, this));
-//        }
-//        for (EmailAddress ea : user.getEmailAddresses()) {
-//            this.emailAddresses.add(new EmailAddressEntity(ea, this));
-//        }
-//        for (Map.Entry<String, UserAttribute> entry : user.getUserAttributes().entrySet()) {
-//            this.userAttributes.put(entry.getKey(), new UserAttributeEntity(entry.getValue(), this));
-//        }
-//        for (Phone phone : user.getPhones()) {
-//            this.phones.add(new PhoneEntity(phone, this));
-//        }
-//        for (Address address : user.getAddresses()) {
-//            this.addresses.add(new AddressEntity(address, this));
-//        }
-//        //TODO check and refactoring
-//        this.principalList = user.getPrincipalList();
-//    }
 
     public String getUserId() {
         return userId;
@@ -911,6 +842,22 @@ public class UserEntity {
 
     public void setUserKeys(Set<UserKey> userKeys) {
         this.userKeys = userKeys;
+    }
+
+    public Set<UserGroupEntity> getUserGroups() {
+        return userGroups;
+    }
+
+    public void setUserGroups(Set<UserGroupEntity> userGroups) {
+        this.userGroups = userGroups;
+    }
+
+    public Set<UserRoleEntity> getUserRoles() {
+        return userRoles;
+    }
+
+    public void setUserRoles(Set<UserRoleEntity> userRoles) {
+        this.userRoles = userRoles;
     }
 
     @Override

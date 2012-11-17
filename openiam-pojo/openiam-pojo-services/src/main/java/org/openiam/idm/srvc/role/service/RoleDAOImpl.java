@@ -25,6 +25,7 @@ import static org.hibernate.criterion.Example.create;
 import org.openiam.exception.data.ObjectNotFoundException;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.dto.RoleSearch;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.grp.dto.Group;
@@ -136,7 +137,7 @@ public class RoleDAOImpl implements RoleDAO {
 	public List<Role> findUserRoles(String userId) {
 		Session session = sessionFactory.getCurrentSession();
 		
-		Query qry = session.createQuery("select role from Role role, UserRole ur " +
+		Query qry = session.createQuery("select role from Role role, UserRoleEntity ur " +
 				" where ur.userId = :userId and " +
 				"       ur.roleId = role.roleId" + 
 				" order by role.roleName ");
@@ -155,7 +156,7 @@ public class RoleDAOImpl implements RoleDAO {
 	
 	public List<Role> findUserRolesByService(String serviceId, String userId) {
 		Session session = sessionFactory.getCurrentSession();
-		Query qry = session.createQuery("select role from Role role, UserRole ur "
+		Query qry = session.createQuery("select role from Role role, UserRoleEntity ur "
 				+ "       ur.userId = :userId and " 
 				+ "       ur.roleId = role.roleId and "
 				+ "       role.serviceId = :serviceId ");
@@ -221,10 +222,10 @@ public class RoleDAOImpl implements RoleDAO {
 	 * @param roleId
 	 * @return
 	 */
-	public List<User> findUsersInRole(String roleId) {
+	public List<UserEntity> findUsersInRole(String roleId) {
 		Session session = sessionFactory.getCurrentSession();
 		
-		Query qry = session.createQuery("select usr from org.openiam.idm.srvc.user.dto.User usr, UserRole ur " +
+		Query qry = session.createQuery("select usr from org.openiam.idm.srvc.user.domain.UserEntity usr, UserRoleEntity ur " +
 				" where ur.userId = usr.userId and" +
 				" ur.roleId = :roleId " + 
 				" order by usr.lastName, usr.firstName ");
@@ -234,7 +235,7 @@ public class RoleDAOImpl implements RoleDAO {
 		qry.setCacheable(true);
 		qry.setCacheRegion("query.role.findUsersInRole");
 		
-		List<User> results = (List<User>) qry.list();
+		List<UserEntity> results = (List<UserEntity>) qry.list();
 		if (results == null || results.size() == 0)
 			return null;
 		return results;
@@ -392,7 +393,7 @@ public class RoleDAOImpl implements RoleDAO {
     public Role findDirectRoleForUser(String roleId, String userId) {
     	Session session = sessionFactory.getCurrentSession();
 		
-    	Query qry = session.createQuery("select role from Role role, UserRole  ur " + 
+    	Query qry = session.createQuery("select role from Role role, UserRoleEntity  ur " +
     			" where ur.roleId = role.roleId and " +
 				"		  ur.userId = :userId and  " + 
 				" 	  role.roleId = :roleId ");

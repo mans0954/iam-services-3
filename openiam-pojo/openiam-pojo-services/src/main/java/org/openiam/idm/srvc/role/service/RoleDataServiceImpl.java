@@ -3,6 +3,8 @@ package org.openiam.idm.srvc.role.service;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.dozer.converter.UserDozerConverter;
+import org.openiam.dozer.converter.UserRoleDozerConverter;
 import org.openiam.exception.data.ObjectNotFoundException;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.UserGroupDAO;
@@ -17,6 +19,7 @@ import org.openiam.idm.srvc.user.dto.User;
 
 import org.openiam.idm.srvc.user.dto.UserConstant;
 import org.openiam.idm.srvc.user.service.UserDataService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
 
@@ -32,7 +35,10 @@ public class RoleDataServiceImpl implements RoleDataService {
 	private UserGroupDAO userGroupDao;
 	private RolePolicyDAO rolePolicyDao;
     private ResourceRoleDAO resRoleDao;
-	
+    @Autowired
+    private UserDozerConverter userDozerConverter;
+    @Autowired
+    private UserRoleDozerConverter userRoleDozerConverter;
 
 	private static final Log log = LogFactory.getLog(RoleDataServiceImpl.class);
 
@@ -287,7 +293,7 @@ public class RoleDataServiceImpl implements RoleDataService {
 			throw new IllegalArgumentException("userId object is null");	
 		
 		ur.setUserRoleId(null);
-		userRoleDao.add(ur);
+		userRoleDao.save(userRoleDozerConverter.convertToEntity(ur,false));
 	}
 	
 	/**
@@ -299,14 +305,14 @@ public class RoleDataServiceImpl implements RoleDataService {
 			throw new IllegalArgumentException("roleId is null");
 		if (ur.getUserId() == null)
 			throw new IllegalArgumentException("userId object is null");		
-		userRoleDao.update(ur);
+		userRoleDao.update(userRoleDozerConverter.convertToEntity(ur,false));
 	}
 	
 	public UserRole getUserRoleById(String userRoleId ) {
 		if (userRoleId == null) {
 			throw new IllegalArgumentException("userRoleId is null");
 		}
-		return userRoleDao.findById(userRoleId);
+		return userRoleDozerConverter.convertToDTO(userRoleDao.findById(userRoleId),false);
 		
 	}
 	
@@ -314,7 +320,7 @@ public class RoleDataServiceImpl implements RoleDataService {
 		if (userId == null) {
 			throw new IllegalArgumentException("userId is null");
 		}
-		return userRoleDao.findUserRoleByUser(userId);		
+		return userRoleDozerConverter.convertToDTOList(userRoleDao.findUserRoleByUser(userId),false);
 	}
 	
 	
@@ -329,7 +335,7 @@ public class RoleDataServiceImpl implements RoleDataService {
 		ur.setUserId(userId);
 		ur.setRoleId(roleId);
 		
-		userRoleDao.add(ur);
+		userRoleDao.save(userRoleDozerConverter.convertToEntity(ur,false));
 
 	}
 	
@@ -592,7 +598,7 @@ public class RoleDataServiceImpl implements RoleDataService {
 		//System.out.println("in getUsersInRole: rl=" + rl);
 		//System.out.println("in getUsersInRole: users =" + rl.getUsers());
 		
-		List<User> userList = userRoleDao.findUserByRole(roleId);
+		List<User> userList = userDozerConverter.convertToDTOList(userRoleDao.findUserByRole(roleId),true);
 
         // No direct association, continue with indirect
 		if (userList == null || userList.isEmpty())
@@ -608,7 +614,7 @@ public class RoleDataServiceImpl implements RoleDataService {
 	 		Iterator<Group> it = groupSet.iterator();
 	 		while (it.hasNext()) {
 	 			Group grp = it.next();
-	 			List<User> userLst = userGroupDao.findUserByGroup(grp.getGrpId());
+	 			List<User> userLst = userDozerConverter.convertToDTOList(userGroupDao.findUserByGroup(grp.getGrpId()), true);
 	 			//Set<User> grpUsers = grp.getUsers();
 	 			userSetToNewUserSet(userLst, UserConstant.INDIRECT, newUserSet);
 	 		}

@@ -67,6 +67,14 @@
             <a>principalList</a>
             <b>principalList</b>
         </field>
+        <field-exclude>
+            <a>userGroups</a>
+            <b>userGroups</b>
+        </field-exclude>
+        <field-exclude>
+            <a>userRoles</a>
+            <b>userRoles</b>
+        </field-exclude>
     </mapping>
 
     <mapping>

@@ -61,4 +61,13 @@
         <class-b>org.openiam.idm.srvc.auth.dto.LoginId</class-b>
     </mapping>
 
+    <mapping>
+        <class-a>org.openiam.idm.srvc.grp.domain.UserGroupEntity</class-a>
+        <class-b>org.openiam.idm.srvc.grp.dto.UserGroup</class-b>
+    </mapping>
+    <mapping>
+        <class-a>org.openiam.idm.srvc.role.domain.UserRoleEntity</class-a>
+        <class-b>org.openiam.idm.srvc.role.dto.UserRole</class-b>
+    </mapping>
+
 </mappings>

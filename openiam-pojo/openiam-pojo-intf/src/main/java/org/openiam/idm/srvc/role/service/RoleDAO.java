@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.role.service;
 
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.dto.RoleSearch;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 
 import java.util.List;
@@ -92,7 +93,7 @@ public interface RoleDAO {
      * @param roleId
      * @return
      */
-    public List<User> findUsersInRole(String roleId);
+    public List<UserEntity> findUsersInRole(String roleId);
 
     /**
      * Returns a list of all Roles regardless of service

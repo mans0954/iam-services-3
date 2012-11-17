@@ -15,6 +15,8 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.HibernateException;
+import org.openiam.dozer.converter.UserDozerConverter;
+import org.openiam.dozer.converter.UserGroupDozerConverter;
 import org.openiam.idm.srvc.grp.dto.*;
 import org.openiam.idm.srvc.grp.service.GroupAttributeDAO;
 
@@ -24,6 +26,7 @@ import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.dozer.DozerUtils;
 import org.openiam.exception.data.DataException;
 import org.openiam.exception.data.ObjectNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <code>GroupDataServiceImpl</code> provides a service to manage groups as
@@ -40,6 +43,10 @@ public class GroupDataServiceImpl implements GroupDataService {
 	private GroupAttributeDAO groupAttrDao;
 	private UserGroupDAO userGroupDao;
 	private UserDAO userDao;
+    @Autowired
+    private UserGroupDozerConverter userGroupDozerConverter;
+    @Autowired
+    private UserDozerConverter userDozerConverter;
 	
 	private static final Log log = LogFactory.getLog(GroupDataServiceImpl.class);
 
@@ -455,7 +462,7 @@ public class GroupDataServiceImpl implements GroupDataService {
 	 * @param userId
 	 *            User to be added to group.
 	 * 
-	 * @param grpId
+	 * @param groupId
 	 *            Group to which user will be added .
 	 */
 	public void addUserToGroup(String groupId, String userId) {
@@ -468,7 +475,7 @@ public class GroupDataServiceImpl implements GroupDataService {
 		log.debug("addUserToGroup:groupId = " + groupId);
 		
 		UserGroup ug = new UserGroup(groupId, userId);
-		userGroupDao.add(ug);
+		userGroupDao.save(userGroupDozerConverter.convertToEntity(ug, false));
 		
 	}
 
@@ -480,9 +487,7 @@ public class GroupDataServiceImpl implements GroupDataService {
 	public List<User> getUsersByGroup(String grpId) {
 		if (grpId == null)
 			throw new NullPointerException("grpId id is null");
-
-		return  userGroupDao.findUserByGroup(grpId);
-
+		return  userDozerConverter.convertToDTOList(userGroupDao.findUserByGroup(grpId),true);
 	}
 
 

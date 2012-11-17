@@ -12,6 +12,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
 import org.hibernate.annotations.GenericGenerator;
+import org.openiam.dozer.DozerDTOCorrespondence;
 
 import java.util.Date;
 
@@ -29,8 +30,7 @@ import java.util.Date;
         "status",
         "createdBy"
 })
-@Entity
-@Table(name="USER_ROLE")
+@DozerDTOCorrespondence(UserRole.class)
 public class UserRole implements java.io.Serializable {
 
     /**
@@ -54,10 +54,6 @@ public class UserRole implements java.io.Serializable {
     	this.roleId = roleId;
     }
 
-    @Id
-    @GeneratedValue(generator="system-uuid")
-    @GenericGenerator(name="system-uuid", strategy = "uuid")
-    @Column(name="USER_ROLE_ID", length=32)
     public String getUserRoleId() {
         return this.userRoleId;
     }
@@ -66,7 +62,7 @@ public class UserRole implements java.io.Serializable {
         this.userRoleId = userRoleId;
     }
 
-    @Column(name="ROLE_ID",length=32,nullable=false)
+
     public String getRoleId() {
         return this.roleId;
     }
@@ -75,7 +71,7 @@ public class UserRole implements java.io.Serializable {
         this.roleId = roleId;
     }
 
-    @Column(name="STATUS",length=20)
+
     public String getStatus() {
         return this.status;
     }
@@ -84,7 +80,7 @@ public class UserRole implements java.io.Serializable {
         this.status = status;
     }
 
-    @Column(name="CREATE_DATE",length=19)
+
     public Date getCreateDate() {
         return this.createDate;
     }
@@ -93,7 +89,7 @@ public class UserRole implements java.io.Serializable {
         this.createDate = createDate;
     }
 
-    @Column(name="CREATED_BY",length=19)
+
     public String getCreatedBy() {
         return this.createdBy;
     }
@@ -102,7 +98,7 @@ public class UserRole implements java.io.Serializable {
         this.createdBy = createdBy;
     }
 
-    @Column(name="USER_ID",length=32,nullable=false)
+
     public String getUserId() {
         return userId;
     }
@@ -111,7 +107,7 @@ public class UserRole implements java.io.Serializable {
         this.userId = userId;
     }
 
-    @Column(name="START_DATE",length=19)
+
     public Date getStartDate() {
         return startDate;
     }
@@ -120,7 +116,7 @@ public class UserRole implements java.io.Serializable {
         this.startDate = startDate;
     }
 
-    @Column(name="END_DATE",length=19)
+
     public Date getEndDate() {
         return endDate;
     }

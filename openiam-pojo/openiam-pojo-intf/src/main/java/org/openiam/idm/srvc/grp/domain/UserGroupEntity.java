@@ -1,51 +1,44 @@
-package org.openiam.idm.srvc.grp.dto;
+package org.openiam.idm.srvc.grp.domain;
 
-// Generated Jul 18, 2009 8:49:09 AM by Hibernate Tools 3.2.2.GA
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlSchemaType;
-import javax.xml.bind.annotation.XmlType;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.idm.srvc.grp.domain.UserGroupEntity;
+import org.openiam.idm.srvc.grp.dto.UserGroup;
 
+import javax.persistence.*;
+import java.io.Serializable;
 import java.util.Date;
 
 /**
- * Object used for representing the Group-User relationship
+ * Created by: Alexander Duckardt
+ * Date: 17.11.12
  */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "usergroup", propOrder = {
-        "userGrpId",
-        "grpId",
-        "userId",
-        "createDate",
-        "status",
-        "createdBy"
-})
-@DozerDTOCorrespondence(UserGroupEntity.class)
-public class UserGroup implements java.io.Serializable {
+@Entity
+@Table(name="USER_GRP")
+@DozerDTOCorrespondence(UserGroup.class)
+public class UserGroupEntity implements Serializable {
     private static final long serialVersionUID = 5686110876382504665L;
+    @Id
+    @GeneratedValue(generator="system-uuid")
+    @GenericGenerator(name="system-uuid", strategy = "uuid")
+    @Column(name="USER_GRP_ID", length=32)
     protected String userGrpId;
+    @Column(name="GRP_ID",length=32,nullable=false)
     protected String grpId;
+    @Column(name="USER_ID",length=32,nullable=false)
     protected String userId;
+    @Column(name="STATUS",length=20,nullable=false)
     protected String status;
-    @XmlSchemaType(name = "dateTime")
+    @Column(name="CREATE_DATE",length=19)
+    @Temporal(TemporalType.DATE)
     protected Date createDate;
+    @Column(name="CREATED_BY",length=20)
     protected String createdBy;
 
-    public UserGroup() {
+    public UserGroupEntity() {
     }
 
-    public UserGroup(String grpId, String userId) {
+    public UserGroupEntity(String grpId, String userId) {
         this.grpId = grpId;
         this.userId = userId;
         status = "ACTIVE";
@@ -54,56 +47,50 @@ public class UserGroup implements java.io.Serializable {
 
 
     public String getUserGrpId() {
-        return this.userGrpId;
+        return userGrpId;
     }
 
     public void setUserGrpId(String userGrpId) {
         this.userGrpId = userGrpId;
     }
 
-
     public String getGrpId() {
-        return this.grpId;
+        return grpId;
     }
 
     public void setGrpId(String grpId) {
         this.grpId = grpId;
     }
 
-
     public String getUserId() {
-        return this.userId;
+        return userId;
     }
 
     public void setUserId(String userId) {
         this.userId = userId;
     }
 
-
     public String getStatus() {
-        return this.status;
+        return status;
     }
 
     public void setStatus(String status) {
         this.status = status;
     }
 
-
     public Date getCreateDate() {
-        return this.createDate;
+        return createDate;
     }
 
     public void setCreateDate(Date createDate) {
         this.createDate = createDate;
     }
 
-
     public String getCreatedBy() {
-        return this.createdBy;
+        return createdBy;
     }
 
     public void setCreatedBy(String createdBy) {
         this.createdBy = createdBy;
     }
-
 }
