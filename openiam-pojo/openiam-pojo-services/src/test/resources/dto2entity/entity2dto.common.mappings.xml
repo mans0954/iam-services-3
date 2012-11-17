@@ -23,4 +23,51 @@
 		<class-a>org.openiam.idm.srvc.res.domain.ResourceGroupEntity</class-a>
 		<class-b>org.openiam.idm.srvc.res.dto.ResourceGroup</class-b>
 	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.res.domain.ResourceUserEmbeddableId</class-a>
+		<class-b>org.openiam.idm.srvc.res.dto.ResourceUserId</class-b>
+	</mapping>
+
+    <mapping>
+        <class-a>org.openiam.idm.srvc.user.domain.UserNoteEntity</class-a>
+        <class-b>org.openiam.idm.srvc.user.dto.UserNote</class-b>
+    </mapping>
+    <mapping>
+        <class-a>org.openiam.idm.srvc.user.domain.UserAttributeEntity</class-a>
+        <class-b>org.openiam.idm.srvc.user.dto.UserAttribute</class-b>
+    </mapping>
+
+    <mapping>
+        <class-a>org.openiam.idm.srvc.continfo.domain.AddressEntity</class-a>
+        <class-b>org.openiam.idm.srvc.continfo.dto.Address</class-b>
+    </mapping>
+    <mapping>
+        <class-a>org.openiam.idm.srvc.continfo.domain.EmailAddressEntity</class-a>
+        <class-b>org.openiam.idm.srvc.continfo.dto.EmailAddress</class-b>
+    </mapping>
+    <mapping>
+        <class-a>org.openiam.idm.srvc.continfo.domain.PhoneEntity</class-a>
+        <class-b>org.openiam.idm.srvc.continfo.dto.Phone</class-b>
+    </mapping>
+
+
+    <mapping>
+        <class-a>org.openiam.idm.srvc.auth.domain.LoginAttributeEntity</class-a>
+        <class-b>org.openiam.idm.srvc.auth.dto.LoginAttribute</class-b>
+    </mapping>
+    <mapping>
+        <class-a>org.openiam.idm.srvc.auth.domain.LoginEmbeddableId</class-a>
+        <class-b>org.openiam.idm.srvc.auth.dto.LoginId</class-b>
+    </mapping>
+
+    <mapping>
+        <class-a>org.openiam.idm.srvc.grp.domain.UserGroupEntity</class-a>
+        <class-b>org.openiam.idm.srvc.grp.dto.UserGroup</class-b>
+    </mapping>
+    <mapping>
+        <class-a>org.openiam.idm.srvc.role.domain.UserRoleEntity</class-a>
+        <class-b>org.openiam.idm.srvc.role.dto.UserRole</class-b>
+    </mapping>
+
 </mappings>

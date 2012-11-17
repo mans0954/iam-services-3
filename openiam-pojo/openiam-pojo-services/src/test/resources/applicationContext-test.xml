@@ -48,15 +48,27 @@
             </props>
         </property>
 
-        <property name="packagesToScan" value="org.openiam.idm.srvc.role.dto*,
-                                               org.openiam.idm.srvc.grp.dto*,
-                                               org.openiam.core.domain*,
-                                               org.openiam.idm.srvc.auth.dto*,
+        <property name="packagesToScan" value="org.openiam.core.domain*,
+											   org.openiam.idm.srvc.grp.dto*,
+											   org.openiam.idm.srvc.grp.domain*,
+											   org.openiam.idm.srvc.res.dto*,
+											   org.openiam.idm.srvc.role.dto*,
+											   org.openiam.idm.srvc.role.domain*,
+											   org.openiam.idm.srvc.user.dto*,
                                                org.openiam.idm.srvc.user.domain*,
+											   org.openiam.idm.srvc.continfo.dto*,
                                                org.openiam.am.srvc.resattr.domain*,
+											   org.openiam.idm.srvc.mngsys.dto*,
+											   org.openiam.am.srvc.resattr.domain*,
+											   org.openiam.idm.srvc.org.dto*,
                                                org.openiam.idm.srvc.org.domain*,
+											   org.openiam.idm.srvc.auth.dto*,
+											   org.openiam.idm.srvc.auth.domain*,
+											   org.openiam.idm.srvc.org.dto*,
+											   org.openiam.am.srvc.resattr.domain*,
+											   org.openiam.idm.srvc.cat.dto*,
                                                org.openiam.idm.srvc.continfo.domain*,
-                                               org.openiam.idm.srvc.res.domain*"/>
+                                               org.openiam.idm.srvc.res.domain"/>
     </bean>
 
     <!--tx begin-->
