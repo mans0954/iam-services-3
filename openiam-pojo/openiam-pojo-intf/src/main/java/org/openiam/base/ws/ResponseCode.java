@@ -49,7 +49,19 @@ public enum ResponseCode {
 	
 	@XmlEnumValue("invalidResourceType")
 	INVALID_RESOURCE_TYPE("invalidResourceType"),
+	
+    @XmlEnumValue("resourceTypesNotEqual")
+    RESOURCE_TYPES_NOT_EQUAL("resourceTypesNotEqual"),
 
+    @XmlEnumValue("relationshipExists")
+    RELATIONSHIP_EXISTS("relationshipExists"),
+    
+    @XmlEnumValue("cantAddYourselfAsChild")
+    CANT_ADD_YOURSELF_AS_CHILD("cantAddYourselfAsChild"),
+    
+    @XmlEnumValue("circularDependency")
+    CIRCULAR_DEPENDENCY("circularDependency"),
+	
     @XmlEnumValue("objectNotFound")
     OBJECT_NOT_FOUND("objectNotFound"),
 

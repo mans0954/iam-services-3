@@ -195,4 +195,20 @@ public interface ResourceDataService {
     
     @WebMethod
     int getNumOfChildResources(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId);
+    
+    @WebMethod
+    List<Resource> getParentResources(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,
+    								@WebParam(name = "from", targetNamespace = "") int from,
+    								@WebParam(name = "size", targetNamespace = "") int size);
+    
+    @WebMethod
+    int getNumOfParentResources(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId);
+    
+    @WebMethod
+    Response addChildResource(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,
+    						  @WebParam(name = "memberResourceId", targetNamespace = "") final String memberResourceId);
+    
+    @WebMethod
+    Response deleteChildResource(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,
+    						  	 @WebParam(name = "memberResourceId", targetNamespace = "") final String memberResourceId);
 }

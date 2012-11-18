@@ -353,6 +353,14 @@ public class ResourceEntity {
 		}
 	}
 	
+	public boolean hasChildResoruce(final ResourceEntity entity) {
+		boolean contains = false;
+		if(childResources != null) {
+			contains = childResources.contains(entity);
+		}
+		return contains;
+	}
+	
 	public void removeChildResource(final String resourceId) {
 		if(resourceId != null && childResources != null) {
 			for(final Iterator<ResourceEntity> it = childResources.iterator(); it.hasNext();) {

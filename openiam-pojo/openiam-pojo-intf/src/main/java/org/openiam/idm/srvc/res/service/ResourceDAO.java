@@ -9,7 +9,6 @@ public interface ResourceDAO extends BaseDao<ResourceEntity, String> {
 
     ResourceEntity findByName(String resourceName);
 
-
     /**
      * Gets the resources by type.
      *

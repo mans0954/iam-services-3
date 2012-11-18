@@ -414,7 +414,7 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 		try {
 			final ResourceEntity entity = resourceDao.findById(resourceId);
 			if(entity == null) {
-				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
 			
 			if(CollectionUtils.isNotEmpty(entity.getChildResources())) {
@@ -458,5 +458,122 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 		parent.setResourceId(resourceId);
 		example.addParentResource(parent);
 		return resourceDao.count(example);
+	}
+	
+	@Override
+	public List<Resource> getParentResources(final  String resourceId, final int from, final int size) {
+		final ResourceEntity example = new ResourceEntity();
+		final ResourceEntity child = new ResourceEntity();
+		child.setResourceId(resourceId);
+		example.addChildResource(child);
+		final List<ResourceEntity> resultList = resourceDao.getByExample(example, from, size);
+		return resourceConverter.convertToDTOList(resultList, false);
+	}
+
+	@Override
+	public int getNumOfParentResources(final String resourceId) {
+		final ResourceEntity example = new ResourceEntity();
+		final ResourceEntity child = new ResourceEntity();
+		child.setResourceId(resourceId);
+		example.addChildResource(child);
+		return resourceDao.count(example);
+	}
+
+	@Override
+	public Response addChildResource(final String resourceId, final String memberResourceId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(StringUtils.isBlank(resourceId) || StringUtils.isBlank(memberResourceId)) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			final ResourceEntity parent = resourceDao.findById(resourceId);
+			if(parent == null) {
+				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+			}
+			
+			final ResourceEntity child = resourceDao.findById(memberResourceId);
+			if(child == null) {
+				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+			}
+			
+			if(parent.hasChildResoruce(child)) {
+				throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
+			}
+			
+			if(!parent.getResourceType().equals(child.getResourceType())) {
+				throw new BasicDataServiceException(ResponseCode.RESOURCE_TYPES_NOT_EQUAL);
+			}
+			
+			if(parent.equals(child)) {
+				throw new BasicDataServiceException(ResponseCode.CANT_ADD_YOURSELF_AS_CHILD);
+			}
+			
+			/* now check that this doesn't cause a circular dependency */
+			if(causesCircularDependency(parent, child, new HashSet<ResourceEntity>())) {
+				throw new BasicDataServiceException(ResponseCode.CIRCULAR_DEPENDENCY);
+			}
+			
+			parent.addChildResource(child);
+			resourceDao.save(parent);
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			log.error("Can't delete resource", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+		return response;
+	}
+	
+	private boolean causesCircularDependency(final ResourceEntity parent, final ResourceEntity child, final Set<ResourceEntity> visitedSet) {
+		boolean retval = false;
+		if(parent != null && child != null) {
+			if(!visitedSet.contains(child)) {
+				visitedSet.add(child);
+				if(CollectionUtils.isNotEmpty(parent.getParentResources())) {
+					for(final ResourceEntity entity : parent.getParentResources()) {
+						retval = entity.getResourceId().equals(child.getResourceId());
+						if(retval) {
+							break;
+						}
+						causesCircularDependency(parent, entity, visitedSet);
+					}
+				}
+			}
+		}
+		return retval;
+	}
+
+	@Override
+	public Response deleteChildResource(final String resourceId, final String memberResourceId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(StringUtils.isBlank(resourceId) || StringUtils.isBlank(memberResourceId)) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			final ResourceEntity parent = resourceDao.findById(resourceId);
+			if(parent == null) {
+				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+			}
+			
+			final ResourceEntity child = resourceDao.findById(memberResourceId);
+			if(child == null) {
+				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+			}
+			
+			parent.removeChildResource(child);
+			resourceDao.save(parent);
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			log.error("Can't delete resource", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+		return response;
 	}
 }

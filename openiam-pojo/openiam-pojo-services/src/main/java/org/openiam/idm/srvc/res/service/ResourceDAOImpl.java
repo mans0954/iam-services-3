@@ -38,12 +38,12 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String> impleme
                 String resourceName = resource.getName();
                 MatchMode matchMode = null;
                 if (StringUtils.indexOf(resourceName, "*") == 0) {
-                    matchMode = MatchMode.START;
+                    matchMode = MatchMode.END;
                     resourceName = resourceName.substring(1);
                 }
                 if (StringUtils.isNotEmpty(resourceName) && StringUtils.indexOf(resourceName, "*") == resourceName.length() - 1) {
                     resourceName = resourceName.substring(0, resourceName.length() - 1);
-                    matchMode = (matchMode == MatchMode.START) ? MatchMode.ANYWHERE : MatchMode.END;
+                    matchMode = (matchMode == MatchMode.END) ? MatchMode.ANYWHERE : MatchMode.START;
                 }
 
                 if (StringUtils.isNotEmpty(resourceName)) {
@@ -72,6 +72,19 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String> impleme
             	
             	if(CollectionUtils.isNotEmpty(parentResourceIds)) {
             		criteria.createAlias("parentResources", "parent").add( Restrictions.in("parent.resourceId", parentResourceIds));
+            	}
+            }
+            
+            if(CollectionUtils.isNotEmpty(resource.getChildResources())) {
+            	final Set<String> childResoruceIds = new HashSet<String>();
+            	for(final ResourceEntity child : resource.getChildResources()) {
+            		if(child != null && StringUtils.isNotBlank(child.getResourceId())) {
+            			childResoruceIds.add(child.getResourceId());
+            		}
+            	}
+            	
+            	if(CollectionUtils.isNotEmpty(childResoruceIds)) {
+            		criteria.createAlias("childResources", "child").add( Restrictions.in("child.resourceId", childResoruceIds));
             	}
             }
         }
@@ -195,7 +208,6 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String> impleme
     protected String getPKfieldName() {
         return "resourceId";
     }
-
 }
 
 
