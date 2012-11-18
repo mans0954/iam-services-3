@@ -208,7 +208,7 @@ public class GroupDAOImpl implements GroupDAO {
 	 */
 	public List<Group> findGroupsForUser(String userId) {
 		Session session = sessionFactory.getCurrentSession();
-		Query qry = session.createQuery("select grp  from Group as grp, UserGroup ug " +
+		Query qry = session.createQuery("select grp  from Group as grp, UserGroupEntity ug " +
 						" where ug.userId = :userId and grp.grpId = ug.grpId ");
 		
 
