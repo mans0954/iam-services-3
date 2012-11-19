@@ -12,6 +12,8 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.RandomStringUtils;
 import org.dozer.Mapper;
 import org.openiam.base.AttributeOperationEnum;
+import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
+import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupAttribute;
 import org.openiam.idm.srvc.grp.dto.GroupStatus;
@@ -39,17 +41,17 @@ public class TestGroupConversion extends AbstractTestNGSpringContextTests {
 	
 	@Test
 	public void testGroupConversion() {
-		final Group original = createGroupWithNoSubgroups();
+		final GroupEntity original = createGroupWithNoSubgroups();
 		
-		compareGroup(original, deepDozerMapper.map(original, Group.class), true);
-		compareGroup(original, shallowDozerMapper.map(original, Group.class), false);
+		compareGroup(original, deepDozerMapper.map(original, GroupEntity.class), true);
+		compareGroup(original, shallowDozerMapper.map(original, GroupEntity.class), false);
 	}
 	
 	@Test
 	public void testRoleConversion() {
 		final Role original = createSimpleRole();
 		
-		final Set<Group> groupSet = new HashSet<Group>();
+		final Set<GroupEntity> groupSet = new HashSet<GroupEntity>();
 		groupSet.add(createGroupWithNoSubgroups());
 		groupSet.add(createGroupWithNoSubgroups());
 		groupSet.add(createGroupWithNoSubgroups());
@@ -74,18 +76,10 @@ public class TestGroupConversion extends AbstractTestNGSpringContextTests {
 		compareRole(original, shallowDozerMapper.map(original, Role.class), false);
 	}
 	
-	private Group createGroupWithNoSubgroups() {
-		final Group group = createSimpleGroup();
+	private GroupEntity createGroupWithNoSubgroups() {
+		final GroupEntity group = createSimpleGroup();
 		
-		final Set<Role> roleSet = new HashSet<Role>();
-		roleSet.add(createSimpleRole());
-		roleSet.add(createSimpleRole());
-		roleSet.add(createSimpleRole());
-		roleSet.add(createSimpleRole());
-		roleSet.add(createSimpleRole());
-		group.setRoles(roleSet);
-		
-		final Map<String, GroupAttribute> groupAttributeMap = new HashMap<String, GroupAttribute>();
+		final Map<String, GroupAttributeEntity> groupAttributeMap = new HashMap<String, GroupAttributeEntity>();
 		groupAttributeMap.put(rs(2), createGroupAttribute());
 		groupAttributeMap.put(rs(2), createGroupAttribute());
 		groupAttributeMap.put(rs(2), createGroupAttribute());
@@ -96,14 +90,13 @@ public class TestGroupConversion extends AbstractTestNGSpringContextTests {
 		return group;
 	}
 	
-	private Group createSimpleGroup() {
-		final Group group = new Group();
+	private GroupEntity createSimpleGroup() {
+		final GroupEntity group = new GroupEntity();
 		group.setCompanyId(rs(2));
 		group.setCreateDate(new Date());
 		group.setCreatedBy(rs(2));
 		group.setDescription(rs(2));
 		group.setGroupClass(rs(2));
-		group.setGroupStatus(GroupStatus.ACTIVE);
 		group.setGrpId(rs(2));
 		group.setGrpName(rs(2));
 		group.setInternalGroupId(rs(2));
@@ -114,13 +107,12 @@ public class TestGroupConversion extends AbstractTestNGSpringContextTests {
 		group.setOwnerId(rs(2));
 		group.setProvisionMethod(rs(2));
 		group.setProvisionObjName(rs(2));
-		group.setSelected(true);
 		group.setStatus(rs(2));
 		return group;
 	}
 	
-	private GroupAttribute createGroupAttribute() {
-		final GroupAttribute groupAttribute = new GroupAttribute();
+	private GroupAttributeEntity createGroupAttribute() {
+		final GroupAttributeEntity groupAttribute = new GroupAttributeEntity();
 		groupAttribute.setGroupId(rs(2));
 		groupAttribute.setId(rs(2));
 		groupAttribute.setMetadataElementId(rs(2));
@@ -205,7 +197,7 @@ public class TestGroupConversion extends AbstractTestNGSpringContextTests {
 		return RandomStringUtils.randomAlphanumeric(size);
 	}
 	
-	private void compareGroup(final Group original, final Group copy, final boolean isDeep) {
+	private void compareGroup(final GroupEntity original, final GroupEntity copy, final boolean isDeep) {
 		Assert.assertEquals(original.getCompanyId(), copy.getCompanyId());
 		Assert.assertEquals(original.getCreatedBy(), copy.getCreatedBy());
 		Assert.assertEquals(original.getDescription(), copy.getDescription());
@@ -221,13 +213,6 @@ public class TestGroupConversion extends AbstractTestNGSpringContextTests {
 		Assert.assertEquals(original.getProvisionMethod(), copy.getProvisionMethod());
 		Assert.assertEquals(original.getProvisionObjName(), copy.getProvisionObjName());
 		Assert.assertEquals(original.getStatus(), copy.getStatus());
-		Assert.assertEquals(original.getSelected(), copy.getSelected());
-		
-		if(isDeep) {
-			//TODO:  assert
-		} else {
-			Assert.assertTrue(CollectionUtils.isEmpty(copy.getRoles()));
-		}
 	}
 	
 	private void compareRole(final Role original, final Role copy, final boolean isDeep) {

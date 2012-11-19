@@ -28,6 +28,7 @@ import org.openiam.idm.srvc.role.dto.RoleSearch;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDAO;
+import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.springframework.util.CollectionUtils;
@@ -266,11 +267,7 @@ public class RoleDAOImpl implements RoleDAO {
 	}
 
 	public void addGroupToRole(String roleId, String groupId) {
-
-
-		
-		
-		Group grp = groupDao.findById(groupId);
+		final GroupEntity grp = groupDao.findById(groupId);
 
 	
 		Role role = findById(roleId);
@@ -313,13 +310,13 @@ public class RoleDAOImpl implements RoleDAO {
 			throw new ObjectNotFoundException();
 		}
 		//org.hibernate.Hibernate.initialize(rl.getGroups());
-		Set<Group> grpSet = rl.getGroups();
+		Set<GroupEntity> grpSet = rl.getGroups();
 		if (grpSet == null || grpSet.isEmpty()) {
 			return;
 		}
-		Iterator<Group> it = grpSet.iterator();
+		Iterator<GroupEntity> it = grpSet.iterator();
 		while (it.hasNext()) {
-			Group grp = it.next();
+			GroupEntity grp = it.next();
 			if (grp.getGrpId().equalsIgnoreCase(groupId)) {
 				it.remove();
 			}
@@ -335,13 +332,13 @@ public class RoleDAOImpl implements RoleDAO {
 			throw new ObjectNotFoundException();
 		}
 		//org.hibernate.Hibernate.initialize(rl.getGroups());
-		Set<Group> grpSet = rl.getGroups();
+		Set<GroupEntity> grpSet = rl.getGroups();
 		if (grpSet == null || grpSet.isEmpty()) {
 			return;
 		}
-		Iterator<Group> it = grpSet.iterator();
+		Iterator<GroupEntity> it = grpSet.iterator();
 		while (it.hasNext()) {
-			Group grp = it.next();
+			GroupEntity grp = it.next();
 			it.remove();
 
 		}

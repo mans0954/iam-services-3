@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.dozer.DozerBeanMapper;
+import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.policy.dto.Policy;
@@ -116,12 +117,12 @@ public class DozerUtils {
      * @return
      */
     @Deprecated
-	public Group[] getDozerDeepMappedGroupArray(final Group[] groupArray) {
-		Group[] retVal = null;
+	public GroupEntity[] getDozerDeepMappedGroupArray(final GroupEntity[] groupArray) {
+    	GroupEntity[] retVal = null;
 		if(groupArray != null) {
-			retVal = new Group[groupArray.length];
+			retVal = new GroupEntity[groupArray.length];
 			for(int i = 0; i < groupArray.length; i++) {
-				retVal[i] = deepMapper.map(groupArray[i], Group.class);
+				retVal[i] = deepMapper.map(groupArray[i], GroupEntity.class);
 			}
 		}
 		return retVal;

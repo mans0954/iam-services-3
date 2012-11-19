@@ -49,6 +49,7 @@ import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.base.ws.StringResponse;
 import org.openiam.dozer.DozerUtils;
+import org.openiam.dozer.converter.GroupDozerConverter;
 import org.openiam.exception.AuthenticationException;
 import org.openiam.exception.LogoutException;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
@@ -64,6 +65,7 @@ import org.openiam.idm.srvc.auth.spi.LoginModuleFactory;
 import org.openiam.idm.srvc.auth.sso.SSOTokenFactory;
 import org.openiam.idm.srvc.auth.sso.SSOTokenModule;
 import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
+import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.policy.dto.Policy;
@@ -115,6 +117,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private DozerUtils dozerUtils;
     @Autowired
     protected KeyManagementService keyManagementService;
+    
+    @Autowired
+    private GroupDozerConverter groupDozerConverter;
 	
 	private static final Log log = LogFactory.getLog(AuthenticationServiceImpl.class);
 
@@ -822,11 +827,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 	private void populateSubject(String userId, Subject sub) {
 		log.debug("populateSubject: userId=" + userId);
 		
-		final List<Group> groupList = groupManager.getUserInGroups(userId);
+		final List<GroupEntity> groupList = groupManager.getUserInGroups(userId, 0, Integer.MAX_VALUE);
 		final List<Role> roleAry = roleManager.getUserRoles(userId);
 		
 		if (CollectionUtils.isNotEmpty(groupList)) {
-			sub.setGroups(dozerUtils.getDozerDeepMappedGroupList(groupList));
+			sub.setGroups(groupDozerConverter.convertToDTOList(groupList, true));
 		}
 		if (CollectionUtils.isNotEmpty(roleAry)) {
 			sub.setRoles(dozerUtils.getDozerDeepMappedRoleList(roleAry));

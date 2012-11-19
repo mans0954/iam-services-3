@@ -36,17 +36,5 @@ import java.util.List;
  */
 public interface UserGroupDAO  extends BaseDao<UserGroupEntity, String>{
 
-    void removeUserFromGroup(String grpId, String userId);
-
-    List<UserGroupEntity> findUserInGroup(String groupId, String userId);
-
-    /**
-     * Returns a list of users that are associated with a group.
-     *
-     * @param groupId
-     * @return
-     */
-    List<UserEntity> findUserByGroup(String groupId);
-
-
+    List<UserEntity> findUserByGroup(final String groupId, final int from, final int size);
 }

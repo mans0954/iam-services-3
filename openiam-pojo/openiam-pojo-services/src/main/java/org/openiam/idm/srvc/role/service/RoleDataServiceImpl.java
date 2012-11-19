@@ -6,6 +6,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.dozer.converter.UserRoleDozerConverter;
 import org.openiam.exception.data.ObjectNotFoundException;
+import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.UserGroupDAO;
 import org.openiam.idm.srvc.res.service.ResourceRoleDAO;
@@ -212,14 +213,14 @@ public class RoleDataServiceImpl implements RoleDataService {
 
 	}
 
-	public Group[] getGroupsInRole(String roleId) {
+	public GroupEntity[] getGroupsInRole(String roleId) {
 		Role rl = roleDao.findById(roleId);
 		if (rl == null) {
 			log.error("Role not found for roleId =" + roleId);
 			throw new ObjectNotFoundException();
 		}
 		//org.hibernate.Hibernate.initialize(rl.getGroups());
-		Set<Group> grpSet = rl.getGroups();
+		Set<GroupEntity> grpSet = rl.getGroups();
 		if (grpSet == null || grpSet.isEmpty()) {
 			return null;
 		}
@@ -235,13 +236,13 @@ public class RoleDataServiceImpl implements RoleDataService {
 			throw new ObjectNotFoundException();
 		}
 		//org.hibernate.Hibernate.initialize(rl.getGroups());
-		Set<Group> grpSet = rl.getGroups();
+		Set<GroupEntity> grpSet = rl.getGroups();
 		if (grpSet == null || grpSet.isEmpty()) {
 			return false;
 		}
-		Iterator<Group> it = grpSet.iterator();
+		Iterator<GroupEntity> it = grpSet.iterator();
 		while (it.hasNext()) {
-			Group g = it.next();
+			GroupEntity g = it.next();
 			if (g.getGrpId().equalsIgnoreCase(groupId)) {
 				return true;
 			}
@@ -607,14 +608,14 @@ public class RoleDataServiceImpl implements RoleDataService {
 		Set<User> newUserSet = updateUserRoleAssociation(userList, UserConstant.DIRECT);
 
 		/* Get the users that are linked through a group */
-	 	Set<Group> groupSet = rl.getGroups();
+	 	Set<GroupEntity> groupSet = rl.getGroups();
 	 	// ensure that we have a unique set of users.
 	 	// iterate through the groups
 	 	if (groupSet != null && !groupSet.isEmpty()) {
-	 		Iterator<Group> it = groupSet.iterator();
+	 		Iterator<GroupEntity> it = groupSet.iterator();
 	 		while (it.hasNext()) {
-	 			Group grp = it.next();
-	 			List<User> userLst = userDozerConverter.convertToDTOList(userGroupDao.findUserByGroup(grp.getGrpId()), true);
+	 			GroupEntity grp = it.next();
+	 			List<User> userLst = userDozerConverter.convertToDTOList(userGroupDao.findUserByGroup(grp.getGrpId(), 0, Integer.MAX_VALUE), true);
 	 			//Set<User> grpUsers = grp.getUsers();
 	 			userSetToNewUserSet(userLst, UserConstant.INDIRECT, newUserSet);
 	 		}
@@ -668,43 +669,20 @@ public class RoleDataServiceImpl implements RoleDataService {
 
 	}
 
-	private Group[] groupSetToArray(Set<Group> groupSet) {
+	private GroupEntity[] groupSetToArray(Set<GroupEntity> groupSet) {
 
 		int size = groupSet.size();
-		Group[] groupAry = new Group[size];
-		Iterator<Group> it = groupSet.iterator();
+		GroupEntity[] groupAry = new GroupEntity[size];
+		Iterator<GroupEntity> it = groupSet.iterator();
 		int ctr = 0;
 		while (it.hasNext()) {
-			Group ra = it.next();
+			GroupEntity ra = it.next();
 			groupAry[ctr++] = ra;
 		}
 		return groupAry;
 
 	}
 
-	private User[] userSetToArray(Set<User> userSet) {
-
-		int size = userSet.size();
-		User[] userAry = new User[size];
-		Iterator<User> it = userSet.iterator();
-		int ctr = 0;
-		while (it.hasNext()) {
-			User u = it.next();
-			userAry[ctr++] = u;
-		}
-		return userAry;
-
-	}
-	private User[] userCollectionToArray(Collection<User> userCol) {
-
-		int size = userCol.size();
-		User[] userAry = new User[size];
-		return  userCol.toArray(userAry);
-		
-
-
-	}
-	
 	private Set<User> updateUserRoleAssociation(List<User> userList, int roleAssociationMethod) {
 
 		Set<User> newUserSet = new HashSet();

@@ -14,7 +14,8 @@
 
     <context:annotation-config />
     <context:component-scan base-package="org.openiam.idm.srvc.org.service,
-    								      org.openiam.core,org.openiam.idm.srvc,
+    								      org.openiam.core,
+    								      org.openiam.idm.srvc,
     								      org.openiam.dozer.converter" />
 
 	<bean id="springContextProvider" class="org.openiam.util.SpringContextProvider" />
@@ -123,32 +124,6 @@
 	<bean id="serviceDAO" class="org.openiam.idm.srvc.service.service.ServiceDAOImpl">
 		<property name="sessionFactory" ref="sessionFactory"></property>		
 	</bean>
-
-	
-	<!-- Group Beans -->
-	<bean id="groupWS" class="org.openiam.idm.srvc.grp.ws.GroupDataWebServiceImpl" >
-		<property name="groupManager" ref="groupManager" />
-		<property name="dozerUtils" ref="dozerUtils" />
-	</bean>
-	
-	<bean id="groupManager" class="org.openiam.idm.srvc.grp.service.GroupDataServiceImpl" >
-		<property name="groupDao" ref="groupDAO" />
-		<property name="groupAttrDao" ref="groupAttrDAO" />
-		<property name="userDao" ref="userDAO" />
-		<property name="userGroupDao" ref="userGroupDAO" />
-	</bean>
-
-	<bean id="groupDAO" class="org.openiam.idm.srvc.grp.service.GroupDAOImpl" >
-		<property name="userDao" ref="userDAO" />
-		<property name="sessionFactory" ref="sessionFactory"></property>
-		<property name="maxResultSetSize" value="100" />			
-	</bean>	
-	<bean id="groupAttrDAO" class="org.openiam.idm.srvc.grp.service.GroupAttributeDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"></property>		
-	</bean>	
-	<bean id="userGroupDAO" class="org.openiam.idm.srvc.grp.service.UserGroupDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"></property>		
-	</bean>		
 
  <!-- QueryDataService  -->
 	<bean id="queryWS" class="org.openiam.idm.srvc.qry.ws.QueryDataWebServiceImpl" >

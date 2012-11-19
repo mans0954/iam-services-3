@@ -14,6 +14,7 @@ import javax.jws.WebService;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dozer.DozerBeanMapper;
@@ -27,11 +28,16 @@ import org.openiam.idm.srvc.user.ws.UserListResponse;
 import org.openiam.util.DozerMappingType;
 
 import org.openiam.base.ws.Response;
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.base.ws.exception.BasicDataServiceException;
 import org.openiam.dozer.DozerUtils;
+import org.openiam.dozer.converter.GroupDozerConverter;
 import org.openiam.exception.data.DataException;
 import org.openiam.exception.data.ObjectNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
+import org.springframework.stereotype.Service;
 
 /**
  * <code>GroupDataServiceImpl</code> provides a service to manage groups as
@@ -47,327 +53,261 @@ import org.springframework.beans.factory.annotation.Required;
 		targetNamespace = "urn:idm.openiam.org/srvc/grp/service", 
 		portName = "GroupDataWebServicePort", 
 		serviceName = "GroupDataWebService")
+@Service("groupWS")
 public class GroupDataWebServiceImpl implements GroupDataWebService {
-	protected GroupDataService groupManager;
+	
+	@Autowired
+	private GroupDataService groupManager;
+	
+    @Autowired
+    private GroupDozerConverter groupDozerConverter;
 		
 	private static final Log log = LogFactory.getLog(GroupDataWebServiceImpl.class);
-	private DozerUtils dozerUtils;
 
-	@Required
-	public void setDozerUtils(final DozerUtils dozerUtils) {
-		this.dozerUtils = dozerUtils;
-	}
-	
 	public GroupDataWebServiceImpl() {
 
 	}
 
-	public void setGroupManager(GroupDataService groupManager) {
-		this.groupManager = groupManager;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.grp.ws.GroupDataWebService#addAttribute(org.openiam.idm.srvc.grp.dto.GroupAttribute)
-	 */
-	public Response addAttribute(GroupAttribute attribute) {
-		final Response resp = new Response(ResponseStatus.SUCCESS);
-		groupManager.addAttribute(attribute);
-		return resp;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.grp.ws.GroupDataWebService#addGroup(org.openiam.idm.srvc.grp.dto.Group)
-	 */
-	public GroupResponse addGroup(Group grp) {
-		final GroupResponse resp = new GroupResponse(ResponseStatus.SUCCESS);
-		groupManager.addGroup(grp);
-		if (grp.getGrpId() == null) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		} else {
-			resp.setGroup(grp);
+	@Override
+	public GroupResponse addGroup(final Group group) {
+		final GroupResponse response = new GroupResponse(ResponseStatus.SUCCESS);
+		try {
+			if(group == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			
+			
+			groupManager.saveGroup(groupDozerConverter.convertToEntity(group, true));
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
 		}
-		return resp;
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.grp.ws.GroupDataWebService#addUserToGroup(java.lang.String, java.lang.String)
-	 */
-	public Response addUserToGroup(String grpId, String userId) {
-		final Response resp = new Response(ResponseStatus.SUCCESS);
-		groupManager.addUserToGroup(grpId, userId); 
-		return resp;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.grp.ws.GroupDataWebService#getAllAttributes(java.lang.String)
-	 */
-	public GroupAttrMapResponse getAllAttributes(String groupId) {
-		final GroupAttrMapResponse resp = new GroupAttrMapResponse(ResponseStatus.SUCCESS);
-		final Map<String, GroupAttribute> attrMap = groupManager.getAllAttributes(groupId); 
-		if (MapUtils.isEmpty(attrMap)) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		} else {
-			resp.setGroupAttrMap(attrMap);
+	@Override
+	public GroupResponse updateGroup(final Group group) {
+		final GroupResponse response = new GroupResponse(ResponseStatus.SUCCESS);
+		try {
+			if(group == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());	
+		} catch(Throwable e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
 		}
-		return resp;
-
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.grp.ws.GroupDataWebService#getAllGroups()
-	 */
-	public GroupListResponse getAllGroups() {
-		final GroupListResponse resp = new GroupListResponse(ResponseStatus.SUCCESS);
-		final List<Group> grpList = groupManager.getAllGroups(); 
-		if (CollectionUtils.isEmpty(grpList)) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		} else {
-			resp.setGroupList(dozerUtils.getDozerDeepMappedGroupList(grpList));
+	@Override
+	public GroupResponse getGroup(final String groupId) {
+		final GroupResponse response = new GroupResponse(ResponseStatus.SUCCESS);
+		try {
+			if(StringUtils.isBlank(groupId)) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
 		}
-		return resp;
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.grp.ws.GroupDataWebService#getAllGroupsWithDependents(boolean)
-	 */
-	/*
-	public GroupListResponse getAllGroupsWithDependents(boolean subgroups) {
-		final GroupListResponse resp = new GroupListResponse(ResponseStatus.SUCCESS);
-		final List<Group> grpList = groupManager.getAllGroupsWithDependents(subgroups); 
-		if (CollectionUtils.isEmpty(grpList)) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		} else {
-			resp.setGroupList(dozerUtils.getDozerDeepMappedGroupList(grpList));
+	@Override
+	public Response deleteGroup(final String groupId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(StringUtils.isBlank(groupId)) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
 		}
-		return resp;
+		return response;
 	}
-	*/
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.grp.ws.GroupDataWebService#getAttribute(java.lang.String)
-	 */
-	public GroupAttributeResponse getAttribute(String attrId) {
-		final GroupAttributeResponse resp = new GroupAttributeResponse(ResponseStatus.SUCCESS);
-		final GroupAttribute attr = groupManager.getAttribute(attrId);  
-		if (attr == null) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		} else {
-			resp.setGroupAttr(attr);
+	@Override
+	public GroupListResponse getChildGroups(final String parentGroupId) {
+		final GroupListResponse response = new GroupListResponse(ResponseStatus.SUCCESS);
+		try {
+			if(StringUtils.isBlank(parentGroupId)) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
 		}
-		return resp;
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.grp.ws.GroupDataWebService#getChildGroups(java.lang.String, boolean)
-	 */
-	public GroupListResponse getChildGroups(String parentGroupId,		boolean subgroups) {
-		final GroupListResponse resp = new GroupListResponse(ResponseStatus.SUCCESS);
-		final List<Group> grpList = groupManager.getChildGroups(parentGroupId, subgroups); 
-		if (CollectionUtils.isEmpty(grpList)) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		} else {
-			resp.setGroupList(dozerUtils.getDozerDeepMappedGroupList(grpList));
+	@Override
+	public GroupListResponse getParentGroups(final String groupId) {
+		final GroupListResponse response = new GroupListResponse(ResponseStatus.SUCCESS);
+		try {
+			if(groupId == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
 		}
-		return resp;
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.grp.ws.GroupDataWebService#getGroup(java.lang.String)
-	 */
-	public GroupResponse getGroup(String grpId) {
-		final GroupResponse resp = new GroupResponse(ResponseStatus.SUCCESS);
-		final Group grp = groupManager.getGroup(grpId); 
-		if (grp == null) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		} else {
-			resp.setGroup(dozerUtils.getDozerDeepMappedGroup(grp));
+	@Override
+	public Response isUserInGroup(final String groupId, final String userId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(groupId == null || userId == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
 		}
-		return resp;
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.grp.ws.GroupDataWebService#getGroupWithDependants(java.lang.String)
-	 */
-	public GroupResponse getGroupWithDependants(String grpId) {
-		final GroupResponse resp = new GroupResponse(ResponseStatus.SUCCESS);
-		final Group grp = groupManager.getGroupWithDependants(grpId); 
-		if (grp == null) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		} else {
-			resp.setGroup(dozerUtils.getDozerDeepMappedGroup(grp));
+	@Override
+	public GroupListResponse getUserInGroups(final String userId, final String from, final String size) {
+		final GroupListResponse response = new GroupListResponse(ResponseStatus.SUCCESS);
+		try {
+			if(userId == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
 		}
-		return resp;
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.grp.ws.GroupDataWebService#getGroupsNotLinkedToUser(java.lang.String, java.lang.String, boolean)
-	 */
-	public GroupListResponse getGroupsNotLinkedToUser(String userId,
-			String parentGroupId, boolean nested) {
-		final GroupListResponse resp = new GroupListResponse(ResponseStatus.SUCCESS);
-		final List<Group> grpList = groupManager.getGroupsNotLinkedToUser(userId, parentGroupId, nested); 
-		if (CollectionUtils.isEmpty(grpList)) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		} else {
-			resp.setGroupList(dozerUtils.getDozerDeepMappedGroupList(grpList));
+	@Override
+	public GroupListResponse getUserInGroupsAsFlatList(final String userId) {
+		final GroupListResponse response = new GroupListResponse(ResponseStatus.SUCCESS);
+		try {
+			if(userId == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
 		}
-		return resp;
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.grp.ws.GroupDataWebService#getParentGroup(java.lang.String, boolean)
-	 */
-	public GroupListResponse getParentGroups(String groupId, boolean dependants) {
-		final GroupListResponse resp = new GroupListResponse(ResponseStatus.SUCCESS);
-		final Group group  = groupManager.getGroup(groupId);
-		if (group == null) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		} else {
-			resp.setGroupList(dozerUtils.getDozerDeepMappedGroupList(group.getParentGroups()));
+	@Override
+	public UserListResponse getUsersByGroup(final String groupId, final int from, final int size) {
+		final UserListResponse response = new UserListResponse(ResponseStatus.SUCCESS);
+		try {
+			if(groupId == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
 		}
-		return resp;
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.grp.ws.GroupDataWebService#getUserInGroups(java.lang.String)
-	 */
-	public GroupListResponse getUserInGroups(String userId) {
-		log.info("getUserInGroups: userId=" + userId);
-		final GroupListResponse resp = new GroupListResponse(ResponseStatus.SUCCESS);
-		final List<Group> grpList = groupManager.getUserInGroups(userId); 
-		if (org.springframework.util.CollectionUtils.isEmpty(grpList)) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		} else {
-			resp.setGroupList(dozerUtils.getDozerDeepMappedGroupList(grpList));
+	@Override
+	public Response addUserToGroup(final String groupId, final String userId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(groupId == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
 		}
-		return resp;
+		return response;
 	}
-	
-	
-	public GroupListResponse getUserInGroupsAsFlatList(	String userId) {
-		log.info("getUserInGroupsAsFlatList: userId=" + userId);
-		final GroupListResponse resp = new GroupListResponse(ResponseStatus.SUCCESS);
-		final List<Group> grpList = groupManager.getUserInGroupsAsFlatList(userId); 
-		if (CollectionUtils.isEmpty(grpList)) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		} else {
-			resp.setGroupList(dozerUtils.getDozerDeepMappedGroupList(grpList));
+
+	@Override
+	public Response removeUserFromGroup(final String groupId, final String userId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(groupId == null || userId == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
 		}
-		return resp;		
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.grp.ws.GroupDataWebService#getUsersByGroup(java.lang.String)
-	 */
-	public UserListResponse getUsersByGroup(String grpId) {
-		final UserListResponse resp = new UserListResponse(ResponseStatus.SUCCESS);
-		final List<User> userList = groupManager.getUsersByGroup(grpId); 
-		if (CollectionUtils.isEmpty(userList)) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		} else {
-			resp.setUserList(dozerUtils.getDozerDeepMappedUserList(userList));
+	@Override
+	public Response addAttribute(final GroupAttribute attribute) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(attribute == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
 		}
-		return resp;
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.grp.ws.GroupDataWebService#isUserInGroup(java.lang.String, java.lang.String)
-	 */
-	public Response isUserInGroup(String groupId, String userId) {
-		final Response resp = new Response(ResponseStatus.SUCCESS);
-		final boolean retval = groupManager.isUserInGroup(groupId, userId); 
-		resp.setResponseValue(new Boolean(retval));
-		return resp;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.grp.ws.GroupDataWebService#removeAllAttributes(java.lang.String)
-	 */
-	public Response removeAllAttributes(String groupId) {
-		final Response resp = new Response(ResponseStatus.SUCCESS);
-		groupManager.removeAllAttributes(groupId); 
-		return resp;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.grp.ws.GroupDataWebService#removeAttribute(org.openiam.idm.srvc.grp.dto.GroupAttribute)
-	 */
-	public Response removeAttribute(GroupAttribute attr) {
-		final Response resp = new Response(ResponseStatus.SUCCESS);
-		groupManager.removeAttribute(attr); 
-		return resp;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.grp.ws.GroupDataWebService#removeChildGroups(java.lang.String)
-	 */
-	/*
-	public Response removeChildGroups(String parentGroupId) {
-		final Response resp = new Response(ResponseStatus.SUCCESS);
-		groupManager.removeChildGroups(parentGroupId); 
-		return resp;
-	}
-	*/
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.grp.ws.GroupDataWebService#removeGroup(java.lang.String)
-	 */
-	public Response removeGroup(String grpId) {
-		final Response resp = new Response(ResponseStatus.SUCCESS);
-		groupManager.removeGroup(grpId); 
-		return resp;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.grp.ws.GroupDataWebService#removeUserFromGroup(java.lang.String, java.lang.String)
-	 */
-	public Response removeUserFromGroup(String groupId, String userId) {
-		final Response resp = new Response(ResponseStatus.SUCCESS);
-		groupManager.removeUserFromGroup(groupId, userId); 
-		return resp;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.grp.ws.GroupDataWebService#saveAttributes(org.openiam.idm.srvc.grp.dto.GroupAttribute[])
-	 */
-	public Response saveAttributes(GroupAttribute[] groupAttr) {
-		groupManager.saveAttributes(groupAttr);
-		return new Response(ResponseStatus.SUCCESS);
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.grp.ws.GroupDataWebService#search(org.openiam.idm.srvc.grp.dto.GroupSearch)
-	 */
-	public GroupListResponse search(GroupSearch search) {
-		final GroupListResponse resp = new GroupListResponse(ResponseStatus.SUCCESS);
-		final List<Group> grpList = groupManager.search(search); 
-		if (CollectionUtils.isEmpty(grpList)) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		} else {
-			resp.setGroupList(dozerUtils.getDozerDeepMappedGroupList(grpList));
+	@Override
+	public Response removeAttribute(final GroupAttribute attribute) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(attribute == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
 		}
-		return resp;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.grp.ws.GroupDataWebService#updateAttribute(org.openiam.idm.srvc.grp.dto.GroupAttribute)
-	 */
-	public Response updateAttribute(GroupAttribute attribute) {
-		groupManager.updateAttribute(attribute); 
-		return new Response(ResponseStatus.SUCCESS);
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.grp.ws.GroupDataWebService#updateGroup(org.openiam.idm.srvc.grp.dto.Group)
-	 */
-	public GroupResponse updateGroup(Group grp) {
-		final GroupResponse resp = new GroupResponse(ResponseStatus.SUCCESS);	
-		groupManager.updateGroup(grp); 
-		
-		if (grp.getGrpId() == null) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}
-		resp.setGroup(grp);
-		return  resp;
+		return response;
 	}
 }

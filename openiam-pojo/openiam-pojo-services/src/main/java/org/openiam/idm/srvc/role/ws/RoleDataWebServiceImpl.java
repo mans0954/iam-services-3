@@ -21,6 +21,7 @@
  */
 package org.openiam.idm.srvc.role.ws;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +35,8 @@ import org.dozer.DozerBeanMapper;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.DozerUtils;
+import org.openiam.dozer.converter.GroupDozerConverter;
+import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.ws.GroupArrayResponse;
 import org.openiam.idm.srvc.grp.ws.GroupListResponse;
@@ -46,6 +49,7 @@ import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.ws.UserArrayResponse;
 import org.openiam.util.DozerMappingType;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
 
 /**
@@ -60,6 +64,9 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 
 	private DozerUtils dozerUtils;
 	private RoleDataService roleDataService;
+	
+    @Autowired
+    private GroupDozerConverter groupDozerConverter;
 
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#addAttribute(org.openiam.idm.srvc.role.dto.RoleAttribute)
@@ -130,20 +137,6 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#getAllRoles()
-	 */
-	public RoleListResponse getAllRoles() {
-		final RoleListResponse resp = new RoleListResponse(ResponseStatus.SUCCESS);
-		final List<Role> roleList = roleDataService.getAllRoles(); 
-		if (roleList == null) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		} else {
-			resp.setRoleList(dozerUtils.getDozerDeepMappedRoleList(roleList));
-		}
-		return resp;
-	}
-
-	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#getAttribute(java.lang.String)
 	 */
 	public RoleAttributeResponse getAttribute(String attrId) {
@@ -162,11 +155,11 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 	 */
 	public GroupArrayResponse getGroupsInRole(String roleId) {
 		final GroupArrayResponse resp = new GroupArrayResponse(ResponseStatus.SUCCESS);
-		final Group[] groupAry = roleDataService.getGroupsInRole(roleId);
+		final GroupEntity[] groupAry = roleDataService.getGroupsInRole(roleId);
 		if (groupAry == null) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		} else {
-			resp.setGroupAry(dozerUtils.getDozerDeepMappedGroupArray(groupAry));
+			resp.setGroupAry((Group[])groupDozerConverter.convertToDTOList(Arrays.asList(groupAry), true).toArray());
 		}
 		return resp;
 	}

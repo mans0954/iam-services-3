@@ -715,7 +715,7 @@ implements ProvisionService,  ApplicationContextAware  {
 		User currentUser2 = UserAttributeHelper.cloneUser(origUser);
 		
 		List<Role> curRoleList = roleDataService.getUserRolesAsFlatList(provUser.getUserId());
-		List<Group> curGroupList = this.groupManager.getUserInGroupsAsFlatList(provUser.getUserId());
+		List<Group> curGroupList = this.groupManager.getCompiledGroupsForUser(provUser.getUserId());
 		
 		log.info("** 1) Deptcd in Orig=" + currentUser2.getDeptCd());
 

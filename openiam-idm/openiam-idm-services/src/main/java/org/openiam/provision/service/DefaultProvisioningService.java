@@ -43,6 +43,7 @@ import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginId;
+import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
@@ -1402,7 +1403,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         modifyUser.addMissingUserComponents(pUser);
 
         List<Role> curRoleList = roleDataService.getUserRolesAsFlatList(pUser.getUserId());
-        List<Group> curGroupList = groupManager.getUserInGroupsAsFlatList(pUser.getUserId());
+        List<Group> curGroupList = groupManager.getCompiledGroupsForUser(pUser.getUserId());
         List<Login> curPrincipalList = loginManager.getLoginByUser(pUser.getUserId());
 
 

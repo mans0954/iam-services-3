@@ -8,6 +8,7 @@ import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseObject;
+import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupSet;
 import org.openiam.idm.srvc.grp.dto.GroupSetAdapter;
@@ -106,7 +107,7 @@ public class Role extends BaseObject implements Comparable<Role> {
     protected String createdBy;
     protected String description;
     @XmlJavaTypeAdapter(GroupSetAdapter.class)
-    protected Set<Group> groups = new HashSet<Group>(0);
+    protected Set<GroupEntity> groups = new HashSet<GroupEntity>(0);
     protected String roleId;
     protected String provisionObjName;
     @XmlJavaTypeAdapter(RoleAttributeSetAdapter.class)
@@ -195,11 +196,11 @@ public class Role extends BaseObject implements Comparable<Role> {
 	    joinColumns={@JoinColumn(name="ROLE_ID")},
 	    inverseJoinColumns={@JoinColumn(name="GRP_ID")})
 	@Fetch(FetchMode.SELECT)
-    public Set<Group> getGroups() {
+    public Set<GroupEntity> getGroups() {
         return groups;
     }
 
-    public void setGroups(Set<Group> value) {
+    public void setGroups(Set<GroupEntity> value) {
         this.groups = value;
     }
 

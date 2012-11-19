@@ -1,25 +1,13 @@
 package org.openiam.idm.srvc.grp.dto;
 
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
-import org.hibernate.annotations.GenericGenerator;
+import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 
-
-/**
- * GroupAttribute represents an individual attribute that is associated with a group. A group may
- * have many attributes. A GroupAttribute should also be associated
- * with a MetadataElement. This approach is used as a way to extend the attributes associated with
- * group without having to extend the schema.
- */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "GroupAttribute", propOrder = {
         "id",
@@ -28,13 +16,12 @@ import org.hibernate.annotations.GenericGenerator;
         "metadataElementId",
         "groupId"
 })
-@Entity
-@Table(name="GRP_ATTRIBUTES")
+@DozerDTOCorrespondence(GroupAttributeEntity.class)
 public class GroupAttribute implements java.io.Serializable {
 
-    // Fields
-
-    protected String id;
+	private static final long serialVersionUID = 1L;
+	
+	protected String id;
     protected String name;
     protected String value;
     protected String metadataElementId;
@@ -47,10 +34,6 @@ public class GroupAttribute implements java.io.Serializable {
     public GroupAttribute() {
     }
     
-    @Id
-    @GeneratedValue(generator="system-uuid")
-    @GenericGenerator(name="system-uuid", strategy = "uuid")
-    @Column(name="ID",length=32)
     public String getId() {
         return this.id;
     }
@@ -59,7 +42,6 @@ public class GroupAttribute implements java.io.Serializable {
         this.id = id;
     }
 
-    @Column(name="METADATA_ID",length=20)
     public String getMetadataElementId() {
         return metadataElementId;
     }
@@ -68,7 +50,6 @@ public class GroupAttribute implements java.io.Serializable {
         this.metadataElementId = metadataElementId;
     }
 
-    @Column(name="NAME",length=20)
     public String getName() {
         return this.name;
     }
@@ -77,7 +58,6 @@ public class GroupAttribute implements java.io.Serializable {
         this.name = name;
     }
 
-    @Column(name="VALUE")
     public String getValue() {
         return this.value;
     }
@@ -86,7 +66,6 @@ public class GroupAttribute implements java.io.Serializable {
         this.value = value;
     }
 
-    @Column(name="GRP_ID",length=32)
     public String getGroupId() {
         return groupId;
     }
@@ -94,6 +73,21 @@ public class GroupAttribute implements java.io.Serializable {
     public void setGroupId(String groupId) {
         this.groupId = groupId;
     }
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((groupId == null) ? 0 : groupId.hashCode());
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime
+				* result
+				+ ((metadataElementId == null) ? 0 : metadataElementId
+						.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + ((value == null) ? 0 : value.hashCode());
+		return result;
+	}
 
 	@Override
 	public boolean equals(Object obj) {
@@ -131,6 +125,8 @@ public class GroupAttribute implements java.io.Serializable {
 			return false;
 		return true;
 	}
+	
+	
 
 	@Override
 	public String toString() {

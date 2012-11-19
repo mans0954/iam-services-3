@@ -68,14 +68,6 @@ public interface RoleDataWebService {
     Response removeRole(
             @WebParam(name = "roleId", targetNamespace = "")
             String roleId);
-
-    /**
-     * Returns a list of all Roles regardless of service The list is sorted by  Role
-     *
-     * @return
-     */
-    @WebMethod
-    RoleListResponse getAllRoles();
     
     @WebMethod
     public RoleListResponse getRolesInDomain(final String domainId);

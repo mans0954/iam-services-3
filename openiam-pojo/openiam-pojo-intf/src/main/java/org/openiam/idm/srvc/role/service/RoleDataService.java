@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.role.service;
 
+import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.role.dto.*;
 import org.openiam.idm.srvc.user.dto.User;
 
@@ -214,7 +215,7 @@ public interface RoleDataService {
      * @param roleId   The roleId for which groups has to be retrieved .
      */
     // problem generating wsdl with this method
-    org.openiam.idm.srvc.grp.dto.Group[] getGroupsInRole(String roleId);
+    GroupEntity[] getGroupsInRole(String roleId);
 
     /* ------------- User to Role Methods --------------------------------- */
 
