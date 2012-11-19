@@ -19,6 +19,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dozer.DozerBeanMapper;
 import org.hibernate.HibernateException;
+import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.*;
 import org.openiam.idm.srvc.grp.service.*;
 
@@ -75,10 +76,9 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 			if(group == null) {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
-			
-			
-			
-			groupManager.saveGroup(groupDozerConverter.convertToEntity(group, true));
+			final GroupEntity entity = groupDozerConverter.convertToEntity(group, true);
+			groupManager.saveGroup(entity);
+			response.setGroup(groupDozerConverter.convertToDTO(entity, true));
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
@@ -97,6 +97,9 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
 			
+			final GroupEntity entity = groupDozerConverter.convertToEntity(group, true);
+			groupManager.saveGroup(entity);
+			response.setGroup(groupDozerConverter.convertToDTO(entity, true));
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());	
@@ -114,6 +117,9 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 			if(StringUtils.isBlank(groupId)) {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
+			
+			final GroupEntity entity = groupManager.getGroup(groupId);
+			response.setGroup(groupDozerConverter.convertToDTO(entity, true));
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
@@ -131,6 +137,8 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 			if(StringUtils.isBlank(groupId)) {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
+			
+			groupManager.deleteGroup(groupId);
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
@@ -142,7 +150,7 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 	}
 
 	@Override
-	public GroupListResponse getChildGroups(final String parentGroupId) {
+	public GroupListResponse getChildGroups(final String parentGroupId, final int from, final int size) {
 		final GroupListResponse response = new GroupListResponse(ResponseStatus.SUCCESS);
 		try {
 			if(StringUtils.isBlank(parentGroupId)) {
@@ -159,7 +167,7 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 	}
 
 	@Override
-	public GroupListResponse getParentGroups(final String groupId) {
+	public GroupListResponse getParentGroups(final String groupId, final int from, final int size) {
 		final GroupListResponse response = new GroupListResponse(ResponseStatus.SUCCESS);
 		try {
 			if(groupId == null) {

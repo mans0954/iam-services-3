@@ -27,9 +27,9 @@ public interface GroupDataService {
 	
 	public void deleteGroup(final String groupId);
 	
-	public List<GroupEntity> getChildGroups(final String groupId);
+	public List<GroupEntity> getChildGroups(final String groupId, final int from, final int size);
 	
-	public List<GroupEntity> getParentGroups(final String groupId);
+	public List<GroupEntity> getParentGroups(final String groupId, final int from, final int size);
 	
     public GroupEntity getGroup(String grpId);
     

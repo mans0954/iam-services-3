@@ -26,6 +26,8 @@ import org.openiam.idm.srvc.grp.domain.UserGroupEntity;
 import org.openiam.idm.srvc.grp.dto.*;
 import org.openiam.idm.srvc.grp.service.GroupAttributeDAO;
 
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.dto.ResourceGroup;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDAO;
@@ -128,33 +130,23 @@ public class GroupDataServiceImpl implements GroupDataService {
 	}
 
 	@Override
-	public List<GroupEntity> getChildGroups(final String groupId) {
-		final List<GroupEntity> retVal = new LinkedList<GroupEntity>();
-		if(groupId != null) {
-			final GroupEntity group = groupDao.findById(groupId);
-			if(group != null) {
-				final Set<GroupEntity> children = group.getChildGroups();
-				if(CollectionUtils.isNotEmpty(children)) {
-					retVal.addAll(children);
-				}
-			}
-		}
-		return retVal;
+	public List<GroupEntity> getChildGroups(final String groupId, final int from, final int size) {
+		final GroupEntity example = new GroupEntity();
+		final GroupEntity parent = new GroupEntity();
+		parent.setGrpId(groupId);
+		example.addParentGroup(parent);
+		final List<GroupEntity> resultList = groupDao.getByExample(example, from, size);
+		return resultList;
 	}
 
 	@Override
-	public List<GroupEntity> getParentGroups(final String groupId) {
-		final List<GroupEntity> retVal = new LinkedList<GroupEntity>();
-		if(groupId != null) {
-			final GroupEntity group = groupDao.findById(groupId);
-			if(group != null) {
-				final Set<GroupEntity> parents = group.getParentGroups();
-				if(CollectionUtils.isNotEmpty(parents)) {
-					retVal.addAll(parents);
-				}
-			}
-		}
-		return retVal;
+	public List<GroupEntity> getParentGroups(final String groupId, final int from, final int size) {
+		final GroupEntity example = new GroupEntity();
+		final GroupEntity parent = new GroupEntity();
+		parent.setGrpId(groupId);
+		example.addChildGroup(parent);
+		final List<GroupEntity> resultList = groupDao.getByExample(example, from, size);
+		return resultList;
 	}
 	
 	@Override

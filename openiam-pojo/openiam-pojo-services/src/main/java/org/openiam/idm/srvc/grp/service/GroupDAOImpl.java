@@ -77,6 +77,32 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
 			if(StringUtils.isNotBlank(group.getInternalGroupId())) {
 				criteria.add(Restrictions.eq("internalGroupId", group.getInternalGroupId()));
 			}
+			
+            if(CollectionUtils.isNotEmpty(group.getParentGroups())) {
+            	final Set<String> parentGroupIds = new HashSet<String>();
+            	for(final GroupEntity parent : group.getParentGroups()) {
+            		if(parent != null && StringUtils.isNotBlank(parent.getGrpId())) {
+            			parentGroupIds.add(parent.getGrpId());
+            		}
+            	}
+            	
+            	if(CollectionUtils.isNotEmpty(parentGroupIds)) {
+            		criteria.createAlias("parentGroups", "parent").add( Restrictions.in("parent.grpId", parentGroupIds));
+            	}
+            }
+            
+            if(CollectionUtils.isNotEmpty(group.getChildGroups())) {
+            	final Set<String> childGroupIds = new HashSet<String>();
+            	for(final GroupEntity child : group.getChildGroups()) {
+            		if(child != null && StringUtils.isNotBlank(child.getGrpId())) {
+            			childGroupIds.add(child.getGrpId());
+            		}
+            	}
+            	
+            	if(CollectionUtils.isNotEmpty(childGroupIds)) {
+            		criteria.createAlias("childGroups", "child").add( Restrictions.in("child.resourceId", childGroupIds));
+            	}
+            }
 		}
 		return criteria;
 	}

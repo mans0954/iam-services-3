@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.grp.domain;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -28,6 +29,7 @@ import org.openiam.base.AttributeOperationEnum;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupAttribute;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
 
 @Entity
 @Table(name="GRP")
@@ -228,6 +230,24 @@ public class GroupEntity {
 
 	public Set<GroupEntity> getParentGroups() {
 		return parentGroups;
+	}
+	
+	public void addParentGroup(final GroupEntity entity) {
+		if(entity != null) {
+			if(parentGroups == null) {
+				parentGroups = new HashSet<GroupEntity>();
+			}
+			parentGroups.add(entity);
+		}
+	}
+	
+	public void addChildGroup(final GroupEntity entity) {
+		if(entity != null) {
+			if(childGroups == null) {
+				childGroups = new HashSet<GroupEntity>();
+			}
+			childGroups.add(entity);
+		}
 	}
 
 	public void setParentGroups(Set<GroupEntity> parentGroups) {

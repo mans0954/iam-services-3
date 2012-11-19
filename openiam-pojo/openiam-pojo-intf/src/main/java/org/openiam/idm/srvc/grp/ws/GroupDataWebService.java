@@ -90,7 +90,9 @@ public interface GroupDataWebService {
      * @return List of Group objects. Returns null if no groups are found.
      */
     @WebMethod
-    public GroupListResponse getChildGroups(final @WebParam(name = "parentGroupId", targetNamespace = "") String parentGroupId);
+    public GroupListResponse getChildGroups(final @WebParam(name = "parentGroupId", targetNamespace = "") String parentGroupId,
+    									    final @WebParam(name = "from", targetNamespace = "") int from,
+    									    final @WebParam(name = "size", targetNamespace = "") int size);
 
     /**
      * Returns the parent Group object for the groupId that is passed in. If no
@@ -102,7 +104,9 @@ public interface GroupDataWebService {
      * @return
      */
     @WebMethod
-    public GroupListResponse getParentGroups(final @WebParam(name = "groupId", targetNamespace = "") String groupId);
+    public GroupListResponse getParentGroups(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
+    										 final @WebParam(name = "from", targetNamespace = "") int from,
+    										 final @WebParam(name = "size", targetNamespace = "") int size);
 
     /**
      * Returns true or false depending on whether a user belongs to a particular
