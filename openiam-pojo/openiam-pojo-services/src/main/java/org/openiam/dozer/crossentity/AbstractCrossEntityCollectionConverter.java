@@ -9,7 +9,7 @@ public abstract class AbstractCrossEntityCollectionConverter {
 	
 	protected Mapper mapper = null;
 
-	private Class<?> determineTargetClass(final Object entry) {
+	protected Class<?> determineTargetClass(final Object entry) {
 		Class<?> retVal = null;
 		final DozerDTOCorrespondence correspondingClassAnnotation = entry.getClass().getAnnotation(DozerDTOCorrespondence.class);
 		if(correspondingClassAnnotation != null) {

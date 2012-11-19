@@ -47,7 +47,7 @@
             <a>userNotes</a>
             <b>userNotes</b>
         </field>
-        <field custom-converter="org.openiam.dozer.crossentity.MapConverterWithKeyString" custom-converter-param="dto2entityShallowDozerMapper">
+        <field custom-converter="org.openiam.dozer.crossentity.CrossEntityMapConverterWithKeyString" custom-converter-param="dto2entityShallowDozerMapper">
             <a>userAttributes</a>
             <b>userAttributes</b>
         </field>
@@ -111,7 +111,7 @@
     		<a>childGroups</a>
     		<b>childGroups</b>
     	</field>
-    	<field custom-converter="org.openiam.dozer.crossentity.MapConverterWithKeyString" custom-converter-param="dto2entityShallowDozerMapper">
+    	<field custom-converter="org.openiam.dozer.crossentity.CrossEntityMapConverterWithKeyString" custom-converter-param="dto2entityShallowDozerMapper">
     		<a>attributes</a>
     		<b>attributes</b>
     	</field>
