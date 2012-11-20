@@ -65,9 +65,9 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
 
                 if (StringUtils.isNotEmpty(groupName)) {
                     if (matchMode != null) {
-                        criteria.add(Restrictions.ilike("name", groupName, matchMode));
+                        criteria.add(Restrictions.ilike("grpName", groupName, matchMode));
                     } else {
-                        criteria.add(Restrictions.eq("name", groupName));
+                        criteria.add(Restrictions.eq("grpName", groupName));
                     }
                 }
             }

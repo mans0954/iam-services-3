@@ -632,6 +632,7 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 			entity.setGroupId(groupId);
 			entity.setResourceId(resourceId);
 			resource.removeResourceGroup(entity);
+			resourceDao.save(resource);
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());

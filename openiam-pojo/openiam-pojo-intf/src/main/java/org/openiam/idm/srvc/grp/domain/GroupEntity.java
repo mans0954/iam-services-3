@@ -107,9 +107,11 @@ public class GroupEntity {
     @Fetch(FetchMode.SUBSELECT)
     private Set<GroupEntity> childGroups;
     
-    @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.EAGER)
+	/* changed to 'lazy' and 'subselect' to prevent left outer join, which causes extra rows when querying subentities */
+    @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
     @JoinColumn(name="GRP_ID", referencedColumnName="GRP_ID")
     @MapKeyColumn(name="name")
+    @Fetch(FetchMode.SUBSELECT)
     private Map<String, GroupAttributeEntity> attributes;
     
 	@Transient
