@@ -20,7 +20,9 @@ public class ResourceTypeDAOTouchTest extends AbstractTransactionalTestNGSpringC
 
     @Test
     public void touchUpdate() {
-        resourceTypeDAO.update(new ResourceTypeEntity());
+        ResourceTypeEntity typeEntity = new ResourceTypeEntity();
+        resourceTypeDAO.save(typeEntity);
+        resourceTypeDAO.update(typeEntity);
     }
 
 }
