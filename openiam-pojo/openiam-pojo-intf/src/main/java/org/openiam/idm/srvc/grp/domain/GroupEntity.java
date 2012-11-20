@@ -30,6 +30,8 @@ import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupAttribute;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.domain.ResourceGroupEntity;
+import org.openiam.idm.srvc.res.dto.ResourceGroup;
 
 @Entity
 @Table(name="GRP")
@@ -85,6 +87,11 @@ public class GroupEntity {
     
     @Column(name="INTERNAL_GROUP_ID",length=32)
     private String internalGroupId;
+    
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "GRP_ID")
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<ResourceGroupEntity> resourceGroups;
     
     @ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
     @JoinTable(name="grp_to_grp_membership",
@@ -276,6 +283,23 @@ public class GroupEntity {
 
 	public void setOperation(AttributeOperationEnum operation) {
 		this.operation = operation;
+	}
+
+	public Set<ResourceGroupEntity> getResourceGroups() {
+		return resourceGroups;
+	}
+
+	public void setResourceGroups(Set<ResourceGroupEntity> resourceGroups) {
+		this.resourceGroups = resourceGroups;
+	}
+	
+	public void addResourceGroup(final ResourceGroupEntity resourceGroup) {
+		if(resourceGroup != null) {
+			if(resourceGroups == null) {
+				this.resourceGroups = new HashSet<ResourceGroupEntity>();
+			}
+			this.resourceGroups.add(resourceGroup);
+		}
 	}
 
 	@Override

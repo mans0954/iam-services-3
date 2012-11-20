@@ -104,5 +104,9 @@
     		<a>attributes</a>
     		<b>attributes</b>
     	</field-exclude>
+    	<field-exclude>
+    		<a>resourceGroups</a>
+    		<b>resourceGroups</b>
+    	</field-exclude>
     </mapping>
 </mappings>

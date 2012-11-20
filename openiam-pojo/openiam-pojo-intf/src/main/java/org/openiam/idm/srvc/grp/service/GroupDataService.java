@@ -34,6 +34,11 @@ public interface GroupDataService {
     public GroupEntity getGroup(String grpId);
     
     public List<Group> getCompiledGroupsForUser(final String userId);
+    
+    public boolean isUserInGroup(final String groupId, final String userId);
+    
+    public List<GroupEntity> getGroupsForResource(final String resourceId, final int from, final int size);
+    public int getNumOfGroupsForResource(final String resourceId);
 
     /**
      * Returns true or false depending on whether a user belongs to a particular
@@ -45,7 +50,7 @@ public interface GroupDataService {
      * @param userId
      * @return
      */
-    public boolean isUserInGroup(String groupId, String userId);
+    public boolean isUserInCompiledGroupList(String groupId, String userId);
 
     /**
      * Returns List of Groups that a user belongs to. Since groups can be hierarchical, its possible that additional groups will be found
@@ -59,7 +64,7 @@ public interface GroupDataService {
      * @param userId
      * @return
      */
-    public List<GroupEntity> getUserInGroups(final String userId, final int from, final int size);
+    public List<GroupEntity> getGroupsForUser(final String userId, final int from, final int size);
 
     /**
      * This method gets all users assigned to a particular group .<br>
@@ -122,5 +127,7 @@ public interface GroupDataService {
      * @return
      */
     public List<GroupEntity> findBeans(final GroupEntity entity, final int from, final int size);
+    
+    public int countBeans(final GroupEntity entity);
 
 }

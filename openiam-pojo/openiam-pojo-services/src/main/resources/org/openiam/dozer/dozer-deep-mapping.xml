@@ -83,6 +83,10 @@
 			<a>childGroups</a>
 			<b>childGroups</b>
 		</field>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+			<a>resourceGroups</a>
+			<b>resourceGroups</b>
+		</field>
 	</mapping>
 	
 	<mapping>

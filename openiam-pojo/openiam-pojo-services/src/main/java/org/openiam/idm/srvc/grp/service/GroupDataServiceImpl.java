@@ -27,6 +27,7 @@ import org.openiam.idm.srvc.grp.dto.*;
 import org.openiam.idm.srvc.grp.service.GroupAttributeDAO;
 
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.domain.ResourceGroupEntity;
 import org.openiam.idm.srvc.res.dto.ResourceGroup;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
@@ -82,7 +83,7 @@ public class GroupDataServiceImpl implements GroupDataService {
 		return groupDao.findById(grpId);
 	}
 
-	public boolean isUserInGroup(String groupId, String userId) {
+	public boolean isUserInCompiledGroupList(String groupId, String userId) {
 		if(groupId != null) {
 			final List<Group> userGroupList =  getCompiledGroupsForUser(userId);
 			if(CollectionUtils.isNotEmpty(userGroupList)) {
@@ -101,6 +102,22 @@ public class GroupDataServiceImpl implements GroupDataService {
 		if(groupId != null && userId != null) {
 			userGroupDao.save(new UserGroupEntity(groupId, userId));
 		}
+	}
+	
+	public boolean isUserInGroup(final String groupId, final String userId) {
+		boolean retVal = false;
+		if(groupId != null && userId != null) {
+			final List<GroupEntity> groupList = groupDao.findGroupsForUser(userId, 0, Integer.MAX_VALUE);
+			if(CollectionUtils.isNotEmpty(groupList)) {
+				for(final GroupEntity group : groupList) {
+					if(group.getGrpId().equals(groupId)) {
+						retVal = true;
+						break;
+					}
+				}
+			}
+		}
+		return retVal;
 	}
 
 
@@ -176,7 +193,7 @@ public class GroupDataServiceImpl implements GroupDataService {
 	}
 
 	@Override
-	public List<GroupEntity> getUserInGroups(String userId, int from, int size) {
+	public List<GroupEntity> getGroupsForUser(String userId, int from, int size) {
 		return groupDao.findGroupsForUser(userId, from, size);
 	}
 
@@ -205,5 +222,29 @@ public class GroupDataServiceImpl implements GroupDataService {
 	@Override
 	public List<GroupEntity> findBeans(GroupEntity entity, int from, int size) {
 		return groupDao.getByExample(entity, from, size);
+	}
+
+	@Override
+	public int countBeans(GroupEntity entity) {
+		return groupDao.count(entity);
+	}
+
+	@Override
+	public List<GroupEntity> getGroupsForResource(final String resourceId, final int from, final int size) {
+		final GroupEntity entity = new GroupEntity();
+		
+		final ResourceGroupEntity resourceGroupEntity = new ResourceGroupEntity();
+		resourceGroupEntity.setResourceId(resourceId);
+		entity.addResourceGroup(resourceGroupEntity);
+		return groupDao.getByExample(entity, from, size);
+	}
+	
+	@Override
+	public int getNumOfGroupsForResource(final String resourceId) {
+		final GroupEntity entity = new GroupEntity();
+		final ResourceGroupEntity resourceGroupEntity = new ResourceGroupEntity();
+		resourceGroupEntity.setResourceId(resourceId);
+		entity.addResourceGroup(resourceGroupEntity);
+		return groupDao.count(entity);
 	}
 }

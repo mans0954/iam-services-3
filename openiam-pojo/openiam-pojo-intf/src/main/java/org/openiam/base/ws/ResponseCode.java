@@ -50,6 +50,9 @@ public enum ResponseCode {
 	@XmlEnumValue("invalidResourceType")
 	INVALID_RESOURCE_TYPE("invalidResourceType"),
 	
+	@XmlEnumValue("membershipExists")
+	MEMBERSHIP_EXISTS("membershipExists"),
+	
     @XmlEnumValue("resourceTypesNotEqual")
     RESOURCE_TYPES_NOT_EQUAL("resourceTypesNotEqual"),
 
@@ -61,6 +64,9 @@ public enum ResponseCode {
     
     @XmlEnumValue("circularDependency")
     CIRCULAR_DEPENDENCY("circularDependency"),
+    
+    @XmlEnumValue("invalidGroupName")
+    INVALID_GROUP_NAME("invalidGroupName"),
 	
     @XmlEnumValue("objectNotFound")
     OBJECT_NOT_FOUND("objectNotFound"),

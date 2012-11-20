@@ -83,6 +83,10 @@
 			<a>childGroups</a>
 			<b>childGroups</b>
 		</field-exclude>
+		<field-exclude>
+			<a>resourceGroups</a>
+			<b>resourceGroups</b>
+		</field-exclude>
 	</mapping>
 	
 	<mapping>

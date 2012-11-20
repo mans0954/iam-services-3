@@ -285,15 +285,28 @@ public class ResourceEntity {
         this.resourceGroups = resourceGroups;
     }
 
-    /*
-    public Set<ResourcePrivilegeEntity> getEntitlements() {
-        return entitlements;
-    }
-
-    public void setEntitlements(Set<ResourcePrivilegeEntity> entitlements) {
-        this.entitlements = entitlements;
-    }
-    */
+   public void addResourceGroup(final ResourceGroupEntity entity) {
+	   if(entity != null) {
+		   if(resourceGroups == null) {
+			   this.resourceGroups = new HashSet<ResourceGroupEntity>();
+		   }
+		   this.resourceGroups.add(entity);
+ 	   }
+   }
+   
+   public void removeResourceGroup(final ResourceGroupEntity entity) {
+	   if(entity != null) {
+		   if(resourceGroups != null) {
+			   for(final Iterator<ResourceGroupEntity> it = resourceGroups.iterator(); it.hasNext();) {
+				   final ResourceGroupEntity rge = it.next();
+				   if(rge.getGroupId().equals(entity.getGroupId()) && rge.getResourceId().equals(entity.getResourceId())) {
+					   it.remove();
+					   break;
+				   }
+			   }
+		   }
+	   }
+   }
 
     public String getMinAuthLevel() {
         return minAuthLevel;

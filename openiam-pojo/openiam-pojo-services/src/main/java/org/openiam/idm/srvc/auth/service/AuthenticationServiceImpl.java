@@ -827,7 +827,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 	private void populateSubject(String userId, Subject sub) {
 		log.debug("populateSubject: userId=" + userId);
 		
-		final List<GroupEntity> groupList = groupManager.getUserInGroups(userId, 0, Integer.MAX_VALUE);
+		final List<GroupEntity> groupList = groupManager.getGroupsForUser(userId, 0, Integer.MAX_VALUE);
 		final List<Role> roleAry = roleManager.getUserRoles(userId);
 		
 		if (CollectionUtils.isNotEmpty(groupList)) {

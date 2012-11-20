@@ -34,14 +34,6 @@ public class ResourceGroup implements java.io.Serializable {
     public ResourceGroup() {
     }
 
-    public ResourceGroup(ResourceGroupEntity groupEntity) {
-        this.resGroupId = groupEntity.getResGroupId();
-        this.resourceId = groupEntity.getResourceId();
-        this.groupId = groupEntity.getGroupId();
-        this.startDate = groupEntity.getStartDate();
-        this.endDate = groupEntity.getEndDate();
-    }
-
     public ResourceGroup(String resourceId, String groupId) {
         this.resourceId = resourceId;
         this.groupId = groupId;

@@ -211,4 +211,12 @@ public interface ResourceDataService {
     @WebMethod
     Response deleteChildResource(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,
     						  	 @WebParam(name = "memberResourceId", targetNamespace = "") final String memberResourceId);
+    
+    @WebMethod
+    Response addGroupToResource(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,
+    							@WebParam(name = "groupId", targetNamespace = "") final String groupId);
+    
+    @WebMethod
+    Response removeGroupToResource(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,
+    							   @WebParam(name = "groupId", targetNamespace = "") final String groupId);
 }

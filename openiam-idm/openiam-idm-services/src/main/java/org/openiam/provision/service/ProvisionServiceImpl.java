@@ -1521,7 +1521,7 @@ implements ProvisionService,  ApplicationContextAware  {
 						requestId,  null, null, null);
 				
 			}else {
-				if (!groupManager.isUserInGroup(g.getGrpId(), userId)) {
+				if (!groupManager.isUserInCompiledGroupList(g.getGrpId(), userId)) {
 					groupManager.addUserToGroup(g.getGrpId(), userId);
 					
 					auditHelper.addLog("MODIFY USER", null,

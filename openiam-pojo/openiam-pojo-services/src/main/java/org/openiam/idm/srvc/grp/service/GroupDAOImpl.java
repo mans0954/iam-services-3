@@ -33,6 +33,8 @@ import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.domain.ResourceGroupEntity;
+import org.openiam.idm.srvc.res.dto.ResourceGroup;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.springframework.stereotype.Repository;
@@ -101,6 +103,19 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
             	
             	if(CollectionUtils.isNotEmpty(childGroupIds)) {
             		criteria.createAlias("childGroups", "child").add( Restrictions.in("child.resourceId", childGroupIds));
+            	}
+            }
+            
+            if(CollectionUtils.isNotEmpty(group.getResourceGroups())) {
+            	final Set<String> resourceIds = new HashSet<String>();
+            	for(final ResourceGroupEntity resourceGroupEntity : group.getResourceGroups()) {
+            		if(resourceGroupEntity != null && StringUtils.isNotBlank(resourceGroupEntity.getResourceId())) {
+            			resourceIds.add(resourceGroupEntity.getResourceId());
+            		}
+            	}
+            	
+            	if(CollectionUtils.isNotEmpty(resourceIds)) {
+            		criteria.createAlias("resourceGroups", "resourceGroup").add( Restrictions.in("resourceGroup.resourceId", resourceIds));
             	}
             }
 		}

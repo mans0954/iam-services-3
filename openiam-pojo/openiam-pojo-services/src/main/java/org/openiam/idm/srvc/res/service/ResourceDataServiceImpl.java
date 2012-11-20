@@ -21,7 +21,10 @@ import org.openiam.dozer.converter.ResourceRoleDozerConverter;
 import org.openiam.dozer.converter.ResourceTypeDozerConverter;
 import org.openiam.dozer.converter.ResourceUserDozerConverter;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
+import org.openiam.idm.srvc.grp.domain.GroupEntity;
+import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.domain.ResourceGroupEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.domain.ResourceRoleEmbeddableId;
 import org.openiam.idm.srvc.res.domain.ResourceRoleEntity;
@@ -62,6 +65,9 @@ public class ResourceDataServiceImpl implements ResourceDataService {
     
     @Autowired
     private ResourceUserDAO resourceUserDao;
+    
+    @Autowired
+    private GroupDAO groupDAO;
     
     @Autowired
     private ResourceTypeDozerConverter resourceTypeConverter;
@@ -566,6 +572,66 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 			
 			parent.removeChildResource(child);
 			resourceDao.save(parent);
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			log.error("Can't delete resource", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+		return response;
+	}
+
+	@Override
+	public Response addGroupToResource(final String resourceId, final String groupId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(StringUtils.isBlank(resourceId) || StringUtils.isBlank(groupId)) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			final ResourceEntity resource = resourceDao.findById(resourceId);
+			final GroupEntity group = groupDAO.findById(groupId);
+			
+			if(resource == null || group == null) {
+				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+			}
+			
+			final ResourceGroupEntity entity = new ResourceGroupEntity();
+			entity.setGroupId(groupId);
+			entity.setResourceId(resourceId);
+			
+			resource.addResourceGroup(entity);
+			resourceDao.save(resource);
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			log.error("Can't delete resource", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+		return response;
+	}
+
+	@Override
+	public Response removeGroupToResource(final String resourceId, final String groupId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(StringUtils.isBlank(resourceId) || StringUtils.isBlank(groupId)) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			final ResourceEntity resource = resourceDao.findById(resourceId);
+			if(resource == null) {
+				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+			}
+			
+			final ResourceGroupEntity entity = new ResourceGroupEntity();
+			entity.setGroupId(groupId);
+			entity.setResourceId(resourceId);
+			resource.removeResourceGroup(entity);
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
