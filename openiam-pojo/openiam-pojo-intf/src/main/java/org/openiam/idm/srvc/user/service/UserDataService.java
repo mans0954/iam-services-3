@@ -1,8 +1,11 @@
 package org.openiam.idm.srvc.user.service;
 
+import org.openiam.idm.searchbeans.OrganizationSearchBean;
+import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
+import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.user.dto.*;
 
 import javax.jws.WebMethod;
@@ -92,6 +95,10 @@ public interface UserDataService {
     public List<User> search(UserSearch search);
 
     public List<User> searchByDelegationProperties(DelegationFilterSearch search);
+
+    List<User> findBeans(UserSearchBean searchBean, int from, int size);
+
+    int count(UserSearchBean searchBean);
 
     /* (non-Javadoc)
       * @see org.openiam.idm.srvc.user.service.UserDataService#addAttribute(org.openiam.idm.srvc.user.dto.UserAttribute)

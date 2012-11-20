@@ -34,6 +34,7 @@ import org.apache.commons.lang.StringUtils;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.DozerUtils;
+import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
@@ -710,6 +711,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#search(org.openiam.idm.srvc.user.dto.UserSearch)
 	 */
+    @Deprecated
 	public UserListResponse search(UserSearch search) {
 		final UserListResponse resp = new UserListResponse(ResponseStatus.SUCCESS);
 		final List<User> userList = userManager.search(search);
@@ -733,7 +735,17 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 		return resp;
 
     }
+    @WebMethod
+    public List<User> findBeans(@WebParam(name = "searchBean", targetNamespace = "") UserSearchBean userSearchBean,
+                         @WebParam(name = "from", targetNamespace = "") int from,
+                         @WebParam(name = "size", targetNamespace = "") int size){
+        return userManager.findBeans(userSearchBean, from, size);
+    }
 
+    @WebMethod
+    public int count(UserSearchBean userSearchBean){
+        return userManager.count(userSearchBean);
+    }
 
 
 	/* (non-Javadoc)
@@ -823,17 +835,6 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 
     }
 
-    @Override
-    public List<User> findBeans(@WebParam(name = "searchBean", targetNamespace = "") UserSearch searchBean,
-                                @WebParam(name = "from", targetNamespace = "") int from,
-                                @WebParam(name = "size", targetNamespace = "") int size) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public int count(@WebParam(name = "searchBean", targetNamespace = "") UserSearch searchBean) {
-        return 0;  //To change body of implemented methods use File | Settings | File Templates.
-    }
 
     public void setUserManager(UserDataService userManager) {
 		this.userManager = userManager;

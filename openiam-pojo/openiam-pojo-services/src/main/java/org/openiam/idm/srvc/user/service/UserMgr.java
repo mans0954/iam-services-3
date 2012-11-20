@@ -5,11 +5,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.SysConfiguration;
 import org.openiam.dozer.converter.*;
+import org.openiam.idm.searchbeans.OrganizationSearchBean;
+import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.auth.domain.LoginEmbeddableId;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
+import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -27,6 +30,8 @@ import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.jws.WebMethod;
+import javax.jws.WebParam;
 import java.util.*;
 
 /**
@@ -359,7 +364,7 @@ public class UserMgr implements UserDataService {
       *
       * @see org.openiam.idm.srvc.user.service.UserDataService#search(org.openiam.util.db.Search)
       */
-
+    @Deprecated
     public List<User> search(UserSearch search) {
         List<UserEntity> entityList = userDao.search(search);
 //        List<User> userList = null;
@@ -379,6 +384,14 @@ public class UserMgr implements UserDataService {
 //            userList.add(new User(userEntity));
 //        }
         return userDozerConverter.convertToDTOList(entityList,true);
+    }
+
+    public List<User> findBeans(UserSearchBean searchBean, int from, int size){
+        return null;
+    }
+
+    public int count(UserSearchBean searchBean){
+      return 0;
     }
 
     /* -------- Methods for Attributes ---------- */
