@@ -71,6 +71,10 @@ public class ResourceDataServiceImpl implements ResourceDataService {
     
     @Autowired
     private ResourceTypeDozerConverter resourceTypeConverter;
+    
+
+    @Autowired
+    private ResourceGroupDAO resourceGroupDAO;
 
     private static final Log log = LogFactory.getLog(ResourceDataServiceImpl.class);
 
@@ -598,12 +602,16 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
 			}
 			
+			final ResourceGroupEntity record = resourceGroupDAO.getRecord(resourceId, groupId);
+			if(record != null) {
+				throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
+			}
+			
 			final ResourceGroupEntity entity = new ResourceGroupEntity();
 			entity.setGroupId(groupId);
 			entity.setResourceId(resourceId);
 			
-			resource.addResourceGroup(entity);
-			resourceDao.save(resource);
+			resourceGroupDAO.save(entity);
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
@@ -628,11 +636,10 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
 			}
 			
-			final ResourceGroupEntity entity = new ResourceGroupEntity();
-			entity.setGroupId(groupId);
-			entity.setResourceId(resourceId);
-			resource.removeResourceGroup(entity);
-			resourceDao.save(resource);
+			final ResourceGroupEntity entity = resourceGroupDAO.getRecord(resourceId, groupId);
+			if(entity != null) {
+				resourceGroupDAO.delete(entity);
+			}
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());

@@ -29,6 +29,7 @@ import org.openiam.idm.srvc.grp.service.GroupAttributeDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourceGroupEntity;
 import org.openiam.idm.srvc.res.dto.ResourceGroup;
+import org.openiam.idm.srvc.res.service.ResourceGroupDAO;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDAO;
