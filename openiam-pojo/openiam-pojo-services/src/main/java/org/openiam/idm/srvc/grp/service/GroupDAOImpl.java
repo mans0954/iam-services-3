@@ -42,9 +42,6 @@ import org.springframework.stereotype.Repository;
 @Repository("groupDAO")
 public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements GroupDAO {
 
-	private static final Log log = LogFactory.getLog(GroupDAOImpl.class);
-	
-
 	@Override
 	protected Criteria getExampleCriteria(GroupEntity group) {
 		final Criteria criteria = getCriteria();

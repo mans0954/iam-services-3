@@ -44,31 +44,6 @@ public class UserDAOTouchTest extends AbstractTransactionalTestNGSpringContextTe
   }
 
   @Test
-  public void touchFindByName() {
-      userDAO.findByName("", "");
-  }
-
-  @Test
-  public void touchFindByOrganization() {
-      userDAO.findByOrganization("");
-  }
-
-  @Test
-  public void touchFindByStatus() {
-      userDAO.findByStatus(null);
-  }
-
-  @Test
-  public void touchFindStaff() {
-      userDAO.findStaff("");
-  }
-
-  @Test
-  public void touchFindSupervisors() {
-      userDAO.findSupervisors("");
-  }
-
-  @Test
   public void touchRemove() {
       userDAO.delete(new UserEntity());
   }

@@ -16,13 +16,13 @@ public class UserAttributeDAOTouchTest extends AbstractTransactionalTestNGSpring
 
     @Test
     public void touchAdd() {
-        userAttributeDAO.add(new UserAttributeEntity());
+        userAttributeDAO.save(new UserAttributeEntity());
     }
 
     @Test
     public void touchAttachClean() {
         UserAttributeEntity userAttribute = new UserAttributeEntity();
-        userAttributeDAO.add(userAttribute);
+        userAttributeDAO.save(userAttribute);
         userAttributeDAO.attachClean(userAttribute);
     }
 
@@ -48,7 +48,7 @@ public class UserAttributeDAOTouchTest extends AbstractTransactionalTestNGSpring
 
     @Test
     public void touchRemove() {
-        userAttributeDAO.remove(new UserAttributeEntity());
+        userAttributeDAO.delete(new UserAttributeEntity());
     }
 
     @Test

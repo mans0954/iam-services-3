@@ -18,14 +18,14 @@ public class UserNoteDAOTouchTest extends AbstractTransactionalTestNGSpringConte
     @Test
     public void touchAttachClean() {
       UserNoteEntity usernote = new UserNoteEntity();
-      userNoteDAO.persist(usernote);
+      userNoteDAO.save(usernote);
       userNoteDAO.attachClean(usernote);
     }
 
     @Test
     public void touchAttachDirty() {
       UserNoteEntity usernote = new UserNoteEntity();
-      userNoteDAO.persist(usernote);
+      userNoteDAO.save(usernote);
       userNoteDAO.attachDirty(usernote);
     }
 
@@ -41,7 +41,7 @@ public class UserNoteDAOTouchTest extends AbstractTransactionalTestNGSpringConte
 
     @Test
     public void touchFindByExample() {
-      userNoteDAO.findByExample(new UserNoteEntity());
+      userNoteDAO.getByExample(new UserNoteEntity());
     }
 
     @Test
@@ -61,6 +61,6 @@ public class UserNoteDAOTouchTest extends AbstractTransactionalTestNGSpringConte
 
     @Test
     public void touchPersist() {
-      userNoteDAO.persist(new UserNoteEntity());
+      userNoteDAO.save(new UserNoteEntity());
     }
 }

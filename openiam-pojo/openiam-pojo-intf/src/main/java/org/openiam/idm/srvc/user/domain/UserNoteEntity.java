@@ -34,22 +34,15 @@ public class UserNoteEntity {
 
     @Column(name="NOTE_TYPE", length=20)
     private String noteType;
+    @Column(name = "USER_ID", length = 32)
+    private String userId;
 
     @ManyToOne
-    @JoinColumn(name="USER_ID")
+    @JoinColumn(name="USER_ID", referencedColumnName = "USER_ID", insertable = false, updatable = false)
     private UserEntity user;
 
     public UserNoteEntity() {
     }
-
-//    public UserNoteEntity(final UserNote userNote, final UserEntity user) {
-//        this.userNoteId = userNote.getUserNoteId();
-//        this.createDate = userNote.getCreateDate();
-//        this.createdBy = userNote.getCreatedBy();
-//        this.description = userNote.getDescription();
-//        this.noteType = userNote.getNoteType();
-//        this.user = user;
-//    }
 
     public String getUserNoteId() {
         return userNoteId;
@@ -99,6 +92,14 @@ public class UserNoteEntity {
         this.user = user;
     }
 
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -110,7 +111,7 @@ public class UserNoteEntity {
         if (createdBy != null ? !createdBy.equals(that.createdBy) : that.createdBy != null) return false;
         if (description != null ? !description.equals(that.description) : that.description != null) return false;
         if (noteType != null ? !noteType.equals(that.noteType) : that.noteType != null) return false;
-        if (user != null ? !user.equals(that.user) : that.user != null) return false;
+        if (userId != null ? !userId.equals(that.userId) : that.userId != null) return false;
         if (userNoteId != null ? !userNoteId.equals(that.userNoteId) : that.userNoteId != null) return false;
 
         return true;
@@ -123,7 +124,7 @@ public class UserNoteEntity {
         result = 31 * result + (createdBy != null ? createdBy.hashCode() : 0);
         result = 31 * result + (description != null ? description.hashCode() : 0);
         result = 31 * result + (noteType != null ? noteType.hashCode() : 0);
-        result = 31 * result + (user != null ? user.hashCode() : 0);
+        result = 31 * result + (userId != null ? userId.hashCode() : 0);
         return result;
     }
 }

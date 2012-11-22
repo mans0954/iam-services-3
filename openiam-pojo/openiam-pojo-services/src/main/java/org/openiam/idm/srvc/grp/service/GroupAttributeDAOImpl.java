@@ -18,8 +18,6 @@ import org.springframework.stereotype.Repository;
 @Repository("groupAttrDAO")
 public class GroupAttributeDAOImpl extends BaseDaoImpl<GroupAttributeEntity, String> implements GroupAttributeDAO {
 
-	private static final Log log = LogFactory.getLog(GroupAttributeDAOImpl.class);
-
 	@Override
 	protected String getPKfieldName() {
 		return "id";

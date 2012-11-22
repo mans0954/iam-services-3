@@ -80,22 +80,22 @@
 
     <bean class="org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor"/>
 
-    <bean id="userDAO" class="org.openiam.idm.srvc.user.service.UserDAOImpl">
-        <property name="sessionFactory" ref="sessionFactory"/>
-        <property name="seqGenDao" ref="seqGenDAO"/>
-        <property name="emailSearchVal" value="EMAIL1"/>
-        <property name="phoneSearchVal" value="Desk Phone"/>
-        <property name="maxResultSetSize" value="${fetch.size}"/>
-        <property name="dbType" value="${openiam.dbType}"/>
-    </bean>
+    <!--<bean id="userDAO" class="org.openiam.idm.srvc.user.service.UserDAOImpl">-->
+        <!--<property name="sessionFactory" ref="sessionFactory"/>-->
+        <!--<property name="seqGenDao" ref="seqGenDAO"/>-->
+        <!--<property name="emailSearchVal" value="EMAIL1"/>-->
+        <!--<property name="phoneSearchVal" value="Desk Phone"/>-->
+        <!--<property name="maxResultSetSize" value="${fetch.size}"/>-->
+        <!--<property name="dbType" value="${openiam.dbType}"/>-->
+    <!--</bean>-->
 
-    <bean id="userAttributeDAO" class="org.openiam.idm.srvc.user.service.UserAttributeDAOImpl">
-        <property name="sessionFactory" ref="sessionFactory"/>
-    </bean>
+    <!--<bean id="userAttributeDAO" class="org.openiam.idm.srvc.user.service.UserAttributeDAOImpl">-->
+        <!--<property name="sessionFactory" ref="sessionFactory"/>-->
+    <!--</bean>-->
 
-    <bean id="userNoteDAO" class="org.openiam.idm.srvc.user.service.UserNoteDAOImpl">
-        <property name="sessionFactory" ref="sessionFactory"/>
-    </bean>
+    <!--<bean id="userNoteDAO" class="org.openiam.idm.srvc.user.service.UserNoteDAOImpl">-->
+        <!--<property name="sessionFactory" ref="sessionFactory"/>-->
+    <!--</bean>-->
 
     <bean id="addressDAO" class="org.openiam.idm.srvc.continfo.service.AddressDAOImpl">
         <property name="sessionFactory" ref="sessionFactory"/>
@@ -109,9 +109,9 @@
         <property name="sessionFactory" ref="sessionFactory"/>
     </bean>
 
-    <bean id="supervisorDAO" class="org.openiam.idm.srvc.user.service.SupervisorDAOImpl">
-        <property name="sessionFactory" ref="sessionFactory"/>
-    </bean>
+    <!--<bean id="supervisorDAO" class="org.openiam.idm.srvc.user.service.SupervisorDAOImpl">-->
+        <!--<property name="sessionFactory" ref="sessionFactory"/>-->
+    <!--</bean>-->
 
     <bean id="seqGenDAO" class="org.openiam.base.id.SequenceGenDAOImpl">
         <property name="sessionFactory" ref="sessionFactory"/>
