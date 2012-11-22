@@ -15,12 +15,12 @@ public class SupervisorDAOTouchTest extends AbstractTransactionalTestNGSpringCon
 
     @Test
     public void touchAdd() {
-        supervisorDao.add(new SupervisorEntity());
+        supervisorDao.save(new SupervisorEntity());
     }
 
     @Test
     public void touchFindByExample() {
-        supervisorDao.findByExample(new SupervisorEntity());
+        supervisorDao.getByExample(new SupervisorEntity());
     }
 
     @Test
@@ -45,7 +45,7 @@ public class SupervisorDAOTouchTest extends AbstractTransactionalTestNGSpringCon
 
     @Test
     public void touchRemove() {
-        supervisorDao.remove(new SupervisorEntity());
+        supervisorDao.delete(new SupervisorEntity());
     }
 
     @Test

@@ -91,12 +91,13 @@ public interface UserDataService {
     public List<User> findUserByOrganization(String orgId);
 
     public List<User> findUsersByStatus(UserStatusEnum status);
-
+    @Deprecated
     public List<User> search(UserSearch search);
-
     public List<User> searchByDelegationProperties(DelegationFilterSearch search);
 
-    List<User> findBeans(UserSearchBean searchBean, int from, int size);
+    public List<User> findBeans(UserSearchBean searchBean);
+
+    public List<User> findBeans(UserSearchBean searchBean, int from, int size);
 
     int count(UserSearchBean searchBean);
 

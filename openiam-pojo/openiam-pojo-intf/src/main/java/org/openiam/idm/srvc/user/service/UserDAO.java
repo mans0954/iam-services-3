@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.user.service;
 
 import org.openiam.core.dao.BaseDao;
+import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
 import org.openiam.idm.srvc.user.dto.UserSearch;
@@ -17,32 +18,17 @@ import org.openiam.idm.srvc.user.dto.UserStatusEnum;
  */
 public interface UserDAO extends BaseDao<UserEntity, String> {
 
-//    public void add(UserEntity transientInstance);
-
-//    public void remove(UserEntity persistentInstance);
-
-//    public UserEntity update(UserEntity detachedInstance);
-//
-//    public UserEntity findById(String id);
-
-    public UserEntity findByName(String firstName, String lastName);
-
     public List<UserEntity> findByLastUpdateRange(Date startDate, Date endDate);
-
+    @Deprecated
     public List<UserEntity> search(UserSearch search);
-
-    public List<UserEntity> findByStatus(UserStatusEnum status);
-
-    /* Methods to get staff and supervisors lists */
-    public List<UserEntity> findStaff(String supervisorId);
-
-    public List<UserEntity> findSupervisors(String staffId);
-
-    public List<UserEntity> findByOrganization(String orgId);
 
     public List<UserEntity> findByDelegationProperties(DelegationFilterSearch search);
 
     public List<String> getUserIdList(int startPos, int count);
 
     public Long getUserCount();
+
+    public List<UserEntity> getByExample(UserSearchBean searchBean, int startAt, int size);
+
+    public Long getUserCount(UserSearchBean searchBean);
 }

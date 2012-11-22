@@ -49,21 +49,24 @@ import org.openiam.idm.srvc.continfo.ws.PhoneMapResponse;
 import org.openiam.idm.srvc.continfo.ws.PhoneResponse;
 import org.openiam.idm.srvc.user.dto.*;
 import org.openiam.idm.srvc.user.service.UserDataService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Required;
+import org.springframework.stereotype.Service;
 
 /**
  * @author suneet
  *
  */
-@WebService(endpointInterface = "org.openiam.idm.srvc.user.ws.UserDataWebService", 
+@Service("userWS")
+@WebService(endpointInterface = "org.openiam.idm.srvc.user.ws.UserDataWebService",
 		targetNamespace = "urn:idm.openiam.org/srvc/user/service", 
 		serviceName = "UserDataWebService",
 		portName = "UserDataWebServicePort")
-
 public class UserDataWebServiceImpl implements UserDataWebService {
-	
+	@Autowired
+    @Qualifier("userManager")
 	private UserDataService userManager;
-	private DozerUtils dozerUtils;
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#addAddress(org.openiam.idm.srvc.continfo.dto.Address)
 	 */
@@ -212,7 +215,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 		if (userList == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
-			resp.setUserList(dozerUtils.getDozerDeepMappedUserList(userList));
+			resp.setUserList(userList);
 		}
 		return resp;
 	}
@@ -227,7 +230,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 		if (userList == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
-			resp.setUserList(dozerUtils.getDozerDeepMappedUserList(userList));
+			resp.setUserList(userList);
 		}
 		return resp;
 	}
@@ -438,7 +441,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 		if (sup == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
-			resp.setSupervisorList(dozerUtils.getDozerDeepMappedSupervisorList(sup));
+			resp.setSupervisorList(sup);
 		}
 		return resp;
 	}
@@ -536,7 +539,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 		if (sup == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
-			resp.setSupervisor(dozerUtils.getDozerDeepMappedSupervisor(sup));
+			resp.setSupervisor(sup);
 		}
 		return resp;
 	}
@@ -550,7 +553,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 		if (sup == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
-			resp.setSupervisorList(dozerUtils.getDozerDeepMappedSupervisorList(sup));
+			resp.setSupervisorList(sup);
 		}
 		return resp;
 	}
@@ -564,7 +567,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 		if (user == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
-			resp.setUser(dozerUtils.getDozerDeepMappedUser(user));
+			resp.setUser(user);
 		}
 		return resp;
 	}
@@ -579,7 +582,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 		if (user == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
-			resp.setUser(dozerUtils.getDozerDeepMappedUser(user));
+			resp.setUser(user);
 		}
 		return resp;
 	}
@@ -595,7 +598,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 		if (user == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
-			resp.setUser(dozerUtils.getDozerDeepMappedUser(user));
+			resp.setUser(user);
 		}
 		return resp;
 	}
@@ -718,7 +721,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 		if (userList == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		} else {
-			resp.setUserList(dozerUtils.getDozerDeepMappedUserList(userList));
+			resp.setUserList(userList);
 		}
 		return resp;
 	}
@@ -730,7 +733,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 		if (userList == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
-			resp.setUserList(dozerUtils.getDozerDeepMappedUserList(userList));
+			resp.setUserList(userList);
 		}
 		return resp;
 
@@ -831,17 +834,5 @@ public class UserDataWebServiceImpl implements UserDataWebService {
             resp.setAttributeList(userAttrList);
         }
         return resp;
-        
-
     }
-
-
-    public void setUserManager(UserDataService userManager) {
-		this.userManager = userManager;
-	}
-	
-	@Required
-	public void setDozerUtils(final DozerUtils dozerUtils) {
-		this.dozerUtils = dozerUtils;
-	}
 }

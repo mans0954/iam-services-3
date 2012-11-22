@@ -25,15 +25,12 @@ import java.util.List;
         "status",
         "secondaryStatus",
         "nickName",
-        "deptCd",
-        "division",
         "phoneAreaCd",
         "phoneNbr",
         "employeeId",
         "groupIdList",
         "roleIdList",
         "emailAddress",
-        "orgId",
         "orgName",
         "principal",
         "attributeName",
@@ -52,6 +49,7 @@ import java.util.List;
         "lastDate",
         "dateOfBirth",
         "zipCode",
+        "delAdmin",
         "orgIdList",
         "deptIdList",
         "divisionIdList",
@@ -65,15 +63,12 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
     protected String nickName = null;
     protected String status = null;
     protected String secondaryStatus = null;
-    protected String deptCd = null;
-    protected String division = null;
     protected String phoneAreaCd = null;
     protected String phoneNbr = null;
     protected String employeeId = null;
     protected List<String> groupIdList = new ArrayList<String>();
     protected List<String> roleIdList = new ArrayList<String>();
     protected String emailAddress = null;
-    protected String orgId = null;
     protected String orgName;
     protected String principal;
     protected String attributeName;
@@ -99,12 +94,20 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
     protected String zipCode;
 
     protected String loggedIn = null;
+    protected int delAdmin = 0;
 
     protected List<String> orgIdList = new ArrayList<String>();
     protected List<String> deptIdList = new ArrayList<String>();
     protected List<String> divisionIdList = new ArrayList<String>();
     protected List<SearchAttribute> attributeList = new ArrayList<SearchAttribute>();
 
+    public int getDelAdmin() {
+        return delAdmin;
+    }
+
+    public void setDelAdmin(int delAdmin) {
+        this.delAdmin = delAdmin;
+    }
     public String getFirstName() {
         return firstName;
     }
@@ -143,22 +146,6 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
 
     public void setSecondaryStatus(String secondaryStatus) {
         this.secondaryStatus = secondaryStatus;
-    }
-
-    public String getDeptCd() {
-        return deptCd;
-    }
-
-    public void setDeptCd(String deptCd) {
-        this.deptCd = deptCd;
-    }
-
-    public String getDivision() {
-        return division;
-    }
-
-    public void setDivision(String division) {
-        this.division = division;
     }
 
     public String getPhoneAreaCd() {
@@ -207,14 +194,6 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
 
     public void setEmailAddress(String emailAddress) {
         this.emailAddress = emailAddress;
-    }
-
-    public String getOrgId() {
-        return orgId;
-    }
-
-    public void setOrgId(String orgId) {
-        this.orgId = orgId;
     }
 
     public String getOrgName() {

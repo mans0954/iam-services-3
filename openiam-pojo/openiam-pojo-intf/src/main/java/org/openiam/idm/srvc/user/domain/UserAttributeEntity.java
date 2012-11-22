@@ -27,22 +27,18 @@ public class UserAttributeEntity {
     @Column(name = "NAME", length = 50)
     private String name;
 
-    @ManyToOne
-    @JoinColumn(name = "USER_ID")
-    private UserEntity user;
+    @Column(name = "USER_ID", length = 32)
+    private String userId;
 
     @Column(name = "VALUE", length = 50)
     private String value;
 
+    @ManyToOne
+    @JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID", insertable = false, updatable = false)
+    private UserEntity user;
+
     public UserAttributeEntity() {
     }
-
-//    public UserAttributeEntity(UserAttribute userAttribute, UserEntity user) {
-//        this.id = userAttribute.getId();
-//        this.metadataElementId = userAttribute.getMetadataElementId();
-//        this.name = userAttribute.getName();
-//        this.user = user;
-//    }
 
     public String getId() {
         return id;
@@ -66,6 +62,14 @@ public class UserAttributeEntity {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     public UserEntity getUser() {
@@ -95,7 +99,7 @@ public class UserAttributeEntity {
         if (metadataElementId != null ? !metadataElementId.equals(that.metadataElementId) : that.metadataElementId != null)
             return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
-        if (user != null ? !user.equals(that.user) : that.user != null) return false;
+        if (userId != null ? !userId.equals(that.userId) : that.userId != null) return false;
         if (value != null ? !value.equals(that.value) : that.value != null) return false;
 
         return true;
@@ -106,7 +110,7 @@ public class UserAttributeEntity {
         int result = id != null ? id.hashCode() : 0;
         result = 31 * result + (metadataElementId != null ? metadataElementId.hashCode() : 0);
         result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (user != null ? user.hashCode() : 0);
+        result = 31 * result + (userId != null ? userId.hashCode() : 0);
         result = 31 * result + (value != null ? value.hashCode() : 0);
         return result;
     }
