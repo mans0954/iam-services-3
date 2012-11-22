@@ -361,40 +361,6 @@
 			
 	</bean>	
 	
-	<!-- Role Beans -->
-	<bean id="roleWS" class="org.openiam.idm.srvc.role.ws.RoleDataWebServiceImpl" >
-		<property name="roleDataService" ref="roleDataService" />
-		<property name="dozerUtils" ref="dozerUtils" />
-	</bean>
-	
-	<bean id="roleDataService" class="org.openiam.idm.srvc.role.service.RoleDataServiceImpl" >
-		<property name="roleDao" ref="roleDAO" />
-		<property name="roleAttributeDAO" ref="roleAttributeDAO" />
-		<property name="userManager" ref="userManager" />
-		<property name="userRoleDao" ref="userRoleDAO" />
-		<property name="userGroupDao" ref="userGroupDAO" />
-		<property name="rolePolicyDao" ref="rolePolicyDAO" />
-        <property name="resRoleDao" ref="resourceRoleDAO" />
-	</bean>
-
-	<bean id="roleDAO" class="org.openiam.idm.srvc.role.service.RoleDAOImpl" >
-		<property name="groupDao" ref="groupDAO" />
-		<property name="userDao" ref="userDAO" />
-		<property name="sessionFactory" ref="sessionFactory"></property>		
-	</bean>	
-
-	<bean id="roleAttributeDAO" class="org.openiam.idm.srvc.role.service.RoleAttributeDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"></property>		
-	</bean>	
-
-	<bean id="userRoleDAO" class="org.openiam.idm.srvc.role.service.UserRoleDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"></property>		
-	</bean>	
-
-	<bean id="rolePolicyDAO" class="org.openiam.idm.srvc.role.service.RolePolicyDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"></property>		
-	</bean>	
-	
 	<!-- Policy Beans -->
 	<bean id="policyDataService" class="org.openiam.idm.srvc.policy.service.PolicyDataServiceImpl" >
 		<property name="policyDefDao" ref="policyDefDAO" />

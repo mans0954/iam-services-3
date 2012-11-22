@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Set;
 
 import javax.naming.InitialContext;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
@@ -22,417 +24,63 @@ import org.hibernate.criterion.Restrictions;
 
 import static org.hibernate.criterion.Example.create;
 
+import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.exception.data.ObjectNotFoundException;
+import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.role.dto.RoleSearch;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
+import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
 
-/**
- * Data access interface for domain model class Role.
- * 
- * @see org.openiam.idm.srvc.role.dto.Role
- */
-public class RoleDAOImpl implements RoleDAO {
-
-	protected UserDAO userDao;
-	protected GroupDAO groupDao;
+@Repository("roleDAO")
+public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements RoleDAO {
 
 	private static final Log log = LogFactory.getLog(RoleDAOImpl.class);
 
-	private SessionFactory sessionFactory;
-
-	public void setSessionFactory(SessionFactory session) {
-		this.sessionFactory = session;
-	}
-
-	protected SessionFactory getSessionFactory() {
-		try {
-			return (SessionFactory) new InitialContext()
-					.lookup("SessionFactory");
-		} catch (Exception e) {
-			log.error("Could not locate SessionFactory in JNDI", e);
-			throw new IllegalStateException(
-					"Could not locate SessionFactory in JNDI");
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.role.service.RoleDAO#add(org.openiam.idm.srvc.role.dto.Role)
-	 */
-	public void add(Role transientInstance) {
-		log.debug("persisting Role instance");
-		try {
-			sessionFactory.getCurrentSession().save(transientInstance);
-			log.debug("persist successful");
-		} catch (RuntimeException re) {
-			log.error("persist failed", re);
-			throw re;
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.role.service.RoleDAO#remove(org.openiam.idm.srvc.role.dto.Role)
-	 */
-	public void remove(Role persistentInstance) {
-		log.debug("deleting Role instance");
-		try {
-			sessionFactory.getCurrentSession().delete(persistentInstance);
-			log.debug("delete successful");
-		} catch (HibernateException re) {
-			log.error("delete failed", re);
-			throw re;
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.role.service.RoleDAO#update(org.openiam.idm.srvc.role.dto.Role)
-	 */
-	public void update(Role detachedInstance) {
-		log.debug("merging Role instance");
-		
-		try {
-			sessionFactory.getCurrentSession().merge(detachedInstance);
-			log.debug("merge successful");
-		} catch (HibernateException re) {
-			log.error("merge failed", re);
-			throw re;
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.role.service.RoleDAO#findById(java.lang.String)
-	 */
-	public Role findById(String id) {
-		try {
-			Role instance = (Role) sessionFactory.getCurrentSession().get(
-					"org.openiam.idm.srvc.role.dto.Role", id);
-			if (instance == null) {
-				log.debug("get successful, no instance found");
+	
+	
+	@Override
+	protected Criteria getExampleCriteria(final RoleEntity entity) {
+		final Criteria criteria = super.getCriteria();
+		if(entity != null) {
+			if(StringUtils.isNotBlank(entity.getRoleId())) {
+				criteria.add(Restrictions.eq("roleId", entity.getRoleId()));
 			} else {
-				log.debug("get successful, instance found");
+				if(StringUtils.isNotBlank(entity.getRoleName())) {
+					criteria.add(Restrictions.eq("roleName", entity.getRoleName()));
+				}
 			}
-			return instance;
-		} catch (HibernateException re) {
-			re.printStackTrace();
-			log.error("get failed", re);
-			throw re;
 		}
+		return criteria;
 	}
 
-
-
-	public List<Role> findUserRoles(String userId) {
-		Session session = sessionFactory.getCurrentSession();
-		
-		Query qry = session.createQuery("select role from Role role, UserRoleEntity ur " +
+	@Override
+	public List<RoleEntity> findUserRoles(String userId) {
+		final Query qry = getSession().createQuery("select role from Role role, UserRoleEntity ur " +
 				" where ur.userId = :userId and " +
 				"       ur.roleId = role.roleId" + 
 				" order by role.roleName ");
 		
 	
 		qry.setString("userId", userId);
-		
-	
-		List<Role> result = (List<Role>) qry.list();
-		if (result == null || result.size() == 0)
-			return null;
-
-		
-		return result;
-	}
-	
-	public List<Role> findUserRolesByService(String serviceId, String userId) {
-		Session session = sessionFactory.getCurrentSession();
-		Query qry = session.createQuery("select role from Role role, UserRoleEntity ur "
-				+ "       ur.userId = :userId and " 
-				+ "       ur.roleId = role.roleId and "
-				+ "       role.serviceId = :serviceId ");
-
-		
-		qry.setString("userId", userId);
-		qry.setString("serviceId", serviceId);
-		List<Role> result = (List<Role>) qry.list();
-		if (result == null || result.size() == 0)
-			return null;
-		return result;		
-	}
-	
-	
-	public List<Role>findIndirectUserRoles(String userId) {
-		Session session = sessionFactory.getCurrentSession();
-
-	
-		SQLQuery qry = session.createSQLQuery("SELECT ROLE.ROLE_ID, ROLE.SERVICE_ID, ROLE.ROLE_NAME, "
-				+ " 	ROLE.CREATE_DATE, ROLE.CREATED_BY, ROLE.DESCRIPTION, ROLE.STATUS, ROLE.INHERIT_FROM_PARENT,  " 
-				+ " 	ROLE.PROVISION_OBJ_NAME, ROLE.PARENT_ROLE_ID, ROLE.TYPE_ID, ROLE.OWNER_ID,ROLE.INTERNAL_ROLE_ID   " 
-				+ "  FROM ROLE JOIN GRP_ROLE  "
-				+ "			ON (ROLE.ROLE_ID = GRP_ROLE.ROLE_ID) "
-				+ "     JOIN USER_GRP " 
-				+ " 		ON (GRP_ROLE.GRP_ID =  USER_GRP.GRP_ID) " 
-				+ "	WHERE USER_GRP.USER_ID = :userId");
-		
-		
-		qry.addEntity(Role.class);
-		qry.setString("userId", userId);
-		qry.setCacheable(true);
-		qry.setCacheRegion("query.role.findIndirectUsersRole");
-		List<Role> result = (List<Role>) qry.list();
-		if (result == null || result.size() == 0)
-			return null;
-		return result;		
-	}
-
-	public List<Role> findIndirectUserRolesByService(String userId) {
-		Session session = sessionFactory.getCurrentSession();
-
-		SQLQuery qry = session.createSQLQuery("SELECT role.ROLE_ID, role.SERVICE_ID, role.ROLE_NAME, "
-							+ " 	role.CREATE_DATE, role.CREATED_BY, role.DESCRIPTION, role.STATUS, role.INHERIT_FROM_PARENT, " 
-							+ " 	role.PROVISION_OBJ_NAME, role.PARENT_ROLE_ID, role.TYPE_ID, role.OWNER_ID, role.INTERNAL_ROLE_ID " 
-							+ "  FROM ROLE role  "
-							+ "  	JOIN GRP_ROLE grp_role  "
-							+ "		JOIN USER_GRP user_grp  "
-							+ "     ON (role.ROLE_ID = grp_role.ROLE_ID and " 
-							+ " 		grp_role.GRP_ID =  user_grp.GRP_ID) " 
-							+ "	WHERE user_grp.USER_ID = :userId");
-		
-		qry.addEntity(Role.class);
-		qry.setString("userId", userId);
-		List<Role> result = (List<Role>) qry.list();
-		if (result == null || result.size() == 0)
-			return null;
-		return result;		
-	}
-	
-	/**
-	 * Get the users that are in a role
-	 * 
-	 * @param roleId
-	 * @return
-	 */
-	public List<UserEntity> findUsersInRole(String roleId) {
-		Session session = sessionFactory.getCurrentSession();
-		
-		Query qry = session.createQuery("select usr from org.openiam.idm.srvc.user.domain.UserEntity usr, UserRoleEntity ur " +
-				" where ur.userId = usr.userId and" +
-				" ur.roleId = :roleId " + 
-				" order by usr.lastName, usr.firstName ");
-		
-		qry.setString("roleId", roleId);
-		// enable caching
-		qry.setCacheable(true);
-		qry.setCacheRegion("query.role.findUsersInRole");
-		
-		List<UserEntity> results = (List<UserEntity>) qry.list();
-		if (results == null || results.size() == 0)
-			return null;
-		return results;
-	}
-	
-
-
-	/**
-	 * Returns a list of all Roles regardless of service The list is sorted by
-	 * ServiceId, Role
-	 * 
-	 * @return
-	 */
-	public List<Role> findAllRoles() {
-		Session session = sessionFactory.getCurrentSession();
-		Query qry = session.createQuery("from Role r "
-				+ " order by r.serviceId asc, r.roleId asc ");
-		// enable caching
-		qry.setCacheable(true);
-		qry.setCacheRegion("query.role.findAllRoles");
-		
-		List<Role> result = (List<Role>) qry.list();
-		if (result == null || result.size() == 0)
-			return null;
-
-		return result;
-
-	}
-
-	public void addGroupToRole(String roleId, String groupId) {
-		final GroupEntity grp = groupDao.findById(groupId);
-
-	
-		Role role = findById(roleId);
-		
-		
-		role.getGroups().add(grp);
-
-		try {
-			sessionFactory.getCurrentSession().save(role);
-			log.debug("persist user to group successful");
-		} catch (HibernateException re) {
-			re.printStackTrace();
-			log.error("persist failed", re);
-			throw re;
-		}
-	}
-
-
-	public UserDAO getUserDao() {
-		return userDao;
-	}
-
-	public void setUserDao(UserDAO userDao) {
-		this.userDao = userDao;
-	}
-
-	public GroupDAO getGroupDao() {
-		return groupDao;
-	}
-
-	public void setGroupDao(GroupDAO groupDao) {
-		this.groupDao = groupDao;
-	}
-
-	public void removeGroupFromRole(String roleId, String groupId) {
-
-		Role rl = findById(roleId);
-		if (rl == null) {
-			log.error("Role not found for roleId =" + roleId);
-			throw new ObjectNotFoundException();
-		}
-		//org.hibernate.Hibernate.initialize(rl.getGroups());
-		Set<GroupEntity> grpSet = rl.getGroups();
-		if (grpSet == null || grpSet.isEmpty()) {
-			return;
-		}
-		Iterator<GroupEntity> it = grpSet.iterator();
-		while (it.hasNext()) {
-			GroupEntity grp = it.next();
-			if (grp.getGrpId().equalsIgnoreCase(groupId)) {
-				it.remove();
-			}
-		}
-
-	}
-
-	public void removeAllGroupsFromRole(String roleId) {
-
-		Role rl = findById(roleId);
-		if (rl == null) {
-			log.error("Role not found for roleId =" + roleId);
-			throw new ObjectNotFoundException();
-		}
-		//org.hibernate.Hibernate.initialize(rl.getGroups());
-		Set<GroupEntity> grpSet = rl.getGroups();
-		if (grpSet == null || grpSet.isEmpty()) {
-			return;
-		}
-		Iterator<GroupEntity> it = grpSet.iterator();
-		while (it.hasNext()) {
-			GroupEntity grp = it.next();
-			it.remove();
-
-		}
-
+		return qry.list();
 	}
 
 	@Override
-	public Role getRoleByName(String roleName) {
-		final Session session = sessionFactory.getCurrentSession();
-		final Query qry = session.createQuery(" select role from org.openiam.idm.srvc.role.dto.Role role where role.roleName = :roleName");
-		qry.setString("roleName", roleName);
-		final List<Role> results = (List<Role>) qry.list();
-		if(CollectionUtils.isEmpty(results) || results.size() > 1) {
-			return null;
-		} else {
-			return results.get(0);
-		}
-	}
-
-	public List<Role> findRolesInService(String serviceId) {
-		Session session = sessionFactory.getCurrentSession();
-		Query qry = session
-				.createQuery(" from org.openiam.idm.srvc.role.dto.Role r "
-						+ " where r.serviceId = :serviceId "
-						+ " order by r.roleId asc");
-		qry.setString("serviceId", serviceId);
-		List<Role> results = (List<Role>) qry.list();
-		return results;
-	}
-
-	public List<Role> findRolesInGroup(String groupId) {
-		Session session = sessionFactory.getCurrentSession();
-		Query qry = session
-				.createQuery(" select role from org.openiam.idm.srvc.role.dto.Role role "
-						+ "		 join role.groups as group "
-						+ " where group.grpId = :groupId "
-						+ " order by role.roleId asc");
-		qry.setString("groupId", groupId);
-		List<Role> results = (List<Role>) qry.list();
-		if (results == null || results.size() == 0)
-			return null;
-		return results;
+	public List<RoleEntity> findRolesInGroup(String groupId) {
+		final Criteria criteria = super.getCriteria();
+		criteria.createAlias("groups", "groups").add( Restrictions.in("groups.grpId", new String[] {groupId}));
+		return criteria.list();
 	}
 	
-    /**
-     * Returns a role object if a direct relationship between a user and role exists.
-     * @return
-     */
-    public Role findDirectRoleForUser(String roleId, String userId) {
-    	Session session = sessionFactory.getCurrentSession();
-		
-    	Query qry = session.createQuery("select role from Role role, UserRoleEntity  ur " +
-    			" where ur.roleId = role.roleId and " +
-				"		  ur.userId = :userId and  " + 
-				" 	  role.roleId = :roleId ");
 
-		qry.setString("userId", userId);
-		qry.setString("roleId", roleId);
-		return (Role) qry.uniqueResult();
-	
-    }
-    
-    public List<Role> search(RoleSearch search) {
-		Session session = sessionFactory.getCurrentSession();
-		Criteria crit = session.createCriteria(Role.class);
-		
-		if (search.getRoleId() != null && search.getRoleId().length() > 0 ) {
-			log.debug("search: roleId=" + search.getRoleId() );
-			crit.add(Restrictions.eq("roleId",search.getRoleId()));
-		}
-		if (search.getDomainId() != null && search.getDomainId().length() > 0 ) {
-			log.debug("search: domainId=" + search.getDomainId() );
-			crit.add(Restrictions.eq("serviceId",search.getDomainId()));
-		}
-		if (search.getRoleName() != null && search.getRoleName().length() > 0 ) {
-			log.debug("search: roleName=" + search.getRoleName() );
-			crit.add(Restrictions.like("roleName",search.getRoleName()));
-		}
-		if (search.getOwnerId() != null && search.getOwnerId().length() > 0 ) {
-			log.debug("search: ownerId=" + search.getOwnerId() );
-			crit.add(Restrictions.eq("ownerId",search.getOwnerId()));
-		}
-		if (search.getTypeId() != null && search.getTypeId().length() > 0 ) {
-			log.debug("search: typeId=" + search.getTypeId() );
-			crit.add(Restrictions.eq("metadataTypeId",search.getTypeId()));
-		}
-		if (search.getInternalRoleId() != null && search.getInternalRoleId().length() > 0 ) {
-			log.debug("search: internalRoleId=" + search.getInternalRoleId() );
-			crit.add(Restrictions.eq("internalRoleId",search.getInternalRoleId()));
-		}
-		crit.addOrder(Order.asc("roleName"));
-		
-		List<Role> results = (List<Role>)crit.list();
-		return results;		
-    	
-    }
+	@Override
+	protected String getPKfieldName() {
+		return "roleId";
+	}
 }

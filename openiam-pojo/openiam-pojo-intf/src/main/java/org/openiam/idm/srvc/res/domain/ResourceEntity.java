@@ -429,10 +429,6 @@ public class ResourceEntity {
                 ", URL='" + URL + '\'' +
                 ", resOwnerUserId='" + resOwnerUserId + '\'' +
                 ", resOwnerGroupId='" + resOwnerGroupId + '\'' +
-                ", resourceRoles=" + resourceRoles +
-                ", resourceProps=" + resourceProps +
-                ", resourceGroups=" + resourceGroups +
-                /*", entitlements=" + entitlements*/ +
                 '}';
     }
 

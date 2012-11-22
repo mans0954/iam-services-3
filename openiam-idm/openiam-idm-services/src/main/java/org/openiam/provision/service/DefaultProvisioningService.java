@@ -61,6 +61,7 @@ import org.openiam.idm.srvc.pswd.service.PasswordGenerator;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
+import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.dto.Supervisor;
 import org.openiam.idm.srvc.user.dto.User;
@@ -1228,9 +1229,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 }
             }
         }
-        final List<Role> roleList = roleDataService.getUserRoles(user.getUserId());
+        final List<RoleEntity> roleList = roleDataService.getUserRoles(user.getUserId(), 0, Integer.MAX_VALUE);
         if(CollectionUtils.isNotEmpty(roleList)) {
-            for(final Role role : roleList) {
+            for(final RoleEntity role : roleList) {
                 final List<Resource> resourceList = resourceDataService.getResourcesForRole(role.getRoleId());
                 if(CollectionUtils.isNotEmpty(resourceList)) {
                     for(final Resource resource : resourceList) {
@@ -3417,7 +3418,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     		if(CollectionUtils.isNotEmpty(provisionUser.getMemberOfRoles())) {
     			for(final Iterator<Role> it = provisionUser.getMemberOfRoles().iterator(); it.hasNext();) {
     				final Role role = it.next();
-    				final Role found = roleDataService.getRole(role.getRoleId());
+    				final RoleEntity found = roleDataService.getRole(role.getRoleId());
     				if(found == null) {
     					it.remove();
     				} else {

@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mule.api.MuleContext;
@@ -44,6 +45,7 @@ import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceRole;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.role.service.RoleDataService;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
@@ -189,13 +191,11 @@ public class ReconciliationServiceImpl implements ReconciliationService, MuleCon
                 log.debug("Created Command for: " + situation.getSituation());
             }
 
-            List<User> users = new ArrayList<User>();
+            List<UserEntity> users = new ArrayList<UserEntity>();
             for(ResourceRole rRole: res.getResourceRoles()) {
-                User[] usrAry = roleDataService.getUsersInRole(rRole.getId().getRoleId());
-                if(usrAry != null) {
-                    for(User user: usrAry){
-                        users.add(user);
-                    }
+                final List<UserEntity> usersInrole = roleDataService.getUsersInRole(rRole.getId().getRoleId(), 0, Integer.MAX_VALUE);
+                if(CollectionUtils.isNotEmpty(usersInrole)) {
+                	users.addAll(usersInrole);
                 }
             }
 
@@ -205,7 +205,7 @@ public class ReconciliationServiceImpl implements ReconciliationService, MuleCon
                 ReconciliationResponse resp = new ReconciliationResponse(ResponseStatus.SUCCESS);
                 return resp;
             }
-            for ( User u  : users ) {
+            for (final UserEntity u  : users ) {
                 Login l = null;
                 User user = userMgr.getUserWithDependent(u.getUserId(), true);
                 List<Login> logins = user.getPrincipalList();

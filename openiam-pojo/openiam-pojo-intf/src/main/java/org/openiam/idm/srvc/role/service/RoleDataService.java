@@ -1,7 +1,13 @@
 package org.openiam.idm.srvc.role.service;
 
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
+import org.openiam.idm.srvc.grp.dto.Group;
+import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
+import org.openiam.idm.srvc.role.domain.RoleEntity;
+import org.openiam.idm.srvc.role.domain.RolePolicyEntity;
+import org.openiam.idm.srvc.role.domain.UserRoleEntity;
 import org.openiam.idm.srvc.role.dto.*;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 
 import java.util.List;
@@ -13,75 +19,15 @@ import java.util.List;
  * @author Suneet Shah
  * @version 1
  */
-//@XmlSeeAlso({org.openiam.idm.srvc.user.dto.ObjectFactory.class,org.openiam.idm.srvc.org.dto.ObjectFactory.class,org.openiam.idm.srvc.continfo.dto.ObjectFactory.class,org.openiam.idm.srvc.grp.dto.ObjectFactory.class,org.openiam.idm.srvc.role.types.ObjectFactory.class,org.openiam.idm.srvc.role.dto.ObjectFactory.class,org.openiam.idm.srvc.meta.dto.ObjectFactory.class})
 public interface RoleDataService {
-
-	public List<Role> getRolesInDomain(String domainId);
 	
-    /**
-     * Retrieves a role object based on the roleId and the domainId.
-     * Dependent objects include Group and Users collections that are associated with this Role.
-     *
-     * @param domainId
-     * @param roleId
-     * @return
-     */
-    org.openiam.idm.srvc.role.dto.Role getRole(String roleId);
+    public RoleEntity getRole(String roleId);
+    
+    public void saveRole(final RoleEntity role);
+    
+    public void removeRole(String roleId);
 
-    Role getRoleByName(final String roleName);
-
-    /**
-     * Adds a new role to the system
-     *
-     * @param role
-     * @return
-     */
-    org.openiam.idm.srvc.role.dto.Role addRole(org.openiam.idm.srvc.role.dto.Role role);
-
-    /**
-     * Updates an existing role
-     *
-     * @param role
-     */
-    void updateRole(org.openiam.idm.srvc.role.dto.Role role);
-
-    /**
-     * Removes a role.
-     *
-     * @param domainId
-     * @param roleId
-     */
-    int removeRole(String roleId);
-
-    /**
-     * Returns a list of all Roles regardless of service The list is sorted by
-     * domainId, Role
-     *
-     * @return
-     */
-    List<Role> getAllRoles();
-
-    /**
-     * Role Policy Methods ******
-     */
-
-    public RolePolicy addRolePolicy(RolePolicy rPolicy);
-
-    /**
-     * Update an attribute to the Role object.
-     *
-     * @param attribute
-     */
-    public RolePolicy updateRolePolicy(RolePolicy rPolicy);
-
-    /**
-     * Returns List of RolePolicy for the Role.
-     *
-     * @param domainId
-     * @param roleId
-     * @return
-     */
-    public List<RolePolicy> getAllRolePolicies(String roleId);
+    public void savePolicy(RolePolicyEntity rPolicy);
 
     /**
      * Returns a single RolePolicy object based on the attributeId.
@@ -89,14 +35,14 @@ public interface RoleDataService {
      * @param attrId
      * @return
      */
-    public RolePolicy getRolePolicy(String rolePolicyId);
+    public RolePolicyEntity getRolePolicy(String rolePolicyId);
 
     /**
      * Removes a RolePolicy specified by the rPolicy parameter.
      *
      * @param attr
      */
-    public void removeRolePolicy(RolePolicy rPolicy);
+    public void removeRolePolicy(final String rolePolicyId);
 
 
     /** * Attribute Methods ****** */
@@ -106,46 +52,14 @@ public interface RoleDataService {
      *
      * @param attribute
      */
-    public RoleAttribute addAttribute(org.openiam.idm.srvc.role.dto.RoleAttribute attribute);
-
-    /**
-     * Update an attribute to the Role object.
-     *
-     * @param attribute
-     */
-    public void updateAttribute(org.openiam.idm.srvc.role.dto.RoleAttribute attribute);
-
-    /**
-     * Returns an array of RoleAttributes for the Role.
-     *
-     * @param domainId
-     * @param roleId
-     * @return
-     */
-    public org.openiam.idm.srvc.role.dto.RoleAttribute[] getAllAttributes(String roleId);
-
-    /**
-     * Returns a single RoleAttributes object based on the attributeId.
-     *
-     * @param attrId
-     * @return
-     */
-    public org.openiam.idm.srvc.role.dto.RoleAttribute getAttribute(String attrId);
+    public void saveAttribute(RoleAttributeEntity attribute);
 
     /**
      * Removes a RoleAttribute specified by the attribute.
      *
      * @param attr
      */
-    public void removeAttribute(org.openiam.idm.srvc.role.dto.RoleAttribute attr);
-
-    /**
-     * Removes all the attributes associated with a role.
-     *
-     * @param domainId
-     * @param roleId
-     */
-    public void removeAllAttributes(String roleId);
+    public void removeAttribute(final String roleAttributeId);
 
     /** * Role-Group Methods ****** */
 
@@ -156,20 +70,7 @@ public interface RoleDataService {
      * @param groupId
      * @return
      */
-    List<Role> getRolesInGroup(String groupId);
-
-
-    /**
-     * This method returns true if particular group is associated with a role.<br>
-     * For example:
-     * <p/>
-     * <code>
-     * boolean check = roleService.isGroupInRole(domainId, roleId, groupId);<br>
-     * </code>
-     *
-     * @return boolean Returns True if group belongs to that roleId.
-     */
-    boolean isGroupInRole(String roleId, String groupId);
+   public List<RoleEntity> getRolesInGroup(String groupId, final int from, final int size);
 
 
     /**
@@ -183,7 +84,7 @@ public interface RoleDataService {
      * @param grpId  The group for which the roleId is to be added .
      * @param roleId The roleId which is to be added to the group.
      */
-    void addGroupToRole(String roleId, String groupId);
+    public void addGroupToRole(String roleId, String groupId);
 
     /**
      * Removes the association between a single group and role.
@@ -192,15 +93,7 @@ public interface RoleDataService {
      * @param roleId
      * @param groupId
      */
-    void removeGroupFromRole(String roleId, String groupId);
-
-    /**
-     * Removes the association between a role and all the groups linked to it.
-     *
-     * @param domainId
-     * @param roleId
-     */
-    void removeAllGroupsFromRole(String roleId);
+    public void removeGroupFromRole(String roleId, String groupId);
 
     /**
      * This method retrieves all groups for a particular role. Returns null if
@@ -215,29 +108,7 @@ public interface RoleDataService {
      * @param roleId   The roleId for which groups has to be retrieved .
      */
     // problem generating wsdl with this method
-    GroupEntity[] getGroupsInRole(String roleId);
-
-    /* ------------- User to Role Methods --------------------------------- */
-
-    /**
-     * Adds a User to Role. This operation allows you to set additional attributes in the UserRole objects.
-     */
-    void assocUserToRole(UserRole ur);
-
-    /**
-     * Updates the attributes in the user role object.
-     *
-     * @param ur
-     */
-    void updateUserRoleAssoc(UserRole ur);
-
-    /**
-     * Gets a UserRole object based on the record identifier
-     *
-     * @param userRoleId
-     * @return
-     */
-    UserRole getUserRoleById(String userRoleId);
+    public List<GroupEntity> getGroupsInRole(final String roleId, final int from, final int size);
 
     /**
      * Returns a list of UserRole objects
@@ -245,7 +116,7 @@ public interface RoleDataService {
      * @param userId
      * @return
      */
-    List<UserRole> getUserRolesForUser(String userId);
+    public List<UserRoleEntity> getUserRolesForUser(final String userId, final int from, final int size);
 
 
     /**
@@ -260,7 +131,7 @@ public interface RoleDataService {
      * @param roleId   The roleId to which the user will be associated.
      * @param userId   The userId to which the roleId is to be added .
      */
-    void addUserToRole(String roleId, String userId);
+    public void addUserToRole(String roleId, String userId);
 
     /**
      * This method removes a particular user directly to a role.
@@ -269,20 +140,7 @@ public interface RoleDataService {
      * @param roleId
      * @param userId
      */
-    void removeUserFromRole(String roleId, String userId);
-
-    /**
-     * This method returns true if user belongs to that roleId.<br>
-     * For example:
-     * <p/>
-     * <code>
-     * boolean check = roleService.isUserInRole(domainId, roleId, userId);<br>
-     * </code>
-     *
-     * @return boolean Returns True if user belongs to that roleId. False if it does not belong to this role.
-     */
-
-    boolean isUserInRole(String roleId, String userId);
+    public void removeUserFromRole(String roleId, String userId);
 
     /**
      * Return an array of users that are in a particular role
@@ -291,8 +149,7 @@ public interface RoleDataService {
      * @param roleId
      * @return
      */
-    // problem generating wsdl with this method
-    User[] getUsersInRole(String roleId);
+    public List<UserEntity> getUsersInRole(final String roleId, final int from, final int size);
 
     /**
      * Returns an array of Role objects that indicate the Roles a user is
@@ -301,7 +158,7 @@ public interface RoleDataService {
      * @param userId
      * @return
      */
-    List<Role> getUserRoles(String userId);
+    public List<RoleEntity> getUserRoles(final String userId, final int from, final int size);
 
     /**
      * Returns a list of roles that a user belongs to. Roles can be hierarchical and this operation traverses the tree to roles that are in the
@@ -310,28 +167,9 @@ public interface RoleDataService {
      * @param userId
      * @return
      */
-    List<Role> getUserRolesAsFlatList(String userId);
-
-    /**
-     * Returns the roles that are directly associated with a user; ie. Does not take into
-     * account roles that may be associated with a user becuase of a group relationship.
-     *
-     * @param userId
-     * @return
-     */
-    public List<Role> getUserRolesDirect(String userId);
-
-    /**
-     * Returns an array of Role objects that indicate the Roles a user is
-     * associated to within a given security domain.
-     *
-     * @param userId
-     * @return
-     */
-
-    List<Role> getUserRolesByDomain(String service, String userId);
-
-    List<Role> search(RoleSearch search);
-
-
+    public List<Role> getUserRolesAsFlatList(final String userId);
+    
+    public List<RoleEntity> findBeans(final RoleEntity example, final int from, final int size);
+    
+    public int countBeans(final RoleEntity example);
 }

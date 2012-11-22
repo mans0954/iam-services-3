@@ -1,11 +1,14 @@
 package org.openiam.idm.srvc.role.ws;
 
+import java.util.List;
+
 import org.openiam.base.ws.Response;
-import org.openiam.idm.srvc.grp.ws.GroupArrayResponse;
+import org.openiam.idm.searchbeans.RoleSearchBean;
+import org.openiam.idm.srvc.grp.ws.GroupListResponse;
+import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.dto.RolePolicy;
-import org.openiam.idm.srvc.role.dto.RoleSearch;
 import org.openiam.idm.srvc.role.dto.UserRole;
-import org.openiam.idm.srvc.user.ws.UserArrayResponse;
+import org.openiam.idm.srvc.user.ws.UserListResponse;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
@@ -33,9 +36,6 @@ public interface RoleDataWebService {
     RoleResponse getRole(
             @WebParam(name = "roleId", targetNamespace = "")
             String roleId);
-
-    @WebMethod
-    RoleResponse getRoleByName(@WebParam(name = "roleName", targetNamespace = "") String roleName);
 
     /**
      * Adds a new role to the system
@@ -68,9 +68,6 @@ public interface RoleDataWebService {
     Response removeRole(
             @WebParam(name = "roleId", targetNamespace = "")
             String roleId);
-    
-    @WebMethod
-    public RoleListResponse getRolesInDomain(final String domainId);
 
     /** * Attribute Methods ****** */
 
@@ -95,46 +92,14 @@ public interface RoleDataWebService {
             org.openiam.idm.srvc.role.dto.RoleAttribute attribute);
 
     /**
-     * Returns an array of RoleAttributes for the Role.
-     *
-     * @param roleId
-     * @return
-     */
-    @WebMethod
-    RoleAttributeArrayResponse getAllAttributes(
-            @WebParam(name = "roleId", targetNamespace = "")
-            String roleId);
-
-    /**
-     * Returns a single RoleAttributes object based on the attributeId.
-     *
-     * @param attrId
-     * @return
-     */
-    @WebMethod
-    RoleAttributeResponse getAttribute(
-            @WebParam(name = "attrId", targetNamespace = "")
-            String attrId);
-
-    /**
      * Removes a RoleAttribute specified by the attribute.
      *
      * @param attr
      */
     @WebMethod
     Response removeAttribute(
-            @WebParam(name = "attribute", targetNamespace = "")
-            org.openiam.idm.srvc.role.dto.RoleAttribute attribute);
+            final @WebParam(name = "attributeId", targetNamespace = "") String attributeId);
 
-    /**
-     * Removes all the attributes associated with a role.
-     *
-     * @param roleId
-     */
-    @WebMethod
-    Response removeAllAttributes(
-            @WebParam(name = "roleId", targetNamespace = "")
-            String roleId);
 
     /** * Role-Group Methods ****** */
 
@@ -147,26 +112,9 @@ public interface RoleDataWebService {
      */
     @WebMethod
     RoleListResponse getRolesInGroup(
-            @WebParam(name = "groupId", targetNamespace = "")
-            String groupId);
-
-
-    /**
-     * This method returns true if particular group is associated with a role.<br>
-     * For example:
-     * <p/>
-     * <code>
-     * boolean check = roleService.isGroupInRole( roleId, groupId);<br>
-     * </code>
-     *
-     * @return boolean Returns True if group belongs to that roleId.
-     */
-    @WebMethod
-    Response isGroupInRole(
-            @WebParam(name = "roleId", targetNamespace = "")
-            String roleId,
-            @WebParam(name = "groupId", targetNamespace = "")
-            String groupId);
+            final @WebParam(name = "groupId", targetNamespace = "") String groupId,
+            final @WebParam(name = "from", targetNamespace = "") int from,
+            final @WebParam(name = "size", targetNamespace = "") int size);
 
 
     /**
@@ -201,16 +149,6 @@ public interface RoleDataWebService {
             String groupId);
 
     /**
-     * Removes the association between a role and all the groups linked to it.
-     *
-     * @param roleId
-     */
-    @WebMethod
-    Response removeAllGroupsFromRole(
-            @WebParam(name = "roleId", targetNamespace = "")
-            String roleId);
-
-    /**
      * This method retrieves all groups for a particular role. Returns null if
      * no groups were found.<br>
      * For example:
@@ -221,54 +159,11 @@ public interface RoleDataWebService {
      *
      * @param roleId   The roleId for which groups has to be retrieved .
      */
-    // problem generating wsdl with this method
     @WebMethod
-    GroupArrayResponse getGroupsInRole(
-            @WebParam(name = "roleId", targetNamespace = "")
-            String roleId);
-
-    /* ------------- User to Role Methods --------------------------------- */
-
-    /**
-     * Adds a User to Role. This operation allows you to set additional attributes in the UserRole objects.
-     */
-    @WebMethod
-    Response assocUserToRole(
-            @WebParam(name = "userRole", targetNamespace = "")
-            UserRole userRole
-    );
-
-    /**
-     * Updates the attributes in the user role object.
-     *
-     * @param ur
-     */
-    @WebMethod
-    Response updateUserRoleAssoc(
-            @WebParam(name = "userRole", targetNamespace = "")
-            UserRole userRole);
-
-    /**
-     * Gets a UserRole object based on the record identifier
-     *
-     * @param userRoleId
-     * @return
-     */
-    @WebMethod
-    UserRoleResponse getUserRoleById(
-            @WebParam(name = "userRoleId", targetNamespace = "")
-            String userRoleId);
-
-    /**
-     * Returns a list of UserRole objects
-     *
-     * @param userId
-     * @return
-     */
-    @WebMethod
-    UserRoleListResponse getUserRolesForUser(
-            @WebParam(name = "userId", targetNamespace = "")
-            String userId);
+    GroupListResponse getGroupsInRole(
+            final @WebParam(name = "roleId", targetNamespace = "") String roleId,
+            final @WebParam(name = "from", targetNamespace = "") int from,
+            final @WebParam(name = "size", targetNamespace = "") int size);
 
 
     /**
@@ -303,24 +198,6 @@ public interface RoleDataWebService {
             String userId);
 
     /**
-     * This method returns true if user belongs to that roleId.<br>
-     * For example:
-     * <p/>
-     * <code>
-     * boolean check = roleService.isUserInRole(roleId, userId);<br>
-     * </code>
-     *
-     * @return boolean Returns True if user belongs to that roleId. False if it does not belong to this role.
-     */
-
-    @WebMethod
-    Response isUserInRole(
-            @WebParam(name = "roleId", targetNamespace = "")
-            String roleId,
-            @WebParam(name = "userId", targetNamespace = "")
-            String userId);
-
-    /**
      * Return an array of users that are in a particular role
      *
      * @param roleId
@@ -328,21 +205,10 @@ public interface RoleDataWebService {
      */
     // problem generating wsdl with this method
     @WebMethod
-    UserArrayResponse getUsersInRole(
-            @WebParam(name = "roleId", targetNamespace = "")
-            String roleId);
-
-    /**
-     * Returns a list of roles that a user belongs to. Roles can be hierarchical and this operation traverses the tree to roles that are in the
-     * hierarchy.
-     *
-     * @param userId
-     * @return
-     */
-    @WebMethod
-    RoleListResponse getUserRolesAsFlatList(
-            @WebParam(name = "userId", targetNamespace = "")
-            String userId);
+    UserListResponse getUsersInRole(
+            final @WebParam(name = "roleId", targetNamespace = "") String roleId,
+            final @WebParam(name = "from", targetNamespace = "") int from,
+            final @WebParam(name = "size", targetNamespace = "") int size);
 
     /**
      * Returns an array of Role objects that indicate the Roles a user is
@@ -352,41 +218,10 @@ public interface RoleDataWebService {
      * @return
      */
     @WebMethod
-    RoleListResponse getUserRoles(
-            @WebParam(name = "userId", targetNamespace = "")
-            String userId);
-
-    /**
-     * Returns the roles that are directly associated with a user; ie. Does not take into
-     * account roles that may be associated with a user becuase of a group relationship.
-     *
-     * @param userId
-     * @return
-     */
-    @WebMethod
-    RoleListResponse getUserRolesDirect(
-            @WebParam(name = "userId", targetNamespace = "")
-            String userId);
-
-    /**
-     * Returns an array of Role objects that indicate the Roles a user is
-     * associated to within a given security domain.
-     *
-     * @param userId
-     * @return
-     */
-
-    @WebMethod
-    RoleListResponse getUserRolesByDomain(
-            @WebParam(name = "domainId", targetNamespace = "")
-            String domainId,
-            @WebParam(name = "userId", targetNamespace = "")
-            String userId);
-
-    @WebMethod
-    RoleListResponse search(
-            @WebParam(name = "search", targetNamespace = "")
-            RoleSearch search);
+    RoleListResponse getRolesForUser(
+            final @WebParam(name = "userId", targetNamespace = "") String userId,
+            final @WebParam(name = "from", targetNamespace = "") int from,
+            final @WebParam(name = "size", targetNamespace = "") int size);
 
     /**
      * Role Policy Methods ******
@@ -409,17 +244,6 @@ public interface RoleDataWebService {
             RolePolicy rolePolicy);
 
     /**
-     * Returns List of RolePolicy for the Role.
-     *
-     * @param roleId
-     * @return
-     */
-    @WebMethod
-    public RolePolicyListResponse getAllRolePolicies(
-            @WebParam(name = "roleId", targetNamespace = "")
-            String roleId);
-
-    /**
      * Returns a single RolePolicy object based on the attributeId.
      *
      * @param attrId
@@ -437,8 +261,14 @@ public interface RoleDataWebService {
      */
     @WebMethod
     public Response removeRolePolicy(
-            @WebParam(name = "rolePolicy", targetNamespace = "")
-            RolePolicy rolePolicy);
+            final @WebParam(name = "rolePolicyId", targetNamespace = "") String rolePolicyId);
 
 
+    @WebMethod
+    public List<Role> findBeans(final @WebParam(name="searchBean", targetNamespace="") RoleSearchBean searchBean,
+    							final @WebParam(name = "from", targetNamespace = "") int from,
+    							final @WebParam(name = "size", targetNamespace = "") int size);
+    
+    @WebMethod
+    public int countBeans(final @WebParam(name="searchBean", targetNamespace="") RoleSearchBean searchBean);
 }

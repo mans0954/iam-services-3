@@ -36,10 +36,6 @@ import java.util.List;
  */
 public interface UserRoleDAO extends BaseDao<UserRoleEntity, String> {
 
-    public void removeUserFromRole(String roleId, String userId);
-
-    public void removeAllUsersInRole(String roleId);
-
     /**
      * Get all the UserRole objects for this user
      *
@@ -55,5 +51,6 @@ public interface UserRoleDAO extends BaseDao<UserRoleEntity, String> {
      * @return
      */
     List<UserEntity> findUserByRole(String roleId);
-
+    
+    public UserRoleEntity getRecord(final String userId, final String roleId);
 }

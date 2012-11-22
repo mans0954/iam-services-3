@@ -1,13 +1,9 @@
 package org.openiam.idm.srvc.role.dto;
 
-import org.hibernate.annotations.GenericGenerator;
 import org.openiam.base.BaseObject;
+import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.role.domain.RolePolicyEntity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
@@ -25,8 +21,7 @@ import javax.xml.bind.annotation.XmlType;
         "policyScript",
         "actionQualifier"
 })
-@Entity
-@Table(name="ROLE_POLICY")
+@DozerDTOCorrespondence(RolePolicyEntity.class)
 public class RolePolicy extends BaseObject {
 
     protected String rolePolicyId;
@@ -43,10 +38,6 @@ public class RolePolicy extends BaseObject {
     public RolePolicy() {
     }
 
-    @Id
-    @GeneratedValue(generator="system-uuid")
-    @GenericGenerator(name="system-uuid", strategy = "uuid")
-    @Column(name="ROLE_POLICY_ID", length=32)
     public String getRolePolicyId() {
         return rolePolicyId;
     }
@@ -55,7 +46,6 @@ public class RolePolicy extends BaseObject {
         this.rolePolicyId = rolePolicyId;
     }
 
-    @Column(name="ROLE_ID", length=32)
     public String getRoleId() {
         return roleId;
     }
@@ -64,17 +54,14 @@ public class RolePolicy extends BaseObject {
         this.roleId = roleId;
     }
 
-    @Column(name="NAME", length=40)
     public String getName() {
         return name;
     }
-
 
     public void setName(String name) {
         this.name = name;
     }
 
-    @Column(name="VALUE1", length=40)
     public String getValue1() {
         return value1;
     }
@@ -84,7 +71,6 @@ public class RolePolicy extends BaseObject {
         this.value1 = value1;
     }
 
-    @Column(name="VALUE2", length=40)
     public String getValue2() {
         return value2;
     }
@@ -94,7 +80,6 @@ public class RolePolicy extends BaseObject {
         this.value2 = value2;
     }
 
-    @Column(name="ACTION", length=20)
     public String getAction() {
         return action;
     }
@@ -104,7 +89,6 @@ public class RolePolicy extends BaseObject {
         this.action = action;
     }
 
-    @Column(name="EXECUTION_ORDER")
     public Integer getExecutionOrder() {
         return executionOrder;
     }
@@ -114,7 +98,6 @@ public class RolePolicy extends BaseObject {
         this.executionOrder = executionOrder;
     }
 
-    @Column(name="ACTION_QUALIFIER")
     public String getActionQualifier() {
         return actionQualifier;
     }
@@ -124,7 +107,6 @@ public class RolePolicy extends BaseObject {
         this.actionQualifier = actionQualifier;
     }
 
-    @Column(name="POLICY_SCRIPT",length=100)
     public String getPolicyScript() {
         return policyScript;
     }

@@ -3,41 +3,58 @@ package org.openiam.idm.srvc.role.service;
 
 import java.util.List;
 import javax.naming.InitialContext;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.Criteria;
 import org.hibernate.LockMode;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.srvc.role.domain.UserRoleEntity;
 import org.openiam.idm.srvc.role.dto.UserRole;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
+import org.springframework.stereotype.Repository;
 
 import static org.hibernate.criterion.Example.create;
 
-/**
- * DAO implementation for the UserRole. Manages the relationship between user and role.
- * @see org.openiam.idm.srvc.role.dto.UserRole
- * @author Hibernate Tools
- */
+@Repository("userRoleDAO")
 public class UserRoleDAOImpl extends BaseDaoImpl<UserRoleEntity, String> implements UserRoleDAO {
 
 	private static final Log log = LogFactory.getLog(UserRoleDAOImpl.class);
-
-	public void setSessionFactory(SessionFactory session) {
-		   this.sessionFactory = session;
-	}
-
-	protected SessionFactory getSessionFactory() {
-		try {
-			return (SessionFactory) new InitialContext().lookup("SessionFactory");
-		} catch (Exception e) {
-			log.error("Could not locate SessionFactory in JNDI", e);
-			throw new IllegalStateException(
-					"Could not locate SessionFactory in JNDI");
+	
+	@Override
+	protected Criteria getExampleCriteria(final UserRoleEntity entity) {
+		final Criteria criteria = super.getCriteria();
+		if(entity != null) {
+			if(StringUtils.isNotBlank(entity.getUserRoleId())) {
+				criteria.add(Restrictions.eq("userRoleId", entity.getUserRoleId()));
+			} else {
+				if(StringUtils.isNotBlank(entity.getUserId())) {
+					criteria.add(Restrictions.eq("userId", entity.getUserId()));
+				}
+				
+				if(StringUtils.isNotBlank(entity.getRoleId())) {
+					criteria.add(Restrictions.eq("roleId", entity.getRoleId()));
+				}
+			}
 		}
+		return criteria;
+	}
+	
+	@Override
+	public UserRoleEntity getRecord(final String userId, final String roleId) {
+		final UserRoleEntity example = new UserRoleEntity();
+		example.setUserId(userId);
+		example.setRoleId(roleId);
+		
+		final List<UserRoleEntity> resultList = getByExample(example, 0, 1);
+		return (CollectionUtils.isNotEmpty(resultList)) ? resultList.get(0) : null;
 	}
 
 	public List<UserRoleEntity> findUserRoleByUser(String userId) {
@@ -68,28 +85,6 @@ public class UserRoleDAOImpl extends BaseDaoImpl<UserRoleEntity, String> impleme
 		if (result == null || result.size() == 0)
 			return null;
 		return result;			
-	}
-	
-	public void removeUserFromRole(String roleId,	String userId) {
-		log.debug("removeUserFromRole: userId=" + userId);
-		log.debug("removeUserFromRole: roleId=" + roleId);
-		
-		Session session = sessionFactory.getCurrentSession();
-		Query qry = session.createQuery("delete org.openiam.idm.srvc.role.domain.UserRoleEntity ur " +
-					" where ur.roleId = :roleId and ur.userId = :userId ");
-		qry.setString("roleId", roleId);
-		qry.setString("userId", userId);
-		qry.executeUpdate();	
-	}
-
-	public void removeAllUsersInRole(String roleId) {
-		log.debug("removeUserFromRole: roleId=" + roleId);
-		
-		Session session = sessionFactory.getCurrentSession();
-		Query qry = session.createQuery("delete org.openiam.idm.srvc.role.domain.UserRoleEntity ur " +
-					" where ur.roleId = :roleId");
-		qry.setString("roleId", roleId);
-		qry.executeUpdate();			
 	}
 
     @Override
