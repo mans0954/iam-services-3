@@ -180,27 +180,6 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 	}
 
 	@Override
-	public GroupListResponse getGroupsInRole(final String roleId, final int from, final int size) {
-		final GroupListResponse response = new GroupListResponse(ResponseStatus.SUCCESS);
-		try {
-			if(roleId == null) {
-				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-			}
-			
-			final List<GroupEntity> entityList = roleDataService.getGroupsInRole(roleId, from, size);
-			final List<Group> groupList = groupDozerConverter.convertToDTOList(entityList, false);
-			response.setGroupList(groupList);
-		} catch(BasicDataServiceException e) {
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(e.getCode());
-		} catch(Throwable e) {
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorText(e.getMessage());
-		}
-		return response;
-	}
-
-	@Override
 	public RoleResponse getRole(String roleId) {
 		final RoleResponse response = new RoleResponse(ResponseStatus.SUCCESS);
 		try {

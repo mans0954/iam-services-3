@@ -16,12 +16,12 @@ public interface RoleDAO extends BaseDao<RoleEntity, String> {
      * @param userId
      * @return
      */
-    public List<RoleEntity> findUserRoles(String userId);
+    public List<RoleEntity> findUserRoles(final String userId, final int from, final int size);
 
     /**
      * Find all the roles associated with a Group
      *
      * @return
      */
-    public List<RoleEntity> findRolesInGroup(String groupId);
+    public List<RoleEntity> findRolesInGroup(String groupId, final int from, final int size);
 }

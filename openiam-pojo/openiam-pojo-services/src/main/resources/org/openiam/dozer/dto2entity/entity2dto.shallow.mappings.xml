@@ -109,4 +109,29 @@
     		<b>resourceGroups</b>
     	</field-exclude>
     </mapping>
+    
+    <mapping>
+    	<class-a>org.openiam.idm.srvc.role.domain.RoleEntity</class-a>
+    	<class-b>org.openiam.idm.srvc.role.dto.Role</class-b>
+    	<field-exclude>
+			<a>groups</a>
+			<b>groups</b>
+		</field-exclude>
+		<field-exclude>
+			<a>roleAttributes</a>
+			<b>roleAttributes</b>
+		</field-exclude>
+		<field-exclude>
+			<a>rolePolicy</a>
+			<b>rolePolicy</b>
+		</field-exclude>
+		<field-exclude>
+			<a>childRoles</a>
+			<b>childRoles</b>
+		</field-exclude>
+		<field-exclude>
+			<a>parentRoles</a>
+			<b>parentRoles</b>
+		</field-exclude>
+    </mapping>
 </mappings>

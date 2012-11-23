@@ -94,22 +94,7 @@ public interface RoleDataService {
      * @param groupId
      */
     public void removeGroupFromRole(String roleId, String groupId);
-
-    /**
-     * This method retrieves all groups for a particular role. Returns null if
-     * no groups were found.<br>
-     * For example:
-     * <p/>
-     * <code>
-     * roleService.getGroupsInRole(domainId, roleId);<br>
-     * </code>
-     *
-     * @param domainId
-     * @param roleId   The roleId for which groups has to be retrieved .
-     */
-    // problem generating wsdl with this method
-    public List<GroupEntity> getGroupsInRole(final String roleId, final int from, final int size);
-
+    
     /**
      * Returns a list of UserRole objects
      *

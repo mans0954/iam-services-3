@@ -149,24 +149,6 @@ public interface RoleDataWebService {
             String groupId);
 
     /**
-     * This method retrieves all groups for a particular role. Returns null if
-     * no groups were found.<br>
-     * For example:
-     * <p/>
-     * <code>
-     * roleService.getGroupsInRole(roleId);<br>
-     * </code>
-     *
-     * @param roleId   The roleId for which groups has to be retrieved .
-     */
-    @WebMethod
-    GroupListResponse getGroupsInRole(
-            final @WebParam(name = "roleId", targetNamespace = "") String roleId,
-            final @WebParam(name = "from", targetNamespace = "") int from,
-            final @WebParam(name = "size", targetNamespace = "") int size);
-
-
-    /**
      * This method adds particular user directly to a role.<br>
      * For example:
      * <p/>

@@ -109,6 +109,25 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> implements
     							.add(Restrictions.in(getPKfieldName(), idCollection));
     	return criteria.list();
     }
+    
+    @SuppressWarnings("unchecked")
+	public List<T> findByIds(Collection<PrimaryKey> idCollection, final int from, final int size) {
+    	if(CollectionUtils.isEmpty(idCollection)) {
+    		return (List<T>)Collections.EMPTY_LIST;
+    	}
+    	
+    	final Criteria criteria = getSession().createCriteria(domainClass)
+    							.add(Restrictions.in(getPKfieldName(), idCollection));
+    	
+		if(from > -1) {
+			criteria.setFirstResult(from);
+		}
+		
+		if(size > -1) {
+			criteria.setMaxResults(size);
+		}
+    	return criteria.list();
+    }
 
     @SuppressWarnings({"unchecked"})
     public T findById(PrimaryKey id, String... fetchFields) {

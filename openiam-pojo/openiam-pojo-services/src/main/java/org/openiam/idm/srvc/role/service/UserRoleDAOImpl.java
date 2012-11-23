@@ -57,36 +57,6 @@ public class UserRoleDAOImpl extends BaseDaoImpl<UserRoleEntity, String> impleme
 		return (CollectionUtils.isNotEmpty(resultList)) ? resultList.get(0) : null;
 	}
 
-	public List<UserRoleEntity> findUserRoleByUser(String userId) {
-		
-		
-		Session session = sessionFactory.getCurrentSession();
-		Query qry = session.createQuery("select ur from UserRoleEntity ur " +
-						" where ur.userId = :userId " +
-						" order by ur.roleId ");
-		
-		qry.setString("userId", userId);
-		List<UserRoleEntity> result = (List<UserRoleEntity>)qry.list();
-		if (result == null || result.size() == 0)
-			return null;
-		return result;			
-	}
-	
-	public List<UserEntity> findUserByRole(String roleId) {
-		log.debug("findUserByRole: roleId=" + roleId);
-		
-		Session session = sessionFactory.getCurrentSession();
-		Query qry = session.createQuery("select usr from org.openiam.idm.srvc.user.domain.UserEntity as usr, UserRoleEntity ur " +
-						" where ur.roleId = :roleId and ur.userId = usr.userId " +
-						" order by usr.lastName, usr.firstName ");
-		
-		qry.setString("roleId",roleId);
-		List<UserEntity> result = (List<UserEntity>)qry.list();
-		if (result == null || result.size() == 0)
-			return null;
-		return result;			
-	}
-
     @Override
     protected String getPKfieldName() {
         return "userRoleId";

@@ -17,6 +17,9 @@ import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupAttribute;
 import org.openiam.idm.srvc.grp.dto.GroupStatus;
+import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
+import org.openiam.idm.srvc.role.domain.RoleEntity;
+import org.openiam.idm.srvc.role.domain.RolePolicyEntity;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.dto.RoleAttribute;
 import org.openiam.idm.srvc.role.dto.RolePolicy;
@@ -49,7 +52,7 @@ public class TestGroupConversion extends AbstractTestNGSpringContextTests {
 	
 	@Test
 	public void testRoleConversion() {
-		final Role original = createSimpleRole();
+		final RoleEntity original = createSimpleRole();
 		
 		final Set<GroupEntity> groupSet = new HashSet<GroupEntity>();
 		groupSet.add(createGroupWithNoSubgroups());
@@ -62,7 +65,7 @@ public class TestGroupConversion extends AbstractTestNGSpringContextTests {
 		groupSet.add(createGroupWithNoSubgroups());
 		original.setGroups(groupSet);
 		
-		final List<Role> childRoleList = new LinkedList<Role>();
+		final List<RoleEntity> childRoleList = new LinkedList<RoleEntity>();
 		childRoleList.add(createSimpleRole());
 		childRoleList.add(createSimpleRole());
 		childRoleList.add(createSimpleRole());
@@ -72,8 +75,8 @@ public class TestGroupConversion extends AbstractTestNGSpringContextTests {
 		childRoleList.add(createSimpleRole());
 		childRoleList.add(createSimpleRole());
 		
-		compareRole(original, deepDozerMapper.map(original, Role.class), true);
-		compareRole(original, shallowDozerMapper.map(original, Role.class), false);
+		compareRole(original, deepDozerMapper.map(original, RoleEntity.class), true);
+		compareRole(original, shallowDozerMapper.map(original, RoleEntity.class), false);
 	}
 	
 	private GroupEntity createGroupWithNoSubgroups() {
@@ -121,28 +124,18 @@ public class TestGroupConversion extends AbstractTestNGSpringContextTests {
 		return groupAttribute;
 	}
 	
-	private Role createSimpleRole() {
-		final Role role = new Role();
+	private RoleEntity createSimpleRole() {
+		final RoleEntity role = new RoleEntity();
 		role.setCreateDate(new Date());
 		role.setCreatedBy(rs(2));
 		role.setDescription(rs(2));
-		role.setEndDate(new Date());
 		role.setInternalRoleId(rs(2));
 		role.setMetadataTypeId(rs(2));
-		role.setObjectState(rs(2));
-		role.setOperation(AttributeOperationEnum.ADD);
 		role.setOwnerId(rs(2));
 		role.setProvisionObjName(rs(2));
-		role.setRequestClientIP(rs(2));
-		role.setRequestorDomain(rs(2));
-		role.setRequestorLogin(rs(2));
 		role.setRoleName(rs(2));
-		role.setRoleStatus(RoleStatus.ACTIVE);
-		role.setSelected(true);
-		role.setStartDate(new Date());
 		role.setStatus(rs(2));
-		role.setUserAssociationMethod(2);		
-		final Set<RolePolicy> rolePolicySet = new HashSet<RolePolicy>();
+		final Set<RolePolicyEntity> rolePolicySet = new HashSet<RolePolicyEntity>();
 		rolePolicySet.add(createRolePolicy());
 		rolePolicySet.add(createRolePolicy());
 		rolePolicySet.add(createRolePolicy());
@@ -152,7 +145,7 @@ public class TestGroupConversion extends AbstractTestNGSpringContextTests {
 		//role.setChildRoles(childRoles);
 		//	role.setGroups(value);
 		
-		final  Set<RoleAttribute> roleAttributeSet = new HashSet<RoleAttribute>();
+		final  Set<RoleAttributeEntity> roleAttributeSet = new HashSet<RoleAttributeEntity>();
 		roleAttributeSet.add(createRoleAttribute());
 		roleAttributeSet.add(createRoleAttribute());
 		roleAttributeSet.add(createRoleAttribute());
@@ -162,8 +155,8 @@ public class TestGroupConversion extends AbstractTestNGSpringContextTests {
 		return role;
 	}
 	
-	private RoleAttribute createRoleAttribute() {
-		final RoleAttribute roleAttribute = new RoleAttribute();
+	private RoleAttributeEntity createRoleAttribute() {
+		final RoleAttributeEntity roleAttribute = new RoleAttributeEntity();
 		roleAttribute.setAttrGroup(rs(2));
 		roleAttribute.setMetadataElementId(rs(2));
 		roleAttribute.setName(rs(2));
@@ -173,20 +166,15 @@ public class TestGroupConversion extends AbstractTestNGSpringContextTests {
 		return roleAttribute;
 	}
 	
-	private RolePolicy createRolePolicy() {
-		final RolePolicy rolePolicy = new RolePolicy();
+	private RolePolicyEntity createRolePolicy() {
+		final RolePolicyEntity rolePolicy = new RolePolicyEntity();
 		rolePolicy.setAction(RolePolicy.NEW);
 		rolePolicy.setActionQualifier(rs(2));
 		rolePolicy.setExecutionOrder(2);
 		rolePolicy.setName(rs(2));
-		rolePolicy.setObjectState(rs(2));
 		rolePolicy.setPolicyScript(rs(2));
-		rolePolicy.setRequestClientIP(rs(2));
-		rolePolicy.setRequestorDomain(rs(2));
-		rolePolicy.setRequestorLogin(rs(2));
 		rolePolicy.setRoleId(rs(2));
 		rolePolicy.setRolePolicyId(rs(2));
-		rolePolicy.setSelected(true);
 		rolePolicy.setValue1(rs(2));
 		rolePolicy.setValue2(rs(2));
 		return rolePolicy;
@@ -215,22 +203,15 @@ public class TestGroupConversion extends AbstractTestNGSpringContextTests {
 		Assert.assertEquals(original.getStatus(), copy.getStatus());
 	}
 	
-	private void compareRole(final Role original, final Role copy, final boolean isDeep) {
+	private void compareRole(final RoleEntity original, final RoleEntity copy, final boolean isDeep) {
 		Assert.assertEquals(original.getCreatedBy(), copy.getCreatedBy());
 		Assert.assertEquals(original.getDescription(), copy.getDescription());
 		Assert.assertEquals(original.getInternalRoleId(), copy.getInternalRoleId());
 		Assert.assertEquals(original.getMetadataTypeId(), copy.getMetadataTypeId());
-		Assert.assertEquals(original.getObjectState(), copy.getObjectState());
 		Assert.assertEquals(original.getOwnerId(), copy.getOwnerId());
 		Assert.assertEquals(original.getProvisionObjName(), copy.getProvisionObjName());
-		Assert.assertEquals(original.getRequestClientIP(), copy.getRequestClientIP());
-		Assert.assertEquals(original.getRequestorDomain(), copy.getRequestorDomain());
-		Assert.assertEquals(original.getRequestorLogin(), copy.getRequestorLogin());
 		Assert.assertEquals(original.getRoleName(), copy.getRoleName());
 		Assert.assertEquals(original.getStatus(), copy.getStatus());
-		Assert.assertEquals(original.getSelected(), copy.getSelected());
-		Assert.assertEquals(original.getStartDate(), copy.getStartDate());
-		Assert.assertEquals(original.getUserAssociationMethod(), copy.getUserAssociationMethod());
 		
 		if(isDeep) {
 			//TODO:  compare

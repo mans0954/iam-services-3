@@ -120,4 +120,29 @@
     		<b>resourceGroups</b>
     	</field>
     </mapping>
+    
+	<mapping>
+		<class-a>org.openiam.idm.srvc.role.domain.RoleEntity</class-a>
+		<class-b>org.openiam.idm.srvc.role.dto.Role</class-b>
+		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="dto2entityShallowDozerMapper">
+			<a>groups</a>
+			<b>groups</b>
+		</field>
+		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="dto2entityShallowDozerMapper">
+			<a>roleAttributes</a>
+			<b>roleAttributes</b>
+		</field>
+		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="dto2entityShallowDozerMapper">
+			<a>rolePolicy</a>
+			<b>rolePolicy</b>
+		</field>
+		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="dto2entityShallowDozerMapper">
+			<a>childRoles</a>
+			<b>childRoles</b>
+		</field>
+		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="dto2entityShallowDozerMapper">
+			<a>parentRoles</a>
+			<b>parentRoles</b>
+		</field>
+	</mapping>
 </mappings>

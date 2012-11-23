@@ -4,6 +4,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.dozer.converter.RoleDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.dozer.converter.UserRoleDozerConverter;
 import org.openiam.exception.data.ObjectNotFoundException;
@@ -25,6 +26,7 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 
 import org.openiam.idm.srvc.user.dto.UserConstant;
+import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -57,6 +59,13 @@ public class RoleDataServiceImpl implements RoleDataService {
 	
 	@Autowired
 	private GroupDAO groupDAO;
+	
+	@Autowired
+	private UserDAO userDAO;
+	
+	@Autowired
+	private RoleDozerConverter roleDozerConverter;
+	
 
 	private static final Log log = LogFactory.getLog(RoleDataServiceImpl.class);
 
@@ -216,33 +225,57 @@ public class RoleDataServiceImpl implements RoleDataService {
 
 	@Override
 	public List<RoleEntity> getRolesInGroup(String groupId, int from, int size) {
-		roleDao.findRolesInGroup(groupId);
-	}
-
-	@Override
-	public List<GroupEntity> getGroupsInRole(String roleId, int from, int size) {
-		
+		return roleDao.findRolesInGroup(groupId, from, size);
 	}
 
 	@Override
 	public List<UserRoleEntity> getUserRolesForUser(String userId, int from, int size) {
-		userRoleDao.findUserRoleByUser(userId);
+		final UserRoleEntity example = new UserRoleEntity();
+		example.setUserId(userId);
+		return userRoleDao.getByExample(example, from, size);
 	}
 
 	@Override
-	public List<UserEntity> getUsersInRole(String roleId, int from, int size) {
-		return userRoleDao.findUserByRole(roleId);
+	public List<UserEntity> getUsersInRole(final String roleId, int from, int size) {
+		final UserRoleEntity example = new UserRoleEntity();
+		example.setRoleId(roleId);
+		final List<UserRoleEntity> userRoleEntityList = userRoleDao.getByExample(example, from, size);
+		final Set<String> roleIds = new LinkedHashSet<String>();
+		if(CollectionUtils.isNotEmpty(userRoleEntityList)) {
+			for(final UserRoleEntity entity : userRoleEntityList) {
+				roleIds.add(entity.getRoleId());
+			}
+		}
+		return userDAO.findByIds(roleIds, from, size);
 	}
 
 	@Override
 	public List<RoleEntity> getUserRoles(String userId, int from, int size) {
-		return roleDao.findUserRoles(userId);
+		return roleDao.findUserRoles(userId, from, size);
 	}
 
 	@Override
 	public List<Role> getUserRolesAsFlatList(String userId) {
-		// TODO Auto-generated method stub
-		return null;
+		final UserRoleEntity example = new UserRoleEntity();
+		example.setUserId(userId);
+		final List<UserRoleEntity> userRoleEntityList = userRoleDao.getByExample(example);
+		final Set<String> roleIds = new LinkedHashSet<String>();
+		if(CollectionUtils.isNotEmpty(userRoleEntityList)) {
+			for(final UserRoleEntity entity : userRoleEntityList) {
+				roleIds.add(entity.getRoleId());
+			}
+		}
+		
+		final Set<RoleEntity> visitedSet = new HashSet<RoleEntity>();
+		final List<RoleEntity> entityList = roleDao.findByIds(roleIds);
+		if(CollectionUtils.isNotEmpty(entityList)) {
+			for(final RoleEntity entity : entityList) {
+				visitChildRoles(entity.getRoleId(), visitedSet);
+			}
+		}
+		
+		final List<RoleEntity> resultList = new ArrayList<RoleEntity>(visitedSet);
+		return roleDozerConverter.convertToDTOList(resultList, true);
 	}
 
 	@Override

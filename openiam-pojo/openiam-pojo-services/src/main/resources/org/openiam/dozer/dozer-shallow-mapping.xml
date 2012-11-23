@@ -90,8 +90,8 @@
 	</mapping>
 	
 	<mapping>
-		<class-a>org.openiam.idm.srvc.role.dto.Role</class-a>
-		<class-b>org.openiam.idm.srvc.role.dto.Role</class-b>
+		<class-a>org.openiam.idm.srvc.role.domain.RoleEntity</class-a>
+		<class-b>org.openiam.idm.srvc.role.domain.RoleEntity</class-b>
 		<field-exclude>
 			<a>groups</a>
 			<b>groups</b>

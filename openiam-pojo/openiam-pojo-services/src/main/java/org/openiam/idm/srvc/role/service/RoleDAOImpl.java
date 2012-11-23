@@ -60,21 +60,35 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
 	}
 
 	@Override
-	public List<RoleEntity> findUserRoles(String userId) {
-		final Query qry = getSession().createQuery("select role from Role role, UserRoleEntity ur " +
+	public List<RoleEntity> findUserRoles(final String userId, final int from, final int size) {
+		final Query qry = getSession().createQuery("select role from RoleEntity role, UserRoleEntity ur " +
 				" where ur.userId = :userId and " +
 				"       ur.roleId = role.roleId" + 
 				" order by role.roleName ");
 		
 	
 		qry.setString("userId", userId);
+		if(from > -1) {
+			qry.setFirstResult(from);
+		}
+		
+		if(size > -1) {
+			qry.setMaxResults(size);
+		}
 		return qry.list();
 	}
 
 	@Override
-	public List<RoleEntity> findRolesInGroup(String groupId) {
+	public List<RoleEntity> findRolesInGroup(final String groupId, final int from, final int size) {
 		final Criteria criteria = super.getCriteria();
 		criteria.createAlias("groups", "groups").add( Restrictions.in("groups.grpId", new String[] {groupId}));
+		if(from > -1) {
+			criteria.setFirstResult(from);
+		}
+		
+		if(size > -1) {
+			criteria.setMaxResults(size);
+		}
 		return criteria.list();
 	}
 	
