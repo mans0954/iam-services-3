@@ -253,4 +253,12 @@ public interface RoleDataWebService {
     
     @WebMethod
     public int countBeans(final @WebParam(name="searchBean", targetNamespace="") RoleSearchBean searchBean);
+    
+    @WebMethod
+    public List<Role> getRolesForResource(final @WebParam(name="resourceId", targetNamespace="") String resourceId,
+    									  final @WebParam(name = "from", targetNamespace = "") int from,
+    									  final @WebParam(name = "size", targetNamespace = "") int size);
+    
+    @WebMethod
+    public int getNumOfRolesForResource(final @WebParam(name="resourceId", targetNamespace="") String resourceId);
 }

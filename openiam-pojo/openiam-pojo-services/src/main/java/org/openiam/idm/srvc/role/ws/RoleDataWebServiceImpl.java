@@ -444,4 +444,15 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 		final RoleEntity example = roleSearchBeanConverter.convert(searchBean);
 		return roleDataService.countBeans(example);
 	}
+
+	@Override
+	public List<Role> getRolesForResource(final String resourceId, final int from, final int size) {
+		final List<RoleEntity> entityList = roleDataService.getRolesForResource(resourceId, from, size);
+		return roleDozerConverter.convertToDTOList(entityList, false);
+	}
+
+	@Override
+	public int getNumOfRolesForResource(final String resourceId) {
+		return roleDataService.getNumOfRolesForResource(resourceId);
+	}
 }

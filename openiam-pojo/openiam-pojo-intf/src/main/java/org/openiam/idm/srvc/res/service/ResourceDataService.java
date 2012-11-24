@@ -125,27 +125,6 @@ public interface ResourceDataService {
             String resourcePropId);
 
     /**
-     * Add a resource role.
-     *
-     * @param resourceRole the resource role
-     * @return the resource role
-     */
-    @WebMethod
-    Response addResourceRole(
-            @WebParam(name = "resourceRole", targetNamespace = "")
-            ResourceRole resourceRole);
-
-    /**
-     * Remove resource role.
-     *
-     * @param resourceRoleId the resource role id
-     */
-    @WebMethod
-    Response removeResourceRole(
-            @WebParam(name = "resourceRoleId", targetNamespace = "")
-            ResourceRoleId resourceRoleId);
-
-    /**
      * Adds the user to resource.
      *
      * @param user the user
@@ -219,4 +198,12 @@ public interface ResourceDataService {
     @WebMethod
     Response removeGroupToResource(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,
     							   @WebParam(name = "groupId", targetNamespace = "") final String groupId);
+    
+    @WebMethod
+    Response addRoleToResource(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,
+    							@WebParam(name = "roleId", targetNamespace = "") final String roleId);
+    
+    @WebMethod
+    Response removeRoleToResource(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,
+    							   @WebParam(name = "roleId", targetNamespace = "") final String roleId);
 }

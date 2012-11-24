@@ -2,12 +2,14 @@ package org.openiam.idm.srvc.role.service;
 
 // Generated Mar 4, 2008 1:12:08 AM by Hibernate Tools 3.2.0.b11
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 import javax.naming.InitialContext;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -26,6 +28,9 @@ import static org.hibernate.criterion.Example.create;
 
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.exception.data.ObjectNotFoundException;
+import org.openiam.idm.srvc.res.domain.ResourceRoleEmbeddableId;
+import org.openiam.idm.srvc.res.domain.ResourceRoleEntity;
+import org.openiam.idm.srvc.res.dto.ResourceRole;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -35,7 +40,6 @@ import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.springframework.stereotype.Repository;
-import org.springframework.util.CollectionUtils;
 
 @Repository("roleDAO")
 public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements RoleDAO {
@@ -53,6 +57,19 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
 			} else {
 				if(StringUtils.isNotBlank(entity.getRoleName())) {
 					criteria.add(Restrictions.eq("roleName", entity.getRoleName()));
+				}
+				
+				if(CollectionUtils.isNotEmpty(entity.getResourceRoles())) {
+					final Set<String> resourceIds = new HashSet<String>();
+	            	for(final ResourceRoleEntity resourceRole : entity.getResourceRoles()) {
+	            		if(resourceRole != null && StringUtils.isNotBlank(resourceRole.getId().getResourceId())) {
+	            			resourceIds.add(resourceRole.getId().getResourceId());
+	            		}
+	            	}
+	            	
+	            	if(CollectionUtils.isNotEmpty(resourceIds)) {
+	            		criteria.createAlias("resourceRoles", "rr").add( Restrictions.in("rr.id.resourceId", resourceIds));
+	            	}
 				}
 			}
 		}
@@ -96,5 +113,25 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
 	@Override
 	protected String getPKfieldName() {
 		return "roleId";
+	}
+
+	@Override
+	public int getNumOfRolesForResource(final String resourceId) {
+		ResourceRoleEntity rrEntity = new ResourceRoleEntity();
+		rrEntity.setId(new ResourceRoleEmbeddableId(null, resourceId));
+		
+		final RoleEntity entity = new RoleEntity();
+		entity.addResourceRole(rrEntity);
+		return count(entity);
+	}
+
+	@Override
+	public List<RoleEntity> getRolesForResource(final String resourceId, final int from, final int size) {
+		ResourceRoleEntity rrEntity = new ResourceRoleEntity();
+		rrEntity.setId(new ResourceRoleEmbeddableId(null, resourceId));
+		
+		final RoleEntity entity = new RoleEntity();
+		entity.addResourceRole(rrEntity);
+		return getByExample(entity, from, size);
 	}
 }

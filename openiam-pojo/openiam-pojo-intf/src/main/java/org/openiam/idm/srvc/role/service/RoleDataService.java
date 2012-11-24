@@ -157,4 +157,7 @@ public interface RoleDataService {
     public List<RoleEntity> findBeans(final RoleEntity example, final int from, final int size);
     
     public int countBeans(final RoleEntity example);
+    
+    public List<RoleEntity> getRolesForResource(final String resourceId, final int from, final int size);
+    public int getNumOfRolesForResource(final String resourceId);
 }

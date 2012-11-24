@@ -287,4 +287,14 @@ public class RoleDataServiceImpl implements RoleDataService {
 	public int countBeans(RoleEntity example) {
 		return roleDao.count(example);
 	}
+
+	@Override
+	public List<RoleEntity> getRolesForResource(final String resourceId, final int from, final int size) {
+		return roleDao.getRolesForResource(resourceId, from, size);
+	}
+
+	@Override
+	public int getNumOfRolesForResource(final String resourceId) {
+		return roleDao.getNumOfRolesForResource(resourceId);
+	}
 }

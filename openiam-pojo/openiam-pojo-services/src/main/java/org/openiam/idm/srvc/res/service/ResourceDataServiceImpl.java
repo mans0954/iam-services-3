@@ -31,7 +31,9 @@ import org.openiam.idm.srvc.res.domain.ResourceRoleEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 import org.openiam.idm.srvc.res.domain.ResourceUserEntity;
 import org.openiam.idm.srvc.res.dto.*;
+import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
+import org.openiam.idm.srvc.role.service.RoleDAO;
 import org.openiam.idm.srvc.searchbean.converter.ResourceSearchBeanConverter;
 import org.openiam.util.DozerMappingType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,6 +70,9 @@ public class ResourceDataServiceImpl implements ResourceDataService {
     
     @Autowired
     private GroupDAO groupDAO;
+    
+    @Autowired
+    private RoleDAO roleDAO;
     
     @Autowired
     private ResourceTypeDozerConverter resourceTypeConverter;
@@ -314,59 +319,6 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 			response.setErrorText(e.getMessage());
 		}
     	return response;
-    }
-
-    /**
-     * Add a resource role
-     *
-     * @param resourceRole
-     * @return
-     */
-    public Response addResourceRole(ResourceRole resourceRole) {
-    	final Response response = new Response(ResponseStatus.SUCCESS);
-    	try {
-    		if(resourceRole == null || resourceRole.getId() == null || resourceRole.getId().getResourceId() == null || resourceRole.getId().getRoleId() == null) {
-    			throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-    		}
-    		
-    		final ResourceRoleEntity entity = resourceRoleConverter.convertToEntity(resourceRole, true);
-    		resourceRoleDao.save(entity);
-    		response.setResponseValue(resourceRoleConverter.convertToDTO(entity, true));
-    	} catch(BasicDataServiceException e) {
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(e.getCode());
-		} catch(Throwable e) {
-			log.error("Can't save resource type", e);
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorText(e.getMessage());
-		}
-    	return response;
-    }
-
-    public Response removeResourceRole(ResourceRoleId resourceRoleId) {
-    	final Response response = new Response(ResponseStatus.SUCCESS);
-    	try {
-    		if(resourceRoleId == null) {
-    			throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-    		}
-    		
-    		final ResourceRoleEmbeddableId id = new ResourceRoleEmbeddableId(resourceRoleId);
-    		
-    		final ResourceRoleEntity entity = resourceRoleDao.findById(id);
-    		if(entity == null) {
-    			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
-    		}
-    		
-    		resourceRoleDao.delete(entity);
-    	} catch(BasicDataServiceException e) {
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(e.getCode());
-		} catch(Throwable e) {
-			log.error("Can't delete resource", e);
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorText(e.getMessage());
-		}
-		return response;
     }
 
     /**
@@ -640,6 +592,68 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 			if(entity != null) {
 				resourceGroupDAO.delete(entity);
 			}
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			log.error("Can't delete resource", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+		return response;
+	}
+
+	@Override
+	public Response addRoleToResource(final String resourceId, final String roleId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(StringUtils.isBlank(resourceId) || StringUtils.isBlank(roleId)) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			final ResourceEntity resource = resourceDao.findById(resourceId);
+			final RoleEntity role = roleDAO.findById(roleId);
+			if(resource == null && role == null) {
+				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+			}
+			
+			final ResourceRoleEmbeddableId id = new ResourceRoleEmbeddableId(roleId, resourceId);
+			final ResourceRoleEntity dbObject = resourceRoleDao.findById(id);
+			if(dbObject != null) {
+				throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
+			}
+			
+			final ResourceRoleEntity entity = new ResourceRoleEntity();
+			entity.setId(id);
+			resourceRoleDao.save(entity);
+			
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			log.error("Can't delete resource", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+		return response;
+	}
+
+	@Override
+	public Response removeRoleToResource(final String resourceId, final String roleId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(StringUtils.isBlank(resourceId) || StringUtils.isBlank(roleId)) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			final ResourceRoleEmbeddableId id = new ResourceRoleEmbeddableId(roleId, resourceId);
+			final ResourceRoleEntity dbObject = resourceRoleDao.findById(id);
+			if(dbObject == null) {
+				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+			}
+			
+			resourceRoleDao.delete(dbObject);
+			
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());

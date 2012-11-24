@@ -27,6 +27,7 @@ import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
+import org.openiam.idm.srvc.res.domain.ResourceRoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
 
 @Entity
@@ -66,22 +67,24 @@ public class RoleEntity implements Serializable {
     @Column(name="SERVICE_ID",length=32)
     private String serviceId;
 
-	@ManyToMany(cascade=CascadeType.ALL,fetch=FetchType.EAGER)
+	@ManyToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
     @JoinTable(name="GRP_ROLE",
 	    joinColumns={@JoinColumn(name="ROLE_ID")},
 	    inverseJoinColumns={@JoinColumn(name="GRP_ID")})
-	@Fetch(FetchMode.SELECT)
+	@Fetch(FetchMode.SUBSELECT)
     private Set<GroupEntity> groups;
 	
-	@OneToMany(fetch=FetchType.EAGER,orphanRemoval=true,cascade={CascadeType.ALL})
+	@OneToMany(fetch=FetchType.LAZY,orphanRemoval=true,cascade={CascadeType.ALL})
 	@JoinColumn(name="ROLE_ID")
+	@Fetch(FetchMode.SUBSELECT)
 	private Set<RoleAttributeEntity> roleAttributes;
 	
-	@OneToMany(fetch=FetchType.EAGER,orphanRemoval=true,cascade=CascadeType.ALL)
+	@OneToMany(fetch=FetchType.LAZY,orphanRemoval=true,cascade=CascadeType.ALL)
 	@JoinColumn(name="ROLE_ID")
+	@Fetch(FetchMode.SUBSELECT)
 	private Set<RolePolicyEntity> rolePolicy;
 	
-    @ManyToMany(cascade={CascadeType.ALL},fetch=FetchType.LAZY)
+	@ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
     @JoinTable(name="role_to_role_membership",
         joinColumns={@JoinColumn(name="MEMBER_ROLE_ID")},
         inverseJoinColumns={@JoinColumn(name="ROLE_ID")})
@@ -94,6 +97,11 @@ public class RoleEntity implements Serializable {
         inverseJoinColumns={@JoinColumn(name="MEMBER_ROLE_ID")})
     @Fetch(FetchMode.SUBSELECT)
     private Set<RoleEntity> childRoles;
+	
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "ROLE_ID")
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<ResourceRoleEntity> resourceRoles;
     
     @Column(name="CREATE_DATE",length=19)
 	private Date createDate;
@@ -250,6 +258,23 @@ public class RoleEntity implements Serializable {
 
 	public void setCreatedBy(String createdBy) {
 		this.createdBy = createdBy;
+	}
+
+	public Set<ResourceRoleEntity> getResourceRoles() {
+		return resourceRoles;
+	}
+
+	public void setResourceRoles(Set<ResourceRoleEntity> resourceRoles) {
+		this.resourceRoles = resourceRoles;
+	}
+	
+	public void addResourceRole(final ResourceRoleEntity entity) {
+		if(entity != null) {
+			if(resourceRoles == null) {
+				resourceRoles = new LinkedHashSet<ResourceRoleEntity>();
+			}
+			resourceRoles.add(entity);
+		}
 	}
 
 	@Override
