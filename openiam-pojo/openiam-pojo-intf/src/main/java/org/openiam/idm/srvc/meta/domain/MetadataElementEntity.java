@@ -252,4 +252,177 @@ public class MetadataElementEntity implements java.io.Serializable {
     public void setMetadataTypeId(Long metadataTypeId) {
         this.metadataTypeId = metadataTypeId;
     }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result
+                + ((attributeName == null) ? 0 : attributeName.hashCode());
+        result = prime * result
+                + ((auditable == null) ? 0 : auditable.hashCode());
+        result = prime * result
+                + ((dataType == null) ? 0 : dataType.hashCode());
+        result = prime * result
+                + ((defaultValue == null) ? 0 : defaultValue.hashCode());
+        result = prime * result
+                + ((description == null) ? 0 : description.hashCode());
+        result = prime * result + ((label == null) ? 0 : label.hashCode());
+        result = prime * result + ((maxLen == null) ? 0 : maxLen.hashCode());
+        result = prime * result
+                + ((maxValue == null) ? 0 : maxValue.hashCode());
+        result = prime
+                * result
+                + ((metadataElementId == null) ? 0 : metadataElementId
+                        .hashCode());
+        result = prime * result
+                + ((metadataTypeId == null) ? 0 : metadataTypeId.hashCode());
+        result = prime * result + ((minLen == null) ? 0 : minLen.hashCode());
+        result = prime * result
+                + ((minValue == null) ? 0 : minValue.hashCode());
+        result = prime * result
+                + ((multiValue == null) ? 0 : multiValue.hashCode());
+        result = prime * result
+                + ((required == null) ? 0 : required.hashCode());
+        result = prime * result
+                + ((selfEditable == null) ? 0 : selfEditable.hashCode());
+        result = prime * result
+                + ((selfViewable == null) ? 0 : selfViewable.hashCode());
+        result = prime * result
+                + ((textCase == null) ? 0 : textCase.hashCode());
+        result = prime * result + ((uiSize == null) ? 0 : uiSize.hashCode());
+        result = prime * result + ((uiType == null) ? 0 : uiType.hashCode());
+        result = prime * result
+                + ((valueList == null) ? 0 : valueList.hashCode());
+        result = prime * result
+                + ((valueSrc == null) ? 0 : valueSrc.hashCode());
+        return result;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        MetadataElementEntity other = (MetadataElementEntity) obj;
+        if (attributeName == null) {
+            if (other.attributeName != null)
+                return false;
+        } else if (!attributeName.equals(other.attributeName))
+            return false;
+        if (auditable == null) {
+            if (other.auditable != null)
+                return false;
+        } else if (!auditable.equals(other.auditable))
+            return false;
+        if (dataType == null) {
+            if (other.dataType != null)
+                return false;
+        } else if (!dataType.equals(other.dataType))
+            return false;
+        if (defaultValue == null) {
+            if (other.defaultValue != null)
+                return false;
+        } else if (!defaultValue.equals(other.defaultValue))
+            return false;
+        if (description == null) {
+            if (other.description != null)
+                return false;
+        } else if (!description.equals(other.description))
+            return false;
+        if (label == null) {
+            if (other.label != null)
+                return false;
+        } else if (!label.equals(other.label))
+            return false;
+        if (maxLen == null) {
+            if (other.maxLen != null)
+                return false;
+        } else if (!maxLen.equals(other.maxLen))
+            return false;
+        if (maxValue == null) {
+            if (other.maxValue != null)
+                return false;
+        } else if (!maxValue.equals(other.maxValue))
+            return false;
+        if (metadataElementId == null) {
+            if (other.metadataElementId != null)
+                return false;
+        } else if (!metadataElementId.equals(other.metadataElementId))
+            return false;
+        if (metadataTypeId == null) {
+            if (other.metadataTypeId != null)
+                return false;
+        } else if (!metadataTypeId.equals(other.metadataTypeId))
+            return false;
+        if (minLen == null) {
+            if (other.minLen != null)
+                return false;
+        } else if (!minLen.equals(other.minLen))
+            return false;
+        if (minValue == null) {
+            if (other.minValue != null)
+                return false;
+        } else if (!minValue.equals(other.minValue))
+            return false;
+        if (multiValue == null) {
+            if (other.multiValue != null)
+                return false;
+        } else if (!multiValue.equals(other.multiValue))
+            return false;
+        if (required == null) {
+            if (other.required != null)
+                return false;
+        } else if (!required.equals(other.required))
+            return false;
+        if (selfEditable == null) {
+            if (other.selfEditable != null)
+                return false;
+        } else if (!selfEditable.equals(other.selfEditable))
+            return false;
+        if (selfViewable == null) {
+            if (other.selfViewable != null)
+                return false;
+        } else if (!selfViewable.equals(other.selfViewable))
+            return false;
+        if (textCase == null) {
+            if (other.textCase != null)
+                return false;
+        } else if (!textCase.equals(other.textCase))
+            return false;
+        if (uiSize == null) {
+            if (other.uiSize != null)
+                return false;
+        } else if (!uiSize.equals(other.uiSize))
+            return false;
+        if (uiType == null) {
+            if (other.uiType != null)
+                return false;
+        } else if (!uiType.equals(other.uiType))
+            return false;
+        if (valueList == null) {
+            if (other.valueList != null)
+                return false;
+        } else if (!valueList.equals(other.valueList))
+            return false;
+        if (valueSrc == null) {
+            if (other.valueSrc != null)
+                return false;
+        } else if (!valueSrc.equals(other.valueSrc))
+            return false;
+        return true;
+    }
 }

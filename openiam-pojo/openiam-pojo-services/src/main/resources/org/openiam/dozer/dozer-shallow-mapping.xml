@@ -185,5 +185,29 @@
 			<b>elementAttributes</b>
 		</field-exclude>
 	</mapping>
+	<mapping>
+		<class-a>org.openiam.idm.srvc.cat.dto.Category</class-a>
+		<class-b>org.openiam.idm.srvc.cat.dto.Category</class-b>
+		<field-exclude>
+			<a>childCategories</a>
+			<b>childCategories</b>
+		</field-exclude>
+		<field-exclude>
+			<a>categoryLanguages</a>
+			<b>categoryLanguages</b>
+		</field-exclude>
+	</mapping>
+	<mapping>
+		<class-a>org.openiam.idm.srvc.cat.dto.Category</class-a>
+		<class-b>org.openiam.idm.srvc.cat.dto.Category</class-b>
+		<field-exclude>
+			<a>childCategories</a>
+			<b>childCategories</b>
+		</field-exclude>
+		<field-exclude>
+			<a>categoryLanguages</a>
+			<b>categoryLanguages</b>
+		</field-exclude>
+	</mapping>
 </mappings>
         

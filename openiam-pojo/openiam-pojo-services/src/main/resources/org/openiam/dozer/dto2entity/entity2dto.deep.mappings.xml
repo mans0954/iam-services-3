@@ -283,4 +283,16 @@
 			<b>elementAttributes</b>
 		</field>
 	</mapping>
+	<mapping>
+		<class-a>org.openiam.idm.srvc.cat.domain.MetadataTypeEntity</class-a>
+		<class-b>org.openiam.idm.srvc.cat.dto.MetadataType</class-b>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="deepDozerMapper">
+			<a>childCategories</a>
+			<b>childCategories</b> 
+		</field>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="deepDozerMapper">
+			<a>categoryLanguages</a>
+			<b>categoryLanguages</b>
+		</field>
+	</mapping>
    </mappings>

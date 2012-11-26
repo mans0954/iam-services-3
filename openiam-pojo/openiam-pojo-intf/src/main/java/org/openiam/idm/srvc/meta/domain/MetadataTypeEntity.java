@@ -19,7 +19,7 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.idm.srvc.cat.dto.Category;
+import org.openiam.idm.srvc.cat.domain.CategoryEntity;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 
 @Entity
@@ -52,7 +52,7 @@ public class MetadataTypeEntity implements java.io.Serializable {
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "TYPE_ID", insertable = false, updatable = false)
-    private Set<Category> categories = new HashSet<Category>(0);
+    private Set<CategoryEntity> categories = new HashSet<CategoryEntity>(0);
 
 
     public Map<String, MetadataElementEntity> getElementAttributes() {
@@ -64,11 +64,11 @@ public class MetadataTypeEntity implements java.io.Serializable {
         this.elementAttributes = elementAttributes;
     }
 
-    public Set<Category> getCategories() {
+    public Set<CategoryEntity> getCategories() {
         return categories;
     }
 
-    public void setCategories(Set<Category> categories) {
+    public void setCategories(Set<CategoryEntity> categories) {
         this.categories = categories;
     }
 
@@ -103,4 +103,70 @@ public class MetadataTypeEntity implements java.io.Serializable {
     public void setSyncManagedSys(int syncManagedSys) {
         this.syncManagedSys = syncManagedSys;
     }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + active;
+        result = prime * result
+                + ((categories == null) ? 0 : categories.hashCode());
+        result = prime * result
+                + ((description == null) ? 0 : description.hashCode());
+        result = prime
+                * result
+                + ((elementAttributes == null) ? 0 : elementAttributes
+                        .hashCode());
+        result = prime * result
+                + ((metadataTypeId == null) ? 0 : metadataTypeId.hashCode());
+        result = prime * result + syncManagedSys;
+        return result;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        MetadataTypeEntity other = (MetadataTypeEntity) obj;
+        if (active != other.active)
+            return false;
+        if (categories == null) {
+            if (other.categories != null)
+                return false;
+        } else if (!categories.equals(other.categories))
+            return false;
+        if (description == null) {
+            if (other.description != null)
+                return false;
+        } else if (!description.equals(other.description))
+            return false;
+        if (elementAttributes == null) {
+            if (other.elementAttributes != null)
+                return false;
+        } else if (!elementAttributes.equals(other.elementAttributes))
+            return false;
+        if (metadataTypeId == null) {
+            if (other.metadataTypeId != null)
+                return false;
+        } else if (!metadataTypeId.equals(other.metadataTypeId))
+            return false;
+        if (syncManagedSys != other.syncManagedSys)
+            return false;
+        return true;
+    }
+
 }

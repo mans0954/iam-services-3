@@ -6,7 +6,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -348,7 +347,7 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractTestNGSpr
 	
 	private void checkRoleMembership(final String userId, final String roleId) {
 		final User user = userDataWebService.getUserWithDependent(userId, true).getUser();
-		final Role role = roleDataWebService.getRole(roleId).getRole();
+        final Role role = roleDataWebService.getRole(roleId);
 		
 		final List<AuthorizationManagerLoginId> loginIdList = getLoginIdList(user);
 		

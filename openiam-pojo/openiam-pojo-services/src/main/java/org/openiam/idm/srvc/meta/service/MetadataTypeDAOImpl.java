@@ -8,7 +8,7 @@ import java.util.Set;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.openiam.core.dao.BaseDaoImpl;
-import org.openiam.idm.srvc.cat.dto.Category;
+import org.openiam.idm.srvc.cat.domain.CategoryEntity;
 import org.openiam.idm.srvc.cat.service.CategoryDAO;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,11 +28,11 @@ public class MetadataTypeDAOImpl extends
 
     @Override
     public void addCategoryToType(String typeId, String categoryId) {
-        Category cat = categoryDao.findById(categoryId);
+        CategoryEntity cat = categoryDao.findById(categoryId);
         if (cat == null)
             return;
         MetadataTypeEntity type = findById(typeId);
-        Set<Category> categorySet = type.getCategories();
+        Set<CategoryEntity> categorySet = type.getCategories();
         categorySet.add(cat);
 
         try {
@@ -50,13 +50,13 @@ public class MetadataTypeDAOImpl extends
 
         MetadataTypeEntity type = findById(typeId);
         org.hibernate.Hibernate.initialize(type.getCategories());
-        Set<Category> categorySet = type.getCategories();
+        Set<CategoryEntity> categorySet = type.getCategories();
         if (categorySet == null || categorySet.isEmpty()) {
             return;
         }
-        Iterator<Category> it = categorySet.iterator();
+        Iterator<CategoryEntity> it = categorySet.iterator();
         while (it.hasNext()) {
-            Category cat = it.next();
+            CategoryEntity cat = it.next();
             if (cat.getCategoryId().equalsIgnoreCase(categoryId)) {
                 it.remove();
             }

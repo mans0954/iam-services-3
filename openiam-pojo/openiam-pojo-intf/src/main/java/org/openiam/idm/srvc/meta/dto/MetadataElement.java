@@ -20,6 +20,10 @@ import org.openiam.dozer.DozerDTOCorrespondence;
 @DozerDTOCorrespondence(MetadataElement.class)
 public class MetadataElement implements java.io.Serializable {
 
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
     private String metadataElementId;
     private String metadataTypeId;
     private String attributeName;

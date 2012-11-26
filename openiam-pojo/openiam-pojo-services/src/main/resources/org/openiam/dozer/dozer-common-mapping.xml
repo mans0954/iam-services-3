@@ -103,4 +103,16 @@
 		<class-a>org.openiam.idm.srvc.org.dto.OrganizationAttribute</class-a>
 		<class-b>org.openiam.idm.srvc.org.dto.OrganizationAttribute</class-b>
 	</mapping>
+	<mapping>
+		<class-a>org.openiam.idm.srvc.cat.dto.Category</class-a>
+		<class-b>org.openiam.idm.srvc.cat.dto.Category</class-b>
+	</mapping>
+		<mapping>
+		<class-a>org.openiam.idm.srvc.cat.dto.CategoryType</class-a>
+		<class-b>org.openiam.idm.srvc.cat.dto.CategoryType</class-b>
+	</mapping>
+		<mapping>
+		<class-a>org.openiam.idm.srvc.cat.dto.CategoryLanguage</class-a>
+		<class-b>org.openiam.idm.srvc.cat.dto.CategoryLanguage</class-b>
+	</mapping>
 </mappings>

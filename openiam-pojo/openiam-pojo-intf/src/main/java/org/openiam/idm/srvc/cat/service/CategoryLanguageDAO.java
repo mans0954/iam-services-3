@@ -1,21 +1,9 @@
 package org.openiam.idm.srvc.cat.service;
 
-import org.openiam.idm.srvc.cat.dto.CategoryLanguage;
+import org.openiam.core.dao.BaseDao;
+import org.openiam.idm.srvc.cat.domain.CategoryLanguageEntity;
 
-import java.util.List;
-
-public interface CategoryLanguageDAO {
-
-    public abstract void add(CategoryLanguage transientInstance);
-
-    public abstract void remove(CategoryLanguage persistentInstance);
-
-    public abstract CategoryLanguage update(CategoryLanguage detachedInstance);
-
-    public abstract CategoryLanguage findById(
-            org.openiam.idm.srvc.cat.dto.CategoryLanguageId id);
-
-    public abstract List<CategoryLanguage> findByExample(
-            CategoryLanguage instance);
+public interface CategoryLanguageDAO extends
+        BaseDao<CategoryLanguageEntity, String> {
 
 }

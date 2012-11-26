@@ -150,4 +150,28 @@
     		<b>categories</b>
     	</field-exclude>		
 	</mapping>
+	<mapping>
+		<class-a>org.openiam.idm.srvc.meta.domain.MetadataTypeEntity</class-a>
+		<class-b>org.openiam.idm.srvc.meta.dto.MetadataType</class-b>
+    	<field-exclude>
+    		<a>elementAttributes</a>
+    		<b>elementAttributes</b>
+    	</field-exclude>
+    	<field-exclude>
+    		<a>categories</a>
+    		<b>categories</b>
+    	</field-exclude>		
+	</mapping>
+	<mapping>
+		<class-a>org.openiam.idm.srvc.cat.domain.CategoryEntity</class-a>
+		<class-b>org.openiam.idm.srvc.cat.dto.Category</class-b>
+    	<field-exclude>
+    		<a>childCategories</a>
+    		<b>childCategories</b>
+    	</field-exclude>
+    	<field-exclude>
+    		<a>categoryLanguages</a>
+    		<b>categoryLanguages</b>
+    	</field-exclude>		
+	</mapping>
 </mappings>
