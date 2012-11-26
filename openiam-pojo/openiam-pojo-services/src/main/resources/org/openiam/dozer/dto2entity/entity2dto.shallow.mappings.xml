@@ -133,5 +133,9 @@
 			<a>parentRoles</a>
 			<b>parentRoles</b>
 		</field-exclude>
+		<field-exclude>
+			<a>resourceRoles</a>
+			<b>resourceRoles</b>
+		</field-exclude>
     </mapping>
 </mappings>

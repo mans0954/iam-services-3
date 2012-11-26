@@ -132,7 +132,6 @@ public class TestGroupConversion extends AbstractTestNGSpringContextTests {
 		role.setInternalRoleId(rs(2));
 		role.setMetadataTypeId(rs(2));
 		role.setOwnerId(rs(2));
-		role.setProvisionObjName(rs(2));
 		role.setRoleName(rs(2));
 		role.setStatus(rs(2));
 		final Set<RolePolicyEntity> rolePolicySet = new HashSet<RolePolicyEntity>();
@@ -209,7 +208,6 @@ public class TestGroupConversion extends AbstractTestNGSpringContextTests {
 		Assert.assertEquals(original.getInternalRoleId(), copy.getInternalRoleId());
 		Assert.assertEquals(original.getMetadataTypeId(), copy.getMetadataTypeId());
 		Assert.assertEquals(original.getOwnerId(), copy.getOwnerId());
-		Assert.assertEquals(original.getProvisionObjName(), copy.getProvisionObjName());
 		Assert.assertEquals(original.getRoleName(), copy.getRoleName());
 		Assert.assertEquals(original.getStatus(), copy.getStatus());
 		

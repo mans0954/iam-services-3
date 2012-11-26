@@ -46,9 +46,6 @@ public class RoleEntity implements Serializable {
     @Column(name="ROLE_NAME",length=80)
     private String roleName;
     
-    @Column(name="PROVISION_OBJ_NAME",length=80)
-    private String provisionObjName;
-    
     @Column(name="DESCRIPTION")
     private String description;
     
@@ -123,14 +120,6 @@ public class RoleEntity implements Serializable {
 
 	public void setRoleName(String roleName) {
 		this.roleName = roleName;
-	}
-
-	public String getProvisionObjName() {
-		return provisionObjName;
-	}
-
-	public void setProvisionObjName(String provisionObjName) {
-		this.provisionObjName = provisionObjName;
 	}
 
 	public String getDescription() {
@@ -292,9 +281,6 @@ public class RoleEntity implements Serializable {
 		result = prime * result
 				+ ((metadataTypeId == null) ? 0 : metadataTypeId.hashCode());
 		result = prime * result + ((ownerId == null) ? 0 : ownerId.hashCode());
-		result = prime
-				* result
-				+ ((provisionObjName == null) ? 0 : provisionObjName.hashCode());
 		result = prime * result + ((roleId == null) ? 0 : roleId.hashCode());
 		result = prime * result
 				+ ((roleName == null) ? 0 : roleName.hashCode());
@@ -343,11 +329,6 @@ public class RoleEntity implements Serializable {
 				return false;
 		} else if (!ownerId.equals(other.ownerId))
 			return false;
-		if (provisionObjName == null) {
-			if (other.provisionObjName != null)
-				return false;
-		} else if (!provisionObjName.equals(other.provisionObjName))
-			return false;
 		if (roleId == null) {
 			if (other.roleId != null)
 				return false;
@@ -374,8 +355,8 @@ public class RoleEntity implements Serializable {
 	@Override
 	public String toString() {
 		return String
-				.format("RoleEntity [roleId=%s, roleName=%s, provisionObjName=%s, description=%s, status=%s, metadataTypeId=%s, ownerId=%s, internalRoleId=%s, serviceId=%s, createDate=%s, createdBy=%s]",
-						roleId, roleName, provisionObjName, description,
+				.format("RoleEntity [roleId=%s, roleName=%s, description=%s, status=%s, metadataTypeId=%s, ownerId=%s, internalRoleId=%s, serviceId=%s, createDate=%s, createdBy=%s]",
+						roleId, roleName, description,
 						status, metadataTypeId, ownerId, internalRoleId,
 						serviceId, createDate, createdBy);
 	}

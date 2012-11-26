@@ -28,8 +28,6 @@ import org.openiam.idm.srvc.res.domain.ResourceRoleEntity;
         "branchId",
         "categoryId",
         "displayOrder",
-        "nodeLevel",
-        "sensitiveApp",
         "managedSysId",
         "URL",
         "resourceRoles",
@@ -55,8 +53,6 @@ public class Resource extends BaseObject {
     private String branchId;
     private String categoryId;
     private Integer displayOrder;
-    private Integer nodeLevel;
-    private Integer sensitiveApp;
     private String managedSysId;
     private String URL;
 
@@ -147,22 +143,6 @@ public class Resource extends BaseObject {
     public void setDisplayOrder(Integer displayOrder) {
         this.displayOrder = displayOrder;
     }
-    
-    public Integer getNodeLevel() {
-        return this.nodeLevel;
-    }
-
-    public void setNodeLevel(Integer nodeLevel) {
-        this.nodeLevel = nodeLevel;
-    }
-
-    public Integer getSensitiveApp() {
-        return this.sensitiveApp;
-    }
-
-    public void setSensitiveApp(Integer sensitiveApp) {
-        this.sensitiveApp = sensitiveApp;
-    }
 
     public Set<ResourceRole> getResourceRoles() {
         return this.resourceRoles;
@@ -249,8 +229,6 @@ public class Resource extends BaseObject {
                 ", branchId='" + branchId + '\'' +
                 ", categoryId='" + categoryId + '\'' +
                 ", displayOrder=" + displayOrder +
-                ", nodeLevel=" + nodeLevel +
-                ", sensitiveApp=" + sensitiveApp +
                 ", managedSysId='" + managedSysId + '\'' +
                 ", URL='" + URL + '\'' +
                 ", resOwnerUserId='" + resOwnerUserId + '\'' +

@@ -12,6 +12,7 @@ import org.openiam.idm.srvc.role.dto.Role;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "RoleSearchBean", propOrder = {
         "name",
+        "serviceId",
         "isRootsOnly"
 })
 public class RoleSearchBean extends AbstractSearchBean<Role, String> implements SearchBean<Role, String>, Serializable {
@@ -19,6 +20,7 @@ public class RoleSearchBean extends AbstractSearchBean<Role, String> implements 
 	private static final long serialVersionUID = 1L;
 
 	private String name;
+	private String serviceId;
 	private Boolean isRootsOnly;
 	
 	public String getName() {
@@ -37,12 +39,23 @@ public class RoleSearchBean extends AbstractSearchBean<Role, String> implements 
 		this.isRootsOnly = isRootsOnly;
 	}
 
+	public String getServiceId() {
+		return serviceId;
+	}
+
+	public void setServiceId(String serviceId) {
+		this.serviceId = serviceId;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result + (isRootsOnly ? 1231 : 1237);
+		result = prime * result
+				+ ((isRootsOnly == null) ? 0 : isRootsOnly.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result
+				+ ((serviceId == null) ? 0 : serviceId.hashCode());
 		return result;
 	}
 
@@ -55,12 +68,20 @@ public class RoleSearchBean extends AbstractSearchBean<Role, String> implements 
 		if (getClass() != obj.getClass())
 			return false;
 		RoleSearchBean other = (RoleSearchBean) obj;
-		if (isRootsOnly != other.isRootsOnly)
+		if (isRootsOnly == null) {
+			if (other.isRootsOnly != null)
+				return false;
+		} else if (!isRootsOnly.equals(other.isRootsOnly))
 			return false;
 		if (name == null) {
 			if (other.name != null)
 				return false;
 		} else if (!name.equals(other.name))
+			return false;
+		if (serviceId == null) {
+			if (other.serviceId != null)
+				return false;
+		} else if (!serviceId.equals(other.serviceId))
 			return false;
 		return true;
 	}
@@ -68,9 +89,9 @@ public class RoleSearchBean extends AbstractSearchBean<Role, String> implements 
 	@Override
 	public String toString() {
 		return String.format(
-				"RoleSearchBean [name=%s, isRootsOnly=%s, toString()=%s]",
-				name, isRootsOnly, super.toString());
+				"RoleSearchBean [name=%s, serviceId=%s, isRootsOnly=%s]", name,
+				serviceId, isRootsOnly);
 	}
-	
+
 	
 }

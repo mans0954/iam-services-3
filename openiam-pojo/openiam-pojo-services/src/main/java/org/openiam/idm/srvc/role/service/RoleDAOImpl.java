@@ -21,6 +21,7 @@ import org.hibernate.Query;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 
@@ -55,8 +56,30 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
 			if(StringUtils.isNotBlank(entity.getRoleId())) {
 				criteria.add(Restrictions.eq("roleId", entity.getRoleId()));
 			} else {
-				if(StringUtils.isNotBlank(entity.getRoleName())) {
-					criteria.add(Restrictions.eq("roleName", entity.getRoleName()));
+
+				if (StringUtils.isNotEmpty(entity.getRoleName())) {
+	                String roleName = entity.getRoleName();
+	                MatchMode matchMode = null;
+	                if (StringUtils.indexOf(roleName, "*") == 0) {
+	                    matchMode = MatchMode.END;
+	                    roleName = roleName.substring(1);
+	                }
+	                if (StringUtils.isNotEmpty(roleName) && StringUtils.indexOf(roleName, "*") == roleName.length() - 1) {
+	                	roleName = roleName.substring(0, roleName.length() - 1);
+	                    matchMode = (matchMode == MatchMode.END) ? MatchMode.ANYWHERE : MatchMode.START;
+	                }
+
+	                if (StringUtils.isNotEmpty(roleName)) {
+	                    if (matchMode != null) {
+	                        criteria.add(Restrictions.ilike("roleName", roleName, matchMode));
+	                    } else {
+	                        criteria.add(Restrictions.eq("roleName", roleName));
+	                    }
+	                }
+	            }
+				
+				if(StringUtils.isNotBlank(entity.getServiceId())) {
+					criteria.add(Restrictions.eq("serviceId", entity.getServiceId()));
 				}
 				
 				if(CollectionUtils.isNotEmpty(entity.getResourceRoles())) {

@@ -33,7 +33,7 @@ public interface RoleDataWebService {
      * @return
      */
     @WebMethod
-    RoleResponse getRole(
+    Role getRole(
             @WebParam(name = "roleId", targetNamespace = "")
             String roleId);
 

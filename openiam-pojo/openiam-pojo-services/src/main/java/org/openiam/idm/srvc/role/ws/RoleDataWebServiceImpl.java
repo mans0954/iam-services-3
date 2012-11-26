@@ -180,28 +180,15 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 	}
 
 	@Override
-	public RoleResponse getRole(String roleId) {
-		final RoleResponse response = new RoleResponse(ResponseStatus.SUCCESS);
-		try {
-			if(roleId == null) {
-				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-			}
-			
+	public Role getRole(String roleId) {
+		Role retVal = null;
+		if(roleId != null) {
 			final RoleEntity entity = roleDataService.getRole(roleId);
-			if(entity == null) {
-				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+			if(entity != null) {
+				retVal = roleDozerConverter.convertToDTO(entity, false);
 			}
-			
-			final Role role = roleDozerConverter.convertToDTO(entity, false);
-			response.setRole(role);
-		} catch(BasicDataServiceException e) {
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(e.getCode());
-		} catch(Throwable e) {
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorText(e.getMessage());
 		}
-		return response;
+		return retVal;
 	}
 
 	@Override

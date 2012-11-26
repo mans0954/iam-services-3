@@ -513,8 +513,8 @@ public class LoginDataServiceImpl implements LoginDataService {
 			throw new IllegalArgumentException("Invalid status value");
 		}
 		// since each security domain may have different authn policies, loop through each domain
-		SecurityDomain[] secDomainAry = secDomainService.getAllDomainsWithExclude("IDM");
-		for (SecurityDomain secDom : secDomainAry) {
+		final List<SecurityDomain> securityDomainList = secDomainService.getAllDomainsWithExclude("IDM");
+		for (SecurityDomain secDom : securityDomainList) {
 			String authnPolicy =  secDom.getAuthnPolicyId();
 			if (authnPolicy != null) {
 				Policy plcy = policyDao.findById(authnPolicy);

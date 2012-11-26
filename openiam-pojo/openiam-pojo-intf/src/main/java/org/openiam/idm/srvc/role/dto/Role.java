@@ -5,6 +5,7 @@ import org.openiam.base.BaseObject;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupSetAdapter;
+import org.openiam.idm.srvc.res.dto.ResourceRole;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 
 import javax.xml.bind.annotation.*;
@@ -27,7 +28,6 @@ import java.util.*;
  *         &lt;element name="description" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *         &lt;element name="groups" type="{urn:idm.openiam.org/srvc/grp/dto}groupSet" minOccurs="0"/>
  *         &lt;element name="id" type="{urn:idm.openiam.org/srvc/role/dto}roleId" minOccurs="0"/>
- *         &lt;element name="provisionObjName" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *         &lt;element name="roleAttributes" type="{urn:idm.openiam.org/srvc/role/dto}roleAttributeSet" minOccurs="0"/>
  *         &lt;element name="roleName" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *         &lt;element name="userAssociationMethod" type="{http://www.w3.org/2001/XMLSchema}int" minOccurs="0"/>
@@ -48,7 +48,6 @@ import java.util.*;
         "createdBy",
         "description",
         "groups",
-        "provisionObjName",
         "roleAttributes",
         "roleName",
         "userAssociationMethod",
@@ -62,7 +61,8 @@ import java.util.*;
         "startDate",
         "endDate",
         "rolePolicy",
-        "parentRoles"
+        "parentRoles",
+        "resourceRoles"
 })
 @XmlRootElement(name = "Role")
 @XmlSeeAlso({
@@ -87,7 +87,6 @@ public class Role extends BaseObject implements Comparable<Role> {
     @XmlJavaTypeAdapter(GroupSetAdapter.class)
     protected Set<Group> groups = new HashSet<Group>(0);
     protected String roleId;
-    protected String provisionObjName;
     @XmlJavaTypeAdapter(RoleAttributeSetAdapter.class)
     protected Set<RoleAttribute> roleAttributes = new HashSet<RoleAttribute>(0);
 
@@ -107,6 +106,8 @@ public class Role extends BaseObject implements Comparable<Role> {
 
     private Set<Role> parentRoles;
     private Set<Role> childRoles;
+    
+    private Set<ResourceRole> resourceRoles;
 
 
     @XmlSchemaType(name = "dateTime")
@@ -167,14 +168,6 @@ public class Role extends BaseObject implements Comparable<Role> {
 
     public void setGroups(Set<Group> value) {
         this.groups = value;
-    }
-
-    public String getProvisionObjName() {
-        return provisionObjName;
-    }
-
-    public void setProvisionObjName(String value) {
-        this.provisionObjName = value;
     }
 
     public Set<RoleAttribute> getRoleAttributes() {
@@ -338,6 +331,13 @@ public class Role extends BaseObject implements Comparable<Role> {
         return getRoleName().compareTo(o.getRoleName());
     }
 
+	public Set<ResourceRole> getResourceRoles() {
+		return resourceRoles;
+	}
+
+	public void setResourceRoles(Set<ResourceRole> resourceRoles) {
+		this.resourceRoles = resourceRoles;
+	}
 
 	@Override
 	public int hashCode() {
