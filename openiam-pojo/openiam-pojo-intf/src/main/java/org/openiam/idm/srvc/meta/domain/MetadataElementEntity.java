@@ -1,78 +1,89 @@
-package org.openiam.idm.srvc.meta.dto;
+package org.openiam.idm.srvc.meta.domain;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlType;
+import javax.persistence.Cacheable;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.meta.dto.MetadataElement;
 
-// Generated Nov 4, 2008 12:11:29 AM by Hibernate Tools 3.2.2.GA
-
-/**
- * <code>MetadataElement</code> represents an attribute of MetadataType.
- * MetadataElement also contains parameters that define validation constraints.
- */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "MetadataElement", propOrder = { "metadataElementId",
-        "metadataTypeId", "attributeName", "description", "minLen", "maxLen",
-        "defaultValue", "valueList", "label", "multiValue", "auditable",
-        "required", "selfEditable", "selfViewable", "uiType", "uiSize",
-        "valueSrc", "minValue", "maxValue", "textCase", "dataType" })
+@Entity
+@Table(name = "METADATA_ELEMENT")
+@Cacheable
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(MetadataElement.class)
-public class MetadataElement implements java.io.Serializable {
+public class MetadataElementEntity implements java.io.Serializable {
 
+    private static final long serialVersionUID = 1L;
+
+    @Id
+    @GeneratedValue(generator = "system-uuid")
+    @GenericGenerator(name = "system-uuid", strategy = "uuid")
+    @Column(name = "METADATA_ID", length = 32)
     private String metadataElementId;
-    private String metadataTypeId;
+
+    @Column(name = "TYPE_ID", length = 32)
+    private Long metadataTypeId;
+
+    @Column(name = "ATTRIBUTE_NAME", length = 50)
     private String attributeName;
+
+    @Column(name = "DESCRIPTION", length = 40)
     private String description;
-    private Integer minLen = 0;
+
+    @Column(name = "MIN_LEN")
+    private Integer minLen;
+
+    @Column(name = "MAX_LEN")
     private Integer maxLen;
+
+    @Column(name = "TEXT_CASE", length = 20)
     private String textCase;
+
+    @Column(name = "DATA_TYPE", length = 20)
     private String dataType;
-    private Long minValue;
+
+    @Column(name = "MIN_VALUE")
+    private Long minValue = 0L;
+
+    @Column(name = "MAX_VALUE")
     private Long maxValue;
+
+    @Column(name = "DEFAULT_VALUE", length = 100)
     private String defaultValue;
+
+    @Column(name = "VALUE_LIST", length = 1000)
     private String valueList;
+
+    @Column(name = "LABEL", length = 100)
     private String label;
-    private String multiValue;
+
+    @Column(name = "MULTI_VALUE")
+    private Integer multiValue;
+
+    @Column(name = "AUDITABLE")
     private Integer auditable = 1;
+
+    @Column(name = "REQUIRED")
     private Integer required = 0;
 
+    @Column(name = "SELF_EDITABLE")
     private Integer selfEditable = 0;
+
+    @Column(name = "SELF_VIEWABLE")
     private Integer selfViewable = 0;
 
+    @Column(name = "UI_TYPE", length = 20)
     private String uiType;
+    @Column(name = "UI_OBJECT_SIZE", length = 40)
     private String uiSize;
+    @Column(name = "VALUE_SRC", length = 1000)
     private String valueSrc;
-
-    public MetadataElement() {
-    }
-
-    public MetadataElement(String metadataId) {
-        this.metadataElementId = metadataId;
-    }
-
-    public MetadataElement(String metadataId, String typeId,
-            String attributeName, String description, Integer minLen,
-            Integer maxLen, String textCase, String dataType, Long minValue,
-            Long maxValue, String defaultValue, String valueList, String label,
-            String multiValue, Integer auditable, Integer required) {
-        this.metadataElementId = metadataId;
-        this.metadataTypeId = typeId;
-        this.attributeName = attributeName;
-        this.description = description;
-        this.minLen = minLen;
-        this.maxLen = maxLen;
-        this.textCase = textCase;
-        this.dataType = dataType;
-        this.minValue = minValue;
-        this.maxValue = maxValue;
-        this.defaultValue = defaultValue;
-        this.valueList = valueList;
-        this.label = label;
-        this.multiValue = multiValue;
-        this.auditable = auditable;
-        this.required = required;
-    }
 
     public String getMetadataElementId() {
         return metadataElementId;
@@ -80,14 +91,6 @@ public class MetadataElement implements java.io.Serializable {
 
     public void setMetadataElementId(String metadataElementId) {
         this.metadataElementId = metadataElementId;
-    }
-
-    public String getMetadataTypeId() {
-        return metadataTypeId;
-    }
-
-    public void setMetadataTypeId(String metadataTypeId) {
-        this.metadataTypeId = metadataTypeId;
     }
 
     public String getAttributeName() {
@@ -178,11 +181,11 @@ public class MetadataElement implements java.io.Serializable {
         this.label = label;
     }
 
-    public String getMultiValue() {
+    public Integer getMultiValue() {
         return multiValue;
     }
 
-    public void setMultiValue(String multiValue) {
+    public void setMultiValue(Integer multiValue) {
         this.multiValue = multiValue;
     }
 
@@ -200,6 +203,22 @@ public class MetadataElement implements java.io.Serializable {
 
     public void setRequired(Integer required) {
         this.required = required;
+    }
+
+    public Integer getSelfEditable() {
+        return selfEditable;
+    }
+
+    public void setSelfEditable(Integer selfEditable) {
+        this.selfEditable = selfEditable;
+    }
+
+    public Integer getSelfViewable() {
+        return selfViewable;
+    }
+
+    public void setSelfViewable(Integer selfViewable) {
+        this.selfViewable = selfViewable;
     }
 
     public String getUiType() {
@@ -226,26 +245,11 @@ public class MetadataElement implements java.io.Serializable {
         this.valueSrc = valueSrc;
     }
 
-    public boolean isRequire() {
-        if (required == null || required == 0) {
-            return false;
-        }
-        return true;
+    public Long getMetadataTypeId() {
+        return metadataTypeId;
     }
 
-    public Integer getSelfEditable() {
-        return selfEditable;
-    }
-
-    public void setSelfEditable(Integer selfEditable) {
-        this.selfEditable = selfEditable;
-    }
-
-    public Integer getSelfViewable() {
-        return selfViewable;
-    }
-
-    public void setSelfViewable(Integer selfViewable) {
-        this.selfViewable = selfViewable;
+    public void setMetadataTypeId(Long metadataTypeId) {
+        this.metadataTypeId = metadataTypeId;
     }
 }

@@ -88,6 +88,16 @@
 		<class-a>org.openiam.idm.srvc.res.dto.ResourceType</class-a>
 		<class-b>org.openiam.idm.srvc.res.dto.ResourceType</class-b>
 	</mapping>
+
+	<mapping>
+		<class-a>org.openiam.idm.srvc.meta.dto.MetadataElement</class-a>
+		<class-b>org.openiam.idm.srvc.meta.dto.MetadataElement</class-b>
+	</mapping>
+
+	<mapping>
+		<class-a>org.openiam.idm.srvc.meta.dto.MetadataType</class-a>
+		<class-b>org.openiam.idm.srvc.meta.dto.MetadataType</class-b>
+	</mapping>
 	
 	<mapping>
 		<class-a>org.openiam.idm.srvc.org.dto.OrganizationAttribute</class-a>

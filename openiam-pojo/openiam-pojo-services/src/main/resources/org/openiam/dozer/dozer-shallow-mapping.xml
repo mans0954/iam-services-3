@@ -173,5 +173,17 @@
 			<b>childResources</b>
 		</field-exclude>
 	</mapping>
+	<mapping>
+		<class-a>org.openiam.idm.srvc.meta.dto.MetadataType</class-a>
+		<class-b>org.openiam.idm.srvc.meta.dto.MetadataType</class-b>
+		<field-exclude>
+			<a>categories</a>
+			<b>categories</b>
+		</field-exclude>
+		<field-exclude>
+			<a>elementAttributes</a>
+			<b>elementAttributes</b>
+		</field-exclude>
+	</mapping>
 </mappings>
         

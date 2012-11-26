@@ -186,4 +186,16 @@
 			<b>resource</b>
 		</field>
 	</mapping>
+		<mapping>
+		 <class-a>org.openiam.idm.srvc.meta.dto.MetadataType</class-a>
+		<class-b>org.openiam.idm.srvc.meta.dto.MetadataType</class-b>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="deepDozerMapper">
+			<a>categories</a>
+			<b>categories</b> 
+		</field>
+		<field custom-converter=org.openiam.dozer.crossentity.CrossEntityMapConverterWithKeyString" custom-converter-param="deepDozerMapper">
+			<a>elementAttributes</a>
+			<b>elementAttributes</b>
+		</field>
+	</mapping>
 </mappings>
