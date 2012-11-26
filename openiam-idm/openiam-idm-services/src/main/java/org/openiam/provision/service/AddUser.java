@@ -197,25 +197,14 @@ public class AddUser {
 				if (roleDataService.getRole(r.getRoleId()) == null ) {
 					return ResponseCode.ROLE_ID_INVALID;			
 				}
-				
-				final UserRole ur = new UserRole();
-				ur.setUserId(newUserId);
-				ur.setRoleId(r.getRoleId());
-
-				if ( r.getStartDate() != null) {
-					ur.setStartDate(r.getStartDate());
-				}
-				if ( r.getEndDate() != null ) {
-					ur.setEndDate(r.getEndDate());
-				}
-				roleDataService.assocUserToRole(ur);
+				roleDataService.addUserToRole(r.getRoleId(), newUserId);
 
 
                 logList.add( auditHelper.createLogObject("ADD ROLE", user.getRequestorDomain(), user.getRequestorLogin(),
                     "IDM SERVICE", user.getCreatedBy(), "0", "USER", user.getUserId(),
                     null, "SUCCESS", null, "USER_STATUS",
                     user.getUser().getStatus().toString(),
-                    "NA", null, user.getSessionId(), null, ur.getRoleId(),
+                    "NA", null, user.getSessionId(), null, r.getRoleId(),
                         user.getRequestClientIP(), null, null) );
 
 

@@ -1521,7 +1521,7 @@ implements ProvisionService,  ApplicationContextAware  {
 						requestId,  null, null, null);
 				
 			}else {
-				if (!groupManager.isUserInGroup(g.getGrpId(), userId)) {
+				if (!groupManager.isUserInCompiledGroupList(g.getGrpId(), userId)) {
 					groupManager.addUserToGroup(g.getGrpId(), userId);
 					
 					auditHelper.addLog("MODIFY USER", null,
@@ -1552,18 +1552,15 @@ implements ProvisionService,  ApplicationContextAware  {
 						r.getRoleName(),
 						requestId, null, null, null);
 				
-			}else {
-				if (!roleDataService.isUserInRole(r.getRoleId(), userId)) {
-					roleDataService.addUserToRole(r.getRoleId(), userId);
+			} else {
+				roleDataService.addUserToRole(r.getRoleId(), userId);
 
-					auditHelper.addLog("MODIFY USER", null,
-							primaryId, "IDM SERVICE",
-							updatedBy, "0",
-							"USER", userId, null ,"SUCCESS", logId,  "ADD ROLE", 
-							r.getRoleName(),
-							requestId, null,null, null);
-					
-				}
+				auditHelper.addLog("MODIFY USER", null,
+						primaryId, "IDM SERVICE",
+						updatedBy, "0",
+						"USER", userId, null ,"SUCCESS", logId,  "ADD ROLE", 
+						r.getRoleName(),
+						requestId, null,null, null);
 			}
 		}		
 	}

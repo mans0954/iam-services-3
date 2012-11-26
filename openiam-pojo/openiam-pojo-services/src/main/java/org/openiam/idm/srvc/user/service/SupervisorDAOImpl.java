@@ -11,7 +11,10 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
+import org.openiam.core.dao.BaseDao;
+import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
+import org.springframework.stereotype.Repository;
 
 import static org.hibernate.criterion.Example.create;
 
@@ -19,119 +22,13 @@ import static org.hibernate.criterion.Example.create;
  * Data Access Object implementation for domain model class Supervisor.
  * @see org.openiam.idm.srvc.user.dto.Supervisor
  */
-public class SupervisorDAOImpl implements SupervisorDAO  {
+@Repository("supervisorDAO")
+public class SupervisorDAOImpl extends BaseDaoImpl<SupervisorEntity, String> implements SupervisorDAO  {
+    @Override
+    protected String getPKfieldName() {
+        return "orgStructureId";
+    }
 
-    private static final Log log = LogFactory.getLog(SupervisorDAOImpl.class);
-
-	private SessionFactory sessionFactory;
-
-	
-	public void setSessionFactory(SessionFactory session) {
-		   this.sessionFactory = session;
-	}
-	
-	protected SessionFactory getSessionFactory() {
-		try {
-			return (SessionFactory) new InitialContext()
-					.lookup("SessionFactory");
-		} catch (Exception e) {
-			log.error("Could not locate SessionFactory in JNDI", e);
-			throw new IllegalStateException(
-					"Could not locate SessionFactory in JNDI");
-		}
-	}
-	
-    
-    /* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.service.SupervisorDAO#add(org.openiam.idm.srvc.user.dto.Supervisor)
-	 */
-    public void add(SupervisorEntity transientInstance) {
-        log.debug("persisting Supervisor instance");
-        try {
-            sessionFactory.getCurrentSession().persist(transientInstance);
-            log.debug("persist successful");
-        }
-        catch (RuntimeException re) {
-            log.error("persist failed", re);
-            throw re;
-        }
-    }
-    
-    
-    
-    /* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.service.SupervisorDAO#remove(org.openiam.idm.srvc.user.dto.Supervisor)
-	 */
-    public void remove(SupervisorEntity persistentInstance) {
-        log.debug("deleting Supervisor instance");
-        try {
-            sessionFactory.getCurrentSession().delete(persistentInstance);
-            log.debug("delete successful");
-        }
-        catch (RuntimeException re) {
-            log.error("delete failed", re);
-            throw re;
-        }
-    }
-    
-    /* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.service.SupervisorDAO#update(org.openiam.idm.srvc.user.dto.Supervisor)
-	 */
-    public SupervisorEntity update(SupervisorEntity detachedInstance) {
-        log.debug("merging Supervisor instance");
-        try {
-            SupervisorEntity result = (SupervisorEntity) sessionFactory.getCurrentSession()
-                    .merge(detachedInstance);
-            log.debug("merge successful");
-            return result;
-        }
-        catch (RuntimeException re) {
-            log.error("merge failed", re);
-            throw re;
-        }
-    }
-    
-    /* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.service.SupervisorDAO#findById(java.lang.String)
-	 */
-    public SupervisorEntity findById( java.lang.String id) {
-        log.debug("getting Supervisor instance with id: " + id);
-        try {
-            SupervisorEntity instance = (SupervisorEntity) sessionFactory.getCurrentSession()
-                    .get(SupervisorEntity.class, id);
-            if (instance==null) {
-                log.debug("get successful, no instance found");
-            }
-            else {
-                log.debug("get successful, instance found");
-            }
-            return instance;
-        }
-        catch (RuntimeException re) {
-            log.error("get failed", re);
-            throw re;
-        }
-    }
-    
-    /* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.service.SupervisorDAO#findByExample(org.openiam.idm.srvc.user.dto.Supervisor)
-	 */
-    public List<SupervisorEntity> findByExample(SupervisorEntity instance) {
-        log.debug("finding Supervisor instance by example");
-        try {
-            List<SupervisorEntity> results = (List<SupervisorEntity>) sessionFactory.getCurrentSession()
-                    .createCriteria(SupervisorEntity.class)
-                    .add(create(instance))
-            .list();
-            log.debug("find by example successful, result size: " + results.size());
-            return results;
-        }
-        catch (RuntimeException re) {
-            log.error("find by example failed", re);
-            throw re;
-        }
-    } 
-    
     /**
      * Returns a list of Supervisor objects that represents the employees or users for this supervisor
      * @param supervisorId

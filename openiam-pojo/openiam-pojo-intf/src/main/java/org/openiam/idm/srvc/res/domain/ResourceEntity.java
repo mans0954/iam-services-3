@@ -65,12 +65,6 @@ public class ResourceEntity {
     @Column(name = "DISPLAY_ORDER")
     private Integer displayOrder;
 
-    @Column(name = "NODE_LEVEL")
-    private Integer nodeLevel;
-
-    @Column(name = "SENSITIVE_APP")
-    private Integer sensitiveApp;
-
     @Column(name = "MANAGED_SYS_ID")
     private String managedSysId;
 
@@ -197,22 +191,6 @@ public class ResourceEntity {
         this.displayOrder = displayOrder;
     }
 
-    public Integer getNodeLevel() {
-        return nodeLevel;
-    }
-
-    public void setNodeLevel(Integer nodeLevel) {
-        this.nodeLevel = nodeLevel;
-    }
-
-    public Integer getSensitiveApp() {
-        return sensitiveApp;
-    }
-
-    public void setSensitiveApp(Integer sensitiveApp) {
-        this.sensitiveApp = sensitiveApp;
-    }
-
     public String getManagedSysId() {
         return managedSysId;
     }
@@ -285,15 +263,28 @@ public class ResourceEntity {
         this.resourceGroups = resourceGroups;
     }
 
-    /*
-    public Set<ResourcePrivilegeEntity> getEntitlements() {
-        return entitlements;
-    }
-
-    public void setEntitlements(Set<ResourcePrivilegeEntity> entitlements) {
-        this.entitlements = entitlements;
-    }
-    */
+   public void addResourceGroup(final ResourceGroupEntity entity) {
+	   if(entity != null) {
+		   if(resourceGroups == null) {
+			   this.resourceGroups = new HashSet<ResourceGroupEntity>();
+		   }
+		   this.resourceGroups.add(entity);
+ 	   }
+   }
+   
+   public void removeResourceGroup(final ResourceGroupEntity entity) {
+	   if(entity != null) {
+		   if(resourceGroups != null) {
+			   for(final Iterator<ResourceGroupEntity> it = resourceGroups.iterator(); it.hasNext();) {
+				   final ResourceGroupEntity rge = it.next();
+				   if(rge.getGroupId().equals(entity.getGroupId()) && rge.getResourceId().equals(entity.getResourceId())) {
+					   it.remove();
+					   break;
+				   }
+			   }
+		   }
+	   }
+   }
 
     public String getMinAuthLevel() {
         return minAuthLevel;
@@ -410,16 +401,10 @@ public class ResourceEntity {
                 ", branchId='" + branchId + '\'' +
                 ", categoryId='" + categoryId + '\'' +
                 ", displayOrder=" + displayOrder +
-                ", nodeLevel=" + nodeLevel +
-                ", sensitiveApp=" + sensitiveApp +
                 ", managedSysId='" + managedSysId + '\'' +
                 ", URL='" + URL + '\'' +
                 ", resOwnerUserId='" + resOwnerUserId + '\'' +
                 ", resOwnerGroupId='" + resOwnerGroupId + '\'' +
-                ", resourceRoles=" + resourceRoles +
-                ", resourceProps=" + resourceProps +
-                ", resourceGroups=" + resourceGroups +
-                /*", entitlements=" + entitlements*/ +
                 '}';
     }
 
@@ -441,14 +426,12 @@ public class ResourceEntity {
         if (managedSysId != null ? !managedSysId.equals(that.managedSysId) : that.managedSysId != null) return false;
         if (minAuthLevel != null ? !minAuthLevel.equals(that.minAuthLevel) : that.minAuthLevel != null) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
-        if (nodeLevel != null ? !nodeLevel.equals(that.nodeLevel) : that.nodeLevel != null) return false;
         if (resOwnerGroupId != null ? !resOwnerGroupId.equals(that.resOwnerGroupId) : that.resOwnerGroupId != null)
             return false;
         if (resOwnerUserId != null ? !resOwnerUserId.equals(that.resOwnerUserId) : that.resOwnerUserId != null)
             return false;
         if (resourceId != null ? !resourceId.equals(that.resourceId) : that.resourceId != null) return false;
         if (resourceType != null ? !resourceType.equals(that.resourceType) : that.resourceType != null) return false;
-        if (sensitiveApp != null ? !sensitiveApp.equals(that.sensitiveApp) : that.sensitiveApp != null) return false;
 
         return true;
     }
@@ -462,8 +445,6 @@ public class ResourceEntity {
         result = 31 * result + (branchId != null ? branchId.hashCode() : 0);
         result = 31 * result + (categoryId != null ? categoryId.hashCode() : 0);
         result = 31 * result + (displayOrder != null ? displayOrder.hashCode() : 0);
-        result = 31 * result + (nodeLevel != null ? nodeLevel.hashCode() : 0);
-        result = 31 * result + (sensitiveApp != null ? sensitiveApp.hashCode() : 0);
         result = 31 * result + (managedSysId != null ? managedSysId.hashCode() : 0);
         result = 31 * result + (URL != null ? URL.hashCode() : 0);
         result = 31 * result + (resOwnerUserId != null ? resOwnerUserId.hashCode() : 0);

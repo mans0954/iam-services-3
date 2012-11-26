@@ -4,8 +4,6 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
-import org.openiam.idm.srvc.grp.domain.GroupEntity;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -96,7 +94,7 @@ public class GroupSet {
     })
     public static class GroupObj {
 
-        protected GroupEntity group;
+        protected Group group;
 
         /**
          * Gets the value of the group property.
@@ -104,7 +102,7 @@ public class GroupSet {
          * @return possible object is
          *         {@link Group }
          */
-        public GroupEntity getGroup() {
+        public Group getGroup() {
             return group;
         }
 
@@ -114,7 +112,7 @@ public class GroupSet {
          * @param value allowed object is
          *              {@link Group }
          */
-        public void setGroup(GroupEntity value) {
+        public void setGroup(Group value) {
             this.group = value;
         }
 

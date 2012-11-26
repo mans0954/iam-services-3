@@ -23,15 +23,20 @@
 *********************************************************************************
 -->
     <root>
-	       <priority value="warn" />  
+	       <priority value="info" />  
 	       <appender-ref ref="STDOUT" />  
 	       <appender-ref ref="A2" />
     </root>
  	
  	<logger name="org.openiam">
-        <level value="debug"/>
+        <level value="info"/>
         <appender-ref ref="openiam-esb"/>
         <appender-ref ref="STDOUT"/>
+    </logger>
+    
+    <logger name="org.openiam.authmanager">
+     	<level value="debug"/>
+     	<appender-ref ref="STDOUT"/>
     </logger>
 
  	<logger name="org.apache">
@@ -74,7 +79,7 @@
 	       <param name="ConversionPattern" value="%d [%t] %-5p %C{1} : %m%n" />
        </layout>
        <filter class="org.apache.log4j.varia.LevelRangeFilter">
-	       <param name="LevelMin" value="WARN" />
+	       <param name="LevelMin" value="DEBUG" />
 	       <param name="LevelMax" value="FATAL" />
 	       <param name="AcceptOnMatch" value="true" />
        </filter>

@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.secdomain.service;
 
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -8,6 +9,8 @@ import java.util.HashMap;
 import javax.jws.WebService;
 
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.srvc.secdomain.dto.*;
 /**
  * Interface to manager the SecurityDomain that clients will access to gain information about SecurityDomain.
@@ -93,40 +96,20 @@ public class SecurityDomainDataServiceImpl implements SecurityDomainDataService 
 	  secDomainDao.remove(secDom);
   }
   
-  /* (non-Javadoc)
- * @see org.openiam.idm.srvc.secdomain.service.SecurityDomainDataService#getAllSecurityDomains()
- */
-  public SecurityDomain[] getAllSecurityDomains() {
-	  final List<SecurityDomain> domainList = secDomainDao.findAll();
-	  if (domainList == null || domainList.isEmpty())
-		  return null;
-	  
-	  final int size = domainList.size();
-	  final  SecurityDomain[] domainAry = new SecurityDomain[size];
-	  return domainList.toArray(domainAry);
-	  
+  public List<SecurityDomain> getAllSecurityDomains() {
+	  return secDomainDao.findAll();
   }
   
-  public SecurityDomain[] getAllDomainsWithExclude(String excludeDomain) {
+  public List<SecurityDomain> getAllDomainsWithExclude(String excludeDomain) {
 	  final List<SecurityDomain> domainList = secDomainDao.findAll();
-	  if (domainList == null || domainList.isEmpty())
-		  return null;
-	  final int size = (domainList.size()-1);
-	  final SecurityDomain[] domainAry = new SecurityDomain[size];
-	  
-	  int ctr = 0;
-	  for (final SecurityDomain d : domainList) {
-		  if (!d.getDomainId().equalsIgnoreCase(excludeDomain)) {
-			  domainAry[ctr] = d;
-			  ctr++;
+	  if(CollectionUtils.isNotEmpty(domainList)) {
+		  for(final Iterator<SecurityDomain> it = domainList.iterator(); it.hasNext();) {
+			  final SecurityDomain domain = it.next();
+			  if(StringUtils.equalsIgnoreCase(domain.getDomainId(), excludeDomain)) {
+				  it.remove();
+			  }
 		  }
 	  }
-	  return domainAry;
-	 
-	  
+	  return domainList;
   }
- 
- 
-
-  
 }

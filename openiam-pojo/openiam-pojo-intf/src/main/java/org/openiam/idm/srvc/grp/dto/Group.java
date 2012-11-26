@@ -4,6 +4,7 @@ package org.openiam.idm.srvc.grp.dto;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
+import org.openiam.idm.srvc.res.dto.ResourceGroup;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.dto.RoleSetAdapter;
 
@@ -32,7 +33,8 @@ import java.util.*;
         "internalGroupId",
         "operation",
         "parentGroups",
-        "childGroups"
+        "childGroups",
+        "resourceGroups"
 })
 @XmlRootElement(name = "Group")
 @XmlSeeAlso({
@@ -67,6 +69,8 @@ public class Group implements java.io.Serializable {
     
     private Set<Group> parentGroups;
     private Set<Group> childGroups;
+    
+    private Set<ResourceGroup> resourceGroups;
 
 
     @XmlJavaTypeAdapter(RoleSetAdapter.class)
@@ -288,6 +292,14 @@ public class Group implements java.io.Serializable {
 		}
 	}
 	
+	public Set<ResourceGroup> getResourceGroups() {
+		return resourceGroups;
+	}
+
+	public void setResourceGroups(Set<ResourceGroup> resourceGroups) {
+		this.resourceGroups = resourceGroups;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;

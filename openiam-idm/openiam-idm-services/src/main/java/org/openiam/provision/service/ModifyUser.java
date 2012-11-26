@@ -18,6 +18,7 @@ import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.idm.srvc.res.dto.Resource;
+import org.openiam.idm.srvc.role.domain.UserRoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.dto.UserRole;
 import org.openiam.idm.srvc.role.service.RoleDataService;
@@ -839,7 +840,7 @@ public class ModifyUser {
         roleList = new ArrayList<Role>();
         deleteRoleList = new ArrayList<Role>();
 
-        List<UserRole> currentUserRole = roleDataService.getUserRolesForUser(userId);
+        List<UserRoleEntity> currentUserRole = roleDataService.getUserRolesForUser(userId, 0, Integer.MAX_VALUE);
         User user = userMgr.getUserWithDependent(userId, false);
 
 
@@ -859,22 +860,14 @@ public class ModifyUser {
             for (Role rl : newRoleList) {
                 rl.setOperation(AttributeOperationEnum.ADD);
                 roleList.add(rl);
-
-                UserRole ur = new UserRole(userId, rl.getRoleId());
-
-                if (rl.getStartDate() != null) {
-                    ur.setStartDate(rl.getStartDate());
-                }
-                if (rl.getEndDate() != null) {
-                    ur.setEndDate(rl.getEndDate());
-                }
-                roleDataService.assocUserToRole(ur);
+                
+                roleDataService.addUserToRole(rl.getRoleId(), userId);
 
                 logList.add(auditHelper.createLogObject("ADD ROLE", pUser.getRequestorDomain(), pUser.getRequestorLogin(),
                         "IDM SERVICE", user.getCreatedBy(), "0", "USER", user.getUserId(),
                         null, "SUCCESS", null, "USER_STATUS",
                         user.getStatus().toString(),
-                        "NA", null, null, null, ur.getRoleId(),
+                        "NA", null, null, null, rl.getRoleId(),
                         pUser.getRequestClientIP(), primaryIdentity.getId().getLogin(), primaryIdentity.getId().getDomainId()));
 
                 //roleDataService.addUserToRole(rl.getId().getServiceId(), rl.getId().getRoleId(), userId);
@@ -929,22 +922,13 @@ public class ModifyUser {
                 if (origRole == null) {
                     r.setOperation(AttributeOperationEnum.ADD);
                     roleList.add(r);
-
-                    UserRole ur = new UserRole(userId, r.getRoleId());
-
-                    if (r.getStartDate() != null) {
-                        ur.setStartDate(r.getStartDate());
-                    }
-                    if (r.getEndDate() != null) {
-                        ur.setEndDate(r.getEndDate());
-                    }
-                    roleDataService.assocUserToRole(ur);
+                    roleDataService.addUserToRole(r.getRoleId(), userId);
 
                     logList.add(auditHelper.createLogObject("ADD ROLE", pUser.getRequestorDomain(), pUser.getRequestorLogin(),
                             "IDM SERVICE", user.getCreatedBy(), "0", "USER", user.getUserId(),
                             null, "SUCCESS", null, "USER_STATUS",
                             user.getStatus().toString(),
-                            "NA", null, null, null, ur.getRoleId(),
+                            "NA", null, null, null, r.getRoleId(),
                             pUser.getRequestClientIP(), primaryIdentity.getId().getLogin(), primaryIdentity.getId().getDomainId()));
 
                     //roleDataService.addUserToRole(r.getId().getServiceId(), r.getId().getRoleId(), userId);
@@ -966,7 +950,11 @@ public class ModifyUser {
                         // object changed
                         //UserRole ur = new UserRole(userId, r.getId().getServiceId(),
                         //		r.getId().getRoleId());
-                        UserRole ur = getUserRole(r, currentUserRole);
+                        UserRoleEntity ur = getUserRole(r, currentUserRole);
+                        if(ur == null) {
+                        	roleDataService.addUserToRole(user.getUserId(), userId);
+                        }
+                        /*
                         if (ur != null) {
                             if (r.getStartDate() != null) {
                                 ur.setStartDate(r.getStartDate());
@@ -983,6 +971,7 @@ public class ModifyUser {
                             roleDataService.assocUserToRole(usrRl);
 
                         }
+                        */
                     }
                 }
             }
@@ -998,7 +987,7 @@ public class ModifyUser {
 
     }
 
-    private UserRole getUserRole(Role r, List<UserRole> currentUserRole) {
+    private UserRoleEntity getUserRole(Role r, List<UserRoleEntity> currentUserRole) {
         //boolean retval = true;
 
         if (currentUserRole == null) {
@@ -1006,7 +995,7 @@ public class ModifyUser {
         }
 
         // get the user role object
-        for (UserRole u : currentUserRole) {
+        for (UserRoleEntity u : currentUserRole) {
             if (r.getRoleId().equalsIgnoreCase(u.getRoleId())) {
                 return u;
             }
@@ -1015,16 +1004,16 @@ public class ModifyUser {
 
     }
 
-    private boolean userRoleAttrEq(Role r, List<UserRole> currentUserRole) {
+    private boolean userRoleAttrEq(Role r, List<UserRoleEntity> currentUserRole) {
         //boolean retval = true;
 
         if (currentUserRole == null) {
             return false;
         }
 
-        UserRole ur = null;
+        UserRoleEntity ur = null;
         // get the user role object
-        for (UserRole u : currentUserRole) {
+        for (UserRoleEntity u : currentUserRole) {
             if (r.getRoleId().equalsIgnoreCase(u.getRoleId())) {
                 ur = u;
             }

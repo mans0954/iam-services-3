@@ -88,11 +88,9 @@ public class TestCrossEntityConversion extends AbstractTestNGSpringContextTests 
 		Assert.assertEquals(resource.getManagedSysId(), entity.getManagedSysId());
 		Assert.assertEquals(resource.getMinAuthLevel(), entity.getMinAuthLevel());
 		Assert.assertEquals(resource.getName(), entity.getName());
-		Assert.assertEquals(resource.getNodeLevel(), entity.getNodeLevel());
 		Assert.assertEquals(resource.getResourceId(), entity.getResourceId());
 		Assert.assertEquals(resource.getResOwnerGroupId(), entity.getResOwnerGroupId());
 		Assert.assertEquals(resource.getResOwnerUserId(), entity.getResOwnerUserId());
-		Assert.assertEquals(resource.getSensitiveApp(), entity.getSensitiveApp());
 		Assert.assertEquals(resource.getURL(), entity.getURL());
 		confirm(resource.getResourceType(), entity.getResourceType());
 	}
@@ -197,12 +195,10 @@ public class TestCrossEntityConversion extends AbstractTestNGSpringContextTests 
 		entity.setManagedSysId(rs(2));
 		entity.setMinAuthLevel(rs(2));
 		entity.setName(rs(2));
-		entity.setNodeLevel(3);
 		entity.setResourceId(rs(2));
 		entity.setResourceType(createResourceTypeEntity());
 		entity.setResOwnerGroupId(rs(2));
 		entity.setResOwnerUserId(rs(2));
-		entity.setSensitiveApp(3);
 		entity.setURL(rs(2));
 		return entity;
 	}

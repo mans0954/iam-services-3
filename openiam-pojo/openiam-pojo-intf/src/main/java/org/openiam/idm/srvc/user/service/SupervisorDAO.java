@@ -1,21 +1,12 @@
 package org.openiam.idm.srvc.user.service;
 
+import org.openiam.core.dao.BaseDao;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.dto.Supervisor;
 
 import java.util.List;
 
-public interface SupervisorDAO {
-
-    public abstract void add(SupervisorEntity transientInstance);
-
-    public abstract void remove(SupervisorEntity persistentInstance);
-
-    public abstract SupervisorEntity update(SupervisorEntity detachedInstance);
-
-    public abstract SupervisorEntity findById(java.lang.String id);
-
-    public abstract List<SupervisorEntity> findByExample(SupervisorEntity instance);
+public interface SupervisorDAO extends BaseDao<SupervisorEntity, String>{
 
     /**
      * Returns a list of Supervisor objects that represents the employees or users for this supervisor

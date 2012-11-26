@@ -1,16 +1,17 @@
 package org.openiam.idm.srvc.user.service;
 
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.*;
 
-import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Projections;
-import org.hibernate.criterion.Restrictions;
+import org.hibernate.criterion.*;
 import org.openiam.base.id.SequenceGenDAO;
 
 import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
@@ -19,10 +20,13 @@ import org.openiam.idm.srvc.user.dto.UserSearch;
 import org.openiam.idm.srvc.user.dto.SearchAttribute;
 
 import javax.naming.InitialContext;
-import java.util.Date;
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
+
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import static org.hibernate.criterion.Projections.rowCount;
 
 /**
  * Data access implementation for domain model class User and UserWS. UserWS is similar to User,
@@ -31,95 +35,34 @@ import org.openiam.idm.srvc.user.dto.UserStatusEnum;
  * @author Suneet Shah
  * @see org.openiam.idm.srvc.user
  */
+@Repository("userDAO")
 public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements UserDAO {
-
-
-    private static final Log log = LogFactory.getLog(UserDAOImpl.class);
-
-    private SequenceGenDAO seqGenDao;
-    private String emailSearchVal;
-    private String phoneSearchVal;
-    private Integer maxResultSetSize;
+    @Autowired
     private String dbType;
-
-
-    public void setSessionFactory(SessionFactory session) {
-        this.sessionFactory = session;
-    }
-
-
-    protected SessionFactory getSessionFactory() {
-        try {
-            return (SessionFactory) new InitialContext()
-                    .lookup("SessionFactory");
-        } catch (Exception e) {
-            log.error("Could not locate SessionFactory in JNDI", e);
-            throw new IllegalStateException(
-                    "Could not locate SessionFactory in JNDI");
-        }
-    }
 
     @Override
     protected String getPKfieldName() {
         return "userId";
     }
 
-
-    public UserEntity findByName(String firstName, String lastName) {
-        try {
-            Session session = sessionFactory.getCurrentSession();
-            Criteria criteria = session.createCriteria(UserEntity.class)
-                    .add(Restrictions.eq("lastName",lastName))
-                    .add(Restrictions.eq("firstName",firstName));
-
-            List<UserEntity> results = (List<UserEntity>) criteria.list();
-
-            if (results != null && !results.isEmpty()) {
-                return results.get(0);
-            } else {
-                return null;
-            }
-        } catch (HibernateException re) {
-            log.error("get failed", re);
-            throw re;
-        }
-    }
-
-    public List findByStatus(UserStatusEnum status) {
-        Session session = sessionFactory.getCurrentSession();
-        Criteria criteria = session.createCriteria(UserEntity.class)
-                .add(Restrictions.ne("systemFlag","1"))
-                .add(Restrictions.eq("status", status))
-                .addOrder(Order.asc("lastName"));
-
-        List<UserEntity> results = (List<UserEntity>) criteria.list();
-        return results;
-    }
-
     public List<UserEntity> findByLastUpdateRange(Date startDate, Date endDate) {
         log.debug("finding User based on the lastUpdate date range that is provided");
         try {
-
-            Session session = sessionFactory.getCurrentSession();
-            Criteria criteria = session.createCriteria(UserEntity.class);
-            criteria.add(Restrictions.between("lastUpdate", startDate, endDate));
-            return criteria.list();
-
+            return getCriteria().add(Restrictions.between("lastUpdate", startDate, endDate)).list();
         } catch (HibernateException re) {
             re.printStackTrace();
             log.error("findByLastUpdateRange failed.", re);
             throw re;
         }
     }
-
-
+    @Deprecated
     public List<UserEntity> search(UserSearch search) {
         if (dbType != null && dbType.equalsIgnoreCase("ORACLE_INSENSITIVE")) {
             return searchOracleInsensitive(search);
         }
         return defaultSearch(search);
     }
-
+    @Deprecated
     private List<UserEntity> searchOracleInsensitive(UserSearch search) {
 
         boolean firstName = false;
@@ -601,8 +544,8 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             qry.setFetchSize(search.getMaxResultSize().intValue());
             qry.setMaxResults(search.getMaxResultSize().intValue());
         } else {
-            qry.setFetchSize(this.maxResultSetSize);
-            qry.setMaxResults(this.maxResultSetSize);
+//            qry.setFetchSize(this.maxResultSetSize);
+//            qry.setMaxResults(this.maxResultSetSize);
         }
         try {
             List<UserEntity> result = (List<UserEntity>) qry.list();
@@ -619,7 +562,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 
 
     }
-
+    @Deprecated
     private List<UserEntity> defaultSearch(UserSearch search) {
 
         boolean firstName = false;
@@ -1164,8 +1107,8 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             qry.setFetchSize(search.getMaxResultSize().intValue());
             qry.setMaxResults(search.getMaxResultSize().intValue());
         } else {
-            qry.setFetchSize(this.maxResultSetSize);
-            qry.setMaxResults(this.maxResultSetSize);
+//            qry.setFetchSize(this.maxResultSetSize);
+//            qry.setMaxResults(this.maxResultSetSize);
         }
         try {
             List<UserEntity> result = (List<UserEntity>) qry.list();
@@ -1184,165 +1127,231 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
     }
 
 
-    public List<UserEntity> findByOrganization(String orgId) {
-        Session session = sessionFactory.getCurrentSession();
-        Query qry = session.createQuery(
-                "from org.openiam.idm.srvc.user.domain.UserEntity u " + " where u.systemFlag<>:systemFlag and  u.companyId = :orgId order by u.lastName asc");
-        qry.setString("orgId", orgId);
-        qry.setString("systemFlag", "1");
-        List<UserEntity> results = (List<UserEntity>) qry.list();
-        return results;
-
-    }
-
-    public List<UserEntity> findStaff(String supervisorId) {
-        Session session = sessionFactory.getCurrentSession();
-        Query qry = session.createQuery("from SupervisorEntity as s inner join s.employee as staff left outer join s.supervisor as supervisor where supervisor.userId = :supervisorId order by supervisor.userId asc");
-        qry.setString("supervisorId", supervisorId);
-        List<UserEntity> results = (List<UserEntity>) qry.list();
-        return results;
-    }
-
-    public List<UserEntity> findSupervisors(String staffId) {
-        Session session = sessionFactory.getCurrentSession();
-        Query qry = session.createQuery("from SupervisorEntity as s inner join s.supervisor as supervisor left join s.employee as staff where staff.userId = :staffId order by staff.userId asc");
-        qry.setString("staffId", staffId);
-        List<UserEntity> results = (List<UserEntity>) qry.list();
-        return results;
-    }
-
     public List<UserEntity> findByDelegationProperties(DelegationFilterSearch search) {
-        boolean rl = false;
-        boolean orgFilter = false;
-
-
-        StringBuffer bufSql = new StringBuffer();
-        bufSql.append(" select DISTINCT u.USER_ID, u.TYPE_ID, " +
-                      " u.TITLE, u.MIDDLE_INIT, u.LAST_NAME, u.FIRST_NAME," +
-                      " u.BIRTHDATE, u.STATUS, u.SECONDARY_STATUS, u.DEPT_NAME, u.DEPT_CD, " +
-                      " u.LAST_UPDATE, u.CREATED_BY, u.CREATE_DATE, u.SEX, " +
-                      " u.USER_TYPE_IND, u.SUFFIX, u.PREFIX, u.LAST_UPDATED_BY," +
-                      " u.LOCATION_NAME, u.LOCATION_CD, u.EMPLOYEE_TYPE, u.EMPLOYEE_ID, " +
-                      " u.JOB_CODE, u.MANAGER_ID, u.COMPANY_OWNER_ID, u.COMPANY_ID, " +
-                      " u.LAST_DATE, u.START_DATE, u.COST_CENTER, u.DIVISION," +
-                      " u.PASSWORD_THEME, u.NICKNAME, u.MAIDEN_NAME, u.MAIL_CODE, " +
-                      " u.COUNTRY, u.BLDG_NUM, u.STREET_DIRECTION, u.SUITE,  " +
-                      " u.ADDRESS1, u.ADDRESS2, u.ADDRESS3, u.ADDRESS4, u.ADDRESS5, u.ADDRESS6, u.ADDRESS7," +
-                      " u.CITY, u.STATE, u.POSTAL_CD, u.EMAIL_ADDRESS, u.ALTERNATE_ID, u.USER_OWNER_ID, u.DATE_PASSWORD_CHANGED, u.DATE_CHALLENGE_RESP_CHANGED,"
-                      +
-                      " u.PHONE_NBR, u.PHONE_EXT, u.AREA_CD, u.COUNTRY_CD, u.CLASSIFICATION, u.SHOW_IN_SEARCH, u.DEL_ADMIN "
-                      +
-                      " from 	USERS u " +
-                      "  		LEFT JOIN USER_ATTRIBUTES ua ON ( ua.USER_ID = u.USER_ID) " +
-                      "	 	LEFT JOIN USER_ROLE ur on (u.USER_ID = ur.USER_ID) ");
-
-        StringBuffer whereBuf = new StringBuffer();
-        whereBuf.append(" (u.SYSTEM_FLAG is null or u.SYSTEM_FLAG<>:systemFlag) ");
-        if(search.getRole() != null) {
-            whereBuf.append(" ur.ROLE_ID = :role ");
-            rl = true;
+        final Criteria criteria = getCriteria();
+            // check systemFlag
+        Disjunction disjunction  = Restrictions.disjunction();
+        disjunction.add(Restrictions.isNotNull("systemFlag")).add(Restrictions.ne("systemFlag", "1"));
+        criteria.add(disjunction);
+        if(StringUtils.isNotEmpty(search.getRole())){
+            criteria.createAlias("userRoles", "urv");
+            criteria.add(Restrictions.eq("urv.roleId", search.getRole()));
         }
-
 
         if (search.getDelAdmin() == 1) {
-            if (whereBuf.length() > 0)  {
-                whereBuf.append(" and ");
-            }
-            whereBuf.append(" u.DEL_ADMIN = 1");
-
+            criteria.add(Restrictions.eq("delAdmin", search.getDelAdmin()));
             if (search.getOrgFilter() != null) {
-                if (whereBuf.length() > 0)  {
-                    whereBuf.append(" and ");
-                }
-                whereBuf.append(" ua.NAME = 'DLG_FLT_ORG' and ua.VALUE LIKE :orgFilter ");
-                orgFilter = true;
-
+                criteria.createAlias("userAttributes", "ua");
+                criteria.add(Restrictions.eq("ua.name", "DLG_FLT_ORG"));
+                criteria.add(Restrictions.ilike("ua.value", search.getOrgFilter()));
             }
-
         }
-
-
-        if (whereBuf.length() > 0) {
-            bufSql.append(" WHERE ");
-            bufSql.append(whereBuf);
-        }
-        bufSql.append("order by u.LAST_NAME asc");
-
-        String sql = bufSql.toString();
-
-        System.out.println("sql to get approvers:" + sql);
-
-        Session session = sessionFactory.getCurrentSession();
-
-        SQLQuery qry = session.createSQLQuery(sql);
-        qry.addEntity(UserEntity.class);
-        qry.setString("systemFlag", "1");
-        if ( rl) {
-            qry.setString("role", search.getRole());
-        }
-        if (orgFilter) {
-            qry.setString("orgFilter",search.getOrgFilter()) ;
-        }
-
-        List<UserEntity> results = (List<UserEntity>) qry.list();
-        return results;
-
+        criteria.addOrder(Order.asc("lastName"));
+        return (List<UserEntity>) criteria.list();
     }
 
     @Override
     public List<String> getUserIdList(int startPos, int count) {
-         return (List<String>) sessionFactory.getCurrentSession().createCriteria(UserEntity.class)
-                .setProjection(Projections.property("userId"))
-                .setFirstResult(startPos)
-                .setMaxResults(count)
-                .list();
+         return (List<String>) getCriteria().setProjection(Projections.property(getPKfieldName()))
+                .setFirstResult(startPos).setMaxResults(count).list();
     }
 
     @Override
     public Long getUserCount() {
-        return (Long)sessionFactory.getCurrentSession().createCriteria(UserEntity.class)
-                .setProjection(Projections.count("userId"))
-                .uniqueResult();
+        return (Long)getCriteria().setProjection(Projections.count(getPKfieldName())).uniqueResult();
     }
 
-    public SequenceGenDAO getSeqGenDao() {
-        return seqGenDao;
+    @Override
+    public List<UserEntity> getByExample(UserSearchBean searchBean, int startAt, int size) {
+        Criteria criteria = getExampleCriteria(searchBean);
+        if(startAt > -1) {
+            criteria.setFirstResult(startAt);
+        }
+        if(size > -1) {
+            criteria.setMaxResults(size);
+        }
+        return (List<UserEntity>)criteria.list();
     }
 
-    public void setSeqGenDao(SequenceGenDAO seqGenDao) {
-        this.seqGenDao = seqGenDao;
+    @Override
+    public Long getUserCount(UserSearchBean searchBean) {
+        return ((Number)getExampleCriteria(searchBean).setProjection(rowCount())
+                .uniqueResult()).longValue();
+    }
+    private Criterion getStringCriterion(String fieldName, String value){
+        return getStringCriterion(fieldName, value, false);
+    }
+    private Criterion getStringCriterion(String fieldName, String value, boolean caseInsensitive){
+        Criterion criterion=null;
+        MatchMode matchMode = null;
+        if (StringUtils.indexOf(value, "*") == 0) {
+            matchMode = MatchMode.END;
+            value = value.substring(1);
+        }
+        if (StringUtils.isNotEmpty(value) && StringUtils.indexOf(value, "*") == value.length() - 1) {
+            value = value.substring(0, value.length() - 1);
+            matchMode = (matchMode == MatchMode.END) ? MatchMode.ANYWHERE : MatchMode.START;
+        }
+
+        if (StringUtils.isNotEmpty(value)) {
+            if (matchMode != null) {
+                criterion = Restrictions.ilike(fieldName, value, matchMode);
+            } else {
+                criterion = (caseInsensitive) ? Restrictions.eq(fieldName, value).ignoreCase():Restrictions.eq(fieldName, value);
+            }
+        }
+        return criterion;
     }
 
+    private Criteria getExampleCriteria(UserSearchBean searchBean) {
+        boolean ORACLE_INSENSITIVE ="ORACLE_INSENSITIVE".equalsIgnoreCase(dbType);
 
-    public String getEmailSearchVal() {
-        return emailSearchVal;
+        final Criteria criteria = getCriteria();
+        if(StringUtils.isNotBlank(searchBean.getKey())) {
+            criteria.add(Restrictions.eq(getPKfieldName(), searchBean.getKey()));
+        } else {
+            // check systemFlag
+            Disjunction disjunction  = Restrictions.disjunction();
+            disjunction.add(Restrictions.isNotNull("systemFlag")).add(Restrictions.ne("systemFlag", "1"));
+            criteria.add(disjunction);
+            if (searchBean.getShowInSearch() != null) {
+                criteria.add(Restrictions.eq("showInSearch", searchBean.getShowInSearch()));
+            }
+            if (StringUtils.isNotEmpty(searchBean.getFirstName())) {
+                criteria.add(getStringCriterion("firstName", searchBean.getFirstName(), ORACLE_INSENSITIVE));
+            }
+            if (StringUtils.isNotEmpty(searchBean.getLastName())) {
+                criteria.add(getStringCriterion("lastName", searchBean.getLastName(), ORACLE_INSENSITIVE));
+            }
+            if (StringUtils.isNotEmpty(searchBean.getNickName())) {
+                criteria.add(getStringCriterion("nickname", searchBean.getNickName()));
+            }
+            if (StringUtils.isNotEmpty(searchBean.getStatus())) {
+                criteria.add(Restrictions.eq("status", UserStatusEnum.valueOf(searchBean.getStatus())));
+            }
+            if (StringUtils.isNotEmpty(searchBean.getStatus())) {
+                criteria.add(Restrictions.eq("secondaryStatus", UserStatusEnum.valueOf(searchBean.getSecondaryStatus())));
+            }
+            if (searchBean.getCreateDate()!=null) {
+                criteria.add(Restrictions.eq("createDate", searchBean.getCreateDate()));
+            }
+
+            if (searchBean.getStartDate()!=null) {
+                criteria.add(Restrictions.eq("startDate", searchBean.getStartDate()));
+            }
+            if (searchBean.getLastDate()!=null) {
+                criteria.add(Restrictions.eq("lastDate", searchBean.getLastDate()));
+            }
+            if (searchBean.getDateOfBirth()!=null) {
+                criteria.add(Restrictions.eq("birthdate", searchBean.getDateOfBirth()));
+            }
+            if(StringUtils.isNotEmpty(searchBean.getUserTypeInd())) {
+                criteria.add(Restrictions.eq("userTypeInd", searchBean.getUserTypeInd()));
+            }
+            if (StringUtils.isNotEmpty(searchBean.getClassification())) {
+                criteria.add(Restrictions.eq("classification", searchBean.getClassification()));
+            }
+            if (StringUtils.isNotEmpty(searchBean.getLocationCd())) {
+                criteria.add(Restrictions.eq("locationCd", searchBean.getLocationCd()));
+            }
+            if (StringUtils.isNotEmpty(searchBean.getZipCode())) {
+                criteria.add(Restrictions.eq("postalCd", searchBean.getZipCode()));
+            }
+            if(searchBean.getOrgIdList()!=null && !searchBean.getOrgIdList().isEmpty()){
+                criteria.add(Restrictions.in("companyId", searchBean.getOrgIdList()));
+            }
+            if(searchBean.getDeptIdList()!=null && !searchBean.getDeptIdList().isEmpty()){
+                criteria.add(Restrictions.in("deptCd", searchBean.getDeptIdList()));
+            }
+            if(StringUtils.isNotEmpty(searchBean.getOrgName())) {
+                criteria.createAlias("organization", "c");
+                criteria.add(getStringCriterion("c.organizationName", searchBean.getOrgName(), ORACLE_INSENSITIVE));
+            }
+            if(StringUtils.isNotEmpty(searchBean.getPhoneAreaCd()) || StringUtils.isNotEmpty(searchBean.getPhoneNbr())) {
+                if(StringUtils.isNotEmpty(searchBean.getPhoneAreaCd())) {
+                    criteria.add(Restrictions.eq("p.areaCd", searchBean.getPhoneAreaCd()));
+                }
+                if(StringUtils.isNotEmpty(searchBean.getPhoneNbr())) {
+                    criteria.add(Restrictions.eq("p.phoneNbr", searchBean.getPhoneNbr()));
+                }
+                criteria.createAlias("phones", "p");
+            }
+            if(StringUtils.isNotEmpty(searchBean.getEmailAddress())) {
+                criteria.createAlias("emailAddresses", "em");
+                disjunction  = Restrictions.disjunction();
+                disjunction.add(getStringCriterion("em.emailAddress", searchBean.getEmailAddress(),ORACLE_INSENSITIVE)).add(getStringCriterion("email", searchBean.getEmailAddress(),ORACLE_INSENSITIVE));
+                criteria.add(disjunction);
+            }
+            if(searchBean.getGroupIdList()!=null && !searchBean.getGroupIdList().isEmpty()){
+                 criteria.createAlias("userGroups", "g");
+                 criteria.add(Restrictions.in("g.grpId",searchBean.getGroupIdList()));
+            }
+            if(searchBean.getDivisionIdList()!=null && !searchBean.getDivisionIdList().isEmpty()){
+                criteria.add(Restrictions.in("division", searchBean.getDivisionIdList()));
+            }
+            if(StringUtils.isNotEmpty(searchBean.getEmployeeId())) {
+                criteria.add(Restrictions.eq("employeeId", searchBean.getEmployeeId()));
+            }
+            if(searchBean.getRoleIdList()!=null && !searchBean.getRoleIdList().isEmpty()){
+                criteria.createAlias("userRoles", "urv");
+                criteria.add(Restrictions.in("urv.roleId", searchBean.getRoleIdList()));
+            }
+
+            if (StringUtils.isNotEmpty(searchBean.getAttributeName())
+                    || StringUtils.isNotEmpty(searchBean.getAttributeValue())
+                    || StringUtils.isNotEmpty(searchBean.getAttributeElementId())
+                    || (searchBean.getAttributeList()!=null && !searchBean.getAttributeList().isEmpty())) {
+                criteria.createAlias("userAttributes", "ua");
+                if(searchBean.getAttributeList()!=null && !searchBean.getAttributeList().isEmpty()){
+                    List<String> nameList = new ArrayList<String>() ;
+                    List<String> valueList = new ArrayList<String>() ;
+                    for ( SearchAttribute atr  : searchBean.getAttributeList()) {
+                        if (atr.getAttributeName() != null) {
+                            nameList.add(atr.getAttributeName());
+                        }
+                        if (atr.getAttributeValue() != null) {
+                            valueList.add(atr.getAttributeValue());
+                        }
+                    }
+
+                    if (nameList.size() > 0)  {
+                        criteria.add(Restrictions.in("ua.name", nameList));
+                    }
+                    if (valueList.size() > 0)  {
+                        criteria.add(Restrictions.in("ua.value", valueList));
+                    }
+                }
+                if (StringUtils.isNotEmpty(searchBean.getAttributeName())) {
+                    criteria.add( (ORACLE_INSENSITIVE) ?  Restrictions.eq("ua.name", searchBean.getAttributeName()).ignoreCase() : Restrictions.eq("ua.name", searchBean.getAttributeName()));
+                }
+                if (StringUtils.isNotEmpty(searchBean.getAttributeValue())) {
+                    criteria.add(getStringCriterion("ua.value", searchBean.getAttributeValue(),ORACLE_INSENSITIVE));
+                }
+                if (StringUtils.isNotEmpty(searchBean.getAttributeElementId())) {
+                    criteria.add(Restrictions.eq("ua.metadataElementId", searchBean.getAttributeElementId()));
+                }
+            }
+            /* Login  */
+            if(StringUtils.isNotEmpty(searchBean.getPrincipal()) || StringUtils.isNotEmpty(searchBean.getDomainId()) || StringUtils.isNotEmpty(searchBean.getLoggedIn())){
+                criteria.createAlias("principalList", "lg");
+                if(StringUtils.isNotEmpty(searchBean.getPrincipal())) {
+                    criteria.add(getStringCriterion("lg.id.login", searchBean.getPrincipal(),ORACLE_INSENSITIVE));
+                }
+                if(StringUtils.isNotEmpty(searchBean.getDomainId())) {
+                    criteria.add(Restrictions.eq("lg.id.domainId", searchBean.getDomainId()));
+                }
+                if(StringUtils.isNotEmpty(searchBean.getLoggedIn())) {
+                    if("YES".equalsIgnoreCase(searchBean.getLoggedIn())) {
+                        criteria.add(Restrictions.isNotNull("lg.lastLogin"));
+                    } else{
+                        criteria.add(Restrictions.isNull("lg.lastLogin"));
+                    }
+                }
+            }
+            criteria.addOrder(Order.asc("lastName")).addOrder(Order.asc("firstName"));
+        }
+        return criteria;
     }
-
-
-    public void setEmailSearchVal(String emailSearchVal) {
-        this.emailSearchVal = emailSearchVal;
-    }
-
-
-    public String getPhoneSearchVal() {
-        return phoneSearchVal;
-    }
-
-
-    public void setPhoneSearchVal(String phoneSearchVal) {
-        this.phoneSearchVal = phoneSearchVal;
-    }
-
-
-    public Integer getMaxResultSetSize() {
-        return maxResultSetSize;
-    }
-
-
-    public void setMaxResultSetSize(Integer maxResultSetSize) {
-        this.maxResultSetSize = maxResultSetSize;
-    }
-
 
     public String getDbType() {
         return dbType;

@@ -1,26 +1,11 @@
 package org.openiam.idm.srvc.role.service;
 
+import org.openiam.core.dao.BaseDao;
+import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
 import org.openiam.idm.srvc.role.dto.RoleAttribute;
 
 import java.util.List;
 
-/**
- * Data access interface for domain model class RoleAttribute.
- *
- * @see org.openiam.idm.srvc.role.dto.RoleAttribute
- */
-public interface RoleAttributeDAO {
-
-    public void add(RoleAttribute transientInstance);
-
-    public void remove(RoleAttribute persistentInstance);
-
-    public RoleAttribute findById(String id);
-
-    public RoleAttribute update(RoleAttribute detachedInstance);
-
-    public List<RoleAttribute> findByExample(RoleAttribute instance);
-
-    public void deleteRoleAttributes(String roleId);
+public interface RoleAttributeDAO extends BaseDao<RoleAttributeEntity, String> {
 
 }

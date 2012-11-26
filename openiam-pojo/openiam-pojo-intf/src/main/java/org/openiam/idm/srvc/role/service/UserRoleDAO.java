@@ -35,25 +35,6 @@ import java.util.List;
  * @author Suneet Shah
  */
 public interface UserRoleDAO extends BaseDao<UserRoleEntity, String> {
-
-    public void removeUserFromRole(String roleId, String userId);
-
-    public void removeAllUsersInRole(String roleId);
-
-    /**
-     * Get all the UserRole objects for this user
-     *
-     * @param userId
-     * @return
-     */
-    public List<UserRoleEntity> findUserRoleByUser(String userId);
-
-    /**
-     * Returns a list of users in a role.
-     *
-     * @param roleId
-     * @return
-     */
-    List<UserEntity> findUserByRole(String roleId);
-
+    
+    public UserRoleEntity getRecord(final String userId, final String roleId);
 }

@@ -62,6 +62,11 @@ public class AuthorizationMenu implements Serializable {
 	@JsonProperty("nextSibling")
 	private AuthorizationMenu nextSibling;
 	
+	/* this property's sole purpose is informational - it should NOT be stored on the backend */
+	@JsonProperty("urlParams")
+	@XmlTransient
+	private String urlParams;
+	
 	public String getId() {
 		return id;
 	}
@@ -124,6 +129,14 @@ public class AuthorizationMenu implements Serializable {
 
 	public void setDisplayOrder(Integer displayOrder) {
 		this.displayOrder = displayOrder;
+	}
+
+	public String getUrlParams() {
+		return urlParams;
+	}
+
+	public void setUrlParams(String urlParams) {
+		this.urlParams = urlParams;
 	}
 
 	public void afterPropertiesSet(final List<ResourceProp> resourcePropertyList) {

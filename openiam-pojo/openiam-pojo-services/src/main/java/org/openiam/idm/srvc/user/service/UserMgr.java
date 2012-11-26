@@ -3,13 +3,17 @@ package org.openiam.idm.srvc.user.service;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.Hibernate;
 import org.openiam.base.SysConfiguration;
 import org.openiam.dozer.converter.*;
+import org.openiam.idm.searchbeans.OrganizationSearchBean;
+import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.auth.domain.LoginEmbeddableId;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
+import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -26,7 +30,11 @@ import org.openiam.idm.srvc.continfo.service.PhoneDAO;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
 
+import javax.jws.WebMethod;
+import javax.jws.WebParam;
 import java.util.*;
 
 /**
@@ -38,17 +46,29 @@ import java.util.*;
  */
 
 // Note: as per spec serviceName goes in impl class and name goes in interface
-
+@Service("userManager")
 public class UserMgr implements UserDataService {
-
+    @Autowired
+    @Qualifier("userDAO")
     private UserDAO userDao;
+    @Autowired
+    @Qualifier("userAttributeDAO")
     private UserAttributeDAO userAttributeDao;
+    @Autowired
+    @Qualifier("userNoteDAO")
     private UserNoteDAO userNoteDao;
-    private AddressDAO addressDao;
-    private EmailAddressDAO emailAddressDao;
-    private PhoneDAO phoneDao;
+    @Autowired
+    @Qualifier("supervisorDAO")
     private SupervisorDAO supervisorDao;
+    @Autowired
+    private AddressDAO addressDao;
+    @Autowired
+    private EmailAddressDAO emailAddressDao;
+    @Autowired
+    private PhoneDAO phoneDao;
+    @Autowired
     protected LoginDAO loginDao;
+    @Autowired
     protected SysConfiguration sysConfiguration;
     @Autowired
     protected UserDozerConverter userDozerConverter;
@@ -83,7 +103,7 @@ public class UserMgr implements UserDataService {
       */
     public User getUser(String id) {
         UserEntity entity = userDao.findById(id);
-        return entity != null ? userDozerConverter.convertToDTO(entity, true) : null;
+        return entity != null ? userDozerConverter.convertToDTO(entity, false) : null;
     }
 
     /*
@@ -104,10 +124,10 @@ public class UserMgr implements UserDataService {
         }
 
         //	 assemble the various dependant objects
-        org.hibernate.Hibernate.initialize(usr.getPhones());
-        org.hibernate.Hibernate.initialize(usr.getEmailAddresses());
-        org.hibernate.Hibernate.initialize(usr.getAddresses());
-        org.hibernate.Hibernate.initialize(usr.getUserAttributes());
+        Hibernate.initialize(usr.getPhones());
+        Hibernate.initialize(usr.getEmailAddresses());
+        Hibernate.initialize(usr.getAddresses());
+        Hibernate.initialize(usr.getUserAttributes());
         User user = userDozerConverter.convertToDTO(usr, true);
         List<LoginEntity> principalList = loginDao.findUser(id);
         if (principalList != null) {
@@ -320,14 +340,15 @@ public class UserMgr implements UserDataService {
       *      java.util.Date)
       */
     public List findUsersByLastUpdateRange(Date startDate, Date endDate) {
-
         return userDao.findByLastUpdateRange(startDate, endDate);
-
     }
 
     public User getUserByName(String firstName, String lastName) {
-        UserEntity userEntity = userDao.findByName(firstName, lastName);
-        return userEntity != null ? userDozerConverter.convertToDTO(userEntity,true) : null;
+        UserSearchBean searchBean = new UserSearchBean();
+        searchBean.setFirstName(firstName);
+        searchBean.setLastName(lastName);
+        List<User> userList = findBeans(searchBean, 0, 1);
+        return (userList != null && !userList.isEmpty()) ? userList.get(0) : null;
     }
 
 
@@ -337,12 +358,9 @@ public class UserMgr implements UserDataService {
       * @see org.openiam.idm.srvc.user.service.UserDataService#findUserByOrganization(java.lang.String)
       */
     public List<User> findUserByOrganization(String orgId) {
-        List<UserEntity> entityList = userDao.findByOrganization(orgId);
-//        List<User> userList = new LinkedList<User>();
-//        for (UserEntity userEntity : entityList) {
-//            userList.add(new User(userEntity));
-//        }
-        return userDozerConverter.convertToDTOList(entityList,true);
+        UserSearchBean searchBean = new UserSearchBean();
+        searchBean.setOrgIdList(Arrays.asList(orgId));
+        return findBeans(searchBean);
     }
 
     /*
@@ -351,7 +369,9 @@ public class UserMgr implements UserDataService {
       * @see org.openiam.idm.srvc.user.service.UserDataService#findUsersByStatus(java.lang.String)
       */
     public List findUsersByStatus(UserStatusEnum status) {
-        return userDozerConverter.convertToDTOList(userDao.findByStatus(status),true);
+        UserSearchBean searchBean = new UserSearchBean();
+        searchBean.setStatus(status.name());
+        return findBeans(searchBean);
     }
 
     /*
@@ -359,26 +379,26 @@ public class UserMgr implements UserDataService {
       *
       * @see org.openiam.idm.srvc.user.service.UserDataService#search(org.openiam.util.db.Search)
       */
-
+    @Deprecated
     public List<User> search(UserSearch search) {
         List<UserEntity> entityList = userDao.search(search);
-//        List<User> userList = null;
-//        if(entityList != null) {
-//            userList = new LinkedList<User>();
-//            for (UserEntity userEntity : entityList) {
-//                userList.add(new User(userEntity));
-//            }
-//        }
         return userDozerConverter.convertToDTOList(entityList,true);
     }
-
     public List<User> searchByDelegationProperties(DelegationFilterSearch search) {
         List<UserEntity> entityList = userDao.findByDelegationProperties(search);
-//        List<User> userList = new LinkedList<User>();
-//        for (UserEntity userEntity : entityList) {
-//            userList.add(new User(userEntity));
-//        }
-        return userDozerConverter.convertToDTOList(entityList,true);
+        return userDozerConverter.convertToDTOList(entityList, true);
+    }
+
+    public List<User> findBeans(UserSearchBean searchBean){
+        return findBeans(searchBean, -1, -1);
+    }
+
+    public List<User> findBeans(UserSearchBean searchBean, int from, int size){
+        return userDozerConverter.convertToDTOList(userDao.getByExample(searchBean, from, size), searchBean.isDeepCopy());
+    }
+
+    public int count(UserSearchBean searchBean){
+      return 0;
     }
 
     /* -------- Methods for Attributes ---------- */
@@ -401,7 +421,7 @@ public class UserMgr implements UserDataService {
         UserAttributeEntity userAttribute = userAttributeDozerConverter.convertToEntity(attribute, false);
         userAttribute.setUser(userEntity);
 
-        userAttributeDao.add(userAttribute);
+        userAttributeDao.save(userAttribute);
 
         // this.userMsgProducer.sendMessage(attribute.getUserId(),"ADD");
 
@@ -497,7 +517,7 @@ public class UserMgr implements UserDataService {
         UserAttributeEntity userAttribute = userAttributeDozerConverter.convertToEntity(attr, false);
         userAttribute.setUser(userEntity);
 
-        userAttributeDao.remove(userAttribute);
+        userAttributeDao.delete(userAttribute);
 
         // this.userMsgProducer.sendMessage(attr.getUserId(),"DELETE");
 
@@ -651,7 +671,7 @@ public class UserMgr implements UserDataService {
         UserNoteEntity userNote = userNoteDozerConverter.convertToEntity(note, false);
         userNote.setUser(userEntity);
 
-        userNoteDao.persist(userNote);
+        userNoteDao.save(userNote);
 
         return userNoteDozerConverter.convertToDTO(userNote, false);
     }
@@ -706,7 +726,7 @@ public class UserMgr implements UserDataService {
       *
       * @see org.openiam.idm.srvc.user.service.UserDataService#getNote(java.lang.String)
       */
-    public UserNote getNote(java.lang.String noteId) {
+    public UserNote getNote(String noteId) {
         if (noteId == null) {
             throw new NullPointerException("attrId is null");
         }
@@ -1273,7 +1293,7 @@ public class UserMgr implements UserDataService {
     public Supervisor addSupervisor(Supervisor supervisor) {
         if (supervisor == null)
             throw new NullPointerException("supervisor is null");
-        this.supervisorDao.add(supervisorDozerConverter.convertToEntity(supervisor,true));
+        this.supervisorDao.save(supervisorDozerConverter.convertToEntity(supervisor,true));
         return supervisor;
     }
 
@@ -1296,7 +1316,7 @@ public class UserMgr implements UserDataService {
     public void removeSupervisor(Supervisor supervisor) {
         if (supervisor == null)
             throw new NullPointerException("supervisor is null");
-        this.supervisorDao.remove(supervisorDozerConverter.convertToEntity(supervisor,true));
+        this.supervisorDao.delete(supervisorDozerConverter.convertToEntity(supervisor,true));
     }
 
     /*

@@ -12,3 +12,7 @@ dml/1.insert_policy.sql
 ddl/11.create_group_and_role_name_constraints.sql
 ddl/12.add_authorization_data_to_resources.sql
 dml/2.migrate_menus_to_resources.sql
+ddl/13.fix_resource_name_and_type.sql
+ddl/14.add_url_protector_column_to_res.sql
+ddl/15.fix_group_name.sql
+ddl/16.add_fk_to_users.sql

@@ -1,31 +1,13 @@
 package org.openiam.idm.srvc.role.dto;
 
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
-import org.hibernate.annotations.Cascade;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
-import org.hibernate.annotations.GenericGenerator;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseObject;
-import org.openiam.idm.srvc.grp.domain.GroupEntity;
+import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.grp.dto.GroupSet;
 import org.openiam.idm.srvc.grp.dto.GroupSetAdapter;
+import org.openiam.idm.srvc.res.dto.ResourceRole;
+import org.openiam.idm.srvc.role.domain.RoleEntity;
 
-import javax.persistence.Cacheable;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-import javax.persistence.Transient;
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.*;
@@ -46,7 +28,6 @@ import java.util.*;
  *         &lt;element name="description" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *         &lt;element name="groups" type="{urn:idm.openiam.org/srvc/grp/dto}groupSet" minOccurs="0"/>
  *         &lt;element name="id" type="{urn:idm.openiam.org/srvc/role/dto}roleId" minOccurs="0"/>
- *         &lt;element name="provisionObjName" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *         &lt;element name="roleAttributes" type="{urn:idm.openiam.org/srvc/role/dto}roleAttributeSet" minOccurs="0"/>
  *         &lt;element name="roleName" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *         &lt;element name="userAssociationMethod" type="{http://www.w3.org/2001/XMLSchema}int" minOccurs="0"/>
@@ -67,7 +48,6 @@ import java.util.*;
         "createdBy",
         "description",
         "groups",
-        "provisionObjName",
         "roleAttributes",
         "roleName",
         "userAssociationMethod",
@@ -81,7 +61,8 @@ import java.util.*;
         "startDate",
         "endDate",
         "rolePolicy",
-        "parentRoles"
+        "parentRoles",
+        "resourceRoles"
 })
 @XmlRootElement(name = "Role")
 @XmlSeeAlso({
@@ -89,10 +70,7 @@ import java.util.*;
         RoleAttribute.class,
         RolePolicy.class
 })
-@Entity
-@Table(name="ROLE")
-@Cacheable
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@DozerDTOCorrespondence(RoleEntity.class)
 public class Role extends BaseObject implements Comparable<Role> {
 
     /**
@@ -107,9 +85,8 @@ public class Role extends BaseObject implements Comparable<Role> {
     protected String createdBy;
     protected String description;
     @XmlJavaTypeAdapter(GroupSetAdapter.class)
-    protected Set<GroupEntity> groups = new HashSet<GroupEntity>(0);
+    protected Set<Group> groups = new HashSet<Group>(0);
     protected String roleId;
-    protected String provisionObjName;
     @XmlJavaTypeAdapter(RoleAttributeSetAdapter.class)
     protected Set<RoleAttribute> roleAttributes = new HashSet<RoleAttribute>(0);
 
@@ -129,6 +106,8 @@ public class Role extends BaseObject implements Comparable<Role> {
 
     private Set<Role> parentRoles;
     private Set<Role> childRoles;
+    
+    private Set<ResourceRole> resourceRoles;
 
 
     @XmlSchemaType(name = "dateTime")
@@ -143,10 +122,6 @@ public class Role extends BaseObject implements Comparable<Role> {
     	this.roleId = roleId;
     }
 
-    @Id
-    @GeneratedValue(generator="system-uuid")
-    @GenericGenerator(name="system-uuid", strategy = "uuid")
-    @Column(name="ROLE_ID", length=32)
     public String getRoleId() {
 		return roleId;
 	}
@@ -155,7 +130,6 @@ public class Role extends BaseObject implements Comparable<Role> {
 		this.roleId = roleId;
 	}
 
-	@Column(name="SERVICE_ID",length=32)
 	public String getServiceId() {
 		return serviceId;
 	}
@@ -164,7 +138,6 @@ public class Role extends BaseObject implements Comparable<Role> {
 		this.serviceId = serviceId;
 	}
 
-	@Column(name="CREATE_DATE",length=19)
     public Date getCreateDate() {
         return createDate;
     }
@@ -173,7 +146,6 @@ public class Role extends BaseObject implements Comparable<Role> {
         this.createDate = value;
     }
 
-    @Column(name="CREATED_BY",length=20)
     public String getCreatedBy() {
         return createdBy;
     }
@@ -182,7 +154,6 @@ public class Role extends BaseObject implements Comparable<Role> {
         this.createdBy = value;
     }
 
-    @Column(name="DESCRIPTION")
     public String getDescription() {
         return description;
     }
@@ -191,30 +162,14 @@ public class Role extends BaseObject implements Comparable<Role> {
         this.description = value;
     }
 
-	@ManyToMany(cascade=CascadeType.ALL,fetch=FetchType.EAGER)
-    @JoinTable(name="GRP_ROLE",
-	    joinColumns={@JoinColumn(name="ROLE_ID")},
-	    inverseJoinColumns={@JoinColumn(name="GRP_ID")})
-	@Fetch(FetchMode.SELECT)
-    public Set<GroupEntity> getGroups() {
+    public Set<Group> getGroups() {
         return groups;
     }
 
-    public void setGroups(Set<GroupEntity> value) {
+    public void setGroups(Set<Group> value) {
         this.groups = value;
     }
 
-    @Column(name="PROVISION_OBJ_NAME",length=80)
-    public String getProvisionObjName() {
-        return provisionObjName;
-    }
-
-    public void setProvisionObjName(String value) {
-        this.provisionObjName = value;
-    }
-
-	@OneToMany(fetch=FetchType.EAGER,orphanRemoval=true,cascade={CascadeType.ALL})
-	@JoinColumn(name="ROLE_ID")
     public Set<RoleAttribute> getRoleAttributes() {
         return roleAttributes;
     }
@@ -223,7 +178,6 @@ public class Role extends BaseObject implements Comparable<Role> {
         this.roleAttributes = value;
     }
 
-    @Column(name="ROLE_NAME",length=80)
     public String getRoleName() {
         return roleName;
     }
@@ -232,7 +186,6 @@ public class Role extends BaseObject implements Comparable<Role> {
         this.roleName = value;
     }
 
-    @Transient
     public int getUserAssociationMethod() {
         return userAssociationMethod;
     }
@@ -241,7 +194,6 @@ public class Role extends BaseObject implements Comparable<Role> {
         this.userAssociationMethod = value;
     }
 
-    @Column(name="TYPE_ID",length=20)
     public String getMetadataTypeId() {
         return metadataTypeId;
     }
@@ -251,7 +203,6 @@ public class Role extends BaseObject implements Comparable<Role> {
         this.metadataTypeId = metadataTypeId;
     }
 
-    @Column(name="OWNER_ID",length=32)
     public String getOwnerId() {
         return ownerId;
     }
@@ -270,11 +221,6 @@ public class Role extends BaseObject implements Comparable<Role> {
     	}
     }
     
-    @ManyToMany(cascade={CascadeType.ALL},fetch=FetchType.LAZY)
-    @JoinTable(name="role_to_role_membership",
-        joinColumns={@JoinColumn(name="MEMBER_ROLE_ID")},
-        inverseJoinColumns={@JoinColumn(name="ROLE_ID")})
-    @Fetch(FetchMode.SUBSELECT)
     public Set<Role> getParentRoles() {
 		return parentRoles;
 	}
@@ -292,11 +238,6 @@ public class Role extends BaseObject implements Comparable<Role> {
     	}
     }
 
-	@ManyToMany(cascade={CascadeType.ALL},fetch=FetchType.LAZY)
-    @JoinTable(name="role_to_role_membership",
-        joinColumns={@JoinColumn(name="ROLE_ID")},
-        inverseJoinColumns={@JoinColumn(name="MEMBER_ROLE_ID")})
-    @Fetch(FetchMode.SUBSELECT)
 	public Set<Role> getChildRoles() {
 		return childRoles;
 	}
@@ -318,7 +259,6 @@ public class Role extends BaseObject implements Comparable<Role> {
 
     }
 
-	@Column(name="STATUS",length=20)
     public String getStatus() {
         return status;
     }
@@ -332,7 +272,6 @@ public class Role extends BaseObject implements Comparable<Role> {
         this.status = status.toString();
     }
 
-    @Column(name="INTERNAL_ROLE_ID")
     public String getInternalRoleId() {
         return internalRoleId;
     }
@@ -342,7 +281,6 @@ public class Role extends BaseObject implements Comparable<Role> {
         this.internalRoleId = internalRoleId;
     }
 
-    @Transient
     public Boolean getSelected() {
         return selected;
     }
@@ -352,7 +290,6 @@ public class Role extends BaseObject implements Comparable<Role> {
         this.selected = selected;
     }
 
-    @Transient
     public AttributeOperationEnum getOperation() {
         return operation;
     }
@@ -362,8 +299,6 @@ public class Role extends BaseObject implements Comparable<Role> {
         this.operation = operation;
     }
 
-	@OneToMany(fetch=FetchType.EAGER,orphanRemoval=true,cascade=CascadeType.ALL)
-	@JoinColumn(name="ROLE_ID")
     public Set<RolePolicy> getRolePolicy() {
         return rolePolicy;
     }
@@ -372,7 +307,6 @@ public class Role extends BaseObject implements Comparable<Role> {
         this.rolePolicy = rolePolicy;
     }
 
-    @Transient
     public Date getStartDate() {
         return startDate;
     }
@@ -381,7 +315,6 @@ public class Role extends BaseObject implements Comparable<Role> {
         this.startDate = startDate;
     }
 
-    @Transient
     public Date getEndDate() {
         return endDate;
     }
@@ -398,6 +331,13 @@ public class Role extends BaseObject implements Comparable<Role> {
         return getRoleName().compareTo(o.getRoleName());
     }
 
+	public Set<ResourceRole> getResourceRoles() {
+		return resourceRoles;
+	}
+
+	public void setResourceRoles(Set<ResourceRole> resourceRoles) {
+		this.resourceRoles = resourceRoles;
+	}
 
 	@Override
 	public int hashCode() {

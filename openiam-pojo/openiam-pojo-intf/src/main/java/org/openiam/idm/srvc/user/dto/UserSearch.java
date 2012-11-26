@@ -75,6 +75,7 @@ import java.util.List;
         "divisionIdList",
         "attributeList"
 })
+@Deprecated
 public class UserSearch implements Serializable {
 
     protected String firstName = null;

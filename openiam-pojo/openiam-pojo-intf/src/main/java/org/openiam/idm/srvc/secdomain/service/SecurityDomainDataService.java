@@ -1,5 +1,7 @@
 package org.openiam.idm.srvc.secdomain.service;
 
+import java.util.List;
+
 import org.openiam.idm.srvc.secdomain.dto.SecurityDomain;
 
 import javax.jws.WebService;
@@ -54,8 +56,8 @@ public interface SecurityDomainDataService {
      *
      * @return
      */
-    public abstract SecurityDomain[] getAllSecurityDomains();
+    public abstract List<SecurityDomain> getAllSecurityDomains();
 
-    SecurityDomain[] getAllDomainsWithExclude(String excludeDomain);
+    List<SecurityDomain> getAllDomainsWithExclude(String excludeDomain);
 
 }

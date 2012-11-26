@@ -6,13 +6,16 @@ import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import org.hibernate.Criteria;
-import org.hibernate.FetchMode;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.hibernate.*;
+import org.hibernate.criterion.Example;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
+import org.openiam.idm.srvc.user.domain.UserNoteEntity;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
@@ -20,9 +23,11 @@ import static org.hibernate.criterion.Projections.rowCount;
 import static org.hibernate.criterion.Restrictions.eq;
 
 public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> implements BaseDao<T, PrimaryKey> {
+    protected final Log log = LogFactory.getLog(this.getClass());
     protected final Class<T> domainClass;
 
     @Autowired
+    @Qualifier("sessionFactory")
     protected SessionFactory sessionFactory;
 
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -48,7 +53,7 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> implements
     }
     
     protected Criteria getExampleCriteria(T t) {
-    	return getCriteria();
+    	return getCriteria().add(Example.create(t));
     }
 
     @Override
@@ -102,6 +107,25 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> implements
     	
     	final Criteria criteria = getSession().createCriteria(domainClass)
     							.add(Restrictions.in(getPKfieldName(), idCollection));
+    	return criteria.list();
+    }
+    
+    @SuppressWarnings("unchecked")
+	public List<T> findByIds(Collection<PrimaryKey> idCollection, final int from, final int size) {
+    	if(CollectionUtils.isEmpty(idCollection)) {
+    		return (List<T>)Collections.EMPTY_LIST;
+    	}
+    	
+    	final Criteria criteria = getSession().createCriteria(domainClass)
+    							.add(Restrictions.in(getPKfieldName(), idCollection));
+    	
+		if(from > -1) {
+			criteria.setFirstResult(from);
+		}
+		
+		if(size > -1) {
+			criteria.setMaxResults(size);
+		}
     	return criteria.list();
     }
 
@@ -173,6 +197,28 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> implements
 	@Transactional
     public void deleteAll() throws Exception{
         sessionFactory.getCurrentSession().createQuery("delete from "+this.domainClass.getName()).executeUpdate();
+    }
+
+    public void attachDirty(T t) {
+        log.debug("attaching dirty instance");
+        try {
+            this.save(t);
+            log.debug("attach successful");
+        } catch (RuntimeException re) {
+            log.error("attach failed", re);
+            throw re;
+        }
+    }
+
+    public void attachClean(T t) {
+        log.debug("attaching clean instance");
+        try {
+            sessionFactory.getCurrentSession().buildLockRequest(LockOptions.NONE).lock(t);
+            log.debug("attach successful");
+        } catch (RuntimeException re) {
+            log.error("attach failed", re);
+            throw re;
+        }
     }
 }
 

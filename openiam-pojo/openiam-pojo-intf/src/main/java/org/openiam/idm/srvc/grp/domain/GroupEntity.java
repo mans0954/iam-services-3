@@ -30,6 +30,8 @@ import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupAttribute;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.domain.ResourceGroupEntity;
+import org.openiam.idm.srvc.res.dto.ResourceGroup;
 
 @Entity
 @Table(name="GRP")
@@ -86,6 +88,11 @@ public class GroupEntity {
     @Column(name="INTERNAL_GROUP_ID",length=32)
     private String internalGroupId;
     
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "GRP_ID")
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<ResourceGroupEntity> resourceGroups;
+    
     @ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
     @JoinTable(name="grp_to_grp_membership",
         joinColumns={@JoinColumn(name="MEMBER_GROUP_ID")},
@@ -100,9 +107,11 @@ public class GroupEntity {
     @Fetch(FetchMode.SUBSELECT)
     private Set<GroupEntity> childGroups;
     
-    @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.EAGER)
+	/* changed to 'lazy' and 'subselect' to prevent left outer join, which causes extra rows when querying subentities */
+    @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
     @JoinColumn(name="GRP_ID", referencedColumnName="GRP_ID")
     @MapKeyColumn(name="name")
+    @Fetch(FetchMode.SUBSELECT)
     private Map<String, GroupAttributeEntity> attributes;
     
 	@Transient
@@ -278,12 +287,27 @@ public class GroupEntity {
 		this.operation = operation;
 	}
 
+	public Set<ResourceGroupEntity> getResourceGroups() {
+		return resourceGroups;
+	}
+
+	public void setResourceGroups(Set<ResourceGroupEntity> resourceGroups) {
+		this.resourceGroups = resourceGroups;
+	}
+	
+	public void addResourceGroup(final ResourceGroupEntity resourceGroup) {
+		if(resourceGroup != null) {
+			if(resourceGroups == null) {
+				this.resourceGroups = new HashSet<ResourceGroupEntity>();
+			}
+			this.resourceGroups.add(resourceGroup);
+		}
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result
-				+ ((attributes == null) ? 0 : attributes.hashCode());
 		result = prime * result
 				+ ((companyId == null) ? 0 : companyId.hashCode());
 		result = prime * result
@@ -323,11 +347,6 @@ public class GroupEntity {
 		if (getClass() != obj.getClass())
 			return false;
 		GroupEntity other = (GroupEntity) obj;
-		if (attributes == null) {
-			if (other.attributes != null)
-				return false;
-		} else if (!attributes.equals(other.attributes))
-			return false;
 		if (companyId == null) {
 			if (other.companyId != null)
 				return false;
@@ -409,13 +428,12 @@ public class GroupEntity {
 	@Override
 	public String toString() {
 		return String
-				.format("GroupEntity [id=%s, name=%s, createDate=%s, createdBy=%s, companyId=%s, ownerId=%s, provisionMethod=%s, provisionObjName=%s, groupClass=%s, description=%s, status=%s, lastUpdate=%s, lastUpdatedBy=%s, metadataTypeId=%s, internalGroupId=%s, parentGroups=%s, childGroups=%s, attributes=%s]",
-						grpId, grpName, createDate, createdBy, companyId, ownerId,
-						provisionMethod, provisionObjName, groupClass,
+				.format("GroupEntity [grpId=%s, grpName=%s, createDate=%s, createdBy=%s, companyId=%s, ownerId=%s, provisionMethod=%s, provisionObjName=%s, groupClass=%s, description=%s, status=%s, lastUpdate=%s, lastUpdatedBy=%s, metadataTypeId=%s, internalGroupId=%s, operation=%s]",
+						grpId, grpName, createDate, createdBy, companyId,
+						ownerId, provisionMethod, provisionObjName, groupClass,
 						description, status, lastUpdate, lastUpdatedBy,
-						metadataTypeId, internalGroupId, parentGroups,
-						childGroups, attributes);
+						metadataTypeId, internalGroupId, operation);
 	}
-    
-    
+
+	
 }

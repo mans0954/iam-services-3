@@ -1,6 +1,9 @@
 package org.openiam.idm.srvc.grp.ws;
 
+import java.util.List;
+
 import org.openiam.base.ws.Response;
+import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupAttribute;
 import org.openiam.idm.srvc.user.ws.UserListResponse;
@@ -90,7 +93,7 @@ public interface GroupDataWebService {
      * @return List of Group objects. Returns null if no groups are found.
      */
     @WebMethod
-    public GroupListResponse getChildGroups(final @WebParam(name = "parentGroupId", targetNamespace = "") String parentGroupId,
+    public GroupListResponse getChildGroups(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
     									    final @WebParam(name = "from", targetNamespace = "") int from,
     									    final @WebParam(name = "size", targetNamespace = "") int size);
 
@@ -137,10 +140,10 @@ public interface GroupDataWebService {
      * @return
      */
     @WebMethod
-    public GroupListResponse getUserInGroups(
+    public GroupListResponse getGroupsForUser(
             @WebParam(name = "userId", targetNamespace = "") String userId,
-            @WebParam(name = "from") String from,
-            @WebParam(name = "size") String size);
+            @WebParam(name = "from") int from,
+            @WebParam(name = "size") int size);
 
 
     /**
@@ -151,7 +154,7 @@ public interface GroupDataWebService {
      * @return
      */
     @WebMethod
-    public GroupListResponse getUserInGroupsAsFlatList(final @WebParam(name = "userId", targetNamespace = "") String userId);
+    public GroupListResponse getCompiledGroupsForUser(final @WebParam(name = "userId", targetNamespace = "") String userId);
 
     /**
      * This method gets all users assigned to a particular group .<br>
@@ -225,6 +228,23 @@ public interface GroupDataWebService {
      */
     @WebMethod
     public Response removeAttribute(
-            @WebParam(name = "attribute", targetNamespace = "")
-            GroupAttribute attribute);
+            @WebParam(name = "attributeId", targetNamespace = "")
+            String attributeId);
+    
+    
+    @WebMethod
+    public List<Group> findBeans(final @WebParam(name = "searchBean") GroupSearchBean searchBean,
+    							 final @WebParam(name = "from", targetNamespace = "") int from,
+    							 final @WebParam(name = "size", targetNamespace = "") int size);
+    
+    @WebMethod
+    public int countBeans(final @WebParam(name = "searchBean") GroupSearchBean searchBean);
+    
+    @WebMethod
+    public List<Group> getGroupsForResource(final @WebParam(name = "resourceId") String resourceId,
+    										final @WebParam(name = "from", targetNamespace = "") int from,
+    										final @WebParam(name = "size", targetNamespace = "") int size);
+    
+    @WebMethod
+    public int getNumOfGroupsforResource(final @WebParam(name = "resourceId") String resourceId);
 }

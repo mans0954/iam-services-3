@@ -1,15 +1,11 @@
 package org.openiam.idm.srvc.role.dto;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
-import org.hibernate.annotations.GenericGenerator;
+import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
 
 
 /**
@@ -42,8 +38,7 @@ import org.hibernate.annotations.GenericGenerator;
         "value",
         "attrGroup"
 })
-@Entity
-@Table(name="ROLE_ATTRIBUTE")
+@DozerDTOCorrespondence(RoleAttributeEntity.class)
 public class RoleAttribute implements java.io.Serializable {
 
     protected String roleAttrId;
@@ -61,7 +56,6 @@ public class RoleAttribute implements java.io.Serializable {
         this.roleAttrId = roleAttrId;
     }
 
-    @Column(name="METADATA_ID",length=20)
     public String getMetadataElementId() {
         return metadataElementId;
     }
@@ -70,7 +64,6 @@ public class RoleAttribute implements java.io.Serializable {
         this.metadataElementId = value;
     }
 
-    @Column(name="NAME", length=20)
     public String getName() {
         return name;
     }
@@ -79,10 +72,6 @@ public class RoleAttribute implements java.io.Serializable {
         this.name = value;
     }
 
-    @Id
-    @GeneratedValue(generator="system-uuid")
-    @GenericGenerator(name="system-uuid", strategy = "uuid")
-    @Column(name="ROLE_ATTR_ID", length=32)
     public String getRoleAttrId() {
         return roleAttrId;
     }
@@ -91,7 +80,6 @@ public class RoleAttribute implements java.io.Serializable {
         this.roleAttrId = value;
     }
 
-    @Column(name="VALUE")
     public String getValue() {
         return value;
     }
@@ -100,7 +88,6 @@ public class RoleAttribute implements java.io.Serializable {
         this.value = value;
     }
 
-    @Column(name="ROLE_ID", length=32,nullable=false)
     public String getRoleId() {
         return roleId;
     }
@@ -110,7 +97,6 @@ public class RoleAttribute implements java.io.Serializable {
         this.roleId = roleId;
     }
 
-    @Column(name="ATTR_GROUP",length=20)
     public String getAttrGroup() {
         return attrGroup;
     }

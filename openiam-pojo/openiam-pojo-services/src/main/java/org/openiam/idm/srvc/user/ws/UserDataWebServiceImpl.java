@@ -34,6 +34,7 @@ import org.apache.commons.lang.StringUtils;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.DozerUtils;
+import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
@@ -48,21 +49,24 @@ import org.openiam.idm.srvc.continfo.ws.PhoneMapResponse;
 import org.openiam.idm.srvc.continfo.ws.PhoneResponse;
 import org.openiam.idm.srvc.user.dto.*;
 import org.openiam.idm.srvc.user.service.UserDataService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Required;
+import org.springframework.stereotype.Service;
 
 /**
  * @author suneet
  *
  */
-@WebService(endpointInterface = "org.openiam.idm.srvc.user.ws.UserDataWebService", 
+@Service("userWS")
+@WebService(endpointInterface = "org.openiam.idm.srvc.user.ws.UserDataWebService",
 		targetNamespace = "urn:idm.openiam.org/srvc/user/service", 
 		serviceName = "UserDataWebService",
 		portName = "UserDataWebServicePort")
-
 public class UserDataWebServiceImpl implements UserDataWebService {
-	
+	@Autowired
+    @Qualifier("userManager")
 	private UserDataService userManager;
-	private DozerUtils dozerUtils;
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#addAddress(org.openiam.idm.srvc.continfo.dto.Address)
 	 */
@@ -211,7 +215,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 		if (userList == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
-			resp.setUserList(dozerUtils.getDozerDeepMappedUserList(userList));
+			resp.setUserList(userList);
 		}
 		return resp;
 	}
@@ -226,7 +230,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 		if (userList == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
-			resp.setUserList(dozerUtils.getDozerDeepMappedUserList(userList));
+			resp.setUserList(userList);
 		}
 		return resp;
 	}
@@ -437,7 +441,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 		if (sup == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
-			resp.setSupervisorList(dozerUtils.getDozerDeepMappedSupervisorList(sup));
+			resp.setSupervisorList(sup);
 		}
 		return resp;
 	}
@@ -535,7 +539,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 		if (sup == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
-			resp.setSupervisor(dozerUtils.getDozerDeepMappedSupervisor(sup));
+			resp.setSupervisor(sup);
 		}
 		return resp;
 	}
@@ -549,7 +553,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 		if (sup == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
-			resp.setSupervisorList(dozerUtils.getDozerDeepMappedSupervisorList(sup));
+			resp.setSupervisorList(sup);
 		}
 		return resp;
 	}
@@ -563,7 +567,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 		if (user == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
-			resp.setUser(dozerUtils.getDozerDeepMappedUser(user));
+			resp.setUser(user);
 		}
 		return resp;
 	}
@@ -578,7 +582,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 		if (user == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
-			resp.setUser(dozerUtils.getDozerDeepMappedUser(user));
+			resp.setUser(user);
 		}
 		return resp;
 	}
@@ -594,7 +598,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 		if (user == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
-			resp.setUser(dozerUtils.getDozerDeepMappedUser(user));
+			resp.setUser(user);
 		}
 		return resp;
 	}
@@ -710,13 +714,14 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#search(org.openiam.idm.srvc.user.dto.UserSearch)
 	 */
+    @Deprecated
 	public UserListResponse search(UserSearch search) {
 		final UserListResponse resp = new UserListResponse(ResponseStatus.SUCCESS);
 		final List<User> userList = userManager.search(search);
 		if (userList == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		} else {
-			resp.setUserList(dozerUtils.getDozerDeepMappedUserList(userList));
+			resp.setUserList(userList);
 		}
 		return resp;
 	}
@@ -728,12 +733,22 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 		if (userList == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
-			resp.setUserList(dozerUtils.getDozerDeepMappedUserList(userList));
+			resp.setUserList(userList);
 		}
 		return resp;
 
     }
+    @WebMethod
+    public List<User> findBeans(@WebParam(name = "searchBean", targetNamespace = "") UserSearchBean userSearchBean,
+                         @WebParam(name = "from", targetNamespace = "") int from,
+                         @WebParam(name = "size", targetNamespace = "") int size){
+        return userManager.findBeans(userSearchBean, from, size);
+    }
 
+    @WebMethod
+    public int count(UserSearchBean userSearchBean){
+        return userManager.count(userSearchBean);
+    }
 
 
 	/* (non-Javadoc)
@@ -819,28 +834,5 @@ public class UserDataWebServiceImpl implements UserDataWebService {
             resp.setAttributeList(userAttrList);
         }
         return resp;
-        
-
     }
-
-    @Override
-    public List<User> findBeans(@WebParam(name = "searchBean", targetNamespace = "") UserSearch searchBean,
-                                @WebParam(name = "from", targetNamespace = "") int from,
-                                @WebParam(name = "size", targetNamespace = "") int size) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public int count(@WebParam(name = "searchBean", targetNamespace = "") UserSearch searchBean) {
-        return 0;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    public void setUserManager(UserDataService userManager) {
-		this.userManager = userManager;
-	}
-	
-	@Required
-	public void setDozerUtils(final DozerUtils dozerUtils) {
-		this.dozerUtils = dozerUtils;
-	}
 }
