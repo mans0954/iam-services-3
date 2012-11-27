@@ -9,6 +9,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.cat.domain.CategoryEntity;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "category", propOrder = {
@@ -23,7 +24,7 @@ import org.openiam.dozer.DozerDTOCorrespondence;
         "childCategories",
         "categoryLanguages"
 })
-@DozerDTOCorrespondence(Category.class)
+@DozerDTOCorrespondence(CategoryEntity.class)
 public class Category implements Serializable {
     private String categoryId;
     private String createdBy;

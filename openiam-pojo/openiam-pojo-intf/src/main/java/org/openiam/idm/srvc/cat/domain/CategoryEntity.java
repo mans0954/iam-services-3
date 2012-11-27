@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -12,6 +13,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
@@ -50,11 +52,11 @@ public class CategoryEntity implements Serializable {
     @Column(name = "DISPLAY_ORDER")
     private int displayOrder;
 
-    @OneToMany(mappedBy = "categoryId", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@OneToMany(mappedBy = "categoryId", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Fetch(FetchMode.JOIN)
     private Set<CategoryEntity> childCategories;
 
-    @OneToMany(mappedBy = "id.categoryId", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@OneToMany(mappedBy = "id.categoryId", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Fetch(FetchMode.JOIN)
     private Set<CategoryLanguageEntity> categoryLanguages = new HashSet<CategoryLanguageEntity>(0);
 

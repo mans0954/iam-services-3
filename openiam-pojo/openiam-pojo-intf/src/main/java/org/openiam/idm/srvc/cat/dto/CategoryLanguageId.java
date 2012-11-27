@@ -11,6 +11,10 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "categoryLanguageId", propOrder = { "categoryId", "languageCd" })
 public class CategoryLanguageId implements java.io.Serializable {
 
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
     private String categoryId;
     private String languageCd;
 

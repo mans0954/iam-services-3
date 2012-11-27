@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.cat.service;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.dozer.converter.CategoryDozerConverter;
@@ -9,7 +10,6 @@ import org.openiam.idm.srvc.cat.domain.CategoryEntity;
 import org.openiam.idm.srvc.cat.dto.Category;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 
 @Service("categorydataService")
 public class CategoryDataServiceImpl implements CategoryDataService {
@@ -191,28 +191,11 @@ public class CategoryDataServiceImpl implements CategoryDataService {
 		return catIdBuf.toString();
 	}
 	
-	
 	public void updateCategory(Category cat) {
 		if (cat == null) {
 			throw (new NullPointerException("Category object is null") );
 		}
         categoryDao.save(categoryDozerConverter.convertToEntity(cat, false));
-	}
-
-	public CategoryDAO getCategoryDao() {
-		return categoryDao;
-	}
-
-	public void setCategoryDao(CategoryDAO categoryDao) {
-		this.categoryDao = categoryDao;
-	}
-
-	public CategoryLanguageDAO getCategoryLanguageDao() {
-		return categoryLanguageDao;
-	}
-
-	public void setCategoryLanguageDao(CategoryLanguageDAO categoryLanguageDao) {
-		this.categoryLanguageDao = categoryLanguageDao;
 	}
 
 }

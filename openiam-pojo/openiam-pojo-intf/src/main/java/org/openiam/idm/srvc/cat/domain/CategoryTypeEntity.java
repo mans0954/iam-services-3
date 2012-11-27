@@ -11,6 +11,10 @@ import org.openiam.idm.srvc.cat.dto.CategoryType;
 @Table(name="CATEGORY_TYPE")
 @DozerDTOCorrespondence(CategoryType.class)
 public class CategoryTypeEntity implements Serializable {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
     private CategoryTypeEmbeddableId id;
 
     @EmbeddedId

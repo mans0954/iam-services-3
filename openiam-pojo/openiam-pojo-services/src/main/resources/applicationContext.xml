@@ -838,7 +838,7 @@
   </aop:config> 
 
   <aop:config>
-    <aop:pointcut id="categoryOperation" expression="execution(* org.openiam.idm.srvc.cat.service.CategoryDataService.*(..))"/>
+    <aop:pointcut id="categoryOperation" expression="execution(* org.openiam.idm.srvc.cat.ws.CategoryDataWebService.*(..))"/>
     <aop:advisor advice-ref="txAdvice" pointcut-ref="categoryOperation"/>
   </aop:config> 
 

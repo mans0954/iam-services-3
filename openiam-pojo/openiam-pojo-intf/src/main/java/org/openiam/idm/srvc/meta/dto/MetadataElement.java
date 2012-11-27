@@ -4,6 +4,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 
 // Generated Nov 4, 2008 12:11:29 AM by Hibernate Tools 3.2.2.GA
 
@@ -17,7 +18,7 @@ import org.openiam.dozer.DozerDTOCorrespondence;
         "defaultValue", "valueList", "label", "multiValue", "auditable",
         "required", "selfEditable", "selfViewable", "uiType", "uiSize",
         "valueSrc", "minValue", "maxValue", "textCase", "dataType" })
-@DozerDTOCorrespondence(MetadataElement.class)
+@DozerDTOCorrespondence(MetadataElementEntity.class)
 public class MetadataElement implements java.io.Serializable {
 
     /**

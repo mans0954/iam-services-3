@@ -9,6 +9,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.cat.dto.Category;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 
 // Generated Nov 4, 2008 12:11:29 AM by Hibernate Tools 3.2.2.GA
 
@@ -18,7 +19,7 @@ import org.openiam.idm.srvc.cat.dto.Category;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "MetadataType", propOrder = { "metadataTypeId", "description",
         "active", "syncManagedSys", "elementAttributes", "categories" })
-@DozerDTOCorrespondence(MetadataType.class)
+@DozerDTOCorrespondence(MetadataTypeEntity.class)
 public class MetadataType implements java.io.Serializable {
 
     private String metadataTypeId;
