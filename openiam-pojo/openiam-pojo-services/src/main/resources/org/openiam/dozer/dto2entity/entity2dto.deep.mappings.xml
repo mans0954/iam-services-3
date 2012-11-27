@@ -28,8 +28,6 @@
 			<b>resourceGroups</b>
 		</field>
 	</mapping>
-
-	
 	<mapping>
 		<class-a>org.openiam.idm.srvc.res.domain.ResourceUserEntity</class-a>
 		<class-b>org.openiam.idm.srvc.res.dto.ResourceUser</class-b>
@@ -38,8 +36,6 @@
 			<b>resource</b>
 		</field>
 	</mapping>
-
-
     <mapping>
         <class-a>org.openiam.idm.srvc.user.domain.UserEntity</class-a>
         <class-b>org.openiam.idm.srvc.user.dto.User</class-b>
@@ -147,6 +143,30 @@
 		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="dto2entityShallowDozerMapper">
 			<a>resourceRoles</a>
 			<b>resourceRoles</b>
+		</field>
+	</mapping>
+	<mapping>
+		<class-a>org.openiam.idm.srvc.meta.domain.MetadataTypeEntity</class-a>
+		<class-b>org.openiam.idm.srvc.meta.dto.MetadataType</class-b>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="deepDozerMapper">
+			<a>categories</a>
+			<b>categories</b> 
+		</field>
+		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityMapConverterWithKeyString" custom-converter-param="deepDozerMapper">
+			<a>elementAttributes</a>
+			<b>elementAttributes</b>
+		</field>
+	</mapping>
+	<mapping>
+		<class-a>org.openiam.idm.srvc.cat.domain.CategoryEntity</class-a>
+		<class-b>org.openiam.idm.srvc.cat.dto.Category</class-b>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="deepDozerMapper">
+			<a>childCategories</a>
+			<b>childCategories</b> 
+		</field>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="deepDozerMapper">
+			<a>categoryLanguages</a>
+			<b>categoryLanguages</b>
 		</field>
 	</mapping>
 </mappings>
