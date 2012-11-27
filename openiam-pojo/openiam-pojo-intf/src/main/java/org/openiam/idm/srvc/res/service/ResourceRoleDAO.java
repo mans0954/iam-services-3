@@ -13,4 +13,5 @@ import java.util.List;
 
 public interface ResourceRoleDAO extends BaseDao<ResourceRoleEntity, ResourceRoleEmbeddableId>  {
 	public void deleteByRoleId(final String roleId);
+	public void deleteByResourceId(final String resourceId);
 }

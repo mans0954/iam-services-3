@@ -2,6 +2,8 @@ package org.openiam.idm.srvc.res.service;
 
 
 import java.util.List;
+
+import javax.annotation.PostConstruct;
 import javax.naming.InitialContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -32,7 +34,14 @@ public class ResourceRoleDAOImpl extends BaseDaoImpl<ResourceRoleEntity, Resourc
 		return "id";
 	}
 	
-	public static final String DELETE_BY_ROLE_ID = String.format("DELETE %s ur WHERE ur.roleId = :roleId", UserRole.class.getCanonicalName());
+	private static String DELETE_BY_ROLE_ID = "DELETE FROM %s ur WHERE ur.id.roleId = :roleId";
+	private static String DELETE_BY_RESOURCE_ID = "DELETE FROM %s ur WHERE ur.id.resourceId = :resourceId";
+	
+	@PostConstruct
+	public void initSQL() {
+		DELETE_BY_ROLE_ID = String.format(DELETE_BY_ROLE_ID, domainClass.getSimpleName());
+		DELETE_BY_RESOURCE_ID = String.format(DELETE_BY_RESOURCE_ID, domainClass.getSimpleName());
+	}
 
 	@Override
 	public void deleteByRoleId(String roleId) {
@@ -40,6 +49,13 @@ public class ResourceRoleDAOImpl extends BaseDaoImpl<ResourceRoleEntity, Resourc
 		final Query qry = session.createQuery(DELETE_BY_ROLE_ID);
 		qry.setString("roleId", roleId);
 		qry.executeUpdate();
+	}
+
+	@Override
+	public void deleteByResourceId(String resourceId) {
+		final Query query = getSession().createQuery(DELETE_BY_RESOURCE_ID);
+		query.setParameter("resourceId", resourceId);
+		query.executeUpdate();
 	}
 
 }

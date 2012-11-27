@@ -64,7 +64,7 @@ public class RoleEntity implements Serializable {
     @Column(name="SERVICE_ID",length=32)
     private String serviceId;
 
-	@ManyToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
+    @ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
     @JoinTable(name="GRP_ROLE",
 	    joinColumns={@JoinColumn(name="ROLE_ID")},
 	    inverseJoinColumns={@JoinColumn(name="GRP_ID")})
@@ -88,7 +88,7 @@ public class RoleEntity implements Serializable {
     @Fetch(FetchMode.SUBSELECT)
     private Set<RoleEntity> parentRoles;
     
-	@ManyToMany(cascade={CascadeType.ALL},fetch=FetchType.LAZY)
+	@ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
     @JoinTable(name="role_to_role_membership",
         joinColumns={@JoinColumn(name="ROLE_ID")},
         inverseJoinColumns={@JoinColumn(name="MEMBER_ROLE_ID")})
@@ -99,6 +99,11 @@ public class RoleEntity implements Serializable {
     @JoinColumn(name = "ROLE_ID")
     @Fetch(FetchMode.SUBSELECT)
     private Set<ResourceRoleEntity> resourceRoles;
+    
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "ROLE_ID")
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<UserRoleEntity> userRoles;
     
     @Column(name="CREATE_DATE",length=19)
 	private Date createDate;
@@ -264,6 +269,14 @@ public class RoleEntity implements Serializable {
 			}
 			resourceRoles.add(entity);
 		}
+	}
+
+	public Set<UserRoleEntity> getUserRoles() {
+		return userRoles;
+	}
+
+	public void setUserRoles(Set<UserRoleEntity> userRoles) {
+		this.userRoles = userRoles;
 	}
 
 	@Override

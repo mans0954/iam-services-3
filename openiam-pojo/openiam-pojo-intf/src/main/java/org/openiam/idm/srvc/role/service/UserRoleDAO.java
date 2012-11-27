@@ -37,4 +37,6 @@ import java.util.List;
 public interface UserRoleDAO extends BaseDao<UserRoleEntity, String> {
     
     public UserRoleEntity getRecord(final String userId, final String roleId);
+    
+    public void deleteByRoleId(final String roleId);
 }

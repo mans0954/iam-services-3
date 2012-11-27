@@ -50,6 +50,15 @@ public enum ResponseCode {
 	@XmlEnumValue("invalidResourceType")
 	INVALID_RESOURCE_TYPE("invalidResourceType"),
 	
+	@XmlEnumValue("missingRoleName")
+	MISSING_ROLE_NAME("missingRoleName"),
+	
+	@XmlEnumValue("invalidRoleDomain")
+	INVALID_ROLE_DOMAIN("invalidRoleDomain"),
+	
+	@XmlEnumValue("roleNameTakem")
+	ROLE_NAME_TAKEN("roleNameTakem"),
+	
 	@XmlEnumValue("membershipExists")
 	MEMBERSHIP_EXISTS("membershipExists"),
 	
@@ -70,6 +79,18 @@ public enum ResponseCode {
 	
     @XmlEnumValue("objectNotFound")
     OBJECT_NOT_FOUND("objectNotFound"),
+    
+    @XmlEnumValue("hangingChildRoles")
+    ROLE_HANGING_CHILD_ROLES("hangingChildRoles"),
+    
+    @XmlEnumValue("hangingRoleGroups")
+    ROLE_HANGING_GROUPS("hangingRoleGroups"),
+    
+    @XmlEnumValue("hangingRoleResources")
+    ROLE_HANGING_RESOURCES("hangingRoleResources"),
+    
+    @XmlEnumValue("hangingRoleUsers")
+    ROLE_HANGING_USERS("hangingRoleUsers"),
 
     @XmlEnumValue("classNotFound")
     CLASS_NOT_FOUND("classNotFound"),

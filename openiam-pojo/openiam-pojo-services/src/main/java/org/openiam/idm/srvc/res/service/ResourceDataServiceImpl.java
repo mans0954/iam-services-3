@@ -39,6 +39,7 @@ import org.openiam.util.DozerMappingType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service("resourceDataService")
 @WebService(endpointInterface = "org.openiam.idm.srvc.res.service.ResourceDataService", targetNamespace = "urn:idm.openiam.org/srvc/res/service", portName = "ResourceDataWebServicePort", serviceName = "ResourceDataWebService")
@@ -371,6 +372,7 @@ public class ResourceDataServiceImpl implements ResourceDataService {
     }
 
 	@Override
+	@Transactional
 	public Response deleteResource(final String resourceId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {
@@ -379,6 +381,7 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
 			
+			/*
 			if(CollectionUtils.isNotEmpty(entity.getChildResources())) {
 				throw new BasicDataServiceException(ResponseCode.HANGING_CHILDREN);
 			}
@@ -390,7 +393,9 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 			if(CollectionUtils.isNotEmpty(entity.getResourceRoles())) {
 				throw new BasicDataServiceException(ResponseCode.HANGING_ROLES);
 			}
-			
+			*/
+			resourceGroupDAO.deleteByResourceId(resourceId);
+			resourceRoleDao.deleteByResourceId(resourceId);
 			resourceDao.delete(entity);
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);

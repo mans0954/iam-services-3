@@ -137,5 +137,9 @@
 			<a>resourceRoles</a>
 			<b>resourceRoles</b>
 		</field-exclude>
+		<field-exclude>
+			<a>userRoles</a>
+			<b>userRoles</b>
+		</field-exclude>
     </mapping>
 </mappings>

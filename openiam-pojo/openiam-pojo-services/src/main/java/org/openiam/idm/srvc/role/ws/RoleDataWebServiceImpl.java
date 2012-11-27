@@ -31,6 +31,7 @@ import javax.jws.WebParam;
 import javax.jws.WebService;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.dozer.DozerBeanMapper;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
@@ -54,8 +55,10 @@ import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.dto.RoleAttribute;
 import org.openiam.idm.srvc.role.dto.RolePolicy;
 import org.openiam.idm.srvc.role.dto.UserRole;
+import org.openiam.idm.srvc.role.service.RoleDAO;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.searchbean.converter.RoleSearchBeanConverter;
+import org.openiam.idm.srvc.secdomain.service.SecurityDomainDAO;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.ws.UserArrayResponse;
@@ -96,12 +99,26 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
     
     @Autowired
     private RoleSearchBeanConverter roleSearchBeanConverter;
+    
+    @Autowired
+    private RoleDAO roleDao;
+    
+    @Autowired
+    private SecurityDomainDAO securityDomainDAO;
 
 	@Override
 	public RoleAttributeResponse addAttribute(RoleAttribute attribute) {
 		final RoleAttributeResponse response = new RoleAttributeResponse(ResponseStatus.SUCCESS);
 		try {
 			if(attribute == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			if(StringUtils.isBlank(attribute.getName())) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			if(StringUtils.isBlank(attribute.getValue())) {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
 			
@@ -128,28 +145,6 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 			}
 			
 			roleDataService.addGroupToRole(roleId, groupId);
-		} catch(BasicDataServiceException e) {
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(e.getCode());
-		} catch(Throwable e) {
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorText(e.getMessage());
-		}
-		return response;
-	}
-
-	@Override
-	public RoleResponse addRole(final Role role) {
-		final RoleResponse response = new RoleResponse(ResponseStatus.SUCCESS);
-		try {
-			if(role == null) {
-				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-			}
-			
-			final RoleEntity entity = roleDozerConverter.convertToEntity(role, false);
-			roleDataService.saveRole(entity);
-			final Role dto = roleDozerConverter.convertToDTO(entity, false);
-			response.setRole(dto);
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
@@ -271,6 +266,29 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
 			
+			final RoleEntity entity = roleDao.findById(roleId);
+			if(entity == null) {
+				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+			}
+			
+			/*
+			if(CollectionUtils.isNotEmpty(entity.getChildRoles())) {
+				throw new BasicDataServiceException(ResponseCode.ROLE_HANGING_CHILD_ROLES);
+			}
+			
+			if(CollectionUtils.isNotEmpty(entity.getGroups())) {
+				throw new BasicDataServiceException(ResponseCode.ROLE_HANGING_GROUPS);
+			}
+			
+			if(CollectionUtils.isNotEmpty(entity.getResourceRoles())) {
+				throw new BasicDataServiceException(ResponseCode.ROLE_HANGING_RESOURCES);
+			}
+			
+			if(CollectionUtils.isNotEmpty(entity.getUserRoles())) {
+				throw new BasicDataServiceException(ResponseCode.ROLE_HANGING_USERS);
+			}
+			*/
+			
 			 roleDataService.removeRole(roleId);
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
@@ -322,15 +340,55 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 	}
 
 	@Override
-	public Response updateRole(Role role) {
+	public Response saveRole(Role role) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {
 			if(role == null) {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
 			
-			final RoleEntity entity = roleDozerConverter.convertToEntity(role, false);
+			RoleEntity entity = roleDozerConverter.convertToEntity(role, false);
+			if(StringUtils.isBlank(entity.getRoleName())) {
+				throw new BasicDataServiceException(ResponseCode.MISSING_ROLE_NAME);
+			}
+			
+			/* check if the name is taken by another entity */
+			final RoleEntity example = new RoleEntity();
+			example.setRoleName(entity.getRoleName());
+			final List<RoleEntity> nameEntityList = roleDao.getByExample(example);
+			if(CollectionUtils.isNotEmpty(nameEntityList)) {
+				final RoleEntity nameEntity = nameEntityList.get(0);
+				if(StringUtils.isBlank(entity.getRoleId()) || !entity.getRoleId().equals(nameEntity.getRoleId())) {
+					throw new BasicDataServiceException(ResponseCode.ROLE_NAME_TAKEN);
+				}
+			}
+			
+			if(StringUtils.isBlank(entity.getServiceId())) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ROLE_DOMAIN);
+			}
+			
+			if(securityDomainDAO.findById(entity.getServiceId()) == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ROLE_DOMAIN);
+			}
+			
+			if(StringUtils.isNotBlank(entity.getRoleId())) {
+				final RoleEntity dbObject = roleDao.findById(entity.getRoleId());
+				if(dbObject == null) {
+					throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+				}
+				
+				/* merge */
+				dbObject.setRoleName(entity.getRoleName());
+				dbObject.setDescription(entity.getDescription());
+				dbObject.setServiceId(entity.getServiceId());
+				dbObject.setStatus(entity.getStatus());
+				dbObject.setMetadataTypeId(entity.getMetadataTypeId());
+				dbObject.setInternalRoleId(entity.getInternalRoleId());
+				entity = dbObject;
+			}
+			
 			roleDataService.saveRole(entity);
+			response.setResponseValue(entity.getRoleId());
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
