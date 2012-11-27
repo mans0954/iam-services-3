@@ -5,7 +5,10 @@ import javax.jws.WebService;
 import org.openiam.idm.srvc.cat.dto.Category;
 import org.openiam.idm.srvc.cat.service.CategoryDataService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+
+@Service("categorydataWS")
 @WebService(endpointInterface = "org.openiam.idm.srvc.cat.ws.CategoryWebService", targetNamespace = "urn:idm.openiam.org/srvc/cat/service", portName = "CategoryDataWebServicePort", serviceName = "CategoryDataWebService")
 public class CategoryWebServiceImpl implements CategoryWebService {
 
