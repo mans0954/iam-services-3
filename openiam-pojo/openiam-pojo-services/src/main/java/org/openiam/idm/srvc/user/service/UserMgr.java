@@ -398,7 +398,7 @@ public class UserMgr implements UserDataService {
     }
 
     public int count(UserSearchBean searchBean){
-      return 0;
+      return userDao.getUserCount(searchBean).intValue();
     }
 
     /* -------- Methods for Attributes ---------- */

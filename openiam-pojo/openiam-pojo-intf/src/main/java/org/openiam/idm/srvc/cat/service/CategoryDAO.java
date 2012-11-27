@@ -1,32 +1,22 @@
 package org.openiam.idm.srvc.cat.service;
 
-import org.openiam.idm.srvc.cat.dto.Category;
-
 import java.util.List;
+import org.openiam.core.dao.BaseDao;
+import org.openiam.idm.srvc.cat.domain.CategoryEntity;
 
 /**
  * DAO Interface for Category
  *
  * @author suneet shah
  */
-public interface CategoryDAO {
-
-    void add(Category transientInstance);
-
-    void remove(Category persistentInstance);
-
-    Category update(Category detachedInstance);
-
-    Category findById(java.lang.String id);
-
-    List<Category> findByExample(Category instance);
+public interface CategoryDAO extends BaseDao<CategoryEntity, String> {
 
     /**
      * Return a list of Categories where the parentId is null.
      *
      * @return
      */
-    List<Category> findRootCategories();
+    List<CategoryEntity> findRootCategories();
 
     /**
      * Return a list of Categories for the specified parentId.
@@ -34,7 +24,7 @@ public interface CategoryDAO {
      * @param parentId
      * @return
      */
-    List<Category> findChildCategories(String parentId);
+    List<CategoryEntity> findChildCategories(String parentId);
 
     /**
      * Removes a list of categories

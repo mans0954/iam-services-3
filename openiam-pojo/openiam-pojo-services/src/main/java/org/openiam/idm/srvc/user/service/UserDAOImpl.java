@@ -1212,7 +1212,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         } else {
             // check systemFlag
             Disjunction disjunction  = Restrictions.disjunction();
-            disjunction.add(Restrictions.isNotNull("systemFlag")).add(Restrictions.ne("systemFlag", "1"));
+            disjunction.add(Restrictions.isNull("systemFlag")).add(Restrictions.ne("systemFlag", "1"));
             criteria.add(disjunction);
             if (searchBean.getShowInSearch() != null) {
                 criteria.add(Restrictions.eq("showInSearch", searchBean.getShowInSearch()));

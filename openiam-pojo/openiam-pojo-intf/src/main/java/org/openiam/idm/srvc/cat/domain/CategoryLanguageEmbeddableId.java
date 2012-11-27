@@ -1,20 +1,25 @@
-package org.openiam.idm.srvc.cat.dto;
+package org.openiam.idm.srvc.cat.domain;
 
-import javax.xml.bind.annotation.XmlType;
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
 
 // Generated Nov 22, 2008 1:32:51 PM by Hibernate Tools 3.2.2.GA
 
 /**
  * CategoryLanguageId is the PrimaryKey for the CategoryLanguage object
  */
-
-@XmlType(name = "categoryLanguageId", propOrder = { "categoryId", "languageCd" })
-public class CategoryLanguageId implements java.io.Serializable {
-
+@Embeddable
+public class CategoryLanguageEmbeddableId implements java.io.Serializable {
+    /**
+     * @author zaporozhec
+     */
+    private static final long serialVersionUID = 1L;
+    @Column(name = "CATEGORY_ID", length = 20, nullable = false)
     private String categoryId;
+    @Column(name = "LANGUAGE_CD", length = 5, nullable = false)
     private String languageCd;
 
-    public CategoryLanguageId() {
+    public CategoryLanguageEmbeddableId() {
     }
 
     public String getCategoryId() {
@@ -38,9 +43,9 @@ public class CategoryLanguageId implements java.io.Serializable {
             return true;
         if ((other == null))
             return false;
-        if (!(other instanceof CategoryLanguageId))
+        if (!(other instanceof CategoryLanguageEmbeddableId))
             return false;
-        CategoryLanguageId castOther = (CategoryLanguageId) other;
+        CategoryLanguageEmbeddableId castOther = (CategoryLanguageEmbeddableId) other;
 
         return ((this.getCategoryId() == castOther.getCategoryId()) || (this
                 .getCategoryId() != null
@@ -65,5 +70,4 @@ public class CategoryLanguageId implements java.io.Serializable {
                 .hashCode());
         return result;
     }
-
 }

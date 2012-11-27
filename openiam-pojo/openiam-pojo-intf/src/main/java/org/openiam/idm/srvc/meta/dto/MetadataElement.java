@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.meta.dto;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+import org.openiam.dozer.DozerDTOCorrespondence;
 
 // Generated Nov 4, 2008 12:11:29 AM by Hibernate Tools 3.2.2.GA
 
@@ -11,31 +12,18 @@ import javax.xml.bind.annotation.XmlType;
  * MetadataElement also contains parameters that define validation constraints.
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "MetadataElement", propOrder = {
-        "metadataElementId",
-        "metadataTypeId",
-        "attributeName",
-        "description",
-        "minLen",
-        "maxLen",
-        "defaultValue",
-        "valueList",
-        "label",
-        "multiValue",
-        "auditable",
-        "required",
-        "selfEditable",
-        "selfViewable",
-        "uiType",
-        "uiSize",
-        "valueSrc",
-        "minValue",
-        "maxValue",
-        "textCase",
-        "dataType"
-})
+@XmlType(name = "MetadataElement", propOrder = { "metadataElementId",
+        "metadataTypeId", "attributeName", "description", "minLen", "maxLen",
+        "defaultValue", "valueList", "label", "multiValue", "auditable",
+        "required", "selfEditable", "selfViewable", "uiType", "uiSize",
+        "valueSrc", "minValue", "maxValue", "textCase", "dataType" })
+@DozerDTOCorrespondence(MetadataElement.class)
 public class MetadataElement implements java.io.Serializable {
 
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
     private String metadataElementId;
     private String metadataTypeId;
     private String attributeName;
@@ -53,7 +41,7 @@ public class MetadataElement implements java.io.Serializable {
     private Integer auditable = 1;
     private Integer required = 0;
 
-    private Integer selfEditable =0;
+    private Integer selfEditable = 0;
     private Integer selfViewable = 0;
 
     private String uiType;
@@ -68,10 +56,10 @@ public class MetadataElement implements java.io.Serializable {
     }
 
     public MetadataElement(String metadataId, String typeId,
-                           String attributeName, String description, Integer minLen,
-                           Integer maxLen, String textCase, String dataType, Long minValue,
-                           Long maxValue, String defaultValue, String valueList, String label,
-                           String multiValue, Integer auditable, Integer required) {
+            String attributeName, String description, Integer minLen,
+            Integer maxLen, String textCase, String dataType, Long minValue,
+            Long maxValue, String defaultValue, String valueList, String label,
+            String multiValue, Integer auditable, Integer required) {
         this.metadataElementId = metadataId;
         this.metadataTypeId = typeId;
         this.attributeName = attributeName;
@@ -218,8 +206,6 @@ public class MetadataElement implements java.io.Serializable {
         this.required = required;
     }
 
-
-
     public String getUiType() {
         return uiType;
     }
@@ -245,7 +231,7 @@ public class MetadataElement implements java.io.Serializable {
     }
 
     public boolean isRequire() {
-        if ( required == null ||  required == 0) {
+        if (required == null || required == 0) {
             return false;
         }
         return true;

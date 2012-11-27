@@ -1,14 +1,14 @@
 package org.openiam.idm.srvc.meta.dto;
 
-import org.openiam.idm.srvc.cat.dto.Category;
-
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlType;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlType;
+import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.cat.dto.Category;
 
 // Generated Nov 4, 2008 12:11:29 AM by Hibernate Tools 3.2.2.GA
 
@@ -16,14 +16,9 @@ import java.util.Set;
  * <code>MetadataType</code> represents a metdata type instance.
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "MetadataType", propOrder = {
-        "metadataTypeId",
-        "description",
-        "active",
-        "syncManagedSys",
-        "elementAttributes",
-        "categories"
-})
+@XmlType(name = "MetadataType", propOrder = { "metadataTypeId", "description",
+        "active", "syncManagedSys", "elementAttributes", "categories" })
+@DozerDTOCorrespondence(MetadataType.class)
 public class MetadataType implements java.io.Serializable {
 
     private String metadataTypeId;
@@ -32,12 +27,9 @@ public class MetadataType implements java.io.Serializable {
     private int active = 0;
     private int syncManagedSys = 0;
 
-
-    protected Map<String, MetadataElement> elementAttributes = new HashMap<String, MetadataElement>(0);
+    protected Map<String, MetadataElement> elementAttributes = new HashMap<String, MetadataElement>(
+            0);
     protected Set<Category> categories = new HashSet<Category>(0);
-
-
-
 
     public MetadataType() {
     }
@@ -71,7 +63,8 @@ public class MetadataType implements java.io.Serializable {
         return this.elementAttributes;
     }
 
-    public void setElementAttributes(Map<String, MetadataElement> elementAttributes) {
+    public void setElementAttributes(
+            Map<String, MetadataElement> elementAttributes) {
         this.elementAttributes = elementAttributes;
     }
 
@@ -84,13 +77,8 @@ public class MetadataType implements java.io.Serializable {
     }
 
     /*
-        public boolean isActive() {
-            if (active == 0)
-                return false;
-            return true;
-        }
-
-    */
+     * public boolean isActive() { if (active == 0) return false; return true; }
+     */
 
     public int getActive() {
         return active;
@@ -105,13 +93,10 @@ public class MetadataType implements java.io.Serializable {
      *
      * @return
      */
-/*
-	public boolean isSyncManagedSys() {
-		if ( syncManagedSys == 0)
-			return false;
-		return true;
-	}
-*/
+    /*
+     * public boolean isSyncManagedSys() { if ( syncManagedSys == 0) return
+     * false; return true; }
+     */
     public int getSyncManagedSys() {
         return syncManagedSys;
     }
@@ -127,13 +112,9 @@ public class MetadataType implements java.io.Serializable {
 
     @Override
     public String toString() {
-        return "MetadataType{" +
-                "metadataTypeId='" + metadataTypeId + '\'' +
-                ", description='" + description + '\'' +
-                ", active=" + active +
-                ", syncManagedSys=" + syncManagedSys +
-                ", elementAttributes=" + elementAttributes +
-                ", categories=" + categories +
-                '}';
+        return "MetadataType{" + "metadataTypeId='" + metadataTypeId + '\''
+                + ", description='" + description + '\'' + ", active=" + active
+                + ", syncManagedSys=" + syncManagedSys + ", elementAttributes="
+                + elementAttributes + ", categories=" + categories + '}';
     }
 }

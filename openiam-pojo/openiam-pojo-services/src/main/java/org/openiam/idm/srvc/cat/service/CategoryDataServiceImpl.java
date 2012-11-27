@@ -2,40 +2,36 @@ package org.openiam.idm.srvc.cat.service;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.jws.WebService;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.dozer.converter.CategoryDozerConverter;
+import org.openiam.idm.srvc.cat.domain.CategoryEntity;
 import org.openiam.idm.srvc.cat.dto.Category;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 
-@WebService(endpointInterface = "org.openiam.idm.srvc.cat.service.CategoryDataService", 
-		targetNamespace = "urn:idm.openiam.org/srvc/cat/service", 
-		portName = "CategoryDataWebServicePort", 
-		serviceName = "CategoryDataWebService")
+@Service("categorydataService")
 public class CategoryDataServiceImpl implements CategoryDataService {
 
-	
+    @Autowired
 	CategoryDAO categoryDao;
+    @Autowired
 	CategoryLanguageDAO categoryLanguageDao;
-	
+    @Autowired
+    CategoryDozerConverter categoryDozerConverter;
 	private static final Log log = LogFactory.getLog(CategoryDataServiceImpl.class);
 
 	
-	public void addCategory(Category cat) {
+    public void addCategory(Category cat) {
 		if (cat == null) {
 			throw (new NullPointerException("Category object is null") );
 		}
-
-		categoryDao.add(cat);
-
+        categoryDao.save(categoryDozerConverter.convertToEntity(cat, true));
 	}
 
 	public Category[] getAllCategories(boolean nested) {
-		
-		Category[] categoryAry;
-		List<Category> catList = null;
+        List<CategoryEntity> catList = null;
 		
 		if (!nested) {
 			catList = categoryDao.findRootCategories();
@@ -45,11 +41,14 @@ public class CategoryDataServiceImpl implements CategoryDataService {
 		
 		if (catList == null || catList.isEmpty())
 			return null;
-		categoryAry = new Category[catList.size()];
-		catList.toArray(categoryAry);
-		return categoryAry;
+        return (Category[]) categoryDozerConverter.convertToDTOList(catList,
+                true).toArray();
 	}
-	private List<Category> getRecursiveCategories(String parentCategoryId, List<Category> catList) {
+
+    // use entity. PRIVATE only
+    private List<CategoryEntity> getRecursiveCategories(
+            String parentCategoryId,
+            List<CategoryEntity> catList) {
 		
 		if (parentCategoryId == null) {
 			catList = categoryDao.findRootCategories();
@@ -61,14 +60,13 @@ public class CategoryDataServiceImpl implements CategoryDataService {
 		
 		int size = catList.size();
 		for (int i=0; i<size; i++) {
-			Category cat = catList.get(i);
+            CategoryEntity cat = catList.get(i);
 			// check for child categories
-			List<Category> subCat = getRecursiveCategories(cat.getCategoryId(), catList);
+            List<CategoryEntity> subCat = getRecursiveCategories(
+                    cat.getCategoryId(), catList);
 			if (subCat != null && !subCat.isEmpty()) {
-				int subCatSize = subCat.size();
-				Category[] subCatAry = new Category[subCatSize];
-				subCat.toArray(subCatAry);
-				cat.setChildCategories(subCatAry);
+                cat.setChildCategories(new java.util.HashSet<CategoryEntity>(
+                        subCat));
 			}
 		}
 		
@@ -85,13 +83,12 @@ public class CategoryDataServiceImpl implements CategoryDataService {
 			throw (new NullPointerException("CategoryId is null") );
 		}
 
-		return categoryDao.findById(categoryId);
+		return categoryDozerConverter.convertToDTO(categoryDao.findById(categoryId),true);
 		
 	}
 
 	public Category[] getChildCategories(String categoryId, boolean nested) {
-		Category[] categoryAry;
-		List<Category> catList = null;
+        List<CategoryEntity> catList = null;
 		
 		if (!nested) {
 			catList = categoryDao.findChildCategories(categoryId);
@@ -102,11 +99,8 @@ public class CategoryDataServiceImpl implements CategoryDataService {
 		
 		if (catList == null || catList.isEmpty())
 			return null;
-		categoryAry = new Category[catList.size()];
-		catList.toArray(categoryAry);
-		return categoryAry;
-
-	
+        return (Category[]) categoryDozerConverter.convertToDTOList(catList,
+                true).toArray();
 	}
 
 	public int removeCategory(String categoryId, boolean nested) {
@@ -117,13 +111,14 @@ public class CategoryDataServiceImpl implements CategoryDataService {
 		if (!nested) {
 			Category parentCat = new Category();
 			parentCat.setCategoryId(categoryId);
-			categoryDao.remove(parentCat);
+            categoryDao.delete(categoryDozerConverter.convertToEntity(
+                    parentCat, true));
 			return 1;
 		}
 		
 
 		StringBuffer catIdBuf = new StringBuffer();
-		List<Category> catList = new ArrayList<Category>();
+        List<CategoryEntity> catList = new ArrayList<CategoryEntity>();
 	
 		catList = categoryDao.findChildCategories(categoryId);
 
@@ -134,7 +129,7 @@ public class CategoryDataServiceImpl implements CategoryDataService {
 	
 		int size = catList.size();
 		for (int i = 0; i < size; i++) {
-			Category cat = catList.get(i);
+            CategoryEntity cat = catList.get(i);
 			if (catIdBuf.length() > 0) {
 				catIdBuf.append(",");
 			}
@@ -154,7 +149,8 @@ public class CategoryDataServiceImpl implements CategoryDataService {
 		int count =  categoryDao.removeGroupList(catIdStr);
 		Category parentCat = new Category();
 		parentCat.setCategoryId(categoryId);
-		categoryDao.remove(parentCat);
+        categoryDao.delete(categoryDozerConverter.convertToEntity(parentCat,
+                false));
 		return count++;
 
 	}
@@ -165,7 +161,8 @@ public class CategoryDataServiceImpl implements CategoryDataService {
 	 * @param groupList
 	 * @return
 	 */
-	private String getRecursiveCatId(String parentCatId,List<Category> categoryList) {
+    private String getRecursiveCatId(String parentCatId,
+            List<CategoryEntity> categoryList) {
 		StringBuffer catIdBuf = new StringBuffer();
 
 		categoryList = categoryDao.findChildCategories(parentCatId);
@@ -174,7 +171,7 @@ public class CategoryDataServiceImpl implements CategoryDataService {
 		}
 		int size = categoryList.size();
 		for (int i = 0; i < size; i++) {
-			Category cat = categoryList.get(i);
+            CategoryEntity cat = categoryList.get(i);
 			if (catIdBuf.length() > 0) {
 				catIdBuf.append(",");
 			}
@@ -199,7 +196,7 @@ public class CategoryDataServiceImpl implements CategoryDataService {
 		if (cat == null) {
 			throw (new NullPointerException("Category object is null") );
 		}
-		categoryDao.update(cat);
+        categoryDao.save(categoryDozerConverter.convertToEntity(cat, false));
 	}
 
 	public CategoryDAO getCategoryDao() {

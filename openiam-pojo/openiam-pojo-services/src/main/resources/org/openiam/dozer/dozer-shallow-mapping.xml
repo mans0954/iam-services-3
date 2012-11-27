@@ -172,6 +172,46 @@
 			<a>childResources</a>
 			<b>childResources</b>
 		</field-exclude>
+		<field-exclude>
+			<a>userRoles</a>
+			<b>userRoles</b>
+		</field-exclude>
+	</mapping>
+	<mapping>
+		<class-a>org.openiam.idm.srvc.meta.dto.MetadataType</class-a>
+		<class-b>org.openiam.idm.srvc.meta.dto.MetadataType</class-b>
+		<field-exclude>
+			<a>categories</a>
+			<b>categories</b>
+		</field-exclude>
+		<field-exclude>
+			<a>elementAttributes</a>
+			<b>elementAttributes</b>
+		</field-exclude>
+	</mapping>
+	<mapping>
+		<class-a>org.openiam.idm.srvc.cat.dto.Category</class-a>
+		<class-b>org.openiam.idm.srvc.cat.dto.Category</class-b>
+		<field-exclude>
+			<a>childCategories</a>
+			<b>childCategories</b>
+		</field-exclude>
+		<field-exclude>
+			<a>categoryLanguages</a>
+			<b>categoryLanguages</b>
+		</field-exclude>
+	</mapping>
+	<mapping>
+		<class-a>org.openiam.idm.srvc.cat.dto.Category</class-a>
+		<class-b>org.openiam.idm.srvc.cat.dto.Category</class-b>
+		<field-exclude>
+			<a>childCategories</a>
+			<b>childCategories</b>
+		</field-exclude>
+		<field-exclude>
+			<a>categoryLanguages</a>
+			<b>categoryLanguages</b>
+		</field-exclude>
 	</mapping>
 </mappings>
         

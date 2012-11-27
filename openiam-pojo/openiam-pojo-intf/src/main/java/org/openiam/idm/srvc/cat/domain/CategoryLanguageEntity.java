@@ -1,32 +1,39 @@
-package org.openiam.idm.srvc.cat.dto;
+package org.openiam.idm.srvc.cat.domain;
 
 import java.io.Serializable;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlType;
+import javax.persistence.Column;
+import javax.persistence.EmbeddedId;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.cat.dto.CategoryLanguage;
 
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "categoryLanguage", propOrder = { "id", "categoryName" })
+/**
+ * 
+ * @author zaporozhec
+ *
+ */
+
+@Entity
+@Table(name="CATEGORY_LANGUAGE")
 @DozerDTOCorrespondence(CategoryLanguage.class)
-public class CategoryLanguage implements Serializable {
+public class CategoryLanguageEntity implements Serializable {
 
-
-    private CategoryLanguageId id;
+    @EmbeddedId
+    private CategoryLanguageEmbeddableId id;
+    @Column(name = "CATEGORY_NAME", length = 40)
     private String categoryName;
 
     static final long serialVersionUID = -6948749895519617508L;
 
-    public CategoryLanguage() {
+    public CategoryLanguageEntity() {
         super();
     }
 
-    public CategoryLanguageId getId() {
+    public CategoryLanguageEmbeddableId getId() {
         return id;
     }
-
-
-    public void setId(CategoryLanguageId id) {
+    public void setId(CategoryLanguageEmbeddableId id) {
         this.id = id;
     }
 
@@ -52,7 +59,7 @@ public class CategoryLanguage implements Serializable {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		CategoryLanguage other = (CategoryLanguage) obj;
+		CategoryLanguageEntity other = (CategoryLanguageEntity) obj;
 		if (categoryName == null) {
 			if (other.categoryName != null)
 				return false;

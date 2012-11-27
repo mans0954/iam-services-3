@@ -1,28 +1,27 @@
-package org.openiam.idm.srvc.cat.dto;
+package org.openiam.idm.srvc.cat.domain;
 
 import java.io.Serializable;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlType;
-
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "CategoryTypeId", propOrder = {
-        "categoryId",
-        "typeId"
-})
-public class CategoryTypeId implements Serializable {
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
+@Embeddable
+public class CategoryTypeEmbeddableId implements Serializable {
+    /**
+     * @author zaporozhec
+     */
+    private static final long serialVersionUID = 1L;
+    @Column(name = "CATEGORY_ID", length = 20, nullable = false)
     private String categoryId;
+    @Column(name = "TYPE_ID", length = 20, nullable = false)
     private String typeId;
 
 
-    public CategoryTypeId() {
+    public CategoryTypeEmbeddableId() {
         super();
     }
 
     public String getCategoryId() {
         return categoryId;
     }
-
 
     public void setCategoryId(String categoryId) {
         this.categoryId = categoryId;
@@ -41,7 +40,7 @@ public class CategoryTypeId implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        CategoryTypeId that = (CategoryTypeId) o;
+        CategoryTypeEmbeddableId that = (CategoryTypeEmbeddableId) o;
 
         if (categoryId != null ? !categoryId.equals(that.categoryId) : that.categoryId != null) return false;
         if (typeId != null ? !typeId.equals(that.typeId) : that.typeId != null) return false;
