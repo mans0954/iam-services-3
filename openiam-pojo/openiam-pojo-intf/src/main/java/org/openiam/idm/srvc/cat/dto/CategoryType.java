@@ -5,13 +5,18 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.cat.domain.CategoryTypeEntity;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "CategoryType", propOrder = {
         "id"
 })
-@DozerDTOCorrespondence(CategoryType.class)
+@DozerDTOCorrespondence(CategoryTypeEntity.class)
 public class CategoryType implements Serializable {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
     private CategoryTypeId id;
 
     public CategoryTypeId getId() {

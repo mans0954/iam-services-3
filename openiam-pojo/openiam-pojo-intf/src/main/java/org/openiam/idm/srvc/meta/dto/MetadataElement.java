@@ -4,6 +4,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 
 // Generated Nov 4, 2008 12:11:29 AM by Hibernate Tools 3.2.2.GA
 
@@ -17,7 +18,7 @@ import org.openiam.dozer.DozerDTOCorrespondence;
         "defaultValue", "valueList", "label", "multiValue", "auditable",
         "required", "selfEditable", "selfViewable", "uiType", "uiSize",
         "valueSrc", "minValue", "maxValue", "textCase", "dataType" })
-@DozerDTOCorrespondence(MetadataElement.class)
+@DozerDTOCorrespondence(MetadataElementEntity.class)
 public class MetadataElement implements java.io.Serializable {
 
     /**
@@ -53,29 +54,6 @@ public class MetadataElement implements java.io.Serializable {
 
     public MetadataElement(String metadataId) {
         this.metadataElementId = metadataId;
-    }
-
-    public MetadataElement(String metadataId, String typeId,
-            String attributeName, String description, Integer minLen,
-            Integer maxLen, String textCase, String dataType, Long minValue,
-            Long maxValue, String defaultValue, String valueList, String label,
-            String multiValue, Integer auditable, Integer required) {
-        this.metadataElementId = metadataId;
-        this.metadataTypeId = typeId;
-        this.attributeName = attributeName;
-        this.description = description;
-        this.minLen = minLen;
-        this.maxLen = maxLen;
-        this.textCase = textCase;
-        this.dataType = dataType;
-        this.minValue = minValue;
-        this.maxValue = maxValue;
-        this.defaultValue = defaultValue;
-        this.valueList = valueList;
-        this.label = label;
-        this.multiValue = multiValue;
-        this.auditable = auditable;
-        this.required = required;
     }
 
     public String getMetadataElementId() {

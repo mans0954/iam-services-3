@@ -95,11 +95,6 @@
 	</mapping>
 
 	<mapping>
-		<class-a>org.openiam.idm.srvc.meta.dto.MetadataType</class-a>
-		<class-b>org.openiam.idm.srvc.meta.dto.MetadataType</class-b>
-	</mapping>
-	
-	<mapping>
 		<class-a>org.openiam.idm.srvc.org.dto.OrganizationAttribute</class-a>
 		<class-b>org.openiam.idm.srvc.org.dto.OrganizationAttribute</class-b>
 	</mapping>

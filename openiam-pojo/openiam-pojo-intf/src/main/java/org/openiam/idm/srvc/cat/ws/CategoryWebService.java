@@ -1,4 +1,7 @@
-package org.openiam.idm.srvc.cat.service;
+package org.openiam.idm.srvc.cat.ws;
+
+import javax.jws.WebParam;
+import javax.jws.WebService;
 
 import org.openiam.idm.srvc.cat.dto.Category;
 
@@ -32,21 +35,26 @@ import org.openiam.idm.srvc.cat.dto.Category;
  *
  * @author suneet shah
  */
-public interface CategoryDataService {
+@WebService
+public interface CategoryWebService {
 
     /**
      * Adds a new category to the system. CategoryId should not be assigned since is auto-generated
      *
      * @param cat
      */
-    public void addCategory(Category cat);
+    public void addCategory(
+            @WebParam(name = "cat", targetNamespace = "")
+            Category cat);
 
     /**
      * Updates an existing category
      *
      * @param cat
      */
-    public void updateCategory(Category cat);
+    public void updateCategory(
+            @WebParam(name = "cat", targetNamespace = "")
+            Category cat);
 
     /**
      * Removes a existing specified by the categoryId. If the nested flag is set to true, then
@@ -63,14 +71,18 @@ public interface CategoryDataService {
      * @param categoryId
      * @return
      */
-    public Category getCategory(String categoryId);
+    public Category getCategory(
+            @WebParam(name = "categoryId", targetNamespace = "")
+            String categoryId);
 
     /**
      * Returns all the categories starting with top level categories.
      *
      * @return
      */
-    public Category[] getAllCategories(boolean nested);
+    public Category[] getAllCategories(
+            @WebParam(name = "nested", targetNamespace = "")
+            boolean nested);
 
     /**
      * Get all categories for the specified categoryId.
@@ -79,5 +91,9 @@ public interface CategoryDataService {
      * @param nested
      * @return
      */
-	public Category[] getChildCategories(String categoryId, boolean nested);
+    public Category[] getChildCategories(
+            @WebParam(name = "categoryId", targetNamespace = "")
+            String categoryId,
+            @WebParam(name = "nested", targetNamespace = "")
+            boolean nested);
 }
