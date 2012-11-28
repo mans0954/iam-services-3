@@ -56,29 +56,6 @@ public class MetadataElement implements java.io.Serializable {
         this.metadataElementId = metadataId;
     }
 
-    public MetadataElement(String metadataId, String typeId,
-            String attributeName, String description, Integer minLen,
-            Integer maxLen, String textCase, String dataType, Long minValue,
-            Long maxValue, String defaultValue, String valueList, String label,
-            String multiValue, Integer auditable, Integer required) {
-        this.metadataElementId = metadataId;
-        this.metadataTypeId = typeId;
-        this.attributeName = attributeName;
-        this.description = description;
-        this.minLen = minLen;
-        this.maxLen = maxLen;
-        this.textCase = textCase;
-        this.dataType = dataType;
-        this.minValue = minValue;
-        this.maxValue = maxValue;
-        this.defaultValue = defaultValue;
-        this.valueList = valueList;
-        this.label = label;
-        this.multiValue = multiValue;
-        this.auditable = auditable;
-        this.required = required;
-    }
-
     public String getMetadataElementId() {
         return metadataElementId;
     }

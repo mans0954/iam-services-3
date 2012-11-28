@@ -16,3 +16,5 @@ ddl/13.fix_resource_name_and_type.sql
 ddl/14.add_url_protector_column_to_res.sql
 ddl/15.fix_group_name.sql
 ddl/16.add_fk_to_users.sql
+ddl/17.remove_obsolete_res_and_role_fields.sql
+ddl/18.fix_role_name.sql

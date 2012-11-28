@@ -13,6 +13,7 @@ import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.grp.service.UserGroupDAO;
 import org.openiam.idm.srvc.res.service.ResourceRoleDAO;
+import org.openiam.idm.srvc.res.service.ResourceUserDAO;
 import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.domain.RolePolicyEntity;
@@ -49,9 +50,6 @@ public class RoleDataServiceImpl implements RoleDataService {
 	private RolePolicyDAO rolePolicyDao;
     
 	@Autowired
-	private ResourceRoleDAO resRoleDao;
-    
-	@Autowired
     private UserDozerConverter userDozerConverter;
     
 	@Autowired
@@ -66,6 +64,12 @@ public class RoleDataServiceImpl implements RoleDataService {
 	@Autowired
 	private RoleDozerConverter roleDozerConverter;
 	
+	@Autowired
+	private ResourceRoleDAO resourceRoleDAO;
+	
+	@Autowired
+	private UserRoleDAO userRoleDAO;
+	
 
 	private static final Log log = LogFactory.getLog(RoleDataServiceImpl.class);
 
@@ -79,6 +83,8 @@ public class RoleDataServiceImpl implements RoleDataService {
 		if(roleId != null) {
 			final RoleEntity roleEntity = roleDao.findById(roleId);
 			if(roleEntity != null) {
+				resourceRoleDAO.deleteByRoleId(roleId);
+				userRoleDAO.deleteByRoleId(roleId);
 				roleDao.delete(roleEntity);
 			}
 		}

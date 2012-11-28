@@ -112,6 +112,10 @@
 			<a>parentRoles</a>
 			<b>parentRoles</b>
 		</field>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+			<a>userRoles</a>
+			<b>userRoles</b>
+		</field>
 	</mapping>
 	
 	<mapping>
@@ -193,7 +197,7 @@
 			<a>categories</a>
 			<b>categories</b> 
 		</field>
-		<field custom-converter=org.openiam.dozer.crossentity.CrossEntityMapConverterWithKeyString" custom-converter-param="deepDozerMapper">
+		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityMapConverterWithKeyString" custom-converter-param="deepDozerMapper">
 			<a>elementAttributes</a>
 			<b>elementAttributes</b>
 		</field>
@@ -205,7 +209,7 @@
 			<a>categoryLanguages</a>
 			<b>categoryLanguages</b> 
 		</field>
-		<field custom-converter=org.openiam.dozer.PersistentSetConverter" custom-converter-param="deepDozerMapper">
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="deepDozerMapper">
 			<a>childCategories</a>
 			<b>childCategories</b>
 		</field>

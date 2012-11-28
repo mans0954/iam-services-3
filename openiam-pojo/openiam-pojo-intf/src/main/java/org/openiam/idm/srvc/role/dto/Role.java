@@ -62,7 +62,8 @@ import java.util.*;
         "endDate",
         "rolePolicy",
         "parentRoles",
-        "resourceRoles"
+        "resourceRoles",
+        "userRoles"
 })
 @XmlRootElement(name = "Role")
 @XmlSeeAlso({
@@ -108,6 +109,8 @@ public class Role extends BaseObject implements Comparable<Role> {
     private Set<Role> childRoles;
     
     private Set<ResourceRole> resourceRoles;
+    
+    private Set<UserRole> userRoles;
 
 
     @XmlSchemaType(name = "dateTime")
@@ -337,6 +340,14 @@ public class Role extends BaseObject implements Comparable<Role> {
 
 	public void setResourceRoles(Set<ResourceRole> resourceRoles) {
 		this.resourceRoles = resourceRoles;
+	}
+
+	public Set<UserRole> getUserRoles() {
+		return userRoles;
+	}
+
+	public void setUserRoles(Set<UserRole> userRoles) {
+		this.userRoles = userRoles;
 	}
 
 	@Override

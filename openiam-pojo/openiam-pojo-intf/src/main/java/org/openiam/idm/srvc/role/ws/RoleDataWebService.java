@@ -38,24 +38,12 @@ public interface RoleDataWebService {
             String roleId);
 
     /**
-     * Adds a new role to the system
-     *
-     * @param role
-     * @return
-     */
-
-    @WebMethod
-    RoleResponse addRole(
-            @WebParam(name = "role", targetNamespace = "")
-            org.openiam.idm.srvc.role.dto.Role role);
-
-    /**
      * Updates an existing role
      *
      * @param role
      */
     @WebMethod
-    Response updateRole(
+    Response saveRole(
             @WebParam(name = "role", targetNamespace = "")
             org.openiam.idm.srvc.role.dto.Role role);
 

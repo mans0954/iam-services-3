@@ -2,6 +2,8 @@ package org.openiam.idm.srvc.role.service;
 
 
 import java.util.List;
+
+import javax.annotation.PostConstruct;
 import javax.naming.InitialContext;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -27,6 +29,13 @@ import static org.hibernate.criterion.Example.create;
 public class UserRoleDAOImpl extends BaseDaoImpl<UserRoleEntity, String> implements UserRoleDAO {
 
 	private static final Log log = LogFactory.getLog(UserRoleDAOImpl.class);
+	
+	private String DELETE_BY_ROLE_ID = "DELETE FROM %s ur WHERE ur.roleId = :roleId";
+	
+	@PostConstruct
+	public void initSQL() {
+		DELETE_BY_ROLE_ID = String.format(DELETE_BY_ROLE_ID, domainClass.getSimpleName());
+	}
 	
 	@Override
 	protected Criteria getExampleCriteria(final UserRoleEntity entity) {
@@ -61,4 +70,11 @@ public class UserRoleDAOImpl extends BaseDaoImpl<UserRoleEntity, String> impleme
     protected String getPKfieldName() {
         return "userRoleId";
     }
+
+	@Override
+	public void deleteByRoleId(String roleId) {
+		final Query qry = getSession().createQuery(DELETE_BY_ROLE_ID);
+		qry.setString("roleId", roleId);
+		qry.executeUpdate();
+	}
 }

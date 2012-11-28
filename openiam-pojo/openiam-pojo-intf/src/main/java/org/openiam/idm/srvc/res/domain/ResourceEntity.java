@@ -84,7 +84,7 @@ public class ResourceEntity {
     @Fetch(FetchMode.SUBSELECT)
     private Set<ResourceEntity> parentResources = new HashSet<ResourceEntity>(0);
 
-    @ManyToMany(cascade = {CascadeType.ALL}, fetch = FetchType.LAZY)
+    @ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
     @JoinTable(name = "res_to_res_membership",
             joinColumns = {@JoinColumn(name = "RESOURCE_ID")},
             inverseJoinColumns = {@JoinColumn(name = "MEMBER_RESOURCE_ID")})
