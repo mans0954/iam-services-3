@@ -17,23 +17,9 @@ public interface ResourceDAO extends BaseDao<ResourceEntity, String> {
      */
     List<ResourceEntity> getResourcesByType(String resourceTypeId);
 
-    /**
-     * Find resources for role.
-     *
-     * @param roleId   the role id
-     * @return the list
-     */
-    List<ResourceEntity> findResourcesForRole(String roleId);
-
-    /**
-     * Find resources for roles.
-     *
-     * @param roleIdList the role id list
-     * @return the list
-     */
-    List<ResourceEntity> findResourcesForRoles(List<String> roleIdList);
-
-    List<ResourceEntity> findResourcesForUserRole(String userId);
+    List<ResourceEntity> getResourcesForRole(final String roleId, final int from, final int size);
 
     List<ResourceEntity> getRootResources(ResourceEntity resource, int startAt, int size);
+    
+    int getNumOfResourcesForRole(String roleId);
 }

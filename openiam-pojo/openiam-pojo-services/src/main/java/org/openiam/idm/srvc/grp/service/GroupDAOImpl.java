@@ -2,6 +2,8 @@ package org.openiam.idm.srvc.grp.service;
 
 // Generated Jun 12, 2007 10:46:15 PM by Hibernate Tools 3.2.0.beta8
 
+import static org.hibernate.criterion.Projections.rowCount;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -152,6 +154,27 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
 	@Override
 	protected String getPKfieldName() {
 		return "grpId";
+	}
+
+	@Override
+	public List<GroupEntity> getGroupsForRole(String roleId, int from, int size) {
+		final Criteria criteria = super.getCriteria();
+		criteria.createAlias("roles", "roles").add( Restrictions.eq("roles.roleId", roleId));
+		if(from > -1) {
+			criteria.setFirstResult(from);
+		}
+		
+		if(size > -1) {
+			criteria.setMaxResults(size);
+		}
+		return criteria.list();
+	}
+
+	@Override
+	public int getNumOfGroupsForRole(String roleId) {
+		final Criteria criteria = super.getCriteria();
+		criteria.createAlias("roles", "roles").add( Restrictions.eq("roles.roleId", roleId)).setProjection(rowCount());
+		return ((Number)criteria.uniqueResult()).intValue();
 	}
 }
 

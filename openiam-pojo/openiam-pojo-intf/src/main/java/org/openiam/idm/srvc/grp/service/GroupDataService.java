@@ -129,5 +129,8 @@ public interface GroupDataService {
     public List<GroupEntity> findBeans(final GroupEntity entity, final int from, final int size);
     
     public int countBeans(final GroupEntity entity);
+    
+    public List<GroupEntity> getGroupsForRole(final String roleId, final int from, final int size);
+    public int getNumOfGroupsForRole(final String roleId);
 
 }

@@ -322,33 +322,6 @@ public class ResourceDataServiceImpl implements ResourceDataService {
     	return response;
     }
 
-    /**
-     * Returns a list of Resource objects that are linked to a Role.
-     *
-     * @param roleId
-     * @return
-     */
-    public List<Resource> getResourcesForRole(String roleId) {
-        if (roleId == null) {
-            throw new IllegalArgumentException("roleId is null");
-        }
-        List<ResourceEntity> resourceEntities = resourceDao.findResourcesForRole(roleId);
-        return resourceConverter.convertToDTOList(resourceEntities, false);
-    }
-
-    /**
-     * Returns a list of Resource objects that are linked to the list of Roles.
-     *
-     * @param roleIdList
-     * @return
-     */
-    public List<Resource> getResourcesForRoles(List<String> roleIdList) {
-        if (roleIdList == null) {
-            throw new IllegalArgumentException("roleIdList is null");
-        }
-        List<ResourceEntity> resourceEntities = resourceDao.findResourcesForRoles(roleIdList);
-        return resourceConverter.convertToDTOList(resourceEntities, false);
-    }
 
     public Response addUserToResource(ResourceUser resourceUser) {
     	final Response response = new Response(ResponseStatus.SUCCESS);
@@ -668,5 +641,17 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 			response.setErrorText(e.getMessage());
 		}
 		return response;
+	}
+
+	@Override
+	public int getNumOfResourcesForRole(final String roleId) {
+		return resourceDao.getNumOfResourcesForRole(roleId);
+	}
+
+	@Override
+	public List<Resource> getResourcesForRole(final String roleId, final int from, final int size) {
+		final List<ResourceEntity> entityList = resourceDao.getResourcesForRole(roleId, from, size);
+		final List<Resource> resourceList = resourceConverter.convertToDTOList(entityList, false);
+		return resourceList;
 	}
 }

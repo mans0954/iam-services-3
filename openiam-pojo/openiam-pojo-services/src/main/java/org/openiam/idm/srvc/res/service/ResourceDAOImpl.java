@@ -1,5 +1,7 @@
 package org.openiam.idm.srvc.res.service;
 
+import static org.hibernate.criterion.Projections.rowCount;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -119,90 +121,38 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String> impleme
                 .createAlias("resourceType", "rt")
                 .add(Restrictions.eq("rt.resourceTypeId", resourceTypeId))
                 .addOrder(Order.asc("displayOrder"));
-        criteria.setCacheable(true);
-        criteria.setCacheRegion("query.resource.getResourceByType");
         return (List<ResourceEntity>) criteria.list();
     }
 
-    public List<ResourceEntity> findResourcesForRole(String roleId) {
+    public List<ResourceEntity> getResourcesForRole(final String roleId, final int from, final int size) {
         Criteria criteria = getCriteria()
                 .createAlias("resourceRoles", "rr")
                 .add(Restrictions.eq("rr.id.roleId", roleId))
                 .addOrder(Order.asc("managedSysId"))
                 .addOrder(Order.asc("name"));
-        criteria.setCacheable(true);
-        criteria.setCacheRegion("query.resource.findResourcesForRole");
-        final List<ResourceEntity> result = (List<ResourceEntity>) criteria.list();
-        return (CollectionUtils.isNotEmpty(result)) ? result : null;
+        
+        if(from > -1) {
+			criteria.setFirstResult(from);
+		}
+
+		if(size > -1) {
+			criteria.setMaxResults(size);
+		}
+        
+        final List<ResourceEntity> retVal = (List<ResourceEntity>) criteria.list();
+        return retVal;
     }
+    
 
-    public List<ResourceEntity> findResourcesForUserRole(String userId) {
-
-        String select = " select DISTINCT r.RESOURCE_ID, r.RESOURCE_TYPE_ID, " +
-                " r.DESCRIPTION, r.NAME, " +
-                " r.BRANCH_ID, r.CATEGORY_ID, r.DISPLAY_ORDER, " +
-                " r.NODE_LEVEL, r.SENSITIVE_APP, r.MANAGED_SYS_ID," +
-                " r.URL, r.RES_OWNER_GROUP_ID, r.RES_OWNER_USER_ID " +
-                " FROM  USER_ROLE ur, RESOURCE_ROLE rr, RES r " +
-                " WHERE ur.USER_ID = :userId AND ur.ROLE_ID = rr.ROLE_ID AND " +
-                "       rr.RESOURCE_ID = r.RESOURCE_ID";
-
-        Session session = sessionFactory.getCurrentSession();
-        try {
-
-
-            SQLQuery qry = session.createSQLQuery(select);
-            qry.addEntity(ResourceEntity.class);
-            qry.setString("userId", userId);
-
-            List<ResourceEntity> result = (List<ResourceEntity>) qry.list();
-            if (result == null || result.isEmpty()) {
-                log.debug("get successful, no instance found");
-                return null;
-            }
-            log.debug("get successful, resource instances found");
-
-
-            for (ResourceEntity r : result) {
-                Hibernate.initialize(r.getResourceType());
-                Hibernate.initialize(r.getResourceProps());
-                Hibernate.initialize(r.getResourceRoles());
-                //Hibernate.initialize(r.getEntitlements());
-                Hibernate.initialize(r.getResourceGroups());
-            }
-
-            return result;
-        } catch (HibernateException re) {
-            log.error("persist failed", re);
-            throw re;
-        }
-    }
-
-
-    public List<ResourceEntity> findResourcesForRoles(List<String> roleIdList) {
-        try {
-            Criteria criteria = getCriteria()
-                    .createAlias("resourceRoles", "rr")
-                    .add(Restrictions.in("rr.id.roleId", roleIdList))
-                    .addOrder(Order.asc("managedSysId"))
-                    .addOrder(Order.asc("name"))
-                    .setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
-            criteria.setCacheable(true);
-            criteria.setCacheRegion("query.resource.findResourcesForRole");
-            List<ResourceEntity> result = (List<ResourceEntity>) criteria.list();
-            if (result == null || result.isEmpty()) {
-                log.debug("get successful, no instance found");
-                return null;
-            }
-            log.debug("get successful, resource instances found");
-            return result;
-        } catch (HibernateException re) {
-            log.error("persist failed", re);
-            throw re;
-        }
-
-
-    }
+	@Override
+	public int getNumOfResourcesForRole(String roleId) {
+		final Criteria criteria = getCriteria()
+                .createAlias("resourceRoles", "rr")
+                .add(Restrictions.eq("rr.id.roleId", roleId)).setProjection(rowCount());
+		
+		
+		return ((Number)criteria.uniqueResult()).intValue();
+	}
 
     @Override
     protected String getPKfieldName() {
