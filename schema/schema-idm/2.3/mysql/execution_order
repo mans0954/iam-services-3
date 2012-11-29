@@ -18,3 +18,5 @@ ddl/15.fix_group_name.sql
 ddl/16.add_fk_to_users.sql
 ddl/17.remove_obsolete_res_and_role_fields.sql
 ddl/18.fix_role_name.sql
+dml/3.update_menu_urls.sql
+dml/4.role_menus.sql
