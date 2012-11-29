@@ -46,6 +46,7 @@ import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
+import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.grp.ws.GroupArrayResponse;
 import org.openiam.idm.srvc.grp.ws.GroupListResponse;
 import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
@@ -104,6 +105,9 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
     private RoleDAO roleDao;
     
     @Autowired
+    private GroupDAO groupDAO;
+    
+    @Autowired
     private SecurityDomainDAO securityDomainDAO;
 
 	@Override
@@ -142,6 +146,16 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 		try {
 			if(roleId == null || groupId == null) {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			final RoleEntity role = roleDao.findById(roleId);
+			final GroupEntity group = groupDAO.findById(groupId);
+			if(role == null || group == null) {
+				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+			}
+			
+			if(role.hasGroup(group.getGrpId())) {
+				throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
 			}
 			
 			roleDataService.addGroupToRole(roleId, groupId);
@@ -243,7 +257,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 	public Response removeGroupFromRole(String roleId, String groupId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {
-			if(groupId == null) {
+			if(groupId == null || roleId == null) {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
 			

@@ -247,4 +247,12 @@ public interface GroupDataWebService {
     
     @WebMethod
     public int getNumOfGroupsforResource(final @WebParam(name = "resourceId") String resourceId);
+    
+    @WebMethod
+    public List<Group> getGroupsForRole(final @WebParam(name = "roleId") String roleId,
+    									final @WebParam(name = "from", targetNamespace = "") int from,
+    									final @WebParam(name = "size", targetNamespace = "") int size);
+    
+    @WebMethod
+    public int getNumOfGroupsForRole(final @WebParam(name = "roleId") String roleId);
 }

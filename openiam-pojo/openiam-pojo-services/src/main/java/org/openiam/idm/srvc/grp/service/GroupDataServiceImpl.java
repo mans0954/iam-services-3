@@ -248,4 +248,14 @@ public class GroupDataServiceImpl implements GroupDataService {
 		entity.addResourceGroup(resourceGroupEntity);
 		return groupDao.count(entity);
 	}
+
+	@Override
+	public List<GroupEntity> getGroupsForRole(String roleId, int from, int size) {
+		return groupDao.getGroupsForRole(roleId, from, size);
+	}
+
+	@Override
+	public int getNumOfGroupsForRole(String roleId) {
+		return groupDao.getNumOfGroupsForRole(roleId);
+	}
 }

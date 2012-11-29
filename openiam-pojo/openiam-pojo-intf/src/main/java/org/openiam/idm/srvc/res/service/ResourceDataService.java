@@ -135,28 +135,13 @@ public interface ResourceDataService {
             @WebParam(name = "user", targetNamespace = "")
             ResourceUser user);
 
-    /**
-     * Returns a list of Resource objects that are linked to a Role.
-     *
-     * @param roleId   the role id
-     * @return the resources for role
-     */
     @WebMethod
-    List<Resource> getResourcesForRole(
-            @WebParam(name = "roleId", targetNamespace = "")
-            String roleId);
-
-    /**
-     * Returns a list of Resource objects that are linked to the list of Roles.
-     *
-     * @param roleIdList the role id list
-     * @return the resources for roles
-     */
-
+    int getNumOfResourcesForRole(@WebParam(name = "roleId", targetNamespace = "") String roleId);	
+    
     @WebMethod
-    List<Resource> getResourcesForRoles(
-            @WebParam(name = "roleIdList", targetNamespace = "")
-            List<String> roleIdList);
+    List<Resource> getResourcesForRole(@WebParam(name = "roleId", targetNamespace = "") String roleId,
+    								   @WebParam(name = "from", targetNamespace = "") int from,
+    								   @WebParam(name = "size", targetNamespace = "") int size);
 
 
     @WebMethod

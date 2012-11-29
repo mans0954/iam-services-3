@@ -407,4 +407,18 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 	public int getNumOfGroupsforResource(final String resourceId) {
 		return groupManager.getNumOfGroupsForResource(resourceId);
 	}
+
+	@Override
+	@WebMethod
+	public List<Group> getGroupsForRole(final String roleId, final int from, final int size) {
+		final List<GroupEntity> entityList = groupManager.getGroupsForRole(roleId, from, size);
+		final List<Group> groupList = groupDozerConverter.convertToDTOList(entityList, false);
+		return groupList;
+	}
+
+	@Override
+	@WebMethod
+	public int getNumOfGroupsForRole(final String roleId) {
+		return groupManager.getNumOfGroupsForRole(roleId);
+	}
 }

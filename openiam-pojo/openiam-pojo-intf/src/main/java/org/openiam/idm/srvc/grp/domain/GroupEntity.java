@@ -32,6 +32,7 @@ import org.openiam.idm.srvc.grp.dto.GroupAttribute;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourceGroupEntity;
 import org.openiam.idm.srvc.res.dto.ResourceGroup;
+import org.openiam.idm.srvc.role.domain.RoleEntity;
 
 @Entity
 @Table(name="GRP")
@@ -100,19 +101,25 @@ public class GroupEntity {
     @Fetch(FetchMode.SUBSELECT)
     private Set<GroupEntity> parentGroups;
     
-	@ManyToMany(cascade={CascadeType.ALL},fetch=FetchType.LAZY)
+    @ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
     @JoinTable(name="grp_to_grp_membership",
         joinColumns={@JoinColumn(name="GROUP_ID")},
         inverseJoinColumns={@JoinColumn(name="MEMBER_GROUP_ID")})
     @Fetch(FetchMode.SUBSELECT)
     private Set<GroupEntity> childGroups;
     
-	/* changed to 'lazy' and 'subselect' to prevent left outer join, which causes extra rows when querying subentities */
     @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
     @JoinColumn(name="GRP_ID", referencedColumnName="GRP_ID")
     @MapKeyColumn(name="name")
     @Fetch(FetchMode.SUBSELECT)
     private Map<String, GroupAttributeEntity> attributes;
+    
+    @ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
+    @JoinTable(name="GRP_ROLE",
+	    joinColumns={@JoinColumn(name="GRP_ID")},
+	    inverseJoinColumns={@JoinColumn(name="ROLE_ID")})
+	@Fetch(FetchMode.SUBSELECT)
+    private Set<RoleEntity> roles;
     
 	@Transient
 	private AttributeOperationEnum operation;
@@ -302,6 +309,14 @@ public class GroupEntity {
 			}
 			this.resourceGroups.add(resourceGroup);
 		}
+	}
+
+	public Set<RoleEntity> getRoles() {
+		return roles;
+	}
+
+	public void setRoles(Set<RoleEntity> roles) {
+		this.roles = roles;
 	}
 
 	@Override

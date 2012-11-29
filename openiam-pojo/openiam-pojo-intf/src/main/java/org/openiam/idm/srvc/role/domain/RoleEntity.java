@@ -174,6 +174,19 @@ public class RoleEntity implements Serializable {
 	public void setServiceId(String serviceId) {
 		this.serviceId = serviceId;
 	}
+	
+	public boolean hasGroup(final String groupId) {
+		boolean retVal = false;
+		if(groups != null) {
+			for(final GroupEntity entity : groups) {
+				if(entity.getGrpId().equals(groupId)) {
+					retVal = true;
+					break;
+				}
+			}
+		}
+		return retVal;
+	}
 
 	public Set<GroupEntity> getGroups() {
 		return groups;
