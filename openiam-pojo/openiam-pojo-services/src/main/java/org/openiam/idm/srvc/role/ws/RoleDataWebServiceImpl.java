@@ -22,9 +22,11 @@
 package org.openiam.idm.srvc.role.ws;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
@@ -49,6 +51,7 @@ import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.grp.ws.GroupArrayResponse;
 import org.openiam.idm.srvc.grp.ws.GroupListResponse;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.domain.RolePolicyEntity;
@@ -513,5 +516,111 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 	@Override
 	public int getNumOfRolesForResource(final String resourceId) {
 		return roleDataService.getNumOfRolesForResource(resourceId);
+	}
+
+	@Override
+	public List<Role> getChildRoles(final String roleId, final  int from, final int size) {
+		final List<RoleEntity> entityList = roleDataService.getChildRoles(roleId, from, size);
+		final List<Role> roleList = roleDozerConverter.convertToDTOList(entityList, false);
+		return roleList;
+	}
+
+	@Override
+	@WebMethod
+	public int getNumOfChildRoles(final String roleId) {
+		return roleDataService.getNumOfChildRoles(roleId);
+	}
+
+	@Override
+	@WebMethod
+	public List<Role> getParentRoles(final String roleId, final int from, final int size) {
+		final List<RoleEntity> entityList = roleDataService.getParentRoles(roleId, from, size);
+		final List<Role> roleList = roleDozerConverter.convertToDTOList(entityList, false);
+		return roleList;
+	}
+
+	@Override
+	@WebMethod
+	public int getNumOfParentRoles(final String roleId) {
+		return roleDataService.getNumOfParentRoles(roleId);
+	}
+
+	@Override
+	public Response addChildRole(final String roleId, final String childRoleId) {
+		final RolePolicyResponse response = new RolePolicyResponse(ResponseStatus.SUCCESS);
+		try {
+			if(roleId == null || childRoleId == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			final RoleEntity parent = roleDao.findById(roleId);
+			final RoleEntity child = roleDao.findById(childRoleId);
+			if(parent == null || child == null) {
+				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+			}
+			
+			if(parent.hasChildRole(child.getRoleId())) {
+				throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
+			}
+			
+			if(roleId.equals(childRoleId)) {
+				throw new BasicDataServiceException(ResponseCode.CANT_ADD_YOURSELF_AS_CHILD);
+			}
+			
+			if(causesCircularDependency(parent, child, new HashSet<RoleEntity>())) {
+				throw new BasicDataServiceException(ResponseCode.CIRCULAR_DEPENDENCY);
+			}
+			
+			roleDataService.addChildRole(roleId, childRoleId);
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+		return response;
+	}
+	
+	private boolean causesCircularDependency(final RoleEntity parent, final RoleEntity child, final Set<RoleEntity> visitedSet) {
+		boolean retval = false;
+		if(parent != null && child != null) {
+			if(!visitedSet.contains(child)) {
+				visitedSet.add(child);
+				if(CollectionUtils.isNotEmpty(parent.getParentRoles())) {
+					for(final RoleEntity entity : parent.getParentRoles()) {
+						retval = entity.getRoleId().equals(child.getRoleId());
+						if(retval) {
+							break;
+						}
+						causesCircularDependency(parent, entity, visitedSet);
+					}
+				}
+			}
+		}
+		return retval;
+	}
+
+	@Override
+	public Response removeChildRole(final String roleId, final String childRoleId) {
+		final RolePolicyResponse response = new RolePolicyResponse(ResponseStatus.SUCCESS);
+		try {
+			if(roleId == null || childRoleId == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			final RoleEntity parent = roleDao.findById(roleId);
+			final RoleEntity child = roleDao.findById(childRoleId);
+			if(parent == null || child == null) {
+				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+			}
+			
+			roleDataService.removeChildRole(roleId, childRoleId);
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+		return response;
 	}
 }

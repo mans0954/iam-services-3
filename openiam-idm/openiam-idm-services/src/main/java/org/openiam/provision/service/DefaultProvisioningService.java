@@ -1232,7 +1232,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         final List<RoleEntity> roleList = roleDataService.getUserRoles(user.getUserId(), 0, Integer.MAX_VALUE);
         if(CollectionUtils.isNotEmpty(roleList)) {
             for(final RoleEntity role : roleList) {
-                final List<Resource> resourceList = resourceDataService.getResourcesForRole(role.getRoleId());
+                final List<Resource> resourceList = resourceDataService.getResourcesForRole(role.getRoleId(), 0, Integer.MAX_VALUE);
                 if(CollectionUtils.isNotEmpty(resourceList)) {
                     for(final Resource resource : resourceList) {
                         final ManagedSys managedSys = managedSysService.getManagedSys(resource.getManagedSysId());
@@ -2830,7 +2830,13 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         if (roleIdList != null) {
 
             //getResourceForRoleList(domainId, roleIdList);
-            return resourceDataService.getResourcesForRoles(roleIdList);
+        	final List<Resource> resourceList = new LinkedList<Resource>();
+        	if(CollectionUtils.isNotEmpty(roleIdList)) {
+        		for(final String roleId : roleIdList) {
+        			resourceList.addAll(resourceDataService.getResourcesForRole(roleId, 0, Integer.MAX_VALUE));
+        		}
+        	}
+        	return resourceList;
         }
         return null;
     }

@@ -246,6 +246,44 @@ public class RoleEntity implements Serializable {
 	public Set<RoleEntity> getChildRoles() {
 		return childRoles;
 	}
+	
+	public boolean hasChildRole(final String roleId) {
+		boolean retVal = false;
+		if(roleId != null) {
+			if(childRoles != null) {
+				for(final RoleEntity role : childRoles) {
+					if(role.getRoleId().equals(roleId)) {
+						retVal = true;
+						break;
+					}
+				}
+			}
+		}
+		return retVal;
+	}
+	
+	public void addChildRole(final RoleEntity role) {
+		if(role != null) {
+			if(childRoles == null) {
+				childRoles = new LinkedHashSet<RoleEntity>();
+			}
+			childRoles.add(role);
+		}
+	}
+	
+	public void removeChildRole(final String roleId) {
+		if(roleId != null) {
+			if(childRoles != null) {
+				for(final Iterator<RoleEntity> it = childRoles.iterator(); it.hasNext();) {
+					final RoleEntity role = it.next();
+					if(role.getRoleId().equals(roleId)) {
+						it.remove();
+						break;
+					}
+				}
+			}
+		}
+	}
 
 	public void setChildRoles(Set<RoleEntity> childRoles) {
 		this.childRoles = childRoles;

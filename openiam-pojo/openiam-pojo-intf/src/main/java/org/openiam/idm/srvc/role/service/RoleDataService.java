@@ -160,4 +160,12 @@ public interface RoleDataService {
     
     public List<RoleEntity> getRolesForResource(final String resourceId, final int from, final int size);
     public int getNumOfRolesForResource(final String resourceId);
+    
+    public List<RoleEntity> getChildRoles(final String roleId, final int from, final int size);
+    public int getNumOfChildRoles(final String roleId);
+    public void addChildRole(final String roleId, final String childRoleId);
+    public void removeChildRole(final String roleId, final String childRoleId);
+    
+    public List<RoleEntity> getParentRoles(final String roleId, final int from, final int size);
+    public int getNumOfParentRoles(final String roleId);
 }

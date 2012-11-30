@@ -26,6 +26,7 @@ import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 
 import static org.hibernate.criterion.Example.create;
+import static org.hibernate.criterion.Projections.rowCount;
 
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.exception.data.ObjectNotFoundException;
@@ -156,5 +157,45 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
 		final RoleEntity entity = new RoleEntity();
 		entity.addResourceRole(rrEntity);
 		return getByExample(entity, from, size);
+	}
+
+	@Override
+	public List<RoleEntity> getChildRoles(String roleId, int from, int size) {
+		final Criteria criteria = getCriteria().createAlias("parentRoles", "role").add(Restrictions.eq("role.roleId", roleId));
+		if(from > -1) {
+			criteria.setFirstResult(from);
+		}
+		
+		if(size > -1) {
+			criteria.setMaxResults(size);
+		}
+		return criteria.list();
+	}
+	
+	@Override
+	public List<RoleEntity> getParentRoles(String roleId, int from, int size) {
+		final Criteria criteria = getCriteria().createAlias("childRoles", "role").add(Restrictions.eq("role.roleId", roleId));
+		if(from > -1) {
+			criteria.setFirstResult(from);
+		}
+		
+		if(size > -1) {
+			criteria.setMaxResults(size);
+		}
+		return criteria.list();
+	}
+
+	@Override
+	public int getNumOfChildRoles(String roleId) {
+		final Criteria criteria = getCriteria().createAlias("parentRoles", "role").add(Restrictions.eq("role.roleId", roleId)).setProjection(rowCount());
+		return ((Number)criteria.uniqueResult()).intValue();
+	}
+
+	@Override
+	public int getNumOfParentRoles(String roleId) {
+		final Criteria criteria = getCriteria().createAlias("childRoles", "role").add(Restrictions.eq("role.roleId", roleId)).setProjection(rowCount());
+		
+		
+		return ((Number)criteria.uniqueResult()).intValue();
 	}
 }
