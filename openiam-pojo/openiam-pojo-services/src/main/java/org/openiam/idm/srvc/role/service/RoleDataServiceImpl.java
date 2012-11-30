@@ -303,4 +303,46 @@ public class RoleDataServiceImpl implements RoleDataService {
 	public int getNumOfRolesForResource(final String resourceId) {
 		return roleDao.getNumOfRolesForResource(resourceId);
 	}
+
+	@Override
+	public List<RoleEntity> getChildRoles(String roleId, int from, int size) {
+		return roleDao.getChildRoles(roleId, from, size);
+	}
+
+	@Override
+	public int getNumOfChildRoles(String roleId) {
+		return roleDao.getNumOfChildRoles(roleId);
+	}
+
+	@Override
+	public List<RoleEntity> getParentRoles(String roleId, int from, int size) {
+		return roleDao.getParentRoles(roleId, from, size);
+	}
+
+	@Override
+	public int getNumOfParentRoles(String roleId) {
+		return roleDao.getNumOfParentRoles(roleId);
+	}
+
+	@Override
+	public void addChildRole(final String roleId, final String childRoleId) {
+		if(roleId != null && childRoleId != null && !roleId.equals(childRoleId)) {
+			final RoleEntity child = roleDao.findById(childRoleId);
+			final RoleEntity parent = roleDao.findById(roleId);
+			if(parent != null && child != null && !parent.hasChildRole(child.getRoleId())) {
+				parent.addChildRole(child);
+			}
+		}
+	}
+
+	@Override
+	public void removeChildRole(final String roleId, final String childRoleId) {
+		if(roleId != null && childRoleId != null) {
+			final RoleEntity child = roleDao.findById(childRoleId);
+			final RoleEntity parent = roleDao.findById(roleId);
+			if(parent != null && child != null) {
+				parent.removeChildRole(child.getRoleId());
+			}
+		}
+	}
 }

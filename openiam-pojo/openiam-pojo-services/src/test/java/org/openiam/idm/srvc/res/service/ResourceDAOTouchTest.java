@@ -18,20 +18,6 @@ public class ResourceDAOTouchTest extends AbstractTransactionalTestNGSpringConte
     public void touchFindByName() {
         resourceDAO.findByName("");
     }
-    @Test
-    public void touchFindResourcesForRole() {
-        resourceDAO.findResourcesForRole("");
-    }
-
-    @Test
-    public void touchFindResourcesForRoles() {
-        resourceDAO.findResourcesForRoles(Arrays.asList("1","2"));
-    }
-
-    @Test
-    public void touchFindResourcesForUserRole() {
-        resourceDAO.findResourcesForUserRole("");
-    }
 
     @Test
     public void touchGetResourcesByType() {

@@ -5,6 +5,7 @@ import java.util.List;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.grp.ws.GroupListResponse;
+import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.dto.RolePolicy;
 import org.openiam.idm.srvc.role.dto.UserRole;
@@ -249,4 +250,29 @@ public interface RoleDataWebService {
     
     @WebMethod
     public int getNumOfRolesForResource(final @WebParam(name="resourceId", targetNamespace="") String resourceId);
+    
+    
+    @WebMethod
+    public List<Role> getChildRoles(final @WebParam(name="roleId", targetNamespace="") String roleId,
+			  					    final @WebParam(name = "from", targetNamespace = "") int from,
+			  						final @WebParam(name = "size", targetNamespace = "") int size);
+    
+    @WebMethod
+    public int getNumOfChildRoles(final @WebParam(name="roleId", targetNamespace="") String roleId);
+    
+    @WebMethod
+    public List<Role> getParentRoles(final @WebParam(name="roleId", targetNamespace="") String roleId,
+			  						 final @WebParam(name = "from", targetNamespace = "") int from,
+			  						 final @WebParam(name = "size", targetNamespace = "") int size);
+    
+    @WebMethod
+    public int getNumOfParentRoles(final @WebParam(name="roleId", targetNamespace="") String roleId);
+    
+    @WebMethod
+    public Response addChildRole(final @WebParam(name="roleId", targetNamespace="") String roleId,
+    						 final @WebParam(name="parentRoleId", targetNamespace="") String childRoleId);
+    
+    @WebMethod
+    public Response removeChildRole(final @WebParam(name="roleId", targetNamespace="") String roleId,
+			 					final @WebParam(name="parentRoleId", targetNamespace="") String childRoleId);
 }
