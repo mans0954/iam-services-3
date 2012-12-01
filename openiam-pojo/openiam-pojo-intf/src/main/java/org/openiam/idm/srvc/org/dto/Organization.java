@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.org.dto;
 
 import java.util.HashMap;
 import org.openiam.base.AttributeOperationEnum;
+import org.openiam.dozer.DozerDTOCorrespondence;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -46,12 +47,9 @@ import org.openiam.idm.srvc.org.domain.OrganizationEntity;
         "selected",
         "operation"}
 )
-
+@DozerDTOCorrespondence(OrganizationEntity.class)
 public class Organization implements java.io.Serializable, Comparable<Organization> {
 
-    /**
-     *
-     */
     private static final long serialVersionUID = -6297113958697455428L;
 
     protected String orgId;
@@ -111,56 +109,6 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
     public Organization(String companyId) {
         this.orgId = companyId;
     }
-
-    public Organization(OrganizationEntity organizationEntity) {
-       this.orgId = organizationEntity.getOrgId();
-        this.alias = organizationEntity.getAlias();
-        this.createDate = organizationEntity.getCreateDate();
-        this.createdBy = organizationEntity.getCreatedBy();
-        this.description = organizationEntity.getDescription();
-        this.domainName = organizationEntity.getDomainName();
-        this.ldapStr = organizationEntity.getLdapStr();
-        this.lstUpdate = organizationEntity.getLstUpdate();
-        this.lstUpdatedBy = organizationEntity.getLstUpdatedBy();
-        this.metadataTypeId = organizationEntity.getMetadataTypeId();
-        this.organizationName = organizationEntity.getOrganizationName();
-        this.internalOrgId = organizationEntity.getInternalOrgId();
-        this.parentId = organizationEntity.getParentId();
-        this.status = organizationEntity.getStatus();
-        this.classification = organizationEntity.getClassification();
-        this.abbreviation = organizationEntity.getAbbreviation();
-        this.symbol = organizationEntity.getSymbol();
-        for(Map.Entry<String, OrganizationAttributeEntity> attributeEntity :  organizationEntity.getAttributes().entrySet()) {
-            this.attributes.put(attributeEntity.getKey(), new OrganizationAttribute(attributeEntity.getValue()));
-        }
-
-    }
-
-    /**
-     * full constructor
-     */
-    public Organization(String companyId, String metadataTypeId,
-                        String companyName, Date lstUpdate, String lstUpdatedBy,
-                        String parentId, String status, Date createDate, String createdBy,
-                        String alias, String description, String domainName,
-                        String ldapStr, HashMap<String, OrganizationAttribute> companyAttributes) {
-        this.orgId = companyId;
-        this.metadataTypeId = metadataTypeId;
-        this.organizationName = companyName;
-        this.lstUpdate = lstUpdate;
-        this.lstUpdatedBy = lstUpdatedBy;
-        this.parentId = parentId;
-        this.status = status;
-        this.createDate = createDate;
-        this.createdBy = createdBy;
-        this.alias = alias;
-        this.description = description;
-        this.domainName = domainName;
-        this.ldapStr = ldapStr;
-        this.attributes = companyAttributes;
-    }
-
-    // Property accessors
 
     /**
      * Gets the value of the alias property.

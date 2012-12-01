@@ -20,7 +20,6 @@ import java.util.*;
         "createDate",
         "createdBy",
         "description",
-        "groupClass",
         "grpId",
         "grpName",
         "lastUpdate",
@@ -57,7 +56,6 @@ public class Group implements java.io.Serializable {
     protected String ownerId;
     protected String provisionMethod;
     protected String provisionObjName;
-    protected String groupClass;
     protected String description;
 
     protected String status;
@@ -168,14 +166,6 @@ public class Group implements java.io.Serializable {
 
     public GroupAttribute getAttribute(String name) {
         return attributes.get(name);
-    }
-
-    public String getGroupClass() {
-        return groupClass;
-    }
-
-    public void setGroupClass(String groupClass) {
-        this.groupClass = groupClass;
     }
 
     public String getDescription() {
@@ -324,7 +314,6 @@ public class Group implements java.io.Serializable {
 
         return this.companyId.equals(compareGroup.companyId) &&
                 this.description.equals(compareGroup.description) &&
-                this.groupClass.equals(compareGroup.groupClass) &&
                 this.grpId.equals(compareGroup.grpId) &&
                 this.grpName.equals(compareGroup.grpName) &&
                 this.internalGroupId.equals(compareGroup.internalGroupId) &&

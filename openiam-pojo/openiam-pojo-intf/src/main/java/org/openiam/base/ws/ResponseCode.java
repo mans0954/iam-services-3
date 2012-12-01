@@ -20,9 +20,6 @@ public enum ResponseCode {
 	@XmlEnumValue("resourcePropValueMissing")
 	RESOURCE_PROP_VALUE_MISSING("resourcePropValueMissing"),
 	
-	@XmlEnumValue("resourcePropNameMissing")
-	RESOURCE_PROP_NAME_MISSING("resourcePropNameMissing"),
-	
 	@XmlEnumValue("resourcePropMissing")
 	RESOURCE_PROP_MISSING("resourcePropMissing"),
 	
@@ -38,26 +35,17 @@ public enum ResponseCode {
 	@XmlEnumValue("menuDoesNotExist")
 	MENU_DOES_NOT_EXIST("menuDoesNotExist"),
 	
-	@XmlEnumValue("menuNameTaken")
-	MENU_NAME_EXISTS("menuNameTaken"),
-	
-	@XmlEnumValue("resourceNameTaken")
-	RESOURCE_NAME_EXISTS("resourceNameTaken"),
-	
-	@XmlEnumValue("noResourceName")
-	NO_RESOURCE_NAME("noResourceName"),
-	
 	@XmlEnumValue("invalidResourceType")
 	INVALID_RESOURCE_TYPE("invalidResourceType"),
-	
-	@XmlEnumValue("missingRoleName")
-	MISSING_ROLE_NAME("missingRoleName"),
 	
 	@XmlEnumValue("invalidRoleDomain")
 	INVALID_ROLE_DOMAIN("invalidRoleDomain"),
 	
-	@XmlEnumValue("roleNameTakem")
-	ROLE_NAME_TAKEN("roleNameTakem"),
+	@XmlEnumValue("noName")
+	NO_NAME("noName"),
+	
+	@XmlEnumValue("nameTaken")
+	NAME_TAKEN("nameTaken"),
 	
 	@XmlEnumValue("membershipExists")
 	MEMBERSHIP_EXISTS("membershipExists"),
@@ -73,9 +61,6 @@ public enum ResponseCode {
     
     @XmlEnumValue("circularDependency")
     CIRCULAR_DEPENDENCY("circularDependency"),
-    
-    @XmlEnumValue("invalidGroupName")
-    INVALID_GROUP_NAME("invalidGroupName"),
 	
     @XmlEnumValue("objectNotFound")
     OBJECT_NOT_FOUND("objectNotFound"),

@@ -172,4 +172,13 @@
     		<b>categoryLanguages</b>
     	</field-exclude>		
 	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.org.domain.OrganizationEntity</class-a>
+		<class-b>org.openiam.idm.srvc.org.dto.Organization</class-b>
+		<field-exclude>
+			<a>attributes</a>
+			<b>attributes</b>
+		</field-exclude>
+	</mapping>
 </mappings>

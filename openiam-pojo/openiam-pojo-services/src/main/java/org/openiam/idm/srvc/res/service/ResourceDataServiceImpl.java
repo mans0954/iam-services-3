@@ -138,7 +138,7 @@ public class ResourceDataServiceImpl implements ResourceDataService {
     		
     		ResourceEntity entity = resourceConverter.convertToEntity(resource, true);
     		if(StringUtils.isEmpty(entity.getName())) {
-    			throw new BasicDataServiceException(ResponseCode.NO_RESOURCE_NAME);
+    			throw new BasicDataServiceException(ResponseCode.NO_NAME);
     		}
     		
     		
@@ -146,9 +146,9 @@ public class ResourceDataServiceImpl implements ResourceDataService {
     		final ResourceEntity nameCheck = resourceDao.findByName(entity.getName());
     		if(nameCheck != null) {
     			if(StringUtils.isBlank(entity.getResourceId())) {
-    				throw new BasicDataServiceException(ResponseCode.RESOURCE_NAME_EXISTS);
+    				throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
     			} else  if(!nameCheck.getResourceId().equals(entity.getResourceId())) {
-    				throw new BasicDataServiceException(ResponseCode.RESOURCE_NAME_EXISTS);
+    				throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
     			}
     		}
     		
@@ -270,7 +270,7 @@ public class ResourceDataServiceImpl implements ResourceDataService {
     		}
     		
     		if(StringUtils.isBlank(entity.getName())) {
-    			throw new BasicDataServiceException(ResponseCode.RESOURCE_PROP_NAME_MISSING);
+    			throw new BasicDataServiceException(ResponseCode.NO_NAME);
     		}
     		
     		if(StringUtils.isBlank(entity.getPropValue())) {

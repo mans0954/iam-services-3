@@ -16,13 +16,7 @@ import java.util.List;
  */
 
 public interface OrganizationDAO extends BaseDao<OrganizationEntity, String> {
-    @Deprecated
-    OrganizationEntity add(OrganizationEntity instance);
-    @Deprecated
-    void remove(OrganizationEntity instance);
-
-
-
+    
     /**
      * Returns an Organization object that is the parent of the orgId specified.
      * Return null is no parent organizations are found.
@@ -56,8 +50,6 @@ public interface OrganizationDAO extends BaseDao<OrganizationEntity, String> {
     List<OrganizationEntity> findOrganizationByType(String type, String parentId);
 
     List<OrganizationEntity> findOrganizationByClassification(String parentId, OrgClassificationEnum classification);
-
-    List<OrganizationEntity> search(String name, String type, OrgClassificationEnum classification, String internalOrgId);
 
 
 }

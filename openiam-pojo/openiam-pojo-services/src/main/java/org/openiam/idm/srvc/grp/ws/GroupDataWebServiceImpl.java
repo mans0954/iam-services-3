@@ -76,6 +76,9 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
     
     @Autowired
     private GroupSearchBeanConverter groupSearchBeanConverter;
+    
+    @Autowired
+    private GroupDAO groupDAO;
 		
 	private static final Log log = LogFactory.getLog(GroupDataWebServiceImpl.class);
 
@@ -84,21 +87,48 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 	}
 
 	@Override
-	public GroupResponse addGroup(final Group group) {
-		final GroupResponse response = new GroupResponse(ResponseStatus.SUCCESS);
+	public Response saveGroup(final Group group) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {
 			if(group == null) {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
 			
 			if(StringUtils.isBlank(group.getGrpName())) {
-				throw new BasicDataServiceException(ResponseCode.INVALID_GROUP_NAME);
+				throw new BasicDataServiceException(ResponseCode.NO_NAME);
 			}
 			
-			final GroupEntity entity = groupDozerConverter.convertToEntity(group, false);
+			final GroupEntity example = new GroupEntity();
+			example.setGrpName(group.getGrpName());
+			final List<GroupEntity> foundList = groupDAO.getByExample(example);
+			if(CollectionUtils.isNotEmpty(foundList)) {
+				final GroupEntity found = foundList.get(0);
+				if(StringUtils.isBlank(group.getGrpId()) && found != null) {
+					throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
+				}
+			
+				if(StringUtils.isNotBlank(group.getGrpId()) && group.getGrpId().equals(found.getGrpId())) {
+					throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
+				}
+			}
+			
+			GroupEntity entity = groupDozerConverter.convertToEntity(group, false);
+			if(StringUtils.isNotBlank(entity.getGrpId())) {
+				final GroupEntity found = groupDAO.findById(entity.getGrpId());
+				found.setGrpName(entity.getGrpName());
+				found.setCompanyId(entity.getCompanyId());
+				found.setDescription(entity.getDescription());
+				found.setInternalGroupId(entity.getInternalGroupId());
+				found.setMetadataTypeId(entity.getMetadataTypeId());
+				found.setOwnerId(entity.getOwnerId());
+				found.setProvisionMethod(entity.getProvisionMethod());
+				found.setProvisionObjName(entity.getProvisionObjName());
+				found.setStatus(entity.getStatus());
+				entity = found;
+			}
 			
 			groupManager.saveGroup(entity);
-			response.setGroup(groupDozerConverter.convertToDTO(entity, false));
+			response.setResponseValue(entity.getGrpId());
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
@@ -110,48 +140,13 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 	}
 
 	@Override
-	public GroupResponse updateGroup(final Group group) {
-		final GroupResponse response = new GroupResponse(ResponseStatus.SUCCESS);
-		try {
-			if(group == null) {
-				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-			}
-			
-			if(StringUtils.isBlank(group.getGrpName())) {
-				throw new BasicDataServiceException(ResponseCode.INVALID_GROUP_NAME);
-			}
-			
-			final GroupEntity entity = groupDozerConverter.convertToEntity(group, false);
-			groupManager.saveGroup(entity);
-			response.setGroup(groupDozerConverter.convertToDTO(entity, false));
-		} catch(BasicDataServiceException e) {
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(e.getCode());	
-		} catch(Throwable e) {
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorText(e.getMessage());
-		}
-		return response;
-	}
-
-	@Override
-	public GroupResponse getGroup(final String groupId) {
-		final GroupResponse response = new GroupResponse(ResponseStatus.SUCCESS);
-		try {
-			if(StringUtils.isBlank(groupId)) {
-				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-			}
-			
+	public Group getGroup(final String groupId) {
+		Group retVal = null;
+		if(StringUtils.isNotBlank(groupId)) {
 			final GroupEntity entity = groupManager.getGroup(groupId);
-			response.setGroup(groupDozerConverter.convertToDTO(entity, true));
-		} catch(BasicDataServiceException e) {
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(e.getCode());
-		} catch(Throwable e) {
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorText(e.getMessage());
+			retVal = groupDozerConverter.convertToDTO(entity, true);
 		}
-		return response;
+		return retVal;
 	}
 
 	@Override

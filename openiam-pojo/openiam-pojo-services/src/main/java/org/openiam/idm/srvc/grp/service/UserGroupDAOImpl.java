@@ -3,6 +3,8 @@ package org.openiam.idm.srvc.grp.service;
 // Generated Jul 18, 2009 8:49:10 AM by Hibernate Tools 3.2.2.GA
 
 import java.util.List;
+
+import javax.annotation.PostConstruct;
 import javax.naming.InitialContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -26,6 +28,15 @@ public class UserGroupDAOImpl extends BaseDaoImpl<UserGroupEntity, String> imple
 
 	private static final Log log = LogFactory.getLog(UserGroupDAOImpl.class);
 	
+	private static String DELETE_BY_GROUP_ID = "DELETE FROM %s ug WHERE rg.groupId = :groupId";
+	private static String DELETE_BY_USER_ID = "DELETE FROM %s ug WHERE rg.userId = :userId";
+	
+	@PostConstruct
+	public void initSQL() {
+		DELETE_BY_USER_ID = String.format(DELETE_BY_USER_ID, domainClass.getSimpleName());
+		DELETE_BY_GROUP_ID = String.format(DELETE_BY_GROUP_ID, domainClass.getSimpleName());
+	}
+	
 	public List<UserEntity> findUserByGroup(final String groupId, final int from, final int size) {
 		Session session = sessionFactory.getCurrentSession();
 		Query qry = session.createQuery("select usr from org.openiam.idm.srvc.user.domain.UserEntity as usr, UserGroupEntity ug " +
@@ -47,4 +58,18 @@ public class UserGroupDAOImpl extends BaseDaoImpl<UserGroupEntity, String> imple
     protected String getPKfieldName() {
         return "userGrpId";
     }
+
+	@Override
+	public void deleteByGroupId(String groupId) {
+		final Query query = getSession().createQuery(DELETE_BY_GROUP_ID);
+		query.setParameter("groupId", groupId);
+		query.executeUpdate();
+	}
+
+	@Override
+	public void deleteByUserId(String userId) {
+		final Query query = getSession().createQuery(DELETE_BY_USER_ID);
+		query.setParameter("userId", userId);
+		query.executeUpdate();
+	}
 }

@@ -6,6 +6,8 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 import java.util.Date;
+
+import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.org.domain.UserAffiliationEntity;
 
 /**
@@ -22,7 +24,7 @@ import org.openiam.idm.srvc.org.domain.UserAffiliationEntity;
         "status",
         "createdBy"
 })
-
+@DozerDTOCorrespondence(UserAffiliationEntity.class)
 public class UserAffiliation implements java.io.Serializable {
 
     /**
@@ -47,27 +49,6 @@ public class UserAffiliation implements java.io.Serializable {
     private String createdBy;
 
     public UserAffiliation() {
-    }
-
-    public UserAffiliation(String userId, String organizationId) {
-        this.userId = userId;
-        this.organizationId = organizationId;
-        status = "ACTIVE";
-        long curTime = System.currentTimeMillis();
-        createDate = new Date(curTime);
-        startDate = new Date(curTime);
-    }
-
-
-    public UserAffiliation(UserAffiliationEntity affiliationEntity) {
-        this.userId = affiliationEntity.getUser() != null ? affiliationEntity.getUser().getUserId() : "";
-        this.userAffiliationId = affiliationEntity.getUserAffiliationId();
-        this.organizationId = affiliationEntity.getOrganization() != null ? affiliationEntity.getOrganization().getOrgId() : "";
-        this.status = affiliationEntity.getStatus();
-        this.createDate = affiliationEntity.getCreateDate();
-        this.startDate = affiliationEntity.getStartDate();
-        this.endDate = affiliationEntity.getEndDate();
-        this.createdBy = affiliationEntity.getCreatedBy();
     }
 
     public String getStatus() {

@@ -68,9 +68,6 @@ public class GroupEntity {
     @Column(name="PROVISION_OBJ_NAME",length=80)
     private String provisionObjName;
     
-    @Column(name="GROUP_CLASS",length=40)
-    private String groupClass;
-    
     @Column(name="GROUP_DESC",length=80)
     private String description;
     
@@ -120,9 +117,6 @@ public class GroupEntity {
 	    inverseJoinColumns={@JoinColumn(name="ROLE_ID")})
 	@Fetch(FetchMode.SUBSELECT)
     private Set<RoleEntity> roles;
-    
-	@Transient
-	private AttributeOperationEnum operation;
 
 	public String getGrpId() {
 		return grpId;
@@ -186,14 +180,6 @@ public class GroupEntity {
 
 	public void setProvisionObjName(String provisionObjName) {
 		this.provisionObjName = provisionObjName;
-	}
-
-	public String getGroupClass() {
-		return groupClass;
-	}
-
-	public void setGroupClass(String groupClass) {
-		this.groupClass = groupClass;
 	}
 
 	public String getDescription() {
@@ -286,14 +272,6 @@ public class GroupEntity {
 		this.attributes = attributes;
 	}
 
-	public AttributeOperationEnum getOperation() {
-		return operation;
-	}
-
-	public void setOperation(AttributeOperationEnum operation) {
-		this.operation = operation;
-	}
-
 	public Set<ResourceGroupEntity> getResourceGroups() {
 		return resourceGroups;
 	}
@@ -331,8 +309,6 @@ public class GroupEntity {
 				+ ((createdBy == null) ? 0 : createdBy.hashCode());
 		result = prime * result
 				+ ((description == null) ? 0 : description.hashCode());
-		result = prime * result
-				+ ((groupClass == null) ? 0 : groupClass.hashCode());
 		result = prime * result + ((grpId == null) ? 0 : grpId.hashCode());
 		result = prime * result
 				+ ((internalGroupId == null) ? 0 : internalGroupId.hashCode());
@@ -381,11 +357,6 @@ public class GroupEntity {
 			if (other.description != null)
 				return false;
 		} else if (!description.equals(other.description))
-			return false;
-		if (groupClass == null) {
-			if (other.groupClass != null)
-				return false;
-		} else if (!groupClass.equals(other.groupClass))
 			return false;
 		if (grpId == null) {
 			if (other.grpId != null)
@@ -443,11 +414,11 @@ public class GroupEntity {
 	@Override
 	public String toString() {
 		return String
-				.format("GroupEntity [grpId=%s, grpName=%s, createDate=%s, createdBy=%s, companyId=%s, ownerId=%s, provisionMethod=%s, provisionObjName=%s, groupClass=%s, description=%s, status=%s, lastUpdate=%s, lastUpdatedBy=%s, metadataTypeId=%s, internalGroupId=%s, operation=%s]",
+				.format("GroupEntity [grpId=%s, grpName=%s, createDate=%s, createdBy=%s, companyId=%s, ownerId=%s, provisionMethod=%s, provisionObjName=%s, description=%s, status=%s, lastUpdate=%s, lastUpdatedBy=%s, metadataTypeId=%s, internalGroupId=%s]",
 						grpId, grpName, createDate, createdBy, companyId,
-						ownerId, provisionMethod, provisionObjName, groupClass,
+						ownerId, provisionMethod, provisionObjName,
 						description, status, lastUpdate, lastUpdatedBy,
-						metadataTypeId, internalGroupId, operation);
+						metadataTypeId, internalGroupId);
 	}
 
 	

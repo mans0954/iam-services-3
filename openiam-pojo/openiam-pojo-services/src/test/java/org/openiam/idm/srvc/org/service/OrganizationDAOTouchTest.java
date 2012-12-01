@@ -17,11 +17,6 @@ public class OrganizationDAOTouchTest extends AbstractTransactionalTestNGSpringC
     private OrganizationDAO orgDAO;
 
     @Test
-    private void touchAdd() {
-        orgDAO.add(new OrganizationEntity());
-    }
-
-    @Test
     private void touchFindAllOrganization() {
         orgDAO.findAllOrganization();
     }
@@ -59,24 +54,5 @@ public class OrganizationDAOTouchTest extends AbstractTransactionalTestNGSpringC
     @Test
     private void touchFindRootOrganizations() {
         orgDAO.findRootOrganizations();
-    }
-
-    @Test
-    private void touchRemove() {
-        OrganizationEntity organization = new OrganizationEntity();
-        orgDAO.add(organization);
-        orgDAO.remove(organization);
-    }
-
-    @Test
-    private void touchSearch() {
-        orgDAO.search("", "", null, "");
-    }
-
-    @Test
-    private void touchUpdate() {
-        OrganizationEntity organization = new OrganizationEntity();
-        orgDAO.add(organization);
-        orgDAO.update(organization);
     }
 }

@@ -249,7 +249,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 						final ResourceEntity existingResource = resourceDAO.findByName(menu.getName());
 						/* check that, if the user changed the name of the menu, it doesn't conflict with another resource with the same name */
 						if(existingResource != null && !existingResource.getResourceId().equals(resource.getResourceId())) {
-							throw new AuthorizationMenuException(ResponseCode.MENU_NAME_EXISTS, resource.getName());
+							throw new AuthorizationMenuException(ResponseCode.NAME_TAKEN, resource.getName());
 						}
 						
 						merge(resource, menu);
@@ -267,7 +267,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 						final ResourceEntity existingResource = resourceDAO.findByName(resource.getName());
 						/* check that, if the user changed the name of the menu, it doesn't conflict with another resource with the same name */
 						if(existingResource != null) {
-							throw new AuthorizationMenuException(ResponseCode.MENU_NAME_EXISTS, resource.getName());
+							throw new AuthorizationMenuException(ResponseCode.NAME_TAKEN, resource.getName());
 						}
 					}
 					resourcesToCreate.addAll(newResourceList);

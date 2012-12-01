@@ -73,6 +73,9 @@ public class GroupDataServiceImpl implements GroupDataService {
     
     @Autowired
     private GroupDozerConverter groupDozerConverter;
+    
+    @Autowired
+    private ResourceGroupDAO resoruceGroupDAO;
 	
 	private static final Log log = LogFactory.getLog(GroupDataServiceImpl.class);
 
@@ -143,6 +146,8 @@ public class GroupDataServiceImpl implements GroupDataService {
 	public void deleteGroup(String groupId) {
 		final GroupEntity entity = groupDao.findById(groupId);
 		if(entity != null) {
+			userGroupDao.deleteByGroupId(groupId);
+			resoruceGroupDAO.deleteByGroupId(groupId);
 			groupDao.delete(entity);
 		}
 	}

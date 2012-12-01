@@ -366,7 +366,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 			
 			RoleEntity entity = roleDozerConverter.convertToEntity(role, false);
 			if(StringUtils.isBlank(entity.getRoleName())) {
-				throw new BasicDataServiceException(ResponseCode.MISSING_ROLE_NAME);
+				throw new BasicDataServiceException(ResponseCode.NO_NAME);
 			}
 			
 			/* check if the name is taken by another entity */
@@ -376,7 +376,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 			if(CollectionUtils.isNotEmpty(nameEntityList)) {
 				final RoleEntity nameEntity = nameEntityList.get(0);
 				if(StringUtils.isBlank(entity.getRoleId()) || !entity.getRoleId().equals(nameEntity.getRoleId())) {
-					throw new BasicDataServiceException(ResponseCode.ROLE_NAME_TAKEN);
+					throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
 				}
 			}
 			

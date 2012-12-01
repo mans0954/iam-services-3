@@ -40,20 +40,7 @@ public interface GroupDataWebService {
      */
 
     @WebMethod
-    public GroupResponse addGroup(final @WebParam(name = "group", targetNamespace = "") Group group);
-    
-    /**
-     * This method updates and existing group in database. For example:
-     * <p/>
-     * <code>
-     * grpManager.updateGroup(grpValue);<br>
-     * </code>
-     *
-     * @param grp
-     * @return - Number of records created. 0 if update failed to update any records
-     */
-    @WebMethod
-    public GroupResponse updateGroup(final @WebParam(name = "group", targetNamespace = "") Group group);
+    public Response saveGroup(final @WebParam(name = "group", targetNamespace = "") Group group);
 
     /**
      * This method retrieves an existing group object. Dependent objects such as
@@ -62,7 +49,7 @@ public interface GroupDataWebService {
      * @param grpId
      */
     @WebMethod
-    public GroupResponse getGroup(final @WebParam(name = "groupId", targetNamespace = "") String groupId);
+    public Group getGroup(final @WebParam(name = "groupId", targetNamespace = "") String groupId);
 
     /**
      * This method removes group for a particular grpId. If the group has sub

@@ -181,26 +181,6 @@
 	<bean id="phoneDAO" class="org.openiam.idm.srvc.continfo.service.PhoneDAOImpl" >
 		<property name="sessionFactory" ref="sessionFactory"></property>		
 	</bean>	
-
-	<!--<bean id="supervisorDAO" class="org.openiam.idm.srvc.user.service.SupervisorDAOImpl" >-->
-		<!--<property name="sessionFactory" ref="sessionFactory"></property>		-->
-	<!--</bean>	-->
-	
-	<!-- Org Beans -->
-	<bean id="orgManager" class="org.openiam.idm.srvc.org.service.OrganizationDataServiceImpl" >
-		<!--<property name="orgDao" ref="orgDAO" />-->
-		<property name="orgAttrDao" ref="orgAttrDAO" />
-        <property name="orgAffiliationDao" ref="orgAffiliationDAO" />
-	</bean>
-
-	<bean id="orgAttrDAO" class="org.openiam.idm.srvc.org.service.OrganizationAttributeDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"></property>		
-	</bean>	
-
-    <bean id="orgAffiliationDAO" class="org.openiam.idm.srvc.org.service.UserAffiliationDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"></property>
-	</bean>
-
 	
 	<!-- Idm Audit Beans -->
 	<bean id="auditWS" class="org.openiam.idm.srvc.audit.ws.IdmAuditLogWebDataServiceImpl" >
@@ -788,11 +768,6 @@
     <aop:pointcut id="userOperation" expression="execution(* org.openiam.idm.srvc.user.ws.UserDataWebService.*(..))"/>
     <aop:advisor advice-ref="txAdvice" pointcut-ref="userOperation"/>
   </aop:config>  	
-
-  <aop:config>
-    <aop:pointcut id="orgOperation" expression="execution(* org.openiam.idm.srvc.org.service.OrganizationDataServiceImpl.*(..))"/>
-    <aop:advisor advice-ref="txAdvice" pointcut-ref="orgOperation"/>
-  </aop:config> 
 
   <aop:config>
     <aop:pointcut id="groupOperation" expression="execution(* org.openiam.idm.srvc.grp.ws.GroupDataWebService.*(..))"/>
