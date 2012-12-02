@@ -5,8 +5,11 @@ package org.openiam.idm.srvc.meta.service;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
+import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.Session;
+import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.srvc.cat.domain.CategoryEntity;
 import org.openiam.idm.srvc.cat.service.CategoryDAO;
@@ -66,20 +69,8 @@ public class MetadataTypeDAOImpl extends
     @SuppressWarnings("unchecked")
     @Override
     public List<MetadataTypeEntity> findTypesInCategory(String categoryId) {
-        Session session = sessionFactory.getCurrentSession();
-        // TODO Criteria use - Zaporozhec
-        Query qry = session
-                .createQuery(" org.openiam.idm.srvc.meta.domain.MetadataTypeEntity type "
-                        + "		 join type.categories as cat "
-                        + " where cat.categoryId = :catId "
-                        + " order by type.metadataTypeId asc");
-        qry.setString("catId", categoryId);
-        List<MetadataTypeEntity> results = (List<MetadataTypeEntity>) qry
-                .list();
-        if (results == null || results.size() == 0)
-            return null;
-        return results;
-
+    	final Criteria criteria = getCriteria().createAlias("categories", "category").add(Restrictions.eq("category.categoryId", categoryId));
+        return criteria.list();
     }
 
     @Override

@@ -375,41 +375,6 @@
 		<property name="sessionFactory" ref="sessionFactory"></property>		
 	</bean>	
 
-
-
-	<!-- Metadata Beans -->
-	
-<!-- 	  <bean id="metadataWS" class="org.openiam.idm.srvc.meta.ws.MetadataWebServiceImpl" > -->
-<!-- 		<property name="metadataService" ref="metadataService" /> -->
-<!-- 	</bean> -->
-	
-<!-- 	<bean id="metadataService" class="org.openiam.idm.srvc.meta.service.MetadataServiceImpl" > -->
-<!-- 		<property name="metadataTypeDao" ref="metadataTypeDAO" /> -->
-<!-- 		<property name="metadataElementDao" ref="metadataElementDAO" /> -->
-<!-- 	</bean> -->
-	
-<!-- 	<bean id="metadataElementDAO" class="org.openiam.idm.srvc.meta.service.MetadataElementDAOImpl" > -->
-<!-- 		<property name="sessionFactory" ref="sessionFactory"></property>		 -->
-<!-- 	</bean>	 -->
-<!-- 	<bean id="metadataTypeDAO" class="org.openiam.idm.srvc.meta.service.MetadataTypeDAOImpl" > -->
-<!-- 		<property name="sessionFactory" ref="sessionFactory"></property>		 -->
-<!-- 		<property name="categoryDao" ref="categoryDAO" /> -->
-<!-- 	</bean>	 -->
-	
-		<!-- Category Beans --> 
-<!-- 	<bean id="categorydataService" class="org.openiam.idm.srvc.cat.service.CategoryDataServiceImpl" > -->
-<!-- 		<property name="categoryDao" ref="categoryDAO" /> -->
-<!-- 		<property name="categoryLanguageDao" ref="categoryLanguageDAO" /> -->
-<!-- 	</bean> -->
-
-<!-- 	<bean id="categoryDAO" class="org.openiam.idm.srvc.cat.service.CategoryDAOImpl" > -->
-<!-- 		<property name="sessionFactory" ref="sessionFactory"></property>		 -->
-<!-- 	</bean>	 -->
-	
-<!-- 	<bean id="categoryLanguageDAO" class="org.openiam.idm.srvc.cat.service.CategoryLanguageDAOImpl" > -->
-<!-- 		<property name="sessionFactory" ref="sessionFactory"></property>		 -->
-<!-- 	</bean>	 -->
-
 	<!-- Notification and Message Delivery Beans --> 
 	<bean id="messageWS" class="org.openiam.idm.srvc.msg.ws.SysMessageWebServiceImpl" >
 		<property name="msgService" ref="sysMessageService" />
@@ -804,12 +769,6 @@
   <aop:config>
     <aop:pointcut id="secDomainDataOperation" expression="execution(* org.openiam.idm.srvc.secdomain.service.SecurityDomainDataService.*(..))"/>
     <aop:advisor advice-ref="txAdvice" pointcut-ref="secDomainDataOperation"/>
-  </aop:config> 
-
-  
-  <aop:config>
-    <aop:pointcut id="metadataOperation" expression="execution(* org.openiam.idm.srvc.meta.ws.MetadataWebService.*(..))"/>
-    <aop:advisor advice-ref="txAdvice" pointcut-ref="metadataOperation"/>
   </aop:config> 
 
   <aop:config>

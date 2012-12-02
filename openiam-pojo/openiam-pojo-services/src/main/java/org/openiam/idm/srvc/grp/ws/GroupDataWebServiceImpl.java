@@ -107,7 +107,7 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 					throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
 				}
 			
-				if(StringUtils.isNotBlank(group.getGrpId()) && group.getGrpId().equals(found.getGrpId())) {
+				if(StringUtils.isNotBlank(group.getGrpId()) && !group.getGrpId().equals(found.getGrpId())) {
 					throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
 				}
 			}

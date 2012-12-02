@@ -117,22 +117,8 @@ public class MetadataServiceImpl implements MetadataService {
         return typeAry;
     }
 
-    public MetadataType[] getTypesInCategory(String categoryId) {
-
-        if (categoryId == null) {
-            throw new NullPointerException("categoryId is null");
-        }
-
-        List<MetadataType> typeList = metaDataTypeDozerConverter
-                .convertToDTOList(
-                        metadataTypeDao.findTypesInCategory(categoryId), true);
-        if (typeList == null || typeList.isEmpty()) {
-            return null;
-        }
-        int size = typeList.size();
-        MetadataType[] typeAry = new MetadataType[size];
-        typeList.toArray(typeAry);
-        return typeAry;
+    public List<MetadataTypeEntity> getTypesInCategory(String categoryId) {
+    	return metadataTypeDao.findTypesInCategory(categoryId);
     }
 
     public void removeMetadataElement(String elementId) {
@@ -196,21 +182,4 @@ public class MetadataServiceImpl implements MetadataService {
         return metaDataElementDozerConverter.convertToDTOList(
                 metadataElementDao.findbyCategoryType(categoryType), true);
     }
-
-    public MetadataTypeDAO getMetadataTypeDao() {
-        return metadataTypeDao;
-    }
-
-    public void setMetadataTypeDao(MetadataTypeDAO metadataTypeDao) {
-        this.metadataTypeDao = metadataTypeDao;
-    }
-
-    public MetadataElementDAO getMetadataElementDao() {
-        return metadataElementDao;
-    }
-
-    public void setMetadataElementDao(MetadataElementDAO metadataElementDao) {
-        this.metadataElementDao = metadataElementDao;
-    }
-
 }

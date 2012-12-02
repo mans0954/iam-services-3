@@ -170,14 +170,8 @@ public class CategoryEntity implements Serializable {
                 + ((categoryDesc == null) ? 0 : categoryDesc.hashCode());
         result = prime * result
                 + ((categoryId == null) ? 0 : categoryId.hashCode());
-        result = prime
-                * result
-                + ((categoryLanguages == null) ? 0 : categoryLanguages
-                        .hashCode());
         result = prime * result
                 + ((categoryName == null) ? 0 : categoryName.hashCode());
-        result = prime * result
-                + ((childCategories == null) ? 0 : childCategories.hashCode());
         result = prime * result
                 + ((createDate == null) ? 0 : createDate.hashCode());
         result = prime * result
@@ -213,20 +207,10 @@ public class CategoryEntity implements Serializable {
                 return false;
         } else if (!categoryId.equals(other.categoryId))
             return false;
-        if (categoryLanguages == null) {
-            if (other.categoryLanguages != null)
-                return false;
-        } else if (!categoryLanguages.equals(other.categoryLanguages))
-            return false;
         if (categoryName == null) {
             if (other.categoryName != null)
                 return false;
         } else if (!categoryName.equals(other.categoryName))
-            return false;
-        if (childCategories == null) {
-            if (other.childCategories != null)
-                return false;
-        } else if (!childCategories.equals(other.childCategories))
             return false;
         if (createDate == null) {
             if (other.createDate != null)
