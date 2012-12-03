@@ -138,7 +138,7 @@ public class ResourceDataServiceImpl implements ResourceDataService {
     		
     		ResourceEntity entity = resourceConverter.convertToEntity(resource, true);
     		if(StringUtils.isEmpty(entity.getName())) {
-    			throw new BasicDataServiceException(ResponseCode.NO_RESOURCE_NAME);
+    			throw new BasicDataServiceException(ResponseCode.NO_NAME);
     		}
     		
     		
@@ -146,9 +146,9 @@ public class ResourceDataServiceImpl implements ResourceDataService {
     		final ResourceEntity nameCheck = resourceDao.findByName(entity.getName());
     		if(nameCheck != null) {
     			if(StringUtils.isBlank(entity.getResourceId())) {
-    				throw new BasicDataServiceException(ResponseCode.RESOURCE_NAME_EXISTS);
+    				throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
     			} else  if(!nameCheck.getResourceId().equals(entity.getResourceId())) {
-    				throw new BasicDataServiceException(ResponseCode.RESOURCE_NAME_EXISTS);
+    				throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
     			}
     		}
     		
@@ -270,7 +270,7 @@ public class ResourceDataServiceImpl implements ResourceDataService {
     		}
     		
     		if(StringUtils.isBlank(entity.getName())) {
-    			throw new BasicDataServiceException(ResponseCode.RESOURCE_PROP_NAME_MISSING);
+    			throw new BasicDataServiceException(ResponseCode.NO_NAME);
     		}
     		
     		if(StringUtils.isBlank(entity.getPropValue())) {
@@ -651,6 +651,18 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 	@Override
 	public List<Resource> getResourcesForRole(final String roleId, final int from, final int size) {
 		final List<ResourceEntity> entityList = resourceDao.getResourcesForRole(roleId, from, size);
+		final List<Resource> resourceList = resourceConverter.convertToDTOList(entityList, false);
+		return resourceList;
+	}
+
+	@Override
+	public int getNumOfResourceForGroup(final String groupId) {
+		return resourceDao.getNumOfResourcesForGroup(groupId);
+	}
+
+	@Override
+	public List<Resource> getResourcesForGroup(final String groupId, final int from, final int size) {
+		final List<ResourceEntity> entityList = resourceDao.getResourcesForGroup(groupId, from, size);
 		final List<Resource> resourceList = resourceConverter.convertToDTOList(entityList, false);
 		return resourceList;
 	}

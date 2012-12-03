@@ -14,11 +14,6 @@ public class UserAffiliationDAOTouchTest extends AbstractTransactionalTestNGSpri
     private UserAffiliationDAO userAffiliationDAO;
 
     @Test
-    public void touchAdd() {
-        userAffiliationDAO.add(new UserAffiliationEntity());
-    }
-
-    @Test
     public void touchFindById() {
         userAffiliationDAO.findById("");
     }
@@ -29,31 +24,7 @@ public class UserAffiliationDAOTouchTest extends AbstractTransactionalTestNGSpri
     }
 
     @Test
-    public void touchFindUserOrgByUser() {
-        userAffiliationDAO.findUserOrgByUser("");
-    }
-
-    @Test
-    public void touchRemove() {
-        UserAffiliationEntity affiliationEntity = new UserAffiliationEntity();
-        userAffiliationDAO.add(affiliationEntity);
-        userAffiliationDAO.remove(affiliationEntity);
-    }
-
-    @Test
-    public void touchRemoveAllUsersInOrg() {
-        userAffiliationDAO.removeAllUsersInOrg("");
-    }
-
-    @Test
     public void touchRemoveUserFromOrg() {
         userAffiliationDAO.removeUserFromOrg("","");
-    }
-
-    @Test
-    public void touchUpdate() {
-        UserAffiliationEntity affiliationEntity = new UserAffiliationEntity();
-        userAffiliationDAO.add(affiliationEntity);
-        userAffiliationDAO.update(affiliationEntity);
     }
 }

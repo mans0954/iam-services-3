@@ -17,11 +17,13 @@ import org.springframework.stereotype.Repository;
 @Repository("resourceGroupDAO")
 public class ResourceGroupDAOImpl extends BaseDaoImpl<ResourceGroupEntity, String> implements ResourceGroupDAO {
 
+	private static String DELETE_BY_GROUP_ID = "DELETE FROM %s rg WHERE rg.groupId = :groupId";
 	private static String DELETE_BY_RESOURCE_ID = "DELETE FROM %s rg WHERE rg.resourceId = :resourceId";
 	
 	@PostConstruct
 	public void initSQL() {
 		DELETE_BY_RESOURCE_ID = String.format(DELETE_BY_RESOURCE_ID, domainClass.getSimpleName());
+		DELETE_BY_GROUP_ID = String.format(DELETE_BY_GROUP_ID, domainClass.getSimpleName());
 	}
 	
 	@Override
@@ -62,6 +64,13 @@ public class ResourceGroupDAOImpl extends BaseDaoImpl<ResourceGroupEntity, Strin
 	public void deleteByResourceId(String resourceId) {
 		final Query query = getSession().createQuery(DELETE_BY_RESOURCE_ID);
 		query.setParameter("resourceId", resourceId);
+		query.executeUpdate();
+	}
+
+	@Override
+	public void deleteByGroupId(String groupId) {
+		final Query query = getSession().createQuery(DELETE_BY_GROUP_ID);
+		query.setParameter("groupId", groupId);
 		query.executeUpdate();
 	}
 }

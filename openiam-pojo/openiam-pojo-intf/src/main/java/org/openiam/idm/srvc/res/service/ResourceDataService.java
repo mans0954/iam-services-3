@@ -191,4 +191,15 @@ public interface ResourceDataService {
     @WebMethod
     Response removeRoleToResource(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,
     							   @WebParam(name = "roleId", targetNamespace = "") final String roleId);
+    
+    
+    
+    @WebMethod
+    int getNumOfResourceForGroup(@WebParam(name = "groupId", targetNamespace = "") String groupId);	
+    
+    @WebMethod
+    List<Resource> getResourcesForGroup(@WebParam(name = "groupId", targetNamespace = "") String groupId,
+    								@WebParam(name = "from", targetNamespace = "") int from,
+    								@WebParam(name = "size", targetNamespace = "") int size);
+    
 }

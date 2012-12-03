@@ -181,26 +181,6 @@
 	<bean id="phoneDAO" class="org.openiam.idm.srvc.continfo.service.PhoneDAOImpl" >
 		<property name="sessionFactory" ref="sessionFactory"></property>		
 	</bean>	
-
-	<!--<bean id="supervisorDAO" class="org.openiam.idm.srvc.user.service.SupervisorDAOImpl" >-->
-		<!--<property name="sessionFactory" ref="sessionFactory"></property>		-->
-	<!--</bean>	-->
-	
-	<!-- Org Beans -->
-	<bean id="orgManager" class="org.openiam.idm.srvc.org.service.OrganizationDataServiceImpl" >
-		<!--<property name="orgDao" ref="orgDAO" />-->
-		<property name="orgAttrDao" ref="orgAttrDAO" />
-        <property name="orgAffiliationDao" ref="orgAffiliationDAO" />
-	</bean>
-
-	<bean id="orgAttrDAO" class="org.openiam.idm.srvc.org.service.OrganizationAttributeDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"></property>		
-	</bean>	
-
-    <bean id="orgAffiliationDAO" class="org.openiam.idm.srvc.org.service.UserAffiliationDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"></property>
-	</bean>
-
 	
 	<!-- Idm Audit Beans -->
 	<bean id="auditWS" class="org.openiam.idm.srvc.audit.ws.IdmAuditLogWebDataServiceImpl" >
@@ -394,41 +374,6 @@
 	<bean id="secDomainDAO" class="org.openiam.idm.srvc.secdomain.service.SecurityDomainDAOImpl" >
 		<property name="sessionFactory" ref="sessionFactory"></property>		
 	</bean>	
-
-
-
-	<!-- Metadata Beans -->
-	
-<!-- 	  <bean id="metadataWS" class="org.openiam.idm.srvc.meta.ws.MetadataWebServiceImpl" > -->
-<!-- 		<property name="metadataService" ref="metadataService" /> -->
-<!-- 	</bean> -->
-	
-<!-- 	<bean id="metadataService" class="org.openiam.idm.srvc.meta.service.MetadataServiceImpl" > -->
-<!-- 		<property name="metadataTypeDao" ref="metadataTypeDAO" /> -->
-<!-- 		<property name="metadataElementDao" ref="metadataElementDAO" /> -->
-<!-- 	</bean> -->
-	
-<!-- 	<bean id="metadataElementDAO" class="org.openiam.idm.srvc.meta.service.MetadataElementDAOImpl" > -->
-<!-- 		<property name="sessionFactory" ref="sessionFactory"></property>		 -->
-<!-- 	</bean>	 -->
-<!-- 	<bean id="metadataTypeDAO" class="org.openiam.idm.srvc.meta.service.MetadataTypeDAOImpl" > -->
-<!-- 		<property name="sessionFactory" ref="sessionFactory"></property>		 -->
-<!-- 		<property name="categoryDao" ref="categoryDAO" /> -->
-<!-- 	</bean>	 -->
-	
-		<!-- Category Beans --> 
-<!-- 	<bean id="categorydataService" class="org.openiam.idm.srvc.cat.service.CategoryDataServiceImpl" > -->
-<!-- 		<property name="categoryDao" ref="categoryDAO" /> -->
-<!-- 		<property name="categoryLanguageDao" ref="categoryLanguageDAO" /> -->
-<!-- 	</bean> -->
-
-<!-- 	<bean id="categoryDAO" class="org.openiam.idm.srvc.cat.service.CategoryDAOImpl" > -->
-<!-- 		<property name="sessionFactory" ref="sessionFactory"></property>		 -->
-<!-- 	</bean>	 -->
-	
-<!-- 	<bean id="categoryLanguageDAO" class="org.openiam.idm.srvc.cat.service.CategoryLanguageDAOImpl" > -->
-<!-- 		<property name="sessionFactory" ref="sessionFactory"></property>		 -->
-<!-- 	</bean>	 -->
 
 	<!-- Notification and Message Delivery Beans --> 
 	<bean id="messageWS" class="org.openiam.idm.srvc.msg.ws.SysMessageWebServiceImpl" >
@@ -790,11 +735,6 @@
   </aop:config>  	
 
   <aop:config>
-    <aop:pointcut id="orgOperation" expression="execution(* org.openiam.idm.srvc.org.service.OrganizationDataServiceImpl.*(..))"/>
-    <aop:advisor advice-ref="txAdvice" pointcut-ref="orgOperation"/>
-  </aop:config> 
-
-  <aop:config>
     <aop:pointcut id="groupOperation" expression="execution(* org.openiam.idm.srvc.grp.ws.GroupDataWebService.*(..))"/>
     <aop:advisor advice-ref="txAdvice" pointcut-ref="groupOperation"/>
   </aop:config> 
@@ -829,12 +769,6 @@
   <aop:config>
     <aop:pointcut id="secDomainDataOperation" expression="execution(* org.openiam.idm.srvc.secdomain.service.SecurityDomainDataService.*(..))"/>
     <aop:advisor advice-ref="txAdvice" pointcut-ref="secDomainDataOperation"/>
-  </aop:config> 
-
-  
-  <aop:config>
-    <aop:pointcut id="metadataOperation" expression="execution(* org.openiam.idm.srvc.meta.ws.MetadataWebService.*(..))"/>
-    <aop:advisor advice-ref="txAdvice" pointcut-ref="metadataOperation"/>
   </aop:config> 
 
   <aop:config>

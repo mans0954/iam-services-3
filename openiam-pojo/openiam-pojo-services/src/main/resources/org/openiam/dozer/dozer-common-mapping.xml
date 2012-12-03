@@ -95,8 +95,8 @@
 	</mapping>
 
 	<mapping>
-		<class-a>org.openiam.idm.srvc.org.dto.OrganizationAttribute</class-a>
-		<class-b>org.openiam.idm.srvc.org.dto.OrganizationAttribute</class-b>
+		<class-a>org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity</class-a>
+		<class-b>org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity</class-b>
 	</mapping>
 	<mapping>
 		<class-a>org.openiam.idm.srvc.cat.dto.Category</class-a>

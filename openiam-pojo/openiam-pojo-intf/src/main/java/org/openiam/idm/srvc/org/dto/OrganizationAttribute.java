@@ -3,6 +3,8 @@ package org.openiam.idm.srvc.org.dto;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+
+import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 
 
@@ -35,7 +37,7 @@ import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
         "organizationId",
         "value"
 })
-
+@DozerDTOCorrespondence(OrganizationAttributeEntity.class)
 public class OrganizationAttribute implements java.io.Serializable {
 
     /**
@@ -67,28 +69,6 @@ public class OrganizationAttribute implements java.io.Serializable {
      */
     public OrganizationAttribute(String companyAttrId) {
         this.attrId = companyAttrId;
-    }
-
-    /**
-     * full constructor
-     */
-    public OrganizationAttribute(String companyAttrId,
-                                 String metadataId, String organizationId, String name,
-                                 String value) {
-        this.attrId = companyAttrId;
-        this.metadataElementId = metadataId;
-        this.organizationId = organizationId;
-        this.name = name;
-        this.value = value;
-    }
-
-    public OrganizationAttribute(OrganizationAttributeEntity attributeEntity) {
-        this.attrId = attributeEntity.getAttrId();
-        this.metadataElementId = attributeEntity.getMetadataElementId();
-        this.name = attributeEntity.getName();
-        this.organizationId = attributeEntity.getOrganization() != null ? attributeEntity.getOrganization().getOrgId() : "";
-        this.value = attributeEntity.getValue();
-
     }
 
     // Property accessors

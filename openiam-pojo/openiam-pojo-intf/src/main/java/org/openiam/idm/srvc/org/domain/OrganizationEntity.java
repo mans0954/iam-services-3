@@ -15,9 +15,12 @@ import javax.persistence.MapKey;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import org.hibernate.annotations.GenericGenerator;
+import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.org.dto.OrgClassificationEnum;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.idm.srvc.org.dto.OrgClassificationEnum;
 import org.openiam.idm.srvc.org.dto.Organization;
@@ -25,6 +28,7 @@ import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
 
 @Entity
 @Table(name = "COMPANY")
+@DozerDTOCorrespondence(Organization.class)
 public class OrganizationEntity {
     @Id
     @GeneratedValue(generator="system-uuid")
@@ -35,8 +39,9 @@ public class OrganizationEntity {
     @Column(name="ALIAS", length=100)
     private String alias;
 
-    @OneToMany(orphanRemoval=true, cascade = CascadeType.ALL, mappedBy = "organization", fetch = FetchType.EAGER)
+    @OneToMany(orphanRemoval=true, cascade = CascadeType.ALL, mappedBy = "organization", fetch = FetchType.LAZY)
     @MapKey(name = "name")
+    @Fetch(FetchMode.SUBSELECT)
     private Map<String, OrganizationAttributeEntity> attributes = new HashMap<String, OrganizationAttributeEntity>(0);
 
     @Column(name="CREATE_DATE", length=19)
@@ -86,29 +91,6 @@ public class OrganizationEntity {
     private String symbol;
 
     public OrganizationEntity() {
-    }
-
-    public OrganizationEntity(Organization organization) {
-        this.orgId = organization.getOrgId();
-        this.alias = organization.getAlias();
-        for(Map.Entry<String, OrganizationAttribute> attributeEntityEntry : organization.getAttributes().entrySet()) {
-            this.attributes.put(attributeEntityEntry.getKey(), new OrganizationAttributeEntity(attributeEntityEntry.getValue(),this));
-        }
-        this.createDate = organization.getCreateDate();
-        this.createdBy = organization.getCreatedBy();
-        this.description = organization.getDescription();
-        this.domainName = organization.getDomainName();
-        this.ldapStr = organization.getLdapStr();
-        this.lstUpdate = organization.getLstUpdate();
-        this.lstUpdatedBy = organization.getLstUpdatedBy();
-        this.metadataTypeId = organization.getMetadataTypeId();
-        this.organizationName = organization.getOrganizationName();
-        this.internalOrgId = organization.getInternalOrgId();
-        this.parentId = organization.getParentId();
-        this.status = organization.getStatus();
-        this.classification = organization.getClassification();
-        this.abbreviation = organization.getAbbreviation();
-        this.symbol = organization.getSymbol();
     }
 
     public String getOrgId() {
@@ -254,4 +236,137 @@ public class OrganizationEntity {
     public void setSymbol(String symbol) {
         this.symbol = symbol;
     }
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((abbreviation == null) ? 0 : abbreviation.hashCode());
+		result = prime * result + ((alias == null) ? 0 : alias.hashCode());
+		result = prime * result
+				+ ((classification == null) ? 0 : classification.hashCode());
+		result = prime * result
+				+ ((createDate == null) ? 0 : createDate.hashCode());
+		result = prime * result
+				+ ((createdBy == null) ? 0 : createdBy.hashCode());
+		result = prime * result
+				+ ((description == null) ? 0 : description.hashCode());
+		result = prime * result
+				+ ((domainName == null) ? 0 : domainName.hashCode());
+		result = prime * result
+				+ ((internalOrgId == null) ? 0 : internalOrgId.hashCode());
+		result = prime * result + ((ldapStr == null) ? 0 : ldapStr.hashCode());
+		result = prime * result
+				+ ((lstUpdate == null) ? 0 : lstUpdate.hashCode());
+		result = prime * result
+				+ ((lstUpdatedBy == null) ? 0 : lstUpdatedBy.hashCode());
+		result = prime * result
+				+ ((metadataTypeId == null) ? 0 : metadataTypeId.hashCode());
+		result = prime * result + ((orgId == null) ? 0 : orgId.hashCode());
+		result = prime
+				* result
+				+ ((organizationName == null) ? 0 : organizationName.hashCode());
+		result = prime * result
+				+ ((parentId == null) ? 0 : parentId.hashCode());
+		result = prime * result + ((status == null) ? 0 : status.hashCode());
+		result = prime * result + ((symbol == null) ? 0 : symbol.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		OrganizationEntity other = (OrganizationEntity) obj;
+		if (abbreviation == null) {
+			if (other.abbreviation != null)
+				return false;
+		} else if (!abbreviation.equals(other.abbreviation))
+			return false;
+		if (alias == null) {
+			if (other.alias != null)
+				return false;
+		} else if (!alias.equals(other.alias))
+			return false;
+		if (classification != other.classification)
+			return false;
+		if (createDate == null) {
+			if (other.createDate != null)
+				return false;
+		} else if (!createDate.equals(other.createDate))
+			return false;
+		if (createdBy == null) {
+			if (other.createdBy != null)
+				return false;
+		} else if (!createdBy.equals(other.createdBy))
+			return false;
+		if (description == null) {
+			if (other.description != null)
+				return false;
+		} else if (!description.equals(other.description))
+			return false;
+		if (domainName == null) {
+			if (other.domainName != null)
+				return false;
+		} else if (!domainName.equals(other.domainName))
+			return false;
+		if (internalOrgId == null) {
+			if (other.internalOrgId != null)
+				return false;
+		} else if (!internalOrgId.equals(other.internalOrgId))
+			return false;
+		if (ldapStr == null) {
+			if (other.ldapStr != null)
+				return false;
+		} else if (!ldapStr.equals(other.ldapStr))
+			return false;
+		if (lstUpdate == null) {
+			if (other.lstUpdate != null)
+				return false;
+		} else if (!lstUpdate.equals(other.lstUpdate))
+			return false;
+		if (lstUpdatedBy == null) {
+			if (other.lstUpdatedBy != null)
+				return false;
+		} else if (!lstUpdatedBy.equals(other.lstUpdatedBy))
+			return false;
+		if (metadataTypeId == null) {
+			if (other.metadataTypeId != null)
+				return false;
+		} else if (!metadataTypeId.equals(other.metadataTypeId))
+			return false;
+		if (orgId == null) {
+			if (other.orgId != null)
+				return false;
+		} else if (!orgId.equals(other.orgId))
+			return false;
+		if (organizationName == null) {
+			if (other.organizationName != null)
+				return false;
+		} else if (!organizationName.equals(other.organizationName))
+			return false;
+		if (parentId == null) {
+			if (other.parentId != null)
+				return false;
+		} else if (!parentId.equals(other.parentId))
+			return false;
+		if (status == null) {
+			if (other.status != null)
+				return false;
+		} else if (!status.equals(other.status))
+			return false;
+		if (symbol == null) {
+			if (other.symbol != null)
+				return false;
+		} else if (!symbol.equals(other.symbol))
+			return false;
+		return true;
+	}
+    
+    
 }

@@ -30,84 +30,12 @@ import org.springframework.stereotype.Repository;
 @Repository("organizationDAO")
 public class OrganizationDAOImpl extends BaseDaoImpl<OrganizationEntity, String> implements OrganizationDAO {
 
-    private static final Log log = LogFactory.getLog(OrganizationDAOImpl.class);
-
-    protected SessionFactory getSessionFactory() {
-        try {
-            return (SessionFactory) new InitialContext()
-                    .lookup("SessionFactory");
-        } catch (Exception e) {
-            log.error("Could not locate SessionFactory in JNDI", e);
-            throw new IllegalStateException(
-                    "Could not locate SessionFactory in JNDI");
-        }
-    }
-
-
-    public OrganizationEntity findById(java.lang.String id) {
-        log.debug("getting Organization instance with id: " + id);
-        try {
-            OrganizationEntity instance = (OrganizationEntity) sessionFactory.getCurrentSession()
-                    .createCriteria(OrganizationEntity.class)
-                    .setFetchMode("attributes", FetchMode.JOIN)
-                    .add(Restrictions.eq("orgId",id)).uniqueResult();
-
-            if (instance == null) {
-                log.debug("get successful, no instance found");
-            } else {
-                log.debug("get successful, instance found");
-            }
-            return instance;
-        } catch (RuntimeException re) {
-            log.error("get failed", re);
-            throw re;
-        }
-    }
-
-    public List<OrganizationEntity> findByExample(OrganizationEntity instance) {
-        log.debug("finding Company instance by example");
-        try {
-            List results = sessionFactory.getCurrentSession()
-                    .createCriteria(OrganizationEntity.class)
-                    .add(Example.create(instance))
-                    .setFetchMode("attributes", FetchMode.JOIN)
-                    .list();
-            log.debug("find by example successful, result size: "
-                    + results.size());
-            return results;
-        } catch (RuntimeException re) {
-            log.error("find by example failed", re);
-            throw re;
-        }
-    }
-
-    public OrganizationEntity add(OrganizationEntity instance) {
-        log.debug("persisting Organization instance");
-        try {
-            sessionFactory.getCurrentSession().persist(instance);
-            log.debug("persist successful");
-            return instance;
-        } catch (RuntimeException re) {
-            log.error("persist failed", re);
-            throw re;
-        }
-
-    }
-
     public List<OrganizationEntity> findChildOrganization(String orgId) {
-        log.debug("getting Organization instances for childobjects of  " + orgId);
-
-        Session session = sessionFactory.getCurrentSession();
-        Criteria criteria = session.createCriteria(OrganizationEntity.class)
+        final Criteria criteria = getCriteria()
                 .add(Restrictions.eq("parentId", orgId))
                 .addOrder(Order.asc("organizationName"))
                 .setFetchMode("attributes", FetchMode.JOIN);
-        criteria.setCacheable(true);
-        criteria.setCacheRegion("query.organization.findChildOrganization");
-        List<OrganizationEntity> result = criteria.list();
-        if (result == null || result.size() == 0)
-            return null;
-        return result;
+        return criteria.list();
     }
 
     public OrganizationEntity findParent(String orgId) {
@@ -119,122 +47,43 @@ public class OrganizationDAOImpl extends BaseDaoImpl<OrganizationEntity, String>
         return null;
     }
 
-    public void remove(OrganizationEntity instance) {
-        log.debug("deleting Address instance");
-        try {
-            sessionFactory.getCurrentSession().delete(instance);
-            log.debug("delete successful");
-        } catch (RuntimeException re) {
-            log.error("delete failed", re);
-            throw re;
-        }
-    }
-
-    /**
-     * Returns a list of Organization objects that are root level entities; ie. they
-     * don't have a parent.
-     *
-     * @return
-     */
     public List<OrganizationEntity> findRootOrganizations() {
-        log.debug("getting Organization instances at parent level  ");
-
-        Session session = sessionFactory.getCurrentSession();
-        Criteria criteria = session.createCriteria(OrganizationEntity.class)
+        final Criteria criteria = getCriteria()
                 .add(Restrictions.isNull("parentId"))
                 .addOrder(Order.asc("organizationName"))
                 .setFetchMode("attributes", FetchMode.JOIN);
-
-        criteria.setCacheable(true);
-        List<OrganizationEntity> result = (List<OrganizationEntity>) criteria.list();
-
-        if (result == null || result.size() == 0)
-            return null;
-        return result;
-
+        return criteria.list();
     }
 
     public List<OrganizationEntity> findOrganizationByType(String type, String parentId) {
-        log.debug("getting Organization for a type  ");
-        Session session = sessionFactory.getCurrentSession();
-        Criteria criteria = session.createCriteria(OrganizationEntity.class).add(Restrictions.eq("metadataTypeId",type));
+        final Criteria criteria = getCriteria().add(Restrictions.eq("metadataTypeId",type));
         if (parentId != null) {
             criteria.add(Restrictions.eq("parentId",parentId));
         }
-        criteria.addOrder(Order.asc("organizationName"))
-                .setFetchMode("attributes", FetchMode.JOIN);
-        List<OrganizationEntity> result = (List<OrganizationEntity>) criteria.list();
-        if (result == null || result.size() == 0)
-            return null;
-        return result;
+        criteria.addOrder(Order.asc("organizationName")) .setFetchMode("attributes", FetchMode.JOIN);
+        return criteria.list();
     }
 
     public List<OrganizationEntity> findAllOrganization() {
-        Session session = sessionFactory.getCurrentSession();
-        Criteria criteria = session.createCriteria(OrganizationEntity.class)
+        Criteria criteria = getCriteria()
                 .addOrder(Order.asc("organizationName"))
                 .setFetchMode("attributes", FetchMode.JOIN);
-        criteria.setCacheable(true);
-        criteria.setCacheRegion("query.organization.findAllOrganization");
-        List<OrganizationEntity> result = (List<OrganizationEntity>) criteria.list();
-        if (result == null || result.size() == 0)
-            return null;
-        return result;
-    }
-
-    public List<OrganizationEntity> search(String name, String type, OrgClassificationEnum classification, String internalOrgId) {
-        Session session = sessionFactory.getCurrentSession();
-        Criteria criteria = session.createCriteria(OrganizationEntity.class);
-        if (name == null && type == null) {
-            // show all the orgs
-            criteria.add(Restrictions.like("organizationName", "%"));
-        }
-        if (name != null) {
-            criteria.add(Restrictions.like("organizationName", name + "%"));
-        }
-        if (type != null) {
-            criteria.add(Restrictions.eq("metadataTypeId", type));
-        }
-        if (classification != null) {
-            criteria.add(Restrictions.eq("classification", classification));
-        }
-        if (internalOrgId != null) {
-            criteria.add(Restrictions.eq("internalOrgId", internalOrgId));
-        }
-        criteria.setFetchMode("attributes", FetchMode.JOIN);
         return criteria.list();
-
     }
 
-    public List<OrganizationEntity> findOrganizationByClassification(String parentId, OrgClassificationEnum classification) {
-        log.debug("getting Organization for a classification  ");
-
-        Session session = sessionFactory.getCurrentSession();
-        Criteria criteria = session.createCriteria(OrganizationEntity.class);
+    public List<OrganizationEntity> findOrganizationByClassification(final String parentId, final OrgClassificationEnum classification) {
+        final Criteria criteria = getCriteria();
         if (parentId == null) {
             criteria.add(Restrictions.eq("classification",classification));
         } else {
             criteria.add(Restrictions.eq("parentId",parentId));
         }
         criteria.addOrder(Order.asc("parentId")).addOrder(Order.asc("organizationName"));
-
-        criteria.setCacheable(true);
-        criteria.setCacheRegion("query.organization.findOrganizationByClassification");
-        criteria.setFetchMode("attributes", FetchMode.JOIN);
-
-        List<OrganizationEntity> result = (List<OrganizationEntity>) criteria.list();
-        if (result == null || result.size() == 0)
-            return null;
-        return result;
+        return criteria.list();
     }
 
-    /* (non-Javadoc)
-      * @see org.openiam.idm.srvc.org.service.OrganizationDAO#findOrganizationByStatus(java.lang.String, java.lang.String)
-      */
-    public List<OrganizationEntity> findOrganizationByStatus(String parentId,
-                                                       String status) {
-        Session session = sessionFactory.getCurrentSession();
-        Criteria criteria = session.createCriteria(OrganizationEntity.class);
+    public List<OrganizationEntity> findOrganizationByStatus(final String parentId, final String status) {
+        final Criteria criteria = getCriteria();
 
         if (parentId != null) {
             criteria.add(Restrictions.eq("parentId", parentId));
@@ -243,8 +92,6 @@ public class OrganizationDAOImpl extends BaseDaoImpl<OrganizationEntity, String>
             criteria.add(Restrictions.eq("status", status));
         }
         criteria.add(Restrictions.eq("classification", OrgClassificationEnum.ORGANIZATION));
-        criteria.setFetchMode("attributes", FetchMode.JOIN);
-
         return criteria.list();
 
     }
@@ -273,6 +120,18 @@ public class OrganizationDAOImpl extends BaseDaoImpl<OrganizationEntity, String>
                     } else {
                         criteria.add(Restrictions.eq("organizationName", organizationName));
                     }
+                }
+                
+                if (StringUtils.isNotBlank(organization.getMetadataTypeId())) {
+                    criteria.add(Restrictions.eq("metadataTypeId", organization.getMetadataTypeId()));
+                }
+                
+                if (organization.getClassification() != null) {
+                    criteria.add(Restrictions.eq("classification", organization.getClassification()));
+                }
+                
+                if (StringUtils.isNotBlank(organization.getInternalOrgId())) {
+                    criteria.add(Restrictions.eq("internalOrgId", organization.getInternalOrgId()));
                 }
             }
         }

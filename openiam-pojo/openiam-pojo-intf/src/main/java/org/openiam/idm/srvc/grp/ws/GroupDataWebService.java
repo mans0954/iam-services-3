@@ -40,20 +40,7 @@ public interface GroupDataWebService {
      */
 
     @WebMethod
-    public GroupResponse addGroup(final @WebParam(name = "group", targetNamespace = "") Group group);
-    
-    /**
-     * This method updates and existing group in database. For example:
-     * <p/>
-     * <code>
-     * grpManager.updateGroup(grpValue);<br>
-     * </code>
-     *
-     * @param grp
-     * @return - Number of records created. 0 if update failed to update any records
-     */
-    @WebMethod
-    public GroupResponse updateGroup(final @WebParam(name = "group", targetNamespace = "") Group group);
+    public Response saveGroup(final @WebParam(name = "group", targetNamespace = "") Group group);
 
     /**
      * This method retrieves an existing group object. Dependent objects such as
@@ -62,7 +49,7 @@ public interface GroupDataWebService {
      * @param grpId
      */
     @WebMethod
-    public GroupResponse getGroup(final @WebParam(name = "groupId", targetNamespace = "") String groupId);
+    public Group getGroup(final @WebParam(name = "groupId", targetNamespace = "") String groupId);
 
     /**
      * This method removes group for a particular grpId. If the group has sub
@@ -77,6 +64,10 @@ public interface GroupDataWebService {
      */
     @WebMethod
     public Response deleteGroup(final @WebParam(name = "groupId", targetNamespace = "") String groupId);
+    
+    
+    @WebMethod
+    public int getNumOfChildGroups(final @WebParam(name = "groupId", targetNamespace = "") String groupId);
 
     /**
      * Returns all the groups that are the immediate children of the parent
@@ -93,10 +84,13 @@ public interface GroupDataWebService {
      * @return List of Group objects. Returns null if no groups are found.
      */
     @WebMethod
-    public GroupListResponse getChildGroups(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
+    public List<Group> getChildGroups(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
     									    final @WebParam(name = "from", targetNamespace = "") int from,
     									    final @WebParam(name = "size", targetNamespace = "") int size);
 
+    @WebMethod
+    public int getNumOfParentGroups(final @WebParam(name = "groupId", targetNamespace = "") String groupId);
+    
     /**
      * Returns the parent Group object for the groupId that is passed in. If no
      * parent group is found, the system return null.
@@ -107,7 +101,7 @@ public interface GroupDataWebService {
      * @return
      */
     @WebMethod
-    public GroupListResponse getParentGroups(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
+    public List<Group> getParentGroups(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
     										 final @WebParam(name = "from", targetNamespace = "") int from,
     										 final @WebParam(name = "size", targetNamespace = "") int size);
 
@@ -255,4 +249,13 @@ public interface GroupDataWebService {
     
     @WebMethod
     public int getNumOfGroupsForRole(final @WebParam(name = "roleId") String roleId);
+    
+    @WebMethod
+    public Response addChildGroup(final @WebParam(name = "groupId") String groupId, 
+    							  final @WebParam(name = "childGroupId") String childGroupId);
+    
+    
+    @WebMethod
+    public Response removeChildGroup(final @WebParam(name = "groupId") String groupId, 
+    							 	 final @WebParam(name = "childGroupId") String childGroupId);
 }

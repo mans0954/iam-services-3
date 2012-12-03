@@ -100,7 +100,7 @@ public interface RoleDataWebService {
      * @return
      */
     @WebMethod
-    RoleListResponse getRolesInGroup(
+    List<Role> getRolesInGroup(
             final @WebParam(name = "groupId", targetNamespace = "") String groupId,
             final @WebParam(name = "from", targetNamespace = "") int from,
             final @WebParam(name = "size", targetNamespace = "") int size);
@@ -275,4 +275,8 @@ public interface RoleDataWebService {
     @WebMethod
     public Response removeChildRole(final @WebParam(name="roleId", targetNamespace="") String roleId,
 			 					final @WebParam(name="parentRoleId", targetNamespace="") String childRoleId);
+    
+    @WebMethod
+    public int getNumOfRolesForGroup(final @WebParam(name="groupId", targetNamespace="") String groupId);
+    
 }

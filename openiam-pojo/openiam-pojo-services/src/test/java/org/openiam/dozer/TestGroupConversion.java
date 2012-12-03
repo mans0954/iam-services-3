@@ -99,14 +99,12 @@ public class TestGroupConversion extends AbstractTestNGSpringContextTests {
 		group.setCreateDate(new Date());
 		group.setCreatedBy(rs(2));
 		group.setDescription(rs(2));
-		group.setGroupClass(rs(2));
 		group.setGrpId(rs(2));
 		group.setGrpName(rs(2));
 		group.setInternalGroupId(rs(2));
 		group.setLastUpdate(new Date());
 		group.setLastUpdatedBy(rs(2));
 		group.setMetadataTypeId(rs(2));
-		group.setOperation(AttributeOperationEnum.ADD);
 		group.setOwnerId(rs(2));
 		group.setProvisionMethod(rs(2));
 		group.setProvisionObjName(rs(2));
@@ -188,7 +186,6 @@ public class TestGroupConversion extends AbstractTestNGSpringContextTests {
 		Assert.assertEquals(original.getCompanyId(), copy.getCompanyId());
 		Assert.assertEquals(original.getCreatedBy(), copy.getCreatedBy());
 		Assert.assertEquals(original.getDescription(), copy.getDescription());
-		Assert.assertEquals(original.getGroupClass(), copy.getGroupClass());
 		Assert.assertEquals(original.getGrpId(), copy.getGrpId());
 		Assert.assertEquals(original.getGrpName(), copy.getGrpName());
 		Assert.assertEquals(original.getInternalGroupId(), copy.getInternalGroupId());
@@ -196,7 +193,6 @@ public class TestGroupConversion extends AbstractTestNGSpringContextTests {
 		Assert.assertEquals(original.getLastUpdate(), copy.getLastUpdate());
 		Assert.assertEquals(original.getMetadataTypeId(), copy.getMetadataTypeId());
 		Assert.assertEquals(original.getOwnerId(), copy.getOwnerId());
-		Assert.assertEquals(original.getOperation(), copy.getOperation());
 		Assert.assertEquals(original.getProvisionMethod(), copy.getProvisionMethod());
 		Assert.assertEquals(original.getProvisionObjName(), copy.getProvisionObjName());
 		Assert.assertEquals(original.getStatus(), copy.getStatus());

@@ -361,7 +361,7 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractTestNGSpr
 	
 	private void checkGroupMembership(final String userId, final String groupId) {
 		final User user = userDataWebService.getUserWithDependent(userId, true).getUser();
-		final Group group = groupServiceClient.getGroup(groupId).getGroup();
+		final Group group = groupServiceClient.getGroup(groupId);
 		
 		final List<AuthorizationManagerLoginId> loginIdList = getLoginIdList(user);
 		

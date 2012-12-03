@@ -24,6 +24,8 @@ import java.util.List;
 import javax.jws.WebService;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.dozer.converter.MetaDataTypeDozerConverter;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.meta.service.MetadataService;
@@ -41,6 +43,8 @@ public class MetadataWebServiceImpl implements MetadataWebService {
     @Autowired
     MetadataService metadataService;
 
+    @Autowired
+    MetaDataTypeDozerConverter metaDataTypeDozerConverter;
     /*
      * (non-Javadoc)
      * 
@@ -180,16 +184,9 @@ public class MetadataWebServiceImpl implements MetadataWebService {
      * org.openiam.idm.srvc.meta.ws.MetadataWebService#getTypesInCategory(java
      * .lang.String)
      */
-    public MetadataTypeArrayResponse getTypesInCategory(String categoryId) {
-        MetadataTypeArrayResponse resp = new MetadataTypeArrayResponse(
-                ResponseStatus.SUCCESS);
-        MetadataType[] typeAry = metadataService.getTypesInCategory(categoryId);
-        if (typeAry == null) {
-            resp.setStatus(ResponseStatus.FAILURE);
-        } else {
-            resp.setMetadataTypeAry(typeAry);
-        }
-        return resp;
+    public List<MetadataType> getTypesInCategory(String categoryId) {
+        final List<MetadataTypeEntity> entityList = metadataService.getTypesInCategory(categoryId);
+        return metaDataTypeDozerConverter.convertToDTOList(entityList, false);
     }
 
     /*

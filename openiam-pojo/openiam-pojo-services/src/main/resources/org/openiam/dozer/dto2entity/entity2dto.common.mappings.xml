@@ -88,5 +88,27 @@
 	<mapping>
 		<class-a>org.openiam.idm.srvc.cat.domain.CategoryLanguageEntity</class-a>
 		<class-b>org.openiam.idm.srvc.cat.dto.CategoryLanguage</class-b>
-	</mapping>			
+	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity</class-a>
+		<class-b>org.openiam.idm.srvc.org.dto.OrganizationAttribute</class-b>
+		<field>
+			<a>organization.orgId</a>
+			<b>organizationId</b>
+		</field>
+	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.org.domain.UserAffiliationEntity</class-a>
+		<class-b>org.openiam.idm.srvc.org.dto.UserAffiliation</class-b>
+		<field>
+			<a>organization.orgId</a>
+			<b>organizationId</b>
+		</field>
+		<field>
+			<a>user.userId</a>
+			<b>userId</b>
+		</field>
+	</mapping>
 </mappings>

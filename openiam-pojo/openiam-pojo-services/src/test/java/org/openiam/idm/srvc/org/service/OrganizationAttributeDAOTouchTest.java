@@ -18,33 +18,4 @@ public class OrganizationAttributeDAOTouchTest extends AbstractTransactionalTest
     public void touchFindById() {
         orgAttrDAO.findById("");
     }
-
-    @Test
-    public void touchFindAttributesByParent() {
-        orgAttrDAO.findAttributesByParent("");
-    }
-
-    @Test
-    public void touchAdd() {
-        orgAttrDAO.add(new OrganizationAttributeEntity());
-    }
-
-    @Test
-    public void touchRemove() {
-        OrganizationAttributeEntity organizationAttribute = new OrganizationAttributeEntity();
-        orgAttrDAO.add(organizationAttribute);
-        orgAttrDAO.remove(organizationAttribute);
-    }
-
-    @Test
-    public void touchRemoveAttributesByParent() {
-        orgAttrDAO.removeAttributesByParent("");
-    }
-
-    @Test
-    public void touchUpdate() {
-        OrganizationAttributeEntity organizationAttribute = new OrganizationAttributeEntity();
-        orgAttrDAO.add(organizationAttribute);
-        orgAttrDAO.update(organizationAttribute);
-    }
 }

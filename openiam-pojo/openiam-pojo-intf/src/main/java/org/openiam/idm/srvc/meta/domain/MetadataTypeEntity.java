@@ -13,12 +13,16 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.MapKey;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.cat.domain.CategoryEntity;
@@ -49,11 +53,20 @@ public class MetadataTypeEntity implements java.io.Serializable {
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "metadataElementId", fetch = FetchType.LAZY)
     @MapKey(name = "attributeName")
+    @Fetch(FetchMode.SUBSELECT)
     private Map<String, MetadataElementEntity> elementAttributes = new HashMap<String, MetadataElementEntity>(
             0);
 
+    /*
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinColumn(name = "TYPE_ID", insertable = false, updatable = false)
+    @JoinColumn(name = "CATEGORY_ID", insertable = false, updatable = false)
+    @Fetch(FetchMode.SUBSELECT)
+    */
+	@ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
+    @JoinTable(name="CATEGORY_TYPE",
+        joinColumns={@JoinColumn(name="TYPE_ID")},
+        inverseJoinColumns={@JoinColumn(name="CATEGORY_ID")})
+    @Fetch(FetchMode.SUBSELECT)
     private Set<CategoryEntity> categories = new HashSet<CategoryEntity>(0);
 
 
@@ -117,13 +130,7 @@ public class MetadataTypeEntity implements java.io.Serializable {
         int result = 1;
         result = prime * result + active;
         result = prime * result
-                + ((categories == null) ? 0 : categories.hashCode());
-        result = prime * result
                 + ((description == null) ? 0 : description.hashCode());
-        result = prime
-                * result
-                + ((elementAttributes == null) ? 0 : elementAttributes
-                        .hashCode());
         result = prime * result
                 + ((metadataTypeId == null) ? 0 : metadataTypeId.hashCode());
         result = prime * result + syncManagedSys;
@@ -146,20 +153,10 @@ public class MetadataTypeEntity implements java.io.Serializable {
         MetadataTypeEntity other = (MetadataTypeEntity) obj;
         if (active != other.active)
             return false;
-        if (categories == null) {
-            if (other.categories != null)
-                return false;
-        } else if (!categories.equals(other.categories))
-            return false;
         if (description == null) {
             if (other.description != null)
                 return false;
         } else if (!description.equals(other.description))
-            return false;
-        if (elementAttributes == null) {
-            if (other.elementAttributes != null)
-                return false;
-        } else if (!elementAttributes.equals(other.elementAttributes))
             return false;
         if (metadataTypeId == null) {
             if (other.metadataTypeId != null)

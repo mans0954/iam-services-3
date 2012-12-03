@@ -71,6 +71,7 @@ public interface RoleDataService {
      * @return
      */
    public List<RoleEntity> getRolesInGroup(String groupId, final int from, final int size);
+   public int getNumOfRolesForGroup(final String groupId);
 
 
     /**

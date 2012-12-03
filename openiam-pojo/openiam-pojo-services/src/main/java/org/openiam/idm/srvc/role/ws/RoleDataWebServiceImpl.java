@@ -204,17 +204,10 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 	}
 
 	@Override
-	public RoleListResponse getRolesInGroup(final String groupId, final int from, final int size) {
-		final RoleListResponse response = new RoleListResponse(ResponseStatus.SUCCESS);
-		try {
-			final List<RoleEntity> entityList = roleDataService.getRolesInGroup(groupId, from, size);
-			final List<Role> roleList = roleDozerConverter.convertToDTOList(entityList, false);
-			response.setRoleList(roleList);
-		} catch(Throwable e) {
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorText(e.getMessage());
-		}
-		return response;
+	public List<Role> getRolesInGroup(final String groupId, final int from, final int size) {
+		final List<RoleEntity> entityList = roleDataService.getRolesInGroup(groupId, from, size);
+		final List<Role> roleList = roleDozerConverter.convertToDTOList(entityList, false);
+		return roleList;
 	}
 
 	@Override
@@ -366,7 +359,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 			
 			RoleEntity entity = roleDozerConverter.convertToEntity(role, false);
 			if(StringUtils.isBlank(entity.getRoleName())) {
-				throw new BasicDataServiceException(ResponseCode.MISSING_ROLE_NAME);
+				throw new BasicDataServiceException(ResponseCode.NO_NAME);
 			}
 			
 			/* check if the name is taken by another entity */
@@ -376,7 +369,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 			if(CollectionUtils.isNotEmpty(nameEntityList)) {
 				final RoleEntity nameEntity = nameEntityList.get(0);
 				if(StringUtils.isBlank(entity.getRoleId()) || !entity.getRoleId().equals(nameEntity.getRoleId())) {
-					throw new BasicDataServiceException(ResponseCode.ROLE_NAME_TAKEN);
+					throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
 				}
 			}
 			
@@ -622,5 +615,10 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 			response.setErrorText(e.getMessage());
 		}
 		return response;
+	}
+
+	@Override
+	public int getNumOfRolesForGroup(final String groupId) {
+		return roleDataService.getNumOfRolesForGroup(groupId);
 	}
 }

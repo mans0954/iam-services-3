@@ -1,7 +1,10 @@
 package org.openiam.idm.srvc.meta.ws;
 
 
+import java.util.List;
+
 import org.openiam.base.ws.Response;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 
@@ -176,7 +179,7 @@ public interface MetadataWebService {
      * @param categoryId
      */
     @WebMethod
-    MetadataTypeArrayResponse getTypesInCategory(
+    List<MetadataType> getTypesInCategory(
             @WebParam(name = "categoryId", targetNamespace = "")
             String categoryId);
 

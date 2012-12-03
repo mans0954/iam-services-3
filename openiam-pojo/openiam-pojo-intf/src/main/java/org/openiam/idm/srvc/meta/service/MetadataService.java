@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.meta.service;
 
 
+import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 
@@ -137,6 +138,6 @@ public interface MetadataService {
      *
      * @param categoryId
      */
-    MetadataType[] getTypesInCategory(String categoryId);
+    List<MetadataTypeEntity> getTypesInCategory(String categoryId);
 
 }

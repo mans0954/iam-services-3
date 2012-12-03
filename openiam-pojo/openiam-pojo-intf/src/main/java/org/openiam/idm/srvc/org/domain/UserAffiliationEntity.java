@@ -11,11 +11,13 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import org.hibernate.annotations.GenericGenerator;
+import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.org.dto.UserAffiliation;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 
 @Entity
 @Table(name = "USER_AFFILIATION")
+@DozerDTOCorrespondence(UserAffiliation.class)
 public class UserAffiliationEntity {
     @Id
     @GeneratedValue(generator = "system-uuid")
@@ -50,25 +52,6 @@ public class UserAffiliationEntity {
     private String createdBy;
 
     public UserAffiliationEntity() {
-    }
-
-    public UserAffiliationEntity(UserEntity user, OrganizationEntity organization) {
-        this.user = user;
-        this.organization = organization;
-        this.status = "ACTIVE";
-        long curTime = System.currentTimeMillis();
-        this.createDate = new Date(curTime);
-        this.startDate = new Date(curTime);
-    }
-
-    public UserAffiliationEntity(UserAffiliation affiliation, UserEntity user, OrganizationEntity organization) {
-        this.userAffiliationId = affiliation.getUserAffiliationId();
-        this.status = affiliation.getStatus();
-        this.createDate = affiliation.getCreateDate();
-        this.startDate = affiliation.getStartDate();
-        this.createdBy = affiliation.getCreatedBy();
-        this.organization = organization;
-        this.user = user;
     }
 
     public String getUserAffiliationId() {

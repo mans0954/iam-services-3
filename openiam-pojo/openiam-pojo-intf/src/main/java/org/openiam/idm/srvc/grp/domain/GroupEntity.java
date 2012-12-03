@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.grp.domain;
 
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -68,9 +69,6 @@ public class GroupEntity {
     @Column(name="PROVISION_OBJ_NAME",length=80)
     private String provisionObjName;
     
-    @Column(name="GROUP_CLASS",length=40)
-    private String groupClass;
-    
     @Column(name="GROUP_DESC",length=80)
     private String description;
     
@@ -120,9 +118,6 @@ public class GroupEntity {
 	    inverseJoinColumns={@JoinColumn(name="ROLE_ID")})
 	@Fetch(FetchMode.SUBSELECT)
     private Set<RoleEntity> roles;
-    
-	@Transient
-	private AttributeOperationEnum operation;
 
 	public String getGrpId() {
 		return grpId;
@@ -188,14 +183,6 @@ public class GroupEntity {
 		this.provisionObjName = provisionObjName;
 	}
 
-	public String getGroupClass() {
-		return groupClass;
-	}
-
-	public void setGroupClass(String groupClass) {
-		this.groupClass = groupClass;
-	}
-
 	public String getDescription() {
 		return description;
 	}
@@ -248,15 +235,6 @@ public class GroupEntity {
 		return parentGroups;
 	}
 	
-	public void addParentGroup(final GroupEntity entity) {
-		if(entity != null) {
-			if(parentGroups == null) {
-				parentGroups = new HashSet<GroupEntity>();
-			}
-			parentGroups.add(entity);
-		}
-	}
-	
 	public void addChildGroup(final GroupEntity entity) {
 		if(entity != null) {
 			if(childGroups == null) {
@@ -268,6 +246,35 @@ public class GroupEntity {
 
 	public void setParentGroups(Set<GroupEntity> parentGroups) {
 		this.parentGroups = parentGroups;
+	}
+	
+	public boolean hasChildGroup(final String groupId) {
+		boolean retVal = false;
+		if(groupId != null) {
+			if(childGroups != null) {
+				for(final GroupEntity entity : childGroups) {
+					if(entity.getGrpId().equals(groupId)) {
+						retVal = true;
+						break;
+					}
+				}
+			}
+		}
+		return retVal;
+	}
+	
+	public void removeChildGroup(final String groupId) {
+		if(groupId != null) {
+			if(childGroups != null) {
+				for(final Iterator<GroupEntity> it = childGroups.iterator(); it.hasNext();) {
+					final GroupEntity group = it.next();
+					if(group.getGrpId().equals(groupId)) {
+						it.remove();
+						break;
+					}
+				}
+			}
+		}
 	}
 
 	public Set<GroupEntity> getChildGroups() {
@@ -284,14 +291,6 @@ public class GroupEntity {
 
 	public void setAttributes(Map<String, GroupAttributeEntity> attributes) {
 		this.attributes = attributes;
-	}
-
-	public AttributeOperationEnum getOperation() {
-		return operation;
-	}
-
-	public void setOperation(AttributeOperationEnum operation) {
-		this.operation = operation;
 	}
 
 	public Set<ResourceGroupEntity> getResourceGroups() {
@@ -331,8 +330,6 @@ public class GroupEntity {
 				+ ((createdBy == null) ? 0 : createdBy.hashCode());
 		result = prime * result
 				+ ((description == null) ? 0 : description.hashCode());
-		result = prime * result
-				+ ((groupClass == null) ? 0 : groupClass.hashCode());
 		result = prime * result + ((grpId == null) ? 0 : grpId.hashCode());
 		result = prime * result
 				+ ((internalGroupId == null) ? 0 : internalGroupId.hashCode());
@@ -381,11 +378,6 @@ public class GroupEntity {
 			if (other.description != null)
 				return false;
 		} else if (!description.equals(other.description))
-			return false;
-		if (groupClass == null) {
-			if (other.groupClass != null)
-				return false;
-		} else if (!groupClass.equals(other.groupClass))
 			return false;
 		if (grpId == null) {
 			if (other.grpId != null)
@@ -443,11 +435,11 @@ public class GroupEntity {
 	@Override
 	public String toString() {
 		return String
-				.format("GroupEntity [grpId=%s, grpName=%s, createDate=%s, createdBy=%s, companyId=%s, ownerId=%s, provisionMethod=%s, provisionObjName=%s, groupClass=%s, description=%s, status=%s, lastUpdate=%s, lastUpdatedBy=%s, metadataTypeId=%s, internalGroupId=%s, operation=%s]",
+				.format("GroupEntity [grpId=%s, grpName=%s, createDate=%s, createdBy=%s, companyId=%s, ownerId=%s, provisionMethod=%s, provisionObjName=%s, description=%s, status=%s, lastUpdate=%s, lastUpdatedBy=%s, metadataTypeId=%s, internalGroupId=%s]",
 						grpId, grpName, createDate, createdBy, companyId,
-						ownerId, provisionMethod, provisionObjName, groupClass,
+						ownerId, provisionMethod, provisionObjName,
 						description, status, lastUpdate, lastUpdatedBy,
-						metadataTypeId, internalGroupId, operation);
+						metadataTypeId, internalGroupId);
 	}
 
 	
