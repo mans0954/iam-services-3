@@ -654,4 +654,16 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 		final List<Resource> resourceList = resourceConverter.convertToDTOList(entityList, false);
 		return resourceList;
 	}
+
+	@Override
+	public int getNumOfResourceForGroup(final String groupId) {
+		return resourceDao.getNumOfResourcesForGroup(groupId);
+	}
+
+	@Override
+	public List<Resource> getResourcesForGroup(final String groupId, final int from, final int size) {
+		final List<ResourceEntity> entityList = resourceDao.getResourcesForGroup(groupId, from, size);
+		final List<Resource> resourceList = resourceConverter.convertToDTOList(entityList, false);
+		return resourceList;
+	}
 }

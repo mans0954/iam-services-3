@@ -39,6 +39,7 @@ import org.openiam.exception.data.DataException;
 import org.openiam.exception.data.ObjectNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * <code>GroupDataServiceImpl</code> provides a service to manage groups as
@@ -143,6 +144,7 @@ public class GroupDataServiceImpl implements GroupDataService {
 	}
 
 	@Override
+	@Transactional
 	public void deleteGroup(String groupId) {
 		final GroupEntity entity = groupDao.findById(groupId);
 		if(entity != null) {
@@ -154,22 +156,12 @@ public class GroupDataServiceImpl implements GroupDataService {
 
 	@Override
 	public List<GroupEntity> getChildGroups(final String groupId, final int from, final int size) {
-		final GroupEntity example = new GroupEntity();
-		final GroupEntity parent = new GroupEntity();
-		parent.setGrpId(groupId);
-		example.addParentGroup(parent);
-		final List<GroupEntity> resultList = groupDao.getByExample(example, from, size);
-		return resultList;
+		return groupDao.getChildGroups(groupId, from, size);
 	}
 
 	@Override
 	public List<GroupEntity> getParentGroups(final String groupId, final int from, final int size) {
-		final GroupEntity example = new GroupEntity();
-		final GroupEntity parent = new GroupEntity();
-		parent.setGrpId(groupId);
-		example.addChildGroup(parent);
-		final List<GroupEntity> resultList = groupDao.getByExample(example, from, size);
-		return resultList;
+		return groupDao.getParentGroups(groupId, from, size);
 	}
 	
 	@Override
@@ -262,5 +254,39 @@ public class GroupDataServiceImpl implements GroupDataService {
 	@Override
 	public int getNumOfGroupsForRole(String roleId) {
 		return groupDao.getNumOfGroupsForRole(roleId);
+	}
+
+	@Override
+	public int getNumOfChildGroups(String groupId) {
+		return groupDao.getNumOfChildGroups(groupId);
+	}
+
+	@Override
+	public int getNumOfParentGroups(String groupId) {
+		return groupDao.getNumOfParentGroups(groupId);
+	}
+
+	@Override
+	public void addChildGroup(String groupId, String childGroupId) {
+		if(groupId != null && childGroupId != null) {
+			final GroupEntity group = groupDao.findById(groupId);
+			final GroupEntity child = groupDao.findById(childGroupId);
+			if(group != null && child != null) {
+				if(!group.hasChildGroup(childGroupId)) {
+					group.addChildGroup(child);
+					groupDao.update(group);
+				}
+			}
+		}
+	}
+
+	@Override
+	public void removeChildGroup(String groupId, String childGroupId) {
+		if(groupId != null && childGroupId != null) {
+			final GroupEntity group = groupDao.findById(groupId);
+			if(group != null) {
+				group.removeChildGroup(childGroupId);
+			}
+		}
 	}
 }

@@ -120,7 +120,7 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
 	}
 
 	@Override
-	public List<RoleEntity> findRolesInGroup(final String groupId, final int from, final int size) {
+	public List<RoleEntity> getRolesForGroup(final String groupId, final int from, final int size) {
 		final Criteria criteria = super.getCriteria();
 		criteria.createAlias("groups", "groups").add( Restrictions.in("groups.grpId", new String[] {groupId}));
 		if(from > -1) {
@@ -131,6 +131,14 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
 			criteria.setMaxResults(size);
 		}
 		return criteria.list();
+	}
+	
+	@Override
+	public int getNumOfRolesForGroup(String groupId) {
+		final Criteria criteria = super.getCriteria();
+		criteria.createAlias("groups", "groups").add( Restrictions.in("groups.grpId", new String[] {groupId})).setProjection(rowCount());
+		
+		return ((Number)criteria.uniqueResult()).intValue();
 	}
 	
 

@@ -78,32 +78,6 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
 			if(StringUtils.isNotBlank(group.getInternalGroupId())) {
 				criteria.add(Restrictions.eq("internalGroupId", group.getInternalGroupId()));
 			}
-			
-            if(CollectionUtils.isNotEmpty(group.getParentGroups())) {
-            	final Set<String> parentGroupIds = new HashSet<String>();
-            	for(final GroupEntity parent : group.getParentGroups()) {
-            		if(parent != null && StringUtils.isNotBlank(parent.getGrpId())) {
-            			parentGroupIds.add(parent.getGrpId());
-            		}
-            	}
-            	
-            	if(CollectionUtils.isNotEmpty(parentGroupIds)) {
-            		criteria.createAlias("parentGroups", "parent").add( Restrictions.in("parent.grpId", parentGroupIds));
-            	}
-            }
-            
-            if(CollectionUtils.isNotEmpty(group.getChildGroups())) {
-            	final Set<String> childGroupIds = new HashSet<String>();
-            	for(final GroupEntity child : group.getChildGroups()) {
-            		if(child != null && StringUtils.isNotBlank(child.getGrpId())) {
-            			childGroupIds.add(child.getGrpId());
-            		}
-            	}
-            	
-            	if(CollectionUtils.isNotEmpty(childGroupIds)) {
-            		criteria.createAlias("childGroups", "child").add( Restrictions.in("child.resourceId", childGroupIds));
-            	}
-            }
             
             if(CollectionUtils.isNotEmpty(group.getResourceGroups())) {
             	final Set<String> resourceIds = new HashSet<String>();
@@ -175,6 +149,46 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
 		final Criteria criteria = super.getCriteria();
 		criteria.createAlias("roles", "roles").add( Restrictions.eq("roles.roleId", roleId)).setProjection(rowCount());
 		return ((Number)criteria.uniqueResult()).intValue();
+	}
+
+	@Override
+	public int getNumOfChildGroups(String groupId) {
+		final Criteria criteria = getCriteria().createAlias("parentGroups", "group").add( Restrictions.eq("group.grpId", groupId)).setProjection(rowCount());
+		return ((Number)criteria.uniqueResult()).intValue();
+	}
+
+	@Override
+	public int getNumOfParentGroups(String groupId) {
+		final Criteria criteria = getCriteria().createAlias("childGroups", "group").add( Restrictions.eq("group.grpId", groupId)).setProjection(rowCount());
+		return ((Number)criteria.uniqueResult()).intValue();
+	}
+
+	@Override
+	public List<GroupEntity> getChildGroups(String groupId, int from, int size) {
+		final Criteria criteria = getCriteria().createAlias("parentGroups", "group").add( Restrictions.eq("group.grpId", groupId));
+		
+		if(from > -1) {
+			criteria.setFirstResult(from);
+		}
+		
+		if(size > -1) {
+			criteria.setMaxResults(size);
+		}
+		return criteria.list();
+	}
+
+	@Override
+	public List<GroupEntity> getParentGroups(String groupId, int from, int size) {
+		final Criteria criteria = getCriteria().createAlias("childGroups", "group").add( Restrictions.eq("group.grpId", groupId));
+		
+		if(from > -1) {
+			criteria.setFirstResult(from);
+		}
+		
+		if(size > -1) {
+			criteria.setMaxResults(size);
+		}
+		return criteria.list();
 	}
 }
 

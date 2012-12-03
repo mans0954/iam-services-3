@@ -231,7 +231,7 @@ public class RoleDataServiceImpl implements RoleDataService {
 
 	@Override
 	public List<RoleEntity> getRolesInGroup(String groupId, int from, int size) {
-		return roleDao.findRolesInGroup(groupId, from, size);
+		return roleDao.getRolesForGroup(groupId, from, size);
 	}
 
 	@Override
@@ -344,5 +344,10 @@ public class RoleDataServiceImpl implements RoleDataService {
 				parent.removeChildRole(child.getRoleId());
 			}
 		}
+	}
+
+	@Override
+	public int getNumOfRolesForGroup(String groupId) {
+		return roleDao.getNumOfRolesForGroup(groupId);
 	}
 }

@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.grp.domain;
 
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -234,15 +235,6 @@ public class GroupEntity {
 		return parentGroups;
 	}
 	
-	public void addParentGroup(final GroupEntity entity) {
-		if(entity != null) {
-			if(parentGroups == null) {
-				parentGroups = new HashSet<GroupEntity>();
-			}
-			parentGroups.add(entity);
-		}
-	}
-	
 	public void addChildGroup(final GroupEntity entity) {
 		if(entity != null) {
 			if(childGroups == null) {
@@ -254,6 +246,35 @@ public class GroupEntity {
 
 	public void setParentGroups(Set<GroupEntity> parentGroups) {
 		this.parentGroups = parentGroups;
+	}
+	
+	public boolean hasChildGroup(final String groupId) {
+		boolean retVal = false;
+		if(groupId != null) {
+			if(childGroups != null) {
+				for(final GroupEntity entity : childGroups) {
+					if(entity.getGrpId().equals(groupId)) {
+						retVal = true;
+						break;
+					}
+				}
+			}
+		}
+		return retVal;
+	}
+	
+	public void removeChildGroup(final String groupId) {
+		if(groupId != null) {
+			if(childGroups != null) {
+				for(final Iterator<GroupEntity> it = childGroups.iterator(); it.hasNext();) {
+					final GroupEntity group = it.next();
+					if(group.getGrpId().equals(groupId)) {
+						it.remove();
+						break;
+					}
+				}
+			}
+		}
 	}
 
 	public Set<GroupEntity> getChildGroups() {

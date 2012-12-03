@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.grp.ws;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.*;
 import org.openiam.idm.srvc.grp.service.*;
 
+import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.searchbean.converter.GroupSearchBeanConverter;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
@@ -167,48 +169,29 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 		}
 		return response;
 	}
-
+	
 	@Override
-	public GroupListResponse getChildGroups(final String groupId, final int from, final int size) {
-		final GroupListResponse response = new GroupListResponse(ResponseStatus.SUCCESS);
-		try {
-			if(StringUtils.isBlank(groupId)) {
-				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-			}
-			
-			
-			final List<GroupEntity> groupEntityList = groupManager.getChildGroups(groupId, from, size);
-			final List<Group> groupList = groupDozerConverter.convertToDTOList(groupEntityList, false);
-			response.setGroupList(groupList);
-		} catch(BasicDataServiceException e) {
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(e.getCode());
-		} catch(Throwable e) {
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorText(e.getMessage());
-		}
-		return response;
+	public int getNumOfChildGroups(final String groupId) {
+		return groupManager.getNumOfChildGroups(groupId);
 	}
 
 	@Override
-	public GroupListResponse getParentGroups(final String groupId, final int from, final int size) {
-		final GroupListResponse response = new GroupListResponse(ResponseStatus.SUCCESS);
-		try {
-			if(groupId == null) {
-				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-			}
-			
-			final List<GroupEntity> groupEntityList = groupManager.getParentGroups(groupId, from, size);
-			final List<Group> groupList = groupDozerConverter.convertToDTOList(groupEntityList, false);
-			response.setGroupList(groupList);
-		} catch(BasicDataServiceException e) {
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(e.getCode());
-		} catch(Throwable e) {
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorText(e.getMessage());
-		}
-		return response;
+	public List<Group> getChildGroups(final String groupId, final int from, final int size) {
+		final List<GroupEntity> groupEntityList = groupManager.getChildGroups(groupId, from, size);
+		final List<Group> groupList = groupDozerConverter.convertToDTOList(groupEntityList, false);
+		return groupList;
+	}
+	
+	@Override
+	public int getNumOfParentGroups(final String groupId) {
+		return groupManager.getNumOfParentGroups(groupId);
+	}
+
+	@Override
+	public List<Group> getParentGroups(final String groupId, final int from, final int size) {
+		final List<GroupEntity> groupEntityList = groupManager.getParentGroups(groupId, from, size);
+		final List<Group> groupList = groupDozerConverter.convertToDTOList(groupEntityList, false);
+		return groupList;
 	}
 
 	@Override
@@ -415,5 +398,82 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 	@WebMethod
 	public int getNumOfGroupsForRole(final String roleId) {
 		return groupManager.getNumOfGroupsForRole(roleId);
+	}
+
+	@Override
+	public Response addChildGroup(final String groupId, final String childGroupId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(groupId == null || childGroupId == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			if(groupId.equals(childGroupId)) {
+				throw new BasicDataServiceException(ResponseCode.CANT_ADD_YOURSELF_AS_CHILD);
+			}
+			
+			final GroupEntity group = groupDAO.findById(groupId);
+			final GroupEntity child = groupDAO.findById(childGroupId);
+			if(group == null || child == null) {
+				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+			}
+			
+			if(group.hasChildGroup(childGroupId)) {
+				throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
+			}
+			
+			if(causesCircularDependency(group, child, new HashSet<GroupEntity>())) {
+				throw new BasicDataServiceException(ResponseCode.CIRCULAR_DEPENDENCY);
+			}
+			
+			groupManager.addChildGroup(groupId, childGroupId);
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+		return response;
+	}
+
+	@Override
+	@WebMethod
+	public Response removeChildGroup(final String groupId, final String childGroupId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(groupId == null || childGroupId == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			groupManager.removeChildGroup(groupId, childGroupId);
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+		return response;
+	}
+
+	
+	private boolean causesCircularDependency(final GroupEntity parent, final GroupEntity child, final Set<GroupEntity> visitedSet) {
+		boolean retval = false;
+		if(parent != null && child != null) {
+			if(!visitedSet.contains(child)) {
+				visitedSet.add(child);
+				if(CollectionUtils.isNotEmpty(parent.getParentGroups())) {
+					for(final GroupEntity entity : parent.getParentGroups()) {
+						retval = entity.getGrpId().equals(child.getGrpId());
+						if(retval) {
+							break;
+						}
+						causesCircularDependency(parent, entity, visitedSet);
+					}
+				}
+			}
+		}
+		return retval;
 	}
 }

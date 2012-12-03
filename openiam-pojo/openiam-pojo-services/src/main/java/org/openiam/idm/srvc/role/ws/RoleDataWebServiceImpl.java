@@ -204,17 +204,10 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 	}
 
 	@Override
-	public RoleListResponse getRolesInGroup(final String groupId, final int from, final int size) {
-		final RoleListResponse response = new RoleListResponse(ResponseStatus.SUCCESS);
-		try {
-			final List<RoleEntity> entityList = roleDataService.getRolesInGroup(groupId, from, size);
-			final List<Role> roleList = roleDozerConverter.convertToDTOList(entityList, false);
-			response.setRoleList(roleList);
-		} catch(Throwable e) {
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorText(e.getMessage());
-		}
-		return response;
+	public List<Role> getRolesInGroup(final String groupId, final int from, final int size) {
+		final List<RoleEntity> entityList = roleDataService.getRolesInGroup(groupId, from, size);
+		final List<Role> roleList = roleDozerConverter.convertToDTOList(entityList, false);
+		return roleList;
 	}
 
 	@Override
@@ -622,5 +615,10 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 			response.setErrorText(e.getMessage());
 		}
 		return response;
+	}
+
+	@Override
+	public int getNumOfRolesForGroup(final String groupId) {
+		return roleDataService.getNumOfRolesForGroup(groupId);
 	}
 }

@@ -64,6 +64,10 @@ public interface GroupDataWebService {
      */
     @WebMethod
     public Response deleteGroup(final @WebParam(name = "groupId", targetNamespace = "") String groupId);
+    
+    
+    @WebMethod
+    public int getNumOfChildGroups(final @WebParam(name = "groupId", targetNamespace = "") String groupId);
 
     /**
      * Returns all the groups that are the immediate children of the parent
@@ -80,10 +84,13 @@ public interface GroupDataWebService {
      * @return List of Group objects. Returns null if no groups are found.
      */
     @WebMethod
-    public GroupListResponse getChildGroups(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
+    public List<Group> getChildGroups(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
     									    final @WebParam(name = "from", targetNamespace = "") int from,
     									    final @WebParam(name = "size", targetNamespace = "") int size);
 
+    @WebMethod
+    public int getNumOfParentGroups(final @WebParam(name = "groupId", targetNamespace = "") String groupId);
+    
     /**
      * Returns the parent Group object for the groupId that is passed in. If no
      * parent group is found, the system return null.
@@ -94,7 +101,7 @@ public interface GroupDataWebService {
      * @return
      */
     @WebMethod
-    public GroupListResponse getParentGroups(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
+    public List<Group> getParentGroups(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
     										 final @WebParam(name = "from", targetNamespace = "") int from,
     										 final @WebParam(name = "size", targetNamespace = "") int size);
 
@@ -242,4 +249,13 @@ public interface GroupDataWebService {
     
     @WebMethod
     public int getNumOfGroupsForRole(final @WebParam(name = "roleId") String roleId);
+    
+    @WebMethod
+    public Response addChildGroup(final @WebParam(name = "groupId") String groupId, 
+    							  final @WebParam(name = "childGroupId") String childGroupId);
+    
+    
+    @WebMethod
+    public Response removeChildGroup(final @WebParam(name = "groupId") String groupId, 
+    							 	 final @WebParam(name = "childGroupId") String childGroupId);
 }

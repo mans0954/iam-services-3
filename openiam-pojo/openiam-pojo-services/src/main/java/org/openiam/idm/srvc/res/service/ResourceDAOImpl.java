@@ -125,7 +125,7 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String> impleme
     }
 
     public List<ResourceEntity> getResourcesForRole(final String roleId, final int from, final int size) {
-        Criteria criteria = getCriteria()
+        final Criteria criteria = getCriteria()
                 .createAlias("resourceRoles", "rr")
                 .add(Restrictions.eq("rr.id.roleId", roleId))
                 .addOrder(Order.asc("managedSysId"))
@@ -158,6 +158,36 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String> impleme
     protected String getPKfieldName() {
         return "resourceId";
     }
+
+	@Override
+	public List<ResourceEntity> getResourcesForGroup(final String groupId, final int from, final int size) {
+		final Criteria criteria = getCriteria()
+                .createAlias("resourceGroups", "rg")
+                .add(Restrictions.eq("rg.groupId", groupId))
+                .addOrder(Order.asc("managedSysId"))
+                .addOrder(Order.asc("name"));
+        
+        if(from > -1) {
+			criteria.setFirstResult(from);
+		}
+
+		if(size > -1) {
+			criteria.setMaxResults(size);
+		}
+        
+        final List<ResourceEntity> retVal = (List<ResourceEntity>) criteria.list();
+        return retVal;
+	}
+
+	@Override
+	public int getNumOfResourcesForGroup(final String groupId) {
+		final Criteria criteria = getCriteria()
+                .createAlias("resourceGroups", "rg")
+                .add(Restrictions.eq("rg.groupId", groupId)).setProjection(rowCount());
+		
+		
+		return ((Number)criteria.uniqueResult()).intValue();
+	}
 }
 
 
