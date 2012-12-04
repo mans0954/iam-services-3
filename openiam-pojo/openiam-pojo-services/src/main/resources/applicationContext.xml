@@ -735,11 +735,6 @@
   </aop:config>  	
 
   <aop:config>
-    <aop:pointcut id="groupOperation" expression="execution(* org.openiam.idm.srvc.grp.ws.GroupDataWebService.*(..))"/>
-    <aop:advisor advice-ref="txAdvice" pointcut-ref="groupOperation"/>
-  </aop:config> 
-
-  <aop:config>
     <aop:pointcut id="auditOperation" expression="execution(* org.openiam.idm.srvc.audit.ws.IdmAuditLogWebDataService.*(..))"/>
     <aop:advisor advice-ref="txAdvice" pointcut-ref="auditOperation"/>
   </aop:config>   
@@ -750,20 +745,9 @@
     <aop:advisor advice-ref="txAdvice" pointcut-ref="auditHelperOperation"/>
   </aop:config>   
   
-
-  <aop:config>
-    <aop:pointcut id="navigatorOperation" expression="execution(* org.openiam.idm.srvc.menu.ws.NavigatorDataWebService.*(..))"/>
-    <aop:advisor advice-ref="txAdvice" pointcut-ref="navigatorOperation"/>
-  </aop:config>  
-
   <aop:config>
     <aop:pointcut id="loginDataOperation" expression="execution(* org.openiam.idm.srvc.auth.ws.LoginDataWebService.*(..))"/>
     <aop:advisor advice-ref="txAdvice" pointcut-ref="loginDataOperation"/>
-  </aop:config>  
-
-  <aop:config>
-    <aop:pointcut id="roleDataOperation" expression="execution(* org.openiam.idm.srvc.role.ws.RoleDataWebService.*(..))"/>
-    <aop:advisor advice-ref="txAdvice" pointcut-ref="roleDataOperation"/>
   </aop:config>  
 
   <aop:config>
@@ -775,12 +759,6 @@
     <aop:pointcut id="policyOperation" expression="execution(* org.openiam.idm.srvc.policy.service.PolicyDataService.*(..))"/>
     <aop:advisor advice-ref="txAdvice" pointcut-ref="policyOperation"/>
   </aop:config> 
-
-  <aop:config>
-    <aop:pointcut id="resourceOperation" expression="execution(* org.openiam.idm.srvc.res.service.ResourceDataService.*(..))"/>
-    <aop:advisor advice-ref="txAdvice" pointcut-ref="resourceOperation"/>
-  </aop:config> 
-
 
   <aop:config>
     <aop:pointcut id="languageOperation" expression="execution(* org.openiam.idm.srvc.lang.service.LanguageDataService.*(..))"/>

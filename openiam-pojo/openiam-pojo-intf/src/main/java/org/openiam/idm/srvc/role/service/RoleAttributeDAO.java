@@ -8,4 +8,5 @@ import java.util.List;
 
 public interface RoleAttributeDAO extends BaseDao<RoleAttributeEntity, String> {
 
+	public void deleteByRoleId(final String roleId);
 }

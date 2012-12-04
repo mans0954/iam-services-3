@@ -3,6 +3,8 @@ package org.openiam.idm.srvc.role.service;
 
 
 import java.util.List;
+
+import javax.annotation.PostConstruct;
 import javax.naming.InitialContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -21,12 +23,24 @@ import org.springframework.stereotype.Repository;
 public class RoleAttributeDAOImpl extends BaseDaoImpl<RoleAttributeEntity, String> implements RoleAttributeDAO {
 
     private static final Log log = LogFactory.getLog(RoleAttributeDAOImpl.class);
+    
+    private static String DELETE_BY_ROLE_ID = "DELETE FROM %s ra WHERE ra.roleId = :roleId";
+	
+	@PostConstruct
+	public void initSQL() {
+		DELETE_BY_ROLE_ID = String.format(DELETE_BY_ROLE_ID, domainClass.getSimpleName());
+	}
 
 	@Override
 	protected String getPKfieldName() {
 		return "roleAttrId";
 	}
 
-    
+	@Override
+	public void deleteByRoleId(String roleId) {
+		final Query query = getSession().createQuery(DELETE_BY_ROLE_ID);
+		query.setParameter("roleId", roleId);
+		query.executeUpdate();
+	}
 }
 

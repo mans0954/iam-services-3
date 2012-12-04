@@ -43,6 +43,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service("resourceDataService")
 @WebService(endpointInterface = "org.openiam.idm.srvc.res.service.ResourceDataService", targetNamespace = "urn:idm.openiam.org/srvc/res/service", portName = "ResourceDataWebServicePort", serviceName = "ResourceDataWebService")
+@Transactional
 public class ResourceDataServiceImpl implements ResourceDataService {
 
 	@Autowired
@@ -345,7 +346,7 @@ public class ResourceDataServiceImpl implements ResourceDataService {
     }
 
 	@Override
-	@Transactional
+	//@Transactional
 	public Response deleteResource(final String resourceId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {

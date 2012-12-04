@@ -28,8 +28,8 @@ public class UserGroupDAOImpl extends BaseDaoImpl<UserGroupEntity, String> imple
 
 	private static final Log log = LogFactory.getLog(UserGroupDAOImpl.class);
 	
-	private static String DELETE_BY_GROUP_ID = "DELETE FROM %s ug WHERE rg.groupId = :groupId";
-	private static String DELETE_BY_USER_ID = "DELETE FROM %s ug WHERE rg.userId = :userId";
+	private static String DELETE_BY_GROUP_ID = "DELETE FROM %s ug WHERE ug.grpId = :groupId";
+	private static String DELETE_BY_USER_ID = "DELETE FROM %s ug WHERE ug.userId = :userId";
 	
 	@PostConstruct
 	public void initSQL() {
