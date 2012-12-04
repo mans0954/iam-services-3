@@ -13,5 +13,6 @@ import java.util.List;
  * @author Suneet Shah
  */
 public interface GroupAttributeDAO extends BaseDao<GroupAttributeEntity, String> {
-
+	
+	public void deleteByGroupId(final String groupId);
 }

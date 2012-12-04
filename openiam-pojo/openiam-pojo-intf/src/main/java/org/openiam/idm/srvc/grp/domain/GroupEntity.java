@@ -106,7 +106,7 @@ public class GroupEntity {
     @Fetch(FetchMode.SUBSELECT)
     private Set<GroupEntity> childGroups;
     
-    @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
+    @OneToMany(fetch=FetchType.LAZY,orphanRemoval=true,cascade={CascadeType.ALL})
     @JoinColumn(name="GRP_ID", referencedColumnName="GRP_ID")
     @MapKeyColumn(name="name")
     @Fetch(FetchMode.SUBSELECT)

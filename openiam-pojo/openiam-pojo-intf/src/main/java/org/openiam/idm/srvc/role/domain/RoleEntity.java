@@ -18,6 +18,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.Cache;
@@ -71,9 +72,10 @@ public class RoleEntity implements Serializable {
 	@Fetch(FetchMode.SUBSELECT)
     private Set<GroupEntity> groups;
 	
-	@OneToMany(fetch=FetchType.LAZY,orphanRemoval=true,cascade={CascadeType.ALL})
-	@JoinColumn(name="ROLE_ID")
-	@Fetch(FetchMode.SUBSELECT)
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OrderBy("name asc")
+    @JoinColumn(name = "ROLE_ID")
+    @Fetch(FetchMode.SUBSELECT)
 	private Set<RoleAttributeEntity> roleAttributes;
 	
 	@OneToMany(fetch=FetchType.LAZY,orphanRemoval=true,cascade=CascadeType.ALL)

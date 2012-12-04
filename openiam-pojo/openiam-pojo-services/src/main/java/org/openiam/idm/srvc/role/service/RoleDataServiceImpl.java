@@ -31,10 +31,12 @@ import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
 @Service("roleDataService")
+@Transactional
 public class RoleDataServiceImpl implements RoleDataService {
 
 	@Autowired
@@ -79,12 +81,14 @@ public class RoleDataServiceImpl implements RoleDataService {
 	}
 	
 	@Override
+	//@Transactional
 	public void removeRole(String roleId) {
 		if(roleId != null) {
 			final RoleEntity roleEntity = roleDao.findById(roleId);
 			if(roleEntity != null) {
 				resourceRoleDAO.deleteByRoleId(roleId);
 				userRoleDAO.deleteByRoleId(roleId);
+				roleAttributeDAO.deleteByRoleId(roleId);
 				roleDao.delete(roleEntity);
 			}
 		}

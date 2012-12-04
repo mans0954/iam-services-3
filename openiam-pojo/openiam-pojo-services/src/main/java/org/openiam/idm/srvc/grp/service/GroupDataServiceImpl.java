@@ -52,6 +52,7 @@ import org.springframework.transaction.annotation.Transactional;
  */
 
 @Service("groupManager")
+@Transactional
 public class GroupDataServiceImpl implements GroupDataService {
 	
 	@Autowired
@@ -144,12 +145,13 @@ public class GroupDataServiceImpl implements GroupDataService {
 	}
 
 	@Override
-	@Transactional
+	//@Transactional
 	public void deleteGroup(String groupId) {
 		final GroupEntity entity = groupDao.findById(groupId);
 		if(entity != null) {
 			userGroupDao.deleteByGroupId(groupId);
 			resoruceGroupDAO.deleteByGroupId(groupId);
+			groupAttrDao.deleteByGroupId(groupId);
 			groupDao.delete(entity);
 		}
 	}

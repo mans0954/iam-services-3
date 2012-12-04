@@ -23,7 +23,7 @@ public class RoleAttributeEntity implements Serializable {
     @Column(name="ROLE_ATTR_ID", length=32)
     private String roleAttrId;
     
-    @Column(name="ROLE_ID", length=32,nullable=false)
+    @Column(name="ROLE_ID", length=32)
     private String roleId;
     
     @Column(name="METADATA_ID",length=20)
