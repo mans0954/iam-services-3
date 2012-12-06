@@ -111,4 +111,12 @@
 			<b>userId</b>
 		</field>
 	</mapping>
+<mapping>
+		<class-a>org.openiam.idm.srvc.policy.domain.PolicyAttributeEntity</class-a>
+		<class-b>org.openiam.idm.srvc.policy.dto.PolicyAttribute</class-b>
+	</mapping>		
+	<mapping>
+		<class-a>org.openiam.idm.srvc.policy.domain.PolicyObjectAssocEntity</class-a>
+		<class-b>org.openiam.idm.srvc.policy.dto.PolicyObjectAssoc</class-b>
+</mapping>
 </mappings>

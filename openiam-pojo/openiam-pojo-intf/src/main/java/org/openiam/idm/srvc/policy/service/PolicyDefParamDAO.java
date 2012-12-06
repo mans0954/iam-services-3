@@ -21,26 +21,18 @@
  */
 package org.openiam.idm.srvc.policy.service;
 
-import org.openiam.idm.srvc.policy.dto.PolicyDefParam;
-
 import java.util.List;
+import org.openiam.core.dao.BaseDao;
+import org.openiam.idm.srvc.policy.domain.PolicyDefParamEntity;
 
 /**
  * Data access implementation for Policy Definition Parameters
  *
  * @author suneet
  */
-public interface PolicyDefParamDAO {
+public interface PolicyDefParamDAO extends
+        BaseDao<PolicyDefParamEntity, String> {
 
-    void add(PolicyDefParam transientInstance);
-
-    void remove(PolicyDefParam persistentInstance);
-
-    PolicyDefParam update(PolicyDefParam detachedInstance);
-
-    PolicyDefParam findById(java.lang.String id);
-
-    List<PolicyDefParam> findPolicyDefParamByGroup(String defId, String group);
-
-
+    List<PolicyDefParamEntity> findPolicyDefParamByGroup(String defId,
+            String group);
 }

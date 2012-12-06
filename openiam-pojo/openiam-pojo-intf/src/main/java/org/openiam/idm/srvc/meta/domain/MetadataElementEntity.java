@@ -1,10 +1,14 @@
 package org.openiam.idm.srvc.meta.domain;
 
 import javax.persistence.Cacheable;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -28,7 +32,7 @@ public class MetadataElementEntity implements java.io.Serializable {
     private String metadataElementId;
 
     @Column(name = "TYPE_ID", length = 32)
-    private Long metadataTypeId;
+    private String metadataTypeId;
 
     @Column(name = "ATTRIBUTE_NAME", length = 50)
     private String attributeName;
@@ -84,6 +88,10 @@ public class MetadataElementEntity implements java.io.Serializable {
     private String uiSize;
     @Column(name = "VALUE_SRC", length = 1000)
     private String valueSrc;
+
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "TYPE_ID", insertable = false, updatable = false)
+    MetadataTypeEntity metadataType;
 
     public String getMetadataElementId() {
         return metadataElementId;
@@ -245,11 +253,11 @@ public class MetadataElementEntity implements java.io.Serializable {
         this.valueSrc = valueSrc;
     }
 
-    public Long getMetadataTypeId() {
+    public String getMetadataTypeId() {
         return metadataTypeId;
     }
 
-    public void setMetadataTypeId(Long metadataTypeId) {
+    public void setMetadataTypeId(String metadataTypeId) {
         this.metadataTypeId = metadataTypeId;
     }
 

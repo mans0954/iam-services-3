@@ -113,19 +113,19 @@
 <xs:element minOccurs="0" name="lastUpdatedBy" type="xs:string"/>
 <xs:element minOccurs="0" name="rule" type="xs:string"/>
 <xs:element minOccurs="0" name="ruleSrcUrl" type="xs:string"/>
-<xs:element maxOccurs="unbounded" minOccurs="0" name="policyMemberships" nillable="true" type="tns:PolicyMembership"/>
+<!-- <xs:element maxOccurs="unbounded" minOccurs="0" name="policyMemberships" nillable="true" type="tns:PolicyMembership"/> -->
 <xs:element maxOccurs="unbounded" minOccurs="0" name="policyAttributes" nillable="true" type="tns:PolicyAttribute"/>
 </xs:sequence>
 </xs:complexType>
-<xs:complexType name="PolicyMembership">
-<xs:sequence>
-<xs:element minOccurs="0" name="policyMemId" type="xs:string"/>
-<xs:element minOccurs="0" name="policyId" type="xs:string"/>
-<xs:element minOccurs="0" name="domainId" type="xs:string"/>
-<xs:element minOccurs="0" name="resourceType" type="xs:string"/>
-<xs:element minOccurs="0" name="resourceObjId" type="xs:string"/>
-</xs:sequence>
-</xs:complexType>
+<!-- <xs:complexType name="PolicyMembership"> -->
+<!-- <xs:sequence> -->
+<!-- <xs:element minOccurs="0" name="policyMemId" type="xs:string"/> -->
+<!-- <xs:element minOccurs="0" name="policyId" type="xs:string"/> -->
+<!-- <xs:element minOccurs="0" name="domainId" type="xs:string"/> -->
+<!-- <xs:element minOccurs="0" name="resourceType" type="xs:string"/> -->
+<!-- <xs:element minOccurs="0" name="resourceObjId" type="xs:string"/> -->
+<!-- </xs:sequence> -->
+<!-- </xs:complexType> -->
 <xs:complexType name="updatePolicyDefinitionResponse">
 <xs:sequence/>
 </xs:complexType>

@@ -21,8 +21,25 @@
  */
 package org.openiam.spml2.spi.ldap;
 
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
+import javax.jws.WebParam;
+import javax.jws.WebService;
+import javax.naming.Context;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
+import javax.naming.OperationNotSupportedException;
+import javax.naming.directory.BasicAttribute;
+import javax.naming.directory.ModificationItem;
+import javax.naming.directory.SearchControls;
+import javax.naming.ldap.InitialLdapContext;
+import javax.naming.ldap.LdapContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.dozer.converter.PolicyDozerConverter;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.IdmAuditLogDataService;
 import org.openiam.idm.srvc.auth.context.AuthenticationContext;
@@ -54,8 +71,25 @@ import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.spml2.base.AbstractSpml2Complete;
 import org.openiam.spml2.interf.ConnectorService;
-import org.openiam.spml2.msg.*;
-import org.openiam.spml2.msg.password.*;
+import org.openiam.spml2.msg.AddRequestType;
+import org.openiam.spml2.msg.AddResponseType;
+import org.openiam.spml2.msg.DeleteRequestType;
+import org.openiam.spml2.msg.ErrorCode;
+import org.openiam.spml2.msg.ListTargetsRequestType;
+import org.openiam.spml2.msg.ListTargetsResponseType;
+import org.openiam.spml2.msg.LookupRequestType;
+import org.openiam.spml2.msg.LookupResponseType;
+import org.openiam.spml2.msg.ModifyRequestType;
+import org.openiam.spml2.msg.ModifyResponseType;
+import org.openiam.spml2.msg.PSOIdentifierType;
+import org.openiam.spml2.msg.ResponseType;
+import org.openiam.spml2.msg.StatusCodeType;
+import org.openiam.spml2.msg.password.ExpirePasswordRequestType;
+import org.openiam.spml2.msg.password.ResetPasswordRequestType;
+import org.openiam.spml2.msg.password.ResetPasswordResponseType;
+import org.openiam.spml2.msg.password.SetPasswordRequestType;
+import org.openiam.spml2.msg.password.ValidatePasswordRequestType;
+import org.openiam.spml2.msg.password.ValidatePasswordResponseType;
 import org.openiam.spml2.msg.suspend.ResumeRequestType;
 import org.openiam.spml2.msg.suspend.SuspendRequestType;
 import org.openiam.spml2.spi.ldap.dirtype.Directory;
@@ -64,18 +98,9 @@ import org.openiam.spml2.util.connect.ConnectionFactory;
 import org.openiam.spml2.util.connect.ConnectionManagerConstant;
 import org.openiam.spml2.util.connect.ConnectionMgr;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-
-import javax.jws.WebParam;
-import javax.jws.WebService;
-import javax.naming.*;
-import javax.naming.directory.BasicAttribute;
-import javax.naming.directory.ModificationItem;
-import javax.naming.directory.SearchControls;
-import javax.naming.ldap.InitialLdapContext;
-import javax.naming.ldap.LdapContext;
-import java.util.*;
 
 /**
  * Updates the OpenIAM repository with data received from external client.
@@ -95,7 +120,12 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements Connecto
     protected ResourceDataService resourceDataService;
     protected IdmAuditLogDataService auditDataService;
     protected LoginDataService loginManager;
-    protected PolicyDAO policyDao;
+
+    @Autowired
+    private PolicyDAO policyDao;
+    @Autowired
+    private PolicyDozerConverter policyDozerConverter;
+
     protected SecurityDomainDataService secDomainService;
     protected UserDataService userManager;
 
@@ -195,7 +225,8 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements Connecto
 
         log.debug("Authentication policyid=" + securityDomain.getAuthnPolicyId());
         // get the authentication lock out policy
-        Policy plcy = policyDao.findById(securityDomain.getAuthnPolicyId());
+        Policy plcy = policyDozerConverter.convertToDTO(
+                policyDao.findById(securityDomain.getAuthnPolicyId()), true);
         String attrValue = getPolicyAttribute(plcy.getPolicyAttributes(), "FAILED_AUTH_COUNT");
 
         String tokenType = getPolicyAttribute(plcy.getPolicyAttributes(), "TOKEN_TYPE");

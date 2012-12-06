@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
 import javax.persistence.Cacheable;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -18,7 +17,6 @@ import javax.persistence.ManyToMany;
 import javax.persistence.MapKey;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Fetch;
@@ -57,18 +55,23 @@ public class MetadataTypeEntity implements java.io.Serializable {
     private Map<String, MetadataElementEntity> elementAttributes = new HashMap<String, MetadataElementEntity>(
             0);
 
-    /*
-    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinColumn(name = "CATEGORY_ID", insertable = false, updatable = false)
+    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "metadataType", fetch = FetchType.LAZY)
     @Fetch(FetchMode.SUBSELECT)
-    */
-	@ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
-    @JoinTable(name="CATEGORY_TYPE",
-        joinColumns={@JoinColumn(name="TYPE_ID")},
-        inverseJoinColumns={@JoinColumn(name="CATEGORY_ID")})
+    private Set<MetadataElementEntity> metadataElementEntities = new HashSet<MetadataElementEntity>(
+            0);
+    /*
+     * @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, fetch =
+     * FetchType.LAZY)
+     * 
+     * @JoinColumn(name = "CATEGORY_ID", insertable = false, updatable = false)
+     * 
+     * @Fetch(FetchMode.SUBSELECT)
+     */
+    @ManyToMany(cascade = { CascadeType.DETACH, CascadeType.MERGE,
+            CascadeType.PERSIST, CascadeType.REFRESH }, fetch = FetchType.LAZY)
+    @JoinTable(name = "CATEGORY_TYPE", joinColumns = { @JoinColumn(name = "TYPE_ID") }, inverseJoinColumns = { @JoinColumn(name = "CATEGORY_ID") })
     @Fetch(FetchMode.SUBSELECT)
     private Set<CategoryEntity> categories = new HashSet<CategoryEntity>(0);
-
 
     public Map<String, MetadataElementEntity> getElementAttributes() {
         return elementAttributes;

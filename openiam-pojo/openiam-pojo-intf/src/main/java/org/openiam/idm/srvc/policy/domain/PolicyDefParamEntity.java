@@ -1,59 +1,75 @@
-package org.openiam.idm.srvc.policy.dto;
+package org.openiam.idm.srvc.policy.domain;
 
 
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlType;
-
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.idm.srvc.policy.domain.PolicyDefParamEntity;
+import org.openiam.idm.srvc.policy.dto.PolicyDefParam;
 
 /**
- * PolicyDefParam represent the parameters of a policy definition.
+ * @author zaporozhec
  */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "PolicyDefParam", propOrder = {
-        "defParamId",
-        "policyDefId",
-        "name",
-        "description",
-        "operation",
-        "value1",
-        "value2",
-        "repeats",
-        "policyParamHandler",
-        "handlerLanguage",
-        "paramGroup",
-        "policyAttributes"
-})
-@DozerDTOCorrespondence(PolicyDefParamEntity.class)
-public class PolicyDefParam implements java.io.Serializable {
+@Entity
+@Table(name = "POLICY_DEF_PARAM")
+@DozerDTOCorrespondence(PolicyDefParam.class)
+public class PolicyDefParamEntity implements java.io.Serializable {
 
-    /**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
+
+	@Id
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "uuid")
+	@Column(name = "DEF_PARAM_ID", length = 32)
 	private String defParamId;
+
+    @Column(name = "POLICY_DEF_ID", length = 32)
     private String policyDefId;
-    private String name;
+
+	@Column(name = "NAME", length = 60)
+	private String name;
+
+	@Column(name = "DESCRIPTION", length = 255)
     private String description;
+
+	@Column(name = "OPERATION", length = 20)
     private String operation;
+
+	@Column(name = "VALUE1", length = 255)
     private String value1;
+
+	@Column(name = "VALUE2", length = 255)
     private String value2;
+
+	@Column(name = "REPEATS")
     private Integer repeats;
+
+	@Column(name = "POLICY_PARAM_HANDLER", length = 255)
     private String policyParamHandler;
+
+	@Column(name = "HANDLER_LANGUAGE", length = 20)
     private String handlerLanguage;
+
+	@Column(name = "PARAM_GROUP", length = 20)
     private String paramGroup;
 
-    private Set<PolicyAttribute> policyAttributes = new HashSet<PolicyAttribute>(0);
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@JoinColumn(name = "DEF_PARAM_ID", insertable = false, updatable = false)
+    private Set<PolicyAttributeEntity> policyAttributes = new HashSet<PolicyAttributeEntity>(0);
 
-    public PolicyDefParam() {
-    }
+	public PolicyDefParamEntity() {
+	}
 
-    public PolicyDefParam(String defParamId) {
+    public PolicyDefParamEntity(String defParamId) {
         this.defParamId = defParamId;
     }
 
@@ -122,11 +138,11 @@ public class PolicyDefParam implements java.io.Serializable {
         this.policyParamHandler = policyParamHandler;
     }
 
-    public Set<PolicyAttribute> getPolicyAttributes() {
+    public Set<PolicyAttributeEntity> getPolicyAttributes() {
         return this.policyAttributes;
     }
 
-    public void setPolicyAttributes(Set<PolicyAttribute> policyAttributes) {
+    public void setPolicyAttributes(Set<PolicyAttributeEntity> policyAttributes) {
         this.policyAttributes = policyAttributes;
     }
 

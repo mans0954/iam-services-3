@@ -121,42 +121,6 @@
 			<b>userRoles</b>
 		</field-exclude>
 	</mapping>
-	
-	<mapping>
-		<class-a>org.openiam.idm.srvc.policy.dto.Policy</class-a>
-		<class-b>org.openiam.idm.srvc.policy.dto.Policy</class-b>
-		<field-exclude>
-			<a>policyMemberships</a>
-			<b>policyMemberships</b>
-		</field-exclude>
-		<field-exclude>
-			<a>policyAttributes</a>
-			<b>policyAttributes</b>
-		</field-exclude>
-	</mapping>
-	
-	<mapping>
-		<class-a>org.openiam.idm.srvc.policy.dto.PolicyDefParam</class-a>
-		<class-b>org.openiam.idm.srvc.policy.dto.PolicyDefParam</class-b>
-		<field-exclude>
-			<a>policyAttributes</a>
-			<b>policyAttributes</b>
-		</field-exclude>
-	</mapping>
-	
-	<mapping>
-		<class-a>org.openiam.idm.srvc.policy.dto.PolicyDef</class-a>
-		<class-b>org.openiam.idm.srvc.policy.dto.PolicyDef</class-b>
-		<field-exclude>
-			<a>policyDefParams</a>
-			<b>policyDefParams</b>
-		</field-exclude>
-		<field-exclude>
-			<a>policies</a>
-			<b>policies</b>
-		</field-exclude>
-	</mapping>
-	
 	<mapping>
 		<class-a>org.openiam.idm.srvc.res.dto.Resource</class-a>
 		<class-b>org.openiam.idm.srvc.res.dto.Resource</class-b>
@@ -210,16 +174,32 @@
 		</field-exclude>
 	</mapping>
 	<mapping>
-		<class-a>org.openiam.idm.srvc.cat.dto.Category</class-a>
-		<class-b>org.openiam.idm.srvc.cat.dto.Category</class-b>
+		<class-a>org.openiam.idm.srvc.policy.dto.PolicyDef</class-a>
+		<class-b>org.openiam.idm.srvc.policy.dto.PolicyDef</class-b>
 		<field-exclude>
-			<a>childCategories</a>
-			<b>childCategories</b>
+			<a>policies</a>
+			<b>policies</b>
 		</field-exclude>
 		<field-exclude>
-			<a>categoryLanguages</a>
-			<b>categoryLanguages</b>
+			<a>policyDefParams</a>
+			<b>policyDefParams</b>
 		</field-exclude>
 	</mapping>
+	<mapping>
+		<class-a>org.openiam.idm.srvc.policy.dto.PolicyDefParam</class-a>
+		<class-b>org.openiam.idm.srvc.policy.dto.PolicyDefParam</class-b>
+		<field-exclude>
+			<a>policyAttributes</a>
+			<b>policyAttributes</b>
+		</field-exclude>
+	</mapping>		
+	<mapping>
+		<class-a>org.openiam.idm.srvc.policy.dto.Policy</class-a>
+		<class-b>org.openiam.idm.srvc.policy.dto.Policy</class-b>
+		<field-exclude>
+			<a>policyAttributes</a>
+			<b>policyAttributes</b>
+		</field-exclude>
+	</mapping>	
 </mappings>
         

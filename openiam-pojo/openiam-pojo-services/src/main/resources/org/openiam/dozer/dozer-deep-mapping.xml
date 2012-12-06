@@ -121,42 +121,6 @@
 			<b>userRoles</b>
 		</field>
 	</mapping>
-	
-	<mapping>
-		<class-a>org.openiam.idm.srvc.policy.dto.Policy</class-a>
-		<class-b>org.openiam.idm.srvc.policy.dto.Policy</class-b>
-		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
-			<a>policyMemberships</a>
-			<b>policyMemberships</b>
-		</field>
-		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
-			<a>policyAttributes</a>
-			<b>policyAttributes</b>
-		</field>
-	</mapping>
-	
-	<mapping>
-		<class-a>org.openiam.idm.srvc.policy.dto.PolicyDefParam</class-a>
-		<class-b>org.openiam.idm.srvc.policy.dto.PolicyDefParam</class-b>
-		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
-			<a>policyAttributes</a>
-			<b>policyAttributes</b>
-		</field>
-	</mapping>
-	
-	<mapping>
-		<class-a>org.openiam.idm.srvc.policy.dto.PolicyDef</class-a>
-		<class-b>org.openiam.idm.srvc.policy.dto.PolicyDef</class-b>
-		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
-			<a>policyDefParams</a>
-			<b>policyDefParams</b>
-		</field>
-		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
-			<a>policies</a>
-			<b>policies</b>
-		</field>
-	</mapping>
-	
 	<mapping>
 		<class-a>org.openiam.idm.srvc.res.dto.Resource</class-a>
 		<class-b>org.openiam.idm.srvc.res.dto.Resource</class-b>
@@ -218,4 +182,32 @@
 			<b>childCategories</b>
 		</field>
 	</mapping>
+	<mapping>
+		<class-a>org.openiam.idm.srvc.policy.dto.PolicyDef</class-a>
+		<class-b>org.openiam.idm.srvc.policy.dto.PolicyDef</class-b>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="deepDozerMapper">
+			<a>policies</a>
+			<b>policies</b> 
+		</field>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="deepDozerMapper">
+			<a>policyDefParams</a>
+			<b>policyDefParams</b>
+		</field>
+	</mapping>	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.policy.dto.PolicyDefParam</class-a>
+		<class-b>org.openiam.idm.srvc.policy.dto.PolicyDefParam</class-b>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+			<a>policyAttributes</a>
+			<b>policyAttributes</b> 
+		</field>
+	</mapping>		
+	<mapping>
+		<class-a>org.openiam.idm.srvc.policy.dto.Policy</class-a>
+		<class-b>org.openiam.idm.srvc.policy.dto.Policy</class-b>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+			<a>policyAttributes</a>
+			<b>policyAttributes</b> 
+		</field>
+	</mapping>	
 </mappings>

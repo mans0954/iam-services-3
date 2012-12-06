@@ -312,9 +312,9 @@
 		<property name="sessionFactory" ref="sessionFactory"></property>	
 	</bean>	
 
-	<bean id="policyObjectAssocDAO" class="org.openiam.idm.srvc.policy.service.PolicyObjectAssocDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"></property>		
-	</bean>	
+<!-- 	<bean id="policyObjectAssocDAO" class="org.openiam.idm.srvc.policy.service.PolicyObjectAssocDAOImpl" > -->
+<!-- 		<property name="sessionFactory" ref="sessionFactory"></property>		 -->
+<!-- 	</bean>	 -->
 
 	<bean id="identityQuestGroupDAO" class="org.openiam.idm.srvc.pswd.service.IdentityQuestGroupDAOImpl" >
 		<property name="sessionFactory" ref="sessionFactory"></property>		
@@ -337,24 +337,24 @@
 			
 	</bean>	
 	
-	<!-- Policy Beans -->
-	<bean id="policyDataService" class="org.openiam.idm.srvc.policy.service.PolicyDataServiceImpl" >
-		<property name="policyDefDao" ref="policyDefDAO" />
-		<property name="policyDao" ref="policyDAO" />
-		<property name="policyDefParamDao" ref="policyDefParamDAO" />
-		<property name="objectAssoc" ref="policyObjectAssocDAO" />
-		<property name="dozerUtils" ref="dozerUtils" />
-	</bean>
+		<!-- Policy Beans -->
+<!-- 	<bean id="policyDataService" class="org.openiam.idm.srvc.policy.service.PolicyDataServiceImpl" > -->
+<!-- 		<property name="policyDefDao" ref="policyDefDAO" /> -->
+<!-- 		<property name="policyDao" ref="policyDAO" /> -->
+<!-- 		<property name="policyDefParamDao" ref="policyDefParamDAO" /> -->
+<!-- 		<property name="objectAssoc" ref="policyObjectAssocDAO" /> -->
+<!-- 		<property name="dozerUtils" ref="dozerUtils" /> -->
+<!-- 	</bean> -->
 		
-	<bean id="policyDefDAO" class="org.openiam.idm.srvc.policy.service.PolicyDefDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"></property>		
-	</bean>	
-	<bean id="policyDefParamDAO" class="org.openiam.idm.srvc.policy.service.PolicyDefParamDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"></property>		
-	</bean>	
-	<bean id="policyDAO" class="org.openiam.idm.srvc.policy.service.PolicyDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"></property>		
-	</bean>	
+<!-- 	<bean id="policyDefDAO" class="org.openiam.idm.srvc.policy.service.PolicyDefDAOImpl" > -->
+<!-- 		<property name="sessionFactory" ref="sessionFactory"></property>		 -->
+<!-- 	</bean>	 -->
+<!-- 	<bean id="policyDefParamDAO" class="org.openiam.idm.srvc.policy.service.PolicyDefParamDAOImpl" > -->
+<!-- 		<property name="sessionFactory" ref="sessionFactory"></property>		 -->
+<!-- 	</bean>	 -->
+<!-- 	<bean id="policyDAO" class="org.openiam.idm.srvc.policy.service.PolicyDAOImpl" > -->
+<!-- 		<property name="sessionFactory" ref="sessionFactory"></property>		 -->
+<!-- 	</bean>	 -->
 
     <!-- Reference Data Beans -->
 	<bean id="refDataService" class="org.openiam.idm.srvc.cd.service.ReferenceDataServiceImpl" >
@@ -539,13 +539,13 @@
 				<!--<value>org/openiam/idm/srvc/auth/login/LoginAttribute.hbm.xml</value>-->
 				<value>org/openiam/idm/srvc/auth/login/AuthState.hbm.xml</value>
 				<!--  Policy Maps -->
-				<value>org/openiam/idm/srvc/policy/service/Policy.hbm.xml</value>
-				<value>org/openiam/idm/srvc/policy/service/PolicyAttribute.hbm.xml</value>
-				<value>org/openiam/idm/srvc/policy/service/PolicyDef.hbm.xml</value>
-				<value>org/openiam/idm/srvc/policy/service/PolicyDefParam.hbm.xml</value>
-				<value>org/openiam/idm/srvc/policy/service/PolicyObjectAssoc.hbm.xml</value>
+<!-- 				<value>org/openiam/idm/srvc/policy/service/Policy.hbm.xml</value> -->
+<!-- 				<value>org/openiam/idm/srvc/policy/service/PolicyAttribute.hbm.xml</value> -->
+<!-- 				<value>org/openiam/idm/srvc/policy/service/PolicyDef.hbm.xml</value> -->
+<!-- 				<value>org/openiam/idm/srvc/policy/service/PolicyDefParam.hbm.xml</value> -->
+<!-- 				<value>org/openiam/idm/srvc/policy/service/PolicyObjectAssoc.hbm.xml</value> -->
 
-				<value>org/openiam/idm/srvc/secdomain/service/SecurityDomain.hbm.xml</value>
+				<value>org/openiam/idm/srvc/secdomain/service/SecurityDomain.hbm.xml</value> 
 
 				<!-- <value>org/openiam/idm/srvc/res/service/ResourceType.hbm.xml</value> -->
 				<!--value>org/openiam/idm/srvc/res/service/ResourceUser.hbm.xml</value-->
@@ -572,7 +572,7 @@
 				<!--<value>org/openiam/idm/srvc/mngsys/service/ManagedSys.hbm.xml</value>-->
 				<!--<value>org/openiam/idm/srvc/mngsys/service/ManagedSysObjectMatch.hbm.xml</value>-->
 				<value>org/openiam/idm/srvc/mngsys/service/ApproverAssoc.hbm.xml</value>
-				<value>org/openiam/idm/srvc/mngsys/service/AttributeMap.hbm.xml</value>
+<!-- 				<value>org/openiam/idm/srvc/mngsys/service/AttributeMap.hbm.xml</value> -->
 
 
 				<value>org/openiam/idm/srvc/prov/request/service/ProvisionRequest.hbm.xml</value>
@@ -625,11 +625,13 @@
 											   org.openiam.idm.srvc.org.dto*,
 											   org.openiam.am.srvc.resattr.domain*,
 											   org.openiam.idm.srvc.cat.dto*,
-											    org.openiam.idm.srvc.cat.domain*,
+											   org.openiam.idm.srvc.cat.domain*,
                                                org.openiam.idm.srvc.continfo.domain*,
                                                org.openiam.idm.srvc.res.domain*,
                                                org.openiam.idm.srvc.meta.dto*,
-                                               org.openiam.idm.srvc.meta.domain*
+                                               org.openiam.idm.srvc.meta.domain*,
+                                               org.openiam.idm.srvc.policy.dto*,
+                                               org.openiam.idm.srvc.policy.domain*,
                                                "/>
 
 	</bean>

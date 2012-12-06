@@ -22,25 +22,17 @@
 package org.openiam.idm.srvc.pswd.service;
 
 import java.io.IOException;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.ResourceBundle;
-
-import javax.jws.WebService;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.dozer.converter.PolicyObjectAssocDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
-import org.openiam.exception.EncryptionException;
 import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.auth.dto.LoginId;
-import org.openiam.idm.srvc.auth.login.LoginDAO;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
@@ -49,16 +41,19 @@ import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.policy.dto.PolicyObjectAssoc;
 import org.openiam.idm.srvc.policy.service.PolicyDataService;
 import org.openiam.idm.srvc.policy.service.PolicyObjectAssocDAO;
-import org.openiam.idm.srvc.pswd.dto.*;
+import org.openiam.idm.srvc.pswd.dto.Password;
+import org.openiam.idm.srvc.pswd.dto.PasswordHistory;
+import org.openiam.idm.srvc.pswd.dto.PasswordResetTokenRequest;
+import org.openiam.idm.srvc.pswd.dto.PasswordResetTokenResponse;
+import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
+import org.openiam.idm.srvc.pswd.dto.ValidatePasswordResetTokenResponse;
 import org.openiam.idm.srvc.pswd.rule.PasswordValidator;
-import org.openiam.idm.srvc.secdomain.dto.SecurityDomain;
 import org.openiam.idm.srvc.secdomain.service.SecurityDomainDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.util.encrypt.Cryptor;
 import org.openiam.util.encrypt.HashDigest;
-import org.openiam.idm.srvc.pswd.dto.ValidatePasswordResetTokenResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 
 
@@ -74,7 +69,10 @@ public class PasswordServiceImpl implements PasswordService {
 	
 	protected LoginDataService loginManager;
 	protected UserDataService userManager;
+
+    @Autowired
 	PolicyObjectAssocDAO policyAssocDao;
+    @Autowired
 	PolicyDataService policyDataService;
 	
 	protected Cryptor cryptor;
@@ -84,7 +82,8 @@ public class PasswordServiceImpl implements PasswordService {
     protected KeyManagementService keyManagementService;
     @Autowired
     protected UserDozerConverter userDozerConverter;
-	
+    @Autowired
+    protected PolicyObjectAssocDozerConverter policyObjectAssocDozerConverter;
 	
 	private static final Log log = LogFactory.getLog(PasswordServiceImpl.class);
     private static final long DAY_AS_MILLIS = 86400000l;
@@ -271,7 +270,9 @@ public class PasswordServiceImpl implements PasswordService {
 
         if (user.getClassification() != null) {
             log.info("Looking for associate by classification.");
-            policyAssoc = policyAssocDao.findAssociationByLevel("CLASSIFICATION", user.getClassification());
+            policyAssoc = policyObjectAssocDozerConverter.convertToDTO(
+                    policyAssocDao.findAssociationByLevel("CLASSIFICATION",
+                            user.getClassification()), true);
             if (policyAssoc != null) {
                 return getPolicy(policyAssoc);
             }
@@ -280,7 +281,9 @@ public class PasswordServiceImpl implements PasswordService {
         // look to see if a policy exists for the type of user
         if (user.getUserTypeInd() != null) {
             log.info("Looking for associate by type.");
-            policyAssoc = policyAssocDao.findAssociationByLevel("TYPE", user.getUserTypeInd());
+            policyAssoc = policyObjectAssocDozerConverter.convertToDTO(
+                    policyAssocDao.findAssociationByLevel("TYPE",
+                            user.getUserTypeInd()), true);
             log.info("PolicyAssoc found=" + policyAssoc);
             if (policyAssoc != null) {
                 return getPolicy(policyAssoc);
@@ -289,14 +292,18 @@ public class PasswordServiceImpl implements PasswordService {
 
         if (domainId != null) {
             log.info("Looking for associate by domain.");
-            policyAssoc = policyAssocDao.findAssociationByLevel("DOMAIN", domainId);
+            policyAssoc = policyObjectAssocDozerConverter.convertToDTO(
+                    policyAssocDao.findAssociationByLevel("DOMAIN", domainId),
+                    true);
             if (policyAssoc != null) {
                 return getPolicy(policyAssoc);
             }
         }
         log.info("Using global association password policy.");
         // did not find anything - get the global policy
-        policyAssoc = policyAssocDao.findAssociationByLevel("GLOBAL", "GLOBAL");
+        policyAssoc = policyObjectAssocDozerConverter
+                .convertToDTO(policyAssocDao.findAssociationByLevel("GLOBAL",
+                        "GLOBAL"), true);
         if (policyAssoc == null) {
             return null;
         }

@@ -21,28 +21,20 @@
  */
 package org.openiam.idm.srvc.policy.service;
 
-import org.openiam.idm.srvc.policy.dto.PolicyObjectAssoc;
-import org.openiam.idm.srvc.policy.dto.PolicyObjectAssocId;
-
 import java.util.List;
+import org.openiam.core.dao.BaseDao;
+import org.openiam.idm.srvc.policy.domain.PolicyObjectAssocEntity;
 
 /**
  * Data access implementation for PolicyObjectAssoc
  *
  * @author suneet
  */
-public interface PolicyObjectAssocDAO {
+public interface PolicyObjectAssocDAO extends
+        BaseDao<PolicyObjectAssocEntity, String> {
 
-    public abstract void add(PolicyObjectAssoc transientInstance);
+    PolicyObjectAssocEntity findAssociationByLevel(String level, String value);
 
-    public abstract void remove(PolicyObjectAssoc persistentInstance);
-
-    public abstract PolicyObjectAssoc update(PolicyObjectAssoc detachedInstance);
-
-    public abstract PolicyObjectAssoc findById(PolicyObjectAssocId id);
-
-    PolicyObjectAssoc findAssociationByLevel(String level, String value);
-
-    public List<PolicyObjectAssoc> findByPolicy(String policyId);
+    public List<PolicyObjectAssocEntity> findByPolicy(String policyId);
 
 }

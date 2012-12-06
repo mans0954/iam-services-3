@@ -21,23 +21,22 @@
  */
 package org.openiam.idm.srvc.auth.spi;
 
-import java.util.*;
-
+import java.util.Date;
+import java.util.ResourceBundle;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.dozer.converter.PolicyDozerConverter;
 import org.openiam.exception.AuthenticationException;
 import org.openiam.exception.EncryptionException;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogUtil;
 import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.auth.dto.SSOToken;
 import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
 import org.openiam.idm.srvc.auth.sso.SSOTokenModule;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
-import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.service.PolicyDAO;
 import org.openiam.idm.srvc.pswd.service.PasswordService;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
@@ -57,7 +56,8 @@ public abstract class AbstractLoginModule implements LoginModule {
 	protected SSOTokenModule defaultToken;
 	protected LoginDataService loginManager;
 	protected UserDataService userManager;
-	protected PolicyDAO policyDao;
+    @Autowired
+    protected PolicyDAO policyDao;
 	protected SecurityDomain securityDomain;
 	protected Cryptor cryptor;
 
@@ -70,7 +70,8 @@ public abstract class AbstractLoginModule implements LoginModule {
     protected String authPolicyId;
     @Autowired
     protected KeyManagementService keyManagementService;
-
+    @Autowired
+    protected PolicyDozerConverter policyDozerConverter;
 	static protected ResourceBundle res = ResourceBundle.getBundle("securityconf");
 	private static final Log log = LogFactory.getLog(AbstractLoginModule.class);
 	

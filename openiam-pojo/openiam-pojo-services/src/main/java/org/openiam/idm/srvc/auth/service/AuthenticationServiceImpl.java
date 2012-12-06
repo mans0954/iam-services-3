@@ -22,42 +22,39 @@
 package org.openiam.idm.srvc.auth.service;
 
 import java.math.BigDecimal;
-import java.util.*;
-
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
 import javax.jws.WebMethod;
 import javax.jws.WebService;
-
-import org.openiam.exception.ScriptEngineException;
-import org.openiam.idm.srvc.auth.dto.*;
-import org.openiam.idm.srvc.key.service.KeyManagementService;
-import org.openiam.idm.srvc.pswd.service.PasswordService;
-import org.openiam.idm.srvc.res.service.ResourceDataService;
-import org.openiam.idm.srvc.user.dto.UserStatusEnum;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Required;
-import org.springframework.jmx.export.annotation.ManagedAttribute;
-import org.springframework.jmx.export.annotation.ManagedResource;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.dozer.DozerBeanMapper;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.BooleanResponse;
 import org.openiam.base.ws.Response;
-import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.base.ws.StringResponse;
 import org.openiam.dozer.DozerUtils;
 import org.openiam.dozer.converter.GroupDozerConverter;
+import org.openiam.dozer.converter.PolicyDozerConverter;
 import org.openiam.dozer.converter.RoleDozerConverter;
 import org.openiam.exception.AuthenticationException;
 import org.openiam.exception.LogoutException;
+import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogUtil;
 import org.openiam.idm.srvc.auth.context.AuthContextFactory;
 import org.openiam.idm.srvc.auth.context.AuthenticationContext;
 import org.openiam.idm.srvc.auth.context.PasswordCredential;
+import org.openiam.idm.srvc.auth.dto.AuthState;
+import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
+import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.idm.srvc.auth.dto.LoginModuleSelector;
+import org.openiam.idm.srvc.auth.dto.SSOToken;
+import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.login.AuthStateDAO;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.auth.spi.AbstractLoginModule;
@@ -67,22 +64,27 @@ import org.openiam.idm.srvc.auth.sso.SSOTokenFactory;
 import org.openiam.idm.srvc.auth.sso.SSOTokenModule;
 import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
-import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
+import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.policy.service.PolicyDAO;
+import org.openiam.idm.srvc.pswd.service.PasswordService;
+import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
-import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.secdomain.dto.SecurityDomain;
 import org.openiam.idm.srvc.secdomain.service.SecurityDomainDataService;
 import org.openiam.idm.srvc.user.dto.User;
+import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.script.ScriptFactory;
 import org.openiam.script.ScriptIntegration;
-import org.openiam.util.DozerMappingType;
 import org.openiam.util.encrypt.Cryptor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Required;
+import org.springframework.jmx.export.annotation.ManagedAttribute;
+import org.springframework.jmx.export.annotation.ManagedResource;
 
 //import edu.emory.mathcs.backport.java.util.Arrays;
 
@@ -107,10 +109,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 	
 	protected SSOTokenModule defaultToken;
 	protected UserDataService userManager;
-	protected PolicyDAO policyDao;
+    @Autowired
+    private PolicyDAO policyDao;
 	protected Cryptor cryptor;
 	protected AuditLogUtil auditUtil;
 		
+    @Autowired
+    private PolicyDozerConverter policyDozerConverter;
+
 	GroupDataService groupManager; 
 	RoleDataService roleManager;
 	protected String scriptEngine;
@@ -367,7 +373,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         log.debug("Authn policyId=" + authPolicyId);
 
-        authPolicy = policyDao.findById(authPolicyId);
+        authPolicy = policyDozerConverter.convertToDTO(
+                policyDao.findById(authPolicyId), true);
 
         log.debug("Auth Policy object=" + authPolicy);
 
@@ -620,7 +627,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         log.debug("Authn policyId=" + authPolicyId);
 
-        authPolicy = policyDao.findById(authPolicyId);
+        authPolicy = policyDozerConverter.convertToDTO(
+                policyDao.findById(authPolicyId), true);
 
         log.debug("Auth Policy object=" + authPolicy);
 
@@ -893,7 +901,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 		
 		SecurityDomain secDomain = secDomainService.getSecurityDomain(getSysConfiguration().getDefaultSecurityDomain());
 		
-		Policy plcy = policyDao.findById(secDomain.getAuthnPolicyId());
+        Policy plcy = policyDozerConverter.convertToDTO(
+                policyDao.findById(secDomain.getAuthnPolicyId()), true);
 		String attrValue = getPolicyAttribute( plcy.getPolicyAttributes(), "FAILED_AUTH_COUNT");
 		String tokenLife = getPolicyAttribute( plcy.getPolicyAttributes(), "TOKEN_LIFE");
 		String tokenIssuer = getPolicyAttribute( plcy.getPolicyAttributes(), "TOKEN_ISSUER");
@@ -1025,7 +1034,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 		// get the password policy
 		SecurityDomain secDomain = secDomainService.getSecurityDomain(getSysConfiguration().getDefaultSecurityDomain());
 		
-		Policy plcy = policyDao.findById(secDomain.getAuthnPolicyId());
+        Policy plcy = policyDozerConverter.convertToDTO(
+                policyDao.findById(secDomain.getAuthnPolicyId()), true);
 		String tokenLife = getPolicyAttribute( plcy.getPolicyAttributes(), "TOKEN_LIFE");
 		String tokenIssuer = getPolicyAttribute( plcy.getPolicyAttributes(), "TOKEN_ISSUER");
 

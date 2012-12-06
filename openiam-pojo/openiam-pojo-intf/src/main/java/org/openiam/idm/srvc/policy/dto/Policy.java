@@ -1,13 +1,15 @@
 package org.openiam.idm.srvc.policy.dto;
 
 
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 
 /**
  * <code>Policy</code> represents a policy object that is used by the policy service.
@@ -25,14 +27,12 @@ import java.util.Set;
         "lastUpdatedBy",
         "rule",
         "ruleSrcUrl",
-        "policyMemberships",
-        "policyAttributes"
+ "policyAttributes",
+ "enablement"
 })
+@DozerDTOCorrespondence(PolicyEntity.class)
 public class Policy implements java.io.Serializable {
 
-    /**
-     *
-     */
     private static final long serialVersionUID = 5733143745301294956L;
     protected String policyId;
     protected String policyDefId;
@@ -47,8 +47,8 @@ public class Policy implements java.io.Serializable {
     protected String lastUpdatedBy;
     protected String rule;
     protected String ruleSrcUrl;
+	private Integer enablement;
 
-    protected Set<PolicyMembership> policyMemberships = new HashSet<PolicyMembership>(0);
     protected Set<PolicyAttribute> policyAttributes = new HashSet<PolicyAttribute>(0);
 
     public Policy() {
@@ -58,23 +58,6 @@ public class Policy implements java.io.Serializable {
         this.policyId = policyId;
     }
 
-    public Policy(String policyId, String policyDef, String name,
-                  String description, Integer enablement, Date createDate,
-                  String createdBy, Date lastUpdate, String lastUpdatedBy,
-                  Set<PolicyMembership> policyMemberships,
-                  Set<PolicyAttribute> policyAttributes) {
-        this.policyId = policyId;
-        this.policyDefId = policyDef;
-        this.name = name;
-        this.description = description;
-        this.status = enablement;
-        this.createDate = createDate;
-        this.createdBy = createdBy;
-        this.lastUpdate = lastUpdate;
-        this.lastUpdatedBy = lastUpdatedBy;
-        this.policyMemberships = policyMemberships;
-        this.policyAttributes = policyAttributes;
-    }
 
     public String getPolicyId() {
         return this.policyId;
@@ -141,15 +124,7 @@ public class Policy implements java.io.Serializable {
         this.lastUpdatedBy = lastUpdatedBy;
     }
 
-    public Set<PolicyMembership> getPolicyMemberships() {
-        return this.policyMemberships;
-    }
-
-    public void setPolicyMemberships(Set<PolicyMembership> policyMemberships) {
-        this.policyMemberships = policyMemberships;
-    }
-
-    public Set<PolicyAttribute> getPolicyAttributes() {
+	public Set<PolicyAttribute> getPolicyAttributes() {
         return this.policyAttributes;
     }
 
@@ -191,22 +166,34 @@ public class Policy implements java.io.Serializable {
         this.ruleSrcUrl = ruleSrcUrl;
     }
 
-    @Override
-    public String toString() {
-        return "Policy{" +
-                "policyId='" + policyId + '\'' +
-                ", policyDefId='" + policyDefId + '\'' +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", status=" + status +
-                ", createDate=" + createDate +
-                ", createdBy='" + createdBy + '\'' +
-                ", lastUpdate=" + lastUpdate +
-                ", lastUpdatedBy='" + lastUpdatedBy + '\'' +
-                ", rule='" + rule + '\'' +
-                ", ruleSrcUrl='" + ruleSrcUrl + '\'' +
-                ", policyMemberships=" + policyMemberships +
-                ", policyAttributes=" + policyAttributes +
-                '}';
-    }
+	/**
+	 * @return the enablemement
+	 */
+	public Integer getEnablement() {
+		return enablement;
+	}
+
+	/**
+	 * @param enablemement
+	 *            the enablemement to set
+	 */
+	public void setEnablement(Integer enablemement) {
+		this.enablement = enablemement;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return "Policy [policyId=" + policyId + ", policyDefId=" + policyDefId
+				+ ", name=" + name + ", description=" + description
+				+ ", status=" + status + ", createDate=" + createDate
+				+ ", createdBy=" + createdBy + ", lastUpdate=" + lastUpdate
+				+ ", lastUpdatedBy=" + lastUpdatedBy + ", rule=" + rule
+				+ ", ruleSrcUrl=" + ruleSrcUrl + ", enablement=" + enablement
+				+ ", policyAttributes=" + policyAttributes + "]";
+	}
 }
