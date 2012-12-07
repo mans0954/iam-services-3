@@ -20,7 +20,6 @@
  */
 package org.openiam.idm.srvc.policy.service;
 
-import java.util.ArrayList;
 import java.util.List;
 import javax.jws.WebService;
 import org.apache.commons.collections.CollectionUtils;
@@ -52,7 +51,7 @@ public class PolicyDataServiceImpl implements PolicyDataService {
     @Autowired
     private PolicyDefParamDAO policyDefParamDao;
     @Autowired
-    private PolicyObjectAssocDAO objectAssoc;
+    private PolicyObjectAssocDAO policyObjectAssocDAO;
     @Autowired
     private PolicyDozerConverter policyDozerConverter;
     @Autowired
@@ -125,22 +124,6 @@ public class PolicyDataServiceImpl implements PolicyDataService {
         return defList;
     }
 
-    public PolicyDefDAO getPolicyDefDao() {
-        return policyDefDao;
-    }
-
-    public void setPolicyDefDao(PolicyDefDAO policyDefDao) {
-        this.policyDefDao = policyDefDao;
-    }
-
-    public PolicyDAO getPolicyDao() {
-        return policyDao;
-    }
-
-    public void setPolicyDao(PolicyDAO policyDao) {
-        this.policyDao = policyDao;
-    }
-
     public void addPolicy(Policy val) {
         if (val == null) {
             throw new NullPointerException("Policy is null");
@@ -157,7 +140,7 @@ public class PolicyDataServiceImpl implements PolicyDataService {
                 policyDao.findAllPolicies(policyDefId), true);
 
         if (CollectionUtils.isEmpty(policyList)) {
-            return new ArrayList<Policy>();
+            return null;
         }
         return policyList;
 
@@ -210,9 +193,8 @@ public class PolicyDataServiceImpl implements PolicyDataService {
         if (policyName == null) {
             throw new NullPointerException("policyName is null");
         }
-        final List<Policy> policyList = policyDozerConverter.convertToDTOList(
-                policyDao.findPolicyByName(policyType, policyName), true);
-        return CollectionUtils.isNotEmpty(policyList);
+        return CollectionUtils.isNotEmpty(policyDao.findPolicyByName(
+                policyType, policyName));
     }
 
     public PolicyDefParamDAO getPolicyDefParamDao() {
@@ -231,8 +213,8 @@ public class PolicyDataServiceImpl implements PolicyDataService {
      * (org.openiam.idm.srvc.policy.dto.PolicyObjectAssoc)
      */
     public void associatePolicyToObject(PolicyObjectAssoc assoc) {
-        objectAssoc.save(policyObjectAssocDozerConverter.convertToEntity(assoc,
-                true));
+        policyObjectAssocDAO.save(policyObjectAssocDozerConverter
+                .convertToEntity(assoc, true));
 
     }
 
@@ -244,7 +226,7 @@ public class PolicyDataServiceImpl implements PolicyDataService {
      */
     public List<PolicyObjectAssoc> getAssociationsForPolicy(String policyId) {
         return policyObjectAssocDozerConverter.convertToDTOList(
-                objectAssoc.findByPolicy(policyId), true);
+                policyObjectAssocDAO.findByPolicy(policyId), true);
     }
 
     /*
@@ -255,16 +237,15 @@ public class PolicyDataServiceImpl implements PolicyDataService {
      * (org.openiam.idm.srvc.policy.dto.PolicyObjectAssoc)
      */
     public void updatePolicyAssociation(PolicyObjectAssoc assoc) {
-        objectAssoc.update(policyObjectAssocDozerConverter.convertToEntity(
-                assoc, true));
+        policyObjectAssocDAO.update(policyObjectAssocDozerConverter
+                .convertToEntity(assoc, true));
 
     }
 
-    public PolicyObjectAssocDAO getObjectAssoc() {
-        return objectAssoc;
-    }
-
-    public void setObjectAssoc(PolicyObjectAssocDAO objectAssoc) {
-        this.objectAssoc = objectAssoc;
+    @Override
+    public PolicyObjectAssoc findAssociationByLevel(String level, String value) {
+        return policyObjectAssocDozerConverter.convertToDTO(
+                policyObjectAssocDAO.findAssociationByLevel(level, value),
+                false);
     }
 }

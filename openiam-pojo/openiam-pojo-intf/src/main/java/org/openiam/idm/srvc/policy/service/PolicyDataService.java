@@ -137,4 +137,6 @@ public interface PolicyDataService {
 
     List<PolicyObjectAssoc> getAssociationsForPolicy(String policyId);
 
+    PolicyObjectAssoc findAssociationByLevel(String level, String value);
+
 }

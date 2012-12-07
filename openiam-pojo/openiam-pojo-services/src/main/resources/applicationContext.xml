@@ -236,7 +236,7 @@
 		<property name="cryptor" ref="cryptor" />
 		<property name="secDomainService" ref="secDomainService" />
 		<property name="userDao" ref="userDAO" />
-		<property name="policyDao" ref="policyDAO" />
+		<property name="policyDataService" ref="policyDataService" />
 		<property name="passwordManager" ref="passwordManager" />
 		<property name="passwordHistoryDao" ref="passwordHistoryDAO" />	
 		<property name="sysConfiguration" ref="sysConfiguration" />
@@ -300,7 +300,6 @@
 		<property name="passwordValidator" ref="passwordValidator" />	
 		<property name="userManager" ref="userManager" />
 		<property name="loginManager" ref="loginManager" />
-		<property name="policyAssocDao" ref="policyObjectAssocDAO" />
 		<property name="policyDataService" ref="policyDataService" />
 		<property name="cryptor" ref="cryptor" />	
 		<property name="passwordHistoryDao" ref="passwordHistoryDAO" />

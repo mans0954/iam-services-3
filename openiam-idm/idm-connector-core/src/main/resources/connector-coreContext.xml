@@ -26,7 +26,7 @@
 		<property name="resourceDataService" ref="resourceDataService" />
 		<property name="auditDataService" ref="auditDataService" />	
 		<property name="loginManager" ref="loginManager" />
-		<property name="policyDao" ref="policyDAO" />
+		<property name="policyDataService" ref="policyDataService" />
 		<property name="secDomainService" ref="secDomainService" />
 		<property name="userManager" ref="userManager" />
 	</bean>
@@ -41,7 +41,7 @@
 		<property name="resourceDataService" ref="resourceDataService" />
 		<property name="auditDataService" ref="auditDataService" />	
 		<property name="loginManager" ref="loginManager" />
-		<property name="policyDao" ref="policyDAO" />
+		<property name="policyDataService" ref="policyDataService" />
 		<property name="secDomainService" ref="secDomainService" />
 		<property name="userManager" ref="userManager" />
 		<property name="ldapSuspend" ref="ldapSuspend" />
@@ -99,7 +99,7 @@
 		<property name="resourceDataService" ref="resourceDataService" />
 		<property name="auditDataService" ref="auditDataService" />	
 		<property name="loginManager" ref="loginManager" />
-		<property name="policyDao" ref="policyDAO" />
+		<property name="policyDataService" ref="policyDataService" />
 		<property name="secDomainService" ref="secDomainService" />
 		<property name="userManager" ref="userManager" />
 	</bean>
