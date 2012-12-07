@@ -4,6 +4,7 @@ package org.openiam.idm.srvc.auth.domain;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.search.annotations.Indexed;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.auth.dto.Login;
@@ -22,6 +23,7 @@ import java.util.Set;
 @Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(Login.class)
+//@Indexed
 public class LoginEntity implements java.io.Serializable, Cloneable {
     private static final long serialVersionUID = -1972779170001619759L;
     @EmbeddedId

@@ -3,8 +3,11 @@ package org.openiam.idm.srvc.user.service;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.lucene.search.Sort;
 import org.hibernate.Hibernate;
 import org.openiam.base.SysConfiguration;
+import org.openiam.core.dao.lucene.AbstractHibernateSearchDao;
+import org.openiam.core.dao.lucene.SortType;
 import org.openiam.dozer.converter.*;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
@@ -14,6 +17,7 @@ import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
+import org.openiam.idm.srvc.user.dao.UserSearchDAO;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -86,6 +90,10 @@ public class UserMgr implements UserDataService {
     protected SupervisorDozerConverter supervisorDozerConverter;
     @Autowired
     protected LoginDozerConverter loginDozerConverter;
+    
+    @Autowired
+    @Qualifier("userSearchDAO")
+    private UserSearchDAO userSearchDAO;
 
     private static final Log log = LogFactory.getLog(UserMgr.class);
 
@@ -394,7 +402,13 @@ public class UserMgr implements UserDataService {
     }
 
     public List<User> findBeans(UserSearchBean searchBean, int from, int size){
-        return userDozerConverter.convertToDTOList(userDao.getByExample(searchBean, from, size), searchBean.isDeepCopy());
+    	List<UserEntity> entityList = null;
+    	if(StringUtils.isNotBlank(searchBean.getKey())) {
+    		entityList = userDao.getByExample(searchBean, from, size);
+    	} else {
+    		entityList = (List<UserEntity>)userSearchDAO.find(from, size, null, searchBean);
+    	}
+    	return userDozerConverter.convertToDTOList(entityList, false);
     }
 
     public int count(UserSearchBean searchBean){
@@ -1389,149 +1403,5 @@ public class UserMgr implements UserDataService {
         SupervisorEntity entity = supervisorDao.findPrimarySupervisor(employeeId);
 
         return entity != null ? supervisorDozerConverter.convertToDTO(entity, true) : null;
-    }
-
-    /* ----------- DAO Setting methods needed by the Springframework ------- */
-
-    /*
-      * (non-Javadoc)
-      *
-      * @see org.openiam.idm.srvc.user.service.UserDataService#getUserDao()
-      */
-    public UserDAO getUserDao() {
-        return userDao;
-    }
-
-    /*
-      * (non-Javadoc)
-      *
-      * @see org.openiam.idm.srvc.user.service.UserDataService#setUserDao(org.openiam.idm.srvc.user.service.UserDAO)
-      */
-    public void setUserDao(UserDAO userDao) {
-        this.userDao = userDao;
-    }
-
-    /*
-      * (non-Javadoc)
-      *
-      * @see org.openiam.idm.srvc.user.service.UserDataService#getUserAttributeDao()
-      */
-    public UserAttributeDAO getUserAttributeDao() {
-        return userAttributeDao;
-    }
-
-    /*
-      * (non-Javadoc)
-      *
-      * @see org.openiam.idm.srvc.user.service.UserDataService#setUserAttributeDao(org.openiam.idm.srvc.user.service.UserAttributeDAO)
-      */
-    public void setUserAttributeDao(UserAttributeDAO userAttributeDao) {
-        this.userAttributeDao = userAttributeDao;
-    }
-
-    /*
-      * (non-Javadoc)
-      *
-      * @see org.openiam.idm.srvc.user.service.UserDataService#getUserNoteDao()
-      */
-    public UserNoteDAO getUserNoteDao() {
-        return userNoteDao;
-    }
-
-    /*
-      * (non-Javadoc)
-      *
-      * @see org.openiam.idm.srvc.user.service.UserDataService#setUserNoteDao(org.openiam.idm.srvc.user.service.UserNoteDAO)
-      */
-    public void setUserNoteDao(UserNoteDAO userNoteDao) {
-        this.userNoteDao = userNoteDao;
-    }
-
-    /*
-      * (non-Javadoc)
-      *
-      * @see org.openiam.idm.srvc.user.service.UserDataService#getAddressDao()
-      */
-    public AddressDAO getAddressDao() {
-        return addressDao;
-    }
-
-    /*
-      * (non-Javadoc)
-      *
-      * @see org.openiam.idm.srvc.user.service.UserDataService#setAddressDao(org.openiam.idm.srvc.continfo.service.AddressDAO)
-      */
-    public void setAddressDao(AddressDAO addressDao) {
-        this.addressDao = addressDao;
-    }
-
-    /*
-      * (non-Javadoc)
-      *
-      * @see org.openiam.idm.srvc.user.service.UserDataService#getEmailAddressDao()
-      */
-    public EmailAddressDAO getEmailAddressDao() {
-        return emailAddressDao;
-    }
-
-    /*
-      * (non-Javadoc)
-      *
-      * @see org.openiam.idm.srvc.user.service.UserDataService#setEmailAddressDao(org.openiam.idm.srvc.continfo.service.EmailAddressDAO)
-      */
-    public void setEmailAddressDao(EmailAddressDAO emailAddressDao) {
-        this.emailAddressDao = emailAddressDao;
-    }
-
-    /*
-      * (non-Javadoc)
-      *
-      * @see org.openiam.idm.srvc.user.service.UserDataService#getPhoneDao()
-      */
-    public PhoneDAO getPhoneDao() {
-        return phoneDao;
-    }
-
-    /*
-      * (non-Javadoc)
-      *
-      * @see org.openiam.idm.srvc.user.service.UserDataService#setPhoneDao(org.openiam.idm.srvc.continfo.service.PhoneDAO)
-      */
-    public void setPhoneDao(PhoneDAO phoneDao) {
-        this.phoneDao = phoneDao;
-    }
-
-    /*
-      * (non-Javadoc)
-      *
-      * @see org.openiam.idm.srvc.user.service.UserDataService#getSupervisorDao()
-      */
-    public SupervisorDAO getSupervisorDao() {
-        return supervisorDao;
-    }
-
-    /*
-      * (non-Javadoc)
-      *
-      * @see org.openiam.idm.srvc.user.service.UserDataService#setSupervisorDao(org.openiam.idm.srvc.user.service.SupervisorDAO)
-      */
-    public void setSupervisorDao(SupervisorDAO supervisorDao) {
-        this.supervisorDao = supervisorDao;
-    }
-
-    public LoginDAO getLoginDao() {
-        return loginDao;
-    }
-
-    public void setLoginDao(LoginDAO loginDao) {
-        this.loginDao = loginDao;
-    }
-
-    public SysConfiguration getSysConfiguration() {
-        return sysConfiguration;
-    }
-
-    public void setSysConfiguration(SysConfiguration sysConfiguration) {
-        this.sysConfiguration = sysConfiguration;
     }
 }

@@ -593,19 +593,7 @@
                 <!--<value>org/openiam/am/srvc/webres/WebResourceAttribute.hbm.xml</value>-->
 			</list>
 		</property>
-		<property name="hibernateProperties">
-			<props>
-				<prop key="hibernate.dialect">${openiam.hibernate.dialect}</prop>	
-				<prop key="hibernate.show_sql">false</prop>
-				<prop key="hibernate.generate_statistics">true</prop>
-				<!--prop key="hibernate.cache.provider_class">org.hibernate.cache.EhCacheProvider</prop-->
-                <prop key="hibernate.cache.use_second_level_cache">false</prop>
-                <prop key="hibernate.cache.use_query_cache">false</prop>
-                <prop key="hibernate.use_sql_comments">true</prop>
-                <prop key="hibernate.connection.autoReconnect">true</prop>
-   				<prop key="hibernate.validationQuery">${openiam.hibernate.validationQuery}</prop>
-			</props>
-		</property>
+		<property name="hibernateProperties" ref="hibernateProperties" />
 	    <property name="packagesToScan" value="org.openiam.core.domain*,
 											   org.openiam.idm.srvc.grp.dto*,
 											   org.openiam.idm.srvc.grp.domain*,
@@ -635,6 +623,22 @@
                                                "/>
 
 	</bean>
+	
+	<util:properties id="hibernateProperties" location="classpath:openiam.search.hibernate.properties">
+		<prop key="hibernate.dialect">${openiam.hibernate.dialect}</prop>	
+		<prop key="hibernate.show_sql">false</prop>
+		<prop key="hibernate.generate_statistics">true</prop>
+		<!--prop key="hibernate.cache.provider_class">org.hibernate.cache.EhCacheProvider</prop-->
+        <prop key="hibernate.cache.use_second_level_cache">false</prop>
+        <prop key="hibernate.cache.use_query_cache">false</prop>
+        <prop key="hibernate.use_sql_comments">true</prop>
+        <prop key="hibernate.connection.autoReconnect">true</prop>
+		<prop key="hibernate.validationQuery">${openiam.hibernate.validationQuery}</prop>
+	</util:properties>
+  	
+  	<bean id="hibernateTemplate" class="org.springframework.orm.hibernate3.HibernateTemplate">
+  		<property name="sessionFactory" ref="sessionFactory" />
+  	</bean>
 
   
 	<!-- Local DataSource that works in any environment -->
@@ -702,7 +706,6 @@
   	</bean>
 
 	<!-- enable the configuration of transactional behavior based on annotations -->
-  	<tx:annotation-driven transaction-manager="transactionManager"/>
   	<tx:annotation-driven transaction-manager="transactionManager"/>
 
 
@@ -811,6 +814,5 @@
     <aop:pointcut id="queryOperation" expression="execution(* org.openiam.idm.srvc.batch.service.BatchDataServiceImpl.*(..))"/>
     <aop:advisor advice-ref="txAdvice" pointcut-ref="queryOperation"/>
   </aop:config>    
-  
 </beans>
 

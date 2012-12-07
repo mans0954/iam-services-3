@@ -10,10 +10,28 @@ import java.util.Set;
 import javax.persistence.*;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+
+import org.apache.solr.analysis.LowerCaseFilterFactory;
+import org.apache.solr.analysis.StandardTokenizerFactory;
 import org.hibernate.annotations.Filter;
 import org.hibernate.annotations.FilterDef;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.ParamDef;
+import org.hibernate.search.annotations.Analyzer;
+import org.hibernate.search.annotations.AnalyzerDef;
+import org.hibernate.search.annotations.DocumentId;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.FieldBridge;
+import org.hibernate.search.annotations.Fields;
+import org.hibernate.search.annotations.Index;
+import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.IndexedEmbedded;
+import org.hibernate.search.annotations.Store;
+import org.hibernate.search.annotations.TokenFilterDef;
+import org.hibernate.search.annotations.TokenizerDef;
+import org.openiam.core.dao.lucene.LuceneId;
+import org.openiam.core.dao.lucene.LuceneLastUpdate;
+import org.openiam.core.dao.lucene.bridge.OrganizationBridge;
 import org.openiam.core.domain.UserKey;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
@@ -40,11 +58,14 @@ import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 @FilterDef(name = "parentTypeFilter", parameters = @ParamDef(name = "parentFilter", type = "string"))
 @Table(name = "USERS")
 @DozerDTOCorrespondence(User.class)
+@Indexed
 public class UserEntity {
     @Id
     @GeneratedValue(generator = "system-uuid")
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
     @Column(name = "USER_ID", length = 32, nullable = false)
+    @LuceneId
+    @DocumentId
     private String userId;
 
     @Column(name = "BIRTHDATE", length = 19)
@@ -75,15 +96,24 @@ public class UserEntity {
     private String employeeType;
 
     @Column(name = "FIRST_NAME", length = 50)
+    @Fields ({
+        @Field(index = Index.TOKENIZED),
+        @Field(name = "firstName", index = Index.TOKENIZED, store = Store.YES)
+    })
     private String firstName;
 
     @Column(name = "JOB_CODE", length = 50)
     private String jobCode;
 
     @Column(name = "LAST_NAME", length = 50)
+    @Fields ({
+        @Field(index = Index.TOKENIZED),
+        @Field(name = "lastName", index = Index.TOKENIZED, store = Store.YES)
+    })
     private String lastName;
 
     @Column(name = "LAST_UPDATE", length = 19)
+    @LuceneLastUpdate
     private Date lastUpdate;
 
     @Column(name = "LAST_UPDATED_BY", length = 32)
@@ -115,10 +145,12 @@ public class UserEntity {
 
     @Column(name = "STATUS", length = 40)
     @Enumerated(EnumType.STRING)
+    @Field(index=Index.UN_TOKENIZED, store=Store.YES,name="userStatus")
     private UserStatusEnum status;
 
     @Column(name = "SECONDARY_STATUS", length = 40)
     @Enumerated(EnumType.STRING)
+    @Field(index=Index.UN_TOKENIZED, store=Store.YES,name="accountStatus")
     private UserStatusEnum secondaryStatus;
 
     @Column(name = "SUFFIX", length = 20)
@@ -197,15 +229,27 @@ public class UserEntity {
     private String postalCd;
 
     @Column(name = "EMAIL_ADDRESS", length = 320)
+    @Fields ({
+        @Field(index = Index.TOKENIZED),
+        @Field(name = "email", index = Index.TOKENIZED, store = Store.YES)
+    })
     private String email;
 
     @Column(name = "AREA_CD", length = 10)
+    @Fields ({
+        @Field(index = Index.UN_TOKENIZED),
+        @Field(name = "areaCd", index = Index.UN_TOKENIZED, store = Store.YES)
+    })
     private String areaCd;
 
     @Column(name = "COUNTRY_CD", length = 10)
     private String countryCd;
 
     @Column(name = "PHONE_NBR", length = 50)
+    @Fields ({
+        @Field(index = Index.TOKENIZED),
+        @Field(name = "phoneNbr", index = Index.TOKENIZED, store = Store.YES)
+    })
     private String phoneNbr;
 
     @Column(name = "PHONE_EXT", length = 20)
@@ -243,6 +287,7 @@ public class UserEntity {
     )
     private Set<AddressEntity> addresses = new HashSet<AddressEntity>(0);
 
+    //@IndexedEmbedded
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "parent", fetch = FetchType.LAZY)
     @Filter(
             name = "parentTypeFilter",
@@ -250,6 +295,7 @@ public class UserEntity {
     )
     private Set<PhoneEntity> phones = new HashSet<PhoneEntity>(0);
 
+    //@IndexedEmbedded
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "parent", fetch = FetchType.LAZY)
     @Filter(
             name = "parentTypeFilter",
@@ -260,6 +306,7 @@ public class UserEntity {
     @Column(name = "SYSTEM_FLAG",length = 1)
     private String systemFlag;
 
+    //@IndexedEmbedded
     @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
     @JoinColumn(name="USER_ID", referencedColumnName="USER_ID")
     private List<LoginEntity> principalList = new LinkedList<LoginEntity>();
@@ -269,16 +316,19 @@ public class UserEntity {
     protected Set<UserKey> userKeys = new HashSet<UserKey>(0);
 
 
+    //@IndexedEmbedded
     @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
     @JoinColumn(name="USER_ID", referencedColumnName="USER_ID")
     private Set<UserGroupEntity> userGroups = new HashSet<UserGroupEntity>(0);
 
+    //@IndexedEmbedded
     @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
     @JoinColumn(name="USER_ID", referencedColumnName="USER_ID")
     private Set<UserRoleEntity> userRoles = new HashSet<UserRoleEntity>(0);
 
     @ManyToOne(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
     @JoinColumn(name="COMPANY_ID", referencedColumnName="COMPANY_ID", insertable = false, updatable = false)
+    @Field(name="organization", bridge=@FieldBridge(impl=OrganizationBridge.class))
     private OrganizationEntity organization;
 
 
