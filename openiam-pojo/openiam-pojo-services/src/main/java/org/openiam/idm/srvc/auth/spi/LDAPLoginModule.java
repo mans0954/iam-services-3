@@ -21,8 +21,13 @@
  */
 package org.openiam.idm.srvc.auth.spi;
 
-import java.util.*;
-
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.ResourceBundle;
+import java.util.Set;
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
@@ -31,26 +36,22 @@ import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.InitialLdapContext;
 import javax.naming.ldap.LdapContext;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.base.ws.ResponseCode;
-import org.openiam.base.ws.ResponseStatus;
 import org.openiam.exception.AuthenticationException;
 import org.openiam.idm.srvc.auth.context.AuthenticationContext;
 import org.openiam.idm.srvc.auth.context.PasswordCredential;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.SSOToken;
 import org.openiam.idm.srvc.auth.dto.Subject;
-import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
 import org.openiam.idm.srvc.auth.sso.SSOTokenFactory;
 import org.openiam.idm.srvc.auth.sso.SSOTokenModule;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
-import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
+import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 
 /**
  * LDAPLoginModule provides basic password based authentication using an LDAP directory.
@@ -139,7 +140,8 @@ public class LDAPLoginModule extends AbstractLoginModule {
 
 
 
-        Policy authPolicy = policyDao.findById(authPolicyId);
+        Policy authPolicy = policyDozerConverter.convertToDTO(policyDao
+                .findById(authPolicyId),true);
         PolicyAttribute policyAttribute =  authPolicy.getAttribute("AUTH_REPOSITORY");
         if (policyAttribute == null) {
           throw new AuthenticationException(AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
@@ -195,7 +197,8 @@ public class LDAPLoginModule extends AbstractLoginModule {
 
         log.debug("Authentication policyid=" + securityDomain.getAuthnPolicyId());
 		// get the authentication lock out policy
-		Policy plcy = policyDao.findById(securityDomain.getAuthnPolicyId());
+        Policy plcy = policyDozerConverter.convertToDTO(
+                policyDao.findById(securityDomain.getAuthnPolicyId()), true);
 		String attrValue = getPolicyAttribute( plcy.getPolicyAttributes(), "FAILED_AUTH_COUNT");
 
 		String tokenType = getPolicyAttribute( plcy.getPolicyAttributes(), "TOKEN_TYPE");

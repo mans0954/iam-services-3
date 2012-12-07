@@ -37,7 +37,6 @@
 			<b>resource</b>
 		</field>
 	</mapping>
-
     <mapping>
         <class-a>org.openiam.idm.srvc.user.domain.UserEntity</class-a>
         <class-b>org.openiam.idm.srvc.user.dto.User</class-b>
@@ -181,4 +180,32 @@
 			<b>attributes</b>
 		</field-exclude>
 	</mapping>
+	<mapping>
+		<class-a>org.openiam.idm.srvc.policy.domain.PolicyDefEntity</class-a>
+		<class-b>org.openiam.idm.srvc.policy.dto.PolicyDef</class-b>
+		<field-exclude>
+			<a>policies</a>
+			<b>policies</b> 
+		</field-exclude>
+		<field-exclude>
+			<a>policyDefParams</a>
+			<b>policyDefParams</b>
+		</field-exclude>
+	</mapping>	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.policy.domain.PolicyDefParamEntity</class-a>
+		<class-b>org.openiam.idm.srvc.policy.dto.PolicyDefParam</class-b>
+		<field-exclude>
+			<a>policyAttributes</a>
+			<b>policyAttributes</b> 
+		</field-exclude>
+	</mapping>		
+	<mapping>
+		<class-a>org.openiam.idm.srvc.policy.domain.PolicyEntity</class-a>
+		<class-b>org.openiam.idm.srvc.policy.dto.Policy</class-b>
+		<field-exclude>
+			<a>policyAttributes</a>
+			<b>policyAttributes</b> 
+		</field-exclude>
+	</mapping>	
 </mappings>

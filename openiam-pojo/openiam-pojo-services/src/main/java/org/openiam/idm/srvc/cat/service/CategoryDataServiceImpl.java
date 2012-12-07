@@ -2,7 +2,6 @@ package org.openiam.idm.srvc.cat.service;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.dozer.converter.CategoryDozerConverter;
@@ -10,196 +9,180 @@ import org.openiam.idm.srvc.cat.domain.CategoryEntity;
 import org.openiam.idm.srvc.cat.dto.Category;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service("categorydataService")
 public class CategoryDataServiceImpl implements CategoryDataService {
 
     @Autowired
-	CategoryDAO categoryDao;
+    CategoryDAO categoryDao;
     @Autowired
-	CategoryLanguageDAO categoryLanguageDao;
+    CategoryLanguageDAO categoryLanguageDao;
     @Autowired
     CategoryDozerConverter categoryDozerConverter;
-	private static final Log log = LogFactory.getLog(CategoryDataServiceImpl.class);
+    private static final Log log = LogFactory
+            .getLog(CategoryDataServiceImpl.class);
 
-	
+    @Transactional
     public void addCategory(Category cat) {
-		if (cat == null) {
-			throw (new NullPointerException("Category object is null") );
-		}
+        if (cat == null) {
+            throw (new NullPointerException("Category object is null"));
+        }
         categoryDao.save(categoryDozerConverter.convertToEntity(cat, true));
-	}
+    }
 
-	public Category[] getAllCategories(boolean nested) {
-        List<CategoryEntity> catList = null;
-		
-		if (!nested) {
-			catList = categoryDao.findRootCategories();
-		}else {
-			catList = getRecursiveCategories(null, catList);
-		}
-		
-		if (catList == null || catList.isEmpty())
-			return null;
-        return (Category[]) categoryDozerConverter.convertToDTOList(catList,
-                true).toArray();
-	}
+    public List<Category> getAllCategories(boolean nested) {
+        List<Category> catList = null;
+
+        if (!nested) {
+            catList = categoryDozerConverter.convertToDTOList(
+                    categoryDao.findRootCategories(), false);
+        } else {
+            catList = getRecursiveCategories(null);
+        }
+
+        return catList;
+    }
 
     // use entity. PRIVATE only
-    private List<CategoryEntity> getRecursiveCategories(
-            String parentCategoryId,
-            List<CategoryEntity> catList) {
-		
-		if (parentCategoryId == null) {
-			catList = categoryDao.findRootCategories();
-		}else {
-			catList = categoryDao.findChildCategories(parentCategoryId);
-		}
-		if (catList == null || catList.isEmpty())
-			return null;
-		
-		int size = catList.size();
-		for (int i=0; i<size; i++) {
-            CategoryEntity cat = catList.get(i);
-			// check for child categories
-            List<CategoryEntity> subCat = getRecursiveCategories(
-                    cat.getCategoryId(), catList);
-			if (subCat != null && !subCat.isEmpty()) {
-                cat.setChildCategories(new java.util.HashSet<CategoryEntity>(
-                        subCat));
-			}
-		}
-		
-		return catList;
-	}
+    private List<Category> getRecursiveCategories(String parentCategoryId) {
+        List<Category> catList = null;
+        if (parentCategoryId == null) {
+            catList = categoryDozerConverter.convertToDTOList(
+                    categoryDao.findRootCategories(), false);
+        } else {
+            catList = categoryDozerConverter.convertToDTOList(
+                    categoryDao.findChildCategories(parentCategoryId), false);
+        }
+        if (catList == null || catList.isEmpty())
+            return null;
 
+        int size = catList.size();
+        for (int i = 0; i < size; i++) {
+            Category cat = catList.get(i);
+            // check for child categories
+            List<Category> subCat = getRecursiveCategories(cat.getCategoryId());
+            if (subCat != null && !subCat.isEmpty()) {
+                cat.setChildCategories(new java.util.HashSet<Category>(subCat));
+            }
+        }
 
+        return catList;
+    }
 
+    public Category getCategory(String categoryId) {
+        if (categoryId == null) {
+            throw (new NullPointerException("CategoryId is null"));
+        }
+        return categoryDozerConverter.convertToDTO(
+                categoryDao.findById(categoryId), false);
+    }
 
-	
-	
-	public Category getCategory(String categoryId) {
-		if (categoryId == null) {
-			throw (new NullPointerException("CategoryId is null") );
-		}
+    public List<Category> getChildCategories(String categoryId, boolean nested) {
+        List<Category> catList = null;
 
-		return categoryDozerConverter.convertToDTO(categoryDao.findById(categoryId),true);
-		
-	}
+        if (!nested) {
+            catList = categoryDozerConverter.convertToDTOList(
+                    categoryDao.findChildCategories(categoryId), false);
+        } else {
+            catList = getRecursiveCategories(categoryId);
+        }
+        return catList;
+    }
 
-	public Category[] getChildCategories(String categoryId, boolean nested) {
-        List<CategoryEntity> catList = null;
-		
-		if (!nested) {
-			catList = categoryDao.findChildCategories(categoryId);
-		}else {
-			catList = getRecursiveCategories(categoryId, catList);
-		}
-		
-		
-		if (catList == null || catList.isEmpty())
-			return null;
-        return (Category[]) categoryDozerConverter.convertToDTOList(catList,
-                true).toArray();
-	}
+    @Transactional
+    public int removeCategory(String categoryId, boolean nested) {
+        if (categoryId == null) {
+            throw (new NullPointerException("CategoryId is null"));
+        }
 
-	public int removeCategory(String categoryId, boolean nested) {
-		if (categoryId == null) {
-			throw (new NullPointerException("CategoryId is null") );
-		}
-		
-		if (!nested) {
-			Category parentCat = new Category();
-			parentCat.setCategoryId(categoryId);
-            categoryDao.delete(categoryDozerConverter.convertToEntity(
-                    parentCat, true));
-			return 1;
-		}
-		
+        if (!nested) {
+            CategoryEntity parentCat = new CategoryEntity();
+            parentCat.setCategoryId(categoryId);
+            categoryDao.delete(parentCat);
+            return 1;
+        }
 
-		StringBuffer catIdBuf = new StringBuffer();
+        StringBuffer catIdBuf = new StringBuffer();
         List<CategoryEntity> catList = new ArrayList<CategoryEntity>();
-	
-		catList = categoryDao.findChildCategories(categoryId);
 
-		if (catList == null || catList.isEmpty()) {
-			// nothing to delete
-			return 0;
-		}
-	
-		int size = catList.size();
-		for (int i = 0; i < size; i++) {
+        catList = categoryDao.findChildCategories(categoryId);
+
+        if (catList == null || catList.isEmpty()) {
+            // nothing to delete
+            return 0;
+        }
+
+        int size = catList.size();
+        for (int i = 0; i < size; i++) {
             CategoryEntity cat = catList.get(i);
-			if (catIdBuf.length() > 0) {
-				catIdBuf.append(",");
-			}
-			catIdBuf.append(" '" + cat.getCategoryId() + "' ");
+            if (catIdBuf.length() > 0) {
+                catIdBuf.append(",");
+            }
+            catIdBuf.append(" '" + cat.getCategoryId() + "' ");
 
-			String catStr = getRecursiveCatId(cat.getCategoryId(), catList);
-			if (catStr != null) {
-				if (catIdBuf.length() > 0) {
-					catIdBuf.append(",");
-				}
-				catIdBuf.append(catStr);
-			}
+            String catStr = getRecursiveCatId(cat.getCategoryId());
+            if (catStr != null) {
+                if (catIdBuf.length() > 0) {
+                    catIdBuf.append(",");
+                }
+                catIdBuf.append(catStr);
+            }
 
-		}		
-		
-		String catIdStr = catIdBuf.toString();
-		int count =  categoryDao.removeGroupList(catIdStr);
-		Category parentCat = new Category();
-		parentCat.setCategoryId(categoryId);
+        }
+
+        String catIdStr = catIdBuf.toString();
+        int count = categoryDao.removeGroupList(catIdStr);
+        Category parentCat = new Category();
+        parentCat.setCategoryId(categoryId);
         categoryDao.delete(categoryDozerConverter.convertToEntity(parentCat,
                 false));
-		return count++;
+        return count++;
 
-	}
+    }
 
-	/**
-	 * Recursively get that list of categories.
-	 * @param parentGroupId
-	 * @param groupList
-	 * @return
-	 */
-    private String getRecursiveCatId(String parentCatId,
-            List<CategoryEntity> categoryList) {
-		StringBuffer catIdBuf = new StringBuffer();
+    /**
+     * Recursively get that list of categories.
+     * @param parentGroupId
+     * @param groupList
+     * @return
+     */
+    private String getRecursiveCatId(String parentCatId) {
+        StringBuffer catIdBuf = new StringBuffer();
 
-		categoryList = categoryDao.findChildCategories(parentCatId);
-		if (categoryList == null || categoryList.isEmpty()) {
-			return null;
-		}
-		int size = categoryList.size();
-		for (int i = 0; i < size; i++) {
+        List<CategoryEntity> categoryList = categoryDao
+                .findChildCategories(parentCatId);
+        if (categoryList == null || categoryList.isEmpty()) {
+            return null;
+        }
+        int size = categoryList.size();
+        for (int i = 0; i < size; i++) {
             CategoryEntity cat = categoryList.get(i);
-			if (catIdBuf.length() > 0) {
-				catIdBuf.append(",");
-			}
-			catIdBuf.append(" '" + cat.getCategoryId() + "' ");
+            if (catIdBuf.length() > 0) {
+                catIdBuf.append(",");
+            }
+            catIdBuf.append(" '" + cat.getCategoryId() + "' ");
 
-			// check for child group
+            // check for child group
 
-			String catStr = getRecursiveCatId(cat.getCategoryId(), categoryList);
-			if (catStr != null) {
-				if (catIdBuf.length() > 0) {
-					catIdBuf.append(",");
-				}
-				catIdBuf.append(catStr);
-			}
-			log.debug("Category ids after = " + catIdBuf.toString());
-		}
-		return catIdBuf.toString();
-	}
-	
-	public void updateCategory(Category cat) {
-		if (cat == null) {
-			throw (new NullPointerException("Category object is null") );
-		}
+            String catStr = getRecursiveCatId(cat.getCategoryId());
+            if (catStr != null) {
+                if (catIdBuf.length() > 0) {
+                    catIdBuf.append(",");
+                }
+                catIdBuf.append(catStr);
+            }
+            log.debug("Category ids after = " + catIdBuf.toString());
+        }
+        return catIdBuf.toString();
+    }
+
+    @Transactional
+    public void updateCategory(Category cat) {
+        if (cat == null) {
+            throw (new NullPointerException("Category object is null"));
+        }
         categoryDao.save(categoryDozerConverter.convertToEntity(cat, false));
-	}
+    }
 
 }
-
-
-
-

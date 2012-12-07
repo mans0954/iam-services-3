@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.cat.service;
 
+import java.util.List;
 import org.openiam.idm.srvc.cat.dto.Category;
 
 /**
@@ -70,7 +71,7 @@ public interface CategoryDataService {
      *
      * @return
      */
-    public Category[] getAllCategories(boolean nested);
+    public List<Category> getAllCategories(boolean nested);
 
     /**
      * Get all categories for the specified categoryId.
@@ -79,5 +80,5 @@ public interface CategoryDataService {
      * @param nested
      * @return
      */
-	public Category[] getChildCategories(String categoryId, boolean nested);
+    public List<Category> getChildCategories(String categoryId, boolean nested);
 }

@@ -14,7 +14,7 @@ public class CategoryLanguageEmbeddableId implements java.io.Serializable {
      * @author zaporozhec
      */
     private static final long serialVersionUID = 1L;
-    @Column(name = "CATEGORY_ID", length = 20, nullable = false)
+    @Column(name = "CATEGORY_ID", length = 32, nullable = false)
     private String categoryId;
     @Column(name = "LANGUAGE_CD", length = 5, nullable = false)
     private String languageCd;

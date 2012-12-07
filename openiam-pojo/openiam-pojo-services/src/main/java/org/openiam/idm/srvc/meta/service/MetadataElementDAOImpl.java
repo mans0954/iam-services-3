@@ -3,9 +3,11 @@ package org.openiam.idm.srvc.meta.service;
 // Generated Nov 4, 2008 12:11:29 AM by Hibernate Tools 3.2.2.GA
 
 import java.util.List;
+import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
+import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.springframework.stereotype.Repository;
@@ -20,19 +22,12 @@ public class MetadataElementDAOImpl extends
     @SuppressWarnings("unchecked")
     @Override
     public List<MetadataElementEntity> findbyCategoryType(String categoryType) {
+        Criteria criteria = null;
         try {
-            Session session = sessionFactory.getCurrentSession();
-            Query qry = session
-                    .createQuery("select me from MetadataElement me, "
-                            + "		CategoryType ct, MetadataType m "
-                            + " where ct.id.categoryId = :categoryId and "
-                            + "       ct.id.typeId  = m.metadataTypeId  and "
-                            + " 	    m.metadataTypeId = me.metadataTypeId "
-                            + " order by me.metadataTypeId, me.attributeName ");
-            qry.setString("categoryId", categoryType);
-            List<MetadataElementEntity> results = (List<MetadataElementEntity>) qry
-                    .list();
-            return results;
+            criteria = this.getCriteria().createAlias("metadataType", "mt")
+                    .createAlias("mt.categories", "ct")
+                    .add(Restrictions.eq("ct.categoryId", categoryType));
+            return (List<MetadataElementEntity>) criteria.list();
         } catch (HibernateException re) {
             log.error("get failed", re);
             throw re;
@@ -43,9 +38,8 @@ public class MetadataElementDAOImpl extends
     public void removeByParentId(String id) {
         try {
             Session session = sessionFactory.getCurrentSession();
-            Query qry = session
-                    .createQuery("delete org.openiam.idm.srvc.meta.domain.MetadataElementEntity me "
-                            + " where me.metadataTypeId = :id ");
+            Query qry = session.createQuery("delete " + domainClass.getName()
+                    + "as me " + " where me.metadataTypeId = :id ");
             qry.setString("id", id);
             qry.executeUpdate();
         } catch (HibernateException re) {

@@ -4,31 +4,30 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
-
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.cat.dto.Category;
 
 @Entity
-@Table(name="CATEGORY")
+@Table(name = "CATEGORY")
 @DozerDTOCorrespondence(Category.class)
 public class CategoryEntity implements Serializable {
 
     @Id
     @GeneratedValue(generator = "system-uuid")
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    @Column(name = "CATEGORY_ID", length = 20)
+    @Column(name = "CATEGORY_ID", length = 32)
     private String categoryId;
 
     @Column(name = "CREATED_BY", length = 20)
@@ -41,9 +40,10 @@ public class CategoryEntity implements Serializable {
     private String categoryDesc;
 
     @Column(name = "CREATE_DATE", length = 19)
+    @Temporal(TemporalType.TIMESTAMP)
     private Date createDate;
 
-    @Column(name = "PARENT_ID", length = 20)
+    @Column(name = "PARENT_ID", length = 32)
     private String parentId;
 
     @Column(name = "SHOW_LIST")
@@ -52,15 +52,14 @@ public class CategoryEntity implements Serializable {
     @Column(name = "DISPLAY_ORDER")
     private int displayOrder;
 
-	@OneToMany(mappedBy = "categoryId", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @Fetch(FetchMode.JOIN)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "PARENT_ID", insertable = false, updatable = false)
     private Set<CategoryEntity> childCategories;
 
-	@OneToMany(mappedBy = "id.categoryId", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @Fetch(FetchMode.JOIN)
-    private Set<CategoryLanguageEntity> categoryLanguages = new HashSet<CategoryLanguageEntity>(0);
-
-    static final long serialVersionUID = 7480627520054050204L;
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "CATEGORY_ID", insertable = false, updatable = false)
+    private Set<CategoryLanguageEntity> categoryLanguages = new HashSet<CategoryLanguageEntity>(
+            0);
 
     public CategoryEntity() {
         super();
@@ -74,7 +73,6 @@ public class CategoryEntity implements Serializable {
         this.categoryId = categoryId;
     }
 
-
     public String getCreatedBy() {
         return this.createdBy;
     }
@@ -82,7 +80,6 @@ public class CategoryEntity implements Serializable {
     public void setCreatedBy(String createdBy) {
         this.createdBy = createdBy;
     }
-
 
     public String getCategoryName() {
         return this.categoryName;
@@ -92,7 +89,6 @@ public class CategoryEntity implements Serializable {
         this.categoryName = categoryName;
     }
 
-
     public String getCategoryDesc() {
         return this.categoryDesc;
     }
@@ -100,7 +96,6 @@ public class CategoryEntity implements Serializable {
     public void setCategoryDesc(String categoryDesc) {
         this.categoryDesc = categoryDesc;
     }
-
 
     public Date getCreateDate() {
         return this.createDate;
@@ -134,7 +129,6 @@ public class CategoryEntity implements Serializable {
         this.displayOrder = displayOrder;
     }
 
-
     public Set<CategoryLanguageEntity> getCategoryLanguages() {
         return categoryLanguages;
     }
@@ -153,7 +147,8 @@ public class CategoryEntity implements Serializable {
         this.childCategories = childCategories;
     }
 
-    public void setCategoryLanguages(Set<CategoryLanguageEntity> categoryLanguages) {
+    public void setCategoryLanguages(
+            Set<CategoryLanguageEntity> categoryLanguages) {
         this.categoryLanguages = categoryLanguages;
     }
 

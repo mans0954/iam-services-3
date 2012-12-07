@@ -1,44 +1,46 @@
-package org.openiam.idm.srvc.policy.dto;
+package org.openiam.idm.srvc.policy.domain;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.idm.srvc.policy.domain.PolicyObjectAssocEntity;
-
-// Generated Dec 1, 2009 12:48:52 AM by Hibernate Tools 3.2.2.GA
+import org.openiam.idm.srvc.policy.dto.PolicyObjectAssoc;
 
 /**
- * represents the level at which a policy is associated with other
- * objects. Policy can be associated at the following levels: USER_CLASSIFICATION, USER_TYPE, RESOURCE,
- * ORGANIZATION, SECURITY_DOMAIN, GLOBAL
+ * 
+ * @author zaporozhec
+ *
  */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "PolicyObjectAssoc", propOrder = {
-        "policyObjectId",
-        "policyId",
-        "associationLevel",
-        "associationValue",
-        "objectType",
-        "objectId",
-        "parentAssocId"
-})
-@DozerDTOCorrespondence(PolicyObjectAssocEntity.class)
-public class PolicyObjectAssoc implements java.io.Serializable {
+@Entity
+@Table(name = "POLICY_OBJECT_ASSOC")
+@DozerDTOCorrespondence(PolicyObjectAssoc.class)
+public class PolicyObjectAssocEntity implements java.io.Serializable {
 
-    /**
-     * 
-     */
     private static final long serialVersionUID = 1L;
+
+    @Id
+    @GeneratedValue(generator = "system-uuid")
+    @GenericGenerator(name = "system-uuid", strategy = "uuid")
+    @Column(name = "POLICY_OBJECT_ID", length = 32)
     private String policyObjectId;
+    @Column(name = "POLICY_ID", length = 32)
     private String policyId;
+    @Column(name = "ASSOCIATION_LEVEL", length = 20)
     private String associationLevel;
+    @Column(name = "ASSOCIATION_VALUE", length = 255)
     private String associationValue;
+    @Column(name = "OBJECT_TYPE", length = 100)
     private String objectType;
+    @Column(name = "OBJECT_ID", length = 32)
     private String objectId;
+    @Column(name = "PARENT_ASSOC_ID", length = 32)
     private String parentAssocId;
 
-    public PolicyObjectAssoc() {
+
+    public PolicyObjectAssocEntity() {
     }
 
     public String getPolicyObjectId() {

@@ -27,19 +27,17 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
 import javax.jws.WebParam;
 import javax.jws.WebService;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.BasicAttribute;
 import javax.naming.directory.BasicAttributes;
 import javax.naming.directory.ModificationItem;
 import javax.naming.directory.SearchControls;
 import javax.naming.ldap.LdapContext;
-import javax.naming.NamingEnumeration;
-import javax.naming.NamingException;
 import javax.xml.namespace.QName;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
@@ -57,15 +55,14 @@ import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.secdomain.service.SecurityDomainDataService;
 import org.openiam.idm.srvc.user.service.UserDataService;
+import org.openiam.provision.type.ExtensibleAttribute;
+import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.spml2.base.AbstractSpml2Complete;
 import org.openiam.spml2.interf.ConnectorService;
 import org.openiam.spml2.msg.AddRequestType;
 import org.openiam.spml2.msg.AddResponseType;
 import org.openiam.spml2.msg.DeleteRequestType;
 import org.openiam.spml2.msg.ErrorCode;
-import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.provision.type.ExtensibleAttribute;
-
 import org.openiam.spml2.msg.ExtensibleType;
 import org.openiam.spml2.msg.ListTargetsRequestType;
 import org.openiam.spml2.msg.ListTargetsResponseType;
@@ -88,6 +85,7 @@ import org.openiam.spml2.msg.suspend.ActiveRequestType;
 import org.openiam.spml2.msg.suspend.ActiveResponseType;
 import org.openiam.spml2.msg.suspend.ResumeRequestType;
 import org.openiam.spml2.msg.suspend.SuspendRequestType;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Updates the OpenIAM repository with data received from external client.
@@ -107,7 +105,8 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements Connect
 	protected ResourceDataService resourceDataService;
 	protected IdmAuditLogDataService auditDataService;
 	protected LoginDataService loginManager;
-	protected PolicyDAO policyDao;
+    @Autowired
+    private PolicyDAO policyDao;
 	protected SecurityDomainDataService secDomainService; 
 	protected UserDataService userManager;
 	

@@ -774,7 +774,7 @@
           <xs:element minOccurs="0" name="lastUpdatedBy" type="xs:string"/>
           <xs:element minOccurs="0" name="rule" type="xs:string"/>
           <xs:element minOccurs="0" name="ruleSrcUrl" type="xs:string"/>
-          <xs:element maxOccurs="unbounded" minOccurs="0" name="policyMemberships" nillable="true" type="tns:PolicyMembership"/>
+<!--           <xs:element maxOccurs="unbounded" minOccurs="0" name="policyMemberships" nillable="true" type="tns:PolicyMembership"/> -->
           <xs:element maxOccurs="unbounded" minOccurs="0" name="policyAttributes" nillable="true" type="tns:PolicyAttribute"/>
         </xs:sequence>
       </xs:complexType>

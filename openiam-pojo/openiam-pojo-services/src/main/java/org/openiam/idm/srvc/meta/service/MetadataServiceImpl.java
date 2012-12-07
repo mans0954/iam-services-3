@@ -40,7 +40,7 @@ public class MetadataServiceImpl implements MetadataService {
             throw new NullPointerException("metadataElement is null");
         }
         MetadataElementEntity element = metaDataElementDozerConverter
-                .convertToEntity(metadataElement, true);
+                .convertToEntity(metadataElement, false);
         metadataElementDao.save(element);
         return metadataElement;
     }
@@ -50,7 +50,7 @@ public class MetadataServiceImpl implements MetadataService {
             throw new NullPointerException("Metadatatype is null");
         }
         MetadataTypeEntity typeEntity = metaDataTypeDozerConverter
-                .convertToEntity(type, true);
+                .convertToEntity(type, false);
 
         metadataTypeDao.save(typeEntity);
         return type;
@@ -72,7 +72,7 @@ public class MetadataServiceImpl implements MetadataService {
             throw new NullPointerException("elementId is null");
         }
         return metaDataElementDozerConverter.convertToDTO(
-                metadataElementDao.findById(elementId), true);
+                metadataElementDao.findById(elementId), false);
     }
 
     public MetadataElement[] getMetadataElementByType(String typeId) {
@@ -80,7 +80,7 @@ public class MetadataServiceImpl implements MetadataService {
             throw new NullPointerException("typeId is null");
         }
         MetadataType type = metaDataTypeDozerConverter.convertToDTO(
-                metadataTypeDao.findById(typeId), true);
+                metadataTypeDao.findById(typeId), false);
         if (type == null)
             return null;
         Map<String, MetadataElement> elementMap = type.getElementAttributes();
@@ -100,12 +100,12 @@ public class MetadataServiceImpl implements MetadataService {
             throw new NullPointerException("typeId is null");
         }
         return metaDataTypeDozerConverter.convertToDTO(
-                metadataTypeDao.findById(typeId), true);
+                metadataTypeDao.findById(typeId), false);
     }
 
     public MetadataType[] getMetadataTypes() {
         List<MetadataType> typeList = metaDataTypeDozerConverter
-                .convertToDTOList(metadataTypeDao.findAll(), true);
+                .convertToDTOList(metadataTypeDao.findAll(), false);
         if (typeList == null || typeList.isEmpty()) {
             return null;
         }
@@ -118,7 +118,7 @@ public class MetadataServiceImpl implements MetadataService {
     }
 
     public List<MetadataTypeEntity> getTypesInCategory(String categoryId) {
-    	return metadataTypeDao.findTypesInCategory(categoryId);
+        return metadataTypeDao.findTypesInCategory(categoryId);
     }
 
     public void removeMetadataElement(String elementId) {
@@ -157,7 +157,7 @@ public class MetadataServiceImpl implements MetadataService {
             throw new NullPointerException("metadataElement is null");
         }
         metadataElementDao.update(metaDataElementDozerConverter
-                .convertToEntity(mv, true));
+                .convertToEntity(mv, false));
         return mv;
     }
 

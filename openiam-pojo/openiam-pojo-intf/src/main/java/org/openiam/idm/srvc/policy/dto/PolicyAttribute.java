@@ -4,6 +4,9 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
+import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.policy.domain.PolicyAttributeEntity;
+
 // Generated Mar 7, 2009 11:47:12 AM by Hibernate Tools 3.2.2.GA
 
 /**
@@ -20,6 +23,7 @@ import javax.xml.bind.annotation.XmlType;
         "value2",
         "rule"
 })
+@DozerDTOCorrespondence(PolicyAttributeEntity.class)
 public class PolicyAttribute implements java.io.Serializable, Comparable<PolicyAttribute> {
 
     private static final long serialVersionUID = -291717117636794761L;

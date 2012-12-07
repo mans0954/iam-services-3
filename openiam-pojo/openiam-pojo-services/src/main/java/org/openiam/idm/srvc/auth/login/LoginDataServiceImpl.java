@@ -1,15 +1,21 @@
 package org.openiam.idm.srvc.auth.login;
 
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.ResourceBundle;
+import java.util.Set;
+import javax.jws.WebService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.SysConfiguration;
 import org.openiam.dozer.converter.LoginDozerConverter;
+import org.openiam.dozer.converter.PolicyDozerConverter;
 import org.openiam.exception.AuthenticationException;
 import org.openiam.exception.EncryptionException;
 import org.openiam.idm.srvc.auth.domain.LoginEmbeddableId;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.auth.dto.LoginId;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
@@ -25,12 +31,8 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDAO;
-import org.openiam.util.encrypt.*;
+import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.*;
-
-import javax.jws.WebService;
 
 @WebService(endpointInterface = "org.openiam.idm.srvc.auth.login.LoginDataService", 
 		targetNamespace = "urn:idm.openiam.org/srvc/auth/service", 
@@ -41,7 +43,11 @@ public class LoginDataServiceImpl implements LoginDataService {
 	protected LoginAttributeDAO loginAttrDao;
 	protected SecurityDomainDataService secDomainService; 
 	protected UserDAO userDao;
-	protected PolicyDAO policyDao;
+    @Autowired
+    private PolicyDAO policyDao;
+    @Autowired
+    private PolicyDozerConverter policyDozerConverter;
+
 	protected PasswordService passwordManager;
 	protected PasswordHistoryDAO passwordHistoryDao;
 	protected SysConfiguration sysConfiguration;
@@ -517,7 +523,8 @@ public class LoginDataServiceImpl implements LoginDataService {
 		for (SecurityDomain secDom : securityDomainList) {
 			String authnPolicy =  secDom.getAuthnPolicyId();
 			if (authnPolicy != null) {
-				Policy plcy = policyDao.findById(authnPolicy);
+                Policy plcy = policyDozerConverter.convertToDTO(
+                        policyDao.findById(authnPolicy), true);
 				String autoUnlockTime = getPolicyAttribute( plcy.getPolicyAttributes(), "AUTO_UNLOCK_TIME");
 				if (autoUnlockTime != null) {
 					loginDao.bulkUnlock(secDom.getDomainId(), status, Integer.parseInt( autoUnlockTime ));

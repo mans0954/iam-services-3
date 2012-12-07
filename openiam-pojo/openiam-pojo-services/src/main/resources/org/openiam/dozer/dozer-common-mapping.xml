@@ -58,12 +58,6 @@
 		<class-a>org.openiam.idm.srvc.policy.dto.PolicyAttribute</class-a>
 		<class-b>org.openiam.idm.srvc.policy.dto.PolicyAttribute</class-b>
 	</mapping>
-	
-	<mapping>
-		<class-a>org.openiam.idm.srvc.policy.dto.PolicyMembership</class-a>
-		<class-b>org.openiam.idm.srvc.policy.dto.PolicyMembership</class-b>
-	</mapping>
-	
 	<mapping>
 		<class-a>org.openiam.idm.srvc.res.dto.ResourceGroup</class-a>
 		<class-b>org.openiam.idm.srvc.res.dto.ResourceGroup</class-b>
@@ -98,10 +92,6 @@
 		<class-a>org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity</class-a>
 		<class-b>org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity</class-b>
 	</mapping>
-	<mapping>
-		<class-a>org.openiam.idm.srvc.cat.dto.Category</class-a>
-		<class-b>org.openiam.idm.srvc.cat.dto.Category</class-b>
-	</mapping>
 		<mapping>
 		<class-a>org.openiam.idm.srvc.cat.dto.CategoryType</class-a>
 		<class-b>org.openiam.idm.srvc.cat.dto.CategoryType</class-b>
@@ -109,5 +99,13 @@
 		<mapping>
 		<class-a>org.openiam.idm.srvc.cat.dto.CategoryLanguage</class-a>
 		<class-b>org.openiam.idm.srvc.cat.dto.CategoryLanguage</class-b>
+	</mapping>
+	<mapping>
+		<class-a>org.openiam.idm.srvc.policy.dto.PolicyAttribute</class-a>
+		<class-b>org.openiam.idm.srvc.policy.dto.PolicyAttribute</class-b>
+	</mapping>
+	<mapping>
+		<class-a>org.openiam.idm.srvc.policy.dto.PolicyObjectAssoc</class-a>
+		<class-b>org.openiam.idm.srvc.policy.dto.PolicyObjectAssoc</class-b>
 	</mapping>
 </mappings>

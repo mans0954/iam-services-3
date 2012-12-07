@@ -1,6 +1,5 @@
 package org.openiam.idm.srvc.cat.dto;
 
-import java.io.Serializable;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -8,24 +7,16 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
+import org.openiam.base.BaseObject;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.cat.domain.CategoryEntity;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "category", propOrder = {
-        "categoryId",
-        "createdBy",
-        "categoryName",
-        "categoryDesc",
-        "createDate",
-        "parentId",
-        "showList",
-        "displayOrder",
-        "childCategories",
-        "categoryLanguages"
-})
+@XmlType(name = "category", propOrder = { "categoryId", "createdBy",
+        "categoryName", "categoryDesc", "createDate", "parentId", "showList",
+        "displayOrder", "childCategories", "categoryLanguages" })
 @DozerDTOCorrespondence(CategoryEntity.class)
-public class Category implements Serializable {
+public class Category extends BaseObject {
     private String categoryId;
     private String createdBy;
     private String categoryName;
@@ -36,8 +27,8 @@ public class Category implements Serializable {
     private int showList;
     private int displayOrder;
     private Set<Category> childCategories;
-    private Set<CategoryLanguage> categoryLanguages = new HashSet<CategoryLanguage>(0);
-    static final long serialVersionUID = 7480627520054050204L;
+    private Set<CategoryLanguage> categoryLanguages = new HashSet<CategoryLanguage>(
+            0);
 
     public Category() {
         super();

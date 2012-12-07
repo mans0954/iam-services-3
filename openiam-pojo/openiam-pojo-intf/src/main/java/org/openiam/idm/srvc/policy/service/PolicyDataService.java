@@ -1,35 +1,33 @@
 /*
- * Copyright 2009, OpenIAM LLC 
- * This file is part of the OpenIAM Identity and Access Management Suite
- *
- *   OpenIAM Identity and Access Management Suite is free software: 
- *   you can redistribute it and/or modify
- *   it under the terms of the Lesser GNU General Public License 
- *   version 3 as published by the Free Software Foundation.
- *
- *   OpenIAM is distributed in the hope that it will be useful,
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *   Lesser GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with OpenIAM.  If not, see <http://www.gnu.org/licenses/>. *
+ * Copyright 2009, OpenIAM LLC This file is part of the OpenIAM Identity and
+ * Access Management Suite
+ * 
+ * OpenIAM Identity and Access Management Suite is free software: you can
+ * redistribute it and/or modify it under the terms of the Lesser GNU General
+ * Public License version 3 as published by the Free Software Foundation.
+ * 
+ * OpenIAM is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the Lesser GNU General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU General Public License along with
+ * OpenIAM. If not, see <http://www.gnu.org/licenses/>. *
  */
 
 /**
- * PolicyDataService is used create and manage policies. 
- * Enforcement of these policies is handled through policy specific services and 
- * policy enforcement points. 
+ * PolicyDataService is used create and manage policies. Enforcement of these
+ * policies is handled through policy specific services and policy enforcement
+ * points.
  */
 package org.openiam.idm.srvc.policy.service;
 
+import java.util.List;
+import javax.jws.WebService;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyDef;
 import org.openiam.idm.srvc.policy.dto.PolicyDefParam;
 import org.openiam.idm.srvc.policy.dto.PolicyObjectAssoc;
-
-import javax.jws.WebService;
-import java.util.List;
 
 /**
  * @author suneet
@@ -41,14 +39,14 @@ public interface PolicyDataService {
      *
      * @return
      */
-    String[] getPolicyTypes();
+    List<String> getPolicyTypes();
 
     /**
      * Returns an array of all policy definitions
      *
      * @return
      */
-    PolicyDef[] getAllPolicyDef();
+    List<PolicyDef> getAllPolicyDef();
 
     /**
      * Returns a policy definition. These are the parameters that are available to a policy.
@@ -64,8 +62,8 @@ public interface PolicyDataService {
      * @param paramGroup
      * @return
      */
-    List<PolicyDefParam> getPolicyDefParamByGroup(String defId, String paramGroup);
-
+    List<PolicyDefParam> getPolicyDefParamByGroup(String defId,
+            String paramGroup);
 
     /**
      * Adds a new policy definition to the system. PolicyDefId must be defined.
@@ -88,7 +86,6 @@ public interface PolicyDataService {
      */
     void removePolicyDefinition(String definitionId);
 
-
     /**
      * Returns an array of all policies for a particular Policy definition
      *
@@ -103,7 +100,6 @@ public interface PolicyDataService {
      * @return
      */
     Policy getPolicy(String policyId);
-
 
     /**
      * Adds a new policy to the system. PolicyId and PolicyDefId must be defined.
@@ -140,6 +136,5 @@ public interface PolicyDataService {
     void updatePolicyAssociation(PolicyObjectAssoc assoc);
 
     List<PolicyObjectAssoc> getAssociationsForPolicy(String policyId);
-
 
 }

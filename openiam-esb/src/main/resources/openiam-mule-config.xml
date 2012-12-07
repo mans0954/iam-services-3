@@ -87,12 +87,12 @@
 		<model name="categoryWebServiceModel">
 			<service name="categoryWebService">
 				<inbound>
-						<inbound-endpoint address="${webservice.path}CategoryDataWebService" 		exchange-pattern="request-response">
+						<inbound-endpoint address="${webservice.path}CategoryWebService" 		exchange-pattern="request-response">
 						<cxf:jaxws-service />
 					</inbound-endpoint>
 				</inbound>
 				<component>
-					<spring-object bean="categorydataService" />
+					<spring-object bean="categorydataWS" />
 				</component>
 			</service>
 		</model>

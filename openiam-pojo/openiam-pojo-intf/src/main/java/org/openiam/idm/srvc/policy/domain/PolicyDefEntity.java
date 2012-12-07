@@ -1,55 +1,68 @@
-package org.openiam.idm.srvc.policy.dto;
+package org.openiam.idm.srvc.policy.domain;
 
 // Generated Mar 7, 2009 11:47:12 AM by Hibernate Tools 3.2.2.GA
 
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlType;
-
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.idm.srvc.policy.domain.PolicyDefEntity;
+import org.openiam.idm.srvc.policy.dto.PolicyDef;
 
 /**
  * PolicyDef represent a policy definition
  */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "PolicyDef", propOrder = {
-        "policyDefId",
-        "name",
-        "description",
-        "policyType",
-        "locationType",
-        "policyRule",
-        "policyHandler",
-        "policyAdviseHandler",
-        "policyDefParams",
-        "policies"
-})
-@DozerDTOCorrespondence(PolicyDefEntity.class)
-public class PolicyDef implements java.io.Serializable {
+@Entity
+@Table(name = "POLICY_DEF")
+@DozerDTOCorrespondence(PolicyDef.class)
+public class PolicyDefEntity implements java.io.Serializable {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private String policyDefId;
-    private String name;
-    private String description;
-    private String policyType;
-    private String locationType;
-    private String policyRule;
-    private String policyHandler;
-    private String policyAdviseHandler;
-    private Set<PolicyDefParam> policyDefParams = new HashSet<PolicyDefParam>(0);
-    private Set<Policy> policies = new HashSet<Policy>(0);
 
-    public PolicyDef() {
+	@Id
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "uuid")
+	@Column(name = "POLICY_DEF_ID", length = 32)
+	private String policyDefId;
+	@Column(name = "NAME", length = 60)
+	private String name;
+	@Column(name = "DESCRIPTION", length = 255)
+    private String description;
+	@Column(name = "POLICY_TYPE", length = 20)
+    private String policyType;
+	@Column(name = "LOCATION_TYPE", length = 20)
+    private String locationType;
+	@Column(name = "POLICY_RULE", length = 500)
+    private String policyRule;
+	@Column(name = "POLICY_HANDLER", length = 255)
+    private String policyHandler;
+	@Column(name = "POLICY_ADVISE_HANDLER", length = 255)
+    private String policyAdviseHandler;
+
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@JoinColumn(name = "POLICY_DEF_ID", insertable = false, updatable = false)
+    private Set<PolicyDefParamEntity> policyDefParams = new HashSet<PolicyDefParamEntity>(0);
+
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "POLICY_DEF_ID", insertable = false, updatable = false)
+    private Set<PolicyEntity> policies = new HashSet<PolicyEntity>(0);
+
+    public PolicyDefEntity() {
     }
 
-    public PolicyDef(String policyDefId) {
+    public PolicyDefEntity(String policyDefId) {
         this.policyDefId = policyDefId;
     }
 
@@ -117,19 +130,19 @@ public class PolicyDef implements java.io.Serializable {
         this.policyAdviseHandler = policyAdviseHandler;
     }
 
-    public Set<PolicyDefParam> getPolicyDefParams() {
+    public Set<PolicyDefParamEntity> getPolicyDefParams() {
         return this.policyDefParams;
     }
 
-    public void setPolicyDefParams(Set<PolicyDefParam> policyDefParams) {
+    public void setPolicyDefParams(Set<PolicyDefParamEntity> policyDefParams) {
         this.policyDefParams = policyDefParams;
     }
 
-    public Set<Policy> getPolicies() {
+    public Set<PolicyEntity> getPolicies() {
         return this.policies;
     }
 
-    public void setPolicies(Set<Policy> policies) {
+    public void setPolicies(Set<PolicyEntity> policies) {
         this.policies = policies;
     }
 
