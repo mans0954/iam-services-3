@@ -1,6 +1,5 @@
 package org.openiam.idm.srvc.policy.dto;
 
-
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -15,41 +14,30 @@ import org.openiam.idm.srvc.policy.domain.PolicyEntity;
  * <code>Policy</code> represents a policy object that is used by the policy service.
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "Policy", propOrder = {
-        "policyId",
-        "policyDefId",
-        "name",
-        "description",
-        "status",
-        "createDate",
-        "createdBy",
-        "lastUpdate",
-        "lastUpdatedBy",
-        "rule",
-        "ruleSrcUrl",
- "policyAttributes",
- "enablement"
-})
+@XmlType(name = "Policy", propOrder = { "policyId", "policyDefId", "name",
+        "description", "status", "createDate", "createdBy", "lastUpdate",
+        "lastUpdatedBy", "rule", "ruleSrcUrl", "policyAttributes", "enablement" })
 @DozerDTOCorrespondence(PolicyEntity.class)
 public class Policy implements java.io.Serializable {
 
     private static final long serialVersionUID = 5733143745301294956L;
-    protected String policyId;
-    protected String policyDefId;
-    protected String name;
-    protected String description;
-    protected Integer status;
+    private String policyId;
+    private String policyDefId;
+    private String name;
+    private String description;
+    private Integer status;
     @XmlSchemaType(name = "dateTime")
-    protected Date createDate;
-    protected String createdBy;
+    private Date createDate;
+    private String createdBy;
     @XmlSchemaType(name = "dateTime")
-    protected Date lastUpdate;
-    protected String lastUpdatedBy;
-    protected String rule;
-    protected String ruleSrcUrl;
-	private Integer enablement;
+    private Date lastUpdate;
+    private String lastUpdatedBy;
+    private String rule;
+    private String ruleSrcUrl;
+    private Integer enablement;
 
-    protected Set<PolicyAttribute> policyAttributes = new HashSet<PolicyAttribute>(0);
+    private Set<PolicyAttribute> policyAttributes = new HashSet<PolicyAttribute>(
+            0);
 
     public Policy() {
     }
@@ -58,7 +46,6 @@ public class Policy implements java.io.Serializable {
         this.policyId = policyId;
     }
 
-
     public String getPolicyId() {
         return this.policyId;
     }
@@ -66,7 +53,6 @@ public class Policy implements java.io.Serializable {
     public void setPolicyId(String policyId) {
         this.policyId = policyId;
     }
-
 
     public String getName() {
         return this.name;
@@ -124,7 +110,7 @@ public class Policy implements java.io.Serializable {
         this.lastUpdatedBy = lastUpdatedBy;
     }
 
-	public Set<PolicyAttribute> getPolicyAttributes() {
+    public Set<PolicyAttribute> getPolicyAttributes() {
         return this.policyAttributes;
     }
 
@@ -140,7 +126,6 @@ public class Policy implements java.io.Serializable {
         }
         return null;
     }
-
 
     public String getPolicyDefId() {
         return policyDefId;
@@ -166,34 +151,34 @@ public class Policy implements java.io.Serializable {
         this.ruleSrcUrl = ruleSrcUrl;
     }
 
-	/**
-	 * @return the enablemement
-	 */
-	public Integer getEnablement() {
-		return enablement;
-	}
+    /**
+     * @return the enablemement
+     */
+    public Integer getEnablement() {
+        return enablement;
+    }
 
-	/**
-	 * @param enablemement
-	 *            the enablemement to set
-	 */
-	public void setEnablement(Integer enablemement) {
-		this.enablement = enablemement;
-	}
+    /**
+     * @param enablemement
+     *            the enablemement to set
+     */
+    public void setEnablement(Integer enablemement) {
+        this.enablement = enablemement;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		return "Policy [policyId=" + policyId + ", policyDefId=" + policyDefId
-				+ ", name=" + name + ", description=" + description
-				+ ", status=" + status + ", createDate=" + createDate
-				+ ", createdBy=" + createdBy + ", lastUpdate=" + lastUpdate
-				+ ", lastUpdatedBy=" + lastUpdatedBy + ", rule=" + rule
-				+ ", ruleSrcUrl=" + ruleSrcUrl + ", enablement=" + enablement
-				+ ", policyAttributes=" + policyAttributes + "]";
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        return "Policy [policyId=" + policyId + ", policyDefId=" + policyDefId
+                + ", name=" + name + ", description=" + description
+                + ", status=" + status + ", createDate=" + createDate
+                + ", createdBy=" + createdBy + ", lastUpdate=" + lastUpdate
+                + ", lastUpdatedBy=" + lastUpdatedBy + ", rule=" + rule
+                + ", ruleSrcUrl=" + ruleSrcUrl + ", enablement=" + enablement
+                + ", policyAttributes=" + policyAttributes + "]";
+    }
 }

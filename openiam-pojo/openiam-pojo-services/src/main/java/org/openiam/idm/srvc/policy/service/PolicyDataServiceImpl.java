@@ -168,7 +168,7 @@ public class PolicyDataServiceImpl implements PolicyDataService {
             throw new NullPointerException("PolicyId is null");
         }
         return policyDozerConverter.convertToDTO(policyDao.findById(policyId),
-                false);
+                true);
     }
 
     /**

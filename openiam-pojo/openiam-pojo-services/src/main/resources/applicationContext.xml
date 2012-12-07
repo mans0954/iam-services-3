@@ -98,7 +98,7 @@
 		<property name="authContextClass" value="org.openiam.idm.srvc.auth.context.AuthenticationContextImpl" />
 		<property name="defaultToken" ref="defaultSSOToken" />
 		<property name="userManager" ref="userManager" />
-		<property name="policyDao" ref="policyDAO" />
+		<property name="policyDataService" ref="policyDataService" />
 		<property name="groupManager" ref="groupManager" />
 		<property name="roleManager" ref="roleDataService" />
 		<property name="cryptor" ref="cryptor" />
