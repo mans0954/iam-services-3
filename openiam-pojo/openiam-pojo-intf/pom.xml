@@ -73,6 +73,38 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        
+        <dependency>
+   			<groupId>org.hibernate</groupId>
+   			<artifactId>hibernate-search</artifactId>
+   			<version>${hibernatesearch.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>cglib</artifactId>
+                    <groupId>cglib</groupId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
+		</dependency>
+		
+		<dependency>
+   			<groupId>org.hibernate</groupId>
+   			<artifactId>hibernate-entitymanager</artifactId>
+   			<version>${hibernate.entity.manager.version}</version>
+   			<exclusions>
+                <exclusion>
+                    <artifactId>cglib</artifactId>
+                    <groupId>cglib</groupId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
+		</dependency>
 
         <dependency>
             <groupId>org.springframework</groupId>
@@ -104,6 +136,17 @@
             <version>${commons.codec.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        
+		<dependency>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+			<version>2.3</version>
+		</dependency>
 
         <dependency>
             <groupId>org.codehaus.groovy</groupId>

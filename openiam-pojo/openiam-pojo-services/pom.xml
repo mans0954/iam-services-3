@@ -73,7 +73,22 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
+            <scope>provided</scope>
         </dependency>
+        
+        <dependency>
+   			<groupId>org.hibernate</groupId>
+   			<artifactId>hibernate-search</artifactId>
+   			<version>${hibernatesearch.version}</version>
+   			<scope>provided</scope>
+		</dependency>
+		
+		<dependency>
+   			<groupId>org.hibernate</groupId>
+   			<artifactId>hibernate-entitymanager</artifactId>
+   			<version>${hibernate.entity.manager.version}</version>
+   			<scope>provided</scope>
+		</dependency>
 
         <dependency>
             <groupId>org.hibernate</groupId>
@@ -190,13 +205,6 @@
         <dependency>
             <groupId>org.opensaml</groupId>
             <artifactId>opensaml</artifactId>
-        </dependency>
-
-
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <scope>provided</scope>
         </dependency>
 
         <dependency>

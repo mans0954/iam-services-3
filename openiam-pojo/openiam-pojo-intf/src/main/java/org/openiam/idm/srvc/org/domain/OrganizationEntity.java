@@ -22,6 +22,7 @@ import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.search.annotations.DocumentId;
 import org.openiam.idm.srvc.org.dto.OrgClassificationEnum;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
@@ -34,6 +35,7 @@ public class OrganizationEntity {
     @GeneratedValue(generator="system-uuid")
     @GenericGenerator(name="system-uuid", strategy = "uuid")
     @Column(name="COMPANY_ID", length=32, nullable = false)
+    @DocumentId
     private String orgId;
 
     @Column(name="ALIAS", length=100)
