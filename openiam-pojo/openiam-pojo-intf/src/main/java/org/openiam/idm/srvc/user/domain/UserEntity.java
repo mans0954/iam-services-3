@@ -287,7 +287,6 @@ public class UserEntity {
     )
     private Set<AddressEntity> addresses = new HashSet<AddressEntity>(0);
 
-    //@IndexedEmbedded
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "parent", fetch = FetchType.LAZY)
     @Filter(
             name = "parentTypeFilter",
@@ -295,7 +294,6 @@ public class UserEntity {
     )
     private Set<PhoneEntity> phones = new HashSet<PhoneEntity>(0);
 
-    //@IndexedEmbedded
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "parent", fetch = FetchType.LAZY)
     @Filter(
             name = "parentTypeFilter",
@@ -306,7 +304,7 @@ public class UserEntity {
     @Column(name = "SYSTEM_FLAG",length = 1)
     private String systemFlag;
 
-    //@IndexedEmbedded
+    @IndexedEmbedded(prefix="principal.", depth=2)
     @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
     @JoinColumn(name="USER_ID", referencedColumnName="USER_ID")
     private List<LoginEntity> principalList = new LinkedList<LoginEntity>();
@@ -315,20 +313,19 @@ public class UserEntity {
     @JoinColumn(name="USER_ID", referencedColumnName="USER_ID")
     protected Set<UserKey> userKeys = new HashSet<UserKey>(0);
 
-
-    //@IndexedEmbedded
+    @IndexedEmbedded(prefix="groups.")
     @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
     @JoinColumn(name="USER_ID", referencedColumnName="USER_ID")
     private Set<UserGroupEntity> userGroups = new HashSet<UserGroupEntity>(0);
 
-    //@IndexedEmbedded
+    @IndexedEmbedded(prefix="roles.")
     @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
     @JoinColumn(name="USER_ID", referencedColumnName="USER_ID")
     private Set<UserRoleEntity> userRoles = new HashSet<UserRoleEntity>(0);
 
     @ManyToOne(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
     @JoinColumn(name="COMPANY_ID", referencedColumnName="COMPANY_ID", insertable = false, updatable = false)
-    @Field(name="organization", bridge=@FieldBridge(impl=OrganizationBridge.class))
+    @Field(name="organization", bridge=@FieldBridge(impl=OrganizationBridge.class), store=Store.YES)
     private OrganizationEntity organization;
 
 

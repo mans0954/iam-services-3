@@ -4,7 +4,9 @@ package org.openiam.idm.srvc.auth.domain;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.search.annotations.DocumentId;
 import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.IndexedEmbedded;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.auth.dto.Login;
@@ -23,10 +25,11 @@ import java.util.Set;
 @Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(Login.class)
-//@Indexed
 public class LoginEntity implements java.io.Serializable, Cloneable {
     private static final long serialVersionUID = -1972779170001619759L;
+    
     @EmbeddedId
+    @IndexedEmbedded
     protected LoginEmbeddableId id;
 
     @Column(name="USER_ID",length=32)
@@ -131,26 +134,6 @@ public class LoginEntity implements java.io.Serializable, Cloneable {
         this.id = id;
         this.firstTimeLogin = resetPwd;
         this.isLocked = isLocked;
-    }
-
-    public LoginEntity(LoginEmbeddableId id, String userId, String password, String pwdEquivalentToken, Date pwdChanged, Date pwdExp, int resetPwd, int isLocked, String status, Date gracePeriod, Date createDate, String createdBy, String currentLoginHost, Integer authFailCount, Date lastAuthAttempt, Set<LoginAttributeEntity> loginAttributes) {
-        this.id = id;
-        this.userId = userId;
-        this.password = password;
-        this.pwdEquivalentToken = pwdEquivalentToken;
-        this.pwdChanged = pwdChanged;
-        this.pwdExp = pwdExp;
-        this.firstTimeLogin = resetPwd;
-        this.isLocked = isLocked;
-        this.status = status;
-        this.gracePeriod = gracePeriod;
-        this.createDate = createDate;
-        this.createdBy = createdBy;
-        this.currentLoginHost = currentLoginHost;
-        this.authFailCount = authFailCount;
-        this.lastAuthAttempt = lastAuthAttempt;
-        this.loginAttributes = loginAttributes;
-
     }
 
     @Override

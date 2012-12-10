@@ -1,10 +1,12 @@
 package org.openiam.idm.srvc.user.dao;
 
+import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
@@ -56,25 +58,62 @@ public class UserSearchDAO extends AbstractHibernateSearchDao<UserEntity, UserSe
 			luceneQuery.add(clause, BooleanClause.Occur.MUST);
 		}
 		
-		/*
-		clause = buildOrganizationClause(query.getOrgIdList());
+		clause = buildExactClause("organization", query.getOrganizationId());
 		if(clause != null) {
 			luceneQuery.add(clause, BooleanClause.Occur.MUST);
 		}
-		*/
+		
+		clause = buildPrincipalClause(query.getPrincipal());
+		if(clause != null) {
+			luceneQuery.add(clause, BooleanClause.Occur.MUST);
+		}
+		
+		clause = buildGroupQuery(query.getGroupIdSet());
+		if(clause != null) {
+			luceneQuery.add(clause, BooleanClause.Occur.MUST);
+		}
+		
+		clause = buildRoleQuery(query.getRoleIdSet());
+		if(clause != null) {
+			luceneQuery.add(clause, BooleanClause.Occur.MUST);
+		}
 		
 		return luceneQuery;
 	}
 	
-	private Query buildOrganizationClause(final List<String> organizationIdList) {
-        if (CollectionUtils.isNotEmpty(organizationIdList)) {
-        	/*
-        	return ActiveType.getByCode(service).equals(ActiveType.ALL)
-        		? new RegexQuery(new Term("service", "(.*?)"))
-        		: QueryBuilder.buildQuery("service", BooleanClause.Occur.MUST, service);
-        	*/
-        }
-        return null;
+	private Query buildGroupQuery(final Collection<String> groupIdSet) {
+		BooleanQuery paramsQuery = null;
+		if(CollectionUtils.isNotEmpty(groupIdSet)) {
+			paramsQuery = new BooleanQuery();
+			for(final String groupId : groupIdSet) {
+				final Query query = buildExactClause("groups.groupId", groupId);
+				if(query != null) {
+					paramsQuery.add(query, BooleanClause.Occur.SHOULD);
+				}
+			}
+		}
+		return paramsQuery;
+	}
+	
+	private Query buildRoleQuery(final Collection<String> roleIdSet) {
+		BooleanQuery paramsQuery = null;
+		if(CollectionUtils.isNotEmpty(roleIdSet)) {
+			paramsQuery = new BooleanQuery();
+			for(final String roleId : roleIdSet) {
+				final Query query = buildExactClause("roles.roleId", roleId);
+				if(query != null) {
+					paramsQuery.add(query, BooleanClause.Occur.SHOULD);
+				}
+			}
+		}
+		return paramsQuery;
+	}
+	
+	private Query buildPrincipalClause(final String principalName) {
+		if(StringUtils.isNotBlank(principalName)) {
+			return buildTokenizedClause("principal.id.login", principalName);
+		}
+		return null;
     }
 
 	@Override

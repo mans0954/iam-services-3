@@ -2,16 +2,10 @@ package org.openiam.idm.srvc.auth.dto;
 // Generated Feb 18, 2008 3:56:06 PM by Hibernate Tools 3.2.0.b11
 
 
-import org.hibernate.annotations.*;
-import org.hibernate.annotations.Cache;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 
-import javax.persistence.*;
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.Table;
 import javax.xml.bind.annotation.*;
 import java.util.Date;
 import java.util.HashSet;
@@ -97,45 +91,38 @@ public class Login implements java.io.Serializable, Cloneable {
 
     protected String currentLoginHost;
 
-    @Column(name="AUTH_FAIL_COUNT")
     protected Integer authFailCount = new Integer(0);
 
     @XmlSchemaType(name = "dateTime")
     protected Date lastAuthAttempt;
 
-    @Column(name="CANONICAL_NAME",length = 100)
     protected String canonicalName;
 
     @XmlSchemaType(name = "dateTime")
     protected Date lastLogin;
 
-    @Column(name="IS_DEFAULT")
     protected Integer isDefault = new Integer(0);
 
-    @Column(name="PWD_CHANGE_COUNT")
     protected Integer passwordChangeCount = new Integer(0);
 
-    @Column(name="LAST_LOGIN_IP")
     protected String lastLoginIP;
 
     @XmlSchemaType(name = "dateTime")
     protected Date prevLogin;
 
-    @Column(name="PREV_LOGIN_IP")
     protected String prevLoginIP;
 
-    @Column(name="PSWD_RESET_TOKEN")
     protected String pswdResetToken;
 
     @XmlSchemaType(name = "dateTime")
     protected Date pswdResetTokenExp;
-    @OneToMany(mappedBy = "principal",cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+
     protected Set<LoginAttribute> loginAttributes = new HashSet<LoginAttribute>(0);
-    @Transient
+    
     protected boolean selected;
-    @Transient
+    
     protected String origPrincipalName;
-    @Transient
+    
     protected String managedSysName;
 
 
@@ -146,26 +133,6 @@ public class Login implements java.io.Serializable, Cloneable {
         this.id = id;
         this.firstTimeLogin = resetPwd;
         this.isLocked = isLocked;
-    }
-
-    public Login(LoginId id, String userId, String password, String pwdEquivalentToken, Date pwdChanged, Date pwdExp, int resetPwd, int isLocked, String status, Date gracePeriod, Date createDate, String createdBy, String currentLoginHost, Integer authFailCount, Date lastAuthAttempt, Set<LoginAttribute> loginAttributes) {
-        this.id = id;
-        this.userId = userId;
-        this.password = password;
-        this.pwdEquivalentToken = pwdEquivalentToken;
-        this.pwdChanged = pwdChanged;
-        this.pwdExp = pwdExp;
-        this.firstTimeLogin = resetPwd;
-        this.isLocked = isLocked;
-        this.status = status;
-        this.gracePeriod = gracePeriod;
-        this.createDate = createDate;
-        this.createdBy = createdBy;
-        this.currentLoginHost = currentLoginHost;
-        this.authFailCount = authFailCount;
-        this.lastAuthAttempt = lastAuthAttempt;
-        this.loginAttributes = loginAttributes;
-
     }
 
     @Override

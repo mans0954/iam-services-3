@@ -2,10 +2,14 @@ package org.openiam.idm.srvc.grp.domain;
 
 
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Index;
+import org.hibernate.search.annotations.Store;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.dto.UserGroup;
 
 import javax.persistence.*;
+
 import java.io.Serializable;
 import java.util.Date;
 
@@ -16,6 +20,7 @@ import java.util.Date;
 @Entity
 @Table(name="USER_GRP")
 @DozerDTOCorrespondence(UserGroup.class)
+@Embeddable
 public class UserGroupEntity implements Serializable {
     private static final long serialVersionUID = 5686110876382504665L;
     @Id
@@ -23,15 +28,21 @@ public class UserGroupEntity implements Serializable {
     @GenericGenerator(name="system-uuid", strategy = "uuid")
     @Column(name="USER_GRP_ID", length=32)
     protected String userGrpId;
+    
     @Column(name="GRP_ID",length=32,nullable=false)
+    @Field(name = "groupId", index = Index.UN_TOKENIZED, store = Store.YES)
     protected String grpId;
+    
     @Column(name="USER_ID",length=32,nullable=false)
     protected String userId;
+    
     @Column(name="STATUS",length=20,nullable=false)
     protected String status;
+    
     @Column(name="CREATE_DATE",length=19)
     @Temporal(TemporalType.DATE)
     protected Date createDate;
+    
     @Column(name="CREATED_BY",length=20)
     protected String createdBy;
 

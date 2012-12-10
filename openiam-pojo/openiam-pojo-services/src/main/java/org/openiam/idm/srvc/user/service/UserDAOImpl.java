@@ -1278,9 +1278,9 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
                 disjunction.add(getStringCriterion("em.emailAddress", searchBean.getEmailAddress(),ORACLE_INSENSITIVE)).add(getStringCriterion("email", searchBean.getEmailAddress(),ORACLE_INSENSITIVE));
                 criteria.add(disjunction);
             }
-            if(searchBean.getGroupIdList()!=null && !searchBean.getGroupIdList().isEmpty()){
+            if(CollectionUtils.isNotEmpty(searchBean.getGroupIdSet())){
                  criteria.createAlias("userGroups", "g");
-                 criteria.add(Restrictions.in("g.grpId",searchBean.getGroupIdList()));
+                 criteria.add(Restrictions.in("g.grpId", searchBean.getGroupIdSet()));
             }
             if(searchBean.getDivisionIdList()!=null && !searchBean.getDivisionIdList().isEmpty()){
                 criteria.add(Restrictions.in("division", searchBean.getDivisionIdList()));
@@ -1288,9 +1288,9 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             if(StringUtils.isNotEmpty(searchBean.getEmployeeId())) {
                 criteria.add(Restrictions.eq("employeeId", searchBean.getEmployeeId()));
             }
-            if(searchBean.getRoleIdList()!=null && !searchBean.getRoleIdList().isEmpty()){
+            if(CollectionUtils.isNotEmpty(searchBean.getRoleIdSet())) {
                 criteria.createAlias("userRoles", "urv");
-                criteria.add(Restrictions.in("urv.roleId", searchBean.getRoleIdList()));
+                criteria.add(Restrictions.in("urv.roleId", searchBean.getRoleIdSet()));
             }
 
             if (StringUtils.isNotEmpty(searchBean.getAttributeName())
