@@ -45,6 +45,7 @@ public class MetadataWebServiceImpl implements MetadataWebService {
 
     @Autowired
     MetaDataTypeDozerConverter metaDataTypeDozerConverter;
+
     /*
      * (non-Javadoc)
      * 
@@ -185,8 +186,9 @@ public class MetadataWebServiceImpl implements MetadataWebService {
      * .lang.String)
      */
     public List<MetadataType> getTypesInCategory(String categoryId) {
-        final List<MetadataTypeEntity> entityList = metadataService.getTypesInCategory(categoryId);
-        return metaDataTypeDozerConverter.convertToDTOList(entityList, false);
+        final List<MetadataTypeEntity> entityList = metadataService
+                .getTypesInCategory(categoryId);
+        return metaDataTypeDozerConverter.convertToDTOList(entityList, true);
     }
 
     /*

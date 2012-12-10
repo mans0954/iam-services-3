@@ -32,42 +32,8 @@ public class CategoryDataServiceImpl implements CategoryDataService {
     }
 
     public List<Category> getAllCategories(boolean nested) {
-        List<Category> catList = null;
-
-        if (!nested) {
-            catList = categoryDozerConverter.convertToDTOList(
-                    categoryDao.findRootCategories(), false);
-        } else {
-            catList = getRecursiveCategories(null);
-        }
-
-        return catList;
-    }
-
-    // use entity. PRIVATE only
-    private List<Category> getRecursiveCategories(String parentCategoryId) {
-        List<Category> catList = null;
-        if (parentCategoryId == null) {
-            catList = categoryDozerConverter.convertToDTOList(
-                    categoryDao.findRootCategories(), false);
-        } else {
-            catList = categoryDozerConverter.convertToDTOList(
-                    categoryDao.findChildCategories(parentCategoryId), false);
-        }
-        if (catList == null || catList.isEmpty())
-            return null;
-
-        int size = catList.size();
-        for (int i = 0; i < size; i++) {
-            Category cat = catList.get(i);
-            // check for child categories
-            List<Category> subCat = getRecursiveCategories(cat.getCategoryId());
-            if (subCat != null && !subCat.isEmpty()) {
-                cat.setChildCategories(new java.util.HashSet<Category>(subCat));
-            }
-        }
-
-        return catList;
+        return categoryDozerConverter.convertToDTOList(
+                categoryDao.findRootCategories(), nested);
     }
 
     public Category getCategory(String categoryId) {
@@ -79,15 +45,8 @@ public class CategoryDataServiceImpl implements CategoryDataService {
     }
 
     public List<Category> getChildCategories(String categoryId, boolean nested) {
-        List<Category> catList = null;
-
-        if (!nested) {
-            catList = categoryDozerConverter.convertToDTOList(
-                    categoryDao.findChildCategories(categoryId), false);
-        } else {
-            catList = getRecursiveCategories(categoryId);
-        }
-        return catList;
+        return categoryDozerConverter.convertToDTOList(
+                categoryDao.findChildCategories(categoryId), nested);
     }
 
     @Transactional
@@ -95,7 +54,6 @@ public class CategoryDataServiceImpl implements CategoryDataService {
         if (categoryId == null) {
             throw (new NullPointerException("CategoryId is null"));
         }
-
         if (!nested) {
             CategoryEntity parentCat = new CategoryEntity();
             parentCat.setCategoryId(categoryId);
@@ -128,9 +86,7 @@ public class CategoryDataServiceImpl implements CategoryDataService {
                 }
                 catIdBuf.append(catStr);
             }
-
         }
-
         String catIdStr = catIdBuf.toString();
         int count = categoryDao.removeGroupList(catIdStr);
         Category parentCat = new Category();
@@ -138,7 +94,6 @@ public class CategoryDataServiceImpl implements CategoryDataService {
         categoryDao.delete(categoryDozerConverter.convertToEntity(parentCat,
                 false));
         return count++;
-
     }
 
     /**
@@ -182,7 +137,6 @@ public class CategoryDataServiceImpl implements CategoryDataService {
         if (cat == null) {
             throw (new NullPointerException("Category object is null"));
         }
-        categoryDao.save(categoryDozerConverter.convertToEntity(cat, false));
+        categoryDao.save(categoryDozerConverter.convertToEntity(cat, true));
     }
-
 }
