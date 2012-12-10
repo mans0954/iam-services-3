@@ -517,13 +517,9 @@ public class PasswordServiceImpl implements PasswordService {
         this.userManager = userManager;
     }
 
-    public PolicyDataService getPolicyDataService() {
-        return policyDataService;
-    }
-
-    public void setPolicyDataService(PolicyDataService policyDataService) {
-        this.policyDataService = policyDataService;
-    }
+    // public void setPolicyDataService(PolicyDataService policyDataService) {
+    // this.policyDataService = policyDataService;
+    // }
 
     public Cryptor getCryptor() {
         return cryptor;
