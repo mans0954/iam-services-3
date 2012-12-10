@@ -116,13 +116,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     protected PasswordService passwordManager;
     private DozerUtils dozerUtils;
 
-    /**
-     * @param policyDataService the policyDataService to set
-     */
-    public void setPolicyDataService(PolicyDataService policyDataService) {
-        this.policyDataService = policyDataService;
-    }
-
     @Autowired
     protected KeyManagementService keyManagementService;
 

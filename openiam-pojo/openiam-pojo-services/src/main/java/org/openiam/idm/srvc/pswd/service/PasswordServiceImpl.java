@@ -34,10 +34,11 @@ import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
+import org.openiam.idm.srvc.policy.domain.PolicyObjectAssocEntity;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
-import org.openiam.idm.srvc.policy.dto.PolicyObjectAssoc;
 import org.openiam.idm.srvc.policy.service.PolicyDataService;
+import org.openiam.idm.srvc.policy.service.PolicyObjectAssocDAO;
 import org.openiam.idm.srvc.pswd.dto.Password;
 import org.openiam.idm.srvc.pswd.dto.PasswordHistory;
 import org.openiam.idm.srvc.pswd.dto.PasswordResetTokenRequest;
@@ -55,7 +56,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author suneet
- *
+ * 
  */
 
 public class PasswordServiceImpl implements PasswordService {
@@ -68,7 +69,8 @@ public class PasswordServiceImpl implements PasswordService {
 
     @Autowired
     private PolicyDataService policyDataService;
-
+    @Autowired
+    private PolicyObjectAssocDAO policyObjectAssocDao;
     protected Cryptor cryptor;
     protected PasswordHistoryDAO passwordHistoryDao;
     protected HashDigest hash;
@@ -283,50 +285,50 @@ public class PasswordServiceImpl implements PasswordService {
         // Find a password policy for this user
         // order of search, type, classification, domain, global
 
-        PolicyObjectAssoc policyAssoc;
+        PolicyObjectAssocEntity policyAssocEntity = null;
 
         log.info("User type and classifcation=" + user.getUserId() + " "
                 + user.getUserTypeInd());
 
         if (user.getClassification() != null) {
             log.info("Looking for associate by classification.");
-            policyAssoc = policyDataService.findAssociationByLevel(
+            policyAssocEntity = policyObjectAssocDao.findAssociationByLevel(
                     "CLASSIFICATION", user.getClassification());
-            if (policyAssoc != null) {
-                return getPolicy(policyAssoc);
+            if (policyAssocEntity != null) {
+                return getPolicy(policyAssocEntity);
             }
         }
 
         // look to see if a policy exists for the type of user
         if (user.getUserTypeInd() != null) {
             log.info("Looking for associate by type.");
-            policyAssoc = policyDataService.findAssociationByLevel("TYPE",
-                    user.getUserTypeInd());
-            log.info("PolicyAssoc found=" + policyAssoc);
-            if (policyAssoc != null) {
-                return getPolicy(policyAssoc);
+            policyAssocEntity = policyObjectAssocDao.findAssociationByLevel(
+                    "TYPE", user.getUserTypeInd());
+            log.info("PolicyAssoc found=" + policyAssocEntity);
+            if (policyAssocEntity != null) {
+                return getPolicy(policyAssocEntity);
             }
         }
 
         if (domainId != null) {
             log.info("Looking for associate by domain.");
-            policyAssoc = policyDataService.findAssociationByLevel("DOMAIN",
-                    domainId);
-            if (policyAssoc != null) {
-                return getPolicy(policyAssoc);
+            policyAssocEntity = policyObjectAssocDao.findAssociationByLevel(
+                    "DOMAIN", domainId);
+            if (policyAssocEntity != null) {
+                return getPolicy(policyAssocEntity);
             }
         }
         log.info("Using global association password policy.");
         // did not find anything - get the global policy
-        policyAssoc = policyDataService.findAssociationByLevel("GLOBAL",
-                "GLOBAL");
-        if (policyAssoc == null) {
+        policyAssocEntity = policyObjectAssocDao.findAssociationByLevel(
+                "GLOBAL", "GLOBAL");
+        if (policyAssocEntity == null) {
             return null;
         }
-        return getPolicy(policyAssoc);
+        return getPolicy(policyAssocEntity);
     }
 
-    private Policy getPolicy(PolicyObjectAssoc policyAssoc) {
+    private Policy getPolicy(PolicyObjectAssocEntity policyAssoc) {
         log.info("Retreiving policyId=" + policyAssoc.getPolicyId());
         return policyDataService.getPolicy(policyAssoc.getPolicyId());
     }
@@ -515,13 +517,9 @@ public class PasswordServiceImpl implements PasswordService {
         this.userManager = userManager;
     }
 
-    public PolicyDataService getPolicyDataService() {
-        return policyDataService;
-    }
-
-    public void setPolicyDataService(PolicyDataService policyDataService) {
-        this.policyDataService = policyDataService;
-    }
+    // public void setPolicyDataService(PolicyDataService policyDataService) {
+    // this.policyDataService = policyDataService;
+    // }
 
     public Cryptor getCryptor() {
         return cryptor;

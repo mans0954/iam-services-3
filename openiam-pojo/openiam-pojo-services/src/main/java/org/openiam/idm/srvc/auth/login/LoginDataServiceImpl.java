@@ -497,14 +497,6 @@ public class LoginDataServiceImpl implements LoginDataService {
 
     }
 
-    public PolicyDataService getPolicyDao() {
-        return policyDataService;
-    }
-
-    public void setPolicyDataService(PolicyDataService policyDataService) {
-        this.policyDataService = policyDataService;
-    }
-
     /*
      * (non-Javadoc)
      * 

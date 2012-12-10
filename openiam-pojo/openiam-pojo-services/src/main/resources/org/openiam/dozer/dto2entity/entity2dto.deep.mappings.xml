@@ -156,7 +156,7 @@
 	<mapping>
 		<class-a>org.openiam.idm.srvc.meta.domain.MetadataTypeEntity</class-a>
 		<class-b>org.openiam.idm.srvc.meta.dto.MetadataType</class-b>
-		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="dto2entityDeepDozerMapper">
+		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="dto2entityDeepDozerMapper">
 			<a>categories</a>
 			<b>categories</b> 
 		</field>
@@ -168,11 +168,11 @@
 	<mapping>
 		<class-a>org.openiam.idm.srvc.cat.domain.CategoryEntity</class-a>
 		<class-b>org.openiam.idm.srvc.cat.dto.Category</class-b>
-		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="dto2entityDeepDozerMapper">
+		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="dto2entityDeepDozerMapper">
 			<a>childCategories</a>
 			<b>childCategories</b> 
 		</field>
-		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="dto2entityShallowDozerMapper">
+		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="dto2entityShallowDozerMapper">
 			<a>categoryLanguages</a>
 			<b>categoryLanguages</b>
 		</field>
@@ -189,11 +189,11 @@
 <mapping>
 		<class-a>org.openiam.idm.srvc.policy.domain.PolicyDefEntity</class-a>
 		<class-b>org.openiam.idm.srvc.policy.dto.PolicyDef</class-b>
-		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="dto2entityDeepDozerMapper">
+		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="dto2entityDeepDozerMapper">
 			<a>policies</a>
 			<b>policies</b> 
 		</field>
-		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="dto2entityDeepDozerMapper">
+		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="dto2entityDeepDozerMapper">
 			<a>policyDefParams</a>
 			<b>policyDefParams</b>
 		</field>
@@ -201,7 +201,7 @@
 	<mapping>
 		<class-a>org.openiam.idm.srvc.policy.domain.PolicyDefParamEntity</class-a>
 		<class-b>org.openiam.idm.srvc.policy.dto.PolicyDefParam</class-b>
-		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="dto2entityShallowDozerMapper">
+		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="dto2entityShallowDozerMapper">
 			<a>policyAttributes</a>
 			<b>policyAttributes</b> 
 		</field>

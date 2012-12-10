@@ -98,7 +98,6 @@
 		<property name="authContextClass" value="org.openiam.idm.srvc.auth.context.AuthenticationContextImpl" />
 		<property name="defaultToken" ref="defaultSSOToken" />
 		<property name="userManager" ref="userManager" />
-		<property name="policyDataService" ref="policyDataService" />
 		<property name="groupManager" ref="groupManager" />
 		<property name="roleManager" ref="roleDataService" />
 		<property name="cryptor" ref="cryptor" />
@@ -234,7 +233,6 @@
 		<property name="cryptor" ref="cryptor" />
 		<property name="secDomainService" ref="secDomainService" />
 		<property name="userDao" ref="userDAO" />
-		<property name="policyDataService" ref="policyDataService" />
 		<property name="passwordManager" ref="passwordManager" />
 		<property name="passwordHistoryDao" ref="passwordHistoryDAO" />	
 		<property name="sysConfiguration" ref="sysConfiguration" />
@@ -260,7 +258,6 @@
 	<!-- Password Beans -->
 	<bean id="challengeResponse" class="org.openiam.idm.srvc.pswd.service.ChallengeResponseServiceImpl" >
 		<property name="cryptor" ref="cryptor" />
-		<property name="policyDataService" ref="policyDataService" />
 		<property name="identityQuestGroupDao" ref="identityQuestGroupDAO" />
 		<property name="identityQuestDao" ref="identityQuestDAO" />
 		<property name="identityAnswerDao" ref="identityAnswerDAO" />	
@@ -298,7 +295,6 @@
 		<property name="passwordValidator" ref="passwordValidator" />	
 		<property name="userManager" ref="userManager" />
 		<property name="loginManager" ref="loginManager" />
-		<property name="policyDataService" ref="policyDataService" />
 		<property name="cryptor" ref="cryptor" />	
 		<property name="passwordHistoryDao" ref="passwordHistoryDAO" />
         <property name="hash" ref="hash" />
@@ -324,7 +320,6 @@
 	</bean>		
 
 	<bean id="passwordValidator" class="org.openiam.idm.srvc.pswd.rule.PasswordValidatorImpl" >
-		<property name="policyDataService" ref="policyDataService" />
 		<property name="secDomainService" ref="secDomainService" />
 		<property name="userDao" ref="userDAO" />
 		<property name="loginDao" ref="loginDAO" />

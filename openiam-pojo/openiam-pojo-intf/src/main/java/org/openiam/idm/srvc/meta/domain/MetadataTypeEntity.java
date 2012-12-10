@@ -14,7 +14,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
-import javax.persistence.MapKey;
+import javax.persistence.MapKeyColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import org.hibernate.annotations.Cache;
@@ -49,8 +49,9 @@ public class MetadataTypeEntity implements java.io.Serializable {
     @Column(name = "SYNC_MANAGED_SYS")
     private int syncManagedSys = 0;
 
-    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "metadataElementId", fetch = FetchType.LAZY)
-    @MapKey(name = "attributeName")
+    @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, cascade = { CascadeType.ALL })
+    @JoinColumn(name = "TYPE_ID", referencedColumnName = "TYPE_ID")
+    @MapKeyColumn(name = "ATTRIBUTE_NAME")
     @Fetch(FetchMode.SUBSELECT)
     private Map<String, MetadataElementEntity> elementAttributes = new HashMap<String, MetadataElementEntity>(
             0);
