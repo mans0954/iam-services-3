@@ -121,18 +121,18 @@ public class OrganizationDAOImpl extends BaseDaoImpl<OrganizationEntity, String>
                         criteria.add(Restrictions.eq("organizationName", organizationName));
                     }
                 }
-                
-                if (StringUtils.isNotBlank(organization.getMetadataTypeId())) {
-                    criteria.add(Restrictions.eq("metadataTypeId", organization.getMetadataTypeId()));
-                }
-                
-                if (organization.getClassification() != null) {
-                    criteria.add(Restrictions.eq("classification", organization.getClassification()));
-                }
-                
-                if (StringUtils.isNotBlank(organization.getInternalOrgId())) {
-                    criteria.add(Restrictions.eq("internalOrgId", organization.getInternalOrgId()));
-                }
+            }
+            
+            if (StringUtils.isNotBlank(organization.getMetadataTypeId())) {
+                criteria.add(Restrictions.eq("metadataTypeId", organization.getMetadataTypeId()));
+            }
+            
+            if (organization.getClassification() != null) {
+                criteria.add(Restrictions.eq("classification", organization.getClassification()));
+            }
+            
+            if (StringUtils.isNotBlank(organization.getInternalOrgId())) {
+                criteria.add(Restrictions.eq("internalOrgId", organization.getInternalOrgId()));
             }
         }
         return criteria;

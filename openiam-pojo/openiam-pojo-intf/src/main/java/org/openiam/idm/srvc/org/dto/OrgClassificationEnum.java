@@ -46,5 +46,14 @@ public enum OrgClassificationEnum {
         value = val;
     }
 
-
+    public static OrgClassificationEnum fromStringValue(final String val) {
+    	OrgClassificationEnum retVal = null;
+    	for(final OrgClassificationEnum e : OrgClassificationEnum.values()) {
+    		if(e.getValue().equals(val)) {
+    			retVal = e;
+    			break;
+    		}
+    	}
+    	return retVal;
+    }
 }
