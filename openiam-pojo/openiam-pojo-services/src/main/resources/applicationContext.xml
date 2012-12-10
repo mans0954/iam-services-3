@@ -137,38 +137,36 @@
 		<property name="sessionFactory" ref="sessionFactory"></property>	
 	</bean>	
 	
-	<!-- User Beans -->
-
-	<!--<bean id="userWS" class="org.openiam.idm.srvc.user.ws.UserDataWebServiceImpl" >-->
-		<!--<property name="userManager" ref="userManager" />-->
-		<!--<property name="dozerUtils" ref="dozerUtils" />-->
-	<!--</bean>-->
+	<bean id="luceneReindexService" class="org.openiam.idm.srvc.lucene.LuceneReindexService">
+		<property name="hibernateSearchDAOs">
+			<list>
+			  <ref bean="userSearchDAO" />		  
+			</list>
+		</property>
+	</bean>
 	
-	<!--<bean id="userManager" class="org.openiam.idm.srvc.user.service.UserMgr" >-->
-		<!--<property name="userDao" ref="userDAO" />-->
-		<!--<property name="userAttributeDao" ref="userAttributeDAO" />-->
-		<!--<property name="userNoteDao" ref="userNoteDAO" />-->
-		<!--<property name="addressDao" ref="addressDAO" />-->
-		<!--<property name="emailAddressDao" ref="emailAddressDAO" />-->
-		<!--<property name="phoneDao" ref="phoneDAO" />-->
-		<!--<property name="supervisorDao" ref="supervisorDAO" />-->
-		<!--<property name="loginDao" ref="loginDAO" />-->
-        <!--<property name="sysConfiguration" ref="sysConfiguration" />-->
-	<!--</bean>-->
-
-
-
-	<!--<bean id="userDAO" class="org.openiam.idm.srvc.user.service.UserDAOImpl" >-->
-		<!--<property name="dbType" value="${openiam.dbType}" />-->
-	<!--</bean>	-->
-
-	<!--<bean id="userAttributeDAO" class="org.openiam.idm.srvc.user.service.UserAttributeDAOImpl" >-->
-		<!--<property name="sessionFactory" ref="sessionFactory"></property>		-->
-	<!--</bean>	-->
-
-	<!--<bean id="userNoteDAO" class="org.openiam.idm.srvc.user.service.UserNoteDAOImpl" >-->
-		<!--<property name="sessionFactory" ref="sessionFactory"></property>		-->
-	<!--</bean>	-->
+	<util:list id="hibernateSearchDAOs" list-class="java.util.ArrayList">
+		<ref bean="userSearchDAO" />
+	</util:list>
+	
+	<!-- Thread Scheduling - not using annotations since the interval must be configurable -->
+	<bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+    	<property name="triggers">
+        	<list>
+        		<bean class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+        			 <property name="startDelay" value="${org.openiam.lucene.reindex.threadsweep}" />
+        			 <property name="repeatInterval" value="${org.openiam.lucene.reindex.threadsweep}" />
+        			 <property name="jobDetail">
+						<bean class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+							<property name="targetObject" ref="luceneReindexService" />
+						  	<property name="targetMethod" value="sweep" />
+						  	<property name="concurrent" value="false" />
+						</bean>
+        			 </property>
+        		</bean>
+        	</list>
+     	</property>
+	</bean>
 
 	<bean id="addressDAO" class="org.openiam.idm.srvc.continfo.service.AddressDAOImpl" >
 		<property name="sessionFactory" ref="sessionFactory"></property>		

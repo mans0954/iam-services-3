@@ -22,8 +22,8 @@ import java.util.List;
 @XmlType(name = "UserSearchBean", propOrder = {
         "firstName",
         "lastName",
-        "status",
-        "secondaryStatus",
+        "accountStatus",
+        "userStatus",
         "nickName",
         "phoneAreaCd",
         "phoneNbr",
@@ -31,7 +31,6 @@ import java.util.List;
         "groupIdList",
         "roleIdList",
         "emailAddress",
-        "orgName",
         "principal",
         "attributeName",
         "attributeValue",
@@ -50,7 +49,7 @@ import java.util.List;
         "dateOfBirth",
         "zipCode",
         "delAdmin",
-        "orgIdList",
+        "organizationId",
         "deptIdList",
         "divisionIdList",
         "attributeList"
@@ -61,15 +60,14 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
     protected String firstName = null;
     protected String lastName = null;
     protected String nickName = null;
-    protected String status = null;
-    protected String secondaryStatus = null;
+    protected String accountStatus = null;
+    protected String userStatus = null;
     protected String phoneAreaCd = null;
     protected String phoneNbr = null;
     protected String employeeId = null;
     protected List<String> groupIdList = new ArrayList<String>();
     protected List<String> roleIdList = new ArrayList<String>();
     protected String emailAddress = null;
-    protected String orgName;
     protected String principal;
     protected String attributeName;
     protected String attributeValue;
@@ -96,11 +94,20 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
     protected String loggedIn = null;
     protected int delAdmin = 0;
 
-    protected List<String> orgIdList = new ArrayList<String>();
+    private String organizationId;
+    
     protected List<String> deptIdList = new ArrayList<String>();
     protected List<String> divisionIdList = new ArrayList<String>();
     protected List<SearchAttribute> attributeList = new ArrayList<SearchAttribute>();
 
+    public String getOrganizationId() {
+    	return organizationId;
+    }
+    
+    public void setOrganizationId(final String organizationId) {
+    	this.organizationId = organizationId;
+    }
+    
     public int getDelAdmin() {
         return delAdmin;
     }
@@ -132,23 +139,23 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
         this.nickName = nickName;
     }
 
-    public String getStatus() {
-        return status;
-    }
+    public String getAccountStatus() {
+		return accountStatus;
+	}
 
-    public void setStatus(String status) {
-        this.status = status;
-    }
+	public void setAccountStatus(String accountStatus) {
+		this.accountStatus = accountStatus;
+	}
 
-    public String getSecondaryStatus() {
-        return secondaryStatus;
-    }
+	public String getUserStatus() {
+		return userStatus;
+	}
 
-    public void setSecondaryStatus(String secondaryStatus) {
-        this.secondaryStatus = secondaryStatus;
-    }
+	public void setUserStatus(String userStatus) {
+		this.userStatus = userStatus;
+	}
 
-    public String getPhoneAreaCd() {
+	public String getPhoneAreaCd() {
         return phoneAreaCd;
     }
 
@@ -194,14 +201,6 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
 
     public void setEmailAddress(String emailAddress) {
         this.emailAddress = emailAddress;
-    }
-
-    public String getOrgName() {
-        return orgName;
-    }
-
-    public void setOrgName(String orgName) {
-        this.orgName = orgName;
     }
 
     public String getPrincipal() {
@@ -338,14 +337,6 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
 
     public void setLoggedIn(String loggedIn) {
         this.loggedIn = loggedIn;
-    }
-
-    public List<String> getOrgIdList() {
-        return orgIdList;
-    }
-
-    public void setOrgIdList(List<String> orgIdList) {
-        this.orgIdList = orgIdList;
     }
 
     public List<String> getDeptIdList() {

@@ -5,6 +5,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.search.Sort;
 import org.hibernate.Hibernate;
+import org.mvel2.optimizers.impl.refl.nodes.ArrayLength;
 import org.openiam.base.SysConfiguration;
 import org.openiam.core.dao.lucene.AbstractHibernateSearchDao;
 import org.openiam.core.dao.lucene.SortType;
@@ -367,7 +368,7 @@ public class UserMgr implements UserDataService {
       */
     public List<User> findUserByOrganization(String orgId) {
         UserSearchBean searchBean = new UserSearchBean();
-        searchBean.setOrgIdList(Arrays.asList(orgId));
+        searchBean.setOrganizationId(orgId);
         return findBeans(searchBean);
     }
 
@@ -378,7 +379,7 @@ public class UserMgr implements UserDataService {
       */
     public List findUsersByStatus(UserStatusEnum status) {
         UserSearchBean searchBean = new UserSearchBean();
-        searchBean.setStatus(status.name());
+        searchBean.setAccountStatus(status.name());
         return findBeans(searchBean);
     }
 
@@ -404,7 +405,11 @@ public class UserMgr implements UserDataService {
     public List<User> findBeans(UserSearchBean searchBean, int from, int size){
     	List<UserEntity> entityList = null;
     	if(StringUtils.isNotBlank(searchBean.getKey())) {
-    		entityList = userDao.getByExample(searchBean, from, size);
+    		final UserEntity entity = userDao.findById(searchBean.getKey());;
+    		if(entity != null) {
+    			entityList = new ArrayList<UserEntity>(1);
+    			entityList.add(entity);
+    		}
     	} else {
     		entityList = (List<UserEntity>)userSearchDAO.find(from, size, null, searchBean);
     	}
@@ -412,7 +417,7 @@ public class UserMgr implements UserDataService {
     }
 
     public int count(UserSearchBean searchBean){
-      return userDao.getUserCount(searchBean).intValue();
+      return userSearchDAO.count(searchBean);
     }
 
     /* -------- Methods for Attributes ---------- */

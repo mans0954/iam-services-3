@@ -21,37 +21,37 @@ public class UserSearchDAO extends AbstractHibernateSearchDao<UserEntity, UserSe
 	@Override
 	protected Query parse(UserSearchBean query) {
 		final BooleanQuery luceneQuery = new BooleanQuery();
-		Query clause = buildClause("firstName", query.getFirstName());
+		Query clause = buildTokenizedClause("firstName", query.getFirstName());
 		if(clause != null) {
 			luceneQuery.add(clause, BooleanClause.Occur.MUST);
 		}
 		
-		clause = buildClause("lastName", query.getLastName());
+		clause = buildTokenizedClause("lastName", query.getLastName());
 		if(clause != null) {
 			luceneQuery.add(clause, BooleanClause.Occur.MUST);
 		}
 		
-		clause = buildClause("userStatus", query.getStatus());
+		clause = buildExactClause("userStatus", query.getUserStatus());
 		if(clause != null) {
 			luceneQuery.add(clause, BooleanClause.Occur.MUST);
 		}
 		
-		clause = buildClause("accountStatus", query.getSecondaryStatus());
+		clause = buildExactClause("accountStatus", query.getAccountStatus());
 		if(clause != null) {
 			luceneQuery.add(clause, BooleanClause.Occur.MUST);
 		}
 		
-		clause = buildClause("email", query.getEmailAddress());
+		clause = buildTokenizedClause("email", query.getEmailAddress());
 		if(clause != null) {
 			luceneQuery.add(clause, BooleanClause.Occur.MUST);
 		}
 		
-		clause = buildClause("areaCd", query.getPhoneAreaCd());
+		clause = buildExactClause("areaCd", query.getPhoneAreaCd());
 		if(clause != null) {
 			luceneQuery.add(clause, BooleanClause.Occur.MUST);
 		}
 		
-		clause = buildClause("phoneNbr", query.getPhoneNbr());
+		clause = buildExactClause("phoneNbr", query.getPhoneNbr());
 		if(clause != null) {
 			luceneQuery.add(clause, BooleanClause.Occur.MUST);
 		}

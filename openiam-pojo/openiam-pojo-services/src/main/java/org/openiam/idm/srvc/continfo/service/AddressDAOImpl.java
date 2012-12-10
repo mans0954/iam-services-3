@@ -71,22 +71,6 @@ public class AddressDAOImpl implements AddressDAO {
 		}
 	}
 	
-	
-	
-	public List findByExample(AddressEntity instance) {
-		log.debug("finding Address instance by example");
-		try {
-			List results = sessionFactory.getCurrentSession().createCriteria(AddressEntity.class).add(
-					Example.create(instance)).list();
-			log.debug("find by example successful, result size: "
-					+ results.size());
-			return results;
-		} catch (RuntimeException re) {
-			log.error("find by example failed", re);
-			throw re;
-		}
-	}
-	
 
 	public AddressEntity add(AddressEntity instance) {
 		log.debug("persisting Address instance");
@@ -120,46 +104,6 @@ public class AddressDAOImpl implements AddressDAO {
 			log.error("delete failed", re);
 			throw re;
 		}		
-	}
-	
-	/**
-	 * Persist a map of address objects at one time. Handles add, update, delete.
-	 * @param adrMap
-	 */
-	public void saveAddressMap(String parentId, String parentType, Map<String,AddressEntity> adrMap) {
-		// get the current map and then compare each record with the map that has been passed in.
-		Map<String,AddressEntity> currentMap =  this.findByParent(parentId, parentType);
-		if (currentMap != null) {
-			Iterator<AddressEntity> it = currentMap.values().iterator();
-			while (it.hasNext()) {
-				AddressEntity curAdr =  it.next();
-				AddressEntity newAdr = adrMap.get(curAdr.getAddressId());
-				if (newAdr == null) {
-					this.remove(curAdr);
-				}else {
-					this.update(newAdr);
-				}
-					
-			}
-		}
-		
-		
-	
-		Collection<AddressEntity> adrCol = adrMap.values();
-		Iterator<AddressEntity> itr = adrCol.iterator();
-		while (itr.hasNext()) {
-			AddressEntity newAdr = itr.next();
-			AddressEntity curAdr = null;
-			if (currentMap != null ) {
-				curAdr = currentMap.get(newAdr.getAddressId());
-			}
-			if (curAdr == null) {
-				add(newAdr);
-			}
-		}
-		
-		
-		
 	}
 	
 	/**

@@ -20,10 +20,13 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
 import org.apache.log4j.Logger;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.TermQuery;
 import org.hibernate.CacheMode;
 import org.hibernate.Criteria;
 import org.hibernate.FlushMode;
@@ -266,11 +269,20 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType> extends Hibernat
 			.setProjection(Projections.max(lastModifiedFieldName)).uniqueResult();
     }
     
-    protected Query buildClause(final String paramName, final String paramValue) {
+    protected Query buildTokenizedClause(final String paramName, final String paramValue) {
     	if (StringUtils.isNotBlank(paramValue) && StringUtils.isNotBlank(paramName)) {
             final BooleanQuery paramsQuery = new BooleanQuery();
             paramsQuery.add(QueryBuilder.buildQuery(paramName, BooleanClause.Occur.SHOULD, paramValue), BooleanClause.Occur.SHOULD);
             return paramsQuery;
+        }
+    	return null;
+	}
+    
+    protected Query buildExactClause(final String paramName, final String paramValue) {
+    	if (StringUtils.isNotBlank(paramValue) && StringUtils.isNotBlank(paramName)) {
+    		final BooleanQuery query = new BooleanQuery();
+    		query.add(new TermQuery(new Term(paramName, paramValue)), BooleanClause.Occur.SHOULD);
+    		return query;
         }
     	return null;
 	}

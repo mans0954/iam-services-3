@@ -1226,11 +1226,11 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             if (StringUtils.isNotEmpty(searchBean.getNickName())) {
                 criteria.add(getStringCriterion("nickname", searchBean.getNickName()));
             }
-            if (StringUtils.isNotEmpty(searchBean.getStatus())) {
-                criteria.add(Restrictions.eq("status", UserStatusEnum.valueOf(searchBean.getStatus())));
+            if (StringUtils.isNotEmpty(searchBean.getUserStatus())) {
+                criteria.add(Restrictions.eq("status", UserStatusEnum.valueOf(searchBean.getUserStatus())));
             }
-            if (StringUtils.isNotEmpty(searchBean.getStatus())) {
-                criteria.add(Restrictions.eq("secondaryStatus", UserStatusEnum.valueOf(searchBean.getSecondaryStatus())));
+            if (StringUtils.isNotEmpty(searchBean.getAccountStatus())) {
+                criteria.add(Restrictions.eq("secondaryStatus", UserStatusEnum.valueOf(searchBean.getAccountStatus())));
             }
             if (searchBean.getCreateDate()!=null) {
                 criteria.add(Restrictions.eq("createDate", searchBean.getCreateDate()));
@@ -1257,15 +1257,11 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             if (StringUtils.isNotEmpty(searchBean.getZipCode())) {
                 criteria.add(Restrictions.eq("postalCd", searchBean.getZipCode()));
             }
-            if(searchBean.getOrgIdList()!=null && !searchBean.getOrgIdList().isEmpty()){
-                criteria.add(Restrictions.in("companyId", searchBean.getOrgIdList()));
+            if(StringUtils.isNotEmpty(searchBean.getOrganizationId())) {
+                criteria.add(Restrictions.eq("companyId", searchBean.getOrganizationId()));
             }
             if(searchBean.getDeptIdList()!=null && !searchBean.getDeptIdList().isEmpty()){
                 criteria.add(Restrictions.in("deptCd", searchBean.getDeptIdList()));
-            }
-            if(StringUtils.isNotEmpty(searchBean.getOrgName())) {
-                criteria.createAlias("organization", "c");
-                criteria.add(getStringCriterion("c.organizationName", searchBean.getOrgName(), ORACLE_INSENSITIVE));
             }
             if(StringUtils.isNotEmpty(searchBean.getPhoneAreaCd()) || StringUtils.isNotEmpty(searchBean.getPhoneNbr())) {
                 if(StringUtils.isNotEmpty(searchBean.getPhoneAreaCd())) {

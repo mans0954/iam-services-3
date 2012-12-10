@@ -45,15 +45,6 @@ public interface AddressDAO {
     void remove(AddressEntity instance);
 
     /**
-     * Persist a map of address objects at one time. Handles add, update, delete.
-     *
-     * @param parentId
-     * @param parentType
-     * @param adrMap
-     */
-    void saveAddressMap(String parentId, String parentType, Map<String, AddressEntity> adrMap);
-
-    /**
      * Returns a Map of Address objects for the parentId and parentType combination.
      * The map is keyed on the address.description. Address.description indicates
      * the type of address that we have; ie. Shipping, Billing, etc.
