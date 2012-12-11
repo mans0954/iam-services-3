@@ -1,10 +1,14 @@
 package org.openiam.idm.srvc.role.domain;
 
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Index;
+import org.hibernate.search.annotations.Store;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.role.dto.UserRole;
 
 import javax.persistence.*;
+
 import java.util.Date;
 
 /**
@@ -14,6 +18,7 @@ import java.util.Date;
 @Entity
 @Table(name="USER_ROLE")
 @DozerDTOCorrespondence(UserRole.class)
+@Embeddable
 public class UserRoleEntity implements java.io.Serializable {
     private static final long serialVersionUID = -3785768336629177182L;
     @Id
@@ -21,21 +26,29 @@ public class UserRoleEntity implements java.io.Serializable {
     @GenericGenerator(name="system-uuid", strategy = "uuid")
     @Column(name="USER_ROLE_ID", length=32)
     private String userRoleId;
+    
     @Column(name="USER_ID",length=32,nullable=false)
     private String userId;
+    
     @Column(name="ROLE_ID",length=32,nullable=false)
+    @Field(name = "roleId", index = Index.UN_TOKENIZED, store = Store.YES)
     private String roleId;
+    
     @Column(name="STATUS",length=20)
     private String status;
+    
     @Column(name="CREATE_DATE",length=19)
     @Temporal(TemporalType.DATE)
     private Date createDate;
+    
     @Column(name="START_DATE",length=19)
     @Temporal(TemporalType.DATE)
     private Date startDate;
+    
     @Column(name="END_DATE",length=19)
     @Temporal(TemporalType.DATE)
     private Date endDate;
+    
     @Column(name="CREATED_BY",length=19)
     private String createdBy;
 

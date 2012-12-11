@@ -1,18 +1,29 @@
 package org.openiam.idm.srvc.auth.domain;
 
 import javax.persistence.Column;
+import javax.persistence.Embeddable;
+
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Index;
+import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.Store;
+
 import java.io.Serializable;
 
 /**
  * Created by: Alexander Duckardt
  * Date: 16.11.12
  */
+@Embeddable
 public class LoginEmbeddableId implements Serializable {
 
     @Column(name="SERVICE_ID",length=20)
     private String domainId;
+    
+    @Field(name = "login", index = Index.TOKENIZED, store = Store.YES)
     @Column(name="LOGIN",length=320)
     private String login;
+    
     @Column(name="MANAGED_SYS_ID",length=50)
     private String managedSysId;
 

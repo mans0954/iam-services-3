@@ -1,5 +1,6 @@
 package org.openiam.idm.searchbeans;
 
+import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.SearchAttribute;
@@ -12,7 +13,9 @@ import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by: Alexander Duckardt
@@ -28,8 +31,8 @@ import java.util.List;
         "phoneAreaCd",
         "phoneNbr",
         "employeeId",
-        "groupIdList",
-        "roleIdList",
+        "groupIdSet",
+        "roleIdSet",
         "emailAddress",
         "principal",
         "attributeName",
@@ -65,8 +68,8 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
     protected String phoneAreaCd = null;
     protected String phoneNbr = null;
     protected String employeeId = null;
-    protected List<String> groupIdList = new ArrayList<String>();
-    protected List<String> roleIdList = new ArrayList<String>();
+    protected Set<String> groupIdSet = null;
+    protected Set<String> roleIdSet = null;
     protected String emailAddress = null;
     protected String principal;
     protected String attributeName;
@@ -179,23 +182,34 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
         this.employeeId = employeeId;
     }
 
-    public List<String> getGroupIdList() {
-        return groupIdList;
-    }
+	public Set<String> getGroupIdSet() {
+		return groupIdSet;
+	}
+	
+	public void addGroupId(final String groupId) {
+		if(StringUtils.isNotBlank(groupId)) {
+			if(this.groupIdSet == null) {
+				this.groupIdSet = new HashSet<String>();
+			}
+			this.groupIdSet.add(StringUtils.trimToNull(groupId));
+		}
+		
+	}
 
-    public void setGroupIdList(List<String> groupIdList) {
-        this.groupIdList = groupIdList;
-    }
+	public Set<String> getRoleIdSet() {
+		return roleIdSet;
+	}
+	
+	public void addRoleId(final String roleId) {
+		if(StringUtils.isNotBlank(roleId)) {
+			if(this.roleIdSet == null) {
+				this.roleIdSet = new HashSet<String>();
+			}
+			this.roleIdSet.add(StringUtils.trimToNull(roleId));
+		}
+	}
 
-    public List<String> getRoleIdList() {
-        return roleIdList;
-    }
-
-    public void setRoleIdList(List<String> roleIdList) {
-        this.roleIdList = roleIdList;
-    }
-
-    public String getEmailAddress() {
+	public String getEmailAddress() {
         return emailAddress;
     }
 
