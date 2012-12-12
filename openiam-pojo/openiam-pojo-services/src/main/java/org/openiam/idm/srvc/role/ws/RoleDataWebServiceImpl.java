@@ -61,6 +61,7 @@ import org.openiam.idm.srvc.role.dto.RolePolicy;
 import org.openiam.idm.srvc.role.dto.UserRole;
 import org.openiam.idm.srvc.role.service.RoleDAO;
 import org.openiam.idm.srvc.role.service.RoleDataService;
+import org.openiam.idm.srvc.role.service.UserRoleDAO;
 import org.openiam.idm.srvc.searchbean.converter.RoleSearchBeanConverter;
 import org.openiam.idm.srvc.secdomain.service.SecurityDomainDAO;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -112,6 +113,9 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
     
     @Autowired
     private SecurityDomainDAO securityDomainDAO;
+    
+    @Autowired
+    private UserRoleDAO userRoleDAO;
 
 	@Override
 	public RoleAttributeResponse addAttribute(RoleAttribute attribute) {
@@ -178,6 +182,10 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 		try {
 			if(roleId == null || userId == null) {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			if(userRoleDAO.getRecord(userId, roleId) != null) {
+				throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
 			}
 			
 			roleDataService.addUserToRole(roleId, userId);
