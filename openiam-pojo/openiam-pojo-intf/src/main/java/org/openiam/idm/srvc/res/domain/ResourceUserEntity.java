@@ -1,11 +1,14 @@
 package org.openiam.idm.srvc.res.domain;
 
-import javax.persistence.EmbeddedId;
+import java.util.Date;
+
+import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.res.dto.ResourceUser;
 
@@ -13,54 +16,127 @@ import org.openiam.idm.srvc.res.dto.ResourceUser;
 @Table(name = "RESOURCE_USER")
 @DozerDTOCorrespondence(ResourceUser.class)
 public class ResourceUserEntity {
+	
+    @Id
+    @GeneratedValue(generator = "system-uuid")
+    @GenericGenerator(name = "system-uuid", strategy = "uuid")
+	@Column(name = "RESOURCE_USER_ID", length = 32, nullable = false)
+	private String resourceUserId;
 
-    @EmbeddedId
-    private ResourceUserEmbeddableId id;
+	@Column(name = "RESOURCE_ID", length = 32, nullable = false)
+	private String resourceId;
+	    
+	@Column(name = "USER_ID", length = 32, nullable = false)
+	private String userId;
+	
+    @Column(name = "START_DATE", length = 19)
+    private Date startDate;
 
-    @ManyToOne
-    @JoinColumn(name="RESOURCE_ID",insertable = false, updatable = false)
-    private ResourceEntity resource;
-
+    @Column(name = "END_DATE", length = 19)
+    private Date endDate;
+    
     public ResourceUserEntity() {
+    	
     }
 
-    /*
-    public ResourceUserEntity(ResourceUser resourceUser) {
-        this.id = new ResourceUserEmbeddableId(resourceUser.getId().getResourceId(), resourceUser.getId().getUserId(), resourceUser.getId().getPrivilegeId());
-        this.resource = new ResourceEntity(resourceUser.getResource(), false);
-    }
-    */
+	public String getResourceUserId() {
+		return resourceUserId;
+	}
 
-    public ResourceUserEmbeddableId getId() {
-        return id;
-    }
+	public void setResourceUserId(String resourceUserId) {
+		this.resourceUserId = resourceUserId;
+	}
 
-    public void setId(ResourceUserEmbeddableId id) {
-        this.id = id;
-    }
+	public String getResourceId() {
+		return resourceId;
+	}
 
-    public ResourceEntity getResource() {
-        return resource;
-    }
+	public void setResourceId(String resourceId) {
+		this.resourceId = resourceId;
+	}
 
-    public void setResource(ResourceEntity resource) {
-        this.resource = resource;
-    }
+	public String getUserId() {
+		return userId;
+	}
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+	public void setUserId(String userId) {
+		this.userId = userId;
+	}
 
-        ResourceUserEntity that = (ResourceUserEntity) o;
+	public Date getStartDate() {
+		return startDate;
+	}
 
-        if (id != null ? !id.equals(that.id) : that.id != null) return false;
+	public void setStartDate(Date startDate) {
+		this.startDate = startDate;
+	}
 
-        return true;
-    }
+	public Date getEndDate() {
+		return endDate;
+	}
 
-    @Override
-    public int hashCode() {
-        return id != null ? id.hashCode() : 0;
-    }
+	public void setEndDate(Date endDate) {
+		this.endDate = endDate;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((endDate == null) ? 0 : endDate.hashCode());
+		result = prime * result
+				+ ((resourceId == null) ? 0 : resourceId.hashCode());
+		result = prime * result
+				+ ((resourceUserId == null) ? 0 : resourceUserId.hashCode());
+		result = prime * result
+				+ ((startDate == null) ? 0 : startDate.hashCode());
+		result = prime * result + ((userId == null) ? 0 : userId.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ResourceUserEntity other = (ResourceUserEntity) obj;
+		if (endDate == null) {
+			if (other.endDate != null)
+				return false;
+		} else if (!endDate.equals(other.endDate))
+			return false;
+		if (resourceId == null) {
+			if (other.resourceId != null)
+				return false;
+		} else if (!resourceId.equals(other.resourceId))
+			return false;
+		if (resourceUserId == null) {
+			if (other.resourceUserId != null)
+				return false;
+		} else if (!resourceUserId.equals(other.resourceUserId))
+			return false;
+		if (startDate == null) {
+			if (other.startDate != null)
+				return false;
+		} else if (!startDate.equals(other.startDate))
+			return false;
+		if (userId == null) {
+			if (other.userId != null)
+				return false;
+		} else if (!userId.equals(other.userId))
+			return false;
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		return String
+				.format("ResourceUserEntity [resourceUserId=%s, resourceId=%s, userId=%s, startDate=%s, endDate=%s]",
+						resourceUserId, resourceId, userId, startDate, endDate);
+	}
+    
+    
 }

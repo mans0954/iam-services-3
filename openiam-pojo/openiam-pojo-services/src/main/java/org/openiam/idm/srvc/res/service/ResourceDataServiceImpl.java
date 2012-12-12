@@ -35,6 +35,9 @@ import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.service.RoleDAO;
 import org.openiam.idm.srvc.searchbean.converter.ResourceSearchBeanConverter;
+import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.service.UserDAO;
+import org.openiam.idm.srvc.user.ws.UserDataWebService;
 import org.openiam.util.DozerMappingType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
@@ -75,6 +78,9 @@ public class ResourceDataServiceImpl implements ResourceDataService {
     
     @Autowired
     private RoleDAO roleDAO;
+    
+    @Autowired
+    private UserDAO userDAO;
     
     @Autowired
     private ResourceTypeDozerConverter resourceTypeConverter;
@@ -323,17 +329,55 @@ public class ResourceDataServiceImpl implements ResourceDataService {
     	return response;
     }
 
-
-    public Response addUserToResource(ResourceUser resourceUser) {
-    	final Response response = new Response(ResponseStatus.SUCCESS);
+	@Override
+	public Response removeUserFromResource(final String resourceId, final String userId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
     	try {
-    		if(resourceUser == null || resourceUser.getId() == null || resourceUser.getId().getResourceId() == null || resourceUser.getId().getUserId() == null) {
+    		if(resourceId == null || userId== null) {
     			throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
     		}
     		
-    		final ResourceUserEntity entity = resourceUserConverter.convertToEntity(resourceUser, true);
-    		resourceUserDao.save(entity);
-    		response.setResponseValue(resourceUserConverter.convertToDTO(entity, true));
+    		final ResourceUserEntity entity = resourceUserDao.getRecord(resourceId, userId);
+    		if(entity != null) {
+    			resourceUserDao.delete(entity);
+    		}
+    		
+    	} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			log.error("Can't delete resource", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+		return response;
+	}
+
+	@Override
+    public Response addUserToResource(final String resourceId, final String userId) {
+    	final Response response = new Response(ResponseStatus.SUCCESS);
+    	try {
+    		if(resourceId == null || userId== null) {
+    			throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+    		}
+    		
+    		final ResourceUserEntity entity = resourceUserDao.getRecord(resourceId, userId);
+    		
+    		if(entity != null) {
+    			throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
+    		}
+    		
+    		final ResourceEntity resource = resourceDao.findById(resourceId);
+    		final UserEntity user = userDAO.findById(userId);
+    		if(resource == null || user == null) {
+    			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+    		}
+    		
+    		final ResourceUserEntity toSave = new ResourceUserEntity();
+    		toSave.setUserId(userId);
+    		toSave.setResourceId(resourceId);
+    		
+    		resourceUserDao.save(toSave);
     	} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());

@@ -1357,6 +1357,85 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
     public void setDbType(String dbType) {
         this.dbType = dbType;
     }
+    
+    private Criteria getUsersForResourceCriteria(final String resourceId) {
+    	return getCriteria()
+               .createAlias("resourceUsers", "ru")
+               .add(Restrictions.eq("ru.resourceId", resourceId));
+    }
 
+	@Override
+	public List<UserEntity> getUsersForResource(final String resourceId, final int from, final int size) {
+		final Criteria criteria = getUsersForResourceCriteria(resourceId);
+		
+		if(from > -1) {
+			criteria.setFirstResult(from);
+		}
 
+		if(size > -1) {
+			criteria.setMaxResults(size);
+		}
+		
+		return criteria.list();
+	}
+
+	@Override
+	public int getNumOfUsersForResource(final String resourceId) {
+		final Criteria criteria = getUsersForResourceCriteria(resourceId).setProjection(rowCount());
+		return ((Number)criteria.uniqueResult()).intValue();
+	}
+	
+	private Criteria getUsersForGroupCriteria(final String groupId) {
+		return getCriteria()
+	               .createAlias("userGroups", "ug")
+	               .add(Restrictions.eq("ug.grpId", groupId));
+	}
+
+	@Override
+	public List<UserEntity> getUsersForGroup(final String groupId, final int from, final int size) {
+		final Criteria criteria = getUsersForGroupCriteria(groupId);
+		
+		if(from > -1) {
+			criteria.setFirstResult(from);
+		}
+
+		if(size > -1) {
+			criteria.setMaxResults(size);
+		}
+		
+		return criteria.list();
+	}
+
+	@Override
+	public int getNumOfUsersForGroup(String groupId) {
+		final Criteria criteria = getUsersForGroupCriteria(groupId).setProjection(rowCount());
+		return ((Number)criteria.uniqueResult()).intValue();
+	}
+	
+	private Criteria getUsersForRoleCriteria(final String roleId) {
+		return getCriteria()
+	               .createAlias("userRoles", "ur")
+	               .add(Restrictions.eq("ur.roleId", roleId));
+	}
+
+	@Override
+	public List<UserEntity> getUsersForRole(final String roleId, final int from, final int size) {
+		final Criteria criteria = getUsersForRoleCriteria(roleId);
+		
+		if(from > -1) {
+			criteria.setFirstResult(from);
+		}
+
+		if(size > -1) {
+			criteria.setMaxResults(size);
+		}
+		
+		return criteria.list();
+	}
+
+	@Override
+	public int getNumOfUsersForRole(final String roleId) {
+		final Criteria criteria = getUsersForRoleCriteria(roleId).setProjection(rowCount());
+		return ((Number)criteria.uniqueResult()).intValue();
+	}
 }

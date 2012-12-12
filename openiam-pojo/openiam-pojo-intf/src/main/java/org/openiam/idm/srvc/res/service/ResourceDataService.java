@@ -124,16 +124,14 @@ public interface ResourceDataService {
             @WebParam(name = "resourcePropId", targetNamespace = "")
             String resourcePropId);
 
-    /**
-     * Adds the user to resource.
-     *
-     * @param user the user
-     * @return the resource user
-     */
     @WebMethod
-    Response addUserToResource(
-            @WebParam(name = "user", targetNamespace = "")
-            ResourceUser user);
+    Response addUserToResource(final @WebParam(name = "resourceId", targetNamespace = "") String resourceId,
+    						   final @WebParam(name = "userId", targetNamespace = "") String userId);
+    
+    
+    @WebMethod
+    Response removeUserFromResource(final @WebParam(name = "resourceId", targetNamespace = "") String resourceId,
+    						   final @WebParam(name = "userId", targetNamespace = "") String userId);
 
     @WebMethod
     int getNumOfResourcesForRole(@WebParam(name = "roleId", targetNamespace = "") String roleId);	

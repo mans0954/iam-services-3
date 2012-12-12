@@ -31,4 +31,13 @@ public interface UserDAO extends BaseDao<UserEntity, String> {
     public List<UserEntity> getByExample(UserSearchBean searchBean, int startAt, int size);
 
     public Long getUserCount(UserSearchBean searchBean);
+    
+    public List<UserEntity> getUsersForResource(final String resourceId, final int from, final int size);
+    public int getNumOfUsersForResource(final String resourceId);
+    
+    public List<UserEntity> getUsersForGroup(final String groupId, final int from, final int size);
+    public int getNumOfUsersForGroup(final String groupId);
+    
+    public List<UserEntity> getUsersForRole(final String roleId, final int from, final int size);
+    public int getNumOfUsersForRole(final String roleId);
 }

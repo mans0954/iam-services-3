@@ -24,11 +24,6 @@
 		<class-b>org.openiam.idm.srvc.res.dto.ResourceGroup</class-b>
 	</mapping>
 	
-	<mapping>
-		<class-a>org.openiam.idm.srvc.res.domain.ResourceUserEmbeddableId</class-a>
-		<class-b>org.openiam.idm.srvc.res.dto.ResourceUserId</class-b>
-	</mapping>
-
     <mapping>
         <class-a>org.openiam.idm.srvc.user.domain.UserNoteEntity</class-a>
         <class-b>org.openiam.idm.srvc.user.dto.UserNote</class-b>

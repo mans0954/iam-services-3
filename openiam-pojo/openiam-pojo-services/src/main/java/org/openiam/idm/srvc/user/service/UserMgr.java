@@ -1409,4 +1409,34 @@ public class UserMgr implements UserDataService {
 
         return entity != null ? supervisorDozerConverter.convertToDTO(entity, true) : null;
     }
+
+	@Override
+	public List<UserEntity> getUsersForResource(String resourceId, int from, int size) {
+		return userDao.getUsersForResource(resourceId, from, size);
+	}
+
+	@Override
+	public int getNumOfUsersForResource(String resourceId) {
+		return userDao.getNumOfUsersForResource(resourceId);
+	}
+
+	@Override
+	public List<UserEntity> getUsersForGroup(String groupId, int from, int size) {
+		return userDao.getUsersForGroup(groupId, from, size);
+	}
+
+	@Override
+	public int getNumOfUsersForGroup(String groupId) {
+		return userDao.getNumOfUsersForGroup(groupId);
+	}
+
+	@Override
+	public List<UserEntity> getUsersForRole(String roleId, int from, int size) {
+		return userDao.getUsersForRole(roleId, from, size);
+	}
+
+	@Override
+	public int getNumOfUsersForRole(String roleId) {
+		return userDao.getNumOfUsersForRole(roleId);
+	}
 }

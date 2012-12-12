@@ -34,6 +34,7 @@ import org.apache.commons.lang.StringUtils;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.DozerUtils;
+import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
@@ -47,6 +48,7 @@ import org.openiam.idm.srvc.continfo.ws.EmailAddressResponse;
 import org.openiam.idm.srvc.continfo.ws.PhoneListResponse;
 import org.openiam.idm.srvc.continfo.ws.PhoneMapResponse;
 import org.openiam.idm.srvc.continfo.ws.PhoneResponse;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.*;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,9 +69,10 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	@Autowired
     @Qualifier("userManager")
 	private UserDataService userManager;
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#addAddress(org.openiam.idm.srvc.continfo.dto.Address)
-	 */
+	
+    @Autowired
+    private UserDozerConverter userDozerConverter;
+	
 	public AddressResponse addAddress(Address val) {
 		final AddressResponse resp = new AddressResponse(ResponseStatus.SUCCESS);
 		userManager.addAddress(val);
@@ -835,4 +838,41 @@ public class UserDataWebServiceImpl implements UserDataWebService {
         }
         return resp;
     }
+
+	@Override
+	public List<User> getUsersForResource(final String resourceId, final int from, final int size) {
+		final List<UserEntity> entityList = userManager.getUsersForResource(resourceId, from, size);
+		final List<User> userList = userDozerConverter.convertToDTOList(entityList, false);
+		return userList;
+	}
+
+	@Override
+	public int getNumOfUsersForResource(final String resourceId) {
+		return userManager.getNumOfUsersForResource(resourceId);
+	}
+
+	@Override
+	public List<User> getUsersForGroup(final String groupId, final int from, final int size) {
+		final List<UserEntity> entityList = userManager.getUsersForGroup(groupId, from, size);
+		final List<User> userList = userDozerConverter.convertToDTOList(entityList, false);
+		return userList;
+	}
+
+	@Override
+	public int getNumOfUsersForGroup(final String groupId) {
+		return userManager.getNumOfUsersForGroup(groupId);
+	}
+
+	@Override
+	public List<User> getUsersForRole(final String roleId, final int from, final int size) {
+		final List<UserEntity> entityList = userManager.getUsersForRole(roleId, from, size);
+		final List<User> userList = userDozerConverter.convertToDTOList(entityList, false);
+		return userList;
+	}
+
+	@Override
+	public int getNumOfUsersForRole(final String roleId) {
+		return userManager.getNumOfUsersForRole(roleId);
+	}
+
 }
