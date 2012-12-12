@@ -20,6 +20,7 @@ import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
+import org.openiam.idm.srvc.role.service.RoleDAO;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -186,6 +187,33 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String> impleme
                 .add(Restrictions.eq("rg.groupId", groupId)).setProjection(rowCount());
 		
 		
+		return ((Number)criteria.uniqueResult()).intValue();
+	}
+	
+	private Criteria getResourceForUserCriteria(final String userId) {
+		return getCriteria()
+	               .createAlias("resourceUsers", "ru")
+	               .add(Restrictions.eq("ru.userId", userId));
+	}
+
+	@Override
+	public List<ResourceEntity> getResourcesForUser(final String userId, final int from, final int size) {
+		final Criteria criteria = getResourceForUserCriteria(userId);
+		
+		if(from > -1) {
+			criteria.setFirstResult(from);
+		}
+
+		if(size > -1) {
+			criteria.setMaxResults(size);
+		}
+		
+		return criteria.list();
+	}
+
+	@Override
+	public int getNumOfResourcesForUser(String userId) {
+		final Criteria criteria = getResourceForUserCriteria(userId).setProjection(rowCount());
 		return ((Number)criteria.uniqueResult()).intValue();
 	}
 }

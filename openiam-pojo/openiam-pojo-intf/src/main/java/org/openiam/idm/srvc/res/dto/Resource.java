@@ -7,6 +7,7 @@ import org.openiam.dozer.DozerDTOCorrespondence;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -68,7 +69,8 @@ public class Resource extends BaseObject {
 
     private Set<ResourceGroup> resourceGroups = new HashSet<ResourceGroup>(0);
 
-    //private Set<ResourcePrivilege> entitlements = new HashSet<ResourcePrivilege>(0);
+    @XmlTransient
+    private Set<ResourceUser> resourceUsers = new HashSet<ResourceUser>();
     
     private String minAuthLevel;
     private String domain;
@@ -218,6 +220,14 @@ public class Resource extends BaseObject {
     public void setIsUrlProtector(final boolean isUrlProtector) {
     	this.isUrlProtector = isUrlProtector;
     }
+
+	public Set<ResourceUser> getResourceUsers() {
+		return resourceUsers;
+	}
+
+	public void setResourceUsers(Set<ResourceUser> resourceUsers) {
+		this.resourceUsers = resourceUsers;
+	}
 
 	@Override
     public String toString() {

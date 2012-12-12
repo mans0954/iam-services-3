@@ -169,19 +169,6 @@ public interface RoleDataWebService {
             String userId);
 
     /**
-     * Return an array of users that are in a particular role
-     *
-     * @param roleId
-     * @return
-     */
-    // problem generating wsdl with this method
-    @WebMethod
-    UserListResponse getUsersInRole(
-            final @WebParam(name = "roleId", targetNamespace = "") String roleId,
-            final @WebParam(name = "from", targetNamespace = "") int from,
-            final @WebParam(name = "size", targetNamespace = "") int size);
-
-    /**
      * Returns an array of Role objects that indicate the Roles a user is
      * associated to.
      *
@@ -189,10 +176,13 @@ public interface RoleDataWebService {
      * @return
      */
     @WebMethod
-    RoleListResponse getRolesForUser(
+    List<Role> getRolesForUser(
             final @WebParam(name = "userId", targetNamespace = "") String userId,
             final @WebParam(name = "from", targetNamespace = "") int from,
             final @WebParam(name = "size", targetNamespace = "") int size);
+    
+    @WebMethod
+    int getNumOfRolesForUser(final @WebParam(name = "userId", targetNamespace = "") String userId);
 
     /**
      * Role Policy Methods ******

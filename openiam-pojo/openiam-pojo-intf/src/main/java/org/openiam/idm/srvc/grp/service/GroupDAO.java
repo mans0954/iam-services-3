@@ -21,7 +21,8 @@ public interface GroupDAO extends BaseDao<GroupEntity, String> {
      */
     List<GroupEntity> findRootGroups(final int from, final int size);
     
-    public List<GroupEntity> findGroupsForUser(final String userId, final int from, final int size);
+    public int getNumOfGroupsForUser(final String userId);
+    public List<GroupEntity> getGroupsForUser(final String userId, final int from, final int size);
     
     public List<GroupEntity> getGroupsForRole(String roleId, int from, int size);
     public int getNumOfGroupsForRole(String roleId);

@@ -35,4 +35,7 @@ public interface RoleDAO extends BaseDao<RoleEntity, String> {
     
     public List<RoleEntity> getParentRoles(final String roleId, final int from, final int size);
     public int getNumOfParentRoles(final String roleId);
+    
+    public List<RoleEntity> getRolesForUser(final String userId, final int from, final int size);
+    public int getNumOfRolesForUser(final String userId);
 }

@@ -206,4 +206,31 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
 		
 		return ((Number)criteria.uniqueResult()).intValue();
 	}
+	
+	private Criteria getRolesForUserCriteria(final String userId) {
+		return getCriteria()
+	               .createAlias("userRoles", "ur")
+	               .add(Restrictions.eq("ur.userId", userId));
+	}
+
+	@Override
+	public List<RoleEntity> getRolesForUser(String userId, int from, int size) {
+		final Criteria criteria = getRolesForUserCriteria(userId);
+		
+		if(from > -1) {
+			criteria.setFirstResult(from);
+		}
+
+		if(size > -1) {
+			criteria.setMaxResults(size);
+		}
+		
+		return criteria.list();
+	}
+
+	@Override
+	public int getNumOfRolesForUser(String userId) {
+		final Criteria criteria = getRolesForUserCriteria(userId).setProjection(rowCount());
+		return ((Number)criteria.uniqueResult()).intValue();
+	}
 }

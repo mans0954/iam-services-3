@@ -27,6 +27,10 @@
 			<a>resourceGroups</a>
 			<b>resourceGroups</b>
 		</field-exclude>
+		<field-exclude>
+			<a>resourceUsers</a>
+			<b>resourceUsers</b>
+		</field-exclude>
 	</mapping>
 	
     <mapping>
@@ -106,6 +110,10 @@
     	<field-exclude>
     		<a>roles</a>
     		<b>roles</b>
+    	</field-exclude>
+    	<field-exclude>
+    		<a>userGroups</a>
+    		<b>userGroups</b>
     	</field-exclude>
     </mapping>
     

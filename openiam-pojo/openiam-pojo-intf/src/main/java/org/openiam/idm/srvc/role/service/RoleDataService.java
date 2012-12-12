@@ -103,6 +103,10 @@ public interface RoleDataService {
      * @return
      */
     public List<UserRoleEntity> getUserRolesForUser(final String userId, final int from, final int size);
+    
+    
+    public List<RoleEntity> getRolesForUser(final String userId, final int from, final int size);
+    public int getNumOfRolesForUser(final String userId);
 
 
     /**

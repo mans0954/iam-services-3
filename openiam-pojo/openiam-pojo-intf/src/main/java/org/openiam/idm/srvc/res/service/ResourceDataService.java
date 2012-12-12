@@ -200,4 +200,13 @@ public interface ResourceDataService {
     								@WebParam(name = "from", targetNamespace = "") int from,
     								@WebParam(name = "size", targetNamespace = "") int size);
     
+    
+    @WebMethod
+    int getNumOfResourceForUser(@WebParam(name = "userId", targetNamespace = "") String userId);	
+    
+    @WebMethod
+    List<Resource> getResourcesForUser(@WebParam(name = "userId", targetNamespace = "") String userId,
+    								@WebParam(name = "from", targetNamespace = "") int from,
+    								@WebParam(name = "size", targetNamespace = "") int size);
+    
 }

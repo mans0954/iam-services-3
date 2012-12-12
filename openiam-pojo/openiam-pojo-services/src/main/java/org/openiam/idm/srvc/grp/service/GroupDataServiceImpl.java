@@ -161,7 +161,7 @@ public class GroupDataServiceImpl implements GroupDataService {
 	
 	@Override
 	public List<Group> getCompiledGroupsForUser(final String userId) {
-		final List<GroupEntity> groupList = groupDao.findGroupsForUser(userId, 0, Integer.MAX_VALUE);
+		final List<GroupEntity> groupList = groupDao.getGroupsForUser(userId, 0, Integer.MAX_VALUE);
 		final Set<GroupEntity> visitedSet = new HashSet<GroupEntity>();
 		if(CollectionUtils.isNotEmpty(groupList)) {
 			for(final GroupEntity group : groupList) {
@@ -187,7 +187,12 @@ public class GroupDataServiceImpl implements GroupDataService {
 
 	@Override
 	public List<GroupEntity> getGroupsForUser(String userId, int from, int size) {
-		return groupDao.findGroupsForUser(userId, from, size);
+		return groupDao.getGroupsForUser(userId, from, size);
+	}
+	
+	@Override
+	public int getNumOfGroupsForUser(String userId) {
+		return groupDao.getNumOfGroupsForUser(userId);
 	}
 
 	@Override

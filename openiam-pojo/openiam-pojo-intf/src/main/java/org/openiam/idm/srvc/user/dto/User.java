@@ -3,6 +3,8 @@ package org.openiam.idm.srvc.user.dto;
 
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.AttributeOperationEnum;
@@ -304,6 +306,18 @@ public class User extends org.openiam.base.BaseObject {
     public void setUserId(String userId) {
 
         this.userId = userId;
+    }
+    
+    public String getDisplayName() {
+    	String displayName = null;
+    	if(StringUtils.isNotBlank(firstName) && StringUtils.isNotBlank(lastName)) {
+    		displayName = String.format("%s %s", firstName, lastName);
+    	} else if(StringUtils.isNotBlank(firstName)) {
+    		displayName = firstName;
+    	} else if(StringUtils.isNotBlank(lastName)) {
+    		displayName = lastName;
+    	}
+    	return displayName;
     }
 
     public String getFirstName() {
