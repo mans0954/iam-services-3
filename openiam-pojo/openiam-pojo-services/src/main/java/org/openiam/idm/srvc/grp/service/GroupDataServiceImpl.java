@@ -17,6 +17,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.HibernateException;
+import org.openiam.base.ws.Response;
 import org.openiam.dozer.converter.GroupDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.dozer.converter.UserGroupDozerConverter;
@@ -104,32 +105,24 @@ public class GroupDataServiceImpl implements GroupDataService {
 		
 	}
 
+	@Override
 	public void addUserToGroup(final String groupId, final String userId) {
 		if(groupId != null && userId != null) {
-			userGroupDao.save(new UserGroupEntity(groupId, userId));
+			final UserGroupEntity entity = userGroupDao.getRecord(groupId, userId);
+			if(entity == null) {
+				final UserGroupEntity toSave = new UserGroupEntity(groupId, userId);
+				userGroupDao.save(toSave);
+			}
 		}
 	}
 	
-	public boolean isUserInGroup(final String groupId, final String userId) {
-		boolean retVal = false;
-		if(groupId != null && userId != null) {
-			final List<GroupEntity> groupList = groupDao.findGroupsForUser(userId, 0, Integer.MAX_VALUE);
-			if(CollectionUtils.isNotEmpty(groupList)) {
-				for(final GroupEntity group : groupList) {
-					if(group.getGrpId().equals(groupId)) {
-						retVal = true;
-						break;
-					}
-				}
-			}
-		}
-		return retVal;
-	}
-
-
+	@Override
 	public void removeUserFromGroup(String groupId, String userId) {
 		if(groupId != null && userId != null) {
-			userGroupDao.delete(new UserGroupEntity(groupId, userId));
+			final UserGroupEntity entity = userGroupDao.getRecord(groupId, userId);
+			if(entity != null) {
+				userGroupDao.delete(entity);
+			}
 		}
 	}
 	
@@ -195,11 +188,6 @@ public class GroupDataServiceImpl implements GroupDataService {
 	@Override
 	public List<GroupEntity> getGroupsForUser(String userId, int from, int size) {
 		return groupDao.findGroupsForUser(userId, from, size);
-	}
-
-	@Override
-	public List<UserEntity> getUsersInGroup(String groupId, int from, int size) {
-		return userGroupDao.findUserByGroup(groupId, from, size);
 	}
 
 	@Override

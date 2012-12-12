@@ -35,9 +35,9 @@ import java.util.List;
  * @author suneet
  */
 public interface UserGroupDAO  extends BaseDao<UserGroupEntity, String>{
-
-    List<UserEntity> findUserByGroup(final String groupId, final int from, final int size);
     
     public void deleteByGroupId(final String groupId);
     public void deleteByUserId(final String userId);
+    
+    public UserGroupEntity getRecord(final String groupId, final String userId);
 }
