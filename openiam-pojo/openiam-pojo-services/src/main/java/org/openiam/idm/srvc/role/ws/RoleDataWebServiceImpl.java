@@ -219,31 +219,17 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 	}
 
 	@Override
-	public RoleListResponse getRolesForUser(final String userId, final int from, final int size) {
-		final RoleListResponse response = new RoleListResponse(ResponseStatus.SUCCESS);
-		try {
-			final List<RoleEntity> entityList = roleDataService.getUserRoles(userId, from, size);
-			final List<Role> roleList = roleDozerConverter.convertToDTOList(entityList, false);
-			response.setRoleList(roleList);
-		} catch(Throwable e) {
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorText(e.getMessage());
-		}
-		return response;
+	public List<Role> getRolesForUser(final String userId, final int from, final int size) {
+		final List<RoleEntity> entityList = roleDataService.getRolesForUser(userId, from, size);
+		final List<Role> roleList = roleDozerConverter.convertToDTOList(entityList, false);
+		return roleList;
+	}
+	
+	@Override
+	public int getNumOfRolesForUser(final String userId) {
+		return roleDataService.getNumOfRolesForUser(userId);
 	}
 
-	public UserListResponse getUsersInRole(final String roleId, final int from, final int size) {
-		final UserListResponse response = new UserListResponse(ResponseStatus.SUCCESS);
-		try {
-			final List<UserEntity> entityList = roleDataService.getUsersInRole(roleId, from, size);
-			final List<User> userList = userDozerConverter.convertToDTOList(entityList, false);
-			response.setUserList(userList);
-		} catch(Throwable e) {
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorText(e.getMessage());
-		}
-		return response;
-	}
 
 	@Override
 	public Response removeAttribute(final String attributeId) {

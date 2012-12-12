@@ -27,6 +27,10 @@
 			<a>resourceGroups</a>
 			<b>resourceGroups</b>
 		</field>
+		<field-exclude>
+			<a>resourceUsers</a>
+			<b>resourceUsers</b>
+		</field-exclude>
 	</mapping>
     <mapping>
         <class-a>org.openiam.idm.srvc.user.domain.UserEntity</class-a>
@@ -114,6 +118,10 @@
     	<field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="dto2entityShallowDozerMapper">
     		<a>roles</a>
     		<b>roles</b>
+    	</field>
+    	<field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="dto2entityShallowDozerMapper">
+    		<a>userGroups</a>
+    		<b>userGroups</b>
     	</field>
     </mapping>
     

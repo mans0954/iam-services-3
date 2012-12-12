@@ -107,12 +107,10 @@ public class ResourceEntity {
     @Fetch(FetchMode.SUBSELECT)
     private Set<ResourceGroupEntity> resourceGroups = new HashSet<ResourceGroupEntity>(0);
 
-    /*
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "RESOURCE_ID")
+    @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
+    @JoinColumn(name="RESOURCE_ID", referencedColumnName="RESOURCE_ID")
     @Fetch(FetchMode.SUBSELECT)
-    private Set<ResourcePrivilegeEntity> entitlements = new HashSet<ResourcePrivilegeEntity>(0);
-    */
+    private Set<ResourceUserEntity> resourceUsers = new HashSet<ResourceUserEntity>();
 
     @Column(name = "MIN_AUTH_LEVEL")
     private String minAuthLevel;
@@ -391,7 +389,15 @@ public class ResourceEntity {
     	this.resourceProps.add(property);
     }
 
-    @Override
+    public Set<ResourceUserEntity> getResourceUsers() {
+		return resourceUsers;
+	}
+
+	public void setResourceUsers(Set<ResourceUserEntity> resourceUsers) {
+		this.resourceUsers = resourceUsers;
+	}
+
+	@Override
     public String toString() {
         return "Resource{" +
                 "resourceId='" + resourceId + '\'' +

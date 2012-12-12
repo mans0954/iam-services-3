@@ -33,7 +33,8 @@ import java.util.*;
         "operation",
         "parentGroups",
         "childGroups",
-        "resourceGroups"
+        "resourceGroups",
+        "userGroups"
 })
 @XmlRootElement(name = "Group")
 @XmlSeeAlso({
@@ -70,6 +71,7 @@ public class Group implements java.io.Serializable {
     
     private Set<ResourceGroup> resourceGroups;
 
+    private Set<UserGroup> userGroups;
 
     @XmlJavaTypeAdapter(RoleSetAdapter.class)
     protected Set<Role> roles = new HashSet<Role>(0);
@@ -288,6 +290,14 @@ public class Group implements java.io.Serializable {
 
 	public void setResourceGroups(Set<ResourceGroup> resourceGroups) {
 		this.resourceGroups = resourceGroups;
+	}
+
+	public Set<UserGroup> getUserGroups() {
+		return userGroups;
+	}
+
+	public void setUserGroups(Set<UserGroup> userGroups) {
+		this.userGroups = userGroups;
 	}
 
 	@Override

@@ -122,33 +122,15 @@ public interface GroupDataWebService {
             @WebParam(name = "userId", targetNamespace = "")
             String userId);
 
-    /**
-     * Returns List of Group objects that represent the groups this user belongs
-     * to. For example:
-     * <p/>
-     * <code>
-     * grpManager.getUserInGroups(userId);<br>
-     * </code>
-     *
-     * @param userId
-     * @return
-     */
+   
     @WebMethod
-    public GroupListResponse getGroupsForUser(
+    public List<Group> getGroupsForUser(
             @WebParam(name = "userId", targetNamespace = "") String userId,
             @WebParam(name = "from") int from,
             @WebParam(name = "size") int size);
+    
+    public int getNumOfGroupsForUser(final @WebParam(name = "userId", targetNamespace = "") String userId);
 
-
-    /**
-     * Returns List of Groups that a user belongs to. The list of Groups is returns a flat list.  This operation will traverse the
-     * group hierarchy from the bottom up to return the list of groups  a user belongs to.
-     *
-     * @param userId
-     * @return
-     */
-    @WebMethod
-    public GroupListResponse getCompiledGroupsForUser(final @WebParam(name = "userId", targetNamespace = "") String userId);
 
     /**
      * This method adds the user to a group .<br>

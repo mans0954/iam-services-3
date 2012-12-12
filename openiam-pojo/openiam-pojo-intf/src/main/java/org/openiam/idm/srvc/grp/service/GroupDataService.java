@@ -53,19 +53,9 @@ public interface GroupDataService {
      */
     public boolean isUserInCompiledGroupList(String groupId, String userId);
 
-    /**
-     * Returns List of Groups that a user belongs to. Since groups can be hierarchical, its possible that additional groups will be found
-     * in the subGroups property.  This operation will traverse the group hierarchy from the bottom up to return the list of groups
-     * a user belongs to.  For example:
-     * <p/>
-     * <code>
-     * grpManager.getUserInGroups(userId);<br>
-     * </code>
-     *
-     * @param userId
-     * @return
-     */
+    
     public List<GroupEntity> getGroupsForUser(final String userId, final int from, final int size);
+    public int getNumOfGroupsForUser(final String userId);
 
     /**
      * This method adds the user to a group .<br>

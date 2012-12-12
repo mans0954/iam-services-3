@@ -13,6 +13,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.apache.solr.analysis.LowerCaseFilterFactory;
 import org.apache.solr.analysis.StandardTokenizerFactory;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Filter;
 import org.hibernate.annotations.FilterDef;
 import org.hibernate.annotations.GenericGenerator;
@@ -309,24 +311,29 @@ public class UserEntity {
     @IndexedEmbedded(prefix="principal.", depth=2)
     @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
     @JoinColumn(name="USER_ID", referencedColumnName="USER_ID")
+    @Fetch(FetchMode.SUBSELECT)
     private List<LoginEntity> principalList = new LinkedList<LoginEntity>();
 
     @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
     @JoinColumn(name="USER_ID", referencedColumnName="USER_ID")
+    @Fetch(FetchMode.SUBSELECT)
     protected Set<UserKey> userKeys = new HashSet<UserKey>(0);
 
     @IndexedEmbedded(prefix="groups.")
     @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
     @JoinColumn(name="USER_ID", referencedColumnName="USER_ID")
+    @Fetch(FetchMode.SUBSELECT)
     private Set<UserGroupEntity> userGroups = new HashSet<UserGroupEntity>(0);
     
     @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
     @JoinColumn(name="USER_ID", referencedColumnName="USER_ID")
+    @Fetch(FetchMode.SUBSELECT)
     private Set<ResourceUserEntity> resourceUsers = new HashSet<ResourceUserEntity>();
 
     @IndexedEmbedded(prefix="roles.")
     @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
     @JoinColumn(name="USER_ID", referencedColumnName="USER_ID")
+    @Fetch(FetchMode.SUBSELECT)
     private Set<UserRoleEntity> userRoles = new HashSet<UserRoleEntity>(0);
 
     @ManyToOne(cascade=CascadeType.ALL,fetch=FetchType.LAZY)

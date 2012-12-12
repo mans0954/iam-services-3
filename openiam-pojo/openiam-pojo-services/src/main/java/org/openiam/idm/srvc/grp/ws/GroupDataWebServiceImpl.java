@@ -218,44 +218,15 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 	}
 
 	@Override
-	public GroupListResponse getGroupsForUser(final String userId, final int from, final int size) {
-		final GroupListResponse response = new GroupListResponse(ResponseStatus.SUCCESS);
-		try {
-			if(userId == null) {
-				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-			}
-			
-			final List<GroupEntity> groupEntityList = groupManager.getGroupsForUser(userId, from, size);
-			final List<Group> groupList = groupDozerConverter.convertToDTOList(groupEntityList, false);
-			response.setGroupList(groupList);
-		} catch(BasicDataServiceException e) {
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(e.getCode());
-		} catch(Throwable e) {
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorText(e.getMessage());
-		}
-		return response;
+	public List<Group> getGroupsForUser(final String userId, final int from, final int size) {
+		final List<GroupEntity> groupEntityList = groupManager.getGroupsForUser(userId, from, size);
+		final List<Group> groupList = groupDozerConverter.convertToDTOList(groupEntityList, false);
+		return groupList;
 	}
-
+	
 	@Override
-	public GroupListResponse getCompiledGroupsForUser(final String userId) {
-		final GroupListResponse response = new GroupListResponse(ResponseStatus.SUCCESS);
-		try {
-			if(userId == null) {
-				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-			}
-			
-			final List<Group> groupList = groupManager.getCompiledGroupsForUser(userId);
-			response.setGroupList(groupList);
-		} catch(BasicDataServiceException e) {
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(e.getCode());
-		} catch(Throwable e) {
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorText(e.getMessage());
-		}
-		return response;
+	public int getNumOfGroupsForUser(final String userId) {
+		return groupManager.getNumOfGroupsForUser(userId);
 	}
 
 	@Override

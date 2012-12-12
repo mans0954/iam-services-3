@@ -26,6 +26,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.search.annotations.IndexedEmbedded;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.dto.Group;
@@ -118,6 +119,11 @@ public class GroupEntity {
 	    inverseJoinColumns={@JoinColumn(name="ROLE_ID")})
 	@Fetch(FetchMode.SUBSELECT)
     private Set<RoleEntity> roles;
+    
+    @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
+    @JoinColumn(name="GRP_ID", referencedColumnName="GRP_ID")
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<UserGroupEntity> userGroups = new HashSet<UserGroupEntity>(0);
 
 	public String getGrpId() {
 		return grpId;
@@ -316,6 +322,14 @@ public class GroupEntity {
 
 	public void setRoles(Set<RoleEntity> roles) {
 		this.roles = roles;
+	}
+
+	public Set<UserGroupEntity> getUserGroups() {
+		return userGroups;
+	}
+
+	public void setUserGroups(Set<UserGroupEntity> userGroups) {
+		this.userGroups = userGroups;
 	}
 
 	@Override

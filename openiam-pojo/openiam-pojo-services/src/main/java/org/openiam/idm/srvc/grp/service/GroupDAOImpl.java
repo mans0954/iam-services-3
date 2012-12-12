@@ -110,19 +110,30 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
 		return (List<GroupEntity>)criteria.list();
 	}
 	
-	public List<GroupEntity> findGroupsForUser(final String userId, final int from, final int size) {
-		final Query qry = getSession().createQuery("select grp from GroupEntity as grp, UserGroupEntity ug where ug.userId = :userId and grp.grpId = ug.grpId ");
-		qry.setString("userId", userId);
+	private Criteria getGroupsForUserCriteria(final String userId) {
+		return getCriteria()
+	               .createAlias("userGroups", "ug")
+	               .add(Restrictions.eq("ug.userId", userId));
+	}
+	
+	@Override
+	public int getNumOfGroupsForUser(String userId) {
+		final Criteria criteria = getGroupsForUserCriteria(userId).setProjection(rowCount());
+		return ((Number)criteria.uniqueResult()).intValue();
+	}
+	
+	public List<GroupEntity> getGroupsForUser(final String userId, final int from, final int size) {
+		final Criteria criteria = getGroupsForUserCriteria(userId);
 		
 		if(from > -1) {
-			qry.setFirstResult(from);
+			criteria.setFirstResult(from);
 		}
-		
+
 		if(size > -1) {
-			qry.setMaxResults(size);
+			criteria.setMaxResults(size);
 		}
 		
-		return (List<GroupEntity>)qry.list();			
+		return criteria.list();
 	}
 
 	@Override

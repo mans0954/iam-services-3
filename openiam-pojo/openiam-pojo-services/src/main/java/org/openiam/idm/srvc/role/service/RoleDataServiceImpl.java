@@ -353,4 +353,14 @@ public class RoleDataServiceImpl implements RoleDataService {
 	public int getNumOfRolesForGroup(String groupId) {
 		return roleDao.getNumOfRolesForGroup(groupId);
 	}
+
+	@Override
+	public List<RoleEntity> getRolesForUser(final String userId, final int from, final int size) {
+		return roleDao.getRolesForUser(userId, from, size);
+	}
+
+	@Override
+	public int getNumOfRolesForUser(final String userId) {
+		return roleDao.getNumOfRolesForUser(userId);
+	}
 }
