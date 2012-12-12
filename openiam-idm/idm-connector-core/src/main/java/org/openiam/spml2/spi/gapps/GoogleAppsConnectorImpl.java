@@ -75,6 +75,7 @@ public class GoogleAppsConnectorImpl implements ConnectorService {
     protected ManagedSystemDataService managedSysService;
     protected ManagedSystemObjectMatchDAO managedSysObjectMatchDao;
     protected ResourceDataService resourceDataService;
+    @Autowired
     protected IdmAuditLogDataService auditDataService;
     protected LoginDataService loginManager;
     @Autowired

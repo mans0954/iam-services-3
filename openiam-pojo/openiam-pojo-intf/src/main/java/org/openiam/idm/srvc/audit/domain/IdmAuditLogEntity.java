@@ -1,76 +1,147 @@
-package org.openiam.idm.srvc.audit.dto;
+package org.openiam.idm.srvc.audit.domain;
 
 // Generated Nov 30, 2007 3:01:45 AM by Hibernate Tools 3.2.0.b11
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlSchemaType;
-import javax.xml.bind.annotation.XmlType;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.audit.constant.CustomIdmAuditLogType;
-import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 
 /**
  * DTO object that is used log and retrieve audit information
  * Refactoring 6.12.2012
  * @author zaporozhec 
  */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "IdmAuditLog", propOrder = { "logId", "objectTypeId",
-        "actionId", "actionStatus", "reason", "reasonDetail", "actionDatetime",
-        "objectName", "resourceName", "userId", "domainId", "principal",
-        "host", "clientId", "reqUrl", "requestId", "sessionId",
-        "attributesChanges", "objectId", "linkedLogId", "linkSequence",
-        "logHash", "srcSystemId", "targetSystemId", "nodeIP", "customRecords" })
-@DozerDTOCorrespondence(IdmAuditLogEntity.class)
-public class IdmAuditLog implements java.io.Serializable {
-
+@Entity
+@Table(name = "IDM_AUDIT_LOG")
+@DozerDTOCorrespondence(IdmAuditLog.class)
+public class IdmAuditLogEntity implements java.io.Serializable {
+    @Id
+    @GeneratedValue(generator = "system-uuid")
+    @GenericGenerator(name = "system-uuid", strategy = "uuid")
+    @Column(name = "LOG_ID", length = 32)
     private String logId;
+
+    @Column(name = "OBJECT_TYPE_ID", length = 20)
     private String objectTypeId;
+
+    @Column(name = "OBJECT_ID", length = 32)
     private String objectId;
+
+    @Column(name = "ACTION_ID", length = 50)
     private String actionId;
+
+    @Column(name = "ACTION_STATUS", length = 32)
     private String actionStatus;
+
+    @Column(name = "REASON", length = 1000)
     private String reason;
+
+    @Column(name = "REASON_DETAIL")
     private String reasonDetail;
-    @XmlSchemaType(name = "dateTime")
+
+    @Column(name = "ACTION_DATETIME")
+    @Temporal(TemporalType.TIMESTAMP)
     private Date actionDatetime;
+
+    @Column(name = "OBJECT_NAME", length = 255)
     private String objectName;
+
+    @Column(name = "RESOURCE_NAME", length = 255)
     private String resourceName;
+
+    @Column(name = "USER_ID", length = 32)
     private String userId;
+
+    @Column(name = "SERVICE_ID", length = 20)
     private String domainId;
+
+    @Column(name = "LOGIN_ID", length = 320)
     private String principal;
+
+    @Column(name = "HOST", length = 100)
     /* IP or host name of the client machine */
     private String host;
+
+    @Column(name = "NODE_IP", length = 60)
     /* IP or host name of the node which sent the request to the IAM server */
     private String nodeIP;
 
+    @Column(name = "CLIENT_ID", length = 20)
     private String clientId;
-    private String reqUrl;
-    private String attributesChanges;
 
+    @Column(name = "REQ_URL", length = 255)
+    private String reqUrl;
+
+    @Column(name = "LINKED_LOG_ID", length = 40)
     private String linkedLogId;
+
+    @Column(name = "LINK_SEQUENCE")
     private Integer linkSequence = 0;
+
+    @Column(name = "LOG_HASH", length = 80)
     private String logHash;
+
+    @Column(name = "REQUEST_ID", length = 40)
     private String requestId;
+
+    @Column(name = "SESSION_ID", length = 40)
     private String sessionId;
 
+    @Column(name = "SRC_SYSTEM_ID", length = 32)
     private String srcSystemId;
+
+    @Column(name = "TARGET_SYSTEM_ID", length = 40)
     private String targetSystemId;
 
-    private List<IdmAuditLogCustom> customRecords = new ArrayList<IdmAuditLogCustom>(
+    @Column(name = "LOG_ID", length = 32)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "LOG_ID", insertable = false, updatable = false)
+    private List<IdmAuditLogCustomEntity> customRecords = new ArrayList<IdmAuditLogCustomEntity>(
             0);
 
-    // private Set<CustomIdmAuditLog> customAttributes = new Has
-
-    public IdmAuditLog() {
+    /**
+     * @return the customRecords
+     */
+    public List<IdmAuditLogCustomEntity> getCustomRecords() {
+        return customRecords;
     }
 
-    public IdmAuditLog(String objectTypeId, String actionId,
+    /**
+     * @param customRecords the customRecords to set
+     */
+    public void setCustomRecords(List<IdmAuditLogCustomEntity> customRecords) {
+        this.customRecords = customRecords;
+    }
+
+    /**
+     * @param linkSequence the linkSequence to set
+     */
+    public void setLinkSequence(Integer linkSequence) {
+        this.linkSequence = linkSequence;
+    }
+
+    public IdmAuditLogEntity() {
+    }
+
+    public IdmAuditLogEntity(String objectTypeId, String actionId,
             String actionStatus, String reason, String domainId, String userId,
             String principal, String linkedLogId, String clientId) {
+
         this.objectTypeId = objectTypeId;
         this.actionId = actionId;
         this.actionStatus = actionStatus;
@@ -78,19 +149,9 @@ public class IdmAuditLog implements java.io.Serializable {
         this.domainId = domainId;
         this.userId = userId;
         this.principal = principal;
-        this.linkedLogId = linkedLogId;
+        this.actionDatetime = new java.util.Date(System.currentTimeMillis());
+        this.userId = userId;
         this.clientId = clientId;
-    }
-
-    public IdmAuditLogCustom getCustomRecord(int dislpayOrder,
-            CustomIdmAuditLogType type) {
-        for (IdmAuditLogCustom ialc : this.customRecords) {
-            if (dislpayOrder == ialc.getDispayOrder()
-                    && type.equals(ialc.getType())) {
-                return ialc;
-            }
-        }
-        return null;
     }
 
     /**
@@ -121,8 +182,34 @@ public class IdmAuditLog implements java.io.Serializable {
         this.principal = principal;
         this.requestId = requestId;
         this.reason = reason;
-        updateCustomRecord(attrName, attrValue, 1, CustomIdmAuditLogType.ATTRIB);
+        this.updateCustomRecord(attrName, attrValue, 1,
+                CustomIdmAuditLogType.ATTRIB);
 
+    }
+
+    public void updateCustomRecord(String name, String value, int displayOrder,
+            CustomIdmAuditLogType type) {
+        if (type == null)
+            return;
+        boolean isExist = false;
+        for (IdmAuditLogCustomEntity ialcEntity : customRecords) {
+            if (type.equals(ialcEntity.getType())
+                    && displayOrder == ialcEntity.getDispayOrder()) {
+                isExist = true;
+                ialcEntity.setCustomValue(value);
+                ialcEntity.setCustomName(name);
+                break;
+            }
+        }
+        if (!isExist) {
+            IdmAuditLogCustomEntity ialcEntity = new IdmAuditLogCustomEntity();
+            ialcEntity.setType(type);
+            ialcEntity.setCustomName(name);
+            ialcEntity.setCustomValue(value);
+            ialcEntity.setDispayOrder(displayOrder);
+            ialcEntity.setLogId(this.logId);
+            customRecords.add(ialcEntity);
+        }
     }
 
     public void updateSynchAttributes(String actionStatus, String reason,
@@ -139,31 +226,6 @@ public class IdmAuditLog implements java.io.Serializable {
 
     public void setLinkedLogId(String linkedLogId) {
         this.linkedLogId = linkedLogId;
-    }
-
-    public void updateCustomRecord(String name, String value, int displayOrder,
-            CustomIdmAuditLogType type) {
-        if (type == null)
-            return;
-        boolean isExist = false;
-        for (IdmAuditLogCustom ialcEntity : customRecords) {
-            if (type.equals(ialcEntity.getType())
-                    && displayOrder == ialcEntity.getDispayOrder()) {
-                isExist = true;
-                ialcEntity.setCustomValue(value);
-                ialcEntity.setCustomName(name);
-                break;
-            }
-        }
-        if (!isExist) {
-            IdmAuditLogCustom ialcEntity = new IdmAuditLogCustom();
-            ialcEntity.setType(type);
-            ialcEntity.setCustomName(name);
-            ialcEntity.setCustomValue(value);
-            ialcEntity.setDispayOrder(displayOrder);
-            ialcEntity.setLogId(this.logId);
-            customRecords.add(ialcEntity);
-        }
     }
 
     public int getLinkSequence() {
@@ -286,13 +348,13 @@ public class IdmAuditLog implements java.io.Serializable {
         this.reqUrl = reqUrl;
     }
 
-    public String getAttributesChanges() {
-        return this.attributesChanges;
-    }
-
-    public void setAttributesChanges(String attributesChanges) {
-        this.attributesChanges = attributesChanges;
-    }
+    // public String getAttributesChanges() {
+    // return this.attributesChanges;
+    // }
+    //
+    // public void setAttributesChanges(String attributesChanges) {
+    // this.attributesChanges = attributesChanges;
+    // }
 
     public String getDomainId() {
         return domainId;
@@ -356,14 +418,6 @@ public class IdmAuditLog implements java.io.Serializable {
 
     public void setNodeIP(String nodeIP) {
         this.nodeIP = nodeIP;
-    }
-
-    public List<IdmAuditLogCustom> getCustomRecords() {
-        return customRecords;
-    }
-
-    public void setCustomRecords(List<IdmAuditLogCustom> customRecords) {
-        this.customRecords = customRecords;
     }
 
 }

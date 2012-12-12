@@ -1,5 +1,12 @@
 package org.openiam.provision.service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.AttributeOperationEnum;
@@ -20,7 +27,6 @@ import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.role.domain.UserRoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.role.dto.UserRole;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.dto.Supervisor;
 import org.openiam.idm.srvc.user.dto.User;
@@ -29,8 +35,7 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
-
-import java.util.*;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Helper class for the modifyUser operation in the Provisioning Service.
@@ -42,12 +47,14 @@ public class ModifyUser {
     private GroupDataService groupManager;
     private UserDataService userMgr;
     private LoginDataService loginManager;
+    @Autowired
     private AuditHelper auditHelper;
     private OrganizationDataService orgManager;
 
     private static final Log log = LogFactory.getLog(ModifyUser.class);
 
-    // these instance variables will be used later in the provisioning process when we need to show the difference at the field level
+    // these instance variables will be used later in the provisioning process
+    // when we need to show the difference at the field level
     Map<String, UserAttribute> userAttributes = new HashMap<String, UserAttribute>();
     Set<EmailAddress> emailSet = new HashSet<EmailAddress>();
     Set<Phone> phoneSet = new HashSet<Phone>();
@@ -91,7 +98,8 @@ public class ModifyUser {
 
             log.debug("- Adding original addressSet to the user object");
 
-            List<Address> addressList = userMgr.getAddressList(user.getUserId());
+            List<Address> addressList = userMgr
+                    .getAddressList(user.getUserId());
             if (addressList != null && !addressList.isEmpty()) {
 
                 user.setAddresses(new HashSet<Address>(addressList));
@@ -106,7 +114,8 @@ public class ModifyUser {
 
             log.debug("- Adding original emailSet to the user object");
 
-            List<EmailAddress> emailList = userMgr.getEmailAddressList(user.getUserId());
+            List<EmailAddress> emailList = userMgr.getEmailAddressList(user
+                    .getUserId());
             if (emailList != null && !emailList.isEmpty()) {
 
                 user.setEmailAddresses(new HashSet<EmailAddress>(emailList));
@@ -130,7 +139,6 @@ public class ModifyUser {
 
         }
 
-
         // check the user attributes
         Map<String, UserAttribute> userAttrSet = user.getUserAttributes();
         if (userAttrSet == null || userAttrSet.isEmpty()) {
@@ -144,14 +152,14 @@ public class ModifyUser {
 
         }
 
-
         // the affiliations
         List<Organization> affiliationList = user.getUserAffiliations();
         if (affiliationList == null || affiliationList.isEmpty()) {
 
             log.debug("- Adding original affiliationList to the user object");
 
-            List<Organization> userAffiliations = orgManager.getOrganizationsForUser(user.getUserId());
+            List<Organization> userAffiliations = orgManager
+                    .getOrganizationsForUser(user.getUserId());
             if (userAffiliations != null && !userAffiliations.isEmpty()) {
 
                 user.setUserAffiliations(userAffiliations);
@@ -159,16 +167,13 @@ public class ModifyUser {
 
         }
 
-
     }
 
     public String updateUser(ProvisionUser user, User origUser) {
 
-
         String requestId = UUIDGen.getUUID();
 
         log.debug("ModifyUser: updateUser called.");
-
 
         User newUser = user.getUser();
         updateUserObject(origUser, newUser);
@@ -180,7 +185,6 @@ public class ModifyUser {
         return requestId;
     }
 
-
     public void updateUserObject(User origUser, User newUser) {
 
         origUser.updateUser(newUser);
@@ -190,11 +194,9 @@ public class ModifyUser {
         updateAddress(origUser, newUser);
     }
 
-
     public Map<String, UserAttribute> getUserAttributes() {
         return userAttributes;
     }
-
 
     private void updateUserEmail(User origUser, User newUser) {
         Set<EmailAddress> origEmailSet = origUser.getEmailAddresses();
@@ -204,7 +206,8 @@ public class ModifyUser {
             log.debug("New email list is not null");
             origEmailSet = new HashSet<EmailAddress>();
             origEmailSet.addAll(newEmailSet);
-            // update the instance variable so that it can passed to the connector with the right operation code
+            // update the instance variable so that it can passed to the
+            // connector with the right operation code
             for (EmailAddress em : newEmailSet) {
                 em.setOperation(AttributeOperationEnum.ADD);
                 this.emailSet.add(em);
@@ -212,7 +215,8 @@ public class ModifyUser {
             return;
         }
 
-        if ((origEmailSet != null && origEmailSet.size() > 0) && (newEmailSet == null || newEmailSet.size() == 0)) {
+        if ((origEmailSet != null && origEmailSet.size() > 0)
+                && (newEmailSet == null || newEmailSet.size() == 0)) {
             log.debug("orig email list is not null and nothing was passed in for the newEmailSet - ie no change");
             for (EmailAddress em : origEmailSet) {
                 em.setOperation(AttributeOperationEnum.NO_CHANGE);
@@ -226,8 +230,10 @@ public class ModifyUser {
         if (newEmailSet != null) {
             for (EmailAddress em : newEmailSet) {
                 if (em.getOperation() == AttributeOperationEnum.DELETE) {
-                    // get the email object from the original set of emails so that we can remove it
-                    EmailAddress e = getEmailAddress(em.getEmailId(), origEmailSet);
+                    // get the email object from the original set of emails so
+                    // that we can remove it
+                    EmailAddress e = getEmailAddress(em.getEmailId(),
+                            origEmailSet);
                     if (e != null) {
                         origEmailSet.remove(e);
                     }
@@ -236,33 +242,39 @@ public class ModifyUser {
                     // check if this address is in the current list
                     // if it is - see if it has changed
                     // if it is not - add it.
-                    EmailAddress origEmail = getEmailAddress(em.getEmailId(), origEmailSet);
+                    EmailAddress origEmail = getEmailAddress(em.getEmailId(),
+                            origEmailSet);
                     if (origEmail == null) {
                         em.setOperation(AttributeOperationEnum.ADD);
                         origEmailSet.add(em);
                         emailSet.add(em);
 
-                        log.debug("EMAIL ADDRESS -> ADD NEW ADDRESS = " + em.getEmailAddress());
+                        log.debug("EMAIL ADDRESS -> ADD NEW ADDRESS = "
+                                + em.getEmailAddress());
 
                     } else {
                         if (em.equals(origEmail)) {
                             // not changed
                             em.setOperation(AttributeOperationEnum.NO_CHANGE);
                             emailSet.add(em);
-                            log.debug("EMAIL ADDRESS -> NO CHANGE = " + em.getEmailAddress());
+                            log.debug("EMAIL ADDRESS -> NO CHANGE = "
+                                    + em.getEmailAddress());
                         } else {
                             // object changed
                             origEmail.updateEmailAddress(em);
                             origEmailSet.add(origEmail);
-                            origEmail.setOperation(AttributeOperationEnum.REPLACE);
+                            origEmail
+                                    .setOperation(AttributeOperationEnum.REPLACE);
                             emailSet.add(origEmail);
-                            log.debug("EMAIL ADDRESS -> REPLACE = " + em.getEmailAddress());
+                            log.debug("EMAIL ADDRESS -> REPLACE = "
+                                    + em.getEmailAddress());
                         }
                     }
                 }
             }
         }
-        // if a value is in original list and not in the new list - then add it on
+        // if a value is in original list and not in the new list - then add it
+        // on
         for (EmailAddress e : origEmailSet) {
             EmailAddress newEmail = getEmailAddress(e.getEmailId(), newEmailSet);
             if (newEmail == null) {
@@ -273,13 +285,13 @@ public class ModifyUser {
 
     }
 
-
     private EmailAddress getEmailAddress(String id, Set<EmailAddress> emailSet) {
         Iterator<EmailAddress> emailIt = emailSet.iterator();
         while (emailIt.hasNext()) {
             EmailAddress email = emailIt.next();
             if (email.getEmailId() != null) {
-                if (email.getEmailId().equals(id) && (id != null && id.length() > 0)) {
+                if (email.getEmailId().equals(id)
+                        && (id != null && id.length() > 0)) {
                     return email;
                 }
             }
@@ -293,7 +305,8 @@ public class ModifyUser {
         while (phoneIt.hasNext()) {
             Phone phone = phoneIt.next();
             if (phone.getPhoneId() != null) {
-                if (phone.getPhoneId().equals(id) && (id != null && id.length() > 0)) {
+                if (phone.getPhoneId().equals(id)
+                        && (id != null && id.length() > 0)) {
                     return phone;
                 }
             }
@@ -307,7 +320,8 @@ public class ModifyUser {
         while (addressIt.hasNext()) {
             Address adr = addressIt.next();
             if (adr.getAddressId() != null) {
-                if (adr.getAddressId().equals(id) && (id != null && id.length() > 0)) {
+                if (adr.getAddressId().equals(id)
+                        && (id != null && id.length() > 0)) {
                     return adr;
                 }
             }
@@ -347,8 +361,7 @@ public class ModifyUser {
 
         log.debug("Getting identity for ManagedSysId");
 
-        if (principalList == null ||
-                principalList.size() == 0) {
+        if (principalList == null || principalList.size() == 0) {
             return null;
         }
 
@@ -366,7 +379,6 @@ public class ModifyUser {
         return null;
     }
 
-
     private void updatePhone(User origUser, User newUser) {
         Set<Phone> origPhoneSet = origUser.getPhones();
         Set<Phone> newPhoneSet = newUser.getPhones();
@@ -375,7 +387,8 @@ public class ModifyUser {
             log.debug("New email list is not null");
             origPhoneSet = new HashSet<Phone>();
             origPhoneSet.addAll(newPhoneSet);
-            // update the instance variable so that it can passed to the connector with the right operation code
+            // update the instance variable so that it can passed to the
+            // connector with the right operation code
             for (Phone ph : newPhoneSet) {
                 ph.setOperation(AttributeOperationEnum.ADD);
                 phoneSet.add(ph);
@@ -383,7 +396,8 @@ public class ModifyUser {
             return;
         }
 
-        if ((origPhoneSet != null && origPhoneSet.size() > 0) && (newPhoneSet == null || newPhoneSet.size() == 0)) {
+        if ((origPhoneSet != null && origPhoneSet.size() > 0)
+                && (newPhoneSet == null || newPhoneSet.size() == 0)) {
             log.debug("orig phone list is not null and nothing was passed in for the newPhoneSet - ie no change");
             for (Phone ph : origPhoneSet) {
                 ph.setOperation(AttributeOperationEnum.NO_CHANGE);
@@ -398,7 +412,8 @@ public class ModifyUser {
             for (Phone ph : newPhoneSet) {
                 if (ph.getOperation() == AttributeOperationEnum.DELETE) {
 
-                    // get the email object from the original set of emails so that we can remove it
+                    // get the email object from the original set of emails so
+                    // that we can remove it
                     Phone e = getPhone(ph.getPhoneId(), origPhoneSet);
                     if (e != null) {
                         origPhoneSet.remove(e);
@@ -423,14 +438,16 @@ public class ModifyUser {
                             // object changed
                             origPhone.updatePhone(ph);
                             origPhoneSet.add(origPhone);
-                            origPhone.setOperation(AttributeOperationEnum.REPLACE);
+                            origPhone
+                                    .setOperation(AttributeOperationEnum.REPLACE);
                             phoneSet.add(origPhone);
                         }
                     }
                 }
             }
         }
-        // if a value is in original list and not in the new list - then add it on
+        // if a value is in original list and not in the new list - then add it
+        // on
         for (Phone ph : origPhoneSet) {
             Phone newPhone = getPhone(ph.getPhoneId(), newPhoneSet);
             if (newPhone == null) {
@@ -449,7 +466,8 @@ public class ModifyUser {
             log.debug("New email list is not null");
             origAddressSet = new HashSet<Address>();
             origAddressSet.addAll(newAddressSet);
-            // update the instance variable so that it can passed to the connector with the right operation code
+            // update the instance variable so that it can passed to the
+            // connector with the right operation code
             for (Address ph : newAddressSet) {
                 ph.setOperation(AttributeOperationEnum.ADD);
                 addressSet.add(ph);
@@ -457,7 +475,8 @@ public class ModifyUser {
             return;
         }
 
-        if ((origAddressSet != null && origAddressSet.size() > 0) && (newAddressSet == null || newAddressSet.size() == 0)) {
+        if ((origAddressSet != null && origAddressSet.size() > 0)
+                && (newAddressSet == null || newAddressSet.size() == 0)) {
             log.debug("orig Address list is not null and nothing was passed in for the newAddressSet - ie no change");
             for (Address ph : origAddressSet) {
                 ph.setOperation(AttributeOperationEnum.NO_CHANGE);
@@ -471,7 +490,8 @@ public class ModifyUser {
         for (Address ph : newAddressSet) {
             if (ph.getOperation() == AttributeOperationEnum.DELETE) {
 
-                // get the email object from the original set of emails so that we can remove it
+                // get the email object from the original set of emails so that
+                // we can remove it
                 Address e = getAddress(ph.getAddressId(), origAddressSet);
                 if (e != null) {
                     origAddressSet.remove(e);
@@ -482,7 +502,8 @@ public class ModifyUser {
                 // if it is - see if it has changed
                 // if it is not - add it.
                 log.debug("evaluate Address");
-                Address origAddress = getAddress(ph.getAddressId(), origAddressSet);
+                Address origAddress = getAddress(ph.getAddressId(),
+                        origAddressSet);
                 if (origAddress == null) {
                     ph.setOperation(AttributeOperationEnum.ADD);
                     origAddressSet.add(ph);
@@ -496,13 +517,15 @@ public class ModifyUser {
                         // object changed
                         origAddress.updateAddress(ph);
                         origAddressSet.add(origAddress);
-                        origAddress.setOperation(AttributeOperationEnum.REPLACE);
+                        origAddress
+                                .setOperation(AttributeOperationEnum.REPLACE);
                         addressSet.add(origAddress);
                     }
                 }
             }
         }
-        // if a value is in original list and not in the new list - then add it on
+        // if a value is in original list and not in the new list - then add it
+        // on
         for (Address ph : origAddressSet) {
             Address newAddress = getAddress(ph.getAddressId(), newAddressSet);
             if (newAddress == null) {
@@ -513,26 +536,28 @@ public class ModifyUser {
 
     }
 
-    /* Update Group Associate*/
+    /* Update Group Associate */
 
-    public void updateGroupAssociation(String userId, List<Group> origGroupList, List<Group> newGroupList) {
+    public void updateGroupAssociation(String userId,
+            List<Group> origGroupList, List<Group> newGroupList) {
 
         log.debug("updating group associations..");
         log.debug("origGroupList =" + origGroupList);
         log.debug("newGroupList=" + newGroupList);
 
-        if ((origGroupList == null || origGroupList.size() == 0) &&
-                (newGroupList == null || newGroupList.size() == 0)) {
+        if ((origGroupList == null || origGroupList.size() == 0)
+                && (newGroupList == null || newGroupList.size() == 0)) {
             return;
         }
 
-        if ((origGroupList == null || origGroupList.size() == 0) &&
-                (newGroupList != null || newGroupList.size() > 0)) {
+        if ((origGroupList == null || origGroupList.size() == 0)
+                && (newGroupList != null || newGroupList.size() > 0)) {
 
             log.debug("New group list is not null");
             origGroupList = new ArrayList<Group>();
             origGroupList.addAll(newGroupList);
-            // update the instance variable so that it can passed to the connector with the right operation code
+            // update the instance variable so that it can passed to the
+            // connector with the right operation code
             for (Group g : newGroupList) {
                 g.setOperation(AttributeOperationEnum.ADD);
                 groupList.add(g);
@@ -541,7 +566,8 @@ public class ModifyUser {
             return;
         }
 
-        if ((origGroupList != null && origGroupList.size() > 0) && (newGroupList == null || newGroupList.size() == 0)) {
+        if ((origGroupList != null && origGroupList.size() > 0)
+                && (newGroupList == null || newGroupList.size() == 0)) {
             log.debug("orig group list is not null and nothing was passed in for the newGroupList - ie no change");
             for (Group g : origGroupList) {
                 g.setOperation(AttributeOperationEnum.NO_CHANGE);
@@ -555,10 +581,12 @@ public class ModifyUser {
         for (Group g : newGroupList) {
             if (g.getOperation() == AttributeOperationEnum.DELETE) {
                 log.debug("removing Group :" + g.getGrpId());
-                // get the email object from the original set of emails so that we can remove it
+                // get the email object from the original set of emails so that
+                // we can remove it
                 Group grp = getGroup(g.getGrpId(), origGroupList);
                 if (grp != null) {
-                    this.groupManager.removeUserFromGroup(grp.getGrpId(), userId);
+                    this.groupManager.removeUserFromGroup(grp.getGrpId(),
+                            userId);
                 }
                 groupList.add(grp);
             } else {
@@ -580,7 +608,8 @@ public class ModifyUser {
                 }
             }
         }
-        // if a value is in original list and not in the new list - then add it on
+        // if a value is in original list and not in the new list - then add it
+        // on
         for (Group g : origGroupList) {
             Group newGroup = getGroup(g.getGrpId(), newGroupList);
             if (newGroup == null) {
@@ -590,28 +619,29 @@ public class ModifyUser {
         }
 
     }
+
     /* Update Principal List */
 
     public void updatePrincipalList(String userId, List<Login> origLoginList,
-                                    List<Login> newLoginList,
-                                    List<Resource> deleteResourceList) {
+            List<Login> newLoginList, List<Resource> deleteResourceList) {
 
         log.debug("** updating Principals in modify User.");
         log.debug("- origPrincpalList =" + origLoginList);
         log.debug("- newPrincipalList=" + newLoginList);
 
-        if ((origLoginList == null || origLoginList.size() == 0) &&
-                (newLoginList == null || newLoginList.size() == 0)) {
+        if ((origLoginList == null || origLoginList.size() == 0)
+                && (newLoginList == null || newLoginList.size() == 0)) {
             return;
         }
 
-        if ((origLoginList == null || origLoginList.size() == 0) &&
-                (newLoginList != null || newLoginList.size() > 0)) {
+        if ((origLoginList == null || origLoginList.size() == 0)
+                && (newLoginList != null || newLoginList.size() > 0)) {
 
             log.debug("New Principal list is not null, but Original Principal List is null");
             origLoginList = new ArrayList<Login>();
             origLoginList.addAll(newLoginList);
-            // update the instance variable so that it can passed to the connector with the right operation code
+            // update the instance variable so that it can passed to the
+            // connector with the right operation code
             for (Login lg : newLoginList) {
                 lg.setOperation(AttributeOperationEnum.ADD);
                 lg.setUserId(userId);
@@ -621,7 +651,8 @@ public class ModifyUser {
             return;
         }
 
-        if ((origLoginList != null && origLoginList.size() > 0) && (newLoginList == null || newLoginList.size() == 0)) {
+        if ((origLoginList != null && origLoginList.size() > 0)
+                && (newLoginList == null || newLoginList.size() == 0)) {
             log.debug("orig Principal list is not null and nothing was passed in for the newPrincipal list - ie no change");
             for (Login l : origLoginList) {
                 l.setOperation(AttributeOperationEnum.NO_CHANGE);
@@ -632,9 +663,11 @@ public class ModifyUser {
                     l.setPasswordChangeCount(0);
                     // reset the password from the primary identity
                     // get the primary identity for this user
-                    Login primaryIdentity = loginManager.getPrimaryIdentity(l.getUserId());
+                    Login primaryIdentity = loginManager.getPrimaryIdentity(l
+                            .getUserId());
                     if (primaryIdentity != null) {
-                        log.debug("Identity password reset to: " + primaryIdentity.getPassword());
+                        log.debug("Identity password reset to: "
+                                + primaryIdentity.getPassword());
                         l.setPassword(primaryIdentity.getPassword());
                     }
 
@@ -654,7 +687,8 @@ public class ModifyUser {
             if (l.getOperation() == AttributeOperationEnum.DELETE) {
 
                 log.debug("removing Login :" + l.getId());
-                // get the email object from the original set of emails so that we can remove it
+                // get the email object from the original set of emails so that
+                // we can remove it
                 Login lg = getPrincipal(l.getId(), origLoginList);
 
                 if (lg != null) {
@@ -685,23 +719,30 @@ public class ModifyUser {
                         log.debug("Identities are equal - No Change");
                         log.debug("OrigLogin status=" + origLogin.getStatus());
 
-                        // if the request contains a password, then set the password
+                        // if the request contains a password, then set the
+                        // password
                         // as part of the modify request
 
-                        if (l.getPassword() != null && !l.getPassword().equals(origLogin.getPassword())) {
+                        if (l.getPassword() != null
+                                && !l.getPassword().equals(
+                                        origLogin.getPassword())) {
                             // update the password
 
                             log.debug("Password change detected during synch process");
 
                             Login newLg = (Login) origLogin.clone();
                             try {
-                                newLg.setPassword(loginManager.encryptPassword(l.getUserId(),l.getPassword()));
+                                newLg.setPassword(loginManager.encryptPassword(
+                                        l.getUserId(), l.getPassword()));
                             } catch (Exception e) {
                                 log.error(e);
                                 e.printStackTrace();
                             }
-                            loginManager.changeIdentityName(newLg.getId().getLogin(), newLg.getPassword(),
-                                    newLg.getUserId(), newLg.getId().getManagedSysId(), newLg.getId().getDomainId());
+                            loginManager.changeIdentityName(newLg.getId()
+                                    .getLogin(), newLg.getPassword(), newLg
+                                    .getUserId(), newLg.getId()
+                                    .getManagedSysId(), newLg.getId()
+                                    .getDomainId());
                             principalList.add(newLg);
                         } else {
                             log.debug("Updating Identity in IDM repository");
@@ -719,10 +760,8 @@ public class ModifyUser {
 
                         }
 
-
                     } else {
                         log.debug("Identity changed - RENAME");
-
 
                         // clone the object
                         Login newLg = (Login) origLogin.clone();
@@ -730,24 +769,27 @@ public class ModifyUser {
                         newLg.setOperation(AttributeOperationEnum.REPLACE);
                         newLg.getId().setLogin(l.getId().getLogin());
 
-                        //encrypt the password and save it
+                        // encrypt the password and save it
                         String newPassword = l.getPassword();
                         if (newPassword == null) {
                             newLg.setPassword(null);
                         } else {
                             try {
-                                newLg.setPassword(loginManager.encryptPassword(l.getUserId(), newPassword));
+                                newLg.setPassword(loginManager.encryptPassword(
+                                        l.getUserId(), newPassword));
                             } catch (EncryptionException e) {
                                 log.error(e);
                                 e.printStackTrace();
                             }
                         }
-                        loginManager.changeIdentityName(newLg.getId().getLogin(), newLg.getPassword(),
-                                newLg.getUserId(), newLg.getId().getManagedSysId(), newLg.getId().getDomainId());
-                        //loginManager.addLogin(newLg);
+                        loginManager.changeIdentityName(newLg.getId()
+                                .getLogin(), newLg.getPassword(), newLg
+                                .getUserId(), newLg.getId().getManagedSysId(),
+                                newLg.getId().getDomainId());
+                        // loginManager.addLogin(newLg);
 
-
-                        // we cannot send the encrypted password to the connector
+                        // we cannot send the encrypted password to the
+                        // connector
                         // set the password back
                         newLg.setPassword(newPassword);
                         // used the match up the
@@ -757,7 +799,8 @@ public class ModifyUser {
                 }
             }
         }
-        // if a value is in original list and not in the new list - then add it on
+        // if a value is in original list and not in the new list - then add it
+        // on
         log.debug("Check if a value is in the original principal list but not in the new Principal List");
         for (Login lg : origLoginList) {
             Login newLogin = getPrincipal(lg.getId(), newLoginList);
@@ -769,12 +812,14 @@ public class ModifyUser {
 
     }
 
-    private boolean notInDeleteResourceList(Login l, List<Resource> deleteResourceList) {
+    private boolean notInDeleteResourceList(Login l,
+            List<Resource> deleteResourceList) {
         if (deleteResourceList == null) {
             return true;
         }
         for (Resource r : deleteResourceList) {
-            if (l.getId().getManagedSysId().equalsIgnoreCase(r.getManagedSysId())) {
+            if (l.getId().getManagedSysId()
+                    .equalsIgnoreCase(r.getManagedSysId())) {
                 return false;
             }
         }
@@ -783,9 +828,10 @@ public class ModifyUser {
 
     /* User Org Affiliation */
 
-    public void updateUserOrgAffiliation(String userId, List<Organization> newOrgList) {
-        List<Organization> currentOrgList = orgManager.getOrganizationsForUser(userId);
-
+    public void updateUserOrgAffiliation(String userId,
+            List<Organization> newOrgList) {
+        List<Organization> currentOrgList = orgManager
+                .getOrganizationsForUser(userId);
 
         if (newOrgList == null) {
             return;
@@ -795,9 +841,9 @@ public class ModifyUser {
 
             boolean inCurList = isCurrentOrgInNewList(o, currentOrgList);
 
-            if (o.getOperation() == null ||
-                    o.getOperation() == AttributeOperationEnum.ADD ||
-                    o.getOperation() == AttributeOperationEnum.NO_CHANGE) {
+            if (o.getOperation() == null
+                    || o.getOperation() == AttributeOperationEnum.ADD
+                    || o.getOperation() == AttributeOperationEnum.NO_CHANGE) {
 
                 if (!inCurList) {
                     orgManager.addUserToOrg(o.getOrgId(), userId);
@@ -813,8 +859,8 @@ public class ModifyUser {
 
     }
 
-
-    private boolean isCurrentOrgInNewList(Organization newOrg, List<Organization> curOrgList) {
+    private boolean isCurrentOrgInNewList(Organization newOrg,
+            List<Organization> curOrgList) {
         if (curOrgList != null) {
             for (Organization o : curOrgList) {
                 if (o.getOrgId().equals(newOrg.getOrgId())) {
@@ -829,8 +875,9 @@ public class ModifyUser {
 
     /* Role Association */
 
-    public void updateRoleAssociation(String userId, List<Role> origRoleList, List<Role> newRoleList, List<IdmAuditLog> logList,
-                                      ProvisionUser pUser, Login primaryIdentity) {
+    public void updateRoleAssociation(String userId, List<Role> origRoleList,
+            List<Role> newRoleList, List<IdmAuditLog> logList,
+            ProvisionUser pUser, Login primaryIdentity) {
 
         log.debug("updateRoleAssociation():");
         log.debug("-origRoleList =" + origRoleList);
@@ -840,44 +887,52 @@ public class ModifyUser {
         roleList = new ArrayList<Role>();
         deleteRoleList = new ArrayList<Role>();
 
-        List<UserRoleEntity> currentUserRole = roleDataService.getUserRolesForUser(userId, 0, Integer.MAX_VALUE);
+        List<UserRoleEntity> currentUserRole = roleDataService
+                .getUserRolesForUser(userId, 0, Integer.MAX_VALUE);
         User user = userMgr.getUserWithDependent(userId, false);
 
-
-        if ((origRoleList == null || origRoleList.size() == 0) &&
-                (newRoleList == null || newRoleList.size() == 0)) {
+        if ((origRoleList == null || origRoleList.size() == 0)
+                && (newRoleList == null || newRoleList.size() == 0)) {
             return;
         }
 
-        // scneario where the original role list is empty but new roles are passed in on the request
-        if ((origRoleList == null || origRoleList.size() == 0) &&
-                (newRoleList != null || newRoleList.size() > 0)) {
+        // scneario where the original role list is empty but new roles are
+        // passed in on the request
+        if ((origRoleList == null || origRoleList.size() == 0)
+                && (newRoleList != null || newRoleList.size() > 0)) {
 
             log.debug("New Role list is not null");
             origRoleList = new ArrayList<Role>();
             origRoleList.addAll(newRoleList);
-            // update the instance variable so that it can passed to the connector with the right operation code
+            // update the instance variable so that it can passed to the
+            // connector with the right operation code
             for (Role rl : newRoleList) {
                 rl.setOperation(AttributeOperationEnum.ADD);
                 roleList.add(rl);
-                
+
                 roleDataService.addUserToRole(rl.getRoleId(), userId);
 
-                logList.add(auditHelper.createLogObject("ADD ROLE", pUser.getRequestorDomain(), pUser.getRequestorLogin(),
-                        "IDM SERVICE", user.getCreatedBy(), "0", "USER", user.getUserId(),
-                        null, "SUCCESS", null, "USER_STATUS",
-                        user.getStatus().toString(),
-                        "NA", null, null, null, rl.getRoleId(),
-                        pUser.getRequestClientIP(), primaryIdentity.getId().getLogin(), primaryIdentity.getId().getDomainId()));
+                logList.add(auditHelper.createLogObject("ADD ROLE", pUser
+                        .getRequestorDomain(), pUser.getRequestorLogin(),
+                        "IDM SERVICE", user.getCreatedBy(), "0", "USER", user
+                                .getUserId(), null, "SUCCESS", null,
+                        "USER_STATUS", user.getStatus().toString(), "NA", null,
+                        null, null, rl.getRoleId(), pUser.getRequestClientIP(),
+                        primaryIdentity.getId().getLogin(), primaryIdentity
+                                .getId().getDomainId()));
 
-                //roleDataService.addUserToRole(rl.getId().getServiceId(), rl.getId().getRoleId(), userId);
+                // roleDataService.addUserToRole(rl.getId().getServiceId(),
+                // rl.getId().getRoleId(), userId);
             }
             return;
         }
 
-        // roles were originally assigned to this user, but this request does not have any roles.
-        // need to ensure that old roles are marked with the no-change operation code.
-        if ((origRoleList != null && origRoleList.size() > 0) && (newRoleList == null || newRoleList.size() == 0)) {
+        // roles were originally assigned to this user, but this request does
+        // not have any roles.
+        // need to ensure that old roles are marked with the no-change operation
+        // code.
+        if ((origRoleList != null && origRoleList.size() > 0)
+                && (newRoleList == null || newRoleList.size() == 0)) {
             log.debug("orig Role list is not null and nothing was passed in for the newRoleList - ie no change");
             for (Role r : origRoleList) {
                 r.setOperation(AttributeOperationEnum.NO_CHANGE);
@@ -890,23 +945,29 @@ public class ModifyUser {
         // else add with operation 2
         for (Role r : newRoleList) {
             if (r.getOperation() == AttributeOperationEnum.DELETE) {
-                // get the email object from the original set of emails so that we can remove it
+                // get the email object from the original set of emails so that
+                // we can remove it
                 Role rl = getRole(r.getRoleId(), origRoleList);
                 if (rl != null) {
                     roleDataService.removeUserFromRole(rl.getRoleId(), userId);
 
-                    logList.add(auditHelper.createLogObject("REMOVE ROLE", pUser.getRequestorDomain(), pUser.getRequestorLogin(),
-                            "IDM SERVICE", user.getCreatedBy(), "0", "USER", user.getUserId(),
-                            null, "SUCCESS", null, "USER_STATUS",
-                            user.getStatus().toString(),
-                            "NA", null, null, null, rl.getRoleId(),
-                            pUser.getRequestClientIP(), primaryIdentity.getId().getLogin(), primaryIdentity.getId().getDomainId()));
+                    logList.add(auditHelper.createLogObject("REMOVE ROLE",
+                            pUser.getRequestorDomain(), pUser
+                                    .getRequestorLogin(), "IDM SERVICE", user
+                                    .getCreatedBy(), "0", "USER", user
+                                    .getUserId(), null, "SUCCESS", null,
+                            "USER_STATUS", user.getStatus().toString(), "NA",
+                            null, null, null, rl.getRoleId(), pUser
+                                    .getRequestClientIP(), primaryIdentity
+                                    .getId().getLogin(), primaryIdentity
+                                    .getId().getDomainId()));
 
                 }
                 log.debug("Adding role to deleteRoleList =" + rl);
                 this.deleteRoleList.add(rl);
 
-                // need to pass on to connector that a role has been removed so that
+                // need to pass on to connector that a role has been removed so
+                // that
                 // the connector can also take action on this event.
 
                 roleList.add(r);
@@ -924,20 +985,25 @@ public class ModifyUser {
                     roleList.add(r);
                     roleDataService.addUserToRole(r.getRoleId(), userId);
 
-                    logList.add(auditHelper.createLogObject("ADD ROLE", pUser.getRequestorDomain(), pUser.getRequestorLogin(),
-                            "IDM SERVICE", user.getCreatedBy(), "0", "USER", user.getUserId(),
-                            null, "SUCCESS", null, "USER_STATUS",
-                            user.getStatus().toString(),
-                            "NA", null, null, null, r.getRoleId(),
-                            pUser.getRequestClientIP(), primaryIdentity.getId().getLogin(), primaryIdentity.getId().getDomainId()));
+                    logList.add(auditHelper.createLogObject("ADD ROLE", pUser
+                            .getRequestorDomain(), pUser.getRequestorLogin(),
+                            "IDM SERVICE", user.getCreatedBy(), "0", "USER",
+                            user.getUserId(), null, "SUCCESS", null,
+                            "USER_STATUS", user.getStatus().toString(), "NA",
+                            null, null, null, r.getRoleId(), pUser
+                                    .getRequestClientIP(), primaryIdentity
+                                    .getId().getLogin(), primaryIdentity
+                                    .getId().getDomainId()));
 
-                    //roleDataService.addUserToRole(r.getId().getServiceId(), r.getId().getRoleId(), userId);
+                    // roleDataService.addUserToRole(r.getId().getServiceId(),
+                    // r.getId().getRoleId(), userId);
                 } else {
                     // get the user role object
                     log.debug("checking if no_change or replace");
-                    //if (r.equals(origRole)) {
-                    //UserRole uRole = userRoleAttrEq(r, currentUserRole);
-                    if (r.getRoleId().equals(origRole.getRoleId()) && userRoleAttrEq(r, currentUserRole)) {
+                    // if (r.equals(origRole)) {
+                    // UserRole uRole = userRoleAttrEq(r, currentUserRole);
+                    if (r.getRoleId().equals(origRole.getRoleId())
+                            && userRoleAttrEq(r, currentUserRole)) {
                         // not changed
                         log.debug("- no_change ");
                         r.setOperation(AttributeOperationEnum.NO_CHANGE);
@@ -948,35 +1014,33 @@ public class ModifyUser {
                         roleList.add(r);
 
                         // object changed
-                        //UserRole ur = new UserRole(userId, r.getId().getServiceId(),
-                        //		r.getId().getRoleId());
+                        // UserRole ur = new UserRole(userId,
+                        // r.getId().getServiceId(),
+                        // r.getId().getRoleId());
                         UserRoleEntity ur = getUserRole(r, currentUserRole);
-                        if(ur == null) {
-                        	roleDataService.addUserToRole(user.getUserId(), userId);
+                        if (ur == null) {
+                            roleDataService.addUserToRole(user.getUserId(),
+                                    userId);
                         }
                         /*
-                        if (ur != null) {
-                            if (r.getStartDate() != null) {
-                                ur.setStartDate(r.getStartDate());
-                            }
-                            if (r.getEndDate() != null) {
-                                ur.setEndDate(r.getEndDate());
-                            }
-                            if (r.getStatus() != null) {
-                                ur.setStatus(r.getStatus());
-                            }
-                            roleDataService.updateUserRoleAssoc(ur);
-                        } else {
-                            UserRole usrRl = new UserRole(user.getUserId(), r.getRoleId());
-                            roleDataService.assocUserToRole(usrRl);
-
-                        }
-                        */
+                         * if (ur != null) { if (r.getStartDate() != null) {
+                         * ur.setStartDate(r.getStartDate()); } if
+                         * (r.getEndDate() != null) {
+                         * ur.setEndDate(r.getEndDate()); } if (r.getStatus() !=
+                         * null) { ur.setStatus(r.getStatus()); }
+                         * roleDataService.updateUserRoleAssoc(ur); } else {
+                         * UserRole usrRl = new UserRole(user.getUserId(),
+                         * r.getRoleId());
+                         * roleDataService.assocUserToRole(usrRl);
+                         * 
+                         * }
+                         */
                     }
                 }
             }
         }
-        // if a value is in original list and not in the new list - then add it on
+        // if a value is in original list and not in the new list - then add it
+        // on
         for (Role rl : origRoleList) {
             Role newRole = getRole(rl.getRoleId(), newRoleList);
             if (newRole == null) {
@@ -987,8 +1051,9 @@ public class ModifyUser {
 
     }
 
-    private UserRoleEntity getUserRole(Role r, List<UserRoleEntity> currentUserRole) {
-        //boolean retval = true;
+    private UserRoleEntity getUserRole(Role r,
+            List<UserRoleEntity> currentUserRole) {
+        // boolean retval = true;
 
         if (currentUserRole == null) {
             return null;
@@ -1005,7 +1070,7 @@ public class ModifyUser {
     }
 
     private boolean userRoleAttrEq(Role r, List<UserRoleEntity> currentUserRole) {
-        //boolean retval = true;
+        // boolean retval = true;
 
         if (currentUserRole == null) {
             return false;
@@ -1039,22 +1104,27 @@ public class ModifyUser {
         return true;
     }
 
-
     public void updateSupervisor(User user, Supervisor supervisor) {
 
         if (supervisor == null) {
             return;
         }
-        // check the current supervisor - if different - remove it and add the new one.
-        List<Supervisor> supervisorList = userMgr.getSupervisors(user.getUserId());
+        // check the current supervisor - if different - remove it and add the
+        // new one.
+        List<Supervisor> supervisorList = userMgr.getSupervisors(user
+                .getUserId());
         for (Supervisor s : supervisorList) {
-            log.debug("looking to match supervisor ids = " + s.getSupervisor().getUserId() + " " + supervisor.getSupervisor().getUserId());
-            if (s.getSupervisor().getUserId().equalsIgnoreCase(supervisor.getSupervisor().getUserId())) {
+            log.debug("looking to match supervisor ids = "
+                    + s.getSupervisor().getUserId() + " "
+                    + supervisor.getSupervisor().getUserId());
+            if (s.getSupervisor().getUserId()
+                    .equalsIgnoreCase(supervisor.getSupervisor().getUserId())) {
                 return;
             }
             userMgr.removeSupervisor(s);
         }
-        log.debug("adding supervisor: " + supervisor.getSupervisor().getUserId());
+        log.debug("adding supervisor: "
+                + supervisor.getSupervisor().getUserId());
         supervisor.setEmployee(user);
         userMgr.addSupervisor(supervisor);
 
@@ -1066,13 +1136,15 @@ public class ModifyUser {
      * Update the list of attributes with the correct operation values so that they can be
      * passed to the connector
      */
-    public ExtensibleUser updateAttributeList(org.openiam.provision.type.ExtensibleUser extUser, Map<String, String> currentValueMap) {
+    public ExtensibleUser updateAttributeList(
+            org.openiam.provision.type.ExtensibleUser extUser,
+            Map<String, String> currentValueMap) {
         if (extUser == null) {
             return null;
         }
         log.debug("updateAttributeList: Updating operations on attributes being passed to connectors");
-        log.debug("updateAttributeList: Current attributeMap = " + currentValueMap);
-
+        log.debug("updateAttributeList: Current attributeMap = "
+                + currentValueMap);
 
         List<ExtensibleAttribute> extAttrList = extUser.getAttributes();
         if (extAttrList == null) {
@@ -1123,7 +1195,6 @@ public class ModifyUser {
 
     }
 
-
     public RoleDataService getRoleDataService() {
         return roleDataService;
     }
@@ -1156,51 +1227,41 @@ public class ModifyUser {
         this.loginManager = loginManager;
     }
 
-
     public AuditHelper getAuditHelper() {
         return auditHelper;
     }
-
 
     public void setAuditHelper(AuditHelper auditHelper) {
         this.auditHelper = auditHelper;
     }
 
-
     public Set<EmailAddress> getEmailSet() {
         return emailSet;
     }
-
 
     public void setEmailSet(Set<EmailAddress> emailSet) {
         this.emailSet = emailSet;
     }
 
-
     public Set<Phone> getPhoneSet() {
         return phoneSet;
     }
-
 
     public void setPhoneSet(Set<Phone> phoneSet) {
         this.phoneSet = phoneSet;
     }
 
-
     public Set<Address> getAddressSet() {
         return addressSet;
     }
-
 
     public void setAddressSet(Set<Address> addressSet) {
         this.addressSet = addressSet;
     }
 
-
     public List<Group> getGroupList() {
         return groupList;
     }
-
 
     public void setGroupList(List<Group> groupList) {
         this.groupList = groupList;
@@ -1224,7 +1285,9 @@ public class ModifyUser {
                     log.debug("- Evaluating delRl = " + delRl);
                     if (delRl != null) {
 
-                        if (!found && r.getRoleId().equalsIgnoreCase(delRl.getRoleId())) {
+                        if (!found
+                                && r.getRoleId().equalsIgnoreCase(
+                                        delRl.getRoleId())) {
                             found = true;
                         }
 
@@ -1247,11 +1310,13 @@ public class ModifyUser {
      * @param roleList
      */
 
-    public void validateIdentitiesExistforSecurityDomain(Login primaryIdentity, List<Role> roleList) {
+    public void validateIdentitiesExistforSecurityDomain(Login primaryIdentity,
+            List<Role> roleList) {
 
         log.debug("validateIdentitiesExistforSecurityDomain");
 
-        List<Login> identityList = loginManager.getLoginByUser(primaryIdentity.getUserId());
+        List<Login> identityList = loginManager.getLoginByUser(primaryIdentity
+                .getUserId());
         String managedSysId = primaryIdentity.getId().getManagedSysId();
 
         log.debug("Identitylist =" + identityList);
@@ -1271,14 +1336,16 @@ public class ModifyUser {
             if (l.getId().getManagedSysId().equalsIgnoreCase(managedSysId)) {
                 boolean found = false;
                 for (Role r : roleList) {
-                    if (r.getServiceId().equalsIgnoreCase(l.getId().getDomainId())) {
+                    if (r.getServiceId().equalsIgnoreCase(
+                            l.getId().getDomainId())) {
                         found = true;
                     }
 
                 }
                 if (!found) {
                     if (l.getId().getManagedSysId().equalsIgnoreCase("0")) {
-                        // primary identity - do not delete. Just disable its status
+                        // primary identity - do not delete. Just disable its
+                        // status
                         log.debug("Primary identity - chagne its status");
                         l.setStatus("INACTIVE");
                         loginManager.updateLogin(l);
@@ -1286,7 +1353,9 @@ public class ModifyUser {
                     } else {
 
                         log.debug("Removing identity for  :" + l.getId());
-                        loginManager.removeLogin(l.getId().getDomainId(), l.getId().getLogin(), l.getId().getManagedSysId());
+                        loginManager.removeLogin(l.getId().getDomainId(), l
+                                .getId().getLogin(), l.getId()
+                                .getManagedSysId());
                     }
                 }
             }
@@ -1295,13 +1364,15 @@ public class ModifyUser {
 
     }
 
-    private boolean identityInDomain(String secDomain, String managedSysId, List<Login> identityList) {
+    private boolean identityInDomain(String secDomain, String managedSysId,
+            List<Login> identityList) {
 
         log.debug("IdentityinDomain =" + secDomain + "-" + managedSysId);
 
         for (Login l : identityList) {
-            if (l.getId().getDomainId().equalsIgnoreCase(secDomain) &&
-                    l.getId().getManagedSysId().equalsIgnoreCase(managedSysId)) {
+            if (l.getId().getDomainId().equalsIgnoreCase(secDomain)
+                    && l.getId().getManagedSysId()
+                            .equalsIgnoreCase(managedSysId)) {
                 return true;
             }
 
@@ -1311,10 +1382,11 @@ public class ModifyUser {
     }
 
     private void addIdentity(String secDomain, Login primaryIdentity) {
-        if (loginManager.getLoginByManagedSys(secDomain, primaryIdentity.getId().getLogin(), primaryIdentity.getId().getManagedSysId()) == null) {
+        if (loginManager.getLoginByManagedSys(secDomain, primaryIdentity
+                .getId().getLogin(), primaryIdentity.getId().getManagedSysId()) == null) {
 
-            LoginId id = new LoginId(secDomain, primaryIdentity.getId().getLogin(), primaryIdentity.getId().getManagedSysId());
-
+            LoginId id = new LoginId(secDomain, primaryIdentity.getId()
+                    .getLogin(), primaryIdentity.getId().getManagedSysId());
 
             Login newLg = new Login();
 
@@ -1326,52 +1398,44 @@ public class ModifyUser {
             newLg.setGracePeriod(primaryIdentity.getGracePeriod());
             newLg.setManagedSysName(primaryIdentity.getManagedSysName());
             newLg.setPassword(primaryIdentity.getPassword());
-            newLg.setPasswordChangeCount(primaryIdentity.getPasswordChangeCount());
+            newLg.setPasswordChangeCount(primaryIdentity
+                    .getPasswordChangeCount());
             newLg.setStatus(primaryIdentity.getStatus());
             newLg.setIsLocked(primaryIdentity.getIsLocked());
             newLg.setOrigPrincipalName(primaryIdentity.getOrigPrincipalName());
             newLg.setUserId(primaryIdentity.getUserId());
             newLg.setResetPassword(primaryIdentity.getResetPassword());
 
-
             log.debug("Adding identity = " + newLg);
 
             loginManager.addLogin(newLg);
         }
 
-
     }
-
 
     public List<Role> getRoleList() {
         return roleList;
     }
 
-
     public void setRoleList(List<Role> roleList) {
         this.roleList = roleList;
     }
-
 
     public List<Login> getPrincipalList() {
         return principalList;
     }
 
-
     public void setPrincipalList(List<Login> principalList) {
         this.principalList = principalList;
     }
-
 
     public void setUserAttributes(Map<String, UserAttribute> userAttributes) {
         this.userAttributes = userAttributes;
     }
 
-
     public List<Role> getDeleteRoleList() {
         return deleteRoleList;
     }
-
 
     public void setDeleteRoleList(List<Role> deleteRoleList) {
         this.deleteRoleList = deleteRoleList;

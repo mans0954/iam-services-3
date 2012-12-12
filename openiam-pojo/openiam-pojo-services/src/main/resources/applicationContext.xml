@@ -101,7 +101,6 @@
 		<property name="groupManager" ref="groupManager" />
 		<property name="roleManager" ref="roleDataService" />
 		<property name="cryptor" ref="cryptor" />
-		<property name="auditUtil" ref="auditUtil" />
 		<property name="sysConfiguration" ref="sysConfiguration" />
 		<property name="scriptEngine" value="org.openiam.script.GroovyScriptEngineIntegration" />
         <property name="resourceService" ref="resourceDataService" />
@@ -169,7 +168,7 @@
 
 	<bean id="addressDAO" class="org.openiam.idm.srvc.continfo.service.AddressDAOImpl" >
 		<property name="sessionFactory" ref="sessionFactory"></property>		
-	</bean>	
+	</bean>
 
 	<bean id="emailAddressDAO" class="org.openiam.idm.srvc.continfo.service.EmailAddressDAOImpl" >
 		<property name="sessionFactory" ref="sessionFactory"></property>		
@@ -179,29 +178,6 @@
 		<property name="sessionFactory" ref="sessionFactory"></property>		
 	</bean>	
 	
-	<!-- Idm Audit Beans -->
-	<bean id="auditWS" class="org.openiam.idm.srvc.audit.ws.IdmAuditLogWebDataServiceImpl" >
-		<property name="auditDataService" ref="auditDataService" />
-	</bean>
-
-
-	<bean id="auditUtil" class="org.openiam.idm.srvc.audit.service.AuditLogUtil" >
-		<property name="auditDataService" ref="auditDataService" />
-	</bean>
-
-
-			
-	<bean id="auditDataService" class="org.openiam.idm.srvc.audit.service.IdmAuditLogDataServiceImpl" >
-		<property name="auditDao" ref="auditDAO" />
-		<property name="hash" ref="hash" />
-
-        <property name="loginDS" ref="loginManager" />
-        <property name="sysConfiguration" ref="sysConfiguration" />
-	</bean>
-
-	<bean id="auditDAO" class="org.openiam.idm.srvc.audit.service.IdmAuditLogDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"></property>		
-	</bean>	
 
 	<bean id="seqGenDAO" class="org.openiam.base.id.SequenceGenDAOImpl">
 		<property name="sessionFactory" ref="sessionFactory"></property>		
@@ -267,7 +243,6 @@
 		<property name="respValidatorObjName" value="${challengeResponse.respValidatorObjName}" />
 		<property name="respValidatorObjType" value="${challengeResponse.respValidatorObjType}" />
 		
-		<property name="auditHelper" ref="auditHelper" />	
 		<property name="userMgr" ref="userManager" />	
 		<property name="passwordMgr" ref="passwordManager" />	
 		
@@ -298,7 +273,6 @@
 		<property name="cryptor" ref="cryptor" />	
 		<property name="passwordHistoryDao" ref="passwordHistoryDAO" />
         <property name="hash" ref="hash" />
-		
 	</bean>	
 
 	<bean id="passwordHistoryDAO" class="org.openiam.idm.srvc.pswd.service.PasswordHistoryDAOImpl" >
@@ -405,7 +379,6 @@
 		<property name="optionalBccAddress" value="${mail.optionalBccAddress}" />
 		<property name="userManager" ref="userWS" />
 		<property name="scriptEngine" value="org.openiam.script.GroovyScriptEngineIntegration" />
-		<property name="auditHelper" ref="auditHelper" />
 		
 	</bean>
 	
@@ -519,7 +492,7 @@
 <!-- 				<value>org/openiam/idm/srvc/cat/service/Category.hbm.xml</value> -->
 <!-- 				<value>org/openiam/idm/srvc/cat/service/CategoryLanguage.hbm.xml</value> -->
 <!-- 				<value>org/openiam/idm/srvc/cat/service/CategoryType.hbm.xml</value> -->
-				<value>org/openiam/idm/srvc/audit/service/IdmAuditLog.hbm.xml</value>
+<!-- 				<value>org/openiam/idm/srvc/audit/service/IdmAuditLog.hbm.xml</value> -->
 				<!-- Menu Maps -->
 				<value>org/openiam/idm/srvc/menu/service/Menu.hbm.xml</value>
 				<!-- <value>org/openiam/idm/srvc/menu/service/Permission.hbm.xml</value> -->
@@ -612,6 +585,8 @@
                                                org.openiam.idm.srvc.meta.domain*,
                                                org.openiam.idm.srvc.policy.dto*,
                                                org.openiam.idm.srvc.policy.domain*,
+                                               org.openiam.idm.srvc.audit.dto*,
+                                               org.openiam.idm.srvc.audit.domain*
                                                "/>
 
 	</bean>

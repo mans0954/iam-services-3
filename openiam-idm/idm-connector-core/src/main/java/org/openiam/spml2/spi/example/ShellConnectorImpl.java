@@ -100,6 +100,7 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
     protected ManagedSystemDataService managedSysService;
     protected ManagedSystemObjectMatchDAO managedSysObjectMatchDao;
     protected ResourceDataService resourceDataService;
+    @Autowired
     protected IdmAuditLogDataService auditDataService;
     protected LoginDataService loginManager;
     @Autowired

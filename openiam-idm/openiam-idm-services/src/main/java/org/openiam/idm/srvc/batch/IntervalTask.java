@@ -1,13 +1,16 @@
 package org.openiam.idm.srvc.batch;
 
-import java.util.*;
-
 import java.net.ConnectException;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.mule.api.MuleContext;
 import org.mule.api.context.MuleContextAware;
 import org.mule.module.client.MuleClient;
@@ -21,52 +24,54 @@ import org.openiam.idm.srvc.policy.service.PolicyDataService;
 import org.openiam.script.ScriptFactory;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-
 
 /**
  * Scheduled task that is called at set intervals by the schedular
  * @author suneet
  *
  */
-public class IntervalTask  implements ApplicationContextAware, MuleContextAware {
+public class IntervalTask implements ApplicationContextAware, MuleContextAware {
 
-	private static final Log log = LogFactory.getLog(IntervalTask.class);
+    private static final Log log = LogFactory.getLog(IntervalTask.class);
 
     /*
-     * The flags for the running tasks are handled by this Thread-Safe Set.
-     * It stores the taskIds of the currently executing tasks.
-     * This is faster and as reliable as storing the flags in the database,
-     * if the tasks are only launched from ONE host in a clustered environment.
-     * It is unique for each class-loader, which means unique per war-deployment.
+     * The flags for the running tasks are handled by this Thread-Safe Set. It
+     * stores the taskIds of the currently executing tasks. This is faster and
+     * as reliable as storing the flags in the database, if the tasks are only
+     * launched from ONE host in a clustered environment. It is unique for each
+     * class-loader, which means unique per war-deployment.
      */
-    private static Set<String> runningTask = Collections.newSetFromMap(new ConcurrentHashMap());
-	protected BatchDataService batchService;
-	
-	protected LoginDataWebService loginManager;
-	protected PolicyDataService policyDataService;
-	protected String scriptEngine;
-	protected AuditHelper auditHelper;
+    private static Set<String> runningTask = Collections
+            .newSetFromMap(new ConcurrentHashMap());
+    protected BatchDataService batchService;
+
+    protected LoginDataWebService loginManager;
+    protected PolicyDataService policyDataService;
+    protected String scriptEngine;
+    @Autowired
+    protected AuditHelper auditHelper;
 
     protected MuleContext muleContext;
 
-    static protected ResourceBundle res = ResourceBundle.getBundle("datasource");
+    static protected ResourceBundle res = ResourceBundle
+            .getBundle("datasource");
 
-    static boolean isPrimary = Boolean.parseBoolean(res.getString("IS_PRIMARY"));
+    static boolean isPrimary = Boolean
+            .parseBoolean(res.getString("IS_PRIMARY"));
 
     static String serviceHost = res.getString("PRIMARY_HOST");
     static String serviceContext = res.getString("openiam.idm.ws.path");
 
-	
-	public static ApplicationContext ac;
-	
-	public IntervalTask() {
-		super();
-	}
+    public static ApplicationContext ac;
 
-	public void execute(String frequencyMeasure) 
-	{
+    public IntervalTask() {
+        super();
+    }
+
+    public void execute(String frequencyMeasure) {
         if (!isPrimary) {
             log.debug("Scheduler: Not primary instance");
 
@@ -76,103 +81,111 @@ public class IntervalTask  implements ApplicationContextAware, MuleContextAware 
             }
         }
 
+        ScriptIntegration se = null;
+        Map<String, Object> bindingMap = new HashMap<String, Object>();
+        bindingMap.put("context", ac);
 
-	
-		ScriptIntegration se = null;
-		Map<String, Object> bindingMap = new HashMap<String, Object>();
-		bindingMap.put("context", ac);	
-		
-		try {
-			se = ScriptFactory.createModule(this.scriptEngine); 
-		}catch(Exception e) {
-			log.error(e);
-			return;
+        try {
+            se = ScriptFactory.createModule(this.scriptEngine);
+        } catch (Exception e) {
+            log.error(e);
+            return;
 
-		}
+        }
 
-		// get the list of domains
-		List<BatchTask> taskList = batchService.getAllTasksByFrequency(frequencyMeasure);
+        // get the list of domains
+        List<BatchTask> taskList = batchService
+                .getAllTasksByFrequency(frequencyMeasure);
 
-		if (taskList != null) {
-			for (BatchTask task : taskList) {
-				String requestId = UUIDGen.getUUID();
-				try {
-					if (task.getEnabled() != 0) {
-                        // This needs to be synchronized, because the check for the taskId and the insertion need to
-                        // happen atomically. It is possible for two threads, started by Quartz, to reach this point at
+        if (taskList != null) {
+            for (BatchTask task : taskList) {
+                String requestId = UUIDGen.getUUID();
+                try {
+                    if (task.getEnabled() != 0) {
+                        // This needs to be synchronized, because the check for
+                        // the taskId and the insertion need to
+                        // happen atomically. It is possible for two threads,
+                        // started by Quartz, to reach this point at
                         // the same time for the same task.
                         synchronized (runningTask) {
-                            if(runningTask.contains(task.getTaskId())) {
-                                log.debug("Task " + task.getTaskName() + " already running");
+                            if (runningTask.contains(task.getTaskId())) {
+                                log.debug("Task " + task.getTaskName()
+                                        + " already running");
                                 continue;
                             }
                             runningTask.add(task.getTaskId());
                         }
 
-						auditHelper.addLog(task.getTaskName(), null,	null,
-								"IDM BATCH TASK", null, "0", "BATCH", task.getTaskId(), 
-								null,   "TASK STARTED", null,  null, 
-								task.getParam1(), requestId, null, null, null);
-						
-						log.debug("Executing task:" + task.getTaskName());
+                        auditHelper.addLog(task.getTaskName(), null, null,
+                                "IDM BATCH TASK", null, "0", "BATCH",
+                                task.getTaskId(), null, "TASK STARTED", null,
+                                null, task.getParam1(), requestId, null, null,
+                                null);
 
-						if (task.getLastExecTime() == null) {
-							task.setLastExecTime(new Date(System.currentTimeMillis()));
-						}
-						bindingMap.put("taskObj", task);
-						bindingMap.put("lastExecTime", task.getLastExecTime());
-						bindingMap.put("parentRequestId", requestId);
+                        log.debug("Executing task:" + task.getTaskName());
+
+                        if (task.getLastExecTime() == null) {
+                            task.setLastExecTime(new Date(System
+                                    .currentTimeMillis()));
+                        }
+                        bindingMap.put("taskObj", task);
+                        bindingMap.put("lastExecTime", task.getLastExecTime());
+                        bindingMap.put("parentRequestId", requestId);
 
                         try {
-                            Integer output = (Integer)se.execute(bindingMap, task.getTaskUrl());
-                            if (output.intValue() == 0 ) {
-                                 auditHelper.addLog(task.getTaskName(), null,	null,
-                                        "IDM BATCH TASK", null, "0", "BATCH", task.getTaskId(),
-                                        null,   "FAIL", null,  null,
-                                        task.getParam1(), requestId, null, null, null);
-                            }else {
-                                auditHelper.addLog(task.getTaskName(), null,	null,
-                                        "IDM BATCH TASK", null, "0", "BATCH", task.getTaskId(),
-                                        null,   "SUCCESS", null,  "USER_STATUS",
-                                        task.getParam1(), requestId, null, null, null);
+                            Integer output = (Integer) se.execute(bindingMap,
+                                    task.getTaskUrl());
+                            if (output.intValue() == 0) {
+                                auditHelper.addLog(task.getTaskName(), null,
+                                        null, "IDM BATCH TASK", null, "0",
+                                        "BATCH", task.getTaskId(), null,
+                                        "FAIL", null, null, task.getParam1(),
+                                        requestId, null, null, null);
+                            } else {
+                                auditHelper.addLog(task.getTaskName(), null,
+                                        null, "IDM BATCH TASK", null, "0",
+                                        "BATCH", task.getTaskId(), null,
+                                        "SUCCESS", null, "USER_STATUS",
+                                        task.getParam1(), requestId, null,
+                                        null, null);
                             }
                         } catch (ScriptEngineException e) {
                             log.error(e);
                         }
                     }
 
-				}catch(Exception e) {
-					log.error(e);
-				}finally {
-					if (task.getEnabled() != 0) {
-                        // this point can only be reached by the thread, which put the taskId into the map
+                } catch (Exception e) {
+                    log.error(e);
+                } finally {
+                    if (task.getEnabled() != 0) {
+                        // this point can only be reached by the thread, which
+                        // put the taskId into the map
                         runningTask.remove(task.getTaskId());
                         // Get the updated status of the task
                         task = batchService.getBatchTask(task.getTaskId());
-						task.setLastExecTime(new Date(System.currentTimeMillis()));
-						batchService.updateTask(task);
-					}
-				}
-				
-			}
-		}
+                        task.setLastExecTime(new Date(System
+                                .currentTimeMillis()));
+                        batchService.updateTask(task);
+                    }
+                }
 
-	
-	}
+            }
+        }
+
+    }
 
     private boolean isAlive() {
         Map<String, String> msgPropMap = new HashMap<String, String>();
         msgPropMap.put("SERVICE_HOST", serviceHost);
         msgPropMap.put("SERVICE_CONTEXT", serviceContext);
 
-
-        //Create the client with the context
+        // Create the client with the context
         try {
 
             MuleClient client = new MuleClient(muleContext);
             client.send("vm://heartBeatIsAlive", null, msgPropMap);
 
-        }catch(Exception  ce) {
+        } catch (Exception ce) {
             log.error(ce.toString());
 
             if (ce instanceof ConnectException) {
@@ -183,53 +196,51 @@ public class IntervalTask  implements ApplicationContextAware, MuleContextAware 
         return true;
     }
 
+    public BatchDataService getBatchService() {
+        return batchService;
+    }
 
+    public void setBatchService(BatchDataService batchService) {
+        this.batchService = batchService;
+    }
 
-	public BatchDataService getBatchService() {
-		return batchService;
-	}
+    public LoginDataWebService getLoginManager() {
+        return loginManager;
+    }
 
-	public void setBatchService(BatchDataService batchService) {
-		this.batchService = batchService;
-	}
+    public void setLoginManager(LoginDataWebService loginManager) {
+        this.loginManager = loginManager;
+    }
 
-	public LoginDataWebService getLoginManager() {
-		return loginManager;
-	}
+    public PolicyDataService getPolicyDataService() {
+        return policyDataService;
+    }
 
-	public void setLoginManager(LoginDataWebService loginManager) {
-		this.loginManager = loginManager;
-	}
+    public void setPolicyDataService(PolicyDataService policyDataService) {
+        this.policyDataService = policyDataService;
+    }
 
-	public PolicyDataService getPolicyDataService() {
-		return policyDataService;
-	}
+    public String getScriptEngine() {
+        return scriptEngine;
+    }
 
-	public void setPolicyDataService(PolicyDataService policyDataService) {
-		this.policyDataService = policyDataService;
-	}
+    public void setScriptEngine(String scriptEngine) {
+        this.scriptEngine = scriptEngine;
+    }
 
-	public String getScriptEngine() {
-		return scriptEngine;
-	}
+    public AuditHelper getAuditHelper() {
+        return auditHelper;
+    }
 
-	public void setScriptEngine(String scriptEngine) {
-		this.scriptEngine = scriptEngine;
-	}
+    public void setAuditHelper(AuditHelper auditHelper) {
+        this.auditHelper = auditHelper;
+    }
 
-	public AuditHelper getAuditHelper() {
-		return auditHelper;
-	}
+    public void setApplicationContext(ApplicationContext applicationContext)
+            throws BeansException {
+        ac = applicationContext;
 
-	public void setAuditHelper(AuditHelper auditHelper) {
-		this.auditHelper = auditHelper;
-	}
-
-	public void setApplicationContext(ApplicationContext applicationContext)
-			throws BeansException {
-		ac = applicationContext;
-		
-	}
+    }
 
     public void setMuleContext(MuleContext ctx) {
 
@@ -237,6 +248,5 @@ public class IntervalTask  implements ApplicationContextAware, MuleContextAware 
 
         muleContext = ctx;
     }
-
 
 }

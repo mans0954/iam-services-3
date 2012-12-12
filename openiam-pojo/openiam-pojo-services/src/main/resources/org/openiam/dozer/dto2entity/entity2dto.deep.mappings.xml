@@ -218,4 +218,12 @@
 			<b>policyAttributes</b> 
 		</field>
 	</mapping>	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity</class-a>
+		<class-b>org.openiam.idm.srvc.audit.dto.IdmAuditLog</class-b>
+			<field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentListConverter" custom-converter-param="dto2entityShallowDozerMapper">
+				<a>customRecords</a>
+				<b>customRecords</b> 
+			</field>
+	</mapping>
 </mappings>

@@ -1,4 +1,4 @@
-package org.openiam.idm.srvc.audit.dto;
+package org.openiam.idm.srvc.audit.constant;
 
 /**
  * Constants used with the Audit Service

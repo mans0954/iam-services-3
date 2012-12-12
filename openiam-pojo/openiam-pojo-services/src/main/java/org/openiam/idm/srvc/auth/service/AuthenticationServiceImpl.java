@@ -107,7 +107,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Autowired
     protected PolicyDataService policyDataService;
     protected Cryptor cryptor;
-    protected AuditLogUtil auditUtil;
+
+    @Autowired
+    protected AuditLogUtil auditLogUtil;
 
     GroupDataService groupManager;
     RoleDataService roleManager;
@@ -189,7 +191,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             loginModule.setUserService(userManager);
             loginModule.setCryptor(cryptor);
             loginModule.setSecurityDomain(secDomain);
-            loginModule.setAuditUtil(auditUtil);
+            loginModule.setAuditUtil(auditLogUtil);
 
         } catch (Exception ie) {
             log.error(ie.getMessage(), ie);
@@ -523,7 +525,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 loginModule.setUserService(userManager);
                 loginModule.setCryptor(cryptor);
                 loginModule.setSecurityDomain(secDomain);
-                loginModule.setAuditUtil(auditUtil);
+                loginModule.setAuditUtil(auditLogUtil);
                 loginModule.setUser(user);
                 loginModule.setLg(lg);
                 loginModule.setAuthPolicyId(authPolicyId);
@@ -796,7 +798,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 loginModule.setUserService(userManager);
                 loginModule.setCryptor(cryptor);
                 loginModule.setSecurityDomain(secDomain);
-                loginModule.setAuditUtil(auditUtil);
+                loginModule.setAuditUtil(auditLogUtil);
                 loginModule.setUser(user);
                 loginModule.setLg(lg);
                 loginModule.setAuthPolicyId(authPolicyId);
@@ -1171,10 +1173,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         this.cryptor = cryptor;
     }
 
-    public void setAuditUtil(AuditLogUtil auditUtil) {
-        this.auditUtil = auditUtil;
-    }
-
     private SSOToken token(String userId, Map tokenParam) throws Exception {
 
         tokenParam.put("USER_ID", userId);
@@ -1192,7 +1190,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 reason, domainId, userId, principal, linkedLogId, clientId);
         log.setHost(clientIP);
         log.setNodeIP(nodeIP);
-        auditUtil.log(log);
+        auditLogUtil.log(log);
     }
 
     public String getScriptEngine() {

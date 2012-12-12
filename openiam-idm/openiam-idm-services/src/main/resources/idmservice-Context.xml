@@ -52,9 +52,9 @@
 	<bean id="intervalTask" class="org.openiam.idm.srvc.batch.IntervalTask" >
 		<property name="batchService" ref="batchDataService" />
 		<property name="loginManager" ref="loginWS" />
-		<property name="policyDataService" ref="policyDataService" />
+<!-- 		<property name="policyDataService" ref="policyDataService" /> -->
 		<property name="scriptEngine" value="org.openiam.script.GroovyScriptEngineIntegration" />
-		<property name="auditHelper" ref="auditHelper" />
+<!-- 		<property name="auditHelper" ref="auditHelper" /> -->
 	</bean>
 	
 	<bean id="nightlyTask" class="org.openiam.idm.srvc.batch.NightlyTask">
@@ -62,7 +62,7 @@
 		<property name="loginManager" ref="loginWS" />
 		<property name="policyDataService" ref="policyDataService" />
 		<property name="scriptEngine" value="org.openiam.script.GroovyScriptEngineIntegration" />
-		<property name="auditHelper" ref="auditHelper" />
+<!-- 		<property name="auditHelper" ref="auditHelper" /> -->
 	</bean>	
 
 <!-- Provisioning Service -->
@@ -76,7 +76,7 @@
         <property name="loginManager" ref="loginManager" />
         <property name="loginDao" ref="loginDAO" />
         <property name="userMgr" ref="userManager" />
-        <property name="auditDataService" ref="auditDataService" />
+<!--         <property name="auditDataService" ref="auditDataService" /> -->
         <property name="managedSysService" ref="managedSysService" />
         <property name="roleDataService" ref="roleDataService" />
         <property name="groupManager" ref="groupManager" />
@@ -87,7 +87,7 @@
         <property name="scriptEngine" value="org.openiam.script.GroovyScriptEngineIntegration" />
         <property name="orgManager" ref="orgManager" />
         <property name="passwordDS" ref="passwordManager" />
-        <property name="auditHelper" ref="auditHelper" />
+<!--         <property name="auditHelper" ref="auditHelper" /> -->
         <property name="connectorAdapter" ref="connectorAdapter" />
         <property name="remoteConnectorAdapter" ref="remoteConnectorAdapter" />
         <property name="connectorService" ref="connectorService" />
@@ -102,7 +102,7 @@
 			<property name="loginManager" ref="loginManager" />
 			<property name="loginDao" ref="loginDAO" />
 			<property name="userMgr" ref="userManager" />	
-			<property name="auditDataService" ref="auditDataService" />	
+<!-- 			<property name="auditDataService" ref="auditDataService" />	 -->
 			<property name="managedSysService" ref="managedSysService" />	
 			<property name="roleDataService" ref="roleDataService" />
 			<property name="groupManager" ref="groupManager" />
@@ -115,7 +115,7 @@
 			<property name="passwordDS" ref="passwordManager" />
 			<!--property name="addUser" ref="addUser" / -->
 			<!-- property name="modifyUser" ref="modifyUser" / -->
-			<property name="auditHelper" ref="auditHelper" />
+<!-- 			<property name="auditHelper" ref="auditHelper" /> -->
 			<!--property name="attrListBuilder" ref="attributeListBuilder" / -->
 			<property name="connectorAdapter" ref="connectorAdapter" />
 			<!--property name="disableUser" ref="disableUser" / -->
@@ -145,7 +145,7 @@
 			<property name="sysConfiguration" ref="sysConfiguration" />
 			<property name="resourceDataService" ref="resourceDataService" />
 			<property name="managedSysService" ref="managedSysService" />
-            <property name="auditHelper" ref="auditHelper" />
+<!--             <property name="auditHelper" ref="auditHelper" /> -->
             <property name="orgManager" ref="orgManager" />
             <!--property name="orgManager" ref="orgManager" / -->
 	</bean>
@@ -155,14 +155,14 @@
 			<property name="userMgr" ref="userManager" />	
 			<property name="roleDataService" ref="roleDataService" />
 			<property name="groupManager" ref="groupManager" />
-			<property name="auditHelper" ref="auditHelper" />
+<!-- 			<property name="auditHelper" ref="auditHelper" /> -->
             <property name="orgManager" ref="orgManager" />
             <!-- property name="orgManager" ref="orgManager" / -->
 	</bean>
 
 	<bean id="disableUser" class="org.openiam.provision.service.DisableUserDelegate" >
 			<property name="userMgr" ref="userManager" />	
-			<property name="auditHelper" ref="auditHelper" />
+<!-- 			<property name="auditHelper" ref="auditHelper" /> -->
 			<property name="sysConfiguration" ref="sysConfiguration" />
 			<property name="loginManager" ref="loginManager" />
 			<property name="managedSysService" ref="managedSysService" />
@@ -191,9 +191,9 @@
         <property name="loginManager" ref="loginManager" />
     </bean>
 
-    <bean id="auditHelper" class="org.openiam.idm.srvc.audit.service.AuditHelperImpl" >
-		<property name="auditDataService" ref="auditDataService" />
-	</bean>
+<!--     <bean id="auditHelper" class="org.openiam.idm.srvc.audit.service.AuditHelperImpl" > -->
+<!-- 		<property name="auditDataService" ref="auditDataService" /> -->
+<!-- 	</bean> -->
 
 
 	<!--bean id="bpmWS" class="org.openiam.idm.srvc.bpm.service.BpmServiceImpl" / -->
@@ -284,7 +284,7 @@
 		<property name="loginManager" ref="loginManager" />
 		<property name="roleDataService" ref="roleDataService" />
 		<property name="userMgr" ref="userManager" />	
-		<property name="auditHelper" ref="auditHelper" />
+<!-- 		<property name="auditHelper" ref="auditHelper" /> -->
 	</bean>	
 	<bean id="csvAdapter" class="org.openiam.idm.srvc.synch.srcadapter.CSVAdapter" >
 		<property name="matchRuleFactory" ref="matchRuleFactory" />
@@ -292,7 +292,7 @@
 		<property name="loginManager" ref="loginManager" />
 		<property name="roleDataService" ref="roleDataService" />
 		<property name="userMgr" ref="userManager" />	
-		<property name="auditHelper" ref="auditHelper" />
+<!-- 		<property name="auditHelper" ref="auditHelper" /> -->
 	</bean>	
 
 	<bean id="ldapAdapter" class="org.openiam.idm.srvc.synch.srcadapter.LdapAdapter" >
@@ -301,7 +301,7 @@
 		<property name="loginManager" ref="loginManager" />
 		<property name="roleDataService" ref="roleDataService" />
 		<property name="userMgr" ref="userManager" />
-		<property name="auditHelper" ref="auditHelper" />
+<!-- 		<property name="auditHelper" ref="auditHelper" /> -->
 	</bean>	
 	<bean id="activeDirAdapter" class="org.openiam.idm.srvc.synch.srcadapter.ActiveDirectoryAdapter" >
 	</bean>
@@ -311,7 +311,7 @@
 		<property name="loginManager" ref="loginManager" />
 		<property name="roleDataService" ref="roleDataService" />
 		<property name="userMgr" ref="userManager" />
-		<property name="auditHelper" ref="auditHelper" />
+<!-- 		<property name="auditHelper" ref="auditHelper" /> -->
         <property name="scriptEngine" value="org.openiam.script.GroovyScriptEngineIntegration" />
 	</bean>
 	
@@ -345,7 +345,7 @@
         <property name="loginManager" ref="loginManager" />
         <property name="roleDataService" ref="roleDataService" />
         <property name="userMgr" ref="userManager" />
-        <property name="auditHelper" ref="auditHelper" />
+<!--         <property name="auditHelper" ref="auditHelper" /> -->
         <property name="adapterMap" ref="adapterMap" />
         <!--<property name="scriptEngine" value="org.openiam.script.GroovyScriptEngineIntegration" />-->
 
@@ -357,7 +357,7 @@
         <property name="loginManager" ref="loginManager" />
         <property name="roleDataService" ref="roleDataService" />
         <property name="userMgr" ref="userManager" />
-        <property name="auditHelper" ref="auditHelper" />
+<!--         <property name="auditHelper" ref="auditHelper" /> -->
     </bean>
     
     

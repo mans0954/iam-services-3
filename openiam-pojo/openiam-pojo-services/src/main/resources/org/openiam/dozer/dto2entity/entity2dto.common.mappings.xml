@@ -23,7 +23,6 @@
 		<class-a>org.openiam.idm.srvc.res.domain.ResourceGroupEntity</class-a>
 		<class-b>org.openiam.idm.srvc.res.dto.ResourceGroup</class-b>
 	</mapping>
-
     <mapping>
         <class-a>org.openiam.idm.srvc.user.domain.UserNoteEntity</class-a>
         <class-b>org.openiam.idm.srvc.user.dto.UserNote</class-b>
@@ -114,9 +113,12 @@
 		<class-a>org.openiam.idm.srvc.policy.domain.PolicyObjectAssocEntity</class-a>
 		<class-b>org.openiam.idm.srvc.policy.dto.PolicyObjectAssoc</class-b>
 	</mapping>
-	
 	<mapping>
 		<class-a>org.openiam.idm.srvc.res.domain.ResourceUserEntity</class-a>
 		<class-b>org.openiam.idm.srvc.res.dto.ResourceUser</class-b>
+	</mapping>
+	<mapping>
+		<class-a>org.openiam.idm.srvc.audit.domain.IdmAuditLogCustomEntity</class-a>
+		<class-b>org.openiam.idm.srvc.audit.dto.IdmAuditLogCustom</class-b>
 	</mapping>
 </mappings>

@@ -1,5 +1,6 @@
 package org.openiam.provision.service;
 
+import java.util.ResourceBundle;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mule.api.MuleContext;
@@ -19,25 +20,26 @@ import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-
-import java.util.ResourceBundle;
 
 /**
  * Base class for the provisioning service
  * User: suneetshah
  */
-public abstract class AbstractProvisioningService  implements MuleContextAware, ProvisionService, ApplicationContextAware {
+public abstract class AbstractProvisioningService implements MuleContextAware,
+        ProvisionService, ApplicationContextAware {
 
-    protected static final Log log = LogFactory.getLog(AbstractProvisioningService.class);
+    protected static final Log log = LogFactory
+            .getLog(AbstractProvisioningService.class);
     // used to inject the application context into the groovy scripts
     protected static ApplicationContext ac;
 
     protected UserDataService userMgr;
     protected LoginDataService loginManager;
     protected LoginDAO loginDao;
-
+    @Autowired
     protected IdmAuditLogDataService auditDataService;
     protected ManagedSystemDataService managedSysService;
     protected RoleDataService roleDataService;
@@ -49,6 +51,7 @@ public abstract class AbstractProvisioningService  implements MuleContextAware, 
     protected String scriptEngine;
     protected OrganizationDataService orgManager;
     protected PasswordService passwordDS;
+    @Autowired
     protected AuditHelper auditHelper;
     protected ConnectorAdapter connectorAdapter;
     protected RemoteConnectorAdapter remoteConnectorAdapter;
@@ -73,9 +76,12 @@ public abstract class AbstractProvisioningService  implements MuleContextAware, 
     protected static final String IDENTITY_NEW = "NEW";
     protected static final String IDENTITY_EXIST = "EXIST";
 
-    final static protected ResourceBundle res = ResourceBundle.getBundle("datasource");
-    final static protected String serviceHost = res.getString("openiam.service_base");
-    final static protected String serviceContext = res.getString("openiam.idm.ws.path");
+    final static protected ResourceBundle res = ResourceBundle
+            .getBundle("datasource");
+    final static protected String serviceHost = res
+            .getString("openiam.service_base");
+    final static protected String serviceContext = res
+            .getString("openiam.idm.ws.path");
 
     public void setMuleContext(MuleContext ctx) {
         log.debug("Provisioning - setMuleContext called.");
@@ -111,7 +117,8 @@ public abstract class AbstractProvisioningService  implements MuleContextAware, 
         return deprovisionSelectedResource;
     }
 
-    public void setDeprovisionSelectedResource(DeprovisionSelectedResourceHelper deprovisionSelectedResource) {
+    public void setDeprovisionSelectedResource(
+            DeprovisionSelectedResourceHelper deprovisionSelectedResource) {
         this.deprovisionSelectedResource = deprovisionSelectedResource;
     }
 
@@ -119,7 +126,8 @@ public abstract class AbstractProvisioningService  implements MuleContextAware, 
      * ***** Spring methods ************
      */
 
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+    public void setApplicationContext(ApplicationContext applicationContext)
+            throws BeansException {
         ac = applicationContext;
     }
 
@@ -154,7 +162,6 @@ public abstract class AbstractProvisioningService  implements MuleContextAware, 
     public void setAuditDataService(IdmAuditLogDataService auditDataService) {
         this.auditDataService = auditDataService;
     }
-
 
     public ManagedSystemDataService getManagedSysService() {
         return managedSysService;
@@ -236,7 +243,6 @@ public abstract class AbstractProvisioningService  implements MuleContextAware, 
         this.passwordDS = passwordDS;
     }
 
-
     public AuditHelper getAuditHelper() {
         return auditHelper;
     }
@@ -245,7 +251,6 @@ public abstract class AbstractProvisioningService  implements MuleContextAware, 
         this.auditHelper = auditHelper;
     }
 
-
     public ConnectorAdapter getConnectorAdapter() {
         return connectorAdapter;
     }
@@ -253,7 +258,6 @@ public abstract class AbstractProvisioningService  implements MuleContextAware, 
     public void setConnectorAdapter(ConnectorAdapter connectorAdapter) {
         this.connectorAdapter = connectorAdapter;
     }
-
 
     public RemoteConnectorAdapter getRemoteConnectorAdapter() {
         return remoteConnectorAdapter;
@@ -276,7 +280,8 @@ public abstract class AbstractProvisioningService  implements MuleContextAware, 
         return validateConnection;
     }
 
-    public void setValidateConnection(ValidateConnectionConfig validateConnection) {
+    public void setValidateConnection(
+            ValidateConnectionConfig validateConnection) {
         this.validateConnection = validateConnection;
     }
 

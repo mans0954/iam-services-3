@@ -1,5 +1,9 @@
 package org.openiam.provision.service;
 
+import java.util.Iterator;
+import java.util.Map;
+import java.util.ResourceBundle;
+import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mule.api.MuleContext;
@@ -32,13 +36,9 @@ import org.openiam.spml2.msg.DeleteRequestType;
 import org.openiam.spml2.msg.PSOIdentifierType;
 import org.openiam.spml2.msg.ResponseType;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-
-import java.util.Iterator;
-import java.util.Map;
-import java.util.ResourceBundle;
-import java.util.Set;
 
 /**
  * Base class that will be extended by all the helper classes that will be used by the DefaultProvisioningService
@@ -49,7 +49,7 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
     protected UserDataService userMgr;
     protected LoginDataService loginManager;
     protected LoginDAO loginDao;
-
+    @Autowired
     protected IdmAuditLogDataService auditDataService;
     protected ManagedSystemDataService managedSysService;
     protected RoleDataService roleDataService;
@@ -61,6 +61,7 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
     protected String scriptEngine;
     protected OrganizationDataService orgManager;
     protected PasswordService passwordDS;
+    @Autowired
     protected AuditHelper auditHelper;
     protected ConnectorAdapter connectorAdapter;
     protected RemoteConnectorAdapter remoteConnectorAdapter;
@@ -70,17 +71,20 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
     protected String preProcessor;
     protected String postProcessor;
 
-    protected  MuleContext muleContext;
+    protected MuleContext muleContext;
 
+    final static protected ResourceBundle res = ResourceBundle
+            .getBundle("datasource");
+    final static protected String serviceHost = res
+            .getString("openiam.service_base");
+    final static protected String serviceContext = res
+            .getString("openiam.idm.ws.path");
 
-    final static protected ResourceBundle res = ResourceBundle.getBundle("datasource");
-    final static protected String serviceHost = res.getString("openiam.service_base");
-    final static protected String serviceContext = res.getString("openiam.idm.ws.path");
+    protected static final Log log = LogFactory
+            .getLog(BaseProvisioningHelper.class);
 
-    protected static final Log log = LogFactory.getLog(BaseProvisioningHelper.class);
-
-
-    protected String getResProperty(Set<ResourceProp> resPropSet, String propertyName) {
+    protected String getResProperty(Set<ResourceProp> resPropSet,
+            String propertyName) {
         String value = null;
 
         if (resPropSet == null) {
@@ -124,7 +128,8 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
 
     }
 
-    protected int executePreProcess(PreProcessor ppScript, Map<String, Object> bindingMap, ProvisionUser user, String operation) {
+    protected int executePreProcess(PreProcessor ppScript,
+            Map<String, Object> bindingMap, ProvisionUser user, String operation) {
         if ("ADD".equalsIgnoreCase(operation)) {
             return ppScript.addUser(user, bindingMap);
         }
@@ -140,10 +145,11 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
 
         return 0;
 
-
     }
 
-    protected int executePostProcess(PostProcessor ppScript, Map<String, Object> bindingMap, ProvisionUser user, String operation, boolean success) {
+    protected int executePostProcess(PostProcessor ppScript,
+            Map<String, Object> bindingMap, ProvisionUser user,
+            String operation, boolean success) {
         if ("ADD".equalsIgnoreCase(operation)) {
             return ppScript.addUser(user, bindingMap, success);
         }
@@ -161,14 +167,11 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
         }
         return 0;
 
-
     }
 
     protected ResponseType localDelete(Login l, String requestId,
-                                     PSOIdentifierType idType,
-                                     ManagedSys mSys,
-                                     ProvisionUser user,
-                                     IdmAuditLog auditLog) {
+            PSOIdentifierType idType, ManagedSys mSys, ProvisionUser user,
+            IdmAuditLog auditLog) {
 
         log.debug("Local delete for=" + l);
 
@@ -176,8 +179,8 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
         reqType.setRequestID(requestId);
         reqType.setPsoID(idType);
 
-        ResponseType resp = connectorAdapter.deleteRequest(mSys, reqType, muleContext);
-
+        ResponseType resp = connectorAdapter.deleteRequest(mSys, reqType,
+                muleContext);
 
         String logid = null;
         String status = null;
@@ -190,28 +193,22 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
             logid = auditLog.getLogId();
         }
 
-        auditHelper.addLog("DELETE IDENTITY", user.getRequestorDomain(), user.getRequestorLogin(),
-                "IDM SERVICE", user.getCreatedBy(), l.getId().getManagedSysId(),
-                "IDENTITY", user.getUserId(),
-                logid, status, logid,
-                "IDENTITY_STATUS", "DELETED",
-                requestId, resp.getErrorCodeAsStr(), user.getSessionId(), resp.getErrorMessage(),
-                user.getRequestClientIP(), l.getId().getLogin(), l.getId().getDomainId());
+        auditHelper.addLog("DELETE IDENTITY", user.getRequestorDomain(), user
+                .getRequestorLogin(), "IDM SERVICE", user.getCreatedBy(), l
+                .getId().getManagedSysId(), "IDENTITY", user.getUserId(),
+                logid, status, logid, "IDENTITY_STATUS", "DELETED", requestId,
+                resp.getErrorCodeAsStr(), user.getSessionId(), resp
+                        .getErrorMessage(), user.getRequestClientIP(), l
+                        .getId().getLogin(), l.getId().getDomainId());
 
         return resp;
 
-
     }
 
-    protected UserResponse remoteDelete(
-            Login mLg,
-            String requestId,
-            ManagedSys mSys,
-            ProvisionConnector connector,
-            ManagedSystemObjectMatch matchObj,
-            ProvisionUser user,
-            IdmAuditLog auditLog
-    ) {
+    protected UserResponse remoteDelete(Login mLg, String requestId,
+            ManagedSys mSys, ProvisionConnector connector,
+            ManagedSystemObjectMatch matchObj, ProvisionUser user,
+            IdmAuditLog auditLog) {
 
         UserRequest request = new UserRequest();
 
@@ -226,24 +223,24 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
         }
         request.setOperation("DELETE");
 
-        UserResponse resp = remoteConnectorAdapter.deleteRequest(mSys, request, connector, muleContext);
+        UserResponse resp = remoteConnectorAdapter.deleteRequest(mSys, request,
+                connector, muleContext);
 
-        auditHelper.addLog("DELETE IDENTITY", auditLog.getDomainId(), auditLog.getPrincipal(),
-                "IDM SERVICE", user.getCreatedBy(), mLg.getId().getManagedSysId(),
-                "IDENTITY", user.getUserId(),
-                auditLog.getLogId(), resp.getStatus().toString(), auditLog.getLogId(), "IDENTITY_STATUS",
-                "DELETED",
-                requestId, resp.getErrorCodeAsStr(), user.getSessionId(), resp.getErrorMsgAsStr(),
-                user.getRequestClientIP(), mLg.getId().getLogin(), mLg.getId().getDomainId());
+        auditHelper.addLog("DELETE IDENTITY", auditLog.getDomainId(), auditLog
+                .getPrincipal(), "IDM SERVICE", user.getCreatedBy(), mLg
+                .getId().getManagedSysId(), "IDENTITY", user.getUserId(),
+                auditLog.getLogId(), resp.getStatus().toString(), auditLog
+                        .getLogId(), "IDENTITY_STATUS", "DELETED", requestId,
+                resp.getErrorCodeAsStr(), user.getSessionId(), resp
+                        .getErrorMsgAsStr(), user.getRequestClientIP(), mLg
+                        .getId().getLogin(), mLg.getId().getDomainId());
 
         return resp;
 
-
     }
 
-
-
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+    public void setApplicationContext(ApplicationContext applicationContext)
+            throws BeansException {
         ac = applicationContext;
     }
 
@@ -387,7 +384,8 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
         return remoteConnectorAdapter;
     }
 
-    public void setRemoteConnectorAdapter(RemoteConnectorAdapter remoteConnectorAdapter) {
+    public void setRemoteConnectorAdapter(
+            RemoteConnectorAdapter remoteConnectorAdapter) {
         this.remoteConnectorAdapter = remoteConnectorAdapter;
     }
 
@@ -403,7 +401,8 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
         return validateConnection;
     }
 
-    public void setValidateConnection(ValidateConnectionConfig validateConnection) {
+    public void setValidateConnection(
+            ValidateConnectionConfig validateConnection) {
         this.validateConnection = validateConnection;
     }
 

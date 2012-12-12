@@ -36,6 +36,7 @@ import org.openiam.idm.srvc.pswd.dto.UserIdentityAnswer;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.util.encrypt.Cryptor;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author suneet
@@ -57,6 +58,7 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
     protected ValidatorFactory respValidatorFactory;
 
     protected UserDataService userMgr;
+    @Autowired
     protected org.openiam.idm.srvc.audit.service.AuditHelper auditHelper;
     protected PasswordService passwordMgr;
 

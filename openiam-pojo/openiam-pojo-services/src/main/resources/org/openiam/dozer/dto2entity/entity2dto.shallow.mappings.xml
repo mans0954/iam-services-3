@@ -212,4 +212,12 @@
 			<b>policyAttributes</b> 
 		</field-exclude>
 	</mapping>	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity</class-a>
+		<class-b>org.openiam.idm.srvc.audit.dto.IdmAuditLog</class-b>
+			<field-exclude>
+			<a>customRecords</a>
+			<b>customRecords</b> 
+		</field-exclude>
+	</mapping>
 </mappings>

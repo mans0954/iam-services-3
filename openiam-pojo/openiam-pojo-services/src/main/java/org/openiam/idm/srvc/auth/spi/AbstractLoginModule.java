@@ -56,8 +56,8 @@ public abstract class AbstractLoginModule implements LoginModule {
     protected UserDataService userManager;
     protected SecurityDomain securityDomain;
     protected Cryptor cryptor;
-
-    protected AuditLogUtil auditUtil;
+    @Autowired
+    protected AuditLogUtil auditLogUtil;
     protected ResourceDataService resourceService;
     protected PasswordService passwordManager;
     @Autowired
@@ -223,7 +223,7 @@ public abstract class AbstractLoginModule implements LoginModule {
         log.setHost(clientIP);
         log.setNodeIP(nodeIP);
 
-        auditUtil.log(log);
+        auditLogUtil.log(log);
     }
 
     public Cryptor getCryptor() {
@@ -232,14 +232,6 @@ public abstract class AbstractLoginModule implements LoginModule {
 
     public void setCryptor(Cryptor cryptor) {
         this.cryptor = cryptor;
-    }
-
-    public AuditLogUtil getAuditUtil() {
-        return auditUtil;
-    }
-
-    public void setAuditUtil(AuditLogUtil auditUtil) {
-        this.auditUtil = auditUtil;
     }
 
     public User getUser() {
@@ -287,5 +279,9 @@ public abstract class AbstractLoginModule implements LoginModule {
      */
     public void setPolicyDataService(PolicyDataService policyDataService) {
         this.policyDataService = policyDataService;
+    }
+
+    public void setAuditUtil(AuditLogUtil auditLogUtil) {
+        this.auditLogUtil = auditLogUtil;
     }
 }
