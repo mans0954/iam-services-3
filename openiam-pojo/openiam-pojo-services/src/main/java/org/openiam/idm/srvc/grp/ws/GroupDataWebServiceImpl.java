@@ -23,6 +23,7 @@ import org.hibernate.HibernateException;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
+import org.openiam.idm.srvc.grp.domain.UserGroupEntity;
 import org.openiam.idm.srvc.grp.dto.*;
 import org.openiam.idm.srvc.grp.service.*;
 
@@ -78,6 +79,9 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
     
     @Autowired
     private GroupSearchBeanConverter groupSearchBeanConverter;
+    
+    @Autowired
+    private UserGroupDAO userGroupDAO;
     
     @Autowired
     private GroupDAO groupDAO;
@@ -255,27 +259,6 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 	}
 
 	@Override
-	public UserListResponse getUsersByGroup(final String groupId, final int from, final int size) {
-		final UserListResponse response = new UserListResponse(ResponseStatus.SUCCESS);
-		try {
-			if(groupId == null) {
-				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-			}
-			
-			final List<UserEntity> userEntityList = groupManager.getUsersInGroup(groupId, from, size);
-			final List<User> userList = userDozerConverter.convertToDTOList(userEntityList, false);
-			response.setUserList(userList);
-		} catch(BasicDataServiceException e) {
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(e.getCode());
-		} catch(Throwable e) {
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorText(e.getMessage());
-		}
-		return response;
-	}
-
-	@Override
 	public Response addUserToGroup(final String groupId, final String userId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {
@@ -283,8 +266,10 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
 			
-			if(groupManager.isUserInGroup(groupId, userId)) {
-				throw new BasicDataServiceException(ResponseCode.MEMBERSHIP_EXISTS);
+			final UserGroupEntity entity = userGroupDAO.getRecord(groupId, userId);
+			
+			if(entity != null) {
+				throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
 			}
 			
 			groupManager.addUserToGroup(groupId, userId);
@@ -292,6 +277,7 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
 		} catch(Throwable e) {
+			log.error("Error while adding user to group", e);
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorText(e.getMessage());
 		}
@@ -311,6 +297,7 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
 		} catch(Throwable e) {
+			log.error("Error while remove user from group", e);
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorText(e.getMessage());
 		}

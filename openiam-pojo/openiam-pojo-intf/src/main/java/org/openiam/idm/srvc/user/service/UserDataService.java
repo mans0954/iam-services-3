@@ -6,6 +6,7 @@ import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.org.dto.Organization;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.*;
 
 import javax.jws.WebMethod;
@@ -369,47 +370,12 @@ public interface UserDataService {
     @XmlJavaTypeAdapter(org.openiam.idm.srvc.user.dto.UserAttributeMapAdapter.class)
     public Map<String, org.openiam.idm.srvc.user.dto.UserAttribute> getAllAttributes(String userId);
 
-    /*
-     @WebMethod(exclude=true)
-     public UserDAO getUserDao();
-
-     @WebMethod(exclude=true)
-     public void setUserDao(UserDAO userDao);
-
-     @WebMethod(exclude=true)
-     public UserAttributeDAO getUserAttributeDao();
-
-     @WebMethod(exclude=true)
-     public void setUserAttributeDao(UserAttributeDAO userAttributeDao);
-
-     @WebMethod(exclude=true)
-     public UserNoteDAO getUserNoteDao();
-
-     @WebMethod(exclude=true)
-     public void setUserNoteDao(UserNoteDAO userNoteDao);
-
-     @WebMethod(exclude=true)
-     public AddressDAO getAddressDao();
-
-     @WebMethod(exclude=true)
-     public void setAddressDao(AddressDAO addressDao);
-
-     @WebMethod(exclude=true)
-     public EmailAddressDAO getEmailAddressDao();
-
-     @WebMethod(exclude=true)
-     public void setEmailAddressDao(EmailAddressDAO emailAddressDao);
-
-     @WebMethod(exclude=true)
-     public PhoneDAO getPhoneDao();
-
-     @WebMethod(exclude=true)
-     public void setPhoneDao(PhoneDAO phoneDao);
-
-     @WebMethod(exclude=true)
-     public SupervisorDAO getSupervisorDao();
-
-     @WebMethod(exclude=true)
-     public void setSupervisorDao(SupervisorDAO supervisorDao);
-     */
+    public List<UserEntity> getUsersForResource(final String resourceId, final int from, final int size);
+    public int getNumOfUsersForResource(final String resourceId);
+    
+    public List<UserEntity> getUsersForGroup(final String groupId, final int from, final int size);
+    public int getNumOfUsersForGroup(final String groupId);
+    
+    public List<UserEntity> getUsersForRole(final String roleId, final int from, final int size);
+    public int getNumOfUsersForRole(final String roleId);
 }

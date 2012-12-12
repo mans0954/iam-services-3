@@ -45,6 +45,8 @@ import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.grp.domain.UserGroupEntity;
 import org.openiam.idm.srvc.grp.dto.UserGroup;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
+import org.openiam.idm.srvc.res.domain.ResourceUserEntity;
+import org.openiam.idm.srvc.res.dto.ResourceUser;
 import org.openiam.idm.srvc.role.domain.UserRoleEntity;
 import org.openiam.idm.srvc.user.dto.Supervisor;
 import org.openiam.idm.srvc.user.dto.User;
@@ -317,6 +319,10 @@ public class UserEntity {
     @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
     @JoinColumn(name="USER_ID", referencedColumnName="USER_ID")
     private Set<UserGroupEntity> userGroups = new HashSet<UserGroupEntity>(0);
+    
+    @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
+    @JoinColumn(name="USER_ID", referencedColumnName="USER_ID")
+    private Set<ResourceUserEntity> resourceUsers = new HashSet<ResourceUserEntity>();
 
     @IndexedEmbedded(prefix="roles.")
     @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
@@ -900,7 +906,15 @@ public class UserEntity {
         this.userRoles = userRoles;
     }
 
-    @Override
+    public Set<ResourceUserEntity> getResourceUsers() {
+		return resourceUsers;
+	}
+
+	public void setResourceUsers(Set<ResourceUserEntity> resourceUsers) {
+		this.resourceUsers = resourceUsers;
+	}
+
+	@Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;

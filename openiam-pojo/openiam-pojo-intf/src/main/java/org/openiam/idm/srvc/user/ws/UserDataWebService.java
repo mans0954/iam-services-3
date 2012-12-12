@@ -538,4 +538,28 @@ public interface UserDataWebService {
             @WebParam(name = "attributeList", targetNamespace = "")
             List<String> attributeList);
 
+    
+    @WebMethod
+    public List<User> getUsersForResource(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,
+    									  @WebParam(name = "from", targetNamespace = "") final int from,
+    									  @WebParam(name = "size", targetNamespace = "") final int size);
+    
+    @WebMethod
+    public int getNumOfUsersForResource(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId);
+    
+    @WebMethod
+    public List<User> getUsersForGroup(@WebParam(name = "groupId", targetNamespace = "") final String groupId,
+    								   @WebParam(name = "from", targetNamespace = "") final int from,
+    								   @WebParam(name = "size", targetNamespace = "") final int size);
+    
+    @WebMethod
+    public int getNumOfUsersForGroup(@WebParam(name = "groupId", targetNamespace = "") final String groupId);
+    
+    @WebMethod
+    public List<User> getUsersForRole(@WebParam(name = "roleId", targetNamespace = "") final String roleId,
+    								  @WebParam(name = "from", targetNamespace = "") final int from,
+    								  @WebParam(name = "size", targetNamespace = "") final int size);
+    
+    @WebMethod
+    public int getNumOfUsersForRole(@WebParam(name = "roleId", targetNamespace = "") final String roleId);
 }

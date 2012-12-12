@@ -29,14 +29,6 @@
 		</field-exclude>
 	</mapping>
 	
-	<mapping>
-		<class-a>org.openiam.idm.srvc.res.domain.ResourceUserEntity</class-a>
-		<class-b>org.openiam.idm.srvc.res.dto.ResourceUser</class-b>
-		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="dto2entityShallowDozerMapper">
-			<a>resource</a>
-			<b>resource</b>
-		</field>
-	</mapping>
     <mapping>
         <class-a>org.openiam.idm.srvc.user.domain.UserEntity</class-a>
         <class-b>org.openiam.idm.srvc.user.dto.User</class-b>
@@ -71,6 +63,10 @@
         <field-exclude>
             <a>userRoles</a>
             <b>userRoles</b>
+        </field-exclude>
+        <field-exclude>
+        	<a>resourceUsers</a>
+        	<b>resourceUsers</b>
         </field-exclude>
     </mapping>
 

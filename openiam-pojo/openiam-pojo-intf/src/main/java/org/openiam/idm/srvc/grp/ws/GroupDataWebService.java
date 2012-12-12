@@ -151,23 +151,6 @@ public interface GroupDataWebService {
     public GroupListResponse getCompiledGroupsForUser(final @WebParam(name = "userId", targetNamespace = "") String userId);
 
     /**
-     * This method gets all users assigned to a particular group .<br>
-     * For example:
-     * <p/>
-     * <code>
-     * Set userList = grpManager.getUsersByGroup(groupId);<br>
-     * </code>
-     *
-     * @param grpId The group to which users belong .
-     * @return List of User object .
-     */
-    @WebMethod
-    public UserListResponse getUsersByGroup(
-    		final @WebParam(name = "groupId", targetNamespace = "") String groupId,
-    		final @WebParam(name = "from") int from,
-    		final @WebParam(name = "size") int size);
-
-    /**
      * This method adds the user to a group .<br>
      * For example:
      * <p/>

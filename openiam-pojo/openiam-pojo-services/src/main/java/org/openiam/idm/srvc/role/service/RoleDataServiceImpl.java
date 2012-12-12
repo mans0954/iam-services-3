@@ -122,10 +122,9 @@ public class RoleDataServiceImpl implements RoleDataService {
 	@Override
 	public void addUserToRole(String roleId, String userId) {
 		if(roleId != null && userId != null) {
-			final UserRoleEntity ur = new UserRoleEntity();
-			ur.setUserId(userId);
-			ur.setRoleId(roleId);
-			userRoleDao.save(ur);
+			if(userRoleDao.getRecord(userId, roleId) == null) {
+				userRoleDao.save(new UserRoleEntity(userId, roleId));
+			}
 		}
 	}
 	

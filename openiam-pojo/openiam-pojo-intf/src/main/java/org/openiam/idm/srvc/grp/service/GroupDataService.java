@@ -38,8 +38,6 @@ public interface GroupDataService {
     
     public List<Group> getCompiledGroupsForUser(final String userId);
     
-    public boolean isUserInGroup(final String groupId, final String userId);
-    
     public List<GroupEntity> getGroupsForResource(final String resourceId, final int from, final int size);
     public int getNumOfGroupsForResource(final String resourceId);
 
@@ -68,19 +66,6 @@ public interface GroupDataService {
      * @return
      */
     public List<GroupEntity> getGroupsForUser(final String userId, final int from, final int size);
-
-    /**
-     * This method gets all users assigned to a particular group .<br>
-     * For example:
-     * <p/>
-     * <code>
-     * Set userList = grpManager.getUsersByGroup(groupId);<br>
-     * </code>
-     *
-     * @param grpId The group to which users belong .
-     * @return List of User object .
-     */
-    public List<UserEntity> getUsersInGroup(final String groupId, final int from, final int size);
 
     /**
      * This method adds the user to a group .<br>

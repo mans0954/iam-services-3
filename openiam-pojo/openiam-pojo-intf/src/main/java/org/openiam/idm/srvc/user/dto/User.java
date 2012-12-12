@@ -21,6 +21,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.*;
 
 import org.openiam.idm.srvc.grp.dto.UserGroup;
+import org.openiam.idm.srvc.res.domain.ResourceUserEntity;
+import org.openiam.idm.srvc.res.dto.ResourceUser;
 import org.openiam.idm.srvc.role.domain.UserRoleEntity;
 import org.openiam.idm.srvc.role.dto.UserRole;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
@@ -247,8 +249,6 @@ public class User extends org.openiam.base.BaseObject {
     protected Supervisor supervisor;
 
     protected String alternateContactId;
-    //@XmlElement(name="securityDomain",	namespace = "urn:idm.openiam.org/srvc/user/dto")
-
     protected String securityDomain;
 
     protected String userOwnerId;
@@ -262,7 +262,6 @@ public class User extends org.openiam.base.BaseObject {
 
     @XmlJavaTypeAdapter(UserNoteSetAdapter.class)
     protected Set<UserNote> userNotes = new HashSet<UserNote>(0);
-    //protected Set<Group> groups = new HashSet<Group>(0);
 
 
     @XmlJavaTypeAdapter(UserAttributeMapAdapter.class)
@@ -277,7 +276,9 @@ public class User extends org.openiam.base.BaseObject {
     private Set<UserGroup> userGroups = new HashSet<UserGroup>(0);
     @XmlTransient
     private Set<UserRole> userRoles = new HashSet<UserRole>(0);
-    //protected Set userAttributes = new HashSet(0);
+    
+    @XmlTransient
+    private Set<ResourceUser> resourceUsers = new HashSet<ResourceUser>();
 
     // Constructors
 
@@ -856,6 +857,8 @@ public class User extends org.openiam.base.BaseObject {
     public void setPhoneExt(String phoneExt) {
         this.phoneExt = phoneExt;
     }
+    
+    
 
     /*
      public Set<Phone> getPhones() {
@@ -876,7 +879,15 @@ public class User extends org.openiam.base.BaseObject {
         }
     */
 
-    public String getEmail() {
+    public Set<ResourceUser> getResourceUsers() {
+		return resourceUsers;
+	}
+
+	public void setResourceUsers(Set<ResourceUser> resourceUsers) {
+		this.resourceUsers = resourceUsers;
+	}
+
+	public String getEmail() {
         return email;
     }
 
