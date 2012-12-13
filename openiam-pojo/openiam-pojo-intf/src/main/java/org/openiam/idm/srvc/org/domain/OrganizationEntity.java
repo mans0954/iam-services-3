@@ -11,7 +11,9 @@ import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.MapKey;
+import javax.persistence.MapKeyColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import org.hibernate.annotations.GenericGenerator;
@@ -41,8 +43,9 @@ public class OrganizationEntity {
     @Column(name="ALIAS", length=100)
     private String alias;
 
-    @OneToMany(orphanRemoval=true, cascade = CascadeType.ALL, mappedBy = "organization", fetch = FetchType.LAZY)
-    @MapKey(name = "name")
+    @OneToMany(fetch=FetchType.LAZY,orphanRemoval=true,cascade={CascadeType.ALL})
+    @JoinColumn(name="COMPANY_ID", referencedColumnName="COMPANY_ID")
+    @MapKeyColumn(name="name")
     @Fetch(FetchMode.SUBSELECT)
     private Map<String, OrganizationAttributeEntity> attributes = new HashMap<String, OrganizationAttributeEntity>(0);
 

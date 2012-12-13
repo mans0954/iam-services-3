@@ -29,6 +29,7 @@ import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.util.DozerMappingType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * <code>OrganizationManager</code> provides a service level interface to the
@@ -46,6 +47,7 @@ import org.springframework.stereotype.Service;
         portName = "OrganizationDataWebServicePort",
         serviceName = "OrganizationDataWebService")
 @Service("orgManager")
+@Transactional
 public class OrganizationDataServiceImpl implements OrganizationDataService {
 	
 	private static final Log log = LogFactory.getLog(OrganizationDataServiceImpl.class);
@@ -181,7 +183,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     @Override
     public List<Organization> findBeans(final OrganizationSearchBean searchBean, final int from, final int size) {
         final List<OrganizationEntity> entityList = orgDao.getByExample(organizationSearchBeanConverter.convert(searchBean), from, size);
-        final List<Organization> resultList = organizationDozerConverter.convertToDTOList(entityList, false);
+        final List<Organization> resultList = organizationDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy());
         return resultList;
     }
 
@@ -195,7 +197,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 	public Response removeAttribute(final String attributeId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {
-			if(attributeId != null) {
+			if(attributeId == null) {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
 			
@@ -209,7 +211,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
 		} catch(Throwable e) {
-			log.error("Can't save resource type", e);
+			log.error("Can't delete occupation attribute", e);
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorText(e.getMessage());
 		}
@@ -271,19 +273,20 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
 			
-			final OrganizationEntity organization = (StringUtils.isNotBlank(attribute.getOrganizationId())) ? orgDao.findById(attribute.getOrganizationId()) : null;
+			if(StringUtils.isBlank(attribute.getOrganizationId())) {
+				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+			}
+			
+			if(orgDao.findById(attribute.getOrganizationId()) == null) {
+				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+			}
 			
 			final OrganizationAttributeEntity entity = organizationAttributeDozerConverter.convertToEntity(attribute, false);
 			if(StringUtils.isBlank(entity.getName())) {
 				throw new BasicDataServiceException(ResponseCode.NO_NAME);
 			}
 			
-			entity.setOrganization(organization);
-			if(StringUtils.isNotBlank(entity.getAttrId())) {
-				orgAttrDao.update(entity);
-			} else {
-				orgAttrDao.save(entity);
-			}
+			orgAttrDao.save(entity);
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
