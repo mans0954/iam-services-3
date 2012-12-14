@@ -45,8 +45,9 @@ import org.openiam.idm.srvc.org.domain.OrganizationEntity;
         "abbreviation",
         "symbol",
         "selected",
-        "operation"}
-)
+        "operation",
+        "classificaitonAsString"
+})
 @DozerDTOCorrespondence(OrganizationEntity.class)
 public class Organization implements java.io.Serializable, Comparable<Organization> {
 
@@ -85,6 +86,9 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
 
     protected String status;
 
+    /* used by front-end to avoid conversion into enum from JSON */
+    private String classificaitonAsString;
+    
     protected OrgClassificationEnum classification;
 
     protected String abbreviation;
@@ -410,7 +414,15 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
         this.operation = operation;
     }
 
-    public int compareTo(Organization o) {
+    public String getClassificaitonAsString() {
+		return classificaitonAsString;
+	}
+
+	public void setClassificaitonAsString(String classificaitonAsString) {
+		this.classificaitonAsString = classificaitonAsString;
+	}
+
+	public int compareTo(Organization o) {
         if (getOrganizationName() == null || o == null) {
             return Integer.MIN_VALUE;
         }

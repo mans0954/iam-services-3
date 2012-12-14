@@ -227,6 +227,10 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
 			
+			if(organization.getClassification() == null) {
+				organization.setClassification(OrgClassificationEnum.fromStringValue(organization.getClassificaitonAsString()));
+			}
+			
 			OrganizationEntity entity = organizationDozerConverter.convertToEntity(organization, false);
 			if(StringUtils.isNotBlank(entity.getOrgId())) {
 				final OrganizationEntity dbOrg = orgDao.findById(entity.getOrgId());
@@ -253,6 +257,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 			} else {
 				orgDao.save(entity);
 			}
+			response.setResponseValue(entity.getOrgId());
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
