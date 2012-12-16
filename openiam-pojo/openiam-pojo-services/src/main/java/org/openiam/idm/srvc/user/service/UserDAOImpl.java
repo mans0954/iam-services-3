@@ -1438,4 +1438,12 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 		final Criteria criteria = getUsersForRoleCriteria(roleId).setProjection(rowCount());
 		return ((Number)criteria.uniqueResult()).intValue();
 	}
+
+	@Override
+	public void disassociateUsersFromOrganization(String organizationId) {
+		final String queryString = String.format("UPDATE %s u SET u.organization = NULL WHERE u.organization.orgId = :organizationId", domainClass.getSimpleName());
+		final Query query = getSession().createQuery(queryString);
+		query.setParameter("organizationId", organizationId);
+		query.executeUpdate();
+	}
 }

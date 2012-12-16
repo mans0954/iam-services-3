@@ -377,6 +377,9 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
 			}
 			
+			userDAO.disassociateUsersFromOrganization(orgId);
+			userAffiliationDAO.deleteByOrganizationId(orgId);
+			orgAttrDao.deleteByOrganizationId(orgId);
 			orgDao.delete(entity);
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);

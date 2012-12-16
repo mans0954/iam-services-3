@@ -28,9 +28,10 @@ import org.openiam.idm.srvc.org.domain.UserAffiliationEntity;
 import java.util.List;
 
 public interface UserAffiliationDAO extends BaseDao<UserAffiliationEntity, String> {
-    public void removeUserFromOrg(String orgId, String userId);
 
     public List<OrganizationEntity> findOrgAffiliationsByUser(String userId);
 
     public UserAffiliationEntity getRecord(final String userId, final String organizationId);
+    
+    public void deleteByOrganizationId(String organizationId);
 }
