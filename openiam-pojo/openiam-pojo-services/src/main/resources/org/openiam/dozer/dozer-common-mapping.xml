@@ -3,11 +3,6 @@
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="http://dozer.sourceforge.net
           http://dozer.sourceforge.net/schema/beanmapping.xsd">
-
-	<mapping>
-		<class-a>org.openiam.idm.srvc.auth.dto.LoginId</class-a>
-		<class-b>org.openiam.idm.srvc.auth.dto.LoginId</class-b>
-	</mapping>
 	
 	<mapping>
 		<class-a>org.openiam.idm.srvc.user.dto.UserNote</class-a>

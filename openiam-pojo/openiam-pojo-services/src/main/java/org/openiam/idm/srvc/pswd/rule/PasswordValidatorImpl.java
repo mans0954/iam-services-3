@@ -27,7 +27,6 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.exception.ObjectNotFoundException;
-import org.openiam.idm.srvc.auth.domain.LoginEmbeddableId;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
@@ -80,9 +79,7 @@ public class PasswordValidatorImpl implements PasswordValidator {
     public PasswordValidationCode validate(Policy pswdPolicy, Password password)
             throws ObjectNotFoundException, IOException {
         // get the user object for the principal
-        LoginEntity lg = loginDao.findById(new LoginEmbeddableId(password
-                .getDomainId(), password.getPrincipal(), password
-                .getManagedSysId()));
+        LoginEntity lg = loginDao.getRecord(password.getPrincipal(), password.getManagedSysId(), password.getDomainId());
         UserEntity usr = userDao.findById(lg.getUserId());
 
         return validateForUser(pswdPolicy, password, usr, lg);
@@ -109,9 +106,7 @@ public class PasswordValidatorImpl implements PasswordValidator {
         // get the user object for the principal if they are null
         LoginEntity lg = login;
         if (lg == null) {
-            lg = loginDao.findById(new LoginEmbeddableId(
-                    password.getDomainId(), password.getPrincipal(), password
-                            .getManagedSysId()));
+        	lg = loginDao.getRecord(password.getPrincipal(), password.getManagedSysId(), password.getDomainId());
         }
         UserEntity usr = user;
         if (usr == null) {

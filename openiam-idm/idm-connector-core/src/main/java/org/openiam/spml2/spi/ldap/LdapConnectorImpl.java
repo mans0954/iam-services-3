@@ -38,12 +38,13 @@ import javax.naming.ldap.InitialLdapContext;
 import javax.naming.ldap.LdapContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.dozer.converter.LoginDozerConverter;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.IdmAuditLogDataService;
 import org.openiam.idm.srvc.auth.context.AuthenticationContext;
 import org.openiam.idm.srvc.auth.context.PasswordCredential;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.auth.dto.LoginId;
 import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
@@ -120,6 +121,9 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
 
     @Autowired
     private PolicyDataService policyDataService;
+    
+    @Autowired
+    private LoginDozerConverter loginDozerConverter;
 
     protected SecurityDomainDataService secDomainService;
     protected UserDataService userManager;
@@ -190,7 +194,7 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
 
         }
         // get the id of the user from the openiam repository
-        List<Login> principalList = loginManager.getLoginByUser(user
+        List<LoginEntity> principalList = loginManager.getLoginByUser(user
                 .getUserId());
         if (principalList == null) {
             log("AUTHENTICATION", "AUTHENTICATION", "FAIL", "INVALID LOGIN",
@@ -198,9 +202,9 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
             resp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_LOGIN);
             return resp;
         }
-        Login ldapLogin = null;
-        for (Login l : principalList) {
-            if (l.getId().getManagedSysId().equalsIgnoreCase(managedSysId)) {
+        LoginEntity ldapLogin = null;
+        for (LoginEntity l : principalList) {
+            if (l.getManagedSysId().equalsIgnoreCase(managedSysId)) {
                 ldapLogin = l;
             }
         }
@@ -211,7 +215,7 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
             return resp;
 
         }
-        if (!ldapLogin.getId().getLogin().contains(principal)) {
+        if (!ldapLogin.getLogin().contains(principal)) {
             log("AUTHENTICATION", "AUTHENTICATION", "FAIL", "INVALID LOGIN",
                     domainId, null, principal, null, null);
             resp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_LOGIN);
@@ -220,7 +224,7 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
         }
 
         // try to login to AD with this user
-        LdapContext tempCtx = connect(ldapLogin.getId().getLogin(), password);
+        LdapContext tempCtx = connect(ldapLogin.getLogin(), password);
         if (tempCtx == null) {
             log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
                     "RESULT_INVALID_PASSWORD", domainId, null, principal, null,
@@ -256,7 +260,7 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
         lg.setAuthFailCount(0);
         lg.setFirstTimeLogin(0);
         log.debug("Good Authn: Login object updated.");
-        loginManager.updateLogin(lg);
+        loginManager.updateLogin(loginDozerConverter.convertToEntity(lg, true));
 
         // check the user status
         if (user.getStatus() != null) {
@@ -372,7 +376,7 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
                 if (principal != null) {
                     log.debug("reconcile principle found");
 
-                    Login login = loginManager.getLoginByManagedSys(
+                    LoginEntity login = loginManager.getLoginByManagedSys(
                             mSys.getDomainId(), searchPrincipal, managedSysId);
                     if (login == null) {
                         log.debug("Situation: IDM Not Found");
@@ -382,11 +386,9 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
                         delete.setPsoID(idType);
                         delete(delete);
                         Login l = new Login();
-                        LoginId id = new LoginId();
-                        id.setDomainId(mSys.getDomainId());
-                        id.setLogin(principal);
-                        id.setManagedSysId(managedSysId);
-                        l.setId(id);
+                        l.setDomainId(mSys.getDomainId());
+                        l.setLogin(principal);
+                        l.setManagedSysId(managedSysId);
                         ReconciliationCommand command = situations
                                 .get("IDM Not Found");
                         if (command != null) {

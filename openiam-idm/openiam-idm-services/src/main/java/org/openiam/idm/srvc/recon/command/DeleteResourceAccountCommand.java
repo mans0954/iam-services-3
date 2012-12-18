@@ -60,15 +60,15 @@ public class DeleteResourceAccountCommand implements ReconciliationCommand {
 
                 log.debug("Calling delete with Remote connector");
                 UserRequest request = new UserRequest();
-                request.setUserIdentity(login.getId().getLogin());
-                request.setTargetID(login.getId().getManagedSysId());
+                request.setUserIdentity(login.getLogin());
+                request.setTargetID(login.getManagedSysId());
                 request.setHostLoginId(mSys.getUserId());
                 request.setHostLoginPassword(mSys.getDecryptPassword());
                 request.setHostUrl(mSys.getHostUrl());
                 remoteConnectorAdapter.deleteRequest(mSys, request, connector, muleContext);
             } else {
                 DeleteRequestType reqType = new DeleteRequestType();
-                PSOIdentifierType idType = new PSOIdentifierType(login.getId().getLogin(), null, managedSysId);
+                PSOIdentifierType idType = new PSOIdentifierType(login.getLogin(), null, managedSysId);
                 reqType.setPsoID(idType);
                 log.debug("Calling delete local connector");
                 connectorAdapter.deleteRequest(mSys, reqType, muleContext);
@@ -77,10 +77,8 @@ public class DeleteResourceAccountCommand implements ReconciliationCommand {
         }
         List<Login> principleList = user.getPrincipalList();
         for(Login l : principleList){
-            System.out.println("Checking login");
-            if(l.getId().equals(login.getId())){
+            if(l.getLoginId().equals(login.getLoginId())){
                 l.setOperation(AttributeOperationEnum.DELETE);
-                System.out.println("Set to delete");
                 break;
             }
         }

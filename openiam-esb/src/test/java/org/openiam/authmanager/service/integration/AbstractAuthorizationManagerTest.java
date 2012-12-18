@@ -11,7 +11,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.authmanager.common.model.AuthorizationManagerLoginId;
 import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.auth.dto.LoginId;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService;
@@ -261,8 +260,7 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractTestNGSpr
 		final List<AuthorizationManagerLoginId> loginIdList = new LinkedList<AuthorizationManagerLoginId>();
 		if(user != null && CollectionUtils.isNotEmpty(user.getPrincipalList())) {
 			for(final Login login : user.getPrincipalList()) {
-				final LoginId loginId = login.getId();
-				final AuthorizationManagerLoginId authManagerLoginId = new AuthorizationManagerLoginId(loginId.getDomainId(), loginId.getLogin(), loginId.getManagedSysId());
+				final AuthorizationManagerLoginId authManagerLoginId = new AuthorizationManagerLoginId(login.getDomainId(), login.getLogin(), login.getManagedSysId());
 				loginIdList.add(authManagerLoginId);
 			}
 		}

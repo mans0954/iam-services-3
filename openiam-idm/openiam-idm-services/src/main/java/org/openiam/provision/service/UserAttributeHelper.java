@@ -131,14 +131,14 @@ public class UserAttributeHelper {
 		if (principalList != null && principalList.size() > 0) {
 			for (Login lg  : principalList) {
 				try {
-					if (lg.getId().getManagedSysId().equalsIgnoreCase("0")) {
-						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY.PRINCIPAL.", lg.getId().getLogin()));
+					if (lg.getManagedSysId().equalsIgnoreCase("0")) {
+						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY.PRINCIPAL.", lg.getLogin()));
 						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_PSWD.PRINCIPAL", lg.getPassword()));
 						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_STATUS.PRINCIPAL", lg.getStatus()));
 					}else {
-						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY." + lg.getId().getManagedSysId(), lg.getId().getLogin()));
-						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_PSWD."+lg.getId().getManagedSysId(), lg.getPassword()));
-						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_STATUS."+lg.getId().getManagedSysId(), lg.getStatus()));
+						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY." + lg.getManagedSysId(), lg.getLogin()));
+						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_PSWD."+lg.getManagedSysId(), lg.getPassword()));
+						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_STATUS."+lg.getManagedSysId(), lg.getStatus()));
 
 					}
 				}catch(Exception e) {
@@ -150,7 +150,7 @@ public class UserAttributeHelper {
 		}
 		/*	Login lg = getPrimaryPrincipal(principalList);
 		if (lg != null) {
-			extUser.getAttributes().add(new ExtensibleAttribute("PRINCIPAL.IDENTITY", lg.getId().getLogin()));
+			extUser.getAttributes().add(new ExtensibleAttribute("PRINCIPAL.IDENTITY", lg.getLogin()));
 			extUser.getAttributes().add(new ExtensibleAttribute("PRINCIPAL.IDENTITY_PSWD", lg.getPassword()));
 		}
 	*/
@@ -216,7 +216,7 @@ public class UserAttributeHelper {
 		}
 		for (Login lg  : principalList) {
 			try {
-				if (lg.getId().getManagedSysId().equalsIgnoreCase("0")) {
+				if (lg.getManagedSysId().equalsIgnoreCase("0")) {
 					return lg;
 				}
 			}catch(Exception e) {
@@ -303,8 +303,8 @@ public class UserAttributeHelper {
 	if (principalList != null && principalList.size() > 0) {
 		for (Login lg  : principalList) {
 			try {
-				if (lg.getId().getManagedSysId().equalsIgnoreCase("0")) {
-					extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY.PRINCIPAL.", lg.getId().getLogin(),0, "String"));
+				if (lg.getManagedSysId().equalsIgnoreCase("0")) {
+					extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY.PRINCIPAL.", lg.getLogin(),0, "String"));
 					String p = lg.getPassword();
 					if (p != null && p.length()> 12) {
 						p = loginManager.decryptPassword(lg.getUserId(),p);
@@ -314,16 +314,16 @@ public class UserAttributeHelper {
 					}
 					extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_STATUS.PRINCIPAL", lg.getStatus()));
 				}else {
-					extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY." + lg.getId().getManagedSysId(), lg.getId().getLogin(),0, "String"));
+					extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY." + lg.getManagedSysId(), lg.getLogin(),0, "String"));
 					String p = lg.getPassword();
 					if (p != null && p.length()> 12) {
 						p = loginManager.decryptPassword(lg.getUserId(),p);
-						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_PSWD."+lg.getId().getManagedSysId(), p,0, "String"));
+						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_PSWD."+lg.getManagedSysId(), p,0, "String"));
 					}else {
-						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_PSWD."+lg.getId().getManagedSysId(), p,0, "String"));
+						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_PSWD."+lg.getManagedSysId(), p,0, "String"));
 					}
-					//extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_PSWD."+lg.getId().getManagedSysId(), lg.getPassword(),0));
-					extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_STATUS."+lg.getId().getManagedSysId(), lg.getStatus()));
+					//extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_PSWD."+lg.getManagedSysId(), lg.getPassword(),0));
+					extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_STATUS."+lg.getManagedSysId(), lg.getStatus()));
 				}
 			}catch(Exception e) {
 				log.error(e);
@@ -334,7 +334,7 @@ public class UserAttributeHelper {
 	}
 	/*	Login lg = getPrimaryPrincipal(principalList);
 	if (lg != null) {
-		extUser.getAttributes().add(new ExtensibleAttribute("PRINCIPAL.IDENTITY", lg.getId().getLogin()));
+		extUser.getAttributes().add(new ExtensibleAttribute("PRINCIPAL.IDENTITY", lg.getLogin()));
 		extUser.getAttributes().add(new ExtensibleAttribute("PRINCIPAL.IDENTITY_PSWD", lg.getPassword()));
 	}
 */

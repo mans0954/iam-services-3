@@ -2,6 +2,7 @@ package org.openiam.spml2.spi.jdbc;
 
 import org.apache.commons.lang.StringUtils;
 import org.openiam.exception.EncryptionException;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
@@ -45,7 +46,7 @@ public class AppTableResumeCommand extends AbstractAppTableCommand implements Re
         /* targetID -  */
         final String targetID = psoID.getTargetID();
 
-        List<Login> loginList = loginManager.getLoginByManagedSys(principalName, targetID);
+        List<LoginEntity> loginList = loginManager.getLoginByManagedSys(principalName, targetID);
         if (loginList == null || loginList.isEmpty()) {
         	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_IDENTIFIER, "Principal not found");
             return response;
@@ -53,7 +54,7 @@ public class AppTableResumeCommand extends AbstractAppTableCommand implements Re
 
         try {
 
-            final Login login = loginList.get(0);
+            final LoginEntity login = loginList.get(0);
             final String encPassword = login.getPassword();
             final String decPassword = loginManager.decryptPassword(login.getUserId(),encPassword);
 

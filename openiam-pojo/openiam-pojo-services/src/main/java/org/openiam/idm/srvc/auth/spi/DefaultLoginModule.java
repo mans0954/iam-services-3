@@ -30,6 +30,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.exception.AuthenticationException;
 import org.openiam.idm.srvc.auth.context.AuthenticationContext;
 import org.openiam.idm.srvc.auth.context.PasswordCredential;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.SSOToken;
 import org.openiam.idm.srvc.auth.dto.Subject;
@@ -258,7 +259,7 @@ public class DefaultLoginModule extends AbstractLoginModule {
      * @param lg
      * @return
      */
-    private int passwordExpired(Login lg, Date curDate) {
+    private int passwordExpired(LoginEntity lg, Date curDate) {
         log.debug("passwordExpired Called.");
         log.debug("- Password Exp =" + lg.getPwdExp());
         log.debug("- Password Grace Period =" + lg.getGracePeriod());
@@ -290,7 +291,7 @@ public class DefaultLoginModule extends AbstractLoginModule {
         return AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP;
     }
 
-    private Date getGracePeriodDate(Login lg, Date curDate) {
+    private Date getGracePeriodDate(LoginEntity lg, Date curDate) {
 
         Date pwdExpDate = lg.getPwdExp();
 
@@ -298,9 +299,7 @@ public class DefaultLoginModule extends AbstractLoginModule {
             return null;
         }
 
-        Policy plcy = passwordManager.getPasswordPolicy(lg.getId()
-                .getDomainId(), lg.getId().getLogin(), lg.getId()
-                .getManagedSysId());
+        Policy plcy = passwordManager.getPasswordPolicy(lg.getDomainId(), lg.getLogin(), lg.getManagedSysId());
         if (plcy == null) {
             return null;
         }

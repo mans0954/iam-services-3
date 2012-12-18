@@ -25,27 +25,21 @@ public class LoginAttributeEntity implements java.io.Serializable {
     @GenericGenerator(name="system-uuid", strategy = "uuid")
     @Column(name="LOGIN_ATTR_ID", length=32, nullable = false)
     protected String loginAttrId;
-    @Column(name="SERVICE_ID",length =20 )
-    protected String domainId;
-    @Column(name="LOGIN",length =320 )
-    protected String login;
-    @Column(name="MANAGED_SYS_ID",length = 32)
-    @XmlTransient
-    protected String managedSysId;
+    
     @Column(name="NAME",length = 20)
     protected String name;
+    
     @Column(name="VALUE")
     protected String value;
+    
     @Column(name="METADATA_ID",length = 20)
     protected String metadataId;
+    
     @Column(name="ATTR_GROUP",length = 20)
     protected String attrGroup;
-//    @XmlTransient
-//    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-//    @JoinColumns({@JoinColumn(name = "SERVICE_ID", referencedColumnName = "SERVICE_ID", insertable = false, updatable = false),
-//                  @JoinColumn(name = "LOGIN", referencedColumnName = "LOGIN", insertable = false, updatable = false),
-//                  @JoinColumn(name = "MANAGED_SYS_ID", referencedColumnName = "MANAGED_SYS_ID", insertable = false, updatable = false)})
-//    private Login principal;
+    
+    @Column(name="LOGIN_ID",length = 32)
+    private String loginId;
 
     public LoginAttributeEntity() {
     }
@@ -53,17 +47,6 @@ public class LoginAttributeEntity implements java.io.Serializable {
 
     public LoginAttributeEntity(String loginAttrId) {
         this.loginAttrId = loginAttrId;
-    }
-
-    public LoginAttributeEntity(String loginAttrId, String name, String value, String metadataId,
-                          String serviceId, String login, String attrGroup) {
-        this.loginAttrId = loginAttrId;
-        this.name = name;
-        this.value = value;
-        this.metadataId = metadataId;
-        this.domainId = serviceId;
-        this.login = login;
-        this.attrGroup = attrGroup;
     }
 
     public String getLoginAttrId() {
@@ -77,17 +60,6 @@ public class LoginAttributeEntity implements java.io.Serializable {
     public String getName() {
         return this.name;
     }
-
-
-    public String getLogin() {
-        return login;
-    }
-
-
-    public void setLogin(String login) {
-        this.login = login;
-    }
-
 
     public void setName(String name) {
         this.name = name;
@@ -120,36 +92,29 @@ public class LoginAttributeEntity implements java.io.Serializable {
     }
 
 
-    public String getDomainId() {
-        return domainId;
-    }
+	public String getLoginId() {
+		return loginId;
+	}
 
 
-    public void setDomainId(String domainId) {
-        this.domainId = domainId;
-    }
+	public void setLoginId(String loginId) {
+		this.loginId = loginId;
+	}
 
-    public String getManagedSysId() {
-        return managedSysId;
-    }
 
-    public void setManagedSysId(String managedSysId) {
-        this.managedSysId = managedSysId;
-    }
-
-//    public Login getPrincipal() {
-//        return principal;
-//    }
-//
-//    public void setPrincipal(Login principal) {
-//        this.principal = principal;
-//    }
-
-    @Override
+	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((loginAttrId == null) ? 0 : loginAttrId.hashCode());
+		result = prime * result
+				+ ((attrGroup == null) ? 0 : attrGroup.hashCode());
+		result = prime * result
+				+ ((loginAttrId == null) ? 0 : loginAttrId.hashCode());
+		result = prime * result + ((loginId == null) ? 0 : loginId.hashCode());
+		result = prime * result
+				+ ((metadataId == null) ? 0 : metadataId.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + ((value == null) ? 0 : value.hashCode());
 		return result;
 	}
 
@@ -168,20 +133,15 @@ public class LoginAttributeEntity implements java.io.Serializable {
 				return false;
 		} else if (!attrGroup.equals(other.attrGroup))
 			return false;
-		if (domainId == null) {
-			if (other.domainId != null)
-				return false;
-		} else if (!domainId.equals(other.domainId))
-			return false;
-		if (login == null) {
-			if (other.login != null)
-				return false;
-		} else if (!login.equals(other.login))
-			return false;
 		if (loginAttrId == null) {
 			if (other.loginAttrId != null)
 				return false;
 		} else if (!loginAttrId.equals(other.loginAttrId))
+			return false;
+		if (loginId == null) {
+			if (other.loginId != null)
+				return false;
+		} else if (!loginId.equals(other.loginId))
 			return false;
 		if (metadataId == null) {
 			if (other.metadataId != null)
@@ -205,10 +165,12 @@ public class LoginAttributeEntity implements java.io.Serializable {
 	@Override
 	public String toString() {
 		return String
-				.format("LoginAttribute [loginAttrId=%s, domainId=%s, login=%s, name=%s, value=%s, metadataId=%s, attrGroup=%s]",
-						loginAttrId, domainId, login, name, value, metadataId,
-						attrGroup);
+				.format("LoginAttributeEntity [loginAttrId=%s, name=%s, value=%s, metadataId=%s, attrGroup=%s, loginId=%s]",
+						loginAttrId, name, value, metadataId, attrGroup,
+						loginId);
 	}
+
+    
 }
 
 

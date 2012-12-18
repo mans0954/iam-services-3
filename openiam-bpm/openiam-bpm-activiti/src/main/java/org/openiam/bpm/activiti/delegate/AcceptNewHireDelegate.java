@@ -14,6 +14,7 @@ import org.openiam.base.ws.ResponseStatus;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.bpm.request.NewHireRequest;
 import org.openiam.bpm.request.RequestorInformation;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.auth.ws.LoginResponse;
@@ -136,9 +137,9 @@ public class AcceptNewHireDelegate implements JavaDelegate {
 
                 final User approver = userManager.getUserWithDependent(newHireExecutorId, false);
 
-                final Login login = loginDS.getPrimaryIdentity(newUser.getUserId());
+                final LoginEntity login = loginDS.getPrimaryIdentity(newUser.getUserId());
                 if (login != null) {
-                    identity = login.getId().getLogin();
+                    identity = login.getLogin();
                     password = loginDS.decryptPassword(login.getUserId(),login.getPassword());
                 }
 

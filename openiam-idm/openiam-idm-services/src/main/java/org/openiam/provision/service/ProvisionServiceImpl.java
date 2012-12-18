@@ -35,6 +35,7 @@ import javax.xml.namespace.QName;
 import javax.xml.ws.Service;
 import javax.xml.ws.soap.SOAPBinding;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.cxf.frontend.ClientProxyFactoryBean;
@@ -51,7 +52,6 @@ import org.openiam.idm.srvc.audit.service.AuditHelper;
 import org.openiam.idm.srvc.audit.service.IdmAuditLogDataService;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.auth.dto.LoginId;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.continfo.dto.Address;
@@ -223,7 +223,7 @@ public class ProvisionServiceImpl implements ProvisionService,
             primaryLogin = principalList.get(0);
             log.info("primary login=" + primaryLogin);
             bindingMap.put("lg", primaryLogin);
-            secDomain = primaryLogin.getId().getDomainId();
+            secDomain = primaryLogin.getDomainId();
         }
 
         /* -- Temp hack -- */
@@ -337,19 +337,19 @@ public class ProvisionServiceImpl implements ProvisionService,
                 for (Resource res : roleResource) {
 
                     if (res.getName().equalsIgnoreCase("GLOBAL MANAGER")) {
-                        LoginId gmLgId = new LoginId(secDomain,
-                                globalManagerId, "2");
                         Login gmLg = new Login();
-                        gmLg.setId(gmLgId);
+                        gmLg.setDomainId(secDomain);
+                        gmLg.setLogin(globalManagerId);
+                        gmLg.setManagedSysId("2");
                         gmLg.setStatus("ACTIVE");
                         principalList.add(gmLg);
 
                     }
                     if (res.getName().equalsIgnoreCase("NETWORX")) {
-                        LoginId networkLgId = new LoginId(secDomain, networxId,
-                                "1");
                         Login networxLg = new Login();
-                        networxLg.setId(networkLgId);
+                        networxLg.setDomainId(secDomain);
+                        networxLg.setLogin(networxId);
+                        networxLg.setManagedSysId("1");
                         networxLg.setPassword(password);
                         networxLg.setStatus("ACTIVE");
                         principalList.add(networxLg);
@@ -365,11 +365,10 @@ public class ProvisionServiceImpl implements ProvisionService,
         log.info("Persisting identity count=" + principalList.size());
         if (principalList != null) {
             for (Login lg : principalList) {
-                Login newLg = new Login();
-                LoginId newLgId = new LoginId();
-
-                newLgId = lg.getId();
-                newLg.setId(newLgId);
+                LoginEntity newLg = new LoginEntity();
+                newLg.setDomainId(lg.getDomainId());
+                newLg.setLogin(lg.getLogin());
+                newLg.setManagedSysId(lg.getManagedSysId());
                 newLg.setUserId(newUser.getUserId());
                 newLg.setFirstTimeLogin(1);
                 newLg.setStatus("ACTIVE");
@@ -393,8 +392,6 @@ public class ProvisionServiceImpl implements ProvisionService,
 
                 // log.info("--Principal=" + lg);
                 loginManager.addLogin(newLg);
-
-                log.info("--added identity:" + lg.getId());
             }
         }
 
@@ -412,19 +409,17 @@ public class ProvisionServiceImpl implements ProvisionService,
             log.info("principal list size=" + principalList.size());
             for (Login lg : principalList) {
                 log.info("Login object=" + lg);
-                if (!lg.getId().getManagedSysId().equals("0") && !syncCalled) {
+                if (!lg.getManagedSysId().equals("0") && !syncCalled) {
                     log.info("Login managedsys is ="
-                            + lg.getId().getManagedSysId());
+                            + lg.getManagedSysId());
                     // get the managed system for the identity - ignore the
                     // managed system id that is linked to openiam's repository
                     // ManagedSys managedSys =
-                    // managedSysService.getManagedSys(lg.getId().getManagedSysId());
+                    // managedSysService.getManagedSys(lg.getManagedSysId());
                     ManagedSys managedSys = managedSysService
                             .getManagedSys("1");
                     log.info("Managedsys object= " + managedSys);
                     if (managedSys != null) {
-                        log.info("Managed sys found for managedSysId="
-                                + lg.getId());
 
                         // collection of attributes that were determined earlier
                         ManagedSysAttributes sysAttribute = managedSysMap
@@ -456,12 +451,12 @@ public class ProvisionServiceImpl implements ProvisionService,
 
                             AddRequestType addReqType = new AddRequestType();
                             PSOIdentifierType idType = new PSOIdentifierType(lg
-                                    .getId().getLogin(), null, "target");
+                                    .getLogin(), null, "target");
                             addReqType.setPsoID(idType);
                             requestId = "R" + System.currentTimeMillis();
                             addReqType.setRequestID(requestId);
                             addReqType
-                                    .setTargetID(lg.getId().getManagedSysId());
+                                    .setTargetID(lg.getManagedSysId());
 
                             ExtensibleUser extUser = null;
 
@@ -487,7 +482,7 @@ public class ProvisionServiceImpl implements ProvisionService,
 
                     } else {
                         log.debug("Managed sys not found for managedSysId="
-                                + lg.getId().getManagedSysId());
+                                + lg.getManagedSysId());
                     }
                 }
                 // get the connector
@@ -497,7 +492,7 @@ public class ProvisionServiceImpl implements ProvisionService,
         }
 
         auditHelper.addLog("NEW USER", provUser.getSecurityDomain(),
-                primaryLogin.getId().getLogin(), "IDM SERVICE",
+                primaryLogin.getLogin(), "IDM SERVICE",
                 provUser.getCreatedBy(), "0", "USER", newUser.getUserId(),
                 null, "SUCCESS", null, "USER_STATUS", provUser.getUser()
                         .getStatus().toString(), requestId, null, null, null);
@@ -584,7 +579,7 @@ public class ProvisionServiceImpl implements ProvisionService,
 
         ProvisionUserResponse resp = new ProvisionUserResponse();
 
-        Login login = loginManager.getLoginByManagedSys(securityDomain,
+        LoginEntity login = loginManager.getLoginByManagedSys(securityDomain,
                 principal, managedSystemId);
         if (login == null) {
             resp.setStatus(ResponseStatus.FAILURE);
@@ -595,7 +590,7 @@ public class ProvisionServiceImpl implements ProvisionService,
         login.setStatus("INACTIVE");
         loginManager.updateLogin(login);
 
-        if (login.getId().getManagedSysId().equals("0")) {
+        if (login.getManagedSysId().equals("0")) {
             // Turning off the primary identity - change the status on the user
             String userId = login.getUserId();
             if (userId != null) {
@@ -605,24 +600,21 @@ public class ProvisionServiceImpl implements ProvisionService,
             }
         }
 
-        List<Login> principalList = loginManager.getLoginByUser(login
+        List<LoginEntity> principalList = loginManager.getLoginByUser(login
                 .getUserId());
         if (principalList != null) {
-            for (Login lg : principalList) {
+            for (LoginEntity lg : principalList) {
                 // get the managed system for the identity - ignore the managed
                 // system id that is linked to openiam's repository
-                if (!lg.getId()
-                        .getManagedSysId()
-                        .equalsIgnoreCase(
-                                this.sysConfiguration.getDefaultManagedSysId())) {
+                if (!StringUtils.equalsIgnoreCase(lg.getManagedSysId(), sysConfiguration.getDefaultManagedSysId())) {
                     // if
-                    // (!lg.getId().getManagedSysId().equalsIgnoreCase(passwordSync.getManagedSystemId()))
+                    // (!lg.getManagedSysId().equalsIgnoreCase(passwordSync.getManagedSystemId()))
                     // {
                     ManagedSys managedSys = managedSysService.getManagedSys(lg
-                            .getId().getManagedSysId());
+                            .getManagedSysId());
                     if (managedSys != null) {
                         log.debug("Managed sys found for managedSysId="
-                                + lg.getId().getManagedSysId());
+                                + lg.getManagedSysId());
                         ProvisionConnector connector = connectorService
                                 .getConnector(managedSys.getConnectorId());
 
@@ -645,8 +637,7 @@ public class ProvisionServiceImpl implements ProvisionService,
 
                             DeleteRequestType deleteRequest = new DeleteRequestType();
                             PSOIdentifierType idType = new PSOIdentifierType(lg
-                                    .getId().getLogin(), null, lg.getId()
-                                    .getManagedSysId());
+                                    .getLogin(), null, lg.getManagedSysId());
                             deleteRequest.setRequestID("R"
                                     + System.currentTimeMillis());
                             deleteRequest.setRecursive(new Boolean(true));
@@ -671,7 +662,7 @@ public class ProvisionServiceImpl implements ProvisionService,
 
                     } else {
                         log.debug("Managed sys not found for managedSysId="
-                                + lg.getId().getManagedSysId());
+                                + lg.getManagedSysId());
                     }
                 }
                 // get the connector
@@ -786,10 +777,10 @@ public class ProvisionServiceImpl implements ProvisionService,
         userMgr.updateUserWithDependent(origUser, true);
 
         // get the primary identity
-        Login primaryLg = loginManager.getPrimaryIdentity(origUser.getUserId());
+        LoginEntity primaryLg = loginManager.getPrimaryIdentity(origUser.getUserId());
         String primaryId = null;
         if (primaryLg != null) {
-            primaryId = primaryLg.getId().getLogin();
+            primaryId = primaryLg.getLogin();
         }
         log.info("Primary id=" + primaryId);
 
@@ -815,25 +806,25 @@ public class ProvisionServiceImpl implements ProvisionService,
         List<Login> tempPrincipalList = provUser.getPrincipalList();
         log.info("pricipallist = " + tempPrincipalList);
         if (tempPrincipalList != null && tempPrincipalList.size() > 0) {
-            updatePrincipals(newUser, provUser.getPrincipalList());
+            updatePrincipals(newUser, loginDozerConverter.convertToEntityList(provUser.getPrincipalList(), true));
         }
 
         // temp hack
-        List<Login> curPrincipalList = loginManager.getLoginByUser(origUser
+        List<LoginEntity> curPrincipalList = loginManager.getLoginByUser(origUser
                 .getUserId());
 
-        Login primaryLogin = null;
+        LoginEntity primaryLogin = null;
         String secDomain = null;
-        for (Login lg : curPrincipalList) {
-            if (lg.getId().getManagedSysId().equalsIgnoreCase("0")) {
+        for (LoginEntity lg : curPrincipalList) {
+            if (lg.getManagedSysId().equalsIgnoreCase("0")) {
                 primaryLogin = lg;
-                secDomain = primaryLogin.getId().getDomainId();
+                secDomain = primaryLogin.getDomainId();
                 // rolePrincipalList.add(lg);
             }
             // build the active-inactive list of resources
             if (lg.getStatus() != null
                     && lg.getStatus().equalsIgnoreCase("INACTIVE")) {
-                inactiveResourceList.add(lg.getId().getManagedSysId());
+                inactiveResourceList.add(lg.getManagedSysId());
             }
         }
 
@@ -892,7 +883,7 @@ public class ProvisionServiceImpl implements ProvisionService,
                 .getUserRolesAsFlatList(origUser.getUserId()); // provUser.getActiveMemberOfRoles();
 
         // List<Role> roleList = provUser.getMemberOfRoles();
-        List<Login> rolePrincipalList = new ArrayList<Login>();
+        List<LoginEntity> rolePrincipalList = new ArrayList<LoginEntity>();
 
         if (activeRoleList != null && activeRoleList.size() > 0) {
             log.info("Active role List= " + activeRoleList.size());
@@ -913,10 +904,8 @@ public class ProvisionServiceImpl implements ProvisionService,
                     log.info("Role principal list size = "
                             + rolePrincipalList.size());
                     boolean found = false;
-                    for (Login l : curPrincipalList) {
-                        log.info("checking identity: " + l.getId() + " "
-                                + l.getId().getManagedSysId());
-                        if (l.getId().getManagedSysId()
+                    for (LoginEntity l : curPrincipalList) {
+                        if (l.getManagedSysId()
                                 .equalsIgnoreCase(res.getResourceId())) {
                             // found
                             log.info("-Match for resource found. Setting status to active.");
@@ -927,12 +916,12 @@ public class ProvisionServiceImpl implements ProvisionService,
                             rolePrincipalList.add(l);
                             // remove from the inactive list
                             log.info("Res made active....="
-                                    + l.getId().getManagedSysId());
+                                    + l.getManagedSysId());
                             log.info("InactiveResoruceList size="
                                     + inactiveResourceList);
 
                             inactiveResourceList = removeFromInactiveResList(l
-                                    .getId().getManagedSysId(),
+                                    .getManagedSysId(),
                                     inactiveResourceList);
 
                             log.info("InactiveResoruceList after update size="
@@ -943,10 +932,10 @@ public class ProvisionServiceImpl implements ProvisionService,
                         log.info("-Match for resource not found. added identity for "
                                 + res.getName());
                         if (res.getName().equalsIgnoreCase("GLOBAL MANAGER")) {
-                            LoginId gmLgId = new LoginId(secDomain,
-                                    globalManagerId, "2");
-                            Login gmLg = new Login();
-                            gmLg.setId(gmLgId);
+                            LoginEntity gmLg = new LoginEntity();
+                            gmLg.setDomainId(secDomain);
+                            gmLg.setLogin(globalManagerId);
+                            gmLg.setManagedSysId("2");
                             gmLg.setPasswordChangeCount(0);
                             gmLg.setAuthFailCount(0);
                             gmLg.setStatus("ACTIVE");
@@ -957,7 +946,7 @@ public class ProvisionServiceImpl implements ProvisionService,
                                     + inactiveResourceList);
 
                             inactiveResourceList = removeFromInactiveResList(
-                                    gmLg.getId().getManagedSysId(),
+                                    gmLg.getManagedSysId(),
                                     inactiveResourceList);
 
                             auditHelper.addLog("MODIFY USER", provUser
@@ -970,10 +959,10 @@ public class ProvisionServiceImpl implements ProvisionService,
 
                         }
                         if (res.getName().equalsIgnoreCase("NETWORX")) {
-                            LoginId networkLgId = new LoginId(secDomain,
-                                    networxId, "1");
-                            Login networxLg = new Login();
-                            networxLg.setId(networkLgId);
+                            LoginEntity networxLg = new LoginEntity();
+                            networxLg.setDomainId(secDomain);
+                            networxLg.setLogin(networxId);
+                            networxLg.setManagedSysId("1");
                             networxLg.setPassword(password);
                             networxLg.setPasswordChangeCount(0);
                             networxLg.setAuthFailCount(0);
@@ -996,25 +985,24 @@ public class ProvisionServiceImpl implements ProvisionService,
         // identities
 
         if (curPrincipalList != null) {
-            for (Login lg : curPrincipalList) {
-                if (lg.getId().getManagedSysId().equalsIgnoreCase("0")) {
+            for (LoginEntity lg : curPrincipalList) {
+                if (lg.getManagedSysId().equalsIgnoreCase("0")) {
                     rolePrincipalList.add(lg);
                 }
             }
             // IF A VALUE IS IN THE CURRENT LIST, BUT NOT in the rolelist, then
             // delete it
             log.info("Searching the curent principal list...");
-            for (Login curLg : curPrincipalList) {
-                log.info("cur lg sysid = " + curLg.getId().getManagedSysId());
+            for (LoginEntity curLg : curPrincipalList) {
+                log.info("cur lg sysid = " + curLg.getManagedSysId());
                 boolean found = false;
-                for (Login roleLg : rolePrincipalList) {
-                    if (roleLg.getId().getManagedSysId()
-                            .equalsIgnoreCase(curLg.getId().getManagedSysId())) {
+                for (LoginEntity roleLg : rolePrincipalList) {
+                    if (roleLg.getManagedSysId()
+                            .equalsIgnoreCase(curLg.getManagedSysId())) {
                         found = true;
                     }
                 }
                 if (!found) {
-                    curLg.setOperation(AttributeOperationEnum.DELETE);
                     curLg.setStatus("INACTIVE");
                     rolePrincipalList.add(curLg);
 
@@ -1022,7 +1010,7 @@ public class ProvisionServiceImpl implements ProvisionService,
                             .getSecurityDomain(), primaryId, "IDM SERVICE",
                             provUser.getUser().getLastUpdatedBy(), "0", "USER",
                             provUser.getUserId(), null, "SUCCESS", logId,
-                            "DISABLE IDENTITY", curLg.getId().getLogin(),
+                            "DISABLE IDENTITY", curLg.getLogin(),
                             requestId, null, null, null);
                 }
             }
@@ -1045,21 +1033,18 @@ public class ProvisionServiceImpl implements ProvisionService,
         // INACTIVE
         if (isTerminate(newUser)) {
             log.info("--Status has been changed to terminate.");
-            for (Login lg : rolePrincipalList) {
+            for (LoginEntity lg : rolePrincipalList) {
                 lg.setStatus("INACTIVE");
-                log.info("Updating status for login=" + lg.getId());
                 loginManager.updateLogin(lg);
 
             }
         } else {
             log.info("-- Status is not TERMINATE.");
-            for (Login lg : rolePrincipalList) {
-                if (lg.getId().getManagedSysId().equalsIgnoreCase("0")) {
+            for (LoginEntity lg : rolePrincipalList) {
+                if (lg.getManagedSysId().equalsIgnoreCase("0")) {
                     lg.setStatus("ACTIVE");
                     lg.setPasswordChangeCount(0);
                     lg.setAuthFailCount(0);
-                    log.info("Updating status TO ACTIVE for login="
-                            + lg.getId());
                     loginManager.updateLogin(lg);
                 }
 
@@ -1068,7 +1053,7 @@ public class ProvisionServiceImpl implements ProvisionService,
 
         // pass 2 - check the current list with the role list
 
-        provUser.setPrincipalList(rolePrincipalList);
+        provUser.setPrincipalList(loginDozerConverter.convertToDTOList(rolePrincipalList, true));
 
         log.info("ROLE principal list (Before SPML block) = "
                 + rolePrincipalList);
@@ -1084,19 +1069,19 @@ public class ProvisionServiceImpl implements ProvisionService,
         if (rolePrincipalList != null) {
             log.info("Role based principal list size="
                     + rolePrincipalList.size());
-            for (Login lg : rolePrincipalList) {
+            for (LoginEntity lg : rolePrincipalList) {
                 log.info("Login object=" + lg);
-                if (!lg.getId().getManagedSysId().equals("0") &&
+                if (!lg.getManagedSysId().equals("0") &&
                 // lg.getStatus().equalsIgnoreCase("ACTIVE") ) {
-                        !onInactiveList(lg.getId().getManagedSysId(),
+                        !onInactiveList(lg.getManagedSysId(),
                                 inactiveResourceList)) {
                     // lg.getStatus().equalsIgnoreCase("ACTIVE")) {
                     log.info("Login managedsys is ="
-                            + lg.getId().getManagedSysId());
+                            + lg.getManagedSysId());
                     // get the managed system for the identity - ignore the
                     // managed system id that is linked to openiam's repository
                     ManagedSys managedSys = managedSysService.getManagedSys(lg
-                            .getId().getManagedSysId());
+                            .getManagedSysId());
                     log.info("Managedsys object= " + managedSys);
                     // CHECK IF WE HAVE A NETWORX ID. IF WE DO, THEN LEAVE IT
                     // ALONE.
@@ -1107,8 +1092,6 @@ public class ProvisionServiceImpl implements ProvisionService,
                     }
 
                     if (managedSys != null) {
-                        log.info("Managed sys found for managedSysId="
-                                + lg.getId());
 
                         // collection of attributes that were determined earlier
                         // ManagedSysAttributes sysAttribute =
@@ -1140,8 +1123,8 @@ public class ProvisionServiceImpl implements ProvisionService,
 
                             ModifyRequestType modReqType = new ModifyRequestType();
                             PSOIdentifierType idType = new PSOIdentifierType(lg
-                                    .getId().getLogin(), null, "target");
-                            idType.setTargetID(lg.getId().getManagedSysId());
+                                    .getLogin(), null, "target");
+                            idType.setTargetID(lg.getManagedSysId());
                             modReqType.setPsoID(idType);
                             modReqType.setRequestID(requestId);
 
@@ -1191,7 +1174,7 @@ public class ProvisionServiceImpl implements ProvisionService,
 
                     } else {
                         log.debug("Managed sys not found for managedSysId="
-                                + lg.getId().getManagedSysId());
+                                + lg.getManagedSysId());
                     }
                 }
                 // get the connector
@@ -1216,19 +1199,19 @@ public class ProvisionServiceImpl implements ProvisionService,
         return false;
     }
 
-    private boolean networx(List<Login> rolePrincipalList) {
+    private boolean networx(List<LoginEntity> rolePrincipalList) {
         if (rolePrincipalList == null) {
             return false;
         }
-        for (Login l : rolePrincipalList) {
-            if (l.getId().getManagedSysId().equalsIgnoreCase("1")) {
+        for (LoginEntity l : rolePrincipalList) {
+            if (l.getManagedSysId().equalsIgnoreCase("1")) {
                 return true;
             }
         }
         return false;
     }
 
-    private void updatePrincipals(User newUser, List<Login> principalList) {
+    private void updatePrincipals(User newUser, List<LoginEntity> principalList) {
         log.info(" -- Update principals called...");
         if (principalList == null) {
             return;
@@ -1236,20 +1219,18 @@ public class ProvisionServiceImpl implements ProvisionService,
 
         // get the primary users identity and set that as the new identity
         String newLogin = null;
-        for (Login lg : principalList) {
-            if (lg.getId().getManagedSysId().equalsIgnoreCase("0")) {
-                newLogin = lg.getId().getLogin();
+        for (LoginEntity lg : principalList) {
+            if (lg.getManagedSysId().equalsIgnoreCase("0")) {
+                newLogin = lg.getLogin();
             }
         }
         log.info("----New identity=" + newLogin);
 
         //
-        for (Login lg : principalList) {
+        for (LoginEntity lg : principalList) {
             // check if its new / updated or to be removed
 
-            LoginEntity l = loginDao.findLoginByManagedSys(lg.getId()
-                    .getDomainId(), lg.getId().getManagedSysId(), newUser
-                    .getUserId());
+            LoginEntity l = loginDao.findLoginByManagedSys(lg.getDomainId(), lg.getManagedSysId(), newUser.getUserId());
             // List<Login> currentPrincipalList =
             // loginManager.getLoginByUser(newUser.getUserId());
             // int result = checkPrincipal(lg, currentPrincipalList);
@@ -1263,23 +1244,20 @@ public class ProvisionServiceImpl implements ProvisionService,
                 loginManager.addLogin(lg);
             } else {
                 // if
-                // (!l.getId().getLogin().equalsIgnoreCase(lg.getId().getLogin()))
+                // (!l.getLogin().equalsIgnoreCase(lg.getLogin()))
                 // {
-                if (!l.getId().getManagedSysId().equalsIgnoreCase("1")) {
+                if (!l.getManagedSysId().equalsIgnoreCase("1")) {
                     // update
                     log.info("removed Identity");
                     loginDao.delete(l);
                     log.info("adding newidentity");
-                    Login newIdentity = new Login();
-                    LoginId newIdentityId = new LoginId();
-                    newIdentityId.setDomainId(l.getId().getDomainId());
-                    newIdentityId.setLogin(newLogin);
-                    newIdentityId.setManagedSysId(l.getId().getManagedSysId());
-                    // newIdentityId.
-                    newIdentity.setId(newIdentityId);
+                    LoginEntity newIdentity = new LoginEntity();
+                    newIdentity.setDomainId(l.getDomainId());
+                    newIdentity.setLogin(newLogin);
+                    newIdentity.setManagedSysId(l.getManagedSysId());
 
                     newIdentity.setUserId(newUser.getUserId());
-                    newIdentity.getId().setLogin(newLogin);
+                    newIdentity.setLogin(newLogin);
                     newIdentity.setAuthFailCount(l.getAuthFailCount());
                     newIdentity.setCanonicalName(l.getCanonicalName());
                     newIdentity.setCreateDate(l.getCreateDate());
@@ -1298,8 +1276,8 @@ public class ProvisionServiceImpl implements ProvisionService,
                     newIdentity.setStatus(l.getStatus());
 
                     log.info("Updating identity: "
-                            + newIdentity.getId().getLogin() + " "
-                            + newIdentity.getId().getManagedSysId());
+                            + newIdentity.getLogin() + " "
+                            + newIdentity.getManagedSysId());
 
                     loginManager.addLogin(newIdentity);
                 }
@@ -1310,19 +1288,19 @@ public class ProvisionServiceImpl implements ProvisionService,
         }
     }
 
-    private int checkPrincipal(Login lg, List<Login> currentPrincipalList) {
+    private int checkPrincipal(LoginEntity lg, List<LoginEntity> currentPrincipalList) {
         if (currentPrincipalList == null) {
             // add this identity - its new
             return 1;
         }
-        for (Login currentLg : currentPrincipalList) {
-            if (currentLg.getId().getDomainId()
-                    .equalsIgnoreCase(lg.getId().getDomainId())
-                    && currentLg.getId().getManagedSysId()
-                            .equalsIgnoreCase(lg.getId().getManagedSysId())) {
+        for (LoginEntity currentLg : currentPrincipalList) {
+            if (currentLg.getDomainId()
+                    .equalsIgnoreCase(lg.getDomainId())
+                    && currentLg.getManagedSysId()
+                            .equalsIgnoreCase(lg.getManagedSysId())) {
                 // found - now check if a change has occurred
-                if (currentLg.getId().getLogin()
-                        .equalsIgnoreCase(lg.getId().getLogin())) {
+                if (currentLg.getLogin()
+                        .equalsIgnoreCase(lg.getLogin())) {
                     // do nothing
                     return 0;
                 } else {
@@ -1714,7 +1692,7 @@ public class ProvisionServiceImpl implements ProvisionService,
         String requestorId = passwordSync.getRequestorId();
 
         // get the user object associated with this principal
-        Login login = loginManager.getLoginByManagedSys(
+        LoginEntity login = loginManager.getLoginByManagedSys(
                 passwordSync.getSecurityDomain(), passwordSync.getPrincipal(),
                 passwordSync.getManagedSystemId());
         if (login == null) {
@@ -1836,7 +1814,7 @@ public class ProvisionServiceImpl implements ProvisionService,
                         /*
                          * logManagedSysEvent(passwordSync.getAction(),
                          * passwordSync.getSecurityDomain(),
-                         * lg.getId().getLogin(), passwordSync.getSrcSystemId(),
+                         * lg.getLogin(), passwordSync.getSrcSystemId(),
                          * lg, "PASSWORD", "SUCCESS", primaryLogId );
                          */
                     }
@@ -1865,7 +1843,7 @@ public class ProvisionServiceImpl implements ProvisionService,
                 log.info("-Password changed in openiam repository for user:"
                         + passwordSync.getPrincipal());
 
-                Login l = loginManager.getLoginByManagedSys(
+                LoginEntity l = loginManager.getLoginByManagedSys(
                         passwordSync.getSecurityDomain(),
                         passwordSync.getPrincipal(),
                         passwordSync.getManagedSystemId());
@@ -1906,19 +1884,17 @@ public class ProvisionServiceImpl implements ProvisionService,
             }
 
             // update the connected systems
-            List<Login> principalList = loginManager.getLoginByUser(login
+            List<LoginEntity> principalList = loginManager.getLoginByUser(login
                     .getUserId());
             if (principalList != null) {
-                for (Login lg : principalList) {
+                for (LoginEntity lg : principalList) {
 
                     log.info("PrincipalList size =" + principalList.size());
 
                     // get the managed system for the identity - ignore the
                     // managed system id that is linked to openiam's repository
-                    if (!lg.getId()
-                            .getManagedSysId()
-                            .equalsIgnoreCase(passwordSync.getManagedSystemId())) {
-                        String managedSysId = lg.getId().getManagedSysId();
+                    if (!StringUtils.equalsIgnoreCase(lg.getManagedSysId(), passwordSync.getManagedSystemId())) {
+                        String managedSysId = lg.getManagedSysId();
                         Resource res = resourceDataService
                                 .getResource(managedSysId);
 
@@ -1950,16 +1926,14 @@ public class ProvisionServiceImpl implements ProvisionService,
 
                             log.info("Sync allowed for sys=" + managedSysId);
 
-                            retval = loginManager.resetPassword(lg.getId()
-                                    .getDomainId(), lg.getId().getLogin(), lg
-                                    .getId().getManagedSysId(), encPassword);
+                            retval = loginManager.resetPassword(lg.getDomainId(), lg.getLogin(), lg.getManagedSysId(), encPassword);
 
                             ManagedSys managedSys = managedSysService
-                                    .getManagedSys(lg.getId().getManagedSysId());
+                                    .getManagedSys(lg.getManagedSysId());
                             if (managedSys != null) {
 
                                 log.debug("Managed sys found for managedSysId="
-                                        + lg.getId().getManagedSysId());
+                                        + lg.getManagedSysId());
 
                                 ProvisionConnector connector = connectorService
                                         .getConnector(managedSys
@@ -1987,14 +1961,14 @@ public class ProvisionServiceImpl implements ProvisionService,
 
                                     SetPasswordRequestType pswdReqType = new SetPasswordRequestType();
                                     PSOIdentifierType idType = new PSOIdentifierType(
-                                            lg.getId().getLogin(), null, lg
-                                                    .getId().getManagedSysId());
+                                            lg.getLogin(), null, lg
+                                                    .getManagedSysId());
                                     pswdReqType.setPsoID(idType);
                                     pswdReqType.setRequestID(primaryLogId);
                                     pswdReqType.setPassword(password);
 
                                     log.info("Setting password on target system:"
-                                            + lg.getId().getManagedSysId());
+                                            + lg.getManagedSysId());
 
                                     ResponseType resp = client
                                             .setPassword(pswdReqType);
@@ -2003,14 +1977,14 @@ public class ProvisionServiceImpl implements ProvisionService,
                                         response.setStatus(ResponseStatus.FAILURE);
                                         // logManagedSysEvent(passwordSync.getAction(),
                                         // passwordSync.getSecurityDomain(),
-                                        // lg.getId().getLogin(),
+                                        // lg.getLogin(),
                                         // passwordSync.getSrcSystemId(), lg,
                                         // "PASSWORD", "FAILURE", primaryLogId
                                         // );
                                     } else {
                                         // logManagedSysEvent(passwordSync.getAction(),
                                         // passwordSync.getSecurityDomain(),
-                                        // lg.getId().getLogin(),
+                                        // lg.getLogin(),
                                         // passwordSync.getSrcSystemId(), lg,
                                         // "PASSWORD", "SUCCESS", primaryLogId
                                         // );
@@ -2020,7 +1994,7 @@ public class ProvisionServiceImpl implements ProvisionService,
 
                             } else {
                                 log.debug("Managed sys not found for managedSysId="
-                                        + lg.getId().getManagedSysId());
+                                        + lg.getManagedSysId());
                             }
                         }
                     }
@@ -2049,7 +2023,7 @@ public class ProvisionServiceImpl implements ProvisionService,
         String primaryLogId = null;
 
         // get the user object associated with this principal
-        Login login = loginManager.getLoginByManagedSys(
+        LoginEntity login = loginManager.getLoginByManagedSys(
                 passwordSync.getSecurityDomain(), passwordSync.getPrincipal(),
                 passwordSync.getManagedSystemId());
         if (login == null) {
@@ -2124,8 +2098,7 @@ public class ProvisionServiceImpl implements ProvisionService,
             auditHelper.addLog("SET PASSWORD",
                     passwordSync.getSecurityDomain(), passwordSync
                             .getPrincipal(), "IDM SERVICE", passwordSync
-                            .getRequestorId(), "PASSWORD", login.getId()
-                            .getLogin(), null, null, "SUCCESS", null, null,
+                            .getRequestorId(), "PASSWORD", login.getLogin(), null, null, "SUCCESS", null, null,
                     null, requestId, null, null, null);
 
             ManagedSys managedSys = managedSysService
@@ -2191,7 +2164,7 @@ public class ProvisionServiceImpl implements ProvisionService,
                         /*
                          * logManagedSysEvent(passwordSync.getAction(),
                          * passwordSync.getSecurityDomain(),
-                         * lg.getId().getLogin(), passwordSync.getSrcSystemId(),
+                         * lg.getLogin(), passwordSync.getSrcSystemId(),
                          * lg, "PASSWORD", "SUCCESS", primaryLogId );
                          */
                     }
@@ -2219,7 +2192,7 @@ public class ProvisionServiceImpl implements ProvisionService,
                 log.info("-Password changed in openiam repository for user:"
                         + passwordSync.getPrincipal());
 
-                Login l = loginManager.getLoginByManagedSys(
+                LoginEntity l = loginManager.getLoginByManagedSys(
                         passwordSync.getSecurityDomain(),
                         passwordSync.getPrincipal(),
                         passwordSync.getManagedSystemId());
@@ -2245,21 +2218,19 @@ public class ProvisionServiceImpl implements ProvisionService,
             }
 
             // update the connected systems
-            List<Login> principalList = loginManager.getLoginByUser(login
+            List<LoginEntity> principalList = loginManager.getLoginByUser(login
                     .getUserId());
             if (principalList != null) {
                 log.info("PrincipalList size =" + principalList.size());
-                for (Login lg : principalList) {
+                for (LoginEntity lg : principalList) {
                     // get the managed system for the identity - ignore the
                     // managed system id that is linked to openiam's repository
                     log.info("**** Managed System Id in passwordsync object="
                             + passwordSync.getManagedSystemId());
 
-                    if (!lg.getId()
-                            .getManagedSysId()
-                            .equalsIgnoreCase(passwordSync.getManagedSystemId())) {
+                    if (!StringUtils.equalsIgnoreCase(lg.getManagedSysId(), passwordSync.getManagedSystemId())) {
                         // determine if you should sync the password or not
-                        String managedSysId = lg.getId().getManagedSysId();
+                        String managedSysId = lg.getManagedSysId();
                         Resource res = resourceDataService
                                 .getResource(managedSysId);
 
@@ -2289,15 +2260,14 @@ public class ProvisionServiceImpl implements ProvisionService,
                         if (syncAllowed) {
 
                             log.info("Sync allowed for sys=" + managedSysId);
-                            retval = loginManager.setPassword(lg.getId()
-                                    .getDomainId(), lg.getId().getLogin(), lg
-                                    .getId().getManagedSysId(), encPassword);
+                            retval = loginManager.setPassword(lg.getDomainId(), lg.getLogin(), lg
+                                    .getManagedSysId(), encPassword);
 
                             ManagedSys managedSys = managedSysService
-                                    .getManagedSys(lg.getId().getManagedSysId());
+                                    .getManagedSys(lg.getManagedSysId());
                             if (managedSys != null) {
                                 log.debug("Managed sys found for managedSysId="
-                                        + lg.getId().getManagedSysId());
+                                        + lg.getManagedSysId());
 
                                 ProvisionConnector connector = connectorService
                                         .getConnector(managedSys
@@ -2325,8 +2295,8 @@ public class ProvisionServiceImpl implements ProvisionService,
 
                                     SetPasswordRequestType pswdReqType = new SetPasswordRequestType();
                                     PSOIdentifierType idType = new PSOIdentifierType(
-                                            lg.getId().getLogin(), null, lg
-                                                    .getId().getManagedSysId());
+                                            lg.getLogin(), null, lg
+                                                    .getManagedSysId());
                                     pswdReqType.setPsoID(idType);
                                     // pswdReqType.setRequestID(UUIDGen.getUUID());
                                     pswdReqType.setRequestID("R"
@@ -2335,7 +2305,7 @@ public class ProvisionServiceImpl implements ProvisionService,
                                             .getPassword());
 
                                     log.info("Setting password on target system:"
-                                            + lg.getId().getManagedSysId());
+                                            + lg.getManagedSysId());
 
                                     ResponseType resp = client
                                             .setPassword(pswdReqType);
@@ -2357,14 +2327,14 @@ public class ProvisionServiceImpl implements ProvisionService,
                                         response.setStatus(ResponseStatus.FAILURE);
                                         // logManagedSysEvent(passwordSync.getAction(),
                                         // passwordSync.getSecurityDomain(),
-                                        // lg.getId().getLogin(),
+                                        // lg.getLogin(),
                                         // passwordSync.getSrcSystemId(), lg,
                                         // "PASSWORD", "FAILURE", primaryLogId
                                         // );
                                     } else {
                                         // logManagedSysEvent(passwordSync.getAction(),
                                         // passwordSync.getSecurityDomain(),
-                                        // lg.getId().getLogin(),
+                                        // lg.getLogin(),
                                         // passwordSync.getSrcSystemId(), lg,
                                         // "PASSWORD", "SUCCESS", primaryLogId
                                         // );
@@ -2374,7 +2344,7 @@ public class ProvisionServiceImpl implements ProvisionService,
 
                             } else {
                                 log.debug("Managed sys not found for managedSysId="
-                                        + lg.getId().getManagedSysId());
+                                        + lg.getManagedSysId());
                             }
                         }
                     }
@@ -2445,7 +2415,7 @@ public class ProvisionServiceImpl implements ProvisionService,
             return resp;
 
         }
-        Login lg = getPrimaryIdentity(userId);
+        LoginEntity lg = getPrimaryIdentity(userId);
 
         if (operation.equals(AccountLockEnum.LOCKED)) {
             user.setSecondaryStatus(UserStatusEnum.LOCKED);
@@ -2479,8 +2449,7 @@ public class ProvisionServiceImpl implements ProvisionService,
 
         String requestId = "R" + System.currentTimeMillis();
 
-        auditHelper.addLog("LOCK USER", lg.getId().getDomainId(), lg.getId()
-                .getLogin(), "IDM SERVICE", requestorId, "USER", "USER", user
+        auditHelper.addLog("LOCK USER", lg.getDomainId(), lg.getLogin(), "IDM SERVICE", requestorId, "USER", "USER", user
                 .getUserId(), null, "SUCCESS", null, null, null, requestId,
                 auditReason, null, null);
 
@@ -2489,12 +2458,10 @@ public class ProvisionServiceImpl implements ProvisionService,
         return resp;
     }
 
-    private Login getPrimaryIdentity(String userId) {
-        List<Login> loginList = loginManager.getLoginByUser(userId);
-        for (Login lg : loginList) {
-            if (lg.getId()
-                    .getManagedSysId()
-                    .equalsIgnoreCase(sysConfiguration.getDefaultManagedSysId())) {
+    private LoginEntity getPrimaryIdentity(String userId) {
+        List<LoginEntity> loginList = loginManager.getLoginByUser(userId);
+        for (LoginEntity lg : loginList) {
+            if (StringUtils.equalsIgnoreCase(lg.getManagedSysId(), sysConfiguration.getDefaultManagedSysId())) {
                 return lg;
             }
         }

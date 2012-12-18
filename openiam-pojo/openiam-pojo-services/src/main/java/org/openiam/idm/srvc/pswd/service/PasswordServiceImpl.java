@@ -27,6 +27,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.dozer.converter.LoginDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
@@ -39,6 +40,7 @@ import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.policy.service.PolicyDataService;
 import org.openiam.idm.srvc.policy.service.PolicyObjectAssocDAO;
+import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
 import org.openiam.idm.srvc.pswd.dto.Password;
 import org.openiam.idm.srvc.pswd.dto.PasswordHistory;
 import org.openiam.idm.srvc.pswd.dto.PasswordResetTokenRequest;
@@ -67,6 +69,9 @@ public class PasswordServiceImpl implements PasswordService {
     protected LoginDataService loginManager;
     protected UserDataService userManager;
 
+    @Autowired
+    private LoginDozerConverter loginDozerConverter;
+    
     @Autowired
     private PolicyDataService policyDataService;
     @Autowired
@@ -174,7 +179,7 @@ public class PasswordServiceImpl implements PasswordService {
 
         // Date curDate = new Date(System.currentTimeMillis());
 
-        Login lg = loginManager.getLoginByManagedSys(domainId, principal,
+        LoginEntity lg = loginManager.getLoginByManagedSys(domainId, principal,
                 managedSysId);
         if (lg == null) {
             return -1;
@@ -248,7 +253,7 @@ public class PasswordServiceImpl implements PasswordService {
     public int passwordChangeCount(String domainId, String principal,
             String managedSysId) {
 
-        Login lg = loginManager.getLoginByManagedSys(domainId, principal,
+    	LoginEntity lg = loginManager.getLoginByManagedSys(domainId, principal,
                 managedSysId);
         if (lg == null) {
             return -1;
@@ -270,7 +275,7 @@ public class PasswordServiceImpl implements PasswordService {
         // order of search, type, classification, domain, global
 
         // get the user for this principal
-        final Login lg = loginManager.getLoginByManagedSys(domainId, principal,
+        final LoginEntity lg = loginManager.getLoginByManagedSys(domainId, principal,
                 managedSysId);
         log.info("login=" + lg);
         final User user = userManager.getUserWithDependent(lg.getUserId(),
@@ -352,7 +357,7 @@ public class PasswordServiceImpl implements PasswordService {
             return -1;
         }
         int version = Integer.parseInt(attr.getValue1());
-        List<PasswordHistory> historyList = this.passwordHistoryDao
+        List<PasswordHistoryEntity> historyList = this.passwordHistoryDao
                 .findPasswordHistoryByPrincipal(pswd.getDomainId(),
                         pswd.getPrincipal(), pswd.getManagedSysId(), version);
         if (historyList == null || historyList.isEmpty()) {
@@ -361,12 +366,10 @@ public class PasswordServiceImpl implements PasswordService {
         }
         // check the list.
         log.info("Found " + historyList.size() + " passwords in the history");
-        for (PasswordHistory hist : historyList) {
+        for (PasswordHistoryEntity hist : historyList) {
             String pwd = hist.getPassword();
             try {
-                Login login = loginManager.getLoginByManagedSys(
-                        hist.getServiceId(), hist.getLogin(),
-                        hist.getManagedSysId());
+                LoginEntity login = loginManager.getLogin(hist.getLoginId());
                 decrypt = cryptor.decrypt(keyManagementService.getUserKey(
                         login.getUserId(), KeyName.password.name()), pwd);
             } catch (Exception e) {
@@ -421,7 +424,7 @@ public class PasswordServiceImpl implements PasswordService {
             }
         }
 
-        Login l = loginManager.getLoginByManagedSys(request.getDomainId(),
+        LoginEntity l = loginManager.getLoginByManagedSys(request.getDomainId(),
                 request.getPrincipal(), request.getManagedSysId());
 
         long expireDate = getExpirationTime(expirationDays);
@@ -450,7 +453,7 @@ public class PasswordServiceImpl implements PasswordService {
                 ResponseStatus.SUCCESS);
 
         // look up the token
-        Login l = loginManager.getPasswordResetToken(token);
+        LoginEntity l = loginManager.getPasswordResetToken(token);
         if (l == null) {
             resp.setStatus(ResponseStatus.FAILURE);
             return resp;
@@ -471,7 +474,7 @@ public class PasswordServiceImpl implements PasswordService {
 
         }
 
-        resp.setPrincipal(l);
+        resp.setPrincipal(loginDozerConverter.convertToDTO(l, false));
 
         return resp;
     }

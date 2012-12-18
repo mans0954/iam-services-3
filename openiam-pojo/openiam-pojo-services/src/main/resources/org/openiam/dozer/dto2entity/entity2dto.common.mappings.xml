@@ -50,10 +50,6 @@
         <class-a>org.openiam.idm.srvc.auth.domain.LoginAttributeEntity</class-a>
         <class-b>org.openiam.idm.srvc.auth.dto.LoginAttribute</class-b>
     </mapping>
-    <mapping>
-        <class-a>org.openiam.idm.srvc.auth.domain.LoginEmbeddableId</class-a>
-        <class-b>org.openiam.idm.srvc.auth.dto.LoginId</class-b>
-    </mapping>
 
     <mapping>
         <class-a>org.openiam.idm.srvc.grp.domain.UserGroupEntity</class-a>

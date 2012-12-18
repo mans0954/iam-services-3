@@ -1,6 +1,8 @@
 package org.openiam.provision.service;
 
 import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mule.api.MuleContext;
@@ -10,6 +12,7 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.srvc.audit.service.AuditHelper;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
@@ -79,17 +82,16 @@ public class DisableUserDelegate {
         }
         userMgr.updateUserWithDependent(usr, false);
 
-        Login lRequestor = loginManager.getPrimaryIdentity(requestorId);
-        Login lTargetUser = loginManager.getPrimaryIdentity(userId);
+        LoginEntity lRequestor = loginManager.getPrimaryIdentity(requestorId);
+        LoginEntity lTargetUser = loginManager.getPrimaryIdentity(userId);
 
         if (lRequestor != null && lTargetUser != null) {
 
-            auditHelper.addLog(strOperation, lRequestor.getId().getDomainId(),
-                    lRequestor.getId().getLogin(), "IDM SERVICE", requestorId,
+            auditHelper.addLog(strOperation, lRequestor.getDomainId(),
+                    lRequestor.getLogin(), "IDM SERVICE", requestorId,
                     "IDM", "USER", usr.getUserId(), null, "SUCCESS", null,
                     null, null, requestId, null, null, null, null, lTargetUser
-                            .getId().getLogin(), lTargetUser.getId()
-                            .getDomainId());
+                            .getLogin(), lTargetUser.getDomainId());
         } else {
             if (log.isDebugEnabled()) {
                 log.debug(String
@@ -107,21 +109,18 @@ public class DisableUserDelegate {
         // disable the user in the managed systems
 
         // typical sync
-        List<Login> principalList = loginManager
+        List<LoginEntity> principalList = loginManager
                 .getLoginByUser(usr.getUserId());
         if (principalList != null) {
             log.debug("PrincipalList size =" + principalList.size());
-            for (Login lg : principalList) {
+            for (LoginEntity lg : principalList) {
                 // get the managed system for the identity - ignore the managed
                 // system id that is linked to openiam's repository
-                log.debug("-diabling managed system=" + lg.getId().getLogin()
-                        + " - " + lg.getId().getManagedSysId());
+                log.debug("-diabling managed system=" + lg.getLogin()
+                        + " - " + lg.getManagedSysId());
 
-                if (!lg.getId()
-                        .getManagedSysId()
-                        .equalsIgnoreCase(
-                                sysConfiguration.getDefaultManagedSysId())) {
-                    String managedSysId = lg.getId().getManagedSysId();
+                if (!StringUtils.equalsIgnoreCase(lg.getManagedSysId(), sysConfiguration.getDefaultManagedSysId())) {
+                    String managedSysId = lg.getManagedSysId();
                     // update the target system
                     ManagedSys mSys = managedSysService
                             .getManagedSys(managedSysId);
@@ -132,7 +131,7 @@ public class DisableUserDelegate {
 
                         SuspendRequestType suspendReq = new SuspendRequestType();
                         PSOIdentifierType idType = new PSOIdentifierType(lg
-                                .getId().getLogin(), null, managedSysId);
+                                .getLogin(), null, managedSysId);
                         suspendReq.setPsoID(idType);
                         suspendReq.setRequestID(requestId);
                         connectorAdapter.suspendRequest(mSys, suspendReq,
@@ -150,7 +149,7 @@ public class DisableUserDelegate {
 
                         ResumeRequestType resumeReq = new ResumeRequestType();
                         PSOIdentifierType idType = new PSOIdentifierType(lg
-                                .getId().getLogin(), null, managedSysId);
+                                .getLogin(), null, managedSysId);
                         resumeReq.setPsoID(idType);
                         resumeReq.setRequestID(requestId);
                         connectorAdapter.resumeRequest(mSys, resumeReq,
@@ -159,16 +158,15 @@ public class DisableUserDelegate {
 
                     String domainId = null;
                     String loginId = null;
-                    if (lRequestor.getId() != null) {
-                        domainId = lRequestor.getId().getDomainId();
-                        loginId = lRequestor.getId().getLogin();
+                    if (lRequestor != null) {
+                        domainId = lRequestor.getDomainId();
+                        loginId = lRequestor.getLogin();
                     }
 
                     auditHelper.addLog(strOperation + " IDENTITY", domainId,
                             loginId, "IDM SERVICE", requestorId, "IDM", "USER",
                             null, null, "SUCCESS", requestId, null, null,
-                            requestId, null, null, null, null, lg.getId()
-                                    .getLogin(), lg.getId().getDomainId());
+                            requestId, null, null, null, null, lg.getLogin(), lg.getDomainId());
                 } else {
                     lg.setAuthFailCount(0);
                     lg.setIsLocked(0);

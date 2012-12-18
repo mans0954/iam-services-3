@@ -21,30 +21,21 @@
  */
 package org.openiam.idm.srvc.pswd.service;
 
+import org.openiam.core.dao.BaseDao;
+import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
 import org.openiam.idm.srvc.pswd.dto.PasswordHistory;
 
 import java.util.List;
 
-/**
- * @author suneet
- */
-public interface PasswordHistoryDAO {
+public interface PasswordHistoryDAO extends BaseDao<PasswordHistoryEntity, String> {
 
-    public abstract void add(PasswordHistory transientInstance);
-
-    public abstract void remove(PasswordHistory persistentInstance);
-
-    public abstract PasswordHistory update(PasswordHistory detachedInstance);
-
-    public abstract PasswordHistory findById(java.lang.String id);
-
-    List<PasswordHistory> findPasswordHistoryByPrincipal(String domainId,
+    List<PasswordHistoryEntity> findPasswordHistoryByPrincipal(String domainId,
                                                          String principal, String managedSys,
                                                          int versions);
-    List<PasswordHistory> findAllPasswordHistoryByPrincipal(String domainId,
+    List<PasswordHistoryEntity> findAllPasswordHistoryByPrincipal(String domainId,
                                                          String principal, String managedSys);
 
-    List<PasswordHistory> getSublist(int startPos,int size);
+    List<PasswordHistoryEntity> getSublist(int startPos,int size);
 
     Long getCount();
 }

@@ -1,28 +1,26 @@
 package org.openiam.idm.srvc.auth.dto;
-
+/*
 import javax.persistence.Column;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 // Generated Feb 18, 2008 3:56:06 PM by Hibernate Tools 3.2.0.b11
 
+import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.auth.domain.LoginEmbeddableId;
 
-/**
- * PrimaryKey for a Login object.
- */
+
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "LoginId", propOrder = {
         "domainId",
         "login",
         "managedSysId"
 })
+@DozerDTOCorrespondence(LoginEmbeddableId.class)
 public class LoginId implements java.io.Serializable {
 
-    @Column(name="SERVICE_ID",length=20)
     private String domainId;
-    @Column(name="LOGIN",length=320)
     private String login;
-    @Column(name="MANAGED_SYS_ID",length=50)
     private String managedSysId;
 
     public LoginId() {
@@ -105,4 +103,4 @@ public class LoginId implements java.io.Serializable {
 	}
 }
 
-
+*/

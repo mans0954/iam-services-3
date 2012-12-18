@@ -16,7 +16,9 @@ import java.util.Set;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "Login", propOrder = {
-        "id",
+		"domainId",
+        "login",
+        "managedSysId",
         "userId",
         "password",
         "pwdEquivalentToken",
@@ -45,21 +47,23 @@ import java.util.Set;
         "prevLoginIP",
         "prevLogin",
         "pswdResetToken",
-        "pswdResetTokenExp"
+        "pswdResetTokenExp",
+        "loginId"
 })
 @XmlSeeAlso({
         Subject.class,
         SSOToken.class
 })
 @DozerDTOCorrespondence(LoginEntity.class)
-public class Login implements java.io.Serializable, Cloneable {
+public class Login implements java.io.Serializable {
 
-    /**
-     *
-     */
     private static final long serialVersionUID = -1972779170001619759L;
     protected AttributeOperationEnum operation;
-    protected LoginId id;
+    
+    private String loginId;
+    private String domainId;
+    private String login;
+    private String managedSysId;
 
     protected String userId;
 
@@ -127,51 +131,6 @@ public class Login implements java.io.Serializable, Cloneable {
 
 
     public Login() {
-    }
-
-    public Login(LoginId id, int resetPwd, int isLocked) {
-        this.id = id;
-        this.firstTimeLogin = resetPwd;
-        this.isLocked = isLocked;
-    }
-
-    @Override
-    public Object clone() {
-        Login l = new Login();
-        LoginId lgId = new LoginId(id.getDomainId(), id.getLogin(), id.getManagedSysId());
-        l.setId(lgId);
-
-        l.setAuthFailCount(authFailCount);
-        l.setCanonicalName(canonicalName);
-        l.setCreateDate(createDate);
-        l.setCreatedBy(createdBy);
-        l.setCurrentLoginHost(currentLoginHost);
-        l.setFirstTimeLogin(firstTimeLogin);
-        l.setGracePeriod(gracePeriod);
-        l.setIsDefault(isDefault);
-        l.setLastAuthAttempt(lastAuthAttempt);
-        l.setLastLogin(lastLogin);
-        l.setLoginAttributes(loginAttributes);
-        l.setOperation(operation);
-        l.setPassword(password);
-        l.setPasswordChangeCount(passwordChangeCount);
-        l.setPwdChanged(pwdChanged);
-        l.setPwdExp(pwdExp);
-        l.setResetPassword(resetPassword);
-        l.setSelected(selected);
-        l.setStatus(status);
-        l.setUserId(userId);
-        return l;
-
-    }
-
-
-    public LoginId getId() {
-        return this.id;
-    }
-
-    public void setId(LoginId id) {
-        this.id = id;
     }
 
     public String getUserId() {
@@ -399,40 +358,6 @@ public class Login implements java.io.Serializable, Cloneable {
         this.selected = selected;
     }
 
-    @Override
-    public String toString() {
-        return "Login{" +
-                "operation=" + operation +
-                ", id=" + id +
-                ", userId='" + userId + '\'' +
-                ", password='" + password + '\'' +
-                ", pwdEquivalentToken='" + pwdEquivalentToken + '\'' +
-                ", pwdChanged=" + pwdChanged +
-                ", pwdExp=" + pwdExp +
-                ", firstTimeLogin=" + firstTimeLogin +
-                ", resetPassword=" + resetPassword +
-                ", isLocked=" + isLocked +
-                ", status='" + status + '\'' +
-                ", gracePeriod=" + gracePeriod +
-                ", createDate=" + createDate +
-                ", createdBy='" + createdBy + '\'' +
-                ", currentLoginHost='" + currentLoginHost + '\'' +
-                ", authFailCount=" + authFailCount +
-                ", lastAuthAttempt=" + lastAuthAttempt +
-                ", canonicalName='" + canonicalName + '\'' +
-                ", lastLogin=" + lastLogin +
-                ", isDefault=" + isDefault +
-                ", passwordChangeCount=" + passwordChangeCount +
-                ", selected=" + selected +
-                ", loginAttributes=" + loginAttributes +
-                ", origPrincipalName='" + origPrincipalName + '\'' +
-                ", managedSysName='" + managedSysName + '\'' +
-                ", lastLoginIP='" + lastLoginIP + '\'' +
-                ", prevLogin=" + prevLogin +
-                ", prevLoginIP='" + prevLoginIP + '\'' +
-                '}';
-    }
-
     public AttributeOperationEnum getOperation() {
         return operation;
     }
@@ -460,14 +385,108 @@ public class Login implements java.io.Serializable, Cloneable {
         this.managedSysName = managedSysName;
     }
 
+	public String getDomainId() {
+		return domainId;
+	}
+
+	public void setDomainId(String domainId) {
+		this.domainId = domainId;
+	}
+
+	public String getLogin() {
+		return login;
+	}
+
+	public void setLogin(String login) {
+		this.login = login;
+	}
+
+	public String getManagedSysId() {
+		return managedSysId;
+	}
+
+	public void setManagedSysId(String managedSysId) {
+		this.managedSysId = managedSysId;
+	}
+
+	public String getLoginId() {
+		return loginId;
+	}
+
+	public void setLoginId(String loginId) {
+		this.loginId = loginId;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result
+				+ ((authFailCount == null) ? 0 : authFailCount.hashCode());
+		result = prime * result
+				+ ((canonicalName == null) ? 0 : canonicalName.hashCode());
+		result = prime * result
+				+ ((createDate == null) ? 0 : createDate.hashCode());
+		result = prime * result
+				+ ((createdBy == null) ? 0 : createdBy.hashCode());
+		result = prime
+				* result
+				+ ((currentLoginHost == null) ? 0 : currentLoginHost.hashCode());
+		result = prime * result
+				+ ((domainId == null) ? 0 : domainId.hashCode());
+		result = prime * result + firstTimeLogin;
+		result = prime * result
+				+ ((gracePeriod == null) ? 0 : gracePeriod.hashCode());
+		result = prime * result
+				+ ((isDefault == null) ? 0 : isDefault.hashCode());
+		result = prime * result + isLocked;
+		result = prime * result
+				+ ((lastAuthAttempt == null) ? 0 : lastAuthAttempt.hashCode());
+		result = prime * result
+				+ ((lastLogin == null) ? 0 : lastLogin.hashCode());
+		result = prime * result
+				+ ((lastLoginIP == null) ? 0 : lastLoginIP.hashCode());
+		result = prime * result + ((login == null) ? 0 : login.hashCode());
+		result = prime * result + ((loginId == null) ? 0 : loginId.hashCode());
+		result = prime * result
+				+ ((managedSysId == null) ? 0 : managedSysId.hashCode());
+		result = prime * result
+				+ ((managedSysName == null) ? 0 : managedSysName.hashCode());
+		result = prime * result
+				+ ((operation == null) ? 0 : operation.hashCode());
+		result = prime
+				* result
+				+ ((origPrincipalName == null) ? 0 : origPrincipalName
+						.hashCode());
+		result = prime * result
+				+ ((password == null) ? 0 : password.hashCode());
+		result = prime
+				* result
+				+ ((passwordChangeCount == null) ? 0 : passwordChangeCount
+						.hashCode());
+		result = prime * result
+				+ ((prevLogin == null) ? 0 : prevLogin.hashCode());
+		result = prime * result
+				+ ((prevLoginIP == null) ? 0 : prevLoginIP.hashCode());
+		result = prime * result
+				+ ((pswdResetToken == null) ? 0 : pswdResetToken.hashCode());
+		result = prime
+				* result
+				+ ((pswdResetTokenExp == null) ? 0 : pswdResetTokenExp
+						.hashCode());
+		result = prime * result
+				+ ((pwdChanged == null) ? 0 : pwdChanged.hashCode());
+		result = prime
+				* result
+				+ ((pwdEquivalentToken == null) ? 0 : pwdEquivalentToken
+						.hashCode());
+		result = prime * result + ((pwdExp == null) ? 0 : pwdExp.hashCode());
+		result = prime * result + resetPassword;
+		result = prime * result + (selected ? 1231 : 1237);
+		result = prime * result + ((status == null) ? 0 : status.hashCode());
+		result = prime * result + ((userId == null) ? 0 : userId.hashCode());
 		return result;
 	}
-
 
 	@Override
 	public boolean equals(Object obj) {
@@ -503,17 +522,17 @@ public class Login implements java.io.Serializable, Cloneable {
 				return false;
 		} else if (!currentLoginHost.equals(other.currentLoginHost))
 			return false;
+		if (domainId == null) {
+			if (other.domainId != null)
+				return false;
+		} else if (!domainId.equals(other.domainId))
+			return false;
 		if (firstTimeLogin != other.firstTimeLogin)
 			return false;
 		if (gracePeriod == null) {
 			if (other.gracePeriod != null)
 				return false;
 		} else if (!gracePeriod.equals(other.gracePeriod))
-			return false;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
 			return false;
 		if (isDefault == null) {
 			if (other.isDefault != null)
@@ -537,10 +556,20 @@ public class Login implements java.io.Serializable, Cloneable {
 				return false;
 		} else if (!lastLoginIP.equals(other.lastLoginIP))
 			return false;
-		if (loginAttributes == null) {
-			if (other.loginAttributes != null)
+		if (login == null) {
+			if (other.login != null)
 				return false;
-		} else if (!loginAttributes.equals(other.loginAttributes))
+		} else if (!login.equals(other.login))
+			return false;
+		if (loginId == null) {
+			if (other.loginId != null)
+				return false;
+		} else if (!loginId.equals(other.loginId))
+			return false;
+		if (managedSysId == null) {
+			if (other.managedSysId != null)
+				return false;
+		} else if (!managedSysId.equals(other.managedSysId))
 			return false;
 		if (managedSysName == null) {
 			if (other.managedSysName != null)
@@ -615,7 +644,5 @@ public class Login implements java.io.Serializable, Cloneable {
 			return false;
 		return true;
 	}
-    
-    
 }
 

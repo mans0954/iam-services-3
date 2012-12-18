@@ -12,55 +12,68 @@ import org.openiam.base.SysConfiguration;
 import org.openiam.dozer.converter.LoginDozerConverter;
 import org.openiam.exception.AuthenticationException;
 import org.openiam.exception.EncryptionException;
-import org.openiam.idm.srvc.auth.domain.LoginEmbeddableId;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
-import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.policy.service.PolicyDataService;
+import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
 import org.openiam.idm.srvc.pswd.dto.PasswordHistory;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
 import org.openiam.idm.srvc.pswd.service.PasswordService;
 import org.openiam.idm.srvc.secdomain.dto.SecurityDomain;
 import org.openiam.idm.srvc.secdomain.service.SecurityDomainDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+@Service("loginManager")
 @WebService(endpointInterface = "org.openiam.idm.srvc.auth.login.LoginDataService", targetNamespace = "urn:idm.openiam.org/srvc/auth/service", serviceName = "LoginWebService")
 public class LoginDataServiceImpl implements LoginDataService {
 
+	@Autowired
     protected LoginDAO loginDao;
-    protected LoginAttributeDAO loginAttrDao;
-    protected SecurityDomainDataService secDomainService;
-    protected UserDAO userDao;
-    @Autowired
+    
+	@Autowired
+	protected LoginAttributeDAO loginAttrDao;
+    
+	@Autowired
+	protected SecurityDomainDataService secDomainService;
+    
+	@Autowired
+	protected UserDAO userDao;
+    
+	@Autowired
     private PolicyDataService policyDataService;
 
+	@Autowired
     protected PasswordService passwordManager;
-    protected PasswordHistoryDAO passwordHistoryDao;
-    protected SysConfiguration sysConfiguration;
+    
+	@Autowired
+	protected PasswordHistoryDAO passwordHistoryDao;
+    
+	@Autowired
+	protected SysConfiguration sysConfiguration;
 
+	@Autowired
     protected Cryptor cryptor;
-    @Autowired
+    
+	@Autowired
     private KeyManagementService keyManagementService;
 
     @Autowired
     protected LoginDozerConverter loginDozerConverter;
 
-    static protected ResourceBundle res = ResourceBundle
-            .getBundle("securityconf");
     boolean encrypt = true; // default encryption setting
     private static final Log log = LogFactory
             .getLog(LoginDataServiceImpl.class);
 
-    public Login addLogin(Login login) {
+    public void addLogin(LoginEntity login) {
         if (login == null) {
             throw new NullPointerException("Login is null");
         }
@@ -69,11 +82,10 @@ public class LoginDataServiceImpl implements LoginDataService {
             login.setCreateDate(new Date(System.currentTimeMillis()));
         }
 
-        loginDao.save(loginDozerConverter.convertToEntity(login, false));
-        return login;
+        loginDao.save(login);
     }
 
-    public Login getLogin(String secDomainId, String login)
+    public LoginEntity getLogin(String secDomainId, String login)
             throws AuthenticationException {
         if (secDomainId == null) {
             throw new NullPointerException("service is null");
@@ -90,14 +102,10 @@ public class LoginDataServiceImpl implements LoginDataService {
                     AuthenticationConstants.RESULT_INVALID_DOMAIN);
         }
 
-        LoginEmbeddableId id = new LoginEmbeddableId(secDomainId, login,
-                secDomain.getAuthSysId());
-        LoginEntity lg = loginDao.findById(id);
-
-        return loginDozerConverter.convertToDTO(lg, true);
+        return loginDao.getRecord(login, secDomain.getAuthSysId(), secDomainId);
     }
 
-    public Login getLoginByManagedSys(String domainId, String login,
+    public LoginEntity getLoginByManagedSys(String domainId, String login,
             String sysId) {
         if (domainId == null) {
             throw new NullPointerException("domainId is null");
@@ -106,18 +114,10 @@ public class LoginDataServiceImpl implements LoginDataService {
             throw new NullPointerException("Login is null");
         }
 
-        log.debug("getLoginByManagedSys(): Params = domainId=" + domainId
-                + " login=" + login + " AuthSysId=" + sysId);
-
-        LoginEmbeddableId id = new LoginEmbeddableId(domainId, login, sysId);
-        LoginEntity lg = loginDao.findById(id);
-
-        log.debug("getLoginByManagedSys(): login =" + lg);
-
-        return loginDozerConverter.convertToDTO(lg, true);
+        return loginDao.getRecord(login, sysId, domainId);
     }
 
-    public List<Login> getLoginByManagedSys(String principalName,
+    public List<LoginEntity> getLoginByManagedSys(String principalName,
             String managedSysId) {
         if (principalName == null) {
             throw new NullPointerException("principalName is null");
@@ -125,15 +125,13 @@ public class LoginDataServiceImpl implements LoginDataService {
         if (managedSysId == null) {
             throw new NullPointerException("manaagedSysId is null");
         }
-        return loginDozerConverter.convertToDTOList(
-                loginDao.findLoginByManagedSys(principalName, managedSysId),
-                true);
+        return loginDao.findLoginByManagedSys(principalName, managedSysId);
     }
 
     public String getPassword(String domainId, String login, String sysId)
             throws Exception {
 
-        Login lg = getLoginByManagedSys(domainId, login, sysId);
+    	LoginEntity lg = getLoginByManagedSys(domainId, login, sysId);
         if (lg != null && lg.getPassword() != null) {
             try {
                 return cryptor.decrypt(keyManagementService.getUserKey(
@@ -157,16 +155,11 @@ public class LoginDataServiceImpl implements LoginDataService {
      * @return
      */
     public boolean loginExists(String domainId, String principal, String sysId) {
-        Login lg = this.getLoginByManagedSys(domainId, principal, sysId);
+    	LoginEntity lg = getLoginByManagedSys(domainId, principal, sysId);
         if (lg == null) {
             return false;
         }
         return true;
-    }
-
-    public List getLoginByDept(String managedSysId, String department,
-            String div) {
-        return loginDao.findLoginByDept(managedSysId, department, div);
     }
 
     /**
@@ -227,7 +220,7 @@ public class LoginDataServiceImpl implements LoginDataService {
         String gracePeriod = getPolicyAttribute(plcy.getPolicyAttributes(),
                 "PWD_EXP_GRACE");
 
-        Login lg = getLoginByManagedSys(domainId, login, sysId);
+        LoginEntity lg = getLoginByManagedSys(domainId, login, sysId);
         lg.setPassword(password);
         lg.setPwdChanged(cal.getTime());
 
@@ -260,16 +253,13 @@ public class LoginDataServiceImpl implements LoginDataService {
             }
         }
 
-        LoginEntity loginEntity = loginDozerConverter
-                .convertToEntity(lg, false);
-        loginDao.update(loginEntity);
+        loginDao.update(lg);
 
-        if (loginEntity != null) {
-            // add the password to the history table
-            PasswordHistory hist = new PasswordHistory(lg.getId().getLogin(),
-                    lg.getId().getDomainId(), lg.getId().getManagedSysId());
-            hist.setPassword(password);
-            passwordHistoryDao.add(hist);
+        if (lg != null) {
+        	final PasswordHistoryEntity hist = new PasswordHistoryEntity();
+        	hist.setPassword(password);
+        	hist.setLoginId(lg.getLoginId());
+            passwordHistoryDao.save(hist);
             return true;
         }
         return false;
@@ -293,7 +283,7 @@ public class LoginDataServiceImpl implements LoginDataService {
         String gracePeriod = getPolicyAttribute(plcy.getPolicyAttributes(),
                 "PWD_EXP_GRACE");
 
-        Login lg = getLoginByManagedSys(domainId, login, sysId);
+        LoginEntity lg = getLoginByManagedSys(domainId, login, sysId);
         UserEntity user = userDao.findById(lg.getUserId());
         user.setSecondaryStatus(null);
         userDao.update(user);
@@ -322,11 +312,9 @@ public class LoginDataServiceImpl implements LoginDataService {
             lg.setGracePeriod(cal.getTime());
         }
 
-        LoginEntity loginEntity = loginDozerConverter
-                .convertToEntity(lg, false);
-        loginDao.update(loginEntity);
+        loginDao.update(lg);
 
-        if (loginEntity != null) {
+        if (lg != null) {
             return true;
         }
         return false;
@@ -352,7 +340,7 @@ public class LoginDataServiceImpl implements LoginDataService {
         return null;
     }
 
-    public List<Login> getLoginByUser(String userId) {
+    public List<LoginEntity> getLoginByUser(String userId) {
 
         log.info("LoginDataService: getLoginByUser userId=" + userId);
 
@@ -363,11 +351,11 @@ public class LoginDataServiceImpl implements LoginDataService {
         if (loginList == null || loginList.size() == 0) {
             return null;
         }
-        return loginDozerConverter.convertToDTOList(loginList, true);
-
+        
+        return loginList;
     }
 
-    public List<Login> getLoginByDomain(String domain) {
+    public List<LoginEntity> getLoginByDomain(String domain) {
         if (domain == null) {
             throw new NullPointerException("domain is null");
         }
@@ -375,11 +363,11 @@ public class LoginDataServiceImpl implements LoginDataService {
         if (loginList == null || loginList.size() == 0) {
             return null;
         }
-        return loginDozerConverter.convertToDTOList(loginList, true);
+        return loginList;
     }
 
     public void lockLogin(String domainId, String principal, String sysId) {
-        Login lg = getLoginByManagedSys(domainId, principal, sysId);
+        final LoginEntity lg = getLoginByManagedSys(domainId, principal, sysId);
         // get the user object
         UserEntity user = userDao.findById(lg.getUserId());
 
@@ -393,7 +381,7 @@ public class LoginDataServiceImpl implements LoginDataService {
     }
 
     public void unLockLogin(String domainId, String principal, String sysId) {
-        Login lg = getLoginByManagedSys(domainId, principal, sysId);
+    	LoginEntity lg = getLoginByManagedSys(domainId, principal, sysId);
         // get the user object
         UserEntity user = userDao.findById(lg.getUserId());
 
@@ -411,10 +399,7 @@ public class LoginDataServiceImpl implements LoginDataService {
             throw new NullPointerException("Login is null");
         }
 
-        LoginEmbeddableId id = new LoginEmbeddableId(serviceId, login,
-                managedSysId);
-
-        LoginEntity loginEntity = loginDao.findById(id);
+        LoginEntity loginEntity = loginDao.getRecord(login, managedSysId, serviceId);
         loginDao.delete(loginEntity);
     }
 
@@ -432,55 +417,13 @@ public class LoginDataServiceImpl implements LoginDataService {
 
     }
 
-    public void updateLogin(Login login) {
+    public void updateLogin(LoginEntity login) {
         if (login == null) {
             throw new NullPointerException("Login is null");
         }
 
         log.debug("Updating Identity" + login);
-
-        loginDao.merge(loginDozerConverter.convertToEntity(login, true));
-        // loginDao.update(loginDozerConverter.convertToEntity(login, true));
-    }
-
-    public LoginDAO getLoginDao() {
-        return loginDao;
-    }
-
-    public void setLoginDao(LoginDAO loginDao) {
-        this.loginDao = loginDao;
-    }
-
-    public LoginAttributeDAO getLoginAttrDao() {
-        return loginAttrDao;
-    }
-
-    public void setLoginAttrDao(LoginAttributeDAO loginAttrDao) {
-        this.loginAttrDao = loginAttrDao;
-    }
-
-    public Cryptor getCryptor() {
-        return cryptor;
-    }
-
-    public void setCryptor(Cryptor crypt) {
-        this.cryptor = crypt;
-    }
-
-    public SecurityDomainDataService getSecDomainService() {
-        return secDomainService;
-    }
-
-    public void setSecDomainService(SecurityDomainDataService secDomainService) {
-        this.secDomainService = secDomainService;
-    }
-
-    public UserDAO getUserDao() {
-        return userDao;
-    }
-
-    public void setUserDao(UserDAO userDao) {
-        this.userDao = userDao;
+        loginDao.update(login);
     }
 
     private String getPolicyAttribute(Set<PolicyAttribute> attr, String name) {
@@ -497,40 +440,6 @@ public class LoginDataServiceImpl implements LoginDataService {
 
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.auth.login.LoginDataService#getUserByLogin(java.
-     * lang.String, java.lang.String, java.lang.String)
-     */
-    public User getUserByLogin(String domainId, String login, String sysId) {
-        Login lg = getLoginByManagedSys(domainId, login, sysId);
-        if (lg == null) {
-            return null;
-        }
-        if (lg.getUserId() == null) {
-            log.info("UserId in login object is null");
-            return null;
-        }
-        UserEntity usr = userDao.findById(lg.getUserId());
-
-        // assemble the various dependant objects
-        org.hibernate.Hibernate.initialize(usr.getPhones());
-        org.hibernate.Hibernate.initialize(usr.getEmailAddresses());
-        org.hibernate.Hibernate.initialize(usr.getAddresses());
-        org.hibernate.Hibernate.initialize(usr.getUserAttributes());
-
-        return null;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.auth.login.LoginDataService#bulkUnLock(org.openiam
-     * .idm.srvc.user.dto.UserStatusEnum)
-     */
     public void bulkUnLock(UserStatusEnum status) {
         log.info("bulk unlock called.");
         if (status == null) {
@@ -560,84 +469,41 @@ public class LoginDataServiceImpl implements LoginDataService {
 
     }
 
-    public List<Login> getLockedUserSince(Date lastExecTime) {
-        return loginDozerConverter.convertToDTOList(
-                loginDao.findLockedUsers(lastExecTime), true);
+    public List<LoginEntity> getLockedUserSince(Date lastExecTime) {
+        return loginDao.findLockedUsers(lastExecTime);
     }
 
-    public List<Login> getInactiveUsers(int startDays, int endDays) {
+    public List<LoginEntity> getInactiveUsers(int startDays, int endDays) {
         String primaryManagedSys = sysConfiguration.getDefaultManagedSysId();
 
         List<LoginEntity> loginList = loginDao.findInactiveUsers(startDays,
                 endDays, primaryManagedSys);
 
-        return loginDozerConverter.convertToDTOList(loginList, true);
+        return loginList;
     }
 
-    public PasswordService getPasswordManager() {
-        return passwordManager;
-    }
-
-    public void setPasswordManager(PasswordService passwordManager) {
-        this.passwordManager = passwordManager;
-    }
-
-    public PasswordHistoryDAO getPasswordHistoryDao() {
-        return passwordHistoryDao;
-    }
-
-    public void setPasswordHistoryDao(PasswordHistoryDAO passwordHistoryDao) {
-        this.passwordHistoryDao = passwordHistoryDao;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.auth.login.LoginDataService#getUserNearPswdExpiration
-     * (int)
-     */
-    public List<Login> getUserNearPswdExpiration(int expDays) {
+    public List<LoginEntity> getUserNearPswdExpiration(int expDays) {
         List<LoginEntity> loginList = loginDao.findUserNearPswdExp(expDays);
-        return loginDozerConverter.convertToDTOList(loginList, true);
+        return loginList;
     }
 
-    public List<Login> usersWithPasswordExpYesterday() {
+    public List<LoginEntity> usersWithPasswordExpYesterday() {
         List<LoginEntity> loginList = loginDao.findUserPswdExpYesterday();
-        return loginDozerConverter.convertToDTOList(loginList, true);
+        return loginList;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.auth.login.LoginDataService#getPrimaryIdentity(java
-     * .lang.String)
-     */
-    public Login getPrimaryIdentity(String userId) {
-        // List<Login> loginList = getLoginByUser(userId);
-        // if (loginList == null) {
-        // return null;
-        // }
-        //
-        // for ( Login lg : loginList) {
-        // if
-        // (lg.getId().getManagedSysId().equalsIgnoreCase(sysConfiguration.getDefaultManagedSysId()))
-        // {
-        // return lg;
-        // }
-        // }
-
+    public LoginEntity getPrimaryIdentity(String userId) {
+       
         return getByUserIdManagedSys(userId,
                 sysConfiguration.getDefaultManagedSysId());
     }
 
     @Override
-    public Login getByUserIdManagedSys(String userId, String managedSysId) {
-        List<Login> loginList = getLoginByUser(userId);
+    public LoginEntity getByUserIdManagedSys(String userId, String managedSysId) {
+        List<LoginEntity> loginList = getLoginByUser(userId);
         if (loginList != null) {
-            for (Login lg : loginList) {
-                if (lg.getId().getManagedSysId().equalsIgnoreCase(managedSysId)) {
+            for (LoginEntity lg : loginList) {
+            	if(lg.getManagedSysId().equals(managedSysId)) {
                     return lg;
                 }
             }
@@ -645,36 +511,24 @@ public class LoginDataServiceImpl implements LoginDataService {
         return null;
     }
 
-    public SysConfiguration getSysConfiguration() {
-        return sysConfiguration;
-    }
-
-    public void setSysConfiguration(SysConfiguration sysConfiguration) {
-        this.sysConfiguration = sysConfiguration;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.auth.login.LoginDataService#bulkResetPasswordChangeCount
-     * ()
-     */
     public int bulkResetPasswordChangeCount() {
         return loginDao.bulkResetPasswordChangeCount();
 
     }
 
-    public List<Login> getAllLoginByManagedSys(String managedSysId) {
+    public List<LoginEntity> getAllLoginByManagedSys(String managedSysId) {
         if (managedSysId == null) {
             throw new NullPointerException("managedSysId is null");
         }
-        return loginDozerConverter.convertToDTOList(
-                loginDao.findAllLoginByManagedSys(managedSysId), true);
+        return loginDao.findAllLoginByManagedSys(managedSysId);
     }
 
-    public Login getPasswordResetToken(String token) {
-        return loginDozerConverter.convertToDTO(
-                loginDao.findByPasswordResetToken(token), true);
+    public LoginEntity getPasswordResetToken(String token) {
+        return loginDao.findByPasswordResetToken(token);
     }
+
+	@Override
+	public LoginEntity getLogin(final String loginId) {
+		return loginDao.findById(loginId);
+	}
 }

@@ -4,13 +4,16 @@ package org.openiam.idm.srvc.auth.domain;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.search.annotations.DocumentId;
-import org.hibernate.search.annotations.Indexed;
-import org.hibernate.search.annotations.IndexedEmbedded;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Index;
+import org.hibernate.search.annotations.Store;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.auth.dto.LoginId;
 import org.openiam.idm.srvc.auth.dto.SSOToken;
 import org.openiam.idm.srvc.auth.dto.Subject;
 
@@ -25,12 +28,24 @@ import java.util.Set;
 @Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(Login.class)
-public class LoginEntity implements java.io.Serializable, Cloneable {
+public class LoginEntity implements java.io.Serializable {
     private static final long serialVersionUID = -1972779170001619759L;
     
-    @EmbeddedId
-    @IndexedEmbedded
-    protected LoginEmbeddableId id;
+    @Id
+    @GeneratedValue(generator = "system-uuid")
+    @GenericGenerator(name = "system-uuid", strategy = "uuid")
+	@Column(name = "LOGIN_ID", length = 32, nullable = false)
+    private String loginId;
+    
+    @Column(name="SERVICE_ID",length=20)
+    private String domainId;
+    
+    @Field(name = "login", index = Index.TOKENIZED, store = Store.YES)
+    @Column(name="LOGIN",length=320)
+    private String login;
+    
+    @Column(name="MANAGED_SYS_ID",length=50)
+    private String managedSysId;
 
     @Column(name="USER_ID",length=32)
     protected String userId;
@@ -120,57 +135,13 @@ public class LoginEntity implements java.io.Serializable, Cloneable {
     @Temporal(TemporalType.TIMESTAMP)
     protected Date pswdResetTokenExp;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinColumns({@JoinColumn(name = "SERVICE_ID", referencedColumnName = "SERVICE_ID", insertable = false, updatable = false),
-                  @JoinColumn(name = "LOGIN", referencedColumnName = "LOGIN", insertable = false, updatable = false),
-                  @JoinColumn(name = "MANAGED_SYS_ID", referencedColumnName = "MANAGED_SYS_ID", insertable = false, updatable = false)})
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "LOGIN_ID")
+    @Fetch(FetchMode.SUBSELECT)
     protected Set<LoginAttributeEntity> loginAttributes = new HashSet<LoginAttributeEntity>(0);
 
 
     public LoginEntity() {
-    }
-
-    public LoginEntity(LoginEmbeddableId id, int resetPwd, int isLocked) {
-        this.id = id;
-        this.firstTimeLogin = resetPwd;
-        this.isLocked = isLocked;
-    }
-
-    @Override
-    public Object clone() {
-        LoginEntity l = new LoginEntity();
-        LoginEmbeddableId lgId = new LoginEmbeddableId(id.getDomainId(), id.getLogin(), id.getManagedSysId());
-        l.setId(lgId);
-
-        l.setAuthFailCount(authFailCount);
-        l.setCanonicalName(canonicalName);
-        l.setCreateDate(createDate);
-        l.setCreatedBy(createdBy);
-        l.setCurrentLoginHost(currentLoginHost);
-        l.setFirstTimeLogin(firstTimeLogin);
-        l.setGracePeriod(gracePeriod);
-        l.setIsDefault(isDefault);
-        l.setLastAuthAttempt(lastAuthAttempt);
-        l.setLastLogin(lastLogin);
-        l.setLoginAttributes(loginAttributes);
-        l.setPassword(password);
-        l.setPasswordChangeCount(passwordChangeCount);
-        l.setPwdChanged(pwdChanged);
-        l.setPwdExp(pwdExp);
-        l.setResetPassword(resetPassword);
-        l.setStatus(status);
-        l.setUserId(userId);
-        return l;
-
-    }
-
-
-    public LoginEmbeddableId getId() {
-        return this.id;
-    }
-
-    public void setId(LoginEmbeddableId id) {
-        this.id = id;
     }
 
     public String getUserId() {
@@ -306,12 +277,6 @@ public class LoginEntity implements java.io.Serializable, Cloneable {
         this.canonicalName = canonicalName;
     }
 
-    /**
-     * Tracks how many times the password has been changed.
-     *
-     * @return
-     */
-
     public Integer getPasswordChangeCount() {
         return passwordChangeCount;
     }
@@ -389,46 +354,99 @@ public class LoginEntity implements java.io.Serializable, Cloneable {
         this.loginAttributes = loginAttributes;
     }
 
+	public String getLoginId() {
+		return loginId;
+	}
 
-    @Override
-    public String toString() {
-        return "Login{" +
-                ", id=" + id +
-                ", userId='" + userId + '\'' +
-                ", password='" + password + '\'' +
-                ", pwdEquivalentToken='" + pwdEquivalentToken + '\'' +
-                ", pwdChanged=" + pwdChanged +
-                ", pwdExp=" + pwdExp +
-                ", firstTimeLogin=" + firstTimeLogin +
-                ", resetPassword=" + resetPassword +
-                ", isLocked=" + isLocked +
-                ", status='" + status + '\'' +
-                ", gracePeriod=" + gracePeriod +
-                ", createDate=" + createDate +
-                ", createdBy='" + createdBy + '\'' +
-                ", currentLoginHost='" + currentLoginHost + '\'' +
-                ", authFailCount=" + authFailCount +
-                ", lastAuthAttempt=" + lastAuthAttempt +
-                ", canonicalName='" + canonicalName + '\'' +
-                ", lastLogin=" + lastLogin +
-                ", isDefault=" + isDefault +
-                ", passwordChangeCount=" + passwordChangeCount +
-                ", loginAttributes=" + loginAttributes +
-                ", lastLoginIP='" + lastLoginIP + '\'' +
-                ", prevLogin=" + prevLogin +
-                ", prevLoginIP='" + prevLoginIP + '\'' +
-                '}';
-    }
+	public void setLoginId(String loginId) {
+		this.loginId = loginId;
+	}
 
+	public String getDomainId() {
+		return domainId;
+	}
+
+	public void setDomainId(String domainId) {
+		this.domainId = domainId;
+	}
+
+	public String getLogin() {
+		return login;
+	}
+
+	public void setLogin(String login) {
+		this.login = login;
+	}
+
+	public String getManagedSysId() {
+		return managedSysId;
+	}
+
+	public void setManagedSysId(String managedSysId) {
+		this.managedSysId = managedSysId;
+	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result
+				+ ((authFailCount == null) ? 0 : authFailCount.hashCode());
+		result = prime * result
+				+ ((canonicalName == null) ? 0 : canonicalName.hashCode());
+		result = prime * result
+				+ ((createDate == null) ? 0 : createDate.hashCode());
+		result = prime * result
+				+ ((createdBy == null) ? 0 : createdBy.hashCode());
+		result = prime
+				* result
+				+ ((currentLoginHost == null) ? 0 : currentLoginHost.hashCode());
+		result = prime * result
+				+ ((domainId == null) ? 0 : domainId.hashCode());
+		result = prime * result + firstTimeLogin;
+		result = prime * result
+				+ ((gracePeriod == null) ? 0 : gracePeriod.hashCode());
+		result = prime * result
+				+ ((isDefault == null) ? 0 : isDefault.hashCode());
+		result = prime * result + isLocked;
+		result = prime * result
+				+ ((lastAuthAttempt == null) ? 0 : lastAuthAttempt.hashCode());
+		result = prime * result
+				+ ((lastLogin == null) ? 0 : lastLogin.hashCode());
+		result = prime * result
+				+ ((lastLoginIP == null) ? 0 : lastLoginIP.hashCode());
+		result = prime * result + ((login == null) ? 0 : login.hashCode());
+		result = prime * result + ((loginId == null) ? 0 : loginId.hashCode());
+		result = prime * result
+				+ ((managedSysId == null) ? 0 : managedSysId.hashCode());
+		result = prime * result
+				+ ((password == null) ? 0 : password.hashCode());
+		result = prime
+				* result
+				+ ((passwordChangeCount == null) ? 0 : passwordChangeCount
+						.hashCode());
+		result = prime * result
+				+ ((prevLogin == null) ? 0 : prevLogin.hashCode());
+		result = prime * result
+				+ ((prevLoginIP == null) ? 0 : prevLoginIP.hashCode());
+		result = prime * result
+				+ ((pswdResetToken == null) ? 0 : pswdResetToken.hashCode());
+		result = prime
+				* result
+				+ ((pswdResetTokenExp == null) ? 0 : pswdResetTokenExp
+						.hashCode());
+		result = prime * result
+				+ ((pwdChanged == null) ? 0 : pwdChanged.hashCode());
+		result = prime
+				* result
+				+ ((pwdEquivalentToken == null) ? 0 : pwdEquivalentToken
+						.hashCode());
+		result = prime * result + ((pwdExp == null) ? 0 : pwdExp.hashCode());
+		result = prime * result + resetPassword;
+		result = prime * result + ((status == null) ? 0 : status.hashCode());
+		result = prime * result + ((userId == null) ? 0 : userId.hashCode());
 		return result;
 	}
-
 
 	@Override
 	public boolean equals(Object obj) {
@@ -464,17 +482,17 @@ public class LoginEntity implements java.io.Serializable, Cloneable {
 				return false;
 		} else if (!currentLoginHost.equals(other.currentLoginHost))
 			return false;
+		if (domainId == null) {
+			if (other.domainId != null)
+				return false;
+		} else if (!domainId.equals(other.domainId))
+			return false;
 		if (firstTimeLogin != other.firstTimeLogin)
 			return false;
 		if (gracePeriod == null) {
 			if (other.gracePeriod != null)
 				return false;
 		} else if (!gracePeriod.equals(other.gracePeriod))
-			return false;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
 			return false;
 		if (isDefault == null) {
 			if (other.isDefault != null)
@@ -498,10 +516,20 @@ public class LoginEntity implements java.io.Serializable, Cloneable {
 				return false;
 		} else if (!lastLoginIP.equals(other.lastLoginIP))
 			return false;
-		if (loginAttributes == null) {
-			if (other.loginAttributes != null)
+		if (login == null) {
+			if (other.login != null)
 				return false;
-		} else if (!loginAttributes.equals(other.loginAttributes))
+		} else if (!login.equals(other.login))
+			return false;
+		if (loginId == null) {
+			if (other.loginId != null)
+				return false;
+		} else if (!loginId.equals(other.loginId))
+			return false;
+		if (managedSysId == null) {
+			if (other.managedSysId != null)
+				return false;
+		} else if (!managedSysId.equals(other.managedSysId))
 			return false;
 		if (password == null) {
 			if (other.password != null)
@@ -562,7 +590,5 @@ public class LoginEntity implements java.io.Serializable, Cloneable {
 			return false;
 		return true;
 	}
-    
-    
 }
 

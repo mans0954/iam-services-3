@@ -15,7 +15,6 @@ import org.openiam.idm.srvc.user.dto.UserStatusEnum
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.auth.dto.LoginId;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.idm.srvc.continfo.dto.*;
 

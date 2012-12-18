@@ -6,6 +6,7 @@ import org.openiam.am.srvc.resattr.dao.WebResourceAttributeDao;
 import org.openiam.am.srvc.resattr.dto.Attribute;
 import org.openiam.am.srvc.resattr.dto.AttributeMap;
 import org.openiam.am.srvc.resattr.domain.WebResourceAttribute;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.user.dto.User;
@@ -118,7 +119,7 @@ public class WebResourceAttributeServiceImpl implements WebResourceAttributeServ
                 throw new NullPointerException("Empty attribute map collection");
             }
             // get default identity object
-            Login identityObject = loginManager.getLoginByManagedSys(securityDomain, principalName, "0");
+            LoginEntity identityObject = loginManager.getLoginByManagedSys(securityDomain, principalName, "0");
             if (identityObject == null) {
                 StringBuilder msg = new StringBuilder();
                 msg.append("Default identity object for { securityDomain: ").append(securityDomain).append(", principalName: ")
@@ -131,7 +132,7 @@ public class WebResourceAttributeServiceImpl implements WebResourceAttributeServ
                 throw new NullPointerException("User object has not been found");
 
 
-            Login login = loginManager.getByUserIdManagedSys(user.getUserId(), managedSysId);
+            LoginEntity login = loginManager.getByUserIdManagedSys(user.getUserId(), managedSysId);
             if (login == null) {
                 StringBuilder msg = new StringBuilder();
                 msg.append("Login object for { securityDomain: ").append(securityDomain).append(", principalName: ")
@@ -152,7 +153,7 @@ public class WebResourceAttributeServiceImpl implements WebResourceAttributeServ
         }
     }
 
-    private Attribute parseAttribute(AttributeMap attr, Login login, User user) throws Exception {
+    private Attribute parseAttribute(AttributeMap attr, LoginEntity login, User user) throws Exception {
         Attribute attribute = new Attribute();
         if (attr.getAccessManagerAttributeName() == null) {
             throw new NullPointerException("AccessManagerAttributeName is null");

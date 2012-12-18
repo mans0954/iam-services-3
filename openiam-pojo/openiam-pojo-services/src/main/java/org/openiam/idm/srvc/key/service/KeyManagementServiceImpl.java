@@ -8,12 +8,12 @@ import org.openiam.core.domain.UserKey;
 import org.openiam.exception.EncryptionException;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.auth.dto.LoginId;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.dto.UserSecurityWrapper;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
+import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
 import org.openiam.idm.srvc.pswd.dto.PasswordHistory;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -180,9 +180,9 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         userList.add(user);
         List<LoginEntity> lgList = loginDAO.findUser(user.getUserId());
         List<UserKey> keyList = userKeyDao.getByUserId(user.getUserId());
-        List<PasswordHistory> pwdList = new ArrayList<PasswordHistory>();
+        List<PasswordHistoryEntity> pwdList = new ArrayList<PasswordHistoryEntity>();
         for (LoginEntity lg: lgList){
-            pwdList.addAll(passwordHistoryDao.findAllPasswordHistoryByPrincipal(lg.getId().getDomainId(), lg.getId().getLogin(),lg.getId().getManagedSysId()));
+            pwdList.addAll(passwordHistoryDao.findAllPasswordHistoryByPrincipal(lg.getDomainId(), lg.getLogin(),lg.getManagedSysId()));
         }
         HashMap<String, List<ManagedSys>> managedSysMap = getManagedSysMap();
         List<UserKey> newUserKeyList = new ArrayList<UserKey>();
@@ -270,7 +270,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         }
         log.warn("Encrypt user passwords history...");
         if(userSecurityWrapper.getPasswordHistoryList() != null && !userSecurityWrapper.getPasswordHistoryList().isEmpty()) {
-            for(PasswordHistory pwd : userSecurityWrapper.getPasswordHistoryList()) {
+            for(PasswordHistoryEntity pwd : userSecurityWrapper.getPasswordHistoryList()) {
                 pwd.setPassword(cryptor.encrypt(pwdKey, pwd.getPassword()));
                 passwordHistoryDao.update(pwd);
             }
@@ -336,7 +336,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         }
         if(userSecurityWrapper.getPasswordHistoryList()!=null && !userSecurityWrapper.getPasswordHistoryList().isEmpty()){
             log.warn("Decrypting user passwords history ...");
-            for(PasswordHistory pwd : userSecurityWrapper.getPasswordHistoryList()) {
+            for(PasswordHistoryEntity pwd : userSecurityWrapper.getPasswordHistoryList()) {
                 pwd.setPassword(cryptor.decrypt(key, pwd.getPassword()));
             }
         }
@@ -357,7 +357,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         msg.append("LOGIN LIST FOR USER_ID("+user.getUserId()+") [\n");
         if(user.getPrincipalList() != null && !user.getPrincipalList().isEmpty()) {
             for(Login login : user.getPrincipalList()) {
-                msg.append("\t{login:"+login.getId().getLogin()+";password:"+login.getPassword()+"}\n");
+                msg.append("\t{login:"+login.getLogin()+";password:"+login.getPassword()+"}\n");
             }
         }
         msg.append("]");
@@ -422,7 +422,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
             HashMap<String, List<ManagedSys>> managedSysMap = getManagedSysMap();
             HashMap<String, List<LoginEntity>> loginMap = getLoginMap();
             HashMap<String, List<UserKey>> userKeyMap = getUserKeyMap();
-            HashMap<String, List<PasswordHistory>> pwdHistoryMap = getPasswordHistoryMap(loginMap);
+            HashMap<String, List<PasswordHistoryEntity>> pwdHistoryMap = getPasswordHistoryMap(loginMap);
 
             for (String userId : userIdList){
                 UserSecurityWrapper usw = new UserSecurityWrapper();
@@ -500,16 +500,16 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         return managedSysMap;
     }
 
-    private HashMap<String, List<PasswordHistory>> getPasswordHistoryMap(HashMap<String, List<LoginEntity>> loginMap) {
-        HashMap<String, List<PasswordHistory>> pwdHistoryMap = new HashMap<String, List<PasswordHistory>>();
+    private HashMap<String, List<PasswordHistoryEntity>> getPasswordHistoryMap(final HashMap<String, List<LoginEntity>> loginMap) {
+        final HashMap<String, List<PasswordHistoryEntity>> pwdHistoryMap = new HashMap<String, List<PasswordHistoryEntity>>();
 
         if(loginMap != null && !loginMap.isEmpty()) {
 
-            Long pwdCount = passwordHistoryDao.getCount();
+            final Long pwdCount = passwordHistoryDao.getCount();
             if(pwdCount!=null && pwdCount>0){
                 long fetchedDataCount = 0l;
-                Set<PasswordHistory> pwdList = new HashSet<PasswordHistory>();
-                HashMap<LoginId, List<PasswordHistory>> pwdMap = new HashMap<LoginId, List<PasswordHistory>>();
+                final Set<PasswordHistoryEntity> pwdList = new HashSet<PasswordHistoryEntity>();
+                final HashMap<String, List<PasswordHistoryEntity>> pwdMap = new HashMap<String, List<PasswordHistoryEntity>>();
 
                 int pageNum=0;
                 do{
@@ -518,26 +518,21 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                     pageNum++;
                 }while(fetchedDataCount<pwdCount);
 
-                for(PasswordHistory ph : pwdList) {
-                    LoginId lgId = new  LoginId();
-                    lgId.setDomainId(ph.getServiceId());
-                    lgId.setLogin(ph.getLogin());
-                    lgId.setManagedSysId(ph.getManagedSysId());
-
-                    if(!pwdMap.containsKey(lgId)) {
-                        pwdMap.put(lgId, new ArrayList<PasswordHistory>());
+                for(final PasswordHistoryEntity ph : pwdList) {
+                    if(!pwdMap.containsKey(ph.getLoginId())) {
+                        pwdMap.put(ph.getLoginId(), new ArrayList<PasswordHistoryEntity>());
                     }
-                    pwdMap.get(lgId).add(ph);
+                    pwdMap.get(ph.getLoginId()).add(ph);
                 }
 
                 // map to userId
                 for (String userId:loginMap.keySet()){
                     for(LoginEntity lg: loginMap.get(userId)){
-                        if(pwdMap.containsKey(lg.getId())){
+                        if(pwdMap.containsKey(lg.getLoginId())){
                             if(!pwdHistoryMap.containsKey(userId)) {
-                                pwdHistoryMap.put(userId, new ArrayList<PasswordHistory>());
+                                pwdHistoryMap.put(userId, new ArrayList<PasswordHistoryEntity>());
                             }
-                            pwdHistoryMap.get(userId).addAll(pwdMap.get(lg.getId()));
+                            pwdHistoryMap.get(userId).addAll(pwdMap.get(lg.getLoginId()));
                         }
                     }
                 }
@@ -545,6 +540,4 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         }
         return pwdHistoryMap;
     }
-
-
 }

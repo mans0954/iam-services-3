@@ -10,6 +10,7 @@ import org.mule.api.MuleContext;
 import org.openiam.base.SysConfiguration;
 import org.openiam.connector.type.UserRequest;
 import org.openiam.connector.type.UserResponse;
+import org.openiam.dozer.converter.LoginDozerConverter;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditHelper;
 import org.openiam.idm.srvc.audit.service.IdmAuditLogDataService;
@@ -70,6 +71,9 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
     protected PasswordHistoryDAO passwordHistoryDao;
     protected String preProcessor;
     protected String postProcessor;
+    
+    @Autowired
+    protected LoginDozerConverter loginDozerConverter;
 
     protected MuleContext muleContext;
 
@@ -194,12 +198,10 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
         }
 
         auditHelper.addLog("DELETE IDENTITY", user.getRequestorDomain(), user
-                .getRequestorLogin(), "IDM SERVICE", user.getCreatedBy(), l
-                .getId().getManagedSysId(), "IDENTITY", user.getUserId(),
+                .getRequestorLogin(), "IDM SERVICE", user.getCreatedBy(), l.getManagedSysId(), "IDENTITY", user.getUserId(),
                 logid, status, logid, "IDENTITY_STATUS", "DELETED", requestId,
                 resp.getErrorCodeAsStr(), user.getSessionId(), resp
-                        .getErrorMessage(), user.getRequestClientIP(), l
-                        .getId().getLogin(), l.getId().getDomainId());
+                        .getErrorMessage(), user.getRequestClientIP(), l.getLogin(), l.getDomainId());
 
         return resp;
 
@@ -212,9 +214,9 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
 
         UserRequest request = new UserRequest();
 
-        request.setUserIdentity(mLg.getId().getLogin());
+        request.setUserIdentity(mLg.getLogin());
         request.setRequestID(requestId);
-        request.setTargetID(mLg.getId().getManagedSysId());
+        request.setTargetID(mLg.getManagedSysId());
         request.setHostLoginId(mSys.getUserId());
         request.setHostLoginPassword(mSys.getDecryptPassword());
         request.setHostUrl(mSys.getHostUrl());
@@ -227,13 +229,11 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
                 connector, muleContext);
 
         auditHelper.addLog("DELETE IDENTITY", auditLog.getDomainId(), auditLog
-                .getPrincipal(), "IDM SERVICE", user.getCreatedBy(), mLg
-                .getId().getManagedSysId(), "IDENTITY", user.getUserId(),
+                .getPrincipal(), "IDM SERVICE", user.getCreatedBy(), mLg.getManagedSysId(), "IDENTITY", user.getUserId(),
                 auditLog.getLogId(), resp.getStatus().toString(), auditLog
                         .getLogId(), "IDENTITY_STATUS", "DELETED", requestId,
                 resp.getErrorCodeAsStr(), user.getSessionId(), resp
-                        .getErrorMsgAsStr(), user.getRequestClientIP(), mLg
-                        .getId().getLogin(), mLg.getId().getDomainId());
+                        .getErrorMsgAsStr(), user.getRequestClientIP(), mLg.getLogin(), mLg.getDomainId());
 
         return resp;
 

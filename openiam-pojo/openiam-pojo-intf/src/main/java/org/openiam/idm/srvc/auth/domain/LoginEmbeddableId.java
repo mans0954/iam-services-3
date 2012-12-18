@@ -1,5 +1,5 @@
 package org.openiam.idm.srvc.auth.domain;
-
+/*
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 
@@ -7,14 +7,13 @@ import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Store;
+import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.auth.dto.LoginId;
 
 import java.io.Serializable;
 
-/**
- * Created by: Alexander Duckardt
- * Date: 16.11.12
- */
 @Embeddable
+@DozerDTOCorrespondence(LoginId.class)
 public class LoginEmbeddableId implements Serializable {
 
     @Column(name="SERVICE_ID",length=20)
@@ -106,3 +105,4 @@ public class LoginEmbeddableId implements Serializable {
                 login, managedSysId);
     }
 }
+*/

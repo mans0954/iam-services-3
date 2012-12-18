@@ -28,6 +28,7 @@ import org.openiam.exception.AuthenticationException;
 import org.openiam.exception.EncryptionException;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditLogUtil;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
@@ -63,7 +64,7 @@ public abstract class AbstractLoginModule implements LoginModule {
     @Autowired
     protected PolicyDataService policyDataService;
     protected User user;
-    protected Login lg;
+    protected LoginEntity lg;
     protected String authPolicyId;
     @Autowired
     protected KeyManagementService keyManagementService;
@@ -166,7 +167,7 @@ public abstract class AbstractLoginModule implements LoginModule {
 
     }
 
-    public void setResultCode(Login lg, Subject sub, Date curDate) {
+    public void setResultCode(LoginEntity lg, Subject sub, Date curDate) {
         if (lg.getFirstTimeLogin() == 1) {
             sub.setResultCode(AuthenticationConstants.RESULT_SUCCESS_FIRST_TIME);
         } else if (lg.getPwdExp() != null) {
@@ -181,7 +182,7 @@ public abstract class AbstractLoginModule implements LoginModule {
 
     }
 
-    public int setDaysToPassworExpiration(Login lg, Date curDate, Subject sub) {
+    public int setDaysToPassworExpiration(LoginEntity lg, Date curDate, Subject sub) {
         if (lg.getPwdExp() == null) {
             return -1;
         }
@@ -242,11 +243,11 @@ public abstract class AbstractLoginModule implements LoginModule {
         this.user = user;
     }
 
-    public Login getLg() {
+    public LoginEntity getLg() {
         return lg;
     }
 
-    public void setLg(Login lg) {
+    public void setLg(LoginEntity lg) {
         this.lg = lg;
     }
 

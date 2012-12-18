@@ -14,7 +14,7 @@ import org.openiam.base.id.UUIDGen;
 import org.openiam.idm.srvc.auth.ws.LoginDataWebService;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.auth.dto.LoginId;
+
 
 def MailService mailService = ServiceHelper.emailService();
 def UserDataWebService userManager = ServiceHelper.userService()
