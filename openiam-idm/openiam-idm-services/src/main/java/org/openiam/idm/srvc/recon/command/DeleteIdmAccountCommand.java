@@ -28,13 +28,10 @@ public class DeleteIdmAccountCommand implements ReconciliationCommand {
     }
 
     public boolean execute(Login login, User user, List<ExtensibleAttribute> attributes) {
-        log.debug("Entering DeleteIdmAccountCommand");
         List<Login> principleList = user.getPrincipalList();
         for(Login l : principleList){
-            System.out.println("Checking login");
-            if(l.getId().equals(login.getId())){
+            if(l.getLoginId().equals(login.getLoginId())){
                 l.setOperation(AttributeOperationEnum.DELETE);
-                System.out.println("Set to delete");
                 break;
             }
         }

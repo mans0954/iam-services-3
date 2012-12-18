@@ -8,15 +8,14 @@ import org.apache.commons.logging.LogFactory;
 import org.hibernate.*;
 
 import org.hibernate.criterion.*;
-import org.openiam.base.id.SequenceGenDAO;
 
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
-
 import org.openiam.idm.srvc.user.dto.UserSearch;
+
 import org.openiam.idm.srvc.user.dto.SearchAttribute;
 
 import javax.naming.InitialContext;
@@ -1331,10 +1330,10 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             if(StringUtils.isNotEmpty(searchBean.getPrincipal()) || StringUtils.isNotEmpty(searchBean.getDomainId()) || StringUtils.isNotEmpty(searchBean.getLoggedIn())){
                 criteria.createAlias("principalList", "lg");
                 if(StringUtils.isNotEmpty(searchBean.getPrincipal())) {
-                    criteria.add(getStringCriterion("lg.id.login", searchBean.getPrincipal(),ORACLE_INSENSITIVE));
+                    criteria.add(getStringCriterion("lg.login", searchBean.getPrincipal(),ORACLE_INSENSITIVE));
                 }
                 if(StringUtils.isNotEmpty(searchBean.getDomainId())) {
-                    criteria.add(Restrictions.eq("lg.id.domainId", searchBean.getDomainId()));
+                    criteria.add(Restrictions.eq("lg.domainId", searchBean.getDomainId()));
                 }
                 if(StringUtils.isNotEmpty(searchBean.getLoggedIn())) {
                     if("YES".equalsIgnoreCase(searchBean.getLoggedIn())) {
@@ -1437,5 +1436,13 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 	public int getNumOfUsersForRole(final String roleId) {
 		final Criteria criteria = getUsersForRoleCriteria(roleId).setProjection(rowCount());
 		return ((Number)criteria.uniqueResult()).intValue();
+	}
+
+	@Override
+	public void disassociateUsersFromOrganization(String organizationId) {
+		final String queryString = String.format("UPDATE %s u SET u.organization = NULL WHERE u.organization.orgId = :organizationId", domainClass.getSimpleName());
+		final Query query = getSession().createQuery(queryString);
+		query.setParameter("organizationId", organizationId);
+		query.executeUpdate();
 	}
 }

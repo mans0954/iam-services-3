@@ -12,7 +12,6 @@ import org.openiam.core.dao.lucene.SortType;
 import org.openiam.dozer.converter.*;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
-import org.openiam.idm.srvc.auth.domain.LoginEmbeddableId;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
@@ -25,7 +24,6 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.domain.UserNoteEntity;
 import org.openiam.idm.srvc.user.dto.*;
 import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.auth.dto.LoginId;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.ContactConstants;
@@ -147,9 +145,7 @@ public class UserMgr implements UserDataService {
 
     public User getUserByPrincipal(String securityDomain, String principal,
                                    String managedSysId, boolean dependants) {
-        // get the login
-        LoginEmbeddableId loginId = new LoginEmbeddableId(securityDomain, principal, managedSysId);
-        LoginEntity login = loginDao.findById(loginId);
+        LoginEntity login = loginDao.getRecord(principal, managedSysId, securityDomain);
         if (login == null) {
             return null;
         }

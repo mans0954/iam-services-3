@@ -183,6 +183,14 @@
 			<a>attributes</a>
 			<b>attributes</b>
 		</field-exclude>
+		<field-exclude>
+			<a>parentOrganizations</a>
+			<b>parentOrganizations</b>
+		</field-exclude>
+		<field-exclude>
+			<a>childOrganizations</a>
+			<b>childOrganizations</b>
+		</field-exclude>
 	</mapping>
 	<mapping>
 		<class-a>org.openiam.idm.srvc.policy.domain.PolicyDefEntity</class-a>

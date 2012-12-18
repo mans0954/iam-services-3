@@ -24,9 +24,6 @@ public interface OrganizationDataService {
     public List<Organization> getTopLevelOrganizations();
 
     @WebMethod
-    public List<Organization> subOrganizations(@WebParam(name = "orgId", targetNamespace = "") String orgId);
-
-    @WebMethod
     public Response removeAttribute(final @WebParam(name = "attributeId", targetNamespace = "") String attributeId);
 
     @WebMethod
@@ -40,14 +37,6 @@ public interface OrganizationDataService {
 
     @WebMethod
     public Response deleteOrganization(@WebParam(name = "orgId", targetNamespace = "") String orgId);
-
-
-    @WebMethod
-    public List<Organization> allDepartments(@WebParam(name = "parentId", targetNamespace = "") String parentId);
-
-
-    @WebMethod
-    public List<Organization> allDivisions(@WebParam(name = "parentId", targetNamespace = "") String parentId);
 
     @WebMethod
     public List<Organization> getAllOrganizations();
@@ -76,4 +65,28 @@ public interface OrganizationDataService {
 
     @WebMethod
     int count(@WebParam(name="searchBean", targetNamespace="") OrganizationSearchBean searchBean);
+    
+    @WebMethod
+    public int getNumOfParentOrganizations(@WebParam(name = "organizationId", targetNamespace = "") String organizationId);
+    
+    @WebMethod
+    public int getNumOfChildOrganizations(@WebParam(name = "organizationId", targetNamespace = "") String organizationId);
+    
+    @WebMethod
+    public List<Organization> getParentOrganizations(@WebParam(name = "organizationId", targetNamespace = "") String organizationId,
+                             						 @WebParam(name = "from", targetNamespace = "") int from,
+                             						 @WebParam(name = "size", targetNamespace = "") int size);
+    
+    @WebMethod
+    public List<Organization> getChildOrganizations(@WebParam(name = "organizationId", targetNamespace = "") String organizationId,
+                             						 @WebParam(name = "from", targetNamespace = "") int from,
+                             						 @WebParam(name = "size", targetNamespace = "") int size);
+    
+    @WebMethod
+    public Response addChildOrganization(@WebParam(name = "organizationId", targetNamespace = "") String organizationId,
+    									 @WebParam(name = "childOrganizationId", targetNamespace = "") String childOrganizationId);
+    
+    @WebMethod
+    public Response removeChildOrganization(@WebParam(name = "organizationId", targetNamespace = "") String organizationId,
+    									 	@WebParam(name = "childOrganizationId", targetNamespace = "") String childOrganizationId);
 }

@@ -2,7 +2,11 @@ package org.openiam.idm.srvc.org.domain;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -11,7 +15,11 @@ import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.MapKey;
+import javax.persistence.MapKeyColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import org.hibernate.annotations.GenericGenerator;
@@ -26,6 +34,7 @@ import org.hibernate.search.annotations.DocumentId;
 import org.openiam.idm.srvc.org.dto.OrgClassificationEnum;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
+import org.openiam.idm.srvc.role.domain.RoleEntity;
 
 @Entity
 @Table(name = "COMPANY")
@@ -41,8 +50,9 @@ public class OrganizationEntity {
     @Column(name="ALIAS", length=100)
     private String alias;
 
-    @OneToMany(orphanRemoval=true, cascade = CascadeType.ALL, mappedBy = "organization", fetch = FetchType.LAZY)
-    @MapKey(name = "name")
+    @OneToMany(fetch=FetchType.LAZY,orphanRemoval=true,cascade={CascadeType.ALL})
+    @JoinColumn(name="COMPANY_ID", referencedColumnName="COMPANY_ID")
+    @MapKeyColumn(name="name")
     @Fetch(FetchMode.SUBSELECT)
     private Map<String, OrganizationAttributeEntity> attributes = new HashMap<String, OrganizationAttributeEntity>(0);
 
@@ -76,9 +86,6 @@ public class OrganizationEntity {
     @Column(name="INTERNAL_COMPANY_ID")
     private String internalOrgId;
 
-    @Column(name="PARENT_ID", length=32)
-    private String parentId;
-
     @Column(name="STATUS", length=20)
     private String status;
 
@@ -91,6 +98,20 @@ public class OrganizationEntity {
 
     @Column(name="SYMBOL", length=10)
     private String symbol;
+    
+	@ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
+    @JoinTable(name="COMPANY_TO_COMPANY_MEMBERSHIP",
+        joinColumns={@JoinColumn(name="MEMBER_COMPANY_ID")},
+        inverseJoinColumns={@JoinColumn(name="COMPANY_ID")})
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<OrganizationEntity> parentOrganizations;
+    
+	@ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
+    @JoinTable(name="COMPANY_TO_COMPANY_MEMBERSHIP",
+        joinColumns={@JoinColumn(name="COMPANY_ID")},
+        inverseJoinColumns={@JoinColumn(name="MEMBER_COMPANY_ID")})
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<OrganizationEntity> childOrganizations;
 
     public OrganizationEntity() {
     }
@@ -199,14 +220,6 @@ public class OrganizationEntity {
         this.internalOrgId = internalOrgId;
     }
 
-    public String getParentId() {
-        return parentId;
-    }
-
-    public void setParentId(String parentId) {
-        this.parentId = parentId;
-    }
-
     public String getStatus() {
         return status;
     }
@@ -239,6 +252,60 @@ public class OrganizationEntity {
         this.symbol = symbol;
     }
 
+	public Set<OrganizationEntity> getParentOrganizations() {
+		return parentOrganizations;
+	}
+
+	public void setParentOrganizations(Set<OrganizationEntity> parentOrganizations) {
+		this.parentOrganizations = parentOrganizations;
+	}
+
+	public Set<OrganizationEntity> getChildOrganizations() {
+		return childOrganizations;
+	}
+
+	public void setChildOrganizations(Set<OrganizationEntity> childOrganizations) {
+		this.childOrganizations = childOrganizations;
+	}
+	
+	public void addChildOrganization(final OrganizationEntity entity) {
+		if(entity != null) {
+			if(childOrganizations == null) {
+				childOrganizations = new LinkedHashSet<OrganizationEntity>();
+			}
+			childOrganizations.add(entity);
+		}
+	}
+	
+	public void removeChildOrganization(final String organizationId) {
+		if(organizationId != null) {
+			if(childOrganizations != null) {
+				for(final Iterator<OrganizationEntity> it = childOrganizations.iterator(); it.hasNext();) {
+					final OrganizationEntity entity = it.next();
+					if(entity.getOrgId().equals(organizationId)) {
+						it.remove();
+						break;
+					}
+				}
+			}
+		}
+	}
+	
+	public boolean hasChildOrganization(final String organizationId) {
+		boolean retval = false;
+		if(organizationId != null) {
+			if(childOrganizations != null) {
+				for(final OrganizationEntity entity : childOrganizations) {
+					if(entity.getOrgId().equals(organizationId)) {
+						retval = true;
+						break;
+					}
+				}
+			}
+		}
+		return retval;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -269,8 +336,6 @@ public class OrganizationEntity {
 		result = prime
 				* result
 				+ ((organizationName == null) ? 0 : organizationName.hashCode());
-		result = prime * result
-				+ ((parentId == null) ? 0 : parentId.hashCode());
 		result = prime * result + ((status == null) ? 0 : status.hashCode());
 		result = prime * result + ((symbol == null) ? 0 : symbol.hashCode());
 		return result;
@@ -351,11 +416,6 @@ public class OrganizationEntity {
 			if (other.organizationName != null)
 				return false;
 		} else if (!organizationName.equals(other.organizationName))
-			return false;
-		if (parentId == null) {
-			if (other.parentId != null)
-				return false;
-		} else if (!parentId.equals(other.parentId))
 			return false;
 		if (status == null) {
 			if (other.status != null)

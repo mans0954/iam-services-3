@@ -111,7 +111,7 @@ public class UserSearchDAO extends AbstractHibernateSearchDao<UserEntity, UserSe
 	
 	private Query buildPrincipalClause(final String principalName) {
 		if(StringUtils.isNotBlank(principalName)) {
-			return buildTokenizedClause("principal.id.login", principalName);
+			return buildTokenizedClause("principal.login", principalName);
 		}
 		return null;
     }

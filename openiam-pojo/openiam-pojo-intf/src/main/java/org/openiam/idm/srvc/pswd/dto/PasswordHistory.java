@@ -6,6 +6,10 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
+
+import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
+
 import java.util.Date;
 
 /**
@@ -14,42 +18,20 @@ import java.util.Date;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "PasswordHistory", propOrder = {
         "pwdHistoryId",
-        "login",
-        "serviceId",
-        "managedSysId",
+        "loginId",
         "dateCreated",
         "password"
 })
+@DozerDTOCorrespondence(PasswordHistoryEntity.class)
 public class PasswordHistory implements java.io.Serializable {
 
     private String pwdHistoryId;
-    private String login;
-    private String serviceId;
-    private String managedSysId;
+    private String loginId;
     @XmlSchemaType(name = "dateTime")
     private Date dateCreated;
     private String password;
 
     public PasswordHistory() {
-    }
-
-    public PasswordHistory(String login, String serviceId,
-                           String managedSysId) {
-        this.pwdHistoryId = pwdHistoryId;
-        this.login = login;
-        this.serviceId = serviceId;
-        this.managedSysId = managedSysId;
-        this.dateCreated = dateCreated;
-    }
-
-    public PasswordHistory(String pwdHistoryId, String login, String serviceId,
-                           String managedSysId, Date dateCreated, String password) {
-        this.pwdHistoryId = pwdHistoryId;
-        this.login = login;
-        this.serviceId = serviceId;
-        this.managedSysId = managedSysId;
-        this.dateCreated = dateCreated;
-        this.password = password;
     }
 
     public String getPwdHistoryId() {
@@ -58,30 +40,6 @@ public class PasswordHistory implements java.io.Serializable {
 
     public void setPwdHistoryId(String pwdHistoryId) {
         this.pwdHistoryId = pwdHistoryId;
-    }
-
-    public String getLogin() {
-        return this.login;
-    }
-
-    public void setLogin(String login) {
-        this.login = login;
-    }
-
-    public String getServiceId() {
-        return this.serviceId;
-    }
-
-    public void setServiceId(String serviceId) {
-        this.serviceId = serviceId;
-    }
-
-    public String getManagedSysId() {
-        return this.managedSysId;
-    }
-
-    public void setManagedSysId(String managedSysId) {
-        this.managedSysId = managedSysId;
     }
 
     public Date getDateCreated() {
@@ -100,4 +58,11 @@ public class PasswordHistory implements java.io.Serializable {
         this.password = password;
     }
 
+	public String getLoginId() {
+		return loginId;
+	}
+
+	public void setLoginId(String loginId) {
+		this.loginId = loginId;
+	}
 }

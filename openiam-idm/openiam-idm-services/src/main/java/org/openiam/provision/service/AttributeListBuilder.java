@@ -26,7 +26,6 @@ import org.apache.commons.logging.LogFactory;
 import org.mule.util.StringUtils;
 import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.auth.dto.LoginId;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.provision.dto.ProvisionUser;
@@ -70,11 +69,10 @@ public class AttributeListBuilder {
             }
 
             final Login identity = new Login();
-            final LoginId loginId = new LoginId();
 
             // init values
-            loginId.setDomainId(domainId);
-            loginId.setManagedSysId(managedSysId);
+            identity.setDomainId(domainId);
+            identity.setManagedSysId(managedSysId);
 
             for (final AttributeMap attr : attrMap) {
 
@@ -105,7 +103,7 @@ public class AttributeListBuilder {
                                     log.debug(String.format("buildFromRules: ManagedSysId=%s, login=%s", managedSysId, output));
                                 }
 
-                                loginId.setLogin((String) output);
+                                identity.setLogin((String) output);
                                 extUser.setPrincipalFieldName(attr.getAttributeName());
                                 extUser.setPrincipalFieldDataType(attr.getDataType());
 
@@ -150,7 +148,6 @@ public class AttributeListBuilder {
                 }
 
             }
-            identity.setId(loginId);
             identity.setAuthFailCount(0);
             identity.setCreateDate(new Date(System.currentTimeMillis()));
             identity.setCreatedBy(createdBy);
@@ -211,7 +208,6 @@ public class AttributeListBuilder {
                                String createdBy) {
 
         Login newIdentity = new Login();
-        LoginId newId = new LoginId();
 
         for (AttributeMap attr : attrMap) {
             Policy policy = attr.getAttributePolicy();
@@ -222,7 +218,7 @@ public class AttributeListBuilder {
                     if (url != null) {
                         try {
                             String output = (String) se.execute(bindingMap, url);
-                            newId.setLogin(output);
+                            newIdentity.setLogin(output);
                         } catch (ScriptEngineException ex) {
                             log.error(ex);
                         }
@@ -243,12 +239,11 @@ public class AttributeListBuilder {
 
 
         }
-        if (newId.getLogin() == null) {
+        if (newIdentity.getLogin() == null) {
             return null;
         }
-        newId.setDomainId(domainId);
-        newId.setManagedSysId(managedSysId);
-        newIdentity.setId(newId);
+        newIdentity.setDomainId(domainId);
+        newIdentity.setManagedSysId(managedSysId);
         newIdentity.setAuthFailCount(0);
         newIdentity.setCreateDate(new Date(System.currentTimeMillis()));
         newIdentity.setFirstTimeLogin(0);

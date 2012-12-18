@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.synch.service;
 
 import java.util.List;
 
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.dto.User;
@@ -10,7 +11,7 @@ import org.openiam.idm.srvc.user.dto.User;
 public abstract class AbstractTransformScript implements TransformScript {
 
 	protected User user;
-	protected List<Login> principalList;
+	protected List<LoginEntity> principalList;
 	protected List<Role> userRoleList;
 	protected boolean isNewUser = false;
 
@@ -20,10 +21,10 @@ public abstract class AbstractTransformScript implements TransformScript {
 	public void setUser(User user) {
 		this.user = user;
 	}
-	public List<Login> getPrincipalList() {
+	public List<LoginEntity> getPrincipalList() {
 		return principalList;
 	}
-	public void setPrincipalList(List<Login> principalList) {
+	public void setPrincipalList(List<LoginEntity> principalList) {
 		this.principalList = principalList;
 	}
 	public List<Role> getUserRoleList() {

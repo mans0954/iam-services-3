@@ -23,6 +23,7 @@ package org.openiam.idm.srvc.synch.service;
 
 import java.util.List;
 
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.synch.dto.LineObject;
@@ -44,8 +45,8 @@ public interface TransformScript {
 
 	User getUser();
 	void setUser(User user) ;
-	List<Login> getPrincipalList() ;
-	void setPrincipalList(List<Login> principalList);
+	List<LoginEntity> getPrincipalList() ;
+	void setPrincipalList(List<LoginEntity> principalList);
 	List<Role> getUserRoleList() ;
 	void setUserRoleList(List<Role> userRoleList) ;
 	boolean isNewUser();

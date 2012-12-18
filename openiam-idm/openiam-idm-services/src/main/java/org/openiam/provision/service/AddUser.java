@@ -29,12 +29,13 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.dozer.converter.LoginDozerConverter;
 import org.openiam.exception.EncryptionException;
 import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditHelper;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.auth.dto.LoginId;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.grp.dto.Group;
@@ -76,6 +77,9 @@ public class AddUser {
     @Autowired
     protected AuditHelper auditHelper;
     protected OrganizationDataService orgManager;
+    
+    @Autowired
+    private LoginDozerConverter loginDozerConverter;
 
     public ProvisionUserResponse createUser(ProvisionUser user,
             List<IdmAuditLog> logList) {
@@ -151,7 +155,7 @@ public class AddUser {
                     lg.setPassword(loginManager.encryptPassword(u.getUserId(),
                             pswd));
                 }
-                loginManager.addLogin(lg);
+                loginManager.addLogin(loginDozerConverter.convertToEntity(lg, true));
             }
         }
 
@@ -263,13 +267,11 @@ public class AddUser {
             log.debug("- policyAttrMap IS NOT null");
 
             Login primaryIdentity = new Login();
-            LoginId primaryID = new LoginId();
             EmailAddress primaryEmail = new EmailAddress();
 
             // init values
-            primaryID.setDomainId(sysConfiguration.getDefaultSecurityDomain());
-            primaryID
-                    .setManagedSysId(sysConfiguration.getDefaultManagedSysId());
+            primaryIdentity.setDomainId(sysConfiguration.getDefaultSecurityDomain());
+            primaryIdentity.setManagedSysId(sysConfiguration.getDefaultManagedSysId());
 
             try {
                 for (AttributeMap attr : policyAttrMap) {
@@ -284,7 +286,7 @@ public class AddUser {
                                 if (objectType.equalsIgnoreCase("PRINCIPAL")) {
                                     if (attr.getAttributeName()
                                             .equalsIgnoreCase("PRINCIPAL")) {
-                                        primaryID.setLogin(output);
+                                    	primaryIdentity.setLogin(output);
                                     }
                                     if (attr.getAttributeName()
                                             .equalsIgnoreCase("PASSWORD")) {
@@ -292,7 +294,7 @@ public class AddUser {
                                     }
                                     if (attr.getAttributeName()
                                             .equalsIgnoreCase("DOMAIN")) {
-                                        primaryID.setDomainId(output);
+                                    	primaryIdentity.setDomainId(output);
                                     }
                                 }
                                 if (objectType.equals("EMAIL")) {
@@ -308,7 +310,6 @@ public class AddUser {
             } catch (Exception e) {
                 log.error(e);
             }
-            primaryIdentity.setId(primaryID);
             principalList.add(primaryIdentity);
             user.setPrincipalList(principalList);
             user.getEmailAddresses().add(primaryEmail);
@@ -407,7 +408,7 @@ public class AddUser {
             return;
         }
 
-        List<Login> identityList = loginManager.getLoginByUser(primaryIdentity
+        List<LoginEntity> identityList = loginManager.getLoginByUser(primaryIdentity
                 .getUserId());
 
         for (Role r : roleList) {
@@ -421,9 +422,9 @@ public class AddUser {
 
     }
 
-    private boolean identityInDomain(String secDomain, List<Login> identityList) {
-        for (Login l : identityList) {
-            if (l.getId().getDomainId().equalsIgnoreCase(secDomain)) {
+    private boolean identityInDomain(String secDomain, List<LoginEntity> identityList) {
+        for (LoginEntity l : identityList) {
+            if (l.getDomainId().equalsIgnoreCase(secDomain)) {
                 return true;
             }
 
@@ -433,27 +434,21 @@ public class AddUser {
     }
 
     private void addIdentity(String secDomain, Login primaryIdentity) {
-        if (loginManager.getLoginByManagedSys(secDomain, primaryIdentity
-                .getId().getLogin(), primaryIdentity.getId().getManagedSysId()) == null) {
+        if (loginManager.getLoginByManagedSys(secDomain, primaryIdentity.getLogin(), primaryIdentity.getManagedSysId()) == null) {
 
-            LoginId id = new LoginId(secDomain, primaryIdentity.getId()
-                    .getLogin(), primaryIdentity.getId().getManagedSysId());
-
-            Login newLg = new Login();
-
-            newLg.setId(id);
+            LoginEntity newLg = new LoginEntity();
+            newLg.setDomainId(secDomain);
+            newLg.setLogin(primaryIdentity.getLogin());
+            newLg.setManagedSysId(primaryIdentity.getManagedSysId());
             newLg.setAuthFailCount(0);
             newLg.setFirstTimeLogin(primaryIdentity.getFirstTimeLogin());
             newLg.setIsLocked(primaryIdentity.getIsLocked());
             newLg.setLastAuthAttempt(primaryIdentity.getLastAuthAttempt());
             newLg.setGracePeriod(primaryIdentity.getGracePeriod());
-            newLg.setManagedSysName(primaryIdentity.getManagedSysName());
             newLg.setPassword(primaryIdentity.getPassword());
-            newLg.setPasswordChangeCount(primaryIdentity
-                    .getPasswordChangeCount());
+            newLg.setPasswordChangeCount(primaryIdentity.getPasswordChangeCount());
             newLg.setStatus(primaryIdentity.getStatus());
             newLg.setIsLocked(primaryIdentity.getIsLocked());
-            newLg.setOrigPrincipalName(primaryIdentity.getOrigPrincipalName());
             newLg.setUserId(primaryIdentity.getUserId());
             newLg.setResetPassword(primaryIdentity.getResetPassword());
 

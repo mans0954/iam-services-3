@@ -267,7 +267,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
             return null;
         }
         for (Login l : principalList) {
-            if (l.getId().getManagedSysId().equals(managedSysId)) {
+            if (l.getManagedSysId().equals(managedSysId)) {
                 return l;
             }
         }

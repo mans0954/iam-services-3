@@ -5,6 +5,7 @@ import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.connector.type.UserResponse;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
@@ -51,23 +52,23 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
         }
         ProvisionUser pUser = new ProvisionUser(usr);
 
-        Login lg = loginManager.getPrimaryIdentity(userId);
+        LoginEntity lg = loginManager.getPrimaryIdentity(userId);
 
-        List<Login> principalList = loginManager.getLoginByUser(userId);
+        List<LoginEntity> principalList = loginManager.getLoginByUser(userId);
 
         // setup audit information
 
-        Login lRequestor = loginManager.getPrimaryIdentity(requestorUserId);
-        Login lTargetUser = loginManager.getPrimaryIdentity(userId);
+        LoginEntity lRequestor = loginManager.getPrimaryIdentity(requestorUserId);
+        LoginEntity lTargetUser = loginManager.getPrimaryIdentity(userId);
 
         if (lRequestor != null && lTargetUser != null) {
 
-            auditLog = auditHelper.addLog("DEPROVISION RESOURCE", lRequestor.getId().getDomainId(), lRequestor.getId().getLogin(),
+            auditLog = auditHelper.addLog("DEPROVISION RESOURCE", lRequestor.getDomainId(), lRequestor.getLogin(),
                     "IDM SERVICE", usr.getCreatedBy(), "0", "USER", usr.getUserId(),
                     null, "SUCCESS", null, "USER_STATUS",
                     usr.getStatus().toString(),
                     requestId, null, null, null,
-                    null, lTargetUser.getId().getLogin(), lTargetUser.getId().getDomainId());
+                    null, lTargetUser.getLogin(), lTargetUser.getDomainId());
         }
 
 
@@ -98,7 +99,7 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
 
                     log.debug("Looking up identity for : " + mSysId);
 
-                    Login l = getLoginForManagedSys(mSysId, principalList);
+                    LoginEntity l = getLoginForManagedSys(mSysId, principalList);
 
                     log.debug("Identity for Managedsys =" + l);
 
@@ -110,31 +111,31 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
                         l.setIsLocked(0);
                         loginManager.updateLogin(l);
 
-                        ManagedSys mSys = managedSysService.getManagedSys(l.getId().getManagedSysId());
+                        ManagedSys mSys = managedSysService.getManagedSys(l.getManagedSysId());
 
                         ProvisionConnector connector = connectorService.getConnector(mSys.getConnectorId());
 
                         ManagedSystemObjectMatch matchObj = null;
                         ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(mSys.getManagedSysId(), "USER");
 
-                        log.debug("Deleting id=" + l.getId().getLogin());
+                        log.debug("Deleting id=" + l.getLogin());
                         log.debug("- delete using managed sys id=" + mSys.getManagedSysId());
 
 
-                        PSOIdentifierType idType = new PSOIdentifierType(l.getId().getLogin(), null,
-                                l.getId().getManagedSysId());
+                        PSOIdentifierType idType = new PSOIdentifierType(l.getLogin(), null,
+                                l.getManagedSysId());
 
                         boolean connectorSuccess = false;
 
                         if (connector.getConnectorInterface() != null &&
                                 connector.getConnectorInterface().equalsIgnoreCase("REMOTE")) {
-                            UserResponse resp = remoteDelete(l, requestId, mSys, connector, matchObj, pUser, auditLog);
+                            UserResponse resp = remoteDelete(loginDozerConverter.convertToDTO(l, true), requestId, mSys, connector, matchObj, pUser, auditLog);
                             if (resp.getStatus() == StatusCodeType.SUCCESS) {
                                 connectorSuccess = true;
                             }
 
                         } else {
-                            ResponseType resp = localDelete(l, requestId, idType, mSys, pUser, auditLog);
+                            ResponseType resp = localDelete(loginDozerConverter.convertToDTO(l, true), requestId, idType, mSys, pUser, auditLog);
 
                             if (resp.getStatus() == StatusCodeType.SUCCESS) {
                                 connectorSuccess = true;
@@ -176,12 +177,9 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
     }
 
 
-    private Login getLoginForManagedSys(String managedSysId, List<Login> principalList) {
-        for (Login l : principalList) {
-
-            log.debug("Looking for identity for managedSysId " + l.getId());
-
-            if (l.getId().getManagedSysId().equalsIgnoreCase(managedSysId)) {
+    private LoginEntity getLoginForManagedSys(String managedSysId, List<LoginEntity> principalList) {
+        for (LoginEntity l : principalList) {
+            if (l.getManagedSysId().equalsIgnoreCase(managedSysId)) {
                 return l;
             }
 

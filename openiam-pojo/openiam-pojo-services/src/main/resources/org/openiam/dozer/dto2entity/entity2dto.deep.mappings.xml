@@ -185,9 +185,17 @@
 	<mapping>
 		<class-a>org.openiam.idm.srvc.org.domain.OrganizationEntity</class-a>
 		<class-b>org.openiam.idm.srvc.org.dto.Organization</class-b>
-		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityMapConverterWithKeyString" custom-converter-param="deepDozerMapper">
+		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityMapConverterWithKeyString" custom-converter-param="dto2entityShallowDozerMapper">
 			<a>attributes</a>
 			<b>attributes</b>
+		</field>
+		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="dto2entityShallowDozerMapper">
+			<a>parentOrganizations</a>
+			<b>parentOrganizations</b>
+		</field>
+		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="dto2entityShallowDozerMapper">
+			<a>childOrganizations</a>
+			<b>childOrganizations</b>
 		</field>
 	</mapping>
 <mapping>

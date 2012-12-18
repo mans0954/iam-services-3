@@ -203,29 +203,6 @@
 
 	
 	<!-- Login Beans -->
-	<bean id="loginManager" class="org.openiam.idm.srvc.auth.login.LoginDataServiceImpl" >
-		<property name="loginDao" ref="loginDAO" />
-		<property name="loginAttrDao" ref="loginAttrDAO" />
-		<property name="cryptor" ref="cryptor" />
-		<property name="secDomainService" ref="secDomainService" />
-		<property name="userDao" ref="userDAO" />
-		<property name="passwordManager" ref="passwordManager" />
-		<property name="passwordHistoryDao" ref="passwordHistoryDAO" />	
-		<property name="sysConfiguration" ref="sysConfiguration" />
-	</bean>
-	<bean id="loginWS" class="org.openiam.idm.srvc.auth.ws.LoginDataWebServiceImpl" >
-		<property name="loginDS" ref="loginManager" />
-	</bean>
-	
-
-	<bean id="loginDAO" class="org.openiam.idm.srvc.auth.login.LoginDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"></property>
-        <property name="dbType" value="${openiam.dbType}" />
-	</bean>	
-
-	<bean id="loginAttrDAO" class="org.openiam.idm.srvc.auth.login.LoginAttributeDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"></property>		
-	</bean>	
 
 	<bean id="authStateDAO" class="org.openiam.idm.srvc.auth.login.AuthStateDAOImpl" >
 		<property name="sessionFactory" ref="sessionFactory"></property>		
@@ -274,14 +251,6 @@
 		<property name="passwordHistoryDao" ref="passwordHistoryDAO" />
         <property name="hash" ref="hash" />
 	</bean>	
-
-	<bean id="passwordHistoryDAO" class="org.openiam.idm.srvc.pswd.service.PasswordHistoryDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"></property>	
-	</bean>	
-
-<!-- 	<bean id="policyObjectAssocDAO" class="org.openiam.idm.srvc.policy.service.PolicyObjectAssocDAOImpl" > -->
-<!-- 		<property name="sessionFactory" ref="sessionFactory"></property>		 -->
-<!-- 	</bean>	 -->
 
 	<bean id="identityQuestGroupDAO" class="org.openiam.idm.srvc.pswd.service.IdentityQuestGroupDAOImpl" >
 		<property name="sessionFactory" ref="sessionFactory"></property>		
@@ -520,7 +489,9 @@
 				<value>org/openiam/idm/srvc/pswd/service/IdentityQuestGroup.hbm.xml</value>
 				<value>org/openiam/idm/srvc/pswd/service/IdentityQuestion.hbm.xml</value>
 				<value>org/openiam/idm/srvc/pswd/service/UserIdentityAnswer.hbm.xml</value>
+				<!--
 				<value>org/openiam/idm/srvc/pswd/service/PwdHistory.hbm.xml</value>
+				-->
 
                 <!-- Move map entries to the IDM project. Should not be part of the general project  -->
 
@@ -586,7 +557,8 @@
                                                org.openiam.idm.srvc.policy.dto*,
                                                org.openiam.idm.srvc.policy.domain*,
                                                org.openiam.idm.srvc.audit.dto*,
-                                               org.openiam.idm.srvc.audit.domain*
+                                               org.openiam.idm.srvc.audit.domain*,
+                                               org.openiam.idm.srvc.pswd.domain*
                                                "/>
 
 	</bean>
@@ -716,11 +688,6 @@
     <aop:pointcut id="auditHelperOperation" expression="execution(* org.openiam.idm.srvc.audit.service.AuditHelperImpl.*(..))"/>
     <aop:advisor advice-ref="txAdvice" pointcut-ref="auditHelperOperation"/>
   </aop:config>   
-  
-  <aop:config>
-    <aop:pointcut id="loginDataOperation" expression="execution(* org.openiam.idm.srvc.auth.ws.LoginDataWebService.*(..))"/>
-    <aop:advisor advice-ref="txAdvice" pointcut-ref="loginDataOperation"/>
-  </aop:config>  
 
   <aop:config>
     <aop:pointcut id="secDomainDataOperation" expression="execution(* org.openiam.idm.srvc.secdomain.service.SecurityDomainDataService.*(..))"/>

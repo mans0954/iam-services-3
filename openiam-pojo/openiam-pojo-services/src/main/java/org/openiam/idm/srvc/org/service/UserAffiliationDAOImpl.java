@@ -15,12 +15,19 @@ import org.openiam.idm.srvc.org.domain.UserAffiliationEntity;
 import org.springframework.stereotype.Repository;
 
 
+import javax.annotation.PostConstruct;
 import javax.naming.InitialContext;
 import java.util.List;
 
 @Repository("orgAffiliationDAO")
 public class UserAffiliationDAOImpl extends BaseDaoImpl<UserAffiliationEntity, String> implements UserAffiliationDAO {
 
+	private static String DELETE_BY_ORGANIZATION_ID = "DELETE FROM %s ua WHERE ua.organization.orgId = :organizationId";
+	
+	@PostConstruct
+	public void initSQL() {
+		DELETE_BY_ORGANIZATION_ID = String.format(DELETE_BY_ORGANIZATION_ID, domainClass.getSimpleName());
+	}
 	
 	
 	@Override
@@ -40,22 +47,18 @@ public class UserAffiliationDAOImpl extends BaseDaoImpl<UserAffiliationEntity, S
 	}
 	
 	@Override
-	public void removeUserFromOrg(String orgId, String userId) {
-
-		Session session = sessionFactory.getCurrentSession();
-		Query qry = session.createQuery("delete org.openiam.idm.srvc.org.domain.UserAffiliationEntity ur " +
-					" where  ur.organization.orgId = :orgId and ur.user.userId = :userId ");
-		qry.setString("orgId", orgId);
-		qry.setString("userId", userId);
-		qry.executeUpdate();	
-	}
-	
-	@Override
 	public UserAffiliationEntity getRecord(String userId, String organizationId) {
 		final Criteria criteria = getCriteria()
 								.add(Restrictions.eq("user.userId", userId))
 								.add(Restrictions.eq("organization.orgId", organizationId));
 		return (UserAffiliationEntity)criteria.uniqueResult();
+	}
+	
+	@Override
+	public void deleteByOrganizationId(String organizationId) {
+		final Query query = getSession().createQuery(DELETE_BY_ORGANIZATION_ID);
+		query.setParameter("organizationId", organizationId);
+		query.executeUpdate();
 	}
 
 	@Override

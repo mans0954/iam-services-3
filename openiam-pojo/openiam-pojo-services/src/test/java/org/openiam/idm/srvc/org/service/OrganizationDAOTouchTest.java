@@ -27,32 +27,17 @@ public class OrganizationDAOTouchTest extends AbstractTransactionalTestNGSpringC
     }
 
     @Test
-    private void touchFindChildOrganization() {
-        orgDAO.findChildOrganization("");
-    }
-
-    @Test
-    private void touchFindOrganizationByClassification() {
-        orgDAO.findOrganizationByClassification("", null);
-    }
-
-    @Test
-    private void touchFindOrganizationByStatus() {
-        orgDAO.findOrganizationByStatus("", "");
-    }
-
-    @Test
-    private void touchFindOrganizationByType() {
-        orgDAO.findOrganizationByType("", "");
-    }
-
-    @Test
-    private void touchFindParent() {
-        orgDAO.findParent("");
-    }
-
-    @Test
     private void touchFindRootOrganizations() {
         orgDAO.findRootOrganizations();
+    }
+    
+    @Test
+    private void touchGetChildOrganizations() {
+    	orgDAO.getChildOrganizations("", 0, Integer.MAX_VALUE);
+    }
+    
+    @Test
+    private void touchGetParentOrganizations() {
+    	orgDAO.getParentOrganizations("", 0, Integer.MAX_VALUE);
     }
 }

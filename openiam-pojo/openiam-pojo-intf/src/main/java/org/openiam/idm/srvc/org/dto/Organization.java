@@ -10,7 +10,10 @@ import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 
@@ -38,15 +41,17 @@ import org.openiam.idm.srvc.org.domain.OrganizationEntity;
         "metadataTypeId",
         "orgId",
         "organizationName",
-        "parentId",
         "classification",
         "internalOrgId",
         "status",
         "abbreviation",
         "symbol",
         "selected",
-        "operation"}
-)
+        "operation",
+        "classificaitonAsString",
+        "parentOrganizations",
+        "childOrganizations"
+})
 @DozerDTOCorrespondence(OrganizationEntity.class)
 public class Organization implements java.io.Serializable, Comparable<Organization> {
 
@@ -81,10 +86,11 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
 
     protected String internalOrgId;
 
-    protected String parentId;
-
     protected String status;
 
+    /* used by front-end to avoid conversion into enum from JSON */
+    private String classificaitonAsString;
+    
     protected OrgClassificationEnum classification;
 
     protected String abbreviation;
@@ -95,7 +101,8 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
 
     protected AttributeOperationEnum operation;
 
-    // Constructors
+    private Set<Organization> parentOrganizations;
+    private Set<Organization> childOrganizations;
 
     /**
      * default constructor
@@ -327,24 +334,6 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
     }
 
     /**
-     * Gets the value of the parentId property.
-     *
-     * @return possible object is {@link String }
-     */
-    public String getParentId() {
-        return parentId;
-    }
-
-    /**
-     * Sets the value of the parentId property.
-     *
-     * @param value allowed object is {@link String }
-     */
-    public void setParentId(String value) {
-        this.parentId = value;
-    }
-
-    /**
      * Gets the value of the status property.
      *
      * @return possible object is {@link String }
@@ -410,7 +399,31 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
         this.operation = operation;
     }
 
-    public int compareTo(Organization o) {
+    public String getClassificaitonAsString() {
+		return classificaitonAsString;
+	}
+
+	public void setClassificaitonAsString(String classificaitonAsString) {
+		this.classificaitonAsString = classificaitonAsString;
+	}
+
+	public Set<Organization> getParentOrganizations() {
+		return parentOrganizations;
+	}
+
+	public void setParentOrganizations(Set<Organization> parentOrganizations) {
+		this.parentOrganizations = parentOrganizations;
+	}
+
+	public Set<Organization> getChildOrganizations() {
+		return childOrganizations;
+	}
+
+	public void setChildOrganizations(Set<Organization> childOrganizations) {
+		this.childOrganizations = childOrganizations;
+	}
+
+	public int compareTo(Organization o) {
         if (getOrganizationName() == null || o == null) {
             return Integer.MIN_VALUE;
         }
@@ -443,7 +456,6 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
         if (orgId != null ? !orgId.equals(that.orgId) : that.orgId != null) return false;
         if (organizationName != null ? !organizationName.equals(that.organizationName) : that.organizationName != null)
             return false;
-        if (parentId != null ? !parentId.equals(that.parentId) : that.parentId != null) return false;
         if (selected != null ? !selected.equals(that.selected) : that.selected != null) return false;
         if (status != null ? !status.equals(that.status) : that.status != null) return false;
         if (symbol != null ? !symbol.equals(that.symbol) : that.symbol != null) return false;

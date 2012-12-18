@@ -52,6 +52,7 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.resp.LookupUserResponse;
 import org.openiam.provision.service.ConnectorAdapter;
 import  org.openiam.provision.service.ProvisionService;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.provision.service.RemoteConnectorAdapter;
 
@@ -199,7 +200,7 @@ public class ReconciliationServiceImpl implements ReconciliationService, MuleCon
                 }
             }
 
-            List<Login> principalList =  loginManager.getAllLoginByManagedSys(managedSysId);
+            final List<LoginEntity> principalList =  loginManager.getAllLoginByManagedSys(managedSysId);
             if (principalList == null || principalList.isEmpty()) {
                 log.debug("No identities found for managedSysId in IDM repository");
                 ReconciliationResponse resp = new ReconciliationResponse(ResponseStatus.SUCCESS);
@@ -211,7 +212,7 @@ public class ReconciliationServiceImpl implements ReconciliationService, MuleCon
                 List<Login> logins = user.getPrincipalList();
                 if(logins != null) {
                     for(Login login: logins){
-                        if(login.getId().getDomainId().equalsIgnoreCase(mSys.getDomainId()) && login.getId().getManagedSysId().equalsIgnoreCase(managedSysId)){
+                        if(login.getDomainId().equalsIgnoreCase(mSys.getDomainId()) && login.getManagedSysId().equalsIgnoreCase(managedSysId)){
                             l = login;
                             break;
                         }
@@ -234,7 +235,7 @@ public class ReconciliationServiceImpl implements ReconciliationService, MuleCon
                     return resp;
                 }
 
-                String principal = l.getId().getLogin();
+                String principal = l.getLogin();
                 log.debug("looking up identity in resource: " + principal);
 
                 LookupUserResponse lookupResp =  provisionService.getTargetSystemUser(principal, managedSysId);

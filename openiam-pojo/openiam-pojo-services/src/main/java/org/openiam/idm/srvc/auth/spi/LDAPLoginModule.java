@@ -40,6 +40,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.exception.AuthenticationException;
 import org.openiam.idm.srvc.auth.context.AuthenticationContext;
 import org.openiam.idm.srvc.auth.context.PasswordCredential;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.SSOToken;
 import org.openiam.idm.srvc.auth.dto.Subject;
@@ -493,7 +494,7 @@ public class LDAPLoginModule extends AbstractLoginModule {
      * @param lg
      * @return
      */
-    private int passwordExpired(Login lg, Date curDate) {
+    private int passwordExpired(LoginEntity lg, Date curDate) {
         if (lg.getGracePeriod() == null) {
             // set an early date
             lg.setGracePeriod(new Date(0));

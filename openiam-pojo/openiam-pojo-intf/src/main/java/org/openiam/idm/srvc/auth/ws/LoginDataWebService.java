@@ -4,7 +4,6 @@ import org.openiam.base.ws.Response;
 import org.openiam.exception.AuthenticationException;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
-import org.openiam.idm.srvc.user.ws.UserResponse;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
@@ -76,15 +75,6 @@ public interface LoginDataWebService {
     public LoginResponse getPrincipalByManagedSys(
             @WebParam(name = "principal", targetNamespace = "")
             String principalName,
-            @WebParam(name = "managedSysId", targetNamespace = "")
-            String managedSysId);
-
-    @WebMethod
-    public UserResponse getUserByLogin(
-            @WebParam(name = "domainId", targetNamespace = "")
-            String domainId,
-            @WebParam(name = "principal", targetNamespace = "")
-            String principal,
             @WebParam(name = "managedSysId", targetNamespace = "")
             String managedSysId);
 
@@ -240,15 +230,6 @@ public interface LoginDataWebService {
             String principal,
             @WebParam(name = "managedSysId", targetNamespace = "")
             String managedSysId);
-
-    @WebMethod
-    public Response getLoginByDept(
-            @WebParam(name = "managedSysId", targetNamespace = "")
-            String managedSysId,
-            @WebParam(name = "department", targetNamespace = "")
-            String department,
-            @WebParam(name = "div", targetNamespace = "")
-            String div);
 
     @WebMethod
     public LoginListResponse getLockedUserSince(

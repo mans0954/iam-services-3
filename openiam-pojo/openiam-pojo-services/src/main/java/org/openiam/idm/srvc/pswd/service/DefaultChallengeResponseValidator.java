@@ -28,6 +28,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.base.BaseObject;
 import org.openiam.exception.data.IdentityAnswerNotFoundException;
 import org.openiam.exception.data.PrincipalNotFoundException;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.pswd.dto.ChallengeResponseUser;
@@ -70,7 +71,7 @@ public class DefaultChallengeResponseValidator implements
 		
 		int correctAns = 0;
 		
-		Login lg =loginManager.getLoginByManagedSys(req.getDomain(),
+		LoginEntity lg =loginManager.getLoginByManagedSys(req.getDomain(),
 				req.getPrincipal(),
 				req.getManagedSysId());
 		
@@ -110,7 +111,7 @@ public class DefaultChallengeResponseValidator implements
 	public boolean isResponseValid(ChallengeResponseUser req,
 			List<UserIdentityAnswer> newAnswerList) {
 		
-		Login lg =loginManager.getLoginByManagedSys(req.getDomain(),
+		LoginEntity lg =loginManager.getLoginByManagedSys(req.getDomain(),
 				req.getPrincipal(),
 				req.getManagedSysId());
 		

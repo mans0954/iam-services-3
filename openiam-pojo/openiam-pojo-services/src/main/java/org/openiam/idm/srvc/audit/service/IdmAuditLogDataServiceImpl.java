@@ -13,6 +13,7 @@ import org.openiam.idm.srvc.audit.domain.IdmAuditLogCustomEntity;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.dto.SearchAudit;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.util.encrypt.HashDigest;
@@ -111,7 +112,7 @@ public class IdmAuditLogDataServiceImpl implements IdmAuditLogDataService {
 
     public List<IdmAuditLog> eventsAboutUser(String principal, Date startDate) {
 
-        Login l = loginDS.getLoginByManagedSys(
+        LoginEntity l = loginDS.getLoginByManagedSys(
                 sysConfiguration.getDefaultSecurityDomain(), principal,
                 sysConfiguration.getDefaultManagedSysId());
 
@@ -119,7 +120,7 @@ public class IdmAuditLogDataServiceImpl implements IdmAuditLogDataService {
             return null;
         }
 
-        List<Login> principalList = loginDS.getLoginByUser(l.getUserId());
+        List<LoginEntity> principalList = loginDS.getLoginByUser(l.getUserId());
 
         if (principalList == null || principalList.isEmpty()) {
             return null;
@@ -133,12 +134,12 @@ public class IdmAuditLogDataServiceImpl implements IdmAuditLogDataService {
 
     }
 
-    private List<String> getListOfPrincipals(List<Login> principalList) {
+    private List<String> getListOfPrincipals(List<LoginEntity> principalList) {
 
         List<String> strList = new ArrayList<String>();
 
-        for (Login l : principalList) {
-            strList.add(l.getId().getLogin());
+        for (LoginEntity l : principalList) {
+            strList.add(l.getLogin());
 
         }
         return strList;

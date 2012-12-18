@@ -16,7 +16,6 @@ import org.dozer.Mapper;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginAttribute;
-import org.openiam.idm.srvc.auth.dto.LoginId;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
@@ -117,10 +116,6 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		user.setPrefix(rs(2));
 		
 		final List<Login> principalList = new LinkedList<Login>();
-		principalList.add(new Login(new LoginId(rs(2), rs(2), rs(2)), 1, 1));
-		principalList.add(new Login(new LoginId(rs(2), rs(2), rs(2)), 1, 1));
-		principalList.add(new Login(new LoginId(rs(2), rs(2), rs(2)), 1, 1));
-		principalList.add(new Login(new LoginId(rs(2), rs(2), rs(2)), 1, 1));
 		user.setPrincipalList(principalList);
 		user.setRequestClientIP(rs(2));
 		user.setRequestorDomain(rs(2));
@@ -186,7 +181,6 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		login.setCurrentLoginHost(rs(2));
 		login.setFirstTimeLogin(2);
 		login.setGracePeriod(new Date());
-		login.setId(new LoginId(rs(2), rs(2), rs(2)));
 		login.setIsDefault(3);
 		login.setIsLocked(3);
 		login.setLastAuthAttempt(new Date());
@@ -194,13 +188,6 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		login.setLastLoginIP(rs(2));
 		
 		final Set<LoginAttribute> loginAttributes = new LinkedHashSet<LoginAttribute>();
-		loginAttributes.add(new LoginAttribute(rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2)));
-		loginAttributes.add(new LoginAttribute(rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2)));
-		loginAttributes.add(new LoginAttribute(rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2)));
-		loginAttributes.add(new LoginAttribute(rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2)));
-		loginAttributes.add(new LoginAttribute(rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2)));
-		loginAttributes.add(new LoginAttribute(rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2)));
-		loginAttributes.add(new LoginAttribute(rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2)));
 		login.setLoginAttributes(loginAttributes);
 		login.setManagedSysName(rs(2));
 		login.setOperation(AttributeOperationEnum.ADD);
@@ -245,18 +232,6 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 	}
 	
 	@Test
-	public void testConvertLoginId() {
-		final LoginId original = new LoginId();
-		original.setDomainId(rs(2));
-		original.setLogin(rs(2));
-		original.setManagedSysId(rs(2));
-		
-		compareLoginId(original, deepDozerMapper.map(original, LoginId.class));
-		compareLoginId(original, shallowDozerMapper.map(original, LoginId.class));
-	}
-
-	
-	@Test
 	public void testConvertUserNote() {
 
 	}
@@ -285,12 +260,6 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		return RandomStringUtils.randomAlphanumeric(size);
 	}
 	
-	private void compareLoginId(final LoginId original, final LoginId copy) {
-		Assert.assertEquals(original.getDomainId(), copy.getDomainId());
-		Assert.assertEquals(original.getLogin(), copy.getLogin());
-		Assert.assertEquals(original.getManagedSysId(), copy.getManagedSysId());
-	}
-	
 	private void comapreSupervisor(final Supervisor original, final Supervisor copy, final boolean isDeep) {
 		Assert.assertEquals(original.getComments(), copy.getComments());
 		Assert.assertEquals(original.getEndDate(), copy.getEndDate());
@@ -316,7 +285,6 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		Assert.assertEquals(original.getCurrentLoginHost(), copy.getCurrentLoginHost());
 		Assert.assertEquals(original.getFirstTimeLogin(), copy.getFirstTimeLogin());
 		Assert.assertEquals(original.getGracePeriod(), copy.getGracePeriod());
-		Assert.assertEquals(original.getId(), copy.getId());
 		Assert.assertEquals(original.getIsDefault(), copy.getIsDefault());
 		Assert.assertEquals(original.getIsLocked(), copy.getIsLocked());
 		Assert.assertEquals(original.getLastAuthAttempt(), copy.getLastAuthAttempt());

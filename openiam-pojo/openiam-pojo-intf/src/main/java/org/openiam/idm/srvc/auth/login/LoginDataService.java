@@ -2,8 +2,8 @@ package org.openiam.idm.srvc.auth.login;
 
 import org.openiam.exception.AuthenticationException;
 import org.openiam.exception.EncryptionException;
-import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.user.dto.User;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 
 import javax.jws.WebService;
@@ -20,30 +20,17 @@ import java.util.List;
 @WebService
 public interface LoginDataService {
 
-    /**
-     * This method adds a principal to the user specified in the Login object.. <br>
-     * For example:
-     * <p/>
-     * <code>
-     * Login lv = new Login();<br>
-     * lv.setLogin(login);<br>
-     * lv.setPassword(password);<br>
-     * lv.setService(service);<br>
-     * lv.setNewUser(true);<br>
-     * loginDataService.addLogin(lv);<br>
-     * </code>
-     *
-     * @param loginValue
-     */
-    public Login addLogin(Login principal);
+    public void addLogin(LoginEntity principal);
 
-    public void updateLogin(Login principal);
+    public void updateLogin(LoginEntity principal);
 
     public void removeLogin(String domainId, String principal, String managedSysId);
+    
+    public LoginEntity getLogin(final String loginId);
 
-    public Login getLogin(String domainId, String principal) throws AuthenticationException;
+    public LoginEntity getLogin(String domainId, String principal) throws AuthenticationException;
 
-    public Login getLoginByManagedSys(String domainId, String principal, String sysId);
+    public LoginEntity getLoginByManagedSys(String domainId, String principal, String sysId);
 
     /**
      * Returns a list of Login objects for the managed system specified by the sysId
@@ -51,9 +38,7 @@ public interface LoginDataService {
      * @param managedSysId
      * @return
      */
-    public List<Login> getAllLoginByManagedSys(String managedSysId);
-
-    public User getUserByLogin(String domainId, String principal, String sysId);
+    public List<LoginEntity> getAllLoginByManagedSys(String managedSysId);
 
     /**
      * Returns the primary identity for this user
@@ -61,7 +46,7 @@ public interface LoginDataService {
      * @param userId
      * @return
      */
-    public Login getPrimaryIdentity(String userId);
+    public LoginEntity getPrimaryIdentity(String userId);
 
     /**
      * Returns the identity for this user  and managedSysId
@@ -70,7 +55,7 @@ public interface LoginDataService {
      * @param managedSysId
      * @return
      */
-    public Login getByUserIdManagedSys(String userId, String managedSysId);
+    public LoginEntity getByUserIdManagedSys(String userId, String managedSysId);
 
     /**
      * Returns a decrypted password.
@@ -137,7 +122,7 @@ public interface LoginDataService {
 
     public String decryptPassword(String userId, String password ) throws EncryptionException;
 
-    public List<Login> getLoginByUser(String userId);
+    public List<LoginEntity> getLoginByUser(String userId);
 
     void lockLogin(String domainId, String principal, String sysId);
 
@@ -153,37 +138,20 @@ public interface LoginDataService {
 
     int bulkResetPasswordChangeCount();
 
-    List<Login> getLoginByDomain(String domain);
+    List<LoginEntity> getLoginByDomain(String domain);
 
-    /**
-     * List containing an array of User and Login objects
-     *
-     * @param managedSysId
-     * @param department
-     * @param div
-     * @return
-     */
-    public List getLoginByDept(String managedSysId, String department, String div);
+    public List<LoginEntity> getLockedUserSince(Date lastExecTime);
 
-    public List<Login> getLockedUserSince(Date lastExecTime);
+    public List<LoginEntity> getInactiveUsers(int startDays, int endDays);
 
-    /**
-     * Return the list of users that have not logged in certain number of days.
-     *
-     * @param startDays
-     * @param endDays
-     * @return
-     */
-    public List<Login> getInactiveUsers(int startDays, int endDays);
-
-    public List<Login> getUserNearPswdExpiration(int expDays);
+    public List<LoginEntity> getUserNearPswdExpiration(int expDays);
 
     /**
      * List of users whose passworss are expiring today
      *
      * @return
      */
-    public List<Login> usersWithPasswordExpYesterday();
+    public List<LoginEntity> usersWithPasswordExpYesterday();
 
     /**
      * Changes the identity of a user
@@ -197,10 +165,7 @@ public interface LoginDataService {
     public int changeIdentityName(String newPrincipalName, String newPassword,
                                   String userId, String managedSysId, String domainId);
 
-    public List<Login> getLoginByManagedSys(String principalName, String managedSysId);
+    public List<LoginEntity> getLoginByManagedSys(String principalName, String managedSysId);
 
-    Login getPasswordResetToken(String token);
-
-
-
+    LoginEntity getPasswordResetToken(String token);
 }

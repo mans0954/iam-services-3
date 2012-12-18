@@ -1,6 +1,8 @@
 package org.openiam.idm.srvc.org.service;
 
 
+import static org.hibernate.criterion.Projections.rowCount;
+
 import java.util.List;
 import javax.naming.InitialContext;
 
@@ -30,23 +32,6 @@ import org.springframework.stereotype.Repository;
 @Repository("organizationDAO")
 public class OrganizationDAOImpl extends BaseDaoImpl<OrganizationEntity, String> implements OrganizationDAO {
 
-    public List<OrganizationEntity> findChildOrganization(String orgId) {
-        final Criteria criteria = getCriteria()
-                .add(Restrictions.eq("parentId", orgId))
-                .addOrder(Order.asc("organizationName"))
-                .setFetchMode("attributes", FetchMode.JOIN);
-        return criteria.list();
-    }
-
-    public OrganizationEntity findParent(String orgId) {
-        OrganizationEntity curOrg = findById(orgId);
-        if (curOrg != null && curOrg.getParentId() != null) {
-            return findById(curOrg.getParentId());
-        }
-
-        return null;
-    }
-
     public List<OrganizationEntity> findRootOrganizations() {
         final Criteria criteria = getCriteria()
                 .add(Restrictions.isNull("parentId"))
@@ -55,45 +40,11 @@ public class OrganizationDAOImpl extends BaseDaoImpl<OrganizationEntity, String>
         return criteria.list();
     }
 
-    public List<OrganizationEntity> findOrganizationByType(String type, String parentId) {
-        final Criteria criteria = getCriteria().add(Restrictions.eq("metadataTypeId",type));
-        if (parentId != null) {
-            criteria.add(Restrictions.eq("parentId",parentId));
-        }
-        criteria.addOrder(Order.asc("organizationName")) .setFetchMode("attributes", FetchMode.JOIN);
-        return criteria.list();
-    }
-
     public List<OrganizationEntity> findAllOrganization() {
         Criteria criteria = getCriteria()
                 .addOrder(Order.asc("organizationName"))
                 .setFetchMode("attributes", FetchMode.JOIN);
         return criteria.list();
-    }
-
-    public List<OrganizationEntity> findOrganizationByClassification(final String parentId, final OrgClassificationEnum classification) {
-        final Criteria criteria = getCriteria();
-        if (parentId == null) {
-            criteria.add(Restrictions.eq("classification",classification));
-        } else {
-            criteria.add(Restrictions.eq("parentId",parentId));
-        }
-        criteria.addOrder(Order.asc("parentId")).addOrder(Order.asc("organizationName"));
-        return criteria.list();
-    }
-
-    public List<OrganizationEntity> findOrganizationByStatus(final String parentId, final String status) {
-        final Criteria criteria = getCriteria();
-
-        if (parentId != null) {
-            criteria.add(Restrictions.eq("parentId", parentId));
-        }
-        if (status != null) {
-            criteria.add(Restrictions.eq("status", status));
-        }
-        criteria.add(Restrictions.eq("classification", OrgClassificationEnum.ORGANIZATION));
-        return criteria.list();
-
     }
 
     @Override
@@ -142,5 +93,52 @@ public class OrganizationDAOImpl extends BaseDaoImpl<OrganizationEntity, String>
     protected String getPKfieldName() {
         return "orgId";
     }
+    
+    private Criteria getChildOrganizationsCriteria(final String organizationId) {
+		return getCriteria().createAlias("parentOrganizations", "organization").add( Restrictions.eq("organization.orgId", organizationId));
+	}
+    
+	@Override
+	public int getNumOfChildOrganizations(String organizationId) {
+		final Criteria criteria = getChildOrganizationsCriteria(organizationId).setProjection(rowCount());
+		return ((Number)criteria.uniqueResult()).intValue();
+	}
 
+	@Override
+	public List<OrganizationEntity> getChildOrganizations(final String organizationId, final int from, final int size) {
+		final Criteria criteria = getChildOrganizationsCriteria(organizationId);
+		
+		if(from > -1) {
+			criteria.setFirstResult(from);
+		}
+		
+		if(size > -1) {
+			criteria.setMaxResults(size);
+		}
+		return criteria.list();
+	}
+	
+    private Criteria getParentOrganizationsCriteria(final String organizationId) {
+    	return getCriteria().createAlias("childOrganizations", "organization").add( Restrictions.eq("organization.orgId", organizationId));
+	}
+	
+	@Override
+	public int getNumOfParentOrganizations(String organizationId) {
+		final Criteria criteria = getParentOrganizationsCriteria(organizationId).setProjection(rowCount());
+		return ((Number)criteria.uniqueResult()).intValue();
+	}
+
+	@Override
+	public List<OrganizationEntity> getParentOrganizations(final String organizationId, final int from, final int size) {
+		final Criteria criteria = getParentOrganizationsCriteria(organizationId);
+		
+		if(from > -1) {
+			criteria.setFirstResult(from);
+		}
+		
+		if(size > -1) {
+			criteria.setMaxResults(size);
+		}
+		return criteria.list();
+	}
 }

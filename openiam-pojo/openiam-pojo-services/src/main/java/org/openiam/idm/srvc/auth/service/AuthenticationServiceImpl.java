@@ -47,6 +47,7 @@ import org.openiam.idm.srvc.audit.service.AuditLogUtil;
 import org.openiam.idm.srvc.auth.context.AuthContextFactory;
 import org.openiam.idm.srvc.auth.context.AuthenticationContext;
 import org.openiam.idm.srvc.auth.context.PasswordCredential;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.AuthState;
 import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
 import org.openiam.idm.srvc.auth.dto.Login;
@@ -288,9 +289,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             return sub;
         }
 
-        Login lg = loginManager.getPrimaryIdentity(tokenUserId);
+        LoginEntity lg = loginManager.getPrimaryIdentity(tokenUserId);
 
-        Response resp = renewToken(lg.getId().getLogin(), token, tokenType);
+        Response resp = renewToken(lg.getLogin(), token, tokenType);
 
         log.debug("authenticateByToken: response from renewToken=" + resp);
 
@@ -302,7 +303,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         AuthState authSt = authStateDao.findById(tokenUserId);
         Subject sub = new Subject(tokenUserId);
-        sub.setPrincipal(lg.getId().getLogin());
+        sub.setPrincipal(lg.getLogin());
         sub.setExpirationTime(authSt.getExpiration());
         sub.setResultCode(AuthenticationConstants.RESULT_SUCCESS);
 
@@ -369,7 +370,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         String loginModName = null;
         LoginModuleSelector modSel = new LoginModuleSelector();
 
-        Login lg = null;
+        LoginEntity lg = null;
         String userId = null;
         User user = null;
 
@@ -642,7 +643,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         String loginModName = null;
         LoginModuleSelector modSel = new LoginModuleSelector();
 
-        Login lg = null;
+        LoginEntity lg = null;
         String userId = null;
         User user = null;
 
@@ -925,7 +926,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         log.debug("validateToken token=" + token);
 
         // check if this is a valid user
-        Login lg = loginManager.getLoginByManagedSys(
+        LoginEntity lg = loginManager.getLoginByManagedSys(
                 this.sysConfiguration.getDefaultSecurityDomain(), loginId,
                 this.sysConfiguration.getDefaultManagedSysId());
         if (lg == null) {
@@ -967,7 +968,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 "TOKEN_ISSUER");
 
         // get the userId of this token
-        Login lg = loginManager.getLoginByManagedSys(
+        LoginEntity lg = loginManager.getLoginByManagedSys(
                 sysConfiguration.getDefaultSecurityDomain(), principal,
                 sysConfiguration.getDefaultManagedSysId());
 
@@ -1106,13 +1107,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 "TOKEN_ISSUER");
 
         // get the primary identity
-        Login lg = this.loginManager.getPrimaryIdentity(userId);
+        LoginEntity lg = this.loginManager.getPrimaryIdentity(userId);
         SSOTokenModule tkModule = SSOTokenFactory.createModule(tokenType);
         tkModule.setCryptor(cryptor);
         tkModule.setTokenLife(Integer.parseInt(tokenLife));
 
-        boolean tokenStatus = tkModule.isTokenValid(lg.getUserId(), lg.getId()
-                .getLogin(), token);
+        boolean tokenStatus = tkModule.isTokenValid(lg.getUserId(), lg.getLogin(), token);
 
         BooleanResponse resp = new BooleanResponse(tokenStatus);
         return resp;

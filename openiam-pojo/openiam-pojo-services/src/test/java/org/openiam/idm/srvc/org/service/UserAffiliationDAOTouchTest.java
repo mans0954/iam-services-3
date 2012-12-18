@@ -22,9 +22,4 @@ public class UserAffiliationDAOTouchTest extends AbstractTransactionalTestNGSpri
     public void touchFindOrgAffiliationsByUser() {
         userAffiliationDAO.findOrgAffiliationsByUser("");
     }
-
-    @Test
-    public void touchRemoveUserFromOrg() {
-        userAffiliationDAO.removeUserFromOrg("","");
-    }
 }

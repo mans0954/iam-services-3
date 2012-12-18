@@ -5,6 +5,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseAttribute;
 import org.openiam.base.SysConfiguration;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
@@ -69,7 +70,7 @@ public class LdapV3 implements Directory{
         try {
 
              // get the current password for the user.
-            Login login = loginManager.getLoginByManagedSys(
+            LoginEntity login = loginManager.getLoginByManagedSys(
                     sysConfiguration.getDefaultSecurityDomain(),
                     ldapName,
                     targetID);

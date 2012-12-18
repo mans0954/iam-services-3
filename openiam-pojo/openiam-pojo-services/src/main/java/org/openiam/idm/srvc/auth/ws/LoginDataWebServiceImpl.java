@@ -4,13 +4,18 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.dozer.converter.LoginDozerConverter;
 import org.openiam.exception.AuthenticationException;
 import org.openiam.exception.EncryptionException;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.ws.UserResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
@@ -21,9 +26,16 @@ import javax.jws.WebService;
 		targetNamespace = "urn:idm.openiam.org/srvc/auth/service", 
 		serviceName = "LoginDataWebService",
 		portName = "LoginDataWebServicePort")
+@Service("loginWS")
+@Transactional
 public class LoginDataWebServiceImpl implements LoginDataWebService {
 
-	protected LoginDataService loginDS;
+	@Autowired
+	private LoginDataService loginDS;
+	
+	@Autowired
+	private LoginDozerConverter loginDozerConverter;
+	
 	private static final Log log = LogFactory.getLog(LoginDataWebServiceImpl.class);
 	
 	/* (non-Javadoc)
@@ -31,11 +43,12 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	 */
 	public LoginResponse addLogin(Login principal) {
 		LoginResponse resp = new LoginResponse(ResponseStatus.SUCCESS);
-		Login lg = loginDS.addLogin(principal);
-		if (lg == null ) {
+		final LoginEntity entity = loginDozerConverter.convertToEntity(principal, false);
+		loginDS.addLogin(entity);
+		if (entity == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
-			resp.setPrincipal(lg); 
+			resp.setPrincipal(loginDozerConverter.convertToDTO(entity, false)); 
 		}
 		return resp;
 		
@@ -87,12 +100,12 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	 */
 	public LoginResponse getLogin(String domainId, String principal)
 			throws AuthenticationException {
-		LoginResponse resp = new LoginResponse(ResponseStatus.SUCCESS);
-		Login lg = loginDS.getLogin(domainId, principal);
+		final LoginResponse resp = new LoginResponse(ResponseStatus.SUCCESS);
+		final LoginEntity lg = loginDS.getLogin(domainId, principal);
 		if (lg == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
-			resp.setPrincipal(lg); 
+			resp.setPrincipal(loginDozerConverter.convertToDTO(lg, false)); 
 		}
 		return resp;
 	}
@@ -102,11 +115,11 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	 */
 	public LoginListResponse getLoginByDomain(String domainId) {
 		LoginListResponse resp = new LoginListResponse(ResponseStatus.SUCCESS);
-		List<Login> lgList = loginDS.getLoginByDomain(domainId);
+		List<LoginEntity> lgList = loginDS.getLoginByDomain(domainId);
 		if (lgList == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
-			resp.setPrincipalList(lgList); 
+			resp.setPrincipalList(loginDozerConverter.convertToDTOList(lgList, false)); 
 		}
 		return resp;
 	}
@@ -118,11 +131,11 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 			String sysId) {
 		
 		LoginResponse resp = new LoginResponse(ResponseStatus.SUCCESS);
-		Login lg = loginDS.getLoginByManagedSys(domainId, principal, sysId);
+		LoginEntity lg = loginDS.getLoginByManagedSys(domainId, principal, sysId);
 		if (lg == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
-			resp.setPrincipal(lg); 
+			resp.setPrincipal(loginDozerConverter.convertToDTO(lg, false)); 
 		}
 		return resp;
 		
@@ -131,12 +144,12 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 
     public LoginResponse getPrincipalByManagedSys(String principalName,
                                                   String managedSysId) {
-        LoginResponse resp = new LoginResponse(ResponseStatus.SUCCESS);
-		List<Login> lgList = loginDS.getLoginByManagedSys(principalName, managedSysId);
+        final LoginResponse resp = new LoginResponse(ResponseStatus.SUCCESS);
+        final List<LoginEntity> lgList = loginDS.getLoginByManagedSys(principalName, managedSysId);
 		if (lgList == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
-			resp.setPrincipal(lgList.get(0));
+			resp.setPrincipal(loginDozerConverter.convertToDTO(lgList.get(0), false));
 		}
 		return resp;
     }
@@ -149,11 +162,11 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 		log.info("getLoginByUser userId=" + userId);
 		
 		LoginListResponse resp = new LoginListResponse(ResponseStatus.SUCCESS);
-		List<Login> lgList = loginDS.getLoginByUser(userId);
+		List<LoginEntity> lgList = loginDS.getLoginByUser(userId);
 		if (lgList == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
-			resp.setPrincipalList(lgList); 
+			resp.setPrincipalList(loginDozerConverter.convertToDTOList(lgList, false)); 
 		}
 		return resp;
 	}
@@ -170,23 +183,6 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}
 		resp.setResponseValue(pswd);
-		return resp;
-		
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#getUserByLogin(java.lang.String, java.lang.String, java.lang.String)
-	 */
-	public UserResponse getUserByLogin(String domainId, String principal,
-			String managedSysId) {
-		
-		UserResponse resp = new UserResponse(ResponseStatus.SUCCESS);
-		User user = loginDS.getUserByLogin(domainId, principal, managedSysId);
-		if (user == null ) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setUser(user); 
-		}
 		return resp;
 		
 	}
@@ -267,9 +263,9 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#updateLogin(org.openiam.idm.srvc.auth.dto.Login)
 	 */
 	public Response updateLogin(Login principal) {
-		LoginResponse resp = new LoginResponse(ResponseStatus.SUCCESS);
-		loginDS.updateLogin(principal);
-
+		final LoginResponse resp = new LoginResponse(ResponseStatus.SUCCESS);
+		final LoginEntity entity = loginDozerConverter.convertToEntity(principal, false);
+		loginDS.updateLogin(entity);
 		return resp;
 	}
 	
@@ -303,15 +299,6 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 		return resp;
 
 	}
-
-	public Response getLoginByDept(String managedSysId, String department, String div) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
-		List loginList =  loginDS.getLoginByDept(managedSysId, department, div);
-		if (loginList != null ) {
-			resp.setResponseValue(loginList);
-		}
-		return resp;
-	}
 	
 
 	public LoginDataService getLoginDS() {
@@ -327,11 +314,11 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	 */
 	public LoginResponse getPrimaryIdentity(String userId) {
 		LoginResponse resp = new LoginResponse(ResponseStatus.SUCCESS);
-		Login lg = loginDS.getPrimaryIdentity(userId);
+		LoginEntity lg = loginDS.getPrimaryIdentity(userId);
 		if (lg == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
-			resp.setPrincipal(lg); 
+			resp.setPrincipal(loginDozerConverter.convertToDTO(lg, false)); 
 		}
 		return resp;
 	}
@@ -354,11 +341,11 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 		log.info("getLockedUserSince " );
 		
 		LoginListResponse resp = new LoginListResponse(ResponseStatus.SUCCESS);
-		List<Login> lgList = loginDS.getLockedUserSince(lastExecTime);
+		List<LoginEntity> lgList = loginDS.getLockedUserSince(lastExecTime);
 		if (lgList == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
-			resp.setPrincipalList(lgList); 
+			resp.setPrincipalList(loginDozerConverter.convertToDTOList(lgList, false)); 
 		}
 		return resp;
 	}
@@ -369,11 +356,11 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	public LoginListResponse getInactiveUsers(int startDays, int endDays) {
 		
 		LoginListResponse resp = new LoginListResponse(ResponseStatus.SUCCESS);
-		List<Login> lgList = loginDS.getInactiveUsers(startDays, endDays);
+		List<LoginEntity> lgList = loginDS.getInactiveUsers(startDays, endDays);
 		if (lgList == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
-			resp.setPrincipalList(lgList); 
+			resp.setPrincipalList(loginDozerConverter.convertToDTOList(lgList, false)); 
 		}
 		return resp;
 		
@@ -384,11 +371,11 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	 */
 	public LoginListResponse getUserNearPswdExpiration(int expDays) {
 		LoginListResponse resp = new LoginListResponse(ResponseStatus.SUCCESS);
-		List<Login> lgList = loginDS.getUserNearPswdExpiration(expDays);
+		List<LoginEntity> lgList = loginDS.getUserNearPswdExpiration(expDays);
 		if (lgList == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
-			resp.setPrincipalList(lgList); 
+			resp.setPrincipalList(loginDozerConverter.convertToDTOList(lgList, false)); 
 		}
 		return resp;
 	}
@@ -415,11 +402,11 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 
     public LoginListResponse getAllLoginByManagedSys(String managedSysId) {
         LoginListResponse resp = new LoginListResponse(ResponseStatus.SUCCESS);
-		List<Login> lgList = loginDS.getAllLoginByManagedSys(managedSysId);
+		List<LoginEntity> lgList = loginDS.getAllLoginByManagedSys(managedSysId);
 		if (lgList == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
-			resp.setPrincipalList(lgList);
+			resp.setPrincipalList(loginDozerConverter.convertToDTOList(lgList, false)); 
 		}
 		return resp;
     }

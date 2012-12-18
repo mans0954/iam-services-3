@@ -21,16 +21,14 @@ public class OrganizationAttributeEntity {
     @Column(name = "COMPANY_ATTR_ID", length = 32, nullable = false)
     private String attrId;
 
-    // protected MetadataElement metadataElement;
     @Column(name = "METADATA_ID", length = 20)
     private String metadataElementId;
 
     @Column(name = "NAME", length = 20)
     private String name;
 
-    @ManyToOne
-    @JoinColumn(name = "COMPANY_ID")
-    private OrganizationEntity organization;
+    @Column(name = "COMPANY_ID", length = 32)
+    private String organizationId;
 
     @Column(name = "VALUE")
     private String value;
@@ -62,15 +60,15 @@ public class OrganizationAttributeEntity {
         this.name = name;
     }
 
-    public OrganizationEntity getOrganization() {
-        return organization;
-    }
+    public String getOrganizationId() {
+		return organizationId;
+	}
 
-    public void setOrganization(OrganizationEntity organization) {
-        this.organization = organization;
-    }
+	public void setOrganizationId(String organizationId) {
+		this.organizationId = organizationId;
+	}
 
-    public String getValue() {
+	public String getValue() {
         return value;
     }
 
@@ -89,7 +87,7 @@ public class OrganizationAttributeEntity {
         if (metadataElementId != null ? !metadataElementId.equals(that.metadataElementId) : that.metadataElementId != null)
             return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
-        if (organization != null ? !organization.equals(that.organization) : that.organization != null) return false;
+        if (organizationId != null ? !organizationId.equals(that.organizationId) : that.organizationId != null) return false;
         if (value != null ? !value.equals(that.value) : that.value != null) return false;
 
         return true;
@@ -100,7 +98,7 @@ public class OrganizationAttributeEntity {
         int result = attrId != null ? attrId.hashCode() : 0;
         result = 31 * result + (metadataElementId != null ? metadataElementId.hashCode() : 0);
         result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (organization != null ? organization.hashCode() : 0);
+        result = 31 * result + (organizationId != null ? organizationId.hashCode() : 0);
         result = 31 * result + (value != null ? value.hashCode() : 0);
         return result;
     }
