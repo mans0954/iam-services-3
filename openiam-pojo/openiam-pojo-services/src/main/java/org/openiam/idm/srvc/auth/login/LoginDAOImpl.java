@@ -1,43 +1,40 @@
 package org.openiam.idm.srvc.auth.login;
+
 // Generated Feb 18, 2008 3:56:08 PM by Hibernate Tools 3.2.0.b11
 
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.hibernate.*;
-import org.hibernate.criterion.Restrictions;
-import org.openiam.core.dao.BaseDao;
-import org.openiam.core.dao.BaseDaoImpl;
-import org.openiam.idm.srvc.auth.domain.LoginEntity;
-import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.user.dto.UserStatusEnum;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Repository;
-
-import javax.naming.InitialContext;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.hibernate.Query;
+import org.hibernate.SQLQuery;
+import org.hibernate.Session;
+import org.hibernate.criterion.Restrictions;
+import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
+import org.openiam.idm.srvc.user.dto.UserStatusEnum;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Repository;
 
 @Repository("loginDAO")
-public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements LoginDAO {
+public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements
+        LoginDAO {
 
     private static final Log log = LogFactory.getLog(LoginDAOImpl.class);
 
     @Value("${openiam.dbType}")
     private String dbType;
 
-    public int changeIdentity(String principal, String pswd, String userId, String managedSysId) {
+    public int changeIdentity(String principal, String pswd, String userId,
+            String managedSysId) {
         Session session = sessionFactory.getCurrentSession();
-        String hq = " UPDATE LoginEntity l " +
-                " set l.login = :principal,  " +
-                "     l.password = :pswd," +
-                "	   l.passwordChangeCount = 0," +
-                " 	   l.isLocked = 0, " +
-                "	   l.authFailCount = 0	 " +
-                " where l.managedSysId = :managedSysId and " +
-                "		 l.userId = :userId";
+        String hq = " UPDATE LoginEntity l " + " set l.login = :principal,  "
+                + "     l.password = :pswd," + "	   l.passwordChangeCount = 0,"
+                + " 	   l.isLocked = 0, " + "	   l.authFailCount = 0	 "
+                + " where l.managedSysId = :managedSysId and "
+                + "		 l.userId = :userId";
         Query qry = session.createQuery(hq);
         qry.setString("userId", userId);
         qry.setString("principal", principal);
@@ -46,14 +43,15 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements Lo
         return qry.executeUpdate();
     }
 
-    public LoginEntity getRecord(final String login, final String managedSysId, final String domainId) {
-    	if (dbType != null && dbType.equalsIgnoreCase("ORACLE_INSENSITIVE")) {
-    		return findByIdOracleInsensitive(login, managedSysId, domainId);
-    	}
-            
-    	return (LoginEntity)getCriteria().add(Restrictions.eq("login", login))
-    								     .add(Restrictions.eq("managedSysId", managedSysId))
-    								     .add(Restrictions.eq("domainId", domainId)).uniqueResult();
+    public LoginEntity getRecord(final String login, final String managedSysId,
+            final String domainId) {
+        if (dbType != null && dbType.equalsIgnoreCase("ORACLE_INSENSITIVE")) {
+            return findByIdOracleInsensitive(login, managedSysId, domainId);
+        }
+
+        return (LoginEntity) getCriteria().add(Restrictions.eq("login", login))
+                .add(Restrictions.eq("managedSysId", managedSysId))
+                .add(Restrictions.eq("domainId", domainId)).uniqueResult();
     }
 
     @Override
@@ -62,19 +60,18 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements Lo
     }
 
     /*
-      Gets the LoginID ignoring case.
+     * Gets the LoginID ignoring case.
      */
-    private LoginEntity findByIdOracleInsensitive(final String login, final String managedSysId, final String domainid) {
+    private LoginEntity findByIdOracleInsensitive(final String login,
+            final String managedSysId, final String domainid) {
 
-
-        String select = " select /*+ INDEX(IDX_LOGIN_UPPER)  */ " +
-                " SERVICE_ID, LOGIN, MANAGED_SYS_ID, IDENTITY_TYPE, CANONICAL_NAME, USER_ID, PASSWORD, " +
-                " PWD_EQUIVALENT_TOKEN, PWD_CHANGED, PWD_EXP, RESET_PWD, FIRST_TIME_LOGIN, IS_LOCKED, STATUS, " +
-                " GRACE_PERIOD, CREATE_DATE, CREATED_BY, CURRENT_LOGIN_HOST, AUTH_FAIL_COUNT, LAST_AUTH_ATTEMPT, " +
-                " LAST_LOGIN, IS_DEFAULT, PWD_CHANGE_COUNT, LAST_LOGIN_IP, PREV_LOGIN, PREV_LOGIN_IP " +
-                " FROM 	LOGIN  " +
-                " WHERE SERVICE_ID = :serviceId AND UPPER(LOGIN) = :login AND MANAGED_SYS_ID = :managedSysId  ";
-
+        String select = " select /*+ INDEX(IDX_LOGIN_UPPER)  */ "
+                + " SERVICE_ID, LOGIN, MANAGED_SYS_ID, IDENTITY_TYPE, CANONICAL_NAME, USER_ID, PASSWORD, "
+                + " PWD_EQUIVALENT_TOKEN, PWD_CHANGED, PWD_EXP, RESET_PWD, FIRST_TIME_LOGIN, IS_LOCKED, STATUS, "
+                + " GRACE_PERIOD, CREATE_DATE, CREATED_BY, CURRENT_LOGIN_HOST, AUTH_FAIL_COUNT, LAST_AUTH_ATTEMPT, "
+                + " LAST_LOGIN, IS_DEFAULT, PWD_CHANGE_COUNT, LAST_LOGIN_IP, PREV_LOGIN, PREV_LOGIN_IP "
+                + " FROM 	LOGIN  "
+                + " WHERE SERVICE_ID = :serviceId AND UPPER(LOGIN) = :login AND MANAGED_SYS_ID = :managedSysId  ";
 
         Session session = sessionFactory.getCurrentSession();
 
@@ -84,7 +81,6 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements Lo
         qry.setString("serviceId", domainid);
         qry.setString("login", login);
         qry.setString("managedSysId", managedSysId);
-
 
         try {
             return (LoginEntity) qry.uniqueResult();
@@ -98,51 +94,60 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements Lo
 
     public List<LoginEntity> findAllLoginByManagedSys(String managedSysId) {
         Session session = sessionFactory.getCurrentSession();
-        Query qry = session.createQuery("from org.openiam.idm.srvc.auth.domain.LoginEntity l " +
-                " where l.managedSysId = :managedSysId order by l.login asc ");
+        Query qry = session
+                .createQuery("from org.openiam.idm.srvc.auth.domain.LoginEntity l "
+                        + " where l.managedSysId = :managedSysId order by l.login asc ");
         qry.setString("managedSysId", managedSysId);
         return (List<LoginEntity>) qry.list();
 
     }
 
-    public List<LoginEntity> getLoginSublist(int startPos, int size){
+    public List<LoginEntity> getLoginSublist(int startPos, int size) {
         StringBuilder sql = new StringBuilder();
         sql.append("from ").append(LoginEntity.class.getName()).append(" l");
-        return (List<LoginEntity>)sessionFactory.getCurrentSession().createQuery(sql.toString()).setFirstResult(startPos).setMaxResults(size).list();
+        return (List<LoginEntity>) sessionFactory.getCurrentSession()
+                .createQuery(sql.toString()).setFirstResult(startPos)
+                .setMaxResults(size).list();
     }
 
-    public Long getLoginCount(){
+    public Long getLoginCount() {
         StringBuilder sql = new StringBuilder();
-        sql.append("SELECT count(l.password) from ").append(LoginEntity.class.getName()).append(" l");
-        return (Long)sessionFactory.getCurrentSession().createQuery(sql.toString()).uniqueResult();
+        sql.append("SELECT count(l.password) from ")
+                .append(LoginEntity.class.getName()).append(" l");
+        return (Long) sessionFactory.getCurrentSession()
+                .createQuery(sql.toString()).uniqueResult();
     }
 
     public List<LoginEntity> findUser(String userId) {
         Session session = sessionFactory.getCurrentSession();
-        Query qry = session.createQuery("from org.openiam.idm.srvc.auth.domain.LoginEntity l " +
-                " where l.userId = :userId order by l.status desc, l.managedSysId asc ");
+        Query qry = session
+                .createQuery("from org.openiam.idm.srvc.auth.domain.LoginEntity l "
+                        + " where l.userId = :userId order by l.status desc, l.managedSysId asc ");
         qry.setString("userId", userId);
         return (List<LoginEntity>) qry.list();
-
 
     }
 
     public List<LoginEntity> findLoginByDomain(String domain) {
         Session session = sessionFactory.getCurrentSession();
-        Query qry = session.createQuery("from org.openiam.idm.srvc.auth.domain.LoginEntity l " +
-                " where l.domainId = :domain ");
+        Query qry = session
+                .createQuery("from org.openiam.idm.srvc.auth.domain.LoginEntity l "
+                        + " where l.domainId = :domain ");
         qry.setString("domain", domain);
         return (List<LoginEntity>) qry.list();
 
     }
 
-    public LoginEntity findLoginByManagedSys(String domain, String managedSys, String userId) {
+    public LoginEntity findLoginByManagedSys(String domain, String managedSys,
+            String userId) {
         Session session = sessionFactory.getCurrentSession();
-        Query qry = session.createQuery("from org.openiam.idm.srvc.auth.domain.LoginEntity l " +
-                " where l.domainId = :domain and " +
-                "  l.managedSysId = :managedSys and " +
-                "  l.userId = :userId ");
-        log.debug("domain=" + domain + " managedSys=" + managedSys + " userId=" + userId);
+        Query qry = session
+                .createQuery("from org.openiam.idm.srvc.auth.domain.LoginEntity l "
+                        + " where l.domainId = :domain and "
+                        + "  l.managedSysId = :managedSys and "
+                        + "  l.userId = :userId ");
+        log.debug("domain=" + domain + " managedSys=" + managedSys + " userId="
+                + userId);
         qry.setString("domain", domain);
         qry.setString("managedSys", managedSys);
         qry.setString("userId", userId);
@@ -153,12 +158,14 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements Lo
         return null;
     }
 
-    public List<LoginEntity> findLoginByManagedSys(String principalName, String managedSysId) {
+    public List<LoginEntity> findLoginByManagedSys(String principalName,
+            String managedSysId) {
         Session session = sessionFactory.getCurrentSession();
-        Query qry = session.createQuery("from org.openiam.idm.srvc.auth.domain.LoginEntity l " +
-                " where  " +
-                "  l.managedSysId = :managedSys and " +
-                "  l.login = :login ");
+        Query qry = session
+                .createQuery("from org.openiam.idm.srvc.auth.domain.LoginEntity l "
+                        + " where  "
+                        + "  l.managedSysId = :managedSys and "
+                        + "  l.login = :login ");
 
         qry.setString("managedSys", managedSysId);
         qry.setString("login", principalName);
@@ -168,8 +175,9 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements Lo
 
     public LoginEntity findByPasswordResetToken(String token) {
         Session session = sessionFactory.getCurrentSession();
-        Query qry = session.createQuery("from org.openiam.idm.srvc.auth.domain.LoginEntity l " +
-                " where  l.pswdResetToken = :token  ");
+        Query qry = session
+                .createQuery("from org.openiam.idm.srvc.auth.domain.LoginEntity l "
+                        + " where  l.pswdResetToken = :token  ");
 
         qry.setString("token", token);
         return (LoginEntity) qry.uniqueResult();
@@ -177,50 +185,51 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements Lo
 
     public List<LoginEntity> findLockedUsers(Date startTime) {
         Session session = sessionFactory.getCurrentSession();
-        Query qry = session.createQuery("from org.openiam.idm.srvc.auth.domain.LoginEntity l " +
-                " where l.isLocked = 1 and  " +
-                "  l.lastAuthAttempt >= :startTime ");
+        Query qry = session
+                .createQuery("from org.openiam.idm.srvc.auth.domain.LoginEntity l "
+                        + " where l.isLocked = 1 and  "
+                        + "  l.lastAuthAttempt >= :startTime ");
         qry.setTimestamp("startTime", startTime);
         return (List<LoginEntity>) qry.list();
 
     }
 
-    String loginQry = " UPDATE org.openiam.idm.srvc.auth.domain.LoginEntity l  " +
-            " SET l.isLocked = 0 " +
-            "       where l.domainId = :domain and  " +
-            "             l.isLocked = :status and " +
-            "             l.lastAuthAttempt <= :policyTime";
+    String loginQry = " UPDATE org.openiam.idm.srvc.auth.domain.LoginEntity l  "
+            + " SET l.isLocked = 0 "
+            + "       where l.domainId = :domain and  "
+            + "             l.isLocked = :status and "
+            + "             l.lastAuthAttempt <= :policyTime";
 
-
-    /* (non-Javadoc)
-      * @see org.openiam.idm.srvc.auth.login.LoginDAO#bulkUnlock(org.openiam.idm.srvc.user.dto.UserStatusEnum)
-      */
-    public int bulkUnlock(String domainId, UserStatusEnum status, int autoUnlockTime) {
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.openiam.idm.srvc.auth.login.LoginDAO#bulkUnlock(org.openiam.idm.srvc
+     * .user.dto.UserStatusEnum)
+     */
+    public int bulkUnlock(String domainId, UserStatusEnum status,
+            int autoUnlockTime) {
 
         log.debug("bulkUnlock operation in LoginDAO called.");
         Session session = sessionFactory.getCurrentSession();
 
+        String userQry = " UPDATE org.openiam.idm.srvc.user.domain.UserEntity u  "
+                + " SET u.secondaryStatus = null "
+                + " where u.secondaryStatus = 'LOCKED' and "
+                + "       u.userId in ("
+                + " 	select l.userId from org.openiam.idm.srvc.auth.domain.LoginEntity as l  "
+                + "       where l.domainId = :domain and  "
+                + "             l.isLocked = :status and "
+                + "             l.lastAuthAttempt <= :policyTime" + "   )";
 
-        String userQry = " UPDATE org.openiam.idm.srvc.user.domain.UserEntity u  " +
-                " SET u.secondaryStatus = null " +
-                " where u.secondaryStatus = 'LOCKED' and " +
-                "       u.userId in (" +
-                " 	select l.userId from org.openiam.idm.srvc.auth.domain.LoginEntity as l  " +
-                "       where l.domainId = :domain and  " +
-                "             l.isLocked = :status and " +
-                "             l.lastAuthAttempt <= :policyTime" +
-                "   )";
-
-        String loginQry = " UPDATE org.openiam.idm.srvc.auth.domain.LoginEntity l  " +
-                " SET l.isLocked = 0, " +
-                "     l.authFailCount = 0 " +
-                "       where l.domainId = :domain and  " +
-                "             l.isLocked = :status and " +
-                "             l.lastAuthAttempt <= :policyTime";
-
+        String loginQry = " UPDATE org.openiam.idm.srvc.auth.domain.LoginEntity l  "
+                + " SET l.isLocked = 0, "
+                + "     l.authFailCount = 0 "
+                + "       where l.domainId = :domain and  "
+                + "             l.isLocked = :status and "
+                + "             l.lastAuthAttempt <= :policyTime";
 
         Query qry = session.createQuery(userQry);
-
 
         Date policyTime = new Date(System.currentTimeMillis());
 
@@ -240,11 +249,11 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements Lo
         int statusParam = 0;
         if (status.equals(UserStatusEnum.LOCKED)) {
             statusParam = 1;
-            //qry.setInteger("status", 1);
+            // qry.setInteger("status", 1);
             log.debug("status=1");
         } else {
             statusParam = 2;
-            //qry.setInteger("status", 2);
+            // qry.setInteger("status", 2);
             log.debug("status=2");
         }
 
@@ -266,14 +275,15 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements Lo
 
         return rowCount;
 
-
     }
 
-
-    /* (non-Javadoc)
-      * @see org.openiam.idm.srvc.auth.login.LoginDAO#findInactiveUsers(int, int)
-      */
-    public List<LoginEntity> findInactiveUsers(int startDays, int endDays, String managedSysId) {
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.openiam.idm.srvc.auth.login.LoginDAO#findInactiveUsers(int, int)
+     */
+    public List<LoginEntity> findInactiveUsers(int startDays, int endDays,
+            String managedSysId) {
         log.debug("findInactiveUsers called.");
         log.debug("Start days=" + startDays);
         log.debug("End days=" + endDays);
@@ -283,9 +293,9 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements Lo
         Date startDate = new Date(curTimeMillis);
         Date endDate = new Date(curTimeMillis);
 
-        StringBuilder sql = new StringBuilder(" from org.openiam.idm.srvc.auth.domain.LoginEntity l where " +
-                " l.managedSysId = :managedSys and ");
-
+        StringBuilder sql = new StringBuilder(
+                " from org.openiam.idm.srvc.auth.domain.LoginEntity l where "
+                        + " l.managedSysId = :managedSys and ");
 
         if (startDays != 0) {
             sql.append(" l.lastLogin <= :startDate ");
@@ -314,7 +324,6 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements Lo
 
         }
 
-
         Session session = sessionFactory.getCurrentSession();
         Query qry = session.createQuery(sql.toString());
 
@@ -334,10 +343,11 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements Lo
         return results;
     }
 
-
-    /* (non-Javadoc)
-    * @see org.openiam.idm.srvc.auth.login.LoginDAO#findUserNearPswdExp(int)
-    */
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.openiam.idm.srvc.auth.login.LoginDAO#findUserNearPswdExp(int)
+     */
     public List<LoginEntity> findUserNearPswdExp(int daysToExpiration) {
         log.debug("findUserNearPswdExp: findUserNearPswdExp called.");
         log.debug("days to password Expiration=" + daysToExpiration);
@@ -356,14 +366,14 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements Lo
             c.add(Calendar.DAY_OF_YEAR, 1);
             endDate.setTime(c.getTimeInMillis());
 
-
-            log.debug("dates between : " + expDate.toString() + " " + endDate.toString());
+            log.debug("dates between : " + expDate.toString() + " "
+                    + endDate.toString());
 
         }
 
-        String sql = new String(" from org.openiam.idm.srvc.auth.dto.Login l where " +
-                " l.pwdExp BETWEEN :startDate and :endDate");
-
+        String sql = new String(
+                " from org.openiam.idm.srvc.auth.dto.Login l where "
+                        + " l.pwdExp BETWEEN :startDate and :endDate");
 
         Session session = sessionFactory.getCurrentSession();
         Query qry = session.createQuery(sql);
@@ -384,7 +394,6 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements Lo
         java.sql.Date expDate = new java.sql.Date(System.currentTimeMillis());
         java.sql.Date endDate = new java.sql.Date(expDate.getTime());
 
-
         Calendar c = Calendar.getInstance();
         c.add(Calendar.DAY_OF_YEAR, 1);
         c.setTime(expDate);
@@ -393,13 +402,12 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements Lo
         c.add(Calendar.DAY_OF_YEAR, 1);
         endDate.setTime(c.getTimeInMillis());
 
+        log.debug("dates between : " + expDate.toString() + " "
+                + endDate.toString());
 
-        log.debug("dates between : " + expDate.toString() + " " + endDate.toString());
-
-
-        String sql = new String(" from org.openiam.idm.srvc.auth.domain.LoginEntity l where " +
-                " l.pwdExp BETWEEN :startDate and :endDate");
-
+        String sql = new String(
+                " from org.openiam.idm.srvc.auth.domain.LoginEntity l where "
+                        + " l.pwdExp BETWEEN :startDate and :endDate");
 
         Session session = sessionFactory.getCurrentSession();
         Query qry = session.createQuery(sql);
@@ -414,21 +422,21 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements Lo
 
     }
 
-
-    /* (non-Javadoc)
-      * @see org.openiam.idm.srvc.auth.login.LoginDAO#bulkResetPasswordChangeCount()
-      */
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.openiam.idm.srvc.auth.login.LoginDAO#bulkResetPasswordChangeCount()
+     */
     public int bulkResetPasswordChangeCount() {
         log.debug("bulkResetPasswordChangeCount operation in LoginDAO called.");
         Session session = sessionFactory.getCurrentSession();
 
-
-        String loginQry = " UPDATE org.openiam.idm.srvc.auth.domain.LoginEntity l  " +
-                " SET l.passwordChangeCount = 0 ";
+        String loginQry = " UPDATE org.openiam.idm.srvc.auth.domain.LoginEntity l  "
+                + " SET l.passwordChangeCount = 0 ";
 
         Query qry = session.createQuery(loginQry);
         return qry.executeUpdate();
 
     }
 }
-

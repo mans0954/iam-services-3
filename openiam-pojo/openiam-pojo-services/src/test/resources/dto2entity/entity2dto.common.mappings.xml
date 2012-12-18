@@ -60,5 +60,16 @@
         <class-a>org.openiam.idm.srvc.role.domain.UserRoleEntity</class-a>
         <class-b>org.openiam.idm.srvc.role.dto.UserRole</class-b>
     </mapping>
-
+	<mapping>
+		<class-a>org.openiam.idm.srvc.meta.domain.MetadataElementEntity</class-a>
+		<class-b>org.openiam.idm.srvc.meta.dto.MetadataElement</class-b>
+	</mapping>	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.cat.domain.CategoryTypeEntity</class-a>
+		<class-b>org.openiam.idm.srvc.cat.dto.CategoryType</class-b>
+	</mapping>
+	<mapping>
+		<class-a>org.openiam.idm.srvc.cat.domain.CategoryLanguageEntity</class-a>
+		<class-b>org.openiam.idm.srvc.cat.dto.CategoryLanguage</class-b>
+	</mapping>
 </mappings>

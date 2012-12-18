@@ -25,7 +25,6 @@ import javax.jws.WebService;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.MetaDataTypeDozerConverter;
-import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.meta.service.MetadataService;
@@ -186,9 +185,7 @@ public class MetadataWebServiceImpl implements MetadataWebService {
      * .lang.String)
      */
     public List<MetadataType> getTypesInCategory(String categoryId) {
-        final List<MetadataTypeEntity> entityList = metadataService
-                .getTypesInCategory(categoryId);
-        return metaDataTypeDozerConverter.convertToDTOList(entityList, true);
+        return metadataService.getTypesInCategory(categoryId);
     }
 
     /*

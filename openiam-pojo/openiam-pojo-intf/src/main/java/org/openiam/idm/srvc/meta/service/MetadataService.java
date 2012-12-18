@@ -1,11 +1,8 @@
 package org.openiam.idm.srvc.meta.service;
 
-
-import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
+import java.util.List;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
-
-import java.util.List;
 
 /**
  * Data service interface for Metadata. Metadata is used in OpenIAM to create
@@ -42,7 +39,8 @@ public interface MetadataService {
      */
     void removeMetadataType(String typeId);
 
-    // Added by aps 11 Aug 01 due to database change. Type-Category methods now useless
+    // Added by aps 11 Aug 01 due to database change. Type-Category methods now
+    // useless
 
     /**
      * Gets a map of all Metadata Types. Choosing from a Metadata Type is the first
@@ -62,7 +60,6 @@ public interface MetadataService {
      */
     MetadataType getMetadataType(String typeId);
 
-
     /**
      * Adds a MetadataElement to a MetadataType. MetadataId should be left unassigned
      * as it will be automatically generated.
@@ -70,7 +67,6 @@ public interface MetadataService {
      * @param metadataElement
      */
     MetadataElement addMetadataElement(MetadataElement metadataElement);
-
 
     /**
      * Gets the MetadataElementValue values.
@@ -81,7 +77,6 @@ public interface MetadataService {
      */
 
     MetadataElement getMetadataElementById(String elementId);
-
 
     /**
      * Deletes the MetadataElement from a MetadataType
@@ -110,7 +105,6 @@ public interface MetadataService {
 
     List<MetadataElement> getAllElementsForCategoryType(String categoryType);
 
-
     /**
      * ***********Methods added to handle Category-Type table.*************
      * <p/>
@@ -123,7 +117,6 @@ public interface MetadataService {
      */
     void addTypeToCategory(String typeId, String categoryId);
 
-
     /**
      * Removes the association between a MetadataType and Category.
      *
@@ -132,12 +125,11 @@ public interface MetadataService {
      */
     void removeTypeFromCategory(String typeId, String categoryId);
 
-
     /**
      * Returns a list of MetadataTypes that are associated with a Category
      *
      * @param categoryId
      */
-    List<MetadataTypeEntity> getTypesInCategory(String categoryId);
+    List<MetadataType> getTypesInCategory(String categoryId);
 
 }

@@ -7,9 +7,11 @@ import org.springframework.test.context.testng.AbstractTransactionalTestNGSpring
 import org.springframework.test.context.transaction.TransactionConfiguration;
 import org.testng.annotations.Test;
 
-@ContextConfiguration(locations = {"classpath:applicationContext-test.xml","classpath:test-application-context.xml"})
+@ContextConfiguration(locations = { "classpath:applicationContext-test.xml",
+        "classpath:test-application-context.xml" })
 @TransactionConfiguration(transactionManager = "transactionManager", defaultRollback = true)
-public class SupervisorDAOTouchTest extends AbstractTransactionalTestNGSpringContextTests {
+public class SupervisorDAOTouchTest extends
+        AbstractTransactionalTestNGSpringContextTests {
     @Autowired
     private SupervisorDAO supervisorDao;
 
@@ -50,6 +52,8 @@ public class SupervisorDAOTouchTest extends AbstractTransactionalTestNGSpringCon
 
     @Test
     public void touchUpdate() {
-        supervisorDao.update(new SupervisorEntity());
+        SupervisorEntity entity = new SupervisorEntity();
+        supervisorDao.save(entity);
+        supervisorDao.update(entity);
     }
 }

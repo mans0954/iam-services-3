@@ -40,7 +40,7 @@ public class MetadataServiceImpl implements MetadataService {
             throw new NullPointerException("metadataElement is null");
         }
         MetadataElementEntity element = metaDataElementDozerConverter
-                .convertToEntity(metadataElement, false);
+                .convertToEntity(metadataElement, true);
         metadataElementDao.save(element);
         return metadataElement;
     }
@@ -49,10 +49,17 @@ public class MetadataServiceImpl implements MetadataService {
         if (type == null) {
             throw new NullPointerException("Metadatatype is null");
         }
-        MetadataTypeEntity typeEntity = metaDataTypeDozerConverter
-                .convertToEntity(type, false);
 
-        metadataTypeDao.save(typeEntity);
+        try {
+            MetadataTypeEntity mte = metaDataTypeDozerConverter
+                    .convertToEntity(type, true);
+            metadataTypeDao.save(mte);
+            type = metaDataTypeDozerConverter.convertToDTO(mte, true);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return null;
+        }
+
         return type;
 
     }
@@ -71,16 +78,21 @@ public class MetadataServiceImpl implements MetadataService {
         if (elementId == null) {
             throw new NullPointerException("elementId is null");
         }
-        return metaDataElementDozerConverter.convertToDTO(
-                metadataElementDao.findById(elementId), false);
+        MetadataElementEntity result = metadataElementDao.findById(elementId);
+        if (result == null)
+            return null;
+        return metaDataElementDozerConverter.convertToDTO(result, true);
     }
 
     public MetadataElement[] getMetadataElementByType(String typeId) {
         if (typeId == null) {
             throw new NullPointerException("typeId is null");
         }
-        MetadataType type = metaDataTypeDozerConverter.convertToDTO(
-                metadataTypeDao.findById(typeId), true);
+        MetadataTypeEntity result = metadataTypeDao.findById(typeId);
+        if (result == null)
+            return null;
+        MetadataType type = metaDataTypeDozerConverter.convertToDTO(result,
+                true);
         if (type == null)
             return null;
         Map<String, MetadataElement> elementMap = type.getElementAttributes();
@@ -99,16 +111,19 @@ public class MetadataServiceImpl implements MetadataService {
         if (typeId == null) {
             throw new NullPointerException("typeId is null");
         }
-        return metaDataTypeDozerConverter.convertToDTO(
-                metadataTypeDao.findById(typeId), true);
+        MetadataTypeEntity result = metadataTypeDao.findById(typeId);
+        if (result == null)
+            return null;
+        return metaDataTypeDozerConverter.convertToDTO(result, true);
     }
 
     public MetadataType[] getMetadataTypes() {
-        List<MetadataType> typeList = metaDataTypeDozerConverter
-                .convertToDTOList(metadataTypeDao.findAll(), true);
-        if (typeList == null || typeList.isEmpty()) {
+        List<MetadataTypeEntity> typeListEntity = metadataTypeDao.findAll();
+        if (typeListEntity == null || typeListEntity.isEmpty()) {
             return null;
         }
+        List<MetadataType> typeList = metaDataTypeDozerConverter
+                .convertToDTOList(typeListEntity, true);
 
         int size = typeList.size();
         MetadataType[] typeAry = new MetadataType[size];
@@ -117,8 +132,10 @@ public class MetadataServiceImpl implements MetadataService {
         return typeAry;
     }
 
-    public List<MetadataTypeEntity> getTypesInCategory(String categoryId) {
-        return metadataTypeDao.findTypesInCategory(categoryId);
+    public List<MetadataType> getTypesInCategory(String categoryId) {
+        List<MetadataTypeEntity> resultList = metadataTypeDao
+                .findTypesInCategory(categoryId);
+        return metaDataTypeDozerConverter.convertToDTOList(resultList, true);
     }
 
     public void removeMetadataElement(String elementId) {
@@ -134,13 +151,10 @@ public class MetadataServiceImpl implements MetadataService {
         if (typeId == null) {
             throw new NullPointerException("typeId is null");
         }
-
         metadataElementDao.removeByParentId(typeId);
-
-        MetadataType type = new MetadataType();
-        type.setMetadataTypeId(typeId);
-        metadataTypeDao.delete(metaDataTypeDozerConverter.convertToEntity(type,
-                false));
+        MetadataTypeEntity type = metadataTypeDao.findById(typeId);
+        if (type != null)
+            metadataTypeDao.delete(type);
     }
 
     public void removeTypeFromCategory(String typeId, String categoryId) {
