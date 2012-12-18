@@ -7,6 +7,7 @@ public class TokenCallback implements Callback, Serializable {
     private String prompt;
     private boolean echoOn;
     private char[] securityToken;
+    private String userId;
 
     public String getPrompt() {
         return prompt;
@@ -30,6 +31,14 @@ public class TokenCallback implements Callback, Serializable {
 
     public void setSecurityToken(char[] securityToken) {
         this.securityToken = securityToken;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     public TokenCallback(String prompt, boolean echoOn) {

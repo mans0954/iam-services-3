@@ -1,23 +1,50 @@
 package org.openiam.jaas.handler;
 
 
+import org.openiam.jaas.callback.TokenCallback;
+
+import javax.security.auth.callback.*;
+import java.io.IOException;
+
 public class DefaultCallbackHandler extends AbstractCalbackHandler{
     private String userName;
     private String password;
     private String token;
+    private String userId;
+
+    @Override
+    protected void processCallback(Callback callback)throws IOException, UnsupportedCallbackException {
+        if (callback instanceof TokenCallback) {
+            log.debug("TokenCallback found");
+            ((TokenCallback)callback).setSecurityToken(this.getToken());
+            ((TokenCallback)callback).setUserId(this.getUserId());
+        } else {
+            super.processCallback(callback);
+        }
+    }
+
+    @Override
+    public void clean(){
+        userName = null;
+        password = null;
+        token = null;
+        userId = null;
+    }
 
     @Override
     protected String getUserName() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return (userName==null)?"":userName;
     }
 
     @Override
     protected char[] getPassword() {
-        return new char[0];  //To change body of implemented methods use File | Settings | File Templates.
+        return (password==null || password.isEmpty()) ? new char[0]: password.toCharArray();
     }
 
-    @Override
-    protected char[] getToken() {
-        return new char[0];  //To change body of implemented methods use File | Settings | File Templates.
+    private char[] getToken() {
+        return (token==null || token.isEmpty()) ? new char[0]: token.toCharArray();
+    }
+    private String getUserId() {
+        return (userId==null || userId.isEmpty()) ? null: userId;
     }
 }

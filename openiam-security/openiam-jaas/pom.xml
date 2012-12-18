@@ -26,7 +26,7 @@
         </notifiers>
     </ciManagement>
     <build>
-        <finalName>openiam-am-intf</finalName>
+        <finalName>openiam-jaas</finalName>
     </build>
 
     <dependencies>
@@ -41,7 +41,19 @@
             <artifactId>commons-codec</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-rt-frontend-jaxws</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-rt-transports-http</artifactId>
+        </dependency>
 
+        <dependency>
+            <groupId>org.openiam</groupId>
+            <artifactId>openiam-pojo-intf</artifactId>
+        </dependency>
 
     </dependencies>
 
