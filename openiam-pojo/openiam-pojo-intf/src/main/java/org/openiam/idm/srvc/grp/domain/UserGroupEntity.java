@@ -30,7 +30,7 @@ public class UserGroupEntity implements Serializable {
     protected String userGrpId;
     
     @Column(name="GRP_ID",length=32,nullable=false)
-    @Field(name = "groupId", index = Index.UN_TOKENIZED, store = Store.YES)
+    @Field(name = "groupId", index = Index.UN_TOKENIZED/*, store = Store.YES*/)
     protected String grpId;
     
     @Column(name="USER_ID",length=32,nullable=false)

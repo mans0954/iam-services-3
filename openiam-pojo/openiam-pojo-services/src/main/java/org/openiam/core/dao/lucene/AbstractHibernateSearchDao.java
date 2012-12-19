@@ -60,7 +60,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 public abstract class AbstractHibernateSearchDao<T, Q, KeyType> extends HibernateDaoSupport implements HibernateSearchDao<T, Q, KeyType>, DisposableBean, InitializingBean {
 
-	private static Logger logger = Logger.getLogger(AbstractHibernateSearchDao.class);
+	protected static Logger logger = Logger.getLogger(AbstractHibernateSearchDao.class);
 	
 	private final ReentrantLock reentrantLock = new ReentrantLock();
 
@@ -133,6 +133,23 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType> extends Hibernat
     	}
         return result;
     }
+    
+    @SuppressWarnings("unchecked")
+    @Override public List<KeyType> findIds(final SortType sort, final Q query) {
+    	final List<KeyType> result = new ArrayList<KeyType>();
+    	if ((query != null)) {
+            final Query luceneQuery = parse(query);
+            if (luceneQuery != null) {
+				final List idList = findIds(buildFullTextSessionQuery(getFullTextSession(), luceneQuery, sort).setProjection(idFieldName));
+				for (final Object row : idList) {
+					final Object[] columns = (Object[]) row;
+					final KeyType id = (KeyType) columns[0];
+					result.add(id);
+				}
+            }
+    	}
+        return result;
+    }
 
     @SuppressWarnings("unchecked")
 	@Override public List<KeyType> findIds(final int from, final int size, final SortType sort, final Q query) {
@@ -186,6 +203,10 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType> extends Hibernat
     protected int count(final FullTextQuery fullTextQuery) {
         return fullTextQuery.getResultSize();
     }
+    
+    protected int getMaxFetchSizeOnReinex() {
+    	return 1000;
+    }
 
     protected abstract Query parse(Q query);
     protected abstract Class<T> getEntityClass();
@@ -231,20 +252,25 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType> extends Hibernat
         		fullTextSession.purgeAll(entityClass);
         	}
 
-        	final int maxSize = 1000;
+        	final int maxSize = getMaxFetchSizeOnReinex();
         	final Criteria criteria = load.getExecutableCriteria(fullTextSession);
         	for (int from = 0; ; from += maxSize) {
         		final Transaction transaction = fullTextSession.beginTransaction();
         		try {
+        			logger.info(String.format("Fetching from %s, size: %s", from, maxSize));
         			final List<T> list = criteria.setFirstResult(from).setMaxResults(maxSize).list();
+        			logger.info(String.format("Fetched from %s, size: %s.  Indexing...", from, maxSize));
                 	for (final T entity : list) {
                 		fullTextSession.index(entity);
                 	}
+                	logger.info(String.format("Fetched from %s, size: %s.  Done indexing... committing", from, maxSize));
                 	transaction.commit();
+                	logger.info(String.format("Fetched from %s, size: %s.  Done indexing... committed", from, maxSize));
                 	if (list.isEmpty() || list.size() < maxSize) {
                 		break;
                 	}
             	} catch (Exception e) {
+            		logger.error("Can't index - rolling back", e);
             		transaction.rollback();
             	}
         	}

@@ -112,6 +112,7 @@
         <module>openiam-esb</module>
         <module>openiam-bpm</module>
 		<module>openiam-km</module>
+	<module>openiam-security</module>
 		<module>openiam-auth-manager</module>
     </modules>
 	<properties>

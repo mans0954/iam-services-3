@@ -1,5 +1,7 @@
 package org.openiam.idm.srvc.user.service;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -10,6 +12,7 @@ import org.openiam.base.SysConfiguration;
 import org.openiam.core.dao.lucene.AbstractHibernateSearchDao;
 import org.openiam.core.dao.lucene.SortType;
 import org.openiam.dozer.converter.*;
+import org.openiam.idm.searchbeans.LoginSearchBean;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
@@ -25,6 +28,7 @@ import org.openiam.idm.srvc.user.domain.UserNoteEntity;
 import org.openiam.idm.srvc.user.dto.*;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
+import org.openiam.idm.srvc.auth.login.lucene.LoginSearchDAO;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.ContactConstants;
 import org.openiam.idm.srvc.continfo.service.AddressDAO;
@@ -91,8 +95,10 @@ public class UserMgr implements UserDataService {
     protected LoginDozerConverter loginDozerConverter;
     
     @Autowired
-    @Qualifier("userSearchDAO")
     private UserSearchDAO userSearchDAO;
+    
+    @Autowired
+    private LoginSearchDAO loginSearchDAO;
 
     private static final Log log = LogFactory.getLog(UserMgr.class);
 
@@ -397,6 +403,37 @@ public class UserMgr implements UserDataService {
     public List<User> findBeans(UserSearchBean searchBean){
         return findBeans(searchBean, -1, -1);
     }
+    
+    private List<String> getUserIds(final UserSearchBean searchBean) {
+    	final List<List<String>> nonEmptyListOfLists = new LinkedList<List<String>>();
+		
+		nonEmptyListOfLists.add(userSearchDAO.findIds(null, searchBean));
+		
+		if(StringUtils.isNotBlank(searchBean.getPrincipal())) {
+			final LoginSearchBean loginSearchBean = new LoginSearchBean();
+			loginSearchBean.setLogin(StringUtils.trimToNull(searchBean.getPrincipal()));
+			nonEmptyListOfLists.add(loginSearchDAO.findUserIds(loginSearchBean));
+		}
+		
+		//remove null or empty lists
+		for(final Iterator<List<String>> it = nonEmptyListOfLists.iterator(); it.hasNext();) {
+			final List<String> list = it.next();
+			if(CollectionUtils.isEmpty(list)) {
+				it.remove();
+			}
+		}
+		
+		List<String> finalizedIdList = null;
+		for(final Iterator<List<String>> it = nonEmptyListOfLists.iterator(); it.hasNext();) {
+			if(finalizedIdList == null) {
+				finalizedIdList = it.next();
+			} else {
+				finalizedIdList = ListUtils.intersection(finalizedIdList, it.next());
+			}
+		}
+		
+		return (finalizedIdList != null) ? finalizedIdList : Collections.EMPTY_LIST;
+    }
 
     public List<User> findBeans(UserSearchBean searchBean, int from, int size){
     	List<UserEntity> entityList = null;
@@ -407,13 +444,21 @@ public class UserMgr implements UserDataService {
     			entityList.add(entity);
     		}
     	} else {
-    		entityList = (List<UserEntity>)userSearchDAO.find(from, size, null, searchBean);
+    		List<String> finalizedIdList = getUserIds(searchBean);
+    		if(finalizedIdList != null && finalizedIdList.size() >= from) {
+    			int to = from + size;
+    			if(to > finalizedIdList.size()) {
+    				to = finalizedIdList.size();
+    			}
+    			finalizedIdList = new ArrayList<String>(finalizedIdList.subList(from, to));
+    			entityList = userDao.findByIds(finalizedIdList);
+    		}
     	}
     	return userDozerConverter.convertToDTOList(entityList, false);
     }
 
     public int count(UserSearchBean searchBean){
-      return userSearchDAO.count(searchBean);
+    	return getUserIds(searchBean).size();
     }
 
     /* -------- Methods for Attributes ---------- */

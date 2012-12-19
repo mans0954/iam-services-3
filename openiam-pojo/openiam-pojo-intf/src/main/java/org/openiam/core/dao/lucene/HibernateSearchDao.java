@@ -18,6 +18,15 @@ public interface HibernateSearchDao<T, Q, KeyType> {
 	 * @return list of entity ids 
 	 */
 	List<KeyType> findIds(int from, int size, SortType sortType, Q query);
+	
+	
+	/**
+	 * Get a list of entity ids
+	 * @param sortType type of sorting
+	 * @param query search bean
+	 * @return list of entity ids 
+	 */
+	List<KeyType> findIds(final SortType sort, final Q query);
 
 	/**
 	 * synchronize indexes state with database state

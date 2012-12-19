@@ -31,7 +31,7 @@ public class UserRoleEntity implements java.io.Serializable {
     private String userId;
     
     @Column(name="ROLE_ID",length=32,nullable=false)
-    @Field(name = "roleId", index = Index.UN_TOKENIZED, store = Store.YES)
+    @Field(name = "roleId", index = Index.UN_TOKENIZED/*, store = Store.YES*/)
     private String roleId;
     
     @Column(name="STATUS",length=20)

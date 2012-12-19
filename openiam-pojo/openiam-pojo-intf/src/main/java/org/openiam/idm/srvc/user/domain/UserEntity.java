@@ -149,12 +149,12 @@ public class UserEntity {
 
     @Column(name = "STATUS", length = 40)
     @Enumerated(EnumType.STRING)
-    @Field(index=Index.UN_TOKENIZED, store=Store.YES,name="userStatus")
+    @Field(index=Index.UN_TOKENIZED, name="userStatus", store=Store.YES)
     private UserStatusEnum status;
 
     @Column(name = "SECONDARY_STATUS", length = 40)
     @Enumerated(EnumType.STRING)
-    @Field(index=Index.UN_TOKENIZED, store=Store.YES,name="accountStatus")
+    @Field(index=Index.UN_TOKENIZED ,name="accountStatus", store=Store.YES)
     private UserStatusEnum secondaryStatus;
 
     @Column(name = "SUFFIX", length = 20)
@@ -308,7 +308,7 @@ public class UserEntity {
     @Column(name = "SYSTEM_FLAG",length = 1)
     private String systemFlag;
 
-    @IndexedEmbedded(prefix="principal.", depth=2)
+    //@IndexedEmbedded(prefix="principal.", depth=1)
     @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
     @JoinColumn(name="USER_ID", referencedColumnName="USER_ID")
     @Fetch(FetchMode.SUBSELECT)
@@ -319,7 +319,7 @@ public class UserEntity {
     @Fetch(FetchMode.SUBSELECT)
     protected Set<UserKey> userKeys = new HashSet<UserKey>(0);
 
-    @IndexedEmbedded(prefix="groups.")
+    //@IndexedEmbedded(prefix="groups.")
     @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
     @JoinColumn(name="USER_ID", referencedColumnName="USER_ID")
     @Fetch(FetchMode.SUBSELECT)
@@ -330,7 +330,7 @@ public class UserEntity {
     @Fetch(FetchMode.SUBSELECT)
     private Set<ResourceUserEntity> resourceUsers = new HashSet<ResourceUserEntity>();
 
-    @IndexedEmbedded(prefix="roles.")
+    //@IndexedEmbedded(prefix="roles.")
     @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
     @JoinColumn(name="USER_ID", referencedColumnName="USER_ID")
     @Fetch(FetchMode.SUBSELECT)
