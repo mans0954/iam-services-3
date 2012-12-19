@@ -113,12 +113,13 @@ public abstract class AbstractLoginModule implements LoginModule {
 
             // add the users roles into the subject
             List<Role> iamRoleList = iamSubject.getRoles();
-            for (Role r  : iamRoleList) {
-                String roleId = r.getRoleId();
-                UserRoleGroup urg = new UserRoleGroup(roleId);
-                subject.getPrincipals().add(urg);
+            if(iamRoleList!=null){
+                for (Role r  : iamRoleList) {
+                    String roleId = r.getRoleId();
+                    UserRoleGroup urg = new UserRoleGroup(roleId);
+                    subject.getPrincipals().add(urg);
+                }
             }
-
             if(iamSubject.getSsoToken()!=null && iamSubject.getSsoToken().getToken()!=null && !iamSubject.getSsoToken().getToken().isEmpty())
                 subject.getPublicCredentials().add(new TokenCredential(iamSubject.getUserId(), iamSubject.getSsoToken().getToken()));
         }

@@ -1,6 +1,5 @@
 package org.openiam.jaas.module;
 
-import org.openiam.exception.AuthenticationException;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
 import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
 import org.openiam.jaas.callback.TokenCallback;
@@ -51,14 +50,19 @@ public class DefaultLoginModule extends AbstractLoginModule {
 
     protected boolean processLogin() throws LoginException{
         try {
+
+            int resultCode = AuthenticationConstants.RESULT_SUCCESS;
+
             if (this.token == null || token.isEmpty()) {
                 // password authentication
                 log.debug("Executing password authentication");
                 AuthenticationResponse resp = ServiceLookupHelper.getAuthenticationService().passwordAuth(jaasConfiguration.getSecurityDomain(),
                                                                                                           username,
                                                                                                           password);
+                resultCode = resp.getAuthErrorCode();
                 iamSubject = resp.getSubject();
-                log.debug("Token from password auth=" + iamSubject.getSsoToken().getToken());
+                if(iamSubject!=null && iamSubject.getSsoToken()!=null)
+                    log.debug("Token from password auth=" + iamSubject.getSsoToken().getToken());
             }else {
                 // token is present. Carry out token authenticaiton
                 log.debug("Executing token authentication");
@@ -66,13 +70,11 @@ public class DefaultLoginModule extends AbstractLoginModule {
                 log.debug("LOGIN MOD -> token=" + token);
                 iamSubject = ServiceLookupHelper.getAuthenticationService().authenticateByToken(userId, token,
                                                                                                 AuthenticationConstants.OPENIAM_TOKEN);
+
+                resultCode = iamSubject.getResultCode();
             }
-            this.success = true;
-            return true;
-        }catch(AuthenticationException ae) {
-            log.error(ae.getMessage(), ae);
-            int errCode = ae.getErrorCode();
-            switch (errCode) {
+
+            switch (resultCode) {
                 case AuthenticationConstants.RESULT_INVALID_DOMAIN:
                     throw new FailedLoginException("RESULT_INVALID_DOMAIN");
                 case AuthenticationConstants.RESULT_INVALID_LOGIN:
@@ -90,9 +92,14 @@ public class DefaultLoginModule extends AbstractLoginModule {
                 case AuthenticationConstants.RESULT_INVALID_TOKEN:
                     throw new FailedLoginException("RESULT_INVALID_TOKEN");
                 case AuthenticationConstants.RESULT_SERVICE_NOT_FOUND:
-                default:
                     throw new FailedLoginException("INVALID");
             }
+
+            this.success = true;
+            return true;
+        }catch(FailedLoginException ae) {
+            log.error(ae.getMessage(), ae);
+            throw  ae;
         } catch (Exception ex){
             log.error(ex.getMessage(), ex);
             throw new FailedLoginException("INVALID");

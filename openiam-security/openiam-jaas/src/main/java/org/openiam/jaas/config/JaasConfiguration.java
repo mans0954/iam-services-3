@@ -24,7 +24,7 @@ public class JaasConfiguration {
 
 
     public static JaasConfiguration getInstance() {
-        return  getInstance("iam_client_config.properties.properties");
+        return  getInstance("iam_client_config.properties");
     }
 
     public static JaasConfiguration getInstance(String properties){
@@ -49,7 +49,7 @@ public class JaasConfiguration {
     private void loadProperties(String propertiesFile) {
         this.properties = new Properties();
         try{
-            InputStream propertyStream = this.getClass().getResourceAsStream(propertiesFile);
+            InputStream propertyStream = this.getClass().getClassLoader().getResourceAsStream(propertiesFile);
             if(propertyStream==null){
                 propertyStream = new FileInputStream(propertiesFile);
                 if(propertyStream==null)

@@ -47,4 +47,20 @@ public class DefaultCallbackHandler extends AbstractCalbackHandler{
     private String getUserId() {
         return (userId==null || userId.isEmpty()) ? null: userId;
     }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
 }
