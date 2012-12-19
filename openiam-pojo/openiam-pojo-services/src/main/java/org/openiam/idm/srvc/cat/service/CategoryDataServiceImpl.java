@@ -20,7 +20,8 @@ public class CategoryDataServiceImpl implements CategoryDataService {
     CategoryLanguageDAO categoryLanguageDao;
     @Autowired
     CategoryDozerConverter categoryDozerConverter;
-    private static final Log log = LogFactory.getLog(CategoryTestTouch.class);
+    private static final Log log = LogFactory
+            .getLog(CategoryDataServiceImpl.class);
 
     @Transactional
     public Category addCategory(Category cat) {
