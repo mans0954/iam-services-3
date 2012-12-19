@@ -32,5 +32,9 @@
         </c:otherwise>
     </c:choose>
 
+<form method="post">
+    <input type="submit" value="logout">
+</form>
+
 </body>
 </html>

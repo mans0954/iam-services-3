@@ -4,6 +4,8 @@ import org.openiam.jaas.group.UserRoleGroup;
 import org.openiam.jaas.principal.UserIdentity;
 
 import javax.security.auth.Subject;
+import javax.security.auth.login.LoginContext;
+import javax.security.auth.login.LoginException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -16,6 +18,25 @@ public class SecureController extends BaseController {
 
     protected void doPost(HttpServletRequest request,
                           HttpServletResponse response) throws ServletException, IOException {
+        HttpSession session = request.getSession(true);
+        LoginContext lc =  (LoginContext)session.getAttribute(Constants.LOGIN_CONTEXT);
+        Subject subject  = (Subject)session.getAttribute(Constants.USER_SUBJECT);
+
+        if(lc!=null){
+            try {
+                lc.logout();
+            } catch (LoginException e) {
+                e.printStackTrace();
+            }
+            session.removeAttribute(Constants.USER_SUBJECT);
+            session.removeAttribute(Constants.LOGIN_CONTEXT);
+            session.invalidate();
+        }
+        ((HttpServletResponse)response).sendRedirect(request.getContextPath()+"/login");
+    }
+
+    protected void doGet(HttpServletRequest request,
+                         HttpServletResponse response) throws ServletException, IOException  {
         String jspPage = "/secure/info.jsp";
         HttpSession session = request.getSession(true);
 
@@ -33,11 +54,6 @@ public class SecureController extends BaseController {
         }
 
         dispatch(jspPage, request, response);
-    }
-
-    protected void doGet(HttpServletRequest request,
-                         HttpServletResponse response) throws ServletException, IOException  {
-        doPost(request, response);
     }
 
 }

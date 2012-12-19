@@ -10,11 +10,13 @@ import java.util.Set;
 
 public class UserRoleGroup implements Serializable, Group {
     private String name = null;
+    private String id = null;
     private Set<Principal> users = new HashSet<Principal>();
 
-    public UserRoleGroup(String name) {
+    public UserRoleGroup(String name, String roleId) {
         super();
         this.name = name;
+        this.id = roleId;
     }
     @Override
     public boolean addMember(Principal user) {
@@ -39,5 +41,13 @@ public class UserRoleGroup implements Serializable, Group {
     @Override
     public String getName() {
         return name;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }
