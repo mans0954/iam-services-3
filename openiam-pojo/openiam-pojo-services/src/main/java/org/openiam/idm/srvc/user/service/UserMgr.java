@@ -403,6 +403,37 @@ public class UserMgr implements UserDataService {
     public List<User> findBeans(UserSearchBean searchBean){
         return findBeans(searchBean, -1, -1);
     }
+    
+    private List<String> getUserIds(final UserSearchBean searchBean) {
+    	final List<List<String>> nonEmptyListOfLists = new LinkedList<List<String>>();
+		
+		nonEmptyListOfLists.add(userSearchDAO.findIds(null, searchBean));
+		
+		if(StringUtils.isNotBlank(searchBean.getPrincipal())) {
+			final LoginSearchBean loginSearchBean = new LoginSearchBean();
+			loginSearchBean.setLogin(StringUtils.trimToNull(searchBean.getPrincipal()));
+			nonEmptyListOfLists.add(loginSearchDAO.findUserIds(loginSearchBean));
+		}
+		
+		//remove null or empty lists
+		for(final Iterator<List<String>> it = nonEmptyListOfLists.iterator(); it.hasNext();) {
+			final List<String> list = it.next();
+			if(CollectionUtils.isEmpty(list)) {
+				it.remove();
+			}
+		}
+		
+		List<String> finalizedIdList = null;
+		for(final Iterator<List<String>> it = nonEmptyListOfLists.iterator(); it.hasNext();) {
+			if(finalizedIdList == null) {
+				finalizedIdList = it.next();
+			} else {
+				finalizedIdList = ListUtils.intersection(finalizedIdList, it.next());
+			}
+		}
+		
+		return (finalizedIdList != null) ? finalizedIdList : Collections.EMPTY_LIST;
+    }
 
     public List<User> findBeans(UserSearchBean searchBean, int from, int size){
     	List<UserEntity> entityList = null;
@@ -413,40 +444,21 @@ public class UserMgr implements UserDataService {
     			entityList.add(entity);
     		}
     	} else {
-    		final List<List<String>> nonEmptyListOfLists = new LinkedList<List<String>>();
-    		
-    		nonEmptyListOfLists.add(userSearchDAO.findIds(null, searchBean));
-    		
-    		if(StringUtils.isNotBlank(searchBean.getPrincipal())) {
-    			final LoginSearchBean loginSearchBean = new LoginSearchBean();
-    			loginSearchBean.setLogin(StringUtils.trimToNull(searchBean.getPrincipal()));
-    			nonEmptyListOfLists.add(loginSearchDAO.findUserIds(loginSearchBean));
-    		}
-    		
-    		//remove null or empty lists
-    		for(final Iterator<List<String>> it = nonEmptyListOfLists.iterator(); it.hasNext();) {
-    			final List<String> list = it.next();
-    			if(CollectionUtils.isEmpty(list)) {
-    				it.remove();
+    		List<String> finalizedIdList = getUserIds(searchBean);
+    		if(finalizedIdList != null && finalizedIdList.size() >= from) {
+    			int to = from + size;
+    			if(to > finalizedIdList.size()) {
+    				to = finalizedIdList.size();
     			}
+    			finalizedIdList = new ArrayList<String>(finalizedIdList.subList(from, to));
+    			entityList = userDao.findByIds(finalizedIdList);
     		}
-    		
-    		List<String> finalizedIdList = null;
-    		for(final Iterator<List<String>> it = nonEmptyListOfLists.iterator(); it.hasNext();) {
-    			if(finalizedIdList == null) {
-    				finalizedIdList = it.next();
-    			} else {
-    				finalizedIdList = ListUtils.intersection(finalizedIdList, it.next());
-    			}
-    		}
-    		
-    		entityList = userDao.findByIds(finalizedIdList);
     	}
     	return userDozerConverter.convertToDTOList(entityList, false);
     }
 
     public int count(UserSearchBean searchBean){
-      return userSearchDAO.count(searchBean);
+    	return getUserIds(searchBean).size();
     }
 
     /* -------- Methods for Attributes ---------- */
