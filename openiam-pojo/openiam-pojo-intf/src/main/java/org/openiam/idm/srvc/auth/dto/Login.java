@@ -48,7 +48,8 @@ import java.util.Set;
         "prevLogin",
         "pswdResetToken",
         "pswdResetTokenExp",
-        "loginId"
+        "loginId",
+        "lastUpdate"
 })
 @XmlSeeAlso({
         Subject.class,
@@ -128,6 +129,8 @@ public class Login implements java.io.Serializable {
     protected String origPrincipalName;
     
     protected String managedSysName;
+    
+    private Date lastUpdate;
 
 
     public Login() {
@@ -417,6 +420,14 @@ public class Login implements java.io.Serializable {
 		this.loginId = loginId;
 	}
 
+	public Date getLastUpdate() {
+		return lastUpdate;
+	}
+
+	public void setLastUpdate(Date lastUpdate) {
+		this.lastUpdate = lastUpdate;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -446,6 +457,8 @@ public class Login implements java.io.Serializable {
 				+ ((lastLogin == null) ? 0 : lastLogin.hashCode());
 		result = prime * result
 				+ ((lastLoginIP == null) ? 0 : lastLoginIP.hashCode());
+		result = prime * result
+				+ ((lastUpdate == null) ? 0 : lastUpdate.hashCode());
 		result = prime * result + ((login == null) ? 0 : login.hashCode());
 		result = prime * result + ((loginId == null) ? 0 : loginId.hashCode());
 		result = prime * result
@@ -556,6 +569,11 @@ public class Login implements java.io.Serializable {
 				return false;
 		} else if (!lastLoginIP.equals(other.lastLoginIP))
 			return false;
+		if (lastUpdate == null) {
+			if (other.lastUpdate != null)
+				return false;
+		} else if (!lastUpdate.equals(other.lastUpdate))
+			return false;
 		if (login == null) {
 			if (other.login != null)
 				return false;
@@ -644,5 +662,7 @@ public class Login implements java.io.Serializable {
 			return false;
 		return true;
 	}
+
+	
 }
 

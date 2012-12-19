@@ -10,8 +10,11 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.search.annotations.DocumentId;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Index;
+import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Store;
 import org.openiam.base.AttributeOperationEnum;
+import org.openiam.core.dao.lucene.LuceneId;
+import org.openiam.core.dao.lucene.LuceneLastUpdate;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.SSOToken;
@@ -28,6 +31,8 @@ import java.util.Set;
 @Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(Login.class)
+@Indexed
+@Embeddable
 public class LoginEntity implements java.io.Serializable {
     private static final long serialVersionUID = -1972779170001619759L;
     
@@ -35,8 +40,11 @@ public class LoginEntity implements java.io.Serializable {
     @GeneratedValue(generator = "system-uuid")
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
 	@Column(name = "LOGIN_ID", length = 32, nullable = false)
+    @LuceneId
+    @DocumentId
     private String loginId;
     
+    @Field(name = "domainId", index = Index.UN_TOKENIZED, store = Store.YES)
     @Column(name="SERVICE_ID",length=20)
     private String domainId;
     
@@ -44,9 +52,11 @@ public class LoginEntity implements java.io.Serializable {
     @Column(name="LOGIN",length=320)
     private String login;
     
+    @Field(name = "managedSysId", index = Index.UN_TOKENIZED, store = Store.YES)
     @Column(name="MANAGED_SYS_ID",length=50)
     private String managedSysId;
 
+    @Field(name = "userId", index = Index.UN_TOKENIZED, store = Store.YES)
     @Column(name="USER_ID",length=32)
     protected String userId;
 
@@ -140,6 +150,9 @@ public class LoginEntity implements java.io.Serializable {
     @Fetch(FetchMode.SUBSELECT)
     protected Set<LoginAttributeEntity> loginAttributes = new HashSet<LoginAttributeEntity>(0);
 
+    @Column(name = "LAST_UPDATE", length = 19)
+    @LuceneLastUpdate
+    private Date lastUpdate;
 
     public LoginEntity() {
     }
@@ -386,6 +399,14 @@ public class LoginEntity implements java.io.Serializable {
 		this.managedSysId = managedSysId;
 	}
 
+	public Date getLastUpdate() {
+		return lastUpdate;
+	}
+
+	public void setLastUpdate(Date lastUpdate) {
+		this.lastUpdate = lastUpdate;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -415,6 +436,8 @@ public class LoginEntity implements java.io.Serializable {
 				+ ((lastLogin == null) ? 0 : lastLogin.hashCode());
 		result = prime * result
 				+ ((lastLoginIP == null) ? 0 : lastLoginIP.hashCode());
+		result = prime * result
+				+ ((lastUpdate == null) ? 0 : lastUpdate.hashCode());
 		result = prime * result + ((login == null) ? 0 : login.hashCode());
 		result = prime * result + ((loginId == null) ? 0 : loginId.hashCode());
 		result = prime * result
@@ -515,6 +538,11 @@ public class LoginEntity implements java.io.Serializable {
 			if (other.lastLoginIP != null)
 				return false;
 		} else if (!lastLoginIP.equals(other.lastLoginIP))
+			return false;
+		if (lastUpdate == null) {
+			if (other.lastUpdate != null)
+				return false;
+		} else if (!lastUpdate.equals(other.lastUpdate))
 			return false;
 		if (login == null) {
 			if (other.login != null)

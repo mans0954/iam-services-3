@@ -16,6 +16,7 @@ import org.hibernate.FetchMode;
 import org.hibernate.LockOptions;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Example;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,6 +61,10 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable>
 
     protected Criteria getExampleCriteria(T t) {
         return getCriteria().add(Example.create(t));
+    }
+    
+    protected DetachedCriteria getDetachedCriteria() {
+    	return DetachedCriteria.forClass(domainClass);
     }
 
     @Override

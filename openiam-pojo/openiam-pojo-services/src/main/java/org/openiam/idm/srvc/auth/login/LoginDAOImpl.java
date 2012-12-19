@@ -5,6 +5,7 @@ package org.openiam.idm.srvc.auth.login;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.*;
+import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDao;
 import org.openiam.core.dao.BaseDaoImpl;
