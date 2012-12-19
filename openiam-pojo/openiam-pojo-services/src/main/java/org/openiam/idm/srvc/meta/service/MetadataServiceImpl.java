@@ -42,7 +42,7 @@ public class MetadataServiceImpl implements MetadataService {
         MetadataElementEntity element = metaDataElementDozerConverter
                 .convertToEntity(metadataElement, true);
         metadataElementDao.save(element);
-        return metadataElement;
+        return metaDataElementDozerConverter.convertToDTO(element, true);
     }
 
     public MetadataType addMetadataType(MetadataType type) {
@@ -142,16 +142,13 @@ public class MetadataServiceImpl implements MetadataService {
         if (elementId == null) {
             throw new NullPointerException("elementId is null");
         }
-        MetadataElement element = new MetadataElement(elementId);
-        metadataElementDao.delete(metaDataElementDozerConverter
-                .convertToEntity(element, true));
+        metadataElementDao.delete(metadataElementDao.findById(elementId));
     }
 
     public void removeMetadataType(String typeId) {
         if (typeId == null) {
             throw new NullPointerException("typeId is null");
         }
-        metadataElementDao.removeByParentId(typeId);
         MetadataTypeEntity type = metadataTypeDao.findById(typeId);
         if (type != null)
             metadataTypeDao.delete(type);

@@ -20,17 +20,18 @@ public class CategoryDataServiceImpl implements CategoryDataService {
     CategoryLanguageDAO categoryLanguageDao;
     @Autowired
     CategoryDozerConverter categoryDozerConverter;
-    private static final Log log = LogFactory
-            .getLog(CategoryDataServiceImpl.class);
+    private static final Log log = LogFactory.getLog(CategoryTestTouch.class);
 
     @Transactional
-    public void addCategory(Category cat) {
+    public Category addCategory(Category cat) {
         if (cat == null) {
             throw (new NullPointerException("Category object is null"));
         }
         CategoryEntity catEntity = categoryDozerConverter.convertToEntity(cat,
                 true);
         categoryDao.save(catEntity);
+
+        return categoryDozerConverter.convertToDTO(catEntity, true);
     }
 
     public List<Category> getAllCategories(boolean nested) {
@@ -139,6 +140,6 @@ public class CategoryDataServiceImpl implements CategoryDataService {
         if (cat == null) {
             throw (new NullPointerException("Category object is null"));
         }
-        categoryDao.save(categoryDozerConverter.convertToEntity(cat, true));
+        categoryDao.merge(categoryDozerConverter.convertToEntity(cat, true));
     }
 }

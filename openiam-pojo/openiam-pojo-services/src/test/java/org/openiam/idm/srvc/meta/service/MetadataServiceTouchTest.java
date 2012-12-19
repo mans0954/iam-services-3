@@ -27,81 +27,77 @@ public class MetadataServiceTouchTest extends
     @Autowired
     CategoryDataService categoryDataService;
 
-    @Test(enabled = false)
+    @Test
     public void addMetadataElement() {
         metadataService.addMetadataElement(new MetadataElement());
     }
 
-    @Test(enabled = false)
+    @Test
     public void addMetadataType() {
-
         metadataService.addMetadataType(this.addMetadataTypeRecord());
-
     }
 
-    @Test(enabled = false)
+    @Test
     public void addTypeToCategory() {
-        MetadataType type = this.addMetadataTypeRecord();
-        Category category = new Category();
-        metadataService.addMetadataType(type);
-        categoryDataService.addCategory(category);
-        metadataService.addTypeToCategory(type.getMetadataTypeId(),
-                category.getCategoryId());
+        metadataService
+                .addTypeToCategory(
+                        metadataService.addMetadataType(
+                                this.addMetadataTypeRecord())
+                                .getMetadataTypeId(), categoryDataService
+                                .addCategory(new Category()).getCategoryId());
     }
 
-    @Test(enabled = false)
+    @Test
     public void getAllElementsForCategoryType() {
         metadataService.getAllElementsForCategoryType("");
     }
 
-    @Test(enabled = false)
+    @Test
     public void getMetadataElementById() {
         metadataService.getMetadataElementById("");
     }
 
-    @Test(enabled = false)
+    @Test
     public void getMetadataElementByType() {
         metadataService.getMetadataElementByType("");
     }
 
-    @Test(enabled = false)
+    @Test
     public void getMetadataType() {
         metadataService.getMetadataType("");
     }
 
-    @Test(enabled = false)
+    @Test
     public void getMetadataTypes() {
         metadataService.getMetadataTypes();
     }
 
-    @Test(enabled = false)
+    @Test
     public void getTypesInCategory() {
         metadataService.getTypesInCategory("");
     }
 
-    @Test(enabled = false)
+    @Test
     public void removeMetadataElement() {
-        MetadataElement element = new MetadataElement();
-        metadataService.addMetadataElement(element);
-        metadataService.removeMetadataElement(element.getMetadataElementId());
+        metadataService.removeMetadataElement(metadataService
+                .addMetadataElement(new MetadataElement())
+                .getMetadataElementId());
     }
 
-    @Test(enabled = false)
+    @Test
     public void removeMetadataType() {
-        MetadataType mt = this.addMetadataTypeRecord();
-        metadataService.addMetadataType(mt);
-        metadataService.removeMetadataType("");
+        MetadataType mt = metadataService.addMetadataType(this
+                .addMetadataTypeRecord());
+        metadataService.removeMetadataType(mt.getMetadataTypeId());
     }
 
-    @Test(enabled = false)
+    @Test
     public void removeTypeFromCategory() {
-        MetadataType element = new MetadataType();
-        metadataService.addMetadataType(element);
-
-        Category category = new Category();
-        categoryDataService.addCategory(category);
-        metadataService.removeTypeFromCategory(element.getMetadataTypeId(),
-                category.getCategoryId());
+        metadataService
+                .removeTypeFromCategory(
+                        metadataService.addMetadataType(new MetadataType())
+                                .getMetadataTypeId(), categoryDataService
+                                .addCategory(new Category()).getCategoryId());
     }
 
     private MetadataType addMetadataTypeRecord() {

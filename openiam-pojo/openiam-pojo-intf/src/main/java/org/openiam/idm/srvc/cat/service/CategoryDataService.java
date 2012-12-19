@@ -39,8 +39,9 @@ public interface CategoryDataService {
      * Adds a new category to the system. CategoryId should not be assigned since is auto-generated
      *
      * @param cat
+     * @return 
      */
-    public void addCategory(Category cat);
+    public Category addCategory(Category cat);
 
     /**
      * Updates an existing category

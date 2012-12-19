@@ -38,9 +38,10 @@ public class MetadataElementDAOImpl extends
     public void removeByParentId(String id) {
         try {
             Session session = sessionFactory.getCurrentSession();
-            Query qry = session.createQuery("delete " + domainClass.getName()
-                    + " as me " + " where me.metadataTypeId = :id ");
-            qry.setString("id", id);
+            Query qry = session.createQuery("delete from "
+                    + domainClass.getSimpleName()
+                    + " me where me.metadataTypeId = :id_t");
+            qry.setString("id_t", id);
             qry.executeUpdate();
         } catch (HibernateException re) {
             log.error("get failed", re);
