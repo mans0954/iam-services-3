@@ -28,6 +28,9 @@ import org.openiam.dozer.converter.PolicyDefDozerConverter;
 import org.openiam.dozer.converter.PolicyDefParamDozerConverter;
 import org.openiam.dozer.converter.PolicyDozerConverter;
 import org.openiam.dozer.converter.PolicyObjectAssocDozerConverter;
+import org.openiam.idm.srvc.policy.domain.PolicyDefEntity;
+import org.openiam.idm.srvc.policy.domain.PolicyEntity;
+import org.openiam.idm.srvc.policy.domain.PolicyObjectAssocEntity;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyDef;
 import org.openiam.idm.srvc.policy.dto.PolicyDefParam;
@@ -88,8 +91,10 @@ public class PolicyDataServiceImpl implements PolicyDataService {
         if (policyDefId == null) {
             throw new NullPointerException("policyDefId is null");
         }
-        return policyDefDozerConverter.convertToDTO(
-                policyDefDao.findById(policyDefId), false);
+        PolicyDefEntity pde = policyDefDao.findById(policyDefId);
+        if (pde == null)
+            return null;
+        return policyDefDozerConverter.convertToDTO(pde, false);
 
     }
 
@@ -150,8 +155,10 @@ public class PolicyDataServiceImpl implements PolicyDataService {
         if (policyId == null) {
             throw new NullPointerException("PolicyId is null");
         }
-        return policyDozerConverter.convertToDTO(policyDao.findById(policyId),
-                true);
+        PolicyEntity p = policyDao.findById(policyId);
+        if (p == null)
+            return null;
+        return policyDozerConverter.convertToDTO(p, true);
     }
 
     /**
@@ -244,6 +251,10 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 
     @Override
     public PolicyObjectAssoc findAssociationByLevel(String level, String value) {
+        PolicyObjectAssocEntity poae = policyObjectAssocDAO
+                .findAssociationByLevel(level, value);
+        if (poae == null)
+            return null;
         return policyObjectAssocDozerConverter.convertToDTO(
                 policyObjectAssocDAO.findAssociationByLevel(level, value),
                 false);
