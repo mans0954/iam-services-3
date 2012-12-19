@@ -11,6 +11,9 @@
     <title></title>
 </head>
 <body>
-      Login error page
+      <h2 style="color: red">${requestScope.errorMessage}</h2>
+      <br/>
+      <br/>
+      <a href="login">Please try to login again</a>
 </body>
 </html>

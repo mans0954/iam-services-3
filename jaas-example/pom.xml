@@ -57,51 +57,14 @@
     <properties>
         <maven.compiler.plugin.version>2.3.2</maven.compiler.plugin.version>
         <maven.war.plugin.version>2.0.2</maven.war.plugin.version>
-
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <org.slf4j.version>1.6.2</org.slf4j.version>
-        <spring.version>3.1.1.RELEASE</spring.version>
         <javax.jstl.version>1.2</javax.jstl.version>
         <javax.servlet.version>3.0.1</javax.servlet.version>
-        <junit.version>4.9</junit.version>
-        <commons.codec.version>1.3</commons.codec.version>
-        <commons.collections.version>3.2.1</commons.collections.version>
-        <jackson.version>1.8.5</jackson.version>
-        <validation-api.version>1.0.0.GA</validation-api.version>
-        <hibernate-validator.version>4.3.0.Final</hibernate-validator.version>
-        <cglib.version>2.2.2</cglib.version>
-        <commons.fileupload.version>1.2.2</commons.fileupload.version>
-        <apache.velocity.version>1.7</apache.velocity.version>
-        <javax.mail.version>1.4.1</javax.mail.version>
         <openiam.version>3.0.0</openiam.version>
         <maven.build.timestamp.format>yyyy/MM/dd HH:mm Z</maven.build.timestamp.format>
     </properties>
     <!-- Dependencies -->
     <dependencies>
-        <dependency>
-            <groupId>org.apache.santuario</groupId>
-            <artifactId>xmlsec</artifactId>
-            <version>1.4.2</version>
-        </dependency>
-
-
-        <!-- Logger dependencies -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${org.slf4j.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>jcl-over-slf4j</artifactId>
-            <version>${org.slf4j.version}</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>${org.slf4j.version}</version>
-        </dependency>
 
         <!-- Servlet dependency -->
         <dependency>
@@ -118,23 +81,6 @@
         </dependency>
 
 
-
-        <!-- Commons dependencies -->
-        <dependency>
-            <groupId>commons-codec</groupId>
-            <artifactId>commons-codec</artifactId>
-            <version>${commons.codec.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-fileupload</groupId>
-            <artifactId>commons-fileupload</artifactId>
-            <version>${commons.fileupload.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-collections</groupId>
-            <artifactId>commons-collections</artifactId>
-            <version>${commons.collections.version}</version>
-        </dependency>
 
         <dependency>
             <groupId>org.openiam</groupId>

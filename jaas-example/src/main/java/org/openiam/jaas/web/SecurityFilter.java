@@ -7,16 +7,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 public class SecurityFilter implements Filter {
 
-    private Map _roster = new HashMap();
 
     public void init(FilterConfig config){
-        _roster.put("staff1", "Monday");
-        _roster.put("staff2", "Tuesday");
     }
 
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
@@ -28,21 +23,21 @@ public class SecurityFilter implements Filter {
             HttpSession session = httpRequest.getSession(true);
 
             if(httpRequest.getRequestedSessionId() != null
-               && httpRequest.isRequestedSessionIdValid() && session.getAttribute("userSubject")!=null){
+               && httpRequest.isRequestedSessionIdValid() && session.getAttribute(Constants.USER_SUBJECT)!=null){
                 chain.doFilter(request, response);
             } else {
-                LoginContext lc = (LoginContext) session.getAttribute("loginContext");
+                LoginContext lc = (LoginContext) session.getAttribute(Constants.LOGIN_CONTEXT);
 
                 if(lc!=null){
                     try {
                         lc.logout();
                     } catch (LoginException e) {
-                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                        e.printStackTrace();
                     }
                 }
 
-                session.removeAttribute("userSubject");
-                session.removeAttribute("loginContext");
+                session.removeAttribute(Constants.USER_SUBJECT);
+                session.removeAttribute(Constants.LOGIN_CONTEXT);
                 session.invalidate();
                ((HttpServletResponse)response).sendRedirect(httpRequest.getContextPath()+"/login");
             }

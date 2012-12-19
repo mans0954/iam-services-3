@@ -44,15 +44,22 @@
       <servlet-name>JaasSecureServlet</servlet-name>
       <url-pattern>/secure/info</url-pattern>
   </servlet-mapping>
-    <servlet>
-        <servlet-name>LoginServlet</servlet-name>
-        <servlet-class>org.openiam.jaas.web.LoginController</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>LoginServlet</servlet-name>
-        <url-pattern>/login</url-pattern>
-    </servlet-mapping>
-
+  <servlet>
+      <servlet-name>LoginServlet</servlet-name>
+      <servlet-class>org.openiam.jaas.web.LoginController</servlet-class>
+  </servlet>
+  <servlet-mapping>
+      <servlet-name>LoginServlet</servlet-name>
+      <url-pattern>/login</url-pattern>
+  </servlet-mapping>
+  <servlet>
+      <servlet-name>ErrorServlet</servlet-name>
+      <servlet-class>org.openiam.jaas.web.ErrorController</servlet-class>
+  </servlet>
+  <servlet-mapping>
+      <servlet-name>ErrorServlet</servlet-name>
+      <url-pattern>/login-error</url-pattern>
+  </servlet-mapping>
 
   <session-config>
     <session-timeout>30</session-timeout>
