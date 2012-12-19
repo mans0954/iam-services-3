@@ -1,31 +1,27 @@
 package org.openiam.core.dao;
 
-import static org.hibernate.criterion.Projections.rowCount;
-import static org.hibernate.criterion.Restrictions.eq;
-import java.io.Serializable;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.hibernate.Criteria;
-import org.hibernate.FetchMode;
-import org.hibernate.LockOptions;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.criterion.DetachedCriteria;
+import org.apache.log4j.Logger;
+import org.hibernate.*;
 import org.hibernate.criterion.Example;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.Serializable;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
+import static org.hibernate.criterion.Projections.rowCount;
+import static org.hibernate.criterion.Restrictions.eq;
+
 public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable>
         implements BaseDao<T, PrimaryKey> {
-    protected final Log log = LogFactory.getLog(this.getClass());
+    protected final Logger log = Logger.getLogger(this.getClass());
     protected final Class<T> domainClass;
 
     @Autowired
@@ -61,10 +57,6 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable>
 
     protected Criteria getExampleCriteria(T t) {
         return getCriteria().add(Example.create(t));
-    }
-    
-    protected DetachedCriteria getDetachedCriteria() {
-    	return DetachedCriteria.forClass(domainClass);
     }
 
     @Override

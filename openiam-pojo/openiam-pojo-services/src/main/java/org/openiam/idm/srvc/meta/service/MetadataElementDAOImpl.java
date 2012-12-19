@@ -39,7 +39,7 @@ public class MetadataElementDAOImpl extends
         try {
             Session session = sessionFactory.getCurrentSession();
             Query qry = session.createQuery("delete " + domainClass.getName()
-                    + "as me " + " where me.metadataTypeId = :id ");
+                    + " as me " + " where me.metadataTypeId = :id ");
             qry.setString("id", id);
             qry.executeUpdate();
         } catch (HibernateException re) {

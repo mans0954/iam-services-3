@@ -2,55 +2,366 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:util="http://www.springframework.org/schema/util"
        xmlns:aop="http://www.springframework.org/schema/aop"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
        http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
        http://www.springframework.org/schema/context
        http://www.springframework.org/schema/context/spring-context-3.1.xsd
        http://www.springframework.org/schema/aop
-       http://www.springframework.org/schema/aop/spring-aop-3.1.xsd">
+       http://www.springframework.org/schema/aop/spring-aop-3.1.xsd
+       http://www.springframework.org/schema/util 
+       http://www.springframework.org/schema/util/spring-util-3.0.xsd">
 
     <aop:aspectj-autoproxy proxy-target-class="true"/>
 
     <context:annotation-config/>
 
-    <context:component-scan base-package="org.openiam.idm.srvc.user.service,
+    <context:component-scan base-package="org.openiam.idm.srvc.user.ws,
+    									  org.openiam.idm.srvc.user.service,
+    									  org.openiam.idm.srvc.user.dao,
+    									  org.openiam.idm.srvc.role.service,
+    									  org.openiam.idm.srvc.grp.service,
                                           org.openiam.idm.srvc.res.service,
+                                          org.openiam.idm.srvc.continfo.service,
                                           org.openiam.idm.srvc.searchbean.converter,
+                                          org.openiam.idm.srvc.org.service,
+                                          org.openiam.idm.srvc.meta.service,
+                                          org.openiam.idm.srvc.cat.service,
+                                          org.openiam.idm.srvc.auth.login,
+                                          org.openiam.idm.srvc.secdomain.service,
+                                          org.openiam.idm.srvc.policy.service,
+                                          org.openiam.idm.srvc.pswd.service,
+                                          org.openiam.idm.srvc.audit.service,
+                                          org.openiam.core.dao,
     								      org.openiam.dozer*"/>
-    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-        <property name="locations">
-            <list>
-                <value>classpath:datasource.properties</value>
-                <value>file:/data/openiam/conf/datasource.properties</value>
-            </list>
-        </property>
-        <property name="ignoreResourceNotFound" value="true"/>
+    								      
+<bean id="springContextProvider" class="org.openiam.util.SpringContextProvider" />
+	
+
+	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+  			<list>
+				<value>classpath:datasource.properties</value>
+				<value>classpath:iam-plugin.properties</value>
+                <value>classpath:securityconf.properties</value>
+				<value>file:/data/openiam/conf/datasource.properties</value>
+		        <value>file:/data/openiam/conf/iam-plugin.properties</value>
+                <value>file:/data/openiam/conf/securityconf.properties</value>
+			</list>
+		</property>
+		<property name="ignoreResourceNotFound" value="true" />
+	</bean>
+
+    <bean id="dbType" class="java.lang.String" factory-method="valueOf">
+        <constructor-arg index="0" value="${openiam.dbType}" />
+    </bean>
+	
+	<bean id="sysConfiguration" class="org.openiam.base.SysConfiguration">
+		<property name="defaultManagedSysId" value="${openiam.default_managed_sys}" />
+		<property name="defaultSecurityDomain" value="${openiam.default_sec_domain}" />
+	</bean>
+
+    <!-- HEARTBEAT Beans -->
+
+    <bean id="heartBeat" class="org.openiam.idm.srvc.health.HeartBeatWebServiceImpl">
     </bean>
 
-    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource"/>
+	<!-- Authentication Beans -->
+	<bean id="authenticate" class="org.openiam.idm.srvc.auth.service.AuthenticationServiceImpl">
+		<property name="defaultLoginModule" ref="defaultLoginModuleManager" />
+		<property name="authStateDao" ref="authStateDAO" />
+		<property name="loginManager" ref="loginManager" />
+		<property name="secDomainService" ref="secDomainService" />
+		<property name="authContextClass" value="org.openiam.idm.srvc.auth.context.AuthenticationContextImpl" />
+		<property name="defaultToken" ref="defaultSSOToken" />
+		<property name="userManager" ref="userManager" />
+		<property name="groupManager" ref="groupManager" />
+		<property name="roleManager" ref="roleDataService" />
+		<property name="cryptor" ref="cryptor" />
+		<property name="sysConfiguration" ref="sysConfiguration" />
+		<property name="scriptEngine" value="org.openiam.script.GroovyScriptEngineIntegration" />
+        <property name="resourceService" ref="resourceDataService" />
+        <property name="passwordManager" ref="passwordManager" />
+		<property name="dozerUtils" ref="dozerUtils" />
+	</bean>
+	<bean id="dozerUtils" class="org.openiam.dozer.DozerUtils">
+		<property name="deepMapper" ref="deepDozerMapper"/>
+		<property name="shallowMapper" ref="shallowDozerMapper"/>
+	</bean>
+	<bean id="defaultLoginModuleManager" class="org.openiam.idm.srvc.auth.spi.DefaultLoginModule" >
+	</bean>
 
-    <bean id="sessionFactory" class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
-        <property name="hibernateProperties">
-            <props>
-                <prop key="hibernate.bytecode.use_reflection_optimizer">true</prop>
-                <prop key="hibernate.cache.use_second_level_cache">false</prop>
-                <prop key="hibernate.connection.autocommit">false</prop>
-                <prop key="hibernate.cache.use_query_cache">false</prop>
-                <prop key="hibernate.generate_statistics">false</prop>
-                <prop key="hibernate.connection.isolation">2</prop>
-                <prop key="hibernate.dialect">org.hibernate.dialect.HSQLDialect</prop>
-                <prop key="hibernate.show_sql">false</prop>
-                <prop key="hibernate.format_sql">false</prop>
-                <prop key="hibernate.hbm2ddl.auto">create-drop</prop>
-                <prop key="hibernate.connection.driver_class">org.hsqldb.jdbcDriver</prop>
-                <prop key="hibernate.connection.url">jdbc:hsqldb:mem:testdb;ignorecase=true;get_column_name=true</prop>
-                <prop key="hibernate.connection.username">SA</prop>
-                <prop key="hibernate.connection.password"/>
-            </props>
-        </property>
+	<bean id="defaultSSOToken" class="org.openiam.idm.srvc.auth.sso.DefaultTokenModule" >
+        <property name="cryptor" ref="cryptor" />
+	</bean>
 
-        <property name="packagesToScan" value="org.openiam.core.domain*,
+
+			
+	<!-- Service Beans -->
+	<bean id="serviceManager" class="org.openiam.idm.srvc.service.service.ServiceMgr">
+		<constructor-arg ref="serviceDAO"></constructor-arg>
+	</bean>
+	
+	<bean id="serviceDAO" class="org.openiam.idm.srvc.service.service.ServiceDAOImpl">
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>
+
+ <!-- QueryDataService  -->
+	<bean id="queryWS" class="org.openiam.idm.srvc.qry.ws.QueryDataWebServiceImpl" >
+		<property name="queryService" ref="queryDataService" />
+	</bean>
+	
+	<bean id="queryDataService" class="org.openiam.idm.srvc.qry.service.QueryDataServiceImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>	
+	</bean>	
+	
+	<util:list id="hibernateSearchDAOs" list-class="java.util.ArrayList">
+		<ref bean="userSearchDAO" />
+	</util:list>
+	
+	<bean id="addressDAO" class="org.openiam.idm.srvc.continfo.service.AddressDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>
+
+	<bean id="emailAddressDAO" class="org.openiam.idm.srvc.continfo.service.EmailAddressDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>	
+
+	<bean id="phoneDAO" class="org.openiam.idm.srvc.continfo.service.PhoneDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>	
+	
+
+	<bean id="seqGenDAO" class="org.openiam.base.id.SequenceGenDAOImpl">
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>
+	
+	<!-- Menu Beans -->
+	<bean id="navigatorWS" class="org.openiam.idm.srvc.menu.ws.NavigatorDataWebServiceImpl" >
+		<property name="navigatorDataService" ref="navigatorDataService" />
+	</bean>
+	
+	<bean id="navigatorDataService" class="org.openiam.idm.srvc.menu.service.NavigatorDataServiceImpl" >
+		<property name="navigatorDao" ref="navigatorDAO" />
+		<property name="permissionDao" ref="permissionDAO" />
+	</bean>
+
+	<bean id="navigatorDAO" class="org.openiam.idm.srvc.menu.service.NavigatorDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>	
+
+	<bean id="permissionDAO" class="org.openiam.idm.srvc.menu.service.PermissionDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>	
+
+	
+	<!-- Login Beans -->
+
+	<bean id="authStateDAO" class="org.openiam.idm.srvc.auth.login.AuthStateDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>	
+	
+	<!-- Password Beans -->
+	<bean id="challengeResponse" class="org.openiam.idm.srvc.pswd.service.ChallengeResponseServiceImpl" >
+		<property name="cryptor" ref="cryptor" />
+		<property name="identityQuestGroupDao" ref="identityQuestGroupDAO" />
+		<property name="identityQuestDao" ref="identityQuestDAO" />
+		<property name="identityAnswerDao" ref="identityAnswerDAO" />	
+		<property name="loginManager" ref="loginManager" />	
+		
+		<property name="respValidatorFactory" ref="validatorFactory" />
+		<property name="respValidatorObjName" value="${challengeResponse.respValidatorObjName}" />
+		<property name="respValidatorObjType" value="${challengeResponse.respValidatorObjType}" />
+		
+		<property name="userMgr" ref="userManager" />	
+		<property name="passwordMgr" ref="passwordManager" />	
+		
+		
+	</bean>
+	
+	<bean id="validatorFactory" class="org.openiam.idm.srvc.pswd.service.ValidatorFactory" >
+		<property name="scriptEngine" value="org.openiam.script.GroovyScriptEngineIntegration" />
+	</bean>
+	
+	<bean id="challengeResponseValidator" class="org.openiam.idm.srvc.pswd.service.DefaultChallengeResponseValidator" >
+		<property name="identityQuestDao" ref="identityQuestDAO" />
+		<property name="identityAnswerDao" ref="identityAnswerDAO" />
+		<property name="cryptor" ref="cryptor" />	
+		<property name="loginManager" ref="loginManager" />	
+		
+	</bean>
+
+	<bean id="passwordWS" class="org.openiam.idm.srvc.pswd.ws.PasswordWebServiceImpl" >
+		<property name="passwordDS" ref="passwordManager" />
+	</bean>
+		
+	<bean id="passwordManager" class="org.openiam.idm.srvc.pswd.service.PasswordServiceImpl" >
+		<property name="secDomainService" ref="secDomainService" />
+		<property name="passwordValidator" ref="passwordValidator" />	
+		<property name="userManager" ref="userManager" />
+		<property name="loginManager" ref="loginManager" />
+		<property name="cryptor" ref="cryptor" />	
+		<property name="passwordHistoryDao" ref="passwordHistoryDAO" />
+        <property name="hash" ref="hash" />
+	</bean>	
+
+	<bean id="identityQuestGroupDAO" class="org.openiam.idm.srvc.pswd.service.IdentityQuestGroupDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>	
+	<bean id="identityQuestDAO" class="org.openiam.idm.srvc.pswd.service.IdentityQuestionDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>	
+	<bean id="identityAnswerDAO" class="org.openiam.idm.srvc.pswd.service.UserIdentityAnswerDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>		
+
+	<bean id="passwordValidator" class="org.openiam.idm.srvc.pswd.rule.PasswordValidatorImpl" >
+		<property name="secDomainService" ref="secDomainService" />
+		<property name="userDao" ref="userDAO" />
+		<property name="loginDao" ref="loginDAO" />
+		<property name="passwordHistoryDao" ref="passwordHistoryDAO" />	
+		<property name="cryptor" ref="cryptor" />	
+		<property name="scriptEngine" value="org.openiam.script.GroovyScriptEngineIntegration" />
+			
+	</bean>	
+
+    <!-- Reference Data Beans -->
+	<bean id="refDataService" class="org.openiam.idm.srvc.cd.service.ReferenceDataServiceImpl" >
+		<property name="refDao" ref="refDAO" />
+	</bean>
+
+	<bean id="refDAO" class="org.openiam.idm.srvc.cd.service.ReferenceDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>	
+	
+	<!-- SecurityDomain Beans -->
+
+	<bean id="secDomainService" class="org.openiam.idm.srvc.secdomain.service.SecurityDomainDataServiceImpl" >
+		<property name="secDomainDao" ref="secDomainDAO" />
+	</bean>
+
+	<bean id="secDomainDAO" class="org.openiam.idm.srvc.secdomain.service.SecurityDomainDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>	
+
+	<!-- Notification and Message Delivery Beans --> 
+	<bean id="messageWS" class="org.openiam.idm.srvc.msg.ws.SysMessageWebServiceImpl" >
+		<property name="msgService" ref="sysMessageService" />
+	</bean>
+	
+	<bean id="sysMessageService" class="org.openiam.idm.srvc.msg.service.SysMessageServiceImpl" >
+		<property name="msgDao" ref="sysMessageDAO" />
+	</bean>
+
+	<bean id="sysMessageDAO" class="org.openiam.idm.srvc.msg.service.SysMessageDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>	
+
+	<bean id="orgPolicyWS" class="org.openiam.idm.srvc.orgpolicy.ws.OrgPolicyWebServiceImpl" >
+		<property name="acceptService" ref="orgPolicyService" />
+	</bean>
+	
+	<bean id="orgPolicyService" class="org.openiam.idm.srvc.orgpolicy.service.OrgPolicyServiceImpl" >
+		<property name="acceptanceDao" ref="orgPolicyDAO" />
+		<property name="userLogDao" ref="orgPolicyLogDAO" />
+	</bean>
+
+	<bean id="orgPolicyDAO" class="org.openiam.idm.srvc.orgpolicy.service.OrgPolicyDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>	
+	<bean id="orgPolicyLogDAO" class="org.openiam.idm.srvc.orgpolicy.service.OrgPolicyUserLogDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>		
+	
+	<!-- Email Beans --> 
+	<bean id="mailService" class="org.openiam.idm.srvc.msg.service.MailServiceImpl">
+		<!-- property name="mailSender" ref="emailSender" / -->
+		<property name="mailSender" ref="mailSender" />
+		<property name="defaultSender" value="${mail.defaultSender}" />
+		<property name="subjectPrefix" value="${mail.defaultSubjectPrefix}" />
+		<property name="optionalBccAddress" value="${mail.optionalBccAddress}" />
+		<property name="userManager" ref="userWS" />
+		<property name="scriptEngine" value="org.openiam.script.GroovyScriptEngineIntegration" />
+		
+	</bean>
+	
+	<bean id="emailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+		<property name="host" value="${mail.host}" />
+		<property name="port" value="${mail.port}" />
+		<property name="username" value="${mail.username}" />
+		<property name="password" value="${mail.password}" />
+		<property name="javaMailProperties">
+			<props>
+				<prop key="mail.smtp.auth">false</prop>
+			 	<prop key="mail.smtp.starttls.enable">false</prop>
+			</props>
+		</property> 
+		
+	</bean>
+
+	<bean id="mailSender" class=" org.openiam.idm.srvc.msg.service.MailSender">
+		<property name="host" value="${mail.host}" />
+		<property name="port" value="${mail.port}" />
+		<property name="username" value="${mail.username}" />
+		<property name="password" value="${mail.password}" />
+		<property name="auth" value="false" />
+		<property name="starttls" value="false" />	
+	</bean>
+
+	<!-- Language Beans -->
+	<bean id="languageDataService" class="org.openiam.idm.srvc.lang.service.LanguageDataServiceImpl" >
+		<property name="languageDao" ref="languageDAO" />
+	</bean>
+	
+	<bean id="languageDAO" class="org.openiam.idm.srvc.lang.service.LanguageDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>		
+	<!-- Location Beans -->
+	<bean id="locationDataService" class="org.openiam.idm.srvc.loc.service.LocationDataServiceImpl" >
+		<property name="locationDao" ref="locationDAO" />
+	</bean>
+	<bean id="locationWS" class="org.openiam.idm.srvc.loc.ws.LocationDataWebServiceImpl" >
+		<property name="locationDS" ref="locationDataService" />
+	</bean>
+	
+	<bean id="locationDAO" class="org.openiam.idm.srvc.loc.service.LocationDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>		
+	
+	<!-- Utility Beans -->
+	<bean id="cryptor" class="org.openiam.util.encrypt.DESedeCryptor" >
+	</bean>	
+	<bean id="hash" class="org.openiam.util.encrypt.SHA2Hash" >
+	</bean>
+    <bean id="hash1" class="org.openiam.util.encrypt.SHA1Hash" >
+    </bean>
+    <!-- Batch related beans -->
+	<bean id="batchDataService" class="org.openiam.idm.srvc.batch.service.BatchDataServiceImpl" >
+		<property name="batchDao" ref="batchConfigDAO" />
+	</bean>
+	<bean id="batchConfigDAO" class="org.openiam.idm.srvc.batch.service.BatchConfigDAOImpl" >
+		<property name="sessionFactory" ref="sessionFactory"></property>		
+	</bean>	
+	<!-- Key Management beans -->
+    <bean id="keyManagementService" class="org.openiam.idm.srvc.key.service.KeyManagementServiceImpl">
+        <property name="jksFile" value="${iam.jks.path}" />
+        <property name="jksPassword"  value="${iam.jks.password}"  />
+        <property name="keyPassword"  value="${iam.jks.key.password}"  />
+        <property name="cryptor"  ref="cryptor"  />
+    </bean>
+
+    <bean id="ManagedSysDAO" class="org.openiam.idm.srvc.mngsys.service.ManagedSysDAOImpl" >
+        <property name="sessionFactory" ref="sessionFactory"></property>
+    </bean>
+    <bean id="managedSysObjectMatchDAO" class="org.openiam.idm.srvc.mngsys.service.ManagedSystemObjectMatchDAOImpl" >
+        <property name="sessionFactory" ref="sessionFactory"></property>
+    </bean>
+	<!-- Hibernate SessionFactory -->
+	<bean id="sessionFactory" class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+		<property name="dataSource" ref="dataSource"/>
+		<property name="hibernateProperties" ref="hibernateProperties" />
+	    <property name="packagesToScan" value="org.openiam.core.domain*,
 											   org.openiam.idm.srvc.grp.dto*,
 											   org.openiam.idm.srvc.grp.domain*,
 											   org.openiam.idm.srvc.res.dto*,
@@ -69,63 +380,79 @@
 											   org.openiam.idm.srvc.org.dto*,
 											   org.openiam.am.srvc.resattr.domain*,
 											   org.openiam.idm.srvc.cat.dto*,
+											   org.openiam.idm.srvc.cat.domain*,
                                                org.openiam.idm.srvc.continfo.domain*,
-                                               org.openiam.idm.srvc.res.domain"/>
-    </bean>
+                                               org.openiam.idm.srvc.res.domain*,
+                                               org.openiam.idm.srvc.meta.dto*,
+                                               org.openiam.idm.srvc.meta.domain*,
+                                               org.openiam.idm.srvc.policy.dto*,
+                                               org.openiam.idm.srvc.policy.domain*,
+                                               org.openiam.idm.srvc.audit.dto*,
+                                               org.openiam.idm.srvc.audit.domain*,
+                                               org.openiam.idm.srvc.pswd.domain*
+                                               "/>
 
-    <!--tx begin-->
-    <bean id="transactionManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager">
-        <property name="sessionFactory" ref="sessionFactory"/>
-    </bean>
-
-    <bean class="org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor"/>
-
-    <!--<bean id="userDAO" class="org.openiam.idm.srvc.user.service.UserDAOImpl">-->
-        <!--<property name="sessionFactory" ref="sessionFactory"/>-->
-        <!--<property name="seqGenDao" ref="seqGenDAO"/>-->
-        <!--<property name="emailSearchVal" value="EMAIL1"/>-->
-        <!--<property name="phoneSearchVal" value="Desk Phone"/>-->
-        <!--<property name="maxResultSetSize" value="${fetch.size}"/>-->
-        <!--<property name="dbType" value="${openiam.dbType}"/>-->
-    <!--</bean>-->
-
-    <!--<bean id="userAttributeDAO" class="org.openiam.idm.srvc.user.service.UserAttributeDAOImpl">-->
-        <!--<property name="sessionFactory" ref="sessionFactory"/>-->
-    <!--</bean>-->
-
-    <!--<bean id="userNoteDAO" class="org.openiam.idm.srvc.user.service.UserNoteDAOImpl">-->
-        <!--<property name="sessionFactory" ref="sessionFactory"/>-->
-    <!--</bean>-->
-
-    <bean id="addressDAO" class="org.openiam.idm.srvc.continfo.service.AddressDAOImpl">
-        <property name="sessionFactory" ref="sessionFactory"/>
-    </bean>
-
-    <bean id="emailAddressDAO" class="org.openiam.idm.srvc.continfo.service.EmailAddressDAOImpl">
-        <property name="sessionFactory" ref="sessionFactory"/>
-    </bean>
-
-    <bean id="phoneDAO" class="org.openiam.idm.srvc.continfo.service.PhoneDAOImpl">
-        <property name="sessionFactory" ref="sessionFactory"/>
-    </bean>
-
-    <!--<bean id="supervisorDAO" class="org.openiam.idm.srvc.user.service.SupervisorDAOImpl">-->
-        <!--<property name="sessionFactory" ref="sessionFactory"/>-->
-    <!--</bean>-->
-
-    <bean id="seqGenDAO" class="org.openiam.base.id.SequenceGenDAOImpl">
-        <property name="sessionFactory" ref="sessionFactory"/>
-    </bean>
-
-	<bean id="orgAttrDAO" class="org.openiam.idm.srvc.org.service.OrganizationAttributeDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"/>
 	</bean>
+	
+	<util:properties id="hibernateProperties" location="classpath:openiam.search.hibernate.properties">
+		<prop key="hibernate.dialect">${openiam.hibernate.dialect}</prop>	
+		<prop key="hibernate.show_sql">false</prop>
+		<prop key="hibernate.generate_statistics">true</prop>
+		<!--prop key="hibernate.cache.provider_class">org.hibernate.cache.EhCacheProvider</prop-->
+        <prop key="hibernate.cache.use_second_level_cache">false</prop>
+        <prop key="hibernate.cache.use_query_cache">false</prop>
+        <prop key="hibernate.use_sql_comments">true</prop>
+        <prop key="hibernate.connection.autoReconnect">true</prop>
+		<prop key="hibernate.validationQuery">${openiam.hibernate.validationQuery}</prop>
+	</util:properties>
+  	
+  	<bean id="hibernateTemplate" class="org.springframework.orm.hibernate3.HibernateTemplate">
+  		<property name="sessionFactory" ref="sessionFactory" />
+  	</bean>
+	<!-- Local DataSource that works in any environment -->
+	<!-- Note that DriverManagerDataSource does not pool; it is not intended for production -->
+	<!-- See JPetStore for an example of using Commons DBCP BasicDataSource as alternative -->
+	<!-- See Image Database for an example of using C3P0 ComboPooledDataSource as alternative -->
 
-    <bean id="userAffiliationDAO" class="org.openiam.idm.srvc.org.service.UserAffiliationDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"/>
-	</bean>
+     <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
+        <property name="driverClass" value="${openiam.driver_classname}" />
+        <property name="jdbcUrl" value="${openiam.driver_url}" />
+        <property name="user" value="${openiam.username}" />
+        <property name="password" value="${openiam.password}"/>
 
-    <bean id="userPrivilegeDAO" class="org.openiam.idm.srvc.res.service.UserPrivilegeDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"/>
-	</bean>
+        <property name="minPoolSize" value="${openiam.hibernate.minPoolSize}"/>
+        <property name="maxPoolSize" value="${openiam.hibernate.maxPoolSize}"/>
+        <property name="maxStatements" value="${openiam.hibernate.max_statement}"/>
+        <property name="idleConnectionTestPeriod" value="${openiam.hibernate.idle_test_period}"/>
+        <property name="loginTimeout" value="300"/>
+        <property name="acquireIncrement" value="${openiam.hibernate.acquireIncrement}" />
+        <property name="acquireRetryAttempts" value="${openiam.hibernate.acquireRetryAttempts}"/>
+        <property name="acquireRetryDelay" value="${openiam.hibernate.acquireRetryDelay}"/>
+        <property name="breakAfterAcquireFailure" value="${openiam.hibernate.breakAfterAcquireFailure}"/>
+        <property name="automaticTestTable" value="${openiam.hibernate.automaticTestTable}"/>
+        <property name="testConnectionOnCheckin" value="${openiam.hibernate.testConnectionOnCheckin}"/>
+     </bean>
+    <bean id="exporter"
+              class="org.springframework.jmx.export.MBeanExporter"
+              lazy-init="false">
+            <property name="autodetect" value="true" />
+            <property name="namingStrategy" ref="namingStrategy" />
+            <property name="assembler" ref="assembler" />
+    </bean>
+    <bean id="attributeSource"
+            class="org.springframework.jmx.export.annotation.AnnotationJmxAttributeSource"/>
+    <bean id="assembler"
+            class="org.springframework.jmx.export.assembler.MetadataMBeanInfoAssembler">
+        <property name="attributeSource" ref="attributeSource"/>
+    </bean>
+    <bean id="namingStrategy"
+        class="org.springframework.jmx.export.naming.MetadataNamingStrategy">
+        <property name="attributeSource" ref="attributeSource"/>
+    </bean>
+
+
+	
+	<bean id="transactionManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+    	<property name="sessionFactory" ref="sessionFactory"/>
+  	</bean>
 </beans>

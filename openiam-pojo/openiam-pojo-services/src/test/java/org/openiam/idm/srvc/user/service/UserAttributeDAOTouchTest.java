@@ -7,9 +7,11 @@ import org.springframework.test.context.testng.AbstractTransactionalTestNGSpring
 import org.springframework.test.context.transaction.TransactionConfiguration;
 import org.testng.annotations.Test;
 
-@ContextConfiguration(locations = {"classpath:applicationContext-test.xml","classpath:test-application-context.xml"})
+@ContextConfiguration(locations = { "classpath:applicationContext-test.xml",
+        "classpath:test-application-context.xml" })
 @TransactionConfiguration(transactionManager = "transactionManager", defaultRollback = true)
-public class UserAttributeDAOTouchTest extends AbstractTransactionalTestNGSpringContextTests {
+public class UserAttributeDAOTouchTest extends
+        AbstractTransactionalTestNGSpringContextTests {
 
     @Autowired
     private UserAttributeDAO userAttributeDAO;
@@ -53,6 +55,8 @@ public class UserAttributeDAOTouchTest extends AbstractTransactionalTestNGSpring
 
     @Test
     public void touchUpdate() {
-        userAttributeDAO.update(new UserAttributeEntity());
+        UserAttributeEntity userAttribute = new UserAttributeEntity();
+        userAttributeDAO.save(userAttribute);
+        userAttributeDAO.update(userAttribute);
     }
 }

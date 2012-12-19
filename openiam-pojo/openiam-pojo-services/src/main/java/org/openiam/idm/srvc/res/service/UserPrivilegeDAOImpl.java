@@ -1,17 +1,18 @@
 package org.openiam.idm.srvc.res.service;
 
+import static org.hibernate.criterion.Example.create;
+import java.util.List;
+import javax.naming.InitialContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.*;
-
-import javax.naming.InitialContext;
-import java.util.List;
-
-import static org.hibernate.criterion.Example.create;
-
+import org.hibernate.Criteria;
+import org.hibernate.HibernateException;
+import org.hibernate.LockMode;
+import org.hibernate.Query;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Order;
 import org.openiam.idm.srvc.res.domain.UserPrivilegeEntity;
-import org.openiam.idm.srvc.res.dto.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -23,14 +24,14 @@ import org.openiam.idm.srvc.res.dto.*;
 public class UserPrivilegeDAOImpl implements UserPrivilegeDAO {
 
     /** The Constant log. */
-    private static final Log log = LogFactory.getLog(UserPrivilegeDAOImpl.class);
-	
-    private SessionFactory sessionFactory;	
-	
-    public void setSessionFactory(SessionFactory session) {
-          this.sessionFactory = session;
-    }
+    private static final Log log = LogFactory
+            .getLog(UserPrivilegeDAOImpl.class);
 
+    private SessionFactory sessionFactory;
+
+    public void setSessionFactory(SessionFactory session) {
+        this.sessionFactory = session;
+    }
 
     protected SessionFactory getSessionFactory() {
         try {
@@ -43,7 +44,6 @@ public class UserPrivilegeDAOImpl implements UserPrivilegeDAO {
         }
     }
 
-	
     public void persist(UserPrivilegeEntity transientInstance) {
         log.debug("persisting UserPrivilege instance");
         try {
@@ -91,8 +91,8 @@ public class UserPrivilegeDAOImpl implements UserPrivilegeDAO {
     public UserPrivilegeEntity merge(UserPrivilegeEntity detachedInstance) {
         log.debug("merging UserPrivilege instance");
         try {
-            UserPrivilegeEntity result = (UserPrivilegeEntity) sessionFactory.getCurrentSession().merge(
-                    detachedInstance);
+            UserPrivilegeEntity result = (UserPrivilegeEntity) sessionFactory
+                    .getCurrentSession().merge(detachedInstance);
             log.debug("merge successful");
             return result;
         } catch (RuntimeException re) {
@@ -104,18 +104,18 @@ public class UserPrivilegeDAOImpl implements UserPrivilegeDAO {
     public UserPrivilegeEntity findById(java.lang.String id) {
         log.debug("getting UserPrivilege instance with id: " + id);
         try {
-            UserPrivilegeEntity instance = (UserPrivilegeEntity) sessionFactory.getCurrentSession().get(
-                    UserPrivilegeEntity.class, id);
+            UserPrivilegeEntity instance = (UserPrivilegeEntity) sessionFactory
+                    .getCurrentSession().get(UserPrivilegeEntity.class, id);
             if (instance == null) {
                 log.debug("get successful, no instance found");
             } else {
-                log.debug("get successful, instance found");			
+                log.debug("get successful, instance found");
             }
-			
-           // Hibernate.initialize(instance.getPrivilege());
+
+            // Hibernate.initialize(instance.getPrivilege());
 
             return instance;
-			
+
         } catch (RuntimeException re) {
             log.error("get failed", re);
             throw re;
@@ -126,13 +126,14 @@ public class UserPrivilegeDAOImpl implements UserPrivilegeDAO {
         log.debug("finding UserPrivilege instance by example");
         try {
             List<UserPrivilegeEntity> results = (List<UserPrivilegeEntity>) sessionFactory
-                    .getCurrentSession().createCriteria(UserPrivilegeEntity.class)
+                    .getCurrentSession()
+                    .createCriteria(UserPrivilegeEntity.class)
                     .add(create(instance)).list();
             log.debug("find by example successful, result size: "
                     + results.size());
 
-            for (UserPrivilegeEntity obj:results) {
-               // Hibernate.initialize(obj.());
+            for (UserPrivilegeEntity obj : results) {
+                // Hibernate.initialize(obj.());
             }
 
             return results;
@@ -141,23 +142,22 @@ public class UserPrivilegeDAOImpl implements UserPrivilegeDAO {
             throw re;
         }
     }
-	
-    //==================================================================
-	
-	
+
+    // ==================================================================
+
     public UserPrivilegeEntity add(UserPrivilegeEntity instance) {
         log.debug("persisting instance");
         try {
             sessionFactory.getCurrentSession().persist(instance);
             log.debug("persist successful");
 
-           // Hibernate.initialize(instance.getPrivilege());
+            // Hibernate.initialize(instance.getPrivilege());
 
             return instance;
         } catch (RuntimeException re) {
             log.error("persist failed", re);
             throw re;
-        }		
+        }
     }
 
     public void remove(UserPrivilegeEntity instance) {
@@ -168,7 +168,7 @@ public class UserPrivilegeDAOImpl implements UserPrivilegeDAO {
         } catch (HibernateException re) {
             log.error("delete failed", re);
             throw re;
-        }			
+        }
     }
 
     public UserPrivilegeEntity update(UserPrivilegeEntity instance) {
@@ -177,13 +177,13 @@ public class UserPrivilegeDAOImpl implements UserPrivilegeDAO {
             sessionFactory.getCurrentSession().merge(instance);
             log.debug("merge successful");
 
-        //    Hibernate.initialize(instance.getPrivilege());
+            // Hibernate.initialize(instance.getPrivilege());
 
             return instance;
         } catch (HibernateException re) {
             log.error("merge failed", re);
             throw re;
-        }		
+        }
     }
 
     public List<UserPrivilegeEntity> findAllUserPrivileges() {
@@ -192,22 +192,20 @@ public class UserPrivilegeDAOImpl implements UserPrivilegeDAO {
                 .addOrder(Order.asc("userId"));
         criteria.setCacheable(true);
         criteria.setCacheRegion("query.resource.findAllUserPrivileges");
-        List<UserPrivilegeEntity> result = (List<UserPrivilegeEntity>)criteria.list();
-		
-        for (UserPrivilegeEntity obj:result) {
-            //Hibernate.initialize(obj.getPrivilege());
+        List<UserPrivilegeEntity> result = (List<UserPrivilegeEntity>) criteria
+                .list();
+
+        for (UserPrivilegeEntity obj : result) {
+            // Hibernate.initialize(obj.getPrivilege());
         }
 
         return result;
     }
-	
+
     public int removeAllUserPrivileges() {
         Session session = sessionFactory.getCurrentSession();
         Query qry = session.createQuery("delete from UserPrivilegeEntity");
         return qry.executeUpdate();
     }
-	
-
-
 
 }

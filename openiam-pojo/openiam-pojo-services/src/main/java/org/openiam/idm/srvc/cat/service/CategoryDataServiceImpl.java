@@ -28,7 +28,9 @@ public class CategoryDataServiceImpl implements CategoryDataService {
         if (cat == null) {
             throw (new NullPointerException("Category object is null"));
         }
-        categoryDao.save(categoryDozerConverter.convertToEntity(cat, true));
+        CategoryEntity catEntity = categoryDozerConverter.convertToEntity(cat,
+                true);
+        categoryDao.save(catEntity);
     }
 
     public List<Category> getAllCategories(boolean nested) {

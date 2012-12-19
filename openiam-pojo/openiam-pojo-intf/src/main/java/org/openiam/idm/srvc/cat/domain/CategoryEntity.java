@@ -54,7 +54,7 @@ public class CategoryEntity implements Serializable {
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "PARENT_ID", insertable = false, updatable = false)
-    private Set<CategoryEntity> childCategories;
+    private Set<CategoryEntity> childCategories = new HashSet<CategoryEntity>(0);
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "CATEGORY_ID", insertable = false, updatable = false)

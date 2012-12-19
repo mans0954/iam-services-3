@@ -56,7 +56,7 @@ public class MetadataTypeEntity implements java.io.Serializable {
     private Map<String, MetadataElementEntity> elementAttributes = new HashMap<String, MetadataElementEntity>(
             0);
 
-    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "metadataType", fetch = FetchType.LAZY)
+    @OneToMany(orphanRemoval = true, cascade = CascadeType.DETACH, mappedBy = "metadataType", fetch = FetchType.LAZY)
     @Fetch(FetchMode.SUBSELECT)
     private Set<MetadataElementEntity> metadataElementEntities = new HashSet<MetadataElementEntity>(
             0);

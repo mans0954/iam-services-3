@@ -92,7 +92,6 @@ public class UserSearchDAO extends AbstractHibernateSearchDao<UserEntity, UserSe
 		if(clause != null) {
 			luceneQuery.add(clause, BooleanClause.Occur.MUST);
 		}
-		*/
 		
 		clause = buildGroupQuery(query.getGroupIdSet());
 		if(clause != null) {
@@ -103,9 +102,11 @@ public class UserSearchDAO extends AbstractHibernateSearchDao<UserEntity, UserSe
 		if(clause != null) {
 			luceneQuery.add(clause, BooleanClause.Occur.MUST);
 		}
+		*/
 		return luceneQuery;
 	}
 	
+	/*
 	private Query buildGroupQuery(final Collection<String> groupIdSet) {
 		BooleanQuery paramsQuery = null;
 		if(CollectionUtils.isNotEmpty(groupIdSet)) {
@@ -134,7 +135,6 @@ public class UserSearchDAO extends AbstractHibernateSearchDao<UserEntity, UserSe
 		return paramsQuery;
 	}
 	
-	/*
 	private Query buildPrincipalClause(final String principalName) {
 		if(StringUtils.isNotBlank(principalName)) {
 			return buildTokenizedClause("principal.login", principalName);
