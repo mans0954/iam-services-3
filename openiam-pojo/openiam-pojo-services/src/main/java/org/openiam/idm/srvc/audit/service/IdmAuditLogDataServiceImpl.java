@@ -14,7 +14,6 @@ import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.dto.SearchAudit;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
-import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.util.encrypt.HashDigest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +37,8 @@ public class IdmAuditLogDataServiceImpl implements IdmAuditLogDataService {
 
     @Autowired
     private HashDigest hash;
-    protected LoginDataService loginDS;
+    @Autowired
+    protected LoginDataService loginManager;
     protected SysConfiguration sysConfiguration;
 
     private static final Log sysLog = LogFactory
@@ -86,7 +86,7 @@ public class IdmAuditLogDataServiceImpl implements IdmAuditLogDataService {
     }
 
     public void updateLog(IdmAuditLog log) {
-        idmAuditLogDAO.update(idmAuditLogDozerConverter.convertToEntity(log,
+        idmAuditLogDAO.merge(idmAuditLogDozerConverter.convertToEntity(log,
                 true));
     }
 
@@ -112,7 +112,7 @@ public class IdmAuditLogDataServiceImpl implements IdmAuditLogDataService {
 
     public List<IdmAuditLog> eventsAboutUser(String principal, Date startDate) {
 
-        LoginEntity l = loginDS.getLoginByManagedSys(
+        LoginEntity l = loginManager.getLoginByManagedSys(
                 sysConfiguration.getDefaultSecurityDomain(), principal,
                 sysConfiguration.getDefaultManagedSysId());
 
@@ -120,7 +120,8 @@ public class IdmAuditLogDataServiceImpl implements IdmAuditLogDataService {
             return null;
         }
 
-        List<LoginEntity> principalList = loginDS.getLoginByUser(l.getUserId());
+        List<LoginEntity> principalList = loginManager.getLoginByUser(l
+                .getUserId());
 
         if (principalList == null || principalList.isEmpty()) {
             return null;
@@ -155,11 +156,11 @@ public class IdmAuditLogDataServiceImpl implements IdmAuditLogDataService {
     }
 
     public LoginDataService getLoginDS() {
-        return loginDS;
+        return loginManager;
     }
 
     public void setLoginDS(LoginDataService loginDS) {
-        this.loginDS = loginDS;
+        this.loginManager = loginDS;
     }
 
     public SysConfiguration getSysConfiguration() {

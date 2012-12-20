@@ -1,10 +1,10 @@
 package org.openiam.idm.srvc.audit.service;
 
-import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
-import org.openiam.idm.srvc.audit.dto.SearchAudit;
-
 import java.util.Date;
 import java.util.List;
+import org.openiam.base.SysConfiguration;
+import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.openiam.idm.srvc.audit.dto.SearchAudit;
 
 /**
  * Interface for  <code>IdmAuditLogDataService</code>. All audit logging activities
@@ -36,5 +36,6 @@ public interface IdmAuditLogDataService {
 
     List<IdmAuditLog> eventsAboutUser(String principal, Date startDate);
 
+    public void setSysConfiguration(SysConfiguration sysConfiguration);
 
 }
