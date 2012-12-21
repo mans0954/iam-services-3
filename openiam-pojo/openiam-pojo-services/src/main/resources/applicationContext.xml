@@ -71,7 +71,7 @@
 				<value>file:/data/openiam/conf/datasource.properties</value>
 		        <value>file:/data/openiam/conf/iam-plugin.properties</value>
                 <value>file:/data/openiam/conf/securityconf.properties</value>
-                <value>file:/data/openiam/conf/classpath:openiam.esb.properties</value>
+                <value>file:/data/openiam/conf/openiam.esb.properties</value>
 			</list>
 		</property>
 		<property name="ignoreResourceNotFound" value="true" />
