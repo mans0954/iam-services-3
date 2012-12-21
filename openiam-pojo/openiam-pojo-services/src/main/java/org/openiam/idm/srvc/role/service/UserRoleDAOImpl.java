@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.role.service;
 
 
+import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -15,6 +16,7 @@ import org.hibernate.LockMode;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.srvc.role.domain.UserRoleEntity;
@@ -76,5 +78,20 @@ public class UserRoleDAOImpl extends BaseDaoImpl<UserRoleEntity, String> impleme
 		final Query qry = getSession().createQuery(DELETE_BY_ROLE_ID);
 		qry.setString("roleId", roleId);
 		qry.executeUpdate();
+	}
+
+	@Override
+	public List<String> getUserIdsInRole(final Collection<String> roleIdList, final int from, final int size) {
+		final Criteria criteria = getCriteria().add(Restrictions.in("roleId", roleIdList)).setProjection(Projections.property("userId"));
+		
+		if(from > -1) {
+			criteria.setFirstResult(from);
+		}
+
+		if(size > 0) {
+			criteria.setMaxResults(size);
+		}
+		
+		return criteria.list();
 	}
 }

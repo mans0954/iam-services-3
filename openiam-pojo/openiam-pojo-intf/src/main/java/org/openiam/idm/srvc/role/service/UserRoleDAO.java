@@ -27,6 +27,7 @@ import org.openiam.idm.srvc.role.dto.UserRole;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -39,4 +40,6 @@ public interface UserRoleDAO extends BaseDao<UserRoleEntity, String> {
     public UserRoleEntity getRecord(final String userId, final String roleId);
     
     public void deleteByRoleId(final String roleId);
+    
+    public List<String> getUserIdsInRole(final Collection<String> roleIdList, final int from, final int size);
 }

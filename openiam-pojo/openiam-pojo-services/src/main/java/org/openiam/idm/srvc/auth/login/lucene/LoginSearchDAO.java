@@ -44,12 +44,12 @@ public class LoginSearchDAO extends AbstractHibernateSearchDao<LoginEntity, Logi
 		return LoginEntity.class;
 	}
 
-	public List<String> findUserIds(final LoginSearchBean query) {
+	public List<String> findUserIds(final int from, final int size, final LoginSearchBean query) {
 		final List<String> result = new ArrayList<String>();
     	if ((query != null)) {
             final Query luceneQuery = parse(query);
             if (luceneQuery != null) {
-				final List idList = findIds(buildFullTextSessionQuery(getFullTextSession(), luceneQuery, null).setProjection("userId"));
+				final List idList = findIds(buildFullTextSessionQuery(getFullTextSession(), luceneQuery, from, size, null).setProjection("userId"));
 				for (final Object row : idList) {
 					final Object[] columns = (Object[]) row;
 					final String id = (String) columns[0];

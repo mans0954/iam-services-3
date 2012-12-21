@@ -137,11 +137,6 @@
 		<property name="sessionFactory" ref="sessionFactory"></property>		
 	</bean>
 	
-	<!-- Menu Beans -->
-	<bean id="navigatorWS" class="org.openiam.idm.srvc.menu.ws.NavigatorDataWebServiceImpl" >
-		<property name="navigatorDataService" ref="navigatorDataService" />
-	</bean>
-	
 	<bean id="navigatorDataService" class="org.openiam.idm.srvc.menu.service.NavigatorDataServiceImpl" >
 		<property name="navigatorDao" ref="navigatorDAO" />
 		<property name="permissionDao" ref="permissionDAO" />

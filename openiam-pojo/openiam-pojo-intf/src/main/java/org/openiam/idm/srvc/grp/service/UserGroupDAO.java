@@ -22,11 +22,13 @@
 package org.openiam.idm.srvc.grp.service;
 
 import org.openiam.core.dao.BaseDao;
+import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.domain.UserGroupEntity;
 import org.openiam.idm.srvc.grp.dto.UserGroup;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -40,4 +42,6 @@ public interface UserGroupDAO  extends BaseDao<UserGroupEntity, String>{
     public void deleteByUserId(final String userId);
     
     public UserGroupEntity getRecord(final String groupId, final String userId);
+    
+    public List<String> getUserIdsInGroup(final Collection<String> groupIdList, final int from, final int size);
 }

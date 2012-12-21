@@ -67,9 +67,11 @@
 				<value>classpath:datasource.properties</value>
 				<value>classpath:iam-plugin.properties</value>
                 <value>classpath:securityconf.properties</value>
+                <value>classpath:openiam.esb.properties</value>
 				<value>file:/data/openiam/conf/datasource.properties</value>
 		        <value>file:/data/openiam/conf/iam-plugin.properties</value>
                 <value>file:/data/openiam/conf/securityconf.properties</value>
+                <value>file:/data/openiam/conf/classpath:openiam.esb.properties</value>
 			</list>
 		</property>
 		<property name="ignoreResourceNotFound" value="true" />
@@ -182,25 +184,6 @@
 	<bean id="seqGenDAO" class="org.openiam.base.id.SequenceGenDAOImpl">
 		<property name="sessionFactory" ref="sessionFactory"></property>		
 	</bean>
-	
-	<!-- Menu Beans -->
-	<bean id="navigatorWS" class="org.openiam.idm.srvc.menu.ws.NavigatorDataWebServiceImpl" >
-		<property name="navigatorDataService" ref="navigatorDataService" />
-	</bean>
-	
-	<bean id="navigatorDataService" class="org.openiam.idm.srvc.menu.service.NavigatorDataServiceImpl" >
-		<property name="navigatorDao" ref="navigatorDAO" />
-		<property name="permissionDao" ref="permissionDAO" />
-	</bean>
-
-	<bean id="navigatorDAO" class="org.openiam.idm.srvc.menu.service.NavigatorDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"></property>		
-	</bean>	
-
-	<bean id="permissionDAO" class="org.openiam.idm.srvc.menu.service.PermissionDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"></property>		
-	</bean>	
-
 	
 	<!-- Login Beans -->
 
@@ -463,7 +446,7 @@
 <!-- 				<value>org/openiam/idm/srvc/cat/service/CategoryType.hbm.xml</value> -->
 <!-- 				<value>org/openiam/idm/srvc/audit/service/IdmAuditLog.hbm.xml</value> -->
 				<!-- Menu Maps -->
-				<value>org/openiam/idm/srvc/menu/service/Menu.hbm.xml</value>
+				<!-- <value>org/openiam/idm/srvc/menu/service/Menu.hbm.xml</value>-->
 				<!-- <value>org/openiam/idm/srvc/menu/service/Permission.hbm.xml</value> -->
 				<!-- Util Maps -->
 				<value>org/openiam/base/id/SequenceGen.hbm.xml</value>

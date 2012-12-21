@@ -149,22 +149,6 @@
 			</service>
 		</model>
 
-		<model name="navigatorServiceModel">
-			<service name="navigatorService">
-				<inbound>
-						<inbound-endpoint address="${webservice.path}NavigationService" 		exchange-pattern="request-response">
-						<cxf:jaxws-service />
-					</inbound-endpoint>
-				</inbound>
-				<component>
-					<spring-object bean="navigatorWS" />
-				</component>
-			</service>
-		</model>
-
-
-
-
 		<model name="groupDataServiceModel">
 			<service name="groupDataService">
 				<inbound>

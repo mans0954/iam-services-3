@@ -20,6 +20,7 @@ import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
+import org.openiam.idm.srvc.role.service.UserRoleDAO;
 import org.openiam.idm.srvc.user.dao.UserSearchDAO;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
@@ -36,8 +37,10 @@ import org.openiam.idm.srvc.continfo.service.EmailAddressDAO;
 import org.openiam.idm.srvc.continfo.service.PhoneDAO;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
+import org.openiam.idm.srvc.grp.service.UserGroupDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.jws.WebMethod;
@@ -95,10 +98,19 @@ public class UserMgr implements UserDataService {
     protected LoginDozerConverter loginDozerConverter;
     
     @Autowired
+    private UserRoleDAO userRoleDAO;
+    
+    @Autowired
+    private UserGroupDAO userGroupDAO;
+    
+    @Autowired
     private UserSearchDAO userSearchDAO;
     
     @Autowired
     private LoginSearchDAO loginSearchDAO;
+    
+    @Value("${org.openiam.user.search.max.results}")
+    private int MAX_USER_SEARCH_RESULTS;
 
     private static final Log log = LogFactory.getLog(UserMgr.class);
 
@@ -407,12 +419,20 @@ public class UserMgr implements UserDataService {
     private List<String> getUserIds(final UserSearchBean searchBean) {
     	final List<List<String>> nonEmptyListOfLists = new LinkedList<List<String>>();
 		
-		nonEmptyListOfLists.add(userSearchDAO.findIds(null, searchBean));
+		nonEmptyListOfLists.add(userSearchDAO.findIds(0, MAX_USER_SEARCH_RESULTS, null, searchBean));
 		
 		if(StringUtils.isNotBlank(searchBean.getPrincipal())) {
 			final LoginSearchBean loginSearchBean = new LoginSearchBean();
 			loginSearchBean.setLogin(StringUtils.trimToNull(searchBean.getPrincipal()));
-			nonEmptyListOfLists.add(loginSearchDAO.findUserIds(loginSearchBean));
+			nonEmptyListOfLists.add(loginSearchDAO.findUserIds(0, MAX_USER_SEARCH_RESULTS, loginSearchBean));
+		}
+		
+		if(CollectionUtils.isNotEmpty(searchBean.getRoleIdSet())) {
+			nonEmptyListOfLists.add(userRoleDAO.getUserIdsInRole(searchBean.getRoleIdSet(), 0, MAX_USER_SEARCH_RESULTS));
+		}
+		
+		if(CollectionUtils.isNotEmpty(searchBean.getGroupIdSet())) {
+			nonEmptyListOfLists.add(userGroupDAO.getUserIdsInGroup(searchBean.getGroupIdSet(), 0, MAX_USER_SEARCH_RESULTS));
 		}
 		
 		//remove null or empty lists
