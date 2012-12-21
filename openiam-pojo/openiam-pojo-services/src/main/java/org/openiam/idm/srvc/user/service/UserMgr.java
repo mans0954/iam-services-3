@@ -703,24 +703,6 @@ public class UserMgr implements UserDataService {
         return attrMap;
     }
 
-    public List<UserAttribute> getUserAsAttributeList(
-            String principalName,
-            List<String> attributeList) {
-
-        List<UserAttribute> attrList = new ArrayList<UserAttribute>();
-
-
-        User u = getUserByPrincipal(sysConfiguration.getDefaultSecurityDomain(), principalName, sysConfiguration.getDefaultManagedSysId(), false);
-        if (u == null) {
-            return null;
-        }
-        UserAttribute atr = new UserAttribute("EMAIL", u.getEmail());
-        attrList.add(atr);
-
-        return attrList;
-
-
-    }
 
     /* -------- Methods for UserNotes ---------- */
     /*

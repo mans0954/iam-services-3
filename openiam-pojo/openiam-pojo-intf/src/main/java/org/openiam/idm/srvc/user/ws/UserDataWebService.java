@@ -531,13 +531,6 @@ public interface UserDataWebService {
             @WebParam(name = "userId", targetNamespace = "")
             String userId);
 
-
-    public AttributeListResponse getUserAsAttributeList(
-            @WebParam(name = "principalName", targetNamespace = "")
-            String principalName,
-            @WebParam(name = "attributeList", targetNamespace = "")
-            List<String> attributeList);
-
     
     @WebMethod
     public List<User> getUsersForResource(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,

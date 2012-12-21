@@ -826,19 +826,6 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 		return resp;
 	}
 
-    public AttributeListResponse getUserAsAttributeList (
-            String principalName,
-            List<String> attributeList) {
-    	final AttributeListResponse resp = new AttributeListResponse(ResponseStatus.SUCCESS);
-    	final  List<UserAttribute> userAttrList =  userManager.getUserAsAttributeList(principalName, attributeList);
-        if (userAttrList == null && userAttrList.isEmpty()) {
-            resp.setStatus(ResponseStatus.FAILURE);
-        }else {
-            resp.setAttributeList(userAttrList);
-        }
-        return resp;
-    }
-
 	@Override
 	public List<User> getUsersForResource(final String resourceId, final int from, final int size) {
 		final List<UserEntity> entityList = userManager.getUsersForResource(resourceId, from, size);
