@@ -140,14 +140,11 @@
 	<bean id="luceneReindexService" class="org.openiam.idm.srvc.lucene.LuceneReindexService">
 		<property name="hibernateSearchDAOs">
 			<list>
-			  <ref bean="userSearchDAO" />		  
+			  <ref bean="userSearchDAO" />
+			  <ref bean="loginSearchDAO" />
 			</list>
 		</property>
 	</bean>
-	
-	<util:list id="hibernateSearchDAOs" list-class="java.util.ArrayList">
-		<ref bean="userSearchDAO" />
-	</util:list>
 	
 	<!-- Thread Scheduling - not using annotations since the interval must be configurable -->
 	<bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
