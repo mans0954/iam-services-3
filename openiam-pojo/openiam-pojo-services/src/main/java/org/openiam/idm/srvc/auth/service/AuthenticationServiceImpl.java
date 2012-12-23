@@ -74,6 +74,7 @@ import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.secdomain.dto.SecurityDomain;
 import org.openiam.idm.srvc.secdomain.service.SecurityDomainDataService;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
@@ -372,7 +373,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         LoginEntity lg = null;
         String userId = null;
-        User user = null;
+        UserEntity user = null;
 
         SecurityDomain secDomain = secDomainService
                 .getSecurityDomain(secDomainId);
@@ -463,7 +464,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             userId = lg.getUserId();
 
             log.debug("UserId=" + userId);
-            user = userManager.getUserWithDependent(userId, false);
+            user = userManager.getUser(userId);
             log.debug("User object for " + userId + "=" + user);
         }
 
@@ -645,7 +646,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         LoginEntity lg = null;
         String userId = null;
-        User user = null;
+        UserEntity user = null;
 
         SecurityDomain secDomain = secDomainService
                 .getSecurityDomain(secDomainId);
@@ -736,8 +737,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             userId = lg.getUserId();
 
             log.debug("UserId=" + userId);
-            user = userManager.getUserWithDependent(userId, false);
-            log.debug("User object for " + userId + "=" + user);
+            user = userManager.getUser(userId);
         }
 
         try {
@@ -1029,7 +1029,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     private boolean isUserStatusValid(String userId) {
 
-        User u = userManager.getUserWithDependent(userId, false);
+        UserEntity u = userManager.getUser(userId);
 
         UserStatusEnum en = u.getStatus();
 
@@ -1089,7 +1089,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         // get the user
 
-        User user = userManager.getUserWithDependent(userId, false);
+        UserEntity user = userManager.getUser(userId);
         if (user == null) {
             // invalid user
             BooleanResponse resp = new BooleanResponse(false);

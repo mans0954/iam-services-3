@@ -36,14 +36,14 @@ public interface UserDataWebService {
       * @see org.openiam.idm.srvc.user.service.UserDataService#getUser(java.lang.String, boolean)
       */
     @WebMethod
-    public UserResponse getUserWithDependent(
+    public User getUserWithDependent(
             @WebParam(name = "id", targetNamespace = "")
             String id,
             @WebParam(name = "dependants", targetNamespace = "")
             boolean dependants);
 
     @WebMethod
-    public UserResponse getUserByPrincipal(
+    public User getUserByPrincipal(
             @WebParam(name = "securityDomain", targetNamespace = "")
             String securityDomain,
             @WebParam(name = "principal", targetNamespace = "")
@@ -58,7 +58,7 @@ public interface UserDataWebService {
       * @see org.openiam.idm.srvc.user.service.UserDataService#addUser(org.openiam.idm.srvc.user.dto.User)
       */
     @WebMethod
-    public UserResponse addUser(
+    public Response addUser(
             @WebParam(name = "user", targetNamespace = "")
             User user) throws Exception;
 
@@ -67,7 +67,7 @@ public interface UserDataWebService {
       */
 
     @WebMethod
-    public UserResponse addUserWithDependent(
+    public Response addUserWithDependent(
             @WebParam(name = "user", targetNamespace = "")
             User user,
             @WebParam(name = "dependency", targetNamespace = "")
@@ -96,37 +96,37 @@ public interface UserDataWebService {
 
 
     @WebMethod
-    public UserResponse getUserByName(
+    public User getUserByName(
             @WebParam(name = "firstName", targetNamespace = "")
             String firstName,
             @WebParam(name = "lastName", targetNamespace = "")
             String lastName);
 
     @WebMethod
-    public UserListResponse findUsersByLastUpdateRange(
+    public List<User> findUsersByLastUpdateRange(
             @WebParam(name = "startDate", targetNamespace = "")
             Date startDate,
             @WebParam(name = "endDate", targetNamespace = "")
             Date endDate);
 
     @WebMethod
-    public UserListResponse findUserByOrganization(
+    public List<User> findUserByOrganization(
             @WebParam(name = "orgId", targetNamespace = "")
             String orgId);
 
     @WebMethod
-    public UserListResponse findUsersByStatus(
+    public List<User> findUsersByStatus(
             @WebParam(name = "status", targetNamespace = "")
             String status);
 
     @WebMethod
-    public UserListResponse search(
+    public List<User> search(
             @WebParam(name = "search", targetNamespace = "")
             UserSearch search);
 
 
     @WebMethod
-    public UserListResponse searchByDelegationProperties(
+    public List<User> searchByDelegationProperties(
             @WebParam(name = "search", targetNamespace = "")
             DelegationFilterSearch search);
 
@@ -142,7 +142,7 @@ public interface UserDataWebService {
       * @see org.openiam.idm.srvc.user.service.UserDataService#addAttribute(org.openiam.idm.srvc.user.dto.UserAttribute)
       */
     @WebMethod
-    public UserAttributeResponse addAttribute(
+    public Response addAttribute(
             @WebParam(name = "attribute", targetNamespace = "")
             UserAttribute attribute);
 
@@ -159,7 +159,7 @@ public interface UserDataWebService {
       * @see org.openiam.idm.srvc.user.service.UserDataService#getAttribute(java.lang.String)
       */
     @WebMethod
-    public UserAttributeResponse getAttribute(
+    public UserAttribute getAttribute(
             @WebParam(name = "attrId", targetNamespace = "")
             String attrId);
 
@@ -169,7 +169,7 @@ public interface UserDataWebService {
     @WebMethod
     public Response removeAttribute(
             @WebParam(name = "attr", targetNamespace = "")
-            UserAttribute attr);
+            String attrId);
 
     /* (non-Javadoc)
       * @see org.openiam.idm.srvc.user.service.UserDataService#removeAllAttributes(java.lang.String)
@@ -184,7 +184,7 @@ public interface UserDataWebService {
       * @see org.openiam.idm.srvc.user.service.UserDataService#addNote(org.openiam.idm.srvc.user.dto.UserNote)
       */
     @WebMethod
-    public UserNoteResponse addNote(
+    public Response addNote(
             @WebParam(name = "note", targetNamespace = "")
             UserNote note);
 
@@ -200,7 +200,7 @@ public interface UserDataWebService {
       * @see org.openiam.idm.srvc.user.service.UserDataService#getAllNotes(java.lang.String)
       */
     @WebMethod
-    public UserNoteListResponse getAllNotes(
+    public List<UserNote> getAllNotes(
             @WebParam(name = "userId", targetNamespace = "")
             String userId);
 
@@ -208,7 +208,7 @@ public interface UserDataWebService {
       * @see org.openiam.idm.srvc.user.service.UserDataService#getNote(java.lang.String)
       */
     @WebMethod
-    public UserNoteResponse getNote(
+    public UserNote getNote(
             @WebParam(name = "noteId", targetNamespace = "")
             java.lang.String noteId);
 
@@ -218,7 +218,7 @@ public interface UserDataWebService {
     @WebMethod
     public Response removeNote(
             @WebParam(name = "note", targetNamespace = "")
-            UserNote note);
+            String noteId);
 
     /* (non-Javadoc)
       * @see org.openiam.idm.srvc.user.service.UserDataService#removeAllNotes(java.lang.String)
@@ -256,7 +256,7 @@ public interface UserDataWebService {
     @WebMethod
     public Response removeAddress(
             @WebParam(name = "address", targetNamespace = "")
-            Address address);
+            String addressId);
 
     /* (non-Javadoc)
       * @see org.openiam.idm.srvc.user.service.UserDataService#removeAllAddresses(java.lang.String)
@@ -270,7 +270,7 @@ public interface UserDataWebService {
       * @see org.openiam.idm.srvc.user.service.UserDataService#getAddressById(java.lang.String)
       */
     @WebMethod
-    public AddressResponse getAddressById(
+    public Address getAddressById(
             @WebParam(name = "addressId", targetNamespace = "")
             String addressId);
 
@@ -278,7 +278,7 @@ public interface UserDataWebService {
       * @see org.openiam.idm.srvc.user.service.UserDataService#getAddressByName(java.lang.String, java.lang.String)
       */
     @WebMethod
-    public AddressResponse getAddressByName(
+    public Address getAddressByName(
             @WebParam(name = "userId", targetNamespace = "")
             String userId,
             @WebParam(name = "addressName", targetNamespace = "")
@@ -288,7 +288,7 @@ public interface UserDataWebService {
       * @see org.openiam.idm.srvc.user.service.UserDataService#getDefaultAddress(java.lang.String)
       */
     @WebMethod
-    public AddressResponse getDefaultAddress(
+    public Address getDefaultAddress(
             @WebParam(name = "userId", targetNamespace = "")
             String userId);
 
@@ -296,7 +296,7 @@ public interface UserDataWebService {
       * @see org.openiam.idm.srvc.user.service.UserDataService#getAddressList(java.lang.String)
       */
     @WebMethod
-    public AddressListResponse getAddressList(
+    public List<Address> getAddressList(
             @WebParam(name = "userId", targetNamespace = "")
             String userId);
 
@@ -326,7 +326,7 @@ public interface UserDataWebService {
     @WebMethod
     public Response removePhone(
             @WebParam(name = "phone", targetNamespace = "")
-            Phone phone);
+            String phoneId);
 
     /* (non-Javadoc)
       * @see org.openiam.idm.srvc.user.service.UserDataService#removeAllPhones(java.lang.String)
@@ -340,7 +340,7 @@ public interface UserDataWebService {
       * @see org.openiam.idm.srvc.user.service.UserDataService#getPhoneById(java.lang.String)
       */
     @WebMethod
-    public PhoneResponse getPhoneById(
+    public Phone getPhoneById(
             @WebParam(name = "addressId", targetNamespace = "")
             String addressId);
 
@@ -348,7 +348,7 @@ public interface UserDataWebService {
       * @see org.openiam.idm.srvc.user.service.UserDataService#getPhoneByName(java.lang.String, java.lang.String)
       */
     @WebMethod
-    public PhoneResponse getPhoneByName(
+    public Phone getPhoneByName(
             @WebParam(name = "userId", targetNamespace = "")
             String userId,
             @WebParam(name = "addressName", targetNamespace = "")
@@ -358,7 +358,7 @@ public interface UserDataWebService {
       * @see org.openiam.idm.srvc.user.service.UserDataService#getDefaultPhone(java.lang.String)
       */
     @WebMethod
-    public PhoneResponse getDefaultPhone(
+    public Phone getDefaultPhone(
             @WebParam(name = "userId", targetNamespace = "")
             String userId);
 
@@ -366,7 +366,7 @@ public interface UserDataWebService {
       * @see org.openiam.idm.srvc.user.service.UserDataService#getPhoneList(java.lang.String)
       */
     @WebMethod
-    public PhoneListResponse getPhoneList(
+    public List<Phone> getPhoneList(
             @WebParam(name = "userId", targetNamespace = "")
             String userId);
 
@@ -398,7 +398,7 @@ public interface UserDataWebService {
     @WebMethod
     public Response removeEmailAddress(
             @WebParam(name = "email", targetNamespace = "")
-            EmailAddress email);
+            String emailId);
 
 
     /* (non-Javadoc)
@@ -413,7 +413,7 @@ public interface UserDataWebService {
       * @see org.openiam.idm.srvc.user.service.UserDataService#getEmailAddressById(java.lang.String)
       */
     @WebMethod
-    public EmailAddressResponse getEmailAddressById(
+    public EmailAddress getEmailAddressById(
             @WebParam(name = "addressId", targetNamespace = "")
             String addressId);
 
@@ -421,7 +421,7 @@ public interface UserDataWebService {
       * @see org.openiam.idm.srvc.user.service.UserDataService#getEmailAddressByName(java.lang.String, java.lang.String)
       */
     @WebMethod
-    public EmailAddressResponse getEmailAddressByName(
+    public EmailAddress getEmailAddressByName(
             @WebParam(name = "userId", targetNamespace = "")
             String userId,
             @WebParam(name = "addressName", targetNamespace = "")
@@ -431,7 +431,7 @@ public interface UserDataWebService {
       * @see org.openiam.idm.srvc.user.service.UserDataService#getDefaultEmailAddress(java.lang.String)
       */
     @WebMethod
-    public EmailAddressResponse getDefaultEmailAddress(
+    public EmailAddress getDefaultEmailAddress(
             @WebParam(name = "userId", targetNamespace = "")
             String userId);
 
@@ -439,12 +439,12 @@ public interface UserDataWebService {
       * @see org.openiam.idm.srvc.user.service.UserDataService#getEmailAddressList(java.lang.String)
       */
     @WebMethod
-    public EmailAddressListResponse getEmailAddressList(
+    public List<EmailAddress> getEmailAddressList(
             @WebParam(name = "userId", targetNamespace = "")
             String userId);
 
     @WebMethod
-    public SupervisorResponse addSupervisor(
+    public Response addSupervisor(
             @WebParam(name = "supervisor", targetNamespace = "")
             Supervisor supervisor);
 
@@ -456,10 +456,10 @@ public interface UserDataWebService {
     @WebMethod
     public Response removeSupervisor(
             @WebParam(name = "supervisor", targetNamespace = "")
-            Supervisor supervisor);
+            String supervisorId);
 
     @WebMethod
-    public SupervisorResponse getSupervisor(
+    public Supervisor getSupervisor(
             @WebParam(name = "supervisorObjId", targetNamespace = "")
             String supervisorObjId);
 
@@ -470,7 +470,7 @@ public interface UserDataWebService {
      * @return
      */
     @WebMethod
-    public SupervisorListResponse getSupervisors(
+    public List<Supervisor> getSupervisors(
             @WebParam(name = "employeeId", targetNamespace = "")
             String employeeId);
 
@@ -481,7 +481,7 @@ public interface UserDataWebService {
      * @return
      */
     @WebMethod
-    public SupervisorListResponse getEmployees(
+    public List<Supervisor> getEmployees(
             @WebParam(name = "supervisorId", targetNamespace = "")
             String supervisorId);
 
@@ -492,45 +492,9 @@ public interface UserDataWebService {
      * @return
      */
     @WebMethod
-    public SupervisorResponse getPrimarySupervisor(
+    public Supervisor getPrimarySupervisor(
             @WebParam(name = "employeeId", targetNamespace = "")
             String employeeId);
-
-    // methods with schema conflicts
-
-    /* (non-Javadoc)
-      * @see org.openiam.idm.srvc.user.service.UserDataService#getUser(java.lang.String)
-      */
-
-    //@TODO public User getUser(String id);
-
-
-    /* (non-Javadoc)
-      * @see org.openiam.idm.srvc.user.service.UserDataService#getPhoneMap(java.lang.String)
-      */
-    @WebMethod
-    public PhoneMapResponse getPhoneMap(
-            @WebParam(name = "userId", targetNamespace = "")
-            String userId);
-
-    /* (non-Javadoc)
-      * @see org.openiam.idm.srvc.user.service.UserDataService#getEmailAddressMap(java.lang.String)
-      */
-    @WebMethod
-    public EmailAddressMapResponse getEmailAddressMap(
-            @WebParam(name = "userId", targetNamespace = "")
-            java.lang.String userId);
-
-
-    /* (non-Javadoc)
-      * @see org.openiam.idm.srvc.user.service.UserDataService#getAddressMap(java.lang.String)
-      */
-
-    @WebMethod
-    public AddressMapResponse getAddressMap(
-            @WebParam(name = "userId", targetNamespace = "")
-            String userId);
-
     
     @WebMethod
     public List<User> getUsersForResource(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,

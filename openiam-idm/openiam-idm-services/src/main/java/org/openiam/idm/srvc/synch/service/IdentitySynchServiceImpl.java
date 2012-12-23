@@ -35,6 +35,7 @@ import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.openiam.idm.srvc.synch.dto.BulkMigrationConfig;
@@ -46,6 +47,7 @@ import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.dto.UserResourceAssociation;
 import org.openiam.provision.service.ProvisionService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author suneet
@@ -58,6 +60,9 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
     private MuleContext muleContext;
     private UserDataService userMgr;
     private ProvisionService provisionService;
+    
+    @Autowired
+    private UserDozerConverter userDozerConverter;
 
     static protected ResourceBundle res = ResourceBundle.getBundle("datasource");
 
@@ -243,7 +248,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
             return resp;
         }
 
-        List<User> searchResult =  userMgr.search(search);
+        List<User> searchResult =  userDozerConverter.convertToDTOList(userMgr.search(search), true);
 
         // all the provisioning service
         for ( User user :  searchResult) {
@@ -398,7 +403,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
             return resp;
         }
 
-        List<User> searchResult =  userMgr.search(search);
+        List<User> searchResult =  userDozerConverter.convertToDTOList(userMgr.search(search), true);
 
 
         if (searchResult == null) {

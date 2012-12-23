@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.continfo.service;
 
+import org.openiam.core.dao.BaseDao;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 
@@ -14,37 +15,8 @@ import java.util.Map;
  *
  * @author Suneet Shah
  */
-public interface PhoneDAO {
-    //extends BaseDAO<EmailAddress, String> {
-
-    /**
-     * Return an object for the id.
-     *
-     * @param id
-     */
-    PhoneEntity findById(String id);
-
-    /**
-     * Adds a new instance
-     *
-     * @param instance
-     */
-    PhoneEntity add(PhoneEntity instance);
-
-    /**
-     * Updates an existing instance
-     *
-     * @param instace
-     */
-    void update(PhoneEntity instace);
-
-    /**
-     * Removes an existing instance
-     *
-     * @param instance
-     */
-    void remove(PhoneEntity instance);
-
+public interface PhoneDAO extends BaseDao<PhoneEntity, String> {
+  
     /**
      * Persist a map of Phone objects at one time. Handles add, update, delete.
      *

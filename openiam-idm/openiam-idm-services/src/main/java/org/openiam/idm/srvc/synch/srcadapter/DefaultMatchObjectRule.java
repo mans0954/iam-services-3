@@ -65,7 +65,7 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
 		}
 		
 		userManager = (UserDataWebService) ac.getBean("userWS");
-		List<User> userList = userManager.search(search).getUserList();
+		List<User> userList = userManager.search(search);
 		
 		if (userList != null) {
 			System.out.println("User matched with existing user...");

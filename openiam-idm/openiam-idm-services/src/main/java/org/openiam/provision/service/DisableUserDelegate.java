@@ -17,6 +17,7 @@ import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
@@ -59,7 +60,7 @@ public class DisableUserDelegate {
             response.setErrorCode(ResponseCode.USER_NOT_FOUND);
             return response;
         }
-        User usr = this.userMgr.getUserWithDependent(userId, false);
+        UserEntity usr = this.userMgr.getUser(userId);
 
         if (usr == null) {
             auditHelper.addLog((operation) ? "DISABLE" : "ENABLE",

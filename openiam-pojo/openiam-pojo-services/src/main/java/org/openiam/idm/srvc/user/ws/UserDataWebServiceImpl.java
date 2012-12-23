@@ -21,6 +21,7 @@
  */
 package org.openiam.idm.srvc.user.ws;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -31,11 +32,23 @@ import javax.jws.WebParam;
 import javax.jws.WebService;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.openiam.base.ws.Response;
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.base.ws.exception.BasicDataServiceException;
 import org.openiam.dozer.DozerUtils;
+import org.openiam.dozer.converter.AddressDozerConverter;
+import org.openiam.dozer.converter.EmailAddressDozerConverter;
+import org.openiam.dozer.converter.PhoneDozerConverter;
+import org.openiam.dozer.converter.SupervisorDozerConverter;
+import org.openiam.dozer.converter.UserAttributeDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
+import org.openiam.dozer.converter.UserNoteDozerConverter;
 import org.openiam.idm.searchbeans.UserSearchBean;
+import org.openiam.idm.srvc.continfo.domain.AddressEntity;
+import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
+import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
@@ -48,13 +61,17 @@ import org.openiam.idm.srvc.continfo.ws.EmailAddressResponse;
 import org.openiam.idm.srvc.continfo.ws.PhoneListResponse;
 import org.openiam.idm.srvc.continfo.ws.PhoneMapResponse;
 import org.openiam.idm.srvc.continfo.ws.PhoneResponse;
+import org.openiam.idm.srvc.user.domain.SupervisorEntity;
+import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.domain.UserNoteEntity;
 import org.openiam.idm.srvc.user.dto.*;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 /**
  * @author suneet
@@ -66,764 +83,844 @@ import org.springframework.stereotype.Service;
 		serviceName = "UserDataWebService",
 		portName = "UserDataWebServicePort")
 public class UserDataWebServiceImpl implements UserDataWebService {
+	
+	private static Logger log = Logger.getLogger(UserDataWebServiceImpl.class);
+	
 	@Autowired
     @Qualifier("userManager")
 	private UserDataService userManager;
 	
     @Autowired
     private UserDozerConverter userDozerConverter;
+    
+    @Autowired
+    private SupervisorDozerConverter supervisorDozerConverter;
+    
+    @Autowired
+    private EmailAddressDozerConverter emailAddressDozerConverter;
+    
+    @Autowired
+    private UserNoteDozerConverter userNoteDozerConverter;
+    
+    @Autowired
+    private AddressDozerConverter addressDozerConverter;
+    
+    @Autowired
+    private UserAttributeDozerConverter userAttributeDozerConverter;
+    
+    @Autowired
+    private PhoneDozerConverter phoneDozerConverter;
 	
-	public AddressResponse addAddress(Address val) {
-		final AddressResponse resp = new AddressResponse(ResponseStatus.SUCCESS);
-		userManager.addAddress(val);
-		if (StringUtils.isEmpty(val.getAddressId())) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setAddress(val);
-		}
-		return resp;
+    @Override
+	public Response addAddress(final Address val) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(val == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			final AddressEntity entity = addressDozerConverter.convertToEntity(val, true);
+			userManager.addAddress(entity);
+		} catch(BasicDataServiceException e) {
+    		response.setErrorCode(e.getCode());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	} catch(Throwable e) {
+    		log.error("Can't perform operation", e);
+    		response.setErrorText(e.getMessage());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	}
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#addAddressSet(java.util.Set)
-	 */
+    @Override
 	public Response addAddressSet(Set<Address> adrList) {
-		final Response resp = new Response(ResponseStatus.SUCCESS);
-		userManager.addAddressSet(adrList);
-		return resp;
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(CollectionUtils.isEmpty(adrList)) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			final List<AddressEntity> entityList = addressDozerConverter.convertToEntityList(new ArrayList<Address>(adrList), true);
+			userManager.addAddressSet(entityList);
+		} catch(BasicDataServiceException e) {
+    		response.setErrorCode(e.getCode());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	} catch(Throwable e) {
+    		log.error("Can't perform operation", e);
+    		response.setErrorText(e.getMessage());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	}
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#addAttribute(org.openiam.idm.srvc.user.dto.UserAttribute)
-	 */
-	public UserAttributeResponse addAttribute(UserAttribute attribute) {
-		final UserAttributeResponse resp = new UserAttributeResponse(ResponseStatus.SUCCESS);
-		userManager.addAttribute(attribute);
-		if (StringUtils.isEmpty(attribute.getId())) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setAttribute(attribute);;
-		}
-		return resp;
+    @Override
+	public Response addAttribute(final UserAttribute attribute) {
+    	final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(attribute == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			final UserAttributeEntity entity = userAttributeDozerConverter.convertToEntity(attribute, true);
+			userManager.addAttribute(entity);
+		} catch(BasicDataServiceException e) {
+    		response.setErrorCode(e.getCode());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	} catch(Throwable e) {
+    		log.error("Can't perform operation", e);
+    		response.setErrorText(e.getMessage());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	}
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#addEmailAddress(org.openiam.idm.srvc.continfo.dto.EmailAddress)
-	 */
-	public EmailAddressResponse addEmailAddress(EmailAddress val) {
-		final EmailAddressResponse resp = new EmailAddressResponse(ResponseStatus.SUCCESS);
-		userManager.addEmailAddress(val);
-		if (StringUtils.isEmpty(val.getEmailId())) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setEmailAddress(val);
-		}
-		return resp;
+    @Override
+	public Response addEmailAddress(EmailAddress val) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(val == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			final EmailAddressEntity entity = emailAddressDozerConverter.convertToEntity(val, true);
+			userManager.addEmailAddress(entity);
+		} catch(BasicDataServiceException e) {
+    		response.setErrorCode(e.getCode());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	} catch(Throwable e) {
+    		log.error("Can't perform operation", e);
+    		response.setErrorText(e.getMessage());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	}
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#addEmailAddressSet(java.util.Set)
-	 */
-	public Response addEmailAddressSet(Set<EmailAddress> adrList) {
-		final Response resp = new Response(ResponseStatus.SUCCESS);
-		userManager.addEmailAddressSet(adrList);
-		return resp;
+    @Override
+	public Response addEmailAddressSet(final Set<EmailAddress> adrList) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(CollectionUtils.isEmpty(adrList)) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			final List<EmailAddressEntity> entityList = emailAddressDozerConverter.convertToEntityList(new ArrayList<EmailAddress>(adrList), true);
+			userManager.addEmailAddressSet(entityList);
+		} catch(BasicDataServiceException e) {
+    		response.setErrorCode(e.getCode());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	} catch(Throwable e) {
+    		log.error("Can't perform operation", e);
+    		response.setErrorText(e.getMessage());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	}
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#addNote(org.openiam.idm.srvc.user.dto.UserNote)
-	 */
-	public UserNoteResponse addNote(UserNote note) {
-		final UserNoteResponse resp = new UserNoteResponse(ResponseStatus.SUCCESS);
-		userManager.addNote(note);
-		if (StringUtils.isEmpty(note.getUserNoteId())) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setUserNote(note);
-		}
-		return resp;
+    @Override
+	public Response addNote(final UserNote note) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(note == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			final UserNoteEntity entity = userNoteDozerConverter.convertToEntity(note, true);
+			userManager.addNote(entity);
+		} catch(BasicDataServiceException e) {
+    		response.setErrorCode(e.getCode());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	} catch(Throwable e) {
+    		log.error("Can't perform operation", e);
+    		response.setErrorText(e.getMessage());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	}
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#addPhone(org.openiam.idm.srvc.continfo.dto.Phone)
-	 */
-	public PhoneResponse addPhone(Phone val) {
-		final PhoneResponse resp = new PhoneResponse(ResponseStatus.SUCCESS);
-		userManager.addPhone(val);
-		if (StringUtils.isEmpty(val.getPhoneId())) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setPhone(val);
-		}
-		return resp;
+    @Override
+	public Response addPhone(Phone val) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(val == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			final PhoneEntity entity = phoneDozerConverter.convertToEntity(val, true);
+			userManager.addPhone(entity);
+		} catch(BasicDataServiceException e) {
+    		response.setErrorCode(e.getCode());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	} catch(Throwable e) {
+    		log.error("Can't perform operation", e);
+    		response.setErrorText(e.getMessage());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	}
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#addPhoneSet(java.util.Set)
-	 */
-	public Response addPhoneSet(Set<Phone> phoneList) {
-		final Response resp = new Response(ResponseStatus.SUCCESS);
-		userManager.addPhoneSet(phoneList);
-		return resp;
+    @Override
+	public Response addPhoneSet(final Set<Phone> phoneList) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(CollectionUtils.isEmpty(phoneList)) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			final List<PhoneEntity> entityList = phoneDozerConverter.convertToEntityList(new ArrayList<Phone>(phoneList), true);
+			userManager.addPhoneSet(entityList);
+		} catch(BasicDataServiceException e) {
+    		response.setErrorCode(e.getCode());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	} catch(Throwable e) {
+    		log.error("Can't perform operation", e);
+    		response.setErrorText(e.getMessage());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	}
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#addSupervisor(org.openiam.idm.srvc.user.dto.Supervisor)
-	 */
-	public SupervisorResponse addSupervisor(Supervisor supervisor) {
-		final SupervisorResponse resp = new SupervisorResponse(ResponseStatus.SUCCESS);
-		userManager.addSupervisor(supervisor);
-		if (StringUtils.isEmpty(supervisor.getOrgStructureId())) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setSupervisor(supervisor);
-		}
-		return resp;
+    @Override
+	public Response addSupervisor(final Supervisor supervisor) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(supervisor == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			final SupervisorEntity entity = supervisorDozerConverter.convertToEntity(supervisor, true);
+			userManager.addSupervisor(entity);
+		} catch(BasicDataServiceException e) {
+    		response.setErrorCode(e.getCode());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	} catch(Throwable e) {
+    		log.error("Can't perform operation", e);
+    		response.setErrorText(e.getMessage());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	}
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#addUser(org.openiam.idm.srvc.user.dto.User)
-	 */
-	public UserResponse addUser(User user) throws Exception {
-		UserResponse resp = new UserResponse(ResponseStatus.SUCCESS);
-		userManager.addUser(user);
-		if (StringUtils.isEmpty(user.getUserId())) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setUser(user);
-		}
-		return resp;
+    @Override
+	public Response addUser(User user) throws Exception {
+    	final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(user == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			final UserEntity entity = userDozerConverter.convertToEntity(user, true);
+			userManager.addUser(entity);
+		} catch(BasicDataServiceException e) {
+    		response.setErrorCode(e.getCode());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	} catch(Throwable e) {
+    		log.error("Can't perform operation", e);
+    		response.setErrorText(e.getMessage());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	}
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#addUserWithDependent(org.openiam.idm.srvc.user.dto.User, boolean)
-	 */
-	public UserResponse addUserWithDependent(User user, boolean dependency) throws Exception {
-		final UserResponse resp = new UserResponse(ResponseStatus.SUCCESS);
-		userManager.addUserWithDependent(user, dependency);
-		if (StringUtils.isEmpty(user.getUserId())) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setUser(user);
-		}
-		return resp;
+    @Override
+	public Response addUserWithDependent(User user, boolean dependency) throws Exception {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(user == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			final UserEntity entity = userDozerConverter.convertToEntity(user, true);
+			userManager.addUserWithDependent(entity, dependency);
+		} catch(BasicDataServiceException e) {
+    		response.setErrorCode(e.getCode());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	} catch(Throwable e) {
+    		log.error("Can't perform operation", e);
+    		response.setErrorText(e.getMessage());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	}
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#findUserByOrganization(java.lang.String)
-	 */
-	public UserListResponse findUserByOrganization(final String orgId) {
-		final UserListResponse resp = new UserListResponse(ResponseStatus.SUCCESS);
-		final List<User> userList = userManager.findUserByOrganization(orgId);
-		if (userList == null ) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setUserList(userList);
-		}
-		return resp;
+    @Override
+	public List<User> findUserByOrganization(final String orgId) {
+		final List<UserEntity> entityList = userManager.findUserByOrganization(orgId);
+		return userDozerConverter.convertToDTOList(entityList, false);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#findUsersByLastUpdateRange(java.util.Date, java.util.Date)
-	 */
-	public UserListResponse findUsersByLastUpdateRange(Date startDate,
-			Date endDate) {
-		final UserListResponse resp = new UserListResponse(ResponseStatus.SUCCESS);
-		final List<User> userList = userManager.findUsersByLastUpdateRange(startDate, endDate);
-		if (userList == null ) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setUserList(userList);
-		}
-		return resp;
+    @Override
+	public List<User> findUsersByLastUpdateRange(final Date startDate, final Date endDate) {
+		final List<UserEntity> entityList = userManager.findUsersByLastUpdateRange(startDate, endDate);
+		return userDozerConverter.convertToDTOList(entityList, false);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#findUsersByStatus(java.lang.String)
-	 */
-	public UserListResponse findUsersByStatus(String status) {
-		final UserListResponse resp = new UserListResponse(ResponseStatus.SUCCESS);
-		final List<User> userList = userManager.findUsersByStatus(UserStatusEnum.valueOf(status));
-		if (userList == null ) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setUserList(userList);
-		}
-		return resp;
+    @Override
+	public List<User> findUsersByStatus(String status) {
+		final List<UserEntity> entityList = userManager.findUsersByStatus(UserStatusEnum.valueOf(status));
+		return userDozerConverter.convertToDTOList(entityList, false);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getAddressById(java.lang.String)
-	 */
-	public AddressResponse getAddressById(String addressId) {
-		final AddressResponse resp = new AddressResponse(ResponseStatus.SUCCESS);
-		final Address adr = userManager.getAddressById(addressId);
-		if (adr == null ) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setAddress(adr);
-		}
-		return resp;
+    @Override
+	public Address getAddressById(String addressId) {
+		final AddressEntity adr = userManager.getAddressById(addressId);
+		return addressDozerConverter.convertToDTO(adr, false);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getAddressByName(java.lang.String, java.lang.String)
-	 */
-	public AddressResponse getAddressByName(String userId, String addressName) {
-		final AddressResponse resp = new AddressResponse(ResponseStatus.SUCCESS);
-		final Address adr = userManager.getAddressByName(userId, addressName);
-		if (adr == null ) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setAddress(adr);
-		}
-		return resp;
+    @Override
+	public Address getAddressByName(String userId, String addressName) {
+		final AddressEntity adr = userManager.getAddressByName(userId, addressName);
+		return addressDozerConverter.convertToDTO(adr, false);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getAddressList(java.lang.String)
-	 */
-	public AddressListResponse getAddressList(String userId) {
-		final AddressListResponse resp = new AddressListResponse(ResponseStatus.SUCCESS);
-		final List<Address> adrList = userManager.getAddressList(userId);
-		if (adrList == null ) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setAddressList(adrList);
-		}
-		return resp;
+    @Override
+	public List<Address> getAddressList(String userId) {
+		final List<AddressEntity> adrList = userManager.getAddressList(userId);
+		return addressDozerConverter.convertToDTOList(adrList, false);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getAddressMap(java.lang.String)
-	 */
-	public AddressMapResponse getAddressMap(String userId) {
-		final AddressMapResponse resp = new AddressMapResponse(ResponseStatus.SUCCESS);
-		final Map<String, Address> adrMap = userManager.getAddressMap(userId);
-		if (adrMap == null ) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setAddressMap(adrMap);
-		}
-		return resp;
+    @Override
+	public List<UserNote> getAllNotes(String userId) {
+		final List<UserNoteEntity> entityList = userManager.getAllNotes(userId);
+		return userNoteDozerConverter.convertToDTOList(entityList, false);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getAllNotes(java.lang.String)
-	 */
-	public UserNoteListResponse getAllNotes(String userId) {
-		final UserNoteListResponse resp = new UserNoteListResponse(ResponseStatus.SUCCESS);
-		final List<UserNote> note = userManager.getAllNotes(userId);
-		if (note == null ) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setUserNoteList(note);
-		}
-		return resp;
+    @Override
+	public UserAttribute getAttribute(String attrId) {
+		final UserAttributeEntity userAttr = userManager.getAttribute(attrId);
+		return userAttributeDozerConverter.convertToDTO(userAttr, false);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getAttribute(java.lang.String)
-	 */
-	public UserAttributeResponse getAttribute(String attrId) {
-		final UserAttributeResponse resp = new UserAttributeResponse(ResponseStatus.SUCCESS);
-		final UserAttribute userAttr = userManager.getAttribute(attrId);
-		if (userAttr == null ) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setAttribute(userAttr);
-		}
-		return resp;
+    @Override
+	public Address getDefaultAddress(String userId) {
+		final AddressEntity adr = userManager.getDefaultAddress(userId);
+		return addressDozerConverter.convertToDTO(adr, false);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getDefaultAddress(java.lang.String)
-	 */
-	public AddressResponse getDefaultAddress(String userId) {
-		final AddressResponse resp = new AddressResponse(ResponseStatus.SUCCESS);
-		final Address adr = userManager.getDefaultAddress(userId);
-		if (adr == null ) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setAddress(adr);
-		}
-		return resp;
+    @Override
+	public EmailAddress getDefaultEmailAddress(String userId) {
+		final EmailAddressEntity adr = userManager.getDefaultEmailAddress(userId);
+		return emailAddressDozerConverter.convertToDTO(adr, false);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getDefaultEmailAddress(java.lang.String)
-	 */
-	public EmailAddressResponse getDefaultEmailAddress(String userId) {
-		final EmailAddressResponse resp = new EmailAddressResponse(ResponseStatus.SUCCESS);
-		final EmailAddress adr = userManager.getDefaultEmailAddress(userId);
-		if (adr == null ) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setEmailAddress(adr);
-		}
-		return resp;
+    @Override
+	public Phone getDefaultPhone(String userId) {
+		final PhoneEntity ph = userManager.getDefaultPhone(userId);
+		return phoneDozerConverter.convertToDTO(ph, false);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getDefaultPhone(java.lang.String)
-	 */
-	public PhoneResponse getDefaultPhone(String userId) {
-		final PhoneResponse resp = new PhoneResponse(ResponseStatus.SUCCESS);
-		final Phone ph = userManager.getDefaultPhone(userId);
-		if (ph == null ) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setPhone(ph);
-		}
-		return resp;
+    @Override
+	public EmailAddress getEmailAddressById(String addressId) {
+		final EmailAddressEntity adr = userManager.getEmailAddressById(addressId);
+		return emailAddressDozerConverter.convertToDTO(adr, false);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getEmailAddressById(java.lang.String)
-	 */
-	public EmailAddressResponse getEmailAddressById(String addressId) {
-		final EmailAddressResponse resp = new EmailAddressResponse(ResponseStatus.SUCCESS);
-		final EmailAddress adr = userManager.getEmailAddressById(addressId);
-		if (adr == null ) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setEmailAddress(adr);
-		}
-		return resp;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getEmailAddressByName(java.lang.String, java.lang.String)
-	 */
-	public EmailAddressResponse getEmailAddressByName(String userId,
+    @Override
+	public EmailAddress getEmailAddressByName(String userId,
 			String addressName) {
-		final EmailAddressResponse resp = new EmailAddressResponse(ResponseStatus.SUCCESS);
-		final EmailAddress adr = userManager.getEmailAddressByName(userId, addressName);
-		if (adr == null ) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setEmailAddress(adr);
-		}
-		return resp;
+		final EmailAddressEntity adr = userManager.getEmailAddressByName(userId, addressName);
+		return emailAddressDozerConverter.convertToDTO(adr, false);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getEmailAddressList(java.lang.String)
-	 */
-	public EmailAddressListResponse getEmailAddressList(String userId) {
-		final EmailAddressListResponse resp = new EmailAddressListResponse(ResponseStatus.SUCCESS);
-		final List<EmailAddress> adr = userManager.getEmailAddressList(userId);
-		if (adr == null ) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setEmailAddressList(adr); 
-		}
-		return resp;
+    @Override
+	public List<EmailAddress> getEmailAddressList(String userId) {
+		final List<EmailAddressEntity> adr = userManager.getEmailAddressList(userId);
+		return emailAddressDozerConverter.convertToDTOList(adr, false);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getEmailAddressMap(java.lang.String)
-	 */
-	public EmailAddressMapResponse getEmailAddressMap(String userId) {
-		final EmailAddressMapResponse resp = new EmailAddressMapResponse(ResponseStatus.SUCCESS);
-		final Map<String, EmailAddress> adrMap = userManager.getEmailAddressMap(userId);
-		if (adrMap == null ) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setEmailMap(adrMap);
-		}
-		return resp;
+    @Override
+	public List<Supervisor> getEmployees(String supervisorId) {
+		final List<SupervisorEntity> sup = userManager.getEmployees(supervisorId);
+		return supervisorDozerConverter.convertToDTOList(sup, false);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getEmployees(java.lang.String)
-	 */
-	public SupervisorListResponse getEmployees(String supervisorId) {
-		final SupervisorListResponse resp = new SupervisorListResponse(ResponseStatus.SUCCESS);
-		final List<Supervisor> sup = userManager.getEmployees(supervisorId);
-		if (sup == null ) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setSupervisorList(sup);
-		}
-		return resp;
+    @Override
+	public UserNote getNote(String noteId) {
+		final UserNoteEntity note = userManager.getNote(noteId);
+		return userNoteDozerConverter.convertToDTO(note, false);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getNote(java.lang.String)
-	 */
-	public UserNoteResponse getNote(String noteId) {
-		final UserNoteResponse resp = new UserNoteResponse(ResponseStatus.SUCCESS);
-		final UserNote note = userManager.getNote(noteId);
-		if (note.getUserNoteId() == null || note.getUserNoteId().isEmpty()) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setUserNote(note);
-		}
-		return resp;
+    @Override
+	public Phone getPhoneById(String addressId) {
+		final PhoneEntity ph = userManager.getPhoneById(addressId);
+		return phoneDozerConverter.convertToDTO(ph, false);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getPhoneById(java.lang.String)
-	 */
-	public PhoneResponse getPhoneById(String addressId) {
-		final PhoneResponse resp = new PhoneResponse(ResponseStatus.SUCCESS);
-		final Phone ph = userManager.getPhoneById(addressId);
-		if (ph == null ) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setPhone(ph);
-		}
-		return resp;
+    @Override
+	public Phone getPhoneByName(String userId, String addressName) {
+		final PhoneEntity ph = userManager.getPhoneByName(userId, addressName);
+		return phoneDozerConverter.convertToDTO(ph, false);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getPhoneByName(java.lang.String, java.lang.String)
-	 */
-	public PhoneResponse getPhoneByName(String userId, String addressName) {
-		final PhoneResponse resp = new PhoneResponse(ResponseStatus.SUCCESS);
-		final Phone ph = userManager.getPhoneByName(userId, addressName);
-		if (ph == null ) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setPhone(ph);
-		}
-		return resp;
+    @Override
+	public List<Phone> getPhoneList(String userId) {
+		final List<PhoneEntity> ph = userManager.getPhoneList(userId);
+		return phoneDozerConverter.convertToDTOList(ph, false);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getPhoneList(java.lang.String)
-	 */
-	public PhoneListResponse getPhoneList(String userId) {
-		final PhoneListResponse resp = new PhoneListResponse(ResponseStatus.SUCCESS);
-		final List<Phone> ph = userManager.getPhoneList(userId);
-		if (ph == null ) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setPhoneList(ph);
-		}
-		return resp;
+    @Override
+	public Supervisor getPrimarySupervisor(String employeeId) {
+		final SupervisorEntity sup = userManager.getPrimarySupervisor(employeeId);
+		return supervisorDozerConverter.convertToDTO(sup, false);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getPhoneMap(java.lang.String)
-	 */
-	public PhoneMapResponse getPhoneMap(String userId) {
-		final PhoneMapResponse resp = new PhoneMapResponse(ResponseStatus.SUCCESS);
-		final Map<String, Phone> phoneMap = userManager.getPhoneMap(userId);
-		if (phoneMap == null ) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setPhoneMap(phoneMap);
-		}
-		return resp;
+    @Override
+	public Supervisor getSupervisor(String supervisorObjId) {
+		final SupervisorEntity sup = userManager.getSupervisor(supervisorObjId);
+		return supervisorDozerConverter.convertToDTO(sup, false);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getPrimarySupervisor(java.lang.String)
-	 */
-	public SupervisorResponse getPrimarySupervisor(String employeeId) {
-		final SupervisorResponse resp = new SupervisorResponse(ResponseStatus.SUCCESS);
-		Supervisor sup = userManager.getPrimarySupervisor(employeeId);
-		if (sup == null ) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setSupervisor(sup);
-		}
-		return resp;
+    @Override
+	public List<Supervisor> getSupervisors(String employeeId) {
+		final List<SupervisorEntity> sup = userManager.getSupervisors(employeeId);
+		return supervisorDozerConverter.convertToDTOList(sup, false);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getSupervisor(java.lang.String)
-	 */
-	public SupervisorResponse getSupervisor(String supervisorObjId) {
-		final SupervisorResponse resp = new SupervisorResponse(ResponseStatus.SUCCESS);
-		final Supervisor sup = userManager.getSupervisor(supervisorObjId);
-		if (sup == null ) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setSupervisor(sup);
-		}
-		return resp;
+    @Override
+	public User getUserByName(String firstName, String lastName) {
+		final UserEntity user = userManager.getUserByName(firstName, lastName);
+		return userDozerConverter.convertToDTO(user, false);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getSupervisors(java.lang.String)
-	 */
-	public SupervisorListResponse getSupervisors(String employeeId) {
-		final SupervisorListResponse resp = new SupervisorListResponse(ResponseStatus.SUCCESS);
-		final List<Supervisor> sup = userManager.getSupervisors(employeeId);
-		if (sup == null ) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setSupervisorList(sup);
-		}
-		return resp;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getUserByName(java.lang.String, java.lang.String)
-	 */
-	public UserResponse getUserByName(String firstName, String lastName) {
-		final UserResponse resp = new UserResponse(ResponseStatus.SUCCESS);
-		final User user = userManager.getUserByName(firstName, lastName);
-		if (user == null ) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setUser(user);
-		}
-		return resp;
-	}
-
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#getUserWithDependent(java.lang.String, boolean)
-	 */
-	public UserResponse getUserWithDependent(String id, boolean dependants) {
-		final UserResponse resp = new UserResponse(ResponseStatus.SUCCESS);
-		final User user = userManager.getUserWithDependent(id, dependants);
-		if (user == null ) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setUser(user);
-		}
-		return resp;
+    @Override
+	public User getUserWithDependent(String id, boolean dependants) {
+		final UserEntity user = userManager.getUser(id);
+		return userDozerConverter.convertToDTO(user, dependants);
 	}
 	
-	@WebMethod
-	public UserResponse getUserByPrincipal(
+    @Override
+	public User getUserByPrincipal(
 			String securityDomain, 
 			String principal, 
 			String managedSysId, 
 			boolean dependants) {
-		final UserResponse resp = new UserResponse(ResponseStatus.SUCCESS);
-		final User user = userManager.getUserByPrincipal(securityDomain, principal, managedSysId, dependants);
-		if (user == null ) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setUser(user);
-		}
-		return resp;
+		final UserEntity user = userManager.getUserByPrincipal(securityDomain, principal, managedSysId, dependants);
+		return userDozerConverter.convertToDTO(user, dependants);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#removeAddress(org.openiam.idm.srvc.continfo.dto.Address)
-	 */
-	public Response removeAddress(Address val) {
-		final Response resp = new Response(ResponseStatus.SUCCESS);
-		userManager.removeAddress(val);
-		return resp;
+    @Override
+	public Response removeAddress(String addressId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(addressId == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			userManager.removeAddress(addressId);
+		} catch(BasicDataServiceException e) {
+    		response.setErrorCode(e.getCode());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	} catch(Throwable e) {
+    		log.error("Can't perform operation", e);
+    		response.setErrorText(e.getMessage());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	}
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#removeAllAddresses(java.lang.String)
-	 */
+    @Override
 	public Response removeAllAddresses(String userId) {
-		final Response resp = new Response(ResponseStatus.SUCCESS);
-		userManager.removeAllAddresses(userId);
-		return resp;
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(userId == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			userManager.removeAllAddresses(userId);
+		} catch(BasicDataServiceException e) {
+    		response.setErrorCode(e.getCode());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	} catch(Throwable e) {
+    		log.error("Can't perform operation", e);
+    		response.setErrorText(e.getMessage());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	}
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#removeAllAttributes(java.lang.String)
-	 */
+    @Override
 	public Response removeAllAttributes(String userId) {
-		final Response resp = new Response(ResponseStatus.SUCCESS);
-		userManager.removeAllAttributes(userId);
-		return resp;
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(userId == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			userManager.removeAllAttributes(userId);
+		} catch(BasicDataServiceException e) {
+    		response.setErrorCode(e.getCode());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	} catch(Throwable e) {
+    		log.error("Can't perform operation", e);
+    		response.setErrorText(e.getMessage());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	}
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#removeAllEmailAddresses(java.lang.String)
-	 */
+    @Override
 	public Response removeAllEmailAddresses(String userId) {
-		final Response resp = new Response(ResponseStatus.SUCCESS);
-		userManager.removeAllEmailAddresses(userId);
-		return resp;
+    	final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(userId == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			userManager.removeAllEmailAddresses(userId);
+		} catch(BasicDataServiceException e) {
+    		response.setErrorCode(e.getCode());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	} catch(Throwable e) {
+    		log.error("Can't perform operation", e);
+    		response.setErrorText(e.getMessage());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	}
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#removeAllNotes(java.lang.String)
-	 */
+    @Override
 	public Response removeAllNotes(String userId) {
-		final Response resp = new Response(ResponseStatus.SUCCESS);
-		userManager.removeAllNotes(userId);
-		return resp;
+    	final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(userId == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			userManager.removeAllNotes(userId);
+		} catch(BasicDataServiceException e) {
+    		response.setErrorCode(e.getCode());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	} catch(Throwable e) {
+    		log.error("Can't perform operation", e);
+    		response.setErrorText(e.getMessage());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	}
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#removeAllPhones(java.lang.String)
-	 */
+    @Override
 	public Response removeAllPhones(String userId) {
-		final Response resp = new Response(ResponseStatus.SUCCESS);
-		userManager.removeAllPhones(userId);
-		return resp;
+    	final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(userId == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			userManager.removeAllPhones(userId);
+		} catch(BasicDataServiceException e) {
+    		response.setErrorCode(e.getCode());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	} catch(Throwable e) {
+    		log.error("Can't perform operation", e);
+    		response.setErrorText(e.getMessage());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	}
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#removeAttribute(org.openiam.idm.srvc.user.dto.UserAttribute)
-	 */
-	public Response removeAttribute(UserAttribute attr) {
-		final Response resp = new Response(ResponseStatus.SUCCESS);
-		userManager.removeAttribute(attr);
-		return resp;
+    @Override
+	public Response removeAttribute(String attrId) {
+    	final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(attrId == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			userManager.removeAttribute(attrId);
+		} catch(BasicDataServiceException e) {
+    		response.setErrorCode(e.getCode());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	} catch(Throwable e) {
+    		log.error("Can't perform operation", e);
+    		response.setErrorText(e.getMessage());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	}
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#removeEmailAddress(org.openiam.idm.srvc.continfo.dto.EmailAddress)
-	 */
-	public Response removeEmailAddress(EmailAddress val) {
-		final Response resp = new Response(ResponseStatus.SUCCESS);
-		userManager.removeEmailAddress(val);
-		return resp;
+    @Override
+	public Response removeEmailAddress(String emailId) {
+    	final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(emailId == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			userManager.removeEmailAddress(emailId);
+		} catch(BasicDataServiceException e) {
+    		response.setErrorCode(e.getCode());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	} catch(Throwable e) {
+    		log.error("Can't perform operation", e);
+    		response.setErrorText(e.getMessage());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	}
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#removeNote(org.openiam.idm.srvc.user.dto.UserNote)
-	 */
-	public Response removeNote(UserNote note) {
-		final Response resp = new Response(ResponseStatus.SUCCESS);
-		userManager.removeNote(note);
-		return resp;
+    @Override
+	public Response removeNote(String noteId) {
+    	final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(noteId == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			userManager.removeNote(noteId);
+		} catch(BasicDataServiceException e) {
+    		response.setErrorCode(e.getCode());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	} catch(Throwable e) {
+    		log.error("Can't perform operation", e);
+    		response.setErrorText(e.getMessage());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	}
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#removePhone(org.openiam.idm.srvc.continfo.dto.Phone)
-	 */
-	public Response removePhone(Phone val) {
-		final Response resp = new Response(ResponseStatus.SUCCESS);
-		userManager.removePhone(val);
-		return resp;
+    @Override
+	public Response removePhone(String phoneId) {
+    	final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(phoneId == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			userManager.removePhone(phoneId);
+		} catch(BasicDataServiceException e) {
+    		response.setErrorCode(e.getCode());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	} catch(Throwable e) {
+    		log.error("Can't perform operation", e);
+    		response.setErrorText(e.getMessage());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	}
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#removeSupervisor(org.openiam.idm.srvc.user.dto.Supervisor)
-	 */
-	public Response removeSupervisor(Supervisor supervisor) {
-		final Response resp = new Response(ResponseStatus.SUCCESS);
-		userManager.removeSupervisor(supervisor);
-		return resp;
+    @Override
+	public Response removeSupervisor(String supervisorId) {
+    	final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(supervisorId == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			userManager.removeSupervisor(supervisorId);
+		} catch(BasicDataServiceException e) {
+    		response.setErrorCode(e.getCode());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	} catch(Throwable e) {
+    		log.error("Can't perform operation", e);
+    		response.setErrorText(e.getMessage());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	}
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#removeUser(java.lang.String)
-	 */
+    @Override
 	public Response removeUser(String id) {
-		final Response resp = new Response(ResponseStatus.SUCCESS);
-		userManager.removeUser(id);
-		return resp;
+    	final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(id == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			userManager.removeUser(id);
+		} catch(BasicDataServiceException e) {
+    		response.setErrorCode(e.getCode());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	} catch(Throwable e) {
+    		log.error("Can't perform operation", e);
+    		response.setErrorText(e.getMessage());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	}
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#search(org.openiam.idm.srvc.user.dto.UserSearch)
-	 */
+    @Override
     @Deprecated
-	public UserListResponse search(UserSearch search) {
-		final UserListResponse resp = new UserListResponse(ResponseStatus.SUCCESS);
-		final List<User> userList = userManager.search(search);
-		if (userList == null ) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		} else {
-			resp.setUserList(userList);
-		}
-		return resp;
+	public List<User> search(UserSearch search) {
+		final List<UserEntity> userList = userManager.search(search);
+		return userDozerConverter.convertToDTOList(userList, false);
 	}
 
-    public UserListResponse searchByDelegationProperties(
-                                                         DelegationFilterSearch search) {
-    	final UserListResponse resp = new UserListResponse(ResponseStatus.SUCCESS);
-    	final List<User> userList = userManager.searchByDelegationProperties(search);
-		if (userList == null ) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setUserList(userList);
-		}
-		return resp;
+    @Override
+    public List<User> searchByDelegationProperties(final DelegationFilterSearch search) {
+    	final List<UserEntity> userList = userManager.searchByDelegationProperties(search);
+    	return userDozerConverter.convertToDTOList(userList, false);
 
     }
-    @WebMethod
+    
+    @Override
     public List<User> findBeans(@WebParam(name = "searchBean", targetNamespace = "") UserSearchBean userSearchBean,
                          @WebParam(name = "from", targetNamespace = "") int from,
                          @WebParam(name = "size", targetNamespace = "") int size){
-        return userManager.findBeans(userSearchBean, from, size);
+        final List<UserEntity> userList = userManager.findBeans(userSearchBean, from, size);
+        return userDozerConverter.convertToDTOList(userList, false);
     }
 
-    @WebMethod
+    @Override
     public int count(UserSearchBean userSearchBean){
         return userManager.count(userSearchBean);
     }
 
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#updateAddress(org.openiam.idm.srvc.continfo.dto.Address)
-	 */
+    @Override
 	public Response updateAddress(Address val) {
-		final Response resp = new Response(ResponseStatus.SUCCESS);
-		userManager.updateAddress(val);
-		return resp;
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(val == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			final AddressEntity entity = addressDozerConverter.convertToEntity(val, false);
+			userManager.updateAddress(entity);
+		} catch(BasicDataServiceException e) {
+    		response.setErrorCode(e.getCode());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	} catch(Throwable e) {
+    		log.error("Can't perform operation", e);
+    		response.setErrorText(e.getMessage());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	}
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#updateAttribute(org.openiam.idm.srvc.user.dto.UserAttribute)
-	 */
-	public Response updateAttribute(UserAttribute attribute) {
-		final Response resp = new Response(ResponseStatus.SUCCESS);
-		userManager.updateAttribute(attribute);
-		return resp;
+    @Override
+	public Response updateAttribute(UserAttribute attribute) {		
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(attribute == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			final UserAttributeEntity entity = userAttributeDozerConverter.convertToEntity(attribute, false);
+			userManager.updateAttribute(entity);
+		} catch(BasicDataServiceException e) {
+    		response.setErrorCode(e.getCode());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	} catch(Throwable e) {
+    		log.error("Can't perform operation", e);
+    		response.setErrorText(e.getMessage());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	}
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#updateEmailAddress(org.openiam.idm.srvc.continfo.dto.EmailAddress)
-	 */
+    @Override
 	public Response updateEmailAddress(EmailAddress val) {
-		final Response resp = new Response(ResponseStatus.SUCCESS);
-		userManager.updateEmailAddress(val);
-		return resp;
+    	final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(val == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			final EmailAddressEntity entity = emailAddressDozerConverter.convertToEntity(val, true);
+			userManager.updateEmailAddress(entity);
+		} catch(BasicDataServiceException e) {
+    		response.setErrorCode(e.getCode());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	} catch(Throwable e) {
+    		log.error("Can't perform operation", e);
+    		response.setErrorText(e.getMessage());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	}
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#updateNote(org.openiam.idm.srvc.user.dto.UserNote)
-	 */
+    @Override
 	public Response updateNote(UserNote note) {
-		final Response resp = new Response(ResponseStatus.SUCCESS);
-		userManager.updateNote(note);
-		return resp;
+    	final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(note == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			final UserNoteEntity entity = userNoteDozerConverter.convertToEntity(note, true);
+			userManager.updateNote(entity);
+		} catch(BasicDataServiceException e) {
+    		response.setErrorCode(e.getCode());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	} catch(Throwable e) {
+    		log.error("Can't perform operation", e);
+    		response.setErrorText(e.getMessage());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	}
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#updatePhone(org.openiam.idm.srvc.continfo.dto.Phone)
-	 */
+    @Override
 	public Response updatePhone(Phone val) {
-		final Response resp = new Response(ResponseStatus.SUCCESS);
-		userManager.updatePhone(val);
-		return resp;
+    	final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(val == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			final PhoneEntity entity = phoneDozerConverter.convertToEntity(val, true);
+			userManager.updatePhone(entity);
+		} catch(BasicDataServiceException e) {
+    		response.setErrorCode(e.getCode());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	} catch(Throwable e) {
+    		log.error("Can't perform operation", e);
+    		response.setErrorText(e.getMessage());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	}
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#updateSupervisor(org.openiam.idm.srvc.user.dto.Supervisor)
-	 */
+    @Override
 	public Response updateSupervisor(Supervisor supervisor) {
-		final Response resp = new Response(ResponseStatus.SUCCESS);
-		userManager.updateSupervisor(supervisor);
-		return resp;
+    	final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(supervisor == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			final SupervisorEntity entity = supervisorDozerConverter.convertToEntity(supervisor, true);
+			userManager.updateSupervisor(entity);
+		} catch(BasicDataServiceException e) {
+    		response.setErrorCode(e.getCode());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	} catch(Throwable e) {
+    		log.error("Can't perform operation", e);
+    		response.setErrorText(e.getMessage());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	}
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#updateUser(org.openiam.idm.srvc.user.dto.User)
-	 */
+    @Override
 	public Response updateUser(User user) {
-		final Response resp = new Response(ResponseStatus.SUCCESS);
-		userManager.updateUser(user);
-		return resp;
+    	final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(user == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			final UserEntity entity = userDozerConverter.convertToEntity(user, true);
+			userManager.updateUser(entity);
+		} catch(BasicDataServiceException e) {
+    		response.setErrorCode(e.getCode());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	} catch(Throwable e) {
+    		log.error("Can't perform operation", e);
+    		response.setErrorText(e.getMessage());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	}
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.user.ws.UserDataWebService#updateUserWithDependent(org.openiam.idm.srvc.user.dto.User, boolean)
-	 */
+    @Override
 	public Response updateUserWithDependent(User user, boolean dependency) {
-		final Response resp = new Response(ResponseStatus.SUCCESS);
-		userManager.updateUserWithDependent(user, dependency);
-		return resp;
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(user == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			final UserEntity entity = userDozerConverter.convertToEntity(user, dependency);
+			userManager.updateUserWithDependent(entity, dependency);
+		} catch(BasicDataServiceException e) {
+    		response.setErrorCode(e.getCode());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	} catch(Throwable e) {
+    		log.error("Can't perform operation", e);
+    		response.setErrorText(e.getMessage());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	}
+		return response;
 	}
 
 	@Override

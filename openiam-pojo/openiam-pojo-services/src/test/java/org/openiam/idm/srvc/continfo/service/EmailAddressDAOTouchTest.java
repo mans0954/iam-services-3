@@ -18,7 +18,7 @@ public class EmailAddressDAOTouchTest extends AbstractTransactionalTestNGSpringC
 
     @Test
     public void touchAdd() {
-        emailAddressDAO.add(new EmailAddressEntity());
+        emailAddressDAO.save(new EmailAddressEntity());
     }
 
     @Test
@@ -48,7 +48,7 @@ public class EmailAddressDAOTouchTest extends AbstractTransactionalTestNGSpringC
 
     @Test
     public void touchRemove() {
-        emailAddressDAO.remove(new EmailAddressEntity());
+        emailAddressDAO.delete(new EmailAddressEntity());
     }
 
     @Test

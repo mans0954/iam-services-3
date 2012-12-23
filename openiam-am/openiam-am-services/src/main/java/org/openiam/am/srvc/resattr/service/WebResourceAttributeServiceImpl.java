@@ -9,6 +9,7 @@ import org.openiam.am.srvc.resattr.domain.WebResourceAttribute;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -127,7 +128,7 @@ public class WebResourceAttributeServiceImpl implements WebResourceAttributeServ
                         .append("} has not been found ");
                 throw new NullPointerException(msg.toString());
             }
-            User user = userManager.getUserWithDependent(identityObject.getUserId(), false);
+            UserEntity user = userManager.getUser(identityObject.getUserId());
             if (user == null)
                 throw new NullPointerException("User object has not been found");
 
@@ -153,7 +154,7 @@ public class WebResourceAttributeServiceImpl implements WebResourceAttributeServ
         }
     }
 
-    private Attribute parseAttribute(AttributeMap attr, LoginEntity login, User user) throws Exception {
+    private Attribute parseAttribute(AttributeMap attr, LoginEntity login, UserEntity user) throws Exception {
         Attribute attribute = new Attribute();
         if (attr.getAccessManagerAttributeName() == null) {
             throw new NullPointerException("AccessManagerAttributeName is null");

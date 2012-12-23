@@ -135,7 +135,7 @@ public class AcceptNewHireDelegate implements JavaDelegate {
                 String identity = null;
                 String password = null;
 
-                final User approver = userManager.getUserWithDependent(newHireExecutorId, false);
+                final UserEntity approver = userManager.getUser(newHireExecutorId);
 
                 final LoginEntity login = loginDS.getPrimaryIdentity(newUser.getUserId());
                 if (login != null) {

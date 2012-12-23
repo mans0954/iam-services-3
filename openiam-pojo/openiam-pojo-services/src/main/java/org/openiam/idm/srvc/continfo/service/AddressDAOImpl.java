@@ -19,92 +19,16 @@ import org.hibernate.criterion.Example;
 import org.hibernate.HibernateException;
 
 import org.hibernate.criterion.Restrictions;
+import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.exception.data.DataException;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
+import org.springframework.stereotype.Repository;
 
-
-/**
- * DAO Implementation for domain model class Address.
- * @see org.openiam.idm.srvc.continfo.dto.Address
- */
-public class AddressDAOImpl implements AddressDAO {
+@Repository("addressDAO")
+public class AddressDAOImpl extends BaseDaoImpl<AddressEntity, String> implements AddressDAO {
 
 
 	private static final Log log = LogFactory.getLog(AddressDAOImpl.class);
-
-	private SessionFactory sessionFactory;
-
-	public void setSessionFactory(SessionFactory session) {
-		   this.sessionFactory = session;
-	}
-	
-	protected SessionFactory getSessionFactory() {
-		try {
-			return (SessionFactory) new InitialContext()
-					.lookup("SessionFactory");
-		} catch (Exception e) {
-			log.error("Could not locate SessionFactory in JNDI", e);
-			throw new IllegalStateException(
-					"Could not locate SessionFactory in JNDI");
-		}
-	}
-
-
-	/**
-	 * Return an address object for the id.
-	 * @param id
-	 */
-	public AddressEntity findById(java.lang.String id) {
-		log.debug("getting Address instance with id: " + id);
-		try {
-			AddressEntity instance = (AddressEntity) sessionFactory.getCurrentSession()
-					.get(AddressEntity.class, id);
-			if (instance == null) {
-				log.debug("get successful, no instance found");
-			} else {
-				log.debug("get successful, instance found");
-			}
-			return instance;
-		} catch (RuntimeException re) {
-			log.error("get failed", re);
-			throw re;
-		}
-	}
-	
-
-	public AddressEntity add(AddressEntity instance) {
-		log.debug("persisting Address instance");
-		try {
-			sessionFactory.getCurrentSession().persist(instance);
-			log.debug("persist successful");
-			return instance;
-		} catch (HibernateException re) {
-			log.error("persist failed", re);
-			throw new DataException( re.getMessage(), re.getCause() ); 
-		}
-		
-	}
-	public void update(AddressEntity instance) {
-		log.debug("merging Address instance");
-		try {
-			//sessionFactory.getCurrentSession().saveOrUpdate(instance);
-			sessionFactory.getCurrentSession().merge(instance);
-			log.debug("merge successful");
-		} catch (RuntimeException re) {
-			log.error("merge failed", re);
-			throw re;
-		}		
-	}
-	public void remove(AddressEntity instance){
-		log.debug("deleting Address instance");
-		try {
-			sessionFactory.getCurrentSession().delete(instance);
-			log.debug("delete successful");
-		} catch (RuntimeException re) {
-			log.error("delete failed", re);
-			throw re;
-		}		
-	}
 	
 	/**
 	 * Returns a Map of Address objects for the parentId and parentType combination.
@@ -233,7 +157,7 @@ public class AddressDAOImpl implements AddressDAO {
 				AddressEntity curAdr = currentMap.get(key);
 				if (newAdr == null) {
 					// address was removed - deleted
-					remove(curAdr);
+					delete(curAdr);
 				}else if (!curAdr.equals(newAdr)) {
 					// object changed
 					this.update(newAdr);
@@ -250,7 +174,7 @@ public class AddressDAOImpl implements AddressDAO {
 			}
 			if (curAdr == null) {
 				// new address object
-				this.add(adr);
+				this.save(adr);
 			}
 		}
 	
@@ -266,6 +190,11 @@ public class AddressDAOImpl implements AddressDAO {
 			}
 		}
 		return adr;
+	}
+
+	@Override
+	protected String getPKfieldName() {
+		return "addressId";
 	}
 	
 }

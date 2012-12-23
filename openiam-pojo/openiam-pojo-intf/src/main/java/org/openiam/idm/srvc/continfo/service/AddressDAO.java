@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.continfo.service;
 
+import org.openiam.core.dao.BaseDao;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.dto.Address;
 
@@ -14,35 +15,8 @@ import java.util.Map;
  *
  * @author Suneet Shah
  */
-public interface AddressDAO {
+public interface AddressDAO extends BaseDao<AddressEntity, String> {
 
-    /**
-     * Return an address object for the id.
-     *
-     * @param id
-     */
-    AddressEntity findById(java.lang.String id);
-
-    /**
-     * Creates a new address
-     *
-     * @param instance
-     */
-    AddressEntity add(AddressEntity instance);
-
-    /**
-     * Updates an existing address
-     *
-     * @param instace
-     */
-    void update(AddressEntity instace);
-
-    /**
-     * Removes an address
-     *
-     * @param instance
-     */
-    void remove(AddressEntity instance);
 
     /**
      * Returns a Map of Address objects for the parentId and parentType combination.

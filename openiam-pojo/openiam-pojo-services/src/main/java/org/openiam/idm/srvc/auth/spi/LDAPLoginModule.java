@@ -234,7 +234,7 @@ public class LDAPLoginModule extends AbstractLoginModule {
                     AuthenticationConstants.RESULT_INVALID_LOGIN);
         }
 
-        user = this.userManager.getUserWithDependent(lg.getUserId(), false);
+        user = this.userManager.getUser(lg.getUserId());
 
         // try to login to AD with this user
         LdapContext tempCtx = connect(distinguishedName, password);

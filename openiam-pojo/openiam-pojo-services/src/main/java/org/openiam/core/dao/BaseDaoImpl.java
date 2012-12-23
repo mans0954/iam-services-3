@@ -162,11 +162,15 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable>
     }
 
     public void save(T entity) {
-        sessionFactory.getCurrentSession().saveOrUpdate(entity);
+    	if(entity != null) {
+    		sessionFactory.getCurrentSession().saveOrUpdate(entity);
+    	}
     }
 
     public void delete(T entity) {
-        sessionFactory.getCurrentSession().delete(entity);
+    	if(entity != null) {
+    		sessionFactory.getCurrentSession().delete(entity);
+    	}
     }
 
     public void save(Collection<T> entities) {
@@ -181,12 +185,16 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable>
 
     @Override
     public void update(T t) {
-        sessionFactory.getCurrentSession().update(t);
+    	if(t != null) {
+    		sessionFactory.getCurrentSession().update(t);
+    	}
     }
 
     @Override
     public void merge(T t) {
-        sessionFactory.getCurrentSession().merge(t);
+    	if(t != null) {
+    		sessionFactory.getCurrentSession().merge(t);
+    	}
     }
 
     @Transactional

@@ -32,6 +32,7 @@ import org.apache.commons.logging.LogFactory;
 import org.mule.api.MuleContext;
 import org.mule.api.context.MuleContextAware;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnector;
@@ -55,6 +56,7 @@ import  org.openiam.provision.service.ProvisionService;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.provision.service.RemoteConnectorAdapter;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author suneet
@@ -76,6 +78,9 @@ public class ReconciliationServiceImpl implements ReconciliationService, MuleCon
     protected ConnectorAdapter connectorAdapter;
     protected RemoteConnectorAdapter remoteConnectorAdapter;
     protected RoleDataService roleDataService;
+    
+    @Autowired
+    private UserDozerConverter userDozerConverter;
 
 
     private static final Log log = LogFactory.getLog(ReconciliationServiceImpl.class);
@@ -208,7 +213,7 @@ public class ReconciliationServiceImpl implements ReconciliationService, MuleCon
             }
             for (final UserEntity u  : users ) {
                 Login l = null;
-                User user = userMgr.getUserWithDependent(u.getUserId(), true);
+                User user = userDozerConverter.convertToDTO(userMgr.getUser(u.getUserId()), true);
                 List<Login> logins = user.getPrincipalList();
                 if(logins != null) {
                     for(Login login: logins){

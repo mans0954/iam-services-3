@@ -63,6 +63,7 @@ import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.secdomain.dto.SecurityDomain;
 import org.openiam.idm.srvc.secdomain.service.SecurityDomainDataService;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
@@ -267,9 +268,9 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
             if (user.getStatus().equals(UserStatusEnum.PENDING_INITIAL_LOGIN) ||
             // after the start date
                     user.getStatus().equals(UserStatusEnum.PENDING_START_DATE)) {
-
-                user.setStatus(UserStatusEnum.ACTIVE);
-                userManager.updateUser(user);
+            	final UserEntity entity = userManager.getUser(user.getUserId());
+            	entity.setStatus(UserStatusEnum.ACTIVE);
+                userManager.updateUser(entity);
             }
         }
 

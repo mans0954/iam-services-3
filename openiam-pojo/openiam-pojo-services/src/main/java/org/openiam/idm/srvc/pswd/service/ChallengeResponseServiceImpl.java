@@ -33,6 +33,7 @@ import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.pswd.dto.ChallengeResponseUser;
 import org.openiam.idm.srvc.pswd.dto.IdentityQuestion;
 import org.openiam.idm.srvc.pswd.dto.UserIdentityAnswer;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.util.encrypt.Cryptor;
@@ -282,7 +283,7 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
         // get the user Id
         UserIdentityAnswer ans = ansList.get(0);
         String userId = ans.getUserId();
-        User usr = userMgr.getUserWithDependent(userId, false);
+        UserEntity usr = userMgr.getUser(userId);
         usr.setDateChallengeRespChanged(new Date(System.currentTimeMillis()));
         userMgr.updateUserWithDependent(usr, false);
 

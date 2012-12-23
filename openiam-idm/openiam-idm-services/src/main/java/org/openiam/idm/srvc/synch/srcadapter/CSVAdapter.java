@@ -29,6 +29,7 @@ import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditHelper;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
@@ -47,6 +48,7 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.service.ProvisionService;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
 import java.io.*;
@@ -71,6 +73,9 @@ public class CSVAdapter extends  AbstractSrcAdapter  {
 
     ProvisionService provService = null;
     String systemAccount;
+    
+    @Autowired
+    private UserDozerConverter userDozerConverter;
 
     MatchRuleFactory matchRuleFactory;
 
@@ -187,7 +192,7 @@ public class CSVAdapter extends  AbstractSrcAdapter  {
                             // initialize the transform script
                             if (usr != null) {
                                 transformScript.setNewUser(false);
-                                transformScript.setUser(userMgr.getUserWithDependent(usr.getUserId(), true));
+                                transformScript.setUser(userDozerConverter.convertToDTO(userMgr.getUser(usr.getUserId()), true));
                                 transformScript.setPrincipalList(loginManager.getLoginByUser(usr.getUserId()));
                                 transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getUserId()));
 

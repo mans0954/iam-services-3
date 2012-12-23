@@ -278,11 +278,9 @@ public class PasswordServiceImpl implements PasswordService {
         final LoginEntity lg = loginManager.getLoginByManagedSys(domainId, principal,
                 managedSysId);
         log.info("login=" + lg);
-        final User user = userManager.getUserWithDependent(lg.getUserId(),
-                false);
+        final UserEntity user = userManager.getUser(lg.getUserId());
 
-        return getPasswordPolicyByUser(domainId,
-                userDozerConverter.convertToEntity(user, false));
+        return getPasswordPolicyByUser(domainId, user);
     }
 
     @Override

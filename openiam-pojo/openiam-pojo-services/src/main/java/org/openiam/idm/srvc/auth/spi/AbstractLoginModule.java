@@ -40,6 +40,7 @@ import org.openiam.idm.srvc.policy.service.PolicyDataService;
 import org.openiam.idm.srvc.pswd.service.PasswordService;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.secdomain.dto.SecurityDomain;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
@@ -63,7 +64,7 @@ public abstract class AbstractLoginModule implements LoginModule {
     protected PasswordService passwordManager;
     @Autowired
     protected PolicyDataService policyDataService;
-    protected User user;
+    protected UserEntity user;
     protected LoginEntity lg;
     protected String authPolicyId;
     @Autowired
@@ -135,7 +136,7 @@ public abstract class AbstractLoginModule implements LoginModule {
      * @param curDate
      * @return
      */
-    public boolean pendingInitialStartDateCheck(User user, Date curDate) {
+    public boolean pendingInitialStartDateCheck(UserEntity user, Date curDate) {
         if (user.getStatus().equals(UserStatusEnum.PENDING_START_DATE)) {
             if (user.getStartDate() != null
                     && curDate.before(user.getStartDate())) {
@@ -150,7 +151,7 @@ public abstract class AbstractLoginModule implements LoginModule {
         return true;
     }
 
-    public void checkSecondaryStatus(User user) throws AuthenticationException {
+    public void checkSecondaryStatus(UserEntity user) throws AuthenticationException {
         if (user.getSecondaryStatus() != null) {
             if (user.getSecondaryStatus().equals(UserStatusEnum.LOCKED)
                     || user.getSecondaryStatus().equals(
@@ -235,11 +236,11 @@ public abstract class AbstractLoginModule implements LoginModule {
         this.cryptor = cryptor;
     }
 
-    public User getUser() {
+    public UserEntity getUser() {
         return user;
     }
 
-    public void setUser(User user) {
+    public void setUser(UserEntity user) {
         this.user = user;
     }
 

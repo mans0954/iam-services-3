@@ -165,19 +165,6 @@
      	</property>
 	</bean>
 
-	<bean id="addressDAO" class="org.openiam.idm.srvc.continfo.service.AddressDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"></property>		
-	</bean>
-
-	<bean id="emailAddressDAO" class="org.openiam.idm.srvc.continfo.service.EmailAddressDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"></property>		
-	</bean>	
-
-	<bean id="phoneDAO" class="org.openiam.idm.srvc.continfo.service.PhoneDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"></property>		
-	</bean>	
-	
-
 	<bean id="seqGenDAO" class="org.openiam.base.id.SequenceGenDAOImpl">
 		<property name="sessionFactory" ref="sessionFactory"></property>		
 	</bean>
@@ -326,7 +313,7 @@
 		<property name="defaultSender" value="${mail.defaultSender}" />
 		<property name="subjectPrefix" value="${mail.defaultSubjectPrefix}" />
 		<property name="optionalBccAddress" value="${mail.optionalBccAddress}" />
-		<property name="userManager" ref="userWS" />
+		<property name="userManager" ref="userManager" />
 		<property name="scriptEngine" value="org.openiam.script.GroovyScriptEngineIntegration" />
 		
 	</bean>

@@ -91,9 +91,9 @@ public class SendNewHireRequestDelegate implements JavaDelegate {
 					sendNotification(requestApprover);
 				} else {
 					if(delegationFilterSearchObj != null && delegationFilterSearchObj instanceof DelegationFilterSearch) {
-						final List<User> roleApprovers = userManager.searchByDelegationProperties((DelegationFilterSearch)delegationFilterSearchObj);
+						final List<UserEntity> roleApprovers = userManager.searchByDelegationProperties((DelegationFilterSearch)delegationFilterSearchObj);
 						if (CollectionUtils.isNotEmpty(roleApprovers)) {
-							for (final User approver : roleApprovers) {
+							for (final UserEntity approver : roleApprovers) {
 								sendNotificationRequest(approver);
 							}
 						}
@@ -103,7 +103,7 @@ public class SendNewHireRequestDelegate implements JavaDelegate {
 		}
 	}
 	
-	private void sendNotificationRequest(final User user) {
+	private void sendNotificationRequest(final UserEntity user) {
 		final NotificationRequest request = new NotificationRequest();
         request.setUserId(user.getUserId());
         request.setNotificationType("NEW_PENDING_REQUEST");

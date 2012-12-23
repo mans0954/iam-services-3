@@ -4,6 +4,7 @@ import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.connector.type.UserResponse;
+import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
@@ -17,6 +18,7 @@ import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.spml2.msg.PSOIdentifierType;
 import org.openiam.spml2.msg.ResponseType;
 import org.openiam.spml2.msg.StatusCodeType;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +29,9 @@ import java.util.Map;
  */
 public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
 
+	@Autowired
+	private UserDozerConverter userDozerConverter;
+	
     public ProvisionUserResponse deprovisionSelectedResources( String userId, String requestorUserId, List<String> resourceList)  {
 
         log.debug("deprovisionSelectedResources().....for userId=" + userId);
@@ -44,7 +49,7 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
             return response;
         }
 
-        User usr = this.userMgr.getUserWithDependent(userId, false);
+        User usr = userDozerConverter.convertToDTO(userMgr.getUser(userId), true);
         if (usr == null) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(ResponseCode.USER_NOT_FOUND);

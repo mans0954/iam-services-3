@@ -46,6 +46,8 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.LoginDozerConverter;
+import org.openiam.dozer.converter.SupervisorDozerConverter;
+import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.srvc.audit.service.AuditHelper;
@@ -74,6 +76,8 @@ import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.service.RoleDataService;
+import org.openiam.idm.srvc.user.domain.SupervisorEntity;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.Supervisor;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
@@ -136,6 +140,12 @@ public class ProvisionServiceImpl implements ProvisionService,
     protected AuditHelper auditHelper;
     @Autowired
     private LoginDozerConverter loginDozerConverter;
+    
+    @Autowired
+    private UserDozerConverter userDozerConverter;
+    
+    @Autowired
+    private SupervisorDozerConverter supervisorDozerConverter;
 
     /*
      * (non-Javadoc)
@@ -253,7 +263,9 @@ public class ProvisionServiceImpl implements ProvisionService,
          */
         //
 
-        User newUser = userMgr.addUser(user);
+        UserEntity entity = userDozerConverter.convertToEntity(user, true);
+        userMgr.addUser(entity);
+        User newUser = userDozerConverter.convertToDTO(entity, true);
         if (newUser == null || newUser.getUserId() == null) {
             ProvisionUserResponse resp = new ProvisionUserResponse();
             resp.setStatus(ResponseStatus.FAILURE);
@@ -264,7 +276,8 @@ public class ProvisionServiceImpl implements ProvisionService,
         Supervisor supervisor = provUser.getSupervisor();
         if (supervisor != null && supervisor.getSupervisor() != null) {
             supervisor.setEmployee(user);
-            userMgr.addSupervisor(supervisor);
+            final SupervisorEntity supervisorEntity = supervisorDozerConverter.convertToEntity(supervisor, true);
+            userMgr.addSupervisor(supervisorEntity);
             log.info("created user supervisor");
         }
 
@@ -594,7 +607,7 @@ public class ProvisionServiceImpl implements ProvisionService,
             // Turning off the primary identity - change the status on the user
             String userId = login.getUserId();
             if (userId != null) {
-                User usr = userMgr.getUserWithDependent(userId, false);
+                UserEntity usr = userMgr.getUser(userId);
                 usr.setStatus(UserStatusEnum.DELETED);
                 userMgr.updateUser(usr);
             }
@@ -742,8 +755,8 @@ public class ProvisionServiceImpl implements ProvisionService,
 
         // get the current user object - update it with the new values and then
         // save it
-        User origUser = userMgr
-                .getUserWithDependent(provUser.getUserId(), true);
+        UserEntity entity = userMgr.getUser(provUser.getUserId());
+        User origUser = userDozerConverter.convertToDTO(entity, true);
 
         if (origUser == null || origUser.getUserId() == null) {
             ProvisionUserResponse resp = new ProvisionUserResponse();
@@ -774,7 +787,8 @@ public class ProvisionServiceImpl implements ProvisionService,
 
         String requestId = "R" + System.currentTimeMillis();
 
-        userMgr.updateUserWithDependent(origUser, true);
+        entity = userDozerConverter.convertToEntity(origUser, true);
+        userMgr.updateUserWithDependent(entity, true);
 
         // get the primary identity
         LoginEntity primaryLg = loginManager.getPrimaryIdentity(origUser.getUserId());
@@ -1664,9 +1678,9 @@ public class ProvisionServiceImpl implements ProvisionService,
         }
         // check the current supervisor - if different - remove it and add the
         // new one.
-        List<Supervisor> supervisorList = userMgr.getSupervisors(user
+        List<SupervisorEntity> supervisorList = userMgr.getSupervisors(user
                 .getUserId());
-        for (Supervisor s : supervisorList) {
+        for (SupervisorEntity s : supervisorList) {
             log.info("looking to match supervisor ids = "
                     + s.getSupervisor().getUserId() + " "
                     + supervisor.getSupervisor().getUserId());
@@ -1674,11 +1688,13 @@ public class ProvisionServiceImpl implements ProvisionService,
                     .equalsIgnoreCase(supervisor.getSupervisor().getUserId())) {
                 return;
             }
-            userMgr.removeSupervisor(s);
+            userMgr.removeSupervisor(s.getOrgStructureId());
         }
         log.info("adding supervisor: " + supervisor.getSupervisor().getUserId());
         supervisor.setEmployee(user);
-        userMgr.addSupervisor(supervisor);
+        
+        final SupervisorEntity entity = supervisorDozerConverter.convertToEntity(supervisor, true);
+        userMgr.addSupervisor(entity);
 
     }
 
@@ -1707,7 +1723,7 @@ public class ProvisionServiceImpl implements ProvisionService,
             response.setErrorCode(ResponseCode.USER_NOT_FOUND);
             return response;
         }
-        User usr = this.userMgr.getUserWithDependent(userId, false);
+        UserEntity usr = userMgr.getUser(userId);
         if (usr == null) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(ResponseCode.USER_NOT_FOUND);
@@ -2038,7 +2054,7 @@ public class ProvisionServiceImpl implements ProvisionService,
             response.setErrorCode(ResponseCode.USER_NOT_FOUND);
             return response;
         }
-        User usr = this.userMgr.getUserWithDependent(userId, false);
+        UserEntity usr = userMgr.getUser(userId);
         if (usr == null) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(ResponseCode.USER_NOT_FOUND);
@@ -2367,7 +2383,7 @@ public class ProvisionServiceImpl implements ProvisionService,
     public Response disableUser(String userId, boolean operation,
             String requestorId) {
         // get the user
-        User user = userMgr.getUserWithDependent(userId, false);
+        UserEntity user = userMgr.getUser(userId);
         if (user == null) {
             log.error("UserId " + userId + " not found");
             Response resp = new Response();
@@ -2406,7 +2422,7 @@ public class ProvisionServiceImpl implements ProvisionService,
             throw new NullPointerException("Operation parameter is null");
         }
 
-        User user = userMgr.getUserWithDependent(userId, false);
+        UserEntity user = userMgr.getUser(userId);
         if (user == null) {
             log.error("UserId " + userId + " not found");
             Response resp = new Response();

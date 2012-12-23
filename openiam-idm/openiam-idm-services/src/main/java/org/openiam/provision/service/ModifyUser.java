@@ -11,13 +11,19 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.id.UUIDGen;
+import org.openiam.dozer.converter.AddressDozerConverter;
+import org.openiam.dozer.converter.EmailAddressDozerConverter;
 import org.openiam.dozer.converter.LoginDozerConverter;
+import org.openiam.dozer.converter.PhoneDozerConverter;
+import org.openiam.dozer.converter.SupervisorDozerConverter;
+import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.exception.EncryptionException;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditHelper;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
+import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
@@ -29,6 +35,8 @@ import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.role.domain.UserRoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.service.RoleDataService;
+import org.openiam.idm.srvc.user.domain.SupervisorEntity;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.Supervisor;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
@@ -54,6 +62,21 @@ public class ModifyUser {
     
     @Autowired
     private LoginDozerConverter loginDozerConverter;
+    
+    @Autowired
+    private EmailAddressDozerConverter emailAddressDozerConverter;
+    
+    @Autowired
+    private AddressDozerConverter addressDozerConverter;
+    
+    @Autowired
+    private PhoneDozerConverter phoneDozerConverter;
+    
+    @Autowired
+    private UserDozerConverter userDozerConverter;
+    
+    @Autowired
+    private SupervisorDozerConverter supervisorDozerConverter;
 
     private static final Log log = LogFactory.getLog(ModifyUser.class);
 
@@ -102,8 +125,7 @@ public class ModifyUser {
 
             log.debug("- Adding original addressSet to the user object");
 
-            List<Address> addressList = userMgr
-                    .getAddressList(user.getUserId());
+            List<Address> addressList = addressDozerConverter.convertToDTOList(userMgr.getAddressList(user.getUserId()), true);
             if (addressList != null && !addressList.isEmpty()) {
 
                 user.setAddresses(new HashSet<Address>(addressList));
@@ -118,8 +140,7 @@ public class ModifyUser {
 
             log.debug("- Adding original emailSet to the user object");
 
-            List<EmailAddress> emailList = userMgr.getEmailAddressList(user
-                    .getUserId());
+            List<EmailAddress> emailList = emailAddressDozerConverter.convertToDTOList(userMgr.getEmailAddressList(user.getUserId()), true);
             if (emailList != null && !emailList.isEmpty()) {
 
                 user.setEmailAddresses(new HashSet<EmailAddress>(emailList));
@@ -134,7 +155,7 @@ public class ModifyUser {
 
             log.debug("- Adding original phoneSet to the user object");
 
-            List<Phone> phoneList = userMgr.getPhoneList(user.getUserId());
+            List<Phone> phoneList = phoneDozerConverter.convertToDTOList(userMgr.getPhoneList(user.getUserId()), true);
             if (phoneList != null && !phoneList.isEmpty()) {
 
                 user.setPhones(new HashSet<Phone>(phoneList));
@@ -149,7 +170,7 @@ public class ModifyUser {
 
             log.debug("- Adding original user attributes to the user object");
 
-            User u = userMgr.getUserWithDependent(user.getUserId(), true);
+            User u = userDozerConverter.convertToDTO(userMgr.getUser(user.getUserId()), true);
             if (u.getUserAttributes() != null) {
                 user.setUserAttributes(u.getUserAttributes());
             }
@@ -184,7 +205,8 @@ public class ModifyUser {
 
         log.debug("User object pending update:" + origUser);
 
-        userMgr.updateUserWithDependent(origUser, true);
+        final UserEntity entity = userDozerConverter.convertToEntity(origUser, true);
+        userMgr.updateUserWithDependent(entity, true);
 
         return requestId;
     }
@@ -898,7 +920,7 @@ public class ModifyUser {
 
         List<UserRoleEntity> currentUserRole = roleDataService
                 .getUserRolesForUser(userId, 0, Integer.MAX_VALUE);
-        User user = userMgr.getUserWithDependent(userId, false);
+        UserEntity user = userMgr.getUser(userId);
 
         if ((origRoleList == null || origRoleList.size() == 0)
                 && (newRoleList == null || newRoleList.size() == 0)) {
@@ -1120,9 +1142,8 @@ public class ModifyUser {
         }
         // check the current supervisor - if different - remove it and add the
         // new one.
-        List<Supervisor> supervisorList = userMgr.getSupervisors(user
-                .getUserId());
-        for (Supervisor s : supervisorList) {
+        List<SupervisorEntity> supervisorList = userMgr.getSupervisors(user.getUserId());
+        for (SupervisorEntity s : supervisorList) {
             log.debug("looking to match supervisor ids = "
                     + s.getSupervisor().getUserId() + " "
                     + supervisor.getSupervisor().getUserId());
@@ -1130,13 +1151,13 @@ public class ModifyUser {
                     .equalsIgnoreCase(supervisor.getSupervisor().getUserId())) {
                 return;
             }
-            userMgr.removeSupervisor(s);
+            userMgr.removeSupervisor(s.getOrgStructureId());
         }
         log.debug("adding supervisor: "
                 + supervisor.getSupervisor().getUserId());
         supervisor.setEmployee(user);
-        userMgr.addSupervisor(supervisor);
-
+        final SupervisorEntity entity = supervisorDozerConverter.convertToEntity(supervisor, true);
+        userMgr.addSupervisor(entity);
     }
 
     //

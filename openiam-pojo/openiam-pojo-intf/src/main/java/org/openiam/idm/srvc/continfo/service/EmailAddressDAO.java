@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.continfo.service;
 
+import org.openiam.core.dao.BaseDao;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 
 import java.util.List;
@@ -13,37 +14,8 @@ import java.util.Map;
  *
  * @author Suneet Shah
  */
-public interface EmailAddressDAO {
-    //extends BaseDAO<EmailAddress, String> {
-
-    /**
-     * Return an object for the id.
-     *
-     * @param id
-     */
-    EmailAddressEntity findById(String id);
-
-    /**
-     * Adds a new instance
-     *
-     * @param instance
-     */
-    EmailAddressEntity add(EmailAddressEntity instance);
-
-    /**
-     * Updates an existing instance
-     *
-     * @param instace
-     */
-    void update(EmailAddressEntity instace);
-
-    /**
-     * Removes an existing instance
-     *
-     * @param instance
-     */
-    void remove(EmailAddressEntity instance);
-
+public interface EmailAddressDAO extends BaseDao<EmailAddressEntity, String> {
+   
     /**
      * Persist a map of EmailAddress objects at one time. Handles add, update, delete.
      *

@@ -10,7 +10,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.idm.srvc.audit.service.AuditHelper;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
+import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.ws.UserDataWebService;
 import org.openiam.script.ScriptFactory;
 import org.openiam.script.ScriptIntegration;
@@ -28,7 +30,7 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
     private String optionalBccAddress;
 
     protected String scriptEngine;
-    protected UserDataWebService userManager;
+    protected UserDataService userManager;
     @Autowired
     protected AuditHelper auditHelper;
 
@@ -132,8 +134,7 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
         if (req.getUserId() == null) {
             return false;
         }
-        User usr = userManager.getUserWithDependent(req.getUserId(), true)
-                .getUser();
+        UserEntity usr = userManager.getUser(req.getUserId());
         if (usr == null) {
             return false;
         }
@@ -229,11 +230,11 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
         ac = applicationContext;
     }
 
-    public UserDataWebService getUserManager() {
+    public UserDataService getUserManager() {
         return userManager;
     }
 
-    public void setUserManager(UserDataWebService userManager) {
+    public void setUserManager(UserDataService userManager) {
         this.userManager = userManager;
     }
 

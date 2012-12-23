@@ -64,6 +64,7 @@ import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.Supervisor;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
@@ -701,7 +702,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         String requestId = "R" + UUIDGen.getUUID();
 
-        User usr = this.userMgr.getUserWithDependent(user.getUserId(), false);
+        UserEntity entity = userMgr.getUser(user.getUserId());
+        User usr = userDozerConverter.convertToDTO(entity, true);
         if (usr == null) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(ResponseCode.USER_NOT_FOUND);
@@ -732,7 +734,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         usr.setSecondaryStatus(null);
         usr.setLastUpdatedBy(requestorId);
         usr.setLastUpdate(new Date(System.currentTimeMillis()));
-        userMgr.updateUserWithDependent(usr, false);
+        entity = userDozerConverter.convertToEntity(usr, true);
+        userMgr.updateUserWithDependent(entity, false);
 
         LoginEntity lRequestor = loginManager.getPrimaryIdentity(requestorId);
         LoginEntity lTargetUser = loginManager.getPrimaryIdentity(usr.getUserId());
@@ -860,7 +863,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         }
 
 
-        User usr = this.userMgr.getUserWithDependent(userId, false);
+        UserEntity entity = userMgr.getUser(userId);
+        User usr = userDozerConverter.convertToDTO(entity, true);
         if (usr == null) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(ResponseCode.USER_NOT_FOUND);
@@ -957,7 +961,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             usr.setSecondaryStatus(null);
             usr.setLastUpdatedBy(requestorId);
             usr.setLastUpdate(new Date(System.currentTimeMillis()));
-            userMgr.updateUserWithDependent(usr, false);
+            entity = userDozerConverter.convertToEntity(usr, true);
+            userMgr.updateUserWithDependent(entity, false);
 
             LoginEntity lRequestor = loginManager.getPrimaryIdentity(requestorId);
             LoginEntity lTargetUser = loginManager.getPrimaryIdentity(userId);
@@ -1112,7 +1117,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             throw new NullPointerException("Operation parameter is null");
         }
 
-        User user = userMgr.getUserWithDependent(userId, false);
+        UserEntity user = userMgr.getUser(userId);
         if (user == null) {
             log.error("UserId " + userId + " not found");
             response.setStatus(ResponseStatus.FAILURE);
@@ -1344,7 +1349,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             org = orgManager.getOrganization(pUser.getUser().getCompanyId());
         }
 
-        User origUser = userMgr.getUserWithDependent(pUser.getUserId(), true);
+        UserEntity entity = userMgr.getUser(pUser.getUserId());
+        User origUser = userDozerConverter.convertToDTO(entity, true);
         if (origUser == null || origUser.getUserId() == null) {
             throw new IllegalArgumentException("UserId is not valid. UserId=" + pUser.getUserId());
         }
@@ -2033,7 +2039,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             response.setErrorCode(ResponseCode.USER_NOT_FOUND);
             return response;
         }
-        User usr = this.userMgr.getUserWithDependent(userId, false);
+        UserEntity usr = this.userMgr.getUser(userId);
         if (usr == null) {
             auditHelper.addLog("RESET PASSWORD", passwordSync.getRequestorDomain(), passwordSync.getRequestorLogin(),
                     "IDM SERVICE", passwordSync.getRequestorId(), "PASSWORD", "PASSWORD", userId, null, "FAILURE", null, null,
@@ -2320,7 +2326,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             response.setErrorCode(ResponseCode.USER_NOT_FOUND);
             return response;
         }
-        User usr = this.userMgr.getUserWithDependent(userId, false);
+        UserEntity usr = userMgr.getUser(userId);
         if (usr == null) {
             auditHelper.addLog("SET PASSWORD", passwordSync.getRequestorDomain(), passwordSync.getRequestorLogin(),
                     "IDM SERVICE", passwordSync.getRequestorId(), "PASSWORD", "PASSWORD", null, null, "FAILURE", null, null,
@@ -2613,7 +2619,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             response.setErrorCode(ResponseCode.USER_NOT_FOUND);
             return response;
         }
-        User usr = this.userMgr.getUserWithDependent(userId, false);
+        UserEntity usr = userMgr.getUser(userId);
         if (usr == null) {
             auditHelper.addLog("SET PASSWORD", passwordSync.getRequestorDomain(), passwordSync.getRequestorLogin(),
                     "IDM SERVICE", passwordSync.getRequestorId(), "PASSWORD", "PASSWORD", null, null, "FAILURE", null, null,

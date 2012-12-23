@@ -30,6 +30,8 @@ import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.LoginDozerConverter;
+import org.openiam.dozer.converter.SupervisorDozerConverter;
+import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.exception.EncryptionException;
 import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
@@ -48,6 +50,8 @@ import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.service.RoleDataService;
+import org.openiam.idm.srvc.user.domain.SupervisorEntity;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.Supervisor;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDataService;
@@ -79,7 +83,13 @@ public class AddUser {
     protected OrganizationDataService orgManager;
     
     @Autowired
+    private UserDozerConverter userDozerConverter;
+    
+    @Autowired
     private LoginDozerConverter loginDozerConverter;
+    
+    @Autowired
+    private SupervisorDozerConverter supervisorDozerConverter;
 
     public ProvisionUserResponse createUser(ProvisionUser user,
             List<IdmAuditLog> logList) {
@@ -90,7 +100,10 @@ public class AddUser {
 
         User newUser = null;
         try {
-            newUser = userMgr.addUser(user.getUser());
+        	newUser = user.getUser();
+        	final UserEntity entity = userDozerConverter.convertToEntity(newUser, true);
+            userMgr.addUser(entity);
+            newUser = userDozerConverter.convertToDTO(entity, true);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
@@ -136,7 +149,8 @@ public class AddUser {
         Supervisor supervisor = u.getSupervisor();
         if (supervisor != null && supervisor.getSupervisor() != null) {
             supervisor.setEmployee(u.getUser());
-            userMgr.addSupervisor(supervisor);
+            final SupervisorEntity entity = supervisorDozerConverter.convertToEntity(supervisor, true);
+            userMgr.addSupervisor(entity);
         }
     }
 

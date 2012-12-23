@@ -17,104 +17,14 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Restrictions;
+import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
+import org.springframework.stereotype.Repository;
 
-
-/**
- * Implementation for EmailAddresDAO. Associated with a RDBMS.
- * @author Suneet Shah
- *
- */
-public class EmailAddressDAOImpl  implements EmailAddressDAO {  
+@Repository("emailAddressDAO")
+public class EmailAddressDAOImpl extends BaseDaoImpl<EmailAddressEntity, String> implements EmailAddressDAO {  
 
 	private static final Log log = LogFactory.getLog(AddressDAOImpl.class);
-
-	private SessionFactory sessionFactory;
-
-	public void setSessionFactory(SessionFactory session) {
-		   this.sessionFactory = session;
-	}
-	
-	protected SessionFactory getSessionFactory() {
-		try {
-			return (SessionFactory) new InitialContext()
-					.lookup("SessionFactory");
-		} catch (Exception e) {
-			log.error("Could not locate SessionFactory in JNDI", e);
-			throw new IllegalStateException(
-					"Could not locate SessionFactory in JNDI");
-		}
-	}
-
-	
-	
-
-	public EmailAddressEntity findById(java.lang.String id) {
-
-		try {
-			EmailAddressEntity instance = (EmailAddressEntity) sessionFactory
-					.getCurrentSession().get(EmailAddressEntity.class, id);
-			if (instance == null) {
-				log.debug("get successful, no instance found");
-			} else {
-				log.debug("get successful, instance found");
-			}
-			return instance;
-		} catch (RuntimeException re) {
-			log.error("get failed", re);
-			throw re;
-		}
-	}
-
-	/**
-	 * Adds a new instance
-	 * @param instance
-	 */
-	public EmailAddressEntity add(EmailAddressEntity instance) {
-
-		try {
-			sessionFactory.getCurrentSession().persist(instance);
-			log.debug("persist successful");
-			return instance;
-		} catch (RuntimeException re) {
-			log.error("persist failed", re);
-			throw re;
-		}
-
-	}
-
-	/**
-	 * Removes an existing instance
-	 * @param instance
-	 */
-	public void remove(EmailAddressEntity instance) {
-
-		try {
-			sessionFactory.getCurrentSession().delete(instance);
-			log.debug("delete successful");
-		} catch (RuntimeException re) {
-			log.error("delete failed", re);
-			throw re;
-		}
-
-	}
-	/**
-	 * Updates an existing instance
-	 * @param instance
-	 */
-	public void update(EmailAddressEntity instance) {
-		log.debug("merging instance");
-		try {
-			sessionFactory.getCurrentSession().merge(instance);
-			log.debug("merge successful");
-		} catch (RuntimeException re) {
-			log.error("merge failed", re);
-			throw re;
-		}
-
-	}
-
-	
 
 	public EmailAddressEntity findByName(String name, String parentId, String parentType) {
 
@@ -201,7 +111,7 @@ public class EmailAddressDAOImpl  implements EmailAddressDAO {
 				EmailAddressEntity curEmail =  it.next();
 				EmailAddressEntity newEmail = adrMap.get(curEmail.getEmailId());
 				if (newEmail == null) {
-					this.remove(curEmail);
+					delete(curEmail);
 				}else {
 					this.update(newEmail);
 				}
@@ -218,7 +128,7 @@ public class EmailAddressDAOImpl  implements EmailAddressDAO {
 				curEmail = currentMap.get(newEmail.getEmailId());
 			}
 			if (curEmail == null) {
-				add(newEmail);
+				save(newEmail);
 			}
 		}		
 	}
@@ -247,7 +157,7 @@ public class EmailAddressDAOImpl  implements EmailAddressDAO {
 				EmailAddressEntity curEmail = currentMap.get(key);
 				if (newEmail == null) {
 					// address was removed - deleted
-					remove(curEmail);
+					delete(curEmail);
 				}else if (!curEmail.equals(newEmail)) {
 					// object changed
 					this.update(newEmail);
@@ -264,7 +174,7 @@ public class EmailAddressDAOImpl  implements EmailAddressDAO {
 			}
 			if (curAdr == null) {
 				// new address object
-				this.add(email);
+				save(email);
 			}
 		}
 		
@@ -280,5 +190,10 @@ public class EmailAddressDAOImpl  implements EmailAddressDAO {
 			}
 		}
 		return adr;
+	}
+
+	@Override
+	protected String getPKfieldName() {
+		return "emailId";
 	}
 }

@@ -14,10 +14,6 @@ public class AddressDAOTouchTest extends AbstractTransactionalTestNGSpringContex
     @Autowired
     private AddressDAO addressDAO;
 
-    @Test
-    private void touchAdd() {
-        addressDAO.add(new AddressEntity());
-    }
 
     @Test
     private void touchFindById() {

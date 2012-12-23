@@ -18,7 +18,7 @@ public class PhoneDAOTouchTest extends AbstractTransactionalTestNGSpringContextT
 
     @Test
     public void touchAdd() {
-        phoneDAO.add(new PhoneEntity());
+        phoneDAO.save(new PhoneEntity());
     }
 
     @Test
@@ -48,7 +48,7 @@ public class PhoneDAOTouchTest extends AbstractTransactionalTestNGSpringContextT
 
     @Test
     public void touchRemove() {
-        phoneDAO.remove(new PhoneEntity());
+        phoneDAO.delete(new PhoneEntity());
     }
 
     @Test

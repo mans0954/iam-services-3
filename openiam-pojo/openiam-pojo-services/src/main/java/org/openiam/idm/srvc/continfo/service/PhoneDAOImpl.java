@@ -17,103 +17,15 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
 import org.hibernate.criterion.Restrictions;
+import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
+import org.springframework.stereotype.Repository;
 
 
-/**
- * Implementation for PhoneDAO. Associated with a RDBMS.
- * @author Suneet Shah
- *
- */
-public class PhoneDAOImpl implements PhoneDAO {
+@Repository("phoneDAO")
+public class PhoneDAOImpl extends BaseDaoImpl<PhoneEntity, String> implements PhoneDAO {
 
 	private static final Log log = LogFactory.getLog(PhoneDAOImpl.class);
-
-	private SessionFactory sessionFactory;
-
-	public void setSessionFactory(SessionFactory session) {
-		   this.sessionFactory = session;
-	}
-	
-	protected SessionFactory getSessionFactory() {
-		try {
-			return (SessionFactory) new InitialContext()
-					.lookup("SessionFactory");
-		} catch (Exception e) {
-			log.error("Could not locate SessionFactory in JNDI", e);
-			throw new IllegalStateException(
-					"Could not locate SessionFactory in JNDI");
-		}
-	}
-
-	public PhoneEntity findById(java.lang.String id) {
-
-		try {
-			PhoneEntity instance = (PhoneEntity) sessionFactory
-					.getCurrentSession().get(PhoneEntity.class, id);
-			if (instance == null) {
-				log.debug("get successful, no instance found");
-			} else {
-				log.debug("get successful, instance found");
-			}
-			return instance;
-		} catch (RuntimeException re) {
-			log.error("get failed", re);
-			throw re;
-		}
-	}
-
-	/**
-	 * Adds a new instance
-	 * @param instance
-	 */
-	public PhoneEntity add(PhoneEntity instance) {
-
-		try {
-			sessionFactory.getCurrentSession().persist(instance);
-			log.debug("persist successful");
-			return instance;
-		} catch (RuntimeException re) {
-			re.printStackTrace();
-			log.error("persist failed", re);
-			throw re;
-		}
-
-	}
-
-	/**
-	 * Removes an existing instance
-	 * @param instance
-	 */
-	public void remove(PhoneEntity instance) {
-
-		try {
-			sessionFactory.getCurrentSession().delete(instance);
-			log.debug("delete successful");
-		} catch (RuntimeException re) {
-			log.error("delete failed", re);
-			throw re;
-		}
-
-	}
-	/**
-	 * Updates an existing instance
-	 * @param instance
-	 */
-	public void update(PhoneEntity instance) {
-
-		try {
-			sessionFactory.getCurrentSession().merge(instance);
-			log.debug("merge successful");
-		} catch (RuntimeException re) {
-			re.printStackTrace();
-			log.error("merge failed", re);
-			throw re;
-		}
-
-	}
-
-	
 
 	public PhoneEntity findByName(String name, String parentId, String parentType) {
 
@@ -199,7 +111,7 @@ public class PhoneDAOImpl implements PhoneDAO {
 				PhoneEntity curPhone =  it.next();
 				PhoneEntity newPhone = adrMap.get(curPhone.getPhoneId());
 				if (newPhone == null) {
-					this.remove(curPhone);
+					delete(curPhone);
 				}else {
 					this.update(newPhone);
 				}
@@ -215,7 +127,7 @@ public class PhoneDAOImpl implements PhoneDAO {
 				curPhone = currentMap.get(newPhone.getPhoneId());
 			}
 			if (curPhone == null) {
-				add(newPhone);
+				save(newPhone);
 			}
 		}
 		
@@ -244,7 +156,7 @@ public class PhoneDAOImpl implements PhoneDAO {
 				PhoneEntity curPhone = currentMap.get(key);
 				if (newPhone == null) {
 					// address was removed - deleted
-					remove(curPhone);
+					delete(curPhone);
 				}else if (!curPhone.equals(newPhone)) {
 					// object changed
 					this.update(newPhone);
@@ -261,7 +173,7 @@ public class PhoneDAOImpl implements PhoneDAO {
 			}
 			if (curAdr == null) {
 				// new address object
-				this.add(phone);
+				save(phone);
 			}
 		}
 		
@@ -277,6 +189,11 @@ public class PhoneDAOImpl implements PhoneDAO {
 			}
 		}
 		return phone;
+	}
+
+	@Override
+	protected String getPKfieldName() {
+		return "phoneId";
 	}
 	
 }

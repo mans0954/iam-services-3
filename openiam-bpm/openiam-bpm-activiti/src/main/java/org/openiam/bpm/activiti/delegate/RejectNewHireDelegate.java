@@ -125,7 +125,7 @@ public class RejectNewHireDelegate implements JavaDelegate {
             	}
             }
 
-            final User approver = userManager.getUserWithDependent(newHireExecutorId, false);
+            final UserEntity approver = userManager.getUser(newHireExecutorId);
             final NotificationRequest request = new NotificationRequest();
             request.setUserId(notifyUserId);
             request.setNotificationType("REQUEST_REJECTED");

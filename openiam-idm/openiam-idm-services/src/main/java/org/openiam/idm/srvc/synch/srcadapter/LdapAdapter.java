@@ -28,6 +28,7 @@ import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditHelper;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
@@ -47,6 +48,7 @@ import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.service.ProvisionService;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
 import javax.naming.Context;
@@ -88,6 +90,9 @@ public class LdapAdapter implements SourceAdapter {
     protected RoleDataService roleDataService;
     protected AuditHelper auditHelper;
     protected MatchRuleFactory matchRuleFactory;
+    
+    @Autowired
+    private UserDozerConverter userDozerConverter;
 
     static protected ResourceBundle secres = ResourceBundle.getBundle("securityconf");
 
@@ -266,7 +271,7 @@ public class LdapAdapter implements SourceAdapter {
                         // initialize the transform script
                         if (usr != null) {
                             transformScript.setNewUser(false);
-                            transformScript.setUser(userMgr.getUserWithDependent(usr.getUserId(), true));
+                            transformScript.setUser(userDozerConverter.convertToDTO(userMgr.getUser(usr.getUserId()), true));
                             transformScript.setPrincipalList(loginManager.getLoginByUser(usr.getUserId()));
                             transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getUserId()));
 
