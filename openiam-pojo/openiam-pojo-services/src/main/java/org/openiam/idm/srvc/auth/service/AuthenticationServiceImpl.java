@@ -30,6 +30,7 @@ import java.util.StringTokenizer;
 import javax.jws.WebMethod;
 import javax.jws.WebService;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.SysConfiguration;
@@ -340,27 +341,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     public AuthenticationResponse login(AuthenticationRequest request) {
-        log.debug("*** login called...");
-
-        String secDomainId;
-        String principal;
-        String password;
-        String clientIP;
-        String nodeIP;
-
         if (request == null) {
             throw new IllegalArgumentException("Request object is null");
         }
 
-        secDomainId = request.getDomainId();
-        principal = request.getPrincipal();
-        password = request.getPassword();
-
-        clientIP = request.getClientIP();
-        nodeIP = request.getNodeIP();
-
-        log.debug("Login request for :" + principal + " from: " + clientIP
-                + " / " + nodeIP);
+        final String secDomainId = request.getDomainId();
+        final String principal = request.getPrincipal();
+        final String password = request.getPassword();
+        final String clientIP = request.getClientIP();
+        final String nodeIP = request.getNodeIP();
 
         AuthenticationResponse authResp = new AuthenticationResponse(
                 ResponseStatus.FAILURE);
@@ -388,13 +377,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         // Determine which login module to use
         // - get the Authentication policy for the domain
         String authPolicyId = secDomain.getAuthnPolicyId();
-
-        log.debug("Authn policyId=" + authPolicyId);
-
         authPolicy = policyDataService.getPolicy(authPolicyId);
-
-        log.debug("Auth Policy object=" + authPolicy);
-
         PolicyAttribute modType = authPolicy.getAttribute("LOGIN_MOD_TYPE");
         PolicyAttribute defaultModule = authPolicy
                 .getAttribute("DEFAULT_LOGIN_MOD");
@@ -406,14 +389,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         // log.debug("loginModule=" + secDomain.getDefaultLoginModule());
 
-        if (loginModName
-                .equalsIgnoreCase("org.openiam.idm.srvc.auth.spi.DefaultLoginModule")) {
+        if (StringUtils.equals(loginModName, "org.openiam.idm.srvc.auth.spi.DefaultLoginModule")) {
             /* Few basic checks must be met before calling the login module. */
             /* Simplifies the login module */
-            if (principal == null || principal.length() == 0) {
-
-                log.debug("Invalid login:" + principal);
-
+            if (StringUtils.isBlank(principal)) {
                 log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
                         "INVALID LOGIN", secDomainId, null, principal, null,
                         null, clientIP, nodeIP);
@@ -425,7 +404,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
             }
 
-            if (password == null || password.equals("")) {
+            if (StringUtils.isBlank(password)) {
 
                 log.debug("Invalid password");
 
@@ -443,10 +422,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             lg = loginManager.getLoginByManagedSys(secDomainId, principal,
                     secDomain.getAuthSysId());
 
-            log.debug("login object after looking up the login:" + lg);
-
             if (lg == null) {
-                log.debug("Login not found. Throw authentication exception");
                 log("AUTHENTICATION", "AUTHENTICATION", "FAIL",
                         "INVALID LOGIN", secDomainId, null, principal, null,
                         null, clientIP, nodeIP);
@@ -456,16 +432,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_LOGIN);
                 return authResp;
 
-            } else {
-                log.debug("Login found. No exception thrown");
             }
 
             // check the user status - move to the abstract class for reuse
             userId = lg.getUserId();
-
-            log.debug("UserId=" + userId);
             user = userManager.getUser(userId);
-            log.debug("User object for " + userId + "=" + user);
         }
 
         try {

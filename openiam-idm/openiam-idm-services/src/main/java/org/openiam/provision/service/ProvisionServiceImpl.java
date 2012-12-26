@@ -2084,8 +2084,7 @@ public class ProvisionServiceImpl implements ProvisionService,
             }
 
         } catch (ObjectNotFoundException oe) {
-            oe.printStackTrace();
-            log.error(oe);
+            log.error("Can't validate password", oe);
         }
 
         // update the openIAM repository

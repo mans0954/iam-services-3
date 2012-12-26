@@ -73,8 +73,7 @@ public class PasswordHistoryRule extends AbstractPasswordRule {
 			pswd.setPassword(password);
 			
 			int version =  Integer.parseInt( attribute.getValue1() );
-			List<PasswordHistoryEntity> historyList = passwordHistoryDao.findPasswordHistoryByPrincipal(
-					 pswd.getDomainId(), pswd.getPrincipal(), pswd.getManagedSysId(), version);
+			List<PasswordHistoryEntity> historyList = passwordHistoryDao.getPasswordHistoryByLoginId(lg.getLogin(), 0, version);
 			if (historyList == null || historyList.isEmpty()) {
 				// no history
 				return retval;
@@ -89,7 +88,7 @@ public class PasswordHistoryRule extends AbstractPasswordRule {
 				try {
 					decrypt =  cryptor.decrypt(keyManagementService.getUserKey(userId, KeyName.password.name()), pwd);
 				}catch(Exception e) {
-					log.error("PasswordHistoryRule failed due to decrption error. ");
+					log.error("PasswordHistoryRule failed due to decrption error. ", e);
 					return PasswordValidationCode.FAIL_HISTORY_RULE;
 				}
 				if (pswd.getPassword().equals(decrypt)) {

@@ -29,11 +29,7 @@ import java.util.List;
 
 public interface PasswordHistoryDAO extends BaseDao<PasswordHistoryEntity, String> {
 
-    List<PasswordHistoryEntity> findPasswordHistoryByPrincipal(String domainId,
-                                                         String principal, String managedSys,
-                                                         int versions);
-    List<PasswordHistoryEntity> findAllPasswordHistoryByPrincipal(String domainId,
-                                                         String principal, String managedSys);
+    List<PasswordHistoryEntity> getPasswordHistoryByLoginId(final String loginId, final int from, final int size);
 
     List<PasswordHistoryEntity> getSublist(int startPos,int size);
 

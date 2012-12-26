@@ -21,6 +21,8 @@
 package org.openiam.idm.srvc.audit.service;
 
 import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
 import org.openiam.dozer.converter.IdmAuditLogDozerConverter;
 import org.openiam.idm.srvc.audit.constant.CustomIdmAuditLogType;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
@@ -47,8 +49,7 @@ public class AuditHelperImpl implements AuditHelper {
      * @return
      */
     public IdmAuditLog logEvent(IdmAuditLog log) {
-
-        if (log.getLogId() != null && log.getLogId().isEmpty()) {
+        if (StringUtils.isEmpty(log.getLogId())) {
             log.setLogId(null);
         }
 
@@ -143,20 +144,23 @@ public class AuditHelperImpl implements AuditHelper {
         log.setSrcSystemId(srcSystem);
         log.setTargetSystemId(targetSystem);
 
-        log.updateCustomRecord(attrName, attrValue, 1,
-                CustomIdmAuditLogType.ATTRIB);
         log.setRequestId(requestId);
         log.setReason(reason);
         log.setSessionId(sessionId);
         log.setReasonDetail(reasonDetail);
         log.setHost(requestIP);
+        
+        idmAuditLogDAO.save(log);
+        
+        log.updateCustomRecord(attrName, attrValue, 1,
+                CustomIdmAuditLogType.ATTRIB);
 
         log.updateCustomRecord("TARGET_IDENTITY", targetPrincipal, 3,
                 CustomIdmAuditLogType.ATTRIB);
         log.updateCustomRecord("TARGET_IDENTITY", targetUserDomain, 4,
                 CustomIdmAuditLogType.ATTRIB);
-
-        return logEvent(log);
+        idmAuditLogDAO.update(log);
+        return idmAuditLogDozerConverter.convertToDTO(log, true);
     }
 
     private IdmAuditLog logEvent(IdmAuditLogEntity log) {

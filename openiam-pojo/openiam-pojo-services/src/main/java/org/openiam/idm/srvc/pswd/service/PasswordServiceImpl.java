@@ -55,6 +55,7 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.util.encrypt.Cryptor;
 import org.openiam.util.encrypt.HashDigest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 
 /**
  * @author suneet
@@ -105,14 +106,14 @@ public class PasswordServiceImpl implements PasswordService {
         }
         log.info("Selected Password policy=" + pswdPolicy.getPolicyId());
 
+        PasswordValidationCode retVal = null;
         try {
-
-            return passwordValidator.validate(pswdPolicy, pswd);
-
+        	retVal = passwordValidator.validate(pswdPolicy, pswd);
         } catch (IOException io) {
             log.error(io);
-            return PasswordValidationCode.FAIL_OTHER;
+            retVal = PasswordValidationCode.FAIL_OTHER;
         }
+        return retVal;
     }
 
     @Override
@@ -126,15 +127,14 @@ public class PasswordServiceImpl implements PasswordService {
         }
         log.info("Selected Password policy=" + pswdPolicy.getPolicyId());
 
+        PasswordValidationCode retVal = null;
         try {
-
-            return passwordValidator
-                    .validateForUser(pswdPolicy, pswd, user, lg);
-
+        	retVal = passwordValidator.validateForUser(pswdPolicy, pswd, user, lg);
         } catch (IOException io) {
             log.error(io);
-            return PasswordValidationCode.FAIL_OTHER;
+            retVal = PasswordValidationCode.FAIL_OTHER;
         }
+        return retVal;
     }
 
     @Override
@@ -355,33 +355,38 @@ public class PasswordServiceImpl implements PasswordService {
             return -1;
         }
         int version = Integer.parseInt(attr.getValue1());
-        List<PasswordHistoryEntity> historyList = this.passwordHistoryDao
-                .findPasswordHistoryByPrincipal(pswd.getDomainId(),
-                        pswd.getPrincipal(), pswd.getManagedSysId(), version);
-        if (historyList == null || historyList.isEmpty()) {
-            // no history
-            return 0;
+        
+        final LoginEntity loginEntity = loginManager.getLoginByManagedSys(pswd.getDomainId(), pswd.getPrincipal(), pswd.getManagedSysId());
+        
+        int retVal = 0;
+        if(loginEntity != null) {
+        	final List<PasswordHistoryEntity> historyList = passwordHistoryDao.getPasswordHistoryByLoginId(loginEntity.getLoginId(), 0, version);
+        	if (CollectionUtils.isEmpty(historyList)) {
+        		// no history
+        		retVal = 0;
+        	} else {
+        		log.info("Found " + historyList.size() + " passwords in the history");
+        		for (PasswordHistoryEntity hist : historyList) {
+        			String pwd = hist.getPassword();
+        			try {
+        				LoginEntity login = loginManager.getLogin(hist.getLoginId());
+        				decrypt = cryptor.decrypt(keyManagementService.getUserKey(
+        						login.getUserId(), KeyName.password.name()), pwd);
+        			} catch (Exception e) {
+        				log.error("Unable to decrypt password in history: " + pwd);
+        				throw new IllegalArgumentException(
+        						"Unable to decrypt password in password history list");
+        			}
+        			if (pswd.getPassword().equals(decrypt)) {
+        				log.info("matching password found.");
+        				retVal = 1;
+        			}
+        		}
+        	}
+        } else {
+        	retVal = 0;
         }
-        // check the list.
-        log.info("Found " + historyList.size() + " passwords in the history");
-        for (PasswordHistoryEntity hist : historyList) {
-            String pwd = hist.getPassword();
-            try {
-                LoginEntity login = loginManager.getLogin(hist.getLoginId());
-                decrypt = cryptor.decrypt(keyManagementService.getUserKey(
-                        login.getUserId(), KeyName.password.name()), pwd);
-            } catch (Exception e) {
-                log.error("Unable to decrypt password in history: " + pwd);
-                throw new IllegalArgumentException(
-                        "Unable to decrypt password in password history list");
-            }
-            if (pswd.getPassword().equals(decrypt)) {
-                log.info("matching password found.");
-                return 1;
-            }
-        }
-        log.info("No match found.");
-        return 0;
+        return retVal;
     }
 
     @Override

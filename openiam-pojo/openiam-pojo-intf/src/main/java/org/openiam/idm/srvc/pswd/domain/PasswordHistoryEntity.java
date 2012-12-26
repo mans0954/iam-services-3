@@ -26,8 +26,12 @@ public class PasswordHistoryEntity {
 	@Column(name = "LOGIN_ID", length = 32, nullable = false)
     private String loginId;
 	
-	@Column(name = "DATE_CREATED", length = 19)
-    private Date dateCreated;
+	/* 
+	 * this is a not nullable field.  Triggers not used in order to avoid 
+	 * conflicts with DBs that don't support triggers (no-SQL?)
+	 */
+	@Column(name = "DATE_CREATED", length = 19, nullable=false)
+    private Date dateCreated = new Date();
 	
 	@Column(name = "PASSWORD", length = 255, nullable = false)
     private String password;

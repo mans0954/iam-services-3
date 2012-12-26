@@ -182,7 +182,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         List<UserKey> keyList = userKeyDao.getByUserId(user.getUserId());
         List<PasswordHistoryEntity> pwdList = new ArrayList<PasswordHistoryEntity>();
         for (LoginEntity lg: lgList){
-            pwdList.addAll(passwordHistoryDao.findAllPasswordHistoryByPrincipal(lg.getDomainId(), lg.getLogin(),lg.getManagedSysId()));
+            pwdList.addAll(passwordHistoryDao.getPasswordHistoryByLoginId(lg.getLoginId(), 0, Integer.MAX_VALUE));
         }
         HashMap<String, List<ManagedSys>> managedSysMap = getManagedSysMap();
         List<UserKey> newUserKeyList = new ArrayList<UserKey>();

@@ -234,7 +234,7 @@
 		<property name="userDao" ref="userDAO" />
 		<property name="loginDao" ref="loginDAO" />
 		<property name="passwordHistoryDao" ref="passwordHistoryDAO" />	
-		<property name="cryptor" ref="cryptor" />	
+		<property name="cryptor" ref="cryptor" />
 		<property name="scriptEngine" value="org.openiam.script.GroovyScriptEngineIntegration" />
 			
 	</bean>	
