@@ -45,7 +45,7 @@ public interface UserDataService {
      */
     public UserEntity getUserByPrincipal(String securityDomain, String principal, String managedSysId, boolean dependants);
 
-    public void addUser(UserEntity user);
+    public void addUser(UserEntity user) throws Exception;
 
     public void addUserWithDependent(UserEntity user, boolean dependency);
 
@@ -203,7 +203,7 @@ public interface UserDataService {
     public List<UserEntity> getUsersForRole(final String roleId, final int from, final int size);
     public int getNumOfUsersForRole(final String roleId);
 
-    public void saveUserInfo(UserEntity userEntity, SupervisorEntity supervisorEntity);
+    public String saveUserInfo(UserEntity userEntity, SupervisorEntity supervisorEntity) throws Exception;
 
     public void deleteUser(String userId);
 

@@ -518,7 +518,7 @@ public interface UserDataWebService {
     public int getNumOfUsersForRole(@WebParam(name = "roleId", targetNamespace = "") final String roleId);
 
     @WebMethod
-    public Response saveUserInfo(@WebParam(name = "user", targetNamespace = "")final User user,
+    public UserResponse saveUserInfo(@WebParam(name = "user", targetNamespace = "")final User user,
                                  @WebParam(name = "supervisor", targetNamespace = "")final Supervisor supervisor);
 
     @WebMethod

@@ -1,9 +1,6 @@
 package org.openiam.idm.srvc.user.dto;
 
 
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -11,25 +8,19 @@ import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseConstants;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.continfo.domain.AddressEntity;
-import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
-import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
+import org.openiam.idm.srvc.grp.dto.UserGroup;
+import org.openiam.idm.srvc.res.dto.ResourceUser;
+import org.openiam.idm.srvc.role.dto.UserRole;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.util.*;
-
-import org.openiam.idm.srvc.grp.dto.UserGroup;
-import org.openiam.idm.srvc.res.domain.ResourceUserEntity;
-import org.openiam.idm.srvc.res.dto.ResourceUser;
-import org.openiam.idm.srvc.role.domain.UserRoleEntity;
-import org.openiam.idm.srvc.role.dto.UserRole;
-import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
-import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.domain.UserNoteEntity;
 
 /**
  * User domain object.  This object is used to transfer data between the service layer
@@ -107,7 +98,10 @@ import org.openiam.idm.srvc.user.domain.UserNoteEntity;
         "securityDomain",
         "userOwnerId",
         "datePasswordChanged",
-        "dateChallengeRespChanged"
+        "dateChallengeRespChanged",
+        "login",
+        "password",
+        "notifyUserViaEmail"
 })
 @XmlSeeAlso({
         Login.class,
@@ -281,6 +275,11 @@ public class User extends org.openiam.base.BaseObject {
     
     @XmlTransient
     private Set<ResourceUser> resourceUsers = new HashSet<ResourceUser>();
+
+    // these fields are used only when userWS is used directly without provision
+    private String login;
+    private String password;
+    private Boolean notifyUserViaEmail=true;
 
     // Constructors
 
@@ -1489,6 +1488,30 @@ public class User extends org.openiam.base.BaseObject {
 
     public void setUserRoles(Set<UserRole> userRoles) {
         this.userRoles = userRoles;
+    }
+
+    public String getLogin() {
+        return login;
+    }
+
+    public void setLogin(String login) {
+        this.login = login;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public Boolean getNotifyUserViaEmail() {
+        return notifyUserViaEmail;
+    }
+
+    public void setNotifyUserViaEmail(Boolean notifyUserViaEmail) {
+        this.notifyUserViaEmail = notifyUserViaEmail;
     }
 
     @Override

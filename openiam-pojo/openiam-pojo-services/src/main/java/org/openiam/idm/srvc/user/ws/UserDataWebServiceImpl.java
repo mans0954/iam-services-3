@@ -28,6 +28,7 @@ import org.openiam.base.ws.ResponseStatus;
 import org.openiam.base.ws.exception.BasicDataServiceException;
 import org.openiam.dozer.converter.*;
 import org.openiam.idm.searchbeans.UserSearchBean;
+import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
@@ -47,10 +48,7 @@ import org.springframework.util.CollectionUtils;
 
 import javax.jws.WebParam;
 import javax.jws.WebService;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author suneet
@@ -939,18 +937,37 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	}
 
     @Override
-    public Response saveUserInfo(final User user, final Supervisor supervisor){
-        final Response response = new Response(ResponseStatus.SUCCESS);
+    public UserResponse saveUserInfo(final User user, final Supervisor supervisor){
+        final UserResponse response = new UserResponse(ResponseStatus.SUCCESS);
         try {
             if(user == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            }
+            if(user.getUserId()==null){
+                // create new user, need to merge user objects
+                List<Login> principalList = new ArrayList<Login>();
+                Login principal = new Login();
+                principal.setLogin(user.getLogin());
+                principal.setPassword(user.getPassword());
+                principalList.add(principal);
+                user.setPrincipalList(principalList);
+
+                Set<EmailAddress> emailAddressList = new HashSet<EmailAddress>();
+
+                EmailAddress ea = new EmailAddress();
+                ea.setEmailAddress(user.getEmail());
+                ea.setIsDefault(1);
+                emailAddressList.add(ea);
+                user.setEmailAddresses(emailAddressList);
             }
 
             final UserEntity userEntity = userDozerConverter.convertToEntity(user, true);
             SupervisorEntity supervisorEntity = null;
             if(supervisor!=null)
                 supervisorEntity = supervisorDozerConverter.convertToEntity(supervisor, true);
-            userManager.saveUserInfo(userEntity, supervisorEntity);
+            String userId = userManager.saveUserInfo(userEntity, supervisorEntity);
+            user.setUserId(userId);
+            response.setUser(user);
         } catch(BasicDataServiceException e) {
             response.setErrorCode(e.getCode());
             response.setStatus(ResponseStatus.FAILURE);

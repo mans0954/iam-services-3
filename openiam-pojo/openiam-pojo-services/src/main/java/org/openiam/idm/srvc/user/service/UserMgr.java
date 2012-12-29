@@ -7,13 +7,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.BaseConstants;
 import org.openiam.base.SysConfiguration;
-import org.openiam.base.ws.Response;
-import org.openiam.base.ws.ResponseCode;
-import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.searchbeans.LoginSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
+import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.auth.login.lucene.LoginSearchDAO;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
@@ -25,6 +23,7 @@ import org.openiam.idm.srvc.continfo.service.AddressDAO;
 import org.openiam.idm.srvc.continfo.service.EmailAddressDAO;
 import org.openiam.idm.srvc.continfo.service.PhoneDAO;
 import org.openiam.idm.srvc.grp.service.UserGroupDAO;
+import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.role.service.UserRoleDAO;
 import org.openiam.idm.srvc.user.dao.UserSearchDAO;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
@@ -86,6 +85,11 @@ public class UserMgr implements UserDataService {
     
     @Autowired
     private LoginSearchDAO loginSearchDAO;
+
+    @Autowired
+    private KeyManagementService keyManagementService;
+    @Autowired
+    private LoginDataService loginManager;
     
     @Value("${org.openiam.user.search.max.results}")
     private int MAX_USER_SEARCH_RESULTS;
@@ -109,7 +113,7 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
-    public void addUser(UserEntity user) {
+    public void addUser(UserEntity user) throws Exception {
         if (user == null)
             throw new NullPointerException("user object is null");
 
@@ -122,6 +126,8 @@ public class UserMgr implements UserDataService {
 
         validateEmailAddress(user, user.getEmailAddresses());
         userDao.save(user);
+
+        keyManagementService.generateUserKeys(user);
     }
 
     @Override
@@ -838,14 +844,15 @@ public class UserMgr implements UserDataService {
 
     @Override
     @Transactional
-    public void saveUserInfo(UserEntity newUserEntity, SupervisorEntity supervisorEntity){
+    public String saveUserInfo(UserEntity newUserEntity, SupervisorEntity supervisorEntity) throws Exception {
+        String userId= newUserEntity.getUserId();
         if(newUserEntity.getUserId()!=null){
             // update, need to merge user objects
             UserEntity origUser = this.getUser(newUserEntity.getUserId());
             this.mergeUserFields(origUser, newUserEntity);
             userDao.update(origUser);
         } else {
-            userDao.save(newUserEntity);
+            userId = createNewUser(newUserEntity);
         }
         if(supervisorEntity!=null){
             // update supervisor
@@ -856,7 +863,7 @@ public class UserMgr implements UserDataService {
                           + supervisorEntity.getSupervisor().getUserId());
                 if (s.getSupervisor().getUserId()
                      .equalsIgnoreCase(supervisorEntity.getSupervisor().getUserId())) {
-                    return;
+                    break;
                 }
                 this.removeSupervisor(s.getOrgStructureId());
             }
@@ -865,7 +872,43 @@ public class UserMgr implements UserDataService {
 
             this.addSupervisor(supervisorEntity);
         }
+        return userId;
     }
+    @Transactional
+    private String createNewUser(UserEntity newUserEntity) throws Exception {
+        List<LoginEntity> principalList = newUserEntity.getPrincipalList();
+        Set<EmailAddressEntity> emailAddressList = newUserEntity.getEmailAddresses();
+
+        newUserEntity.setPrincipalList(null);
+        newUserEntity.setEmailAddresses(null);
+
+        this.addUser(newUserEntity);
+
+        if (principalList != null && !principalList.isEmpty()) {
+            for (LoginEntity lg : principalList) {
+                lg.setDomainId(sysConfiguration.getDefaultSecurityDomain());
+                lg.setManagedSysId(sysConfiguration.getDefaultManagedSysId());
+                lg.setFirstTimeLogin(1);
+                lg.setIsLocked(0);
+                lg.setCreateDate(new Date(System.currentTimeMillis()));
+                lg.setUserId(newUserEntity.getUserId());
+                lg.setStatus("ACTIVE");
+                // encrypt the password
+                if (lg.getPassword() != null) {
+                    String pswd = lg.getPassword();
+                    lg.setPassword(loginManager.encryptPassword(newUserEntity.getUserId(),
+                                                                pswd));
+                }
+                loginDao.save(lg);
+            }
+        }
+        if(emailAddressList!=null && !emailAddressList.isEmpty()){
+            validateEmailAddress(newUserEntity, emailAddressList);
+            this.addEmailAddressSet(emailAddressList);
+        }
+        return newUserEntity.getUserId();
+    }
+
     @Transactional
     public void deleteUser(String userId){
         List<LoginEntity> loginList = loginDao.findUser(userId);
