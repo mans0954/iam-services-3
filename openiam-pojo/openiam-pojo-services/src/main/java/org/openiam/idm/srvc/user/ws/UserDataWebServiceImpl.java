@@ -21,30 +21,12 @@
  */
 package org.openiam.idm.srvc.user.ws;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.jws.WebMethod;
-import javax.jws.WebParam;
-import javax.jws.WebService;
-
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.base.ws.exception.BasicDataServiceException;
-import org.openiam.dozer.DozerUtils;
-import org.openiam.dozer.converter.AddressDozerConverter;
-import org.openiam.dozer.converter.EmailAddressDozerConverter;
-import org.openiam.dozer.converter.PhoneDozerConverter;
-import org.openiam.dozer.converter.SupervisorDozerConverter;
-import org.openiam.dozer.converter.UserAttributeDozerConverter;
-import org.openiam.dozer.converter.UserDozerConverter;
-import org.openiam.dozer.converter.UserNoteDozerConverter;
+import org.openiam.dozer.converter.*;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
@@ -52,15 +34,6 @@ import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
-import org.openiam.idm.srvc.continfo.ws.AddressListResponse;
-import org.openiam.idm.srvc.continfo.ws.AddressMapResponse;
-import org.openiam.idm.srvc.continfo.ws.AddressResponse;
-import org.openiam.idm.srvc.continfo.ws.EmailAddressListResponse;
-import org.openiam.idm.srvc.continfo.ws.EmailAddressMapResponse;
-import org.openiam.idm.srvc.continfo.ws.EmailAddressResponse;
-import org.openiam.idm.srvc.continfo.ws.PhoneListResponse;
-import org.openiam.idm.srvc.continfo.ws.PhoneMapResponse;
-import org.openiam.idm.srvc.continfo.ws.PhoneResponse;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -69,9 +42,15 @@ import org.openiam.idm.srvc.user.dto.*;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+
+import javax.jws.WebParam;
+import javax.jws.WebService;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author suneet
@@ -959,4 +938,82 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 		return userManager.getNumOfUsersForRole(roleId);
 	}
 
+    @Override
+    public Response saveUserInfo(final User user, final Supervisor supervisor){
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if(user == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            }
+
+            final UserEntity userEntity = userDozerConverter.convertToEntity(user, true);
+            SupervisorEntity supervisorEntity = null;
+            if(supervisor!=null)
+                supervisorEntity = supervisorDozerConverter.convertToEntity(supervisor, true);
+            userManager.saveUserInfo(userEntity, supervisorEntity);
+        } catch(BasicDataServiceException e) {
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+        } catch(Throwable e) {
+            log.error("Can't perform operation", e);
+            response.setErrorText(e.getMessage());
+            response.setStatus(ResponseStatus.FAILURE);
+        }
+        return response;
+    }
+    @Override
+    public Response deleteUser(final String userId){
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if(userId == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            }
+            userManager.deleteUser(userId);
+        } catch(BasicDataServiceException e) {
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+        } catch(Throwable e) {
+            log.error("Can't perform operation", e);
+            response.setErrorText(e.getMessage());
+            response.setStatus(ResponseStatus.FAILURE);
+        }
+        return response;
+    }
+
+    @Override
+    public Response enableDisableUser(final String userId, final UserStatusEnum secondaryStatus){
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if(userId == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            }
+            userManager.enableDisableUser(userId,secondaryStatus);
+        } catch(BasicDataServiceException e) {
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+        } catch(Throwable e) {
+            log.error("Can't perform operation", e);
+            response.setErrorText(e.getMessage());
+            response.setStatus(ResponseStatus.FAILURE);
+        }
+        return response;
+    }
+
+    public Response activateUser(final String userId){
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if(userId == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            }
+            userManager.activateUser(userId);
+        } catch(BasicDataServiceException e) {
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+        } catch(Throwable e) {
+            log.error("Can't perform operation", e);
+            response.setErrorText(e.getMessage());
+            response.setStatus(ResponseStatus.FAILURE);
+        }
+        return response;
+    }
 }

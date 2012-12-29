@@ -1,13 +1,10 @@
 package org.openiam.idm.srvc.user.ws;
 
 import org.openiam.base.ws.Response;
-import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
-import org.openiam.idm.srvc.continfo.ws.*;
-import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.user.dto.*;
 
 import javax.jws.WebMethod;
@@ -519,4 +516,19 @@ public interface UserDataWebService {
     
     @WebMethod
     public int getNumOfUsersForRole(@WebParam(name = "roleId", targetNamespace = "") final String roleId);
+
+    @WebMethod
+    public Response saveUserInfo(@WebParam(name = "user", targetNamespace = "")final User user,
+                                 @WebParam(name = "supervisor", targetNamespace = "")final Supervisor supervisor);
+
+    @WebMethod
+    public Response deleteUser(@WebParam(name = "userId", targetNamespace = "")final String userId);
+
+    @WebMethod
+    public Response enableDisableUser(@WebParam(name = "userId", targetNamespace = "")final String userId,
+                                      @WebParam(name = "userId", targetNamespace = "")final UserStatusEnum secondaryStatus);
+
+    @WebMethod
+    public Response activateUser(@WebParam(name = "userId", targetNamespace = "")final String userId);
+
 }

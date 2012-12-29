@@ -320,8 +320,7 @@ public class UserEntity {
     protected Set<UserKey> userKeys = new HashSet<UserKey>(0);
 
     //@IndexedEmbedded(prefix="groups.")
-    @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
-    @JoinColumn(name="USER_ID", referencedColumnName="USER_ID")
+    @OneToMany(mappedBy = "user")
     @Fetch(FetchMode.SUBSELECT)
     private Set<UserGroupEntity> userGroups = new HashSet<UserGroupEntity>(0);
     

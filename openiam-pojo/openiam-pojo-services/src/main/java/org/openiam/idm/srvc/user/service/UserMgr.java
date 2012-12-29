@@ -5,21 +5,26 @@ import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.lucene.search.Sort;
-import org.hibernate.Hibernate;
-import org.mvel2.optimizers.impl.refl.nodes.ArrayLength;
+import org.openiam.base.BaseConstants;
 import org.openiam.base.SysConfiguration;
-import org.openiam.core.dao.lucene.AbstractHibernateSearchDao;
-import org.openiam.core.dao.lucene.SortType;
-import org.openiam.dozer.converter.*;
+import org.openiam.base.ws.Response;
+import org.openiam.base.ws.ResponseCode;
+import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.searchbeans.LoginSearchBean;
-import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
+import org.openiam.idm.srvc.auth.login.LoginDAO;
+import org.openiam.idm.srvc.auth.login.lucene.LoginSearchDAO;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
-import org.openiam.idm.srvc.org.dto.Organization;
+import org.openiam.idm.srvc.continfo.dto.Address;
+import org.openiam.idm.srvc.continfo.dto.ContactConstants;
+import org.openiam.idm.srvc.continfo.dto.Phone;
+import org.openiam.idm.srvc.continfo.service.AddressDAO;
+import org.openiam.idm.srvc.continfo.service.EmailAddressDAO;
+import org.openiam.idm.srvc.continfo.service.PhoneDAO;
+import org.openiam.idm.srvc.grp.service.UserGroupDAO;
 import org.openiam.idm.srvc.role.service.UserRoleDAO;
 import org.openiam.idm.srvc.user.dao.UserSearchDAO;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
@@ -29,25 +34,12 @@ import org.openiam.idm.srvc.user.domain.UserNoteEntity;
 import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
 import org.openiam.idm.srvc.user.dto.UserSearch;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
-import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.auth.login.LoginDAO;
-import org.openiam.idm.srvc.auth.login.lucene.LoginSearchDAO;
-import org.openiam.idm.srvc.continfo.dto.Address;
-import org.openiam.idm.srvc.continfo.dto.ContactConstants;
-import org.openiam.idm.srvc.continfo.service.AddressDAO;
-import org.openiam.idm.srvc.continfo.service.EmailAddressDAO;
-import org.openiam.idm.srvc.continfo.service.PhoneDAO;
-import org.openiam.idm.srvc.continfo.dto.Phone;
-import org.openiam.idm.srvc.continfo.dto.EmailAddress;
-import org.openiam.idm.srvc.grp.service.UserGroupDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.jws.WebMethod;
-import javax.jws.WebParam;
 import java.util.*;
 
 /**
@@ -843,4 +835,263 @@ public class UserMgr implements UserDataService {
 	public int getNumOfUsersForRole(String roleId) {
 		return userDao.getNumOfUsersForRole(roleId);
 	}
+
+    @Override
+    @Transactional
+    public void saveUserInfo(UserEntity newUserEntity, SupervisorEntity supervisorEntity){
+        if(newUserEntity.getUserId()!=null){
+            // update, need to merge user objects
+            UserEntity origUser = this.getUser(newUserEntity.getUserId());
+            this.mergeUserFields(origUser, newUserEntity);
+            userDao.update(origUser);
+        } else {
+            userDao.save(newUserEntity);
+        }
+        if(supervisorEntity!=null){
+            // update supervisor
+            List<SupervisorEntity> supervisorList = this.getSupervisors(newUserEntity.getUserId());
+            for (SupervisorEntity s : supervisorList) {
+                log.debug("looking to match supervisor ids = "
+                          + s.getSupervisor().getUserId() + " "
+                          + supervisorEntity.getSupervisor().getUserId());
+                if (s.getSupervisor().getUserId()
+                     .equalsIgnoreCase(supervisorEntity.getSupervisor().getUserId())) {
+                    return;
+                }
+                this.removeSupervisor(s.getOrgStructureId());
+            }
+            log.debug("adding supervisor: " + supervisorEntity.getSupervisor().getUserId());
+            supervisorEntity.setEmployee(newUserEntity);
+
+            this.addSupervisor(supervisorEntity);
+        }
+    }
+    @Transactional
+    public void deleteUser(String userId){
+        List<LoginEntity> loginList = loginDao.findUser(userId);
+        if (loginList == null || loginList.isEmpty()) {
+           throw new NullPointerException("Principal Not Found");
+        }
+        for (LoginEntity login: loginList){
+            // change the status on the identity
+            login.setStatus("INACTIVE");
+            loginDao.update(login);
+        }
+        // Turning off the primary identity - change the status on the user
+        if (userId != null) {
+            UserEntity usr = this.getUser(userId);
+            usr.setStatus(UserStatusEnum.DELETED);
+            userDao.update(usr);
+        }
+    }
+
+    public void enableDisableUser(String userId, UserStatusEnum secondaryStatus){
+        UserEntity user = this.getUser(userId);
+        if (user == null) {
+            log.error("UserId " + userId + " not found");
+            throw new NullPointerException("UserId " + userId + " not found");
+        }
+        user.setSecondaryStatus(secondaryStatus);
+        userDao.update(user);
+    }
+    @Transactional
+    public void activateUser(String userId){
+        UserEntity user = this.getUser(userId);
+        if (user == null) {
+            log.error("UserId " + userId + " not found");
+            throw new NullPointerException("UserId " + userId + " not found");
+        }
+        List<LoginEntity> loginList = loginDao.findUser(userId);
+        if (loginList == null || loginList.isEmpty()) {
+            throw new NullPointerException("Principal Not Found");
+        }
+
+        for (LoginEntity login: loginList){
+            // change the status on the identity
+            login.setStatus(null);
+            loginDao.update(login);
+        }
+        if (userId != null) {
+            user.setStatus(UserStatusEnum.ACTIVE);
+            userDao.update(user);
+        }
+    }
+    private void mergeUserFields(UserEntity origUserEntity, UserEntity newUserEntity){
+        if (newUserEntity.getBirthdate() != null) {
+            if (newUserEntity.getBirthdate().equals(BaseConstants.NULL_DATE)) {
+                origUserEntity.setBirthdate(null);
+            } else {
+                origUserEntity.setBirthdate(newUserEntity.getBirthdate());
+            }
+        }
+        if (newUserEntity.getClassification() != null) {
+            if (newUserEntity.getClassification().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                origUserEntity.setClassification(null);
+            } else {
+                origUserEntity.setClassification(newUserEntity.getClassification());
+            }
+        }
+        if (newUserEntity.getCompanyId() != null) {
+            if (newUserEntity.getCompanyId().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                origUserEntity.setCompanyId(null);
+            } else {
+                origUserEntity.setCompanyId(newUserEntity.getCompanyId());
+            }
+        }
+        if (newUserEntity.getCostCenter() != null) {
+            if (newUserEntity.getCostCenter().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                origUserEntity.setCostCenter(null);
+            } else {
+                origUserEntity.setCostCenter(newUserEntity.getCostCenter());
+            }
+        }
+        if (newUserEntity.getDeptCd() != null) {
+            if (newUserEntity.getDeptCd().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                origUserEntity.setDeptCd(null);
+            } else {
+                origUserEntity.setDeptCd(newUserEntity.getDeptCd());
+            }
+        }
+        if (newUserEntity.getDivision() != null) {
+            if (newUserEntity.getDivision().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                origUserEntity.setDivision(null);
+            } else {
+                origUserEntity.setDivision(newUserEntity.getDivision());
+            }
+        }
+
+        if (newUserEntity.getEmployeeId() != null) {
+            if (newUserEntity.getEmployeeId().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                origUserEntity.setEmployeeId(null);
+            } else {
+                origUserEntity.setEmployeeId(newUserEntity.getEmployeeId());
+            }
+        }
+        if (newUserEntity.getEmployeeType() != null) {
+            if (newUserEntity.getEmployeeType().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                origUserEntity.setEmployeeType(null);
+            } else {
+                origUserEntity.setEmployeeType(newUserEntity.getEmployeeType());
+            }
+        }
+        if (newUserEntity.getFirstName() != null) {
+            if (newUserEntity.getFirstName().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                origUserEntity.setFirstName(null);
+            } else {
+                origUserEntity.setFirstName(newUserEntity.getFirstName());
+            }
+        }
+        if (newUserEntity.getJobCode() != null) {
+            if (newUserEntity.getJobCode().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                origUserEntity.setJobCode(null);
+            } else {
+                origUserEntity.setJobCode(newUserEntity.getJobCode());
+            }
+        }
+        if (newUserEntity.getLastName() != null) {
+            if (newUserEntity.getLastName().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                origUserEntity.setLastName(null);
+            } else {
+                origUserEntity.setLastName(newUserEntity.getLastName());
+            }
+        }
+        if (newUserEntity.getLastDate() != null) {
+            if (newUserEntity.getLastDate().equals(BaseConstants.NULL_DATE)) {
+                origUserEntity.setLastDate(null);
+            } else {
+                origUserEntity.setLastDate(newUserEntity.getLastDate());
+            }
+        }
+        if (newUserEntity.getMaidenName() != null) {
+            if (newUserEntity.getMaidenName().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                origUserEntity.setMaidenName(null);
+            } else {
+                origUserEntity.setMaidenName(newUserEntity.getMaidenName());
+            }
+        }
+        if (newUserEntity.getMetadataTypeId() != null) {
+            if (newUserEntity.getMetadataTypeId().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                origUserEntity.setMetadataTypeId(null);
+            } else {
+                origUserEntity.setMetadataTypeId(newUserEntity.getMetadataTypeId());
+            }
+        }
+        if (newUserEntity.getMiddleInit() != null) {
+            if (newUserEntity.getMiddleInit().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                origUserEntity.setMiddleInit(null);
+            } else {
+                origUserEntity.setMiddleInit(newUserEntity.getMiddleInit());
+            }
+        }
+        if (newUserEntity.getNickname() != null) {
+            if (newUserEntity.getNickname().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                origUserEntity.setNickname(null);
+            } else {
+                origUserEntity.setNickname(newUserEntity.getNickname());
+            }
+        }
+        if (newUserEntity.getSecondaryStatus() != null) {
+            origUserEntity.setSecondaryStatus(newUserEntity.getSecondaryStatus());
+        }
+        if (newUserEntity.getSex() != null) {
+            if (newUserEntity.getSex().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                origUserEntity.setSex(null);
+            } else {
+                origUserEntity.setSex(newUserEntity.getSex());
+            }
+        }
+        if (newUserEntity.getStartDate() != null) {
+            if (newUserEntity.getStartDate().equals(BaseConstants.NULL_DATE)) {
+                origUserEntity.setStartDate(null);
+            } else {
+                origUserEntity.setStartDate(newUserEntity.getStartDate());
+            }
+        }
+
+        if (newUserEntity.getStatus() != null) {
+            origUserEntity.setStatus(newUserEntity.getStatus());
+        }
+        if (newUserEntity.getSuffix() != null) {
+            if (newUserEntity.getSuffix().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                origUserEntity.setSuffix(null);
+            } else {
+                origUserEntity.setSuffix(newUserEntity.getSuffix());
+            }
+        }
+        if (newUserEntity.getShowInSearch() != null) {
+            if (newUserEntity.getShowInSearch().equals(BaseConstants.NULL_INTEGER)) {
+                origUserEntity.setShowInSearch(0);
+            } else {
+                origUserEntity.setShowInSearch(newUserEntity.getShowInSearch());
+            }
+        }
+        if (newUserEntity.getTitle() != null) {
+            if (newUserEntity.getTitle().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                origUserEntity.setTitle(null);
+            } else {
+                origUserEntity.setTitle(newUserEntity.getTitle());
+            }
+        }
+        if (newUserEntity.getUserTypeInd() != null) {
+            if (newUserEntity.getUserTypeInd().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                origUserEntity.setUserTypeInd(null);
+            } else {
+                origUserEntity.setUserTypeInd(newUserEntity.getUserTypeInd());
+            }
+        }
+        if (newUserEntity.getAlternateContactId() != null) {
+            if (newUserEntity.getAlternateContactId().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                origUserEntity.setAlternateContactId(null);
+            } else {
+                origUserEntity.setAlternateContactId(newUserEntity.getAlternateContactId());
+            }
+        }
+        if (newUserEntity.getDelAdmin() != null) {
+            if (newUserEntity.getDelAdmin().equals(BaseConstants.NULL_INTEGER)) {
+                origUserEntity.setDelAdmin(0);
+            } else {
+                origUserEntity.setDelAdmin(newUserEntity.getDelAdmin());
+            }
+        }
+    }
 }

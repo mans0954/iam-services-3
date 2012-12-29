@@ -202,4 +202,12 @@ public interface UserDataService {
     
     public List<UserEntity> getUsersForRole(final String roleId, final int from, final int size);
     public int getNumOfUsersForRole(final String roleId);
+
+    public void saveUserInfo(UserEntity userEntity, SupervisorEntity supervisorEntity);
+
+    public void deleteUser(String userId);
+
+    public void enableDisableUser(String userId, UserStatusEnum secondaryStatus);
+
+    public void activateUser(String userId);
 }

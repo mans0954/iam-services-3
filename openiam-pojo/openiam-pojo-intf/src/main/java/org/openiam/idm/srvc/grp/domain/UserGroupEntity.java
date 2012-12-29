@@ -4,12 +4,11 @@ package org.openiam.idm.srvc.grp.domain;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Index;
-import org.hibernate.search.annotations.Store;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.dto.UserGroup;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 
 import javax.persistence.*;
-
 import java.io.Serializable;
 import java.util.Date;
 
@@ -45,6 +44,10 @@ public class UserGroupEntity implements Serializable {
     
     @Column(name="CREATED_BY",length=20)
     protected String createdBy;
+
+    @ManyToOne(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
+    @JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID", insertable = false, updatable = false)
+    private UserEntity user;
 
     public UserGroupEntity() {
     }
@@ -103,5 +106,13 @@ public class UserGroupEntity implements Serializable {
 
     public void setCreatedBy(String createdBy) {
         this.createdBy = createdBy;
+    }
+
+    public UserEntity getUser() {
+        return user;
+    }
+
+    public void setUser(UserEntity user) {
+        this.user = user;
     }
 }
