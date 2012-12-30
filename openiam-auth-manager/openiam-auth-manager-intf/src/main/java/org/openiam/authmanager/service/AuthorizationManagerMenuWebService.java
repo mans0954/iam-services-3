@@ -5,8 +5,10 @@ import javax.jws.WebParam;
 import javax.jws.WebService;
 
 import org.openiam.authmanager.common.model.AuthorizationMenu;
+import org.openiam.authmanager.ws.request.MenuEntitlementsRequest;
 import org.openiam.authmanager.ws.request.MenuRequest;
 import org.openiam.authmanager.ws.response.MenuSaveResponse;
+import org.openiam.base.ws.Response;
 
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/authorizationmanager/menu/service", name = "AuthorizationManagerMenuWebService")
 public interface AuthorizationManagerMenuWebService {
@@ -29,4 +31,23 @@ public interface AuthorizationManagerMenuWebService {
 	
 	@WebMethod
 	public MenuSaveResponse deleteMenuTree(@WebParam(name = "rootId", targetNamespace = "") final String rootId);
+	
+	/**
+	 * This method gets a non-cached version of a user's, group's, role's, or resource's entitlements to a particular tree.
+	 * It should NOT be called by anything that requires good performance, as this method will make lots and lots of DB calls
+	 * before completing.  It is designed for use ONLY for Admin purposes, nothing more.  If you call this method outside of
+	 * an Administrative console - don't call it.
+	 * @param menuId - ID of the menu
+	 * @param principalId - the "id" of the user, group, role, or resource
+	 * @param principalType - the "type" represented by the <p>principalId</p>.  Valid values are 'group', 'role', 'user', or 'resource'
+	 * @return An AuthorizationMenu representing the tree, and the entity's entitlements to this tree.  Returns null if the menu can't be found,
+	 * or of the principal of the type can't be found.
+	 */
+	@WebMethod
+	public AuthorizationMenu getNonCachedMenuTree(final @WebParam(name="menuId", targetNamespace = "") String menuId,
+												  final @WebParam(name="principalId", targetNamespace = "") String principalId,
+												  final @WebParam(name="principalType", targetNamespace = "") String principalType);
+	
+	@WebMethod
+	public Response entitle(final @WebParam(name="menuEntitlementsRequest", targetNamespace = "") MenuEntitlementsRequest menuEntitlementsRequest);
 }

@@ -8,6 +8,7 @@ import org.openiam.authmanager.common.model.AuthorizationGroup;
 import org.openiam.authmanager.common.model.AuthorizationResource;
 import org.openiam.authmanager.common.model.AuthorizationRole;
 import org.openiam.authmanager.common.model.AuthorizationManagerLoginId;
+import org.openiam.authmanager.model.ResourceEntitlementToken;
 
 public interface AuthorizationManagerService {
 

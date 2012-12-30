@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.res.service;
 
+import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -19,11 +20,13 @@ public class ResourceGroupDAOImpl extends BaseDaoImpl<ResourceGroupEntity, Strin
 
 	private static String DELETE_BY_GROUP_ID = "DELETE FROM %s rg WHERE rg.groupId = :groupId";
 	private static String DELETE_BY_RESOURCE_ID = "DELETE FROM %s rg WHERE rg.resourceId = :resourceId";
+	private static String DELETE_BY_GROUP_ID_AND_RESOURCE_ID_BATCH = "DELETE FROM %s rg WHERE rg.resourceId IN(:resourceIds) AND rg.groupId = :groupId";
 	
 	@PostConstruct
 	public void initSQL() {
 		DELETE_BY_RESOURCE_ID = String.format(DELETE_BY_RESOURCE_ID, domainClass.getSimpleName());
 		DELETE_BY_GROUP_ID = String.format(DELETE_BY_GROUP_ID, domainClass.getSimpleName());
+		DELETE_BY_GROUP_ID_AND_RESOURCE_ID_BATCH = String.format(DELETE_BY_GROUP_ID_AND_RESOURCE_ID_BATCH, domainClass.getSimpleName());
 	}
 	
 	@Override
@@ -72,5 +75,15 @@ public class ResourceGroupDAOImpl extends BaseDaoImpl<ResourceGroupEntity, Strin
 		final Query query = getSession().createQuery(DELETE_BY_GROUP_ID);
 		query.setParameter("groupId", groupId);
 		query.executeUpdate();
+	}
+
+	@Override
+	public void deleteByGroupId(String groupId, Collection<String> resourceIds) {
+		if(CollectionUtils.isNotEmpty(resourceIds)) {
+			final Query query = getSession().createQuery(DELETE_BY_GROUP_ID_AND_RESOURCE_ID_BATCH);
+			query.setParameterList("resourceIds", resourceIds);
+			query.setParameter("groupId", groupId);
+			query.executeUpdate();
+		}
 	}
 }

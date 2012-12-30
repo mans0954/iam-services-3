@@ -11,4 +11,5 @@ public interface AuthorizationManagerMenuService {
 	public AuthorizationMenu getMenuTreeByName(final String menuRoot, final String domain, final String login, final String managedSysId);
 	
 	public AuthorizationMenu getMenuTree(final String menuId);
+	public AuthorizationMenu getNonCachedMenuTree(final String menuId, final String principalId, final String principalType);
 }

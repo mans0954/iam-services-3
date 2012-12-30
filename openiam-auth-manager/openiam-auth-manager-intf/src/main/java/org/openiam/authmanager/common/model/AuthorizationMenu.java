@@ -1,7 +1,10 @@
 package org.openiam.authmanager.common.model;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -11,6 +14,7 @@ import javax.xml.bind.annotation.XmlType;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
+import org.openiam.authmanager.model.MenuEntitlementType;
 import org.openiam.authmanager.util.AuthorizationConstants;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 
@@ -24,7 +28,8 @@ import org.openiam.idm.srvc.res.dto.ResourceProp;
         "icon",
         "isPublic",
         "firstChild",
-        "nextSibling"
+        "nextSibling",
+        "entitlementTypeList"
 })
 public class AuthorizationMenu implements Serializable {
 	
@@ -66,6 +71,9 @@ public class AuthorizationMenu implements Serializable {
 	@JsonProperty("urlParams")
 	@XmlTransient
 	private String urlParams;
+	
+	@JsonProperty("entitlementType")
+	private Set<MenuEntitlementType> entitlementTypeList;
 	
 	public String getId() {
 		return id;
@@ -138,6 +146,10 @@ public class AuthorizationMenu implements Serializable {
 	public void setUrlParams(String urlParams) {
 		this.urlParams = urlParams;
 	}
+	
+	public Set<MenuEntitlementType> getEntitlementTypeList() {
+		return entitlementTypeList;
+	}
 
 	public void afterPropertiesSet(final List<ResourceProp> resourcePropertyList) {
 		if(resourcePropertyList != null) {
@@ -159,6 +171,15 @@ public class AuthorizationMenu implements Serializable {
 	
 	public void setIsPublic(final boolean isPublic) {
 		this.isPublic = isPublic;
+	}
+	
+	public void addEntitlementType(final MenuEntitlementType entitlementType) {
+		if(entitlementType != null) {
+			if(entitlementTypeList == null) {
+				this.entitlementTypeList = new HashSet<MenuEntitlementType>();
+			}
+			this.entitlementTypeList.add(entitlementType);
+		}
 	}
 
 	@Override

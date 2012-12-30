@@ -1,5 +1,6 @@
 package org.openiam.authmanager.service.impl;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -24,16 +25,26 @@ import org.openiam.authmanager.exception.AuthorizationMenuException;
 import org.openiam.authmanager.service.AuthorizationManagerMenuService;
 import org.openiam.authmanager.service.AuthorizationManagerMenuWebService;
 import org.openiam.authmanager.util.AuthorizationConstants;
+import org.openiam.authmanager.ws.request.MenuEntitlementsRequest;
 import org.openiam.authmanager.ws.request.MenuRequest;
 import org.openiam.authmanager.ws.response.MenuSaveResponse;
+import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.base.ws.exception.BasicDataServiceException;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.domain.ResourceGroupEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
+import org.openiam.idm.srvc.res.domain.ResourceRoleEmbeddableId;
+import org.openiam.idm.srvc.res.domain.ResourceRoleEntity;
+import org.openiam.idm.srvc.res.domain.ResourceUserEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
+import org.openiam.idm.srvc.res.service.ResourceGroupDAO;
+import org.openiam.idm.srvc.res.service.ResourceRoleDAO;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
+import org.openiam.idm.srvc.res.service.ResourceUserDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,6 +66,15 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 	
 	@Autowired
 	private ResourceDAO resourceDAO;
+	
+	@Autowired
+	private ResourceRoleDAO resourceRoleDAO;
+	
+	@Autowired
+	private ResourceGroupDAO resourceGroupDAO;
+	
+	@Autowired
+	private ResourceUserDAO resourceUserDAO;
 	
 	@Override
 	public AuthorizationMenu getMenuTreeForUserId(final MenuRequest request) {
@@ -87,6 +107,12 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 	@Override
 	public AuthorizationMenu getMenuTree(final String menuId) {
 		return menuService.getMenuTree(menuId);
+	}
+	
+
+	@Override
+	public AuthorizationMenu getNonCachedMenuTree(final String menuId, final String principalId, final String principalType) {
+		return menuService.getNonCachedMenuTree(menuId, principalId, principalType);
 	}
 	
 	@Override
@@ -429,5 +455,82 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 				setParents(parent, menu.getNextSibling());
 			}
 		}
+	}
+
+	@Override
+	@Transactional
+	public Response entitle(final MenuEntitlementsRequest menuEntitlementsRequest) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(menuEntitlementsRequest == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			final String principalType = menuEntitlementsRequest.getPrincipalType();
+			final String principalId = menuEntitlementsRequest.getPrincipalId();
+			if(StringUtils.isBlank(principalType) || StringUtils.isBlank(principalId)) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			if(StringUtils.equalsIgnoreCase("user", principalType)) {
+				final String userId = principalId;
+				if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getDisentitled())) {
+					resourceUserDAO.deleteByUserId(userId, menuEntitlementsRequest.getDisentitled());
+				}
+				
+				if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getNewlyEntitled())) {
+					final List<ResourceUserEntity> entityList = new ArrayList<ResourceUserEntity>(menuEntitlementsRequest.getNewlyEntitled().size());
+					for(final String resourceId : menuEntitlementsRequest.getNewlyEntitled()) {
+						final ResourceUserEntity entity = new ResourceUserEntity();
+						entity.setUserId(userId);
+						entity.setResourceId(resourceId);
+						entityList.add(entity);
+					}
+					resourceUserDAO.save(entityList);
+				}
+			} else if(StringUtils.equalsIgnoreCase("group", principalType)) {
+				final String groupId = principalId;
+				if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getDisentitled())) {
+					resourceGroupDAO.deleteByGroupId(groupId, menuEntitlementsRequest.getDisentitled());
+				}
+				
+				if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getNewlyEntitled())) {
+					final List<ResourceGroupEntity> entityList = new ArrayList<ResourceGroupEntity>(menuEntitlementsRequest.getNewlyEntitled().size());
+					for(final String resourceId : menuEntitlementsRequest.getNewlyEntitled()) {
+						final ResourceGroupEntity entity = new ResourceGroupEntity();
+						entity.setGroupId(groupId);
+						entity.setResourceId(resourceId);
+						entityList.add(entity);
+					}
+					resourceGroupDAO.save(entityList);
+				}
+			} else if(StringUtils.equalsIgnoreCase("role", principalType)) {
+				final String roleId = principalId;
+				if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getDisentitled())) {
+					resourceRoleDAO.deleteByRoleId(roleId, menuEntitlementsRequest.getDisentitled());
+				}
+				
+				if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getNewlyEntitled())) {
+					final List<ResourceRoleEntity> entityList = new ArrayList<ResourceRoleEntity>(menuEntitlementsRequest.getNewlyEntitled().size());
+					for(final String resourceId : menuEntitlementsRequest.getNewlyEntitled()) {
+						final ResourceRoleEntity entity = new ResourceRoleEntity();
+						final ResourceRoleEmbeddableId id = new ResourceRoleEmbeddableId(roleId, resourceId);
+						entity.setId(id);
+						entityList.add(entity);
+					}
+					resourceRoleDAO.save(entityList);
+				}
+			} else {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			log.error("Can't save menu entitlements", e);
+			response.setStatus(ResponseStatus.FAILURE);
+		}
+		return response;
 	}
 }

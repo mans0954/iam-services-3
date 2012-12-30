@@ -1,10 +1,13 @@
 package org.openiam.idm.srvc.res.service;
 
 
+import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
 import javax.naming.InitialContext;
+
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
@@ -35,11 +38,15 @@ public class ResourceRoleDAOImpl extends BaseDaoImpl<ResourceRoleEntity, Resourc
 	
 	private static String DELETE_BY_ROLE_ID = "DELETE FROM %s ur WHERE ur.id.roleId = :roleId";
 	private static String DELETE_BY_RESOURCE_ID = "DELETE FROM %s ur WHERE ur.id.resourceId = :resourceId";
+	private static String DELETE_BY_RESOURCE_ID_BATCH = "DELETE FROM %s ur WHERE ur.id.resourceId IN(:resourceIds)";
+	private static String DELETE_BY_ROLE_ID_AND_RESOURCE_ID_BATCH = "DELETE FROM %s ur WHERE ur.id.resourceId IN(:resourceIds) AND ur.id.roleId = :roleId";
 	
 	@PostConstruct
 	public void initSQL() {
 		DELETE_BY_ROLE_ID = String.format(DELETE_BY_ROLE_ID, domainClass.getSimpleName());
 		DELETE_BY_RESOURCE_ID = String.format(DELETE_BY_RESOURCE_ID, domainClass.getSimpleName());
+		DELETE_BY_RESOURCE_ID_BATCH = String.format(DELETE_BY_RESOURCE_ID_BATCH, domainClass.getSimpleName());
+		DELETE_BY_ROLE_ID_AND_RESOURCE_ID_BATCH = String.format(DELETE_BY_ROLE_ID_AND_RESOURCE_ID_BATCH, domainClass.getSimpleName());
 	}
 
 	@Override
@@ -55,6 +62,25 @@ public class ResourceRoleDAOImpl extends BaseDaoImpl<ResourceRoleEntity, Resourc
 		final Query query = getSession().createQuery(DELETE_BY_RESOURCE_ID);
 		query.setParameter("resourceId", resourceId);
 		query.executeUpdate();
+	}
+
+	@Override
+	public void deleteByResourceIds(Collection<String> resourceIds) {
+		if(CollectionUtils.isNotEmpty(resourceIds)) {
+			final Query query = getSession().createQuery(DELETE_BY_RESOURCE_ID_BATCH);
+			query.setParameterList("resourceIds", resourceIds);
+			query.executeUpdate();
+		}
+	}
+
+	@Override
+	public void deleteByRoleId(String roleId, Collection<String> resourceIds) {
+		if(CollectionUtils.isNotEmpty(resourceIds)) {
+			final Query query = getSession().createQuery(DELETE_BY_ROLE_ID_AND_RESOURCE_ID_BATCH);
+			query.setParameterList("resourceIds", resourceIds);
+			query.setParameter("roleId", roleId);
+			query.executeUpdate();
+		}
 	}
 
 }

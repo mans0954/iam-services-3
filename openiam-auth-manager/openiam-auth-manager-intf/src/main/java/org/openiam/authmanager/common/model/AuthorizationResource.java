@@ -15,7 +15,8 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AuthorizationResource", propOrder = {
-        "name"
+        "name",
+        "inheritFromParent"
 })
 public class AuthorizationResource extends AbstractAuthorizationEntity implements Serializable  {
 
@@ -25,6 +26,8 @@ public class AuthorizationResource extends AbstractAuthorizationEntity implement
 	private Set<AuthorizationResource> directParentResources;
 	
 	private String name;
+	
+	private boolean inheritFromParent = true;
 	
 	/*
 	private BitSet linearBitSet = new BitSet();
@@ -40,6 +43,10 @@ public class AuthorizationResource extends AbstractAuthorizationEntity implement
 
 	public void setName(String name) {
 		this.name = name;
+	}
+	
+	public boolean isInheritFromParent() {
+		return inheritFromParent;
 	}
 
 	public void addParentResoruce(final AuthorizationResource resource) {
@@ -66,10 +73,12 @@ public class AuthorizationResource extends AbstractAuthorizationEntity implement
 		final Set<AuthorizationResource> compiledResourceBitSet = new HashSet<AuthorizationResource>();
 		if(!visitedSet.contains(this)) {
 			visitedSet.add(this);
-			if(directParentResources != null) {
-				for(final AuthorizationResource parent : directParentResources) {
-					compiledResourceBitSet.add(parent);
-					compiledResourceBitSet.addAll(parent.visitResources(visitedSet));
+			if(inheritFromParent) {
+				if(directParentResources != null) {
+					for(final AuthorizationResource parent : directParentResources) {
+						compiledResourceBitSet.add(parent);
+						compiledResourceBitSet.addAll(parent.visitResources(visitedSet));
+					}
 				}
 			}
 		}

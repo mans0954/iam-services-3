@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -21,6 +22,9 @@ import org.openiam.authmanager.common.xref.ResourceResourceXref;
 import org.openiam.authmanager.dao.ResourceDAO;
 import org.openiam.authmanager.dao.ResourcePropDAO;
 import org.openiam.authmanager.dao.ResourceResourceXrefDAO;
+import org.openiam.authmanager.model.MenuEntitlementType;
+import org.openiam.authmanager.model.ResourceEntitlementToken;
+import org.openiam.authmanager.service.AuthorizationManagerAdminService;
 import org.openiam.authmanager.service.AuthorizationManagerMenuService;
 import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
@@ -65,6 +69,9 @@ public class AuthorizationManagerMenuServiceImpl implements AuthorizationManager
 	@Autowired
 	private AuthorizationManagerService authManager;
 	
+	@Autowired
+	private AuthorizationManagerAdminService authManagerAdminService;
+	
 	@Override
 	public void setApplicationContext(final ApplicationContext ctx) throws BeansException {
 		this.ctx = ctx;
@@ -108,6 +115,45 @@ public class AuthorizationManagerMenuServiceImpl implements AuthorizationManager
 	@Override
 	public AuthorizationMenu getMenuTree(final String menuId) {
 		return getAllMenuTress().get(menuId);
+	}
+	
+	@Override
+	public AuthorizationMenu getNonCachedMenuTree(String menuId, String principalId, String principalType) {
+		final AuthorizationMenu menu = getMenuTree(menuId);
+		ResourceEntitlementToken token = null;
+		if(menu != null) {
+			if(StringUtils.equalsIgnoreCase("user", principalType)) {
+				token = authManagerAdminService.getNonCachedEntitlementsForUser(principalId);
+			} else if(StringUtils.equalsIgnoreCase("group", principalType)) {
+				token = authManagerAdminService.getNonCachedEntitlementsForGroup(principalId);
+			} else if(StringUtils.equalsIgnoreCase("role", principalType)) {
+				token = authManagerAdminService.getNonCachedEntitlementsForRole(principalId);
+			}
+		}
+		
+		doEntitlementsCheck(menu, token);
+		
+		return menu;
+	}
+	
+	private void doEntitlementsCheck(final AuthorizationMenu menu, final ResourceEntitlementToken token) {
+		if(menu != null && token != null) {
+			if(token.isResourceDirect(menu.getId())) {
+				menu.addEntitlementType(MenuEntitlementType.EXPLICIT);
+			}
+			
+			if(token.isResourceIndirect(menu.getId())) {
+				menu.addEntitlementType(MenuEntitlementType.IMPLICIT);
+			}
+			
+			doEntitlementsCheck(menu.getFirstChild(), token);
+			
+			AuthorizationMenu next = menu.getNextSibling();
+			while(next != null) {
+				doEntitlementsCheck(next, token);
+				next = next.getNextSibling();
+			}
+		}
 	}
 	
 	private final Map<String, AuthorizationMenu> getAllMenuTress() {

@@ -10,4 +10,5 @@ public interface ResourceGroupDAO extends BaseDao<ResourceGroupEntity, String> {
 	public ResourceGroupEntity getRecord(final String resourceId, final String groupId);
 	public void deleteByResourceId(final String resourceId);
 	public void deleteByGroupId(final String groupId);
+	public void deleteByGroupId(final String groupId, final Collection<String> resourceIds);
 }
