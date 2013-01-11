@@ -399,9 +399,14 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 
     @Override
 	public List<EmailAddress> getEmailAddressList(String userId) {
-		final List<EmailAddressEntity> adr = userManager.getEmailAddressList(userId);
-		return emailAddressDozerConverter.convertToDTOList(adr, false);
+		return this.getEmailAddressList(userId, Integer.MAX_VALUE, 0);
 	}
+
+    @Override
+    public List<EmailAddress> getEmailAddressList(String userId, Integer size, Integer from) {
+        final List<EmailAddressEntity> adr = userManager.getEmailAddressList(userId);
+        return emailAddressDozerConverter.convertToDTOList(adr, false);
+    }
 
     @Override
 	public List<Supervisor> getEmployees(String supervisorId) {
@@ -978,6 +983,9 @@ public class UserDataWebServiceImpl implements UserDataWebService {
         }
         return response;
     }
+
+
+
     @Override
     public Response deleteUser(final String userId){
         final Response response = new Response(ResponseStatus.SUCCESS);
@@ -1032,5 +1040,10 @@ public class UserDataWebServiceImpl implements UserDataWebService {
             response.setStatus(ResponseStatus.FAILURE);
         }
         return response;
+    }
+
+    @Override
+    public Integer getNumOfEmailsForUser(String userId){
+         return userManager.getNumOfEmailsForUser(userId);
     }
 }

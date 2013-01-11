@@ -156,7 +156,7 @@ public interface UserDataService {
     public EmailAddressEntity getDefaultEmailAddress(String userId);
 
     public List<EmailAddressEntity> getEmailAddressList(String userId);
-
+    public List<EmailAddressEntity> getEmailAddressList(String userId, Integer size, Integer from);
 
     public void addSupervisor(SupervisorEntity supervisor);
 
@@ -210,4 +210,6 @@ public interface UserDataService {
     public void enableDisableUser(String userId, UserStatusEnum secondaryStatus);
 
     public void activateUser(String userId);
+
+    public Integer getNumOfEmailsForUser( String userId);
 }

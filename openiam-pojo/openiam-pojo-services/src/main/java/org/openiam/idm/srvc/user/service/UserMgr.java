@@ -7,6 +7,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.BaseConstants;
 import org.openiam.base.SysConfiguration;
+import org.openiam.idm.searchbeans.EmailSearchBean;
 import org.openiam.idm.searchbeans.LoginSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
@@ -25,6 +26,7 @@ import org.openiam.idm.srvc.continfo.service.PhoneDAO;
 import org.openiam.idm.srvc.grp.service.UserGroupDAO;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.role.service.UserRoleDAO;
+import org.openiam.idm.srvc.searchbean.converter.EmailAddressSearchBeanConverter;
 import org.openiam.idm.srvc.user.dao.UserSearchDAO;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
@@ -39,6 +41,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.jws.WebParam;
 import java.util.*;
 
 /**
@@ -90,6 +93,8 @@ public class UserMgr implements UserDataService {
     private KeyManagementService keyManagementService;
     @Autowired
     private LoginDataService loginManager;
+    @Autowired
+    private EmailAddressSearchBeanConverter emailAddressSearchBeanConverter;
     
     @Value("${org.openiam.user.search.max.results}")
     private int MAX_USER_SEARCH_RESULTS;
@@ -756,11 +761,19 @@ public class UserMgr implements UserDataService {
 
     @Override
     public List<EmailAddressEntity> getEmailAddressList(String userId) {
+        return this.getEmailAddressList(userId, Integer.MAX_VALUE, 0);
+    }
+
+    @Override
+    public List<EmailAddressEntity> getEmailAddressList(String userId, Integer size, Integer from) {
         if (userId == null)
             throw new NullPointerException("userId is null");
 
-        return emailAddressDao.findByParentAsList(userId,
-                ContactConstants.PARENT_TYPE_USER);
+
+        EmailSearchBean searchBean = new EmailSearchBean();
+        searchBean.setParentId(userId);
+        searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
+        return emailAddressDao.getByExample(emailAddressSearchBeanConverter.convert(searchBean), from, size);
     }
 
     @Override
@@ -959,6 +972,15 @@ public class UserMgr implements UserDataService {
             userDao.update(user);
         }
     }
+
+
+    public Integer getNumOfEmailsForUser( String userId){
+        EmailSearchBean searchBean = new EmailSearchBean();
+        searchBean.setParentId(userId);
+        searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
+        return emailAddressDao.count(emailAddressSearchBeanConverter.convert(searchBean));
+    }
+
     private void mergeUserFields(UserEntity origUserEntity, UserEntity newUserEntity){
         if (newUserEntity.getBirthdate() != null) {
             if (newUserEntity.getBirthdate().equals(BaseConstants.NULL_DATE)) {

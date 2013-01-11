@@ -439,6 +439,10 @@ public interface UserDataWebService {
     public List<EmailAddress> getEmailAddressList(
             @WebParam(name = "userId", targetNamespace = "")
             String userId);
+    @WebMethod
+    public List<EmailAddress> getEmailAddressList(@WebParam(name = "userId", targetNamespace = "") String userId,
+                                                  @WebParam(name = "size", targetNamespace = "") Integer size,
+                                                  @WebParam(name = "from", targetNamespace = "") Integer from);
 
     @WebMethod
     public Response addSupervisor(
@@ -530,5 +534,8 @@ public interface UserDataWebService {
 
     @WebMethod
     public Response activateUser(@WebParam(name = "userId", targetNamespace = "")final String userId);
+
+    @WebMethod
+    public Integer getNumOfEmailsForUser(@WebParam(name = "userId", targetNamespace = "") String userId);
 
 }

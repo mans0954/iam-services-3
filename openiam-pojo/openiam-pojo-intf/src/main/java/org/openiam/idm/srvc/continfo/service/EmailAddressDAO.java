@@ -73,5 +73,4 @@ public interface EmailAddressDAO extends BaseDao<EmailAddressEntity, String> {
      */
     EmailAddressEntity findByName(String name, String parentId, String parentType);
 
-
 }
