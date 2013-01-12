@@ -35,20 +35,25 @@ import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Required;
+import org.springframework.stereotype.Component;
 
 /**
  * Module to create and manage the default token structure used by OpenIAM
  * @author suneet
  *
  */
+@Component("defaultSSOToken")
 public class DefaultTokenModule implements SSOTokenModule {
-
-	static protected ResourceBundle res = ResourceBundle.getBundle("securityconf");
 	private static final Log log = LogFactory.getLog(DefaultTokenModule.class);
 	
+	@Autowired
+	@Qualifier("cryptor")
 	protected Cryptor cryptor;
-    @Autowired
-    private KeyManagementService keyManagementService;
+	
+	@Autowired
+    protected KeyManagementService keyManagementService;
 	protected int tokenLife;
 
     static final int MIN_AS_MILLIS = 60000;
@@ -185,7 +190,8 @@ public class DefaultTokenModule implements SSOTokenModule {
 	}
 
 
-
+	@Override
+	//@Required
 	public void setCryptor(Cryptor cryptor) {
 		this.cryptor = cryptor;
 	}
@@ -195,6 +201,7 @@ public class DefaultTokenModule implements SSOTokenModule {
 	}
 
     @Override
+    //@Required
     public void setKeyManagementService(KeyManagementService keyManagementService) {
         this.keyManagementService=keyManagementService;
     }

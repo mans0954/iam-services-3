@@ -113,10 +113,12 @@
 	<bean id="defaultLoginModuleManager" class="org.openiam.idm.srvc.auth.spi.DefaultLoginModule" >
 	</bean>
 
+	<!--
 	<bean id="defaultSSOToken" class="org.openiam.idm.srvc.auth.sso.DefaultTokenModule" >
         <property name="cryptor" ref="cryptor" />
+        <property name="keyManagementService" ref="keyManagementService" />
 	</bean>
-
+	-->
 
 			
 	<!-- Service Beans -->

@@ -268,6 +268,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         String tokenUserId = null;
         SSOTokenModule tkModule = SSOTokenFactory.createModule(tokenType);
         tkModule.setCryptor(cryptor);
+        tkModule.setKeyManagementService(keyManagementService);
 
         if (!AuthenticationConstants.OPENIAM_TOKEN.equalsIgnoreCase(tokenType)) {
             log.debug("authenticateByToken: Token type is invalid=" + tokenType);
@@ -909,6 +910,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         // get handler for the token type
         SSOTokenModule tkModule = SSOTokenFactory.createModule(tokenType);
         tkModule.setCryptor(cryptor);
+        tkModule.setKeyManagementService(keyManagementService);
         boolean tokenStatus = tkModule.isTokenValid(lg.getUserId(), loginId,
                 token);
 
@@ -980,6 +982,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         SSOTokenModule tkModule = SSOTokenFactory
                 .createModule((String) tokenParam.get("TOKEN_TYPE"));
         tkModule.setCryptor(this.cryptor);
+        tkModule.setKeyManagementService(keyManagementService);
         tkModule.setTokenLife(Integer.parseInt(tokenLife));
 
         try {
@@ -1081,6 +1084,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         LoginEntity lg = this.loginManager.getPrimaryIdentity(userId);
         SSOTokenModule tkModule = SSOTokenFactory.createModule(tokenType);
         tkModule.setCryptor(cryptor);
+        tkModule.setKeyManagementService(keyManagementService);
         tkModule.setTokenLife(Integer.parseInt(tokenLife));
 
         boolean tokenStatus = tkModule.isTokenValid(lg.getUserId(), lg.getLogin(), token);

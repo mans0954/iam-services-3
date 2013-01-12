@@ -551,6 +551,7 @@ public class LDAPLoginModule extends AbstractLoginModule {
         SSOTokenModule tkModule = SSOTokenFactory
                 .createModule((String) tokenParam.get("TOKEN_TYPE"));
         tkModule.setCryptor(cryptor);
+        tkModule.setKeyManagementService(keyManagementService);
         tkModule.setTokenLife(Integer.parseInt((String) tokenParam
                 .get("TOKEN_LIFE")));
 
