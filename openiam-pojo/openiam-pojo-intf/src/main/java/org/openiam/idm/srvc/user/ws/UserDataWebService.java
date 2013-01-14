@@ -440,7 +440,7 @@ public interface UserDataWebService {
             @WebParam(name = "userId", targetNamespace = "")
             String userId);
     @WebMethod
-    public List<EmailAddress> getEmailAddressList(@WebParam(name = "userId", targetNamespace = "") String userId,
+    public List<EmailAddress> getEmailAddressListByPage(@WebParam(name = "userId", targetNamespace = "") String userId,
                                                   @WebParam(name = "size", targetNamespace = "") Integer size,
                                                   @WebParam(name = "from", targetNamespace = "") Integer from);
 

@@ -399,11 +399,11 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 
     @Override
 	public List<EmailAddress> getEmailAddressList(String userId) {
-		return this.getEmailAddressList(userId, Integer.MAX_VALUE, 0);
+		return this.getEmailAddressListByPage(userId, Integer.MAX_VALUE, 0);
 	}
 
     @Override
-    public List<EmailAddress> getEmailAddressList(String userId, Integer size, Integer from) {
+    public List<EmailAddress> getEmailAddressListByPage(String userId, Integer size, Integer from) {
         final List<EmailAddressEntity> adr = userManager.getEmailAddressList(userId);
         return emailAddressDozerConverter.convertToDTOList(adr, false);
     }
