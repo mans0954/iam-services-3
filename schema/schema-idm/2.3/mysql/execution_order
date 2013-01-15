@@ -24,3 +24,15 @@ ddl/19.fix_group_name.sql
 ddl/20.drop_deprecated_group_columns.sql
 dml/5.group_menus.sql
 dml/6.create_group_categories.sql
+ddl/21.fix_id_lenght_metadata_category.sql
+ddl/22.auto_update_user_timestamps.sql
+ddl/23.add_IDM_AUDIT_LOG_CUSTOM_table.sql
+ddl/24.fix_company_attribute_id_fk.sql
+ddl/25.company_to_company_membership.sql
+ddl/26.DROP_RESOURCE_COMPANY.sql
+ddl/27.migrate_login.sql
+ddl/28.login_timestamp.sql
+ddl/29.drop_menus_and_permissions.sql
+dml/7.user_menu.sql
+dml/8.org_menu.sql
+dml/9.menu_tree_menus.sql
