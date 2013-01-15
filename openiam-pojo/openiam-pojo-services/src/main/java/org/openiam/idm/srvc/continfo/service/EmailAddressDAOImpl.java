@@ -71,8 +71,12 @@ public class EmailAddressDAOImpl extends BaseDaoImpl<EmailAddressEntity, String>
 
             if (email.getParent() != null) {
                 if (StringUtils.isNotBlank(email.getParent().getUserId())) {
-                    criteria.add(Restrictions.eq("parentType", email.getParentType()));
+                    criteria.add(Restrictions.eq("parent.userId", email.getParent().getUserId()));
                 }
+            }
+            
+            if (StringUtils.isNotBlank(email.getParentType())) {
+                criteria.add(Restrictions.eq("parentType", email.getParentType()));
             }
         }
         return criteria;
@@ -120,7 +124,7 @@ public class EmailAddressDAOImpl extends BaseDaoImpl<EmailAddressEntity, String>
                 .createAlias("parent","p")
                 .add(Restrictions.eq("p.userId",parentId))
                 .add(Restrictions.eq("parentType",parentType))
-                .add(Restrictions.eq("isDefault",1));
+                .add(Restrictions.eq("isDefault",true));
 
 		return (EmailAddressEntity)criteria.uniqueResult();
 	}

@@ -20,10 +20,6 @@
  */
 package org.openiam.provision.service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.SysConfiguration;
@@ -59,6 +55,11 @@ import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Helper class that will be called by the DefaultProvisioningService to add users in to the 
@@ -313,7 +314,7 @@ public class AddUser {
                                 }
                                 if (objectType.equals("EMAIL")) {
                                     primaryEmail.setEmailAddress(output);
-                                    primaryEmail.setIsDefault(1);
+                                    primaryEmail.setIsDefault(true);
                                 }
                             }
                         } catch (ScriptEngineException e) {

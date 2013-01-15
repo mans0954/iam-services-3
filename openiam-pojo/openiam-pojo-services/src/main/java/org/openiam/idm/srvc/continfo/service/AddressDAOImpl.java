@@ -1,35 +1,45 @@
 package org.openiam.idm.srvc.continfo.service;
 
 
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Set;
-import java.util.Iterator;
-import java.util.Collection;
-
-import javax.naming.InitialContext;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.criterion.Example;
-import org.hibernate.HibernateException;
-
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
-import org.openiam.exception.data.DataException;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.springframework.stereotype.Repository;
+
+import java.util.*;
 
 @Repository("addressDAO")
 public class AddressDAOImpl extends BaseDaoImpl<AddressEntity, String> implements AddressDAO {
 
 
 	private static final Log log = LogFactory.getLog(AddressDAOImpl.class);
-	
+
+    @Override
+    protected Criteria getExampleCriteria(AddressEntity address){
+        final Criteria criteria = getCriteria();
+        if (StringUtils.isNotBlank(address.getAddressId())) {
+            criteria.add(Restrictions.eq(getPKfieldName(), address.getAddressId()));
+        } else {
+
+            if (address.getParent() != null) {
+                if (StringUtils.isNotBlank(address.getParent().getUserId())) {
+                    criteria.add(Restrictions.eq("parent.userId", address.getParent().getUserId()));
+                }
+            }
+
+            if (StringUtils.isNotBlank(address.getParentType())) {
+                criteria.add(Restrictions.eq("parentType", address.getParentType()));
+            }
+        }
+        return criteria;
+    }
+
 	/**
 	 * Returns a Map of Address objects for the parentId and parentType combination.
 	 * The map is keyed on the address.description. Address.description indicates

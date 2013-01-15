@@ -1,13 +1,12 @@
 package org.openiam.idm.srvc.continfo.dto;
 
 import org.openiam.base.AttributeOperationEnum;
+import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
-
-import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 
 // Generated Jun 12, 2007 10:46:13 PM by Hibernate Tools 3.2.0.beta8
 
@@ -35,13 +34,13 @@ public class EmailAddress implements java.io.Serializable {
 
     private String emailId;
 
-    protected Boolean isActive = Boolean.TRUE;
+    protected boolean isActive = true;
 
     protected String description;
 
     protected String emailAddress;
 
-    protected Integer isDefault = new Integer(0);
+    protected boolean isDefault = false;
 
     protected String parentType;
 
@@ -74,7 +73,7 @@ public class EmailAddress implements java.io.Serializable {
 //        this.parentId = emailAddressEntity.getParent() != null ? emailAddressEntity.getParent().getUserId() : "";
 //    }
 
-    public EmailAddress(String emailAddress, String name, String parentId, String parentType, Integer aDefault) {
+    public EmailAddress(String emailAddress, String name, String parentId, String parentType, boolean aDefault) {
         this.emailAddress = emailAddress;
         this.name = name;
         this.parentId = parentId;
@@ -86,7 +85,7 @@ public class EmailAddress implements java.io.Serializable {
      * full constructor
      */
     public EmailAddress(String emailId, String description,
-                        String emailAddress, Integer isDefault) {
+                        String emailAddress, boolean isDefault) {
         this.emailId = emailId;
         this.description = description;
         this.emailAddress = emailAddress;
@@ -96,7 +95,7 @@ public class EmailAddress implements java.io.Serializable {
     public void updateEmailAddress(EmailAddress emailAdr) {
         this.description = emailAdr.getDescription();
         this.emailAddress = emailAdr.getEmailAddress();
-        this.isActive = emailAdr.isActive();
+        this.isActive = emailAdr.getIsActive();
         this.isDefault = emailAdr.getIsDefault();
         this.name = emailAdr.getName();
     }
@@ -130,11 +129,11 @@ public class EmailAddress implements java.io.Serializable {
         this.emailAddress = emailAddress;
     }
 
-    public Integer getIsDefault() {
+    public boolean getIsDefault() {
         return this.isDefault;
     }
 
-    public void setIsDefault(Integer isDefault) {
+    public void setIsDefault(boolean isDefault) {
         this.isDefault = isDefault;
     }
 
@@ -163,11 +162,11 @@ public class EmailAddress implements java.io.Serializable {
      *
      * @return
      */
-    public Boolean isActive() {
+    public Boolean getIsActive() {
         return isActive;
     }
 
-    public void setActive(Boolean isActive) {
+    public void setIsActive(Boolean isActive) {
         this.isActive = isActive;
     }
 
@@ -216,8 +215,8 @@ public class EmailAddress implements java.io.Serializable {
         if (description != null ? !description.equals(that.description) : that.description != null) return false;
         if (emailAddress != null ? !emailAddress.equals(that.emailAddress) : that.emailAddress != null) return false;
         if (emailId != null ? !emailId.equals(that.emailId) : that.emailId != null) return false;
-        if (isActive != null ? !isActive.equals(that.isActive) : that.isActive != null) return false;
-        if (isDefault != null ? !isDefault.equals(that.isDefault) : that.isDefault != null) return false;
+        if (isActive != that.isActive) return false;
+        if (isDefault !=that.isDefault) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (operation != that.operation) return false;
         if (parentId != null ? !parentId.equals(that.parentId) : that.parentId != null) return false;
@@ -230,10 +229,10 @@ public class EmailAddress implements java.io.Serializable {
     public int hashCode() {
         int result = operation != null ? operation.hashCode() : 0;
         result = 31 * result + (emailId != null ? emailId.hashCode() : 0);
-        result = 31 * result + (isActive != null ? isActive.hashCode() : 0);
+        result = 31 * result + Boolean.valueOf(isActive).hashCode();
         result = 31 * result + (description != null ? description.hashCode() : 0);
         result = 31 * result + (emailAddress != null ? emailAddress.hashCode() : 0);
-        result = 31 * result + (isDefault != null ? isDefault.hashCode() : 0);
+        result = 31 * result + Boolean.valueOf(isDefault).hashCode();
         result = 31 * result + (parentType != null ? parentType.hashCode() : 0);
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (parentId != null ? parentId.hashCode() : 0);

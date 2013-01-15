@@ -1,11 +1,9 @@
 package org.openiam.idm.srvc.user.service;
 
-import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
-import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -14,15 +12,10 @@ import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
 import org.openiam.idm.srvc.user.dto.UserSearch;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 
-import javax.jws.WebMethod;
-import javax.jws.WebParam;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Service interface that clients will access to gain information about users and related information.
@@ -120,6 +113,8 @@ public interface UserDataService {
 
     public List<AddressEntity> getAddressList(String userId);
 
+    public List<AddressEntity> getAddressList(String userId, Integer size, Integer from);
+
     public void addPhone(PhoneEntity val);
 
     public void addPhoneSet(Collection<PhoneEntity> phoneList);
@@ -137,6 +132,8 @@ public interface UserDataService {
     public PhoneEntity getDefaultPhone(String userId);
 
     public List<PhoneEntity> getPhoneList(String userId);
+
+    public List<PhoneEntity> getPhoneList(String userId, Integer size, Integer from);
 
     public void addEmailAddress(EmailAddressEntity val);
 
@@ -212,4 +209,7 @@ public interface UserDataService {
     public void activateUser(String userId);
 
     public Integer getNumOfEmailsForUser( String userId);
+
+    public Integer getNumOfAddressesForUser(String userId);
+    public Integer getNumOfPhonesForUser(String userId);
 }

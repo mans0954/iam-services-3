@@ -1,24 +1,12 @@
 package org.openiam.idm.srvc.continfo.dto;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-import javax.persistence.Transient;
-import javax.xml.bind.annotation.XmlTransient;
-import org.hibernate.annotations.GenericGenerator;
 import org.openiam.base.AttributeOperationEnum;
+import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
-
-import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
-import org.openiam.idm.srvc.user.domain.UserEntity;
 
 // Generated Jun 12, 2007 10:46:13 PM by Hibernate Tools 3.2.0.beta8
 
@@ -50,7 +38,7 @@ public class Phone implements java.io.Serializable {
 
     private String phoneId;
 
-    protected Boolean isActive = Boolean.TRUE;
+    protected boolean isActive = true;
 
     protected String areaCd;
 
@@ -58,7 +46,7 @@ public class Phone implements java.io.Serializable {
 
     protected String description;
 
-    protected Integer isDefault = new Integer(0);
+    protected boolean isDefault = false;
 
     protected String parentType;
 
@@ -106,7 +94,7 @@ public class Phone implements java.io.Serializable {
      */
     public Phone(String phoneId, String areaCd, String countryCd,
                  String description, String phoneNbr, String phoneExt,
-                 Integer isDefault, String addressId) {
+                 boolean isDefault, String addressId) {
         this.phoneId = phoneId;
         this.areaCd = areaCd;
         this.countryCd = countryCd;
@@ -177,11 +165,11 @@ public class Phone implements java.io.Serializable {
         this.phoneExt = phoneExt;
     }
 
-    public Integer getIsDefault() {
+    public boolean getIsDefault() {
         return this.isDefault;
     }
 
-    public void setIsDefault(Integer isDefault) {
+    public void setIsDefault(boolean isDefault) {
         this.isDefault = isDefault;
     }
 
@@ -221,11 +209,11 @@ public class Phone implements java.io.Serializable {
      *
      * @return
      */
-    public Boolean isActive() {
+    public boolean getIsActive() {
         return isActive;
     }
 
-    public void setActive(Boolean isActive) {
+    public void setIsActive(boolean isActive) {
         this.isActive = isActive;
     }
 
@@ -275,8 +263,8 @@ public class Phone implements java.io.Serializable {
         if (areaCd != null ? !areaCd.equals(phone.areaCd) : phone.areaCd != null) return false;
         if (countryCd != null ? !countryCd.equals(phone.countryCd) : phone.countryCd != null) return false;
         if (description != null ? !description.equals(phone.description) : phone.description != null) return false;
-        if (isActive != null ? !isActive.equals(phone.isActive) : phone.isActive != null) return false;
-        if (isDefault != null ? !isDefault.equals(phone.isDefault) : phone.isDefault != null) return false;
+        if (isActive != phone.isActive)  return false;
+        if (isDefault != phone.isDefault) return false;
         if (name != null ? !name.equals(phone.name) : phone.name != null) return false;
         if (operation != phone.operation) return false;
         if (parentId != null ? !parentId.equals(phone.parentId) : phone.parentId != null) return false;
@@ -293,11 +281,11 @@ public class Phone implements java.io.Serializable {
     public int hashCode() {
         int result = operation != null ? operation.hashCode() : 0;
         result = 31 * result + (phoneId != null ? phoneId.hashCode() : 0);
-        result = 31 * result + (isActive != null ? isActive.hashCode() : 0);
+        result = 31 * result + Boolean.valueOf(isActive).hashCode();
         result = 31 * result + (areaCd != null ? areaCd.hashCode() : 0);
         result = 31 * result + (countryCd != null ? countryCd.hashCode() : 0);
         result = 31 * result + (description != null ? description.hashCode() : 0);
-        result = 31 * result + (isDefault != null ? isDefault.hashCode() : 0);
+        result = 31 * result + Boolean.valueOf(isDefault).hashCode();
         result = 31 * result + (parentType != null ? parentType.hashCode() : 0);
         result = 31 * result + (phoneExt != null ? phoneExt.hashCode() : 0);
         result = 31 * result + (phoneNbr != null ? phoneNbr.hashCode() : 0);

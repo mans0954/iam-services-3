@@ -1,25 +1,18 @@
 package org.openiam.idm.srvc.continfo.service;
 
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.naming.InitialContext;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.springframework.stereotype.Repository;
+
+import java.util.*;
 
 
 @Repository("phoneDAO")
@@ -27,7 +20,28 @@ public class PhoneDAOImpl extends BaseDaoImpl<PhoneEntity, String> implements Ph
 
 	private static final Log log = LogFactory.getLog(PhoneDAOImpl.class);
 
-	public PhoneEntity findByName(String name, String parentId, String parentType) {
+    @Override
+    protected Criteria getExampleCriteria(PhoneEntity phone){
+        final Criteria criteria = getCriteria();
+        if (StringUtils.isNotBlank(phone.getPhoneId())) {
+            criteria.add(Restrictions.eq(getPKfieldName(), phone.getPhoneId()));
+        } else {
+
+            if (phone.getParent() != null) {
+                if (StringUtils.isNotBlank(phone.getParent().getUserId())) {
+                    criteria.add(Restrictions.eq("parent.userId", phone.getParent().getUserId()));
+                }
+            }
+
+            if (StringUtils.isNotBlank(phone.getParentType())) {
+                criteria.add(Restrictions.eq("parentType", phone.getParentType()));
+            }
+        }
+        return criteria;
+    }
+
+
+    public PhoneEntity findByName(String name, String parentId, String parentType) {
 
 
 		Session session = sessionFactory.getCurrentSession();

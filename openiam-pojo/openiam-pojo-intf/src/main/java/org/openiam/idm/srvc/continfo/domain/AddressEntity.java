@@ -10,6 +10,7 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlTransient;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.continfo.dto.Address;
@@ -26,7 +27,11 @@ public class AddressEntity {
     private String addressId;
 
     @Column(name = "ACTIVE")
-    private Boolean isActive = Boolean.TRUE;
+    @Type(type = "yes_no")
+    private boolean isActive = true;
+    @Column(name="IS_DEFAULT")
+    @Type(type = "yes_no")
+    private boolean isDefault = false;
 
     @Column(name = "BLDG_NUM", length = 45)
     private String bldgNumber;
@@ -117,12 +122,20 @@ public class AddressEntity {
         this.addressId = addressId;
     }
 
-    public Boolean getActive() {
+    public boolean getIsActive() {
         return isActive;
     }
 
-    public void setActive(Boolean active) {
+    public void setIsActive(boolean active) {
         isActive = active;
+    }
+
+    public boolean getIsDefault() {
+        return isDefault;
+    }
+
+    public void setIsDefault(boolean aDefault) {
+        isDefault = aDefault;
     }
 
     public String getBldgNumber() {
@@ -288,7 +301,8 @@ public class AddressEntity {
         if (city != null ? !city.equals(that.city) : that.city != null) return false;
         if (country != null ? !country.equals(that.country) : that.country != null) return false;
         if (description != null ? !description.equals(that.description) : that.description != null) return false;
-        if (isActive != null ? !isActive.equals(that.isActive) : that.isActive != null) return false;
+        if (isActive!=that.isActive) return false;
+        if (isDefault!=that.isDefault) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (parent != null ? !parent.equals(that.parent) : that.parent != null) return false;
         if (parentType != null ? !parentType.equals(that.parentType) : that.parentType != null) return false;
@@ -304,7 +318,8 @@ public class AddressEntity {
     @Override
     public int hashCode() {
         int result = addressId != null ? addressId.hashCode() : 0;
-        result = 31 * result + (isActive != null ? isActive.hashCode() : 0);
+        result = 31 * result + Boolean.valueOf(isActive).hashCode();
+        result = 31 * result + Boolean.valueOf(isDefault).hashCode();
         result = 31 * result + (bldgNumber != null ? bldgNumber.hashCode() : 0);
         result = 31 * result + (streetDirection != null ? streetDirection.hashCode() : 0);
         result = 31 * result + (suite != null ? suite.hashCode() : 0);

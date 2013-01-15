@@ -7,9 +7,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.BaseConstants;
 import org.openiam.base.SysConfiguration;
-import org.openiam.idm.searchbeans.EmailSearchBean;
-import org.openiam.idm.searchbeans.LoginSearchBean;
-import org.openiam.idm.searchbeans.UserSearchBean;
+import org.openiam.idm.searchbeans.*;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
@@ -17,7 +15,6 @@ import org.openiam.idm.srvc.auth.login.lucene.LoginSearchDAO;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
-import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.ContactConstants;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.continfo.service.AddressDAO;
@@ -26,7 +23,9 @@ import org.openiam.idm.srvc.continfo.service.PhoneDAO;
 import org.openiam.idm.srvc.grp.service.UserGroupDAO;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.role.service.UserRoleDAO;
+import org.openiam.idm.srvc.searchbean.converter.AddressSearchBeanConverter;
 import org.openiam.idm.srvc.searchbean.converter.EmailAddressSearchBeanConverter;
+import org.openiam.idm.srvc.searchbean.converter.PhoneSearchBeanConverter;
 import org.openiam.idm.srvc.user.dao.UserSearchDAO;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
@@ -41,7 +40,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.jws.WebParam;
 import java.util.*;
 
 /**
@@ -95,6 +93,10 @@ public class UserMgr implements UserDataService {
     private LoginDataService loginManager;
     @Autowired
     private EmailAddressSearchBeanConverter emailAddressSearchBeanConverter;
+    @Autowired
+    private AddressSearchBeanConverter addressSearchBeanConverter;
+    @Autowired
+    private PhoneSearchBeanConverter phoneSearchBeanConverter;
     
     @Value("${org.openiam.user.search.max.results}")
     private int MAX_USER_SEARCH_RESULTS;
@@ -567,11 +569,19 @@ public class UserMgr implements UserDataService {
 
     @Override
     public List<AddressEntity> getAddressList(String userId) {
+        return this.getAddressList(userId, Integer.MAX_VALUE,0);
+    }
+
+    @Override
+    public List<AddressEntity> getAddressList(String userId, Integer size, Integer from) {
         if (userId == null)
             throw new NullPointerException("userId is null");
-        List<Address> addressList = null;
-        return addressDao.findByParentAsList(userId,
-                ContactConstants.PARENT_TYPE_USER);
+
+
+        AddressSearchBean searchBean = new AddressSearchBean();
+        searchBean.setParentId(userId);
+        searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
+        return addressDao.getByExample(addressSearchBeanConverter.convert(searchBean), from, size);
     }
 
     @Override
@@ -662,11 +672,18 @@ public class UserMgr implements UserDataService {
 
     @Override
     public List<PhoneEntity> getPhoneList(String userId) {
+        return this.getPhoneList(userId, Integer.MAX_VALUE,0);
+    }
+    @Override
+    public List<PhoneEntity> getPhoneList(String userId, Integer size, Integer from){
         if (userId == null)
             throw new NullPointerException("userId is null");
-        List<Phone> phoneList = null;
-        return phoneDao.findByParentAsList(userId,
-                ContactConstants.PARENT_TYPE_USER);
+
+
+        PhoneSearchBean searchBean = new PhoneSearchBean();
+        searchBean.setParentId(userId);
+        searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
+        return phoneDao.getByExample(phoneSearchBeanConverter.convert(searchBean), from, size);
     }
 
     @Override
@@ -681,7 +698,6 @@ public class UserMgr implements UserDataService {
         UserEntity userEntity = userDao.findById(val.getParent().getUserId());
         val.setParent(userEntity);
         emailAddressDao.save(val);
-
     }
 
     @Override
@@ -979,6 +995,20 @@ public class UserMgr implements UserDataService {
         searchBean.setParentId(userId);
         searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
         return emailAddressDao.count(emailAddressSearchBeanConverter.convert(searchBean));
+    }
+
+    public Integer getNumOfAddressesForUser(String userId){
+        AddressSearchBean searchBean = new AddressSearchBean();
+        searchBean.setParentId(userId);
+        searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
+        return addressDao.count(addressSearchBeanConverter.convert(searchBean));
+    }
+
+    public Integer getNumOfPhonesForUser(String userId){
+        PhoneSearchBean searchBean = new PhoneSearchBean();
+        searchBean.setParentId(userId);
+        searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
+        return phoneDao.count(phoneSearchBeanConverter.convert(searchBean));
     }
 
     private void mergeUserFields(UserEntity origUserEntity, UserEntity newUserEntity){

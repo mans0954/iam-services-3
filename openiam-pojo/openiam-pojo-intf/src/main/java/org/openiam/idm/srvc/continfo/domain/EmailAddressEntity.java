@@ -1,17 +1,12 @@
 package org.openiam.idm.srvc.continfo.domain;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.dto.User;
+
+import javax.persistence.*;
 
 @Entity
 @Table(name = "EMAIL_ADDRESS")
@@ -24,7 +19,8 @@ public class EmailAddressEntity {
     private String emailId;
 
     @Column(name = "ACTIVE")
-    private Boolean isActive = Boolean.TRUE;
+    @Type(type = "yes_no")
+    private boolean isActive = true;
 
     @Column(name = "DESCRIPTION", length = 100)
     private String description;
@@ -33,7 +29,8 @@ public class EmailAddressEntity {
     private String emailAddress;
 
     @Column(name = "IS_DEFAULT")
-    private Integer isDefault = new Integer(0);
+    @Type(type = "yes_no")
+    private boolean isDefault = false;
 
     @ManyToOne
     @JoinColumn(name = "PARENT_ID")
@@ -66,11 +63,11 @@ public class EmailAddressEntity {
         this.emailId = emailId;
     }
 
-    public Boolean getActive() {
+    public Boolean getIsActive() {
         return isActive;
     }
 
-    public void setActive(Boolean active) {
+    public void setIsActive(Boolean active) {
         isActive = active;
     }
 
@@ -90,11 +87,11 @@ public class EmailAddressEntity {
         this.emailAddress = emailAddress;
     }
 
-    public Integer getDefault() {
+    public boolean getIsDefault() {
         return isDefault;
     }
 
-    public void setDefault(Integer aDefault) {
+    public void setIsDefault(boolean aDefault) {
         isDefault = aDefault;
     }
 
@@ -132,8 +129,8 @@ public class EmailAddressEntity {
         if (description != null ? !description.equals(that.description) : that.description != null) return false;
         if (emailAddress != null ? !emailAddress.equals(that.emailAddress) : that.emailAddress != null) return false;
         if (emailId != null ? !emailId.equals(that.emailId) : that.emailId != null) return false;
-        if (isActive != null ? !isActive.equals(that.isActive) : that.isActive != null) return false;
-        if (isDefault != null ? !isDefault.equals(that.isDefault) : that.isDefault != null) return false;
+        if (isActive != that.isActive) return false;
+        if (isDefault != that.isDefault) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (parent != null ? !parent.equals(that.parent) : that.parent != null) return false;
         if (parentType != null ? !parentType.equals(that.parentType) : that.parentType != null) return false;
@@ -144,10 +141,10 @@ public class EmailAddressEntity {
     @Override
     public int hashCode() {
         int result = emailId != null ? emailId.hashCode() : 0;
-        result = 31 * result + (isActive != null ? isActive.hashCode() : 0);
+        result = 31 * result + Boolean.valueOf(isActive).hashCode();
         result = 31 * result + (description != null ? description.hashCode() : 0);
         result = 31 * result + (emailAddress != null ? emailAddress.hashCode() : 0);
-        result = 31 * result + (isDefault != null ? isDefault.hashCode() : 0);
+        result = 31 * result +  Boolean.valueOf(isDefault).hashCode();
         result = 31 * result + (parent != null ? parent.hashCode() : 0);
         result = 31 * result + (parentType != null ? parentType.hashCode() : 0);
         result = 31 * result + (name != null ? name.hashCode() : 0);

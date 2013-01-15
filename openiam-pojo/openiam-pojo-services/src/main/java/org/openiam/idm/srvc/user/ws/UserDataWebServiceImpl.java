@@ -96,6 +96,9 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
 			final AddressEntity entity = addressDozerConverter.convertToEntity(val, true);
+            UserEntity user = new UserEntity();
+            user.setUserId(val.getParentId());
+            entity.setParent(user);
 			userManager.addAddress(entity);
 		} catch(BasicDataServiceException e) {
     		response.setErrorCode(e.getCode());
@@ -115,8 +118,13 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 			if(CollectionUtils.isEmpty(adrList)) {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
-			
+            String parentId = adrList.iterator().next().getParentId();
 			final List<AddressEntity> entityList = addressDozerConverter.convertToEntityList(new ArrayList<Address>(adrList), true);
+            for (AddressEntity entity:entityList){
+                UserEntity user = new UserEntity();
+                user.setUserId(parentId);
+                entity.setParent(user);
+            }
 			userManager.addAddressSet(entityList);
 		} catch(BasicDataServiceException e) {
     		response.setErrorCode(e.getCode());
@@ -159,6 +167,9 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 			}
 			
 			final EmailAddressEntity entity = emailAddressDozerConverter.convertToEntity(val, true);
+            UserEntity user = new UserEntity();
+            user.setUserId(val.getParentId());
+            entity.setParent(user);
 			userManager.addEmailAddress(entity);
 		} catch(BasicDataServiceException e) {
     		response.setErrorCode(e.getCode());
@@ -178,8 +189,13 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 			if(CollectionUtils.isEmpty(adrList)) {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
-			
+			String parentId = adrList.iterator().next().getParentId();
 			final List<EmailAddressEntity> entityList = emailAddressDozerConverter.convertToEntityList(new ArrayList<EmailAddress>(adrList), true);
+            for (EmailAddressEntity e: entityList){
+                UserEntity user = new UserEntity();
+                user.setUserId(parentId);
+                e.setParent(user);
+            }
 			userManager.addEmailAddressSet(entityList);
 		} catch(BasicDataServiceException e) {
     		response.setErrorCode(e.getCode());
@@ -222,6 +238,9 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 			}
 			
 			final PhoneEntity entity = phoneDozerConverter.convertToEntity(val, true);
+            UserEntity user = new UserEntity();
+            user.setUserId(val.getParentId());
+            entity.setParent(user);
 			userManager.addPhone(entity);
 		} catch(BasicDataServiceException e) {
     		response.setErrorCode(e.getCode());
@@ -241,8 +260,14 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 			if(CollectionUtils.isEmpty(phoneList)) {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
-			
-			final List<PhoneEntity> entityList = phoneDozerConverter.convertToEntityList(new ArrayList<Phone>(phoneList), true);
+            String parentId = phoneList.iterator().next().getParentId();
+            final List<PhoneEntity> entityList = phoneDozerConverter.convertToEntityList(new ArrayList<Phone>(phoneList), true);
+
+            for (PhoneEntity e: entityList){
+                UserEntity user = new UserEntity();
+                user.setUserId(parentId);
+                e.setParent(user);
+            }
 			userManager.addPhoneSet(entityList);
 		} catch(BasicDataServiceException e) {
     		response.setErrorCode(e.getCode());
@@ -350,9 +375,13 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 
     @Override
 	public List<Address> getAddressList(String userId) {
-		final List<AddressEntity> adrList = userManager.getAddressList(userId);
-		return addressDozerConverter.convertToDTOList(adrList, false);
+        return this.getAddressListByPage(userId, Integer.MAX_VALUE, 0);
 	}
+    @Override
+    public List<Address> getAddressListByPage(String userId, Integer size, Integer from) {
+        final List<AddressEntity> adrList = userManager.getAddressList(userId, size, from);
+        return addressDozerConverter.convertToDTOList(adrList, false);
+    }
 
     @Override
 	public List<UserNote> getAllNotes(String userId) {
@@ -404,7 +433,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 
     @Override
     public List<EmailAddress> getEmailAddressListByPage(String userId, Integer size, Integer from) {
-        final List<EmailAddressEntity> adr = userManager.getEmailAddressList(userId);
+        final List<EmailAddressEntity> adr = userManager.getEmailAddressList(userId, size, from);
         return emailAddressDozerConverter.convertToDTOList(adr, false);
     }
 
@@ -434,9 +463,13 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 
     @Override
 	public List<Phone> getPhoneList(String userId) {
-		final List<PhoneEntity> ph = userManager.getPhoneList(userId);
-		return phoneDozerConverter.convertToDTOList(ph, false);
+        return getPhoneListByPage(userId, Integer.MAX_VALUE, 0);
 	}
+    @Override
+    public List<Phone> getPhoneListByPage(String userId, Integer size, Integer from) {
+        final List<PhoneEntity> phoneList = userManager.getPhoneList(userId, size, from);
+        return phoneDozerConverter.convertToDTOList(phoneList, false);
+    }
 
     @Override
 	public Supervisor getPrimarySupervisor(String employeeId) {
@@ -746,6 +779,9 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 			}
 			
 			final AddressEntity entity = addressDozerConverter.convertToEntity(val, false);
+            UserEntity user = new UserEntity();
+            user.setUserId(val.getParentId());
+            entity.setParent(user);
 			userManager.updateAddress(entity);
 		} catch(BasicDataServiceException e) {
     		response.setErrorCode(e.getCode());
@@ -788,6 +824,9 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 			}
 			
 			final EmailAddressEntity entity = emailAddressDozerConverter.convertToEntity(val, true);
+            UserEntity user = new UserEntity();
+            user.setUserId(val.getParentId());
+            entity.setParent(user);
 			userManager.updateEmailAddress(entity);
 		} catch(BasicDataServiceException e) {
     		response.setErrorCode(e.getCode());
@@ -961,7 +1000,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 
                 EmailAddress ea = new EmailAddress();
                 ea.setEmailAddress(user.getEmail());
-                ea.setIsDefault(1);
+                ea.setIsDefault(true);
                 emailAddressList.add(ea);
                 user.setEmailAddresses(emailAddressList);
             }
@@ -1045,5 +1084,15 @@ public class UserDataWebServiceImpl implements UserDataWebService {
     @Override
     public Integer getNumOfEmailsForUser(String userId){
          return userManager.getNumOfEmailsForUser(userId);
+    }
+
+    @Override
+    public Integer getNumOfAddressesForUser(String userId){
+        return userManager.getNumOfAddressesForUser(userId);
+    }
+
+    @Override
+    public Integer getNumOfPhonesForUser(String userId){
+        return userManager.getNumOfPhonesForUser(userId);
     }
 }

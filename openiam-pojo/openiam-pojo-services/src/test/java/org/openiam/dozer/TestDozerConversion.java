@@ -1,14 +1,5 @@
 package org.openiam.dozer;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.RandomStringUtils;
@@ -19,17 +10,15 @@ import org.openiam.idm.srvc.auth.dto.LoginAttribute;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
-import org.openiam.idm.srvc.user.dto.Supervisor;
-import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.user.dto.UserAttribute;
-import org.openiam.idm.srvc.user.dto.UserNote;
-import org.openiam.idm.srvc.user.dto.UserStatusEnum;
+import org.openiam.idm.srvc.user.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.Assert;
 import org.testng.annotations.Test;
+
+import java.util.*;
 
 @ContextConfiguration("classpath:test-application-context.xml")
 public class TestDozerConversion extends AbstractTestNGSpringContextTests {
@@ -54,11 +43,11 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		user.setAddress7(rs(5));
 		
 		final Set<Address> addressSet = new HashSet<Address>();
-		addressSet.add(new Address(rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), 1, rs(2)));
-		addressSet.add(new Address(rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), 0, rs(2)));
-		addressSet.add(new Address(rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), 0, rs(2)));
-		addressSet.add(new Address(rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), 0, rs(2)));
-		addressSet.add(new Address(rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), 0, rs(2)));
+		addressSet.add(new Address(rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), true, rs(2)));
+		addressSet.add(new Address(rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), false, rs(2)));
+		addressSet.add(new Address(rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), false, rs(2)));
+		addressSet.add(new Address(rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), false, rs(2)));
+		addressSet.add(new Address(rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), false, rs(2)));
 		user.setAddresses(addressSet);
 		
 		user.setAlternateContactId(rs(2));
@@ -81,9 +70,9 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		user.setEmail(rs(2));
 		
 		final Set<EmailAddress> emailAddresses = new HashSet<EmailAddress>();
-		emailAddresses.add(new EmailAddress(rs(2), rs(2), rs(2), 1));
-		emailAddresses.add(new EmailAddress(rs(2), rs(2), rs(2), 1));
-		emailAddresses.add(new EmailAddress(rs(2), rs(2), rs(2), 1));
+		emailAddresses.add(new EmailAddress(rs(2), rs(2), rs(2), true));
+		emailAddresses.add(new EmailAddress(rs(2), rs(2), rs(2), true));
+		emailAddresses.add(new EmailAddress(rs(2), rs(2), rs(2), true));
 		user.setEmailAddresses(emailAddresses);
 		user.setEmployeeId(rs(2));
 		user.setEmployeeType(rs(2));
@@ -105,10 +94,10 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		user.setPasswordTheme(rs(2));
 		
 		final Set<Phone> phones = new HashSet<Phone>();
-		phones.add(new Phone(rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), 1, rs(2)));
-		phones.add(new Phone(rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), 1, rs(2)));
-		phones.add(new Phone(rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), 1, rs(2)));
-		phones.add(new Phone(rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), 1, rs(2)));
+		phones.add(new Phone(rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), true, rs(2)));
+		phones.add(new Phone(rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), true, rs(2)));
+		phones.add(new Phone(rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), true, rs(2)));
+		phones.add(new Phone(rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), true, rs(2)));
 		user.setPhones(phones);
 		user.setPhoneExt(rs(2));
 		user.setPhoneNbr(rs(2));

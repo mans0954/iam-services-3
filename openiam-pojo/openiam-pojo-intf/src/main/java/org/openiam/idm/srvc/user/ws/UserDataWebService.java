@@ -297,7 +297,10 @@ public interface UserDataWebService {
             @WebParam(name = "userId", targetNamespace = "")
             String userId);
 
-
+    @WebMethod
+    public List<Address> getAddressListByPage(@WebParam(name = "userId", targetNamespace = "")String userId,
+                                              @WebParam(name = "size", targetNamespace = "")Integer size,
+                                              @WebParam(name = "from", targetNamespace = "")Integer from);
     /* (non-Javadoc)
       * @see org.openiam.idm.srvc.user.service.UserDataService#addPhone(org.openiam.idm.srvc.continfo.dto.Phone)
       */
@@ -366,6 +369,11 @@ public interface UserDataWebService {
     public List<Phone> getPhoneList(
             @WebParam(name = "userId", targetNamespace = "")
             String userId);
+
+    @WebMethod
+    public List<Phone> getPhoneListByPage(@WebParam(name = "userId", targetNamespace = "") String userId,
+                                          @WebParam(name = "size", targetNamespace = "") Integer size,
+                                          @WebParam(name = "from", targetNamespace = "") Integer from);
 
 
     /* (non-Javadoc)
@@ -538,4 +546,9 @@ public interface UserDataWebService {
     @WebMethod
     public Integer getNumOfEmailsForUser(@WebParam(name = "userId", targetNamespace = "") String userId);
 
+    @WebMethod
+    public Integer getNumOfAddressesForUser(@WebParam(name = "userId", targetNamespace = "") String userId);
+
+    @WebMethod
+    public Integer getNumOfPhonesForUser(@WebParam(name = "userId", targetNamespace = "") String userId);
 }

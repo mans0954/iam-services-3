@@ -1,22 +1,12 @@
 package org.openiam.idm.srvc.continfo.dto;
 
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Transient;
-import javax.xml.bind.annotation.XmlTransient;
-import org.hibernate.annotations.GenericGenerator;
 import org.openiam.base.AttributeOperationEnum;
+import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
-
-import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.idm.srvc.continfo.domain.AddressEntity;
-import org.openiam.idm.srvc.user.domain.UserEntity;
 
 // Generated Jun 12, 2007 10:46:13 PM by Hibernate Tools 3.2.0.beta8
 
@@ -58,7 +48,7 @@ public class Address implements java.io.Serializable {
 
     protected AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
 
-    protected Boolean isActive = Boolean.TRUE;
+    protected boolean isActive = true;
 
     protected String bldgNumber;
 
@@ -86,7 +76,7 @@ public class Address implements java.io.Serializable {
 
     protected String description;
 
-    protected Integer isDefault = new Integer(0);
+    protected boolean isDefault = false;
 
     protected String parentType;
 
@@ -143,7 +133,7 @@ public class Address implements java.io.Serializable {
                    String address2,
                    String address3, String address4, String address5, String address6, String address7,
                    String city, String state, String postalCd,
-                   Integer isDefault, String description) {
+                   boolean isDefault, String description) {
         this.addressId = addressId;
         this.country = country;
         this.address1 = address1;
@@ -201,7 +191,7 @@ public class Address implements java.io.Serializable {
         this.city = adr.getCity();
         this.country = adr.getCountry();
         this.description = adr.getDescription();
-        this.isActive = adr.isActive();
+        this.isActive = adr.getIsActive();
         this.isDefault = adr.getIsDefault();
         this.name = adr.getName();
         this.postalCd = adr.getPostalCd();
@@ -267,11 +257,11 @@ public class Address implements java.io.Serializable {
         this.postalCd = postalCd;
     }
 
-    public Integer getIsDefault() {
+    public boolean getIsDefault() {
         return this.isDefault;
     }
 
-    public void setIsDefault(Integer isDefault) {
+    public void setIsDefault(boolean isDefault) {
         this.isDefault = isDefault;
     }
 
@@ -318,11 +308,11 @@ public class Address implements java.io.Serializable {
      *
      * @return
      */
-    public Boolean isActive() {
+    public Boolean getIsActive() {
         return isActive;
     }
 
-    public void setActive(Boolean isActive) {
+    public void setIsActive(Boolean isActive) {
         this.isActive = isActive;
     }
 
@@ -436,8 +426,8 @@ public class Address implements java.io.Serializable {
         if (city != null ? !city.equals(address.city) : address.city != null) return false;
         if (country != null ? !country.equals(address.country) : address.country != null) return false;
         if (description != null ? !description.equals(address.description) : address.description != null) return false;
-        if (isActive != null ? !isActive.equals(address.isActive) : address.isActive != null) return false;
-        if (isDefault != null ? !isDefault.equals(address.isDefault) : address.isDefault != null) return false;
+        if (isActive != address.isActive) return false;
+        if (isDefault != address.isDefault) return false;
         if (name != null ? !name.equals(address.name) : address.name != null) return false;
         if (parentId != null ? !parentId.equals(address.parentId) : address.parentId != null) return false;
         if (parentType != null ? !parentType.equals(address.parentType) : address.parentType != null) return false;
@@ -453,7 +443,7 @@ public class Address implements java.io.Serializable {
     @Override
     public int hashCode() {
         int result = addressId != null ? addressId.hashCode() : 0;
-        result = 31 * result + (isActive != null ? isActive.hashCode() : 0);
+        result = 31 * result + Boolean.valueOf(isActive).hashCode();
         result = 31 * result + (bldgNumber != null ? bldgNumber.hashCode() : 0);
         result = 31 * result + (streetDirection != null ? streetDirection.hashCode() : 0);
         result = 31 * result + (suite != null ? suite.hashCode() : 0);
@@ -467,7 +457,7 @@ public class Address implements java.io.Serializable {
         result = 31 * result + (city != null ? city.hashCode() : 0);
         result = 31 * result + (country != null ? country.hashCode() : 0);
         result = 31 * result + (description != null ? description.hashCode() : 0);
-        result = 31 * result + (isDefault != null ? isDefault.hashCode() : 0);
+        result = 31 * result + Boolean.valueOf(isDefault).hashCode();
         result = 31 * result + (parentType != null ? parentType.hashCode() : 0);
         result = 31 * result + (postalCd != null ? postalCd.hashCode() : 0);
         result = 31 * result + (state != null ? state.hashCode() : 0);
