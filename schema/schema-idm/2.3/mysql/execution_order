@@ -36,3 +36,5 @@ ddl/29.drop_menus_and_permissions.sql
 dml/7.user_menu.sql
 dml/8.org_menu.sql
 dml/9.menu_tree_menus.sql
+ddl/30.drop_user_privilege.sql
+ddl/31.modify_user_contacts.sql
