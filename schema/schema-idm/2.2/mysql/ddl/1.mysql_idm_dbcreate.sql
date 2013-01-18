@@ -1,3 +1,4 @@
+
 /* Creates the DB and initial user account and privleges */
 
 CREATE database openiam DEFAULT CHARACTER SET utf8
