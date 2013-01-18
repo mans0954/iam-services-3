@@ -167,6 +167,13 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable>
     	}
     }
 
+    public  T add(T entity){
+        if(entity!=null){
+            sessionFactory.getCurrentSession().persist(entity);
+        }
+        return entity;
+    }
+
     public void delete(T entity) {
     	if(entity != null) {
     		sessionFactory.getCurrentSession().delete(entity);

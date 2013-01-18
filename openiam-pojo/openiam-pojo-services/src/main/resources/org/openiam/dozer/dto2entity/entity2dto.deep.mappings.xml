@@ -234,4 +234,12 @@
 				<b>customRecords</b> 
 			</field>
 	</mapping>
+    <mapping>
+        <class-a>org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity</class-a>
+        <class-b>org.openiam.idm.srvc.mngsys.dto.ManagedSys</class-b>
+        <field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="dto2entityShallowDozerMapper">
+            <a>mngSysObjectMatchs</a>
+            <b>mngSysObjectMatchs</b>
+        </field>
+    </mapping>
 </mappings>

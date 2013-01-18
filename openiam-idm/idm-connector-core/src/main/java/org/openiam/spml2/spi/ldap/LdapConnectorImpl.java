@@ -39,6 +39,7 @@ import javax.naming.ldap.LdapContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.dozer.converter.LoginDozerConverter;
+import org.openiam.dozer.converter.ManagedSystemObjectMatchDozerConverter;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.IdmAuditLogDataService;
 import org.openiam.idm.srvc.auth.context.AuthenticationContext;
@@ -49,6 +50,7 @@ import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
 import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService;
@@ -135,6 +137,9 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
     protected LdapModifyCommand modifyCommand;
     protected LdapLookupCommand lookupCommand;
     protected LdapDeleteCommand deleteCommand;
+
+    @Autowired
+    protected ManagedSystemObjectMatchDozerConverter managedSystemObjectMatchDozerConverter;
 
     public static ApplicationContext ac;
 
@@ -580,10 +585,10 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
             // check if the identity exists before setting the password
 
             ManagedSystemObjectMatch matchObj = null;
-            List<ManagedSystemObjectMatch> matchObjList = managedSysObjectMatchDao
+            List<ManagedSystemObjectMatchEntity> matchObjList = managedSysObjectMatchDao
                     .findBySystemId(targetID, "USER");
             if (matchObjList != null && matchObjList.size() > 0) {
-                matchObj = matchObjList.get(0);
+                matchObj = managedSystemObjectMatchDozerConverter.convertToDTO(matchObjList.get(0),false);
             }
 
             if (matchObj != null) {

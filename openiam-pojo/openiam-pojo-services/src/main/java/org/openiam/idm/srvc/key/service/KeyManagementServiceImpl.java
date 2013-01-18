@@ -2,7 +2,6 @@ package org.openiam.idm.srvc.key.service;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.bouncycastle.util.encoders.Hex;
 import org.openiam.core.dao.UserKeyDao;
 import org.openiam.core.domain.UserKey;
 import org.openiam.exception.EncryptionException;
@@ -11,6 +10,7 @@ import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.dto.UserSecurityWrapper;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
 import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
@@ -184,7 +184,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         for (LoginEntity lg: lgList){
             pwdList.addAll(passwordHistoryDao.getPasswordHistoryByLoginId(lg.getLoginId(), 0, Integer.MAX_VALUE));
         }
-        HashMap<String, List<ManagedSys>> managedSysMap = getManagedSysMap();
+        HashMap<String, List<ManagedSysEntity>> managedSysMap = getManagedSysMap();
         List<UserKey> newUserKeyList = new ArrayList<UserKey>();
 
 
@@ -278,11 +278,11 @@ public class KeyManagementServiceImpl implements KeyManagementService {
 
         if(userSecurityWrapper.getManagedSysList() != null && !userSecurityWrapper.getManagedSysList().isEmpty()) {
             log.warn("Encrypt manages sys...");
-            for(ManagedSys ms : userSecurityWrapper.getManagedSysList()) {
+            for(ManagedSysEntity ms : userSecurityWrapper.getManagedSysList()) {
                 if(ms.getPswd() != null) {
                     ms.setPswd(cryptor.encrypt(pwdKey, ms.getPswd()));
                 }
-                managedSysDAO.update(ms);
+                managedSysDAO.save(ms);
             }
         }
         log.warn("Encrypt user data FINISHED...");
@@ -343,7 +343,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
 
         if(userSecurityWrapper.getManagedSysList()!=null && !userSecurityWrapper.getManagedSysList().isEmpty()) {
             log.warn("Decrypting manages sys ...");
-            for(ManagedSys ms : userSecurityWrapper.getManagedSysList()) {
+            for(ManagedSysEntity ms : userSecurityWrapper.getManagedSysList()) {
                 if(ms.getPswd() != null) {
                     ms.setPswd(cryptor.decrypt(key, ms.getPswd()));
                 }
@@ -419,7 +419,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
                 pageNum++;
             }while(fetchedDataCount<userCount);
 
-            HashMap<String, List<ManagedSys>> managedSysMap = getManagedSysMap();
+            HashMap<String, List<ManagedSysEntity>> managedSysMap = getManagedSysMap();
             HashMap<String, List<LoginEntity>> loginMap = getLoginMap();
             HashMap<String, List<UserKey>> userKeyMap = getUserKeyMap();
             HashMap<String, List<PasswordHistoryEntity>> pwdHistoryMap = getPasswordHistoryMap(loginMap);
@@ -486,13 +486,13 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         return lgMap;
     }
 
-    private HashMap<String, List<ManagedSys>> getManagedSysMap() {
-        HashMap<String, List<ManagedSys>> managedSysMap = new HashMap<String, List<ManagedSys>>();
-        List<ManagedSys> mngSysList = managedSysDAO.findAllManagedSys();
+    private HashMap<String, List<ManagedSysEntity>> getManagedSysMap() {
+        HashMap<String, List<ManagedSysEntity>> managedSysMap = new HashMap<String, List<ManagedSysEntity>>();
+        List<ManagedSysEntity> mngSysList = managedSysDAO.findAllManagedSys();
         if(mngSysList != null && !mngSysList.isEmpty()) {
-            for(ManagedSys ms : mngSysList) {
+            for(ManagedSysEntity ms : mngSysList) {
                 if(!managedSysMap.containsKey(ms.getUserId())) {
-                    managedSysMap.put(ms.getUserId(), new ArrayList<ManagedSys>());
+                    managedSysMap.put(ms.getUserId(), new ArrayList<ManagedSysEntity>());
                 }
                 managedSysMap.get(ms.getUserId()).add(ms);
             }

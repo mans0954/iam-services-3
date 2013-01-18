@@ -390,12 +390,12 @@
         <property name="cryptor"  ref="cryptor"  />
     </bean>
 
-    <bean id="ManagedSysDAO" class="org.openiam.idm.srvc.mngsys.service.ManagedSysDAOImpl" >
-        <property name="sessionFactory" ref="sessionFactory"></property>
-    </bean>
-    <bean id="managedSysObjectMatchDAO" class="org.openiam.idm.srvc.mngsys.service.ManagedSystemObjectMatchDAOImpl" >
-        <property name="sessionFactory" ref="sessionFactory"></property>
-    </bean>
+    <!--<bean id="ManagedSysDAO" class="org.openiam.idm.srvc.mngsys.service.ManagedSysDAOImpl" >-->
+        <!--<property name="sessionFactory" ref="sessionFactory"></property>-->
+    <!--</bean>-->
+    <!--<bean id="managedSysObjectMatchDAO" class="org.openiam.idm.srvc.mngsys.service.ManagedSystemObjectMatchDAOImpl" >-->
+        <!--<property name="sessionFactory" ref="sessionFactory"></property>-->
+    <!--</bean>-->
     <!--<bean id="keyManager" class="org.openiam.core.key.manager.KeyManager">-->
         <!--<property name="jksFile" value="${iam.jks.path}" />-->
         <!--<property name="jksPassword"  value="${iam.jks.password}"  />-->
@@ -509,6 +509,7 @@
                                                org.openiam.idm.srvc.user.domain*,
 											   org.openiam.idm.srvc.continfo.dto*,
                                                org.openiam.am.srvc.resattr.domain*,
+                                               org.openiam.idm.srvc.mngsys.domain*,
 											   org.openiam.idm.srvc.mngsys.dto*,
 											   org.openiam.am.srvc.resattr.domain*,
 											   org.openiam.idm.srvc.org.dto*,
@@ -516,7 +517,6 @@
 											   org.openiam.idm.srvc.auth.dto*,
 											   org.openiam.idm.srvc.auth.domain*,
 											   org.openiam.idm.srvc.org.dto*,
-											   org.openiam.am.srvc.resattr.domain*,
 											   org.openiam.idm.srvc.cat.dto*,
 											   org.openiam.idm.srvc.cat.domain*,
                                                org.openiam.idm.srvc.continfo.domain*,

@@ -1,21 +1,18 @@
 package org.openiam.spml2.spi.gapps;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.ResourceBundle;
-import javax.jws.WebParam;
-import javax.jws.WebService;
-import javax.naming.directory.ModificationItem;
-import javax.xml.namespace.QName;
+import com.google.gdata.client.appsforyourdomain.UserService;
+import com.google.gdata.data.appsforyourdomain.AppsForYourDomainException;
+import com.google.gdata.data.appsforyourdomain.Login;
+import com.google.gdata.data.appsforyourdomain.Name;
+import com.google.gdata.data.appsforyourdomain.provisioning.UserEntry;
+import com.google.gdata.util.AuthenticationException;
+import com.google.gdata.util.ServiceException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.dozer.converter.ManagedSystemObjectMatchDozerConverter;
 import org.openiam.idm.srvc.audit.service.IdmAuditLogDataService;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService;
@@ -28,36 +25,24 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.spml2.interf.ConnectorService;
-import org.openiam.spml2.msg.AddRequestType;
-import org.openiam.spml2.msg.AddResponseType;
-import org.openiam.spml2.msg.DeleteRequestType;
-import org.openiam.spml2.msg.ErrorCode;
-import org.openiam.spml2.msg.ExtensibleType;
-import org.openiam.spml2.msg.LookupRequestType;
-import org.openiam.spml2.msg.LookupResponseType;
-import org.openiam.spml2.msg.ModificationType;
-import org.openiam.spml2.msg.ModifyRequestType;
-import org.openiam.spml2.msg.ModifyResponseType;
-import org.openiam.spml2.msg.PSOIdentifierType;
-import org.openiam.spml2.msg.ResponseType;
-import org.openiam.spml2.msg.ReturnDataType;
-import org.openiam.spml2.msg.StatusCodeType;
-import org.openiam.spml2.msg.password.ExpirePasswordRequestType;
-import org.openiam.spml2.msg.password.ResetPasswordRequestType;
-import org.openiam.spml2.msg.password.ResetPasswordResponseType;
-import org.openiam.spml2.msg.password.SetPasswordRequestType;
-import org.openiam.spml2.msg.password.ValidatePasswordRequestType;
-import org.openiam.spml2.msg.password.ValidatePasswordResponseType;
+import org.openiam.spml2.msg.*;
+import org.openiam.spml2.msg.password.*;
 import org.openiam.spml2.msg.suspend.ResumeRequestType;
 import org.openiam.spml2.msg.suspend.SuspendRequestType;
 import org.springframework.beans.factory.annotation.Autowired;
-import com.google.gdata.client.appsforyourdomain.UserService;
-import com.google.gdata.data.appsforyourdomain.AppsForYourDomainException;
-import com.google.gdata.data.appsforyourdomain.Login;
-import com.google.gdata.data.appsforyourdomain.Name;
-import com.google.gdata.data.appsforyourdomain.provisioning.UserEntry;
-import com.google.gdata.util.AuthenticationException;
-import com.google.gdata.util.ServiceException;
+
+import javax.jws.WebParam;
+import javax.jws.WebService;
+import javax.naming.directory.ModificationItem;
+import javax.xml.namespace.QName;
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.ResourceBundle;
 
 /**
  * Provisioning connector for Google Apps
@@ -82,6 +67,8 @@ public class GoogleAppsConnectorImpl implements ConnectorService {
     protected PolicyDataService policyDataService;
     protected SecurityDomainDataService secDomainService;
     protected UserDataService userManager;
+    @Autowired
+    protected ManagedSystemObjectMatchDozerConverter managedSystemObjectMatchDozerConverter;
 
     private static final String APPS_FEEDS_URL_BASE = "https://apps-apis.google.com/a/feeds/";
 
@@ -146,10 +133,10 @@ public class GoogleAppsConnectorImpl implements ConnectorService {
          */
         ManagedSys managedSys = managedSysService.getManagedSys(targetID);
         ManagedSystemObjectMatch matchObj = null;
-        List<ManagedSystemObjectMatch> matchObjList = managedSysObjectMatchDao
+        List<ManagedSystemObjectMatchEntity> matchObjList = managedSysObjectMatchDao
                 .findBySystemId(targetID, "USER");
         if (matchObjList != null && matchObjList.size() > 0) {
-            matchObj = matchObjList.get(0);
+            matchObj = managedSystemObjectMatchDozerConverter.convertToDTO(matchObjList.get(0),false);
         }
 
         List<ExtensibleObject> requestAttributeList = reqType.getData()
@@ -264,10 +251,10 @@ public class GoogleAppsConnectorImpl implements ConnectorService {
          */
         ManagedSys managedSys = managedSysService.getManagedSys(targetID);
         ManagedSystemObjectMatch matchObj = null;
-        List<ManagedSystemObjectMatch> matchObjList = managedSysObjectMatchDao
+        List<ManagedSystemObjectMatchEntity> matchObjList = managedSysObjectMatchDao
                 .findBySystemId(targetID, "USER");
         if (matchObjList != null && matchObjList.size() > 0) {
-            matchObj = matchObjList.get(0);
+            matchObj = managedSystemObjectMatchDozerConverter.convertToDTO(matchObjList.get(0),false);
         }
 
         List<ModificationType> modTypeList = reqType.getModification();
@@ -486,10 +473,10 @@ public class GoogleAppsConnectorImpl implements ConnectorService {
          */
         ManagedSys managedSys = managedSysService.getManagedSys(targetID);
         ManagedSystemObjectMatch matchObj = null;
-        List<ManagedSystemObjectMatch> matchObjList = managedSysObjectMatchDao
+        List<ManagedSystemObjectMatchEntity> matchObjList = managedSysObjectMatchDao
                 .findBySystemId(targetID, "USER");
         if (matchObjList != null && matchObjList.size() > 0) {
-            matchObj = matchObjList.get(0);
+            matchObj = managedSystemObjectMatchDozerConverter.convertToDTO(matchObjList.get(0),false);
         }
 
         UserService userService = new UserService(
@@ -567,10 +554,10 @@ public class GoogleAppsConnectorImpl implements ConnectorService {
          */
         ManagedSys managedSys = managedSysService.getManagedSys(targetID);
         ManagedSystemObjectMatch matchObj = null;
-        List<ManagedSystemObjectMatch> matchObjList = managedSysObjectMatchDao
+        List<ManagedSystemObjectMatchEntity> matchObjList = managedSysObjectMatchDao
                 .findBySystemId(targetID, "USER");
         if (matchObjList != null && matchObjList.size() > 0) {
-            matchObj = matchObjList.get(0);
+            matchObj = managedSystemObjectMatchDozerConverter.convertToDTO(matchObjList.get(0),false);
         }
 
         UserService userService = new UserService(
@@ -740,10 +727,10 @@ public class GoogleAppsConnectorImpl implements ConnectorService {
          */
         ManagedSys managedSys = managedSysService.getManagedSys(targetID);
         ManagedSystemObjectMatch matchObj = null;
-        List<ManagedSystemObjectMatch> matchObjList = managedSysObjectMatchDao
+        List<ManagedSystemObjectMatchEntity> matchObjList = managedSysObjectMatchDao
                 .findBySystemId(targetID, "USER");
         if (matchObjList != null && matchObjList.size() > 0) {
-            matchObj = matchObjList.get(0);
+            matchObj = managedSystemObjectMatchDozerConverter.convertToDTO(matchObjList.get(0),false);
         }
 
         UserService userService = new UserService(
@@ -821,10 +808,10 @@ public class GoogleAppsConnectorImpl implements ConnectorService {
          */
         ManagedSys managedSys = managedSysService.getManagedSys(targetID);
         ManagedSystemObjectMatch matchObj = null;
-        List<ManagedSystemObjectMatch> matchObjList = managedSysObjectMatchDao
+        List<ManagedSystemObjectMatchEntity> matchObjList = managedSysObjectMatchDao
                 .findBySystemId(targetID, "USER");
         if (matchObjList != null && matchObjList.size() > 0) {
-            matchObj = matchObjList.get(0);
+            matchObj = managedSystemObjectMatchDozerConverter.convertToDTO(matchObjList.get(0),false);
         }
 
         UserService userService = new UserService(
@@ -887,10 +874,10 @@ public class GoogleAppsConnectorImpl implements ConnectorService {
         response.setStatus(StatusCodeType.SUCCESS);
 
         ManagedSystemObjectMatch matchObj = null;
-        List<ManagedSystemObjectMatch> matchObjList = managedSysObjectMatchDao
+        List<ManagedSystemObjectMatchEntity> matchObjList = managedSysObjectMatchDao
                 .findBySystemId(managedSys.getManagedSysId(), "USER");
         if (matchObjList != null && matchObjList.size() > 0) {
-            matchObj = matchObjList.get(0);
+            matchObj = managedSystemObjectMatchDozerConverter.convertToDTO(matchObjList.get(0),false);
         }
 
         UserService userService = new UserService(

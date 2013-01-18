@@ -1,21 +1,24 @@
 package org.openiam.idm.srvc.mngsys.service;
 
-import java.util.List;
-import java.util.ResourceBundle;
-
-import javax.jws.WebService;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.dozer.converter.ManagedSysDozerConverter;
+import org.openiam.dozer.converter.ManagedSystemObjectMatchDozerConverter;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
+import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
-import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.jws.WebService;
+import java.util.List;
+import java.util.ResourceBundle;
 
 @WebService(endpointInterface = "org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService", 
 		targetNamespace = "urn:idm.openiam.org/srvc/mngsys/service", 
@@ -24,16 +27,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class ManagedSystemDataServiceImpl implements ManagedSystemDataService {
     @Autowired
 	protected ManagedSysDAO managedSysDao;
+    @Autowired
 	protected ManagedSystemObjectMatchDAO managedSysObjectMatchDao;
 	protected ApproverAssociationDAO approverAssociationDao;
+    @Autowired
 	protected UserDataService userManager;
+
 	protected AttributeMapDAO attributeMapDao;
     @Autowired
     protected KeyManagementService keyManagementService;
-	
+	@Autowired
+    private ManagedSysDozerConverter managedSysDozerConverter;
+    @Autowired
+    private ManagedSystemObjectMatchDozerConverter managedSystemObjectMatchDozerConverter;
 
-	private static final Log log = LogFactory.getLog(ManagedSystemDataServiceImpl.class);
-	
+    private static final Log log = LogFactory.getLog(ManagedSystemDataServiceImpl.class);
 	protected Cryptor cryptor;
 	static protected ResourceBundle res = ResourceBundle.getBundle("securityconf");
 	boolean encrypt = true;	// default encryption setting
@@ -52,9 +60,9 @@ public class ManagedSystemDataServiceImpl implements ManagedSystemDataService {
         		log.error(e);
         	}
         };
-		
-		return managedSysDao.add(sys);
 
+        ManagedSysEntity entity =  managedSysDao.add(managedSysDozerConverter.convertToEntity(sys,false));
+        return  managedSysDozerConverter.convertToDTO(entity,false);
 	}
 
 	public ManagedSys getManagedSys(String sysId) {
@@ -62,30 +70,32 @@ public class ManagedSystemDataServiceImpl implements ManagedSystemDataService {
 			throw new NullPointerException("sysId is null");
 		}
 
-		ManagedSys sys = managedSysDao.findById(sysId);
-		
-		if (sys != null && sys.getPswd() != null) {
-			try {
-				sys.setDecryptPassword(cryptor.decrypt(keyManagementService.getUserKey(sys.getUserId(), KeyName.password.name()),sys.getPswd()));
-        	}catch(Exception e) {
-        		log.error(e);
-        	}
-		}
-		return sys;
-
+		ManagedSysEntity sys = managedSysDao.findById(sysId);
+        ManagedSys sysDto = null;
+        if(sys!=null){
+            sysDto = managedSysDozerConverter.convertToDTO(sys,true);
+            if (sysDto != null && sysDto.getPswd() != null) {
+                try {
+                    sysDto.setDecryptPassword(cryptor.decrypt(keyManagementService.getUserKey(sys.getUserId(), KeyName.password.name()),sys.getPswd()));
+                }catch(Exception e) {
+                    log.error(e);
+                }
+            }
+        }
+		return sysDto;
 	}
 
 	public ManagedSys[] getManagedSysByProvider(String providerId) {
 		if (providerId == null) {
 			throw new NullPointerException("providerId is null");
 		}
-		List<ManagedSys> sysList= managedSysDao.findbyConnectorId(providerId);
+		List<ManagedSysEntity> sysList= managedSysDao.findbyConnectorId(providerId);
         if(sysList == null) {
             return null;
         }
 		int size = sysList.size();
 		ManagedSys[] sysAry = new ManagedSys[size];
-		sysList.toArray(sysAry);
+        managedSysDozerConverter.convertToDTOList(sysList, true).toArray(sysAry);
 		return sysAry;
 	}
 	
@@ -98,25 +108,25 @@ public class ManagedSystemDataServiceImpl implements ManagedSystemDataService {
 		if (domainId == null) {
 			throw new NullPointerException("domainId is null");
 		}
-		List<ManagedSys> sysList= managedSysDao.findbyDomain(domainId);
+		List<ManagedSysEntity> sysList= managedSysDao.findbyDomain(domainId);
         if(sysList == null) {
             return null;
         }
 		int size = sysList.size();
 		ManagedSys[] sysAry = new ManagedSys[size];
-		sysList.toArray(sysAry);
+        managedSysDozerConverter.convertToDTOList(sysList, true).toArray(sysAry);
 		return sysAry;
 		
 	}
 	
 	public ManagedSys[] getAllManagedSys() {
-		List<ManagedSys> sysList= managedSysDao.findAllManagedSys();
+		List<ManagedSysEntity> sysList= managedSysDao.findAllManagedSys();
         if(sysList == null) {
             return null;
         }
 		int size = sysList.size();
 		ManagedSys[] sysAry = new ManagedSys[size];
-		sysList.toArray(sysAry);
+        managedSysDozerConverter.convertToDTOList(sysList, true).toArray(sysAry);
 		return sysAry;
 	}
 	
@@ -125,8 +135,9 @@ public class ManagedSystemDataServiceImpl implements ManagedSystemDataService {
 		if (sysId == null) {
 			throw new NullPointerException("sysId is null");
 		}
-		ManagedSys sys = getManagedSys(sysId);
-		managedSysDao.remove(sys);
+
+        ManagedSysEntity sys = managedSysDao.findById(sysId);
+		managedSysDao.delete(sys);
 	}
 
 	public void updateManagedSystem(ManagedSys sys) {
@@ -141,7 +152,7 @@ public class ManagedSystemDataServiceImpl implements ManagedSystemDataService {
         	}
         };
         
-		managedSysDao.update(sys);
+		managedSysDao.merge(managedSysDozerConverter.convertToEntity(sys, false));
 	}
 	
 	/**
@@ -157,23 +168,21 @@ public class ManagedSystemDataServiceImpl implements ManagedSystemDataService {
 		if (objectType == null) {
 			throw new NullPointerException("objectType is null");
 		}
-		List<ManagedSystemObjectMatch> objList = managedSysObjectMatchDao.findBySystemId(managedSystemId, objectType);
+		List<ManagedSystemObjectMatchEntity> objList = managedSysObjectMatchDao.findBySystemId(managedSystemId, objectType);
 		if (objList == null) {
 			return null;
 		}
 		int size = objList.size();
 		ManagedSystemObjectMatch[] objAry = new ManagedSystemObjectMatch[size];
-		objList.toArray(objAry);
+        managedSystemObjectMatchDozerConverter.convertToDTOList(objList,false).toArray(objAry);
 		return objAry;
-		
-		
 	}
 
 	public ManagedSys getManagedSysByResource(String resourceId) {
 		if (resourceId == null) {
 			throw new NullPointerException("resourceId is null");
 		}		
-		return managedSysDao.findByResource(resourceId, "ACTIVE");
+		return managedSysDozerConverter.convertToDTO(managedSysDao.findByResource(resourceId, "ACTIVE"), true);
 	}
 
 	/* (non-Javadoc)
@@ -199,39 +208,12 @@ public class ManagedSystemDataServiceImpl implements ManagedSystemDataService {
 */
 
 	
-	public ManagedSysDAO getManagedSysDao() {
-		return managedSysDao;
-	}
-
-	public void setManagedSysDao(ManagedSysDAO managedSysDao) {
-		this.managedSysDao = managedSysDao;
-	}
-
-	public ManagedSystemObjectMatchDAO getManagedSysObjectMatchDao() {
-		return managedSysObjectMatchDao;
-	}
-
-	public void setManagedSysObjectMatchDao(
-			ManagedSystemObjectMatchDAO managedSysObjectMatchDao) {
-		this.managedSysObjectMatchDao = managedSysObjectMatchDao;
-	}
-
 	public Cryptor getCryptor() {
 		return cryptor;
 	}
 
 	public void setCryptor(Cryptor cryptor) {
 		this.cryptor = cryptor;
-	}
-
-
-
-	public UserDataService getUserManager() {
-		return userManager;
-	}
-
-	public void setUserManager(UserDataService userManager) {
-		this.userManager = userManager;
 	}
 
 	/* (non-Javadoc)
@@ -241,7 +223,7 @@ public class ManagedSystemDataServiceImpl implements ManagedSystemDataService {
 		if (name == null) {
 			throw new NullPointerException("Parameter Managed system name is null");
 		}
-		return managedSysDao.findByName(name);
+		return managedSysDozerConverter.convertToDTO(managedSysDao.findByName(name),true);
 	}
 
 	//Approver Association  ================================================================
@@ -364,20 +346,19 @@ public class ManagedSystemDataServiceImpl implements ManagedSystemDataService {
 	 * @see org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService#addManagedSystemObjectMatch(org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch)
 	 */
 	public void addManagedSystemObjectMatch(ManagedSystemObjectMatch obj) {
-		managedSysObjectMatchDao.add(obj);
-		
+		managedSysObjectMatchDao.save(managedSystemObjectMatchDozerConverter.convertToEntity(obj,false));
 	}
 
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService#updateManagedSystemObjectMatch(org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch)
 	 */
 	public void updateManagedSystemObjectMatch(ManagedSystemObjectMatch obj) {
-		this.managedSysObjectMatchDao.update(obj);
+		this.managedSysObjectMatchDao.merge(managedSystemObjectMatchDozerConverter.convertToEntity(obj,false));
 		
 	}
 	
 	public void removeManagedSystemObjectMatch(ManagedSystemObjectMatch obj) {
-		this.managedSysObjectMatchDao.remove(obj);
+		this.managedSysObjectMatchDao.delete(managedSystemObjectMatchDozerConverter.convertToEntity(obj,false));
 	}
 
 	public AttributeMap getAttributeMap(String attributeMapId) {

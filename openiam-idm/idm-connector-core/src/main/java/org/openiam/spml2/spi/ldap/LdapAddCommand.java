@@ -2,6 +2,7 @@ package org.openiam.spml2.spi.ldap;
 
 import org.openiam.base.BaseAttribute;
 import org.openiam.exception.ConfigurationException;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
@@ -83,9 +84,9 @@ public class LdapAddCommand extends LdapAbstractCommand {
 
 
             ManagedSystemObjectMatch matchObj = null;
-            List<ManagedSystemObjectMatch> matchObjList = managedSysObjectMatchDao.findBySystemId(targetID, "USER");
+            List<ManagedSystemObjectMatchEntity> matchObjList = managedSysObjectMatchDao.findBySystemId(targetID, "USER");
             if (matchObjList != null && matchObjList.size() > 0) {
-                matchObj = matchObjList.get(0);
+                matchObj = managedSystemObjectMatchDozerConverter.convertToDTO(matchObjList.get(0),false);
             }
 
             log.debug("matchObj = " + matchObj);

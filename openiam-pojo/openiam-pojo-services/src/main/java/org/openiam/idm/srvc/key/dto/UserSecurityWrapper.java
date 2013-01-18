@@ -2,13 +2,10 @@ package org.openiam.idm.srvc.key.dto;
 
 import org.openiam.core.domain.UserKey;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
-import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
-import org.openiam.idm.srvc.pswd.dto.PasswordHistory;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * Created by: Alexander Duckardt
@@ -19,7 +16,7 @@ public class UserSecurityWrapper {
     private List<LoginEntity> loginList;
     private List<UserKey> userKeyList;
     private List<PasswordHistoryEntity> passwordHistoryList;
-    private List<ManagedSys>  managedSysList;
+    private List<ManagedSysEntity>  managedSysList;
 
     public String getUserId() {
         return userId;
@@ -53,11 +50,11 @@ public class UserSecurityWrapper {
         this.passwordHistoryList = passwordHistoryList;
     }
 
-    public List<ManagedSys> getManagedSysList() {
+    public List<ManagedSysEntity> getManagedSysList() {
         return managedSysList;
     }
 
-    public void setManagedSysList(List<ManagedSys> managedSysList) {
+    public void setManagedSysList(List<ManagedSysEntity> managedSysList) {
         this.managedSysList = managedSysList;
     }
 }

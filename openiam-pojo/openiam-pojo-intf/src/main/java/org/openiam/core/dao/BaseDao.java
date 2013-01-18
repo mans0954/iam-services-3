@@ -1,7 +1,5 @@
 package org.openiam.core.dao;
 
-import org.hibernate.LockOptions;
-
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
@@ -25,6 +23,8 @@ public interface BaseDao<T, PrimaryKey extends Serializable> {
   void merge(T t);
 
   void save(T t);
+
+  T add(T t);
 
   void delete(T t);
 

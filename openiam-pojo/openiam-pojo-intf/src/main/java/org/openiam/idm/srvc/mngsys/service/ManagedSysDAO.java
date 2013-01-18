@@ -1,31 +1,23 @@
 package org.openiam.idm.srvc.mngsys.service;
 
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
+import org.openiam.core.dao.BaseDao;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 
 import java.util.List;
 
-public interface ManagedSysDAO {
+public interface ManagedSysDAO extends BaseDao<ManagedSysEntity, String> {
 
-	ManagedSys add(ManagedSys transientInstance);
 
-	 void remove(ManagedSys persistentInstance);
-
-	 ManagedSys update(ManagedSys detachedInstance);
-
-	 ManagedSys findById(String id);
-
-	 List<ManagedSys> findByExample(ManagedSys instance);
-	 
-	 List<ManagedSys> findbyConnectorId(String connectorId);
+	 List<ManagedSysEntity> findbyConnectorId(String connectorId);
 
 	 /**
 	  * Lists all managed systems belonging to a domain.
 	  * @param domainId
 	  * @return
 	  */
-	 List<ManagedSys> findbyDomain(String domainId);
+	 List<ManagedSysEntity> findbyDomain(String domainId);
 	 
-	 List<ManagedSys> findAllManagedSys();
+	 List<ManagedSysEntity> findAllManagedSys();
 	 
 	/**
 	 * Returns a ManagedSys object for the specified name. The name is the value in the
@@ -33,7 +25,7 @@ public interface ManagedSysDAO {
 	 * @param name
 	 * @return
 	 */
-	ManagedSys findByName(String name);
+    ManagedSysEntity findByName(String name);
 	
 	/**
 	 * Returns the managed system that is associated with the specified resource id.
@@ -41,5 +33,5 @@ public interface ManagedSysDAO {
 	 * @param status
 	 * @return
 	 */
-	ManagedSys findByResource(String resourceId, String status);
+    ManagedSysEntity findByResource(String resourceId, String status);
 }

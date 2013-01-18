@@ -39,11 +39,13 @@ import javax.naming.ldap.LdapContext;
 import javax.xml.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.dozer.converter.ManagedSystemObjectMatchDozerConverter;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.IdmAuditLogDataService;
 import org.openiam.idm.srvc.auth.context.AuthenticationContext;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
@@ -107,6 +109,8 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
     private PolicyDataService policyDataService;
     protected SecurityDomainDataService secDomainService;
     protected UserDataService userManager;
+    @Autowired
+    protected ManagedSystemObjectMatchDozerConverter managedSystemObjectMatchDozerConverter;
 
     static String keystore;
 
@@ -177,10 +181,10 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
          */
         ManagedSys managedSys = managedSysService.getManagedSys(targetID);
         ManagedSystemObjectMatch matchObj = null;
-        List<ManagedSystemObjectMatch> matchObjList = managedSysObjectMatchDao
+        List<ManagedSystemObjectMatchEntity> matchObjList = managedSysObjectMatchDao
                 .findBySystemId(targetID, "USER");
         if (matchObjList != null && matchObjList.size() > 0) {
-            matchObj = matchObjList.get(0);
+            matchObj = managedSystemObjectMatchDozerConverter.convertToDTO(matchObjList.get(0),false);
         }
 
         List<ExtensibleObject> requestAttributeList = reqType.getData()
@@ -474,10 +478,10 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
          */
         ManagedSys managedSys = managedSysService.getManagedSys(targetID);
         ManagedSystemObjectMatch matchObj = null;
-        List<ManagedSystemObjectMatch> matchObjList = managedSysObjectMatchDao
+        List<ManagedSystemObjectMatchEntity> matchObjList = managedSysObjectMatchDao
                 .findBySystemId(targetID, "USER");
         if (matchObjList != null && matchObjList.size() > 0) {
-            matchObj = matchObjList.get(0);
+            matchObj = managedSystemObjectMatchDozerConverter.convertToDTO(matchObjList.get(0),false);
         }
 
         String host;

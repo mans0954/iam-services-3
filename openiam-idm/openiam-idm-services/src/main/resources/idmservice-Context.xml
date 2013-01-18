@@ -208,10 +208,7 @@
 	</bean>	
 
 	<bean id="managedSysService" class="org.openiam.idm.srvc.mngsys.service.ManagedSystemDataServiceImpl" >
-		<!--<property name="managedSysDao" ref="managedSysDAO" />-->
-		<property name="managedSysObjectMatchDao" ref="managedSysObjectMatchDAO" />
 		<property name="approverAssociationDao" ref="approverAssociationDAO" />
-		<property name="userManager" ref="userManager" />
 		<property name="attributeMapDao" ref="attributeMapDAO" />
 		<property name="cryptor" ref="cryptor" />
 	</bean>
