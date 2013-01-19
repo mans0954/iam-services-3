@@ -1,5 +1,6 @@
 package org.openiam.authmanager.service;
 
+import java.util.List;
 import java.util.Set;
 
 import javax.jws.WebMethod;
@@ -24,6 +25,12 @@ import org.openiam.base.ws.Response;
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/authorizationmanager/service", name = "AuthorizationManagerWebService")
 public interface AuthorizationManagerWebService {
 
+	@WebMethod
+	public List<String> isUserEntitledToResources(
+			@WebParam(name = "userId", targetNamespace = "") final String userId,
+			@WebParam(name = "resourceIdList", targetNamespace = "") final List<String> resourceIdList
+			);
+	
 	/**
 	 * @param request 
 	 * @return - answers the question "Is User A entitled to resource B, either directly or through recursive membership to other entities

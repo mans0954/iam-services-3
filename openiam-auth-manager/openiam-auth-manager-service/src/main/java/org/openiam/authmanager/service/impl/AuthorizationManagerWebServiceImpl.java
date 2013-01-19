@@ -1,12 +1,15 @@
 package org.openiam.authmanager.service.impl;
 
 import java.net.URL;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.authmanager.common.model.AuthorizationGroup;
 import org.openiam.authmanager.common.model.AuthorizationResource;
@@ -39,6 +42,24 @@ public class AuthorizationManagerWebServiceImpl implements AuthorizationManagerW
 
 	@Autowired
 	private AuthorizationManagerService authManagerService;
+	
+	@Override
+	@WebMethod
+	public List<String> isUserEntitledToResources(final String userId, final List<String> resourceIdList) {
+		final List<String> entitledResources = new LinkedList<String>();
+		if(userId != null) {
+			if(CollectionUtils.isNotEmpty(resourceIdList)) {
+				for(final String resourceId : resourceIdList) {
+					final AuthorizationResource resource = new AuthorizationResource();
+					resource.setId(resourceId);
+					if(authManagerService.isEntitled(userId, resource)) {
+						entitledResources.add(resourceId);
+					}
+				}
+			}
+		}
+		return entitledResources;
+	}
 
 	@Override
 	public AccessResponse isUserEntitledTo( final UserToResourceAccessRequest request) {

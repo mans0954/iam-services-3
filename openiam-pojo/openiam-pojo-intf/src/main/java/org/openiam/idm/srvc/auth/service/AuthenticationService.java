@@ -42,51 +42,6 @@ public interface AuthenticationService {
             @WebParam(name = "userId", targetNamespace = "")
             String userId) throws LogoutException;
 
-
-    /**
-     * Sets the login and the password and the password related details for a
-     * new user and also authenticates the user. It can add a new login for a
-     * new service for an existing user. <br>
-     * If authentication is successful returns a Subject which has principals,
-     * userGroups userId, authenticating authority, credentials, token and
-     * expiration time. If not successful, a null is returned. <br>
-     * For example:
-     * <p>
-     * <code>
-     *   Login lv = new Login();<br>
-     lv.setLogin(login);<br>
-     lv.setPassword(password);<br>
-     lv.setService(serviceId);<br>
-     lv.setToken(token);<br>
-     lv.setNewUser(false);<br>
-     Subject sub =  authenticationService.authenticate(lv);<br>
-     * </code>
-     *
-     *
-     * @param loginValue
-     *            The bulk accessor class for the PasswordLoginBean.
-     * @return SSOSubject which holds user information
-     */
-    //Subject authenticate(AuthenticationContext ctx) throws AuthenticationException;
-
-    /**
-     * passwordAuth provides a simple approach to enabling password based authentication.
-     *
-     * @param domainId
-     * @param principal
-     * @param password
-     * @return
-     * @throws AuthenticationException
-     */
-/*	@WebMethod
-	Subject passwordAuth(
-			@WebParam(name = "domainId", targetNamespace = "")
-			String domainId, 
-			@WebParam(name = "principal", targetNamespace = "")
-			String principal, 
-			@WebParam(name = "password", targetNamespace = "")
-			String password) throws AuthenticationException;
-*/
     @WebMethod
     AuthenticationResponse passwordAuth(
             @WebParam(name = "domainId", targetNamespace = "")
