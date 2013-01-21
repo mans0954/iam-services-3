@@ -405,6 +405,7 @@ public class AuthorizationManagerMenuServiceImpl implements AuthorizationManager
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		service.submit(this);
+		sweep();
+		//service.submit(this);
 	}
 }

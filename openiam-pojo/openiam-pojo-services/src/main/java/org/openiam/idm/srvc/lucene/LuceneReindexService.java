@@ -78,9 +78,6 @@ public class LuceneReindexService implements InitializingBean, Runnable {
 	
 	@PreDestroy
 	public void destroy() {
-		/* This Runnable only stops running after a server shutdown.  When doing a "redeploy" (i.e. not stopping JBOSS),
-		 * This Runnable keeps running.  Setting this flat to true will force the Runnable to exit.
-		 */
 		forceThreadShutdown = true;
 	}
 	
@@ -103,6 +100,7 @@ public class LuceneReindexService implements InitializingBean, Runnable {
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		service.submit(this);
+		sweep();
+		//service.submit(this);
 	}
 }

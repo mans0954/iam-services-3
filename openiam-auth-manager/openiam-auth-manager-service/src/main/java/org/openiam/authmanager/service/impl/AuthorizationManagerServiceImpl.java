@@ -905,6 +905,7 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		service.submit(this);
+		sweep();
+		//service.submit(this);
 	}
 }
