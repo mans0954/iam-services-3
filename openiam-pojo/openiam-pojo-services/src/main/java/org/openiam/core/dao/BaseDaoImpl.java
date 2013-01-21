@@ -160,26 +160,27 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable>
                 .createCriteria(domainClass).setProjection(rowCount())
                 .uniqueResult()).longValue();
     }
-
+    @Transactional
     public void save(T entity) {
     	if(entity != null) {
     		sessionFactory.getCurrentSession().saveOrUpdate(entity);
     	}
     }
 
+    @Transactional
     public  T add(T entity){
         if(entity!=null){
             sessionFactory.getCurrentSession().persist(entity);
         }
         return entity;
     }
-
+    @Transactional
     public void delete(T entity) {
     	if(entity != null) {
     		sessionFactory.getCurrentSession().delete(entity);
     	}
     }
-
+    @Transactional
     public void save(Collection<T> entities) {
         if (entities == null || entities.isEmpty()) {
             return;
@@ -191,6 +192,7 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable>
     }
 
     @Override
+    @Transactional
     public void update(T t) {
     	if(t != null) {
     		sessionFactory.getCurrentSession().update(t);
@@ -198,6 +200,7 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable>
     }
 
     @Override
+    @Transactional
     public void merge(T t) {
     	if(t != null) {
     		sessionFactory.getCurrentSession().merge(t);
@@ -210,7 +213,7 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable>
                 .createQuery("delete from " + this.domainClass.getName())
                 .executeUpdate();
     }
-
+    @Transactional
     public void attachDirty(T t) {
         log.debug("attaching dirty instance");
         try {

@@ -90,8 +90,8 @@ public class AuthProviderServiceImpl implements AuthProviderService {
         if(attribute.getProviderType()==null)
             throw new NullPointerException("provider type is null");
 
-
-        authAttributeDao.save(attribute);
+        attribute.setAuthAttributeId(null);
+        authAttributeDao.add(attribute);
     }
 
     @Override
@@ -174,8 +174,8 @@ public class AuthProviderServiceImpl implements AuthProviderService {
 
 
 
-
-        authProviderDao.save(provider);
+        provider.setProviderId(null);
+        authProviderDao.add(provider);
     }
 
     @Override
@@ -257,8 +257,8 @@ public class AuthProviderServiceImpl implements AuthProviderService {
             throw new NullPointerException("attribute name is not set");
         if(attribute.getValue() ==null || attribute.getValue().trim().isEmpty())
             throw new NullPointerException("value is not set");
-
-        authProviderAttributeDao.save(attribute);
+        attribute.setProviderAttributeId(null);
+        authProviderAttributeDao.add(attribute);
     }
 
     public Integer getNumOfAuthProviderAttributes(String providerId){

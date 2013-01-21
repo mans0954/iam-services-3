@@ -10,7 +10,7 @@ import java.io.Serializable;
 
 @Entity
 @Table(name = "AUTH_PROVIDER_ATTRIBUTE", uniqueConstraints = {
-        @UniqueConstraint(columnNames={"providerId", "attributeId"})
+        @UniqueConstraint(columnNames={"PROVIDER_ID", "AUTH_ATTRIBUTE_ID"})
 })
 @DozerDTOCorrespondence(AuthProviderAttribute.class)
 public class AuthProviderAttributeEntity implements Serializable {

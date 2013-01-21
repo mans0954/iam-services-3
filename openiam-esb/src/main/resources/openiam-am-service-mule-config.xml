@@ -32,4 +32,17 @@
             </component>
         </service>
     </model>
+    <model name="authResourceModel">
+        <service name="authResourceService">
+            <inbound>
+                <inbound-endpoint address="${webservice.path}AuthResourceAttributeWebService" 		exchange-pattern="request-response">
+                    <cxf:jaxws-service />
+                </inbound-endpoint>
+            </inbound>
+            <component>
+                <spring-object bean="authResourceAttributeWS" />
+            </component>
+        </service>
+    </model>
+
 </mule>
