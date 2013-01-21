@@ -1,6 +1,6 @@
 package org.openiam.am.srvc.resattr.ws;
 
-import org.openiam.am.srvc.resattr.dto.AttributeMap;
+import org.openiam.am.srvc.dto.AttributeMap;
 import org.openiam.am.srvc.resattr.dto.WebResourceResponse;
 import org.openiam.base.ws.Response;
 

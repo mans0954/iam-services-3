@@ -1,4 +1,4 @@
-package org.openiam.am.srvc.resattr.dto;
+package org.openiam.am.srvc.dto;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;

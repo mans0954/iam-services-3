@@ -111,6 +111,11 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
     }
 
     @Override
+    public Integer getNumOfAuthAttributeBeans(AuthAttributeSearchBean searchBean){
+          return authProviderService.getNumOfAuthAttributeBeans(authAttributeSearchBeanConverter.convert(searchBean));
+    }
+
+    @Override
     public Response addAuthAttribute(AuthAttribute attribute) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
@@ -197,6 +202,10 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
         final AuthProviderEntity entity = authProviderSearchBeanConverter.convert(searchBean);
         final List<AuthProviderEntity> providerList = authProviderService.findAuthProviderBeans(entity, size, from);
         return authProviderDozerConverter.convertToDTOList(providerList, (searchBean.isDeepCopy()));
+    }
+    @Override
+    public Integer getNumOfAuthProviderBeans(AuthProviderSearchBean searchBean){
+         return authProviderService.getNumOfAuthProviderBeans(authProviderSearchBeanConverter.convert(searchBean));
     }
 
     @Override
@@ -301,6 +310,10 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
     @Override
     public List<AuthProviderAttribute> getAuthProviderAttributeList(String providerId,Integer size,Integer from) {
         return authProviderAttributeDozerConverter.convertToDTOList(authProviderService.getAuthProviderAttributeList(providerId, size, from), true);
+    }
+
+    public Integer getNumOfAuthProviderAttributes(String providerId){
+        return authProviderService.getNumOfAuthProviderAttributes(providerId);
     }
 
     @Override

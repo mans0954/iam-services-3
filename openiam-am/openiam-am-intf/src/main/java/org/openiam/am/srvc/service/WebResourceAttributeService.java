@@ -1,7 +1,7 @@
 package org.openiam.am.srvc.service;
 
-import org.openiam.am.srvc.resattr.dto.Attribute;
-import org.openiam.am.srvc.resattr.dto.AttributeMap;
+import org.openiam.am.srvc.dto.Attribute;
+import org.openiam.am.srvc.dto.AttributeMap;
 
 import java.util.List;
 

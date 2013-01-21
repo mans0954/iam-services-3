@@ -1,5 +1,6 @@
 package org.openiam.am.srvc.dao;
 
+import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.criterion.Restrictions;
@@ -15,6 +16,19 @@ public class AuthProviderAttributeDaoImpl extends BaseDaoImpl<AuthProviderAttrib
     @Override
     protected String getPKfieldName() {
         return "providerAttributeId";
+    }
+
+    @Override
+    protected Criteria getExampleCriteria(final AuthProviderAttributeEntity attribute) {
+        final Criteria criteria = getCriteria();
+        if (StringUtils.isNotBlank(attribute.getProviderAttributeId())) {
+            criteria.add(Restrictions.eq(getPKfieldName(), attribute.getProviderAttributeId()));
+        } else {
+            if (StringUtils.isNotEmpty(attribute.getProviderId())) {
+                criteria.add(Restrictions.eq("providerId", attribute.getProviderId()));
+            }
+        }
+        return criteria;
     }
 
     @Override

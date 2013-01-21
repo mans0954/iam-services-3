@@ -2,8 +2,8 @@ package org.openiam.am.srvc.resattr.ws;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.am.srvc.resattr.dto.Attribute;
-import org.openiam.am.srvc.resattr.dto.AttributeMap;
+import org.openiam.am.srvc.dto.Attribute;
+import org.openiam.am.srvc.dto.AttributeMap;
 import org.openiam.am.srvc.resattr.dto.WebResourceResponse;
 import org.openiam.am.srvc.service.WebResourceAttributeService;
 import org.openiam.base.ws.Response;

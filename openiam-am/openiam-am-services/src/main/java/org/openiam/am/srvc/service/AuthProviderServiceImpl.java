@@ -2,6 +2,7 @@ package org.openiam.am.srvc.service;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.bouncycastle.util.encoders.Hex;
 import org.openiam.am.srvc.dao.AuthAttributeDao;
 import org.openiam.am.srvc.dao.AuthProviderAttributeDao;
 import org.openiam.am.srvc.dao.AuthProviderDao;
@@ -74,6 +75,10 @@ public class AuthProviderServiceImpl implements AuthProviderService {
                                                             Integer from) {
         return authAttributeDao.getByExample(searchBean, from, size);
     }
+    @Override
+    public Integer getNumOfAuthAttributeBeans(AuthAttributeEntity searchBean){
+        return authAttributeDao.count(searchBean);
+    }
 
     @Override
     @Transactional
@@ -136,9 +141,23 @@ public class AuthProviderServiceImpl implements AuthProviderService {
     @Override
     public List<AuthProviderEntity> findAuthProviderBeans(AuthProviderEntity searchBean, Integer size,
                                                           Integer from) {
-        return authProviderDao.getByExample(searchBean,from,size);
-    }
+        List<AuthProviderEntity> result = authProviderDao.getByExample(searchBean,from,size);
 
+        for (AuthProviderEntity provider: result){
+            if(provider.getPrivateKey()!=null && !provider.getPrivateKey().trim().isEmpty()){
+                provider.setPrivateKey(new String(this.decodeKey(provider.getPrivateKey())));
+            }
+            if(provider.getPublicKey()!=null && !provider.getPublicKey().trim().isEmpty()){
+                provider.setPublicKey(new String(this.decodeKey(provider.getPublicKey())));
+            }
+        }
+
+        return result;
+    }
+    @Override
+    public Integer getNumOfAuthProviderBeans(AuthProviderEntity searchBean){
+        return authProviderDao.count(searchBean);
+    }
     @Override
     @Transactional
     public void addAuthProvider(AuthProviderEntity provider) {
@@ -152,6 +171,9 @@ public class AuthProviderServiceImpl implements AuthProviderService {
             throw new NullPointerException("Resource is not set for provider");
         if(provider.getName()==null  || provider.getName().trim().isEmpty())
             throw new NullPointerException("provider name is null");
+
+
+
 
         authProviderDao.save(provider);
     }
@@ -176,8 +198,12 @@ public class AuthProviderServiceImpl implements AuthProviderService {
             entity.setResourceId(provider.getResourceId());
             entity.setName(provider.getName());
             entity.setDescription(provider.getDescription());
-            entity.setPrivateKey(provider.getPrivateKey());
-            entity.setPublicKey(provider.getPublicKey());
+            if(provider.getPrivateKey()!=null && !provider.getPrivateKey().trim().isEmpty()){
+                entity.setPrivateKey(this.encodeKey(provider.getPrivateKey()));
+            }
+            if(provider.getPublicKey()!=null && !provider.getPublicKey().trim().isEmpty()){
+                entity.setPublicKey(this.encodeKey(provider.getPublicKey()));
+            }
             entity.setSignRequest(provider.isSignRequest());
         }
         authProviderDao.save(provider);
@@ -235,6 +261,12 @@ public class AuthProviderServiceImpl implements AuthProviderService {
         authProviderAttributeDao.save(attribute);
     }
 
+    public Integer getNumOfAuthProviderAttributes(String providerId){
+        AuthProviderAttributeEntity attribute = new AuthProviderAttributeEntity();
+        attribute.setProviderId(providerId);
+        return authProviderAttributeDao.count(attribute);
+    }
+
     @Override
     @Transactional
     public void updateAuthProviderAttribute(AuthProviderAttributeEntity attribute) {
@@ -270,4 +302,16 @@ public class AuthProviderServiceImpl implements AuthProviderService {
             authProviderAttributeDao.deleteByProviderList(Arrays.asList(new String[]{providerId}));
         }
     }
+
+    private String encodeKey(String data) {
+        return encodeKey(data.getBytes());
+    }
+    private String encodeKey(byte[] data) {
+        return new String(Hex.encode(data));
+    }
+    private byte[] decodeKey(String data) {
+        return Hex.decode(data);
+    }
+
+
 }

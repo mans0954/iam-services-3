@@ -2,10 +2,9 @@ package org.openiam.am.srvc.service;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.am.srvc.dao.WebResourceAttributeDao;
+import org.openiam.am.srvc.dao.AuthResourceAttributeDao;
+import org.openiam.am.srvc.domain.AuthResourceAttributeEntity;
 import org.openiam.am.srvc.dto.Attribute;
-import org.openiam.am.srvc.dto.AttributeMap;
-import org.openiam.am.srvc.domain.WebResourceAttribute;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -19,15 +18,11 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * User: Alexander Duckardt
- * Date: 8/16/12
- */
 @Service
-public class WebResourceAttributeServiceImpl implements WebResourceAttributeService {
+public class AuthResourceAttributeServiceImpl implements AuthResourceAttributeService{
     protected final Log log = LogFactory.getLog(this.getClass());
     @Autowired
-    private WebResourceAttributeDao webResourceAttributeDao;
+    private AuthResourceAttributeDao authResourceAttributeDao;
     @Autowired
     private LoginDataService loginManager;
     @Autowired
@@ -35,85 +30,101 @@ public class WebResourceAttributeServiceImpl implements WebResourceAttributeServ
 
 
     @Override
-    public AttributeMap getAttributeMap(String attributeId) throws Exception {
-        if (!StringUtils.hasText(attributeId)) throw new NullPointerException("attributeId is null or empty");
-        WebResourceAttribute webResourceAttribute = webResourceAttributeDao.findById(attributeId);
-        AttributeMap attribute = null;
-        if (webResourceAttribute != null) {
-            attribute = fromEntity(webResourceAttribute);
-        }
-        return attribute;
+    public AuthResourceAttributeEntity getAttributeMap(String attributeId) throws Exception {
+        return authResourceAttributeDao.findById(attributeId);
     }
 
     @Override
-    public List<AttributeMap> getAttributeMapCollection(String resourceId) throws Exception {
+    public List<AuthResourceAttributeEntity> getAttributeMapCollection(String resourceId) throws Exception {
+        AuthResourceAttributeEntity example = new AuthResourceAttributeEntity();
+        example.setResourceId(resourceId);
+        return getAttributeMapCollection(resourceId, 0, Integer.MAX_VALUE);
+    }
+
+    @Override
+    public List<AuthResourceAttributeEntity> getAttributeMapCollection(String resourceId, Integer from, Integer size) throws Exception {
         if (!StringUtils.hasText(resourceId)) throw new NullPointerException("resourceId is null or empty");
         log.debug("try to get attribute list by resource id:" + resourceId);
-        List<WebResourceAttribute> attributeList = webResourceAttributeDao.getAttributesByResourceId(resourceId);
-        List<AttributeMap> resultList = new ArrayList<AttributeMap>();
-        if (attributeList != null && !attributeList.isEmpty()) {
-            log.debug("AttributeMap datas has been found for given resource id:" + resourceId + "; Attributes count: "
-                      + attributeList.size());
-            for (WebResourceAttribute attr : attributeList) {
-                resultList.add(fromEntity(attr));
-            }
-        } else {
-            log.debug("There no any attributes for given resource id:" + resourceId);
-        }
-        return resultList;
+        AuthResourceAttributeEntity example = new AuthResourceAttributeEntity();
+        example.setResourceId(resourceId);
+        return  getAttributeMapCollection(example,from, size);
+    }
+    @Override
+    public List<AuthResourceAttributeEntity> getAttributeMapCollection(AuthResourceAttributeEntity searchBean) throws Exception{
+          return  getAttributeMapCollection(searchBean, 0, Integer.MAX_VALUE);
+    }
+
+    @Override
+    public List<AuthResourceAttributeEntity> getAttributeMapCollection(AuthResourceAttributeEntity searchBean, Integer from, Integer size) throws Exception{
+        return authResourceAttributeDao.getByExample(searchBean,from, size);
     }
 
     @Override
     @Transactional
-    public AttributeMap addAttributeMap(AttributeMap attribute) throws Exception {
+    public AuthResourceAttributeEntity addAttributeMap(AuthResourceAttributeEntity attribute) throws Exception {
         if (attribute == null) throw new NullPointerException("Attribute is null");
         if (attribute.getResourceId() == null) throw new NullPointerException("resourceId is null");
         if (attribute.getTargetAttributeName() == null) throw new NullPointerException("TargetAttributeName is null");
 
-        WebResourceAttribute res = webResourceAttributeDao.getByAttributeNameResource(attribute.getResourceId(),attribute.getTargetAttributeName());
-        if(res!=null)
+        AuthResourceAttributeEntity example = new AuthResourceAttributeEntity();
+        example.setResourceId(attribute.getResourceId());
+        example.setTargetAttributeName(attribute.getTargetAttributeName());
+        List<AuthResourceAttributeEntity> res = authResourceAttributeDao.getByExample(example, 0, 1);
+        if(res!=null && !res.isEmpty())
             throw new Exception("AttributeMap for [resourceId: "+attribute.getResourceId()+", targetAttributeName:"+attribute.getTargetAttributeName()+"]  - already exists");
+
         attribute.setAttributeMapId(null);
-        return fromEntity(webResourceAttributeDao.add(fromAttributeMap(attribute)));
+        return authResourceAttributeDao.add(attribute);
     }
 
     @Override
     @Transactional
-    public void addAttributeMapCollection(List<AttributeMap> attributeList) throws Exception {
-            if (attributeList == null) throw new NullPointerException("Attribute collection is null");
+    public void addAttributeMapCollection(List<AuthResourceAttributeEntity> attributeList) throws Exception {
+        if (attributeList == null) throw new NullPointerException("Attribute collection is null");
 
-            for (AttributeMap attribute : attributeList) {
-                addAttributeMap(attribute);
-            }
+        for (AuthResourceAttributeEntity attribute : attributeList) {
+            addAttributeMap(attribute);
+        }
     }
 
     @Override
-    public AttributeMap updateAttributeMap(AttributeMap attribute) throws Exception {
+    @Transactional
+    public AuthResourceAttributeEntity updateAttributeMap(AuthResourceAttributeEntity attribute) throws Exception {
         if (attribute == null) throw new NullPointerException("Attribute is null");
         if (attribute.getAttributeMapId() == null) throw new NullPointerException("AttributeMapId is null");
-        return fromEntity(webResourceAttributeDao.update(fromAttributeMap(attribute)));
+        AuthResourceAttributeEntity res = authResourceAttributeDao.findById(attribute.getAttributeMapId());
+        if(res!=null){
+            res.setTargetAttributeName(attribute.getTargetAttributeName());
+            res.setAmAttributeName(attribute.getAmAttributeName());
+            res.setResourceId(attribute.getResourceId());
+            res.setAmPolicyUrl(attribute.getAmPolicyUrl());
+            authResourceAttributeDao.update(res);
+        }
+        return res;
     }
 
     @Override
+    @Transactional
     public void removeAttributeMap(String attributeId) throws Exception {
         if (!StringUtils.hasText(attributeId)) throw new NullPointerException("attributeId is null or empty");
-        webResourceAttributeDao.delete(attributeId);
+        authResourceAttributeDao.deleteById(attributeId);
     }
 
     @Override
+    @Transactional
     public int removeResourceAttributeMaps(String resourceId) throws Exception {
         if (!StringUtils.hasText(resourceId)) throw new NullPointerException("resourceId is null or empty");
-        return webResourceAttributeDao.deleteByResourceId(resourceId);
+        return authResourceAttributeDao.deleteByResourceId(resourceId);
     }
 
     @Override
     public List<Attribute> getSSOAttributes(String resourceId, String principalName, String securityDomain,
-                                            String managedSysId) {
+                                            String managedSysId, Integer from, Integer size) {
         List<Attribute> resultList = new ArrayList<Attribute>();
         try {
             log.debug("try to get attribute list by resource id:" + resourceId);
             // get attribute list for resource Id
-            List<AttributeMap> attributeMapList = getAttributeMapCollection(resourceId);
+            List<AuthResourceAttributeEntity> attributeMapList = getAttributeMapCollection(resourceId, from, size);
             if (attributeMapList == null || attributeMapList.isEmpty()) {
                 throw new NullPointerException("Empty attribute map collection");
             }
@@ -122,8 +133,8 @@ public class WebResourceAttributeServiceImpl implements WebResourceAttributeServ
             if (identityObject == null) {
                 StringBuilder msg = new StringBuilder();
                 msg.append("Default identity object for { securityDomain: ").append(securityDomain).append(", principalName: ")
-                        .append(principalName).append(", managedSysId:").append(managedSysId)
-                        .append("} has not been found ");
+                   .append(principalName).append(", managedSysId:").append(managedSysId)
+                   .append("} has not been found ");
                 throw new NullPointerException(msg.toString());
             }
             UserEntity user = userManager.getUser(identityObject.getUserId());
@@ -141,24 +152,24 @@ public class WebResourceAttributeServiceImpl implements WebResourceAttributeServ
                 login= identityObject;
             }
 
-            for (AttributeMap attr : attributeMapList) {
+            for (AuthResourceAttributeEntity attr : attributeMapList) {
                 resultList.add(parseAttribute(attr, login, user));
             }
         } catch (Exception ex) {
             resultList.clear();
             log.error(ex.getMessage());
         } finally {
-            return resultList;
+                return resultList;
         }
     }
 
-    private Attribute parseAttribute(AttributeMap attr, LoginEntity login, UserEntity user) throws Exception {
+    private Attribute parseAttribute(AuthResourceAttributeEntity attr, LoginEntity login, UserEntity user) throws Exception {
         Attribute attribute = new Attribute();
-        if (attr.getAccessManagerAttributeName() == null) {
+        if (attr.getAmAttributeName() == null) {
             throw new NullPointerException("AccessManagerAttributeName is null");
         }
 
-        String[] map = attr.getAccessManagerAttributeName().split("\\.");
+        String[] map = attr.getAmAttributeName().split("\\.");
         String attrValue = "";
         if (map != null && map.length > 1) {
             if ("Login".equals(map[0])) {
@@ -167,11 +178,11 @@ public class WebResourceAttributeServiceImpl implements WebResourceAttributeServ
                 attrValue = getAttributeValue(user, map[1],1,map);
             } else {
                 throw new IllegalStateException("Cannot parse object type from AccessManagerAttributeName: " + attr
-                        .getAccessManagerAttributeName());
+                        .getAmAttributeName());
             }
         } else {
             throw new IllegalStateException("Cannot parse object type from AccessManagerAttributeName: " + attr
-                    .getAccessManagerAttributeName());
+                    .getAmAttributeName());
         }
 
         attribute.setTargetAttributeName(attr.getTargetAttributeName());
@@ -219,24 +230,15 @@ public class WebResourceAttributeServiceImpl implements WebResourceAttributeServ
 
     }
 
-    private WebResourceAttribute fromAttributeMap(AttributeMap attribute) {
-        WebResourceAttribute webAttr = new WebResourceAttribute();
-        webAttr.setTargetAttributeName(attribute.getTargetAttributeName());
-        webAttr.setAmAttributeName(attribute.getAccessManagerAttributeName());
-        webAttr.setResourceId(attribute.getResourceId());
-        webAttr.setAttributeMapId(attribute.getAttributeMapId());
-        webAttr.setAmPolicyUrl(attribute.getPolicyUrl());
-        return webAttr;
+    public Integer getNumOfAttributeMapList(String resourceId) throws Exception{
+        AuthResourceAttributeEntity example = new AuthResourceAttributeEntity();
+        example.setResourceId(resourceId);
+        return  getNumOfAttributeMapList(example);
+    }
+
+    public Integer getNumOfAttributeMapList(AuthResourceAttributeEntity searchBean) throws Exception{
+          return authResourceAttributeDao.count(searchBean);
     }
 
 
-    private AttributeMap fromEntity(WebResourceAttribute attributeMap) {
-        AttributeMap attribute = new AttributeMap();
-        attribute.setAttributeMapId(attributeMap.getAttributeMapId());
-        attribute.setResourceId(attributeMap.getResourceId());
-        attribute.setTargetAttributeName(attributeMap.getTargetAttributeName());
-        attribute.setAccessManagerAttributeName(attributeMap.getAmAttributeName());
-        attribute.setPolicyUrl(attributeMap.getAmPolicyUrl());
-        return attribute;
-    }
 }

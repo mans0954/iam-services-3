@@ -19,6 +19,35 @@
     </mapping>
 
     <mapping>
+        <class-a>org.openiam.am.srvc.domain.AuthResourceAttributeEntity</class-a>
+        <class-b>org.openiam.am.srvc.dto.AttributeMap</class-b>
+        <field>
+            <a>attributeMapId</a>
+            <b>attributeMapId</b>
+        </field>
+        <field>
+            <a>resourceId</a>
+            <b>resourceId</b>
+        </field>
+        <field>
+            <a>amAttributeName</a>
+            <b>accessManagerAttributeName</b>
+        </field>
+        <field>
+            <a>amPolicyUrl</a>
+            <b>policyUrl</b>
+        </field>
+        <field>
+            <a>targetAttributeName</a>
+            <b>targetAttributeName</b>
+        </field>
+        <field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter" custom-converter-param="amDto2entityShallowDozerMapper">
+            <a>resource</a>
+            <b>resource</b>
+        </field>
+    </mapping>
+
+    <mapping>
         <class-a>org.openiam.idm.srvc.res.domain.ResourceEntity</class-a>
         <class-b>org.openiam.idm.srvc.res.dto.Resource</class-b>
         <field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="dto2entityShallowDozerMapper">

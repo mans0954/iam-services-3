@@ -1,5 +1,6 @@
 package org.openiam.am.srvc.resattr.dto;
 
+import org.openiam.am.srvc.dto.Attribute;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
 

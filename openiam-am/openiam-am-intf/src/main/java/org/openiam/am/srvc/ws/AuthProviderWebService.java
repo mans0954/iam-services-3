@@ -48,6 +48,9 @@ public interface AuthProviderWebService {
                                                       @WebParam(name = "size", targetNamespace = "")Integer size,
                                                       @WebParam(name = "from", targetNamespace = "")Integer from);
     @WebMethod
+    public Integer getNumOfAuthAttributeBeans(@WebParam(name = "searchBean", targetNamespace = "")AuthAttributeSearchBean searchBean);
+
+    @WebMethod
     public Response addAuthAttribute(@WebParam(name = "attribute", targetNamespace = "")AuthAttribute attribute);
     @WebMethod
     public Response updateAuthAttribute(@WebParam(name = "attribute", targetNamespace = "")AuthAttribute attribute);
@@ -65,6 +68,9 @@ public interface AuthProviderWebService {
     public List<AuthProvider> findAuthProviderBeans(@WebParam(name = "searchBean", targetNamespace = "") AuthProviderSearchBean searchBean,
                                                     @WebParam(name = "size", targetNamespace = "")Integer size,
                                                     @WebParam(name = "from", targetNamespace = "")Integer from);
+    @WebMethod
+    public Integer getNumOfAuthProviderBeans(@WebParam(name = "searchBean", targetNamespace = "") AuthProviderSearchBean searchBean);
+
     @WebMethod
     public Response addAuthProvider(@WebParam(name = "provider", targetNamespace = "")AuthProvider provider);
     @WebMethod
@@ -87,6 +93,10 @@ public interface AuthProviderWebService {
     public List<AuthProviderAttribute> getAuthProviderAttributeList(@WebParam(name = "providerId", targetNamespace = "")String providerId,
                                                                     @WebParam(name = "size", targetNamespace = "")Integer size,
                                                                     @WebParam(name = "from", targetNamespace = "")Integer from);
+
+    @WebMethod
+    public Integer getNumOfAuthProviderAttributes(@WebParam(name = "providerId", targetNamespace = "")String providerId);
+
     @WebMethod
     public Response addAuthProviderAttribute(@WebParam(name = "attribute", targetNamespace = "")AuthProviderAttribute attribute);
     @WebMethod
