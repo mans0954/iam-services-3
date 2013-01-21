@@ -60,11 +60,7 @@ public class LuceneReindexService implements InitializingBean, Runnable {
 					if(!hibernateSearchDao.isSynchronizing()) {
 						wasSynchronized = true;
 						log.warn(String.format("Attempting to reindex '%s'", entityName.toLowerCase()));
-						(new Thread() {
-							public void run() {
-					    		hibernateSearchDao.synchronizeIndexes(false);
-							}
-						}).start();
+					    hibernateSearchDao.synchronizeIndexes(false);
 					} else {
 						log.warn(String.format("Entity '%s' is already synchronizing its indecies - skipping entity", entityName.toLowerCase()));
 					}
