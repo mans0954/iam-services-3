@@ -25,19 +25,21 @@ import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.stereotype.Service;
 
 @ManagedResource(objectName="org.openiam.authorization.manager:name=LuceneReindexService")
-public class LuceneReindexService implements InitializingBean, Runnable {
+public class LuceneReindexService implements InitializingBean/*, Runnable*/ {
 
 	private Date lastReindexTimestamp = new Date();
 	private Map<String, HibernateSearchDao> daoMap;
 	
 	private static final Logger log = Logger.getLogger(LuceneReindexService.class);
 	
+	/*
 	private boolean forceThreadShutdown = false;
 	
 	@Value("${org.openiam.lucene.reindex.threadsweep}")
 	private long sweepInterval;
 	
 	private ExecutorService service = new  ScheduledThreadPoolExecutor(1);
+	*/
 	
 	@SuppressWarnings("rawtypes")
 	public void setHibernateSearchDAOs(final Collection<HibernateSearchDao> hibernateSearchDaos) {
@@ -76,6 +78,7 @@ public class LuceneReindexService implements InitializingBean, Runnable {
 		}
 	}
 	
+	/*
 	@PreDestroy
 	public void destroy() {
 		forceThreadShutdown = true;
@@ -97,6 +100,7 @@ public class LuceneReindexService implements InitializingBean, Runnable {
 			}
 		}
 	}
+	*/
 
 	@Override
 	public void afterPropertiesSet() throws Exception {

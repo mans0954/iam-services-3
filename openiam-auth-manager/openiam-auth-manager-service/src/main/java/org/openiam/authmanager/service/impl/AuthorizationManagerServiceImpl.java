@@ -85,7 +85,7 @@ import org.springframework.util.StopWatch;
  */
 @Service("authorizationManagerService")
 @ManagedResource(objectName="org.openiam.authorization.manager:name=authorizationManagerService")
-public class AuthorizationManagerServiceImpl implements AuthorizationManagerService, InitializingBean, ApplicationContextAware, Runnable {
+public class AuthorizationManagerServiceImpl implements AuthorizationManagerService, InitializingBean, ApplicationContextAware/*, Runnable*/ {
 
 	private ApplicationContext ctx;
 	
@@ -102,12 +102,14 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 	@Qualifier("userLoginCache")
 	private Ehcache loginCache;
 	
+	/*
 	private boolean forceThreadShutdown = false;
 	
 	@Value("${org.openiam.authorization.manager.threadsweep}")
 	private long sweepInterval;
 	
 	private ExecutorService service = new  ScheduledThreadPoolExecutor(1);
+	*/
 	
 	/* used to prevent reads when a cache refresh takes place */
 	//private ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
@@ -878,11 +880,10 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 		return retVal;
 	}
 	
+	/*
 	@PreDestroy
 	public void destroy() {
-		/* This Runnable only stops running after a server shutdown.  When doing a "redeploy" (i.e. not stopping JBOSS),
-		 * This Runnable keeps running.  Setting this flat to true will force the Runnable to exit.
-		 */
+		
 		forceThreadShutdown = true;
 	}
 	
@@ -902,9 +903,11 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 			}
 		}
 	}
+	*/
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		service.submit(this);
+		sweep();
+		//service.submit(this);
 	}
 }
