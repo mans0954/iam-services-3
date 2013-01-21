@@ -2,14 +2,12 @@ package org.openiam.am.srvc.resattr.ws;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.am.srvc.resattr.dao.WebResourceAttributeDao;
 import org.openiam.am.srvc.resattr.dto.Attribute;
 import org.openiam.am.srvc.resattr.dto.AttributeMap;
 import org.openiam.am.srvc.resattr.dto.WebResourceResponse;
-import org.openiam.am.srvc.resattr.service.WebResourceAttributeService;
+import org.openiam.am.srvc.service.WebResourceAttributeService;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

@@ -8,7 +8,7 @@ import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "UserSearchBean", propOrder = {
+@XmlType(name = "EmailSearchBean", propOrder = {
         "name",
         "parentId",
         "parentType"

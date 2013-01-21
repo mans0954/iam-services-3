@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mappings xmlns="http://dozer.sourceforge.net"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://dozer.sourceforge.net
+          http://dozer.sourceforge.net/schema/beanmapping.xsd">
+
+
+    <mapping>
+        <class-a>org.openiam.am.srvc.domain.AuthProviderTypeEntity</class-a>
+        <class-b>org.openiam.am.srvc.dto.AuthProviderType</class-b>
+    </mapping>
+
+    <mapping>
+        <class-a>org.openiam.am.srvc.domain.AuthAttributeEntity</class-a>
+        <class-b>org.openiam.am.srvc.dto.AuthAttribute</class-b>
+    </mapping>
+
+    <mapping>
+        <class-a>org.openiam.am.srvc.domain.AuthProviderAttributeEntity</class-a>
+        <class-b>org.openiam.am.srvc.dto.AuthProviderAttribute</class-b>
+        <field>
+            <a>providerAttributeId</a>
+            <b>providerAttributeId</b>
+        </field>
+        <field>
+            <a>providerId</a>
+            <b>providerId</b>
+        </field>
+        <field>
+            <a>attributeId</a>
+            <b>attributeId</b>
+        </field>
+        <field>
+            <a>value</a>
+            <b>value</b>
+        </field>
+        <field>
+            <a>dataType</a>
+            <b>dataType</b>
+        </field>
+        <field>
+            <a>attribute.attributeName</a>
+            <b>attributeName</b>
+        </field>
+    </mapping>
+
+    <!--<mapping>-->
+        <!--<class-a>org.openiam.idm.srvc.org.domain.UserAffiliationEntity</class-a>-->
+        <!--<class-b>org.openiam.idm.srvc.org.dto.UserAffiliation</class-b>-->
+        <!--<field>-->
+            <!--<a>organization.orgId</a>-->
+            <!--<b>organizationId</b>-->
+        <!--</field>-->
+        <!--<field>-->
+            <!--<a>user.userId</a>-->
+            <!--<b>userId</b>-->
+        <!--</field>-->
+    <!--</mapping>-->
+
+</mappings>

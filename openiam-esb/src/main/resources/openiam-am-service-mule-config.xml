@@ -20,4 +20,16 @@
             </component>
         </service>
     </model>
+    <model name="authProviderModel">
+        <service name="authProviderWSrvc">
+            <inbound>
+                <inbound-endpoint address="${webservice.path}AuthProviderWebService" 		exchange-pattern="request-response">
+                    <cxf:jaxws-service />
+                </inbound-endpoint>
+            </inbound>
+            <component>
+                <spring-object bean="authProviderWS" />
+            </component>
+        </service>
+    </model>
 </mule>
