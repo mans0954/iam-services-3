@@ -9,7 +9,7 @@ import java.io.Serializable;
 
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "UserSearchBean", propOrder = {
+@XmlType(name = "AddressSearchBean", propOrder = {
         "parentId",
         "parentType"
 })
