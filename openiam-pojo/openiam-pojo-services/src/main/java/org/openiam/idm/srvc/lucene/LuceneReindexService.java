@@ -7,24 +7,37 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+
+import javax.annotation.PreDestroy;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.log4j.Logger;
 import org.openiam.core.dao.lucene.HibernateSearchDao;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.stereotype.Service;
 
 @ManagedResource(objectName="org.openiam.authorization.manager:name=LuceneReindexService")
-public class LuceneReindexService {
+public class LuceneReindexService implements InitializingBean, Runnable {
 
 	private Date lastReindexTimestamp = new Date();
 	private Map<String, HibernateSearchDao> daoMap;
 	
 	private static final Logger log = Logger.getLogger(LuceneReindexService.class);
+	
+	private boolean forceThreadShutdown = false;
+	
+	@Value("${org.openiam.lucene.reindex.threadsweep}")
+	private long sweepInterval;
+	
+	private ExecutorService service = new  ScheduledThreadPoolExecutor(1);
 	
 	@SuppressWarnings("rawtypes")
 	public void setHibernateSearchDAOs(final Collection<HibernateSearchDao> hibernateSearchDaos) {
@@ -65,5 +78,35 @@ public class LuceneReindexService {
 		} else {
 			log.info("No reindexing necessary...");
 		}
+	}
+	
+	@PreDestroy
+	public void destroy() {
+		/* This Runnable only stops running after a server shutdown.  When doing a "redeploy" (i.e. not stopping JBOSS),
+		 * This Runnable keeps running.  Setting this flat to true will force the Runnable to exit.
+		 */
+		forceThreadShutdown = true;
+	}
+	
+	@Override
+	public void run() {
+		while(true && !forceThreadShutdown) {
+			try {
+				sweep();
+				Thread.sleep(sweepInterval);
+			} catch(Throwable e) {
+				try {
+					Thread.sleep(sweepInterval);
+				} catch(Throwable e2) {
+					
+				}
+				log.error("Error while executing thread", e);
+			}
+		}
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		service.submit(this);
 	}
 }

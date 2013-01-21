@@ -16,6 +16,7 @@
 	<tx:annotation-driven/>
 	
 	<!-- Thread Scheduling - not using annotations since the interval must be configurable -->
+	<!--
 	<bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
     	<property name="triggers">
         	<list>
@@ -44,6 +45,7 @@
         	</list>
      	</property>
 	</bean>
+	-->
 	
   	<bean id="authManagerCacheManager" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
 		<property name="configLocation">

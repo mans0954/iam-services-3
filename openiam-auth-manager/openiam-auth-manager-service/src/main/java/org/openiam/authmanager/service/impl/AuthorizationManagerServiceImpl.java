@@ -11,10 +11,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
+
+import javax.annotation.PreDestroy;
 
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
@@ -81,7 +85,7 @@ import org.springframework.util.StopWatch;
  */
 @Service("authorizationManagerService")
 @ManagedResource(objectName="org.openiam.authorization.manager:name=authorizationManagerService")
-public class AuthorizationManagerServiceImpl implements AuthorizationManagerService, InitializingBean, ApplicationContextAware {
+public class AuthorizationManagerServiceImpl implements AuthorizationManagerService, InitializingBean, ApplicationContextAware, Runnable {
 
 	private ApplicationContext ctx;
 	
@@ -97,6 +101,13 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 	@Autowired
 	@Qualifier("userLoginCache")
 	private Ehcache loginCache;
+	
+	private boolean forceThreadShutdown = false;
+	
+	@Value("${org.openiam.authorization.manager.threadsweep}")
+	private long sweepInterval;
+	
+	private ExecutorService service = new  ScheduledThreadPoolExecutor(1);
 	
 	/* used to prevent reads when a cache refresh takes place */
 	//private ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
@@ -166,11 +177,6 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 	@Autowired
 	@Qualifier("jdbcResourcePropDAO")
 	private ResourcePropDAO resourcePropDAO;
-	
-	@Override
-	public void afterPropertiesSet() throws Exception {
-		sweep();
-	}
 	
 	/**
 	 * This function sweeps through the database, and compiles the new entitlement mappings
@@ -870,5 +876,35 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 			}
 		}
 		return retVal;
+	}
+	
+	@PreDestroy
+	public void destroy() {
+		/* This Runnable only stops running after a server shutdown.  When doing a "redeploy" (i.e. not stopping JBOSS),
+		 * This Runnable keeps running.  Setting this flat to true will force the Runnable to exit.
+		 */
+		forceThreadShutdown = true;
+	}
+	
+	@Override
+	public void run() {
+		while(true && !forceThreadShutdown) {
+			try {
+				sweep();
+				Thread.sleep(sweepInterval);
+			} catch(Throwable e) {
+				try {
+					Thread.sleep(sweepInterval);
+				} catch(Throwable e2) {
+					
+				}
+				log.error("Error while executing thread", e);
+			}
+		}
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		service.submit(this);
 	}
 }

@@ -9,6 +9,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+
+import javax.annotation.PreDestroy;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -35,6 +39,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.jmx.export.annotation.ManagedOperation;
@@ -43,7 +48,7 @@ import org.springframework.stereotype.Service;
 
 @Service("authorizationManagerMenuService")
 @ManagedResource(objectName="org.openiam.authorization.manager:name=authorizationManagerMenuService")
-public class AuthorizationManagerMenuServiceImpl implements AuthorizationManagerMenuService, InitializingBean, ApplicationContextAware {
+public class AuthorizationManagerMenuServiceImpl implements AuthorizationManagerMenuService, InitializingBean, ApplicationContextAware, Runnable {
 
 	private ApplicationContext ctx;
 	
@@ -71,6 +76,13 @@ public class AuthorizationManagerMenuServiceImpl implements AuthorizationManager
 	
 	@Autowired
 	private AuthorizationManagerAdminService authManagerAdminService;
+	
+	private boolean forceThreadShutdown = false;
+	
+	@Value("${org.openiam.authorization.manager.threadsweep}")
+	private long sweepInterval;
+	
+	private ExecutorService service = new  ScheduledThreadPoolExecutor(1);
 	
 	@Override
 	public void setApplicationContext(final ApplicationContext ctx) throws BeansException {
@@ -342,11 +354,6 @@ public class AuthorizationManagerMenuServiceImpl implements AuthorizationManager
 		return retVal;
 	}
 
-	@Override
-	public void afterPropertiesSet() throws Exception {
-		sweep();
-	}
-
 	private static class AuthorizationMenuOrderComparator implements Comparator<AuthorizationMenu> {
 
 		@Override
@@ -369,6 +376,35 @@ public class AuthorizationManagerMenuServiceImpl implements AuthorizationManager
 				return -1;
 			}
 		}
-		
+	}
+	
+	@PreDestroy
+	public void destroy() {
+		/* This Runnable only stops running after a server shutdown.  When doing a "redeploy" (i.e. not stopping JBOSS),
+		 * This Runnable keeps running.  Setting this flat to true will force the Runnable to exit.
+		 */
+		forceThreadShutdown = true;
+	}
+	
+	@Override
+	public void run() {
+		while(true && !forceThreadShutdown) {
+			try {
+				sweep();
+				Thread.sleep(sweepInterval);
+			} catch(Throwable e) {
+				try {
+					Thread.sleep(sweepInterval);
+				} catch(Throwable e2) {
+					
+				}
+				log.error("Error while executing thread", e);
+			}
+		}
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		service.submit(this);
 	}
 }
