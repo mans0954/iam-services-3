@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.jws.WebService;
+import java.util.HashSet;
 import java.util.List;
 
 @Service("authProviderWS")
@@ -223,7 +224,8 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
             if(provider.getName()==null  || provider.getName().trim().isEmpty())
                 throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NAME_NOT_SET);
 
-
+            provider.setResource(null);
+            provider.setProviderAttributeSet(new HashSet<AuthProviderAttribute>());
             authProviderService.addAuthProvider(authProviderDozerConverter.convertToEntity(provider, false));
         } catch(BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
@@ -249,7 +251,8 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
                 throw new BasicDataServiceException(ResponseCode.RESOURCE_PROP_MISSING);
             if(provider.getName()==null  || provider.getName().trim().isEmpty())
                 throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NAME_NOT_SET);
-
+            provider.setResource(null);
+            provider.setProviderAttributeSet(new HashSet<AuthProviderAttribute>());
             authProviderService.updateAuthProvider(authProviderDozerConverter.convertToEntity(provider, false));
         } catch(BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
