@@ -34,9 +34,11 @@ public class AuthProviderEntity implements Serializable {
     @Type(type = "yes_no")
     private boolean isSignRequest=false;
     @Column(name = "PUBLIC_KEY", nullable = true, columnDefinition = "text")
-    private String publicKey;
+    @Lob
+    private byte[] publicKey=null;
     @Column(name = "PRIVATE_KEY", nullable = true, columnDefinition = "text")
-    private String privateKey;
+    @Lob
+    private byte[] privateKey=null;
 
     @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
     @JoinColumn(name="PROVIDER_TYPE", referencedColumnName = "PROVIDER_TYPE", insertable = false, updatable = false)
@@ -109,19 +111,19 @@ public class AuthProviderEntity implements Serializable {
         isSignRequest = signRequest;
     }
 
-    public String getPublicKey() {
+    public byte[] getPublicKey() {
         return publicKey;
     }
 
-    public void setPublicKey(String publicKey) {
+    public void setPublicKey(byte[] publicKey) {
         this.publicKey = publicKey;
     }
 
-    public String getPrivateKey() {
+    public byte[] getPrivateKey() {
         return privateKey;
     }
 
-    public void setPrivateKey(String privateKey) {
+    public void setPrivateKey(byte[] privateKey) {
         this.privateKey = privateKey;
     }
 

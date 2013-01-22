@@ -2,7 +2,6 @@ package org.openiam.am.srvc.service;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.bouncycastle.util.encoders.Hex;
 import org.openiam.am.srvc.dao.AuthAttributeDao;
 import org.openiam.am.srvc.dao.AuthProviderAttributeDao;
 import org.openiam.am.srvc.dao.AuthProviderDao;
@@ -11,6 +10,10 @@ import org.openiam.am.srvc.domain.AuthAttributeEntity;
 import org.openiam.am.srvc.domain.AuthProviderAttributeEntity;
 import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.am.srvc.domain.AuthProviderTypeEntity;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
+import org.openiam.idm.srvc.res.service.ResourceDAO;
+import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +24,8 @@ import java.util.List;
 @Service("authProviderService")
 public class AuthProviderServiceImpl implements AuthProviderService {
     private final Log log = LogFactory.getLog(this.getClass());
+    private static final String resourceTypeId="AUTH_PROVIDER";
+
     @Autowired
     private AuthProviderTypeDao authProviderTypeDao;
     @Autowired
@@ -29,6 +34,11 @@ public class AuthProviderServiceImpl implements AuthProviderService {
     private AuthProviderDao authProviderDao;
     @Autowired
     private AuthProviderAttributeDao authProviderAttributeDao;
+    @Autowired
+    private ResourceDAO resourceDao;
+    @Autowired
+    private ResourceTypeDAO resourceTypeDAO;
+
 
     /*
     *==================================================
@@ -142,18 +152,7 @@ public class AuthProviderServiceImpl implements AuthProviderService {
     @Override
     public List<AuthProviderEntity> findAuthProviderBeans(AuthProviderEntity searchBean, Integer size,
                                                           Integer from) {
-        List<AuthProviderEntity> result = authProviderDao.getByExample(searchBean,from,size);
-
-        for (AuthProviderEntity provider: result){
-            if(provider.getPrivateKey()!=null && !provider.getPrivateKey().trim().isEmpty()){
-                provider.setPrivateKey(new String(this.decodeKey(provider.getPrivateKey())));
-            }
-            if(provider.getPublicKey()!=null && !provider.getPublicKey().trim().isEmpty()){
-                provider.setPublicKey(new String(this.decodeKey(provider.getPublicKey())));
-            }
-        }
-
-        return result;
+        return authProviderDao.getByExample(searchBean,from,size);
     }
     @Override
     public Integer getNumOfAuthProviderBeans(AuthProviderEntity searchBean){
@@ -168,14 +167,25 @@ public class AuthProviderServiceImpl implements AuthProviderService {
             throw new NullPointerException("provider type is null");
         if(provider.getManagedSysId()==null  || provider.getManagedSysId().trim().isEmpty())
             throw new NullPointerException("ManageSys is not set for provider");
-        if(provider.getResourceId()==null  || provider.getResourceId().trim().isEmpty())
+        if(provider.getResource() ==null)
             throw new NullPointerException("Resource is not set for provider");
         if(provider.getName()==null  || provider.getName().trim().isEmpty())
             throw new NullPointerException("provider name is null");
 
+         // add resource to db
+        ResourceTypeEntity resourceType = resourceTypeDAO.findById(resourceTypeId);
+        if(resourceType==null){
+            throw new NullPointerException("Cannot create resource for provider. Resource type is not found");
+        }
 
+        ResourceEntity resource = provider.getResource();
+        resource.setName(resourceTypeId+"_"+provider.getName());
+        resource.setResourceType(resourceType);
+        resource.setResourceId(null);
+        resource = resourceDao.add(resource);
 
         provider.setProviderId(null);
+        provider.setResourceId(resource.getResourceId());
         authProviderDao.add(provider);
     }
 
@@ -188,24 +198,28 @@ public class AuthProviderServiceImpl implements AuthProviderService {
             throw new NullPointerException("provider type is null");
         if(provider.getManagedSysId()==null  || provider.getManagedSysId().trim().isEmpty())
             throw new NullPointerException("ManageSys is not set for provider");
-        if(provider.getResourceId()==null  || provider.getResourceId().trim().isEmpty())
-            throw new NullPointerException("Resource is not set for provider");
         if(provider.getName()==null  || provider.getName().trim().isEmpty())
             throw new NullPointerException("provider name is null");
         AuthProviderEntity entity = authProviderDao.findById(provider.getProviderId());
         if(entity!=null){
             entity.setProviderType(provider.getProviderType());
             entity.setManagedSysId(provider.getManagedSysId());
-            entity.setResourceId(provider.getResourceId());
             entity.setName(provider.getName());
             entity.setDescription(provider.getDescription());
-            if(provider.getPrivateKey()!=null && !provider.getPrivateKey().trim().isEmpty()){
-                entity.setPrivateKey(this.encodeKey(provider.getPrivateKey()));
+            if(provider.getPrivateKey()!=null && provider.getPrivateKey().length>0){
+                entity.setPrivateKey(provider.getPrivateKey());
             }
-            if(provider.getPublicKey()!=null && !provider.getPublicKey().trim().isEmpty()){
-                entity.setPublicKey(this.encodeKey(provider.getPublicKey()));
+            if(provider.getPublicKey()!=null && provider.getPublicKey().length>0){
+                entity.setPublicKey(provider.getPublicKey());
             }
             entity.setSignRequest(provider.isSignRequest());
+
+            // get resource for provider
+            if(provider.getResource()!=null){
+                ResourceEntity resource = resourceDao.findById(entity.getResourceId());
+                resource.setURL(provider.getResource().getURL());
+                resourceDao.save(resource);
+            }
         }
         authProviderDao.save(provider);
     }
@@ -303,16 +317,4 @@ public class AuthProviderServiceImpl implements AuthProviderService {
             authProviderAttributeDao.deleteByProviderList(Arrays.asList(new String[]{providerId}));
         }
     }
-
-    private String encodeKey(String data) {
-        return encodeKey(data.getBytes());
-    }
-    private String encodeKey(byte[] data) {
-        return new String(Hex.encode(data));
-    }
-    private byte[] decodeKey(String data) {
-        return Hex.decode(data);
-    }
-
-
 }

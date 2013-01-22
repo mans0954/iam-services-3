@@ -33,8 +33,8 @@ public class AuthProvider implements Serializable {
     private String name;
     private String description;
     private boolean isSignRequest=false;
-    private String publicKey;
-    private String privateKey;
+    private byte[] publicKey;
+    private byte[] privateKey;
 
     private Set<AuthProviderAttribute> providerAttributeSet;
     private Resource resource;
@@ -95,19 +95,19 @@ public class AuthProvider implements Serializable {
         isSignRequest = signRequest;
     }
 
-    public String getPublicKey() {
+    public byte[] getPublicKey() {
         return publicKey;
     }
 
-    public void setPublicKey(String publicKey) {
+    public void setPublicKey(byte[] publicKey) {
         this.publicKey = publicKey;
     }
 
-    public String getPrivateKey() {
+    public byte[] getPrivateKey() {
         return privateKey;
     }
 
-    public void setPrivateKey(String privateKey) {
+    public void setPrivateKey(byte[] privateKey) {
         this.privateKey = privateKey;
     }
 

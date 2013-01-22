@@ -119,8 +119,6 @@ public class AuthResourceAttributeWebServiceImpl implements AuthResourceAttribut
         try {
             if(attribute==null || attribute.getAttributeMapId()==null || attribute.getAttributeMapId().trim().isEmpty())
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            if (attribute.getResourceId() == null || attribute.getResourceId() .trim().isEmpty())
-                throw new BasicDataServiceException(ResponseCode.RESOURCE_PROP_MISSING);
             if (attribute.getTargetAttributeName() == null || attribute.getTargetAttributeName().trim().isEmpty())
                 throw new BasicDataServiceException(ResponseCode.AUTH_RESOURCE_ATTRIBUTE_NAME_NOT_SET);
 
