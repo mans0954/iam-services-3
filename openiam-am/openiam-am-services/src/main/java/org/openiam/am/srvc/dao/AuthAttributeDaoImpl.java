@@ -74,7 +74,7 @@ public class AuthAttributeDaoImpl extends BaseDaoImpl<AuthAttributeEntity, Strin
     public void deleteByPkList(List<String> pkList) {
         if(pkList!=null && !pkList.isEmpty()) {
             Query qry = getSession().createQuery("delete "+this.domainClass.getName()+ " p where p.authAttributeId in (:pkList) ");
-            qry.setParameter("pkList", pkList);
+            qry.setParameterList("pkList", pkList);
             qry.executeUpdate();
         }
     }

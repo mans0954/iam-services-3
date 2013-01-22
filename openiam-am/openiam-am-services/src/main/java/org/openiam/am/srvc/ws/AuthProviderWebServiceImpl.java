@@ -125,7 +125,7 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
                 throw new BasicDataServiceException(ResponseCode.AUTH_ATTRIBUTE_NAME_NOT_SET);
             if(attribute.getProviderType()==null)
                 throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_TYPE_NOT_SET);
-            authProviderService.addAuthAttribute(authAttributeDozerConverter.convertToEntity(attribute,true));
+            authProviderService.addAuthAttribute(authAttributeDozerConverter.convertToEntity(attribute,false));
         } catch(BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
@@ -146,7 +146,7 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
                 throw new BasicDataServiceException(ResponseCode.AUTH_ATTRIBUTE_NAME_NOT_SET);
             if(attribute.getProviderType()==null)
                 throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_TYPE_NOT_SET);
-            authProviderService.updateAuthAttribute(authAttributeDozerConverter.convertToEntity(attribute, true));
+            authProviderService.updateAuthAttribute(authAttributeDozerConverter.convertToEntity(attribute, false));
         } catch(BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
@@ -224,7 +224,7 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
                 throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NAME_NOT_SET);
 
 
-            authProviderService.addAuthProvider(authProviderDozerConverter.convertToEntity(provider, true));
+            authProviderService.addAuthProvider(authProviderDozerConverter.convertToEntity(provider, false));
         } catch(BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
@@ -250,7 +250,7 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
             if(provider.getName()==null  || provider.getName().trim().isEmpty())
                 throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NAME_NOT_SET);
 
-            authProviderService.updateAuthProvider(authProviderDozerConverter.convertToEntity(provider, true));
+            authProviderService.updateAuthProvider(authProviderDozerConverter.convertToEntity(provider, false));
         } catch(BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
@@ -330,7 +330,7 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
                 throw new BasicDataServiceException(ResponseCode.AUTH_ATTRIBUTE_VALUE_NOT_SET);
 
 
-            authProviderService.addAuthProviderAttribute(authProviderAttributeDozerConverter.convertToEntity(attribute,true));
+            authProviderService.addAuthProviderAttribute(authProviderAttributeDozerConverter.convertToEntity(attribute,false));
         } catch(BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
@@ -354,7 +354,7 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
             if(attribute.getValue() ==null || attribute.getValue().trim().isEmpty())
                 throw new BasicDataServiceException(ResponseCode.AUTH_ATTRIBUTE_VALUE_NOT_SET);
 
-            authProviderService.updateAuthProviderAttribute(authProviderAttributeDozerConverter.convertToEntity(attribute,true));
+            authProviderService.updateAuthProviderAttribute(authProviderAttributeDozerConverter.convertToEntity(attribute,false));
         } catch(BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());

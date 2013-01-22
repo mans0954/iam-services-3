@@ -118,9 +118,10 @@ public class AuthProviderServiceImpl implements AuthProviderService {
     @Override
     @Transactional
     public void deleteAuthAttribute(String authAttributeId) {
-        AuthAttributeEntity entity = authAttributeDao.findById(authAttributeId);
-        if(entity!=null){
-            authAttributeDao.delete(entity);
+        if(authAttributeId!=null && !authAttributeId.trim().isEmpty()){
+            List<String> pkList = Arrays.asList(new String[]{authAttributeId});
+            authProviderAttributeDao.deleteByAttributeList(pkList);
+            authAttributeDao.deleteByPkList(pkList);
         }
     }
 

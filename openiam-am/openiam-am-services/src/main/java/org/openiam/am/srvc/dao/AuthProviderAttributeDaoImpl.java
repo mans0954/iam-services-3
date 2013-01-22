@@ -36,7 +36,7 @@ public class AuthProviderAttributeDaoImpl extends BaseDaoImpl<AuthProviderAttrib
     public void deleteByProviderList(List<String> pkList) {
         if(pkList!=null && !pkList.isEmpty()) {
             Query qry = getSession().createQuery("delete "+this.domainClass.getName()+ " p where p.providerId in (:pkList) ");
-            qry.setParameter("pkList", pkList);
+            qry.setParameterList("pkList", pkList);
             qry.executeUpdate();
         }
     }
@@ -46,7 +46,7 @@ public class AuthProviderAttributeDaoImpl extends BaseDaoImpl<AuthProviderAttrib
     public void deleteByAttributeList(List<String> pkList){
         if(pkList!=null && !pkList.isEmpty()) {
             Query qry = getSession().createQuery("delete "+this.domainClass.getName()+ " p where p.attributeId in (:pkList) ");
-            qry.setParameter("pkList", pkList);
+            qry.setParameterList("pkList", pkList);
             qry.executeUpdate();
         }
     }

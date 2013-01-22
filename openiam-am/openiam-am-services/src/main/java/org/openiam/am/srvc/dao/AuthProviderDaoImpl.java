@@ -69,7 +69,7 @@ public class AuthProviderDaoImpl extends BaseDaoImpl<AuthProviderEntity, String>
     public void deleteByPkList(List<String> pkList) {
         if(pkList!=null && !pkList.isEmpty()) {
             Query qry = getSession().createQuery("delete "+this.domainClass.getName()+ " p where p.providerId in (:pkList) ");
-            qry.setParameter("pkList", pkList);
+            qry.setParameterList("pkList", pkList);
             qry.executeUpdate();
         }
     }

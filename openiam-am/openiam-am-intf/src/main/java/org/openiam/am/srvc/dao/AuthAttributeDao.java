@@ -10,4 +10,7 @@ public interface AuthAttributeDao extends BaseDao<AuthAttributeEntity, String> {
     public List<String> getPkListByType(String providerType);
 
     void deleteByPkList(List<String> pkList);
+
+
 }
+
