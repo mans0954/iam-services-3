@@ -6,8 +6,11 @@ import org.openiam.idm.srvc.res.dto.Resource;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -38,6 +41,8 @@ public class AuthProvider implements Serializable {
 
     private Set<AuthProviderAttribute> providerAttributeSet;
     private Resource resource;
+    @XmlTransient
+    private Map<String, AuthProviderAttribute> providerAttributeMap=null;
 
     public String getProviderId() {
         return providerId;
@@ -117,6 +122,7 @@ public class AuthProvider implements Serializable {
 
     public void setProviderAttributeSet(Set<AuthProviderAttribute> providerAttributeSet) {
         this.providerAttributeSet = providerAttributeSet;
+        this.generateAttributeMap();
     }
 
     public Resource getResource() {
@@ -125,5 +131,28 @@ public class AuthProvider implements Serializable {
 
     public void setResource(Resource resource) {
         this.resource = resource;
+    }
+    /**
+    *  Returns provider attributes as Map. Key of the map is attribute name.
+     *  if you want to change attribute value, add new or remove attribute, <b>don't use this map. use  setProviderAttributeSet() property to change attribute instead.</b>
+    * */
+    public Map<String, AuthProviderAttribute> getProviderAttributeMap() {
+        if(this.providerAttributeSet!=null && !this.providerAttributeSet.isEmpty()){
+            if(providerAttributeMap==null){
+                generateAttributeMap();
+            }
+        }
+        return providerAttributeMap;
+    }
+
+    public void setProviderAttributeMap(Map<String, AuthProviderAttribute> providerAttributeMap) {
+        this.providerAttributeMap = providerAttributeMap;
+    }
+
+    private  void generateAttributeMap(){
+        providerAttributeMap = new HashMap<String, AuthProviderAttribute>();
+        for (AuthProviderAttribute attr: this.providerAttributeSet){
+            providerAttributeMap.put(attr.getAttributeName(), attr);
+        }
     }
 }
