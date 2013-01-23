@@ -2,7 +2,6 @@ package org.openiam.am.srvc.dozer.converter;
 
 import org.openiam.am.srvc.domain.AuthProviderTypeEntity;
 import org.openiam.am.srvc.dto.AuthProviderType;
-import org.openiam.dozer.converter.AbstractDozerEntityConverter;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

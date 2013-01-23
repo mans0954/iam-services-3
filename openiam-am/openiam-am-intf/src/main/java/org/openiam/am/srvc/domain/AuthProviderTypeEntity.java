@@ -53,6 +53,22 @@ public class AuthProviderTypeEntity implements Serializable {
         isActive = active;
     }
 
+    public Set<AuthAttributeEntity> getAttributeSet() {
+        return attributeSet;
+    }
+
+    public void setAttributeSet(Set<AuthAttributeEntity> attributeSet) {
+        this.attributeSet = attributeSet;
+    }
+
+    public Set<AuthProviderEntity> getProviderSet() {
+        return providerSet;
+    }
+
+    public void setProviderSet(Set<AuthProviderEntity> providerSet) {
+        this.providerSet = providerSet;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

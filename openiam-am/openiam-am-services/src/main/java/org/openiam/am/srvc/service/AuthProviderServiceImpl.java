@@ -19,7 +19,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service("authProviderService")
 public class AuthProviderServiceImpl implements AuthProviderService {
@@ -186,7 +188,27 @@ public class AuthProviderServiceImpl implements AuthProviderService {
 
         provider.setProviderId(null);
         provider.setResourceId(resource.getResourceId());
+        
+        Set<AuthProviderAttributeEntity> providerAttributeSet = provider.getProviderAttributeSet();
+        provider.setProviderAttributeSet(null);
         authProviderDao.add(provider);
+        if(providerAttributeSet!=null && !providerAttributeSet.isEmpty()){
+            syncAuthProviderAttributes(provider, providerAttributeSet);
+        }
+//        Set<AuthProviderAttributeEntity> providerAttributeSet = provider.getProviderAttributeSet();
+//        entity.setProviderAttributeSet(null);
+//        authProviderDao.save(entity);
+//        if(provider.getProviderAttributeSet()!=null && !provider.getProviderAttributeSet().isEmpty()){
+//            entity.setProviderAttributeSet(provider.getProviderAttributeSet());
+//            for (AuthProviderAttributeEntity attribute : providerAttributeSet) {
+//                attribute.setProviderId(provider.getProviderId());
+//                if(attribute.getProviderAttributeId()!=null){
+//                    updateAuthProviderAttribute(attribute);
+//                }else{
+//                    addAuthProviderAttribute(attribute);
+//                }
+//            }
+//        }
     }
 
     @Override
@@ -221,7 +243,12 @@ public class AuthProviderServiceImpl implements AuthProviderService {
                 resourceDao.save(resource);
             }
         }
-        authProviderDao.save(provider);
+        
+        entity.setProviderAttributeSet(null);
+        authProviderDao.save(entity);
+        if(provider.getProviderAttributeSet()!=null && !provider.getProviderAttributeSet().isEmpty()){
+            syncAuthProviderAttributes(entity, provider.getProviderAttributeSet());
+        }
     }
 
     @Override
@@ -230,7 +257,7 @@ public class AuthProviderServiceImpl implements AuthProviderService {
         AuthProviderEntity entity = authProviderDao.findById(providerId);
         if(entity!=null){
             this.deleteAuthProviderAttributes(providerId);
-            authProviderDao.delete(entity);
+            authProviderDao.deleteByPkList(Arrays.asList(new String[]{providerId}));
         }
     }
 
@@ -262,6 +289,13 @@ public class AuthProviderServiceImpl implements AuthProviderService {
     }
 
     @Override
+    public Integer getNumOfAuthProviderAttributes(String providerId){
+        AuthProviderAttributeEntity attribute = new AuthProviderAttributeEntity();
+        attribute.setProviderId(providerId);
+        return authProviderAttributeDao.count(attribute);
+    }
+
+    @Override
     @Transactional
     public void addAuthProviderAttribute(AuthProviderAttributeEntity attribute) {
         if(attribute==null)
@@ -273,14 +307,10 @@ public class AuthProviderServiceImpl implements AuthProviderService {
         if(attribute.getValue() ==null || attribute.getValue().trim().isEmpty())
             throw new NullPointerException("value is not set");
         attribute.setProviderAttributeId(null);
+        attribute.setAttribute(null);
         authProviderAttributeDao.add(attribute);
     }
 
-    public Integer getNumOfAuthProviderAttributes(String providerId){
-        AuthProviderAttributeEntity attribute = new AuthProviderAttributeEntity();
-        attribute.setProviderId(providerId);
-        return authProviderAttributeDao.count(attribute);
-    }
 
     @Override
     @Transactional
@@ -291,16 +321,17 @@ public class AuthProviderServiceImpl implements AuthProviderService {
             throw new NullPointerException("Parent Provider  is not set");
         if(attribute.getAttributeId() ==null || attribute.getAttributeId().trim().isEmpty())
             throw new NullPointerException("attribute name is not set");
-        if(attribute.getValue() ==null || attribute.getValue().trim().isEmpty())
-            throw new NullPointerException("value is not set");
 
-        AuthProviderAttributeEntity entity = authProviderAttributeDao.findById(attribute.getProviderAttributeId());
+        AuthProviderAttributeEntity entity = authProviderAttributeDao.getAuthProviderAttribute(attribute.getProviderId(), attribute.getAttributeId());
         if(entity!=null){
-            entity.setProviderId(attribute.getProviderId());
-            entity.setAttributeId(attribute.getAttributeId());
-            entity.setDataType(attribute.getDataType());
+            entity.setAttribute(null);
+            if(attribute.getValue() ==null || attribute.getValue().trim().isEmpty()){
+                //authProviderAttributeDao.delete(entity);
+                deleteAuthProviderAttributeByName(attribute.getProviderId(), attribute.getAttributeId());
+                return;
+            }
             entity.setValue(attribute.getValue());
-            authProviderAttributeDao.save(entity);
+            authProviderAttributeDao.merge(entity);
         }
     }
 
@@ -315,6 +346,37 @@ public class AuthProviderServiceImpl implements AuthProviderService {
     public void deleteAuthProviderAttributes(String providerId) {
         if(providerId!=null && !providerId.trim().isEmpty()){
             authProviderAttributeDao.deleteByProviderList(Arrays.asList(new String[]{providerId}));
+        }
+    }
+
+    @Transactional
+    private void syncAuthProviderAttributes(AuthProviderEntity provider, Set<AuthProviderAttributeEntity> newAttributes){
+        AuthAttributeEntity example = new AuthAttributeEntity();
+        example.setProviderType(provider.getProviderType());
+        List<AuthAttributeEntity> attributeEntityList = this.findAuthAttributeBeans(example, Integer.MAX_VALUE,0);
+        Set<String> newAttributesIds = new HashSet<String>();
+        for(AuthProviderAttributeEntity providerAttributeEntity: newAttributes){
+            newAttributesIds.add(providerAttributeEntity.getAttributeId());
+        }
+        for(AuthAttributeEntity attr: attributeEntityList){
+            if(!newAttributesIds.contains(attr.getAuthAttributeId())){
+                // need to delete attribute from provider.
+                AuthProviderAttributeEntity providerAttributeEntity = new AuthProviderAttributeEntity();
+                providerAttributeEntity.setProviderId(provider.getProviderId());
+                providerAttributeEntity.setAttributeId(attr.getAuthAttributeId());
+                providerAttributeEntity.setValue(null);
+                providerAttributeEntity.setProviderAttributeId("");
+                newAttributes.add(providerAttributeEntity);
+            }
+        }
+
+        for (AuthProviderAttributeEntity attribute : newAttributes) {
+            attribute.setProviderId(provider.getProviderId());
+            if(attribute.getProviderAttributeId()!=null){
+                updateAuthProviderAttribute(attribute);
+            }else{
+                addAuthProviderAttribute(attribute);
+            }
         }
     }
 }

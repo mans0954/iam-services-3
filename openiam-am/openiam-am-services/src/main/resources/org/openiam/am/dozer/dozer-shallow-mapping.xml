@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mappings xmlns="http://dozer.sourceforge.net"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://dozer.sourceforge.net
+          http://dozer.sourceforge.net/schema/beanmapping.xsd">
+
+    <mapping>
+        <class-a>org.openiam.am.srvc.domain.AuthProviderTypeEntity</class-a>
+        <class-b>org.openiam.am.srvc.domain.AuthProviderTypeEntity</class-b>
+        <field-exclude>
+            <a>attributeSet</a>
+            <b>attributeSet</b>
+        </field-exclude>
+        <field-exclude>
+            <a>providerSet</a>
+            <b>providerSet</b>
+        </field-exclude>
+    </mapping>
+
+    <mapping>
+        <class-a>org.openiam.am.srvc.domain.AuthProviderEntity</class-a>
+        <class-b>org.openiam.am.srvc.domain.AuthProviderEntity</class-b>
+        <field-exclude>
+            <a>providerAttributeSet</a>
+            <b>providerAttributeSet</b>
+        </field-exclude>
+        <field-exclude>
+            <a>resource</a>
+            <b>resource</b>
+        </field-exclude>
+        <field-exclude>
+            <a>managedSys</a>
+            <b>managedSys</b>
+        </field-exclude>
+        <field-exclude>
+            <a>type</a>
+            <b>type</b>
+        </field-exclude>
+    </mapping>
+
+    <mapping>
+        <class-a>org.openiam.am.srvc.domain.AuthProviderAttributeEntity</class-a>
+        <class-b>org.openiam.am.srvc.domain.AuthProviderAttributeEntity</class-b>
+        <field-exclude>
+            <a>provider</a>
+            <b>provider</b>
+        </field-exclude>
+        <field-exclude>
+            <a>attribute</a>
+            <b>attribute</b>
+        </field-exclude>
+    </mapping>
+
+    <mapping>
+        <class-a>org.openiam.am.srvc.domain.AuthResourceAttributeEntity</class-a>
+        <class-b>org.openiam.am.srvc.domain.AuthResourceAttributeEntity</class-b>
+        <field-exclude>
+            <a>resource</a>
+            <b>resource</b>
+        </field-exclude>
+    </mapping>
+
+    <mapping>
+        <class-a>org.openiam.idm.srvc.res.domain.ResourceEntity</class-a>
+        <class-b>org.openiam.idm.srvc.res.domain.ResourceEntity</class-b>
+        <field-exclude>
+            <a>parentResources</a>
+            <b>parentResources</b>
+        </field-exclude>
+        <field-exclude>
+            <a>childResources</a>
+            <b>childResources</b>
+        </field-exclude>
+        <field-exclude>
+            <a>resourceRoles</a>
+            <b>resourceRoles</b>
+        </field-exclude>
+        <field-exclude>
+            <a>resourceProps</a>
+            <b>resourceProps</b>
+        </field-exclude>
+        <field-exclude>
+            <a>resourceGroups</a>
+            <b>resourceGroups</b>
+        </field-exclude>
+        <field-exclude>
+            <a>resourceUsers</a>
+            <b>resourceUsers</b>
+        </field-exclude>
+    </mapping>
+</mappings>
+        

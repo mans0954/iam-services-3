@@ -1,6 +1,8 @@
 package org.openiam.am.srvc.domain;
 
 import org.hibernate.annotations.GenericGenerator;
+import org.openiam.am.srvc.dto.AttributeMap;
+import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 
 import javax.persistence.*;
@@ -8,6 +10,7 @@ import java.io.Serializable;
 
 @Entity
 @Table(name = "AUTH_RESOURCE_ATTRIBUTE")
+@DozerDTOCorrespondence(AttributeMap.class)
 public class AuthResourceAttributeEntity implements Serializable {
     @Id
     @GeneratedValue(generator="system-uuid")

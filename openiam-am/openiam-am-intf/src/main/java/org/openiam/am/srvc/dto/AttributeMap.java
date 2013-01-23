@@ -1,7 +1,12 @@
 package org.openiam.am.srvc.dto;
 
+import org.openiam.am.srvc.domain.AuthResourceAttributeEntity;
+import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.res.dto.Resource;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 
@@ -12,11 +17,14 @@ import javax.xml.bind.annotation.XmlType;
         "accessManagerAttributeName",
         "policyUrl"
 })
+@DozerDTOCorrespondence(AuthResourceAttributeEntity.class)
 public class AttributeMap extends Attribute {
     private String attributeMapId;
     private String resourceId;
     private String accessManagerAttributeName;
     private String policyUrl;
+    @XmlTransient
+    private Resource resource;
 
     // Constructors
 
@@ -57,6 +65,14 @@ public class AttributeMap extends Attribute {
 
     public void setPolicyUrl(String policyUrl) {
         this.policyUrl = policyUrl;
+    }
+
+    public Resource getResource() {
+        return resource;
+    }
+
+    public void setResource(Resource resource) {
+        this.resource = resource;
     }
 
     @Override

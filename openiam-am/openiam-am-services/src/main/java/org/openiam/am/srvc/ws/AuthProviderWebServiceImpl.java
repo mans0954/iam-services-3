@@ -228,9 +228,8 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
             if(provider.getName()==null  || provider.getName().trim().isEmpty())
                 throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NAME_NOT_SET);
 
-            provider.setProviderAttributeSet(new HashSet<AuthProviderAttribute>());
 
-            final AuthProviderEntity entity = authProviderDozerConverter.convertToEntity(provider, false);
+            final AuthProviderEntity entity = authProviderDozerConverter.convertToEntity(provider, true);
             authProviderService.addAuthProvider(entity);
             response.setResponseValue(entity.getProviderId());
         } catch(BasicDataServiceException e) {
@@ -254,14 +253,11 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
                 throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_TYPE_NOT_SET);
             if(provider.getManagedSysId()==null  || provider.getManagedSysId().trim().isEmpty())
                 throw new BasicDataServiceException(ResponseCode.MANAGED_SYS_NOT_SET);
-            if(provider.getResourceId()==null  || provider.getResourceId().trim().isEmpty())
-                throw new BasicDataServiceException(ResponseCode.RESOURCE_PROP_MISSING);
             if(provider.getName()==null  || provider.getName().trim().isEmpty())
                 throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NAME_NOT_SET);
-            provider.setResource(null);
-            provider.setProviderAttributeSet(new HashSet<AuthProviderAttribute>());
+//            provider.setProviderAttributeSet(new HashSet<AuthProviderAttribute>());
             
-            final AuthProviderEntity entity = authProviderDozerConverter.convertToEntity(provider, false);
+            final AuthProviderEntity entity = authProviderDozerConverter.convertToEntity(provider, true);
             authProviderService.updateAuthProvider(entity);
             response.setResponseValue(entity.getProviderId());
         } catch(BasicDataServiceException e) {

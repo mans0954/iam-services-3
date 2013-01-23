@@ -2,7 +2,6 @@ package org.openiam.am.srvc.dozer.converter;
 
 import org.openiam.am.srvc.domain.AuthAttributeEntity;
 import org.openiam.am.srvc.dto.AuthAttribute;
-import org.openiam.dozer.converter.AbstractDozerEntityConverter;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
