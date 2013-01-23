@@ -12,4 +12,4 @@ INSERT INTO AUTH_ATTRIBUTE (AUTH_ATTRIBUTE_ID, ATTRIBUTE_NAME, PROVIDER_TYPE, DE
 	VALUES('3', 'Assertion Consumer URL', 'SAML_PROVIDER', 'Where the SAMLResponse will be POSTed to', 'Y', 'singleValue');
 	
 INSERT INTO AUTH_ATTRIBUTE (AUTH_ATTRIBUTE_ID, ATTRIBUTE_NAME, PROVIDER_TYPE, DESCRIPTION, REQUIRED, DATA_TYPE)
-	VALUES('4', 'Audiences', 'SAML_PROVIDER', 'The Audience value(s) to send in the SAMLResponse', 'Y', 'listValue');
+	VALUES('4', 'Audiences', 'SAML_PROVIDER', 'The Audience value(s) to send in the SAMLResponse', 'N', 'listValue');
