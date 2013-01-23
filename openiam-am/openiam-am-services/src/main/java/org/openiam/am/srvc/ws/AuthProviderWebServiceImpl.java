@@ -1,5 +1,6 @@
 package org.openiam.am.srvc.ws;
 
+import org.apache.log4j.Logger;
 import org.openiam.am.srvc.domain.AuthAttributeEntity;
 import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.am.srvc.dozer.converter.AuthAttributeDozerConverter;
@@ -31,6 +32,9 @@ import java.util.List;
             targetNamespace = "urn:idm.openiam.org/srvc/am/service", portName = "AuthProviderWebServicePort",
             serviceName = "AuthProviderWebService")
 public class AuthProviderWebServiceImpl implements AuthProviderWebService {
+	
+	private static Logger LOG = Logger.getLogger(AuthProviderWebServiceImpl.class);
+	
     @Autowired
     private AuthProviderService authProviderService;
 
@@ -226,11 +230,14 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
 
             provider.setProviderAttributeSet(new HashSet<AuthProviderAttribute>());
 
-            authProviderService.addAuthProvider(authProviderDozerConverter.convertToEntity(provider, false));
+            final AuthProviderEntity entity = authProviderDozerConverter.convertToEntity(provider, false);
+            authProviderService.addAuthProvider(entity);
+            response.setResponseValue(entity.getProviderId());
         } catch(BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
         } catch(Throwable e) {
+        	LOG.error("Error while saving auth provider", e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorText(e.getMessage());
         }
@@ -253,11 +260,15 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
                 throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NAME_NOT_SET);
             provider.setResource(null);
             provider.setProviderAttributeSet(new HashSet<AuthProviderAttribute>());
-            authProviderService.updateAuthProvider(authProviderDozerConverter.convertToEntity(provider, false));
+            
+            final AuthProviderEntity entity = authProviderDozerConverter.convertToEntity(provider, false);
+            authProviderService.updateAuthProvider(entity);
+            response.setResponseValue(entity.getProviderId());
         } catch(BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
         } catch(Throwable e) {
+        	LOG.error("Error while updating auth provider", e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorText(e.getMessage());
         }
