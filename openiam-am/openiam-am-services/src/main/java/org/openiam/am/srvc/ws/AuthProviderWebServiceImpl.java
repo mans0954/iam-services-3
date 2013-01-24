@@ -227,7 +227,9 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
                 throw new BasicDataServiceException(ResponseCode.RESOURCE_PROP_MISSING);
             if(provider.getName()==null  || provider.getName().trim().isEmpty())
                 throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NAME_NOT_SET);
-
+            if(provider.isSignRequest() && (provider.getPrivateKey()==null || provider.getPrivateKey().length==0
+                                            || provider.getPublicKey()==null || provider.getPublicKey().length==0))
+                throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_SECUTITY_KEYS_NOT_SET);
 
             final AuthProviderEntity entity = authProviderDozerConverter.convertToEntity(provider, true);
             authProviderService.addAuthProvider(entity);
@@ -255,7 +257,9 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
                 throw new BasicDataServiceException(ResponseCode.MANAGED_SYS_NOT_SET);
             if(provider.getName()==null  || provider.getName().trim().isEmpty())
                 throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NAME_NOT_SET);
-//            provider.setProviderAttributeSet(new HashSet<AuthProviderAttribute>());
+            if(provider.isSignRequest() && (provider.getPrivateKey()==null || provider.getPrivateKey().length==0
+                                            || provider.getPublicKey()==null || provider.getPublicKey().length==0))
+                throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_SECUTITY_KEYS_NOT_SET);
             
             final AuthProviderEntity entity = authProviderDozerConverter.convertToEntity(provider, true);
             authProviderService.updateAuthProvider(entity);
