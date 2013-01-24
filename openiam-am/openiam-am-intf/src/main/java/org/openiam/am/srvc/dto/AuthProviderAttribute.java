@@ -74,4 +74,32 @@ public class AuthProviderAttribute implements Serializable {
     public void setDataType(AuthAttributeDataType dataType) {
         this.dataType = dataType;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        AuthProviderAttribute that = (AuthProviderAttribute) o;
+
+        if (!attributeId.equals(that.attributeId)) {
+            return false;
+        }
+        if (!providerId.equals(that.providerId)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = providerId.hashCode();
+        result = 31 * result + attributeId.hashCode();
+        return result;
+    }
 }

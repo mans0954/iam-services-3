@@ -193,7 +193,7 @@ public class AuthProviderServiceImpl implements AuthProviderService {
         provider.setProviderAttributeSet(null);
         authProviderDao.add(provider);
         if(providerAttributeSet!=null && !providerAttributeSet.isEmpty()){
-            syncAuthProviderAttributes(provider, providerAttributeSet);
+            saveAuthProviderAttributes(provider, providerAttributeSet);
         }
 //        Set<AuthProviderAttributeEntity> providerAttributeSet = provider.getProviderAttributeSet();
 //        entity.setProviderAttributeSet(null);
@@ -247,7 +247,7 @@ public class AuthProviderServiceImpl implements AuthProviderService {
         entity.setProviderAttributeSet(null);
         authProviderDao.save(entity);
         if(provider.getProviderAttributeSet()!=null && !provider.getProviderAttributeSet().isEmpty()){
-            syncAuthProviderAttributes(entity, provider.getProviderAttributeSet());
+            saveAuthProviderAttributes(entity, provider.getProviderAttributeSet());
         }
     }
 
@@ -350,25 +350,25 @@ public class AuthProviderServiceImpl implements AuthProviderService {
     }
 
     @Transactional
-    private void syncAuthProviderAttributes(AuthProviderEntity provider, Set<AuthProviderAttributeEntity> newAttributes){
-        AuthAttributeEntity example = new AuthAttributeEntity();
-        example.setProviderType(provider.getProviderType());
-        List<AuthAttributeEntity> attributeEntityList = this.findAuthAttributeBeans(example, Integer.MAX_VALUE,0);
-        Set<String> newAttributesIds = new HashSet<String>();
-        for(AuthProviderAttributeEntity providerAttributeEntity: newAttributes){
-            newAttributesIds.add(providerAttributeEntity.getAttributeId());
-        }
-        for(AuthAttributeEntity attr: attributeEntityList){
-            if(!newAttributesIds.contains(attr.getAuthAttributeId())){
-                // need to delete attribute from provider.
-                AuthProviderAttributeEntity providerAttributeEntity = new AuthProviderAttributeEntity();
-                providerAttributeEntity.setProviderId(provider.getProviderId());
-                providerAttributeEntity.setAttributeId(attr.getAuthAttributeId());
-                providerAttributeEntity.setValue(null);
-                providerAttributeEntity.setProviderAttributeId("");
-                newAttributes.add(providerAttributeEntity);
-            }
-        }
+    private void saveAuthProviderAttributes(AuthProviderEntity provider, Set<AuthProviderAttributeEntity> newAttributes){
+//        AuthAttributeEntity example = new AuthAttributeEntity();
+//        example.setProviderType(provider.getProviderType());
+//        List<AuthAttributeEntity> attributeEntityList = this.findAuthAttributeBeans(example, Integer.MAX_VALUE,0);
+//        Set<String> newAttributesIds = new HashSet<String>();
+//        for(AuthProviderAttributeEntity providerAttributeEntity: newAttributes){
+//            newAttributesIds.add(providerAttributeEntity.getAttributeId());
+//        }
+//        for(AuthAttributeEntity attr: attributeEntityList){
+//            if(!newAttributesIds.contains(attr.getAuthAttributeId())){
+//                // need to delete attribute from provider.
+//                AuthProviderAttributeEntity providerAttributeEntity = new AuthProviderAttributeEntity();
+//                providerAttributeEntity.setProviderId(provider.getProviderId());
+//                providerAttributeEntity.setAttributeId(attr.getAuthAttributeId());
+//                providerAttributeEntity.setValue(null);
+//                providerAttributeEntity.setProviderAttributeId("");
+//                newAttributes.add(providerAttributeEntity);
+//            }
+//        }
 
         for (AuthProviderAttributeEntity attribute : newAttributes) {
             attribute.setProviderId(provider.getProviderId());

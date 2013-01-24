@@ -24,8 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.jws.WebService;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 @Service("authProviderWS")
 @WebService(endpointInterface = "org.openiam.am.srvc.ws.AuthProviderWebService",
@@ -231,6 +230,8 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
                                             || provider.getPublicKey()==null || provider.getPublicKey().length==0))
                 throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_SECUTITY_KEYS_NOT_SET);
 
+            validateAndSyncProviderAttributes(provider);
+
             final AuthProviderEntity entity = authProviderDozerConverter.convertToEntity(provider, true);
             authProviderService.addAuthProvider(entity);
             response.setResponseValue(entity.getProviderId());
@@ -243,6 +244,36 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
             response.setErrorText(e.getMessage());
         }
         return response;
+    }
+
+    private void validateAndSyncProviderAttributes(AuthProvider provider) throws BasicDataServiceException{
+        AuthAttributeEntity example = new AuthAttributeEntity();
+        example.setProviderType(provider.getProviderType());
+        List<AuthAttributeEntity> attributeEntityList = authProviderService.findAuthAttributeBeans(example, Integer.MAX_VALUE,0);
+//        Set<String> newAttributesIds = new HashSet<String>();
+        Map<String, AuthProviderAttribute> attributeMap = new HashMap<String, AuthProviderAttribute>();
+
+        if(provider.getProviderAttributeSet()!=null && !provider.getProviderAttributeSet().isEmpty()){
+            for(AuthProviderAttribute attr: provider.getProviderAttributeSet()){
+//                newAttributesIds.add(attr.getAttributeId());
+                attributeMap.put(attr.getAttributeId(), attr);
+            }
+        }
+        for(AuthAttributeEntity attr: attributeEntityList){
+            AuthProviderAttribute providerAttribute = attributeMap.get(attr.getAuthAttributeId());
+            boolean isAttributeEmpty= (providerAttribute==null || providerAttribute.getValue()==null || providerAttribute.getValue().trim().isEmpty());
+            if(attr.isRequired() && isAttributeEmpty)
+                throw new BasicDataServiceException(ResponseCode.AUTH_REQUIRED_PROVIDER_ATTRIBUTE_NOT_SET);
+            if(isAttributeEmpty){
+                // need to delete attribute from provider.
+                providerAttribute = new AuthProviderAttribute();
+                providerAttribute.setProviderId(provider.getProviderId());
+                providerAttribute.setAttributeId(attr.getAuthAttributeId());
+                providerAttribute.setValue(null);
+                providerAttribute.setProviderAttributeId("");
+                provider.getProviderAttributeSet().add(providerAttribute);
+            }
+        }
     }
 
     @Override
@@ -260,7 +291,9 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
             if(provider.isSignRequest() && (provider.getPrivateKey()==null || provider.getPrivateKey().length==0
                                             || provider.getPublicKey()==null || provider.getPublicKey().length==0))
                 throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_SECUTITY_KEYS_NOT_SET);
-            
+
+            validateAndSyncProviderAttributes(provider);
+
             final AuthProviderEntity entity = authProviderDozerConverter.convertToEntity(provider, true);
             authProviderService.updateAuthProvider(entity);
             response.setResponseValue(entity.getProviderId());
