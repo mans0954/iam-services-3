@@ -8,6 +8,7 @@ import org.openiam.idm.srvc.res.domain.ResourceUserEntity;
 
 public interface ResourceUserDAO extends BaseDao<ResourceUserEntity, String>  {
 
+	public void deleteByResourceId(final String resourceId);
 	public void deleteByUserId(final String userId, final Collection<String> resourceIds);
 	public ResourceUserEntity getRecord(final String resourceId, final String userId);
 }

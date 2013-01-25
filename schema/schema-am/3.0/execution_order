@@ -1,0 +1,5 @@
+ddl/1.create_auth_tables.sql
+ddl/2.alter_provider_table.sql
+ddl/3.web_resource_attr.sql
+dml/1.insert_initial_data.sql
+dml/2.create_auth_provider_menus.sql

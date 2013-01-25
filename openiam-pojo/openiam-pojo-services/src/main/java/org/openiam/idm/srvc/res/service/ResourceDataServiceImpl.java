@@ -414,6 +414,7 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 			*/
 			resourceGroupDAO.deleteByResourceId(resourceId);
 			resourceRoleDao.deleteByResourceId(resourceId);
+			resourceUserDao.deleteByResourceId(resourceId);
 			resourceDao.delete(entity);
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);

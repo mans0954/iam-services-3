@@ -27,6 +27,7 @@ import org.springframework.stereotype.Repository;
 public class ResourceUserDAOImpl extends BaseDaoImpl<ResourceUserEntity, String>  implements ResourceUserDAO {
 
 	private static String DELETE_BY_USER_ID_AND_RESOURCE_ID_BATCH = "DELETE FROM %s ru WHERE ru.resourceId IN(:resourceIds) AND ru.userId = :userId";
+	private static String DELETE_BY_RESOURCE_ID = "DELETE FROM %s ru WHERE ru.resourceId = :resourceId";
 	
 	@PostConstruct
 	public void initSQL() {
@@ -55,6 +56,13 @@ public class ResourceUserDAOImpl extends BaseDaoImpl<ResourceUserEntity, String>
 			query.setParameter("userId", userId);
 			query.executeUpdate();
 		}
+	}
+
+	@Override
+	public void deleteByResourceId(String resourceId) {
+		final Query query = getSession().createQuery(DELETE_BY_RESOURCE_ID);
+		query.setParameter("resourceId", resourceId);
+		query.executeUpdate();
 	}
 	
 }
