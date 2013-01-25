@@ -32,6 +32,7 @@ public class ResourceUserDAOImpl extends BaseDaoImpl<ResourceUserEntity, String>
 	@PostConstruct
 	public void initSQL() {
 		DELETE_BY_USER_ID_AND_RESOURCE_ID_BATCH = String.format(DELETE_BY_USER_ID_AND_RESOURCE_ID_BATCH, domainClass.getSimpleName());
+		DELETE_BY_RESOURCE_ID = String.format(DELETE_BY_RESOURCE_ID, domainClass.getSimpleName());
 	}
 	
 	@Override
