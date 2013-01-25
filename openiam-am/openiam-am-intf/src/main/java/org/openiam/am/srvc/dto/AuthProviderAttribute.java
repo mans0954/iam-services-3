@@ -75,31 +75,36 @@ public class AuthProviderAttribute implements Serializable {
         this.dataType = dataType;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((attributeId == null) ? 0 : attributeId.hashCode());
+		result = prime * result
+				+ ((providerId == null) ? 0 : providerId.hashCode());
+		return result;
+	}
 
-        AuthProviderAttribute that = (AuthProviderAttribute) o;
-
-        if (!attributeId.equals(that.attributeId)) {
-            return false;
-        }
-        if (!providerId.equals(that.providerId)) {
-            return false;
-        }
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = providerId.hashCode();
-        result = 31 * result + attributeId.hashCode();
-        return result;
-    }
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		AuthProviderAttribute other = (AuthProviderAttribute) obj;
+		if (attributeId == null) {
+			if (other.attributeId != null)
+				return false;
+		} else if (!attributeId.equals(other.attributeId))
+			return false;
+		if (providerId == null) {
+			if (other.providerId != null)
+				return false;
+		} else if (!providerId.equals(other.providerId))
+			return false;
+		return true;
+	}
 }
