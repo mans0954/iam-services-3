@@ -32,7 +32,7 @@ import java.util.*;
             serviceName = "AuthProviderWebService")
 public class AuthProviderWebServiceImpl implements AuthProviderWebService {
 	
-	private static Logger LOG = Logger.getLogger(AuthProviderWebServiceImpl.class);
+	private static Logger log = Logger.getLogger(AuthProviderWebServiceImpl.class);
 	
     @Autowired
     private AuthProviderService authProviderService;
@@ -74,9 +74,11 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
             }
             authProviderService.addProviderType(authProviderTypeDozerConverter.convertToEntity(providerType, false));
         } catch(BasicDataServiceException e) {
+        	log.error(e.getMessage(), e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
         } catch(Throwable e) {
+        	log.error(e.getMessage(), e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorText(e.getMessage());
         }
@@ -92,9 +94,11 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
             }
             authProviderService.deleteProviderType(providerType);
         } catch(BasicDataServiceException e) {
+        	log.error(e.getMessage(), e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
         } catch(Throwable e) {
+        	log.error(e.getMessage(), e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorText(e.getMessage());
         }
@@ -131,9 +135,11 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
                 throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_TYPE_NOT_SET);
             authProviderService.addAuthAttribute(authAttributeDozerConverter.convertToEntity(attribute,false));
         } catch(BasicDataServiceException e) {
+        	log.error(e.getMessage(), e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
         } catch(Throwable e) {
+        	log.error(e.getMessage(), e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorText(e.getMessage());
         }
@@ -152,9 +158,11 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
                 throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_TYPE_NOT_SET);
             authProviderService.updateAuthAttribute(authAttributeDozerConverter.convertToEntity(attribute, false));
         } catch(BasicDataServiceException e) {
+        	log.error(e.getMessage(), e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
         } catch(Throwable e) {
+        	log.error(e.getMessage(), e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorText(e.getMessage());
         }
@@ -170,9 +178,11 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
 
             authProviderService.deleteAuthAttribute(authAttributeId);
         } catch(BasicDataServiceException e) {
+        	log.error(e.getMessage(), e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
         } catch(Throwable e) {
+        	log.error(e.getMessage(), e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorText(e.getMessage());
         }
@@ -188,9 +198,11 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
 
             authProviderService.deleteAuthAttributesByType(providerType);
         } catch(BasicDataServiceException e) {
+        	log.error(e.getMessage(), e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
         } catch(Throwable e) {
+        	log.error(e.getMessage(), e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorText(e.getMessage());
         }
@@ -236,10 +248,11 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
             authProviderService.addAuthProvider(entity);
             response.setResponseValue(entity.getProviderId());
         } catch(BasicDataServiceException e) {
+        	log.error(e.getMessage(), e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
         } catch(Throwable e) {
-        	LOG.error("Error while saving auth provider", e);
+        	log.error("Error while saving auth provider", e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorText(e.getMessage());
         }
@@ -298,10 +311,11 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
             authProviderService.updateAuthProvider(entity);
             response.setResponseValue(entity.getProviderId());
         } catch(BasicDataServiceException e) {
+        	log.error(e.getMessage(), e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
         } catch(Throwable e) {
-        	LOG.error("Error while updating auth provider", e);
+        	log.error("Error while updating auth provider", e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorText(e.getMessage());
         }
@@ -317,9 +331,11 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
 
             authProviderService.deleteAuthProvider(providerId);
         } catch(BasicDataServiceException e) {
+        	log.error(e.getMessage(), e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
         } catch(Throwable e) {
+        	log.error(e.getMessage(), e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorText(e.getMessage());
         }
@@ -335,9 +351,11 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
 
             authProviderService.deleteAuthProviderByType(providerType);
         } catch(BasicDataServiceException e) {
+        	log.error(e.getMessage(), e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
         } catch(Throwable e) {
+        	log.error(e.getMessage(), e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorText(e.getMessage());
         }
@@ -379,9 +397,11 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
 
             authProviderService.addAuthProviderAttribute(authProviderAttributeDozerConverter.convertToEntity(attribute,false));
         } catch(BasicDataServiceException e) {
+        	log.error(e.getMessage(), e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
         } catch(Throwable e) {
+        	log.error(e.getMessage(), e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorText(e.getMessage());
         }
@@ -403,9 +423,11 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
 
             authProviderService.updateAuthProviderAttribute(authProviderAttributeDozerConverter.convertToEntity(attribute,false));
         } catch(BasicDataServiceException e) {
+        	log.error(e.getMessage(), e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
         } catch(Throwable e) {
+        	log.error(e.getMessage(), e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorText(e.getMessage());
         }
@@ -420,9 +442,11 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             authProviderService.deleteAuthProviderAttributeByName(providerId, attributeId);
         } catch(BasicDataServiceException e) {
+        	log.error(e.getMessage(), e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
         } catch(Throwable e) {
+        	log.error(e.getMessage(), e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorText(e.getMessage());
         }
@@ -438,9 +462,11 @@ public class AuthProviderWebServiceImpl implements AuthProviderWebService {
 
             authProviderService.deleteAuthProviderAttributes(providerId);
         } catch(BasicDataServiceException e) {
+        	log.error(e.getMessage(), e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
         } catch(Throwable e) {
+        	log.error(e.getMessage(), e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorText(e.getMessage());
         }
