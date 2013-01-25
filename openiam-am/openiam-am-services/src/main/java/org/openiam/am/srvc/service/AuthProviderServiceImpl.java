@@ -13,13 +13,14 @@ import org.openiam.am.srvc.domain.AuthProviderTypeEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
+import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -40,7 +41,8 @@ public class AuthProviderServiceImpl implements AuthProviderService {
     private ResourceDAO resourceDao;
     @Autowired
     private ResourceTypeDAO resourceTypeDAO;
-
+    @Autowired
+    private ResourceDataService resourceDataService;
 
     /*
     *==================================================
@@ -258,16 +260,29 @@ public class AuthProviderServiceImpl implements AuthProviderService {
         if(entity!=null){
             this.deleteAuthProviderAttributes(providerId);
             authProviderDao.deleteByPkList(Arrays.asList(new String[]{providerId}));
+            resourceDataService.deleteResource(entity.getResourceId());
         }
     }
 
     @Override
     @Transactional
     public void deleteAuthProviderByType(String providerType) {
-        List<String> pkList = authProviderDao.getPkListByType(providerType);
-        if(pkList!=null && !pkList.isEmpty()){
+        AuthProviderEntity entity = new AuthProviderEntity();
+        entity.setProviderType(providerType);
+        List<AuthProviderEntity> providerList = this.findAuthProviderBeans(entity, Integer.MAX_VALUE,0);
+
+        List<String> pkList = new ArrayList<String>();
+        List<String> resourceIdList = new ArrayList<String>();
+        if(providerList!=null && !providerList.isEmpty()){
+            for (AuthProviderEntity provider :providerList){
+                pkList.add(provider.getProviderId());
+                resourceIdList.add(provider.getResourceId());
+            }
             authProviderAttributeDao.deleteByProviderList(pkList);
             authProviderDao.deleteByPkList(pkList);
+            for (String resourceId :resourceIdList){
+                resourceDataService.deleteResource(resourceId);
+            }
         }
     }
     /*
