@@ -2,7 +2,6 @@ package org.openiam.idm.srvc.key.service;
 
 import org.openiam.exception.EncryptionException;
 import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.dto.User;
 
 /**
  * Created by: Alexander Duckardt
@@ -14,6 +13,9 @@ public interface KeyManagementService {
     public Long generateUserKeys(String userId)throws Exception;
 
     public Long generateUserKeys(UserEntity user) throws Exception;
+
+    public byte[] getCookieKey()throws Exception;
+    public byte[] generateCookieKey()throws Exception;
 
     public void generateMasterKey() throws Exception;
     public void migrateData(String oldSecretKey)throws Exception;

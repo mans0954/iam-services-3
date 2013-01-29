@@ -16,4 +16,8 @@ public interface KeyManagementWS {
     public Response generateMasterKey();
     @WebMethod
     public Response migrateData(@WebParam(name = "secretKey")String secretKey);
+    @WebMethod
+    public byte[] getCookieKey()throws Exception;
+    @WebMethod
+    public byte[] generateCookieKey()throws Exception;
 }

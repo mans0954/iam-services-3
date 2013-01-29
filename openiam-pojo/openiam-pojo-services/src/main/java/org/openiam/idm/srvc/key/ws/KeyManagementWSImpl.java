@@ -54,4 +54,26 @@ public class KeyManagementWSImpl implements KeyManagementWS {
         }
         return resp;
     }
+
+    @Override
+    public byte[] getCookieKey() throws Exception {
+        byte[] key = null;
+        try {
+            key = keyManagementService.getCookieKey();
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+        }
+        return key;
+    }
+
+    @Override
+    public byte[] generateCookieKey() throws Exception {
+        byte[] key = null;
+        try {
+            key = keyManagementService.generateCookieKey();
+        } catch(Exception e) {
+            log.error(e.getMessage(), e);
+        }
+        return key;
+    }
 }
