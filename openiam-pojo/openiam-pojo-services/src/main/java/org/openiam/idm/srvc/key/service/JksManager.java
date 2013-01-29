@@ -24,13 +24,16 @@ public class JksManager {
     public static final String KEYSTORE_FILE_NAME = ".openiam.jks";
     public static final String KEYSTORE_DEFAULT_PASSWORD = "openiamKeyStorePassword";
     public static final String KEYSTORE_DEFAULT_LOCATION = System.getProperty("user.home")+System.getProperty("file.separator");
+    public static final String KEYSTORE_ALIAS = "openiam";
+    public static final String TMP_KEYSTORE_ALIAS = "openiam_tmp";
+    public static final String KEYSTORE_COOKIE_ALIAS = "openiam_cookie";
+
+    public static final int MIN_ITERATION_COUNT = 20;
+
 
     private  static final String PRIVATE_KEY_ALGORITHM = BCObjectIdentifiers.bc_pbe_sha256_pkcs12_aes256_cbc.getId();
     private static final String KEYSTORE_TYPE = "JCEKS";    //
-    public static final String KEYSTORE_ALIAS = "openiam";
-    public static final String TMP_KEYSTORE_ALIAS = "openiam_tmp";
     private static final int KEY_SIZE_IN_BITS = 192; //24 bytes
-    public static final int MIN_ITERATION_COUNT = 20;
     private int iterationCount = 0;
     private String keyStoreName;
 
@@ -52,20 +55,24 @@ public class JksManager {
         this(keyStoreName, MIN_ITERATION_COUNT);
     }
 
-    public void generatePrimaryKey(char[] password, char[] pkPassword) throws Exception {
+    public void generateMasterKey(char[] password, char[] pkPassword) throws Exception {
+        generatePrimaryKey(password, pkPassword, KEYSTORE_ALIAS);
+    }
+
+    public void generatePrimaryKey(char[] password, char[] pkPassword, String alias) throws Exception {
         KeyStore ks = getKeyStore(password);
         byte[] rawKey = getNewPrivateKey();
         System.out.println("RAW KEY: " + encodeKey(rawKey));
         byte[] key =  encryptPrivateKey(pkPassword, rawKey);
         System.out.println("ENCRYPTED KEY: " + encodeKey(key));
-//        // check if there is already key
-//        KeyStore.Entry entry = ks.getEntry(KEYSTORE_ALIAS, new KeyStore.PasswordProtection(password));
-//        if(entry!=null){
-//            // entry is exists, store it. it is necessary to decode ald security data
-//            ks.setEntry(TMP_KEYSTORE_ALIAS, entry, new KeyStore.PasswordProtection(password));
-//        }
+        //        // check if there is already key
+        //        KeyStore.Entry entry = ks.getEntry(KEYSTORE_ALIAS, new KeyStore.PasswordProtection(password));
+        //        if(entry!=null){
+        //            // entry is exists, store it. it is necessary to decode ald security data
+        //            ks.setEntry(TMP_KEYSTORE_ALIAS, entry, new KeyStore.PasswordProtection(password));
+        //        }
         // add new key to jks
-        ks.setEntry(KEYSTORE_ALIAS, new KeyStore.SecretKeyEntry(new SecretKeySpec(key,PRIVATE_KEY_ALGORITHM)), new KeyStore.PasswordProtection(password));
+        ks.setEntry(alias, new KeyStore.SecretKeyEntry(new SecretKeySpec(key,PRIVATE_KEY_ALGORITHM)), new KeyStore.PasswordProtection(password));
         ks.store(new FileOutputStream(keyStoreName), password);
     }
 

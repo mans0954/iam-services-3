@@ -22,6 +22,8 @@ import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
@@ -32,16 +34,23 @@ import java.util.*;
  * Created by: Alexander Duckardt
  * Date: 09.10.12
  */
-//@Service
+@Service("keyManagementService")
 public class KeyManagementServiceImpl implements KeyManagementService {
     protected final Log log = LogFactory.getLog(this.getClass());
     private static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
     private static final int FETCH_COUNT=1000;
+    @Value("${iam.jks.path}")
     private String             jksFile;
+    @Value("${iam.jks.password}")
     private String             jksPassword;
+    @Value("${iam.jks.key.password}")
     private String             keyPassword;
+    @Value("${iam.jks.cookie.key.password}")
+    private String             cookieKeyPassword;
     private Integer            iterationCount;
     private JksManager         jksManager;
+
+    @Autowired
     private Cryptor            cryptor;
     @Autowired
     private UserDAO            userDAO;
@@ -63,6 +72,9 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         if(!StringUtils.hasText(this.jksPassword)) {
             this.jksPassword = JksManager.KEYSTORE_DEFAULT_PASSWORD;
         }
+        if(!StringUtils.hasText(this.cookieKeyPassword)) {
+            this.cookieKeyPassword = JksManager.KEYSTORE_DEFAULT_PASSWORD;
+        }
         if(!StringUtils.hasText(this.keyPassword)) {
             throw new NullPointerException(
                     "The password for master key is required. This property cannot be read from properties files");
@@ -74,32 +86,33 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         }
     }
 
-    public void setJksFile(String jksFile) {
-        this.jksFile = jksFile;
-    }
-
-    public void setJksPassword(String jksPassword) {
-        this.jksPassword = jksPassword;
-    }
-
-    public void setIterationCount(Integer iterationCount) {
-        this.iterationCount = iterationCount;
-    }
-
-    @Required
-    public void setKeyPassword(String keyPassword) {
-        this.keyPassword = keyPassword;
-    }
-
-    public void setCryptor(Cryptor cryptor) {
-        this.cryptor = cryptor;
-    }
+//    public void setJksFile(String jksFile) {
+//        this.jksFile = jksFile;
+//    }
+//
+//    public void setJksPassword(String jksPassword) {
+//        this.jksPassword = jksPassword;
+//    }
+//
+//
+//    public void setIterationCount(Integer iterationCount) {
+//        this.iterationCount = iterationCount;
+//    }
+//
+//    @Required
+//    public void setKeyPassword(String keyPassword) {
+//        this.keyPassword = keyPassword;
+//    }
+//
+//    public void setCryptor(Cryptor cryptor) {
+//        this.cryptor = cryptor;
+//    }
 
     @Override
     public byte[] getUserKey(String userId, String keyName) throws EncryptionException {
         byte[] masterKey = new byte[0];
         try {
-            masterKey = getMasterKey(JksManager.KEYSTORE_ALIAS);
+            masterKey = getPrimaryKey(JksManager.KEYSTORE_ALIAS, this.keyPassword);
 
             if(masterKey == null || masterKey.length == 0) {
                 throw new IllegalAccessException("Cannot get master key to decrypt user keys");
@@ -128,7 +141,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         List<UserKey> newUserKeyList = new ArrayList<UserKey>();
 
         log.warn("Try to get old salt ...");
-        byte[] oldMasterKey = this.getMasterKey(JksManager.KEYSTORE_ALIAS);
+        byte[] oldMasterKey = this.getPrimaryKey(JksManager.KEYSTORE_ALIAS, this.keyPassword);
         if(oldMasterKey != null && oldMasterKey.length > 0) {
             log.warn("OLD MASTER KEY IS: " + jksManager.encodeKey(oldMasterKey));
             log.warn("Decrypting user data ...");
@@ -140,9 +153,9 @@ public class KeyManagementServiceImpl implements KeyManagementService {
 
 
         log.warn(" Generation of new master key ...");
-        jksManager.generatePrimaryKey(this.jksPassword.toCharArray(), this.keyPassword.toCharArray());
+        jksManager.generateMasterKey(this.jksPassword.toCharArray(), this.keyPassword.toCharArray());
 
-        byte[] masterKey = this.getMasterKey(JksManager.KEYSTORE_ALIAS);
+        byte[] masterKey = this.getPrimaryKey(JksManager.KEYSTORE_ALIAS, this.keyPassword);
         if(masterKey == null || masterKey.length == 0) {
             throw new NullPointerException("Cannot get master key to encrypt user keys");
         }
@@ -172,7 +185,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long generateUserKeys(UserEntity user) throws Exception {
-        byte[] masterKey = getMasterKey(JksManager.KEYSTORE_ALIAS);
+        byte[] masterKey = getPrimaryKey(JksManager.KEYSTORE_ALIAS, this.keyPassword);
         if(masterKey == null || masterKey.length == 0) {
             throw new NullPointerException("Cannot get master key to encrypt user keys");
         }
@@ -202,6 +215,8 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         addUserKeys(newUserKeyList);
         return 2L;
     }
+
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void migrateData(String oldSecretKey)throws Exception{
@@ -209,9 +224,9 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         HashMap<String, UserSecurityWrapper> userSecurityMap = getSecurityMap();
         List<UserKey> newUserKeyList = new ArrayList<UserKey>();
 
-        jksManager.generatePrimaryKey(this.jksPassword.toCharArray(), this.keyPassword.toCharArray());
+        jksManager.generateMasterKey(this.jksPassword.toCharArray(), this.keyPassword.toCharArray());
 
-        byte[] masterKey = this.getMasterKey(JksManager.KEYSTORE_ALIAS);
+        byte[] masterKey = this.getPrimaryKey(JksManager.KEYSTORE_ALIAS, this.keyPassword);
         if(masterKey == null || masterKey.length == 0) {
             throw new NullPointerException("Cannot generate master key to encrypt user keys");
         }
@@ -230,6 +245,23 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         // replace user key for given user
         userKeyDao.deleteAll();
         addUserKeys(newUserKeyList);
+    }
+
+    @Override
+    public byte[] getCookieKey()throws Exception{
+        byte[] key = this.getPrimaryKey(JksManager.KEYSTORE_COOKIE_ALIAS, this.cookieKeyPassword);
+        if(key==null || key.length==0){
+            return generateCookieKey();
+        }
+        return key;
+    }
+
+    @Override
+    public byte[] generateCookieKey()throws Exception{
+        // create new key for cookie
+        jksManager.generatePrimaryKey(this.jksPassword.toCharArray(), this.cookieKeyPassword.toCharArray(), JksManager.KEYSTORE_COOKIE_ALIAS);
+        // try to get it
+        return this.getPrimaryKey(JksManager.KEYSTORE_COOKIE_ALIAS, this.cookieKeyPassword);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -400,7 +432,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         }
     }
 
-    private byte[] getMasterKey(String alias) throws Exception {
+    private byte[] getPrimaryKey(String alias, String keyPassword) throws Exception {
         return jksManager.getPrimaryKeyFromJKS(alias, jksPassword.toCharArray(), keyPassword.toCharArray());
     }
 

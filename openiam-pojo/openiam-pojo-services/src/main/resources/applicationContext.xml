@@ -385,12 +385,12 @@
 	
 	
 	<!-- Key Management beans -->
-    <bean id="keyManagementService" class="org.openiam.idm.srvc.key.service.KeyManagementServiceImpl">
-        <property name="jksFile" value="${iam.jks.path}" />
-        <property name="jksPassword"  value="${iam.jks.password}"  />
-        <property name="keyPassword"  value="${iam.jks.key.password}"  />
-        <property name="cryptor"  ref="cryptor"  />
-    </bean>
+    <!--<bean id="keyManagementService" class="org.openiam.idm.srvc.key.service.KeyManagementServiceImpl">-->
+        <!--<property name="jksFile" value="${iam.jks.path}" />-->
+        <!--<property name="jksPassword"  value="${iam.jks.password}"  />-->
+        <!--<property name="keyPassword"  value="${iam.jks.key.password}"  />-->
+        <!--<property name="cryptor"  ref="cryptor"  />-->
+    <!--</bean>-->
 
     <!--<bean id="ManagedSysDAO" class="org.openiam.idm.srvc.mngsys.service.ManagedSysDAOImpl" >-->
         <!--<property name="sessionFactory" ref="sessionFactory"></property>-->
