@@ -181,6 +181,8 @@ public class SAML2TokenModule implements SSOTokenModule {
 		           ssoTkn.setToken( str);
 		           
 		           ssoTkn.setExpirationTime(notAfterTime.toDate());
+		           ssoTkn.setPrincipal(principal);
+		           ssoTkn.setUserId(userId);
 		           return ssoTkn;
 		   	   
 		       }catch(Exception e) {

@@ -21,10 +21,12 @@ import java.util.Date;
         "principal",
         "maxIdleTime",
         "expirationTime",
-        "createTime"
+        "createTime",
+        "userId"
 })
 public class SSOToken {
 
+	private String userId;
     private String tokenType;
     private String token;
     private String authLevel;
@@ -123,4 +125,12 @@ public class SSOToken {
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
     }
+
+	public String getUserId() {
+		return userId;
+	}
+
+	public void setUserId(String userId) {
+		this.userId = userId;
+	}
 }

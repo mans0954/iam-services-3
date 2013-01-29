@@ -124,7 +124,8 @@ public class SAML1TokenModule implements SSOTokenModule {
        DateTime notAfterTime = new DateTime(System.currentTimeMillis());
        notAfterTime = notAfterTime.plusMinutes(idleTime);
        
-       String userId = (String)tokenParam.get("USER_ID");
+       final String userId = (String)tokenParam.get("USER_ID");
+       final String principal = (String)tokenParam.get("PRINCIPAL");
        
        int expectedMinorVersion = 1;      
        qname = Request.DEFAULT_ELEMENT_NAME;
@@ -169,6 +170,8 @@ public class SAML1TokenModule implements SSOTokenModule {
 	           SSOToken ssoTkn = new SSOToken();
 	           ssoTkn.setToken( XMLHelper.nodeToString(generatedDOM));
 	           ssoTkn.setExpirationTime(notAfterTime.toDate());
+	           ssoTkn.setUserId(userId);
+	           ssoTkn.setPrincipal(principal);
 	           return ssoTkn;
 	   	   
 	       }catch(Exception e) {

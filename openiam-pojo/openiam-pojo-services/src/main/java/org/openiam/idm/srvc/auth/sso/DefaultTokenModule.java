@@ -75,13 +75,18 @@ public class DefaultTokenModule implements SSOTokenModule {
 		buf.append(":");
 		buf.append( expirationTime  );
 		
+		final String userId = (String)tokenParam.get("USER_ID");
+		final String principal = (String)tokenParam.get("PRINCIPAL");
+		
 		try {
-			token = cryptor.encrypt(keyManagementService.getUserKey((String)tokenParam.get("USER_ID"), KeyName.token.name()), buf.toString());
+			token = cryptor.encrypt(keyManagementService.getUserKey(userId, KeyName.token.name()), buf.toString());
 		}catch(EncryptionException encExcep) {
 			return null;
 		}
 		
 		SSOToken ssoToken = new SSOToken(new Date(curTime), new Date(expTime), token, AuthenticationConstants.OPENIAM_TOKEN  );
+		ssoToken.setPrincipal(principal);
+		ssoToken.setUserId(userId);
 		
 		return  ssoToken;
 
