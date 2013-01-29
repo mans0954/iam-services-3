@@ -6,21 +6,18 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.LoginDozerConverter;
 import org.openiam.exception.AuthenticationException;
-import org.openiam.exception.EncryptionException;
+import org.openiam.idm.searchbeans.LoginSearchBean;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
-import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
-import org.openiam.idm.srvc.user.ws.UserResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
-
-import javax.jws.WebParam;
 import javax.jws.WebService;
+import java.util.Date;
+import java.util.List;
 
 @WebService(endpointInterface = "org.openiam.idm.srvc.auth.ws.LoginDataWebService", 
 		targetNamespace = "urn:idm.openiam.org/srvc/auth/service", 
@@ -322,6 +319,10 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 		}
 		return resp;
 	}
+
+    public List<Login> findBeans(LoginSearchBean searchBean, Integer from, Integer size){
+        return null;
+    }
 
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#bulkResetPasswordChangeCount()
