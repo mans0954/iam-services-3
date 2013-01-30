@@ -321,7 +321,11 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	}
 
     public List<Login> findBeans(LoginSearchBean searchBean, Integer from, Integer size){
-        return null;
+        return loginDozerConverter.convertToDTOList(loginDS.findBeans(searchBean, from, size), false);
+    }
+
+    public Integer count(LoginSearchBean searchBean){
+        return loginDS.count(searchBean);
     }
 
 	/* (non-Javadoc)

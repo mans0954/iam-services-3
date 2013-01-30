@@ -2,8 +2,8 @@ package org.openiam.idm.srvc.auth.login;
 
 import org.openiam.exception.AuthenticationException;
 import org.openiam.exception.EncryptionException;
+import org.openiam.idm.searchbeans.LoginSearchBean;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
-import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 
 import javax.jws.WebService;
@@ -168,4 +168,8 @@ public interface LoginDataService {
     public List<LoginEntity> getLoginByManagedSys(String principalName, String managedSysId);
 
     LoginEntity getPasswordResetToken(String token);
+
+    Integer count(LoginSearchBean searchBean);
+
+    List<LoginEntity> findBeans(LoginSearchBean searchBean, Integer from, Integer size);
 }

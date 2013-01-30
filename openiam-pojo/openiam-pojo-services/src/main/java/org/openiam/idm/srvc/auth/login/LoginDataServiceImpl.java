@@ -1,18 +1,14 @@
 package org.openiam.idm.srvc.auth.login;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.ResourceBundle;
-import java.util.Set;
-import javax.jws.WebService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.SysConfiguration;
 import org.openiam.dozer.converter.LoginDozerConverter;
 import org.openiam.exception.AuthenticationException;
 import org.openiam.exception.EncryptionException;
+import org.openiam.idm.searchbeans.LoginSearchBean;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
+import org.openiam.idm.srvc.auth.login.lucene.LoginSearchDAO;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
@@ -20,7 +16,6 @@ import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.policy.service.PolicyDataService;
 import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
-import org.openiam.idm.srvc.pswd.dto.PasswordHistory;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
 import org.openiam.idm.srvc.pswd.service.PasswordService;
 import org.openiam.idm.srvc.secdomain.dto.SecurityDomain;
@@ -32,12 +27,21 @@ import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.jws.WebService;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
+
 @Service("loginManager")
 @WebService(endpointInterface = "org.openiam.idm.srvc.auth.login.LoginDataService", targetNamespace = "urn:idm.openiam.org/srvc/auth/service", serviceName = "LoginWebService")
 public class LoginDataServiceImpl implements LoginDataService {
 
 	@Autowired
     protected LoginDAO loginDao;
+
+    @Autowired
+    private LoginSearchDAO loginSearchDAO;
     
 	@Autowired
 	protected LoginAttributeDAO loginAttrDao;
@@ -191,6 +195,14 @@ public class LoginDataServiceImpl implements LoginDataService {
             }
         }
         return false;
+    }
+
+    public Integer count(LoginSearchBean searchBean){
+        return loginSearchDAO.count(searchBean);
+    }
+
+    public List<LoginEntity> findBeans(LoginSearchBean searchBean, Integer from, Integer size){
+       return loginSearchDAO.find(from, size, null, searchBean);
     }
 
     /**

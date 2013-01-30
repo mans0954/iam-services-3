@@ -89,6 +89,9 @@ public interface LoginDataWebService {
     public List<Login> findBeans(
             @WebParam(name = "searchBean", targetNamespace = "") LoginSearchBean searchBean, Integer from, Integer size);
 
+    @WebMethod
+    public Integer count(@WebParam(name = "searchBean", targetNamespace = "") LoginSearchBean searchBean);
+
     /**
      * Returns a decrypted password.
      *
