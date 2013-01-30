@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.auth.ws;
 
 import org.openiam.base.ws.Response;
 import org.openiam.exception.AuthenticationException;
+import org.openiam.idm.searchbeans.LoginSearchBean;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 
@@ -9,6 +10,7 @@ import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Web Service Interface to manage the principals that are associated with a user. The login object is largely used for service that use password
@@ -82,6 +84,10 @@ public interface LoginDataWebService {
     public LoginResponse getPrimaryIdentity(
             @WebParam(name = "userId", targetNamespace = "")
             String userId);
+
+    @WebMethod
+    public List<Login> findBeans(
+            @WebParam(name = "searchBean", targetNamespace = "") LoginSearchBean searchBean, Integer from, Integer size);
 
     /**
      * Returns a decrypted password.
