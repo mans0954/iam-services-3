@@ -486,7 +486,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
     @Override
 	public List<Supervisor> getSupervisors(String employeeId) {
 		final List<SupervisorEntity> sup = userManager.getSupervisors(employeeId);
-		return supervisorDozerConverter.convertToDTOList(sup, false);
+		return supervisorDozerConverter.convertToDTOList(sup, true);
 	}
 
     @Override

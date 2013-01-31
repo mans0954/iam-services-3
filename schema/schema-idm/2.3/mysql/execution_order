@@ -39,3 +39,4 @@ ddl/30.drop_user_privilege.sql
 ddl/31.modify_user_contacts.sql
 ddl/32.modify_resource_type_len.sql
 dml/10.insert_auth_resource_metatypes.sql
+dml/11.self_service_initial_menus.sql
