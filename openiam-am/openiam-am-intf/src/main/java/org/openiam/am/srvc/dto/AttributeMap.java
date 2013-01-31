@@ -1,7 +1,5 @@
 package org.openiam.am.srvc.dto;
 
-import org.openiam.am.srvc.domain.AuthResourceAttributeEntity;
-import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.res.dto.Resource;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -17,7 +15,7 @@ import javax.xml.bind.annotation.XmlType;
         "accessManagerAttributeName",
         "policyUrl"
 })
-@DozerDTOCorrespondence(AuthResourceAttributeEntity.class)
+@Deprecated
 public class AttributeMap extends Attribute {
     private String attributeMapId;
     private String resourceId;

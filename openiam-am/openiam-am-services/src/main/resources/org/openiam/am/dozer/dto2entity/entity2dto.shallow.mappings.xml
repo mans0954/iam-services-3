@@ -12,11 +12,14 @@
             <b>providerAttributeSet</b>
         </field-exclude>
         <field-exclude>
+            <a>resourceAttributeMap</a>
+            <b>resourceAttributeMap</b>
+        </field-exclude>
+        <field-exclude>
             <a>resource</a>
             <b>resource</b>
         </field-exclude>
     </mapping>
-
 
     <mapping>
         <class-a>org.openiam.idm.srvc.res.domain.ResourceEntity</class-a>

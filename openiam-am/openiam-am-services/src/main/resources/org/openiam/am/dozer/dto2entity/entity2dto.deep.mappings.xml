@@ -16,28 +16,33 @@
             <a>resource</a>
             <b>resource</b>
         </field>
+        <field custom-converter="org.openiam.dozer.crossentity.CrossEntityMapConverterWithKeyString" custom-converter-param="amDto2entityShallowDozerMapper">
+            <a>resourceAttributeMap</a>
+            <b>resourceAttributeMap</b>
+        </field>
     </mapping>
+
 
     <mapping>
         <class-a>org.openiam.idm.srvc.res.domain.ResourceEntity</class-a>
         <class-b>org.openiam.idm.srvc.res.dto.Resource</class-b>
-        <field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="dto2entityShallowDozerMapper">
+        <field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="amDto2entityShallowDozerMapper">
             <a>parentResources</a>
             <b>parentResources</b>
         </field>
-        <field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="dto2entityShallowDozerMapper">
+        <field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="amDto2entityShallowDozerMapper">
             <a>childResources</a>
             <b>childResources</b>
         </field>
-        <field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="dto2entityShallowDozerMapper">
+        <field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="amDto2entityShallowDozerMapper">
             <a>resourceRoles</a>
             <b>resourceRoles</b>
         </field>
-        <field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="dto2entityShallowDozerMapper">
+        <field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="amDto2entityShallowDozerMapper">
             <a>resourceProps</a>
             <b>resourceProps</b>
         </field>
-        <field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="dto2entityShallowDozerMapper">
+        <field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="amDto2entityShallowDozerMapper">
             <a>resourceGroups</a>
             <b>resourceGroups</b>
         </field>

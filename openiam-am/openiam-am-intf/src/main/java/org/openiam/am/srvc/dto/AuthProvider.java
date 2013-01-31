@@ -25,7 +25,8 @@ import java.util.Set;
         "publicKey",
         "privateKey",
         "providerAttributeSet",
-        "resource"
+        "resource",
+        "resourceAttributeMap"
 })
 @DozerDTOCorrespondence(AuthProviderEntity.class)
 public class AuthProvider implements Serializable {
@@ -40,6 +41,7 @@ public class AuthProvider implements Serializable {
     private byte[] privateKey;
 
     private Set<AuthProviderAttribute> providerAttributeSet;
+    private Map<String, AuthResourceAttributeMap> resourceAttributeMap=new HashMap<String, AuthResourceAttributeMap>(0);
     private Resource resource;
     @XmlTransient
     private Map<String, AuthProviderAttribute> providerAttributeMap=null;
@@ -132,6 +134,15 @@ public class AuthProvider implements Serializable {
     public void setResource(Resource resource) {
         this.resource = resource;
     }
+
+    public Map<String, AuthResourceAttributeMap> getResourceAttributeMap() {
+        return resourceAttributeMap;
+    }
+
+    public void setResourceAttributeMap(Map<String, AuthResourceAttributeMap> resourceAttributeMap) {
+        this.resourceAttributeMap = resourceAttributeMap;
+    }
+
     /**
     *  Returns provider attributes as Map. Key of the map is attribute name.
      *  if you want to change attribute value, add new or remove attribute, <b>don't use this map. use  setProviderAttributeSet() property to change attribute instead.</b>

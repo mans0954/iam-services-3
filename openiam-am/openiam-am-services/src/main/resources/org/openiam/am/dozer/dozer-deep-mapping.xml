@@ -24,6 +24,10 @@
             <a>providerAttributeSet</a>
             <b>providerAttributeSet</b>
         </field>
+        <field custom-converter="org.openiam.dozer.MapConverterWithKeyString" custom-converter-param="shallowDozerMapper">
+            <a>resourceAttributeMap</a>
+            <b>resourceAttributeMap</b>
+        </field>
         <field custom-converter="org.openiam.dozer.PersistentObjectConverter" custom-converter-param="shallowDozerMapper">
             <a>resource</a>
             <b>resource</b>
@@ -51,14 +55,6 @@
         </field>
     </mapping>
 
-    <mapping>
-        <class-a>org.openiam.am.srvc.domain.AuthResourceAttributeEntity</class-a>
-        <class-b>org.openiam.am.srvc.domain.AuthResourceAttributeEntity</class-b>
-        <field custom-converter="org.openiam.dozer.PersistentObjectConverter" custom-converter-param="shallowDozerMapper">
-            <a>resource</a>
-            <b>resource</b>
-        </field>
-    </mapping>
 
     <mapping>
         <class-a>org.openiam.idm.srvc.res.domain.ResourceEntity</class-a>

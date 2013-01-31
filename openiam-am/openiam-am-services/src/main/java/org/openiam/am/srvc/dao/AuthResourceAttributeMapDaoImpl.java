@@ -5,26 +5,26 @@ import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Restrictions;
-import org.openiam.am.srvc.domain.AuthResourceAttributeEntity;
+import org.openiam.am.srvc.domain.AuthResourceAttributeMapEntity;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-@Repository("authResourceAttributeDao")
-public class AuthResourceAttributeDaoImpl extends BaseDaoImpl<AuthResourceAttributeEntity, String> implements AuthResourceAttributeDao {
+@Repository("authResourceAttributeMapDao")
+public class AuthResourceAttributeMapDaoImpl extends BaseDaoImpl<AuthResourceAttributeMapEntity, String> implements AuthResourceAttributeMapDao {
     @Override
     protected String getPKfieldName() {
         return "attributeMapId";
     }
 
     @Override
-    protected Criteria getExampleCriteria(final AuthResourceAttributeEntity attribute) {
+    protected Criteria getExampleCriteria(final AuthResourceAttributeMapEntity attribute) {
         final Criteria criteria = getCriteria();
         if (StringUtils.isNotBlank(attribute.getAttributeMapId())) {
             criteria.add(Restrictions.eq(getPKfieldName(), attribute.getAttributeMapId()));
         } else {
-            if (StringUtils.isNotEmpty(attribute.getResourceId())) {
-                criteria.add(Restrictions.eq("resourceId", attribute.getResourceId()));
+            if (StringUtils.isNotEmpty(attribute.getProviderId())) {
+                criteria.add(Restrictions.eq("providerId", attribute.getProviderId()));
             }
 
             if (StringUtils.isNotEmpty(attribute.getTargetAttributeName())) {
@@ -48,8 +48,8 @@ public class AuthResourceAttributeDaoImpl extends BaseDaoImpl<AuthResourceAttrib
                 }
             }
 
-            if (StringUtils.isNotEmpty(attribute.getAmAttributeName())) {
-                String amAttributeName = attribute.getAmAttributeName();
+            if (StringUtils.isNotEmpty(attribute.getAmAttributeId())) {
+                String amAttributeName = attribute.getAmAttributeId();
                 MatchMode matchMode = null;
                 if (StringUtils.indexOf(amAttributeName, "*") == 0) {
                     matchMode = MatchMode.END;
@@ -62,9 +62,9 @@ public class AuthResourceAttributeDaoImpl extends BaseDaoImpl<AuthResourceAttrib
 
                 if (StringUtils.isNotEmpty(amAttributeName)) {
                     if (matchMode != null) {
-                        criteria.add(Restrictions.ilike("targetAttributeName", amAttributeName, matchMode));
+                        criteria.add(Restrictions.ilike("amAttributeId", amAttributeName, matchMode));
                     } else {
-                        criteria.add(Restrictions.eq("targetAttributeName", amAttributeName));
+                        criteria.add(Restrictions.eq("amAttributeId", amAttributeName));
                     }
                 }
             }
@@ -83,9 +83,9 @@ public class AuthResourceAttributeDaoImpl extends BaseDaoImpl<AuthResourceAttrib
 
     @Override
     @Transactional
-    public int deleteByResourceId(String resourceId) {
-        Query qry = getSession().createQuery("delete "+this.domainClass.getName()+ " o where o.resourceId =:resourceId ");
-        qry.setParameter("resourceId", resourceId);
+    public int deleteByProviderId(String providerId) {
+        Query qry = getSession().createQuery("delete "+this.domainClass.getName()+ " o where o.providerId =:providerId ");
+        qry.setParameter("providerId", providerId);
         return  qry.executeUpdate();
     }
 }

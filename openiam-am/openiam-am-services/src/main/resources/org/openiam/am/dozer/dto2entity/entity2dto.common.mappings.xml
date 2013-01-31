@@ -24,6 +24,41 @@
     </mapping>
 
     <mapping>
+        <class-a>org.openiam.am.srvc.domain.AuthResourceAMAttributeEntity</class-a>
+        <class-b>org.openiam.am.srvc.dto.AuthResourceAMAttribute</class-b>
+    </mapping>
+
+    <mapping>
+        <class-a>org.openiam.am.srvc.domain.AuthResourceAttributeMapEntity</class-a>
+        <class-b>org.openiam.am.srvc.dto.AuthResourceAttributeMap</class-b>
+        <field>
+            <a>attributeMapId</a>
+            <b>attributeMapId</b>
+        </field>
+        <field>
+            <a>providerId</a>
+            <b>providerId</b>
+        </field>
+        <field>
+            <a>targetAttributeName</a>
+            <b>targetAttributeName</b>
+        </field>
+        <field>
+            <a>amAttributeId</a>
+            <b>amAttributeId</b>
+        </field>
+        <field>
+            <a>amPolicyUrl</a>
+            <b>amPolicyUrl</b>
+        </field>
+        <field>
+            <a>amAttribute.attributeName</a>
+            <b>amAttributeName</b>
+        </field>
+    </mapping>
+
+
+    <mapping>
         <class-a>org.openiam.am.srvc.domain.AuthProviderAttributeEntity</class-a>
         <class-b>org.openiam.am.srvc.dto.AuthProviderAttribute</class-b>
         <field>
@@ -51,47 +86,5 @@
             <b>attributeName</b>
         </field>
     </mapping>
-
-    <mapping>
-        <class-a>org.openiam.am.srvc.domain.AuthResourceAttributeEntity</class-a>
-        <class-b>org.openiam.am.srvc.dto.AttributeMap</class-b>
-        <field>
-            <a>attributeMapId</a>
-            <b>attributeMapId</b>
-        </field>
-        <field>
-            <a>resourceId</a>
-            <b>resourceId</b>
-        </field>
-        <field>
-            <a>amAttributeName</a>
-            <b>accessManagerAttributeName</b>
-        </field>
-        <field>
-            <a>amPolicyUrl</a>
-            <b>policyUrl</b>
-        </field>
-        <field>
-            <a>targetAttributeName</a>
-            <b>targetAttributeName</b>
-        </field>
-        <field-exclude>
-            <a>resource</a>
-            <b>resource</b>
-        </field-exclude>
-    </mapping>
-
-    <!--<mapping>-->
-        <!--<class-a>org.openiam.idm.srvc.org.domain.UserAffiliationEntity</class-a>-->
-        <!--<class-b>org.openiam.idm.srvc.org.dto.UserAffiliation</class-b>-->
-        <!--<field>-->
-            <!--<a>organization.orgId</a>-->
-            <!--<b>organizationId</b>-->
-        <!--</field>-->
-        <!--<field>-->
-            <!--<a>user.userId</a>-->
-            <!--<b>userId</b>-->
-        <!--</field>-->
-    <!--</mapping>-->
 
 </mappings>

@@ -25,6 +25,10 @@
             <b>providerAttributeSet</b>
         </field-exclude>
         <field-exclude>
+            <a>resourceAttributeSet</a>
+            <b>resourceAttributeSet</b>
+        </field-exclude>
+        <field-exclude>
             <a>resource</a>
             <b>resource</b>
         </field-exclude>
@@ -55,8 +59,8 @@
         <class-a>org.openiam.am.srvc.domain.AuthResourceAttributeEntity</class-a>
         <class-b>org.openiam.am.srvc.domain.AuthResourceAttributeEntity</class-b>
         <field-exclude>
-            <a>resource</a>
-            <b>resource</b>
+            <a>provider</a>
+            <b>provider</b>
         </field-exclude>
     </mapping>
 

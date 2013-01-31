@@ -8,8 +8,9 @@ import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 
 import javax.persistence.*;
-
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 @Entity
@@ -55,6 +56,10 @@ public class AuthProviderEntity implements Serializable {
 
     @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "provider")
     private Set<AuthProviderAttributeEntity> providerAttributeSet;
+
+    @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "provider")
+    @MapKey(name = "targetAttributeName")
+    private Map<String, AuthResourceAttributeMapEntity> resourceAttributeMap=new HashMap<String, AuthResourceAttributeMapEntity>(0);
 
     public String getProviderId() {
         return providerId;
@@ -158,5 +163,13 @@ public class AuthProviderEntity implements Serializable {
 
     public void setProviderAttributeSet(Set<AuthProviderAttributeEntity> providerAttributeSet) {
         this.providerAttributeSet = providerAttributeSet;
+    }
+
+    public Map<String, AuthResourceAttributeMapEntity> getResourceAttributeMap() {
+        return resourceAttributeMap;
+    }
+
+    public void setResourceAttributeMap(Map<String, AuthResourceAttributeMapEntity> resourceAttributeMap) {
+        this.resourceAttributeMap = resourceAttributeMap;
     }
 }
