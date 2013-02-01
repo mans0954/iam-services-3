@@ -3,10 +3,7 @@ package org.openiam.am.srvc.service;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.dao.*;
-import org.openiam.am.srvc.domain.AuthAttributeEntity;
-import org.openiam.am.srvc.domain.AuthProviderAttributeEntity;
-import org.openiam.am.srvc.domain.AuthProviderEntity;
-import org.openiam.am.srvc.domain.AuthProviderTypeEntity;
+import org.openiam.am.srvc.domain.*;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
@@ -16,10 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Service("authProviderService")
 public class AuthProviderServiceImpl implements AuthProviderService {
@@ -36,6 +30,8 @@ public class AuthProviderServiceImpl implements AuthProviderService {
     private AuthProviderAttributeDao authProviderAttributeDao;
     @Autowired
     private AuthResourceAttributeMapDao authResourceAttributeMapDao;
+    @Autowired
+    private AuthResourceAttributeService authResourceAttributeService;
     @Autowired
     private ResourceDAO resourceDao;
     @Autowired
@@ -163,7 +159,7 @@ public class AuthProviderServiceImpl implements AuthProviderService {
     }
     @Override
     @Transactional
-    public void addAuthProvider(AuthProviderEntity provider) {
+    public void addAuthProvider(AuthProviderEntity provider) throws Exception{
         if(provider==null)
             throw new NullPointerException("provider is null");
         if(provider.getProviderType()==null || provider.getProviderType().trim().isEmpty())
@@ -191,30 +187,21 @@ public class AuthProviderServiceImpl implements AuthProviderService {
         provider.setResourceId(resource.getResourceId());
         
         Set<AuthProviderAttributeEntity> providerAttributeSet = provider.getProviderAttributeSet();
+        Map<String, AuthResourceAttributeMapEntity> resourceAttributeMap = provider.getResourceAttributeMap();
         provider.setProviderAttributeSet(null);
+        provider.setResourceAttributeMap(null);
         authProviderDao.add(provider);
         if(providerAttributeSet!=null && !providerAttributeSet.isEmpty()){
             saveAuthProviderAttributes(provider, providerAttributeSet);
         }
-//        Set<AuthProviderAttributeEntity> providerAttributeSet = provider.getProviderAttributeSet();
-//        entity.setProviderAttributeSet(null);
-//        authProviderDao.save(entity);
-//        if(provider.getProviderAttributeSet()!=null && !provider.getProviderAttributeSet().isEmpty()){
-//            entity.setProviderAttributeSet(provider.getProviderAttributeSet());
-//            for (AuthProviderAttributeEntity attribute : providerAttributeSet) {
-//                attribute.setProviderId(provider.getProviderId());
-//                if(attribute.getProviderAttributeId()!=null){
-//                    updateAuthProviderAttribute(attribute);
-//                }else{
-//                    addAuthProviderAttribute(attribute);
-//                }
-//            }
-//        }
+        if(resourceAttributeMap!=null && !resourceAttributeMap.isEmpty()){
+            saveAuthResourceAttributes(provider, resourceAttributeMap);
+        }
     }
 
     @Override
     @Transactional
-    public void updateAuthProvider(AuthProviderEntity provider) {
+    public void updateAuthProvider(AuthProviderEntity provider) throws Exception{
         if(provider==null)
             throw new NullPointerException("provider is null");
         if(provider.getProviderType()==null || provider.getProviderType().trim().isEmpty())
@@ -249,6 +236,9 @@ public class AuthProviderServiceImpl implements AuthProviderService {
         authProviderDao.save(entity);
         if(provider.getProviderAttributeSet()!=null && !provider.getProviderAttributeSet().isEmpty()){
             saveAuthProviderAttributes(entity, provider.getProviderAttributeSet());
+        }
+        if(provider.getResourceAttributeMap()!=null && !provider.getResourceAttributeMap().isEmpty()){
+            saveAuthResourceAttributes(entity, provider.getResourceAttributeMap());
         }
     }
 
@@ -367,25 +357,6 @@ public class AuthProviderServiceImpl implements AuthProviderService {
 
     @Transactional
     private void saveAuthProviderAttributes(AuthProviderEntity provider, Set<AuthProviderAttributeEntity> newAttributes){
-//        AuthAttributeEntity example = new AuthAttributeEntity();
-//        example.setProviderType(provider.getProviderType());
-//        List<AuthAttributeEntity> attributeEntityList = this.findAuthAttributeBeans(example, Integer.MAX_VALUE,0);
-//        Set<String> newAttributesIds = new HashSet<String>();
-//        for(AuthProviderAttributeEntity providerAttributeEntity: newAttributes){
-//            newAttributesIds.add(providerAttributeEntity.getAttributeId());
-//        }
-//        for(AuthAttributeEntity attr: attributeEntityList){
-//            if(!newAttributesIds.contains(attr.getAuthAttributeId())){
-//                // need to delete attribute from provider.
-//                AuthProviderAttributeEntity providerAttributeEntity = new AuthProviderAttributeEntity();
-//                providerAttributeEntity.setProviderId(provider.getProviderId());
-//                providerAttributeEntity.setAttributeId(attr.getAuthAttributeId());
-//                providerAttributeEntity.setValue(null);
-//                providerAttributeEntity.setProviderAttributeId("");
-//                newAttributes.add(providerAttributeEntity);
-//            }
-//        }
-
         for (AuthProviderAttributeEntity attribute : newAttributes) {
             attribute.setProviderId(provider.getProviderId());
             if(attribute.getProviderAttributeId()!=null){
@@ -393,6 +364,14 @@ public class AuthProviderServiceImpl implements AuthProviderService {
             }else{
                 addAuthProviderAttribute(attribute);
             }
+        }
+    }
+
+    @Transactional
+    private void saveAuthResourceAttributes(AuthProviderEntity provider, Map<String, AuthResourceAttributeMapEntity> newAttributes) throws Exception{
+        for (AuthResourceAttributeMapEntity attribute : newAttributes.values()) {
+            attribute.setProviderId(provider.getProviderId());
+            authResourceAttributeService.saveAttributeMap(attribute);
         }
     }
 }

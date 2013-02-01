@@ -49,8 +49,8 @@ public interface AuthProviderService {
     */
     public List<AuthProviderEntity> findAuthProviderBeans(AuthProviderEntity searchBean, Integer size, Integer from);
     public Integer getNumOfAuthProviderBeans(AuthProviderEntity searchBean);
-    public void addAuthProvider(AuthProviderEntity attribute);
-    public void updateAuthProvider(AuthProviderEntity attribute);
+    public void addAuthProvider(AuthProviderEntity attribute) throws Exception;
+    public void updateAuthProvider(AuthProviderEntity attribute) throws Exception;
     public void deleteAuthProvider(String providerId);
     public void deleteAuthProviderByType(String providerType);
 
