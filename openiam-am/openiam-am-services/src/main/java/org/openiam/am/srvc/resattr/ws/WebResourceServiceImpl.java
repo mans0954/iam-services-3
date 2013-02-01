@@ -16,6 +16,7 @@ import javax.jws.WebService;
 import java.util.List;
 
 @Service("webResource")
+@Deprecated
 @WebService(endpointInterface = "org.openiam.am.srvc.resattr.ws.WebResourceService",
             targetNamespace = "urn:idm.openiam.org/srvc/res/service", portName = "WebResourceServicePort",
             serviceName = "WebResourceService")

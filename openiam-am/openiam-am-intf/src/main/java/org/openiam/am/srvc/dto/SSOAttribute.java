@@ -4,13 +4,16 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
+/**
+ * User: Alexander Duckardt
+ * Date: 8/16/12
+ */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "Attribute", propOrder = {
+@XmlType(name = "SSOAttribute", propOrder = {
         "targetAttributeName",
         "attributeValue"
 })
-@Deprecated
-public class Attribute implements Comparable<Attribute> {
+public class SSOAttribute implements Comparable<SSOAttribute> {
     private String targetAttributeName;
     private String attributeValue;
 
@@ -30,7 +33,7 @@ public class Attribute implements Comparable<Attribute> {
     }
 
     @Override
-    public int compareTo(Attribute o) {
+    public int compareTo(SSOAttribute o) {
         return this.targetAttributeName.compareTo(o.targetAttributeName);
     }
 

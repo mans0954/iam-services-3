@@ -10,6 +10,8 @@ import org.openiam.core.dao.BaseDaoImpl;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Repository("authResourceAttributeMapDao")
 public class AuthResourceAttributeMapDaoImpl extends BaseDaoImpl<AuthResourceAttributeMapEntity, String> implements AuthResourceAttributeMapDao {
     @Override
@@ -87,5 +89,23 @@ public class AuthResourceAttributeMapDaoImpl extends BaseDaoImpl<AuthResourceAtt
         Query qry = getSession().createQuery("delete "+this.domainClass.getName()+ " o where o.providerId =:providerId ");
         qry.setParameter("providerId", providerId);
         return  qry.executeUpdate();
+    }
+
+    @Override
+    @Transactional
+    public int deleteByAMAttributeId(String attributeId) {
+        Query qry = getSession().createQuery("delete "+this.domainClass.getName()+ " o where o.amAttributeId =:attributeId ");
+        qry.setParameter("attributeId", attributeId);
+        return  qry.executeUpdate();
+    }
+
+    @Override
+    @Transactional
+    public void deleteByProviderList(List<String> providerIdList) {
+        if(providerIdList==null || providerIdList.isEmpty())
+            return;
+        Query qry = getSession().createQuery("delete "+this.domainClass.getName()+ " o where o.providerId in(:providerIdList)");
+        qry.setParameter("providerIdList", providerIdList);
+        qry.executeUpdate();
     }
 }

@@ -9,6 +9,7 @@ import java.util.List;
  * User: Alexander Duckardt
  * Date: 8/16/12
  */
+@Deprecated
 public interface WebResourceAttributeService {
     public AttributeMap getAttributeMap(String attributeId) throws Exception;
 

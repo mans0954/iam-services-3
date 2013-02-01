@@ -19,20 +19,20 @@ public class AuthResourceAttributeMapEntity implements Serializable {
     @GenericGenerator(name="system-uuid", strategy = "uuid")
     @Column(name="ATTRIBUTE_MAP_ID", length=32, nullable = false)
     private String attributeMapId;
-    @Column(name="PROVIDER_ID", length=32, nullable = false, insertable = false, updatable = false)
+    @Column(name="PROVIDER_ID", length=32, nullable = false)
     private String providerId;
     @Column(name="TARGET_ATTRIBUTE_NAME", length=100, nullable = false)
     private String targetAttributeName;
     @Column(name="AM_ATTRIBUTE_ID", length=100, nullable = false)
     private String amAttributeId;
-    @Column(name="AM_ATTRIBUTE_ID", length=100, nullable = true, insertable = false, updatable = false)
+    @Column(name="AM_POLICY_URL", length=100, nullable = true)
     private String amPolicyUrl;
 
-    @ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH})
     @JoinColumn(name="PROVIDER_ID", referencedColumnName = "PROVIDER_ID", insertable = false, updatable = false)
     private AuthProviderEntity provider;
 
-    @ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH})
     @JoinColumn(name="AM_ATTRIBUTE_ID", referencedColumnName = "AM_ATTRIBUTE_ID", insertable = false, updatable = false)
     private AuthResourceAMAttributeEntity amAttribute;
 

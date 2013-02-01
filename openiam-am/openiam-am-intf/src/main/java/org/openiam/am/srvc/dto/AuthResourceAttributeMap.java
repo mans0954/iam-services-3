@@ -8,7 +8,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "AuthResourceAMAttribute", propOrder = {
+@XmlType(name = "AuthResourceAttributeMap", propOrder = {
         "attributeMapId",
         "providerId",
         "amAttributeId",
@@ -16,7 +16,7 @@ import javax.xml.bind.annotation.XmlType;
         "amPolicyUrl"
 })
 @DozerDTOCorrespondence(AuthResourceAttributeMapEntity.class)
-public class AuthResourceAttributeMap extends Attribute {
+public class AuthResourceAttributeMap extends SSOAttribute {
     private String attributeMapId;
     private String providerId;
     private String amAttributeId;

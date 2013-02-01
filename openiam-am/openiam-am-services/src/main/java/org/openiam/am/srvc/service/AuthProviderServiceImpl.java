@@ -2,10 +2,7 @@ package org.openiam.am.srvc.service;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.am.srvc.dao.AuthAttributeDao;
-import org.openiam.am.srvc.dao.AuthProviderAttributeDao;
-import org.openiam.am.srvc.dao.AuthProviderDao;
-import org.openiam.am.srvc.dao.AuthProviderTypeDao;
+import org.openiam.am.srvc.dao.*;
 import org.openiam.am.srvc.domain.AuthAttributeEntity;
 import org.openiam.am.srvc.domain.AuthProviderAttributeEntity;
 import org.openiam.am.srvc.domain.AuthProviderEntity;
@@ -37,6 +34,8 @@ public class AuthProviderServiceImpl implements AuthProviderService {
     private AuthProviderDao authProviderDao;
     @Autowired
     private AuthProviderAttributeDao authProviderAttributeDao;
+    @Autowired
+    private AuthResourceAttributeMapDao authResourceAttributeMapDao;
     @Autowired
     private ResourceDAO resourceDao;
     @Autowired
@@ -258,6 +257,7 @@ public class AuthProviderServiceImpl implements AuthProviderService {
     public void deleteAuthProvider(String providerId) {
         AuthProviderEntity entity = authProviderDao.findById(providerId);
         if(entity!=null){
+            authResourceAttributeMapDao.deleteByProviderId(providerId);
             this.deleteAuthProviderAttributes(providerId);
             authProviderDao.deleteByPkList(Arrays.asList(new String[]{providerId}));
             resourceDataService.deleteResource(entity.getResourceId());
@@ -279,6 +279,7 @@ public class AuthProviderServiceImpl implements AuthProviderService {
                 resourceIdList.add(provider.getResourceId());
             }
             authProviderAttributeDao.deleteByProviderList(pkList);
+            authResourceAttributeMapDao.deleteByProviderList(pkList);
             authProviderDao.deleteByPkList(pkList);
             for (String resourceId :resourceIdList){
                 resourceDataService.deleteResource(resourceId);

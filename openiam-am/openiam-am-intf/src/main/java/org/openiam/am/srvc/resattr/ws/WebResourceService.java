@@ -11,6 +11,7 @@ import java.util.List;
 
 
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/res/service", name = "WebResourceService")
+@Deprecated
 public interface WebResourceService {
 
     @WebMethod
