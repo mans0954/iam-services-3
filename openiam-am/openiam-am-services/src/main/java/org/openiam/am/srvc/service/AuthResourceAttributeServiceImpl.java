@@ -164,7 +164,7 @@ public class AuthResourceAttributeServiceImpl implements AuthResourceAttributeSe
             // get default identity object
             EnumMap<AmAttributes, Object> objectMap = new EnumMap<AmAttributes, Object>(AmAttributes.class);
             objectMap.put(AmAttributes.Login, getLoginObject(userId, managedSysId));
-            objectMap.put(AmAttributes.Login, getUserObject(userId));
+            objectMap.put(AmAttributes.User, getUserObject(userId));
 
 
             for (AuthResourceAttributeMapEntity attr : attributeMapList) {
