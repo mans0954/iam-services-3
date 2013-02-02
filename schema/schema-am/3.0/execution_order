@@ -3,3 +3,5 @@ ddl/2.alter_provider_table.sql
 ddl/3.web_resource_attr.sql
 dml/1.insert_initial_data.sql
 dml/2.create_auth_provider_menus.sql
+ddl/4.create_auth_resource_attribute_table.sql
+dml/3.create_auth_provider_am_attr_menus.sql
