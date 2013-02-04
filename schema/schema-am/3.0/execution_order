@@ -5,3 +5,5 @@ dml/1.insert_initial_data.sql
 dml/2.create_auth_provider_menus.sql
 ddl/4.create_auth_resource_attribute_table.sql
 dml/3.create_auth_provider_am_attr_menus.sql
+ddl/5.alter_auth_resource_attribute_map.sql
+dml/4.update_auth_resource_attribute_map.sql
