@@ -44,6 +44,14 @@
             <b>targetAttributeName</b>
         </field>
         <field>
+            <a>attributeValue</a>
+            <b>attributeValue</b>
+        </field>
+        <field>
+            <a>attributeType</a>
+            <b>attributeType</b>
+        </field>
+        <field>
             <a>amAttributeId</a>
             <b>amAttributeId</b>
         </field>

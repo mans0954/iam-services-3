@@ -47,6 +47,6 @@ public interface AuthResourceAttributeService {
 
     public void removeAttributeMaps(String providerId) throws Exception;
 
-    public List<SSOAttribute> getSSOAttributes(String providerId, String userId, String managedSysId);
+    public List<SSOAttribute> getSSOAttributes(String providerId, String userId);
 
 }

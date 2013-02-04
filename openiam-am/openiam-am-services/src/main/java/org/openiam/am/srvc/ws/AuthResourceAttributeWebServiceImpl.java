@@ -116,7 +116,11 @@ public class AuthResourceAttributeWebServiceImpl implements AuthResourceAttribut
                 throw new BasicDataServiceException(ResponseCode.AUTH_PROVIDER_NOT_SET);
             if (attributeMap.getTargetAttributeName() == null || attributeMap.getTargetAttributeName().trim().isEmpty())
                 throw new BasicDataServiceException(ResponseCode.AUTH_RESOURCE_TARGET_ATTRIBUTE_NOT_SET);
-            if (attributeMap.getAmAttributeId() == null || attributeMap.getAmAttributeId().trim().isEmpty())
+            if (attributeMap.getAttributeType() == null)
+                throw new BasicDataServiceException(ResponseCode.AUTH_RESOURCE_ATTRIBUTE_TYPE_NOT_SET);
+            if ((attributeMap.getAmAttributeId() == null || attributeMap.getAmAttributeId().trim().isEmpty())
+                 &&(attributeMap.getAttributeValue() == null || attributeMap.getAttributeValue().trim().isEmpty())
+                 &&(attributeMap.getAmPolicyUrl() == null || attributeMap.getAmPolicyUrl().trim().isEmpty()))
                 throw new BasicDataServiceException(ResponseCode.AUTH_RESOURCE_AM_ATTRIBUTE_NOT_SET);
 
 
@@ -199,9 +203,7 @@ public class AuthResourceAttributeWebServiceImpl implements AuthResourceAttribut
 
     @Override
     public List<SSOAttribute> getSSOAttributes(@WebParam(name = "providerId", targetNamespace = "") String providerId,
-                                               @WebParam(name = "userId", targetNamespace = "") String userId,
-                                               @WebParam(name = "managedSysId", targetNamespace = "")
-                                               String managedSysId) {
-        return authResourceAttributeService.getSSOAttributes(providerId, userId, managedSysId);
+                                               @WebParam(name = "userId", targetNamespace = "") String userId) {
+        return authResourceAttributeService.getSSOAttributes(providerId, userId);
     }
 }
