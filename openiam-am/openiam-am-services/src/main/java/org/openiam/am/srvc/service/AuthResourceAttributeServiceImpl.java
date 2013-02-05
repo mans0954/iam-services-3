@@ -190,10 +190,10 @@ public class AuthResourceAttributeServiceImpl implements AuthResourceAttributeSe
             EnumMap<AmAttributes, Object> objectMap = new EnumMap<AmAttributes, Object>(AmAttributes.class);
             objectMap.put(AmAttributes.Login, getLoginObject(userId, provider.getManagedSysId()));
             objectMap.put(AmAttributes.User, getUserObject(userId));
-
+            Map<String, UserAttributeEntity> userAttributeEntityMap = userManager.getAllAttributes(userId);
 
             for (AuthResourceAttributeMapEntity attr : attributeMapList) {
-                resultList.add(parseAttribute(attr, userId, objectMap));
+                resultList.add(parseAttribute(attr, userAttributeEntityMap, objectMap));
             }
         } catch (Exception ex) {
             resultList.clear();
@@ -230,7 +230,7 @@ public class AuthResourceAttributeServiceImpl implements AuthResourceAttributeSe
     }
 
 
-    private SSOAttribute parseAttribute(AuthResourceAttributeMapEntity attr, String userId, EnumMap<AmAttributes, Object> objectMap) throws Exception {
+    private SSOAttribute parseAttribute(AuthResourceAttributeMapEntity attr, Map<String, UserAttributeEntity> userAttributeEntityMap, EnumMap<AmAttributes, Object> objectMap) throws Exception {
         SSOAttribute attribute = new SSOAttribute();
 
         String attrValue = "";
@@ -238,7 +238,7 @@ public class AuthResourceAttributeServiceImpl implements AuthResourceAttributeSe
             attrValue = attr.getAttributeValue();
         } else if(attr.getAmPolicyUrl()!=null){
             // TODO: run external groovy script
-            attrValue = executeGroovyScript(userId,attr.getAmPolicyUrl());
+            attrValue = executeGroovyScript(userAttributeEntityMap,attr.getAmPolicyUrl());
         } else{
             if (attr.getAmAttributeId() == null) {
                 throw new NullPointerException("AccessManagerAttributeName is null");
@@ -264,11 +264,10 @@ public class AuthResourceAttributeServiceImpl implements AuthResourceAttributeSe
         return attribute;
     }
 
-    private String executeGroovyScript(String userId, String amPolicyUrl) {
+    private String executeGroovyScript(Map<String, UserAttributeEntity> userAttributeEntityMap, String amPolicyUrl) {
         String result="";
         if(this.scriptEngine!=null && !this.scriptEngine.trim().isEmpty()){
             try {
-                Map<String, UserAttributeEntity> userAttributeEntityMap = userManager.getAllAttributes(userId);
                 if(userAttributeEntityMap!=null && !userAttributeEntityMap.isEmpty()){
                     ScriptIntegration se = ScriptFactory.createModule(this.scriptEngine);
                     Map<String, Object> bindingMap = new HashMap<String, Object>();
