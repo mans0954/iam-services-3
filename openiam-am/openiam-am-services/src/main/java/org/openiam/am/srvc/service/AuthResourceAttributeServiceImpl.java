@@ -12,21 +12,29 @@ import org.openiam.am.srvc.domain.AuthResourceAttributeMapEntity;
 import org.openiam.am.srvc.dto.SSOAttribute;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
+import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
+import org.openiam.script.ScriptFactory;
+import org.openiam.script.ScriptIntegration;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.List;
+import java.util.*;
 
 @Service
-public class AuthResourceAttributeServiceImpl implements AuthResourceAttributeService{
+public class AuthResourceAttributeServiceImpl implements AuthResourceAttributeService,ApplicationContextAware {
     protected final Log log = LogFactory.getLog(this.getClass());
+
+    private static ApplicationContext applicationContext;
     @Autowired
     private AuthResourceAttributeMapDao authResourceAttributeMapDao;
     @Autowired
@@ -36,7 +44,10 @@ public class AuthResourceAttributeServiceImpl implements AuthResourceAttributeSe
     @Autowired
     private LoginDataService loginManager;
     @Autowired
-    protected UserDataService userManager;
+    private UserDataService userManager;
+    @Autowired
+    @Qualifier("scriptEngine")
+    private String scriptEngine;
     /*
     *==================================================
     * AuthResourceAMAttribute section
@@ -182,7 +193,7 @@ public class AuthResourceAttributeServiceImpl implements AuthResourceAttributeSe
 
 
             for (AuthResourceAttributeMapEntity attr : attributeMapList) {
-                resultList.add(parseAttribute(attr, objectMap));
+                resultList.add(parseAttribute(attr, userId, objectMap));
             }
         } catch (Exception ex) {
             resultList.clear();
@@ -219,7 +230,7 @@ public class AuthResourceAttributeServiceImpl implements AuthResourceAttributeSe
     }
 
 
-    private SSOAttribute parseAttribute(AuthResourceAttributeMapEntity attr, EnumMap<AmAttributes, Object> objectMap) throws Exception {
+    private SSOAttribute parseAttribute(AuthResourceAttributeMapEntity attr, String userId, EnumMap<AmAttributes, Object> objectMap) throws Exception {
         SSOAttribute attribute = new SSOAttribute();
 
         String attrValue = "";
@@ -227,7 +238,7 @@ public class AuthResourceAttributeServiceImpl implements AuthResourceAttributeSe
             attrValue = attr.getAttributeValue();
         } else if(attr.getAmPolicyUrl()!=null){
             // TODO: run external groovy script
-            attrValue = "";
+            attrValue = executeGroovyScript(userId,attr.getAmPolicyUrl());
         } else{
             if (attr.getAmAttributeId() == null) {
                 throw new NullPointerException("AccessManagerAttributeName is null");
@@ -251,6 +262,30 @@ public class AuthResourceAttributeServiceImpl implements AuthResourceAttributeSe
         attribute.setTargetAttributeName(attr.getTargetAttributeName());
         attribute.setAttributeValue(attrValue);
         return attribute;
+    }
+
+    private String executeGroovyScript(String userId, String amPolicyUrl) {
+        String result="";
+        if(this.scriptEngine!=null && !this.scriptEngine.trim().isEmpty()){
+            try {
+                Map<String, UserAttributeEntity> userAttributeEntityMap = userManager.getAllAttributes(userId);
+                if(userAttributeEntityMap!=null && !userAttributeEntityMap.isEmpty()){
+                    ScriptIntegration se = ScriptFactory.createModule(this.scriptEngine);
+                    Map<String, Object> bindingMap = new HashMap<String, Object>();
+                    bindingMap.put("userAttributeMap", userAttributeEntityMap);
+                    bindingMap.put("applicationContext",applicationContext);
+
+                    if(!amPolicyUrl.startsWith("/"))
+                        amPolicyUrl="/"+amPolicyUrl;
+                    AuthResourceAttributeMapper mapper = (AuthResourceAttributeMapper) se.instantiateClass(null, amPolicyUrl);
+                    mapper.init(bindingMap);
+                    result=mapper.mapAttribute();
+                }
+            } catch (Exception e) {
+                log.error(e.getMessage(),e);
+            }
+        }
+        return result;
     }
 
     private String getAttributeValue(Object obj, String[] map,int currentMapIndex) throws Exception{
@@ -294,4 +329,8 @@ public class AuthResourceAttributeServiceImpl implements AuthResourceAttributeSe
     }
 
 
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
+    }
 }

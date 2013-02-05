@@ -29,16 +29,6 @@ public interface AuthResourceAttributeService {
 
     public List<AuthResourceAttributeMapEntity> getAttributeMapList(String providerId) ;
 
-//    public List<AuthResourceAttributeMapEntity> getAttributeMapList(String providerId, Integer from, Integer size) throws Exception;
-//
-//    public List<AuthResourceAttributeMapEntity> getAttributeMapList(AuthResourceAttributeMapEntity searchBean) throws Exception;
-//
-//    public List<AuthResourceAttributeMapEntity> getAttributeMapList(AuthResourceAttributeMapEntity searchBean, Integer from, Integer size) throws Exception;
-
-//    public Integer getNumOfAttributeMapList(String providerId) throws Exception;
-//
-//    public Integer getNumOfAttributeMapList(AuthResourceAttributeMapEntity searchBean) throws Exception;
-
     public AuthResourceAttributeMapEntity saveAttributeMap(AuthResourceAttributeMapEntity attribute) throws Exception;
 
     public void saveAttributeMapCollection(List<AuthResourceAttributeMapEntity> attributeList) throws Exception;
