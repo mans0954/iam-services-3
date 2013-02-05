@@ -29,7 +29,8 @@ import org.openiam.idm.srvc.res.dto.ResourceProp;
         "isPublic",
         "firstChild",
         "nextSibling",
-        "entitlementTypeList"
+        "entitlementTypeList",
+        "isVisible"
 })
 public class AuthorizationMenu implements Serializable {
 	
@@ -55,6 +56,9 @@ public class AuthorizationMenu implements Serializable {
 	
 	@JsonProperty("isPublic")
 	private boolean isPublic = false;
+	
+	@JsonProperty("visible")
+	private boolean isVisible = true;
 	
 	/* XMLTransient b/c otherwould would cause infinite loop */
 	@XmlTransient
@@ -161,8 +165,16 @@ public class AuthorizationMenu implements Serializable {
 				if(icon == null && StringUtils.equalsIgnoreCase(prop.getName(), AuthorizationConstants.MENU_ITEM_ICON_PROPERTY)) {
 					icon = StringUtils.trimToNull(prop.getPropValue());
 				}
+				
+				if(StringUtils.equals(prop.getName(), AuthorizationConstants.MENU_ITEM_IS_VISIBLE)) {
+					isVisible = StringUtils.equalsIgnoreCase("true", prop.getPropValue());
+				}
 			}
 		}
+	}
+	
+	public boolean getIsVisible() {
+		return isVisible;
 	}
 	
 	public boolean getIsPublic() {
@@ -321,6 +333,7 @@ public class AuthorizationMenu implements Serializable {
 		menu.setUrl(getUrl());
 		menu.displayName = displayName;
 		menu.isPublic = isPublic;
+		menu.isVisible = isVisible;
 		return menu;
 	}
 }

@@ -389,6 +389,12 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 		urlProp.setPropValue(menu.getUrl());
 		resource.addResourceProperty(urlProp);
 		
+		final ResourcePropEntity visibleProp = new ResourcePropEntity();
+		visibleProp.setResourceId(resource.getResourceId());
+		visibleProp.setName(AuthorizationConstants.MENU_ITEM_IS_VISIBLE);
+		visibleProp.setPropValue(Boolean.valueOf(menu.getIsVisible()).toString());
+		resource.addResourceProperty(visibleProp);
+		
 		return resource;
 	}
 	
@@ -401,6 +407,17 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 		ResourcePropEntity displayNameProp = resource.getResourceProperty(AuthorizationConstants.MENU_ITEM_DISPLAY_NAME_PROPERTY);
 		ResourcePropEntity iconProp = resource.getResourceProperty(AuthorizationConstants.MENU_ITEM_ICON_PROPERTY);
 		ResourcePropEntity urlProp = resource.getResourceProperty(AuthorizationConstants.URL_PATTERN_PROPERTY);
+		ResourcePropEntity visibleProp = resource.getResourceProperty(AuthorizationConstants.MENU_ITEM_IS_VISIBLE);
+		
+		if(visibleProp != null) {
+			visibleProp.setPropValue(Boolean.valueOf(menu.getIsVisible()).toString());
+		} else {
+			visibleProp = new ResourcePropEntity();
+			visibleProp.setResourceId(resource.getResourceId());
+			visibleProp.setName(AuthorizationConstants.MENU_ITEM_IS_VISIBLE);
+			visibleProp.setPropValue(Boolean.valueOf(menu.getIsVisible()).toString());
+			resource.addResourceProperty(visibleProp);
+		}
 		
 		if(displayNameProp != null) {
 			displayNameProp.setPropValue(menu.getDisplayName());
