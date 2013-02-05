@@ -3,8 +3,10 @@ package org.openiam.am.srvc.service;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.constants.AmAttributes;
+import org.openiam.am.srvc.dao.AuthProviderDao;
 import org.openiam.am.srvc.dao.AuthResourceAMAttributeDao;
 import org.openiam.am.srvc.dao.AuthResourceAttributeMapDao;
+import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.am.srvc.domain.AuthResourceAMAttributeEntity;
 import org.openiam.am.srvc.domain.AuthResourceAttributeMapEntity;
 import org.openiam.am.srvc.dto.SSOAttribute;
@@ -29,6 +31,8 @@ public class AuthResourceAttributeServiceImpl implements AuthResourceAttributeSe
     private AuthResourceAttributeMapDao authResourceAttributeMapDao;
     @Autowired
     private AuthResourceAMAttributeDao authResourceAMAttributeDao;
+    @Autowired
+    private AuthProviderDao authProviderDao;
     @Autowired
     private LoginDataService loginManager;
     @Autowired
@@ -104,7 +108,11 @@ public class AuthResourceAttributeServiceImpl implements AuthResourceAttributeSe
             throw new NullPointerException("Provider is not set");
         if (attribute.getTargetAttributeName() == null || attribute.getTargetAttributeName().trim().isEmpty())
             throw new NullPointerException("TargetAttributeName is not set");
-        if (attribute.getAmAttributeId() == null || attribute.getAmAttributeId().trim().isEmpty())
+        if (attribute.getAttributeType() == null)
+            throw new NullPointerException("Attribute type is not defined");
+        if ((attribute.getAmAttributeId() == null || attribute.getAmAttributeId().trim().isEmpty())
+            &&(attribute.getAttributeValue() == null || attribute.getAttributeValue().trim().isEmpty())
+            &&(attribute.getAmPolicyUrl() == null || attribute.getAmPolicyUrl().trim().isEmpty()))
             throw new NullPointerException("Attribute map is not defined");
 
         AuthResourceAttributeMapEntity example = new AuthResourceAttributeMapEntity();
@@ -117,6 +125,8 @@ public class AuthResourceAttributeServiceImpl implements AuthResourceAttributeSe
             AuthResourceAttributeMapEntity entity = attr.get(0);
             entity.setAmAttributeId(attribute.getAmAttributeId());
             entity.setAmPolicyUrl(attribute.getAmPolicyUrl());
+            entity.setAttributeValue(attribute.getAttributeValue());
+            entity.setAttributeType(attribute.getAttributeType());
             entity.setAmAttribute(null);
             authResourceAttributeMapDao.save(entity);
             return entity;
@@ -152,10 +162,14 @@ public class AuthResourceAttributeServiceImpl implements AuthResourceAttributeSe
     }
 
     @Override
-    public List<SSOAttribute> getSSOAttributes(String providerId, String userId, String managedSysId) {
+    public List<SSOAttribute> getSSOAttributes(String providerId, String userId) {
         List<SSOAttribute> resultList = new ArrayList<SSOAttribute>();
         try {
             log.debug("try to get attribute list by provider id:" + providerId);
+            AuthProviderEntity provider = authProviderDao.findById(providerId);
+
+            if(provider==null)
+                throw new NullPointerException("Auth Provider with id: "+providerId+" not found");
             // get attribute list for resource Id
             List<AuthResourceAttributeMapEntity> attributeMapList = getAttributeMapList(providerId);
             if (attributeMapList == null || attributeMapList.isEmpty()) {
@@ -163,7 +177,7 @@ public class AuthResourceAttributeServiceImpl implements AuthResourceAttributeSe
             }
             // get default identity object
             EnumMap<AmAttributes, Object> objectMap = new EnumMap<AmAttributes, Object>(AmAttributes.class);
-            objectMap.put(AmAttributes.Login, getLoginObject(userId, managedSysId));
+            objectMap.put(AmAttributes.Login, getLoginObject(userId, provider.getManagedSysId()));
             objectMap.put(AmAttributes.User, getUserObject(userId));
 
 
@@ -207,32 +221,33 @@ public class AuthResourceAttributeServiceImpl implements AuthResourceAttributeSe
 
     private SSOAttribute parseAttribute(AuthResourceAttributeMapEntity attr, EnumMap<AmAttributes, Object> objectMap) throws Exception {
         SSOAttribute attribute = new SSOAttribute();
-        if (attr.getAmAttributeId() == null) {
-            throw new NullPointerException("AccessManagerAttributeName is null");
-        }
 
-        String[] map = attr.getAmAttributeId().split("\\.");
         String attrValue = "";
-        if (map != null && map.length > 1) {
-            try{
-                attrValue = getAttributeValue(objectMap.get(AmAttributes.valueOf(map[0])), map,1);
-            } catch (IllegalArgumentException ex){
+        if(attr.getAttributeValue()!=null){
+            attrValue = attr.getAttributeValue();
+        } else if(attr.getAmPolicyUrl()!=null){
+            // TODO: run external groovy script
+            attrValue = "";
+        } else{
+            if (attr.getAmAttributeId() == null) {
+                throw new NullPointerException("AccessManagerAttributeName is null");
+            }
+
+            String[] map = attr.getAmAttributeId().split("\\.");
+
+            if (map != null && map.length > 1) {
+                try{
+                    attrValue = getAttributeValue(objectMap.get(AmAttributes.valueOf(map[0])), map,1);
+                } catch (IllegalArgumentException ex){
+                    throw new IllegalStateException("Cannot parse object type from AccessManagerAttributeName: " + attr
+                            .getAmAttributeId());
+                }
+            } else {
                 throw new IllegalStateException("Cannot parse object type from AccessManagerAttributeName: " + attr
                         .getAmAttributeId());
             }
-
-//            if ("Login".equals(map[0])) {
-//                attrValue = getAttributeValue(login, map[1],1,map);
-//            } else  if ("User".equals(map[0])) {
-//                attrValue = getAttributeValue(user, map[1],1,map);
-//            } else {
-//                throw new IllegalStateException("Cannot parse object type from AccessManagerAttributeName: " + attr
-//                        .getAmAttributeId());
-//            }
-        } else {
-            throw new IllegalStateException("Cannot parse object type from AccessManagerAttributeName: " + attr
-                    .getAmAttributeId());
         }
+        attribute.setAttributeType(attr.getAttributeType());
         attribute.setTargetAttributeName(attr.getTargetAttributeName());
         attribute.setAttributeValue(attrValue);
         return attribute;

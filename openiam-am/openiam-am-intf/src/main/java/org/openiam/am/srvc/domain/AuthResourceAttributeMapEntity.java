@@ -1,6 +1,7 @@
 package org.openiam.am.srvc.domain;
 
 import org.hibernate.annotations.GenericGenerator;
+import org.openiam.am.srvc.constants.SsoAttributeType;
 import org.openiam.am.srvc.dto.AuthResourceAttributeMap;
 import org.openiam.dozer.DozerDTOCorrespondence;
 
@@ -23,16 +24,23 @@ public class AuthResourceAttributeMapEntity implements Serializable {
     private String providerId;
     @Column(name="TARGET_ATTRIBUTE_NAME", length=100, nullable = false)
     private String targetAttributeName;
-    @Column(name="AM_ATTRIBUTE_ID", length=100, nullable = false)
+    @Column(name="AM_ATTRIBUTE_ID", length=100, nullable = true)
     private String amAttributeId;
     @Column(name="AM_POLICY_URL", length=100, nullable = true)
     private String amPolicyUrl;
+
+    @Column(name="ATTRIBUTE_VALUE", length=100, nullable = true)
+    private String  attributeValue;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name="ATTRIBUTE_TYPE", length=32, nullable = false)
+    private SsoAttributeType attributeType;
 
     @ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH})
     @JoinColumn(name="PROVIDER_ID", referencedColumnName = "PROVIDER_ID", insertable = false, updatable = false)
     private AuthProviderEntity provider;
 
-    @ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH})
+    @ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH}, optional = true)
     @JoinColumn(name="AM_ATTRIBUTE_ID", referencedColumnName = "AM_ATTRIBUTE_ID", insertable = false, updatable = false)
     private AuthResourceAMAttributeEntity amAttribute;
 
@@ -90,5 +98,21 @@ public class AuthResourceAttributeMapEntity implements Serializable {
 
     public void setAmAttribute(AuthResourceAMAttributeEntity amAttribute) {
         this.amAttribute = amAttribute;
+    }
+
+    public String getAttributeValue() {
+        return attributeValue;
+    }
+
+    public void setAttributeValue(String attributeValue) {
+        this.attributeValue = attributeValue;
+    }
+
+    public SsoAttributeType getAttributeType() {
+        return attributeType;
+    }
+
+    public void setAttributeType(SsoAttributeType attributeType) {
+        this.attributeType = attributeType;
     }
 }

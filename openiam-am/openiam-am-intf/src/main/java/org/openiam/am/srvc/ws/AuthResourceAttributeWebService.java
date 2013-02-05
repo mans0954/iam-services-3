@@ -45,6 +45,5 @@ public interface AuthResourceAttributeWebService {
     public Response removeAttributeMaps(@WebParam(name = "providerId", targetNamespace = "")String providerId);
     @WebMethod
     public List<SSOAttribute> getSSOAttributes(@WebParam(name = "providerId", targetNamespace = "") String providerId,
-                                               @WebParam(name = "userId", targetNamespace = "") String userId,
-                                               @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId);
+                                               @WebParam(name = "userId", targetNamespace = "") String userId);
 }

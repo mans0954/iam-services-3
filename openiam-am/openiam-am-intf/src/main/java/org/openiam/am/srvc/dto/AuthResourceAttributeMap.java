@@ -23,6 +23,8 @@ public class AuthResourceAttributeMap extends SSOAttribute {
     private String amAttributeName;
     private String amPolicyUrl;
 
+
+
     public String getAttributeMapId() {
         return attributeMapId;
     }
