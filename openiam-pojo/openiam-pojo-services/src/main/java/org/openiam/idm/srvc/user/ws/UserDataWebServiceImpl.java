@@ -144,6 +144,10 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 			if(attribute == null) {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
+            if(attribute.getUserId()==null)
+                throw  new BasicDataServiceException(ResponseCode.USER_NOT_SET);
+            if(attribute.getName()==null || attribute.getName().trim().isEmpty())
+                throw  new BasicDataServiceException(ResponseCode.USER_ATTRIBUTE_NAME_NOT_SET);
 			
 			final UserAttributeEntity entity = userAttributeDozerConverter.convertToEntity(attribute, true);
 			userManager.addAttribute(entity);
@@ -798,9 +802,13 @@ public class UserDataWebServiceImpl implements UserDataWebService {
 	public Response updateAttribute(UserAttribute attribute) {		
 		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {
-			if(attribute == null) {
+			if(attribute == null || attribute.getId()==null) {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
+            if(attribute.getUserId()==null)
+                throw  new BasicDataServiceException(ResponseCode.USER_NOT_SET);
+            if(attribute.getName()==null || attribute.getName().trim().isEmpty())
+                throw  new BasicDataServiceException(ResponseCode.USER_ATTRIBUTE_NAME_NOT_SET);
 			
 			final UserAttributeEntity entity = userAttributeDozerConverter.convertToEntity(attribute, false);
 			userManager.updateAttribute(entity);
