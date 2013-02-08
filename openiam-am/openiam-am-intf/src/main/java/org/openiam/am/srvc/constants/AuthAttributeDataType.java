@@ -8,5 +8,5 @@ package org.openiam.am.srvc.constants;
  * To change this template use File | Settings | File Templates.
  */
 public enum AuthAttributeDataType {
-    singleValue, listValue
+    singleValue, listValue, booleanValue;
 }
