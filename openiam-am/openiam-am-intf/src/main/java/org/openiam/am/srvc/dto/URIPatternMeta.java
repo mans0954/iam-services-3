@@ -6,6 +6,19 @@ import java.util.Set;
 import org.openiam.am.srvc.domain.URIPatternMetaEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlType;
+import java.io.Serializable;
+import java.util.Set;
+
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "URIPatternMeta", propOrder = {
+        "id",
+        "pattern",
+        "metaType",
+        "metaValueSet"
+})
 @DozerDTOCorrespondence(URIPatternMetaEntity.class)
 public class URIPatternMeta implements Serializable {
 

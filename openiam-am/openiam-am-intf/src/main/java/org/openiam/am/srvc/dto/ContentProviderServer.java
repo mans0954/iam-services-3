@@ -3,6 +3,18 @@ package org.openiam.am.srvc.dto;
 import org.openiam.am.srvc.domain.ContentProviderServerEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlType;
+import java.io.Serializable;
+
+
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "ContentProviderServer", propOrder = {
+        "id",
+        "contentProvider",
+        "serverURL"
+})
 @DozerDTOCorrespondence(ContentProviderServerEntity.class)
 public class ContentProviderServer {
 

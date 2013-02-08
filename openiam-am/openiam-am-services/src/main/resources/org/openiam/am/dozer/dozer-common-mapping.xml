@@ -18,4 +18,14 @@
         <class-b>org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity</class-b>
     </mapping>
 
+    <mapping>
+        <class-a>org.openiam.am.srvc.domain.AuthLevelEntity</class-a>
+        <class-b>org.openiam.am.srvc.domain.AuthLevelEntity</class-b>
+    </mapping>
+
+    <mapping>
+        <class-a>org.openiam.am.srvc.domain.URIPatternMetaTypeEntity</class-a>
+        <class-b>org.openiam.am.srvc.domain.URIPatternMetaTypeEntity</class-b>
+    </mapping>
+
 </mappings>

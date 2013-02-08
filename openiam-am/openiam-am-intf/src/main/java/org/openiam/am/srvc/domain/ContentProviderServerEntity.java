@@ -14,10 +14,15 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
 import org.hibernate.annotations.GenericGenerator;
+import org.openiam.am.srvc.dto.ContentProviderServer;
+import org.openiam.dozer.DozerDTOCorrespondence;
+
+import javax.persistence.*;
 
 @Entity
 @Table(name = "CONTENT_PROVIDER_SERVER")
-public class ContentProviderServerEntity implements Serializable {
+@DozerDTOCorrespondence(ContentProviderServer.class)
+public class ContentProviderServerEntity {
 
 	@Id
     @GeneratedValue(generator = "system-uuid")

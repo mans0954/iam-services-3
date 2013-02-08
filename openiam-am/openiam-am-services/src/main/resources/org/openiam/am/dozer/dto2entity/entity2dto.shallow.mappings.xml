@@ -50,4 +50,73 @@
         </field-exclude>
     </mapping>
 
+    <mapping>
+        <class-a>org.openiam.am.srvc.domain.ContentProviderEntity</class-a>
+        <class-b>org.openiam.am.srvc.dto.ContentProvider</class-b>
+        <field-exclude>
+            <a>resource</a>
+            <b>resource</b>
+        </field-exclude>
+        <field-exclude>
+            <a>minAuthLevel</a>
+            <b>minAuthLevel</b>
+        </field-exclude>
+    </mapping>
+
+    <mapping>
+        <class-a>org.openiam.am.srvc.domain.ContentProviderServerEntity</class-a>
+        <class-b>org.openiam.am.srvc.dto.ContentProviderServer</class-b>
+        <field-exclude>
+            <a>contentProvider</a>
+            <b>contentProvider</b>
+        </field-exclude>
+    </mapping>
+
+    <mapping>
+        <class-a>org.openiam.am.srvc.domain.URIPatternMetaValueEntity</class-a>
+        <class-b>org.openiam.am.srvc.dto.URIPatternMetaValue</class-b>
+        <field-exclude>
+            <a>amAttribute</a>
+            <b>amAttribute</b>
+        </field-exclude>
+    </mapping>
+
+    <mapping>
+        <class-a>org.openiam.am.srvc.domain.URIPatternMetaEntity</class-a>
+        <class-b>org.openiam.am.srvc.dto.URIPatternMeta</class-b>
+        <field-exclude>
+            <a>pattern</a>
+            <b>pattern</b>
+        </field-exclude>
+        <field-exclude>
+            <a>metaType</a>
+            <b>metaType</b>
+        </field-exclude>
+        <field-exclude>
+            <a>metaValueSet</a>
+            <b>metaValueSet</b>
+        </field-exclude>
+    </mapping>
+
+    <mapping>
+        <class-a>org.openiam.am.srvc.domain.URIPatternEntity</class-a>
+        <class-b>org.openiam.am.srvc.dto.URIPattern</class-b>
+        <field-exclude>
+            <a>contentProvider</a>
+            <b>contentProvider</b>
+        </field-exclude>
+        <field-exclude>
+            <a>minAuthLevel</a>
+            <b>minAuthLevel</b>
+        </field-exclude>
+        <field-exclude>
+            <a>resource</a>
+            <b>resource</b>
+        </field-exclude>
+        <field-exclude>
+            <a>metaEntitySet</a>
+            <b>metaEntitySet</b>
+        </field-exclude>
+    </mapping>
+
 </mappings>

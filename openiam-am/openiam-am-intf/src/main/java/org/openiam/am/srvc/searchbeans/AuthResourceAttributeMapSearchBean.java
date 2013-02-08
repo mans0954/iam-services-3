@@ -1,6 +1,6 @@
 package org.openiam.am.srvc.searchbeans;
 
-import org.openiam.am.srvc.domain.AuthResourceAttributeMapEntity;
+import org.openiam.am.srvc.dto.AuthResourceAttributeMap;
 import org.openiam.idm.searchbeans.AbstractSearchBean;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -13,7 +13,7 @@ import javax.xml.bind.annotation.XmlType;
         "targetAttributeName",
         "amAttributeId"
 })
-public class AuthResourceAttributeMapSearchBean extends AbstractSearchBean<AuthResourceAttributeMapEntity, String> {
+public class AuthResourceAttributeMapSearchBean extends AbstractSearchBean<AuthResourceAttributeMap, String> {
     private String providerId;
     private String targetAttributeName;
     private String amAttributeId;

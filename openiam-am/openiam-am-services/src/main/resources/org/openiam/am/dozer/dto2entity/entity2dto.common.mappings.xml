@@ -99,4 +99,15 @@
         </field>
     </mapping>
 
+    <mapping>
+        <class-a>org.openiam.am.srvc.domain.AuthLevelEntity</class-a>
+        <class-b>org.openiam.am.srvc.dto.AuthLevel</class-b>
+    </mapping>
+
+    <mapping>
+        <class-a>org.openiam.am.srvc.domain.URIPatternMetaTypeEntity</class-a>
+        <class-b>org.openiam.am.srvc.dto.URIPatternMetaType</class-b>
+    </mapping>
+
+
 </mappings>

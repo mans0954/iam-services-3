@@ -3,6 +3,17 @@ package org.openiam.am.srvc.dto;
 import org.openiam.am.srvc.domain.AuthLevelEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlType;
+import java.io.Serializable;
+
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "AuthLevel", propOrder = {
+        "id",
+        "name",
+        "level"
+})
 @DozerDTOCorrespondence(AuthLevelEntity.class)
 public class AuthLevel {
 

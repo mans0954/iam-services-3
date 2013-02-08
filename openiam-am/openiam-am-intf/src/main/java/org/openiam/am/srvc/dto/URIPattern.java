@@ -1,11 +1,25 @@
 package org.openiam.am.srvc.dto;
 
+import org.openiam.am.srvc.domain.URIPatternEntity;
+import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.res.dto.Resource;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
 import java.util.Set;
 
-import org.openiam.am.srvc.domain.URIPatternEntity;
-import org.openiam.dozer.DozerDTOCorrespondence;
-
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "URIPattern", propOrder = {
+        "id",
+        "contentProvider",
+        "minAuthLevel",
+        "pattern",
+        "isPublic",
+        "resource",
+        "metaEntitySet"
+})
 @DozerDTOCorrespondence(URIPatternEntity.class)
 public class URIPattern implements Serializable {
 

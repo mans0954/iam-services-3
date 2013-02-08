@@ -5,7 +5,23 @@ import java.util.Set;
 
 import org.openiam.am.srvc.domain.ContentProviderEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.res.dto.Resource;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlType;
+import java.io.Serializable;
+
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "ContentProvider", propOrder = {
+        "id",
+        "name",
+        "isPublic",
+        "minAuthLevel",
+        "domainPattern",
+        "isSSL",
+        "resource"
+})
 @DozerDTOCorrespondence(ContentProviderEntity.class)
 public class ContentProvider implements Serializable {
 

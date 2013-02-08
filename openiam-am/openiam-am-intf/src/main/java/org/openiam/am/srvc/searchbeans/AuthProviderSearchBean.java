@@ -1,6 +1,6 @@
 package org.openiam.am.srvc.searchbeans;
 
-import org.openiam.am.srvc.domain.AuthProviderEntity;
+import org.openiam.am.srvc.dto.AuthProvider;
 import org.openiam.idm.searchbeans.AbstractSearchBean;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -13,7 +13,7 @@ import javax.xml.bind.annotation.XmlType;
         "managedSysId",
         "providerType"
 })
-public class AuthProviderSearchBean extends AbstractSearchBean<AuthProviderEntity, String> {
+public class AuthProviderSearchBean extends AbstractSearchBean<AuthProvider, String> {
     private String providerName;
     private String managedSysId;
     private String providerType;
