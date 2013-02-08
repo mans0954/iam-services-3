@@ -5,11 +5,12 @@ import org.apache.commons.logging.LogFactory;
 import org.mule.api.MuleContext;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
-import org.openiam.idm.srvc.mngsys.dto.ProvisionConnector;
-import org.openiam.idm.srvc.mngsys.service.ConnectorDataService;
+import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService;
+import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
 import org.openiam.spml2.msg.ResponseType;
 import org.openiam.spml2.msg.StatusCodeType;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Created by IntelliJ IDEA.
@@ -25,14 +26,16 @@ public class ValidateConnectionConfig {
     protected ConnectorAdapter connectorAdapter;
     protected RemoteConnectorAdapter remoteConnectorAdapter;
     protected ManagedSystemDataService managedSysService;
-    protected ConnectorDataService connectorService;
+
+    @Autowired
+    private ProvisionConnectorWebService connectorService;
 
 
     Response testConnection(String managedSysId, MuleContext muleContext) {
         Response resp = new Response(org.openiam.base.ws.ResponseStatus.SUCCESS);
 
         ManagedSys mSys = managedSysService.getManagedSys(managedSysId);
-        ProvisionConnector connector = connectorService.getConnector(mSys.getConnectorId());
+        ProvisionConnectorDto connector = connectorService.getProvisionConnector(mSys.getConnectorId());
 
         if (connector.getConnectorInterface() != null &&
                 connector.getConnectorInterface().equalsIgnoreCase("REMOTE")) {
@@ -74,7 +77,7 @@ public class ValidateConnectionConfig {
 
     }
 
-    private org.openiam.connector.type.ResponseType remoteTestConnection(ManagedSys mSys, ProvisionConnector connector,
+    private org.openiam.connector.type.ResponseType remoteTestConnection(ManagedSys mSys, ProvisionConnectorDto connector,
                                                                          MuleContext muleContext) {
 
 
@@ -107,11 +110,11 @@ public class ValidateConnectionConfig {
         this.managedSysService = managedSysService;
     }
 
-    public ConnectorDataService getConnectorService() {
+    public ProvisionConnectorWebService getConnectorService() {
         return connectorService;
     }
 
-    public void setConnectorService(ConnectorDataService connectorService) {
+    public void setConnectorService(ProvisionConnectorWebService connectorService) {
         this.connectorService = connectorService;
     }
 }

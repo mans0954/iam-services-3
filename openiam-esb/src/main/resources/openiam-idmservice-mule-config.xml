@@ -121,7 +121,7 @@
 					</inbound-endpoint>
 				</inbound>
 				<component>
-					<spring-object bean="connectorService" />
+					<spring-object bean="provisionConnectorWebService" />
 				</component>
 			</service>
 		</model>

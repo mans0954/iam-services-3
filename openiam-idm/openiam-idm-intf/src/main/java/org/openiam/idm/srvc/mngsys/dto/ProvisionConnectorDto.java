@@ -1,5 +1,8 @@
 package org.openiam.idm.srvc.mngsys.dto;
 
+import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.mngsys.domain.ProvisionConnectorEntity;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
@@ -9,7 +12,7 @@ import javax.xml.bind.annotation.XmlType;
  * ProvisionConnector represents a connector for provisioning.  
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "ProvisionConnector", propOrder = {
+@XmlType(name = "ProvisionConnectorDto", propOrder = {
     "connectorId",
     "name",
     "metadataTypeId",
@@ -22,7 +25,8 @@ import javax.xml.bind.annotation.XmlType;
     "wsdlUrl",
     "connectorInterface"
 })
-public class ProvisionConnector implements java.io.Serializable {
+@DozerDTOCorrespondence(ProvisionConnectorEntity.class)
+public class ProvisionConnectorDto implements java.io.Serializable {
 
 
 	private static final long serialVersionUID = -6981651498633257018L;
@@ -39,16 +43,16 @@ public class ProvisionConnector implements java.io.Serializable {
 	protected String connectorInterface;
 	
 
-	public ProvisionConnector() {
+	public ProvisionConnectorDto() {
 	}
 
-	public ProvisionConnector(String connectorId) {
+	public ProvisionConnectorDto(String connectorId) {
 		this.connectorId = connectorId;
 	}
 
-	public ProvisionConnector(String connectorId, String name,
-			String metdataTypeId, String stdComplianceLevel,
-			String clientCommProtocol, String serviceUrl, String className) {
+	public ProvisionConnectorDto(String connectorId, String name,
+                                 String metdataTypeId, String stdComplianceLevel,
+                                 String clientCommProtocol, String serviceUrl, String className) {
 		this.connectorId = connectorId;
 		this.name = name;
 		this.metadataTypeId = metdataTypeId;

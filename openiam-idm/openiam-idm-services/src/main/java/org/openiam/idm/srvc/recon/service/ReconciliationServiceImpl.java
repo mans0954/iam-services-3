@@ -35,9 +35,9 @@ import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
-import org.openiam.idm.srvc.mngsys.dto.ProvisionConnector;
-import org.openiam.idm.srvc.mngsys.service.ConnectorDataService;
+import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService;
+import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
 import org.openiam.idm.srvc.recon.command.ReconciliationCommandFactory;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.idm.srvc.recon.dto.ReconciliationResponse;
@@ -74,7 +74,9 @@ public class ReconciliationServiceImpl implements ReconciliationService, MuleCon
     protected ResourceDataService resourceDataService;
     protected UserDataService userMgr;
     protected ManagedSystemDataService managedSysService;
-    protected ConnectorDataService connectorService;
+    @Autowired
+    private ProvisionConnectorWebService connectorService;
+
     protected ConnectorAdapter connectorAdapter;
     protected RemoteConnectorAdapter remoteConnectorAdapter;
     protected RoleDataService roleDataService;
@@ -278,7 +280,7 @@ public class ReconciliationServiceImpl implements ReconciliationService, MuleCon
             }
 
 
-            ProvisionConnector connector = connectorService.getConnector(mSys.getConnectorId());
+            ProvisionConnectorDto connector = connectorService.getProvisionConnector(mSys.getConnectorId());
 
             if (connector.getConnectorInterface() != null &&
                     connector.getConnectorInterface().equalsIgnoreCase("REMOTE")) {
@@ -339,7 +341,11 @@ public class ReconciliationServiceImpl implements ReconciliationService, MuleCon
         this.managedSysService = managedSysService;
     }
 
-    public void setConnectorService(ConnectorDataService connectorService) {
+    public ProvisionConnectorWebService getConnectorService() {
+        return connectorService;
+    }
+
+    public void setConnectorService(ProvisionConnectorWebService connectorService) {
         this.connectorService = connectorService;
     }
 

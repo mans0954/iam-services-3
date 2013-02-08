@@ -62,9 +62,9 @@ import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
-import org.openiam.idm.srvc.mngsys.dto.ProvisionConnector;
-import org.openiam.idm.srvc.mngsys.service.ConnectorDataService;
+import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService;
+import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.idm.srvc.pswd.dto.Password;
@@ -125,7 +125,10 @@ public class ProvisionServiceImpl implements ProvisionService,
     protected LoginDAO loginDao;
     @Autowired
     protected IdmAuditLogDataService auditDataService;
-    protected ConnectorDataService connectorService;
+
+    @Autowired
+    private ProvisionConnectorWebService connectorService;
+
     protected ManagedSystemDataService managedSysService;
     protected RoleDataService roleDataService;
     protected GroupDataService groupManager;
@@ -438,8 +441,8 @@ public class ProvisionServiceImpl implements ProvisionService,
                         ManagedSysAttributes sysAttribute = managedSysMap
                                 .get(managedSys.getManagedSysId());
 
-                        ProvisionConnector connector = connectorService
-                                .getConnector(managedSys.getConnectorId());
+                        ProvisionConnectorDto connector = connectorService
+                                .getProvisionConnector(managedSys.getConnectorId());
                         log.info("Connector found for "
                                 + connector.getConnectorId());
                         if (connector != null) {
@@ -628,8 +631,8 @@ public class ProvisionServiceImpl implements ProvisionService,
                     if (managedSys != null) {
                         log.debug("Managed sys found for managedSysId="
                                 + lg.getManagedSysId());
-                        ProvisionConnector connector = connectorService
-                                .getConnector(managedSys.getConnectorId());
+                        ProvisionConnectorDto connector = connectorService
+                                .getProvisionConnector(managedSys.getConnectorId());
 
                         if (connector != null) {
 
@@ -1111,8 +1114,8 @@ public class ProvisionServiceImpl implements ProvisionService,
                         // ManagedSysAttributes sysAttribute =
                         // managedSysMap.get(managedSys.getManagedSysId());
 
-                        ProvisionConnector connector = connectorService
-                                .getConnector(managedSys.getConnectorId());
+                        ProvisionConnectorDto connector = connectorService
+                                .getProvisionConnector(managedSys.getConnectorId());
                         log.info("Connector found for "
                                 + connector.getConnectorId());
                         if (connector != null) {
@@ -1773,8 +1776,8 @@ public class ProvisionServiceImpl implements ProvisionService,
                 log.debug("Managed sys found for managedSysId="
                         + passwordSync.getManagedSystemId());
 
-                ProvisionConnector connector = connectorService
-                        .getConnector(managedSys.getConnectorId());
+                ProvisionConnectorDto connector = connectorService
+                        .getProvisionConnector(managedSys.getConnectorId());
 
                 if (connector != null) {
 
@@ -1951,8 +1954,8 @@ public class ProvisionServiceImpl implements ProvisionService,
                                 log.debug("Managed sys found for managedSysId="
                                         + lg.getManagedSysId());
 
-                                ProvisionConnector connector = connectorService
-                                        .getConnector(managedSys
+                                ProvisionConnectorDto connector = connectorService
+                                        .getProvisionConnector(managedSys
                                                 .getConnectorId());
 
                                 if (connector != null) {
@@ -2122,8 +2125,8 @@ public class ProvisionServiceImpl implements ProvisionService,
                 log.debug("Managed sys found for managedSysId="
                         + passwordSync.getManagedSystemId());
 
-                ProvisionConnector connector = connectorService
-                        .getConnector(managedSys.getConnectorId());
+                ProvisionConnectorDto connector = connectorService
+                        .getProvisionConnector(managedSys.getConnectorId());
 
                 if (connector != null) {
 
@@ -2284,8 +2287,8 @@ public class ProvisionServiceImpl implements ProvisionService,
                                 log.debug("Managed sys found for managedSysId="
                                         + lg.getManagedSysId());
 
-                                ProvisionConnector connector = connectorService
-                                        .getConnector(managedSys
+                                ProvisionConnectorDto connector = connectorService
+                                        .getProvisionConnector(managedSys
                                                 .getConnectorId());
 
                                 if (connector != null) {
@@ -2526,11 +2529,11 @@ public class ProvisionServiceImpl implements ProvisionService,
         this.auditDataService = auditDataService;
     }
 
-    public ConnectorDataService getConnectorService() {
+    public ProvisionConnectorWebService getConnectorService() {
         return connectorService;
     }
 
-    public void setConnectorService(ConnectorDataService connectorService) {
+    public void setConnectorService(ProvisionConnectorWebService connectorService) {
         this.connectorService = connectorService;
     }
 

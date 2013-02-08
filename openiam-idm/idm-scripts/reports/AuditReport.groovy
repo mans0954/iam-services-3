@@ -58,7 +58,7 @@ class AuditReport implements ReportDataSetBuilder {
                 "USERS.DEPT_NAME FROM IDM_AUDIT_LOG, USERS";
 
         def StringBuffer where = new StringBuffer();
-        where.append(" IDM_AUDIT_LOG.USER_ID = USERS.USER_ID ");
+        //where.append(" IDM_AUDIT_LOG.USER_ID = USERS.USER_ID ");
 
         if (action != null && action.length() > 0) {
             if (where.length() > 1) {

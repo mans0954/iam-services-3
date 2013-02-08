@@ -29,13 +29,14 @@ import org.mule.module.client.MuleClient;
 import org.openiam.connector.type.*;
 import org.openiam.connector.type.ResponseType;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
-import org.openiam.idm.srvc.mngsys.dto.ProvisionConnector;
-import org.openiam.idm.srvc.mngsys.service.ConnectorDataService;
+import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
+import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.spml2.interf.ConnectorService;
 import org.openiam.spml2.msg.*;
 import org.openiam.spml2.msg.suspend.ResumeRequestType;
 import org.openiam.spml2.msg.suspend.SuspendRequestType;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.xml.namespace.QName;
 import javax.xml.ws.Service;
@@ -54,10 +55,10 @@ public class RemoteConnectorAdapter {
 
     protected static final Log log = LogFactory.getLog(RemoteConnectorAdapter.class);
 
-    protected ConnectorDataService connectorService;
+    @Autowired
+    private ProvisionConnectorWebService connectorService;
 
-
-    public UserResponse addRequest(ManagedSys managedSys, UserRequest addReqType, ProvisionConnector connector, MuleContext muleContext) {
+    public UserResponse addRequest(ManagedSys managedSys, UserRequest addReqType, ProvisionConnectorDto connector, MuleContext muleContext) {
         UserResponse resp = new UserResponse();
         try {
 
@@ -93,7 +94,7 @@ public class RemoteConnectorAdapter {
 
     }
 
-    public UserResponse modifyRequest(ManagedSys managedSys, UserRequest request, ProvisionConnector connector, MuleContext muleContext) {
+    public UserResponse modifyRequest(ManagedSys managedSys, UserRequest request, ProvisionConnectorDto connector, MuleContext muleContext) {
         UserResponse resp = new UserResponse();
         try {
             if (managedSys == null) {
@@ -130,7 +131,7 @@ public class RemoteConnectorAdapter {
 
     }
 
-    public LookupResponse lookupRequest(ManagedSys managedSys, LookupRequest req, ProvisionConnector connector, MuleContext muleContext) {
+    public LookupResponse lookupRequest(ManagedSys managedSys, LookupRequest req, ProvisionConnectorDto connector, MuleContext muleContext) {
 
         LookupResponse resp = new LookupResponse();
 
@@ -166,7 +167,7 @@ public class RemoteConnectorAdapter {
 
     }
 
-    public UserResponse deleteRequest(ManagedSys managedSys, UserRequest request, ProvisionConnector connector, MuleContext muleContext) {
+    public UserResponse deleteRequest(ManagedSys managedSys, UserRequest request, ProvisionConnectorDto connector, MuleContext muleContext) {
         UserResponse resp = new UserResponse();
 
         if (managedSys == null) {
@@ -203,7 +204,7 @@ public class RemoteConnectorAdapter {
 
     }
 
-    public ResponseType setPasswordRequest(ManagedSys managedSys, PasswordRequest request, ProvisionConnector connector, MuleContext muleContext) {
+    public ResponseType setPasswordRequest(ManagedSys managedSys, PasswordRequest request, ProvisionConnectorDto connector, MuleContext muleContext) {
         ResponseType resp = new ResponseType();
 
         if (managedSys == null) {
@@ -240,7 +241,7 @@ public class RemoteConnectorAdapter {
 
     }
 
-    public ResponseType resetPasswordRequest(ManagedSys managedSys, PasswordRequest request, ProvisionConnector connector, MuleContext muleContext) {
+    public ResponseType resetPasswordRequest(ManagedSys managedSys, PasswordRequest request, ProvisionConnectorDto connector, MuleContext muleContext) {
         ResponseType resp = new ResponseType();
 
         if (managedSys == null) {
@@ -279,7 +280,7 @@ public class RemoteConnectorAdapter {
 
     }
 
-    public ResponseType suspend(ManagedSys managedSys, SuspendRequestType request, ProvisionConnector connector, MuleContext muleContext) {
+    public ResponseType suspend(ManagedSys managedSys, SuspendRequestType request, ProvisionConnectorDto connector, MuleContext muleContext) {
         ResponseType resp = new ResponseType();
 
         if (managedSys == null) {
@@ -319,7 +320,7 @@ public class RemoteConnectorAdapter {
 
     }
 
-    public ResponseType resumeRequest(ManagedSys managedSys, ResumeRequestType request, ProvisionConnector connector, MuleContext muleContext) {
+    public ResponseType resumeRequest(ManagedSys managedSys, ResumeRequestType request, ProvisionConnectorDto connector, MuleContext muleContext) {
         ResponseType resp = new ResponseType();
 
         if (managedSys == null) {
@@ -360,7 +361,7 @@ public class RemoteConnectorAdapter {
 
     }
 
-    public ResponseType testConnection(ManagedSys managedSys,ProvisionConnector connector, MuleContext muleContext) {
+    public ResponseType testConnection(ManagedSys managedSys,ProvisionConnectorDto connector, MuleContext muleContext) {
         ResponseType resp = new ResponseType();
 
         if (managedSys == null) {
@@ -397,7 +398,7 @@ public class RemoteConnectorAdapter {
 
     }
 
-    public ResponseType reconcileResource(ReconciliationConfig config, ProvisionConnector connector, MuleContext muleContext){
+    public ResponseType reconcileResource(ReconciliationConfig config, ProvisionConnectorDto connector, MuleContext muleContext){
         ResponseType resp = new ResponseType();
 
         if (config == null) {
@@ -432,7 +433,7 @@ public class RemoteConnectorAdapter {
         return resp;
     }
 
-    private MuleMessage getService(ProvisionConnector connector, Object reqType, String url, String operation, MuleContext muleContext) {
+    private MuleMessage getService(ProvisionConnectorDto connector, Object reqType, String url, String operation, MuleContext muleContext) {
         try {
 
 
@@ -499,7 +500,7 @@ public class RemoteConnectorAdapter {
     }
 
 
-    private ConnectorService getService(ProvisionConnector connector) {
+    private ConnectorService getService(ProvisionConnectorDto connector) {
         try {
 
             QName SERVICE_NAME = new QName(connector.getServiceUrl());
@@ -522,14 +523,11 @@ public class RemoteConnectorAdapter {
 
     }
 
-
-    public ConnectorDataService getConnectorService() {
+    public ProvisionConnectorWebService getConnectorService() {
         return connectorService;
     }
 
-    public void setConnectorService(ConnectorDataService connectorService) {
+    public void setConnectorService(ProvisionConnectorWebService connectorService) {
         this.connectorService = connectorService;
     }
-
-
 }

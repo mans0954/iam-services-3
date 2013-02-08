@@ -63,25 +63,18 @@ public class IdmAuditLogDataServiceImpl implements IdmAuditLogDataService {
                 + log.getActionDatetime();
         log.setLogHash(hash.HexEncodedHash(str));
 
-        log.updateCustomRecord("PUBLISHED", "0", 2,
-                CustomIdmAuditLogType.ATTRIB);
-
         IdmAuditLogEntity ialcEntity = idmAuditLogDozerConverter
                 .convertToEntity(log, false);
         idmAuditLogDAO.save(ialcEntity);
+        ialcEntity.updateCustomRecord("PUBLISHED", "0", 2,
+                CustomIdmAuditLogType.ATTRIB);
 
         List<IdmAuditLogCustomEntity> fetchedList = new ArrayList<IdmAuditLogCustomEntity>(
                 0);
-        if (log.getCustomRecords() != null) {
-            fetchedList.addAll(idmAuditLogCustomDozerConverter
-                    .convertToEntityList(log.getCustomRecords(), false));
-            for (IdmAuditLogCustomEntity custom : fetchedList) {
-                custom.setLogId(ialcEntity.getLogId());
-            }
-            idmAuditLogCustomDAO.save(fetchedList);
+        if (ialcEntity.getCustomRecords() != null) {
+            idmAuditLogCustomDAO.save(ialcEntity.getCustomRecords());
         }
-        ialcEntity.setCustomRecords(fetchedList);
-        log = idmAuditLogDozerConverter.convertToDTO(ialcEntity, true);
+        log = idmAuditLogDozerConverter.convertToDTO(ialcEntity, false);
         return log;
     }
 

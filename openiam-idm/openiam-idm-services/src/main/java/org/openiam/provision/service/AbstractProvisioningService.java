@@ -11,8 +11,8 @@ import org.openiam.idm.srvc.audit.service.IdmAuditLogDataService;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
-import org.openiam.idm.srvc.mngsys.service.ConnectorDataService;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService;
+import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
 import org.openiam.idm.srvc.pswd.service.PasswordService;
@@ -55,7 +55,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
     protected AuditHelper auditHelper;
     protected ConnectorAdapter connectorAdapter;
     protected RemoteConnectorAdapter remoteConnectorAdapter;
-    protected ConnectorDataService connectorService;
+    protected ProvisionConnectorWebService connectorService;
     protected ValidateConnectionConfig validateConnection;
     protected PasswordHistoryDAO passwordHistoryDao;
     protected String preProcessor;
@@ -268,11 +268,11 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
         this.remoteConnectorAdapter = remoteConnectorAdapter;
     }
 
-    public ConnectorDataService getConnectorService() {
+    public ProvisionConnectorWebService getConnectorService() {
         return connectorService;
     }
 
-    public void setConnectorService(ConnectorDataService connectorService) {
+    public void setConnectorService(ProvisionConnectorWebService connectorService) {
         this.connectorService = connectorService;
     }
 

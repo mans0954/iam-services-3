@@ -418,7 +418,7 @@
 				<value>org/openiam/idm/srvc/synch/service/SynchActivityLog.hbm.xml</value>
 				<value>org/openiam/idm/srvc/synch/service/ActivityLogDetail.hbm.xml</value>
 
-                <value>org/openiam/idm/srvc/mngsys/service/ProvisionConnector.hbm.xml</value>
+                <!-- <value>org/openiam/idm/srvc/mngsys/service/ProvisionConnector.hbm.xml</value> -->
 				<!--<value>org/openiam/idm/srvc/mngsys/service/ManagedSys.hbm.xml</value>-->
 				<!--<value>org/openiam/idm/srvc/mngsys/service/ManagedSysObjectMatch.hbm.xml</value>-->
 				<value>org/openiam/idm/srvc/mngsys/service/ApproverAssoc.hbm.xml</value>

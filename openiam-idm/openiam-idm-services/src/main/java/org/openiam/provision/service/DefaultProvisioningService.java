@@ -43,12 +43,12 @@ import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
-import org.openiam.idm.srvc.mngsys.dto.ProvisionConnector;
+import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
+import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.org.dto.Organization;
@@ -56,7 +56,6 @@ import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
 import org.openiam.idm.srvc.pswd.dto.Password;
-import org.openiam.idm.srvc.pswd.dto.PasswordHistory;
 import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
 import org.openiam.idm.srvc.pswd.service.PasswordGenerator;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
@@ -106,11 +105,12 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
     private static final Log log = LogFactory.getLog(DefaultProvisioningService.class);
 
-    private ProvisionDozerUtils dozerUtils;
     @Autowired
     private UserDozerConverter userDozerConverter;
     @Autowired
     private LoginDozerConverter loginDozerConverter;
+    @Autowired
+    ProvisionConnectorWebService connectorService;
 
     public Response testConnectionConfig(String managedSysId) {
         return validateConnection.testConnection(managedSysId, muleContext);
@@ -300,7 +300,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
             //loginManager.updateLogin(primaryLogin);
         }
-        
+
         /* now that you've fully populated the user - save him */
         final List<IdmAuditLog> pendingLogItems = new ArrayList<IdmAuditLog>();
         resp = addUser.createUser(user, pendingLogItems);
@@ -322,7 +322,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     requestId, resp.getErrorCode().toString(), user.getSessionId(), resp.getErrorText(),
                     user.getRequestClientIP(), primaryLogin.getLogin(), primaryLogin.getDomainId());
         }
-        
+
         // need decrypted password for use in the connectors:
         String decPassword = null;
         try {
@@ -383,7 +383,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                         log.debug("Managed sys =" + mSys);
 
-                        ProvisionConnector connector = connectorService.getConnector(mSys.getConnectorId());
+                        ProvisionConnectorDto connector = connectorService.getProvisionConnector(mSys.getConnectorId());
 
                         ManagedSystemObjectMatch matchObj = null;
                         ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(managedSysId, "USER");
@@ -530,7 +530,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             }
         }
 
-        resp.setUser(dozerUtils.getDozerDeepedMappedProvisionUser(user));
+        resp.setUser(user);
         return resp;
     }
 
@@ -776,7 +776,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             // about other attributes during a delete - so generate a list of attributes
 
                             ManagedSys mSys = managedSysService.getManagedSys(l.getManagedSysId());
-                            ProvisionConnector connector = connectorService.getConnector(mSys.getConnectorId());
+                            ProvisionConnectorDto connector = connectorService.getProvisionConnector(mSys.getConnectorId());
 
                             ManagedSystemObjectMatch matchObj = null;
                             ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(mSys.getManagedSysId(), "USER");
@@ -900,7 +900,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             // call delete on the connector
             ManagedSys mSys = managedSysService.getManagedSys(managedSystemId);
 
-            ProvisionConnector connector = connectorService.getConnector(mSys.getConnectorId());
+            ProvisionConnectorDto connector = connectorService.getProvisionConnector(mSys.getConnectorId());
 
             ManagedSystemObjectMatch matchObj = null;
             ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(mSys.getManagedSysId(), "USER");
@@ -998,7 +998,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                             ManagedSys mSys = managedSysService.getManagedSys(l.getManagedSysId());
 
-                            ProvisionConnector connector = connectorService.getConnector(mSys.getConnectorId());
+                            ProvisionConnectorDto connector = connectorService.getProvisionConnector(mSys.getConnectorId());
 
                             ManagedSystemObjectMatch matchObj = null;
                             ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(mSys.getManagedSysId(), "USER");
@@ -1544,7 +1544,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     }
 
 
-                    ProvisionConnector connector = connectorService.getConnector(mSys.getConnectorId());
+                    ProvisionConnectorDto connector = connectorService.getProvisionConnector(mSys.getConnectorId());
 
                     ManagedSystemObjectMatch matchObj = null;
                     ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(managedSysId, "USER");
@@ -1621,7 +1621,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                         bindingMap, pUser.getUser().getLastUpdatedBy());
 
                                 List<Login> priList = pUser.getPrincipalList();
-                               
+
                                 // build the request
                                 AddRequestType addReqType = new AddRequestType();
                                 // get the identity linked to this resource / managedsys
@@ -1846,7 +1846,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         /* Response object */
         resp.setStatus(ResponseStatus.SUCCESS);
-        resp.setUser(dozerUtils.getDozerDeepedMappedProvisionUser(pUser));
+        resp.setUser(pUser);
         return resp;
 
     }
@@ -1886,7 +1886,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 if (mLg != null) {
                     // make sure the identity exists before we deprovision it.
                     ManagedSys mSys = managedSysService.getManagedSys(managedSysId);
-                    ProvisionConnector connector = connectorService.getConnector(mSys.getConnectorId());
+                    ProvisionConnectorDto connector = connectorService.getProvisionConnector(mSys.getConnectorId());
 
                     mLg.setStatus("INACTIVE");
                     mLg.setAuthFailCount(0);
@@ -1949,7 +1949,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
     }
 
-    private Map<String, String> getCurrentObjectAtTargetSystem(Login mLg, ManagedSys mSys, ProvisionConnector connector, ManagedSystemObjectMatch matchObj) {
+    private Map<String, String> getCurrentObjectAtTargetSystem(Login mLg, ManagedSys mSys, ProvisionConnectorDto connector, ManagedSystemObjectMatch matchObj) {
 
         String identity = mLg.getLogin();
 
@@ -2121,7 +2121,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                     encPassword);
 
                             ManagedSys mSys = managedSysService.getManagedSys(managedSysId);
-                            ProvisionConnector connector = connectorService.getConnector(mSys.getConnectorId());
+                            ProvisionConnectorDto connector = connectorService.getProvisionConnector(mSys.getConnectorId());
 
                             ManagedSystemObjectMatch matchObj = null;
                             ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(managedSysId, "USER");
@@ -2150,7 +2150,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
 
             ManagedSys mSys = managedSysService.getManagedSys(passwordSync.getManagedSystemId());
-            ProvisionConnector connector = connectorService.getConnector(mSys.getConnectorId());
+            ProvisionConnectorDto connector = connectorService.getProvisionConnector(mSys.getConnectorId());
 
 
             ManagedSystemObjectMatch matchObj = null;
@@ -2193,7 +2193,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         // get the connector for the managedSystem
 
         ManagedSys mSys = managedSysService.getManagedSys(managedSysId);
-        ProvisionConnector connector = connectorService.getConnector(mSys.getConnectorId());
+        ProvisionConnectorDto connector = connectorService.getProvisionConnector(mSys.getConnectorId());
 
         ManagedSystemObjectMatch matchObj = null;
         ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(managedSysId, "USER");
@@ -2473,7 +2473,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         // update the target system
                         ManagedSys mSys = managedSysService.getManagedSys(managedSysId);
 
-                        ProvisionConnector connector = connectorService.getConnector(mSys.getConnectorId());
+                        ProvisionConnectorDto connector = connectorService.getProvisionConnector(mSys.getConnectorId());
 
                         ManagedSystemObjectMatch matchObj = null;
                         ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(mSys.getManagedSysId(), "USER");
@@ -2519,7 +2519,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         } else {
             // just the update the managed system that was specified.
             ManagedSys mSys = managedSysService.getManagedSys(passwordSync.getManagedSystemId());
-            ProvisionConnector connector = connectorService.getConnector(mSys.getConnectorId());
+            ProvisionConnectorDto connector = connectorService.getProvisionConnector(mSys.getConnectorId());
 
             ManagedSystemObjectMatch matchObj = null;
             ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(mSys.getManagedSysId(), "USER");
@@ -2702,7 +2702,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     // update the target system
                     ManagedSys mSys = managedSysService.getManagedSys(managedSysId);
 
-                    ProvisionConnector connector = connectorService.getConnector(mSys.getConnectorId());
+                    ProvisionConnectorDto connector = connectorService.getProvisionConnector(mSys.getConnectorId());
 
                     ManagedSystemObjectMatch matchObj = null;
                     ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(mSys.getManagedSysId(), "USER");
@@ -3025,7 +3025,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
     private boolean remoteAdd(Login mLg, String requestId, ManagedSys mSys,
                               ManagedSystemObjectMatch matchObj, ExtensibleUser extUser,
-                              ProvisionConnector connector,
+                              ProvisionConnectorDto connector,
                               ProvisionUser user, IdmAuditLog idmAuditLog) {
 
         log.debug("Calling remote connector " + connector.getName());
@@ -3065,7 +3065,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             LoginEntity mLg,
             String requestId,
             ManagedSys mSys,
-            ProvisionConnector connector,
+            ProvisionConnectorDto connector,
             ManagedSystemObjectMatch matchObj,
             ProvisionUser user,
             IdmAuditLog auditLog
@@ -3164,7 +3164,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                      String password,
                                      ManagedSys mSys,
                                      ManagedSystemObjectMatch matchObj,
-                                     ProvisionConnector connector,
+                                     ProvisionConnectorDto connector,
                                      PasswordSync passwordSync) {
 
         PasswordRequest req = new PasswordRequest();
@@ -3194,7 +3194,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                                                       PasswordSync passwordSync,
                                                                       ManagedSys mSys,
                                                                       ManagedSystemObjectMatch matchObj,
-                                                                      ProvisionConnector connector) {
+                                                                      ProvisionConnectorDto connector) {
 
         PasswordRequest req = new PasswordRequest();
         req.setUserIdentity(login.getLogin());
@@ -3386,13 +3386,13 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         }
         return 0;
     }
-    
+
     /* populates any objects that may be required as CRUD operations are called */
     private void populate(final ProvisionUser provisionUser) {
     	if(provisionUser != null) {
     		/* RoleId was deprecated in favor of better DB key.  However,
     		 * certain groovy scripts still require both the roleId and serviceId
-    		 * The caller only sets the roleId of the Role Object.  We have to set the serviceId 
+    		 * The caller only sets the roleId of the Role Object.  We have to set the serviceId
     		 */
     		if(CollectionUtils.isNotEmpty(provisionUser.getMemberOfRoles())) {
     			for(final Iterator<Role> it = provisionUser.getMemberOfRoles().iterator(); it.hasNext();) {
@@ -3429,9 +3429,5 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     public void setDeprovisionSelectedResource(DeprovisionSelectedResourceHelper deprovisionSelectedResource) {
         this.deprovisionSelectedResource = deprovisionSelectedResource;
     }
-    
-	@Required
-	public void setDozerUtils(final ProvisionDozerUtils dozerUtils) {
-		this.dozerUtils = dozerUtils;
-	}
+
 }

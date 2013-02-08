@@ -22,7 +22,7 @@
 
 /devtool/apache-cxf-2.3.3/bin/java2ws -wsdl -cp /git-projects/openiam-idm-ce/idm/openiam-idm-esb/target/classes/ -d /git-projects/openiam-idm-ce/idm/openiam-idm-esb/wsdl/ -o AsynchIdentitySynchService.wsdl  org.openiam.idm.srvc.synch.ws.AsynchIdentitySynchService
 /devtool/apache-cxf-2.3.3/bin/java2ws -wsdl -cp /git-projects/openiam-idm-ce/idm/openiam-idm-esb/target/classes/ -d /git-projects/openiam-idm-ce/idm/openiam-idm-esb/wsdl/ -o ManagedSystemDataService.wsdl  org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService
-/devtool/apache-cxf-2.3.3/bin/java2ws -wsdl -cp /git-projects/openiam-idm-ce/idm/openiam-idm-esb/target/classes/ -d /git-projects/openiam-idm-ce/idm/openiam-idm-esb/wsdl/ -o ConnectorDataService.wsdl  org.openiam.idm.srvc.mngsys.service.ConnectorDataService
+/devtool/apache-cxf-2.3.3/bin/java2ws -wsdl -cp /git-projects/openiam-idm-ce/idm/openiam-idm-esb/target/classes/ -d /git-projects/openiam-idm-ce/idm/openiam-idm-esb/wsdl/ -o ProvisionConnectorWebService.wsdl  org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService
 
 
 // add services for

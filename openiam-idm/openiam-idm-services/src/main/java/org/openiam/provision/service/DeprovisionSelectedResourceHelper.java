@@ -7,10 +7,9 @@ import org.openiam.connector.type.UserResponse;
 import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
-import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
-import org.openiam.idm.srvc.mngsys.dto.ProvisionConnector;
+import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.provision.dto.ProvisionUser;
@@ -118,7 +117,7 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
 
                         ManagedSys mSys = managedSysService.getManagedSys(l.getManagedSysId());
 
-                        ProvisionConnector connector = connectorService.getConnector(mSys.getConnectorId());
+                        ProvisionConnectorDto connector = connectorService.getProvisionConnector(mSys.getConnectorId());
 
                         ManagedSystemObjectMatch matchObj = null;
                         ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(mSys.getManagedSysId(), "USER");

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!DOCTYPE hibernate-mapping SYSTEM "classpath://hibernate-mapping-3.0.dtd" >
 <hibernate-mapping>
-    <class name="org.openiam.idm.srvc.mngsys.dto.ProvisionConnector" table="PROVISION_CONNECTOR">
+    <class name="org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto" table="PROVISION_CONNECTOR">
         <id name="connectorId" type="string">
             <column name="CONNECTOR_ID" length="32" />
             <generator class="uuid" />

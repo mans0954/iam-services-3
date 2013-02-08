@@ -112,7 +112,7 @@ public interface ProvisionService {
 	
 	/**
 	 * The setPassword operation enables a requestor to specify a new password for an user across target systems
-	 * @param request
+	 * @param passwordSync
 	 * @return
 	 */
 	@WebMethod

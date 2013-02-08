@@ -24,7 +24,7 @@ import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 /**
  * DTO object that is used log and retrieve audit information
  * Refactoring 6.12.2012
- * @author zaporozhec 
+ * @author zaporozhec
  */
 @Entity
 @Table(name = "IDM_AUDIT_LOG")
@@ -108,7 +108,6 @@ public class IdmAuditLogEntity implements java.io.Serializable {
     @Column(name = "TARGET_SYSTEM_ID", length = 40)
     private String targetSystemId;
 
-    @Column(name = "LOG_ID", length = 32)
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "LOG_ID", insertable = false, updatable = false)
     private List<IdmAuditLogCustomEntity> customRecords = new ArrayList<IdmAuditLogCustomEntity>(

@@ -7,9 +7,9 @@ import org.openiam.base.AttributeOperationEnum;
 import org.openiam.connector.type.UserRequest;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
-import org.openiam.idm.srvc.mngsys.dto.ProvisionConnector;
-import org.openiam.idm.srvc.mngsys.service.ConnectorDataService;
+import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService;
+import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
 import org.openiam.idm.srvc.recon.service.ReconciliationCommand;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.provision.dto.ProvisionUser;
@@ -33,13 +33,19 @@ public class DeleteResourceAccountCommand implements ReconciliationCommand {
     private ProvisionService provisionService;
     private static final Log log = LogFactory.getLog(DeleteResourceAccountCommand.class);
     private ManagedSystemDataService managedSysService;
-    private ConnectorDataService connectorService;
+    private ProvisionConnectorWebService connectorService;
     private RemoteConnectorAdapter remoteConnectorAdapter;
     private MuleContext muleContext;
     private String managedSysId;
     private ConnectorAdapter connectorAdapter;
 
-    public DeleteResourceAccountCommand(ProvisionService provisionService, ManagedSystemDataService managedSysService, ConnectorDataService connectorService, RemoteConnectorAdapter remoteConnectorAdapter, MuleContext muleContext, String managedSysId, ConnectorAdapter connectorAdapter) {
+    public DeleteResourceAccountCommand(ProvisionService provisionService,
+                                        ManagedSystemDataService managedSysService,
+                                        ProvisionConnectorWebService connectorService,
+                                        RemoteConnectorAdapter remoteConnectorAdapter,
+                                        MuleContext muleContext,
+                                        String managedSysId,
+                                        ConnectorAdapter connectorAdapter) {
         this.provisionService = provisionService;
         this.managedSysService = managedSysService;
         this.connectorService = connectorService;
@@ -53,7 +59,7 @@ public class DeleteResourceAccountCommand implements ReconciliationCommand {
         log.debug("Entering DeleteResourceAccountCommand");
         if(user == null) {
             ManagedSys mSys = managedSysService.getManagedSys(managedSysId);
-            ProvisionConnector connector = connectorService.getConnector(mSys.getConnectorId());
+            ProvisionConnectorDto connector = connectorService.getProvisionConnector(mSys.getConnectorId());
 
             if (connector.getConnectorInterface() != null &&
                     connector.getConnectorInterface().equalsIgnoreCase("REMOTE")) {
