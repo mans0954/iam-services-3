@@ -1,3 +1,5 @@
+use openiam;
+
 INSERT INTO AUTH_ATTRIBUTE (AUTH_ATTRIBUTE_ID, ATTRIBUTE_NAME, PROVIDER_TYPE, DESCRIPTION, REQUIRED, DATA_TYPE)
 	VALUES('AuthnContextClassRef', 'Authentication Context Class', 'SAML_PROVIDER', 'The Value of the AuthnContextClassRef attribute', 'N', 'singleValue');
 	
@@ -6,7 +8,7 @@ INSERT INTO AUTH_ATTRIBUTE (AUTH_ATTRIBUTE_ID, ATTRIBUTE_NAME, PROVIDER_TYPE, DE
 	
 
 INSERT INTO AUTH_ATTRIBUTE (AUTH_ATTRIBUTE_ID, ATTRIBUTE_NAME, PROVIDER_TYPE, DESCRIPTION, REQUIRED, DATA_TYPE)
-	VALUES('Base64EncodeLoginId', 'Base64 Encode Login ID', 'SAML_PROVIDER', 'Should the Login ID be base64 Encoded?', 'N', 'booleanValue');
+	VALUES('SignLoginId', 'Sign Login ID', 'SAML_PROVIDER', 'Should the Login ID be Signed?', 'N', 'booleanValue');
 	
 INSERT INTO AUTH_ATTRIBUTE (AUTH_ATTRIBUTE_ID, ATTRIBUTE_NAME, PROVIDER_TYPE, DESCRIPTION, REQUIRED, DATA_TYPE)
 	VALUES('SPNameQualifier', 'SP Name Qualifier', 'SAML_PROVIDER', 'Value of the SPNameQualifier attribute in the NameID element', 'N', 'singleValue');
