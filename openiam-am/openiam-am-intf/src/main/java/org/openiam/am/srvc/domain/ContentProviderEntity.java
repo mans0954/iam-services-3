@@ -1,6 +1,7 @@
 package org.openiam.am.srvc.domain;
 
 import java.io.Serializable;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -10,6 +11,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
@@ -56,6 +58,12 @@ public class ContentProviderEntity implements Serializable {
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name="RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = false, updatable = false)
 	private ResourceEntity resource;
+	
+	@OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "contentProvider")
+	private Set<ContentProviderServerEntity> serverSet;
+	
+	@OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "contentProvider")
+	private Set<URIPatternEntity> patternSet;
 
 	public String getId() {
 		return id;
@@ -111,6 +119,22 @@ public class ContentProviderEntity implements Serializable {
 
 	public void setResource(ResourceEntity resource) {
 		this.resource = resource;
+	}
+
+	public Set<ContentProviderServerEntity> getServerSet() {
+		return serverSet;
+	}
+
+	public void setServerSet(Set<ContentProviderServerEntity> serverSet) {
+		this.serverSet = serverSet;
+	}
+
+	public Set<URIPatternEntity> getPatternSet() {
+		return patternSet;
+	}
+
+	public void setPatternSet(Set<URIPatternEntity> patternSet) {
+		this.patternSet = patternSet;
 	}
 
 	@Override

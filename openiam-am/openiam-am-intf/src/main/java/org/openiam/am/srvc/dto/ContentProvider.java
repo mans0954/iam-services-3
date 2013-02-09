@@ -17,6 +17,8 @@ public class ContentProvider implements Serializable {
 	private Boolean isSSL;
 	private String resourceId;
 	private Set<URIPattern> patternSet;
+	private Set<ContentProviderServer> serverSet;
+	
 	public String getId() {
 		return id;
 	}
@@ -64,6 +66,15 @@ public class ContentProvider implements Serializable {
 	}
 	public void setPatternSet(Set<URIPattern> patternSet) {
 		this.patternSet = patternSet;
+	}
+	
+	
+	
+	public Set<ContentProviderServer> getServerSet() {
+		return serverSet;
+	}
+	public void setServerSet(Set<ContentProviderServer> serverSet) {
+		this.serverSet = serverSet;
 	}
 	@Override
 	public int hashCode() {
