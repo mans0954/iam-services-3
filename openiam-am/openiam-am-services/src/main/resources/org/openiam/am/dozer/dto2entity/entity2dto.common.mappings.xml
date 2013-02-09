@@ -93,6 +93,10 @@
             <a>attribute.attributeName</a>
             <b>attributeName</b>
         </field>
+        <field>
+            <a>attribute.defaultValue</a>
+            <b>defaultValue</b>
+        </field>
     </mapping>
 
 </mappings>

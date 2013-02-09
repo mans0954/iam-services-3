@@ -16,6 +16,7 @@ import java.io.Serializable;
         "attributeId",
         "attributeName",
         "value",
+        "defaultValue",
         "dataType"
 })
 @DozerDTOCorrespondence(AuthProviderAttributeEntity.class)
@@ -25,6 +26,7 @@ public class AuthProviderAttribute implements Serializable {
     private String attributeId;
     private String attributeName;
     private String value;
+    private String defaultValue;
     private AuthAttributeDataType dataType = AuthAttributeDataType.singleValue;
 
     public String getProviderAttributeId() {
@@ -75,7 +77,15 @@ public class AuthProviderAttribute implements Serializable {
         this.dataType = dataType;
     }
 
-	@Override
+    public String getDefaultValue() {
+        return defaultValue;
+    }
+
+    public void setDefaultValue(String defaultValue) {
+        this.defaultValue = defaultValue;
+    }
+
+    @Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;

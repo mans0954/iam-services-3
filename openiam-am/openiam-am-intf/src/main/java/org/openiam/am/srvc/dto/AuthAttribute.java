@@ -16,7 +16,8 @@ import java.io.Serializable;
         "providerType",
         "description",
         "dataType",
-        "isRequired"
+        "isRequired",
+        "defaultValue"
 })
 @DozerDTOCorrespondence(AuthAttributeEntity.class)
 public class AuthAttribute implements Serializable {
@@ -26,6 +27,7 @@ public class AuthAttribute implements Serializable {
     private String description;
     private AuthAttributeDataType dataType = AuthAttributeDataType.singleValue;
     private boolean isRequired = false;
+    private String defaultValue;
 
     public String getAuthAttributeId() {
         return authAttributeId;
@@ -73,5 +75,13 @@ public class AuthAttribute implements Serializable {
 
     public void setRequired(boolean required) {
         isRequired = required;
+    }
+
+    public String getDefaultValue() {
+        return defaultValue;
+    }
+
+    public void setDefaultValue(String defaultValue) {
+        this.defaultValue = defaultValue;
     }
 }

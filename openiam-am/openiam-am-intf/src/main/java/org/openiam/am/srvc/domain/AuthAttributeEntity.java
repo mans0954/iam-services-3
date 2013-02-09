@@ -32,6 +32,8 @@ public class AuthAttributeEntity implements Serializable {
     @Column(name="REQUIRED")
     @Type(type = "yes_no")
     private boolean isRequired = false;
+    @Column(name="DEFAULT_VALUE", length = 255)
+    private String defaultValue;
 
     @ManyToOne(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
     @JoinColumn(name="PROVIDER_TYPE", referencedColumnName = "PROVIDER_TYPE", insertable = false, updatable = false)
@@ -91,5 +93,13 @@ public class AuthAttributeEntity implements Serializable {
 
     public void setDataType(AuthAttributeDataType dataType) {
         this.dataType = dataType;
+    }
+
+    public String getDefaultValue() {
+        return defaultValue;
+    }
+
+    public void setDefaultValue(String defaultValue) {
+        this.defaultValue = defaultValue;
     }
 }
