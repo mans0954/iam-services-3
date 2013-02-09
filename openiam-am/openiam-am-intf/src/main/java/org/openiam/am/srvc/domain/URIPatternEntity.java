@@ -16,10 +16,13 @@ import javax.persistence.Table;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
+import org.openiam.am.srvc.dto.URIPattern;
+import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 
 @Entity
 @Table(name = "URI_PATTERN")
+@DozerDTOCorrespondence(URIPattern.class)
 public class URIPatternEntity {
 
 	@Id

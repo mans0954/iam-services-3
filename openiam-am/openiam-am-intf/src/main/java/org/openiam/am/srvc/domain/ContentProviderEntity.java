@@ -15,10 +15,13 @@ import javax.persistence.UniqueConstraint;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
+import org.openiam.am.srvc.dto.ContentProvider;
+import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 
 @Entity
 @Table(name = "CONTENT_PROVIDER")
+@DozerDTOCorrespondence(ContentProvider.class)
 public class ContentProviderEntity implements Serializable {
 
 	/**

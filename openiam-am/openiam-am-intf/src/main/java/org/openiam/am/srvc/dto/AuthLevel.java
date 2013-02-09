@@ -1,38 +1,13 @@
-package org.openiam.am.srvc.domain;
+package org.openiam.am.srvc.dto;
 
-import java.io.Serializable;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-
-import org.hibernate.annotations.GenericGenerator;
-import org.openiam.am.srvc.dto.AuthLevel;
+import org.openiam.am.srvc.domain.AuthLevelEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 
-@Entity
-@Table(name = "AUTH_LEVEL")
-@DozerDTOCorrespondence(AuthLevel.class)
-public class AuthLevelEntity implements Serializable {
+@DozerDTOCorrespondence(AuthLevelEntity.class)
+public class AuthLevel {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	
-	@Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    @Column(name = "AUTH_LEVEL_ID", length = 32, nullable = false)
 	private String id;
-	
-	@Column(name="AUTH_LEVEL_NAME", length = 100, nullable = false)
 	private String name;
-	
-	@Column(name="LEVEL", nullable = false)
 	private int level;
 	
 	public String getId() {
@@ -77,7 +52,7 @@ public class AuthLevelEntity implements Serializable {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		AuthLevelEntity other = (AuthLevelEntity) obj;
+		AuthLevel other = (AuthLevel) obj;
 		if (id == null) {
 			if (other.id != null)
 				return false;

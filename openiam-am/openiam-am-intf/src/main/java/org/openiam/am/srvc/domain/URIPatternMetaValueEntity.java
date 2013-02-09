@@ -13,9 +13,12 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.GenericGenerator;
+import org.openiam.am.srvc.dto.URIPatternMetaValue;
+import org.openiam.dozer.DozerDTOCorrespondence;
 
 @Entity
 @Table(name = "URI_PATTERN_META_VALUE")
+@DozerDTOCorrespondence(URIPatternMetaValue.class)
 public class URIPatternMetaValueEntity implements Serializable {
 
 	private static final long serialVersionUID = 1L;

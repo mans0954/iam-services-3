@@ -1,57 +1,32 @@
-package org.openiam.am.srvc.domain;
+package org.openiam.am.srvc.dto;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-
-import org.hibernate.annotations.GenericGenerator;
-import org.openiam.am.srvc.dto.URIPatternMetaType;
+import org.openiam.am.srvc.domain.URIPatternMetaTypeEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 
-@Entity
-@Table(name = "URI_PATTERN_META_TYPE")
-@DozerDTOCorrespondence(URIPatternMetaType.class)
-public class URIPatternMetaTypeEntity {
+@DozerDTOCorrespondence(URIPatternMetaTypeEntity.class)
+public class URIPatternMetaType {
 
-	@Id
-    @GeneratedValue(generator = "system-uuid")
-    @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    @Column(name = "URI_PATTERN_META_TYPE_ID", length = 32, nullable = false)
 	private String id;
-	
-	@Column(name = "METADATA_TYPE_NAME", length = 100, nullable = false)
 	private String name;
-	
-	@Column(name = "SPRING_BEAN_NAME", length = 100, nullable = false)
 	private String springBeanName;
-
 	public String getId() {
 		return id;
 	}
-
 	public void setId(String id) {
 		this.id = id;
 	}
-
 	public String getName() {
 		return name;
 	}
-
 	public void setName(String name) {
 		this.name = name;
 	}
-
 	public String getSpringBeanName() {
 		return springBeanName;
 	}
-
 	public void setSpringBeanName(String springBeanName) {
 		this.springBeanName = springBeanName;
 	}
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -62,7 +37,6 @@ public class URIPatternMetaTypeEntity {
 				+ ((springBeanName == null) ? 0 : springBeanName.hashCode());
 		return result;
 	}
-
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -71,7 +45,7 @@ public class URIPatternMetaTypeEntity {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		URIPatternMetaTypeEntity other = (URIPatternMetaTypeEntity) obj;
+		URIPatternMetaType other = (URIPatternMetaType) obj;
 		if (id == null) {
 			if (other.id != null)
 				return false;
@@ -89,4 +63,6 @@ public class URIPatternMetaTypeEntity {
 			return false;
 		return true;
 	}
+	
+	
 }
