@@ -1,12 +1,13 @@
 package org.openiam.am.srvc.dto;
 
+import java.io.Serializable;
 import java.util.Set;
 
 import org.openiam.am.srvc.domain.ContentProviderEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 
 @DozerDTOCorrespondence(ContentProviderEntity.class)
-public class ContentProvider {
+public class ContentProvider implements Serializable {
 
 	private String id;
 	private String name;

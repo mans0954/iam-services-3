@@ -1,10 +1,12 @@
 package org.openiam.am.srvc.dto;
 
+import java.io.Serializable;
+
 import org.openiam.am.srvc.domain.URIPatternMetaTypeEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 
 @DozerDTOCorrespondence(URIPatternMetaTypeEntity.class)
-public class URIPatternMetaType {
+public class URIPatternMetaType implements Serializable {
 
 	private String id;
 	private String name;

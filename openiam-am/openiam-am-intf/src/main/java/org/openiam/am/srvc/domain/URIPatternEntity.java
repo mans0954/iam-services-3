@@ -1,5 +1,6 @@
 package org.openiam.am.srvc.domain;
 
+import java.io.Serializable;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -23,7 +24,7 @@ import org.openiam.idm.srvc.res.domain.ResourceEntity;
 @Entity
 @Table(name = "URI_PATTERN")
 @DozerDTOCorrespondence(URIPattern.class)
-public class URIPatternEntity {
+public class URIPatternEntity implements Serializable {
 
 	@Id
     @GeneratedValue(generator = "system-uuid")

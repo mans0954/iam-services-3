@@ -1,5 +1,7 @@
 package org.openiam.am.srvc.domain;
 
+import java.io.Serializable;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -15,7 +17,7 @@ import org.hibernate.annotations.GenericGenerator;
 
 @Entity
 @Table(name = "CONTENT_PROVIDER_SERVER")
-public class ContentProviderServerEntity {
+public class ContentProviderServerEntity implements Serializable {
 
 	@Id
     @GeneratedValue(generator = "system-uuid")

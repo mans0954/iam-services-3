@@ -1,5 +1,7 @@
 package org.openiam.am.srvc.domain;
 
+import java.io.Serializable;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -14,7 +16,7 @@ import org.openiam.dozer.DozerDTOCorrespondence;
 @Entity
 @Table(name = "URI_PATTERN_META_TYPE")
 @DozerDTOCorrespondence(URIPatternMetaType.class)
-public class URIPatternMetaTypeEntity {
+public class URIPatternMetaTypeEntity  implements Serializable {
 
 	@Id
     @GeneratedValue(generator = "system-uuid")
