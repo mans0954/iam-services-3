@@ -135,6 +135,13 @@ public class ContentProvider implements Serializable {
 			return false;
 		return true;
 	}
+	@Override
+	public String toString() {
+		return String
+				.format("ContentProvider [id=%s, name=%s, isPublic=%s, authLevel=%s, domainPattern=%s, isSSL=%s, resourceId=%s]",
+						id, name, isPublic, authLevel, domainPattern, isSSL,
+						resourceId);
+	}
 	
 	
 }

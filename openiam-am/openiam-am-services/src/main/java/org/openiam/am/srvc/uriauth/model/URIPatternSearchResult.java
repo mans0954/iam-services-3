@@ -7,7 +7,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.openiam.am.srvc.dto.URIPattern;
 
 public class URIPatternSearchResult {
-
+	
 	private Set<URIPattern> foundPatterns;
 	
 	public void addPattern(final URIPattern pattern) {
@@ -35,4 +35,38 @@ public class URIPatternSearchResult {
 	public boolean hasPatterns() {
 		return CollectionUtils.isNotEmpty(foundPatterns);
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((foundPatterns == null) ? 0 : foundPatterns.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		URIPatternSearchResult other = (URIPatternSearchResult) obj;
+		if (foundPatterns == null) {
+			if (other.foundPatterns != null)
+				return false;
+		} else if (!foundPatterns.equals(other.foundPatterns))
+			return false;
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		return String.format("URIPatternSearchResult [foundPatterns=%s]",
+				foundPatterns);
+	}
+	
+	
 }

@@ -113,6 +113,13 @@ public class URIPattern implements Serializable {
 			return false;
 		return true;
 	}
+	@Override
+	public String toString() {
+		return String
+				.format("URIPattern [id=%s, contentProviderId=%s, pattern=%s, authLevel=%s, isPublic=%s, resourceId=%s]",
+						id, contentProviderId, pattern, authLevel, isPublic,
+						resourceId);
+	}
 	
 	
 }

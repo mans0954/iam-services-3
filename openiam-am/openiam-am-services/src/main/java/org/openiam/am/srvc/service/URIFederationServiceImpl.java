@@ -8,11 +8,15 @@ public class URIFederationServiceImpl implements URIFederationService, Initializ
 	private ContentProviderTree contentProviderTree;
 	
 	public void sweep() {
+		final ContentProviderTree tempTree = new ContentProviderTree();
 		
+		synchronized(this) {
+			contentProviderTree = tempTree;
+		}
 	}
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		
+		sweep();
 	}
 }

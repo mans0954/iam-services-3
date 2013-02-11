@@ -1,5 +1,7 @@
 package org.openiam.am.srvc.uriauth.model;
 
+import java.net.URI;
+
 import org.openiam.am.srvc.dto.URIPattern;
 import org.openiam.am.srvc.uriauth.exception.InvalidPatternException;
 
@@ -11,8 +13,8 @@ public class URIPatternTree {
 		root.addURI(pattern);
 	}
 	
-	public URIPatternSearchResult find(final String patternURI) {
-		return root.find(patternURI);
+	public URIPatternSearchResult find(final URI uri) {
+		return root.find(uri);
 	}
 	
 	@Override

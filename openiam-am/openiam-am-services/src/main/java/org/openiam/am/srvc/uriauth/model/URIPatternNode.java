@@ -1,5 +1,6 @@
 package org.openiam.am.srvc.uriauth.model;
 
+import java.net.URI;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -37,10 +38,10 @@ public class URIPatternNode {
 		return CollectionUtils.isNotEmpty(protectedPatterns);
 	}
 	
-	public URIPatternSearchResult find(final String URI) {
+	public URIPatternSearchResult find(final URI uri) {
 		final URIPatternSearchResult retVal = new URIPatternSearchResult();
-		if(URI != null) {
-			final String lowerCaseURI = URI.trim().toLowerCase();
+		if(uri != null && uri.getPath() != null) {
+			final String lowerCaseURI = uri.getPath().trim().toLowerCase();
 			final String[] slashSeparatedLowercaseURI = StringUtils.split(lowerCaseURI, "/");
 			final List<String> patternList = new LinkedList<String>();
 			for(final String pattern : slashSeparatedLowercaseURI) {
@@ -150,7 +151,7 @@ public class URIPatternNode {
 				retVal = currentPattern.startsWith(uriToken);
 			}
 		} else {
-			retVal = token.equals(currentPattern);
+			retVal = uriToken.equals(currentPattern);
 		}
 		return retVal;
 	}
