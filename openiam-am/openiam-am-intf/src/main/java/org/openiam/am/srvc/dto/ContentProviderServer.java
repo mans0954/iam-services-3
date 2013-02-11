@@ -6,13 +6,12 @@ import org.openiam.dozer.DozerDTOCorrespondence;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
-import java.io.Serializable;
 
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ContentProviderServer", propOrder = {
         "id",
-        "contentProvider",
+        "contentProviderId",
         "serverURL"
 })
 @DozerDTOCorrespondence(ContentProviderServerEntity.class)
@@ -21,6 +20,7 @@ public class ContentProviderServer {
 	private String id;
 	private String contentProviderId;
 	private String serverURL;
+
 	public String getId() {
 		return id;
 	}

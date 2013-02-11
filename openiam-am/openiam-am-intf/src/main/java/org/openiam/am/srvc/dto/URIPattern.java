@@ -2,7 +2,6 @@ package org.openiam.am.srvc.dto;
 
 import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.idm.srvc.res.dto.Resource;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -13,11 +12,11 @@ import java.util.Set;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "URIPattern", propOrder = {
         "id",
-        "contentProvider",
-        "minAuthLevel",
+        "contentProviderId",
+        "authLevel",
         "pattern",
         "isPublic",
-        "resource",
+        "resourceId",
         "metaEntitySet"
 })
 @DozerDTOCorrespondence(URIPatternEntity.class)

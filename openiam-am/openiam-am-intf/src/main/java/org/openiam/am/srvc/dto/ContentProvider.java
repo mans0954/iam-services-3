@@ -1,26 +1,26 @@
 package org.openiam.am.srvc.dto;
 
-import java.io.Serializable;
-import java.util.Set;
-
 import org.openiam.am.srvc.domain.ContentProviderEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.idm.srvc.res.dto.Resource;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
+import java.util.Set;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ContentProvider", propOrder = {
         "id",
         "name",
         "isPublic",
-        "minAuthLevel",
+        "authLevel",
         "domainPattern",
         "isSSL",
-        "resource"
+        "resourceId",
+        "resourceName",
+        "patternSet",
+        "serverSet"
 })
 @DozerDTOCorrespondence(ContentProviderEntity.class)
 public class ContentProvider implements Serializable {
@@ -32,6 +32,7 @@ public class ContentProvider implements Serializable {
 	private String domainPattern;
 	private Boolean isSSL;
 	private String resourceId;
+    private String resourceName;
 	private Set<URIPattern> patternSet;
 	private Set<ContentProviderServer> serverSet;
 	
@@ -77,7 +78,16 @@ public class ContentProvider implements Serializable {
 	public void setResourceId(String resourceId) {
 		this.resourceId = resourceId;
 	}
-	public Set<URIPattern> getPatternSet() {
+
+    public String getResourceName() {
+        return resourceName;
+    }
+
+    public void setResourceName(String resourceName) {
+        this.resourceName = resourceName;
+    }
+
+    public Set<URIPattern> getPatternSet() {
 		return patternSet;
 	}
 	public void setPatternSet(Set<URIPattern> patternSet) {
