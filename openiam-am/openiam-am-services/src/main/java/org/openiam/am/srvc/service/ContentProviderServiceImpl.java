@@ -1,0 +1,106 @@
+package org.openiam.am.srvc.service;
+
+import org.openiam.am.srvc.dao.AuthLevelDao;
+import org.openiam.am.srvc.dao.ContentProviderDao;
+import org.openiam.am.srvc.domain.AuthLevelEntity;
+import org.openiam.am.srvc.domain.ContentProviderEntity;
+import org.openiam.base.ws.ResponseCode;
+import org.openiam.base.ws.exception.BasicDataServiceException;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
+import org.openiam.idm.srvc.res.service.ResourceDAO;
+import org.openiam.idm.srvc.res.service.ResourceDataService;
+import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@Service("contentProviderService")
+public class ContentProviderServiceImpl implements  ContentProviderService{
+    private static final String resourceTypeId="CONTENT_PROVIDER";
+    @Autowired
+    private AuthLevelDao authLevelDao;
+    @Autowired
+    private ContentProviderDao contentProviderDao;
+    @Autowired
+    private ResourceDAO resourceDao;
+    @Autowired
+    private ResourceTypeDAO resourceTypeDAO;
+    @Autowired
+    private ResourceDataService resourceDataService;
+
+
+    @Override
+    public List<AuthLevelEntity> getAuthLevelList(){
+      return  authLevelDao.findAll();
+    }
+
+    @Override
+    public ContentProviderEntity getContentProvider(String providerId) {
+        if(providerId==null || providerId.trim().isEmpty())
+            throw new NullPointerException("Content Provider Id not set");
+        return contentProviderDao.findById(providerId);
+    }
+
+    @Override
+    public Integer getNumOfContentProviders(ContentProviderEntity example) {
+        return contentProviderDao.count(example);
+    }
+
+    @Override
+    public List<ContentProviderEntity> findBeans(ContentProviderEntity example, Integer from, Integer size) {
+        return contentProviderDao.getByExample(example, from, size);
+    }
+    @Override
+    @Transactional
+    public ContentProviderEntity saveContentProvider(ContentProviderEntity provider){
+        if (provider == null)
+            throw new NullPointerException("Content provider not set");
+        if (provider.getName()==null || provider.getName().trim().isEmpty())
+            throw new  IllegalArgumentException("Provider name not set");
+        if (provider.getMinAuthLevel()==null || provider.getMinAuthLevel().getId().trim().isEmpty())
+            throw new  IllegalArgumentException("Auth Level not set for provider");
+
+        AuthLevelEntity authLevel = authLevelDao.findById(provider.getMinAuthLevel().getId());
+        if(authLevel==null) {
+            throw new NullPointerException("Cannot save content provider. Auth LEVEL is not found");
+        }
+
+        provider.setMinAuthLevel(authLevel);
+        ContentProviderEntity entity  = null;
+        if(provider.getId()==null || provider.getId().trim().isEmpty()){
+            // new provider
+            // create resources
+            ResourceTypeEntity resourceType = resourceTypeDAO.findById(resourceTypeId);
+            if(resourceType==null){
+                throw new NullPointerException("Cannot create resource for provider. Resource type is not found");
+            }
+
+            ResourceEntity resource = provider.getResource();
+            resource.setName(resourceTypeId+"_"+provider.getName());
+            resource.setResourceType(resourceType);
+            resource.setResourceId(null);
+            resource = resourceDao.add(resource);
+
+            provider.setId(null);
+            provider.setResource(null);
+            provider.setResourceId(resource.getResourceId());
+
+            contentProviderDao.save(provider);
+            entity = provider;
+        } else{
+            // update provider
+            entity  = contentProviderDao.findById(provider.getId());
+            entity.setDomainPattern(provider.getDomainPattern());
+            entity.setName(provider.getName());
+            entity.setMinAuthLevel(authLevel);
+            entity.setPatternSet(null);
+            entity.setServerSet(null);
+
+            contentProviderDao.save(entity);
+        }
+        return entity;
+    }
+}

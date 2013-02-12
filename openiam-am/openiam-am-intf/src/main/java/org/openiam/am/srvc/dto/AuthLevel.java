@@ -6,7 +6,6 @@ import org.openiam.dozer.DozerDTOCorrespondence;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
-import java.io.Serializable;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AuthLevel", propOrder = {
@@ -20,6 +19,8 @@ public class AuthLevel {
 	private String id;
 	private String name;
 	private int level;
+//    @XmlTransient
+//    private Set<ContentProvider> contentProviderSet;
 	
 	public String getId() {
 		return id;
@@ -45,7 +46,15 @@ public class AuthLevel {
 		this.level = level;
 	}
 
-	@Override
+//    public Set<ContentProvider> getContentProviderSet() {
+//        return contentProviderSet;
+//    }
+//
+//    public void setContentProviderSet(Set<ContentProvider> contentProviderSet) {
+//        this.contentProviderSet = contentProviderSet;
+//    }
+
+    @Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;

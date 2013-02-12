@@ -17,6 +17,7 @@ import java.util.Set;
         "pattern",
         "isPublic",
         "resourceId",
+        "resourceName",
         "metaEntitySet"
 })
 @DozerDTOCorrespondence(URIPatternEntity.class)
@@ -28,6 +29,7 @@ public class URIPattern implements Serializable {
 	private AuthLevel authLevel;
 	private boolean isPublic;
 	private String resourceId;
+    private String resourceName;
 	private Set<URIPatternMeta> metaEntitySet;
 	public String getId() {
 		return id;
@@ -53,10 +55,10 @@ public class URIPattern implements Serializable {
 	public void setAuthLevel(AuthLevel authLevel) {
 		this.authLevel = authLevel;
 	}
-	public boolean isPublic() {
+	public boolean getIsPublic() {
 		return isPublic;
 	}
-	public void setPublic(boolean isPublic) {
+	public void setIsPublic(boolean isPublic) {
 		this.isPublic = isPublic;
 	}
 	public String getResourceId() {
@@ -71,7 +73,16 @@ public class URIPattern implements Serializable {
 	public void setMetaEntitySet(Set<URIPatternMeta> metaEntitySet) {
 		this.metaEntitySet = metaEntitySet;
 	}
-	@Override
+
+    public String getResourceName() {
+        return resourceName;
+    }
+
+    public void setResourceName(String resourceName) {
+        this.resourceName = resourceName;
+    }
+
+    @Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;

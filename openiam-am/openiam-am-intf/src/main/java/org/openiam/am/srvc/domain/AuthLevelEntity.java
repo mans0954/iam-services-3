@@ -1,17 +1,11 @@
 package org.openiam.am.srvc.domain;
 
-import java.io.Serializable;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.am.srvc.dto.AuthLevel;
 import org.openiam.dozer.DozerDTOCorrespondence;
+
+import javax.persistence.*;
+import java.io.Serializable;
 
 @Entity
 @Table(name = "AUTH_LEVEL")
@@ -34,6 +28,9 @@ public class AuthLevelEntity implements Serializable {
 	
 	@Column(name="LEVEL", nullable = false)
 	private int level;
+
+//    @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "minAuthLevel")
+//    private Set<ContentProviderEntity> contentProviderSet;
 	
 	public String getId() {
 		return id;
@@ -59,7 +56,15 @@ public class AuthLevelEntity implements Serializable {
 		this.level = level;
 	}
 
-	@Override
+//    public Set<ContentProviderEntity> getContentProviderSet() {
+//        return contentProviderSet;
+//    }
+//
+//    public void setContentProviderSet(Set<ContentProviderEntity> contentProviderSet) {
+//        this.contentProviderSet = contentProviderSet;
+//    }
+
+    @Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;

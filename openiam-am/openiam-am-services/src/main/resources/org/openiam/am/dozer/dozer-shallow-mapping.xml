@@ -104,6 +104,14 @@
             <a>minAuthLevel</a>
             <b>minAuthLevel</b>
         </field-exclude>
+        <field-exclude>
+            <a>serverSet</a>
+            <b>serverSet</b>
+        </field-exclude>
+        <field-exclude>
+            <a>patternSet</a>
+            <b>patternSet</b>
+        </field-exclude>
     </mapping>
 
     <mapping>
@@ -121,6 +129,10 @@
         <field-exclude>
             <a>amAttribute</a>
             <b>amAttribute</b>
+        </field-exclude>
+        <field-exclude>
+            <a>metaEntity</a>
+            <b>metaEntity</b>
         </field-exclude>
     </mapping>
 

@@ -76,7 +76,11 @@
             <b>isSSL</b>
         </field>
         <field>
-            <a>resource.resourceId</a>
+            <a>contextPath</a>
+            <b>contextPath</b>
+        </field>
+        <field>
+            <a>resourceId</a>
             <b>resourceId</b>
         </field>
         <field>
@@ -122,8 +126,12 @@
             <b>isPublic</b>
         </field>
         <field>
-            <a>resource.resourceId</a>
+            <a>resourceId</a>
             <b>resourceId</b>
+        </field>
+        <field>
+            <a>resource.name</a>
+            <b>resourceName</b>
         </field>
         <field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="amDto2entityShallowDozerMapper">
             <a>metaEntitySet</a>

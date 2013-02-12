@@ -119,6 +119,10 @@
     <mapping>
         <class-a>org.openiam.am.srvc.domain.AuthLevelEntity</class-a>
         <class-b>org.openiam.am.srvc.dto.AuthLevel</class-b>
+        <!--<field-exclude>-->
+            <!--<a>contentProviderSet</a>-->
+            <!--<b>contentProviderSet</b>-->
+        <!--</field-exclude>-->
     </mapping>
 
     <mapping>

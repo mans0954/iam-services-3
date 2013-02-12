@@ -1,25 +1,14 @@
 package org.openiam.am.srvc.domain;
 
-import java.io.Serializable;
-import java.util.Set;
-
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.openiam.am.srvc.dto.ContentProvider;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
+
+import javax.persistence.*;
+import java.io.Serializable;
+import java.util.Set;
 
 @Entity
 @Table(name = "CONTENT_PROVIDER")
@@ -45,7 +34,7 @@ public class ContentProviderEntity implements Serializable {
 	private boolean isPublic;
 	
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinColumn(name="MIN_AUTH_LEVEL", referencedColumnName = "AUTH_LEVEL_ID", insertable = false, updatable = false)
+    @JoinColumn(name="MIN_AUTH_LEVEL", referencedColumnName = "AUTH_LEVEL_ID")
 	private AuthLevelEntity minAuthLevel;
 	
 	@Column(name = "DOMAIN_PATTERN", length = 100, nullable = false)
@@ -54,6 +43,12 @@ public class ContentProviderEntity implements Serializable {
 	@Column(name = "IS_SSL", nullable = true)
 	@Type(type = "yes_no")
 	private Boolean isSSL;
+
+    @Column(name = "CONTEXT_PATH", nullable = false)
+    private String contextPath;
+
+    @Column(name = "RESOURCE_ID", length = 32, nullable = false)
+    private String resourceId;
 	
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name="RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = false, updatable = false)
@@ -81,11 +76,11 @@ public class ContentProviderEntity implements Serializable {
 		this.name = name;
 	}
 
-	public boolean isPublic() {
+	public boolean getIsPublic() {
 		return isPublic;
 	}
 
-	public void setPublic(boolean isPublic) {
+	public void setIsPublic(boolean isPublic) {
 		this.isPublic = isPublic;
 	}
 
@@ -137,7 +132,23 @@ public class ContentProviderEntity implements Serializable {
 		this.patternSet = patternSet;
 	}
 
-	@Override
+    public String getResourceId() {
+        return resourceId;
+    }
+
+    public void setResourceId(String resourceId) {
+        this.resourceId = resourceId;
+    }
+
+    public String getContextPath() {
+        return contextPath;
+    }
+
+    public void setContextPath(String contextPath) {
+        this.contextPath = contextPath;
+    }
+
+    @Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
@@ -146,6 +157,8 @@ public class ContentProviderEntity implements Serializable {
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + (isPublic ? 1231 : 1237);
 		result = prime * result + ((isSSL == null) ? 0 : isSSL.hashCode());
+        result = prime * result
+                 + ((contextPath == null) ? 0 : contextPath.hashCode());
 		result = prime * result
 				+ ((minAuthLevel == null) ? 0 : minAuthLevel.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
@@ -168,6 +181,11 @@ public class ContentProviderEntity implements Serializable {
 				return false;
 		} else if (!domainPattern.equals(other.domainPattern))
 			return false;
+        if (contextPath == null) {
+            if (other.contextPath != null)
+                return false;
+        } else if (!contextPath.equals(other.contextPath))
+            return false;
 		if (id == null) {
 			if (other.id != null)
 				return false;

@@ -45,4 +45,17 @@
         </service>
     </model>
 
+    <model name="contentProviderModel">
+        <service name="contentProviderWSrvc">
+            <inbound>
+                <inbound-endpoint address="${webservice.path}ContentProviderWebService" 		exchange-pattern="request-response">
+                    <cxf:jaxws-service />
+                </inbound-endpoint>
+            </inbound>
+            <component>
+                <spring-object bean="contentProviderWS" />
+            </component>
+        </service>
+    </model>
+
 </mule>

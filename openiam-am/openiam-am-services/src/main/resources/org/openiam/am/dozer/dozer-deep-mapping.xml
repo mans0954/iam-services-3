@@ -7,11 +7,11 @@
 	<mapping>
 		<class-a>org.openiam.am.srvc.domain.AuthProviderTypeEntity</class-a>
 		<class-b>org.openiam.am.srvc.domain.AuthProviderTypeEntity</class-b>
-		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="amShallowDozerMapper">
 			<a>attributeSet</a>
 			<b>attributeSet</b>
 		</field>
-        <field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+        <field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="amShallowDozerMapper">
             <a>providerSet</a>
             <b>providerSet</b>
         </field>
@@ -20,23 +20,23 @@
     <mapping>
         <class-a>org.openiam.am.srvc.domain.AuthProviderEntity</class-a>
         <class-b>org.openiam.am.srvc.domain.AuthProviderEntity</class-b>
-        <field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+        <field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="amShallowDozerMapper">
             <a>providerAttributeSet</a>
             <b>providerAttributeSet</b>
         </field>
-        <field custom-converter="org.openiam.dozer.MapConverterWithKeyString" custom-converter-param="shallowDozerMapper">
+        <field custom-converter="org.openiam.dozer.MapConverterWithKeyString" custom-converter-param="amShallowDozerMapper">
             <a>resourceAttributeMap</a>
             <b>resourceAttributeMap</b>
         </field>
-        <field custom-converter="org.openiam.dozer.PersistentObjectConverter" custom-converter-param="shallowDozerMapper">
+        <field custom-converter="org.openiam.dozer.PersistentObjectConverter" custom-converter-param="amShallowDozerMapper">
             <a>resource</a>
             <b>resource</b>
         </field>
-        <field custom-converter="org.openiam.dozer.PersistentObjectConverter" custom-converter-param="shallowDozerMapper">
+        <field custom-converter="org.openiam.dozer.PersistentObjectConverter" custom-converter-param="amShallowDozerMapper">
             <a>managedSys</a>
             <b>managedSys</b>
         </field>
-        <field custom-converter="org.openiam.dozer.PersistentObjectConverter" custom-converter-param="shallowDozerMapper">
+        <field custom-converter="org.openiam.dozer.PersistentObjectConverter" custom-converter-param="amShallowDozerMapper">
             <a>type</a>
             <b>type</b>
         </field>
@@ -45,11 +45,11 @@
     <mapping>
         <class-a>org.openiam.am.srvc.domain.AuthProviderAttributeEntity</class-a>
         <class-b>org.openiam.am.srvc.domain.AuthProviderAttributeEntity</class-b>
-        <field custom-converter="org.openiam.dozer.PersistentObjectConverter" custom-converter-param="shallowDozerMapper">
+        <field custom-converter="org.openiam.dozer.PersistentObjectConverter" custom-converter-param="amShallowDozerMapper">
             <a>provider</a>
             <b>provider</b>
         </field>
-        <field custom-converter="org.openiam.dozer.PersistentObjectConverter" custom-converter-param="shallowDozerMapper">
+        <field custom-converter="org.openiam.dozer.PersistentObjectConverter" custom-converter-param="amShallowDozerMapper">
             <a>attribute</a>
             <b>attribute</b>
         </field>
@@ -59,23 +59,23 @@
     <mapping>
         <class-a>org.openiam.idm.srvc.res.domain.ResourceEntity</class-a>
         <class-b>org.openiam.idm.srvc.res.domain.ResourceEntity</class-b>
-        <field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+        <field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="amShallowDozerMapper">
             <a>parentResources</a>
             <b>parentResources</b>
         </field>
-        <field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+        <field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="amShallowDozerMapper">
             <a>childResources</a>
             <b>childResources</b>
         </field>
-        <field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+        <field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="amShallowDozerMapper">
             <a>resourceRoles</a>
             <b>resourceRoles</b>
         </field>
-        <field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+        <field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="amShallowDozerMapper">
             <a>resourceProps</a>
             <b>resourceProps</b>
         </field>
-        <field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+        <field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="amShallowDozerMapper">
             <a>resourceGroups</a>
             <b>resourceGroups</b>
         </field>
@@ -88,20 +88,28 @@
     <mapping>
         <class-a>org.openiam.am.srvc.domain.ContentProviderEntity</class-a>
         <class-b>org.openiam.am.srvc.domain.ContentProviderEntity</class-b>
-        <field custom-converter="org.openiam.dozer.PersistentObjectConverter" custom-converter-param="shallowDozerMapper">
+        <field custom-converter="org.openiam.dozer.PersistentObjectConverter" custom-converter-param="amShallowDozerMapper">
             <a>resource</a>
             <b>resource</b>
         </field>
-        <field custom-converter="org.openiam.dozer.PersistentObjectConverter" custom-converter-param="shallowDozerMapper">
+        <field custom-converter="org.openiam.dozer.PersistentObjectConverter" custom-converter-param="amShallowDozerMapper">
             <a>minAuthLevel</a>
             <b>minAuthLevel</b>
+        </field>
+        <field  custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="amShallowDozerMapper">
+            <a>serverSet</a>
+            <b>serverSet</b>
+        </field>
+        <field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="amShallowDozerMapper">
+            <a>patternSet</a>
+            <b>patternSet</b>
         </field>
     </mapping>
 
     <mapping>
         <class-a>org.openiam.am.srvc.domain.ContentProviderServerEntity</class-a>
         <class-b>org.openiam.am.srvc.domain.ContentProviderServerEntity</class-b>
-        <field custom-converter="org.openiam.dozer.PersistentObjectConverter" custom-converter-param="shallowDozerMapper">
+        <field custom-converter="org.openiam.dozer.PersistentObjectConverter" custom-converter-param="amShallowDozerMapper">
             <a>contentProvider</a>
             <b>contentProvider</b>
         </field>
@@ -110,24 +118,28 @@
     <mapping>
         <class-a>org.openiam.am.srvc.domain.URIPatternMetaValueEntity</class-a>
         <class-b>org.openiam.am.srvc.domain.URIPatternMetaValueEntity</class-b>
-        <field custom-converter="org.openiam.dozer.PersistentObjectConverter" custom-converter-param="shallowDozerMapper">
+        <field custom-converter="org.openiam.dozer.PersistentObjectConverter" custom-converter-param="amShallowDozerMapper">
             <a>amAttribute</a>
             <b>amAttribute</b>
+        </field>
+        <field custom-converter="org.openiam.dozer.PersistentObjectConverter" custom-converter-param="amShallowDozerMapper">
+            <a>metaEntity</a>
+            <b>metaEntity</b>
         </field>
     </mapping>
 
     <mapping>
         <class-a>org.openiam.am.srvc.domain.URIPatternMetaEntity</class-a>
         <class-b>org.openiam.am.srvc.domain.URIPatternMetaEntity</class-b>
-        <field custom-converter="org.openiam.dozer.PersistentObjectConverter" custom-converter-param="shallowDozerMapper">
+        <field custom-converter="org.openiam.dozer.PersistentObjectConverter" custom-converter-param="amShallowDozerMapper">
             <a>pattern</a>
             <b>pattern</b>
         </field>
-        <field custom-converter="org.openiam.dozer.PersistentObjectConverter" custom-converter-param="shallowDozerMapper">
+        <field custom-converter="org.openiam.dozer.PersistentObjectConverter" custom-converter-param="amShallowDozerMapper">
             <a>metaType</a>
             <b>metaType</b>
         </field>
-        <field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+        <field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="amShallowDozerMapper">
             <a>metaValueSet</a>
             <b>metaValueSet</b>
         </field>
@@ -136,19 +148,19 @@
     <mapping>
         <class-a>org.openiam.am.srvc.domain.URIPatternEntity</class-a>
         <class-b>org.openiam.am.srvc.domain.URIPatternEntity</class-b>
-        <field custom-converter="org.openiam.dozer.PersistentObjectConverterr" custom-converter-param="shallowDozerMapper">
+        <field custom-converter="org.openiam.dozer.PersistentObjectConverterr" custom-converter-param="amShallowDozerMapper">
             <a>contentProvider</a>
             <b>contentProvider</b>
         </field>
-        <field custom-converter="org.openiam.dozer.PersistentObjectConverter" custom-converter-param="shallowDozerMapper">
+        <field custom-converter="org.openiam.dozer.PersistentObjectConverter" custom-converter-param="amShallowDozerMapper">
             <a>minAuthLevel</a>
             <b>minAuthLevel</b>
         </field>
-        <field custom-converter="org.openiam.dozer.PersistentObjectConverter" custom-converter-param="shallowDozerMapper">
+        <field custom-converter="org.openiam.dozer.PersistentObjectConverter" custom-converter-param="amShallowDozerMapper">
             <a>resource</a>
             <b>resource</b>
         </field>
-        <field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+        <field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="amShallowDozerMapper">
             <a>metaEntitySet</a>
             <b>metaEntitySet</b>
         </field>

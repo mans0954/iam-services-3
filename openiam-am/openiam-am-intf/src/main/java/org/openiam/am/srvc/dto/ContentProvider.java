@@ -31,6 +31,7 @@ public class ContentProvider implements Serializable {
 	private AuthLevel authLevel;
 	private String domainPattern;
 	private Boolean isSSL;
+    private String contextPath;
 	private String resourceId;
     private String resourceName;
 	private Set<URIPattern> patternSet;
@@ -48,10 +49,10 @@ public class ContentProvider implements Serializable {
 	public void setName(String name) {
 		this.name = name;
 	}
-	public boolean isPublic() {
+	public boolean getIsPublic() {
 		return isPublic;
 	}
-	public void setPublic(boolean isPublic) {
+	public void setIsPublic(boolean isPublic) {
 		this.isPublic = isPublic;
 	}
 	public AuthLevel getAuthLevel() {
@@ -93,10 +94,16 @@ public class ContentProvider implements Serializable {
 	public void setPatternSet(Set<URIPattern> patternSet) {
 		this.patternSet = patternSet;
 	}
-	
-	
-	
-	public Set<ContentProviderServer> getServerSet() {
+
+    public String getContextPath() {
+        return contextPath;
+    }
+
+    public void setContextPath(String contextPath) {
+        this.contextPath = contextPath;
+    }
+
+    public Set<ContentProviderServer> getServerSet() {
 		return serverSet;
 	}
 	public void setServerSet(Set<ContentProviderServer> serverSet) {
@@ -110,6 +117,8 @@ public class ContentProvider implements Serializable {
 				+ ((authLevel == null) ? 0 : authLevel.hashCode());
 		result = prime * result
 				+ ((domainPattern == null) ? 0 : domainPattern.hashCode());
+        result = prime * result
+                 + ((contextPath == null) ? 0 : contextPath.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + (isPublic ? 1231 : 1237);
 		result = prime * result + ((isSSL == null) ? 0 : isSSL.hashCode());
@@ -137,6 +146,11 @@ public class ContentProvider implements Serializable {
 				return false;
 		} else if (!domainPattern.equals(other.domainPattern))
 			return false;
+        if (contextPath == null) {
+            if (other.contextPath != null)
+                return false;
+        } else if (!contextPath.equals(other.contextPath))
+            return false;
 		if (id == null) {
 			if (other.id != null)
 				return false;

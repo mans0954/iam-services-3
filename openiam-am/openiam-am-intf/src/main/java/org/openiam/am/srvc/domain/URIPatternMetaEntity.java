@@ -1,22 +1,12 @@
 package org.openiam.am.srvc.domain;
 
-import java.io.Serializable;
-import java.util.Set;
-
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.am.srvc.dto.URIPatternMeta;
 import org.openiam.dozer.DozerDTOCorrespondence;
+
+import javax.persistence.*;
+import java.io.Serializable;
+import java.util.Set;
 
 @Entity
 @Table(name = "URI_PATTERN_META")
@@ -69,7 +59,15 @@ public class URIPatternMetaEntity implements Serializable {
 		this.metaType = metaType;
 	}
 
-	@Override
+    public Set<URIPatternMetaValueEntity> getMetaValueSet() {
+        return metaValueSet;
+    }
+
+    public void setMetaValueSet(Set<URIPatternMetaValueEntity> metaValueSet) {
+        this.metaValueSet = metaValueSet;
+    }
+
+    @Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
