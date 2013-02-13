@@ -1,18 +1,5 @@
 package org.openiam.am.srvc.domain;
 
-import java.io.Serializable;
-
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.am.srvc.dto.ContentProviderServer;
 import org.openiam.dozer.DozerDTOCorrespondence;
@@ -31,7 +18,7 @@ public class ContentProviderServerEntity {
 	private String id;
 	
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinColumn(name="CONTENT_PROVIDER_ID", referencedColumnName = "CONTENT_PROVIDER_ID", insertable = false, updatable = false)
+    @JoinColumn(name="CONTENT_PROVIDER_ID", referencedColumnName = "CONTENT_PROVIDER_ID")
 	private ContentProviderEntity contentProvider;
 	
 	@Column(name = "SERVER_URL", length = 100, nullable = false)

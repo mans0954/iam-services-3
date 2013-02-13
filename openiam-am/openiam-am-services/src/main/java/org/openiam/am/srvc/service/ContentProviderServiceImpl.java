@@ -2,10 +2,10 @@ package org.openiam.am.srvc.service;
 
 import org.openiam.am.srvc.dao.AuthLevelDao;
 import org.openiam.am.srvc.dao.ContentProviderDao;
+import org.openiam.am.srvc.dao.ContentProviderServerDao;
 import org.openiam.am.srvc.domain.AuthLevelEntity;
 import org.openiam.am.srvc.domain.ContentProviderEntity;
-import org.openiam.base.ws.ResponseCode;
-import org.openiam.base.ws.exception.BasicDataServiceException;
+import org.openiam.am.srvc.domain.ContentProviderServerEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
@@ -24,6 +24,8 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
     private AuthLevelDao authLevelDao;
     @Autowired
     private ContentProviderDao contentProviderDao;
+    @Autowired
+    private ContentProviderServerDao contentProviderServerDao;
     @Autowired
     private ResourceDAO resourceDao;
     @Autowired
@@ -118,9 +120,72 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
         if(entity!=null){
             // delete resource
             resourceDataService.deleteResource(entity.getResourceId());
-
+            // delete servers for given provider
+            contentProviderServerDao.deleteByProvider(providerId);
             // delete provider
             contentProviderDao.deleteById(providerId);
         }
+    }
+
+    @Override
+    public List<ContentProviderServerEntity> getServersForProvider(String providerId, Integer from, Integer size) {
+        ContentProviderServerEntity example = new ContentProviderServerEntity();
+        ContentProviderEntity provider = new ContentProviderEntity();
+        provider.setId(providerId);
+        example.setContentProvider(provider);
+
+        return contentProviderServerDao.getByExample(example,from, size);
+    }
+
+    @Override
+    public Integer getNumOfServersForProvider(String providerId) {
+        ContentProviderServerEntity example = new ContentProviderServerEntity();
+        ContentProviderEntity provider = new ContentProviderEntity();
+        provider.setId(providerId);
+        return contentProviderServerDao.count(example);
+    }
+
+    @Override
+    @Transactional
+    public void deleteProviderServer(String contentProviderServerId) {
+        if (contentProviderServerId==null || contentProviderServerId.trim().isEmpty())
+            throw new  IllegalArgumentException("Content Provider Server Id name not set");
+
+        contentProviderServerDao.deleteById(contentProviderServerId);
+    }
+
+    @Override
+    @Transactional
+    public ContentProviderServerEntity saveProviderServer(ContentProviderServerEntity contentProviderServer) {
+        if (contentProviderServer == null)
+            throw new  NullPointerException("Content Provider Server not set");
+        if (contentProviderServer.getServerURL()==null || contentProviderServer.getServerURL().trim().isEmpty())
+            throw new  IllegalArgumentException("Server Url not set");
+        if (contentProviderServer.getContentProvider()==null
+                || contentProviderServer.getContentProvider().getId()==null
+                || contentProviderServer.getContentProvider().getId().trim().isEmpty())
+            throw new  IllegalArgumentException("Content Provider not set");
+
+        ContentProviderEntity provider = contentProviderDao.findById(contentProviderServer.getContentProvider().getId());
+
+        if(provider==null){
+            throw new NullPointerException("Cannot save content provider server. Content Provider is not found");
+        }
+
+        ContentProviderServerEntity entity  = null;
+        if(contentProviderServer.getId()==null || contentProviderServer.getId().trim().isEmpty()){
+            // new server
+
+            contentProviderServer.setId(null);
+            contentProviderServer.setContentProvider(provider);
+            contentProviderServerDao.save(contentProviderServer);
+            entity = contentProviderServer;
+        } else{
+            // update server
+            entity  = contentProviderServerDao.findById(contentProviderServer.getId());
+            entity.setServerURL(contentProviderServer.getServerURL());
+            contentProviderServerDao.save(entity);
+        }
+        return entity;
     }
 }
