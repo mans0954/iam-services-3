@@ -13,6 +13,11 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 
+/**
+ * @author Lev Bornovalov
+ * Class used by the Apache Reverse Proxy to digest the result of URI Federation.
+ * Be careful when changing this class, as it may have unexpected consequences on the Proxy (which is written in C)
+ */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "URIFederationResponse", propOrder = {
 	"requiredAuthLevel",
