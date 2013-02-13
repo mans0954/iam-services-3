@@ -12,6 +12,7 @@ import org.openiam.am.srvc.dto.URIPatternMeta;
 import org.openiam.am.srvc.dto.URIPatternMetaType;
 import org.openiam.am.srvc.dto.URIPatternMetaValue;
 import org.openiam.am.srvc.uriauth.dto.URIFederationResponse;
+import org.openiam.am.srvc.uriauth.dto.URIPatternRuleToken;
 import org.openiam.am.srvc.uriauth.model.ContentProviderNode;
 import org.openiam.am.srvc.uriauth.model.ContentProviderTree;
 import org.openiam.am.srvc.uriauth.model.URIPatternSearchResult;
@@ -20,6 +21,7 @@ import org.openiam.am.srvc.uriauth.rule.URIPatternRule;
 import org.openiam.authmanager.common.model.AuthorizationResource;
 import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.base.ws.ResponseCode;
+import org.openiam.base.ws.ResponseStatus;
 import org.openiam.base.ws.exception.BasicDataServiceException;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
@@ -70,6 +72,7 @@ public class URIFederationServiceImpl implements URIFederationService, Initializ
 			if(uriPatternToken == null || !uriPatternToken.hasPatterns()) { /* means that no matching pattern has been found for this URI - check against the CP */
 				/* means that the Content Provider Auth Level is higher than the current for this user */
 				if(cp.getAuthLevel().gt(authLevel)) {
+					response.setRequiredAuthLevel(cp.getAuthLevel().getLevel());
 					throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_AUTH_LEVEL_DOES_NOT_MEET_MIN_AUTH_LEVEL_ON_CP);
 				}
 			}
@@ -82,6 +85,7 @@ public class URIFederationServiceImpl implements URIFederationService, Initializ
 				}
 				
 				if(pattern.getAuthLevel().gt(authLevel)) {
+					response.setRequiredAuthLevel(pattern.getAuthLevel().getLevel());
 					throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_AUTH_LEVEL_DOES_NOT_MEET_MIN_AUTH_LEVEL_ON_PATTERN, pattern.getId());
 				}
 			}
@@ -97,24 +101,31 @@ public class URIFederationServiceImpl implements URIFederationService, Initializ
 								final  URIPatternRule rule = ctx.getBean(springBeanName, URIPatternRule.class);
 								if(rule != null) {
 									final Set<URIPatternMetaValue> valueSet = meta.getMetaValueSet();
-									rule.process(userId, uri, type, valueSet);
+									final URIPatternRuleToken ruleToken = rule.process(userId, uri, type, valueSet);
+									response.addRuleToken(ruleToken);
 								}
 							} catch(Throwable e) {
 								LOG.error("Error processing rule", e);
+								throw new BasicDataServiceException(ResponseCode.URI_PATTERN_RULE_PROCESS_ERROR, e);
 							}
 						}
 					}
 				}
 			}
 			
+			response.setStatus(ResponseStatus.SUCCESS);
 		} catch(BasicDataServiceException e) {
 			response.setErrorCode(e.getCode());
 			response.setResponseValue(e.getResponseValue());
+			response.setStatus(ResponseStatus.FAILURE);
+			LOG.info("CP or Pattern Exception", e);
 		} catch(URISyntaxException e) {
 			response.setErrorCode(ResponseCode.INVALID_URI);
+			response.setStatus(ResponseStatus.FAILURE);
 			LOG.error("URI Syntax Exception", e);
 		} catch(Throwable e) {
 			response.setErrorCode(ResponseCode.FAIL_OTHER);
+			response.setStatus(ResponseStatus.FAILURE);
 			LOG.error("Unkonwn error while processing proxy request", e);
 		}
 		return response;

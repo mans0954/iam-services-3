@@ -15,12 +15,13 @@ import org.openiam.base.ws.ResponseStatus;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "URIFederationResponse", propOrder = {
-	"status",
-	"errorCode"
+	"requiredAuthLevel",
+	"ruleTokenList"
 })
 public class URIFederationResponse extends Response {
 
 	private Integer requiredAuthLevel;
+	private List<URIPatternRuleToken> ruleTokenList;
 	
 	public ResponseStatus getStatus() {
 		return status;
@@ -36,5 +37,14 @@ public class URIFederationResponse extends Response {
 
 	public void setRequiredAuthLevel(Integer requiredAuthLevel) {
 		this.requiredAuthLevel = requiredAuthLevel;
+	}
+	
+	public void addRuleToken(final URIPatternRuleToken token) {
+		if(token != null) {
+			if(ruleTokenList == null) {
+				this.ruleTokenList = new LinkedList<URIPatternRuleToken>();
+			}
+			this.ruleTokenList.add(token);
+		}
 	}
 }

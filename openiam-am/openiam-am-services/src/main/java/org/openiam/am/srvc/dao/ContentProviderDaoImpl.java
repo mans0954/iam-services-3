@@ -2,11 +2,13 @@ package org.openiam.am.srvc.dao;
 
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
+import org.hibernate.Query;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.am.srvc.domain.ContentProviderEntity;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public class ContentProviderDaoImpl extends BaseDaoImpl<ContentProviderEntity, String> implements ContentProviderDao {
@@ -45,5 +47,13 @@ public class ContentProviderDaoImpl extends BaseDaoImpl<ContentProviderEntity, S
             }
         }
         return criteria;
+    }
+
+    @Override
+    @Transactional
+    public void deleteById(String providerId) {
+        Query qry = getSession().createQuery("delete "+this.domainClass.getName()+ " p where p.id=:providerId ");
+        qry.setString("providerId", providerId);
+        qry.executeUpdate();
     }
 }

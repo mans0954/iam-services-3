@@ -6,9 +6,15 @@ public class BasicDataServiceException extends Exception {
 
 	private ResponseCode code;
 	private String responseValue;
+	private Throwable originalCause;
 	
 	public BasicDataServiceException(final ResponseCode code) {
 		this.code = code;
+	}
+	
+	public BasicDataServiceException(final ResponseCode code, final Throwable originalCause) {
+		this.code = code;
+		this.originalCause = originalCause;
 	}
 	
 	public BasicDataServiceException(final ResponseCode code, final String responseValue) {
@@ -26,5 +32,9 @@ public class BasicDataServiceException extends Exception {
 	
 	public String getResponseValue() {
 		return responseValue;
+	}
+	
+	public Throwable getOriginalCause() {
+		return originalCause;
 	}
 }
