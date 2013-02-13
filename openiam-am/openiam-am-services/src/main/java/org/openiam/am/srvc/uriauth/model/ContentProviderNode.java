@@ -39,24 +39,12 @@ public class ContentProviderNode {
 	public URIPatternTree getPatternTree() {
 		return patternTree;
 	}
-	
-	public boolean matches(final URI uri) {
-		final boolean isSSL = StringUtils.equalsIgnoreCase("https", uri.getScheme());
-		final int port = uri.getPort();
-		final StringBuilder domain = new StringBuilder(uri.getHost());
-		if(port != -1 && port != 80 && port != 443) {
-			domain.append(":").append(port);
-		}
-		
-		boolean matchesSSL = false;
-		if(contentProvider.getIsSSL() == null) {
-			matchesSSL = true;
-		} else {
-			matchesSSL = contentProvider.getIsSSL().equals(Boolean.valueOf(isSSL));
-		}
-		
-		boolean matchesDomain = contentProvider.getDomainPattern().equals(domain);
-		
-		return (matchesSSL && matchesDomain);
+
+	@Override
+	public String toString() {
+		return String.format("ContentProviderNode [contentProvider=%s]",
+				contentProvider);
 	}
+	
+	
 }

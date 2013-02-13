@@ -2,6 +2,7 @@ package org.openiam.authmanager.common.model.url;
 
 import java.util.Comparator;
 
+@Deprecated
 public class URIPatternNodeComparator implements Comparator<URIPatternNode> {
 
 	/**

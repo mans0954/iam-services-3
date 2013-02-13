@@ -12,6 +12,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.authmanager.common.model.AuthorizationResource;
 
+@Deprecated
 public class URIPatternNode {
 	private static final Comparator<URIPatternNode> nodeComparator = new URIPatternNodeComparator();
 	

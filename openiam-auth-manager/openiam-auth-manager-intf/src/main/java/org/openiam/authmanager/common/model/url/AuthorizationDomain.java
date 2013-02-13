@@ -8,6 +8,7 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.authmanager.common.model.AuthorizationResource;
 
+@Deprecated
 public class AuthorizationDomain {
 
 	private boolean isPublic;

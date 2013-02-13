@@ -45,6 +45,22 @@ public class AuthLevel {
 	public void setLevel(int level) {
 		this.level = level;
 	}
+	
+	public boolean gt(final int level) {
+		return (this.level > level);
+	}
+	
+	public boolean gte(final int level) {
+		return (this.level >= level);
+	}
+	
+	public boolean lt(final int level) {
+		return (this.level < level);
+	}
+	
+	public boolean lte(final int level) {
+		return (this.level <= level);
+	}
 
 //    public Set<ContentProvider> getContentProviderSet() {
 //        return contentProviderSet;

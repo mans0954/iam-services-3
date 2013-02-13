@@ -2,6 +2,7 @@ package org.openiam.authmanager.common.model.url;
 
 import org.openiam.authmanager.common.model.AuthorizationResource;
 
+@Deprecated
 public class AuthorizationURIPattern {
 	
 	private boolean isPublic;

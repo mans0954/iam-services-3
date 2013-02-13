@@ -1,5 +1,6 @@
 package org.openiam.am.srvc.uriauth.model;
 
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -30,6 +31,10 @@ public class URIPatternSearchResult {
 				}
 			}
 		}
+	}
+	
+	public Set<URIPattern> getFoundPatterns() {
+		return foundPatterns;
 	}
 	
 	public boolean hasPatterns() {

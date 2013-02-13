@@ -7,6 +7,7 @@ import java.util.Set;
 import org.apache.commons.collections.CollectionUtils;
 import org.openiam.authmanager.common.model.AuthorizationResource;
 
+@Deprecated
 public class URIPatternTree {
 
 	private URIPatternNode root = new URIPatternNode();

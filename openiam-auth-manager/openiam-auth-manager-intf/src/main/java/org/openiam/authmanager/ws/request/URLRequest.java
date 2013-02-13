@@ -10,6 +10,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "URLRequest", propOrder = {
         "url"
 })
+@Deprecated
 public class URLRequest extends UserRequest {
 
 	private static final long serialVersionUID = -1L;

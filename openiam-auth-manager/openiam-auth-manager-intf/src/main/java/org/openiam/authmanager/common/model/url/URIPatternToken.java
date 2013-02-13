@@ -1,5 +1,6 @@
 package org.openiam.authmanager.common.model.url;
 
+@Deprecated
 public class URIPatternToken {
 	
 	private String token;
