@@ -17,6 +17,7 @@ import java.util.Set;
         "authLevel",
         "domainPattern",
         "isSSL",
+        "contextPath",
         "resourceId",
         "resourceName",
         "patternSet",

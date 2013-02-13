@@ -5,4 +5,5 @@ import org.openiam.core.dao.BaseDao;
 
 public interface ContentProviderDao extends BaseDao<ContentProviderEntity, String> {
 
+    void deleteById(String providerId);
 }

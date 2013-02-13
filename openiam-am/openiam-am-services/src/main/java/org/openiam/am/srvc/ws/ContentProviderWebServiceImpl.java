@@ -87,4 +87,24 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
         return response;
     }
 
+    @Override
+    public Response deleteContentProvider(String providerId){
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if (providerId==null || providerId.trim().isEmpty())
+                throw new  BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+
+            contentProviderService.deleteContentProvider(providerId);
+
+        } catch(BasicDataServiceException e) {
+            log.error(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+        } catch(Throwable e) {
+            log.error(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+        }
+        return response;
+    }
 }

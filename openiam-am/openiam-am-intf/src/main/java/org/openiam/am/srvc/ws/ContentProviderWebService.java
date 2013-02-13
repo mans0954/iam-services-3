@@ -50,4 +50,7 @@ public interface ContentProviderWebService {
      */
     @WebMethod
     public Integer getNumOfContentProviders(@WebParam(name = "searchBean", targetNamespace = "") ContentProviderSearchBean searchBean);
+
+    @WebMethod
+    public Response deleteContentProvider(@WebParam(name = "providerId", targetNamespace = "") String providerId);
 }

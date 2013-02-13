@@ -16,4 +16,6 @@ public interface ContentProviderService {
     List<ContentProviderEntity> findBeans(ContentProviderEntity example, Integer from, Integer size);
 
     ContentProviderEntity saveContentProvider(ContentProviderEntity providerEntity);
+
+    void deleteContentProvider(String providerId);
 }

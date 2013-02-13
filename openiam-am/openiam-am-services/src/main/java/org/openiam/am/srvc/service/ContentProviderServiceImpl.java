@@ -60,7 +60,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
             throw new NullPointerException("Content provider not set");
         if (provider.getName()==null || provider.getName().trim().isEmpty())
             throw new  IllegalArgumentException("Provider name not set");
-        if (provider.getMinAuthLevel()==null || provider.getMinAuthLevel().getId().trim().isEmpty())
+        if (provider.getMinAuthLevel()==null || provider.getMinAuthLevel().getId()==null || provider.getMinAuthLevel().getId().trim().isEmpty())
             throw new  IllegalArgumentException("Auth Level not set for provider");
 
         AuthLevelEntity authLevel = authLevelDao.findById(provider.getMinAuthLevel().getId());
@@ -96,11 +96,31 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
             entity.setDomainPattern(provider.getDomainPattern());
             entity.setName(provider.getName());
             entity.setMinAuthLevel(authLevel);
+            entity.setIsPublic(provider.getIsPublic());
+            entity.setIsSSL(provider.getIsSSL());
+            entity.setContextPath(provider.getContextPath());
             entity.setPatternSet(null);
             entity.setServerSet(null);
 
             contentProviderDao.save(entity);
         }
         return entity;
+    }
+
+    @Override
+    @Transactional
+    public void deleteContentProvider(String providerId) {
+        if (providerId==null || providerId.trim().isEmpty())
+            throw new  IllegalArgumentException("Provider Id name not set");
+
+        ContentProviderEntity entity  = contentProviderDao.findById(providerId);
+
+        if(entity!=null){
+            // delete resource
+            resourceDataService.deleteResource(entity.getResourceId());
+
+            // delete provider
+            contentProviderDao.deleteById(providerId);
+        }
     }
 }
