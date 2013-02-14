@@ -68,7 +68,6 @@
         <constructor-arg index="0" value="org.openiam.script.GroovyScriptEngineIntegration" />
     </bean>
     
-    <!--
     <bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
     	<property name="triggers">
         	<list>
@@ -86,7 +85,6 @@
         	</list>
      	</property>
 	</bean>
-	-->
 
     <aop:config>
         <aop:pointcut id="resAttrOperation" expression="execution(* org.openiam.am.srvc.service.WebResourceAttributeServiceImpl.*(..))"/>

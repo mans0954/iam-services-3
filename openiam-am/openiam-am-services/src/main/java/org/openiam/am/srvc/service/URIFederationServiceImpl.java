@@ -57,8 +57,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service("uriFederationService")
-//@ManagedResource(objectName="org.openiam.am.srvc.service:name=authorizationManagerService")
-public class URIFederationServiceImpl implements URIFederationService, ApplicationContextAware, Runnable, InitializingBean {
+@ManagedResource(objectName="org.openiam.am.srvc.service:name=URIFederationService")
+public class URIFederationServiceImpl implements URIFederationService, ApplicationContextAware, InitializingBean {
 	
 	private static Logger LOG = Logger.getLogger(URIFederationServiceImpl.class);
 	private ApplicationContext ctx;
@@ -83,52 +83,16 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 	@Autowired
 	private URIPatternMetaValueDozerConverter patternValueDozerConverter;
 	
-	private boolean forceThreadShutdown = false;
-	
-	@Value("${org.openiam.am.uri.federation.threadsweep}")
-	private long sweepInterval;
-	
-	private ExecutorService service = new  ScheduledThreadPoolExecutor(1);
-	
-	@PreDestroy
-	public void destroy() {
-		forceThreadShutdown = true;
-	}
-	
-	@Override
-	public void run() {
-		while(true && !forceThreadShutdown) {
-			try {
-				sweep();
-				Thread.sleep(sweepInterval);
-			} catch(Throwable e) {
-				try {
-					Thread.sleep(sweepInterval);
-				} catch(Throwable e2) {
-					
-				}
-				LOG.error("Error while executing thread", e);
-			}
-		}
-	}
-	
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		//sweep();
-		service.submit(this);
-	}
-	
-	private void lazyLoadIfNecessary() {
-		if(contentProviderTree == null) {
-			sweep();
-		}
+		sweep();
 	}
 	
 	/*
 	 * Caches DTO Objects, so that we're not tied to the Hibernate Session
 	 */
-	//@ManagedOperation(description="sweep the Content Provider Cache")
-	@Transactional
+	@ManagedOperation(description="sweep the Content Provider Cache")
+	//@Transactional
 	public void sweep() {
 		try {
 			LOG.info("Attemtping to refresh Content Provider Cache...");
@@ -201,7 +165,6 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 	
 	@ManagedOperation(description="Print Cache Contents")
 	public String printCacheContents() {
-		lazyLoadIfNecessary();
 		final String ls = System.getProperty("line.separator");
 		
 		final StringBuilder cacheContents = new StringBuilder();
@@ -211,7 +174,6 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 
 	@Override
 	public URIFederationResponse federateProxyURI(final String userId, final int authLevel, final String proxyURI) {
-		lazyLoadIfNecessary();
 		final URIFederationResponse response = new URIFederationResponse();
 		try {
 			final URI uri = new URI(proxyURI);

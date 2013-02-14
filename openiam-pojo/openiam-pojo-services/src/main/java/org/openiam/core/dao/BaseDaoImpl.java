@@ -7,6 +7,8 @@ import org.hibernate.criterion.Example;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.orm.hibernate3.HibernateTemplate;
+import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
@@ -19,14 +21,20 @@ import java.util.List;
 import static org.hibernate.criterion.Projections.rowCount;
 import static org.hibernate.criterion.Restrictions.eq;
 
-public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable>
+public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends HibernateDaoSupport
         implements BaseDao<T, PrimaryKey> {
     protected final Logger log = Logger.getLogger(this.getClass());
     protected final Class<T> domainClass;
 
     @Autowired
     @Qualifier("sessionFactory")
+    @Deprecated
     protected SessionFactory sessionFactory;
+    
+	@Autowired
+	public void setTemplate(final @Qualifier("hibernateTemplate") HibernateTemplate hibernateTemplate) {
+		super.setHibernateTemplate(hibernateTemplate);
+	}
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public BaseDaoImpl() {
@@ -84,12 +92,8 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable>
                 .uniqueResult()).intValue();
     }
 
-    protected Session getSession() {
-        return sessionFactory.getCurrentSession();
-    }
-
     protected Criteria getCriteria() {
-        return sessionFactory.getCurrentSession().createCriteria(domainClass);
+        return getSession().createCriteria(domainClass);
     }
 
     @SuppressWarnings({ "unchecked" })
@@ -136,7 +140,7 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable>
         if (id == null) {
             return null;
         }
-        Criteria criteria = sessionFactory.getCurrentSession()
+        Criteria criteria = getSession()
                 .createCriteria(domainClass).add(eq(getPKfieldName(), id))
                 .setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
         if (fetchFields != null) {
@@ -151,33 +155,33 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable>
 
     @SuppressWarnings({ "unchecked" })
     public List<T> findAll() {
-        return sessionFactory.getCurrentSession().createCriteria(domainClass)
+        return getSession().createCriteria(domainClass)
                 .list();
     }
 
     public Long countAll() {
-        return ((Number) sessionFactory.getCurrentSession()
+        return ((Number) getSession()
                 .createCriteria(domainClass).setProjection(rowCount())
                 .uniqueResult()).longValue();
     }
     @Transactional
     public void save(T entity) {
     	if(entity != null) {
-    		sessionFactory.getCurrentSession().saveOrUpdate(entity);
+    		getSession().saveOrUpdate(entity);
     	}
     }
 
     @Transactional
     public  T add(T entity){
         if(entity!=null){
-            sessionFactory.getCurrentSession().persist(entity);
+        	getSession().persist(entity);
         }
         return entity;
     }
     @Transactional
     public void delete(T entity) {
     	if(entity != null) {
-    		sessionFactory.getCurrentSession().delete(entity);
+    		getSession().delete(entity);
     	}
     }
     @Transactional
@@ -185,7 +189,7 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable>
         if (entities == null || entities.isEmpty()) {
             return;
         }
-        Session session = sessionFactory.getCurrentSession();
+        Session session = getSession();
         for (T entity : entities) {
             session.saveOrUpdate(entity);
         }
@@ -195,7 +199,7 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable>
     @Transactional
     public void update(T t) {
     	if(t != null) {
-    		sessionFactory.getCurrentSession().update(t);
+    		getSession().update(t);
     	}
     }
 
@@ -203,13 +207,13 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable>
     @Transactional
     public void merge(T t) {
     	if(t != null) {
-    		sessionFactory.getCurrentSession().merge(t);
+    		getSession().merge(t);
     	}
     }
 
     @Transactional
     public void deleteAll() throws Exception {
-        sessionFactory.getCurrentSession()
+    	getSession()
                 .createQuery("delete from " + this.domainClass.getName())
                 .executeUpdate();
     }
@@ -228,7 +232,7 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable>
     public void attachClean(T t) {
         log.debug("attaching clean instance");
         try {
-            sessionFactory.getCurrentSession()
+        	getSession()
                     .buildLockRequest(LockOptions.NONE).lock(t);
             log.debug("attach successful");
         } catch (RuntimeException re) {
