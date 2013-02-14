@@ -42,8 +42,11 @@ public class ContentProviderNode {
 
 	@Override
 	public String toString() {
-		return String.format("ContentProviderNode [contentProvider=%s]",
-				contentProvider);
+		final String ls = System.getProperty("line.separator");
+		final StringBuilder retVal = new StringBuilder();
+		retVal.append("CP: ").append(contentProvider).append(ls);
+		retVal.append("Tree: ").append(patternTree).append(ls);
+		return retVal.toString();
 	}
 	
 	

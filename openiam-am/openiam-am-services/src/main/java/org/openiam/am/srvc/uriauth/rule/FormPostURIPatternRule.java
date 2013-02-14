@@ -9,13 +9,6 @@ import org.openiam.am.srvc.uriauth.dto.URIPatternRuleToken;
 import org.springframework.stereotype.Component;
 
 @Component("formPostURIPatternRule")
-public class FormPostURIPatternRule implements URIPatternRule {
-
-	@Override
-	public URIPatternRuleToken process(final String userId, final URI uri,
-									   final URIPatternMetaType metaType, 
-									   final Set<URIPatternMetaValue> valueSet) {
-		return null;
-	}
+public class FormPostURIPatternRule extends AbstractURIPatternRule {
 
 }

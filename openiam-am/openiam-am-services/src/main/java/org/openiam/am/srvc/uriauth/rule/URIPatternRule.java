@@ -7,7 +7,12 @@ import org.openiam.am.srvc.dto.URIPatternMetaType;
 import org.openiam.am.srvc.dto.URIPatternMetaValue;
 import org.openiam.am.srvc.uriauth.dto.URIPatternRuleToken;
 
+/**
+ * @author Lev Bornovalov
+ * Processes a Rule, the value of which will be returned to the Proxy
+ * BE CAREFUL WHEN CHANGING SPRING BEAN NAMES that implement this interface, as their name is stored in the database to provide runtime configuration
+ */
 public interface URIPatternRule {
 
-	public URIPatternRuleToken process(final String userId, final URI uri, final URIPatternMetaType metaType, final Set<URIPatternMetaValue> valueSet);
+	public URIPatternRuleToken process(final String userId, final URI uri, final URIPatternMetaType metaType, final Set<URIPatternMetaValue> valueSet) throws Exception;
 }

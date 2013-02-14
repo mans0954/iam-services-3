@@ -25,6 +25,11 @@ import org.openiam.base.ws.ResponseStatus;
 })
 public class URIFederationResponse extends Response {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
 	private Integer requiredAuthLevel;
 	private List<URIPatternRuleToken> ruleTokenList;
 	

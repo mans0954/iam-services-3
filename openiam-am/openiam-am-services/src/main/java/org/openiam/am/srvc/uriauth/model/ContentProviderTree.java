@@ -79,17 +79,17 @@ public class ContentProviderTree {
 		final StringBuilder retVal = new StringBuilder();
 		retVal.append("Content Provider Tree:").append(ls).append(ls);
 		for(final String key : sortedSetMap.keySet()) {
-			retVal.append(key).append("=>").append(sortedSetMap.get(key));
-			retVal.append(ls);
+			retVal.append("Key: ").append(key).append(ls);
+			if(sortedSetMap.containsKey(key)) {
+				for(final ContentProviderNode node : sortedSetMap.get(key)) {
+					retVal.append("   ").append(node).append(ls);
+				}
+			} else {
+				retVal.append("No Values for key");
+			}
+			retVal.append("===================================");
+			retVal.append(ls).append(ls);
 		}
 		return retVal.toString();
-	}
-	
-	public static void main(String[] args) {
-		try {
-			System.out.println(ArrayUtils.toString(StringUtils.split(new URI("http://www.google.com/a").getPath(), "/")));
-		} catch(Throwable e) {
-			e.printStackTrace();
-		}
 	}
 }

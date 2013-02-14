@@ -48,6 +48,9 @@ public class AuthResourceAttributeServiceImpl implements AuthResourceAttributeSe
     @Autowired
     @Qualifier("scriptEngine")
     private String scriptEngine;
+    
+    @Autowired
+    private AuthAttributeProcessor authAttributeProcessor;
     /*
     *==================================================
     * AuthResourceAMAttribute section
@@ -195,12 +198,12 @@ public class AuthResourceAttributeServiceImpl implements AuthResourceAttributeSe
             for (AuthResourceAttributeMapEntity attr : attributeMapList) {
                 resultList.add(parseAttribute(attr, userAttributeEntityMap, objectMap));
             }
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             resultList.clear();
             log.error(ex.getMessage());
-        } finally {
-                return resultList;
         }
+        
+        return resultList;
     }
 
     private UserEntity getUserObject(String userId) {
@@ -240,23 +243,7 @@ public class AuthResourceAttributeServiceImpl implements AuthResourceAttributeSe
             // TODO: run external groovy script
             attrValue = executeGroovyScript(userAttributeEntityMap,attr.getAmPolicyUrl());
         } else{
-            if (attr.getAmAttributeId() == null) {
-                throw new NullPointerException("AccessManagerAttributeName is null");
-            }
-
-            String[] map = attr.getAmAttributeId().split("\\.");
-
-            if (map != null && map.length > 1) {
-                try{
-                    attrValue = getAttributeValue(objectMap.get(AmAttributes.valueOf(map[0])), map,1);
-                } catch (IllegalArgumentException ex){
-                    throw new IllegalStateException("Cannot parse object type from AccessManagerAttributeName: " + attr
-                            .getAmAttributeId());
-                }
-            } else {
-                throw new IllegalStateException("Cannot parse object type from AccessManagerAttributeName: " + attr
-                        .getAmAttributeId());
-            }
+            attrValue = authAttributeProcessor.process(attr.getAmAttributeId(), objectMap);
         }
         attribute.setAttributeType(attr.getAttributeType());
         attribute.setTargetAttributeName(attr.getTargetAttributeName());
@@ -285,46 +272,6 @@ public class AuthResourceAttributeServiceImpl implements AuthResourceAttributeSe
             }
         }
         return result;
-    }
-
-    private String getAttributeValue(Object obj, String[] map,int currentMapIndex) throws Exception{
-        String result = "";
-        if(obj==null)
-            return result;
-
-        if(currentMapIndex==map.length-1){
-            // get field value
-            Object res =  getFieldValue(obj, map[currentMapIndex]);
-            if(res!=null){
-                result = res.toString();
-                if(map[currentMapIndex].contains("password")){
-                    String userId =  (String)getFieldValue(obj, "userId");
-                    result = loginManager.decryptPassword(userId,result);
-                }
-            }
-        } else{
-            // try to find subfield
-            Object subField = getFieldValue(obj, map[currentMapIndex]);
-            if(subField==null)
-                throw new NullPointerException("The attribute mapping doesn't exist.");
-            int nextMapIndex =currentMapIndex+1;
-            result =  getAttributeValue(subField, map, nextMapIndex);
-        }
-        return result;
-    }
-
-    private Object getFieldValue(Object obj, String fieldName) throws Exception{
-        Class objClass = obj.getClass();
-
-        if(!StringUtils.hasText(fieldName))
-            throw new NoSuchFieldException("Field Name is null or empty");
-
-        Field f = objClass.getDeclaredField(fieldName);
-        if(f==null)
-            throw new NoSuchFieldException("Field with name "+fieldName+"not found");
-
-        f.setAccessible(true);
-        return f.get(obj);
     }
 
 
