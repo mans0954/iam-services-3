@@ -193,44 +193,47 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 			}
 			
 			final URIPatternSearchResult uriPatternToken = (cpNode.getPatternTree() != null) ? cpNode.getPatternTree().find(uri) : null;
-			if(uriPatternToken == null || !uriPatternToken.hasPatterns()) { /* means that no matching pattern has been found for this URI - check against the CP */
+			
+			/* means that no matching pattern has been found for this URI (i.e. none configured) - check against the CP */
+			if(uriPatternToken == null || !uriPatternToken.hasPatterns()) {
 				/* means that the Content Provider Auth Level is higher than the current for this user */
-				if(cp.getAuthLevel().gt(authLevel)) {
+				if(!cp.getIsPublic() && cp.getAuthLevel().gt(authLevel)) {
 					response.setRequiredAuthLevel(cp.getAuthLevel().getLevel());
 					throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_AUTH_LEVEL_DOES_NOT_MEET_MIN_AUTH_LEVEL_ON_CP);
 				}
-			}
-			
-			
-			/* check entitlements and auth level */
-			for(final URIPattern pattern : uriPatternToken.getFoundPatterns()) {
-				if(!pattern.getIsPublic() && !isEntitled(userId, pattern.getResourceId())) {
-					throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_PATTERN, pattern.getPattern());
-				}
+			} else {
+				/* check entitlements and auth level on patterns */
+				for(final URIPattern pattern : uriPatternToken.getFoundPatterns()) {
+					if(!pattern.getIsPublic()) {
+						if(!isEntitled(userId, pattern.getResourceId())) {
+							throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_PATTERN, pattern.getPattern());
+						}
 				
-				if(pattern.getAuthLevel().gt(authLevel)) {
-					response.setRequiredAuthLevel(pattern.getAuthLevel().getLevel());
-					throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_AUTH_LEVEL_DOES_NOT_MEET_MIN_AUTH_LEVEL_ON_PATTERN, pattern.getId());
+						if(pattern.getAuthLevel().gt(authLevel)) {
+							response.setRequiredAuthLevel(pattern.getAuthLevel().getLevel());
+							throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_AUTH_LEVEL_DOES_NOT_MEET_MIN_AUTH_LEVEL_ON_PATTERN, pattern.getId());
+						}
+					}
 				}
-			}
 			
-			/* do rule processes */
-			for(final URIPattern pattern : uriPatternToken.getFoundPatterns()) {
-				if(CollectionUtils.isNotEmpty(pattern.getMetaEntitySet())) {
-					for(final URIPatternMeta meta : pattern.getMetaEntitySet()) {
-						final URIPatternMetaType type = meta.getMetaType();
-						if(type != null) {
-							final String springBeanName = type.getSpringBeanName();
-							try {
-								final  URIPatternRule rule = ctx.getBean(springBeanName, URIPatternRule.class);
-								if(rule != null) {
-									final Set<URIPatternMetaValue> valueSet = meta.getMetaValueSet();
-									final URIPatternRuleToken ruleToken = rule.process(userId, uri, type, valueSet);
-									response.addRuleToken(ruleToken);
+				/* do rule processes */
+				for(final URIPattern pattern : uriPatternToken.getFoundPatterns()) {
+					if(CollectionUtils.isNotEmpty(pattern.getMetaEntitySet())) {
+						for(final URIPatternMeta meta : pattern.getMetaEntitySet()) {
+							final URIPatternMetaType type = meta.getMetaType();
+							if(type != null) {
+								final String springBeanName = type.getSpringBeanName();
+								try {
+									final  URIPatternRule rule = ctx.getBean(springBeanName, URIPatternRule.class);
+									if(rule != null) {
+										final Set<URIPatternMetaValue> valueSet = meta.getMetaValueSet();
+										final URIPatternRuleToken ruleToken = rule.process(userId, uri, type, valueSet);
+										response.addRuleToken(ruleToken);
+									}
+								} catch(Throwable e) {
+									LOG.error("Error processing rule", e);
+									throw new BasicDataServiceException(ResponseCode.URI_PATTERN_RULE_PROCESS_ERROR, e);
 								}
-							} catch(Throwable e) {
-								LOG.error("Error processing rule", e);
-								throw new BasicDataServiceException(ResponseCode.URI_PATTERN_RULE_PROCESS_ERROR, e);
 							}
 						}
 					}
