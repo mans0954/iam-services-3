@@ -32,11 +32,11 @@ public class URIPatternMetaValueEntity implements Serializable {
 	@Column(name = "META_ATTRIBUTE_NAME", length = 100, nullable = false)
 	private String name;
 	
-	@Column(name = "STATIC_VALUE", length = 100, nullable = false)
+	@Column(name = "STATIC_VALUE", length = 100, nullable = true)
 	private String staticValue;
 	
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinColumn(name="AM_ATTRIBUTE_ID", referencedColumnName = "AM_ATTRIBUTE_ID", insertable = false, updatable = false)
+    @JoinColumn(name="AM_ATTRIBUTE_ID", referencedColumnName = "AM_ATTRIBUTE_ID", insertable = false, updatable = false, nullable=true)
 	private AuthResourceAMAttributeEntity amAttribute;
 	
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
