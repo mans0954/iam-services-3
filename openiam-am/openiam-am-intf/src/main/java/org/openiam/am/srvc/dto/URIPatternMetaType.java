@@ -81,6 +81,12 @@ public class URIPatternMetaType implements Serializable {
 			return false;
 		return true;
 	}
+	@Override
+	public String toString() {
+		return String.format(
+				"URIPatternMetaType [id=%s, name=%s, springBeanName=%s]", id,
+				name, springBeanName);
+	}
 	
 	
 }

@@ -103,6 +103,12 @@ public class AuthLevel {
 			return false;
 		return true;
 	}
+
+	@Override
+	public String toString() {
+		return String.format("AuthLevel [id=%s, name=%s, level=%s]", id, name,
+				level);
+	}
 	
 	
 }

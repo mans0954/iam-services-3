@@ -48,6 +48,12 @@ public class URIPatternRuleToken implements Serializable {
 	public List<URIPatternRuleValue> getValueList() {
 		return valueList;
 	}
+
+	@Override
+	public String toString() {
+		return String.format("URIPatternRuleToken [metaType=%s, valueList=%s]",
+				metaType, valueList);
+	}
 	
 	
 }

@@ -57,4 +57,13 @@ public class URIFederationResponse extends Response {
 			this.ruleTokenList.add(token);
 		}
 	}
+
+	@Override
+	public String toString() {
+		return String
+				.format("URIFederationResponse [requiredAuthLevel=%s, ruleTokenList=%s]",
+						requiredAuthLevel, ruleTokenList);
+	}
+	
+	
 }

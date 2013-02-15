@@ -168,8 +168,14 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 		final String ls = System.getProperty("line.separator");
 		
 		final StringBuilder cacheContents = new StringBuilder();
+		cacheContents.append((contentProviderTree != null) ? contentProviderTree : "");
 		
 		return cacheContents.toString();
+	}
+	
+	@ManagedOperation(description="Test Federation agains parameters")
+	public String federateProxyURIJMX(final String userId, final int authLevel, final String proxyURI) {
+		return federateProxyURI(userId, authLevel, proxyURI).toString();
 	}
 
 	@Override

@@ -97,6 +97,12 @@ public class AuthLevelEntity implements Serializable {
 			return false;
 		return true;
 	}
+
+	@Override
+	public String toString() {
+		return String.format("AuthLevelEntity [id=%s, name=%s, level=%s]", id,
+				name, level);
+	}
 	
 	
 }
