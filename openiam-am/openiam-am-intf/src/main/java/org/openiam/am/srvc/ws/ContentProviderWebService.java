@@ -3,6 +3,7 @@ package org.openiam.am.srvc.ws;
 import org.openiam.am.srvc.dto.AuthLevel;
 import org.openiam.am.srvc.dto.ContentProvider;
 import org.openiam.am.srvc.dto.ContentProviderServer;
+import org.openiam.am.srvc.dto.URIPattern;
 import org.openiam.am.srvc.searchbeans.ContentProviderSearchBean;
 import org.openiam.base.ws.Response;
 
@@ -75,4 +76,21 @@ public interface ContentProviderWebService {
     @WebMethod
     public Response deleteProviderServer(@WebParam(name = "contentProviderServerId", targetNamespace = "") String contentProviderServerId);
 
+
+    @WebMethod
+    public  List<URIPattern> getUriPatternsForProvider(@WebParam(name = "providerId", targetNamespace = "") String providerId,
+                                                       @WebParam(name = "from", targetNamespace = "") Integer from,
+                                                       @WebParam(name = "size", targetNamespace = "") Integer size);
+
+    @WebMethod
+    public  Integer getNumOfUriPatternsForProvider(@WebParam(name = "providerId", targetNamespace = "") String providerId);
+
+    @WebMethod
+    public URIPattern getURIPattern(@WebParam(name = "patternId", targetNamespace = "") String patternId);
+
+    @WebMethod
+    public Response saveURIPattern(@WebParam(name = "pattern", targetNamespace = "") URIPattern pattern);
+
+    @WebMethod
+    public Response deleteProviderPattern(@WebParam(name = "providerId", targetNamespace = "") String providerId);
 }

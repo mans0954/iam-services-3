@@ -3,12 +3,15 @@ package org.openiam.am.srvc.ws;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.domain.ContentProviderEntity;
+import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.am.srvc.dozer.converter.AuthLevelDozerConverter;
 import org.openiam.am.srvc.dozer.converter.ContentProviderDozerConverter;
 import org.openiam.am.srvc.dozer.converter.ContentProviderServerDoserConverter;
+import org.openiam.am.srvc.dozer.converter.URIPatternDozerConverter;
 import org.openiam.am.srvc.dto.AuthLevel;
 import org.openiam.am.srvc.dto.ContentProvider;
 import org.openiam.am.srvc.dto.ContentProviderServer;
+import org.openiam.am.srvc.dto.URIPattern;
 import org.openiam.am.srvc.searchbeans.ContentProviderSearchBean;
 import org.openiam.am.srvc.searchbeans.converter.ContentProviderSearchBeanConverter;
 import org.openiam.am.srvc.service.ContentProviderService;
@@ -19,6 +22,7 @@ import org.openiam.base.ws.exception.BasicDataServiceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.jws.WebParam;
 import javax.jws.WebService;
 import java.util.List;
 
@@ -39,6 +43,8 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
 
     @Autowired
     private ContentProviderServerDoserConverter contentProviderServerDoserConverter;
+    @Autowired
+    private URIPatternDozerConverter uriPatternDozerConverter;
 
     @Override
     public List<AuthLevel> getAuthLevelList(){
@@ -168,4 +174,64 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
         }
         return response;
     }
+
+    @Override
+    public List<URIPattern> getUriPatternsForProvider(String providerId, Integer from, Integer size) {
+        return uriPatternDozerConverter.convertToDTOList(contentProviderService.getUriPatternsForProvider(providerId, from, size), true);
+    }
+
+    @Override
+    public Integer getNumOfUriPatternsForProvider(String providerId) {
+        return contentProviderService.getNumOfUriPatternsForProvider(providerId);
+    }
+
+    @Override
+    public URIPattern getURIPattern(String patternId) {
+        return uriPatternDozerConverter.convertToDTO(contentProviderService.getURIPattern(patternId), true);
+    }
+
+    @Override
+    public Response saveURIPattern(@WebParam(name = "pattern", targetNamespace = "") URIPattern pattern) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if (pattern==null )
+                throw new  BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+
+            URIPatternEntity entity = contentProviderService.saveURIPattern(uriPatternDozerConverter.convertToEntity(pattern,true));
+            response.setResponseValue(uriPatternDozerConverter.convertToDTO(entity, true));
+
+        } catch(BasicDataServiceException e) {
+            log.error(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+        } catch(Throwable e) {
+            log.error(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+        }
+        return response;
+    }
+
+    @Override
+    public Response deleteProviderPattern(@WebParam(name = "providerId", targetNamespace = "") String providerId) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if (providerId==null || providerId.trim().isEmpty())
+                throw new  BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+
+            contentProviderService.deleteProviderPattern(providerId);
+
+        } catch(BasicDataServiceException e) {
+            log.error(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+        } catch(Throwable e) {
+            log.error(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+        }
+        return response;
+    }
+
+
 }

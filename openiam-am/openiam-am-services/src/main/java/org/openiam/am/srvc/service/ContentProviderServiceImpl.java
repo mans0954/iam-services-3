@@ -3,9 +3,11 @@ package org.openiam.am.srvc.service;
 import org.openiam.am.srvc.dao.AuthLevelDao;
 import org.openiam.am.srvc.dao.ContentProviderDao;
 import org.openiam.am.srvc.dao.ContentProviderServerDao;
+import org.openiam.am.srvc.dao.URIPatternDao;
 import org.openiam.am.srvc.domain.AuthLevelEntity;
 import org.openiam.am.srvc.domain.ContentProviderEntity;
 import org.openiam.am.srvc.domain.ContentProviderServerEntity;
+import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
@@ -20,12 +22,17 @@ import java.util.List;
 @Service("contentProviderService")
 public class ContentProviderServiceImpl implements  ContentProviderService{
     private static final String resourceTypeId="CONTENT_PROVIDER";
+    private static final String patternResourceTypeId="URL_PATTERN";
     @Autowired
     private AuthLevelDao authLevelDao;
     @Autowired
     private ContentProviderDao contentProviderDao;
     @Autowired
     private ContentProviderServerDao contentProviderServerDao;
+
+    @Autowired
+    private URIPatternDao uriPatternDao;
+
     @Autowired
     private ResourceDAO resourceDao;
     @Autowired
@@ -122,6 +129,8 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
             resourceDataService.deleteResource(entity.getResourceId());
             // delete servers for given provider
             contentProviderServerDao.deleteByProvider(providerId);
+            // delete patterns
+            uriPatternDao.deleteByProvider(providerId);
             // delete provider
             contentProviderDao.deleteById(providerId);
         }
@@ -187,5 +196,92 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
             contentProviderServerDao.save(entity);
         }
         return entity;
+    }
+
+    @Override
+    public Integer getNumOfUriPatternsForProvider(String providerId) {
+        URIPatternEntity example = new URIPatternEntity();
+        ContentProviderEntity provider = new ContentProviderEntity();
+        provider.setId(providerId);
+        example.setContentProvider(provider);
+        return uriPatternDao.count(example);
+    }
+
+    @Override
+    public List<URIPatternEntity> getUriPatternsForProvider(String providerId, Integer from, Integer size) {
+        URIPatternEntity example = new URIPatternEntity();
+        ContentProviderEntity provider = new ContentProviderEntity();
+        provider.setId(providerId);
+        example.setContentProvider(provider);
+
+        return uriPatternDao.getByExample(example, from, size);
+    }
+
+    @Override
+    public URIPatternEntity getURIPattern(String patternId) {
+        return uriPatternDao.findById(patternId);
+    }
+
+    @Override
+    @Transactional
+    public URIPatternEntity saveURIPattern(URIPatternEntity pattern) {
+        if (pattern == null)
+            throw new NullPointerException("Invalid agrument ");
+        if (pattern.getPattern()==null || pattern.getPattern().trim().isEmpty())
+            throw new  IllegalArgumentException("Pattern not set");
+        if (pattern.getMinAuthLevel()==null || pattern.getMinAuthLevel().getId()==null || pattern.getMinAuthLevel().getId().trim().isEmpty())
+            throw new  IllegalArgumentException("Auth Level not set for url pattern");
+
+        AuthLevelEntity authLevel = authLevelDao.findById(pattern.getMinAuthLevel().getId());
+        if(authLevel==null) {
+            throw new NullPointerException("Cannot save content provider. Auth LEVEL is not found");
+        }
+
+        ContentProviderEntity provider = contentProviderDao.findById(pattern.getContentProvider().getId());
+        if(provider==null){
+            throw new NullPointerException("Cannot save content provider server. Content Provider is not found");
+        }
+
+        pattern.setMinAuthLevel(authLevel);
+        URIPatternEntity entity  = null;
+        if(pattern.getId()==null || pattern.getId().trim().isEmpty()){
+            // new provider
+            // create resources
+            ResourceTypeEntity resourceType = resourceTypeDAO.findById(patternResourceTypeId);
+            if(resourceType==null){
+                throw new NullPointerException("Cannot create resource for URI pattern. Resource type is not found");
+            }
+
+            ResourceEntity resource = provider.getResource();
+            resource.setName(patternResourceTypeId+"_"+pattern.getPattern());
+            resource.setResourceType(resourceType);
+            resource.setResourceId(null);
+            resource = resourceDao.add(resource);
+
+            pattern.setId(null);
+            pattern.setResource(null);
+            pattern.setResourceId(resource.getResourceId());
+
+            uriPatternDao.save(pattern);
+            entity = pattern;
+        } else{
+            // update provider
+            entity  = uriPatternDao.findById(pattern.getId());
+            entity.setPattern(pattern.getPattern());
+            entity.setMinAuthLevel(authLevel);
+            entity.setIsPublic(pattern.getIsPublic());
+            entity.setMetaEntitySet(null);
+
+            uriPatternDao.save(entity);
+        }
+        return entity;
+    }
+
+    @Override
+    @Transactional
+    public void deleteProviderPattern(String patternId) {
+        if (patternId==null || patternId.trim().isEmpty())
+            throw new  IllegalArgumentException("URI Pattern Id not set");
+        uriPatternDao.deleteById(patternId);
     }
 }
