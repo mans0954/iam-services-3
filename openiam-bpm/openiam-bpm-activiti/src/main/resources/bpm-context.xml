@@ -18,13 +18,15 @@
 	
 	<bean id="springContextProvider" class="org.openiam.util.SpringContextProvider" />
     
+    <jee:jndi-lookup jndi-name="${datasource.activiti.jndi.name}" id="bpmDataSource" />
+    <!--
 	<bean id="bpmDataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
 		<property name="driverClass" value="${org.openiam.bpm.activiti.jdbc.driver}" />
 		<property name="jdbcUrl" value="${org.openiam.bpm.activiti.jdbc.url}" />
 		<property name="user" value="${org.openiam.bpm.activiti.jdbc.username}" />
 		<property name="password" value="${org.openiam.bpm.activiti.jdbc.password}" />
-		<!-- <property name="defaultAutoCommit" value="false" /> -->
-	</bean>   
+	</bean>
+	-->   
 	
 	<bean id="bpmTransactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
 		<property name="dataSource" ref="bpmDataSource" />

@@ -43,6 +43,7 @@ import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.base.ws.exception.BasicDataServiceException;
+import org.openiam.thread.Sweepable;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanNotOfRequiredTypeException;
 import org.springframework.beans.factory.InitializingBean;
@@ -57,8 +58,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service("uriFederationService")
-@ManagedResource(objectName="org.openiam.am.srvc.service:name=URIFederationService")
-public class URIFederationServiceImpl implements URIFederationService, ApplicationContextAware, InitializingBean {
+//@ManagedResource(objectName="org.openiam.am.srvc.service:name=URIFederationService")
+public class URIFederationServiceImpl implements URIFederationService, ApplicationContextAware, InitializingBean, Sweepable {
 	
 	private static Logger LOG = Logger.getLogger(URIFederationServiceImpl.class);
 	private ApplicationContext ctx;
@@ -92,7 +93,7 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 	 * Caches DTO Objects, so that we're not tied to the Hibernate Session
 	 */
 	@ManagedOperation(description="sweep the Content Provider Cache")
-	//@Transactional
+	@Transactional
 	public void sweep() {
 		try {
 			LOG.info("Attemtping to refresh Content Provider Cache...");
