@@ -246,11 +246,11 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 			response.setErrorCode(e.getCode());
 			response.setResponseValue(e.getResponseValue());
 			response.setStatus(ResponseStatus.FAILURE);
-			LOG.info("CP or Pattern Exception", e);
+			LOG.info(String.format("CP or Pattern Exception: %s", e.getMessage()));
 		} catch(URISyntaxException e) {
 			response.setErrorCode(ResponseCode.INVALID_URI);
 			response.setStatus(ResponseStatus.FAILURE);
-			LOG.error("URI Syntax Exception", e);
+			LOG.error(String.format("URI Syntax Exception: %s", e.getMessage()));
 		} catch(Throwable e) {
 			response.setErrorCode(ResponseCode.FAIL_OTHER);
 			response.setStatus(ResponseStatus.FAILURE);

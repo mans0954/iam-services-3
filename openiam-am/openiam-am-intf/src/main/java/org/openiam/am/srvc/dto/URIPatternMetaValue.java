@@ -104,6 +104,12 @@ public class URIPatternMetaValue implements Serializable {
 			return false;
 		return true;
 	}
+	@Override
+	public String toString() {
+		return String
+				.format("URIPatternMetaValue [id=%s, name=%s, staticValue=%s, amAttribute=%s, metaEntityId=%s]",
+						id, name, staticValue, amAttribute, metaEntityId);
+	}
 	
 	
 }

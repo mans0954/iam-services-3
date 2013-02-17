@@ -70,7 +70,7 @@ public class ContentProviderTree {
 	}
 	
 	private String getKey(final String domain, final String path) {
-		return new StringBuilder(domain).append(":").append(path).toString();
+		return String.format("%s:%s", domain, path);
 	}
 	
 	@Override

@@ -11,6 +11,7 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 @Service("authAttributeProcessor")
@@ -23,6 +24,7 @@ public class AuthAttributeProcessorImpl implements AuthAttributeProcessor {
     private UserDataService userManager;
 
 	@Override
+	@Transactional
 	public String process(final String amAttributeId, final String userId) throws Exception {
 		LoginEntity identityObject = loginManager.getPrimaryIdentity(userId);
 		final UserEntity user = userManager.getUser(userId);

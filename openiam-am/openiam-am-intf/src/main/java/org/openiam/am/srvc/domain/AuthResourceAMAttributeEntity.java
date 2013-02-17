@@ -64,6 +64,13 @@ public class AuthResourceAMAttributeEntity implements Serializable {
 			return false;
 		return true;
 	}
+
+	@Override
+	public String toString() {
+		return String
+				.format("AuthResourceAMAttributeEntity [amAttributeId=%s, attributeName=%s]",
+						amAttributeId, attributeName);
+	}
     
     
 }

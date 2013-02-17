@@ -61,9 +61,10 @@ public class URIFederationResponse extends Response {
 	@Override
 	public String toString() {
 		return String
-				.format("URIFederationResponse [requiredAuthLevel=%s, ruleTokenList=%s]",
-						requiredAuthLevel, ruleTokenList);
+				.format("URIFederationResponse [requiredAuthLevel=%s, ruleTokenList=%s, status=%s, errorCode=%s, errorText=%s, responseValue=%s]",
+						requiredAuthLevel, ruleTokenList, status, errorCode,
+						errorText, responseValue);
 	}
-	
+
 	
 }
