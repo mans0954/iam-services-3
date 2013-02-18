@@ -9,6 +9,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
 
+import org.openiam.am.srvc.dto.ContentProviderServer;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
@@ -21,7 +22,8 @@ import org.openiam.base.ws.ResponseStatus;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "URIFederationResponse", propOrder = {
 	"requiredAuthLevel",
-	"ruleTokenList"
+	"ruleTokenList",
+	"server"
 })
 public class URIFederationResponse extends Response {
 
@@ -32,6 +34,7 @@ public class URIFederationResponse extends Response {
 	
 	private Integer requiredAuthLevel;
 	private List<URIPatternRuleToken> ruleTokenList;
+	private ContentProviderServer server;
 	
 	public ResponseStatus getStatus() {
 		return status;
@@ -58,13 +61,22 @@ public class URIFederationResponse extends Response {
 		}
 	}
 
+	public ContentProviderServer getServer() {
+		return server;
+	}
+
+	public void setServer(ContentProviderServer server) {
+		this.server = server;
+	}
+
 	@Override
 	public String toString() {
 		return String
-				.format("URIFederationResponse [requiredAuthLevel=%s, ruleTokenList=%s, status=%s, errorCode=%s, errorText=%s, responseValue=%s]",
-						requiredAuthLevel, ruleTokenList, status, errorCode,
-						errorText, responseValue);
+				.format("URIFederationResponse [requiredAuthLevel=%s, ruleTokenList=%s, server=%s, status=%s, errorCode=%s, errorText=%s, responseValue=%s]",
+						requiredAuthLevel, ruleTokenList, server, status,
+						errorCode, errorText, responseValue);
 	}
 
+	
 	
 }

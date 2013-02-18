@@ -1,13 +1,18 @@
 package org.openiam.am.srvc.dto;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.openiam.am.srvc.domain.ContentProviderEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ContentProvider", propOrder = {
@@ -37,6 +42,15 @@ public class ContentProvider implements Serializable {
     private String resourceName;
 	private Set<URIPattern> patternSet;
 	private Set<ContentProviderServer> serverSet;
+	
+	/*
+	 * federation variables.  Internal use only
+	 */
+	@XmlTransient
+	private int serverIdx = 0;
+	
+	@XmlTransient
+	private List<ContentProviderServer> serverList;
 	
 	public String getId() {
 		return id;
@@ -109,7 +123,21 @@ public class ContentProvider implements Serializable {
 	}
 	public void setServerSet(Set<ContentProviderServer> serverSet) {
 		this.serverSet = serverSet;
+		if(serverSet != null) {
+			this.serverList = new ArrayList<ContentProviderServer>(serverSet);
+		}
 	}
+	
+	public synchronized ContentProviderServer getNextServer() {
+		ContentProviderServer retVal = null;
+		if(CollectionUtils.isNotEmpty(serverList)) {
+			final int size = serverList.size();
+			retVal = serverList.get(serverIdx % size);
+			serverIdx++;
+		}
+		return retVal;
+	}
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;

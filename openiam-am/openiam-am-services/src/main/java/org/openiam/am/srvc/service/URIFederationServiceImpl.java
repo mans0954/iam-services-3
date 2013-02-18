@@ -104,56 +104,59 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 			if(CollectionUtils.isNotEmpty(contentProviderEntityList)) {
 				for(final ContentProviderEntity cpEntity : contentProviderEntityList) {
 					
-					/* convert the content provider to a DTO */
-					final ContentProvider cp = cpDozerConverter.convertToDTO(cpEntity, true);
-					if(CollectionUtils.isNotEmpty(cpEntity.getPatternSet())) {
-						
-						/* process the URI patterns, but converting any subcollections to DTOs manually, since our Dozer converter will only go 2 levels deep */
-						final Map<String, URIPattern> uriPatternMap = new LinkedHashMap<String, URIPattern>();
-						for(final URIPatternEntity uriEntity : cpEntity.getPatternSet()) {
+					/* dont' cache CPs who don't have servers */
+					if(CollectionUtils.isNotEmpty(cpEntity.getServerSet())) {
+						/* convert the content provider to a DTO */
+						final ContentProvider cp = cpDozerConverter.convertToDTO(cpEntity, true);
+						if(CollectionUtils.isNotEmpty(cpEntity.getPatternSet())) {
 							
-							/* convert pattern */
-							final URIPattern pattern = patternDozerConverter.convertToDTO(uriEntity, true);
-							uriPatternMap.put(pattern.getId(), pattern);
-							if(CollectionUtils.isNotEmpty(pattern.getMetaEntitySet())) {
+							/* process the URI patterns, but converting any subcollections to DTOs manually, since our Dozer converter will only go 2 levels deep */
+							final Map<String, URIPattern> uriPatternMap = new LinkedHashMap<String, URIPattern>();
+							for(final URIPatternEntity uriEntity : cpEntity.getPatternSet()) {
 								
-								/* convert meta */
-								final Map<String, URIPatternMeta> metaMap = new LinkedHashMap<String, URIPatternMeta>();
-								for(final URIPatternMetaEntity metaEntity : uriEntity.getMetaEntitySet()) {
-									final URIPatternMeta meta = patternMetaDozerConverter.convertToDTO(metaEntity, true);
+								/* convert pattern */
+								final URIPattern pattern = patternDozerConverter.convertToDTO(uriEntity, true);
+								uriPatternMap.put(pattern.getId(), pattern);
+								if(CollectionUtils.isNotEmpty(pattern.getMetaEntitySet())) {
 									
-									/* check that the spring bean exists */
-									final URIPatternMetaType type = meta.getMetaType();
-									if(type != null && StringUtils.isNotBlank(type.getSpringBeanName())) {
-										final String springBeanName = type.getSpringBeanName();
-										try {
-											final URIPatternRule rule = ctx.getBean(springBeanName, URIPatternRule.class);
-											LOG.info(String.format("Spring Bean %s will be used for URI Pattern %s", springBeanName, pattern));
-											metaMap.put(meta.getId(), meta);
-									
-											/* convert values */
-											if(CollectionUtils.isNotEmpty(metaEntity.getMetaValueSet())) {
-												final Map<String, URIPatternMetaValue> valueMap = new LinkedHashMap<String, URIPatternMetaValue>();
-												for(final URIPatternMetaValueEntity valueEntity : metaEntity.getMetaValueSet()) {
-													final URIPatternMetaValue value = patternValueDozerConverter.convertToDTO(valueEntity, true);
-													valueMap.put(value.getId(), value);
+									/* convert meta */
+									final Map<String, URIPatternMeta> metaMap = new LinkedHashMap<String, URIPatternMeta>();
+									for(final URIPatternMetaEntity metaEntity : uriEntity.getMetaEntitySet()) {
+										final URIPatternMeta meta = patternMetaDozerConverter.convertToDTO(metaEntity, true);
+										
+										/* check that the spring bean exists */
+										final URIPatternMetaType type = meta.getMetaType();
+										if(type != null && StringUtils.isNotBlank(type.getSpringBeanName())) {
+											final String springBeanName = type.getSpringBeanName();
+											try {
+												final URIPatternRule rule = ctx.getBean(springBeanName, URIPatternRule.class);
+												LOG.info(String.format("Spring Bean %s will be used for URI Pattern %s", springBeanName, pattern));
+												metaMap.put(meta.getId(), meta);
+										
+												/* convert values */
+												if(CollectionUtils.isNotEmpty(metaEntity.getMetaValueSet())) {
+													final Map<String, URIPatternMetaValue> valueMap = new LinkedHashMap<String, URIPatternMetaValue>();
+													for(final URIPatternMetaValueEntity valueEntity : metaEntity.getMetaValueSet()) {
+														final URIPatternMetaValue value = patternValueDozerConverter.convertToDTO(valueEntity, true);
+														valueMap.put(value.getId(), value);
+													}
+													meta.setMetaValueSet(new LinkedHashSet<URIPatternMetaValue>(valueMap.values()));
 												}
-												meta.setMetaValueSet(new LinkedHashSet<URIPatternMetaValue>(valueMap.values()));
+											} catch(NoSuchBeanDefinitionException e) {
+												LOG.warn(String.format("Spring Bean '%s' on URI Pattern %s will not be used", springBeanName, pattern), e);
+											} catch(BeanNotOfRequiredTypeException e) {
+												LOG.warn(String.format("Spring Bean '%s' on URI Pattern %s will not be used", springBeanName, pattern), e);
 											}
-										} catch(NoSuchBeanDefinitionException e) {
-											LOG.warn(String.format("Spring Bean '%s' on URI Pattern %s will not be used", springBeanName, pattern), e);
-										} catch(BeanNotOfRequiredTypeException e) {
-											LOG.warn(String.format("Spring Bean '%s' on URI Pattern %s will not be used", springBeanName, pattern), e);
 										}
 									}
+									
+									pattern.setMetaEntitySet(new LinkedHashSet<URIPatternMeta>(metaMap.values()));
 								}
-								
-								pattern.setMetaEntitySet(new LinkedHashSet<URIPatternMeta>(metaMap.values()));
 							}
+							cp.setPatternSet(new LinkedHashSet<URIPattern>(uriPatternMap.values()));
 						}
-						cp.setPatternSet(new LinkedHashSet<URIPattern>(uriPatternMap.values()));
+						tempTree.addContentProvider(cp);
 					}
-					tempTree.addContentProvider(cp);
 				}
 			}
 			synchronized(this) {
@@ -241,6 +244,7 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 				}
 			}
 			
+			response.setServer(cp.getNextServer());
 			response.setStatus(ResponseStatus.SUCCESS);
 		} catch(BasicDataServiceException e) {
 			response.setErrorCode(e.getCode());

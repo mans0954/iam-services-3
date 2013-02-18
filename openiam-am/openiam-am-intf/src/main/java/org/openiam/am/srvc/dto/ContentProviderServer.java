@@ -78,6 +78,12 @@ public class ContentProviderServer {
 			return false;
 		return true;
 	}
+	@Override
+	public String toString() {
+		return String
+				.format("ContentProviderServer [id=%s, contentProviderId=%s, serverURL=%s]",
+						id, contentProviderId, serverURL);
+	}
 	
 	
 }

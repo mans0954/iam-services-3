@@ -58,4 +58,17 @@
         </service>
     </model>
 
+
+	<model name="uriFederationModel">
+        <service name="uriFederationWSrvc">
+            <inbound>
+                <inbound-endpoint address="${webservice.path}URIFederationWebService" 		exchange-pattern="request-response">
+                    <cxf:jaxws-service />
+                </inbound-endpoint>
+            </inbound>
+            <component>
+                <spring-object bean="uriFederationWS" />
+            </component>
+        </service>
+    </model>
 </mule>

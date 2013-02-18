@@ -14,7 +14,7 @@ import org.openiam.am.srvc.dto.URIPatternMetaType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "URIPatternRuleToken", propOrder = {
 	"metaType",
-	"valueMap"
+	"valueList"
 })
 public class URIPatternRuleToken implements Serializable {
 	
