@@ -196,6 +196,12 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
         try {
             if (pattern==null )
                 throw new  BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            if (pattern.getPattern()==null || pattern.getPattern().trim().isEmpty())
+                throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_URI_PATERN_NOT_SET);
+            if (pattern.getContentProviderId()==null || pattern.getContentProviderId().trim().isEmpty())
+                throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_NOT_SET);
+            if (pattern.getAuthLevel()==null || pattern.getAuthLevel().getId().trim().isEmpty())
+                throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_AUTH_LEVEL_NOT_SET);
 
             URIPatternEntity entity = contentProviderService.saveURIPattern(uriPatternDozerConverter.convertToEntity(pattern,true));
             response.setResponseValue(uriPatternDozerConverter.convertToDTO(entity, true));

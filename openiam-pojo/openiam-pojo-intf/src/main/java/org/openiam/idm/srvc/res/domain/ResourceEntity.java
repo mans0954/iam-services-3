@@ -50,7 +50,7 @@ public class ResourceEntity {
     @JoinColumn(name = "RESOURCE_TYPE_ID")
     private ResourceTypeEntity resourceType;
 
-    @Column(name = "NAME", length = 40)
+    @Column(name = "NAME", length = 150)
     private String name;
 
     @Column(name = "DESCRIPTION", length = 100)

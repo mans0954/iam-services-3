@@ -87,11 +87,11 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
                 throw new NullPointerException("Cannot create resource for provider. Resource type is not found");
             }
 
-            ResourceEntity resource = provider.getResource();
+            ResourceEntity resource = new ResourceEntity();
             resource.setName(resourceTypeId+"_"+provider.getName());
             resource.setResourceType(resourceType);
             resource.setResourceId(null);
-            resource = resourceDao.add(resource);
+            resourceDao.save(resource);
 
             provider.setId(null);
             provider.setResource(null);
@@ -130,7 +130,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
             // delete servers for given provider
             contentProviderServerDao.deleteByProvider(providerId);
             // delete patterns
-            uriPatternDao.deleteByProvider(providerId);
+            deletePatternByProvider(providerId);
             // delete provider
             contentProviderDao.deleteById(providerId);
         }
@@ -243,6 +243,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
         }
 
         pattern.setMinAuthLevel(authLevel);
+        pattern.setContentProvider(provider);
         URIPatternEntity entity  = null;
         if(pattern.getId()==null || pattern.getId().trim().isEmpty()){
             // new provider
@@ -252,11 +253,12 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
                 throw new NullPointerException("Cannot create resource for URI pattern. Resource type is not found");
             }
 
-            ResourceEntity resource = provider.getResource();
-            resource.setName(patternResourceTypeId+"_"+pattern.getPattern());
+            ResourceEntity resource = new ResourceEntity();
+            resource.setName(patternResourceTypeId+"_"+provider.getId()+"_"+pattern.getPattern());
             resource.setResourceType(resourceType);
             resource.setResourceId(null);
-            resource = resourceDao.add(resource);
+            resourceDao.add(resource);
+
 
             pattern.setId(null);
             pattern.setResource(null);
@@ -282,6 +284,29 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
     public void deleteProviderPattern(String patternId) {
         if (patternId==null || patternId.trim().isEmpty())
             throw new  IllegalArgumentException("URI Pattern Id not set");
-        uriPatternDao.deleteById(patternId);
+
+        URIPatternEntity entity  = uriPatternDao.findById(patternId);
+        deleteProviderPattern(entity);
+    }
+
+    @Transactional
+    private void deleteProviderPattern(URIPatternEntity entity){
+        if(entity!=null){
+            // delete resource
+            resourceDataService.deleteResource(entity.getResourceId());
+
+            // delete pattern
+            uriPatternDao.deleteById(entity.getId());
+        }
+    }
+
+    @Transactional
+    private void deletePatternByProvider(String providerId){
+        List<URIPatternEntity> patternList = getUriPatternsForProvider(providerId, 0, Integer.MAX_VALUE);
+        if(patternList!=null && !patternList.isEmpty()){
+            for (URIPatternEntity pattern: patternList){
+                deleteProviderPattern(pattern);
+            }
+        }
     }
 }
