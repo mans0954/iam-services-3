@@ -178,7 +178,6 @@ public class ResourceDataServiceImpl implements ResourceDataService {
     			dbObject.setManagedSysId(entity.getManagedSysId());
     			dbObject.setName(entity.getName());
     			dbObject.setURL(entity.getURL());
-    			dbObject.setIsUrlProtector(entity.getIsUrlProtector());
     			resourceDao.update(dbObject);
     		} else {
     			resourceDao.save(entity);

@@ -383,12 +383,6 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 		iconProp.setPropValue(menu.getIcon());
 		resource.addResourceProperty(iconProp);
 		
-		final ResourcePropEntity urlProp = new ResourcePropEntity();
-		urlProp.setResourceId(resource.getResourceId());
-		urlProp.setName(AuthorizationConstants.URL_PATTERN_PROPERTY);
-		urlProp.setPropValue(menu.getUrl());
-		resource.addResourceProperty(urlProp);
-		
 		final ResourcePropEntity visibleProp = new ResourcePropEntity();
 		visibleProp.setResourceId(resource.getResourceId());
 		visibleProp.setName(AuthorizationConstants.MENU_ITEM_IS_VISIBLE);
@@ -406,7 +400,6 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 		
 		ResourcePropEntity displayNameProp = resource.getResourceProperty(AuthorizationConstants.MENU_ITEM_DISPLAY_NAME_PROPERTY);
 		ResourcePropEntity iconProp = resource.getResourceProperty(AuthorizationConstants.MENU_ITEM_ICON_PROPERTY);
-		ResourcePropEntity urlProp = resource.getResourceProperty(AuthorizationConstants.URL_PATTERN_PROPERTY);
 		ResourcePropEntity visibleProp = resource.getResourceProperty(AuthorizationConstants.MENU_ITEM_IS_VISIBLE);
 		
 		if(visibleProp != null) {
@@ -437,16 +430,6 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 			iconProp.setName(AuthorizationConstants.MENU_ITEM_ICON_PROPERTY);
 			iconProp.setPropValue(menu.getIcon());
 			resource.addResourceProperty(iconProp);
-		}
-		
-		if(urlProp != null) {
-			urlProp.setPropValue(menu.getUrl());
-		} else {
-			urlProp = new ResourcePropEntity();
-			urlProp.setResourceId(resource.getResourceId());
-			urlProp.setName(AuthorizationConstants.URL_PATTERN_PROPERTY);
-			urlProp.setPropValue(menu.getUrl());
-			resource.addResourceProperty(urlProp);
 		}
 	}
 	

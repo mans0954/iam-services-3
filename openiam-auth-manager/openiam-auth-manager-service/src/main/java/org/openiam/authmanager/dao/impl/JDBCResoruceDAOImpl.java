@@ -12,8 +12,6 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.authmanager.common.model.AuthorizationMenu;
 import org.openiam.authmanager.common.model.AuthorizationResource;
-import org.openiam.authmanager.common.model.url.AuthorizationDomain;
-import org.openiam.authmanager.common.model.url.InvalidPatternException;
 import org.openiam.authmanager.dao.ResourceDAO;
 import org.openiam.authmanager.util.AuthorizationConstants;
 import org.springframework.dao.DataAccessException;
@@ -52,14 +50,6 @@ public class JDBCResoruceDAOImpl extends AbstractJDBCDao implements ResourceDAO 
 			log.debug(String.format("Query: %s", GET_ALL));
 		}
 		return getJdbcTemplate().query(GET_ALL, rowMapper);
-	}
-	
-	@Override
-	public Set<AuthorizationDomain> getAuthorizationDomains(final Map<String, AuthorizationResource> resourceMap) {
-		if(log.isDebugEnabled()) {
-			log.debug(String.format("Query: %s", GET_RESOURCE_DOMAINS_WITH_PATTERNS));
-		}
-		return getJdbcTemplate().query(GET_RESOURCE_DOMAINS_WITH_PATTERNS, new Object[] {AuthorizationConstants.URL_PATTERN_PROPERTY}, new AuthorizationDomainRSE(resourceMap));
 	}
 	
 	@Override
@@ -105,50 +95,6 @@ public class JDBCResoruceDAOImpl extends AbstractJDBCDao implements ResourceDAO 
 			resource.setId(rs.getString("RESOURCE_ID"));
 			resource.setName(rs.getString("NAME"));
 			return resource;
-		}
-		
-	}
-	
-	private class AuthorizationDomainRSE implements ResultSetExtractor<Set<AuthorizationDomain>> {
-		
-		private Map<String, AuthorizationResource> resourceMap;
-		
-		private AuthorizationDomainRSE(final Map<String, AuthorizationResource> resourceMap) {
-			this.resourceMap = resourceMap;
-		}
-
-		@Override
-		public Set<AuthorizationDomain> extractData(ResultSet rs) throws SQLException, DataAccessException {
-			
-			/* need get and contains methods, which is why a Set is not used */
-			final Map<AuthorizationDomain, AuthorizationDomain> domainSet = new HashMap<AuthorizationDomain, AuthorizationDomain>();
-			while(rs.next()) {
-				final AuthorizationResource resource = resourceMap.get(rs.getString("RESOURCE_ID"));
-				final String pattern = StringUtils.trimToNull(StringUtils.lowerCase(rs.getString("PATTERN")));
-				final String minAuthLevel = StringUtils.trimToNull(StringUtils.lowerCase(rs.getString("MIN_AUTH_LEVEL")));
-				final String domain = StringUtils.trimToNull(StringUtils.lowerCase(rs.getString("DOMAIN")));
-				final boolean isPublic = StringUtils.equalsIgnoreCase("y", rs.getString("IS_PUBLIC"));
-				final boolean isSSL = StringUtils.equalsIgnoreCase("y", rs.getString("IS_SSL"));
-				final boolean isUrlProtector = StringUtils.equalsIgnoreCase("y", rs.getString("IS_URL_PROTECTOR"));
-				if(pattern != null && domain != null && resource != null && isUrlProtector) {
-					AuthorizationDomain authDomain = new AuthorizationDomain();
-					authDomain.setDomain(domain);
-					authDomain.setMinAuthLevel(minAuthLevel);
-					authDomain.setPublic(isPublic);
-					authDomain.setSSL(isSSL);
-					if(!domainSet.containsKey(authDomain)) {
-						domainSet.put(authDomain, authDomain);
-					} else {
-						authDomain = domainSet.get(authDomain);
-					}
-					try {
-						authDomain.addPattern(pattern, resource);
-					} catch (InvalidPatternException e) {
-						log.warn("Can't add uri pattern " + pattern, e);
-					}
-				}
-			}
-			return domainSet.keySet();
 		}
 		
 	}

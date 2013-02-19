@@ -126,10 +126,6 @@ public class ResourceEntity {
     @Type(type = "yes_no")
     private boolean isSSL = false;
     
-    @Column(name = "IS_URL_PROTECTOR")
-    @Type(type = "yes_no")
-    private boolean isUrlProtector = false;
-
     public ResourceEntity() {
     }
   
@@ -314,14 +310,6 @@ public class ResourceEntity {
 
     public void setIsSSL(boolean SSL) {
         isSSL = SSL;
-    }
-    
-    public boolean getIsUrlProtector() {
-    	return isUrlProtector;
-    }
-    
-    public void setIsUrlProtector(final boolean isUrlProtector) {
-    	this.isUrlProtector = isUrlProtector;
     }
     
     public void addParentResource(final ResourceEntity resource) {

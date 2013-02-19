@@ -41,3 +41,4 @@ ddl/32.modify_resource_type_len.sql
 dml/10.insert_auth_resource_metatypes.sql
 dml/11.self_service_initial_menus.sql
 dml/12.insert_content_resource_metatypes.sql
+ddl/33.drop_resource_url_protector.sql

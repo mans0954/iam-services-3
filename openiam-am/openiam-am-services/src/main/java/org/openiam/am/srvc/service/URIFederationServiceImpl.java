@@ -16,6 +16,7 @@ import javax.annotation.PreDestroy;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.StopWatch;
 import org.apache.log4j.Logger;
 import org.openiam.am.srvc.dao.ContentProviderDao;
 import org.openiam.am.srvc.domain.ContentProviderEntity;
@@ -185,6 +186,8 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 	@Override
 	public URIFederationResponse federateProxyURI(final String userId, final int authLevel, final String proxyURI) {
 		final URIFederationResponse response = new URIFederationResponse();
+		final StopWatch sw = new StopWatch();
+		sw.start();
 		try {
 			final URI uri = new URI(proxyURI);
 			final ContentProviderNode cpNode = contentProviderTree.find(uri);
@@ -250,15 +253,20 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 			response.setErrorCode(e.getCode());
 			response.setResponseValue(e.getResponseValue());
 			response.setStatus(ResponseStatus.FAILURE);
-			LOG.info(String.format("CP or Pattern Exception: %s", e.getMessage()));
+			//LOG.info(String.format("CP or Pattern Exception: %s", e.getMessage()));
 		} catch(URISyntaxException e) {
 			response.setErrorCode(ResponseCode.INVALID_URI);
 			response.setStatus(ResponseStatus.FAILURE);
-			LOG.error(String.format("URI Syntax Exception: %s", e.getMessage()));
+			LOG.error(String.format("URI Syntax Exception: %s", e));
 		} catch(Throwable e) {
 			response.setErrorCode(ResponseCode.FAIL_OTHER);
 			response.setStatus(ResponseStatus.FAILURE);
 			LOG.error("Unkonwn error while processing proxy request", e);
+		} finally {
+			sw.stop();
+			if(LOG.isDebugEnabled()) {
+				LOG.debug(String.format("URI Fedration took: %s ms", sw.getTime()));
+			}
 		}
 		return response;
 	}
