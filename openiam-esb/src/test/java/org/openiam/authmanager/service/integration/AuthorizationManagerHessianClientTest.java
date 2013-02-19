@@ -21,11 +21,7 @@ public class AuthorizationManagerHessianClientTest extends AbstractAuthorization
 	
 	@Override
 	protected void checkUserURLEntitlements(final String userId, final AuthorizationManagerLoginId loginId, final String url) {
-		if(userId != null) {
-			authClient.isUserWithIdEntitledToURL(userId, url);
-		} else {
-			authClient.isUserWithLoginEntitledToURL(loginId.getDomain(), loginId.getLogin(), loginId.getManagedSysId(), url);
-		}
+		
 	}
 	
 	@Override
