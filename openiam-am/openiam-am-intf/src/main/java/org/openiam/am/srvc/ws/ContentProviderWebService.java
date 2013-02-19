@@ -1,9 +1,6 @@
 package org.openiam.am.srvc.ws;
 
-import org.openiam.am.srvc.dto.AuthLevel;
-import org.openiam.am.srvc.dto.ContentProvider;
-import org.openiam.am.srvc.dto.ContentProviderServer;
-import org.openiam.am.srvc.dto.URIPattern;
+import org.openiam.am.srvc.dto.*;
 import org.openiam.am.srvc.searchbeans.ContentProviderSearchBean;
 import org.openiam.base.ws.Response;
 
@@ -93,4 +90,22 @@ public interface ContentProviderWebService {
 
     @WebMethod
     public Response deleteProviderPattern(@WebParam(name = "providerId", targetNamespace = "") String providerId);
+
+
+    @WebMethod
+    public  List<URIPatternMeta> getMetaDataForPattern(@WebParam(name = "patternId", targetNamespace = "") String patternId,
+                                                       @WebParam(name = "from", targetNamespace = "") Integer from,
+                                                       @WebParam(name = "size", targetNamespace = "") Integer size);
+
+    @WebMethod
+    public  Integer getNumOfMetaDataForPattern(@WebParam(name = "patternId", targetNamespace = "") String patternId);
+
+    @WebMethod
+    public URIPatternMeta getURIPatternMeta(@WebParam(name = "metaId", targetNamespace = "") String metaId);
+
+    @WebMethod
+    public Response saveMetaDataForPattern(@WebParam(name = "uriPatternMeta", targetNamespace = "") URIPatternMeta uriPatternMeta);
+
+    @WebMethod
+    public Response deleteMetaDataForPattern(@WebParam(name = "metaId", targetNamespace = "") String metaId);
 }

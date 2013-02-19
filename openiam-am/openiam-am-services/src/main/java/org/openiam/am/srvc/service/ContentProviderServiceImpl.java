@@ -1,13 +1,7 @@
 package org.openiam.am.srvc.service;
 
-import org.openiam.am.srvc.dao.AuthLevelDao;
-import org.openiam.am.srvc.dao.ContentProviderDao;
-import org.openiam.am.srvc.dao.ContentProviderServerDao;
-import org.openiam.am.srvc.dao.URIPatternDao;
-import org.openiam.am.srvc.domain.AuthLevelEntity;
-import org.openiam.am.srvc.domain.ContentProviderEntity;
-import org.openiam.am.srvc.domain.ContentProviderServerEntity;
-import org.openiam.am.srvc.domain.URIPatternEntity;
+import org.openiam.am.srvc.dao.*;
+import org.openiam.am.srvc.domain.*;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
@@ -32,6 +26,8 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
 
     @Autowired
     private URIPatternDao uriPatternDao;
+    @Autowired
+    private URIPatternMetaDao uriPatternMetaDao;
 
     @Autowired
     private ResourceDAO resourceDao;
@@ -287,6 +283,44 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
 
         URIPatternEntity entity  = uriPatternDao.findById(patternId);
         deleteProviderPattern(entity);
+    }
+
+    @Override
+    public List<URIPatternMetaEntity> getMetaDataForPattern(String patternId, Integer from, Integer size) {
+
+        URIPatternMetaEntity example = new URIPatternMetaEntity();
+        URIPatternEntity pattern = new URIPatternEntity();
+        pattern.setId(patternId);
+        example.setPattern(pattern);
+
+        return uriPatternMetaDao.getByExample(example, from, size);
+    }
+
+    @Override
+    public Integer getNumOfMetaDataForPattern(String patternId) {
+        URIPatternMetaEntity example = new URIPatternMetaEntity();
+        URIPatternEntity pattern = new URIPatternEntity();
+        pattern.setId(patternId);
+        example.setPattern(pattern);
+
+        return uriPatternMetaDao.count(example);
+    }
+
+    @Override
+    public URIPatternMetaEntity getURIPatternMeta(String metaId) {
+        return uriPatternMetaDao.findById(metaId);
+    }
+
+    @Override
+    @Transactional
+    public URIPatternMetaEntity saveMetaDataForPattern(URIPatternMetaEntity uriPatternMetaEntity) {
+        return null;
+    }
+
+    @Override
+    @Transactional
+    public void deleteMetaDataForPattern(String metaId) {
+        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Transactional

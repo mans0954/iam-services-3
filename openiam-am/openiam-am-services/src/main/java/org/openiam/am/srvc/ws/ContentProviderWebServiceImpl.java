@@ -4,14 +4,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.domain.ContentProviderEntity;
 import org.openiam.am.srvc.domain.URIPatternEntity;
-import org.openiam.am.srvc.dozer.converter.AuthLevelDozerConverter;
-import org.openiam.am.srvc.dozer.converter.ContentProviderDozerConverter;
-import org.openiam.am.srvc.dozer.converter.ContentProviderServerDoserConverter;
-import org.openiam.am.srvc.dozer.converter.URIPatternDozerConverter;
-import org.openiam.am.srvc.dto.AuthLevel;
-import org.openiam.am.srvc.dto.ContentProvider;
-import org.openiam.am.srvc.dto.ContentProviderServer;
-import org.openiam.am.srvc.dto.URIPattern;
+import org.openiam.am.srvc.domain.URIPatternMetaEntity;
+import org.openiam.am.srvc.dozer.converter.*;
+import org.openiam.am.srvc.dto.*;
 import org.openiam.am.srvc.searchbeans.ContentProviderSearchBean;
 import org.openiam.am.srvc.searchbeans.converter.ContentProviderSearchBeanConverter;
 import org.openiam.am.srvc.service.ContentProviderService;
@@ -45,6 +40,8 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     private ContentProviderServerDoserConverter contentProviderServerDoserConverter;
     @Autowired
     private URIPatternDozerConverter uriPatternDozerConverter;
+    @Autowired
+    private URIPatternMetaDozerConverter uriPatternMetaDozerConverter;
 
     @Override
     public List<AuthLevel> getAuthLevelList(){
@@ -226,6 +223,64 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
                 throw new  BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 
             contentProviderService.deleteProviderPattern(providerId);
+
+        } catch(BasicDataServiceException e) {
+            log.error(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+        } catch(Throwable e) {
+            log.error(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+        }
+        return response;
+    }
+
+    @Override
+    public List<URIPatternMeta> getMetaDataForPattern(String patternId, Integer from, Integer size) {
+        return uriPatternMetaDozerConverter.convertToDTOList(contentProviderService.getMetaDataForPattern(patternId,
+                                                                                                          from, size), true);
+    }
+
+    @Override
+    public Integer getNumOfMetaDataForPattern(String patternId) {
+        return contentProviderService.getNumOfMetaDataForPattern(patternId);
+    }
+    @Override
+    public URIPatternMeta getURIPatternMeta(String metaId){
+        return uriPatternMetaDozerConverter.convertToDTO(contentProviderService.getURIPatternMeta(metaId), true);
+    }
+
+    @Override
+    public Response saveMetaDataForPattern(URIPatternMeta uriPatternMeta) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if (uriPatternMeta==null)
+                throw new  BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+
+            URIPatternMetaEntity entity = contentProviderService.saveMetaDataForPattern(uriPatternMetaDozerConverter.convertToEntity(uriPatternMeta,true));
+            response.setResponseValue(uriPatternMetaDozerConverter.convertToDTO(entity, true));
+
+        } catch(BasicDataServiceException e) {
+            log.error(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorCode(e.getCode());
+        } catch(Throwable e) {
+            log.error(e.getMessage(), e);
+            response.setStatus(ResponseStatus.FAILURE);
+            response.setErrorText(e.getMessage());
+        }
+        return response;
+    }
+
+    @Override
+    public Response deleteMetaDataForPattern(@WebParam(name = "metaId", targetNamespace = "") String metaId) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if (metaId==null || metaId.trim().isEmpty())
+                throw new  BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+
+            contentProviderService.deleteMetaDataForPattern(metaId);
 
         } catch(BasicDataServiceException e) {
             log.error(e.getMessage(), e);

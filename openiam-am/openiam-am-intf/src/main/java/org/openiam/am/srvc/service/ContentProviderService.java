@@ -1,9 +1,6 @@
 package org.openiam.am.srvc.service;
 
-import org.openiam.am.srvc.domain.AuthLevelEntity;
-import org.openiam.am.srvc.domain.ContentProviderEntity;
-import org.openiam.am.srvc.domain.ContentProviderServerEntity;
-import org.openiam.am.srvc.domain.URIPatternEntity;
+import org.openiam.am.srvc.domain.*;
 
 import java.util.List;
 
@@ -39,4 +36,13 @@ public interface ContentProviderService {
 
     void deleteProviderPattern(String providerId);
 
+    List<URIPatternMetaEntity> getMetaDataForPattern(String patternId, Integer from, Integer size);
+
+    Integer getNumOfMetaDataForPattern(String patternId);
+
+    public URIPatternMetaEntity getURIPatternMeta(String metaId);
+
+    URIPatternMetaEntity saveMetaDataForPattern(URIPatternMetaEntity uriPatternMetaEntity);
+
+    void deleteMetaDataForPattern(String metaId);
 }
