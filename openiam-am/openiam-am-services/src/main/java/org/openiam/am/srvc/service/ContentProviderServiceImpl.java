@@ -28,6 +28,8 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
     private URIPatternDao uriPatternDao;
     @Autowired
     private URIPatternMetaDao uriPatternMetaDao;
+    @Autowired
+    private URIPatternMetaTypeDao uriPatternMetaTypeDao;
 
     @Autowired
     private ResourceDAO resourceDao;
@@ -321,6 +323,11 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
     @Transactional
     public void deleteMetaDataForPattern(String metaId) {
         //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public List<URIPatternMetaTypeEntity> getAllMetaType() {
+        return uriPatternMetaTypeDao.findAll();
     }
 
     @Transactional

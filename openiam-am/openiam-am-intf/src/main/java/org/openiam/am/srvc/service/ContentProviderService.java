@@ -45,4 +45,8 @@ public interface ContentProviderService {
     URIPatternMetaEntity saveMetaDataForPattern(URIPatternMetaEntity uriPatternMetaEntity);
 
     void deleteMetaDataForPattern(String metaId);
+
+    List<URIPatternMetaTypeEntity> getAllMetaType();
+
+
 }

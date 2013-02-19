@@ -43,6 +43,9 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     @Autowired
     private URIPatternMetaDozerConverter uriPatternMetaDozerConverter;
 
+    @Autowired
+    private URIPatternMetaTypeDozerConverter uriPatternMetaTypeDozerConverter;
+
     @Override
     public List<AuthLevel> getAuthLevelList(){
          return authLevelDozerConverter.convertToDTOList(contentProviderService.getAuthLevelList(), false);
@@ -294,5 +297,8 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
         return response;
     }
 
-
+    @Override
+    public List<URIPatternMetaType> getAllMetaType() {
+        return uriPatternMetaTypeDozerConverter.convertToDTOList(contentProviderService.getAllMetaType(), false);
+    }
 }

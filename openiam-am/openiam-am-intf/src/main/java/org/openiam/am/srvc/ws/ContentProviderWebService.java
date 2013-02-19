@@ -108,4 +108,7 @@ public interface ContentProviderWebService {
 
     @WebMethod
     public Response deleteMetaDataForPattern(@WebParam(name = "metaId", targetNamespace = "") String metaId);
+
+    @WebMethod
+    public List<URIPatternMetaType> getAllMetaType();
 }

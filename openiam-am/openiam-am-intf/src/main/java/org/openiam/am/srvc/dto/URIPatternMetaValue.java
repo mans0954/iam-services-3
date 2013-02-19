@@ -1,6 +1,7 @@
 package org.openiam.am.srvc.dto;
 
 import org.openiam.am.srvc.domain.URIPatternMetaValueEntity;
+import org.openiam.base.AttributeOperationEnum;
 import org.openiam.dozer.DozerDTOCorrespondence;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -14,11 +15,12 @@ import java.io.Serializable;
         "name",
         "staticValue",
         "amAttribute",
-        "metaEntityId"
+        "metaEntityId",
+        "operation"
 })
 @DozerDTOCorrespondence(URIPatternMetaValueEntity.class)
 public class URIPatternMetaValue implements Serializable {
-
+    private AttributeOperationEnum operation;
 	private String id;
 	private String name;
 	private String staticValue;
@@ -54,7 +56,16 @@ public class URIPatternMetaValue implements Serializable {
 	public void setMetaEntityId(String metaEntityId) {
 		this.metaEntityId = metaEntityId;
 	}
-	@Override
+
+    public AttributeOperationEnum getOperation() {
+        return operation;
+    }
+
+    public void setOperation(AttributeOperationEnum operation) {
+        this.operation = operation;
+    }
+
+    @Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
