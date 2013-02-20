@@ -1,5 +1,6 @@
 package org.openiam.jaas.module;
 
+import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
 import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
 import org.openiam.jaas.callback.TokenCallback;
@@ -12,6 +13,8 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.FailedLoginException;
 import javax.security.auth.login.LoginException;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 public class DefaultLoginModule extends AbstractLoginModule {
     private  String token;
@@ -56,9 +59,23 @@ public class DefaultLoginModule extends AbstractLoginModule {
             if (this.token == null || token.isEmpty()) {
                 // password authentication
                 log.debug("Executing password authentication");
+                final AuthenticationRequest authenticatedRequest = new AuthenticationRequest();
+    			//authenticatedRequest.setClientIP(request.getRemoteAddr());
+    			authenticatedRequest.setDomainId(jaasConfiguration.getSecurityDomain());
+    			authenticatedRequest.setPassword(password);
+    			authenticatedRequest.setPrincipal(username);
+    			try {
+    				authenticatedRequest.setNodeIP(InetAddress.getLocalHost().getHostAddress());
+    			} catch (UnknownHostException e) {
+    				
+    			}
+    			AuthenticationResponse resp = ServiceLookupHelper.getAuthenticationService().login(authenticatedRequest);
+                
+                /*
                 AuthenticationResponse resp = ServiceLookupHelper.getAuthenticationService().passwordAuth(jaasConfiguration.getSecurityDomain(),
                                                                                                           username,
                                                                                                           password);
+				*/
                 resultCode = resp.getAuthErrorCode();
                 iamSubject = resp.getSubject();
                 if(iamSubject!=null && iamSubject.getSsoToken()!=null)
@@ -68,9 +85,11 @@ public class DefaultLoginModule extends AbstractLoginModule {
                 log.debug("Executing token authentication");
                 log.debug("LOGIN MOD -> userName=" + username);
                 log.debug("LOGIN MOD -> token=" + token);
+                iamSubject = (org.openiam.idm.srvc.auth.dto.Subject)ServiceLookupHelper.getAuthenticationService().renewToken(username, token, AuthenticationConstants.OPENIAM_TOKEN).getResponseValue();
+                /*
                 iamSubject = ServiceLookupHelper.getAuthenticationService().authenticateByToken(userId, token,
                                                                                                 AuthenticationConstants.OPENIAM_TOKEN);
-
+				*/
                 resultCode = iamSubject.getResultCode();
             }
 

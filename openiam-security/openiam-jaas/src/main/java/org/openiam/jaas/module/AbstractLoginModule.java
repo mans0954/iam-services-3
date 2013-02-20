@@ -112,6 +112,7 @@ public abstract class AbstractLoginModule implements LoginModule {
             subject.getPrincipals().add(pIdentity);
 
             // add the users roles into the subject
+            /*
             List<Role> iamRoleList = iamSubject.getRoles();
             if(iamRoleList!=null){
                 for (Role r  : iamRoleList) {
@@ -119,6 +120,7 @@ public abstract class AbstractLoginModule implements LoginModule {
                     subject.getPrincipals().add(urg);
                 }
             }
+            */
             if(iamSubject.getSsoToken()!=null && iamSubject.getSsoToken().getToken()!=null && !iamSubject.getSsoToken().getToken().isEmpty())
                 subject.getPublicCredentials().add(new TokenCredential(iamSubject.getUserId(), iamSubject.getSsoToken().getToken()));
         }
