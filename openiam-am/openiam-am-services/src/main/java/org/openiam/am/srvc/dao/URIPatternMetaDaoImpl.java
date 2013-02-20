@@ -2,10 +2,12 @@ package org.openiam.am.srvc.dao;
 
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
+import org.hibernate.Query;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.am.srvc.domain.URIPatternMetaEntity;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public class URIPatternMetaDaoImpl extends BaseDaoImpl<URIPatternMetaEntity, String> implements URIPatternMetaDao {
@@ -27,5 +29,13 @@ public class URIPatternMetaDaoImpl extends BaseDaoImpl<URIPatternMetaEntity, Str
             }
         }
         return criteria;
+    }
+
+    @Override
+    @Transactional
+    public void deleteById(String id) {
+        Query qry = getSession().createQuery("delete "+this.domainClass.getName()+ " p where p.id=:id ");
+        qry.setString("id", id);
+        qry.executeUpdate();
     }
 }

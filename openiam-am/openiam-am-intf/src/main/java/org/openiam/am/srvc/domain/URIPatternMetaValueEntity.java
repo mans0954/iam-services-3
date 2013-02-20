@@ -1,20 +1,12 @@
 package org.openiam.am.srvc.domain;
 
-import java.io.Serializable;
-
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.am.srvc.dto.URIPatternMetaValue;
+import org.openiam.base.AttributeOperationEnum;
 import org.openiam.dozer.DozerDTOCorrespondence;
+
+import javax.persistence.*;
+import java.io.Serializable;
 
 @Entity
 @Table(name = "URI_PATTERN_META_VALUE")
@@ -42,6 +34,8 @@ public class URIPatternMetaValueEntity implements Serializable {
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name="URI_PATTERN_META_ID", referencedColumnName = "URI_PATTERN_META_ID", insertable = false, updatable = false)
 	private URIPatternMetaEntity metaEntity;
+    @Transient
+    private AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
 	
 	public String getId() {
 		return id;
@@ -82,6 +76,14 @@ public class URIPatternMetaValueEntity implements Serializable {
 	public void setMetaEntity(URIPatternMetaEntity metaEntity) {
 		this.metaEntity = metaEntity;
 	}
+
+    public AttributeOperationEnum getOperation() {
+        return operation;
+    }
+
+    public void setOperation(AttributeOperationEnum operation) {
+        this.operation = operation;
+    }
 
 	@Override
 	public int hashCode() {
@@ -135,7 +137,7 @@ public class URIPatternMetaValueEntity implements Serializable {
 		return true;
 	}
 
-	@Override
+    @Override
 	public String toString() {
 		return String
 				.format("URIPatternMetaValueEntity [id=%s, name=%s, staticValue=%s, amAttribute=%s]",

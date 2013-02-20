@@ -2,6 +2,7 @@ package org.openiam.am.srvc.service;
 
 import org.openiam.am.srvc.dao.*;
 import org.openiam.am.srvc.domain.*;
+import org.openiam.base.AttributeOperationEnum;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 @Service("contentProviderService")
 public class ContentProviderServiceImpl implements  ContentProviderService{
@@ -30,6 +32,11 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
     private URIPatternMetaDao uriPatternMetaDao;
     @Autowired
     private URIPatternMetaTypeDao uriPatternMetaTypeDao;
+    @Autowired
+    private URIPatternMetaValueDao uriPatternMetaValueDao;
+
+    @Autowired
+    private AuthResourceAMAttributeDao authResourceAMAttributeDao;
 
     @Autowired
     private ResourceDAO resourceDao;
@@ -316,18 +323,127 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
     @Override
     @Transactional
     public URIPatternMetaEntity saveMetaDataForPattern(URIPatternMetaEntity uriPatternMetaEntity) {
-        return null;
+        if(uriPatternMetaEntity==null)
+            throw new NullPointerException("Invalid argument");
+        if(uriPatternMetaEntity.getPattern()==null
+           || uriPatternMetaEntity.getPattern().getId()==null
+           || uriPatternMetaEntity.getPattern().getId().trim().isEmpty())
+            throw new NullPointerException("URI Pattern not set");
+        if(uriPatternMetaEntity.getMetaType()==null
+           || uriPatternMetaEntity.getMetaType().getId()==null
+           || uriPatternMetaEntity.getMetaType().getId().trim().isEmpty())
+            throw new NullPointerException("Meta Type not set");
+
+        URIPatternMetaTypeEntity metaType = uriPatternMetaTypeDao.findById(uriPatternMetaEntity.getMetaType().getId());
+        if(metaType==null){
+            throw new NullPointerException("Cannot save Meta data for URI pattern. Meta Type is not found");
+        }
+
+        URIPatternEntity pattern = uriPatternDao.findById(uriPatternMetaEntity.getPattern().getId());
+        if(pattern==null){
+            throw new NullPointerException("Cannot save Meta data for URI pattern. URI pattern is not found");
+        }
+
+        Set<URIPatternMetaValueEntity> metaValues =uriPatternMetaEntity.getMetaValueSet();
+        uriPatternMetaEntity.setPattern(pattern);
+        uriPatternMetaEntity.setMetaType(metaType);
+        uriPatternMetaEntity.setMetaValueSet(null);
+
+        URIPatternMetaEntity entity  = null;
+        if(uriPatternMetaEntity.getId()==null || uriPatternMetaEntity.getId().trim().isEmpty()){
+            // new meta data
+            uriPatternMetaEntity.setId(null);
+
+            uriPatternMetaDao.save(uriPatternMetaEntity);
+            entity = uriPatternMetaEntity;
+        } else{
+            // update meta data
+            entity  = uriPatternMetaDao.findById(uriPatternMetaEntity.getId());
+            entity.setMetaType(uriPatternMetaEntity.getMetaType());
+            uriPatternMetaDao.save(entity);
+        }
+        // sync values
+        syncURIPatternMetaValue(entity, metaValues);
+        return entity;
     }
+
+
 
     @Override
     @Transactional
     public void deleteMetaDataForPattern(String metaId) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        if (metaId==null || metaId.trim().isEmpty())
+            throw new  IllegalArgumentException("Meta Data Id not set");
+
+        URIPatternMetaEntity entity  = uriPatternMetaDao.findById(metaId);
+        deletePatternMeta(entity);
     }
+
 
     @Override
     public List<URIPatternMetaTypeEntity> getAllMetaType() {
         return uriPatternMetaTypeDao.findAll();
+    }
+    @Transactional
+    private void syncURIPatternMetaValue(URIPatternMetaEntity metaData, Set<URIPatternMetaValueEntity> newValues){
+        if(newValues==null || newValues.isEmpty())
+            return;
+        for(URIPatternMetaValueEntity value : newValues){
+           if(AttributeOperationEnum.DELETE==value.getOperation()){
+               deleteMetaValue(value.getId());
+           } else {
+               value.setMetaEntity(metaData);
+               saveMetaValue(value);
+           }
+        }
+    }
+    @Transactional
+    private void deleteMetaValue(String id) {
+        uriPatternMetaValueDao.deleteById(id);
+    }
+
+    @Transactional
+    private void saveMetaValue(URIPatternMetaValueEntity value) {
+        if (value == null)
+            throw new NullPointerException("Meta Value is null");
+        if (value.getMetaEntity() == null || value.getMetaEntity().getId()==null || value.getMetaEntity().getId().trim().isEmpty())
+            throw new NullPointerException("Meta Data is not set");
+        if (value.getName() == null || value.getName().trim().isEmpty())
+            throw new NullPointerException("Meta Data Attribute Name is not set");
+        if ((value.getAmAttribute() == null
+             || value.getAmAttribute().getAmAttributeId()==null
+             || value.getAmAttribute().getAmAttributeId().trim().isEmpty())
+            &&(value.getStaticValue() == null || value.getStaticValue().trim().isEmpty()))
+            throw new NullPointerException("Meta Data Attribute value not set");
+
+        if(value.getAmAttribute() != null
+            && value.getAmAttribute().getAmAttributeId()!=null
+            && !value.getAmAttribute().getAmAttributeId().trim().isEmpty()){
+            value.setStaticValue(null);
+            AuthResourceAMAttributeEntity amAttribute = authResourceAMAttributeDao.findById(value.getAmAttribute().getAmAttributeId());
+            if(amAttribute==null)
+                throw new  NullPointerException("Cannot save Meta data value for URI pattern. Attribute Map is not found");
+
+            value.setAmAttribute(amAttribute);
+        } else{
+            value.setAmAttribute(null);
+        }
+
+        URIPatternMetaValueEntity entity = null;
+        if(value.getId()==null || value.getId().trim().isEmpty()){
+            // new meta data value
+            value.setId(null);
+
+            uriPatternMetaValueDao.save(value);
+            entity = value;
+        } else{
+            // update meta data value
+            entity  = uriPatternMetaValueDao.findById(value.getId());
+            entity.setName(value.getName());
+            entity.setStaticValue(value.getStaticValue());
+            entity.setAmAttribute(value.getAmAttribute());
+            uriPatternMetaValueDao.save(entity);
+        }
     }
 
     @Transactional
@@ -335,11 +451,13 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
         if(entity!=null){
             // delete resource
             resourceDataService.deleteResource(entity.getResourceId());
-
+            // delete meta
+            deleteMetaByPattern(entity.getId());
             // delete pattern
             uriPatternDao.deleteById(entity.getId());
         }
     }
+
 
     @Transactional
     private void deletePatternByProvider(String providerId){
@@ -349,5 +467,23 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
                 deleteProviderPattern(pattern);
             }
         }
+    }
+
+    @Transactional
+    private void deleteMetaByPattern(String patternId){
+        List<URIPatternMetaEntity> metaList = getMetaDataForPattern(patternId, 0, Integer.MAX_VALUE);
+        if(metaList!=null && !metaList.isEmpty()){
+            for (URIPatternMetaEntity meta: metaList){
+                deletePatternMeta(meta);
+            }
+        }
+    }
+
+    @Transactional
+    private void deletePatternMeta(URIPatternMetaEntity entity) {
+        // delete all values
+        uriPatternMetaValueDao.deleteByMeta(entity.getId());
+        //delete meta data
+        uriPatternMetaDao.deleteById(entity.getId());
     }
 }
