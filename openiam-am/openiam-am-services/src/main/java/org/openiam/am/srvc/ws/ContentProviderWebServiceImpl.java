@@ -11,6 +11,8 @@ import org.openiam.am.srvc.dto.*;
 import org.openiam.am.srvc.searchbeans.ContentProviderSearchBean;
 import org.openiam.am.srvc.searchbeans.converter.ContentProviderSearchBeanConverter;
 import org.openiam.am.srvc.service.ContentProviderService;
+import org.openiam.am.srvc.uriauth.exception.InvalidPatternException;
+import org.openiam.am.srvc.uriauth.model.URIPatternTree;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
@@ -98,7 +100,8 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             searchBean.setContextPath(provider.getContextPath());
             searchBean.setSSL(provider.getIsSSL());
 
-            List<ContentProviderEntity> result = contentProviderService.getProviderByDomainPattern(provider.getDomainPattern(), provider.getContextPath(), provider.getIsSSL());
+            List<ContentProviderEntity> result = contentProviderService.getProviderByDomainPattern(
+                    provider.getDomainPattern(), provider.getContextPath(), provider.getIsSSL());
             if(result!=null && !result.isEmpty())
                 throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_DOMAIN_PATTERN_EXISTS);
 
@@ -261,6 +264,13 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             Integer count = contentProviderService.getNumOfUriPatterns(example);
             if(count>0){
                 throw new  BasicDataServiceException(ResponseCode.URI_PATTERN_EXISTS);
+            }
+
+            // validate pattern
+            try{
+                new URIPatternTree().addPattern(pattern);
+            } catch(InvalidPatternException e){
+                throw new  BasicDataServiceException(ResponseCode.URI_PATTERN_INVALID);
             }
 
             URIPatternEntity entity = contentProviderService.saveURIPattern(uriPatternDozerConverter.convertToEntity(pattern,true));
