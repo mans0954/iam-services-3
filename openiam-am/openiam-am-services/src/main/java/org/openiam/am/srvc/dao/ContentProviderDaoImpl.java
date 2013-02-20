@@ -10,6 +10,8 @@ import org.openiam.core.dao.BaseDaoImpl;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Repository
 public class ContentProviderDaoImpl extends BaseDaoImpl<ContentProviderEntity, String> implements ContentProviderDao {
 
@@ -45,8 +47,31 @@ public class ContentProviderDaoImpl extends BaseDaoImpl<ContentProviderEntity, S
                     }
                 }
             }
+            if (StringUtils.isNotEmpty(providerEntity.getDomainPattern())) {
+                criteria.add(Restrictions.eq("domainPattern", providerEntity.getDomainPattern()));
+            }
+            if (StringUtils.isNotEmpty(providerEntity.getContextPath())) {
+                criteria.add(Restrictions.eq("contextPath", providerEntity.getContextPath()));
+            }
         }
         return criteria;
+    }
+
+    @Override
+    public List<ContentProviderEntity> getProviderByDomainPattern(String domainPattern, String contextPath, Boolean isSSL){
+        final Criteria criteria = getCriteria();
+        if (StringUtils.isNotEmpty(domainPattern)) {
+            criteria.add(Restrictions.eq("domainPattern", domainPattern));
+        }
+        if (StringUtils.isNotEmpty(contextPath)) {
+            criteria.add(Restrictions.eq("contextPath", contextPath));
+        }
+
+        if(isSSL==null)
+            criteria.add(Restrictions.isNull("isSSL"));
+        else
+            criteria.add(Restrictions.eq("isSSL", isSSL));
+        return criteria.list();
     }
 
     @Override

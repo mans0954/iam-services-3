@@ -8,11 +8,18 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "AuthProviderSearchBean", propOrder = {
-        "providerName"
+@XmlType(name = "ContentProviderSearchBean", propOrder = {
+        "providerName",
+        "domainPattern",
+        "contextPath",
+        "isSSL"
 })
 public class ContentProviderSearchBean extends AbstractSearchBean<ContentProvider, String> {
     private String providerName;
+
+    private String domainPattern;
+    private String contextPath;
+    private Boolean isSSL;
 
     public String getProviderName() {
         return providerName;
@@ -20,5 +27,29 @@ public class ContentProviderSearchBean extends AbstractSearchBean<ContentProvide
 
     public void setProviderName(String providerName) {
         this.providerName = providerName;
+    }
+
+    public String getDomainPattern() {
+        return domainPattern;
+    }
+
+    public void setDomainPattern(String domainPattern) {
+        this.domainPattern = domainPattern;
+    }
+
+    public String getContextPath() {
+        return contextPath;
+    }
+
+    public void setContextPath(String contextPath) {
+        this.contextPath = contextPath;
+    }
+
+    public Boolean isSSL() {
+        return isSSL;
+    }
+
+    public void setSSL(Boolean SSL) {
+        isSSL = SSL;
     }
 }

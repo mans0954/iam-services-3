@@ -27,6 +27,10 @@ public class URIPatternMetaDaoImpl extends BaseDaoImpl<URIPatternMetaEntity, Str
                 criteria.createAlias("pattern", "p");
                 criteria.add(Restrictions.eq("p.id", entity.getPattern().getId()));
             }
+            if(entity.getMetaType()!=null && StringUtils.isNotEmpty(entity.getMetaType().getId())){
+                criteria.createAlias("metaType", "m");
+                criteria.add(Restrictions.eq("m.id", entity.getPattern().getId()));
+            }
         }
         return criteria;
     }

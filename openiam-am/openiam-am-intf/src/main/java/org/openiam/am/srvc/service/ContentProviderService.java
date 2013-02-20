@@ -18,17 +18,17 @@ public interface ContentProviderService {
 
     void deleteContentProvider(String providerId);
 
-    List<ContentProviderServerEntity> getServersForProvider(String providerId, Integer from, Integer size);
+    List<ContentProviderServerEntity> getProviderServers(ContentProviderServerEntity example, Integer from, Integer size);
 
-    Integer getNumOfServersForProvider(String providerId);
+    Integer getNumOfProviderServers(ContentProviderServerEntity example);
 
     void deleteProviderServer(String contentProviderServerId);
 
     ContentProviderServerEntity saveProviderServer(ContentProviderServerEntity contentProviderServerEntity);
 
-    Integer getNumOfUriPatternsForProvider(String providerId);
+    Integer getNumOfUriPatterns(URIPatternEntity example);
 
-    List<URIPatternEntity> getUriPatternsForProvider(String providerId, Integer from, Integer size);
+    List<URIPatternEntity> getUriPatternsList(URIPatternEntity example, Integer from, Integer size);
 
     URIPatternEntity getURIPattern(String patternId);
 
@@ -36,9 +36,9 @@ public interface ContentProviderService {
 
     void deleteProviderPattern(String providerId);
 
-    List<URIPatternMetaEntity> getMetaDataForPattern(String patternId, Integer from, Integer size);
+    List<URIPatternMetaEntity> getMetaDataList(URIPatternMetaEntity example, Integer from, Integer size);
 
-    Integer getNumOfMetaDataForPattern(String patternId);
+    Integer getNumOfMetaData(URIPatternMetaEntity example);
 
     public URIPatternMetaEntity getURIPatternMeta(String metaId);
 
@@ -49,4 +49,5 @@ public interface ContentProviderService {
     List<URIPatternMetaTypeEntity> getAllMetaType();
 
 
+    List<ContentProviderEntity> getProviderByDomainPattern(String domainPattern, String contextPath, Boolean isSSL);
 }

@@ -34,7 +34,6 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
     private URIPatternMetaTypeDao uriPatternMetaTypeDao;
     @Autowired
     private URIPatternMetaValueDao uriPatternMetaValueDao;
-
     @Autowired
     private AuthResourceAMAttributeDao authResourceAMAttributeDao;
 
@@ -44,7 +43,6 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
     private ResourceTypeDAO resourceTypeDAO;
     @Autowired
     private ResourceDataService resourceDataService;
-
 
     @Override
     public List<AuthLevelEntity> getAuthLevelList(){
@@ -67,6 +65,13 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
     public List<ContentProviderEntity> findBeans(ContentProviderEntity example, Integer from, Integer size) {
         return contentProviderDao.getByExample(example, from, size);
     }
+
+    @Override
+    public List<ContentProviderEntity> getProviderByDomainPattern(String domainPattern, String contextPath,
+                                                                  Boolean isSSL) {
+        return  contentProviderDao.getProviderByDomainPattern(domainPattern, contextPath, isSSL);
+    }
+
     @Override
     @Transactional
     public ContentProviderEntity saveContentProvider(ContentProviderEntity provider){
@@ -142,20 +147,12 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
     }
 
     @Override
-    public List<ContentProviderServerEntity> getServersForProvider(String providerId, Integer from, Integer size) {
-        ContentProviderServerEntity example = new ContentProviderServerEntity();
-        ContentProviderEntity provider = new ContentProviderEntity();
-        provider.setId(providerId);
-        example.setContentProvider(provider);
-
+    public List<ContentProviderServerEntity> getProviderServers(ContentProviderServerEntity example, Integer from, Integer size) {
         return contentProviderServerDao.getByExample(example,from, size);
     }
 
     @Override
-    public Integer getNumOfServersForProvider(String providerId) {
-        ContentProviderServerEntity example = new ContentProviderServerEntity();
-        ContentProviderEntity provider = new ContentProviderEntity();
-        provider.setId(providerId);
+    public Integer getNumOfProviderServers(ContentProviderServerEntity example) {
         return contentProviderServerDao.count(example);
     }
 
@@ -204,21 +201,12 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
     }
 
     @Override
-    public Integer getNumOfUriPatternsForProvider(String providerId) {
-        URIPatternEntity example = new URIPatternEntity();
-        ContentProviderEntity provider = new ContentProviderEntity();
-        provider.setId(providerId);
-        example.setContentProvider(provider);
+    public Integer getNumOfUriPatterns(URIPatternEntity example) {
         return uriPatternDao.count(example);
     }
 
     @Override
-    public List<URIPatternEntity> getUriPatternsForProvider(String providerId, Integer from, Integer size) {
-        URIPatternEntity example = new URIPatternEntity();
-        ContentProviderEntity provider = new ContentProviderEntity();
-        provider.setId(providerId);
-        example.setContentProvider(provider);
-
+    public List<URIPatternEntity> getUriPatternsList(URIPatternEntity example, Integer from, Integer size) {
         return uriPatternDao.getByExample(example, from, size);
     }
 
@@ -295,23 +283,12 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
     }
 
     @Override
-    public List<URIPatternMetaEntity> getMetaDataForPattern(String patternId, Integer from, Integer size) {
-
-        URIPatternMetaEntity example = new URIPatternMetaEntity();
-        URIPatternEntity pattern = new URIPatternEntity();
-        pattern.setId(patternId);
-        example.setPattern(pattern);
-
+    public List<URIPatternMetaEntity> getMetaDataList(URIPatternMetaEntity example, Integer from, Integer size) {
         return uriPatternMetaDao.getByExample(example, from, size);
     }
 
     @Override
-    public Integer getNumOfMetaDataForPattern(String patternId) {
-        URIPatternMetaEntity example = new URIPatternMetaEntity();
-        URIPatternEntity pattern = new URIPatternEntity();
-        pattern.setId(patternId);
-        example.setPattern(pattern);
-
+    public Integer getNumOfMetaData(URIPatternMetaEntity example) {
         return uriPatternMetaDao.count(example);
     }
 
@@ -384,6 +361,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
     public List<URIPatternMetaTypeEntity> getAllMetaType() {
         return uriPatternMetaTypeDao.findAll();
     }
+
     @Transactional
     private void syncURIPatternMetaValue(URIPatternMetaEntity metaData, Set<URIPatternMetaValueEntity> newValues){
         if(newValues==null || newValues.isEmpty())
@@ -461,7 +439,12 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
 
     @Transactional
     private void deletePatternByProvider(String providerId){
-        List<URIPatternEntity> patternList = getUriPatternsForProvider(providerId, 0, Integer.MAX_VALUE);
+        URIPatternEntity example = new URIPatternEntity();
+        ContentProviderEntity provider = new ContentProviderEntity();
+        provider.setId(providerId);
+        example.setContentProvider(provider);
+
+        List<URIPatternEntity> patternList = getUriPatternsList(example, 0, Integer.MAX_VALUE);
         if(patternList!=null && !patternList.isEmpty()){
             for (URIPatternEntity pattern: patternList){
                 deleteProviderPattern(pattern);
@@ -471,7 +454,12 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
 
     @Transactional
     private void deleteMetaByPattern(String patternId){
-        List<URIPatternMetaEntity> metaList = getMetaDataForPattern(patternId, 0, Integer.MAX_VALUE);
+        URIPatternMetaEntity example = new URIPatternMetaEntity();
+        URIPatternEntity pattern = new URIPatternEntity();
+        pattern.setId(patternId);
+        example.setPattern(pattern);
+
+        List<URIPatternMetaEntity> metaList = getMetaDataList(example, 0, Integer.MAX_VALUE);
         if(metaList!=null && !metaList.isEmpty()){
             for (URIPatternMetaEntity meta: metaList){
                 deletePatternMeta(meta);

@@ -13,6 +13,10 @@ public class ContentProviderSearchBeanConverter implements
         final ContentProviderEntity entity = new ContentProviderEntity();
         entity.setId(searchBean.getKey());
         entity.setName(searchBean.getProviderName());
+        entity.setContextPath(searchBean.getContextPath());
+        entity.setDomainPattern(searchBean.getDomainPattern());
+        entity.setIsSSL(searchBean.isSSL());
+
         return entity;
     }
 }

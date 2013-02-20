@@ -28,6 +28,9 @@ public class ContentProviderServerDaoImpl extends BaseDaoImpl<ContentProviderSer
                 criteria.createAlias("contentProvider", "p");
                 criteria.add(Restrictions.eq("p.id", entity.getContentProvider().getId()));
             }
+            if (StringUtils.isNotEmpty(entity.getServerURL())) {
+            	criteria.add(Restrictions.eq("serverURL", entity.getServerURL()));
+            }
         }
         return criteria;
     }

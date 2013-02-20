@@ -3,6 +3,7 @@ package org.openiam.am.srvc.ws;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.domain.ContentProviderEntity;
+import org.openiam.am.srvc.domain.ContentProviderServerEntity;
 import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.am.srvc.domain.URIPatternMetaEntity;
 import org.openiam.am.srvc.dozer.converter.*;
@@ -82,8 +83,27 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             if (provider.getAuthLevel()==null || provider.getAuthLevel().getId().trim().isEmpty())
                 throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_AUTH_LEVEL_NOT_SET);
 
-            ContentProviderEntity entity = contentProviderService.saveContentProvider(contentProviderDozerConverter.convertToEntity(provider,true));
+//            UNIQUE KEY `UNIQUE_CP_NAME` (`CONTENT_PROVIDER_NAME`),
+//            UNIQUE KEY `UNIQUE_CP_PATTERN` (`DOMAIN_PATTERN`,`IS_SSL`,`CONTEXT_PATH`),
 
+            ContentProviderSearchBean searchBean = new ContentProviderSearchBean();
+            searchBean.setProviderName(provider.getName());
+
+            Integer count = getNumOfContentProviders(searchBean);
+            if(count>0)
+                throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_WITH_NAME_EXISTS);
+
+            searchBean.setProviderName(null);
+            searchBean.setDomainPattern(provider.getDomainPattern());
+            searchBean.setContextPath(provider.getContextPath());
+            searchBean.setSSL(provider.getIsSSL());
+
+            List<ContentProviderEntity> result = contentProviderService.getProviderByDomainPattern(provider.getDomainPattern(), provider.getContextPath(), provider.getIsSSL());
+            if(result!=null && !result.isEmpty())
+                throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_DOMAIN_PATTERN_EXISTS);
+
+
+            ContentProviderEntity entity = contentProviderService.saveContentProvider(contentProviderDozerConverter.convertToEntity(provider,true));
             response.setResponseValue(contentProviderDozerConverter.convertToDTO(entity, true));
 
         } catch(BasicDataServiceException e) {
@@ -121,12 +141,22 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
 
     @Override
     public List<ContentProviderServer> getServersForProvider(String providerId, Integer from, Integer size) {
-        return contentProviderServerDoserConverter.convertToDTOList(contentProviderService.getServersForProvider(providerId, from, size), false);
+        ContentProviderServerEntity example = new ContentProviderServerEntity();
+        ContentProviderEntity provider = new ContentProviderEntity();
+        provider.setId(providerId);
+        example.setContentProvider(provider);
+
+        return contentProviderServerDoserConverter.convertToDTOList(contentProviderService.getProviderServers(example, from, size), false);
     }
 
     @Override
     public Integer getNumOfServersForProvider(String providerId) {
-        return contentProviderService.getNumOfServersForProvider(providerId);
+        ContentProviderServerEntity example = new ContentProviderServerEntity();
+        ContentProviderEntity provider = new ContentProviderEntity();
+        provider.setId(providerId);
+        example.setContentProvider(provider);
+
+        return contentProviderService.getNumOfProviderServers(example);
     }
 
     @Override
@@ -140,7 +170,16 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             if (contentProviderServer.getContentProviderId()==null || contentProviderServer.getContentProviderId().trim().isEmpty())
                 throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_NOT_SET);
 
+            ContentProviderServerEntity example = new ContentProviderServerEntity();
+            ContentProviderEntity provider = new ContentProviderEntity();
+            provider.setId(contentProviderServer.getContentProviderId());
+            example.setContentProvider(provider);
+            example.setServerURL(contentProviderServer.getServerURL());
 
+            Integer count = contentProviderService.getNumOfProviderServers(example);
+            if(count>0){
+                throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_SERVER_EXISTS);
+            }
             contentProviderService.saveProviderServer(contentProviderServerDoserConverter.convertToEntity(contentProviderServer, false));
         } catch(BasicDataServiceException e) {
             log.error(e.getMessage(), e);
@@ -177,12 +216,22 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
 
     @Override
     public List<URIPattern> getUriPatternsForProvider(String providerId, Integer from, Integer size) {
-        return uriPatternDozerConverter.convertToDTOList(contentProviderService.getUriPatternsForProvider(providerId, from, size), true);
+        URIPatternEntity example = new URIPatternEntity();
+        ContentProviderEntity provider = new ContentProviderEntity();
+        provider.setId(providerId);
+        example.setContentProvider(provider);
+
+        return uriPatternDozerConverter.convertToDTOList(contentProviderService.getUriPatternsList(example, from, size), true);
     }
 
     @Override
     public Integer getNumOfUriPatternsForProvider(String providerId) {
-        return contentProviderService.getNumOfUriPatternsForProvider(providerId);
+        URIPatternEntity example = new URIPatternEntity();
+        ContentProviderEntity provider = new ContentProviderEntity();
+        provider.setId(providerId);
+        example.setContentProvider(provider);
+
+        return contentProviderService.getNumOfUriPatterns(example);
     }
 
     @Override
@@ -197,11 +246,22 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             if (pattern==null )
                 throw new  BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             if (pattern.getPattern()==null || pattern.getPattern().trim().isEmpty())
-                throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_URI_PATERN_NOT_SET);
+                throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_URI_PATTERN_NOT_SET);
             if (pattern.getContentProviderId()==null || pattern.getContentProviderId().trim().isEmpty())
                 throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_NOT_SET);
             if (pattern.getAuthLevel()==null || pattern.getAuthLevel().getId().trim().isEmpty())
                 throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_AUTH_LEVEL_NOT_SET);
+
+            URIPatternEntity example = new URIPatternEntity();
+            ContentProviderEntity cp = new ContentProviderEntity();
+            cp.setId(pattern.getContentProviderId());
+            example.setContentProvider(cp);
+            example.setPattern(pattern.getPattern());
+
+            Integer count = contentProviderService.getNumOfUriPatterns(example);
+            if(count>0){
+                throw new  BasicDataServiceException(ResponseCode.URI_PATTERN_EXISTS);
+            }
 
             URIPatternEntity entity = contentProviderService.saveURIPattern(uriPatternDozerConverter.convertToEntity(pattern,true));
             response.setResponseValue(uriPatternDozerConverter.convertToDTO(entity, true));
@@ -241,13 +301,22 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
 
     @Override
     public List<URIPatternMeta> getMetaDataForPattern(String patternId, Integer from, Integer size) {
-        return uriPatternMetaDozerConverter.convertToDTOList(contentProviderService.getMetaDataForPattern(patternId,
-                                                                                                          from, size), true);
+        URIPatternMetaEntity example = new URIPatternMetaEntity();
+        URIPatternEntity pattern = new URIPatternEntity();
+        pattern.setId(patternId);
+        example.setPattern(pattern);
+
+        return uriPatternMetaDozerConverter.convertToDTOList(contentProviderService.getMetaDataList(example, from, size), true);
     }
 
     @Override
     public Integer getNumOfMetaDataForPattern(String patternId) {
-        return contentProviderService.getNumOfMetaDataForPattern(patternId);
+        URIPatternMetaEntity example = new URIPatternMetaEntity();
+        URIPatternEntity pattern = new URIPatternEntity();
+        pattern.setId(patternId);
+        example.setPattern(pattern);
+
+        return contentProviderService.getNumOfMetaData(example);
     }
     @Override
     public URIPatternMeta getURIPatternMeta(String metaId){
@@ -260,6 +329,25 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
         try {
             if (uriPatternMeta==null)
                 throw new  BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            if(uriPatternMeta.getUriPatternId()==null
+                   || uriPatternMeta.getUriPatternId().trim().isEmpty())
+                throw new  BasicDataServiceException(ResponseCode.URI_PATTERN_NOT_SET);
+            if(uriPatternMeta.getMetaType()==null
+               || uriPatternMeta.getMetaType().getId()==null
+               || uriPatternMeta.getMetaType().getId().trim().isEmpty())
+                throw new  BasicDataServiceException(ResponseCode.URI_PATTERN_META_TYPE_NOT_SET);
+
+            // checjk if meta data already exists
+            URIPatternMetaEntity example = uriPatternMetaDozerConverter.convertToEntity(uriPatternMeta,true);
+            example.setId(null);
+
+            Integer count = contentProviderService.getNumOfMetaData(example);
+            if(count>0)
+                throw new  BasicDataServiceException(ResponseCode.URI_PATTERN_META_EXISTS);
+
+
+            // check metadata values
+            validateMetaDataValues(uriPatternMeta);
 
             URIPatternMetaEntity entity = contentProviderService.saveMetaDataForPattern(uriPatternMetaDozerConverter.convertToEntity(uriPatternMeta,true));
             response.setResponseValue(uriPatternMetaDozerConverter.convertToDTO(entity, true));
@@ -274,6 +362,20 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             response.setErrorText(e.getMessage());
         }
         return response;
+    }
+
+    private void validateMetaDataValues(URIPatternMeta uriPatternMeta) throws BasicDataServiceException{
+        if(uriPatternMeta.getMetaValueSet()!=null && !uriPatternMeta.getMetaValueSet().isEmpty()){
+            for (URIPatternMetaValue value: uriPatternMeta.getMetaValueSet()){
+                if (value.getName() == null || value.getName().trim().isEmpty())
+                    throw new BasicDataServiceException(ResponseCode.URL_PATTERN_META_VALUE_NAME_NOT_SET);
+                if ((value.getAmAttribute() == null
+                     || value.getAmAttribute().getAmAttributeId()==null
+                     || value.getAmAttribute().getAmAttributeId().trim().isEmpty())
+                    &&(value.getStaticValue() == null || value.getStaticValue().trim().isEmpty()))
+                    throw new BasicDataServiceException(ResponseCode.URL_PATTERN_META_VALUE_MAP_NOT_SET);
+            }
+        }
     }
 
     @Override
