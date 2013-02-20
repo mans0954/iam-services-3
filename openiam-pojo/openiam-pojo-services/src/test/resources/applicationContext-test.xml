@@ -68,23 +68,6 @@
     </bean>
 
 	<!-- Authentication Beans -->
-	<bean id="authenticate" class="org.openiam.idm.srvc.auth.service.AuthenticationServiceImpl">
-		<property name="defaultLoginModule" ref="defaultLoginModuleManager" />
-		<property name="authStateDao" ref="authStateDAO" />
-		<property name="loginManager" ref="loginManager" />
-		<property name="secDomainService" ref="secDomainService" />
-		<property name="authContextClass" value="org.openiam.idm.srvc.auth.context.AuthenticationContextImpl" />
-		<property name="defaultToken" ref="defaultSSOToken" />
-		<property name="userManager" ref="userManager" />
-		<property name="groupManager" ref="groupManager" />
-		<property name="roleManager" ref="roleDataService" />
-		<property name="cryptor" ref="cryptor" />
-		<property name="sysConfiguration" ref="sysConfiguration" />
-		<property name="scriptEngine" value="org.openiam.script.GroovyScriptEngineIntegration" />
-        <property name="resourceService" ref="resourceDataService" />
-        <property name="passwordManager" ref="passwordManager" />
-		<property name="dozerUtils" ref="dozerUtils" />
-	</bean>
 	<bean id="dozerUtils" class="org.openiam.dozer.DozerUtils">
 		<property name="deepMapper" ref="deepDozerMapper"/>
 		<property name="shallowMapper" ref="shallowDozerMapper"/>
@@ -190,16 +173,6 @@
 	<bean id="passwordWS" class="org.openiam.idm.srvc.pswd.ws.PasswordWebServiceImpl" >
 		<property name="passwordDS" ref="passwordManager" />
 	</bean>
-		
-	<bean id="passwordManager" class="org.openiam.idm.srvc.pswd.service.PasswordServiceImpl" >
-		<property name="secDomainService" ref="secDomainService" />
-		<property name="passwordValidator" ref="passwordValidator" />	
-		<property name="userManager" ref="userManager" />
-		<property name="loginManager" ref="loginManager" />
-		<property name="cryptor" ref="cryptor" />	
-		<property name="passwordHistoryDao" ref="passwordHistoryDAO" />
-        <property name="hash" ref="hash" />
-	</bean>	
 
 	<bean id="identityQuestGroupDAO" class="org.openiam.idm.srvc.pswd.service.IdentityQuestGroupDAOImpl" >
 		<property name="sessionFactory" ref="sessionFactory"></property>		
@@ -211,16 +184,6 @@
 		<property name="sessionFactory" ref="sessionFactory"></property>		
 	</bean>		
 
-	<bean id="passwordValidator" class="org.openiam.idm.srvc.pswd.rule.PasswordValidatorImpl" >
-		<property name="secDomainService" ref="secDomainService" />
-		<property name="userDao" ref="userDAO" />
-		<property name="loginDao" ref="loginDAO" />
-		<property name="passwordHistoryDao" ref="passwordHistoryDAO" />	
-		<property name="cryptor" ref="cryptor" />	
-		<property name="scriptEngine" value="org.openiam.script.GroovyScriptEngineIntegration" />
-			
-	</bean>	
-
     <!-- Reference Data Beans -->
 	<bean id="refDataService" class="org.openiam.idm.srvc.cd.service.ReferenceDataServiceImpl" >
 		<property name="refDao" ref="refDAO" />
@@ -231,10 +194,6 @@
 	</bean>	
 	
 	<!-- SecurityDomain Beans -->
-
-	<bean id="secDomainService" class="org.openiam.idm.srvc.secdomain.service.SecurityDomainDataServiceImpl" >
-		<property name="secDomainDao" ref="secDomainDAO" />
-	</bean>
 
 	<bean id="secDomainDAO" class="org.openiam.idm.srvc.secdomain.service.SecurityDomainDAOImpl" >
 		<property name="sessionFactory" ref="sessionFactory"></property>		

@@ -18,7 +18,9 @@ import org.openiam.idm.srvc.policy.service.PolicyDataService;
 import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
 import org.openiam.idm.srvc.pswd.service.PasswordService;
+import org.openiam.idm.srvc.secdomain.domain.SecurityDomainEntity;
 import org.openiam.idm.srvc.secdomain.dto.SecurityDomain;
+import org.openiam.idm.srvc.secdomain.service.SecurityDomainDAO;
 import org.openiam.idm.srvc.secdomain.service.SecurityDomainDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
@@ -45,6 +47,9 @@ public class LoginDataServiceImpl implements LoginDataService {
     
 	@Autowired
 	protected LoginAttributeDAO loginAttrDao;
+	
+	@Autowired
+	private SecurityDomainDAO securityDomainDAO;
     
 	@Autowired
 	protected SecurityDomainDataService secDomainService;
@@ -99,8 +104,7 @@ public class LoginDataServiceImpl implements LoginDataService {
             throw new NullPointerException("Login is null");
         }
 
-        SecurityDomain secDomain = secDomainService
-                .getSecurityDomain(secDomainId);
+        SecurityDomainEntity secDomain = securityDomainDAO.findById(secDomainId);
         if (secDomain == null) {
             throw new AuthenticationException(
                     AuthenticationConstants.RESULT_INVALID_DOMAIN);

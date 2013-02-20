@@ -32,11 +32,8 @@ import java.util.List;
         "daysToPwdExp",
         "domainId",
         "ssoToken",
-        "groups",
-        "roles",
         "userId",
-        "principal",
-        "principals"
+        "principal"
 })
 public class Subject implements Serializable {
 
@@ -52,10 +49,6 @@ public class Subject implements Serializable {
     private String domainId;
 
     private SSOToken ssoToken;    /* Object containing the sso token and related information */
-
-    private List groups;
-    private List roles;
-    private List principals;    /* list of identities for this user */
 
     private String userId;
     private String principal; /* Login */
@@ -163,9 +156,6 @@ public class Subject implements Serializable {
                 ", daysToPwdExp=" + daysToPwdExp +
                 ", domainId='" + domainId + '\'' +
                 ", ssoToken=" + ssoToken +
-                ", groups=" + groups +
-                ", roles=" + roles +
-                ", principals=" + principals +
                 ", userId='" + userId + '\'' +
                 ", principal='" + principal + '\'' +
                 '}';
@@ -229,32 +219,6 @@ public class Subject implements Serializable {
         this.samlType = samlType;
     }
 
-    public List getGroups() {
-        return groups;
-    }
-
-    public void setGroups(List groups) {
-        this.groups = groups;
-    }
-
-    /**
-     * Returns the list of Roles for this identity (Principal).
-     *
-     * @return
-     */
-    public List getRoles() {
-        return roles;
-    }
-
-    /**
-     * Sets the list of roles for this identity (Principal).
-     *
-     * @param roles
-     */
-    public void setRoles(List roles) {
-        this.roles = roles;
-    }
-
 
     /**
      * Returns the principal that was used to carry out the authentication.
@@ -272,24 +236,6 @@ public class Subject implements Serializable {
      */
     public void setPrincipal(String principal) {
         this.principal = principal;
-    }
-
-    /**
-     * Returns the list of Principals for this user.
-     *
-     * @return
-     */
-    public List getPrincipals() {
-        return principals;
-    }
-
-    /**
-     * Sets the list of Principals for this user.
-     *
-     * @param principals
-     */
-    public void setPrincipals(List principals) {
-        this.principals = principals;
     }
 
     /**

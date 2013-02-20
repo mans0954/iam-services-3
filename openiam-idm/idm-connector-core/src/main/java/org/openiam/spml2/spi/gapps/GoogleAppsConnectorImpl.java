@@ -65,7 +65,6 @@ public class GoogleAppsConnectorImpl implements ConnectorService {
     protected LoginDataService loginManager;
     @Autowired
     protected PolicyDataService policyDataService;
-    protected SecurityDomainDataService secDomainService;
     protected UserDataService userManager;
     @Autowired
     protected ManagedSystemObjectMatchDozerConverter managedSystemObjectMatchDozerConverter;
@@ -682,14 +681,6 @@ public class GoogleAppsConnectorImpl implements ConnectorService {
 
     public void setPolicyDataService(PolicyDataService policyDataService) {
         this.policyDataService = policyDataService;
-    }
-
-    public SecurityDomainDataService getSecDomainService() {
-        return secDomainService;
-    }
-
-    public void setSecDomainService(SecurityDomainDataService secDomainService) {
-        this.secDomainService = secDomainService;
     }
 
     public UserDataService getUserManager() {

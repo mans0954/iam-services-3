@@ -39,6 +39,7 @@ import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.policy.service.PolicyDataService;
 import org.openiam.idm.srvc.pswd.service.PasswordService;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
+import org.openiam.idm.srvc.secdomain.domain.SecurityDomainEntity;
 import org.openiam.idm.srvc.secdomain.dto.SecurityDomain;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
@@ -56,7 +57,7 @@ public abstract class AbstractLoginModule implements LoginModule {
     protected SSOTokenModule defaultToken;
     protected LoginDataService loginManager;
     protected UserDataService userManager;
-    protected SecurityDomain securityDomain;
+    protected SecurityDomainEntity securityDomain;
     protected Cryptor cryptor;
     @Autowired
     protected AuditLogUtil auditLogUtil;
@@ -108,7 +109,7 @@ public abstract class AbstractLoginModule implements LoginModule {
 
     }
 
-    public void setSecurityDomain(SecurityDomain secDom) {
+    public void setSecurityDomain(SecurityDomainEntity secDom) {
         this.securityDomain = secDom;
     }
 

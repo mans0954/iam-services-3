@@ -21,6 +21,7 @@
  */
 package org.openiam.idm.srvc.auth.login;
 
+import org.openiam.core.dao.BaseDao;
 import org.openiam.idm.srvc.auth.dto.AuthState;
 
 /**
@@ -28,18 +29,7 @@ import org.openiam.idm.srvc.auth.dto.AuthState;
  *
  * @author suneet
  */
-public interface AuthStateDAO {
+public interface AuthStateDAO extends BaseDao<AuthState, String> {
 
-    void add(AuthState transientInstance);
-
-    void remove(AuthState persistentInstance);
-
-    AuthState update(AuthState detachedInstance);
-
-    AuthState findById(java.lang.String id);
-
-    AuthState findByToken(String token);
-
-    void saveAuthState(AuthState state);
-
+	public void saveAuthState(final AuthState authState);
 }

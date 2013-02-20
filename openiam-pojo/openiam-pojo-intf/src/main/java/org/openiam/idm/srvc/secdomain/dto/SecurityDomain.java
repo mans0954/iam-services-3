@@ -6,6 +6,9 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
+import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.secdomain.domain.SecurityDomainEntity;
+
 /**
  * Class to represent SecurityDomains within the IDM system.
  *
@@ -23,6 +26,7 @@ import javax.xml.bind.annotation.XmlType;
         "authnPolicyId",
         "auditPolicyId"
 })
+@DozerDTOCorrespondence(SecurityDomainEntity.class)
 public class SecurityDomain implements java.io.Serializable {
 
     private String domainId;

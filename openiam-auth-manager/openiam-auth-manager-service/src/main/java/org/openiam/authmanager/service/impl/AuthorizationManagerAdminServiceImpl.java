@@ -93,14 +93,19 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
 				final Set<AuthorizationGroup> userGroups = new HashSet<AuthorizationGroup>();
 				if(CollectionUtils.isNotEmpty(user.getGroupIds())) {
 					for(final String groupId : user.getGroupIds()) {
-						userGroups.add(groupMap.get(groupId));
+						if(groupMap.containsKey(groupId)) {
+							userGroups.add(groupMap.get(groupId));
+						}
 					}
 				}
 				
 				final Map<String, Set<AuthorizationGroup>> group2GroupMap = getGroup2GroupMap(groupMap);
 				final Set<AuthorizationGroup> visitedGroupSet = new HashSet<AuthorizationGroup>();
 				for(final AuthorizationGroup group : userGroups) {
-					compiledGroups.addAll(compileGroups(group, group2GroupMap, visitedGroupSet));
+					final Set<AuthorizationGroup> tempCompiledGroups = compileGroups(group, group2GroupMap, visitedGroupSet);
+					if(CollectionUtils.isNotEmpty(tempCompiledGroups)) {
+						compiledGroups.addAll(tempCompiledGroups);
+					}
 				}
 				compiledGroups.addAll(userGroups);
 				
@@ -110,14 +115,19 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
 				final Set<AuthorizationRole> userRoles = new HashSet<AuthorizationRole>();
 				if(CollectionUtils.isNotEmpty(user.getRoleIds())) {
 					for(final String roleId : user.getRoleIds()) {
-						userRoles.add(roleMap.get(roleId));
+						if(roleMap.containsKey(roleId)) {
+							userRoles.add(roleMap.get(roleId));
+						}
 					}
 				}
 				
 				final Map<String, Set<AuthorizationRole>> role2RoleMap = getRole2RoleMap(roleMap);
 				final Set<AuthorizationRole> visitedRoleSet = new HashSet<AuthorizationRole>();
 				for(final AuthorizationRole role : userRoles) {
-					compiledRoles.addAll(compileRoles(role, role2RoleMap, visitedRoleSet));
+					final Set<AuthorizationRole> tempCompiledRoles = compileRoles(role, role2RoleMap, visitedRoleSet);
+					if(CollectionUtils.isNotEmpty(tempCompiledRoles)) {
+						compiledRoles.addAll(tempCompiledRoles);
+					}
 				}
 				compiledRoles.addAll(userRoles);
 				

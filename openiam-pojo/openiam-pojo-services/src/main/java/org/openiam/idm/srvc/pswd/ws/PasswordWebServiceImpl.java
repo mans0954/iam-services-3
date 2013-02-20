@@ -38,18 +38,22 @@ import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
 import org.openiam.idm.srvc.pswd.service.PasswordService;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.pswd.dto.ValidatePasswordResetTokenResponse;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * Web service implementation for the PasswordWebService
  * @author suneet
  *
  */
+@Service("passwordWS")
 @WebService(endpointInterface = "org.openiam.idm.srvc.pswd.ws.PasswordWebService", 
 		targetNamespace = "urn:idm.openiam.org/srvc/pswd/service", 
 		portName = "PasswordWebServicePort",
 		serviceName = "PasswordWebService")
 public class PasswordWebServiceImpl implements PasswordWebService {
 
+	@Autowired
 	PasswordService passwordDS;
 	
 	public Response daysToPasswordExpiration(String domainId, String principal,
@@ -128,14 +132,4 @@ public class PasswordWebServiceImpl implements PasswordWebService {
     public ValidatePasswordResetTokenResponse validatePasswordResetToken(String token) {
         return passwordDS.validatePasswordResetToken(token);
     }
-
-    public PasswordService getPasswordDS() {
-		return passwordDS;
-	}
-
-	public void setPasswordDS(PasswordService passwordDS) {
-		this.passwordDS = passwordDS;
-	}
-
-
 }

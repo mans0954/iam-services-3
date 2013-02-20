@@ -63,7 +63,9 @@ import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
 import org.openiam.idm.srvc.recon.service.ReconciliationCommand;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
+import org.openiam.idm.srvc.secdomain.domain.SecurityDomainEntity;
 import org.openiam.idm.srvc.secdomain.dto.SecurityDomain;
+import org.openiam.idm.srvc.secdomain.service.SecurityDomainDAO;
 import org.openiam.idm.srvc.secdomain.service.SecurityDomainDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
@@ -127,8 +129,10 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
     
     @Autowired
     private LoginDozerConverter loginDozerConverter;
+    
+    @Autowired
+    private SecurityDomainDAO securityDomainDAO;
 
-    protected SecurityDomainDataService secDomainService;
     protected UserDataService userManager;
 
     protected LdapSuspend ldapSuspend;
@@ -166,8 +170,7 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
         User user = authContext.getUser();
         Login lg = authContext.getLogin();
         String managedSysId = authContext.getManagedSysId();
-        SecurityDomain securityDomain = this.secDomainService
-                .getSecurityDomain(domainId);
+        SecurityDomainEntity securityDomain = securityDomainDAO.findById(domainId);
 
         if (user != null && user.getStatus() != null) {
             log.debug("User Status=" + user.getStatus());
@@ -758,14 +761,6 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
 
     public void setPolicyDataService(PolicyDataService policyDataService) {
         this.policyDataService = policyDataService;
-    }
-
-    public SecurityDomainDataService getSecDomainService() {
-        return secDomainService;
-    }
-
-    public void setSecDomainService(SecurityDomainDataService secDomainService) {
-        this.secDomainService = secDomainService;
     }
 
     public UserDataService getUserManager() {

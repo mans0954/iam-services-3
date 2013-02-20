@@ -107,7 +107,6 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
     protected LoginDataService loginManager;
     @Autowired
     private PolicyDataService policyDataService;
-    protected SecurityDomainDataService secDomainService;
     protected UserDataService userManager;
     @Autowired
     protected ManagedSystemObjectMatchDozerConverter managedSystemObjectMatchDozerConverter;
@@ -861,14 +860,6 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
 
     public void setPolicyDataService(PolicyDataService PolicyDataService) {
         this.policyDataService = policyDataService;
-    }
-
-    public SecurityDomainDataService getSecDomainService() {
-        return secDomainService;
-    }
-
-    public void setSecDomainService(SecurityDomainDataService secDomainService) {
-        this.secDomainService = secDomainService;
     }
 
     public UserDataService getUserManager() {

@@ -55,6 +55,8 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.util.encrypt.Cryptor;
 import org.openiam.util.encrypt.HashDigest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 /**
@@ -62,12 +64,16 @@ import org.springframework.util.CollectionUtils;
  * 
  */
 
+@Service("passwordManager")
 public class PasswordServiceImpl implements PasswordService {
 
-    protected SecurityDomainDataService secDomainService;
+	@Autowired
     protected PasswordValidator passwordValidator;
 
+    @Autowired
     protected LoginDataService loginManager;
+    
+    @Autowired
     protected UserDataService userManager;
 
     @Autowired
@@ -75,13 +81,24 @@ public class PasswordServiceImpl implements PasswordService {
     
     @Autowired
     private PolicyDataService policyDataService;
+    
     @Autowired
     private PolicyObjectAssocDAO policyObjectAssocDao;
+    
+    @Autowired
+    @Qualifier("cryptor")
     protected Cryptor cryptor;
+    
+    @Autowired
     protected PasswordHistoryDAO passwordHistoryDao;
+    
+    @Autowired
+    @Qualifier("hash")
     protected HashDigest hash;
+    
     @Autowired
     protected KeyManagementService keyManagementService;
+    
     @Autowired
     protected UserDozerConverter userDozerConverter;
 
@@ -489,65 +506,5 @@ public class PasswordServiceImpl implements PasswordService {
 
         return (curTime + tokenLife);
 
-    }
-
-    public SecurityDomainDataService getSecDomainService() {
-        return secDomainService;
-    }
-
-    public void setSecDomainService(SecurityDomainDataService secDomainService) {
-        this.secDomainService = secDomainService;
-    }
-
-    public PasswordValidator getPasswordValidator() {
-        return passwordValidator;
-    }
-
-    public void setPasswordValidator(PasswordValidator passwordValidator) {
-        this.passwordValidator = passwordValidator;
-    }
-
-    public LoginDataService getLoginManager() {
-        return loginManager;
-    }
-
-    public void setLoginManager(LoginDataService loginManager) {
-        this.loginManager = loginManager;
-    }
-
-    public UserDataService getUserManager() {
-        return userManager;
-    }
-
-    public void setUserManager(UserDataService userManager) {
-        this.userManager = userManager;
-    }
-
-    // public void setPolicyDataService(PolicyDataService policyDataService) {
-    // this.policyDataService = policyDataService;
-    // }
-
-    public Cryptor getCryptor() {
-        return cryptor;
-    }
-
-    public void setCryptor(Cryptor cryptor) {
-        this.cryptor = cryptor;
-    }
-
-    public PasswordHistoryDAO getPasswordHistoryDao() {
-        return passwordHistoryDao;
-    }
-
-    public void setPasswordHistoryDao(PasswordHistoryDAO passwordHistoryDao) {
-        this.passwordHistoryDao = passwordHistoryDao;
-    }
-
-    public HashDigest getHash() {
-        return hash;
-    }
-
-    public void setHash(HashDigest hash) {
-        this.hash = hash;
     }
 }

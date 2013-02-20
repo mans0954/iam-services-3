@@ -46,6 +46,8 @@ import org.openiam.script.ScriptFactory;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -53,26 +55,32 @@ import org.springframework.stereotype.Service;
  * @author suneet
  *
  */
+@Service("passwordValidator")
 public class PasswordValidatorImpl implements PasswordValidator {
 
     @Autowired
     private PolicyDefParamDAO policyDefParamDao;
 	
-    protected SecurityDomainDataService secDomainService;
+    @Autowired
     protected UserDAO userDao;
+    
+    @Autowired
     protected LoginDAO loginDao;
+    
+    @Autowired
     protected PasswordHistoryDAO passwordHistoryDao;
+    
+    @Autowired
+    @Qualifier("cryptor")
     protected Cryptor cryptor;
+    
+    @Value("${org.openiam.groovy.script.engine}")
     protected String scriptEngine;
+    
     @Autowired
     protected KeyManagementService keyManagementService;
 
-    private static final Log log = LogFactory
-            .getLog(PasswordValidatorImpl.class);
-
-    public PasswordValidatorImpl() {
-
-    }
+    private static final Log log = LogFactory.getLog(PasswordValidatorImpl.class);
 
     /*
      * (non-Javadoc)
@@ -194,53 +202,4 @@ public class PasswordValidatorImpl implements PasswordValidator {
         return false;
 
     }
-
-    public SecurityDomainDataService getSecDomainService() {
-        return secDomainService;
-    }
-
-    public void setSecDomainService(SecurityDomainDataService secDomainService) {
-        this.secDomainService = secDomainService;
-    }
-
-    public UserDAO getUserDao() {
-        return userDao;
-    }
-
-    public void setUserDao(UserDAO userDao) {
-        this.userDao = userDao;
-    }
-
-    public LoginDAO getLoginDao() {
-        return loginDao;
-    }
-
-    public void setLoginDao(LoginDAO loginDao) {
-        this.loginDao = loginDao;
-    }
-
-    public PasswordHistoryDAO getPasswordHistoryDao() {
-        return passwordHistoryDao;
-    }
-
-    public void setPasswordHistoryDao(PasswordHistoryDAO passwordHistoryDao) {
-        this.passwordHistoryDao = passwordHistoryDao;
-    }
-
-    public Cryptor getCryptor() {
-        return cryptor;
-    }
-
-    public void setCryptor(Cryptor cryptor) {
-        this.cryptor = cryptor;
-    }
-
-    public String getScriptEngine() {
-        return scriptEngine;
-    }
-
-    public void setScriptEngine(String scriptEngine) {
-        this.scriptEngine = scriptEngine;
-    }
-
 }

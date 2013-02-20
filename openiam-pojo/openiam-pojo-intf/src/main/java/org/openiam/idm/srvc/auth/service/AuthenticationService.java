@@ -42,6 +42,7 @@ public interface AuthenticationService {
             @WebParam(name = "userId", targetNamespace = "")
             String userId) throws LogoutException;
 
+    /*
     @WebMethod
     AuthenticationResponse passwordAuth(
             @WebParam(name = "domainId", targetNamespace = "")
@@ -50,6 +51,7 @@ public interface AuthenticationService {
             String principal,
             @WebParam(name = "password", targetNamespace = "")
             String password) throws Exception;
+	*/
 
     @WebMethod
     AuthenticationResponse login(
@@ -72,6 +74,7 @@ public interface AuthenticationService {
      * @param tokenType - Constant indicating the type of token that being passed.
      * @return SSOSubject which holds user information.
      */
+    /*
     @WebMethod
     Subject authenticateByToken(
             @WebParam(name = "userId", targetNamespace = "")
@@ -80,7 +83,9 @@ public interface AuthenticationService {
             String token,
             @WebParam(name = "tokenType", targetNamespace = "")
             String tokenType) throws Exception;
+	*/
 
+    /*
     @WebMethod
     BooleanResponse validateToken(
             @WebParam(name = "principal", targetNamespace = "")
@@ -89,6 +94,7 @@ public interface AuthenticationService {
             String token,
             @WebParam(name = "tokenType", targetNamespace = "")
             String tokenType) throws Exception;
+	*/
 
     @WebMethod
     Response renewToken(
@@ -99,6 +105,7 @@ public interface AuthenticationService {
             @WebParam(name = "tokenType", targetNamespace = "")
             String tokenType);
 
+    /*
     @WebMethod
     BooleanResponse validateTokenByUser(
             @WebParam(name = "userId", targetNamespace = "")
@@ -107,19 +114,5 @@ public interface AuthenticationService {
             String token,
             @WebParam(name = "tokenType", targetNamespace = "")
             String tokenType) throws Exception;
-
-    @WebMethod
-    void updateAppStatus(
-            @WebParam(name = "managedSysId", targetNamespace = "")
-            String managedSysId,
-            @WebParam(name = "principal", targetNamespace = "")
-            String loginId,
-            @WebParam(name = "status", targetNamespace = "")
-            String status,
-            @WebParam(name = "sessionId", targetNamespace = "")
-            String sessionId,
-            @WebParam(name = "token", targetNamespace = "")
-            String token);
-
-
+	*/
 }

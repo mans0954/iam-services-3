@@ -73,7 +73,9 @@ import org.openiam.idm.srvc.pswd.service.PasswordService;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.service.RoleDataService;
+import org.openiam.idm.srvc.secdomain.domain.SecurityDomainEntity;
 import org.openiam.idm.srvc.secdomain.dto.SecurityDomain;
+import org.openiam.idm.srvc.secdomain.service.SecurityDomainDAO;
 import org.openiam.idm.srvc.secdomain.service.SecurityDomainDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
@@ -83,9 +85,12 @@ import org.openiam.script.ScriptFactory;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Required;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
+import org.springframework.stereotype.Service;
 
 // import edu.emory.mathcs.backport.java.util.Arrays;
 
@@ -94,59 +99,58 @@ import org.springframework.jmx.export.annotation.ManagedResource;
  *
  */
 
+@Service("authenticate")
 @WebService(endpointInterface = "org.openiam.idm.srvc.auth.service.AuthenticationService", targetNamespace = "urn:idm.openiam.org/srvc/auth/service", portName = "AuthenticationServicePort", serviceName = "AuthenticationService")
 @ManagedResource(objectName = "openiam:name=authenticationService", description = "Authentication Service")
 public class AuthenticationServiceImpl implements AuthenticationService {
 
-    protected LoginModule defaultLoginModule;
-    protected AuthStateDAO authStateDao;
-    protected LoginDataService loginManager;
-    protected SecurityDomainDataService secDomainService;
-    protected String authContextClass;
-    protected ResourceDataService resourceService;
-
-    protected SSOTokenModule defaultToken;
-    protected UserDataService userManager;
+	@Autowired
+    private AuthStateDAO authStateDao;
+    
     @Autowired
-    protected PolicyDataService policyDataService;
-    protected Cryptor cryptor;
+    private LoginDataService loginManager;
+    
+    @Autowired
+    private SecurityDomainDAO securityDomainDAO;
+    
+    @Value("${org.openiam.core.login.authentication.context.class}")
+    private String authContextClass;
+    
+    @Autowired
+    private ResourceDataService resourceService;
 
     @Autowired
-    protected AuditLogUtil auditLogUtil;
+    @Qualifier("defaultSSOToken")
+    private SSOTokenModule defaultToken;
+    
+    @Autowired
+    private UserDataService userManager;
+    
+    @Autowired
+    private PolicyDataService policyDataService;
+    
+    @Autowired
+    @Qualifier("cryptor")
+    private Cryptor cryptor;
 
-    GroupDataService groupManager;
-    RoleDataService roleManager;
-    protected String scriptEngine;
-    protected SysConfiguration sysConfiguration;
-    protected PasswordService passwordManager;
-    private DozerUtils dozerUtils;
+    @Autowired
+    private AuditLogUtil auditLogUtil;
+
+    @Value("${org.openiam.groovy.script.engine}")
+    private String scriptEngine;
+    
+    @Autowired
+    private SysConfiguration sysConfiguration;
+    
+    @Autowired
+    private PasswordService passwordManager;
 
     @Autowired
     protected KeyManagementService keyManagementService;
 
-    @Autowired
-    private GroupDozerConverter groupDozerConverter;
-
-    @Autowired
-    private RoleDozerConverter roleDozerConverter;
-
-    private static final Log log = LogFactory
-            .getLog(AuthenticationServiceImpl.class);
-
-    @Required
-    public void setDozerUtils(final DozerUtils dozerUtils) {
-        this.dozerUtils = dozerUtils;
-    }
+    private static final Log log = LogFactory.getLog(AuthenticationServiceImpl.class);
 
     /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.auth.service.AuthenticationService#authenticate(
-     * org.openiam.idm.srvc.auth.context.AuthenticationContext)
-     */
-    // public Subject authenticate(AuthenticationContext ctx) throws
-    // AuthenticationException {
     public AuthenticationResponse authenticate(AuthenticationContext ctx)
             throws Exception {
         AuthenticationResponse authResp = new AuthenticationResponse(
@@ -185,10 +189,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 loginModule = (AbstractLoginModule) LoginModuleFactory
                         .createModule(secDomain.getDefaultLoginModule());
             }
-            /*
-             * Dependency injection fails when we use our own factory. Set the
-             * necessary beans directly
-             */
+           
+           	//Dependency injection fails when we use our own factory. Set the
+            //necessary beans directly
+             
             loginModule.setLoginService(loginManager);
             loginModule.setTokenModule(defaultToken);
             loginModule.setUserService(userManager);
@@ -253,14 +257,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
 
     }
+    */
 
     /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.auth.service.AuthenticationService#authenticateByToken
-     * (java.lang.String, java.lang.String, java.lang.String)
-     */
     @ManagedAttribute
     public Subject authenticateByToken(String userId, String token,
             String tokenType) throws Exception {
@@ -315,14 +314,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return sub;
 
     }
+    */
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.auth.service.AuthenticationService#globalLogout(
-     * java.lang.String)
-     */
+    @Override
     @ManagedAttribute
     public void globalLogout(String userId) throws LogoutException {
         if (userId == null) {
@@ -337,10 +331,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         authSt.setAuthState(new BigDecimal(0));
         authSt.setToken("LOGOUT");
-        this.authStateDao.saveAuthState(authSt);
+        authStateDao.saveAuthState(authSt);
 
     }
 
+    @Override
     public AuthenticationResponse login(AuthenticationRequest request) {
         if (request == null) {
             throw new IllegalArgumentException("Request object is null");
@@ -365,8 +360,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         String userId = null;
         UserEntity user = null;
 
-        SecurityDomain secDomain = secDomainService
-                .getSecurityDomain(secDomainId);
+        SecurityDomainEntity secDomain = securityDomainDAO.findById(secDomainId);
         if (secDomain == null) {
             // throw new
             // AuthenticationException(AuthenticationConstants.RESULT_INVALID_DOMAIN);
@@ -583,7 +577,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         // add the sso token to the authstate
 
         updateAuthState(sub);
-        populateSubject(sub.getUserId(), sub);
+        //populateSubject(sub.getUserId(), sub);
 
         log.debug("*** PasswordAuth complete...Returning response object");
 
@@ -593,14 +587,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.auth.service.AuthenticationService#passwordAuth(
-     * java.lang.String, java.lang.String, java.lang.String)
-     */
-    // public AuthenticationResponse passwordAuth(String secDomainId, String
-    // principal, String password) throws AuthenticationException {
     @ManagedAttribute
     public AuthenticationResponse passwordAuth(String secDomainId,
             String principal, String password) throws Exception {
@@ -653,8 +639,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         if (loginModName
                 .equalsIgnoreCase("org.openiam.idm.srvc.auth.spi.DefaultLoginModule")) {
-            /* Few basic checks must be met before calling the login module. */
-            /* Simplifies the login module */
+            //Few basic checks must be met before calling the login module.
+            //Simplifies the login module
             if (principal == null || principal.length() == 0) {
 
                 log.debug("Invalid login:" + principal);
@@ -751,10 +737,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 // test code
                 Set<PolicyAttribute> attSet = authPolicy.getPolicyAttributes();
                 Iterator<PolicyAttribute> it = attSet.iterator();
-                /*
-                 * while( it.hasNext() ) { PolicyAttribute attr = it.next();
-                 * System.out.println("Name=" + attr.getName()); }
-                 */
 
             }
             log.debug("login module name=" + loginModName);
@@ -762,10 +744,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             if (modSel.getModuleType() == LoginModuleSelector.MODULE_TYPE_LOGIN_MODULE) {
                 loginModule = (AbstractLoginModule) LoginModuleFactory
                         .createModule(loginModName);
-                /*
-                 * Dependency injection fails when we use our own factory. Set
-                 * the necessary beans directly
-                 */
+                //
+                //Dependency injection fails when we use our own factory. Set
+                //the necessary beans directly
+                
                 loginModule.setLoginService(loginManager);
                 loginModule.setTokenModule(defaultToken);
                 loginModule.setUserService(userManager);
@@ -857,7 +839,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return authResp;
 
     }
+    */
 
+    /*
     private void populateSubject(String userId, Subject sub) {
         log.debug("populateSubject: userId=" + userId);
 
@@ -874,14 +858,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         }
 
     }
+    */
 
     /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.auth.service.AuthenticationService#validateToken
-     * (java.lang.String, java.lang.String, java.lang.String)
-     */
     public BooleanResponse validateToken(String loginId, String token,
             String tokenType) throws Exception {
 
@@ -918,8 +897,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return resp;
 
     }
+    */
 
-    @WebMethod
+    @Override
     public Response renewToken(String principal, String token, String tokenType) {
 
         log.debug("RenewToken called.");
@@ -928,9 +908,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         // validateToken first
 
-        SecurityDomain secDomain = secDomainService
-                .getSecurityDomain(getSysConfiguration()
-                        .getDefaultSecurityDomain());
+        final SecurityDomainEntity secDomain = securityDomainDAO.findById(sysConfiguration.getDefaultSecurityDomain());
 
         Policy plcy = policyDataService.getPolicy(secDomain.getAuthnPolicyId());
         String attrValue = getPolicyAttribute(plcy.getPolicyAttributes(),
@@ -1043,12 +1021,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.auth.service.AuthenticationService#validateTokenByUser
-     * (java.lang.String, java.lang.String, java.lang.String)
-     */
     public BooleanResponse validateTokenByUser(String userId, String token,
             String tokenType) throws Exception {
         if (userId == null) {
@@ -1093,6 +1065,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         return resp;
 
     }
+    */
 
     private void updateAuthState(Subject sub) {
 
@@ -1103,51 +1076,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         authStateDao.saveAuthState(state);
     }
 
-    public void updateAppStatus(String managedSysId, String loginId,
-            String status, String sessionId, String token) {
-
-    }
-
-    public void setDefaultLoginModule(LoginModule defaultLoginModule) {
-        this.defaultLoginModule = defaultLoginModule;
-    }
-
-    public void setAuthStateDao(AuthStateDAO authStateDao) {
-        this.authStateDao = authStateDao;
-    }
-
-    public void setLoginManager(LoginDataService loginManager) {
-        this.loginManager = loginManager;
-    }
-
-    public void setSecDomainService(SecurityDomainDataService secDomainService) {
-        this.secDomainService = secDomainService;
-    }
-
-    public void setAuthContextClass(String authContextClass) {
-        this.authContextClass = authContextClass;
-    }
-
-    public void setDefaultToken(SSOTokenModule defaultToken) {
-        this.defaultToken = defaultToken;
-    }
-
-    public void setUserManager(UserDataService userManager) {
-        this.userManager = userManager;
-    }
-
-    public void setGroupManager(GroupDataService groupManager) {
-        this.groupManager = groupManager;
-    }
-
-    public void setRoleManager(RoleDataService roleManager) {
-        this.roleManager = roleManager;
-    }
-
-    public void setCryptor(Cryptor cryptor) {
-        this.cryptor = cryptor;
-    }
-
+    /*
     private SSOToken token(String userId, Map tokenParam) throws Exception {
 
         tokenParam.put("USER_ID", userId);
@@ -1156,6 +1085,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .createModule((String) tokenParam.get("TOKEN_TYPE"));
         return tkModule.createToken(tokenParam);
     }
+    */
 
     public void log(String objectTypeId, String actionId, String actionStatus,
             String reason, String domainId, String userId, String principal,
@@ -1166,37 +1096,5 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         log.setHost(clientIP);
         log.setNodeIP(nodeIP);
         auditLogUtil.log(log);
-    }
-
-    public String getScriptEngine() {
-        return scriptEngine;
-    }
-
-    public void setScriptEngine(String scriptEngine) {
-        this.scriptEngine = scriptEngine;
-    }
-
-    public SysConfiguration getSysConfiguration() {
-        return sysConfiguration;
-    }
-
-    public void setSysConfiguration(SysConfiguration sysConfiguration) {
-        this.sysConfiguration = sysConfiguration;
-    }
-
-    public ResourceDataService getResourceService() {
-        return resourceService;
-    }
-
-    public void setResourceService(ResourceDataService resourceService) {
-        this.resourceService = resourceService;
-    }
-
-    public PasswordService getPasswordManager() {
-        return passwordManager;
-    }
-
-    public void setPasswordManager(PasswordService passwordManager) {
-        this.passwordManager = passwordManager;
     }
 }
