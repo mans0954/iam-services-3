@@ -154,6 +154,10 @@
             <a>staticValue</a>
             <b>staticValue</b>
         </field>
+        <field>
+            <a>operation</a>
+            <b>operation</b>
+        </field>
         <field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter" custom-converter-param="amDto2entityShallowDozerMapper">
             <a>amAttribute</a>
             <b>amAttribute</b>
@@ -179,7 +183,7 @@
             <a>metaType</a>
             <b>metaType</b>
         </field>
-        <field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="amDto2entityShallowDozerMapper">
+        <field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="amDto2entityDeepDozerMapper">
             <a>metaValueSet</a>
             <b>metaValueSet</b>
         </field>

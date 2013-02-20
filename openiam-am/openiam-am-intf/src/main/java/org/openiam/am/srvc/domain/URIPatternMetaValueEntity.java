@@ -28,11 +28,11 @@ public class URIPatternMetaValueEntity implements Serializable {
 	private String staticValue;
 	
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinColumn(name="AM_ATTRIBUTE_ID", referencedColumnName = "AM_ATTRIBUTE_ID", insertable = false, updatable = false, nullable=true)
+    @JoinColumn(name="AM_ATTRIBUTE_ID", referencedColumnName = "AM_ATTRIBUTE_ID", nullable=true)
 	private AuthResourceAMAttributeEntity amAttribute;
 	
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinColumn(name="URI_PATTERN_META_ID", referencedColumnName = "URI_PATTERN_META_ID", insertable = false, updatable = false)
+    @JoinColumn(name="URI_PATTERN_META_ID", referencedColumnName = "URI_PATTERN_META_ID")
 	private URIPatternMetaEntity metaEntity;
     @Transient
     private AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
