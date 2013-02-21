@@ -35,7 +35,6 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDAO;
 
-import org.openiam.dozer.DozerUtils;
 import org.openiam.exception.data.DataException;
 import org.openiam.exception.data.ObjectNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;

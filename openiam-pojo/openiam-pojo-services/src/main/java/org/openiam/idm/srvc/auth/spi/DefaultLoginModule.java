@@ -25,6 +25,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.exception.AuthenticationException;
@@ -40,12 +42,16 @@ import org.openiam.idm.srvc.auth.sso.SSOTokenModule;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 /**
  * DefaultLoginModule provides basic password based authentication using the OpenIAM repository.
  * @author suneet
  *
  */
+@Scope("prototype")
+@Component("defaultLoginModule")
 public class DefaultLoginModule extends AbstractLoginModule {
 
     private static final Log log = LogFactory.getLog(DefaultLoginModule.class);
@@ -60,10 +66,12 @@ public class DefaultLoginModule extends AbstractLoginModule {
      * org.openiam.idm.srvc.auth.spi.LoginModule#globalLogout(java.lang.String,
      * java.lang.String)
      */
+    /*
     public void globalLogout(String securityDomain, String principal) {
         // TODO Auto-generated method stub
 
     }
+    */
 
     /*
      * (non-Javadoc)
@@ -145,7 +153,7 @@ public class DefaultLoginModule extends AbstractLoginModule {
 
             // if failed auth count is part of the polices, then do the
             // following processing
-            if (attrValue != null && attrValue.length() > 0) {
+            if (StringUtils.isNotBlank(attrValue)) {
 
                 int authFailCount = Integer.parseInt(attrValue);
                 // increment the auth fail counter
@@ -345,6 +353,7 @@ public class DefaultLoginModule extends AbstractLoginModule {
      * @see org.openiam.idm.srvc.auth.spi.LoginModule#logout(java.lang.String,
      * java.lang.String, java.lang.String)
      */
+    /*
     public void logout(String securityDomain, String principal,
             String managedSysId) {
 
@@ -352,6 +361,7 @@ public class DefaultLoginModule extends AbstractLoginModule {
                 principal, null, null, null, null);
 
     }
+    */
 
     /* supporting methods */
 

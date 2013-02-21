@@ -47,6 +47,7 @@ import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * @author suneet
@@ -54,69 +55,40 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public abstract class AbstractLoginModule implements LoginModule {
 
+	@Autowired
+    @Qualifier("defaultSSOToken")
     protected SSOTokenModule defaultToken;
+    
+    @Autowired
     protected LoginDataService loginManager;
+    
+    @Autowired
     protected UserDataService userManager;
-    protected SecurityDomainEntity securityDomain;
+    
+    @Autowired
+    @Qualifier("cryptor")
     protected Cryptor cryptor;
+    
     @Autowired
     protected AuditLogUtil auditLogUtil;
+    
+    @Autowired
     protected ResourceDataService resourceService;
+    
+    @Autowired
     protected PasswordService passwordManager;
+    
     @Autowired
     protected PolicyDataService policyDataService;
+    
+    protected SecurityDomainEntity securityDomain;
     protected UserEntity user;
     protected LoginEntity lg;
     protected String authPolicyId;
+    
     @Autowired
     protected KeyManagementService keyManagementService;
-    static protected ResourceBundle res = ResourceBundle
-            .getBundle("securityconf");
     private static final Log log = LogFactory.getLog(AbstractLoginModule.class);
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.auth.spi.LoginModule#setLoginService(org.openiam
-     * .idm.srvc.auth.login.LoginDataService)
-     */
-    public void setLoginService(LoginDataService loginManager) {
-        this.loginManager = loginManager;
-
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.auth.spi.LoginModule#setTokenModule(org.openiam.
-     * idm.srvc.auth.sso.SSOTokenModule)
-     */
-    public void setTokenModule(SSOTokenModule defaultToken) {
-        this.defaultToken = defaultToken;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.auth.spi.LoginModule#setUserService(org.openiam.
-     * idm.srvc.user.service.UserDataService)
-     */
-    public void setUserService(UserDataService userManager) {
-        this.userManager = userManager;
-
-    }
-
-    public void setSecurityDomain(SecurityDomainEntity secDom) {
-        this.securityDomain = secDom;
-    }
-
-    public void setKeyManagementService(
-            KeyManagementService keyManagementService) {
-        this.keyManagementService = keyManagementService;
-    }
 
     public String decryptPassword(String userId, String encPassword)
             throws Exception {
@@ -229,62 +201,19 @@ public abstract class AbstractLoginModule implements LoginModule {
         auditLogUtil.log(log);
     }
 
-    public Cryptor getCryptor() {
-        return cryptor;
-    }
-
-    public void setCryptor(Cryptor cryptor) {
-        this.cryptor = cryptor;
-    }
-
-    public UserEntity getUser() {
-        return user;
-    }
-
     public void setUser(UserEntity user) {
         this.user = user;
-    }
-
-    public LoginEntity getLg() {
-        return lg;
     }
 
     public void setLg(LoginEntity lg) {
         this.lg = lg;
     }
 
-    public String getAuthPolicyId() {
-        return authPolicyId;
-    }
-
     public void setAuthPolicyId(String authPolicyId) {
         this.authPolicyId = authPolicyId;
     }
-
-    public ResourceDataService getResourceService() {
-        return resourceService;
-    }
-
-    public void setResourceService(ResourceDataService resourceService) {
-        this.resourceService = resourceService;
-    }
-
-    public PasswordService getPasswordManager() {
-        return passwordManager;
-    }
-
-    public void setPasswordManager(PasswordService passwordManager) {
-        this.passwordManager = passwordManager;
-    }
-
-    /**
-     * @param policyDataService the policyDataService to set
-     */
-    public void setPolicyDataService(PolicyDataService policyDataService) {
-        this.policyDataService = policyDataService;
-    }
-
-    public void setAuditUtil(AuditLogUtil auditLogUtil) {
-        this.auditLogUtil = auditLogUtil;
+    
+    public void setSecurityDomain(final SecurityDomainEntity securityDomain) {
+    	this.securityDomain = securityDomain;
     }
 }

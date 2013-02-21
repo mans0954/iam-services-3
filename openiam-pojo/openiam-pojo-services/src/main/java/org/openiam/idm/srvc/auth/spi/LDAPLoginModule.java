@@ -52,12 +52,16 @@ import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 /**
  * LDAPLoginModule provides basic password based authentication using an LDAP directory.
  * @author suneet
  *
  */
+@Scope("prototype")
+@Component("ldapLoginModule")
 public class LDAPLoginModule extends AbstractLoginModule {
 
     private static final Log log = LogFactory.getLog(LDAPLoginModule.class);
@@ -119,10 +123,12 @@ public class LDAPLoginModule extends AbstractLoginModule {
 
     }
 
+    /*
     public void globalLogout(String securityDomain, String principal) {
         // TODO Auto-generated method stub
 
     }
+    */
 
     /*
      * (non-Javadoc)
@@ -532,6 +538,7 @@ public class LDAPLoginModule extends AbstractLoginModule {
      * @see org.openiam.idm.srvc.auth.spi.LoginModule#logout(java.lang.String,
      * java.lang.String, java.lang.String)
      */
+    /*
     public void logout(String securityDomain, String principal,
             String managedSysId) {
 
@@ -539,6 +546,7 @@ public class LDAPLoginModule extends AbstractLoginModule {
                 principal, null, null, null, null);
 
     }
+    */
 
     /* supporting methods */
 

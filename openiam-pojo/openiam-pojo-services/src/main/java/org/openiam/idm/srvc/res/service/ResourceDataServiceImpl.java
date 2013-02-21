@@ -14,7 +14,6 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.base.ws.exception.BasicDataServiceException;
-import org.openiam.dozer.DozerUtils;
 import org.openiam.dozer.converter.ResourceDozerConverter;
 import org.openiam.dozer.converter.ResourcePropDozerConverter;
 import org.openiam.dozer.converter.ResourceRoleDozerConverter;

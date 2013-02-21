@@ -50,17 +50,12 @@ public interface LoginModule {
 	 * @param principal
 	 * @param managedSysId
 	 */
-	void logout(String securityDomain, String principal, String managedSysId);
+	//void logout(String securityDomain, String principal, String managedSysId);
 	
 	/**
 	 * logs out the user associated with the principal from all applications
 	 * @param securityDomain
 	 * @param principal
 	 */
-	void globalLogout(String securityDomain, String principal);
-	
-	void setTokenModule(SSOTokenModule defaultToken);
-	void setLoginService(LoginDataService loginManager);
-	void setUserService(UserDataService userManager);
-	
+	//void globalLogout(String securityDomain, String principal);
 }

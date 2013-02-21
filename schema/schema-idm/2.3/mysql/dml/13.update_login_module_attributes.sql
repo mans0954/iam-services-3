@@ -1,0 +1,3 @@
+use openiam;
+
+UPDATE POLICY_ATTRIBUTE SET VALUE1='defaultLoginModule' WHERE POLICY_ATTR_ID=4108;

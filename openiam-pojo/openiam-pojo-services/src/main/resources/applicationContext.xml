@@ -57,11 +57,6 @@
 			</list>
 		</property>
 	</bean>
-	
-	<bean id="dozerUtils" class="org.openiam.dozer.DozerUtils">
-		<property name="deepMapper" ref="deepDozerMapper"/>
-		<property name="shallowMapper" ref="shallowDozerMapper"/>
-	</bean>
 
 	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
 		<property name="locations">
@@ -390,7 +385,7 @@
 				<!-- Audit log Maps -->
 				<!--<value>org/openiam/idm/srvc/auth/login/Login.hbm.xml</value>-->
 				<!--<value>org/openiam/idm/srvc/auth/login/LoginAttribute.hbm.xml</value>-->
-				<value>org/openiam/idm/srvc/auth/login/AuthState.hbm.xml</value>
+				<!--<value>org/openiam/idm/srvc/auth/login/AuthState.hbm.xml</value>-->
 				<!--  Policy Maps -->
 <!-- 				<value>org/openiam/idm/srvc/policy/service/Policy.hbm.xml</value> -->
 <!-- 				<value>org/openiam/idm/srvc/policy/service/PolicyAttribute.hbm.xml</value> -->

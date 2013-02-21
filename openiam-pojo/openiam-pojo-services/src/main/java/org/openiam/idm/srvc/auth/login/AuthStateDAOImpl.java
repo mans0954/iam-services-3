@@ -11,7 +11,7 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.openiam.core.dao.BaseDaoImpl;
-import org.openiam.idm.srvc.auth.dto.AuthState;
+import org.openiam.idm.srvc.auth.dto.AuthStateEntity;
 import org.springframework.stereotype.Repository;
 
 import static org.hibernate.criterion.Example.create;
@@ -23,7 +23,7 @@ import static org.hibernate.criterion.Example.create;
  * @author Suneet Shah
  */
 @Repository("authStateDAO")
-public class AuthStateDAOImpl extends BaseDaoImpl<AuthState, String> implements AuthStateDAO {
+public class AuthStateDAOImpl extends BaseDaoImpl<AuthStateEntity, String> implements AuthStateDAO {
 
 	@Override
 	protected String getPKfieldName() {
@@ -31,7 +31,7 @@ public class AuthStateDAOImpl extends BaseDaoImpl<AuthState, String> implements 
 	}
 
 	@Override
-	public void saveAuthState(final AuthState authState) {
+	public void saveAuthState(final AuthStateEntity authState) {
 		if(findById(authState.getUserId()) == null) {
 			save(authState);
 		} else {

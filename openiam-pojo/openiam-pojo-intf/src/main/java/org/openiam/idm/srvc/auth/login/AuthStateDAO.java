@@ -22,14 +22,14 @@
 package org.openiam.idm.srvc.auth.login;
 
 import org.openiam.core.dao.BaseDao;
-import org.openiam.idm.srvc.auth.dto.AuthState;
+import org.openiam.idm.srvc.auth.dto.AuthStateEntity;
 
 /**
  * DAO interface for AuthState.
  *
  * @author suneet
  */
-public interface AuthStateDAO extends BaseDao<AuthState, String> {
+public interface AuthStateDAO extends BaseDao<AuthStateEntity, String> {
 
-	public void saveAuthState(final AuthState authState);
+	public void saveAuthState(final AuthStateEntity authState);
 }
