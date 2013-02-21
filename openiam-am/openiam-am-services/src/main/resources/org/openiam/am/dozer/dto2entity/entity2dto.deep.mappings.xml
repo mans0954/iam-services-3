@@ -176,6 +176,10 @@
             <b>id</b>
         </field>
         <field>
+            <a>name</a>
+            <b>name</b>
+        </field>
+        <field>
             <a>pattern.id</a>
             <b>uriPatternId</b>
         </field>

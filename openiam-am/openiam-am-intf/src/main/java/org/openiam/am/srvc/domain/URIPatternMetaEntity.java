@@ -23,19 +23,29 @@ public class URIPatternMetaEntity implements Serializable {
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
     @Column(name = "URI_PATTERN_META_ID", length = 32, nullable = false)
 	private String id;
+    @Column(name = "URI_PATTERN_NAME", length = 100, nullable = false)
+    private String name;
 	
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name="URI_PATTERN_ID", referencedColumnName = "URI_PATTERN_ID")
 	private URIPatternEntity pattern;
-	
+
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name="URI_PATTERN_META_TYPE_ID", referencedColumnName = "URI_PATTERN_META_TYPE_ID")
 	private URIPatternMetaTypeEntity metaType;
 	
 	@OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "metaEntity")
 	private Set<URIPatternMetaValueEntity> metaValueSet;
-	
-	public String getId() {
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getId() {
 		return id;
 	}
 	

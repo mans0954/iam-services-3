@@ -306,6 +306,9 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
            || uriPatternMetaEntity.getPattern().getId()==null
            || uriPatternMetaEntity.getPattern().getId().trim().isEmpty())
             throw new NullPointerException("URI Pattern not set");
+        if(uriPatternMetaEntity.getName()==null
+           || uriPatternMetaEntity.getName().trim().isEmpty())
+            throw new  NullPointerException("URI Pattern Meta name not set");
         if(uriPatternMetaEntity.getMetaType()==null
            || uriPatternMetaEntity.getMetaType().getId()==null
            || uriPatternMetaEntity.getMetaType().getId().trim().isEmpty())

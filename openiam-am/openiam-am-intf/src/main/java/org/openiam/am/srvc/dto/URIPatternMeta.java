@@ -13,6 +13,7 @@ import java.util.Set;
 @XmlType(name = "URIPatternMeta", propOrder = {
         "id",
         "uriPatternId",
+        "name",
         "metaType",
         "metaValueSet"
 })
@@ -21,6 +22,7 @@ public class URIPatternMeta implements Serializable {
 
 	private String id;
 	private String uriPatternId;
+    private String name;
 	private URIPatternMetaType metaType;
 	private Set<URIPatternMetaValue> metaValueSet;
 	public String getId() {
@@ -35,7 +37,16 @@ public class URIPatternMeta implements Serializable {
 	public void setUriPatternId(String uriPatternId) {
 		this.uriPatternId = uriPatternId;
 	}
-	public URIPatternMetaType getMetaType() {
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public URIPatternMetaType getMetaType() {
 		return metaType;
 	}
 	public void setMetaType(URIPatternMetaType metaType) {

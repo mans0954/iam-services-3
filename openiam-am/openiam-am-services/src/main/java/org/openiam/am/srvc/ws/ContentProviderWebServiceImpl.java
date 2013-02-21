@@ -342,18 +342,23 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             if(uriPatternMeta.getUriPatternId()==null
                    || uriPatternMeta.getUriPatternId().trim().isEmpty())
                 throw new  BasicDataServiceException(ResponseCode.URI_PATTERN_NOT_SET);
+
+            if(uriPatternMeta.getName()==null
+               || uriPatternMeta.getName().trim().isEmpty())
+                throw new  BasicDataServiceException(ResponseCode.URI_PATTERN_META_NAME_NOT_SET);
+
             if(uriPatternMeta.getMetaType()==null
                || uriPatternMeta.getMetaType().getId()==null
                || uriPatternMeta.getMetaType().getId().trim().isEmpty())
                 throw new  BasicDataServiceException(ResponseCode.URI_PATTERN_META_TYPE_NOT_SET);
 
-            // checjk if meta data already exists
-            URIPatternMetaEntity example = uriPatternMetaDozerConverter.convertToEntity(uriPatternMeta,true);
-            example.setId(null);
-
-            Integer count = contentProviderService.getNumOfMetaData(example);
-            if(count>0)
-                throw new  BasicDataServiceException(ResponseCode.URI_PATTERN_META_EXISTS);
+//            // checjk if meta data already exists
+//            URIPatternMetaEntity example = uriPatternMetaDozerConverter.convertToEntity(uriPatternMeta,true);
+//            example.setId(null);
+//
+//            Integer count = contentProviderService.getNumOfMetaData(example);
+//            if(count>0)
+//                throw new  BasicDataServiceException(ResponseCode.URI_PATTERN_META_EXISTS);
 
 
             // check metadata values
