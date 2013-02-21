@@ -37,7 +37,6 @@ import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.BooleanResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.dozer.DozerUtils;
 import org.openiam.dozer.converter.GroupDozerConverter;
 import org.openiam.dozer.converter.RoleDozerConverter;
 import org.openiam.exception.AuthenticationException;
@@ -49,7 +48,7 @@ import org.openiam.idm.srvc.auth.context.AuthContextFactory;
 import org.openiam.idm.srvc.auth.context.AuthenticationContext;
 import org.openiam.idm.srvc.auth.context.PasswordCredential;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
-import org.openiam.idm.srvc.auth.dto.AuthState;
+import org.openiam.idm.srvc.auth.dto.AuthStateEntity;
 import org.openiam.idm.srvc.auth.dto.AuthenticationRequest;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginModuleSelector;
@@ -59,7 +58,6 @@ import org.openiam.idm.srvc.auth.login.AuthStateDAO;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.auth.spi.AbstractLoginModule;
 import org.openiam.idm.srvc.auth.spi.LoginModule;
-import org.openiam.idm.srvc.auth.spi.LoginModuleFactory;
 import org.openiam.idm.srvc.auth.sso.SSOTokenFactory;
 import org.openiam.idm.srvc.auth.sso.SSOTokenModule;
 import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
@@ -84,12 +82,18 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.script.ScriptFactory;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.util.encrypt.Cryptor;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 // import edu.emory.mathcs.backport.java.util.Arrays;
@@ -102,7 +106,7 @@ import org.springframework.stereotype.Service;
 @Service("authenticate")
 @WebService(endpointInterface = "org.openiam.idm.srvc.auth.service.AuthenticationService", targetNamespace = "urn:idm.openiam.org/srvc/auth/service", portName = "AuthenticationServicePort", serviceName = "AuthenticationService")
 @ManagedResource(objectName = "openiam:name=authenticationService", description = "Authentication Service")
-public class AuthenticationServiceImpl implements AuthenticationService {
+public class AuthenticationServiceImpl implements AuthenticationService, ApplicationContextAware, BeanFactoryAware {
 
 	@Autowired
     private AuthStateDAO authStateDao;
@@ -147,6 +151,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Autowired
     protected KeyManagementService keyManagementService;
+    
+    @Value("${org.openiam.core.login.login.module.default}")
+    private String defaultLoginModule;
+    
+    private ApplicationContext ctx;
+    private BeanFactory beanFactory;
 
     private static final Log log = LogFactory.getLog(AuthenticationServiceImpl.class);
 
@@ -323,7 +333,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             throw new NullPointerException("UserId is null");
         }
 
-        AuthState authSt = authStateDao.findById(userId);
+        AuthStateEntity authSt = authStateDao.findById(userId);
         if (authSt == null) {
             log.error("AuthState not found for userId=" + userId);
             throw new LogoutException();
@@ -366,7 +376,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             // AuthenticationException(AuthenticationConstants.RESULT_INVALID_DOMAIN);
             authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_DOMAIN);
             return authResp;
-
         }
 
         // Determine which login module to use
@@ -384,7 +393,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         // log.debug("loginModule=" + secDomain.getDefaultLoginModule());
 
-        if (StringUtils.equals(loginModName, "org.openiam.idm.srvc.auth.spi.DefaultLoginModule")) {
+        if (StringUtils.equals(loginModName, defaultLoginModule)) {
             /* Few basic checks must be met before calling the login module. */
             /* Simplifies the login module */
             if (StringUtils.isBlank(principal)) {
@@ -431,6 +440,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
             // check the user status - move to the abstract class for reuse
             userId = lg.getUserId();
+            
             user = userManager.getUser(userId);
         }
 
@@ -442,8 +452,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
             PolicyAttribute selPolicy = authPolicy
                     .getAttribute("LOGIN_MODULE_SEL_POLCY");
-            if (selPolicy != null && selPolicy.getValue1() != null
-                    && selPolicy.getValue1().length() > 0) {
+            if (selPolicy != null && StringUtils.isNotBlank(selPolicy.getValue1())) {
 
                 log.debug("Calling policy selection rule");
 
@@ -465,8 +474,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                     log.error(e);
                 }
 
-                log.debug("LoginModName from script =" + loginModName);
-
             } else {
                 log.debug("retrieving default login module for policy");
 
@@ -479,28 +486,23 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                  */
 
             }
-            log.debug("login module name=" + loginModName);
 
             if (modSel.getModuleType() == LoginModuleSelector.MODULE_TYPE_LOGIN_MODULE) {
-                loginModule = (AbstractLoginModule) LoginModuleFactory
-                        .createModule(loginModName);
-                /*
-                 * Dependency injection fails when we use our own factory. Set
-                 * the necessary beans directly
-                 */
-                loginModule.setLoginService(loginManager);
-                loginModule.setTokenModule(defaultToken);
-                loginModule.setUserService(userManager);
-                loginModule.setCryptor(cryptor);
+            	/* here for backward compatability. in case a groovy script returned an actual class name, get 
+            	 * the spring bean name
+            	 */
+            	try {
+            		loginModName = Class.forName(loginModName).getAnnotation(Component.class).value();
+            	} catch(Throwable e) {
+            		
+            	}
+            	
+                loginModule = beanFactory.getBean(loginModName, AbstractLoginModule.class); 
+                //loginModule = (AbstractLoginModule) LoginModuleFactory.createModule(loginModName);
                 loginModule.setSecurityDomain(secDomain);
-                loginModule.setAuditUtil(auditLogUtil);
                 loginModule.setUser(user);
                 loginModule.setLg(lg);
                 loginModule.setAuthPolicyId(authPolicyId);
-                loginModule.setResourceService(resourceService);
-                loginModule.setPasswordManager(passwordManager);
-                loginModule.setKeyManagementService(keyManagementService);
-                loginModule.setPolicyDataService(policyDataService);
             }
 
         } catch (Exception ie) {
@@ -570,7 +572,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 authResp.setAuthErrorCode(AuthenticationConstants.INTERNAL_ERROR);
                 authResp.setAuthErrorMessage(e.getMessage());
             }
-
         } else {
 
         }
@@ -583,6 +584,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         authResp.setSubject(sub);
         authResp.setStatus(ResponseStatus.SUCCESS);
+        
         return authResp;
     }
 
@@ -946,7 +948,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         }
 
-        AuthState authSt = authStateDao.findById(lg.getUserId());
+        AuthStateEntity authSt = authStateDao.findById(lg.getUserId());
         if (authSt != null) {
 
             if (authSt.getToken() == null
@@ -1069,7 +1071,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     private void updateAuthState(Subject sub) {
 
-        AuthState state = new AuthState(sub.getDomainId(), new BigDecimal(1),
+    	AuthStateEntity state = new AuthStateEntity(sub.getDomainId(), new BigDecimal(1),
                 sub.getSsoToken().getExpirationTime().getTime(), sub
                         .getSsoToken().getToken(), sub.getUserId());
 
@@ -1097,4 +1099,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         log.setNodeIP(nodeIP);
         auditLogUtil.log(log);
     }
+
+	@Override
+	public void setApplicationContext(ApplicationContext ctx)
+			throws BeansException {
+		this.ctx = ctx;
+	}
+
+	@Override
+	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+		this.beanFactory = beanFactory;
+	}
 }
