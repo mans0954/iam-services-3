@@ -11,7 +11,7 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.openiam.core.dao.BaseDaoImpl;
-import org.openiam.idm.srvc.auth.dto.AuthStateEntity;
+import org.openiam.idm.srvc.auth.domain.AuthStateEntity;
 import org.springframework.stereotype.Repository;
 
 import static org.hibernate.criterion.Example.create;

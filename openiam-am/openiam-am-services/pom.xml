@@ -163,6 +163,13 @@
             <groupId>org.mule.modules</groupId>
             <artifactId>mule-module-client</artifactId>
         </dependency>
+        
+		<dependency>
+            <groupId>org.openiam</groupId>
+            <artifactId>openiam-common-db-intf</artifactId>
+            <version>3.0.0</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
 </project>

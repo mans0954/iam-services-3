@@ -22,7 +22,7 @@
 package org.openiam.idm.srvc.auth.login;
 
 import org.openiam.core.dao.BaseDao;
-import org.openiam.idm.srvc.auth.dto.AuthStateEntity;
+import org.openiam.idm.srvc.auth.domain.AuthStateEntity;
 
 /**
  * DAO interface for AuthState.

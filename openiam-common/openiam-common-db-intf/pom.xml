@@ -2,24 +2,18 @@
 <project>
     <parent>
         <groupId>org.openiam</groupId>
-        <artifactId>openiam-pojo</artifactId>
+        <artifactId>openiam-common</artifactId>
         <version>3.0.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.openiam</groupId>
-    <artifactId>openiam-pojo-intf</artifactId>
-    <name>openiam-pojo-intf</name>
+    <artifactId>openiam-common-db-intf</artifactId>
+    <name>openiam-common-db-intf</name>
     <version>3.0.0</version>
-    <description>OpenIAM IDM Services Interfaces and DTOs</description>
+    <description>OpenIAM Common Module for Entities and DAOs</description>
 
     <build>
         <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <excludes>
-                    <exclude>**/*.properties</exclude>
-                </excludes>
-            </resource>
             <resource>
                 <directory>src/test/resources</directory>
                 <excludes>
@@ -112,18 +106,6 @@
             <version>${spring.version}</version>
         </dependency>
 
-
-        <dependency>
-            <groupId>javax.xml.bind</groupId>
-            <artifactId>jaxb-api</artifactId>
-            <version>${javax.xml.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>javax.xml.ws</groupId>
-            <artifactId>jaxws-api</artifactId>
-            <version>${javax.xml.version}</version>
-        </dependency>
-
         <dependency>
             <groupId>commons-collections</groupId>
             <artifactId>commons-collections</artifactId>
@@ -147,20 +129,6 @@
 			<artifactId>commons-lang</artifactId>
 			<version>2.3</version>
 		</dependency>
-
-        <dependency>
-            <groupId>org.codehaus.groovy</groupId>
-            <artifactId>groovy-all</artifactId>
-            <version>${groovy.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.openiam</groupId>
-            <artifactId>openiam-common-intf</artifactId>
-            <version>3.0.0</version>
-            <scope>compile</scope>
-        </dependency>
     </dependencies>
 
 </project>
