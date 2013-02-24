@@ -32,7 +32,6 @@ import org.openiam.idm.srvc.searchbean.converter.GroupSearchBeanConverter;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDAO;
-import org.openiam.idm.srvc.user.ws.UserListResponse;
 import org.openiam.util.DozerMappingType;
 
 import org.openiam.base.ws.Response;

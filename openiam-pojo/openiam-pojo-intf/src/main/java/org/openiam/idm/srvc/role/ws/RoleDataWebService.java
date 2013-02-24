@@ -9,7 +9,6 @@ import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.dto.RolePolicy;
 import org.openiam.idm.srvc.role.dto.UserRole;
-import org.openiam.idm.srvc.user.ws.UserListResponse;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;

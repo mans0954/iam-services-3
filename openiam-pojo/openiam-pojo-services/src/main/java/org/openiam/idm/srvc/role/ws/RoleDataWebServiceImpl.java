@@ -66,8 +66,6 @@ import org.openiam.idm.srvc.searchbean.converter.RoleSearchBeanConverter;
 import org.openiam.idm.srvc.secdomain.service.SecurityDomainDAO;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.user.ws.UserArrayResponse;
-import org.openiam.idm.srvc.user.ws.UserListResponse;
 import org.openiam.util.DozerMappingType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;

@@ -6,7 +6,6 @@ import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupAttribute;
-import org.openiam.idm.srvc.user.ws.UserListResponse;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
