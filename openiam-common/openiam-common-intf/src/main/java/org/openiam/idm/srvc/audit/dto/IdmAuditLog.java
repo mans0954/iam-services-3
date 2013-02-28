@@ -80,6 +80,7 @@ public class IdmAuditLog implements java.io.Serializable {
         this.principal = principal;
         this.linkedLogId = linkedLogId;
         this.clientId = clientId;
+        this.actionDatetime = new Date(System.currentTimeMillis());
     }
 
     public IdmAuditLogCustom getCustomRecord(int dislpayOrder,

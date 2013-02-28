@@ -12,6 +12,7 @@ import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.exception.data.DataException;
+import org.openiam.idm.srvc.audit.constant.CustomIdmAuditLogType;
 import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.dto.SearchAudit;
 import org.springframework.stereotype.Repository;
@@ -140,8 +141,12 @@ public class IdmAuditLogDAOImpl extends BaseDaoImpl<IdmAuditLogEntity, String>
     private Criteria getEventAboutPrincipalCriteria(List<String> principalList, Date startDate, Date endDate){
         Criterion dateRestriction = null;
         if(endDate!=null){
+            Calendar calendar = new GregorianCalendar();
+            calendar.setTime(endDate);
+            calendar.add(Calendar.DAY_OF_MONTH, 1);
+
             dateRestriction = Restrictions.and(Restrictions.ge("actionDatetime", startDate),
-                                               Restrictions.lt("actionDatetime", endDate));
+                                               Restrictions.lt("actionDatetime", calendar.getTime()));
         }  else{
             dateRestriction = Restrictions.ge("actionDatetime", startDate);
         }
@@ -152,9 +157,9 @@ public class IdmAuditLogDAOImpl extends BaseDaoImpl<IdmAuditLogEntity, String>
                 .createAlias("customRecords", "cr")
                 .add(Restrictions.and(dateRestriction,
                                       Restrictions.or(Restrictions.in("principal", principalList),
-                                                      Restrictions.and(Restrictions.and(Restrictions.eq("type", "0"),
-                                                                                        Restrictions.eq("dispayOrder", "3")),
-                                                                       Restrictions.in("value", principalList))
+                                                      Restrictions.and(Restrictions.and(Restrictions.eq("cr.type", CustomIdmAuditLogType.ATTRIB),
+                                                                                        Restrictions.eq("cr.dispayOrder", 3)),
+                                                                       Restrictions.in("cr.customValue", principalList))
                                       )
                 )
                 ).addOrder(Order.asc("actionDatetime"));

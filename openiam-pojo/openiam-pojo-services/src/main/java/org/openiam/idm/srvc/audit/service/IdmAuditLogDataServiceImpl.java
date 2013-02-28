@@ -39,6 +39,7 @@ public class IdmAuditLogDataServiceImpl implements IdmAuditLogDataService {
     private HashDigest hash;
     @Autowired
     protected LoginDataService loginManager;
+    @Autowired
     protected SysConfiguration sysConfiguration;
 
     private static final Log sysLog = LogFactory
