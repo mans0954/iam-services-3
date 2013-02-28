@@ -42,7 +42,7 @@
         </property>
     </bean>
 
-    <bean id="dto2entityShallowDozerMapper" class="org.dozer.DozerBeanMapper">
+    <bean id="idmDto2entityShallowDozerMapper" class="org.dozer.DozerBeanMapper">
         <property name="mappingFiles">
             <list>
                 <value>org/openiam/idm/srvc/dozer/dto2entity/entity2dto.common.mappings.xml</value>
@@ -51,7 +51,7 @@
         </property>
     </bean>
 
-    <bean id="dto2entityDeepDozerMapper" class="org.dozer.DozerBeanMapper">
+    <bean id="idmDto2entityDeepDozerMapper" class="org.dozer.DozerBeanMapper">
         <property name="mappingFiles">
             <list>
                 <value>org/openiam/idm/srvc/dozer/dto2entity/entity2dto.common.mappings.xml</value>

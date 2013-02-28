@@ -3,7 +3,7 @@
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="http://dozer.sourceforge.net
           http://dozer.sourceforge.net/schema/beanmapping.xsd">
-	<!-- This file "depends" on mappings in pojo-services -->
+	<!-- This file "depends" on mappings in idm-services -->
 	<mapping>
 	</mapping>
 </mappings>

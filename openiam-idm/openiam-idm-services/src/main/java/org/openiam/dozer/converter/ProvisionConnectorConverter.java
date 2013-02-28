@@ -1,5 +1,6 @@
 package org.openiam.dozer.converter;
 
+import org.openiam.dozer.AbstractIdmDozerEntityConverter;
 import org.openiam.idm.srvc.mngsys.domain.ProvisionConnectorEntity;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
 import org.springframework.stereotype.Component;
@@ -7,7 +8,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component("provisionConnectorConverter")
-public class ProvisionConnectorConverter extends AbstractDozerEntityConverter<ProvisionConnectorDto, ProvisionConnectorEntity> {
+public class ProvisionConnectorConverter extends AbstractIdmDozerEntityConverter<ProvisionConnectorDto, ProvisionConnectorEntity> {
 
     @Override
     public ProvisionConnectorEntity convertEntity(ProvisionConnectorEntity userEntity, boolean isDeep) {
