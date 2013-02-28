@@ -20,15 +20,16 @@
  */
 package org.openiam.idm.srvc.audit.ws;
 
-import java.util.Date;
-import java.util.List;
-import javax.jws.WebService;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.dto.SearchAudit;
 import org.openiam.idm.srvc.audit.service.IdmAuditLogDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.jws.WebService;
+import java.util.Date;
+import java.util.List;
 
 /**
  * @author suneet
@@ -110,31 +111,41 @@ public class IdmAuditLogWebDataServiceImpl implements IdmAuditLogWebDataService 
      * .idm.srvc.audit.dto.SearchAudit)
      */
     public IdmAuditLogListResponse search(SearchAudit search) {
+        return searchEvents(search, -1, -1);
+    }
+
+    public IdmAuditLogListResponse searchEvents(SearchAudit search, Integer from, Integer size){
         IdmAuditLogListResponse resp = new IdmAuditLogListResponse(
                 ResponseStatus.SUCCESS);
-        List<IdmAuditLog> logList = auditDataService.search(search);
+        List<IdmAuditLog> logList = auditDataService.search(search,from, size);
         if (logList != null) {
             resp.setLogList(logList);
-            ;
+        } else {
+            resp.setStatus(ResponseStatus.FAILURE);
+        }
+        return resp;
+    }
+    public Integer countEvents(SearchAudit search){
+        return auditDataService.countEvents(search);
+    }
+
+    public IdmAuditLogListResponse eventsAboutUser(String principal, Date startDate) {
+        return searchEventsAboutUser(principal, startDate, null, -1,-1);
+    }
+    public IdmAuditLogListResponse searchEventsAboutUser(String principal, Date startDate, Date endDate, Integer from, Integer size){
+        IdmAuditLogListResponse resp = new IdmAuditLogListResponse(
+                ResponseStatus.SUCCESS);
+        List<IdmAuditLog> logList = auditDataService.eventsAboutUser(principal, startDate, endDate, from, size);
+        if (logList != null) {
+            resp.setLogList(logList);
         } else {
             resp.setStatus(ResponseStatus.FAILURE);
         }
         return resp;
     }
 
-    public IdmAuditLogListResponse eventsAboutUser(String principal,
-            Date startDate) {
-        IdmAuditLogListResponse resp = new IdmAuditLogListResponse(
-                ResponseStatus.SUCCESS);
-        List<IdmAuditLog> logList = auditDataService.eventsAboutUser(principal,
-                startDate);
-        if (logList != null) {
-            resp.setLogList(logList);
-            ;
-        } else {
-            resp.setStatus(ResponseStatus.FAILURE);
-        }
-        return resp;
+    public Integer countEventsAboutUser(String principal, Date startDate, Date endDate){
+        return auditDataService.countEventsAboutUser(principal, startDate, endDate);
     }
 
     public IdmAuditLogDataService getAuditDataService() {

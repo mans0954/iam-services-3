@@ -99,33 +99,64 @@ public class IdmAuditLogDataServiceImpl implements IdmAuditLogDataService {
      * @return
      */
     public List<IdmAuditLog> search(SearchAudit search) {
+        return search(search, -1, -1);
+    }
+
+    public List<IdmAuditLog> search(SearchAudit search, Integer from, Integer size) {
         return idmAuditLogDozerConverter.convertToDTOList(
-                idmAuditLogDAO.search(search), true);
+                idmAuditLogDAO.search(search, from, size), true);
+    }
+
+    public Integer countEvents(SearchAudit search){
+        return  idmAuditLogDAO.countEvents(search);
     }
 
     public List<IdmAuditLog> eventsAboutUser(String principal, Date startDate) {
+        return eventsAboutUser(principal, startDate, null);
+    }
 
-        LoginEntity l = loginManager.getLoginByManagedSys(
-                sysConfiguration.getDefaultSecurityDomain(), principal,
-                sysConfiguration.getDefaultManagedSysId());
+    public List<IdmAuditLog> eventsAboutUser(String principal, Date startDate, Date endDate) {
+        return eventsAboutUser(principal, startDate, endDate, -1,-1);
+    }
+    public List<IdmAuditLog> eventsAboutUser(String principal, Date startDate, Date endDate, Integer from, Integer size) {
+
+        LoginEntity l = loginManager.getLoginByManagedSys(sysConfiguration.getDefaultSecurityDomain(), principal,
+                                                          sysConfiguration.getDefaultManagedSysId());
 
         if (l == null) {
             return null;
         }
 
-        List<LoginEntity> principalList = loginManager.getLoginByUser(l
-                .getUserId());
-
+        List<LoginEntity> principalList = loginManager.getLoginByUser(l.getUserId());
         if (principalList == null || principalList.isEmpty()) {
             return null;
         }
 
         List<String> principalListAsStr = getListOfPrincipals(principalList);
 
-        return idmAuditLogDozerConverter.convertToDTOList(idmAuditLogDAO
-                .findEventsAboutIdentityList(principalListAsStr, startDate),
-                true);
+        return idmAuditLogDozerConverter.convertToDTOList(idmAuditLogDAO.findEventsAboutIdentityList(principalListAsStr, startDate, endDate, from, size),
+                                                          true);
+    }
 
+    public Integer countEventsAboutUser(String principal, Date startDate){
+        return countEventsAboutUser(principal, startDate, null);
+    }
+
+    public Integer countEventsAboutUser(String principal, Date startDate, Date endDate){
+        LoginEntity l = loginManager.getLoginByManagedSys(sysConfiguration.getDefaultSecurityDomain(), principal,
+                                                          sysConfiguration.getDefaultManagedSysId());
+
+        if (l == null) {
+            return 0;
+        }
+
+        List<LoginEntity> principalList = loginManager.getLoginByUser(l.getUserId());
+        if (principalList == null || principalList.isEmpty()) {
+            return 0;
+        }
+        List<String> principalListAsStr = getListOfPrincipals(principalList);
+
+        return idmAuditLogDAO.countEventsAboutIdentity(principalListAsStr, startDate, endDate);
     }
 
     private List<String> getListOfPrincipals(List<LoginEntity> principalList) {
