@@ -23,30 +23,13 @@ import java.util.List;
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/auth/service", name = "LoginDataWebService")
 public interface LoginDataWebService {
 
-    /**
-     * This method adds a login to the user specified in the Login object.. <br>
-     * For example:
-     * <p/>
-     * <code>
-     * Login lv = new Login();<br>
-     * lv.setLogin(login);<br>
-     * lv.setPassword(password);<br>
-     * lv.setService(service);<br>
-     * lv.setNewUser(true);<br>
-     * loginDataService.addLogin(lv);<br>
-     * </code>
-     *
-     * @param principal
-     */
     @WebMethod
-    public LoginResponse addLogin(
+    public Response saveLogin(
             @WebParam(name = "principal", targetNamespace = "")
             Login principal);
-
+    
     @WebMethod
-    public Response updateLogin(
-            @WebParam(name = "principal", targetNamespace = "")
-            Login principal);
+    public Response deleteLogin( @WebParam(name = "loginId", targetNamespace = "") String loginId);
 
     @WebMethod
     public Response removeLogin(
@@ -85,6 +68,9 @@ public interface LoginDataWebService {
             @WebParam(name = "userId", targetNamespace = "")
             String userId);
 
+    @WebMethod
+    public Login findById(@WebParam(name = "loginId", targetNamespace = "") String loginId);
+    
     @WebMethod
     public List<Login> findBeans(
             @WebParam(name = "searchBean", targetNamespace = "") LoginSearchBean searchBean, Integer from, Integer size);

@@ -1,9 +1,12 @@
 package org.openiam.idm.srvc.auth.ws;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.Response;
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.base.ws.exception.BasicDataServiceException;
 import org.openiam.dozer.converter.LoginDozerConverter;
 import org.openiam.exception.AuthenticationException;
 import org.openiam.idm.searchbeans.LoginSearchBean;
@@ -15,6 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.jws.WebMethod;
+import javax.jws.WebParam;
 import javax.jws.WebService;
 import java.util.Date;
 import java.util.List;
@@ -35,20 +40,46 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	
 	private static final Log log = LogFactory.getLog(LoginDataWebServiceImpl.class);
 	
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#addLogin(org.openiam.idm.srvc.auth.dto.Login)
-	 */
-	public LoginResponse addLogin(Login principal) {
-		LoginResponse resp = new LoginResponse(ResponseStatus.SUCCESS);
-		final LoginEntity entity = loginDozerConverter.convertToEntity(principal, false);
-		loginDS.addLogin(entity);
-		if (entity == null ) {
+	@Override
+	public Response saveLogin(final Login principal) {
+		final LoginResponse resp = new LoginResponse(ResponseStatus.SUCCESS);
+		try {
+			if(principal == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			if(StringUtils.isBlank(principal.getManagedSysId()) ||
+			   StringUtils.isBlank(principal.getDomainId()) || 
+			   StringUtils.isBlank(principal.getLogin())) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			final LoginEntity currentEntity = loginDS.getLoginByManagedSys(principal.getDomainId(), principal.getLogin(), principal.getManagedSysId());
+			if(currentEntity != null) {
+				if(StringUtils.isBlank(principal.getLoginId())) {
+					throw new BasicDataServiceException(ResponseCode.LOGIN_EXISTS);
+				} else if(!principal.getLoginId().equals(currentEntity.getLoginId())) {
+					throw new BasicDataServiceException(ResponseCode.LOGIN_EXISTS);
+				}
+			}
+			
+			final LoginEntity entity = loginDozerConverter.convertToEntity(principal, true);
+			if(StringUtils.isNotBlank(entity.getLoginId())) {
+				loginDS.mergeLogin(entity);
+			} else {
+				loginDS.addLogin(entity);
+			}
+			resp.setResponseValue(entity.getLoginId());
+		} catch(BasicDataServiceException e) {
+			log.warn(String.format("Error while saving login: %s", e.getMessage()));
+			resp.setErrorCode(e.getCode());
 			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setPrincipal(loginDozerConverter.convertToDTO(entity, false)); 
+		} catch(Throwable e) {
+			resp.setStatus(ResponseStatus.FAILURE);
+			resp.setErrorCode(ResponseCode.INTERNAL_ERROR);
+			log.error("Error while saving login", e);
 		}
 		return resp;
-		
 	}
 
 	/* (non-Javadoc)
@@ -255,16 +286,6 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 		return resp;
 		
 	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#updateLogin(org.openiam.idm.srvc.auth.dto.Login)
-	 */
-	public Response updateLogin(Login principal) {
-		final LoginResponse resp = new LoginResponse(ResponseStatus.SUCCESS);
-		final LoginEntity entity = loginDozerConverter.convertToEntity(principal, false);
-		loginDS.updateLogin(entity);
-		return resp;
-	}
 	
 	public Response isPasswordEq( 
 			String domainId, String principal, 
@@ -319,7 +340,14 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 		}
 		return resp;
 	}
+	
+	@Override
+	public Login findById(final String loginId) {
+		final LoginEntity entity = loginDS.getLogin(loginId);
+		return (entity != null) ? loginDozerConverter.convertToDTO(entity, true) : null;
+	}
 
+	@Override
     public List<Login> findBeans(LoginSearchBean searchBean, Integer from, Integer size){
         return loginDozerConverter.convertToDTOList(loginDS.findBeans(searchBean, from, size), false);
     }
@@ -415,4 +443,25 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 		}
 		return resp;
     }
+
+	@Override
+	public Response deleteLogin(final String loginId) {
+		final LoginResponse resp = new LoginResponse(ResponseStatus.SUCCESS);
+		try {
+			if(StringUtils.isBlank(loginId)) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			loginDS.deleteLogin(loginId);
+		} catch(BasicDataServiceException e) {
+			log.warn(String.format("Error while saving login: %s", e.getMessage()));
+			resp.setErrorCode(e.getCode());
+			resp.setStatus(ResponseStatus.FAILURE);
+		} catch(Throwable e) {
+			resp.setStatus(ResponseStatus.FAILURE);
+			resp.setErrorCode(ResponseCode.INTERNAL_ERROR);
+			log.error("Error while saving login", e);
+		}
+		return resp;
+	}
 }

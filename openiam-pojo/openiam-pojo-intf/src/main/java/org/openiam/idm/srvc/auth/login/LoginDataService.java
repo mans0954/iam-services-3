@@ -21,9 +21,13 @@ import java.util.List;
 public interface LoginDataService {
 
     public void addLogin(LoginEntity principal);
+    
+    public void mergeLogin(final LoginEntity principal);
 
     public void updateLogin(LoginEntity principal);
 
+    public void deleteLogin(final String loginId);
+    
     public void removeLogin(String domainId, String principal, String managedSysId);
     
     public LoginEntity getLogin(final String loginId);

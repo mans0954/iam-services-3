@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.auth.login;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.SysConfiguration;
@@ -30,6 +31,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.jws.WebService;
+
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -206,7 +209,17 @@ public class LoginDataServiceImpl implements LoginDataService {
     }
 
     public List<LoginEntity> findBeans(LoginSearchBean searchBean, Integer from, Integer size){
-       return loginSearchDAO.find(from, size, null, searchBean);
+    	List<LoginEntity> retVal = null;
+    	if(StringUtils.isNotEmpty(searchBean.getKey())) {
+    		final LoginEntity entity = loginDao.findById(searchBean.getKey());
+    		if(entity != null) {
+    			retVal = new ArrayList<LoginEntity>();
+    			retVal.add(entity);
+    		}
+    	} else {
+    		retVal = loginSearchDAO.find(from, size, null, searchBean);
+    	}
+    	return retVal;
     }
 
     /**
@@ -546,5 +559,19 @@ public class LoginDataServiceImpl implements LoginDataService {
 	@Override
 	public LoginEntity getLogin(final String loginId) {
 		return loginDao.findById(loginId);
+	}
+
+	@Override
+	public void deleteLogin(String loginId) {
+		loginAttrDao.deleteByLoginId(loginId);
+		final LoginEntity entity = loginDao.findById(loginId);
+		if(entity != null) {
+			loginDao.delete(entity);
+		}
+	}
+
+	@Override
+	public void mergeLogin(LoginEntity principal) {
+		loginDao.merge(principal);
 	}
 }

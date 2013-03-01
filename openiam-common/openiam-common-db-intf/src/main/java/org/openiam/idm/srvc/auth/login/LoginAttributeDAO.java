@@ -8,4 +8,5 @@ import java.util.List;
 
 public interface LoginAttributeDAO extends BaseDao<LoginAttributeEntity, String> {
 
+	public void deleteByLoginId(final String loginId);
 }
