@@ -1,5 +1,7 @@
 package org.openiam.am.srvc.ws;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.domain.ContentProviderEntity;
@@ -88,23 +90,34 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
 //            UNIQUE KEY `UNIQUE_CP_NAME` (`CONTENT_PROVIDER_NAME`),
 //            UNIQUE KEY `UNIQUE_CP_PATTERN` (`DOMAIN_PATTERN`,`IS_SSL`,`CONTEXT_PATH`),
 
-            ContentProviderSearchBean searchBean = new ContentProviderSearchBean();
+            final ContentProviderSearchBean searchBean = new ContentProviderSearchBean();
             searchBean.setProviderName(provider.getName());
+            final List<ContentProvider> cpEntityWithNameList = findBeans(searchBean, new Integer(0), Integer.MAX_VALUE);
+            if(CollectionUtils.isNotEmpty(cpEntityWithNameList)) {
+            	if(StringUtils.isBlank(provider.getId())) {
+            		throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_WITH_NAME_EXISTS);
+            	} else {
+            		for(final ContentProvider test : cpEntityWithNameList) {
+            			if(!StringUtils.equals(provider.getId(), test.getId())) {
+            				throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_WITH_NAME_EXISTS);
+            			}
+            		}
+            	}
+            }
 
-            Integer count = getNumOfContentProviders(searchBean);
-            if(count>0)
-                throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_WITH_NAME_EXISTS);
-
-            searchBean.setProviderName(null);
-            searchBean.setDomainPattern(provider.getDomainPattern());
-            searchBean.setContextPath(provider.getContextPath());
-            searchBean.setSSL(provider.getIsSSL());
-
-            List<ContentProviderEntity> result = contentProviderService.getProviderByDomainPattern(
-                    provider.getDomainPattern(), provider.getContextPath(), provider.getIsSSL());
-            if(result!=null && !result.isEmpty())
-                throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_DOMAIN_PATTERN_EXISTS);
-
+            final List<ContentProviderEntity> result = contentProviderService.getProviderByDomainPattern(
+                    provider.getDomainPattern(), provider.getIsSSL());
+            if(CollectionUtils.isNotEmpty(result)) {
+            	if(StringUtils.isBlank(provider.getId())) {
+            		throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_DOMAIN_PATTERN_EXISTS);
+            	} else {
+            		for(final ContentProviderEntity test : result) {
+            			if(!StringUtils.equals(provider.getId(), test.getId())) {
+            				throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_DOMAIN_PATTERN_EXISTS);
+            			}
+            		}
+            	}
+            }
 
             ContentProviderEntity entity = contentProviderService.saveContentProvider(contentProviderDozerConverter.convertToEntity(provider,true));
             response.setResponseValue(contentProviderDozerConverter.convertToDTO(entity, true));

@@ -59,18 +59,12 @@ public class ContentProviderTree {
 	}
 	
 	private String getKey(final ContentProvider cp) {
-		return getKey(cp.getDomainPattern(), cp.getContextPath());
+		return cp.getDomainPattern();
 	}
 	
 	private String getKey(final URI uri) {
 		final String domain = uri.getHost();
-		final String[] slashNodes = StringUtils.split(uri.getPath(), "/");
-		final String contextPath = slashNodes.length > 0 ? slashNodes[0] : null;
-		return getKey(domain, contextPath);
-	}
-	
-	private String getKey(final String domain, final String path) {
-		return String.format("%s:%s", domain, path);
+		return uri.getHost();
 	}
 	
 	@Override

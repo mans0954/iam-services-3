@@ -67,9 +67,8 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
     }
 
     @Override
-    public List<ContentProviderEntity> getProviderByDomainPattern(String domainPattern, String contextPath,
-                                                                  Boolean isSSL) {
-        return  contentProviderDao.getProviderByDomainPattern(domainPattern, contextPath, isSSL);
+    public List<ContentProviderEntity> getProviderByDomainPattern(String domainPattern, Boolean isSSL) {
+        return  contentProviderDao.getProviderByDomainPattern(domainPattern, isSSL);
     }
 
     @Override
@@ -117,7 +116,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
             entity.setMinAuthLevel(authLevel);
             entity.setIsPublic(provider.getIsPublic());
             entity.setIsSSL(provider.getIsSSL());
-            entity.setContextPath(provider.getContextPath());
+            /*entity.setContextPath(provider.getContextPath());*/
             entity.setPatternSet(null);
             entity.setServerSet(null);
 

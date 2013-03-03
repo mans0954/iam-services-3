@@ -49,5 +49,5 @@ public interface ContentProviderService {
     List<URIPatternMetaTypeEntity> getAllMetaType();
 
 
-    List<ContentProviderEntity> getProviderByDomainPattern(String domainPattern, String contextPath, Boolean isSSL);
+    List<ContentProviderEntity> getProviderByDomainPattern(String domainPattern, Boolean isSSL);
 }

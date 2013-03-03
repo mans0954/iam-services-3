@@ -12,3 +12,4 @@ dml/5.microsoft_auth_attributes.sql
 dml/6.create_content_provider_menus.sql
 ddl/8.alter_uri_pattern_meta_table.sql
 dml/7.set_am_attribute_default_values.sql
+ddl/9.drop_context_path.sql
