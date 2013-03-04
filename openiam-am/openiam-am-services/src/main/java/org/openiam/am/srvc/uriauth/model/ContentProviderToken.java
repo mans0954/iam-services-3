@@ -7,7 +7,7 @@ public class ContentProviderToken {
 
 	private String domain;
 	private Boolean isSSL;
-	private String contextPath;
+	/*private String contextPath;*/
 	
 	
 	public ContentProviderToken(final ContentProviderNode node) {
@@ -19,7 +19,7 @@ public class ContentProviderToken {
 	public ContentProviderToken(final ContentProvider contentProvider) {
 		this.domain = StringUtils.lowerCase(StringUtils.trimToNull(contentProvider.getDomainPattern()));
 		this.isSSL = contentProvider.getIsSSL();
-		this.contextPath = StringUtils.trimToNull(contentProvider.getContextPath());
+		//this.contextPath = StringUtils.trimToNull(contentProvider.getContextPath());
 	}
 
 	public String getDomain() {
@@ -30,16 +30,20 @@ public class ContentProviderToken {
 		return isSSL;
 	}
 	
+	/*
 	public String getContextPath() {
 		return contextPath;
 	}
+	*/
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
+		/*
 		result = prime * result
 				+ ((contextPath == null) ? 0 : contextPath.hashCode());
+		*/
 		result = prime * result + ((domain == null) ? 0 : domain.hashCode());
 		result = prime * result + ((isSSL == null) ? 0 : isSSL.hashCode());
 		return result;
@@ -54,11 +58,13 @@ public class ContentProviderToken {
 		if (getClass() != obj.getClass())
 			return false;
 		ContentProviderToken other = (ContentProviderToken) obj;
+		/*
 		if (contextPath == null) {
 			if (other.contextPath != null)
 				return false;
 		} else if (!contextPath.equals(other.contextPath))
 			return false;
+		*/
 		if (domain == null) {
 			if (other.domain != null)
 				return false;
@@ -75,8 +81,8 @@ public class ContentProviderToken {
 	@Override
 	public String toString() {
 		return String.format(
-				"ContentProviderToken [domain=%s, isSSL=%s, contextPath=%s]",
-				domain, isSSL, contextPath);
+				"ContentProviderToken [domain=%s, isSSL=%s]",
+				domain, isSSL);
 	}
 
 	

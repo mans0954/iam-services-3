@@ -24,13 +24,13 @@ public class ContentProviderTreeTest {
 	@Test
 	public void testSSLComparisons() throws URISyntaxException {
 		final Map<URI, ContentProvider> cpMap = new HashMap<URI, ContentProvider>();
-		cpMap.put(new URI("https://www.google.com/foo/bar.html"), getContentProvider("www.google.com", "foo", Boolean.TRUE));
-		cpMap.put(new URI("https://google.com/foo/bar.html"), getContentProvider("google.com", "foo", Boolean.TRUE));
-		cpMap.put(new URI("http://www.google.com/foo/bar.html"), getContentProvider("www.google.com", "foo", Boolean.FALSE));
-		cpMap.put(new URI("http://google.com/foo/bar.html"), getContentProvider("google.com", "foo", Boolean.FALSE));
-		cpMap.put(new URI("http://www.foobar.com/foo/bar.html"), getContentProvider("www.foobar.com", "foo", Boolean.FALSE));
-		cpMap.put(new URI("https://www.foobar.com/foo/bar.html"), getContentProvider("www.foobar.com", "foo", Boolean.TRUE));
-		final ContentProvider sslIgnorantCP = getContentProvider("www.dontcare.com", "foo", null);
+		cpMap.put(new URI("https://www.google.com/foo/bar.html"), getContentProvider("www.google.com", Boolean.TRUE));
+		cpMap.put(new URI("https://google.com/foo/bar.html"), getContentProvider("google.com", Boolean.TRUE));
+		cpMap.put(new URI("http://www.google.com/foo/bar.html"), getContentProvider("www.google.com", Boolean.FALSE));
+		cpMap.put(new URI("http://google.com/foo/bar.html"), getContentProvider("google.com", Boolean.FALSE));
+		cpMap.put(new URI("http://www.foobar.com/foo/bar.html"), getContentProvider("www.foobar.com", Boolean.FALSE));
+		cpMap.put(new URI("https://www.foobar.com/foo/bar.html"), getContentProvider("www.foobar.com", Boolean.TRUE));
+		final ContentProvider sslIgnorantCP = getContentProvider("www.dontcare.com", null);
 		cpMap.put(new URI("https://www.dontcare.com/foo/bar.html"), sslIgnorantCP);
 		cpMap.put(new URI("http://www.dontcare.com/foo/bar.html"), sslIgnorantCP);
 		
@@ -44,7 +44,7 @@ public class ContentProviderTreeTest {
 			}
 		}
 		
-		tree.addContentProvider(getContentProvider("google.com", "foo", null));
+		tree.addContentProvider(getContentProvider("google.com", null));
 		for(final URI uri : cpMap.keySet()) {
 			final ContentProvider cp = cpMap.get(uri);
 			final ContentProviderNode node = tree.find(uri);
@@ -53,11 +53,11 @@ public class ContentProviderTreeTest {
 		}
 	}
 	
-	private ContentProvider getContentProvider(final String domain,final String contextPath, final Boolean isSSL) {
+	private ContentProvider getContentProvider(final String domain,final Boolean isSSL) {
 		final ContentProvider cp = new ContentProvider();
 		cp.setDomainPattern(domain);
 		cp.setIsSSL(isSSL);
-		cp.setContextPath(contextPath);
+		/*cp.setContextPath(contextPath);*/
 		cp.setId(RandomStringUtils.randomAlphabetic(5));
 		cp.setResourceId(RandomStringUtils.randomAlphabetic(5));
 		return cp;

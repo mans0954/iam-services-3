@@ -190,13 +190,15 @@ public class AuthResourceAttributeServiceImpl implements AuthResourceAttributeSe
                 return resultList;
             }
             // get default identity object
+            final UserEntity user = getUserObject(userId);
+            
             EnumMap<AmAttributes, Object> objectMap = new EnumMap<AmAttributes, Object>(AmAttributes.class);
             objectMap.put(AmAttributes.Login, getLoginObject(userId, provider.getManagedSysId()));
             objectMap.put(AmAttributes.User, getUserObject(userId));
             Map<String, UserAttributeEntity> userAttributeEntityMap = userManager.getAllAttributes(userId);
 
             for (AuthResourceAttributeMapEntity attr : attributeMapList) {
-                resultList.add(parseAttribute(attr, userAttributeEntityMap, objectMap));
+                resultList.add(parseAttribute(user, attr, userAttributeEntityMap, objectMap));
             }
         } catch (Throwable ex) {
             resultList.clear();
@@ -233,7 +235,10 @@ public class AuthResourceAttributeServiceImpl implements AuthResourceAttributeSe
     }
 
 
-    private SSOAttribute parseAttribute(AuthResourceAttributeMapEntity attr, Map<String, UserAttributeEntity> userAttributeEntityMap, EnumMap<AmAttributes, Object> objectMap) throws Exception {
+    private SSOAttribute parseAttribute(final UserEntity user,
+    									final AuthResourceAttributeMapEntity attr, 
+    									final Map<String, UserAttributeEntity> userAttributeEntityMap, 
+    									final EnumMap<AmAttributes, Object> objectMap) throws Exception {
         SSOAttribute attribute = new SSOAttribute();
 
         String attrValue = "";
@@ -241,7 +246,7 @@ public class AuthResourceAttributeServiceImpl implements AuthResourceAttributeSe
             attrValue = attr.getAttributeValue();
         } else if(attr.getAmPolicyUrl()!=null){
             // TODO: run external groovy script
-            attrValue = executeGroovyScript(userAttributeEntityMap,attr.getAmPolicyUrl());
+            attrValue = executeGroovyScript(user, userAttributeEntityMap,attr.getAmPolicyUrl());
         } else{
             attrValue = authAttributeProcessor.process(attr.getAmAttributeId(), objectMap);
         }
@@ -251,22 +256,23 @@ public class AuthResourceAttributeServiceImpl implements AuthResourceAttributeSe
         return attribute;
     }
 
-    private String executeGroovyScript(Map<String, UserAttributeEntity> userAttributeEntityMap, String amPolicyUrl) {
+    private String executeGroovyScript(final UserEntity user, final Map<String, UserAttributeEntity> userAttributeEntityMap, String amPolicyUrl) {
         String result="";
         if(this.scriptEngine!=null && !this.scriptEngine.trim().isEmpty()){
             try {
-                if(userAttributeEntityMap!=null && !userAttributeEntityMap.isEmpty()){
+ //               if(userAttributeEntityMap!=null && !userAttributeEntityMap.isEmpty()){
                     ScriptIntegration se = ScriptFactory.createModule(this.scriptEngine);
                     Map<String, Object> bindingMap = new HashMap<String, Object>();
                     bindingMap.put("userAttributeMap", userAttributeEntityMap);
                     bindingMap.put("applicationContext",applicationContext);
+                    bindingMap.put("user", user);
 
                     if(!amPolicyUrl.startsWith("/"))
                         amPolicyUrl="/"+amPolicyUrl;
                     AuthResourceAttributeMapper mapper = (AuthResourceAttributeMapper) se.instantiateClass(null, amPolicyUrl);
                     mapper.init(bindingMap);
                     result=mapper.mapAttribute();
-                }
+                //}
             } catch (Exception e) {
                 log.error(e.getMessage(),e);
             }

@@ -44,8 +44,10 @@ public class ContentProviderEntity implements Serializable {
 	@Type(type = "yes_no")
 	private Boolean isSSL;
 
+	/*
     @Column(name = "CONTEXT_PATH", nullable = false)
     private String contextPath;
+    */
 
     @Column(name = "RESOURCE_ID", length = 32, nullable = false)
     private String resourceId;
@@ -140,6 +142,7 @@ public class ContentProviderEntity implements Serializable {
         this.resourceId = resourceId;
     }
 
+    /*
     public String getContextPath() {
         return contextPath;
     }
@@ -147,6 +150,7 @@ public class ContentProviderEntity implements Serializable {
     public void setContextPath(String contextPath) {
         this.contextPath = contextPath;
     }
+    */
 
     @Override
 	public int hashCode() {
@@ -157,8 +161,10 @@ public class ContentProviderEntity implements Serializable {
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + (isPublic ? 1231 : 1237);
 		result = prime * result + ((isSSL == null) ? 0 : isSSL.hashCode());
+		/*
         result = prime * result
                  + ((contextPath == null) ? 0 : contextPath.hashCode());
+		*/
 		result = prime * result
 				+ ((minAuthLevel == null) ? 0 : minAuthLevel.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
@@ -181,11 +187,13 @@ public class ContentProviderEntity implements Serializable {
 				return false;
 		} else if (!domainPattern.equals(other.domainPattern))
 			return false;
+		/*
         if (contextPath == null) {
             if (other.contextPath != null)
                 return false;
         } else if (!contextPath.equals(other.contextPath))
             return false;
+		*/
 		if (id == null) {
 			if (other.id != null)
 				return false;
