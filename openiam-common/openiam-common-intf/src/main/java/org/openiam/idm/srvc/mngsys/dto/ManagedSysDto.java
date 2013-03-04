@@ -20,7 +20,7 @@ import java.util.Set;
  * managed by the IDM system. Managed Resource can also be forms
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "ManagedSys", propOrder = {
+@XmlType(name = "ManagedSysDto", propOrder = {
     "managedSysId",
     "name",
     "description",
@@ -47,14 +47,14 @@ import java.util.Set;
     "deleteHandler",
     "passwordHandler",
     "suspendHandler",
-    "handler1",
-    "handler2",
-    "handler3",
-    "handler4",
+    "searchHandler",
+    "lookupHandler",
+    "testConnectionHandler",
+    "reconcileResourceHandler",
     "handler5"
 })
 @DozerDTOCorrespondence(ManagedSysEntity.class)
-public class ManagedSys implements java.io.Serializable {
+public class ManagedSysDto implements java.io.Serializable {
 
 	/**
 	 * 
@@ -86,10 +86,10 @@ public class ManagedSys implements java.io.Serializable {
     private  String deleteHandler;
     private  String passwordHandler;
     private  String suspendHandler;
-    private  String handler1;
-    private  String handler2;
-    private  String handler3;
-    private  String handler4;
+    private  String searchHandler;
+    private  String lookupHandler;
+    private  String testConnectionHandler;
+    private  String reconcileResourceHandler;
     private  String handler5;
 
 	//private Set<ApproverAssociation> resourceApprovers = new HashSet<ApproverAssociation>(0);
@@ -98,16 +98,16 @@ public class ManagedSys implements java.io.Serializable {
 	*/
 	private Set<ManagedSystemObjectMatch> mngSysObjectMatchs = new HashSet<ManagedSystemObjectMatch>(0);
 
-	public ManagedSys() {
+	public ManagedSysDto() {
 	}
 
-	public ManagedSys(String managedSysId, String connectorId, String domainId) {
+	public ManagedSysDto(String managedSysId, String connectorId, String domainId) {
 		this.managedSysId = managedSysId;
 		this.connectorId = connectorId;
 		this.domainId = domainId;
 	}
 
-	public ManagedSys(String managedSysId, String name, String description, String status, String connectorId, String domainId, String hostUrl, Integer port, String commProtocol, String userId, String pswd, Date startDate, Date endDate) {
+	public ManagedSysDto(String managedSysId, String name, String description, String status, String connectorId, String domainId, String hostUrl, Integer port, String commProtocol, String userId, String pswd, Date startDate, Date endDate) {
 		this.managedSysId = managedSysId;
 		this.name = name;
 		this.description = description;
@@ -355,36 +355,36 @@ public class ManagedSys implements java.io.Serializable {
         this.suspendHandler = suspendHandler;
     }
 
-    public String getHandler1() {
-        return handler1;
+    public String getSearchHandler() {
+        return searchHandler;
     }
 
-    public void setHandler1(String handler1) {
-        this.handler1 = handler1;
+    public void setSearchHandler(String searchHandler) {
+        this.searchHandler = searchHandler;
     }
 
-    public String getHandler2() {
-        return handler2;
+    public String getLookupHandler() {
+        return lookupHandler;
     }
 
-    public void setHandler2(String handler2) {
-        this.handler2 = handler2;
+    public void setLookupHandler(String lookupHandler) {
+        this.lookupHandler = lookupHandler;
     }
 
-    public String getHandler3() {
-        return handler3;
+    public String getTestConnectionHandler() {
+        return testConnectionHandler;
     }
 
-    public void setHandler3(String handler3) {
-        this.handler3 = handler3;
+    public void setTestConnectionHandler(String testConnectionHandler) {
+        this.testConnectionHandler = testConnectionHandler;
     }
 
-    public String getHandler4() {
-        return handler4;
+    public String getReconcileResourceHandler() {
+        return reconcileResourceHandler;
     }
 
-    public void setHandler4(String handler4) {
-        this.handler4 = handler4;
+    public void setReconcileResourceHandler(String reconcileResourceHandler) {
+        this.reconcileResourceHandler = reconcileResourceHandler;
     }
 
     public String getHandler5() {
@@ -397,7 +397,7 @@ public class ManagedSys implements java.io.Serializable {
 
     @Override
     public String toString() {
-        return "ManagedSys{" +
+        return "ManagedSysDto{" +
                 "managedSysId='" + managedSysId + '\'' +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
@@ -408,6 +408,8 @@ public class ManagedSys implements java.io.Serializable {
                 ", port=" + port +
                 ", commProtocol='" + commProtocol + '\'' +
                 ", userId='" + userId + '\'' +
+                ", pswd='" + pswd + '\'' +
+                ", decryptPassword='" + decryptPassword + '\'' +
                 ", startDate=" + startDate +
                 ", endDate=" + endDate +
                 ", resourceId='" + resourceId + '\'' +
@@ -421,10 +423,10 @@ public class ManagedSys implements java.io.Serializable {
                 ", deleteHandler='" + deleteHandler + '\'' +
                 ", passwordHandler='" + passwordHandler + '\'' +
                 ", suspendHandler='" + suspendHandler + '\'' +
-                ", handler1='" + handler1 + '\'' +
-                ", handler2='" + handler2 + '\'' +
-                ", handler3='" + handler3 + '\'' +
-                ", handler4='" + handler4 + '\'' +
+                ", searchHandler='" + searchHandler + '\'' +
+                ", lookupHandler='" + lookupHandler + '\'' +
+                ", testConnectionHandler='" + testConnectionHandler + '\'' +
+                ", reconcileResourceHandler='" + reconcileResourceHandler + '\'' +
                 ", handler5='" + handler5 + '\'' +
                 ", mngSysObjectMatchs=" + mngSysObjectMatchs +
                 '}';

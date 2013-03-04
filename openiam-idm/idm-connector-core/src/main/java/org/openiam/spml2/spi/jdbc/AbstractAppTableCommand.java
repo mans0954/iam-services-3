@@ -1,20 +1,11 @@
 package org.openiam.spml2.spi.jdbc;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
-import org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService;
 import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.spml2.msg.ErrorCode;
-import org.openiam.spml2.msg.ResponseType;
-import org.openiam.spml2.msg.StatusCodeType;
 import org.openiam.spml2.spi.common.jdbc.AbstractJDBCCommand;
-import org.openiam.spml2.spi.common.jdbc.JDBCConnectionMgr;
-import org.springframework.beans.factory.annotation.Required;
 
 import java.sql.*;
 import java.text.ParseException;

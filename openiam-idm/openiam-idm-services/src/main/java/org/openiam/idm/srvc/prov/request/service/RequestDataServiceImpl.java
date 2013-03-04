@@ -9,7 +9,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
-import org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService;
+import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.msg.service.MailService;
 import org.openiam.idm.srvc.prov.request.dto.ProvisionRequest;
 import org.openiam.idm.srvc.prov.request.dto.RequestApprover;
@@ -25,7 +25,7 @@ public class RequestDataServiceImpl implements RequestDataService {
 	
 
 	protected ProvisionRequestDAO requestDao;
-	protected ManagedSystemDataService  managedResource;
+	protected ManagedSystemWebService managedResource;
 	protected ApproverAssociationDAO approverAssociationDao;
 	protected UserDataService userManager;
 	protected MailService mailSender;
@@ -181,11 +181,11 @@ public class RequestDataServiceImpl implements RequestDataService {
 		
 	}
 
-	public ManagedSystemDataService getManagedResource() {
+	public ManagedSystemWebService getManagedResource() {
 		return managedResource;
 	}
 
-	public void setManagedResource(ManagedSystemDataService managedResource) {
+	public void setManagedResource(ManagedSystemWebService managedResource) {
 		this.managedResource = managedResource;
 	}
 

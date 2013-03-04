@@ -1,7 +1,7 @@
 package org.openiam.spml2.spi.jdbc;
 
 import org.apache.commons.lang.StringUtils;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.spml2.msg.ErrorCode;
@@ -38,7 +38,7 @@ public class AppTablePasswordCommand extends AbstractAppTableCommand implements 
 
         final String password = reqType.getPassword();
 
-        final ManagedSys managedSys = managedSysService.getManagedSys(targetID);
+        final ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
         if(managedSys == null) {
         	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, "No managed resource");
             return response;

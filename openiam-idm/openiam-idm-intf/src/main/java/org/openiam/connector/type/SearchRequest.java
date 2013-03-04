@@ -9,12 +9,15 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "SearchRequest", propOrder = {
-    "searchValue",
-    "searchQuery",
-    "returnData"
+        "searchValue",
+        "searchQuery",
+        "returnData",
+        "scriptHandler"
 })
 public class SearchRequest extends RequestType
 {
+    @XmlElement
+    private String scriptHandler;
 
     @XmlElement(required = true)
     protected String searchValue;                          // the value that we are searching for
@@ -47,26 +50,33 @@ public class SearchRequest extends RequestType
      * @param value
      *     allowed object is
      *     {@link org.openiam.connector.type.ReturnData }
-     *     
+     *
      */
     public void setReturnData(ReturnData value) {
         this.returnData = value;
     }
 
-	public String getSearchQuery() {
-		return searchQuery;
-	}
+    public String getSearchQuery() {
+        return searchQuery;
+    }
 
-	public void setSearchQuery(String searchQuery) {
-		this.searchQuery = searchQuery;
-	}
+    public void setSearchQuery(String searchQuery) {
+        this.searchQuery = searchQuery;
+    }
 
-	public String getSearchValue() {
-		return searchValue;
-	}
+    public String getSearchValue() {
+        return searchValue;
+    }
 
-	public void setSearchValue(String searchValue) {
-		this.searchValue = searchValue;
-	}
+    public void setSearchValue(String searchValue) {
+        this.searchValue = searchValue;
+    }
 
+    public String getScriptHandler() {
+        return scriptHandler;
+    }
+
+    public void setScriptHandler(String scriptHandler) {
+        this.scriptHandler = scriptHandler;
+    }
 }

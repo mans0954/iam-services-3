@@ -17,7 +17,7 @@
  */
 
 /**
- * 
+ *
  */
 package org.openiam.idm.srvc.recon.service;
 
@@ -32,11 +32,12 @@ import org.apache.commons.logging.LogFactory;
 import org.mule.api.MuleContext;
 import org.mule.api.context.MuleContextAware;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.connector.type.RemoteReconciliationConfig;
 import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
-import org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService;
+import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
 import org.openiam.idm.srvc.recon.command.ReconciliationCommandFactory;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
@@ -73,14 +74,14 @@ public class ReconciliationServiceImpl implements ReconciliationService, MuleCon
     protected  ProvisionService provisionService;
     protected ResourceDataService resourceDataService;
     protected UserDataService userMgr;
-    protected ManagedSystemDataService managedSysService;
+    protected ManagedSystemWebService managedSysService;
     @Autowired
     private ProvisionConnectorWebService connectorService;
 
     protected ConnectorAdapter connectorAdapter;
     protected RemoteConnectorAdapter remoteConnectorAdapter;
     protected RoleDataService roleDataService;
-    
+
     @Autowired
     private UserDozerConverter userDozerConverter;
 
@@ -188,7 +189,7 @@ public class ReconciliationServiceImpl implements ReconciliationService, MuleCon
 
             Resource res = resourceDataService.getResource(config.getResourceId());
             String managedSysId =  res.getManagedSysId();
-            ManagedSys mSys = managedSysService.getManagedSys(managedSysId);
+            ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
 
             log.debug("ManagedSysId = " + managedSysId);
             log.debug("Getting identities for managedSys");
@@ -286,8 +287,12 @@ public class ReconciliationServiceImpl implements ReconciliationService, MuleCon
                     connector.getConnectorInterface().equalsIgnoreCase("REMOTE")) {
 
                 log.debug("Calling reconcileResource with Remote connector");
-
-                remoteConnectorAdapter.reconcileResource(config, connector, muleContext);
+                RemoteReconciliationConfig remoteReconciliationConfig = null;
+                if(config != null) {
+                    remoteReconciliationConfig = new RemoteReconciliationConfig(config);
+                    remoteReconciliationConfig.setScriptHandler(mSys.getReconcileResourceHandler());
+                }
+                remoteConnectorAdapter.reconcileResource(remoteReconciliationConfig, connector, muleContext);
             } else {
 
                 log.debug("Calling reconcileResource local connector");
@@ -337,7 +342,7 @@ public class ReconciliationServiceImpl implements ReconciliationService, MuleCon
         this.userMgr = userMgr;
     }
 
-    public void setManagedSysService(ManagedSystemDataService managedSysService) {
+    public void setManagedSysService(ManagedSystemWebService managedSysService) {
         this.managedSysService = managedSysService;
     }
 

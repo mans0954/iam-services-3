@@ -51,9 +51,9 @@ import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
 import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
-import org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService;
+import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemObjectMatchDAO;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.service.PolicyDataService;
@@ -64,9 +64,7 @@ import org.openiam.idm.srvc.recon.service.ReconciliationCommand;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.secdomain.domain.SecurityDomainEntity;
-import org.openiam.idm.srvc.secdomain.dto.SecurityDomain;
 import org.openiam.idm.srvc.secdomain.service.SecurityDomainDAO;
-import org.openiam.idm.srvc.secdomain.service.SecurityDomainDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
@@ -117,7 +115,7 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
         ConnectorService, ApplicationContextAware {
 
     private static final Log log = LogFactory.getLog(LdapConnectorImpl.class);
-    protected ManagedSystemDataService managedSysService;
+    protected ManagedSystemWebService managedSysService;
     protected ManagedSystemObjectMatchDAO managedSysObjectMatchDao;
     protected ResourceDataService resourceDataService;
     @Autowired
@@ -334,7 +332,7 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
 
         Resource res = resourceDataService.getResource(config.getResourceId());
         String managedSysId = res.getManagedSysId();
-        ManagedSys mSys = managedSysService.getManagedSys(managedSysId);
+        ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
 
         Map<String, ReconciliationCommand> situations = new HashMap<String, ReconciliationCommand>();
         for (ReconciliationSituation situation : config.getSituationSet()) {
@@ -420,7 +418,7 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
      * @param managedSys
      * @return
      */
-    public ResponseType testConnection(ManagedSys managedSys) {
+    public ResponseType testConnection(ManagedSysDto managedSys) {
         ResponseType response = new ResponseType();
         response.setStatus(StatusCodeType.SUCCESS);
 
@@ -572,7 +570,7 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
          * A) Use the targetID to look up the connection information under
          * managed systems
          */
-        ManagedSys managedSys = managedSysService.getManagedSys(targetID);
+        ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
 
         try {
             log.debug("managedSys found for targetID=" + targetID + " "
@@ -609,7 +607,7 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
             }
 
             Directory dirSpecificImp = DirectorySpecificImplFactory
-                    .create(managedSys.getHandler1());
+                    .create(managedSys.getHandler5());
             ModificationItem[] mods = dirSpecificImp.setPassword(reqType);
 
             ldapctx.modifyAttributes(ldapName, mods);
@@ -703,11 +701,11 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
         this.managedSysObjectMatchDao = managedSysObjectMatchDao;
     }
 
-    public ManagedSystemDataService getManagedSysService() {
+    public ManagedSystemWebService getManagedSysService() {
         return managedSysService;
     }
 
-    public void setManagedSysService(ManagedSystemDataService managedSysService) {
+    public void setManagedSysService(ManagedSystemWebService managedSysService) {
         this.managedSysService = managedSysService;
     }
 

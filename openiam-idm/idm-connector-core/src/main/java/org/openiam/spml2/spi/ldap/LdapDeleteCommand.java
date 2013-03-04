@@ -1,6 +1,6 @@
 package org.openiam.spml2.spi.ldap;
 
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.spml2.msg.*;
 import org.openiam.spml2.spi.ldap.dirtype.Directory;
@@ -44,7 +44,7 @@ public class LdapDeleteCommand extends LdapAbstractCommand {
 
 
         /* A) Use the targetID to look up the connection information under managed systems */
-        ManagedSys managedSys = managedSysService.getManagedSys(targetID);
+        ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
         ManagedSystemObjectMatch[] matchObj = managedSysService.managedSysObjectParam(targetID, "USER");
 
 
@@ -80,7 +80,7 @@ public class LdapDeleteCommand extends LdapAbstractCommand {
             log.debug("managedSys found for targetID=" + targetID + " " + " Name=" + managedSys.getName());
 
 
-            Directory dirSpecificImp  = DirectorySpecificImplFactory.create(managedSys.getHandler1());
+            Directory dirSpecificImp  = DirectorySpecificImplFactory.create(managedSys.getHandler5());
 
             conMgr = ConnectionFactory.create(ConnectionManagerConstant.LDAP_CONNECTION);
             conMgr.setApplicationContext(ac);

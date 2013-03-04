@@ -4,7 +4,7 @@ import java.text.ParseException;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.spml2.msg.AddRequestType;
@@ -26,7 +26,7 @@ public class SalesforceAddCommand extends AbstractSalesForceInsertCommand implem
         response.setStatus(StatusCodeType.SUCCESS);
 
         final String targetID = reqType.getTargetID();
-        final ManagedSys managedSys = managedSysService.getManagedSys(targetID);
+        final ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
         if(managedSys == null) {
         	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, String.format("No Managed System with target id: %s", targetID));
             return response;

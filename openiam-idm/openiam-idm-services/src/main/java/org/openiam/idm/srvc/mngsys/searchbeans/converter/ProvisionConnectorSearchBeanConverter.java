@@ -1,7 +1,7 @@
 package org.openiam.idm.srvc.mngsys.searchbeans.converter;
 
 import org.openiam.idm.srvc.mngsys.domain.ProvisionConnectorEntity;
-import org.openiam.idm.srvc.mngsys.searchbeans.ProvisionConnectorSearchBean;
+import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorSearchBean;
 import org.openiam.idm.srvc.searchbean.converter.SearchBeanConverter;
 import org.springframework.stereotype.Component;
 

@@ -39,7 +39,7 @@ import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
-import org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService;
+import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.idm.srvc.policy.dto.Policy;
@@ -78,7 +78,7 @@ public class AddUser {
     protected LoginDataService loginManager;
     protected SysConfiguration sysConfiguration;
     protected ResourceDataService resourceDataService;
-    protected ManagedSystemDataService managedSysService;
+    protected ManagedSystemWebService managedSysService;
     @Autowired
     protected AuditHelper auditHelper;
     protected OrganizationDataService orgManager;
@@ -522,11 +522,11 @@ public class AddUser {
         this.resourceDataService = resourceDataService;
     }
 
-    public ManagedSystemDataService getManagedSysService() {
+    public ManagedSystemWebService getManagedSysService() {
         return managedSysService;
     }
 
-    public void setManagedSysService(ManagedSystemDataService managedSysService) {
+    public void setManagedSysService(ManagedSystemWebService managedSysService) {
         this.managedSysService = managedSysService;
     }
 

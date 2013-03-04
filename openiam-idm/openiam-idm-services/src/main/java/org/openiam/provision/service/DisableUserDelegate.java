@@ -13,12 +13,10 @@ import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.srvc.audit.service.AuditHelper;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
-import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
-import org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
+import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.spml2.msg.PSOIdentifierType;
@@ -38,7 +36,7 @@ public class DisableUserDelegate {
     protected AuditHelper auditHelper;
     protected SysConfiguration sysConfiguration;
     protected LoginDataService loginManager;
-    protected ManagedSystemDataService managedSysService;
+    protected ManagedSystemWebService managedSysService;
     protected ConnectorAdapter connectorAdapter;
     protected RemoteConnectorAdapter remoteConnectorAdapter;
 
@@ -123,7 +121,7 @@ public class DisableUserDelegate {
                 if (!StringUtils.equalsIgnoreCase(lg.getManagedSysId(), sysConfiguration.getDefaultManagedSysId())) {
                     String managedSysId = lg.getManagedSysId();
                     // update the target system
-                    ManagedSys mSys = managedSysService
+                    ManagedSysDto mSys = managedSysService
                             .getManagedSys(managedSysId);
 
                     if (operation) {
@@ -213,11 +211,11 @@ public class DisableUserDelegate {
         this.loginManager = loginManager;
     }
 
-    public ManagedSystemDataService getManagedSysService() {
+    public ManagedSystemWebService getManagedSysService() {
         return managedSysService;
     }
 
-    public void setManagedSysService(ManagedSystemDataService managedSysService) {
+    public void setManagedSysService(ManagedSystemWebService managedSysService) {
         this.managedSysService = managedSysService;
     }
 

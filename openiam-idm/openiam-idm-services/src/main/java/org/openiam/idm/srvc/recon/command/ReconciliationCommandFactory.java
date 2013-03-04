@@ -2,7 +2,7 @@ package org.openiam.idm.srvc.recon.command;
 
 import org.mule.api.MuleContext;
 import org.mule.api.context.MuleContextAware;
-import org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService;
+import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
 import org.openiam.idm.srvc.recon.service.ReconciliationCommand;
@@ -31,7 +31,7 @@ public class ReconciliationCommandFactory implements ApplicationContextAware, Mu
             reconCommand = new DoNothingCommand();
         } else if(name.equalsIgnoreCase("DEL_RES_ACCOUNT")){
             reconCommand = new DeleteResourceAccountCommand((ProvisionService) applicationContext.getBean("defaultProvision"),
-                    (ManagedSystemDataService)applicationContext.getBean("managedSysService"),
+                    (ManagedSystemWebService)applicationContext.getBean("managedSysService"),
                     (ProvisionConnectorWebService)applicationContext.getBean("connectorService"),
                     (RemoteConnectorAdapter)applicationContext.getBean("remoteConnectorAdapter"),
                     muleContext,

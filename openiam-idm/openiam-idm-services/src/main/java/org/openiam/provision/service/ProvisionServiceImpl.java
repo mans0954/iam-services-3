@@ -61,9 +61,9 @@ import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
-import org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService;
+import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
@@ -129,7 +129,7 @@ public class ProvisionServiceImpl implements ProvisionService,
     @Autowired
     private ProvisionConnectorWebService connectorService;
 
-    protected ManagedSystemDataService managedSysService;
+    protected ManagedSystemWebService managedSysService;
     protected RoleDataService roleDataService;
     protected GroupDataService groupManager;
     protected String connectorWsdl;
@@ -432,7 +432,7 @@ public class ProvisionServiceImpl implements ProvisionService,
                     // managed system id that is linked to openiam's repository
                     // ManagedSys managedSys =
                     // managedSysService.getManagedSys(lg.getManagedSysId());
-                    ManagedSys managedSys = managedSysService
+                    ManagedSysDto managedSys = managedSysService
                             .getManagedSys("1");
                     log.info("Managedsys object= " + managedSys);
                     if (managedSys != null) {
@@ -626,7 +626,7 @@ public class ProvisionServiceImpl implements ProvisionService,
                     // if
                     // (!lg.getManagedSysId().equalsIgnoreCase(passwordSync.getManagedSystemId()))
                     // {
-                    ManagedSys managedSys = managedSysService.getManagedSys(lg
+                    ManagedSysDto managedSys = managedSysService.getManagedSys(lg
                             .getManagedSysId());
                     if (managedSys != null) {
                         log.debug("Managed sys found for managedSysId="
@@ -1097,7 +1097,7 @@ public class ProvisionServiceImpl implements ProvisionService,
                             + lg.getManagedSysId());
                     // get the managed system for the identity - ignore the
                     // managed system id that is linked to openiam's repository
-                    ManagedSys managedSys = managedSysService.getManagedSys(lg
+                    ManagedSysDto managedSys = managedSysService.getManagedSys(lg
                             .getManagedSysId());
                     log.info("Managedsys object= " + managedSys);
                     // CHECK IF WE HAVE A NETWORX ID. IF WE DO, THEN LEAVE IT
@@ -1770,7 +1770,7 @@ public class ProvisionServiceImpl implements ProvisionService,
             // loginManager.getLoginByManagedSys(passwordSync.getSecurityDomain(),
             // passwordSync.getPrincipal(), passwordSync.getManagedSystemId());
 
-            ManagedSys managedSys = managedSysService
+            ManagedSysDto managedSys = managedSysService
                     .getManagedSys(passwordSync.getManagedSystemId());
             if (managedSys != null) {
                 log.debug("Managed sys found for managedSysId="
@@ -1947,7 +1947,7 @@ public class ProvisionServiceImpl implements ProvisionService,
 
                             retval = loginManager.resetPassword(lg.getDomainId(), lg.getLogin(), lg.getManagedSysId(), encPassword);
 
-                            ManagedSys managedSys = managedSysService
+                            ManagedSysDto managedSys = managedSysService
                                     .getManagedSys(lg.getManagedSysId());
                             if (managedSys != null) {
 
@@ -2119,7 +2119,7 @@ public class ProvisionServiceImpl implements ProvisionService,
                             .getRequestorId(), "PASSWORD", login.getLogin(), null, null, "SUCCESS", null, null,
                     null, requestId, null, null, null);
 
-            ManagedSys managedSys = managedSysService
+            ManagedSysDto managedSys = managedSysService
                     .getManagedSys(passwordSync.getManagedSystemId());
             if (managedSys != null) {
                 log.debug("Managed sys found for managedSysId="
@@ -2281,7 +2281,7 @@ public class ProvisionServiceImpl implements ProvisionService,
                             retval = loginManager.setPassword(lg.getDomainId(), lg.getLogin(), lg
                                     .getManagedSysId(), encPassword);
 
-                            ManagedSys managedSys = managedSysService
+                            ManagedSysDto managedSys = managedSysService
                                     .getManagedSys(lg.getManagedSysId());
                             if (managedSys != null) {
                                 log.debug("Managed sys found for managedSysId="
@@ -2537,11 +2537,11 @@ public class ProvisionServiceImpl implements ProvisionService,
         this.connectorService = connectorService;
     }
 
-    public ManagedSystemDataService getManagedSysService() {
+    public ManagedSystemWebService getManagedSysService() {
         return managedSysService;
     }
 
-    public void setManagedSysService(ManagedSystemDataService managedSysService) {
+    public void setManagedSysService(ManagedSystemWebService managedSysService) {
         this.managedSysService = managedSysService;
     }
 

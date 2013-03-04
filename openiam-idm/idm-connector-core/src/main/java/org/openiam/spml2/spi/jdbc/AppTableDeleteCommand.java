@@ -1,7 +1,7 @@
 package org.openiam.spml2.spi.jdbc;
 
 import org.apache.commons.lang.StringUtils;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.spml2.msg.*;
@@ -32,7 +32,7 @@ public class AppTableDeleteCommand extends AbstractAppTableCommand implements De
         final PSOIdentifierType psoID = reqType.getPsoID();
         final String targetID = psoID.getTargetID();
 
-        ManagedSys managedSys = managedSysService.getManagedSys(targetID);
+        ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
 
         if(managedSys == null) {
         	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, String.format("No Managed System with target id: %s", targetID));

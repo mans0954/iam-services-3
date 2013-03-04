@@ -194,7 +194,7 @@
 <xs:element minOccurs="0" name="sys" type="tns:ManagedSys"/>
 </xs:sequence>
 </xs:complexType>
-<xs:complexType name="ManagedSys">
+<xs:complexType name="ManagedSysDto">
 <xs:sequence>
 <xs:element minOccurs="0" name="managedSysId" type="xs:string"/>
 <xs:element minOccurs="0" name="name" type="xs:string"/>
@@ -732,7 +732,7 @@
     <wsdl:part name="parameters" element="tns:getManagedSysByDomainResponse">
     </wsdl:part>
   </wsdl:message>
-  <wsdl:portType name="ManagedSystemDataService">
+  <wsdl:portType name="ManagedSystemWebService">
     <wsdl:operation name="removeAllApproverAssociations">
       <wsdl:input name="removeAllApproverAssociations" message="tns:removeAllApproverAssociations">
     </wsdl:input>
@@ -920,7 +920,7 @@
     </wsdl:output>
     </wsdl:operation>
   </wsdl:portType>
-  <wsdl:binding name="ManagedSystemDataServiceServiceSoapBinding" type="tns:ManagedSystemDataService">
+  <wsdl:binding name="ManagedSystemDataServiceServiceSoapBinding" type="tns:ManagedSystemWebService">
     <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
     <wsdl:operation name="removeAllApproverAssociations">
       <soap:operation soapAction="" style="document"/>

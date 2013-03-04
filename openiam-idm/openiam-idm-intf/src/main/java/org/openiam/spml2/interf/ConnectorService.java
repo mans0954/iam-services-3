@@ -1,6 +1,6 @@
 package org.openiam.spml2.interf;
 
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.spml2.msg.*;
 import org.openiam.spml2.msg.password.*;
@@ -27,7 +27,7 @@ public interface ConnectorService {
 
     @WebMethod
     public ResponseType testConnection(
-            @WebParam(name = "managedSys", targetNamespace = "") ManagedSys managedSys);
+            @WebParam(name = "managedSys", targetNamespace = "") ManagedSysDto managedSys);
 
 
     /**

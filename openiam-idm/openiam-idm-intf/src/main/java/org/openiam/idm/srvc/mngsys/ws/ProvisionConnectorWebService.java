@@ -2,7 +2,7 @@ package org.openiam.idm.srvc.mngsys.ws;
 
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
-import org.openiam.idm.srvc.mngsys.searchbeans.ProvisionConnectorSearchBean;
+import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorSearchBean;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
@@ -15,7 +15,7 @@ import java.util.List;
  * the attributes that are captured for a connector. Additionally, the type is often used to indicate
  *  end system such as 'Active Directory', 'LDAP', etc.
  * @author suneet
- * @author vitaly.yaunin
+ * @author vitaly.yakunin
  * @version 2
  */
 @WebService

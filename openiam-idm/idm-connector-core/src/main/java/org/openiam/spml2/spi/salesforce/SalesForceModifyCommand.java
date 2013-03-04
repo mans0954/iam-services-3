@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.spml2.msg.ErrorCode;
@@ -29,7 +29,7 @@ public class SalesForceModifyCommand extends AbstractSalesForceInsertCommand imp
 
         final String targetID = reqType.getPsoID().getTargetID();
 
-        final ManagedSys managedSys = managedSysService.getManagedSys(targetID);
+        final ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
         if(managedSys == null) {
         	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, String.format("No Managed System with target id: %s", targetID));
             return response;

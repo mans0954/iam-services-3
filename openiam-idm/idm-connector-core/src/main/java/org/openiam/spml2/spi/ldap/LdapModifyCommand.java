@@ -1,7 +1,7 @@
 package org.openiam.spml2.spi.ldap;
 
 import org.openiam.base.BaseAttribute;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.provision.type.ExtensibleAttribute;
@@ -69,7 +69,7 @@ public class LdapModifyCommand extends LdapAbstractCommand {
 
 
         /* A) Use the targetID to look up the connection information under managed systems */
-        ManagedSys managedSys = managedSysService.getManagedSys(targetID);
+        ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
 
         log.debug("managedSys found for targetID=" + targetID + " " + " Name=" + managedSys.getName());
         try {
@@ -129,7 +129,7 @@ public class LdapModifyCommand extends LdapAbstractCommand {
             }
         }
 
-        Directory dirSpecificImp = DirectorySpecificImplFactory.create(managedSys.getHandler1());
+        Directory dirSpecificImp = DirectorySpecificImplFactory.create(managedSys.getHandler5());
 
 
         if (isInDirectory(ldapName, matchObj[0], ldapctx)) {

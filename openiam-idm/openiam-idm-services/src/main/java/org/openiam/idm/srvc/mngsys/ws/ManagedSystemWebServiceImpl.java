@@ -1,4 +1,4 @@
-package org.openiam.idm.srvc.mngsys.service;
+package org.openiam.idm.srvc.mngsys.ws;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -8,25 +8,28 @@ import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
-import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
-import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
+import org.openiam.idm.srvc.mngsys.dto.*;
+import org.openiam.idm.srvc.mngsys.searchbeans.converter.ManagedSystemSearchBeanConverter;
+import org.openiam.idm.srvc.mngsys.service.*;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+import javax.jws.WebParam;
 import javax.jws.WebService;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.ResourceBundle;
 
-@WebService(endpointInterface = "org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService", 
+@Service("managedSystemWebWebService")
+@WebService(endpointInterface = "org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService",
 		targetNamespace = "urn:idm.openiam.org/srvc/mngsys/service", 
 		portName = "ManagedSystemWebServicePort",
 		serviceName = "ManagedSystemWebService")
-public class ManagedSystemDataServiceImpl implements ManagedSystemDataService {
+public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     @Autowired
-	protected ManagedSysDAO managedSysDao;
+	protected ManagedSystemService managedSystemService;
     @Autowired
 	protected ManagedSystemObjectMatchDAO managedSysObjectMatchDao;
 	protected ApproverAssociationDAO approverAssociationDao;
@@ -41,13 +44,32 @@ public class ManagedSystemDataServiceImpl implements ManagedSystemDataService {
     @Autowired
     private ManagedSystemObjectMatchDozerConverter managedSystemObjectMatchDozerConverter;
 
-    private static final Log log = LogFactory.getLog(ManagedSystemDataServiceImpl.class);
+    @Autowired
+    private ManagedSystemSearchBeanConverter managedSystemSearchBeanConverter;
+
+    private static final Log log = LogFactory.getLog(ManagedSystemWebServiceImpl.class);
 	protected Cryptor cryptor;
 	static protected ResourceBundle res = ResourceBundle.getBundle("securityconf");
 	boolean encrypt = true;	// default encryption setting
 
+    @Override
+    public Integer getManagedSystemsCount(@WebParam(name = "searchBean", targetNamespace = "") ManagedSysSearchBean searchBean) {
+        ManagedSysEntity managedSysEntity =  managedSystemSearchBeanConverter.convert(searchBean);
+        return managedSystemService.getManagedSystemsCountByExample(managedSysEntity);
+    }
 
-	public ManagedSys addManagedSystem(ManagedSys sys) {
+    @Override
+    public List<ManagedSysDto> getManagedSystems(@WebParam(name = "searchBean", targetNamespace = "") ManagedSysSearchBean searchBean, @WebParam(name = "size", targetNamespace = "") Integer size, @WebParam(name = "from", targetNamespace = "") Integer from) {
+        List<ManagedSysDto> managedSysDtos = new LinkedList<ManagedSysDto>();
+        ManagedSysEntity managedSysEntity = managedSystemSearchBeanConverter.convert(searchBean);
+        List<ManagedSysEntity> sysEntities = managedSystemService.getManagedSystemsByExample(managedSysEntity, size, from);
+        if(sysEntities != null) {
+            managedSysDtos = managedSysDozerConverter.convertToDTOList(sysEntities,false);
+        }
+        return managedSysDtos;
+    }
+    @Override
+	public ManagedSysDto addManagedSystem(ManagedSysDto sys) {
 
 		if (sys == null) {
 			throw new NullPointerException("sys is null");
@@ -55,23 +77,25 @@ public class ManagedSystemDataServiceImpl implements ManagedSystemDataService {
 		
         if (encrypt && sys.getPswd() != null) {
         	try {
-        		sys.setPswd(cryptor.encrypt(keyManagementService.getUserKey(sys.getUserId(), KeyName.password.name()),sys.getPswd()));
+        		sys.setPswd(cryptor.encrypt(null,sys.getPswd()));
         	}catch(Exception e) {
         		log.error(e);
         	}
-        };
+        }
 
-        ManagedSysEntity entity =  managedSysDao.add(managedSysDozerConverter.convertToEntity(sys,false));
-        return  managedSysDozerConverter.convertToDTO(entity,false);
+        ManagedSysEntity entity = managedSysDozerConverter.convertToEntity(sys, false);
+        managedSystemService.addManagedSys(entity);
+
+        return  managedSysDozerConverter.convertToDTO(entity, false);
 	}
-
-	public ManagedSys getManagedSys(String sysId) {
+    @Override
+	public ManagedSysDto getManagedSys(String sysId) {
 		if (sysId == null) {
 			throw new NullPointerException("sysId is null");
 		}
 
-		ManagedSysEntity sys = managedSysDao.findById(sysId);
-        ManagedSys sysDto = null;
+		ManagedSysEntity sys = managedSystemService.getManagedSysById(sysId);
+        ManagedSysDto sysDto = null;
         if(sys!=null){
             sysDto = managedSysDozerConverter.convertToDTO(sys,true);
             if (sysDto != null && sysDto.getPswd() != null) {
@@ -84,48 +108,48 @@ public class ManagedSystemDataServiceImpl implements ManagedSystemDataService {
         }
 		return sysDto;
 	}
-
-	public ManagedSys[] getManagedSysByProvider(String providerId) {
+    @Override
+    public ManagedSysDto[] getManagedSysByProvider(String providerId) {
 		if (providerId == null) {
 			throw new NullPointerException("providerId is null");
 		}
-		List<ManagedSysEntity> sysList= managedSysDao.findbyConnectorId(providerId);
+		List<ManagedSysEntity> sysList= managedSystemService.getManagedSysByConnectorId(providerId);
         if(sysList == null) {
             return null;
         }
 		int size = sysList.size();
-		ManagedSys[] sysAry = new ManagedSys[size];
+		ManagedSysDto[] sysAry = new ManagedSysDto[size];
         managedSysDozerConverter.convertToDTOList(sysList, true).toArray(sysAry);
 		return sysAry;
 	}
-	
 	/**
 	 * Returns an array of ManagedSys object for a security domain.  
 	 * @param domainId
 	 * @return
 	 */
-	public ManagedSys[] getManagedSysByDomain(String domainId) {
+    @Override
+	public ManagedSysDto[] getManagedSysByDomain(String domainId) {
 		if (domainId == null) {
 			throw new NullPointerException("domainId is null");
 		}
-		List<ManagedSysEntity> sysList= managedSysDao.findbyDomain(domainId);
+		List<ManagedSysEntity> sysList= managedSystemService.getManagedSysByDomain(domainId);
         if(sysList == null) {
             return null;
         }
 		int size = sysList.size();
-		ManagedSys[] sysAry = new ManagedSys[size];
+		ManagedSysDto[] sysAry = new ManagedSysDto[size];
         managedSysDozerConverter.convertToDTOList(sysList, true).toArray(sysAry);
 		return sysAry;
 		
 	}
 	
-	public ManagedSys[] getAllManagedSys() {
-		List<ManagedSysEntity> sysList= managedSysDao.findAllManagedSys();
+	public ManagedSysDto[] getAllManagedSys() {
+		List<ManagedSysEntity> sysList= managedSystemService.getAllManagedSys();
         if(sysList == null) {
             return null;
         }
 		int size = sysList.size();
-		ManagedSys[] sysAry = new ManagedSys[size];
+		ManagedSysDto[] sysAry = new ManagedSysDto[size];
         managedSysDozerConverter.convertToDTOList(sysList, true).toArray(sysAry);
 		return sysAry;
 	}
@@ -136,11 +160,10 @@ public class ManagedSystemDataServiceImpl implements ManagedSystemDataService {
 			throw new NullPointerException("sysId is null");
 		}
 
-        ManagedSysEntity sys = managedSysDao.findById(sysId);
-		managedSysDao.delete(sys);
+        managedSystemService.removeManagedSysById(sysId);
 	}
 
-	public void updateManagedSystem(ManagedSys sys) {
+	public void updateManagedSystem(ManagedSysDto sys) {
 		if (sys == null) {
 			throw new NullPointerException("sys is null");
 		}
@@ -150,9 +173,9 @@ public class ManagedSystemDataServiceImpl implements ManagedSystemDataService {
         	}catch(Exception e) {
         		log.error(e);
         	}
-        };
-        
-		managedSysDao.merge(managedSysDozerConverter.convertToEntity(sys, false));
+        }
+        ManagedSysEntity managedSysEntity = managedSysDozerConverter.convertToEntity(sys, false);
+        managedSystemService.updateManagedSys(managedSysEntity);
 	}
 	
 	/**
@@ -178,15 +201,15 @@ public class ManagedSystemDataServiceImpl implements ManagedSystemDataService {
 		return objAry;
 	}
 
-	public ManagedSys getManagedSysByResource(String resourceId) {
+	public ManagedSysDto getManagedSysByResource(String resourceId) {
 		if (resourceId == null) {
 			throw new NullPointerException("resourceId is null");
 		}		
-		return managedSysDozerConverter.convertToDTO(managedSysDao.findByResource(resourceId, "ACTIVE"), true);
+		return managedSysDozerConverter.convertToDTO(managedSystemService.getManagedSysByResource(resourceId, "ACTIVE"), true);
 	}
 
 	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService#getApproversByAction(java.lang.String, java.lang.String, int)
+	 * @see org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService#getApproversByAction(java.lang.String, java.lang.String, int)
 	 */
 /*	public List<ApproverAssociation> getApproversByAction(String managedSysId,
 			String action, int level) {
@@ -197,7 +220,7 @@ public class ManagedSystemDataServiceImpl implements ManagedSystemDataService {
 	}
 */
 	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService#getApproversByResource(java.lang.String)
+	 * @see org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService#getApproversByResource(java.lang.String)
 	 */
 /*	public List<ApproverAssociation> getApproversByResource(String managedSysId) {
 		if ( managedSysId == null) {
@@ -217,13 +240,13 @@ public class ManagedSystemDataServiceImpl implements ManagedSystemDataService {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService#getManagedSysByName(java.lang.String)
+	 * @see org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService#getManagedSysByName(java.lang.String)
 	 */
-	public ManagedSys getManagedSysByName(String name) {
+	public ManagedSysDto getManagedSysByName(String name) {
 		if (name == null) {
 			throw new NullPointerException("Parameter Managed system name is null");
 		}
-		return managedSysDozerConverter.convertToDTO(managedSysDao.findByName(name),true);
+		return managedSysDozerConverter.convertToDTO(managedSystemService.getManagedSysByName(name),true);
 	}
 
 	//Approver Association  ================================================================
@@ -341,16 +364,16 @@ public class ManagedSystemDataServiceImpl implements ManagedSystemDataService {
         }
 		return this.approverAssociationDao.removeApproversByUser(userId);
 	}
-
 	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService#addManagedSystemObjectMatch(org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch)
+	 * @see org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService#addManagedSystemObjectMatch(org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch)
 	 */
+    @Override
 	public void addManagedSystemObjectMatch(ManagedSystemObjectMatch obj) {
 		managedSysObjectMatchDao.save(managedSystemObjectMatchDozerConverter.convertToEntity(obj,false));
 	}
 
 	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService#updateManagedSystemObjectMatch(org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch)
+	 * @see org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService#updateManagedSystemObjectMatch(org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch)
 	 */
 	public void updateManagedSystemObjectMatch(ManagedSystemObjectMatch obj) {
 		this.managedSysObjectMatchDao.merge(managedSystemObjectMatchDozerConverter.convertToEntity(obj,false));

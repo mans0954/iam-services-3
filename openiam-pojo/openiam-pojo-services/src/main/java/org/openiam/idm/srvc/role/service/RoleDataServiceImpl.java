@@ -117,7 +117,34 @@ public class RoleDataServiceImpl implements RoleDataService {
 		}
 
 	}
-	
+    /**
+     * Adds a user to a role using the UserRole object. Similar to addUserToRole, but allows you to update attributes likes start and end date.
+     */
+    @Override
+    public void assocUserToRole(UserRoleEntity ur) {
+        if (ur.getRoleId() == null)
+            throw new IllegalArgumentException("roleId is null");
+        if (ur.getUserId() == null)
+            throw new IllegalArgumentException("userId object is null");
+
+        ur.setUserRoleId(null);
+        userRoleDao.add(ur);
+    }
+
+    /**
+     * Updates the attributes in the user role object.
+     *
+     * @param ur
+     */
+    @Override
+    public void updateUserRoleAssoc(UserRoleEntity ur) {
+        if (ur.getRoleId() == null)
+            throw new IllegalArgumentException("roleId is null");
+        if (ur.getUserId() == null)
+            throw new IllegalArgumentException("userId object is null");
+        userRoleDao.update(ur);
+    }
+
 	@Override
 	public void addUserToRole(String roleId, String userId) {
 		if(roleId != null && userId != null) {

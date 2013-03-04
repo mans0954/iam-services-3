@@ -7,7 +7,7 @@ import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.spml2.spi.salesforce.dao.CallerDependentSalesForceDao;
@@ -19,7 +19,7 @@ import com.sforce.ws.ConnectionException;
 
 public class AbstractSalesForceInsertCommand extends AbstractSalesforceCommand {
 
-	protected void insertOrUpdate(final String principalName, final List<ExtensibleObject> objectList, final ManagedSys managedSys) throws ParseException, ConnectionException, SalesForcePersistException {
+	protected void insertOrUpdate(final String principalName, final List<ExtensibleObject> objectList, final ManagedSysDto managedSys) throws ParseException, ConnectionException, SalesForcePersistException {
     	final Set<String> fieldNames = new HashSet<String>();
 		final User user = new User(principalName);
 		

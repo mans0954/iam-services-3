@@ -13,9 +13,9 @@ import javax.xml.bind.annotation.XmlType;
 
 /**
  * <p>Java class for RequestType complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="RequestType">
  *   &lt;complexContent>
@@ -26,23 +26,23 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
+ *
+ *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "BaseRequestType",
-	propOrder = {
-	    "requestID",
-	    "executionMode",
-	    "targetID",
-	    "hostUrl",
-	    "hostPort",
-	    "hostLoginId",
-	    "hostLoginPassword",
-	    "baseDN"
-	})
+        propOrder = {
+                "requestID",
+                "executionMode",
+                "targetID",
+                "hostUrl",
+                "hostPort",
+                "hostLoginId",
+                "hostLoginPassword",
+                "baseDN"
+        })
 @XmlSeeAlso({
-    UserRequest.class
+        UserRequest.class
 })
 public class RequestType   {
 
@@ -57,21 +57,21 @@ public class RequestType   {
     protected String baseDN;
 
     public RequestType() {
-    	
+
     }
-    
+
     public RequestType(String requestID, String executionMode) {
-    	this.requestID = requestID;
-    	this.executionMode = executionMode;
+        this.requestID = requestID;
+        this.executionMode = executionMode;
     }
-    
+
     /**
      * Gets the value of the requestID property.
-     * 
+     *
      * @return
      *     possible object is
      *     {@link String }
-     *     
+     *
      */
     public String getRequestID() {
         return requestID;
@@ -79,11 +79,11 @@ public class RequestType   {
 
     /**
      * Sets the value of the requestID property.
-     * 
+     *
      * @param value
      *     allowed object is
      *     {@link String }
-     *     
+     *
      */
     public void setRequestID(String value) {
         this.requestID = value;
@@ -91,11 +91,10 @@ public class RequestType   {
 
     /**
      * Gets the value of the executionMode property.
-     * 
+     *
      * @return
-     *     possible object is
-     *     {@link ExecutionModeType }
-     *     
+     *     possible object is String
+     *
      */
     public String getExecutionMode() {
         return executionMode;
@@ -103,62 +102,61 @@ public class RequestType   {
 
     /**
      * Sets the value of the executionMode property.
-     * 
+     *
      * @param value
-     *     allowed object is
-     *     {@link ExecutionModeType }
-     *     
+     *     allowed object is String
+     *
      */
     public void setExecutionMode(String value) {
         this.executionMode = value;
     }
 
-	public String getTargetID() {
-		return targetID;
-	}
+    public String getTargetID() {
+        return targetID;
+    }
 
-	public void setTargetID(String targetID) {
-		this.targetID = targetID;
-	}
+    public void setTargetID(String targetID) {
+        this.targetID = targetID;
+    }
 
-	public String getHostUrl() {
-		return hostUrl;
-	}
+    public String getHostUrl() {
+        return hostUrl;
+    }
 
-	public void setHostUrl(String hostUrl) {
-		this.hostUrl = hostUrl;
-	}
+    public void setHostUrl(String hostUrl) {
+        this.hostUrl = hostUrl;
+    }
 
-	public String getHostPort() {
-		return hostPort;
-	}
+    public String getHostPort() {
+        return hostPort;
+    }
 
-	public void setHostPort(String hostPort) {
-		this.hostPort = hostPort;
-	}
+    public void setHostPort(String hostPort) {
+        this.hostPort = hostPort;
+    }
 
-	public String getHostLoginId() {
-		return hostLoginId;
-	}
+    public String getHostLoginId() {
+        return hostLoginId;
+    }
 
-	public void setHostLoginId(String hostLoginId) {
-		this.hostLoginId = hostLoginId;
-	}
+    public void setHostLoginId(String hostLoginId) {
+        this.hostLoginId = hostLoginId;
+    }
 
-	public String getHostLoginPassword() {
-		return hostLoginPassword;
-	}
+    public String getHostLoginPassword() {
+        return hostLoginPassword;
+    }
 
-	public void setHostLoginPassword(String hostLoginPassword) {
-		this.hostLoginPassword = hostLoginPassword;
-	}
+    public void setHostLoginPassword(String hostLoginPassword) {
+        this.hostLoginPassword = hostLoginPassword;
+    }
 
-	public String getBaseDN() {
-		return baseDN;
-	}
+    public String getBaseDN() {
+        return baseDN;
+    }
 
-	public void setBaseDN(String baseDN) {
-		this.baseDN = baseDN;
-	}
+    public void setBaseDN(String baseDN) {
+        this.baseDN = baseDN;
+    }
 
 }

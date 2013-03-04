@@ -9,8 +9,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.SysConfiguration;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
-import org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
+import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemObjectMatchDAO;
 import org.openiam.spml2.msg.ErrorCode;
 import org.openiam.spml2.msg.PSOIdentifierType;
@@ -37,7 +37,7 @@ public class LdapSuspend extends  LdapAbstractCommand implements ApplicationCont
 	
 	private static final Log log = LogFactory.getLog(LdapSuspend.class);
 
-	protected ManagedSystemDataService managedSysService;
+	protected ManagedSystemWebService managedSysService;
 	protected ManagedSystemObjectMatchDAO managedSysObjectMatchDao;
 	protected LoginDataService loginManager;
 	protected SysConfiguration sysConfiguration;
@@ -65,7 +65,7 @@ public class LdapSuspend extends  LdapAbstractCommand implements ApplicationCont
 			
 	
 		/* A) Use the targetID to look up the connection information under managed systems */
-		ManagedSys managedSys = managedSysService.getManagedSys(targetID);
+		ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
         try {
 		
             log.debug("managedSys found for targetID=" + targetID + " " + " Name=" + managedSys.getName());
@@ -89,7 +89,7 @@ public class LdapSuspend extends  LdapAbstractCommand implements ApplicationCont
             if (identityExists(ldapName, ldapctx)) {
 
                 // Each directory
-                Directory dirSpecificImp  = DirectorySpecificImplFactory.create(managedSys.getHandler1());
+                Directory dirSpecificImp  = DirectorySpecificImplFactory.create(managedSys.getHandler5());
 
                 log.debug("Directory specific object name = " + dirSpecificImp.getClass().getName());
 
@@ -139,7 +139,7 @@ public class LdapSuspend extends  LdapAbstractCommand implements ApplicationCont
 			
 	
 		/* A) Use the targetID to look up the connection information under managed systems */
-		ManagedSys managedSys = managedSysService.getManagedSys(targetID); 
+		ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
 
         try {
             log.debug("managedSys found for targetID=" + targetID + " " + " Name=" + managedSys.getName());
@@ -154,7 +154,7 @@ public class LdapSuspend extends  LdapAbstractCommand implements ApplicationCont
             // dont try to enable and object that does not exist
             if (identityExists(ldapName, ldapctx)) {
 
-                Directory dirSpecificImp  = DirectorySpecificImplFactory.create(managedSys.getHandler1());
+                Directory dirSpecificImp  = DirectorySpecificImplFactory.create(managedSys.getHandler5());
                 dirSpecificImp.setAttributes("LDAP_NAME", ldapName);
                 dirSpecificImp.setAttributes("LOGIN_MANAGER", loginManager);
                 dirSpecificImp.setAttributes("CONFIGURATION", sysConfiguration);
@@ -195,11 +195,11 @@ public class LdapSuspend extends  LdapAbstractCommand implements ApplicationCont
 		return null;
 	}
 
-	public ManagedSystemDataService getManagedSysService() {
+	public ManagedSystemWebService getManagedSysService() {
 		return managedSysService;
 	}
 
-	public void setManagedSysService(ManagedSystemDataService managedSysService) {
+	public void setManagedSysService(ManagedSystemWebService managedSysService) {
 		this.managedSysService = managedSysService;
 	}
 

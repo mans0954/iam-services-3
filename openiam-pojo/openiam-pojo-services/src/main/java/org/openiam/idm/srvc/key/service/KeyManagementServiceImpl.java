@@ -11,7 +11,7 @@ import org.openiam.idm.srvc.auth.login.LoginDAO;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.dto.UserSecurityWrapper;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
 import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
 import org.openiam.idm.srvc.pswd.dto.PasswordHistory;
@@ -21,7 +21,6 @@ import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Required;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -384,7 +383,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         log.warn("Decrypting user data FINISHED...");
     }
 
-    private void printUserData(User user, HashMap<String, List<PasswordHistory>> pwdHistoryMap, HashMap<String, List<ManagedSys>> managedSysMap) {
+    private void printUserData(User user, HashMap<String, List<PasswordHistory>> pwdHistoryMap, HashMap<String, List<ManagedSysDto>> managedSysMap) {
         StringBuilder msg = new StringBuilder();
         msg.append("LOGIN LIST FOR USER_ID("+user.getUserId()+") [\n");
         if(user.getPrincipalList() != null && !user.getPrincipalList().isEmpty()) {
@@ -408,7 +407,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
 
         msg.append("MANAGED SYS LIST FOR USER_ID("+user.getUserId()+") [\n");
         if(managedSysMap.containsKey(user.getUserId())) {
-            for(ManagedSys ms : managedSysMap.get(user.getUserId())) {
+            for(ManagedSysDto ms : managedSysMap.get(user.getUserId())) {
                 if(ms.getPswd() != null) {
                     msg.append("\tpassword:"+ms.getPswd()+"\n");
                 } else{

@@ -6,7 +6,7 @@ import org.openiam.base.BaseAttribute;
 import org.openiam.dozer.converter.ManagedSystemObjectMatchDozerConverter;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
-import org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService;
+import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemObjectMatchDAO;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
@@ -39,7 +39,7 @@ public abstract class LdapAbstractCommand  implements ApplicationContextAware{
 
     protected static final Log log = LogFactory.getLog(LdapAbstractCommand.class);
 
-    protected ManagedSystemDataService managedSysService;
+    protected ManagedSystemWebService managedSysService;
     protected ResourceDataService resourceDataService;
     protected ManagedSystemObjectMatchDAO managedSysObjectMatchDao;
     @Autowired
@@ -357,11 +357,11 @@ public abstract class LdapAbstractCommand  implements ApplicationContextAware{
     }
 
 
-    public ManagedSystemDataService getManagedSysService() {
+    public ManagedSystemWebService getManagedSysService() {
         return managedSysService;
     }
 
-    public void setManagedSysService(ManagedSystemDataService managedSysService) {
+    public void setManagedSysService(ManagedSystemWebService managedSysService) {
         this.managedSysService = managedSysService;
     }
 

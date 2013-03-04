@@ -6,7 +6,7 @@ import javax.jws.WebService;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.spml2.interf.ConnectorService;
 import org.openiam.spml2.msg.AddRequestType;
@@ -69,7 +69,7 @@ public class SalesForceConnectorImpl implements ConnectorService {
 
 	@Override
 	@WebMethod
-	public ResponseType testConnection(@WebParam(name = "managedSys", targetNamespace = "") ManagedSys managedSys) {
+	public ResponseType testConnection(@WebParam(name = "managedSys", targetNamespace = "") ManagedSysDto managedSys) {
 		final ResponseType response = new ResponseType();
 		response.setStatus(StatusCodeType.SUCCESS);
 		try {

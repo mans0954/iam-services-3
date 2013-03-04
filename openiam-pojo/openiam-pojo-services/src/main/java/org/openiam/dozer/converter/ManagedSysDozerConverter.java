@@ -1,40 +1,40 @@
 package org.openiam.dozer.converter;
 
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component("managedSysDozerConverter")
-public class ManagedSysDozerConverter extends AbstractDozerEntityConverter<ManagedSys, ManagedSysEntity> {
+public class ManagedSysDozerConverter extends AbstractDozerEntityConverter<ManagedSysDto, ManagedSysEntity> {
     @Override
     public ManagedSysEntity convertEntity(ManagedSysEntity userEntity, boolean isDeep) {
         return convert(userEntity, isDeep, ManagedSysEntity.class);
     }
 
     @Override
-    public ManagedSys convertDTO(ManagedSys entity, boolean isDeep) {
-        return convert(entity, isDeep, ManagedSys.class);
+    public ManagedSysDto convertDTO(ManagedSysDto entity, boolean isDeep) {
+        return convert(entity, isDeep, ManagedSysDto.class);
     }
 
     @Override
-    public ManagedSysEntity convertToEntity(ManagedSys entity, boolean isDeep) {
+    public ManagedSysEntity convertToEntity(ManagedSysDto entity, boolean isDeep) {
         return convertToCrossEntity(entity, isDeep, ManagedSysEntity.class);
     }
 
     @Override
-    public ManagedSys convertToDTO(ManagedSysEntity userEntity, boolean isDeep) {
-        return convertToCrossEntity(userEntity, isDeep, ManagedSys.class);
+    public ManagedSysDto convertToDTO(ManagedSysEntity userEntity, boolean isDeep) {
+        return convertToCrossEntity(userEntity, isDeep, ManagedSysDto.class);
     }
 
     @Override
-    public List<ManagedSysEntity> convertToEntityList(List<ManagedSys> list, boolean isDeep) {
+    public List<ManagedSysEntity> convertToEntityList(List<ManagedSysDto> list, boolean isDeep) {
         return convertListToCrossEntity(list, isDeep, ManagedSysEntity.class);
     }
 
     @Override
-    public List<ManagedSys> convertToDTOList(List<ManagedSysEntity> list, boolean isDeep) {
-        return convertListToCrossEntity(list, isDeep, ManagedSys.class);
+    public List<ManagedSysDto> convertToDTOList(List<ManagedSysEntity> list, boolean isDeep) {
+        return convertListToCrossEntity(list, isDeep, ManagedSysDto.class);
     }
 }

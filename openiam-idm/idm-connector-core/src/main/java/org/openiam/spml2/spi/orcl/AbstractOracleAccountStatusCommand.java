@@ -1,6 +1,6 @@
 package org.openiam.spml2.spi.orcl;
 
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -32,7 +32,7 @@ public abstract class AbstractOracleAccountStatusCommand extends AbstractOracleP
 
     private static final String SQL = "ALTER USER \"%s\" account %s";
 
-    protected void changeAccountStatus(final ManagedSys managedSys, final String principalName, final AccountStatus accountStatus)
+    protected void changeAccountStatus(final ManagedSysDto managedSys, final String principalName, final AccountStatus accountStatus)
         throws SQLException, ClassNotFoundException {
         Connection connection = null;
         try {

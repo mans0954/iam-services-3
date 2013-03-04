@@ -13,7 +13,7 @@ import org.openiam.authmanager.common.model.AuthorizationManagerLoginId;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.ws.GroupDataWebService;
-import org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService;
+import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.role.dto.Role;
@@ -52,7 +52,7 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractTestNGSpr
 	
 	@Autowired
 	@Qualifier("managedSysServiceClient")
-	protected ManagedSystemDataService managedSysServiceClient;
+	protected ManagedSystemWebService managedSysServiceClient;
 	
 	private static final int MAX_ITERS = 10;
 	/*

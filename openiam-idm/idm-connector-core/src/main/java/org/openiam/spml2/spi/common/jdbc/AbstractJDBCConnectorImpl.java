@@ -2,7 +2,7 @@ package org.openiam.spml2.spi.common.jdbc;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.spml2.base.AbstractSpml2Complete;
 import org.openiam.spml2.interf.ConnectorService;
@@ -45,7 +45,7 @@ public abstract class AbstractJDBCConnectorImpl extends AbstractSpml2Complete im
         return response;
     }
 
-    public ResponseType testConnection(ManagedSys managedSys) {
+    public ResponseType testConnection(ManagedSysDto managedSys) {
         final ResponseType response = new ResponseType();
         response.setStatus(StatusCodeType.SUCCESS);
 

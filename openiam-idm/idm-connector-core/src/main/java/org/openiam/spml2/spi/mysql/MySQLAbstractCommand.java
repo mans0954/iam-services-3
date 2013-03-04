@@ -2,7 +2,7 @@ package org.openiam.spml2.spi.mysql;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService;
+import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.spml2.spi.common.jdbc.JDBCConnectionMgr;
 
@@ -13,15 +13,15 @@ public abstract class MySQLAbstractCommand {
 
     protected static final Log log = LogFactory.getLog(MySQLAbstractCommand.class);
 
-    protected ManagedSystemDataService managedSysService;
+    protected ManagedSystemWebService managedSysService;
     protected ResourceDataService resourceDataService;
     protected JDBCConnectionMgr connectionMgr;
 
-    public ManagedSystemDataService getManagedSysService() {
+    public ManagedSystemWebService getManagedSysService() {
         return managedSysService;
     }
 
-    public void setManagedSysService(ManagedSystemDataService managedSysService) {
+    public void setManagedSysService(ManagedSystemWebService managedSysService) {
         this.managedSysService = managedSysService;
     }
 

@@ -102,12 +102,12 @@
 	  <property name="address" value="${openiam.service_host}${openiam.idm.ws.path}ResourceDataWebService"/>
 	</bean>
 	
-	<bean id="managedSysServiceClient" class="org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService" 
+	<bean id="managedSysServiceClient" class="org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService"
       factory-bean="managedSysServiceFactory" factory-method="create"/>
 
 
 	<bean id="managedSysServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
-	  <property name="serviceClass" value="org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService"/>
+	  <property name="serviceClass" value="org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService"/>
 	  <property name="address" value="${openiam.service_host}${openiam.idm.ws.path}ManagedSystemWebService"/>
 	</bean>
 	

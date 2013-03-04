@@ -13,14 +13,13 @@ import org.openiam.dozer.converter.ManagedSystemObjectMatchDozerConverter;
 import org.openiam.idm.srvc.audit.service.IdmAuditLogDataService;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
-import org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService;
+import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemObjectMatchDAO;
 import org.openiam.idm.srvc.policy.service.PolicyDataService;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
-import org.openiam.idm.srvc.secdomain.service.SecurityDomainDataService;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
@@ -57,7 +56,7 @@ public class GoogleAppsConnectorImpl implements ConnectorService {
     static protected ResourceBundle res = ResourceBundle
             .getBundle("securityconf");
 
-    protected ManagedSystemDataService managedSysService;
+    protected ManagedSystemWebService managedSysService;
     protected ManagedSystemObjectMatchDAO managedSysObjectMatchDao;
     protected ResourceDataService resourceDataService;
     @Autowired
@@ -130,7 +129,7 @@ public class GoogleAppsConnectorImpl implements ConnectorService {
          * A) Use the targetID to look up the connection information under
          * managed systems
          */
-        ManagedSys managedSys = managedSysService.getManagedSys(targetID);
+        ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
         ManagedSystemObjectMatch matchObj = null;
         List<ManagedSystemObjectMatchEntity> matchObjList = managedSysObjectMatchDao
                 .findBySystemId(targetID, "USER");
@@ -248,7 +247,7 @@ public class GoogleAppsConnectorImpl implements ConnectorService {
          * A) Use the targetID to look up the connection information under
          * managed systems
          */
-        ManagedSys managedSys = managedSysService.getManagedSys(targetID);
+        ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
         ManagedSystemObjectMatch matchObj = null;
         List<ManagedSystemObjectMatchEntity> matchObjList = managedSysObjectMatchDao
                 .findBySystemId(targetID, "USER");
@@ -365,7 +364,7 @@ public class GoogleAppsConnectorImpl implements ConnectorService {
     }
 
     private ModifyResponseType renameIdentity(String newIdentity,
-            String origIdentity, ManagedSys managedSys,
+            String origIdentity, ManagedSysDto managedSys,
             ManagedSystemObjectMatch matchObj) {
         UserService userService = new UserService(
                 "gdata-sample-AppsForYourDomain-UserService");
@@ -470,7 +469,7 @@ public class GoogleAppsConnectorImpl implements ConnectorService {
          * A) Use the targetID to look up the connection information under
          * managed systems
          */
-        ManagedSys managedSys = managedSysService.getManagedSys(targetID);
+        ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
         ManagedSystemObjectMatch matchObj = null;
         List<ManagedSystemObjectMatchEntity> matchObjList = managedSysObjectMatchDao
                 .findBySystemId(targetID, "USER");
@@ -551,7 +550,7 @@ public class GoogleAppsConnectorImpl implements ConnectorService {
          * A) Use the targetID to look up the connection information under
          * managed systems
          */
-        ManagedSys managedSys = managedSysService.getManagedSys(targetID);
+        ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
         ManagedSystemObjectMatch matchObj = null;
         List<ManagedSystemObjectMatchEntity> matchObjList = managedSysObjectMatchDao
                 .findBySystemId(targetID, "USER");
@@ -634,11 +633,11 @@ public class GoogleAppsConnectorImpl implements ConnectorService {
         return null;
     }
 
-    public ManagedSystemDataService getManagedSysService() {
+    public ManagedSystemWebService getManagedSysService() {
         return managedSysService;
     }
 
-    public void setManagedSysService(ManagedSystemDataService managedSysService) {
+    public void setManagedSysService(ManagedSystemWebService managedSysService) {
         this.managedSysService = managedSysService;
     }
 
@@ -716,7 +715,7 @@ public class GoogleAppsConnectorImpl implements ConnectorService {
          * A) Use the targetID to look up the connection information under
          * managed systems
          */
-        ManagedSys managedSys = managedSysService.getManagedSys(targetID);
+        ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
         ManagedSystemObjectMatch matchObj = null;
         List<ManagedSystemObjectMatchEntity> matchObjList = managedSysObjectMatchDao
                 .findBySystemId(targetID, "USER");
@@ -797,7 +796,7 @@ public class GoogleAppsConnectorImpl implements ConnectorService {
          * A) Use the targetID to look up the connection information under
          * managed systems
          */
-        ManagedSys managedSys = managedSysService.getManagedSys(targetID);
+        ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
         ManagedSystemObjectMatch matchObj = null;
         List<ManagedSystemObjectMatchEntity> matchObjList = managedSysObjectMatchDao
                 .findBySystemId(targetID, "USER");
@@ -860,7 +859,7 @@ public class GoogleAppsConnectorImpl implements ConnectorService {
         return response;
     }
 
-    public ResponseType testConnection(ManagedSys managedSys) {
+    public ResponseType testConnection(ManagedSysDto managedSys) {
         ResponseType response = new ResponseType();
         response.setStatus(StatusCodeType.SUCCESS);
 

@@ -9,7 +9,7 @@ public interface ProvisionConnectorService {
 
     List<ProvisionConnectorEntity> getProvisionConnectorsByExample(ProvisionConnectorEntity example, Integer from, Integer size);
 
-    Integer getProvisionConnectorsByExampleCount(ProvisionConnectorEntity example);
+    Integer getProvisionConnectorsCountByExample(ProvisionConnectorEntity example);
 
     List<MetadataTypeEntity> getProvisionConnectorsMetadataTypes();
 

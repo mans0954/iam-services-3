@@ -6,7 +6,7 @@ import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.mngsys.domain.ProvisionConnectorEntity;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
-import org.openiam.idm.srvc.mngsys.searchbeans.ProvisionConnectorSearchBean;
+import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorSearchBean;
 import org.openiam.idm.srvc.mngsys.searchbeans.converter.ProvisionConnectorSearchBeanConverter;
 import org.openiam.idm.srvc.mngsys.service.ProvisionConnectorService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,7 +48,7 @@ public class ProvisionConnectorWebServiceImpl implements ProvisionConnectorWebSe
     @Override
     public Integer getProvisionConnectorsCount(@WebParam(name = "searchBean", targetNamespace = "") ProvisionConnectorSearchBean searchBean) {
         ProvisionConnectorEntity connectorEntity =  provisionConnectorSearchBeanConverter.convert(searchBean);
-        return connectorService.getProvisionConnectorsByExampleCount(connectorEntity);
+        return connectorService.getProvisionConnectorsCountByExample(connectorEntity);
     }
 
     @Override

@@ -105,7 +105,7 @@ public class LoginEntity implements java.io.Serializable {
     protected String currentLoginHost;
 
     @Column(name="AUTH_FAIL_COUNT")
-    protected Integer authFailCount = new Integer(0);
+    protected Integer authFailCount = 0;
 
     @XmlSchemaType(name = "dateTime")
     @Column(name="LAST_AUTH_ATTEMPT",length = 19)
@@ -121,10 +121,10 @@ public class LoginEntity implements java.io.Serializable {
     protected Date lastLogin;
 
     @Column(name="IS_DEFAULT")
-    protected Integer isDefault = new Integer(0);
+    protected Integer isDefault = 0;
 
     @Column(name="PWD_CHANGE_COUNT")
-    protected Integer passwordChangeCount = new Integer(0);
+    protected Integer passwordChangeCount = 0;
 
     @Column(name="LAST_LOGIN_IP")
     protected String lastLoginIP;

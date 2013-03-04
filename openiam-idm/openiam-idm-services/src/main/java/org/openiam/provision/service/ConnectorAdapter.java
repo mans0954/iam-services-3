@@ -27,7 +27,7 @@ import org.mule.api.MuleContext;
 import org.mule.api.MuleException;
 import org.mule.api.MuleMessage;
 import org.mule.module.client.MuleClient;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
 import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
@@ -60,7 +60,7 @@ public class ConnectorAdapter {
     @Autowired
     private ProvisionConnectorWebService connectorService;
 
-    public AddResponseType addRequest(ManagedSys managedSys, AddRequestType addReqType, MuleContext muleContext) {
+    public AddResponseType addRequest(ManagedSysDto managedSys, AddRequestType addReqType, MuleContext muleContext) {
         AddResponseType respType = new AddResponseType();
         respType.setStatus(StatusCodeType.FAILURE);
 
@@ -100,7 +100,7 @@ public class ConnectorAdapter {
 
     }
 
-    public ModifyResponseType modifyRequest(ManagedSys managedSys, ModifyRequestType modReqType, MuleContext muleContext) {
+    public ModifyResponseType modifyRequest(ManagedSysDto managedSys, ModifyRequestType modReqType, MuleContext muleContext) {
         ModifyResponseType respType = new ModifyResponseType();
         respType.setStatus(StatusCodeType.FAILURE);
 
@@ -145,7 +145,7 @@ public class ConnectorAdapter {
 
 
 
-    public LookupResponseType lookupRequest(ManagedSys managedSys, LookupRequestType req, MuleContext muleContext) {
+    public LookupResponseType lookupRequest(ManagedSysDto managedSys, LookupRequestType req, MuleContext muleContext) {
         LookupResponseType resp = new LookupResponseType();
         resp.setStatus(StatusCodeType.FAILURE);
 
@@ -190,7 +190,7 @@ public class ConnectorAdapter {
 
     }
 
-    public ResponseType reconcileResource(ManagedSys managedSys, ReconciliationConfig config, MuleContext muleContext){
+    public ResponseType reconcileResource(ManagedSysDto managedSys, ReconciliationConfig config, MuleContext muleContext){
         ResponseType type = new ResponseType();
         type.setStatus(StatusCodeType.FAILURE);
 
@@ -230,7 +230,7 @@ public class ConnectorAdapter {
         }
     }
 
-    public ResponseType deleteRequest(ManagedSys managedSys, DeleteRequestType delReqType, MuleContext muleContext) {
+    public ResponseType deleteRequest(ManagedSysDto managedSys, DeleteRequestType delReqType, MuleContext muleContext) {
         ResponseType type = new ResponseType();
         type.setStatus(StatusCodeType.FAILURE);
 
@@ -268,7 +268,7 @@ public class ConnectorAdapter {
 
     }
 
-    public ResponseType setPasswordRequest(ManagedSys managedSys, SetPasswordRequestType request, MuleContext muleContext) {
+    public ResponseType setPasswordRequest(ManagedSysDto managedSys, SetPasswordRequestType request, MuleContext muleContext) {
         ResponseType type = new ResponseType();
         type.setStatus(StatusCodeType.FAILURE);
 
@@ -314,7 +314,7 @@ public class ConnectorAdapter {
 
     }
 
-    public ResetPasswordResponseType resetPasswordRequest(ManagedSys managedSys, ResetPasswordRequestType request, MuleContext muleContext) {
+    public ResetPasswordResponseType resetPasswordRequest(ManagedSysDto managedSys, ResetPasswordRequestType request, MuleContext muleContext) {
 
         ResetPasswordResponseType type = new ResetPasswordResponseType();
         type.setStatus(StatusCodeType.FAILURE);
@@ -359,7 +359,7 @@ public class ConnectorAdapter {
 
     }
 
-    public ResponseType suspendRequest(ManagedSys managedSys, SuspendRequestType request, MuleContext muleContext) {
+    public ResponseType suspendRequest(ManagedSysDto managedSys, SuspendRequestType request, MuleContext muleContext) {
 
         ResponseType type = new ResponseType();
         type.setStatus(StatusCodeType.FAILURE);
@@ -399,7 +399,7 @@ public class ConnectorAdapter {
 
     }
 
-    public ResponseType resumeRequest(ManagedSys managedSys, ResumeRequestType request, MuleContext muleContext) {
+    public ResponseType resumeRequest(ManagedSysDto managedSys, ResumeRequestType request, MuleContext muleContext) {
 
         ResponseType type = new ResponseType();
         type.setStatus(StatusCodeType.FAILURE);
@@ -436,7 +436,7 @@ public class ConnectorAdapter {
 
     }
 
-    public ResponseType testConnection(ManagedSys managedSys, MuleContext muleContext) {
+    public ResponseType testConnection(ManagedSysDto managedSys, MuleContext muleContext) {
 
         ResponseType type = new ResponseType();
         type.setStatus(StatusCodeType.FAILURE);
@@ -537,7 +537,7 @@ public class ConnectorAdapter {
 
         if (operation.equalsIgnoreCase("testConnection")) {
 
-            msg = client.send("vm://dispatchConnectorMsgTestConnection", (ManagedSys) reqType, msgPropMap);
+            msg = client.send("vm://dispatchConnectorMsgTestConnection", (ManagedSysDto) reqType, msgPropMap);
         }
 
         log.debug("Service:: Mule Message object: " + msg.toString());

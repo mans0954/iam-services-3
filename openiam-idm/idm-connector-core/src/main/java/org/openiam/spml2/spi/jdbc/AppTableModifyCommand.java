@@ -1,7 +1,7 @@
 package org.openiam.spml2.spi.jdbc;
 
 import org.apache.commons.lang.StringUtils;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.provision.type.ExtensibleAttribute;
@@ -47,7 +47,7 @@ public class AppTableModifyCommand extends AbstractAppTableCommand implements Mo
 
 
         /* A) Use the targetID to look up the connection information under managed systems */
-        final ManagedSys managedSys = managedSysService.getManagedSys(targetID);
+        final ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
         if(managedSys == null) {
         	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, String.format("No Managed System with target id: %s", targetID));
             return response;

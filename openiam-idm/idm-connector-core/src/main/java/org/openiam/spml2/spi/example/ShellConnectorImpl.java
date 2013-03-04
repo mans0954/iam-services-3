@@ -47,14 +47,13 @@ import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
-import org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService;
+import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemObjectMatchDAO;
 import org.openiam.idm.srvc.policy.service.PolicyDataService;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
-import org.openiam.idm.srvc.secdomain.service.SecurityDomainDataService;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
@@ -99,7 +98,7 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
         ConnectorService {
 
     private static final Log log = LogFactory.getLog(ShellConnectorImpl.class);
-    protected ManagedSystemDataService managedSysService;
+    protected ManagedSystemWebService managedSysService;
     protected ManagedSystemObjectMatchDAO managedSysObjectMatchDao;
     protected ResourceDataService resourceDataService;
     @Autowired
@@ -178,7 +177,7 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
          * A) Use the targetID to look up the connection information under
          * managed systems
          */
-        ManagedSys managedSys = managedSysService.getManagedSys(targetID);
+        ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
         ManagedSystemObjectMatch matchObj = null;
         List<ManagedSystemObjectMatchEntity> matchObjList = managedSysObjectMatchDao
                 .findBySystemId(targetID, "USER");
@@ -354,7 +353,7 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
          * A) Use the targetID to look up the connection information under
          * managed systems
          */
-        ManagedSys managedSys = managedSysService.getManagedSys(targetID);
+        ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
 
         String host;
         String hostlogin;
@@ -475,7 +474,7 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
          * A) Use the targetID to look up the connection information under
          * managed systems
          */
-        ManagedSys managedSys = managedSysService.getManagedSys(targetID);
+        ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
         ManagedSystemObjectMatch matchObj = null;
         List<ManagedSystemObjectMatchEntity> matchObjList = managedSysObjectMatchDao
                 .findBySystemId(targetID, "USER");
@@ -743,7 +742,7 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
          * A) Use the targetID to look up the connection information under
          * managed systems
          */
-        ManagedSys managedSys = managedSysService.getManagedSys(targetID);
+        ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
 
         String host;
         String hostlogin;
@@ -803,11 +802,11 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
         this.managedSysObjectMatchDao = managedSysObjectMatchDao;
     }
 
-    public ManagedSystemDataService getManagedSysService() {
+    public ManagedSystemWebService getManagedSysService() {
         return managedSysService;
     }
 
-    public void setManagedSysService(ManagedSystemDataService managedSysService) {
+    public void setManagedSysService(ManagedSystemWebService managedSysService) {
         this.managedSysService = managedSysService;
     }
 
@@ -894,7 +893,7 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
     }
 
     public ResponseType testConnection(
-            @WebParam(name = "managedSys", targetNamespace = "") ManagedSys managedSys) {
+            @WebParam(name = "managedSys", targetNamespace = "") ManagedSysDto managedSys) {
         return null; // To change body of implemented methods use File |
                      // Settings | File Templates.
     }

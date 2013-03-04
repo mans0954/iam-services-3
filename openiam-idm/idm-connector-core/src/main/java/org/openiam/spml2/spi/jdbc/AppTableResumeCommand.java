@@ -3,9 +3,8 @@ package org.openiam.spml2.spi.jdbc;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.exception.EncryptionException;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
-import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.spml2.msg.ErrorCode;
@@ -58,7 +57,7 @@ public class AppTableResumeCommand extends AbstractAppTableCommand implements Re
             final String encPassword = login.getPassword();
             final String decPassword = loginManager.decryptPassword(login.getUserId(),encPassword);
 
-            final ManagedSys managedSys = managedSysService.getManagedSys(targetID);
+            final ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
             if(managedSys == null) {
             	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, String.format("No Managed System with target id: %s", targetID));
                 return response;

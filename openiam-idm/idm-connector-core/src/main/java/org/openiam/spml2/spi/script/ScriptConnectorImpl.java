@@ -20,8 +20,8 @@ package org.openiam.spml2.spi.script;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
-import org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
+import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemObjectMatchDAO;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
@@ -55,14 +55,14 @@ import java.util.Map;
 public class ScriptConnectorImpl extends AbstractSpml2Complete implements ConnectorService {
 
     private static final Log log = LogFactory.getLog(LdapConnectorImpl.class);
-    protected ManagedSystemDataService managedSysService;
+    protected ManagedSystemWebService managedSysService;
     protected ManagedSystemObjectMatchDAO managedSysObjectMatchDao;
     protected ResourceDataService resourceDataService;
     protected String scriptEngine;
 
     public AddResponseType add(AddRequestType reqType) {
         String targetID = reqType.getTargetID();
-        ManagedSys managedSys = managedSysService.getManagedSys(targetID);
+        ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
 
         try {
             return createConnector(managedSys).add(reqType);
@@ -78,7 +78,7 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete implements Connec
 
     public ResponseType delete(DeleteRequestType reqType) {
         String targetID = reqType.getPsoID().getTargetID();
-        ManagedSys managedSys = managedSysService.getManagedSys(targetID);
+        ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
 
         try {
             return createConnector(managedSys).delete(reqType);
@@ -93,7 +93,7 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete implements Connec
 
     public LookupResponseType lookup(LookupRequestType reqType) {
         String targetID = reqType.getPsoID().getTargetID();
-        ManagedSys managedSys = managedSysService.getManagedSys(targetID);
+        ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
 
         try {
             return createConnector(managedSys).lookup(reqType);
@@ -108,7 +108,7 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete implements Connec
 
     public ModifyResponseType modify(ModifyRequestType reqType) {
         String targetID = reqType.getPsoID().getTargetID();
-        ManagedSys managedSys = managedSysService.getManagedSys(targetID);
+        ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
 
         try {
             return createConnector(managedSys).modify(reqType);
@@ -123,7 +123,7 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete implements Connec
 
     public ResponseType expirePassword(ExpirePasswordRequestType reqType) {
         String targetID = reqType.getPsoID().getTargetID();
-        ManagedSys managedSys = managedSysService.getManagedSys(targetID);
+        ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
 
         try {
             return createConnector(managedSys).expirePassword(reqType);
@@ -138,7 +138,7 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete implements Connec
 
     public ResetPasswordResponseType resetPassword(ResetPasswordRequestType reqType) {
         String targetID = reqType.getPsoID().getTargetID();
-        ManagedSys managedSys = managedSysService.getManagedSys(targetID);
+        ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
 
         try {
             return createConnector(managedSys).resetPassword(reqType);
@@ -153,7 +153,7 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete implements Connec
 
     public ResponseType setPassword(SetPasswordRequestType reqType) {
         String targetID = reqType.getPsoID().getTargetID();
-        ManagedSys managedSys = managedSysService.getManagedSys(targetID);
+        ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
 
         try {
             return createConnector(managedSys).setPassword(reqType);
@@ -173,7 +173,7 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete implements Connec
         return response;
     }
 
-    public ResponseType testConnection(ManagedSys managedSys) {
+    public ResponseType testConnection(ManagedSysDto managedSys) {
         try {
             return createConnector(managedSys).testConnection(managedSys);
         } catch (Exception e) {
@@ -187,7 +187,7 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete implements Connec
 
     public ResponseType suspend(SuspendRequestType reqType) {
         String targetID = reqType.getPsoID().getTargetID();
-        ManagedSys managedSys = managedSysService.getManagedSys(targetID);
+        ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
 
         try {
             return createConnector(managedSys).suspend(reqType);
@@ -202,7 +202,7 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete implements Connec
 
     public ResponseType resume(ResumeRequestType reqType) {
         String targetID = reqType.getPsoID().getTargetID();
-        ManagedSys managedSys = managedSysService.getManagedSys(targetID);
+        ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
 
         try {
             return createConnector(managedSys).resume(reqType);
@@ -217,7 +217,7 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete implements Connec
 
     public ValidatePasswordResponseType validatePassword(ValidatePasswordRequestType reqType) {
         String targetID = reqType.getPsoID().getTargetID();
-        ManagedSys managedSys = managedSysService.getManagedSys(targetID);
+        ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
 
         try {
             return createConnector(managedSys).validatePassword(reqType);
@@ -230,7 +230,7 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete implements Connec
         }
     }
 
-    private ConnectorService createConnector(ManagedSys managedSys) throws ClassNotFoundException, IOException {
+    private ConnectorService createConnector(ManagedSysDto managedSys) throws ClassNotFoundException, IOException {
         String connectorPath = "/connector/" + managedSys.getName() + ".groovy";
 
         ScriptIntegration se = ScriptFactory.createModule(this.scriptEngine);
@@ -239,11 +239,11 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete implements Connec
         return (ConnectorService) se.instantiateClass(bindingMap, connectorPath);
     }
 
-    public ManagedSystemDataService getManagedSysService() {
+    public ManagedSystemWebService getManagedSysService() {
         return managedSysService;
     }
 
-    public void setManagedSysService(ManagedSystemDataService managedSysService) {
+    public void setManagedSysService(ManagedSystemWebService managedSysService) {
         this.managedSysService = managedSysService;
     }
 

@@ -12,7 +12,7 @@ import java.util.List;
 public class ProvisionConnectorServiceImpl implements ProvisionConnectorService {
 
     @Autowired
-    ProvisionConnectorDao provisionConnectorDao;
+    private ProvisionConnectorDao provisionConnectorDao;
 
     @Override
     @Transactional(readOnly = true)
@@ -22,7 +22,7 @@ public class ProvisionConnectorServiceImpl implements ProvisionConnectorService 
 
     @Override
     @Transactional(readOnly = true)
-    public Integer getProvisionConnectorsByExampleCount(ProvisionConnectorEntity example) {
+    public Integer getProvisionConnectorsCountByExample(ProvisionConnectorEntity example) {
         return provisionConnectorDao.count(example);
     }
 

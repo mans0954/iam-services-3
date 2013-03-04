@@ -32,7 +32,7 @@ public interface RoleDataService {
     /**
      * Returns a single RolePolicy object based on the attributeId.
      *
-     * @param attrId
+     * @param rolePolicyId
      * @return
      */
     public RolePolicyEntity getRolePolicy(String rolePolicyId);
@@ -40,7 +40,7 @@ public interface RoleDataService {
     /**
      * Removes a RolePolicy specified by the rPolicy parameter.
      *
-     * @param attr
+     * @param rolePolicyId
      */
     public void removeRolePolicy(final String rolePolicyId);
 
@@ -57,7 +57,7 @@ public interface RoleDataService {
     /**
      * Removes a RoleAttribute specified by the attribute.
      *
-     * @param attr
+     * @param roleAttributeId
      */
     public void removeAttribute(final String roleAttributeId);
 
@@ -82,7 +82,7 @@ public interface RoleDataService {
      * roleService.addRoleToGroup(domainId, roleId, groupId);<br>
      * </code>
      *
-     * @param grpId  The group for which the roleId is to be added .
+     * @param groupId  The group for which the roleId is to be added .
      * @param roleId The roleId which is to be added to the group.
      */
     public void addGroupToRole(String roleId, String groupId);
@@ -90,7 +90,6 @@ public interface RoleDataService {
     /**
      * Removes the association between a single group and role.
      *
-     * @param domainId
      * @param roleId
      * @param groupId
      */
@@ -108,7 +107,12 @@ public interface RoleDataService {
     public List<RoleEntity> getRolesForUser(final String userId, final int from, final int size);
     public int getNumOfRolesForUser(final String userId);
 
+    /**
+     * Adds a user to a role using the UserRole object. Similar to addUserToRole, but allows you to update attributes likes start and end date.
+     */
+    void assocUserToRole(UserRoleEntity ur);
 
+    void updateUserRoleAssoc(UserRoleEntity ur);
     /**
      * This method adds particular user directly to a role.<br>
      * For example:
@@ -117,7 +121,6 @@ public interface RoleDataService {
      * roleService.addUserToRole(domainId, roleId, userId);<br>
      * </code>
      *
-     * @param domainId
      * @param roleId   The roleId to which the user will be associated.
      * @param userId   The userId to which the roleId is to be added .
      */
@@ -126,7 +129,6 @@ public interface RoleDataService {
     /**
      * This method removes a particular user directly to a role.
      *
-     * @param domainId
      * @param roleId
      * @param userId
      */
@@ -135,7 +137,6 @@ public interface RoleDataService {
     /**
      * Return an array of users that are in a particular role
      *
-     * @param domainId
      * @param roleId
      * @return
      */

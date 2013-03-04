@@ -1,6 +1,6 @@
 package org.openiam.spml2.spi.mysql;
 
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.spml2.base.AbstractSpml2Complete;
 import org.openiam.spml2.interf.ConnectorService;
@@ -39,7 +39,7 @@ public class MySQLConnectorImpl extends AbstractSpml2Complete implements Connect
         return response;
     }
 
-    public ResponseType testConnection(@WebParam(name = "managedSys", targetNamespace = "") ManagedSys managedSys) {
+    public ResponseType testConnection(@WebParam(name = "managedSys", targetNamespace = "") ManagedSysDto managedSys) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 

@@ -8,6 +8,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mule.api.MuleContext;
 import org.openiam.base.SysConfiguration;
+import org.openiam.connector.type.RemoteUserRequest;
 import org.openiam.connector.type.UserRequest;
 import org.openiam.connector.type.UserResponse;
 import org.openiam.dozer.converter.LoginDozerConverter;
@@ -18,10 +19,10 @@ import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
-import org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService;
+import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
@@ -52,7 +53,7 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
     protected LoginDAO loginDao;
     @Autowired
     protected IdmAuditLogDataService auditDataService;
-    protected ManagedSystemDataService managedSysService;
+    protected ManagedSystemWebService managedSysService;
     protected RoleDataService roleDataService;
     protected GroupDataService groupManager;
     protected String connectorWsdl;
@@ -74,7 +75,7 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
     protected PasswordHistoryDAO passwordHistoryDao;
     protected String preProcessor;
     protected String postProcessor;
-    
+
     @Autowired
     protected LoginDozerConverter loginDozerConverter;
 
@@ -177,7 +178,7 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
     }
 
     protected ResponseType localDelete(Login l, String requestId,
-            PSOIdentifierType idType, ManagedSys mSys, ProvisionUser user,
+            PSOIdentifierType idType, ManagedSysDto mSys, ProvisionUser user,
             IdmAuditLog auditLog) {
 
         log.debug("Local delete for=" + l);
@@ -200,22 +201,25 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
             logid = auditLog.getLogId();
         }
 
-        auditHelper.addLog("DELETE IDENTITY", user.getRequestorDomain(), user
-                .getRequestorLogin(), "IDM SERVICE", user.getCreatedBy(), l.getManagedSysId(), "IDENTITY", user.getUserId(),
-                logid, status, logid, "IDENTITY_STATUS", "DELETED", requestId,
-                resp.getErrorCodeAsStr(), user.getSessionId(), resp
-                        .getErrorMessage(), user.getRequestClientIP(), l.getLogin(), l.getDomainId());
+        auditHelper.addLog("DELETE IDENTITY", user.getRequestorDomain(), user.getRequestorLogin(),
+                "IDM SERVICE", user.getCreatedBy(), l.getManagedSysId(),
+                "IDENTITY", user.getUserId(),
+                logid, status, logid,
+                "IDENTITY_STATUS", "DELETED",
+                requestId, resp.getErrorCodeAsStr(), user.getSessionId(), resp.getErrorMessage(),
+                user.getRequestClientIP(), l.getLogin(), l.getDomainId());
 
         return resp;
+
 
     }
 
     protected UserResponse remoteDelete(Login mLg, String requestId,
-            ManagedSys mSys, ProvisionConnectorDto connector,
+            ManagedSysDto mSys, ProvisionConnectorDto connector,
             ManagedSystemObjectMatch matchObj, ProvisionUser user,
             IdmAuditLog auditLog) {
 
-        UserRequest request = new UserRequest();
+        RemoteUserRequest request = new RemoteUserRequest();
 
         request.setUserIdentity(mLg.getLogin());
         request.setRequestID(requestId);
@@ -228,17 +232,20 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
         }
         request.setOperation("DELETE");
 
-        UserResponse resp = remoteConnectorAdapter.deleteRequest(mSys, request,
-                connector, muleContext);
+        request.setScriptHandler(mSys.getDeleteHandler());
 
-        auditHelper.addLog("DELETE IDENTITY", auditLog.getDomainId(), auditLog
-                .getPrincipal(), "IDM SERVICE", user.getCreatedBy(), mLg.getManagedSysId(), "IDENTITY", user.getUserId(),
-                auditLog.getLogId(), resp.getStatus().toString(), auditLog
-                        .getLogId(), "IDENTITY_STATUS", "DELETED", requestId,
-                resp.getErrorCodeAsStr(), user.getSessionId(), resp
-                        .getErrorMsgAsStr(), user.getRequestClientIP(), mLg.getLogin(), mLg.getDomainId());
+        UserResponse resp = remoteConnectorAdapter.deleteRequest(mSys, request, connector, muleContext);
+
+        auditHelper.addLog("DELETE IDENTITY", auditLog.getDomainId(), auditLog.getPrincipal(),
+                "IDM SERVICE", user.getCreatedBy(), mLg.getManagedSysId(),
+                "IDENTITY", user.getUserId(),
+                auditLog.getLogId(), resp.getStatus().toString(), auditLog.getLogId(), "IDENTITY_STATUS",
+                "DELETED",
+                requestId, resp.getErrorCodeAsStr(), user.getSessionId(), resp.getErrorMsgAsStr(),
+                user.getRequestClientIP(), mLg.getLogin(), mLg.getDomainId());
 
         return resp;
+
 
     }
 
@@ -287,11 +294,11 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
         this.auditDataService = auditDataService;
     }
 
-    public ManagedSystemDataService getManagedSysService() {
+    public ManagedSystemWebService getManagedSysService() {
         return managedSysService;
     }
 
-    public void setManagedSysService(ManagedSystemDataService managedSysService) {
+    public void setManagedSysService(ManagedSystemWebService managedSysService) {
         this.managedSysService = managedSysService;
     }
 

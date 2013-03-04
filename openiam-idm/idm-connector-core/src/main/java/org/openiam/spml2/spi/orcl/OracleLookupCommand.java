@@ -1,7 +1,7 @@
 package org.openiam.spml2.spi.orcl;
 
 import org.apache.commons.lang.StringUtils;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
@@ -39,7 +39,7 @@ public class OracleLookupCommand extends AbstractOracleCommand implements Lookup
         /* targetID -  */
         final String targetID = psoID.getTargetID();
 
-        final ManagedSys managedSys = managedSysService.getManagedSys(targetID);
+        final ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
         if(managedSys == null) {
         	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, String.format("No Managed System with target id: %s", targetID));
             return response;

@@ -3,26 +3,13 @@ package org.openiam.spml2.spi.salesforce;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService;
+import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
-import org.openiam.spml2.spi.salesforce.exception.SalesForceDataIntegrityException;
-import org.openiam.spml2.spi.salesforce.exception.SalesForcePersistException;
 import org.springframework.beans.factory.annotation.Required;
-import org.springframework.dao.DataIntegrityViolationException;
-
-import com.sforce.soap.partner.PartnerConnection;
-import com.sforce.soap.partner.QueryResult;
-import com.sforce.soap.partner.SaveResult;
-import com.sforce.soap.partner.sobject.SObject;
-import com.sforce.ws.ConnectionException;
 
 public abstract class AbstractSalesforceCommand {
 	
@@ -32,11 +19,11 @@ public abstract class AbstractSalesforceCommand {
 	
 	protected static final Log log = LogFactory.getLog(AbstractSalesforceCommand.class);
 
-    protected ManagedSystemDataService managedSysService;
+    protected ManagedSystemWebService managedSysService;
     protected ResourceDataService resourceDataService;
     
     @Required
-    public void setManagedSysService(ManagedSystemDataService managedSysService) {
+    public void setManagedSysService(ManagedSystemWebService managedSysService) {
         this.managedSysService = managedSysService;
     }
 

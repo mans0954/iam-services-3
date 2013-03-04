@@ -230,7 +230,7 @@
 	</mapping>
     <mapping>
         <class-a>org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity</class-a>
-        <class-b>org.openiam.idm.srvc.mngsys.dto.ManagedSys</class-b>
+        <class-b>org.openiam.idm.srvc.mngsys.dto.ManagedSysDto</class-b>
         <field-exclude>
             <a>mngSysObjectMatchs</a>
             <b>mngSysObjectMatchs</b>

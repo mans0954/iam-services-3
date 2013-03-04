@@ -200,7 +200,7 @@
     <!-- 		<property name="auditDataService" ref="auditDataService" /> -->
     <!-- 	</bean> -->
 
-    <bean id="managedSysService" class="org.openiam.idm.srvc.mngsys.service.ManagedSystemDataServiceImpl" >
+    <bean id="managedSysService" class="org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebServiceImpl" >
         <property name="approverAssociationDao" ref="approverAssociationDAO" />
         <property name="attributeMapDao" ref="attributeMapDAO" />
         <property name="cryptor" ref="cryptor" />
@@ -463,7 +463,7 @@ of an operation defined by the FooService interface -->
     </aop:config>
 
     <aop:config>
-        <aop:pointcut id="managedSysDataOperation" expression="execution(* org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService.*(..))"/>
+        <aop:pointcut id="managedSysDataOperation" expression="execution(* org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService.*(..))"/>
         <aop:advisor advice-ref="txAdvice" pointcut-ref="managedSysDataOperation"/>
     </aop:config>
 

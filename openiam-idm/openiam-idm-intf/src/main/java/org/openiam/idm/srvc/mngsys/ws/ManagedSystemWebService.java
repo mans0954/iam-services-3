@@ -1,4 +1,4 @@
-package org.openiam.idm.srvc.mngsys.service;
+package org.openiam.idm.srvc.mngsys.ws;
 
 import java.util.List;
 
@@ -6,20 +6,35 @@ import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 
-import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
-import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
+import org.openiam.idm.srvc.mngsys.dto.*;
 
 /**
- * Interface for <code>ManagedSystemDataService</code>
+ * Interface for <code>ManagedSystemWebService</code>
  * @author suneet shah
  *
  */
 @WebService
-public interface ManagedSystemDataService {
+public interface ManagedSystemWebService {
 
-	/**
+    /**
+     *
+     * @param searchBean
+     * @return
+     */
+    @WebMethod
+    public Integer getManagedSystemsCount(@WebParam(name = "searchBean", targetNamespace = "")ManagedSysSearchBean searchBean);
+
+
+    /**
+     * Return an list of the ManagedSys object in the system by SearchBean
+     * @return the managed systems
+     */
+    @WebMethod
+    List<ManagedSysDto> getManagedSystems(@WebParam(name = "searchBean", targetNamespace = "") ManagedSysSearchBean searchBean,
+                                                       @WebParam(name = "size", targetNamespace = "")Integer size,
+                                                       @WebParam(name = "from", targetNamespace = "")Integer from);
+
+    /**
 	 * Returns a ManagedSys object for the specified systemId.
 	 * 
 	 * @param sysId
@@ -27,7 +42,7 @@ public interface ManagedSystemDataService {
 	 * @return the managed sys
 	 */
 	@WebMethod
-    ManagedSys getManagedSys(
+    ManagedSysDto getManagedSys(
 			@WebParam(name = "sysId", targetNamespace = "")
 			String sysId);
 
@@ -40,7 +55,7 @@ public interface ManagedSystemDataService {
 	 * @return the managed sys by name
 	 */
 	@WebMethod
-	ManagedSys getManagedSysByName(
+    ManagedSysDto getManagedSysByName(
 			@WebParam(name = "name", targetNamespace = "")
 			String name);
 	
@@ -53,7 +68,7 @@ public interface ManagedSystemDataService {
 	 * @return the managed sys by provider
 	 */
 	@WebMethod
-	ManagedSys[] getManagedSysByProvider(
+	ManagedSysDto[] getManagedSysByProvider(
 			@WebParam(name = "providerId", targetNamespace = "")
 			String providerId);
 	
@@ -65,12 +80,12 @@ public interface ManagedSystemDataService {
 	 * @return the managed sys by domain
 	 */
 	@WebMethod
-	ManagedSys[] getManagedSysByDomain(
+	ManagedSysDto[] getManagedSysByDomain(
 			@WebParam(name = "domainId", targetNamespace = "")
 			String domainId);
 	
 	@WebMethod
-	ManagedSys[] getAllManagedSys();
+	ManagedSysDto[] getAllManagedSys();
 	
 	/**
 	 * Gets the managed sys by resource.
@@ -80,7 +95,7 @@ public interface ManagedSystemDataService {
 	 * @return the managed sys by resource
 	 */
 	@WebMethod
-	ManagedSys getManagedSysByResource(
+    ManagedSysDto getManagedSysByResource(
 			@WebParam(name = "resourceId", targetNamespace = "")
 			String resourceId);
 	
@@ -92,9 +107,9 @@ public interface ManagedSystemDataService {
 	 *            the sys
 	 */
 	@WebMethod
-	ManagedSys addManagedSystem(
+    ManagedSysDto addManagedSystem(
 			@WebParam(name = "sys", targetNamespace = "")
-			ManagedSys sys);
+            ManagedSysDto sys);
 	
 	
 	/**
@@ -106,7 +121,7 @@ public interface ManagedSystemDataService {
 	@WebMethod
 	void updateManagedSystem(
 			@WebParam(name = "sys", targetNamespace = "")
-			ManagedSys sys);
+            ManagedSysDto sys);
 	
 	
 	/**

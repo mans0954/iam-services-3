@@ -327,20 +327,6 @@
         <!--<property name="keyPassword"  value="${iam.jks.key.password}"  />-->
         <!--<property name="cryptor"  ref="cryptor"  />-->
     <!--</bean>-->
-
-    <!--<bean id="ManagedSysDAO" class="org.openiam.idm.srvc.mngsys.service.ManagedSysDAOImpl" >-->
-        <!--<property name="sessionFactory" ref="sessionFactory"></property>-->
-    <!--</bean>-->
-    <!--<bean id="managedSysObjectMatchDAO" class="org.openiam.idm.srvc.mngsys.service.ManagedSystemObjectMatchDAOImpl" >-->
-        <!--<property name="sessionFactory" ref="sessionFactory"></property>-->
-    <!--</bean>-->
-    <!--<bean id="keyManager" class="org.openiam.core.key.manager.KeyManager">-->
-        <!--<property name="jksFile" value="${iam.jks.path}" />-->
-        <!--<property name="jksPassword"  value="${iam.jks.password}"  />-->
-        <!--<property name="keyPassword"  value="${iam.jks.key.password}"  />-->
-    <!--</bean>-->
-	<!-- Messaging Beans -->
-
 	<!-- ========================= RESOURCE DEFINITIONS ========================= -->
 <!-- 
 	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
@@ -418,12 +404,7 @@
 				<value>org/openiam/idm/srvc/synch/service/SynchActivityLog.hbm.xml</value>
 				<value>org/openiam/idm/srvc/synch/service/ActivityLogDetail.hbm.xml</value>
 
-                <!-- <value>org/openiam/idm/srvc/mngsys/service/ProvisionConnector.hbm.xml</value> -->
-				<!--<value>org/openiam/idm/srvc/mngsys/service/ManagedSys.hbm.xml</value>-->
-				<!--<value>org/openiam/idm/srvc/mngsys/service/ManagedSysObjectMatch.hbm.xml</value>-->
-				<value>org/openiam/idm/srvc/mngsys/service/ApproverAssoc.hbm.xml</value>
-<!-- 				<value>org/openiam/idm/srvc/mngsys/service/AttributeMap.hbm.xml</value> -->
-
+                <value>org/openiam/idm/srvc/mngsys/service/ApproverAssoc.hbm.xml</value>
 
 				<value>org/openiam/idm/srvc/prov/request/service/ProvisionRequest.hbm.xml</value>
 				<value>org/openiam/idm/srvc/prov/request/service/RequestApprover.hbm.xml</value>
@@ -445,34 +426,21 @@
 		</property>
 		<property name="hibernateProperties" ref="hibernateProperties" />
 	    <property name="packagesToScan" value="org.openiam.core.domain*,
-											   org.openiam.idm.srvc.grp.dto*,
 											   org.openiam.idm.srvc.grp.domain*,
-											   org.openiam.idm.srvc.res.dto*,
-											   org.openiam.idm.srvc.role.dto*,
 											   org.openiam.idm.srvc.role.domain*,
-											   org.openiam.idm.srvc.user.dto*,
                                                org.openiam.idm.srvc.user.domain*,
-											   org.openiam.idm.srvc.continfo.dto*,
                                                org.openiam.am.srvc.domain*,
                                                org.openiam.idm.srvc.mngsys.domain*,
-											   org.openiam.idm.srvc.mngsys.dto*,
-											   org.openiam.idm.srvc.org.dto*,
                                                org.openiam.idm.srvc.org.domain*,
-											   org.openiam.idm.srvc.auth.dto*,
 											   org.openiam.idm.srvc.auth.domain*,
-											   org.openiam.idm.srvc.org.dto*,
-											   org.openiam.idm.srvc.cat.dto*,
 											   org.openiam.idm.srvc.cat.domain*,
                                                org.openiam.idm.srvc.continfo.domain*,
                                                org.openiam.idm.srvc.res.domain*,
-                                               org.openiam.idm.srvc.meta.dto*,
                                                org.openiam.idm.srvc.meta.domain*,
-                                               org.openiam.idm.srvc.policy.dto*,
                                                org.openiam.idm.srvc.policy.domain*,
-                                               org.openiam.idm.srvc.audit.dto*,
                                                org.openiam.idm.srvc.audit.domain*,
                                                org.openiam.idm.srvc.pswd.domain*,
-                                               org.openiam.idm.srvc.secdomain*
+                                               org.openiam.idm.srvc.secdomain.domain*
                                                "/>
 
 	</bean>

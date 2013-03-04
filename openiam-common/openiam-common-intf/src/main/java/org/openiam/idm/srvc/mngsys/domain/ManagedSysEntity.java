@@ -4,7 +4,7 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -16,7 +16,7 @@ import java.util.Set;
 @Table(name = "MANAGED_SYS")
 @Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-@DozerDTOCorrespondence(ManagedSys.class)
+@DozerDTOCorrespondence(ManagedSysDto.class)
 public class ManagedSysEntity implements Serializable {
     private static final long serialVersionUID = -648884785253890053L;
     @Id
@@ -72,14 +72,14 @@ public class ManagedSysEntity implements Serializable {
     private  String passwordHandler;
     @Column(name="SUSPEND_HNDLR",length =100)
     private  String suspendHandler;
-    @Column(name="HNDLR_1",length =100)
-    private  String handler1;
-    @Column(name="HNDLR_2",length =100)
-    private  String handler2;
-    @Column(name="HNDLR_3",length =100)
-    private  String handler3;
-    @Column(name="HNDLR_4",length =100)
-    private  String handler4;
+    @Column(name="SEARCH_HNDLR",length =100)
+    private  String searchHandler;
+    @Column(name="LOOKUP_HNDLR",length =100)
+    private  String lookupHandler;
+    @Column(name="TEST_CONNECTION_HNDLR",length =100)
+    private  String testConnectionHandler;
+    @Column(name="RECONCILE_RESOURCE_HNDLR",length =100)
+    private  String reconcileResourceHandler;
     @Column(name="HNDLR_5",length =100)
     private  String handler5;
 
@@ -279,36 +279,36 @@ public class ManagedSysEntity implements Serializable {
         this.suspendHandler = suspendHandler;
     }
 
-    public String getHandler1() {
-        return handler1;
+    public String getSearchHandler() {
+        return searchHandler;
     }
 
-    public void setHandler1(String handler1) {
-        this.handler1 = handler1;
+    public void setSearchHandler(String searchHandler) {
+        this.searchHandler = searchHandler;
     }
 
-    public String getHandler2() {
-        return handler2;
+    public String getLookupHandler() {
+        return lookupHandler;
     }
 
-    public void setHandler2(String handler2) {
-        this.handler2 = handler2;
+    public void setLookupHandler(String lookupHandler) {
+        this.lookupHandler = lookupHandler;
     }
 
-    public String getHandler3() {
-        return handler3;
+    public String getTestConnectionHandler() {
+        return testConnectionHandler;
     }
 
-    public void setHandler3(String handler3) {
-        this.handler3 = handler3;
+    public void setTestConnectionHandler(String testConnectionHandler) {
+        this.testConnectionHandler = testConnectionHandler;
     }
 
-    public String getHandler4() {
-        return handler4;
+    public String getReconcileResourceHandler() {
+        return reconcileResourceHandler;
     }
 
-    public void setHandler4(String handler4) {
-        this.handler4 = handler4;
+    public void setReconcileResourceHandler(String reconcileResourceHandler) {
+        this.reconcileResourceHandler = reconcileResourceHandler;
     }
 
     public String getHandler5() {
@@ -325,5 +325,91 @@ public class ManagedSysEntity implements Serializable {
 
     public void setMngSysObjectMatchs(Set<ManagedSystemObjectMatchEntity> mngSysObjectMatchs) {
         this.mngSysObjectMatchs = mngSysObjectMatchs;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ManagedSysEntity that = (ManagedSysEntity) o;
+
+        if (addHandler != null ? !addHandler.equals(that.addHandler) : that.addHandler != null) return false;
+        if (commProtocol != null ? !commProtocol.equals(that.commProtocol) : that.commProtocol != null) return false;
+        if (connectionString != null ? !connectionString.equals(that.connectionString) : that.connectionString != null)
+            return false;
+        if (connectorId != null ? !connectorId.equals(that.connectorId) : that.connectorId != null) return false;
+        if (deleteHandler != null ? !deleteHandler.equals(that.deleteHandler) : that.deleteHandler != null)
+            return false;
+        if (description != null ? !description.equals(that.description) : that.description != null) return false;
+        if (domainId != null ? !domainId.equals(that.domainId) : that.domainId != null) return false;
+        if (driverUrl != null ? !driverUrl.equals(that.driverUrl) : that.driverUrl != null) return false;
+        if (endDate != null ? !endDate.equals(that.endDate) : that.endDate != null) return false;
+        if (handler5 != null ? !handler5.equals(that.handler5) : that.handler5 != null) return false;
+        if (hostUrl != null ? !hostUrl.equals(that.hostUrl) : that.hostUrl != null) return false;
+        if (lookupHandler != null ? !lookupHandler.equals(that.lookupHandler) : that.lookupHandler != null)
+            return false;
+        if (managedSysId != null ? !managedSysId.equals(that.managedSysId) : that.managedSysId != null) return false;
+        if (modifyHandler != null ? !modifyHandler.equals(that.modifyHandler) : that.modifyHandler != null)
+            return false;
+        if (name != null ? !name.equals(that.name) : that.name != null) return false;
+        if (passwordHandler != null ? !passwordHandler.equals(that.passwordHandler) : that.passwordHandler != null)
+            return false;
+        if (port != null ? !port.equals(that.port) : that.port != null) return false;
+        if (primaryRepository != null ? !primaryRepository.equals(that.primaryRepository) : that.primaryRepository != null)
+            return false;
+        if (pswd != null ? !pswd.equals(that.pswd) : that.pswd != null) return false;
+        if (reconcileResourceHandler != null ? !reconcileResourceHandler.equals(that.reconcileResourceHandler) : that.reconcileResourceHandler != null)
+            return false;
+        if (resourceId != null ? !resourceId.equals(that.resourceId) : that.resourceId != null) return false;
+        if (searchHandler != null ? !searchHandler.equals(that.searchHandler) : that.searchHandler != null)
+            return false;
+        if (secondaryRepositoryId != null ? !secondaryRepositoryId.equals(that.secondaryRepositoryId) : that.secondaryRepositoryId != null)
+            return false;
+        if (startDate != null ? !startDate.equals(that.startDate) : that.startDate != null) return false;
+        if (status != null ? !status.equals(that.status) : that.status != null) return false;
+        if (suspendHandler != null ? !suspendHandler.equals(that.suspendHandler) : that.suspendHandler != null)
+            return false;
+        if (testConnectionHandler != null ? !testConnectionHandler.equals(that.testConnectionHandler) : that.testConnectionHandler != null)
+            return false;
+        if (updateSecondary != null ? !updateSecondary.equals(that.updateSecondary) : that.updateSecondary != null)
+            return false;
+        if (userId != null ? !userId.equals(that.userId) : that.userId != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = managedSysId != null ? managedSysId.hashCode() : 0;
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (description != null ? description.hashCode() : 0);
+        result = 31 * result + (status != null ? status.hashCode() : 0);
+        result = 31 * result + (connectorId != null ? connectorId.hashCode() : 0);
+        result = 31 * result + (domainId != null ? domainId.hashCode() : 0);
+        result = 31 * result + (hostUrl != null ? hostUrl.hashCode() : 0);
+        result = 31 * result + (port != null ? port.hashCode() : 0);
+        result = 31 * result + (commProtocol != null ? commProtocol.hashCode() : 0);
+        result = 31 * result + (userId != null ? userId.hashCode() : 0);
+        result = 31 * result + (pswd != null ? pswd.hashCode() : 0);
+        result = 31 * result + (startDate != null ? startDate.hashCode() : 0);
+        result = 31 * result + (endDate != null ? endDate.hashCode() : 0);
+        result = 31 * result + (resourceId != null ? resourceId.hashCode() : 0);
+        result = 31 * result + (primaryRepository != null ? primaryRepository.hashCode() : 0);
+        result = 31 * result + (secondaryRepositoryId != null ? secondaryRepositoryId.hashCode() : 0);
+        result = 31 * result + (updateSecondary != null ? updateSecondary.hashCode() : 0);
+        result = 31 * result + (driverUrl != null ? driverUrl.hashCode() : 0);
+        result = 31 * result + (connectionString != null ? connectionString.hashCode() : 0);
+        result = 31 * result + (addHandler != null ? addHandler.hashCode() : 0);
+        result = 31 * result + (modifyHandler != null ? modifyHandler.hashCode() : 0);
+        result = 31 * result + (deleteHandler != null ? deleteHandler.hashCode() : 0);
+        result = 31 * result + (passwordHandler != null ? passwordHandler.hashCode() : 0);
+        result = 31 * result + (suspendHandler != null ? suspendHandler.hashCode() : 0);
+        result = 31 * result + (searchHandler != null ? searchHandler.hashCode() : 0);
+        result = 31 * result + (lookupHandler != null ? lookupHandler.hashCode() : 0);
+        result = 31 * result + (testConnectionHandler != null ? testConnectionHandler.hashCode() : 0);
+        result = 31 * result + (reconcileResourceHandler != null ? reconcileResourceHandler.hashCode() : 0);
+        result = 31 * result + (handler5 != null ? handler5.hashCode() : 0);
+        return result;
     }
 }

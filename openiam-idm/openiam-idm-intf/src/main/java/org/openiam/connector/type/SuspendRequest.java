@@ -11,9 +11,9 @@ import javax.xml.datatype.XMLGregorianCalendar;
 
 /**
  * <p>Java class for SuspendRequestType complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="SuspendRequestType">
  *   &lt;complexContent>
@@ -26,37 +26,47 @@ import javax.xml.datatype.XMLGregorianCalendar;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
+ *
+ *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "SuspendRequest", propOrder = {
-    "userIdentity",
-    "effectiveDate"
+        "userIdentity",
+        "effectiveDate",
+        "scriptHandler"
 })
-public class SuspendRequest    extends RequestType
+public class SuspendRequest extends RequestType
 {
     @XmlElement(required = true)
-	protected String userIdentity;
-	
+    protected String userIdentity;
+
+    @XmlElement
+    protected String scriptHandler;
+
     @XmlSchemaType(name = "dateTime")
     protected XMLGregorianCalendar effectiveDate;
 
-	public String getUserIdentity() {
-		return userIdentity;
-	}
+    public String getUserIdentity() {
+        return userIdentity;
+    }
 
-	public void setUserIdentity(String userIdentity) {
-		this.userIdentity = userIdentity;
-	}
+    public void setUserIdentity(String userIdentity) {
+        this.userIdentity = userIdentity;
+    }
 
-	public XMLGregorianCalendar getEffectiveDate() {
-		return effectiveDate;
-	}
+    public XMLGregorianCalendar getEffectiveDate() {
+        return effectiveDate;
+    }
 
-	public void setEffectiveDate(XMLGregorianCalendar effectiveDate) {
-		this.effectiveDate = effectiveDate;
-	}
+    public void setEffectiveDate(XMLGregorianCalendar effectiveDate) {
+        this.effectiveDate = effectiveDate;
+    }
 
+    public String getScriptHandler() {
+        return scriptHandler;
+    }
 
+    public void setScriptHandler(String scriptHandler) {
+        this.scriptHandler = scriptHandler;
+    }
 }

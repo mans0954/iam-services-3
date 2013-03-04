@@ -1,7 +1,7 @@
 package org.openiam.spml2.spi.ldap;
 
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
@@ -51,7 +51,7 @@ public class LdapLookupCommand extends LdapAbstractCommand {
 
         log.debug("looking up identity: " + identity);
 
-        ManagedSys managedSys = managedSysService.getManagedSys(psoId.getTargetID());
+        ManagedSysDto managedSys = managedSysService.getManagedSys(psoId.getTargetID());
         try {
 
             conMgr = ConnectionFactory.create(ConnectionManagerConstant.LDAP_CONNECTION);
