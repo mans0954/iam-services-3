@@ -27,19 +27,12 @@ public class JDBCResoruceDAOImpl extends AbstractJDBCDao implements ResourceDAO 
 	private static final RowMapper<AuthorizationMenu> menuMapper = new MenuMapper();
 	
 	private String GET_ALL = "SELECT RESOURCE_ID AS RESOURCE_ID, NAME AS NAME FROM %s.RES";
-	private String GET_RESOURCE_DOMAINS_WITH_PATTERNS = "SELECT r.RESOURCE_ID AS RESOURCE_ID, r.IS_URL_PROTECTOR AS IS_URL_PROTECTOR, prop.PROP_VALUE AS PATTERN, r.MIN_AUTH_LEVEL AS MIN_AUTH_LEVEL, r.DOMAIN AS DOMAIN, r.IS_PUBLIC AS IS_PUBLIC, r.IS_SSL AS IS_SSL" +
-														"	FROM " +
-														"		%s.RES r " +
-														"		JOIN %s.RESOURCE_PROP prop " +
-														"			ON  r.RESOURCE_ID=prop.RESOURCE_ID " +
-														"			AND prop.NAME = ?";
 	private String GET_ALL_MENUS = "SELECT RESOURCE_ID AS RESOURCE_ID, URL AS MENU_URL, NAME AS MENU_NAME, DISPLAY_ORDER AS DISPLAY_ORDER, IS_PUBLIC AS IS_PUBLIC FROM %s.RES WHERE RESOURCE_TYPE_ID = ?";
 	private String GET_AUTH_MENU_BY_ID = "SELECT RESOURCE_ID AS RESOURCE_ID, URL AS MENU_URL, NAME AS MENU_NAME, DISPLAY_ORDER AS DISPLAY_ORDER FROM %s.RES WHERE RESOURCE_TYPE_ID = ? AND RESOURCE_ID = ?";
 	
 	@Override
 	protected void initSqlStatements() {
 		GET_ALL = String.format(GET_ALL, getSchemaName());
-		GET_RESOURCE_DOMAINS_WITH_PATTERNS = String.format(GET_RESOURCE_DOMAINS_WITH_PATTERNS,  getSchemaName(), getSchemaName());
 		GET_ALL_MENUS = String.format(GET_ALL_MENUS, getSchemaName());
 		GET_AUTH_MENU_BY_ID = String.format(GET_AUTH_MENU_BY_ID, getSchemaName());
 	}

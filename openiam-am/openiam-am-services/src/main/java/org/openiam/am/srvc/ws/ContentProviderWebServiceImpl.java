@@ -274,9 +274,18 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             example.setContentProvider(cp);
             example.setPattern(pattern.getPattern());
 
-            Integer count = contentProviderService.getNumOfUriPatterns(example);
-            if(count>0){
-                throw new  BasicDataServiceException(ResponseCode.URI_PATTERN_EXISTS);
+            final List<URIPatternEntity> entityList = 
+            		contentProviderService.getUriPatternsList(example, Integer.valueOf(0), Integer.valueOf(Integer.MAX_VALUE));
+            if(CollectionUtils.isNotEmpty(entityList)) {
+            	if(StringUtils.isBlank(pattern.getId())) {
+            		throw new  BasicDataServiceException(ResponseCode.URI_PATTERN_EXISTS);
+            	} else {
+            		for(final URIPatternEntity test : entityList) {
+            			if(!StringUtils.equals(test.getId(), pattern.getId())) {
+            				throw new  BasicDataServiceException(ResponseCode.URI_PATTERN_EXISTS);
+            			}
+            		}
+            	}
             }
 
             // validate pattern

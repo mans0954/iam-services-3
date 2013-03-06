@@ -44,3 +44,5 @@ dml/12.insert_content_resource_metatypes.sql
 ddl/33.drop_resource_url_protector.sql
 ddl/34.alter_resource_table.sql
 dml/13.update_login_module_attributes.sql
+dml/14.update_idm_audit_log_data.sql
+dml/15.connector_menu.sql
