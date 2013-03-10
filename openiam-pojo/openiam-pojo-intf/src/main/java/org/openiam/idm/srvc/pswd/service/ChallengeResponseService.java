@@ -21,9 +21,14 @@
  */
 package org.openiam.idm.srvc.pswd.service;
 
+import org.openiam.base.ws.Response;
+import org.openiam.idm.searchbeans.IdentityAnswerSearchBean;
+import org.openiam.idm.searchbeans.IdentityQuestionSearchBean;
 import org.openiam.idm.srvc.pswd.dto.IdentityQuestion;
 import org.openiam.idm.srvc.pswd.dto.UserIdentityAnswer;
 
+import javax.jws.WebMethod;
+import javax.jws.WebParam;
 import javax.jws.WebService;
 import java.util.List;
 
@@ -35,129 +40,33 @@ import java.util.List;
  */
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/pswd/service", name = "ChallengeResponseWebService")
 public interface ChallengeResponseService {
-    /**
-     * Returns a list of questions that are linked to a user. Questions are linked to a user
-     * when the policy allows the user define their own challenge response questions.
-     * for the companyId.
-     *
-     * @param userId
-     * @return
-     */
-    List<IdentityQuestion> questionsByUser(String userId);
+    
+	@WebMethod
+	public List<IdentityQuestion> findQuestionBeans(@WebParam(name = "searchBean", targetNamespace = "") final IdentityQuestionSearchBean searchBean, 
+									  				@WebParam(name = "from", targetNamespace = "") int from, 
+									  				@WebParam(name = "size", targetNamespace = "") int size);
+	
+	@WebMethod
+	public Response saveQuestion(@WebParam(name = "question", targetNamespace = "") final IdentityQuestion question);
+	
+	@WebMethod
+	public Response deleteQuestion(@WebParam(name = "questionId", targetNamespace = "") final String questionId);
+	
+	@WebMethod
+	public List<UserIdentityAnswer> findAnswerBeans(@WebParam(name = "searchBean", targetNamespace = "") final IdentityAnswerSearchBean searchBean,
+													@WebParam(name = "from", targetNamespace = "") int from, 
+													@WebParam(name = "size", targetNamespace = "") int size);
+	
+	
+	@WebMethod
+	public Response saveAnswer(@WebParam(name = "answer", targetNamespace = "") final UserIdentityAnswer answer);
+	
+	@WebMethod
+	public Response deleteAnswer(@WebParam(name = "answerId", targetNamespace = "") final String answerId);
+	
+	@WebMethod
+	public Response saveAnswers(@WebParam(name = "answerList", targetNamespace = "") final List<UserIdentityAnswer> answerList);
 
-    /**
-     * Returns a list of questions that are linked to a question group. If the system
-     * is configured for just 1 set of questions, then enter the word "GLOBAL"
-     * for the companyId.
-     *
-     * @param groupId
-     * @return
-     * @throws RemoteException
-     */
-    List<IdentityQuestion> questionsByGroup(String groupId);
-
-    /**
-     * Gets all the answers that a users has provided for their identity questions.
-     *
-     * @param userId
-     * @return
-     */
-    List<UserIdentityAnswer> answersByUser(String userId);
-
-    /**
-     * Determines if a user has answered their questions.
-     *
-     * @param userId
-     * @return
-     */
-    boolean userAnserExists(String userId);
-
-    /**
-     * Gets all the questions in the OpenIAM question bank. Does not check external repositories
-     *
-     * @return
-     */
-    List<IdentityQuestion> allQuestions();
-
-    /**
-     * Returns a questions specified by the questionId
-     *
-     * @param questionId
-     * @return
-     */
-    IdentityQuestion getQuestion(String questionId);
-
-    /**
-     * Adds a new question to the question bank
-     *
-     * @param question
-     * @return
-     */
-    IdentityQuestion addQuestion(IdentityQuestion question);
-
-    /**
-     * Updates an existing question
-     *
-     * @param question
-     * @return
-     */
-    IdentityQuestion updateQuestion(IdentityQuestion question);
-
-    /**
-     * Removes a question from the question bank
-     *
-     * @param questionId
-     * @return
-     */
-    void removeQuestion(String questionId);
-
-    /**
-     * Adds an answer to the list of answers for the challenge response questions for a user
-     *
-     * @param answer
-     * @return
-     */
-    UserIdentityAnswer addAnswer(UserIdentityAnswer answer);
-
-    /**
-     * Update an answer to the list of answers for the challenge response questions for a user
-     *
-     * @param answer
-     * @return
-     */
-    UserIdentityAnswer updateAnswer(UserIdentityAnswer answer);
-
-    /**
-     * Returns a UserIdentityAnswer object for the specified answerId. The UserIdentityAnswer object contains the users
-     * answer for a challenge response question
-     *
-     * @param answerId
-     * @return
-     */
-    UserIdentityAnswer getAnswer(String answerId);
-
-    /**
-     * Removes an answer from the list of answers that are used for challenge response functioanlity
-     *
-     * @param answerId
-     */
-    void removeAnswer(String answerId);
-
-    /**
-     * Adds the answers in the ansList. The list contains QuestionValue objects.
-     *
-     * @param ansList
-     * @throws RemoteException
-     */
-    void addAnswers(List<UserIdentityAnswer> ansList);
-
-    /**
-     * Updates the answers contains in the ansList. The list contains QuestionValue objects.
-     *
-     * @param ansList
-     * @throws RemoteException
-     */
-    void saveAnswers(List<UserIdentityAnswer> ansList);
 
     /**
      * Determines is the answers that are provided by the user are the same as those stored in

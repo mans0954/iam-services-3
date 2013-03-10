@@ -32,8 +32,4 @@ import java.util.List;
  */
 public interface IdentityQuestionDAO extends BaseDao<IdentityQuestionEntity, String> {
 
-    List<IdentityQuestion> findAllQuestionsByQuestionGroup(String questionGroup);
-
-    List<IdentityQuestion> findAllQuestionsByUser(String userId);
-
 }

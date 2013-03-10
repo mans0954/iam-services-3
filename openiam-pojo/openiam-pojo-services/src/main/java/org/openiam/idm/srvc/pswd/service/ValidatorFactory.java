@@ -28,19 +28,23 @@ import org.openiam.base.ws.ResponseStatus;
 import org.openiam.script.ScriptFactory;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.stereotype.Component;
 
 /**
  * @author suneet
  *
  */
+@Component("validatorFactory")
 public class ValidatorFactory implements ApplicationContextAware {
 	// used to inject the application context into the groovy scripts
 	public static ApplicationContext ac;
 	
 	protected static final Log log = LogFactory.getLog(ValidatorFactory.class);
 	
+	@Value("${org.openiam.groovy.script.engine}")
 	protected String scriptEngine;
 	
 	public static final String OBJECT_TYPE_JAVA = "java";
@@ -79,11 +83,4 @@ public class ValidatorFactory implements ApplicationContextAware {
 		}
 		
 	}
-	public String getScriptEngine() {
-		return scriptEngine;
-	}
-	public void setScriptEngine(String scriptEngine) {
-		this.scriptEngine = scriptEngine;
-	}
-
 }

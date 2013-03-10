@@ -21,224 +21,257 @@
 package org.openiam.idm.srvc.pswd.service;
 
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
+
+import javax.jws.WebMethod;
+import javax.jws.WebParam;
 import javax.jws.WebService;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.id.UUIDGen;
+import org.openiam.base.ws.Response;
+import org.openiam.base.ws.ResponseCode;
+import org.openiam.base.ws.ResponseStatus;
+import org.openiam.base.ws.exception.BasicDataServiceException;
+import org.openiam.dozer.converter.IdentityQuestionDozerConverter;
+import org.openiam.dozer.converter.UserIdentityAnswerDozerConverter;
+import org.openiam.idm.searchbeans.IdentityAnswerSearchBean;
+import org.openiam.idm.searchbeans.IdentityQuestionSearchBean;
 import org.openiam.idm.srvc.audit.service.AuditHelper;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
+import org.openiam.idm.srvc.pswd.domain.IdentityQuestionEntity;
+import org.openiam.idm.srvc.pswd.domain.UserIdentityAnswerEntity;
 import org.openiam.idm.srvc.pswd.dto.ChallengeResponseUser;
 import org.openiam.idm.srvc.pswd.dto.IdentityQuestion;
 import org.openiam.idm.srvc.pswd.dto.UserIdentityAnswer;
+import org.openiam.idm.srvc.searchbean.converter.IdentityAnswerSearchBeanConverter;
+import org.openiam.idm.srvc.searchbean.converter.IdentityQuestionSearchBeanConverter;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDataService;
-import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
-/**
- * @author suneet
- *
- */
+@Service("challengeResponse")
 @WebService(endpointInterface = "org.openiam.idm.srvc.pswd.service.ChallengeResponseService", targetNamespace = "urn:idm.openiam.org/srvc/pswd/service", portName = "ChallengeResponseWebServicePort", serviceName = "ChallengeResponseWebService")
 public class ChallengeResponseServiceImpl implements ChallengeResponseService {
 
-    protected Cryptor cryptor;
-
-    protected IdentityQuestionDAO identityQuestDao;
-    protected UserIdentityAnswerDAO identityAnswerDao;
-    protected IdentityQuestGroupDAO identityQuestGroupDao;
-    protected LoginDataService loginManager;
-    // protected ChallengeResponseValidator responseValidator;
-
-    protected String respValidatorObjName;
-    protected String respValidatorObjType;;
-    protected ValidatorFactory respValidatorFactory;
-
-    protected UserDataService userMgr;
+	@Autowired
+    private IdentityQuestionDAO questionDAO;
+    
     @Autowired
-    protected org.openiam.idm.srvc.audit.service.AuditHelper auditHelper;
-    protected PasswordService passwordMgr;
+    private UserIdentityAnswerDAO answerDAO;
+    
+    @Autowired
+    private LoginDataService loginManager;
+
+    @Value("${challengeResponse.respValidatorObjName}")
+    private String respValidatorObjName;
+    
+    @Value("${challengeResponse.respValidatorObjType}")
+    private String respValidatorObjType;
+    
+    @Autowired
+    private ValidatorFactory respValidatorFactory;
+
+    @Autowired
+    private UserDataService userMgr;
+    
+    @Autowired
+    private AuditHelper auditHelper;
+    
+    @Autowired
+    private PasswordService passwordMgr;
+    
+    @Autowired
+    private IdentityAnswerSearchBeanConverter answerSearchBeanConverter;
+    
+    @Autowired
+    private IdentityQuestionSearchBeanConverter questionSearchBeanConverter;
+    
+    @Autowired
+    private IdentityQuestionDozerConverter questionDozerConverter;
+    
+    @Autowired
+    private UserIdentityAnswerDozerConverter answerDozerConverter;
 
     private static final Log log = LogFactory
             .getLog(ChallengeResponseServiceImpl.class);
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.pswd.service.ChallengeResponseService#getAllQuestions
-     * ()
-     */
-    public List<IdentityQuestion> allQuestions() {
-        ChallengeResponseValidator responseValidator = respValidatorFactory
-                .createValidator(respValidatorObjName, respValidatorObjType);
-        return responseValidator.getQuestions(null);
-    }
+    
+	@Override
+	public List<IdentityQuestion> findQuestionBeans(final IdentityQuestionSearchBean searchBean, final int from, final int size) {
+		List<IdentityQuestionEntity> resultList = null;
+		if(searchBean.getKey() != null) {
+			final IdentityQuestionEntity entity = questionDAO.findById(searchBean.getKey());
+			if(entity != null) {
+				resultList = new LinkedList<IdentityQuestionEntity>();
+				resultList.add(entity);
+			}
+		} else {
+			resultList = questionDAO.getByExample(questionSearchBeanConverter.convert(searchBean), from, size);
+		}
+		
+		return (resultList != null) ? questionDozerConverter.convertToDTOList(resultList, searchBean.isDeepCopy()) : null;
+	}
+	
+	@Override
+	public List<UserIdentityAnswer> findAnswerBeans(final IdentityAnswerSearchBean searchBean, final int from, final int size) {
+		List<UserIdentityAnswerEntity> resultList = null;
+		if(searchBean.getKey() != null) {
+			final UserIdentityAnswerEntity entity = answerDAO.findById(searchBean.getKey());
+			if(entity != null) {
+				resultList = new LinkedList<UserIdentityAnswerEntity>();
+				resultList.add(entity);
+			}
+		} else {
+			resultList = answerDAO.getByExample(answerSearchBeanConverter.convert(searchBean), from, size);
+		}
+		return (resultList != null) ? answerDozerConverter.convertToDTOList(resultList, searchBean.isDeepCopy()) : null;
+	}
 
-    public List<IdentityQuestion> questionsByUser(String userId) {
-        if (userId == null) {
-            throw new NullPointerException("UserId is null");
-        }
-        return identityQuestDao.findAllQuestionsByUser(userId);
+	@Override
+	public Response saveQuestion(final IdentityQuestion question) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+    	try {
+    		if(question == null) {
+    			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+    		}
+    		
+    		final IdentityQuestionEntity entity = questionDozerConverter.convertToEntity(question, true);
+    		if(StringUtils.isNotBlank(entity.getIdentityQuestionId())) {
+    			questionDAO.save(entity);
+    		} else {
+    			questionDAO.update(entity);
+    		}
+    		
+    		response.setResponseValue(entity.getIdentityQuestionId());
+    	} catch(BasicDataServiceException e) {
+    		response.setErrorCode(e.getCode());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	} catch(Throwable e) {
+    		log.error("Can't save or update resource", e);
+    		response.setErrorText(e.getMessage());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	}
+    	return response;
+	}
 
-    }
+	@Override
+	public Response deleteQuestion(final String questionId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+    	try {
+    		if(StringUtils.isBlank(questionId)) {
+    			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+    		}
+    		
+    		final IdentityQuestionEntity entity = questionDAO.findById(questionId);
+    		if(entity != null) {
+    			questionDAO.delete(entity);
+    		}
+    	} catch(BasicDataServiceException e) {
+    		response.setErrorCode(e.getCode());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	} catch(Throwable e) {
+    		log.error("Can't save or update resource", e);
+    		response.setErrorText(e.getMessage());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	}
+    	return response;
+	}
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.openiam.idm.srvc.pswd.service.ChallengeResponseService#
-     * getQuestionsByGroup(java.lang.String)
-     */
-    public List<IdentityQuestion> questionsByGroup(String group) {
-        if (group == null) {
-            throw new NullPointerException("group is null");
-        }
-        ChallengeResponseUser respUser = new ChallengeResponseUser();
-        respUser.setQuestionGroup(group);
+	@Override
+	public Response saveAnswer(final UserIdentityAnswer answer) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+    	try {
+    		if(answer == null) {
+    			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+    		}
+    		
+    		final UserIdentityAnswerEntity entity = answerDozerConverter.convertToEntity(answer, true);
+    		if(StringUtils.isNotBlank(entity.getIdentityAnsId())) {
+    			answerDAO.save(entity);
+    		} else {
+    			answerDAO.update(entity);
+    		}
+    		
+    		response.setResponseValue(entity.getIdentityAnsId());
+    	} catch(BasicDataServiceException e) {
+    		response.setErrorCode(e.getCode());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	} catch(Throwable e) {
+    		log.error("Can't save or update resource", e);
+    		response.setErrorText(e.getMessage());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	}
+    	return response;
+	}
 
-        ChallengeResponseValidator responseValidator = respValidatorFactory
-                .createValidator(respValidatorObjName, respValidatorObjType);
-        return responseValidator.getQuestions(respUser);
+	@Override
+	public Response deleteAnswer(final String answerId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+    	try {
+    		if(StringUtils.isBlank(answerId)) {
+    			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+    		}
+    		
+    		final UserIdentityAnswerEntity entity = answerDAO.findById(answerId);
+    		if(entity != null) {
+    			answerDAO.delete(entity);
+    		}
+    	} catch(BasicDataServiceException e) {
+    		response.setErrorCode(e.getCode());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	} catch(Throwable e) {
+    		log.error("Can't save or update resource", e);
+    		response.setErrorText(e.getMessage());
+    		response.setStatus(ResponseStatus.FAILURE);
+    	}
+    	return response;
+	}
+	
+	 public Response saveAnswers(List<UserIdentityAnswer> answerList) {
+		 final Response response = new Response(ResponseStatus.SUCCESS);
+	    	try {
+	    		if(CollectionUtils.isEmpty(answerList)) {
+	    			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+	    		}
+		        String requestId = "R" + UUIDGen.getUUID();
+		        
+		        for(final UserIdentityAnswer answer : answerList) {
+		        	saveAnswer(answer);
+		        }
+	
+		        // add to audit log and update the user record that challenge response
+		        // answers have been updated
+		        // get the user Id
+		        final String userId = answerList.get(0).getUserId();
+		        final UserEntity usr = userMgr.getUser(userId);
+		        usr.setDateChallengeRespChanged(new Date(System.currentTimeMillis()));
+		        userMgr.updateUserWithDependent(usr, false);
+	
+		        auditHelper.addLog("SET CHALLENGE QUESTIONS", null, null,
+		                "IDM SERVICE", userId, "PASSWORD", "CHALLENGE QUESTION", null,
+		                null, "SUCCESS", null, null, null, requestId, null, null, null);
+	    	} catch(BasicDataServiceException e) {
+	    		response.setErrorCode(e.getCode());
+	    		response.setStatus(ResponseStatus.FAILURE);
+	    	} catch(Throwable e) {
+	    		log.error("Can't save or update resource", e);
+	    		response.setErrorText(e.getMessage());
+	    		response.setStatus(ResponseStatus.FAILURE);
+	    	}
+	    	return response;
+	    }
 
-    }
-
-    public IdentityQuestion getQuestion(String questionId) {
-        if (questionId == null) {
-            throw new NullPointerException("questionId is null");
-        }
-
-        ChallengeResponseValidator responseValidator = respValidatorFactory
-                .createValidator(respValidatorObjName, respValidatorObjType);
-        return responseValidator.getQuestion(questionId);
-
-    }
-
-    public IdentityQuestion addQuestion(IdentityQuestion question) {
-    	/*
-        if (question == null) {
-            throw new NullPointerException("question is null");
-        }
-        return identityQuestDao.add(question);
-        */
-    	return null;
-    }
-
-    public IdentityQuestion updateQuestion(IdentityQuestion question) {
-    	/*
-        if (question == null) {
-            throw new NullPointerException("question is null");
-        }
-        return identityQuestDao.update(question);
-        */
-    	return null;
-    }
-
-    public void removeQuestion(String questionId) {
-    	/*
-        if (questionId == null) {
-            throw new NullPointerException("question is null");
-        }
-        IdentityQuestion question = new IdentityQuestion();
-        question.setIdentityQuestionId(questionId);
-        identityQuestDao.remove(question);
-        */
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.pswd.service.ChallengeResponseService#AnswersByUser
-     * (java.lang.String)
-     */
-    public List<UserIdentityAnswer> answersByUser(String userId) {
-        if (userId == null) {
-            throw new NullPointerException("UserId is null");
-        }
-
-        ChallengeResponseValidator responseValidator = respValidatorFactory
-                .createValidator(respValidatorObjName, respValidatorObjType);
-        return responseValidator.answersByUser(userId);
-    }
-
-    public boolean userAnserExists(String userId) {
-        List<UserIdentityAnswer> answerList = answersByUser(userId);
-        if (answerList == null || answerList.isEmpty()) {
-            return false;
-        }
-        return true;
-    }
-
-    public UserIdentityAnswer addAnswer(UserIdentityAnswer answer) {
-    	/*
-        if (answer == null) {
-            throw new NullPointerException("Answer object is null");
-        }
-        return identityAnswerDao.add(answer);
-        */
-    	return null;
-
-    }
-
-    public UserIdentityAnswer updateAnswer(UserIdentityAnswer answer) {
-    	/*
-        if (answer == null) {
-            throw new NullPointerException("Answer object is null");
-        }
-        return identityAnswerDao.update(answer);
-        */
-    	return null;
-    }
-
-    public UserIdentityAnswer getAnswer(String answerId) {
-    	/*
-        if (answerId == null) {
-            throw new NullPointerException("answerId object is null");
-        }
-        return identityAnswerDao.findById(answerId);
-        */
-    	return null;
-    }
-
-    public void removeAnswer(String answerId) {
-    	/*
-        if (answerId == null) {
-            throw new NullPointerException("answerId object is null");
-        }
-        UserIdentityAnswer answer = new UserIdentityAnswer();
-        answer.setIdentityAnsId(answerId);
-        identityAnswerDao.delete(answer);
-        */
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.pswd.service.ChallengeResponseService#addAnswers
-     * (java.util.List)
-     */
-    public void addAnswers(List<UserIdentityAnswer> ansList) {
-        if (ansList == null) {
-            throw new NullPointerException("anslist is null");
-        }
-        for (UserIdentityAnswer ans : ansList) {
-            addAnswer(ans);
-        }
-
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.pswd.service.ChallengeResponseService#isResponseValid
-     * (java.lang.String, java.lang.String, java.lang.String, java.util.List)
-     */
     public boolean isResponseValid(String domainId, String login,
             String managedSysId, String questGrpId,
             List<UserIdentityAnswer> newAnswerList) {
@@ -273,131 +306,14 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
             req.setQuestionGroup(questGrpId);
         }
 
-        ChallengeResponseValidator responseValidator = respValidatorFactory
+        final List<UserIdentityAnswerEntity> entityList = answerDozerConverter.convertToEntityList(newAnswerList, true);
+        return getResponseValidator().isResponseValid(req, entityList, requiredCorrect);
+
+    }
+    
+    private ChallengeResponseValidator getResponseValidator() {
+    	final ChallengeResponseValidator responseValidator = respValidatorFactory
                 .createValidator(respValidatorObjName, respValidatorObjType);
-        return responseValidator.isResponseValid(req, newAnswerList,
-                requiredCorrect);
-
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.pswd.service.ChallengeResponseService#saveAnswers
-     * (java.util.List)
-     */
-    public void saveAnswers(List<UserIdentityAnswer> ansList) {
-        if (ansList == null) {
-            throw new NullPointerException("anslist is null");
-        }
-        String requestId = "R" + UUIDGen.getUUID();
-
-        ChallengeResponseValidator responseValidator = respValidatorFactory
-                .createValidator(respValidatorObjName, respValidatorObjType);
-        responseValidator.saveAnswers(ansList);
-
-        // add to audit log and update the user record that challenge response
-        // answers have been updated
-        // get the user Id
-        UserIdentityAnswer ans = ansList.get(0);
-        String userId = ans.getUserId();
-        UserEntity usr = userMgr.getUser(userId);
-        usr.setDateChallengeRespChanged(new Date(System.currentTimeMillis()));
-        userMgr.updateUserWithDependent(usr, false);
-
-        auditHelper.addLog("SET CHALLENGE QUESTIONS", null, null,
-                "IDM SERVICE", userId, "PASSWORD", "CHALLENGE QUESTION", null,
-                null, "SUCCESS", null, null, null, requestId, null, null, null);
-
-    }
-
-    public Cryptor getCryptor() {
-        return cryptor;
-    }
-
-    public void setCryptor(Cryptor cryptor) {
-        this.cryptor = cryptor;
-    }
-
-    public IdentityQuestionDAO getIdentityQuestDao() {
-        return identityQuestDao;
-    }
-
-    public void setIdentityQuestDao(IdentityQuestionDAO identityQuestDao) {
-        this.identityQuestDao = identityQuestDao;
-    }
-
-    public UserIdentityAnswerDAO getIdentityAnswerDao() {
-        return identityAnswerDao;
-    }
-
-    public void setIdentityAnswerDao(UserIdentityAnswerDAO identityAnswerDao) {
-        this.identityAnswerDao = identityAnswerDao;
-    }
-
-    public IdentityQuestGroupDAO getIdentityQuestGroupDao() {
-        return identityQuestGroupDao;
-    }
-
-    public void setIdentityQuestGroupDao(
-            IdentityQuestGroupDAO identityQuestGroupDao) {
-        this.identityQuestGroupDao = identityQuestGroupDao;
-    }
-
-    public LoginDataService getLoginManager() {
-        return loginManager;
-    }
-
-    public void setLoginManager(LoginDataService loginManager) {
-        this.loginManager = loginManager;
-    }
-
-    public ValidatorFactory getRespValidatorFactory() {
-        return respValidatorFactory;
-    }
-
-    public void setRespValidatorFactory(ValidatorFactory respValidatorFactory) {
-        this.respValidatorFactory = respValidatorFactory;
-    }
-
-    public String getRespValidatorObjName() {
-        return respValidatorObjName;
-    }
-
-    public void setRespValidatorObjName(String respValidatorObjName) {
-        this.respValidatorObjName = respValidatorObjName;
-    }
-
-    public String getRespValidatorObjType() {
-        return respValidatorObjType;
-    }
-
-    public void setRespValidatorObjType(String respValidatorObjType) {
-        this.respValidatorObjType = respValidatorObjType;
-    }
-
-    public UserDataService getUserMgr() {
-        return userMgr;
-    }
-
-    public void setUserMgr(UserDataService userMgr) {
-        this.userMgr = userMgr;
-    }
-
-    public PasswordService getPasswordMgr() {
-        return passwordMgr;
-    }
-
-    public void setPasswordMgr(PasswordService passwordMgr) {
-        this.passwordMgr = passwordMgr;
-    }
-
-    public AuditHelper getAuditHelper() {
-        return auditHelper;
-    }
-
-    public void setAuditHelper(AuditHelper auditHelper) {
-        this.auditHelper = auditHelper;
+    	return responseValidator;
     }
 }
