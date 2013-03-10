@@ -15,3 +15,4 @@ dml/7.set_am_attribute_default_values.sql
 ddl/9.drop_context_path.sql
 dml/8.additional_am_user_attributes.sql
 dml/9.remove_unused_cp_menus.sql
+dml/10.name_qualifier_attrs.sql
