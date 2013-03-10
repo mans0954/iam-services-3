@@ -118,26 +118,34 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
     }
 
     public IdentityQuestion addQuestion(IdentityQuestion question) {
+    	/*
         if (question == null) {
             throw new NullPointerException("question is null");
         }
         return identityQuestDao.add(question);
+        */
+    	return null;
     }
 
     public IdentityQuestion updateQuestion(IdentityQuestion question) {
+    	/*
         if (question == null) {
             throw new NullPointerException("question is null");
         }
         return identityQuestDao.update(question);
+        */
+    	return null;
     }
 
     public void removeQuestion(String questionId) {
+    	/*
         if (questionId == null) {
             throw new NullPointerException("question is null");
         }
         IdentityQuestion question = new IdentityQuestion();
         question.setIdentityQuestionId(questionId);
         identityQuestDao.remove(question);
+        */
     }
 
     /*
@@ -166,34 +174,45 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
     }
 
     public UserIdentityAnswer addAnswer(UserIdentityAnswer answer) {
+    	/*
         if (answer == null) {
             throw new NullPointerException("Answer object is null");
         }
         return identityAnswerDao.add(answer);
+        */
+    	return null;
 
     }
 
     public UserIdentityAnswer updateAnswer(UserIdentityAnswer answer) {
+    	/*
         if (answer == null) {
             throw new NullPointerException("Answer object is null");
         }
         return identityAnswerDao.update(answer);
+        */
+    	return null;
     }
 
     public UserIdentityAnswer getAnswer(String answerId) {
+    	/*
         if (answerId == null) {
             throw new NullPointerException("answerId object is null");
         }
         return identityAnswerDao.findById(answerId);
+        */
+    	return null;
     }
 
     public void removeAnswer(String answerId) {
+    	/*
         if (answerId == null) {
             throw new NullPointerException("answerId object is null");
         }
         UserIdentityAnswer answer = new UserIdentityAnswer();
         answer.setIdentityAnsId(answerId);
         identityAnswerDao.delete(answer);
+        */
     }
 
     /*

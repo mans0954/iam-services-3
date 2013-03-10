@@ -15,60 +15,56 @@
  *  You should have received a copy of the GNU General Public License
  *  along with OpenIAM.  If not, see <http://www.gnu.org/licenses/>. *
  */
+
 package org.openiam.idm.srvc.pswd.dto;
+
+
+import java.io.Serializable;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
+import org.openiam.base.BaseObject;
+import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.pswd.domain.IdentityQuestionEntity;
 
 /**
- * Domain object representing an answer by the user for a challenge response question.
+ * Domain object that represents a question for use in the challenge response functionality
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "UserIdentityAnswer", propOrder = {
-        "identityAnsId",
+@XmlType(name = "IdentityQuestion", propOrder = {
         "identityQuestionId",
+        "identityQuestGrpId",
         "questionText",
-        "userId",
-        "questionAnswer"
+        "required",
+        "active",
+        "userId"
 })
-public class UserIdentityAnswer extends org.openiam.base.BaseObject implements java.io.Serializable {
+@DozerDTOCorrespondence(IdentityQuestionEntity.class)
+public class IdentityQuestion extends BaseObject implements Serializable {
 
     /**
      *
      */
-    private static final long serialVersionUID = 8841064146448209034L;
-    protected String identityAnsId;
+    private static final long serialVersionUID = -1802758764731284709L;
     protected String identityQuestionId;
+    protected String identityQuestGrpId;
     protected String questionText;
+    protected boolean required = false;
+    protected boolean active = true;
     protected String userId;
-    protected String questionAnswer;
 
-    public UserIdentityAnswer() {
+    public IdentityQuestion() {
     }
 
-    public UserIdentityAnswer(String identityAnsId) {
-        this.identityAnsId = identityAnsId;
+    public String getIdentityQuestionId() {
+        return this.identityQuestionId;
     }
 
-    public UserIdentityAnswer(String identityAnsId,
-                              String questionText,
-                              String userId, String questionAnswer) {
-        this.identityAnsId = identityAnsId;
-        this.questionText = questionText;
-        this.userId = userId;
-        this.questionAnswer = questionAnswer;
+    public void setIdentityQuestionId(String identityQuestionId) {
+        this.identityQuestionId = identityQuestionId;
     }
-
-    public String getIdentityAnsId() {
-        return this.identityAnsId;
-    }
-
-    public void setIdentityAnsId(String identityAnsId) {
-        this.identityAnsId = identityAnsId;
-    }
-
 
     public String getQuestionText() {
         return this.questionText;
@@ -86,20 +82,29 @@ public class UserIdentityAnswer extends org.openiam.base.BaseObject implements j
         this.userId = userId;
     }
 
-    public String getQuestionAnswer() {
-        return this.questionAnswer;
-    }
+	public boolean isRequired() {
+		return required;
+	}
 
-    public void setQuestionAnswer(String questionAnswer) {
-        this.questionAnswer = questionAnswer;
-    }
+	public void setRequired(boolean required) {
+		this.required = required;
+	}
 
-    public String getIdentityQuestionId() {
-        return identityQuestionId;
-    }
+	public boolean isActive() {
+		return active;
+	}
 
-    public void setIdentityQuestionId(String identityQuestionId) {
-        this.identityQuestionId = identityQuestionId;
-    }
+	public void setActive(boolean active) {
+		this.active = active;
+	}
 
+	public String getIdentityQuestGrpId() {
+		return identityQuestGrpId;
+	}
+
+	public void setIdentityQuestGrpId(String identityQuestGrpId) {
+		this.identityQuestGrpId = identityQuestGrpId;
+	}
+
+    
 }

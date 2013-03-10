@@ -22,6 +22,12 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
+
+import org.openiam.base.BaseObject;
+import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.pswd.domain.IdentityQuestGroupEntity;
+
+import java.io.Serializable;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -42,7 +48,8 @@ import java.util.Set;
         "lastUpdatedBy",
         "identityQuestions"
 })
-public class IdentityQuestGroup extends org.openiam.base.BaseObject implements java.io.Serializable {
+@DozerDTOCorrespondence(IdentityQuestGroupEntity.class)
+public class IdentityQuestGroup extends BaseObject implements Serializable {
 
     /**
      *

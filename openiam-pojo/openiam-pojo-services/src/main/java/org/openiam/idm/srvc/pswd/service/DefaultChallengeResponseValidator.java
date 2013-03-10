@@ -54,6 +54,7 @@ public class DefaultChallengeResponseValidator implements
 	 * @see org.openiam.idm.srvc.pswd.service.ChallengeResponseValidator#getQuestion(org.openiam.idm.srvc.pswd.dto.ChallengeResponseUser)
 	 */
 	public List<IdentityQuestion> getQuestions(ChallengeResponseUser req) {
+		/*
 		if (req == null) {
 			return identityQuestDao.findAllQuestions();
 		}
@@ -61,10 +62,15 @@ public class DefaultChallengeResponseValidator implements
 			return identityQuestDao.findAllQuestionsByQuestionGroup(req.getQuestionGroup());
 		}
 		return null;
+		*/
+    	return null;
 	}
 	
 	public  IdentityQuestion getQuestion(String questionId) {
+		/*
 		return identityQuestDao.findById(questionId);
+		*/
+    	return null;
 	}
 	
 	public boolean isResponseValid(ChallengeResponseUser req, List<UserIdentityAnswer> newAnswerList, int requiredCorrectAns) {
@@ -163,17 +169,23 @@ public class DefaultChallengeResponseValidator implements
 	}
 	
  	private UserIdentityAnswer addAnswer(UserIdentityAnswer answer) {
+ 		/*
  		if (answer == null) {
  			throw new NullPointerException("Answer object is null");
  		}
  		return identityAnswerDao.add(answer);
+ 		*/
+    	return null;
  		
  	}
  	private UserIdentityAnswer updateAnswer(UserIdentityAnswer answer) {
+ 		/*
  		if (answer == null) {
  			throw new NullPointerException("Answer object is null");
  		}
- 		return identityAnswerDao.update(answer);		
+ 		return identityAnswerDao.update(answer);
+ 		*/
+    	return null;
  	}
 	
 	

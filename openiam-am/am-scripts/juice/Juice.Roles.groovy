@@ -9,7 +9,6 @@ public class JuiceRolesGroovy implements AuthResourceAttributeMapper {
 	private Map<String, UserAttributeEntity> entityMap;
 	
 	public String mapAttribute() {
-		System.out.println("Attempting to get juice roles");
 		String retVal = "foo|bar";
 		return retVal;
 	}

@@ -21,20 +21,13 @@
  */
 package org.openiam.idm.srvc.pswd.service;
 
+import org.openiam.core.dao.BaseDao;
+import org.openiam.idm.srvc.pswd.domain.IdentityQuestGroupEntity;
 import org.openiam.idm.srvc.pswd.dto.IdentityQuestGroup;
 
 /**
  * @author suneet
  */
-public interface IdentityQuestGroupDAO {
-
-    public abstract void add(IdentityQuestGroup transientInstance);
-
-    public abstract void remove(IdentityQuestGroup persistentInstance);
-
-    public abstract IdentityQuestGroup update(
-            IdentityQuestGroup detachedInstance);
-
-    public IdentityQuestGroup findById(java.lang.String id);
+public interface IdentityQuestGroupDAO extends BaseDao<IdentityQuestGroupEntity, String> {
 
 }

@@ -181,6 +181,7 @@
 		
 	</bean>
 
+	<!--
 	<bean id="identityQuestGroupDAO" class="org.openiam.idm.srvc.pswd.service.IdentityQuestGroupDAOImpl" >
 		<property name="sessionFactory" ref="sessionFactory"></property>		
 	</bean>	
@@ -190,7 +191,7 @@
 	<bean id="identityAnswerDAO" class="org.openiam.idm.srvc.pswd.service.UserIdentityAnswerDAOImpl" >
 		<property name="sessionFactory" ref="sessionFactory"></property>		
 	</bean>		
-	
+	-->
 		<!-- Policy Beans -->
 <!-- 	<bean id="policyDataService" class="org.openiam.idm.srvc.policy.service.PolicyDataServiceImpl" > -->
 <!-- 		<property name="policyDefDao" ref="policyDefDAO" /> -->
@@ -305,7 +306,7 @@
 	
 	<!-- Utility Beans -->
 	<bean id="cryptor" class="org.openiam.util.encrypt.DESedeCryptor" >
-	</bean>	
+	</bean>
 	<bean id="hash" class="org.openiam.util.encrypt.SHA2Hash" >
 	</bean>
     <bean id="hash1" class="org.openiam.util.encrypt.SHA1Hash" >
@@ -400,9 +401,11 @@
 				<value>org/openiam/idm/srvc/lang/service/Language.hbm.xml</value>
 				<value>org/openiam/idm/srvc/loc/service/Location.hbm.xml</value>
 
+				<!--
 				<value>org/openiam/idm/srvc/pswd/service/IdentityQuestGroup.hbm.xml</value>
 				<value>org/openiam/idm/srvc/pswd/service/IdentityQuestion.hbm.xml</value>
 				<value>org/openiam/idm/srvc/pswd/service/UserIdentityAnswer.hbm.xml</value>
+				-->
 				<!--
 				<value>org/openiam/idm/srvc/pswd/service/PwdHistory.hbm.xml</value>
 				-->

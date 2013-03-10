@@ -10,105 +10,23 @@ import org.hibernate.LockMode;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.idm.srvc.pswd.domain.UserIdentityAnswerEntity;
 import org.openiam.idm.srvc.pswd.dto.IdentityQuestion;
 import org.openiam.idm.srvc.pswd.dto.UserIdentityAnswer;
+import org.springframework.stereotype.Repository;
 
 import static org.hibernate.criterion.Example.create;
 
 /**
  * DAO implementation object for the domain model class  UserIdentityAnswer.
  */
-public class UserIdentityAnswerDAOImpl implements UserIdentityAnswerDAO {
+@Repository("identityAnswerDAO")
+public class UserIdentityAnswerDAOImpl extends BaseDaoImpl<UserIdentityAnswerEntity, String> implements UserIdentityAnswerDAO {
 
 	private static final Log log = LogFactory.getLog(UserIdentityAnswerDAOImpl.class);
 
-	private SessionFactory sessionFactory;
-
-	
-	public void setSessionFactory(SessionFactory session) {
-		   this.sessionFactory = session;
-	}
-	
-	protected SessionFactory getSessionFactory() {
-		try {
-			return (SessionFactory) new InitialContext()
-					.lookup("SessionFactory");
-		} catch (Exception e) {
-			log.error("Could not locate SessionFactory in JNDI", e);
-			throw new IllegalStateException(
-					"Could not locate SessionFactory in JNDI");
-		}
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.pswd.service.UserIdentityAnswerDAO#add(org.openiam.idm.srvc.pswd.dto.UserIdentityAnswer)
-	 */
-	public UserIdentityAnswer add(UserIdentityAnswer transientInstance) {
-		log.debug("persisting UserIdentityAns instance");
-		try {
-			sessionFactory.getCurrentSession().persist(transientInstance);
-			log.debug("persist successful");
-			return transientInstance;
-		} catch (RuntimeException re) {
-			log.error("persist failed", re);
-			throw re;
-		}
-	}
-
-
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.pswd.service.UserIdentityAnswerDAO#delete(org.openiam.idm.srvc.pswd.dto.UserIdentityAnswer)
-	 */
-	public void delete(UserIdentityAnswer persistentInstance) {
-		log.debug("deleting UserIdentityAns instance");
-		try {
-			sessionFactory.getCurrentSession().delete(persistentInstance);
-			log.debug("delete successful");
-		} catch (RuntimeException re) {
-			log.error("delete failed", re);
-			throw re;
-		}
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.pswd.service.UserIdentityAnswerDAO#update(org.openiam.idm.srvc.pswd.dto.UserIdentityAnswer)
-	 */
-	public UserIdentityAnswer update(UserIdentityAnswer detachedInstance) {
-		log.debug("merging UserIdentityAns instance");
-		try {
-			UserIdentityAnswer result = (UserIdentityAnswer) sessionFactory
-					.getCurrentSession().merge(detachedInstance);
-			log.debug("merge successful");
-			return result;
-		} catch (RuntimeException re) {
-			log.error("merge failed", re);
-			throw re;
-		}
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.pswd.service.UserIdentityAnswerDAO#findById(java.lang.String)
-	 */
-	public UserIdentityAnswer findById(java.lang.String id) {
-		log.debug("getting UserIdentityAns instance with id: " + id);
-		try {
-			UserIdentityAnswer instance = (UserIdentityAnswer) sessionFactory
-					.getCurrentSession()
-					.get("org.openiam.idm.srvc.pswd.service.UserIdentityAnswer",
-							id);
-			if (instance == null) {
-				log.debug("get successful, no instance found");
-			} else {
-				log.debug("get successful, instance found");
-			}
-			return instance;
-		} catch (RuntimeException re) {
-			log.error("get failed", re);
-			throw re;
-		}
-	}
-	
+	@Override
 	public List<UserIdentityAnswer> findAnswersByUser(String userId) {
 		Session session = sessionFactory.getCurrentSession();
 		Query qry = session.createQuery("from UserIdentityAnswer ans "
@@ -122,6 +40,11 @@ public class UserIdentityAnswerDAOImpl implements UserIdentityAnswerDAO {
 			return null;
 
 		return result;			
+	}
+
+	@Override
+	protected String getPKfieldName() {
+		return "identityAnsId";
 	}
 
 }
