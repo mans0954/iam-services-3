@@ -202,7 +202,7 @@ public class AuthResourceAttributeServiceImpl implements AuthResourceAttributeSe
             }
         } catch (Throwable ex) {
             resultList.clear();
-            log.error(ex.getMessage());
+            log.error(ex);
         }
         
         return resultList;
