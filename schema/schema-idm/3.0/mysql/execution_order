@@ -48,3 +48,5 @@ dml/14.update_idm_audit_log_data.sql
 dml/15.connector_menu.sql
 ddl/35.identity_question_boolean_flags.sql
 dml/16.selfservice_menus.sql
+dml/16.managed_connections_menu.sql
+dml/17.alter_table_managed_sys.sql
