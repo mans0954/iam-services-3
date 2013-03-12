@@ -23,7 +23,7 @@ public class IdentityQuestGroupDAOImpl extends BaseDaoImpl<IdentityQuestGroupEnt
 
 	@Override
 	protected String getPKfieldName() {
-		return "identityQuestGrpId";
+		return "id";
 	}
 
 

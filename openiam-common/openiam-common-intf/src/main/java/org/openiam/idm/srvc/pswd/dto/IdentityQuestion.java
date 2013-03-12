@@ -34,7 +34,7 @@ import org.openiam.idm.srvc.pswd.domain.IdentityQuestionEntity;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "IdentityQuestion", propOrder = {
-        "identityQuestionId",
+        "id",
         "identityQuestGrpId",
         "questionText",
         "required",
@@ -48,7 +48,7 @@ public class IdentityQuestion extends BaseObject implements Serializable {
      *
      */
     private static final long serialVersionUID = -1802758764731284709L;
-    protected String identityQuestionId;
+    protected String id;
     protected String identityQuestGrpId;
     protected String questionText;
     protected boolean required = false;
@@ -58,12 +58,12 @@ public class IdentityQuestion extends BaseObject implements Serializable {
     public IdentityQuestion() {
     }
 
-    public String getIdentityQuestionId() {
-        return this.identityQuestionId;
+    public String getId() {
+        return this.id;
     }
 
-    public void setIdentityQuestionId(String identityQuestionId) {
-        this.identityQuestionId = identityQuestionId;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getQuestionText() {

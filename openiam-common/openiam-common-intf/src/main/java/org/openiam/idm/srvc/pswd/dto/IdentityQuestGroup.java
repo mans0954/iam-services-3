@@ -38,7 +38,7 @@ import java.util.Set;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "IdentityQuestGroup", propOrder = {
-        "identityQuestGrpId",
+        "id",
         "name",
         "status",
         "companyOwnerId",
@@ -55,7 +55,7 @@ public class IdentityQuestGroup extends BaseObject implements Serializable {
      *
      */
     protected static final long serialVersionUID = 1531681049802666090L;
-    protected String identityQuestGrpId;
+    protected String id;
     protected String name;
     protected String status;
     protected String companyOwnerId;
@@ -65,37 +65,18 @@ public class IdentityQuestGroup extends BaseObject implements Serializable {
     @XmlSchemaType(name = "dateTime")
     protected Date lastUpdate;
     protected String lastUpdatedBy;
-    protected Set<IdentityQuestion> identityQuestions = new HashSet<IdentityQuestion>(
-            0);
+    protected Set<IdentityQuestion> identityQuestions;
 
     public IdentityQuestGroup() {
     }
 
-    public IdentityQuestGroup(String identityQuestGrpId) {
-        this.identityQuestGrpId = identityQuestGrpId;
+
+    public String getId() {
+        return id;
     }
 
-    public IdentityQuestGroup(String identityQuestGrpId, String name,
-                              String status, String companyOwnerId, Date createDate,
-                              String createdBy, Date lastUpdate, String lastUpdatedBy,
-                              Set<IdentityQuestion> identityQuestions) {
-        this.identityQuestGrpId = identityQuestGrpId;
-        this.name = name;
-        this.status = status;
-        this.companyOwnerId = companyOwnerId;
-        this.createDate = createDate;
-        this.createdBy = createdBy;
-        this.lastUpdate = lastUpdate;
-        this.lastUpdatedBy = lastUpdatedBy;
-        this.identityQuestions = identityQuestions;
-    }
-
-    public String getIdentityQuestGrpId() {
-        return this.identityQuestGrpId;
-    }
-
-    public void setIdentityQuestGrpId(String identityQuestGrpId) {
-        this.identityQuestGrpId = identityQuestGrpId;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getName() {

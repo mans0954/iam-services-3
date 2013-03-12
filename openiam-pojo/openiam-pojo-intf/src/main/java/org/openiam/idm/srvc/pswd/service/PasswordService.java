@@ -24,6 +24,7 @@ package org.openiam.idm.srvc.pswd.service;
 import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.pswd.dto.Password;
 import org.openiam.idm.srvc.pswd.dto.PasswordResetTokenRequest;
@@ -121,6 +122,14 @@ public interface PasswordService {
      * @return
      */
     Policy getPasswordPolicyByUser(String domainId, UserEntity user);
+    
+    /**
+     * This method exists to REPLACE <b>getPasswordPolicyByUser</b>.  The functionality is the same.
+     * @param domainId
+     * @param user
+     * @return
+     */
+    PolicyEntity getPasswordPolicyForUser(final String domainId, final UserEntity user);
 
     /**
      * Checks to see if a password exists in the history log based on the policy

@@ -25,7 +25,7 @@ public class UserIdentityAnswerDAOImpl extends BaseDaoImpl<UserIdentityAnswerEnt
 
 	@Override
 	protected String getPKfieldName() {
-		return "identityAnsId";
+		return "id";
 	}
 
 }

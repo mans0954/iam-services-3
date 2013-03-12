@@ -21,6 +21,7 @@
  */
 package org.openiam.idm.srvc.pswd.service;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -29,6 +30,8 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.base.BaseObject;
 import org.openiam.exception.data.IdentityAnswerNotFoundException;
 import org.openiam.exception.data.PrincipalNotFoundException;
+import org.openiam.idm.searchbeans.IdentityAnswerSearchBean;
+import org.openiam.idm.searchbeans.IdentityQuestionSearchBean;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
@@ -38,8 +41,11 @@ import org.openiam.idm.srvc.pswd.domain.UserIdentityAnswerEntity;
 import org.openiam.idm.srvc.pswd.dto.ChallengeResponseUser;
 import org.openiam.idm.srvc.pswd.dto.IdentityQuestion;
 import org.openiam.idm.srvc.pswd.dto.UserIdentityAnswer;
+import org.openiam.idm.srvc.searchbean.converter.IdentityAnswerSearchBeanConverter;
+import org.openiam.idm.srvc.searchbean.converter.IdentityQuestionSearchBeanConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 /**
@@ -49,15 +55,24 @@ import org.springframework.util.CollectionUtils;
  */
 @Service("challengeResponseValidator")
 public class DefaultChallengeResponseValidator implements ChallengeResponseValidator {
-
-	@Autowired
-	private IdentityQuestionDAO identityQuestDao;
-	
-	@Autowired
-	private UserIdentityAnswerDAO identityAnswerDao;
 	
 	@Autowired
 	private LoginDataService loginManager;
+	
+	@Autowired
+    private IdentityQuestionDAO questionDAO;
+    
+    @Autowired
+    private UserIdentityAnswerDAO answerDAO;
+    
+    @Autowired
+    private IdentityQuestGroupDAO questionGroupDAO;
+    
+    @Autowired
+    private IdentityAnswerSearchBeanConverter answerSearchBeanConverter;
+    
+    @Autowired
+    private IdentityQuestionSearchBeanConverter questionSearchBeanConverter;
 	
 	private static final Log log = LogFactory.getLog(DefaultChallengeResponseValidator.class);
 	
@@ -71,12 +86,6 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 		
 	}
 
-	@Override
-	public boolean isResponseValid(final ChallengeResponseUser req, final List<UserIdentityAnswerEntity> newAnswerList) {
-		final int correctAns = getNumOfCorrectAnswers(req, newAnswerList);
-		return correctAns == newAnswerList.size();
-	}
-	
 	private int getNumOfCorrectAnswers(final ChallengeResponseUser req, final List<UserIdentityAnswerEntity> newAnswerList) {
 		int correctAns = 0;
 		
@@ -93,7 +102,7 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 
 		for (UserIdentityAnswerEntity savedAns : savedAnsList) {
 			for (UserIdentityAnswerEntity newAns : newAnswerList) {
-				if(StringUtils.equalsIgnoreCase(newAns.getIdentityAnsId(), savedAns.getIdentityAnsId())) {
+				if(StringUtils.equalsIgnoreCase(newAns.getId(), savedAns.getId())) {
 					if(StringUtils.equalsIgnoreCase(newAns.getQuestionAnswer(), savedAns.getQuestionAnswer())) {
 						correctAns++;
 					}
@@ -110,6 +119,85 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 		
 		final UserIdentityAnswerEntity example = new UserIdentityAnswerEntity();
 		example.setUserId(userId);
-		return this.identityAnswerDao.getByExample(example);
+		return answerDAO.getByExample(example);
+	}
+
+	@Override
+	public List<IdentityQuestionEntity> findQuestionBeans(final IdentityQuestionSearchBean searchBean, final int from, final int size) {
+		List<IdentityQuestionEntity> resultList = null;
+		if(searchBean.getKey() != null) {
+			final IdentityQuestionEntity entity = questionDAO.findById(searchBean.getKey());
+			if(entity != null) {
+				resultList = new LinkedList<IdentityQuestionEntity>();
+				resultList.add(entity);
+			}
+		} else {
+			resultList = questionDAO.getByExample(questionSearchBeanConverter.convert(searchBean), from, size);
+		}
+		return resultList;
+	}
+
+	@Override
+	public List<UserIdentityAnswerEntity> findAnswerBeans(final IdentityAnswerSearchBean searchBean, final int from, final int size) {
+		List<UserIdentityAnswerEntity> resultList = null;
+		if(searchBean.getKey() != null) {
+			final UserIdentityAnswerEntity entity = answerDAO.findById(searchBean.getKey());
+			if(entity != null) {
+				resultList = new LinkedList<UserIdentityAnswerEntity>();
+				resultList.add(entity);
+			}
+		} else {
+			resultList = answerDAO.getByExample(answerSearchBeanConverter.convert(searchBean), from, size);
+		}
+		return resultList;
+	}
+
+	@Override
+	@Transactional
+	public void saveQuestion(final IdentityQuestionEntity entity) throws Exception {
+		if(entity.getIdentityQuestGrp() != null && StringUtils.isNotBlank(entity.getIdentityQuestGrp().getId())) {
+			entity.setIdentityQuestGrp(questionGroupDAO.findById(entity.getIdentityQuestGrp().getId()));
+		}
+		questionDAO.merge(entity);
+	}
+
+	@Override
+	@Transactional
+	public void deleteQuestion(final String questionId) throws Exception {
+		final IdentityQuestionEntity entity = questionDAO.findById(questionId);
+		if(entity != null) {
+			questionDAO.delete(entity);
+		}
+	}
+
+	@Override
+	@Transactional
+	public void saveAnswer(final UserIdentityAnswerEntity entity) throws Exception {
+		if(entity.getIdentityQuestion() != null && StringUtils.isNotBlank(entity.getIdentityQuestion().getId())) {
+			entity.setIdentityQuestion(questionDAO.findById(entity.getIdentityQuestion().getId()));
+		}
+		answerDAO.merge(entity);
+	}
+
+	@Override
+	@Transactional
+	public void deleteAnswer(final String answerId) throws Exception {
+		final UserIdentityAnswerEntity entity = answerDAO.findById(answerId);
+		if(entity != null) {
+			answerDAO.delete(entity);
+		}
+	}
+
+	@Override
+	@Transactional
+	public void saveAnswers(final List<UserIdentityAnswerEntity> answerList) throws Exception {
+		if(answerList != null) {
+			for(final UserIdentityAnswerEntity entity : answerList) {
+				if(entity.getIdentityQuestion() != null && StringUtils.isNotBlank(entity.getIdentityQuestion().getId())) {
+					entity.setIdentityQuestion(questionDAO.findById(entity.getIdentityQuestion().getId()));
+				}
+			}
+			answerDAO.save(answerList);
+		}
 	}
 }

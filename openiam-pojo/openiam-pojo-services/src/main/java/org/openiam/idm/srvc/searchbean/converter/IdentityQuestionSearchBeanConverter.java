@@ -14,12 +14,12 @@ public class IdentityQuestionSearchBeanConverter implements SearchBeanConverter<
 		final IdentityQuestionEntity entity = new IdentityQuestionEntity();
 		if(StringUtils.isNotBlank(searchBean.getGroupId())) {
 			IdentityQuestGroupEntity group = new IdentityQuestGroupEntity();
-			group.setIdentityQuestGrpId(searchBean.getGroupId());
+			group.setId(searchBean.getGroupId());
 			entity.setIdentityQuestGrp(group);
 		}
 		
 		entity.setUserId(StringUtils.trimToNull(searchBean.getUserId()));
-		entity.setIdentityQuestionId(StringUtils.trimToNull(searchBean.getKey()));
+		entity.setId(StringUtils.trimToNull(searchBean.getKey()));
 		return entity;
 	}
 

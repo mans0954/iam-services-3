@@ -33,9 +33,8 @@ import org.openiam.idm.srvc.pswd.domain.UserIdentityAnswerEntity;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "UserIdentityAnswer", propOrder = {
-        "identityAnsId",
-        "identityQuestionId",
-        "questionText",
+        "id",
+        "questionId",
         "userId",
         "questionAnswer"
 })
@@ -46,30 +45,20 @@ public class UserIdentityAnswer extends BaseObject implements Serializable {
      *
      */
     private static final long serialVersionUID = 8841064146448209034L;
-    protected String identityAnsId;
-    protected String identityQuestionId;
-    protected String questionText;
+    protected String id;
+    protected String questionId;
     protected String userId;
     protected String questionAnswer;
 
     public UserIdentityAnswer() {
     }
 
-    public String getIdentityAnsId() {
-        return this.identityAnsId;
+    public String getId() {
+        return this.id;
     }
 
-    public void setIdentityAnsId(String identityAnsId) {
-        this.identityAnsId = identityAnsId;
-    }
-
-
-    public String getQuestionText() {
-        return this.questionText;
-    }
-
-    public void setQuestionText(String questionText) {
-        this.questionText = questionText;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getUserId() {
@@ -88,12 +77,12 @@ public class UserIdentityAnswer extends BaseObject implements Serializable {
         this.questionAnswer = questionAnswer;
     }
 
-    public String getIdentityQuestionId() {
-        return identityQuestionId;
+    public String getQuestionId() {
+        return questionId;
     }
 
-    public void setIdentityQuestionId(String identityQuestionId) {
-        this.identityQuestionId = identityQuestionId;
+    public void setQuestionId(String questionId) {
+        this.questionId = questionId;
     }
 
 }

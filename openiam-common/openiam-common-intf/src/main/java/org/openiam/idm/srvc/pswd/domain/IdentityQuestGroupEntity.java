@@ -26,7 +26,7 @@ public class IdentityQuestGroupEntity {
     @GeneratedValue(generator = "system-uuid")
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
     @Column(name = "IDENTITY_QUEST_GRP_ID", length = 32)
-	private String identityQuestGrpId;
+	private String id;
 	
 	@Column(name = "NAME", length = 60)
 	private String name;
@@ -52,12 +52,12 @@ public class IdentityQuestGroupEntity {
 	@OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "identityQuestGrp")
 	private Set<IdentityQuestionEntity> identityQuestions;
 
-	public String getIdentityQuestGrpId() {
-		return identityQuestGrpId;
+	public String getId() {
+		return id;
 	}
 
-	public void setIdentityQuestGrpId(String identityQuestGrpId) {
-		this.identityQuestGrpId = identityQuestGrpId;
+	public void setId(String id) {
+		this.id = id;
 	}
 
 	public String getName() {
@@ -136,7 +136,7 @@ public class IdentityQuestGroupEntity {
 				+ ((createdBy == null) ? 0 : createdBy.hashCode());
 		result = prime
 				* result
-				+ ((identityQuestGrpId == null) ? 0 : identityQuestGrpId
+				+ ((id == null) ? 0 : id
 						.hashCode());
 		result = prime * result
 				+ ((lastUpdate == null) ? 0 : lastUpdate.hashCode());
@@ -171,10 +171,10 @@ public class IdentityQuestGroupEntity {
 				return false;
 		} else if (!createdBy.equals(other.createdBy))
 			return false;
-		if (identityQuestGrpId == null) {
-			if (other.identityQuestGrpId != null)
+		if (id == null) {
+			if (other.id != null)
 				return false;
-		} else if (!identityQuestGrpId.equals(other.identityQuestGrpId))
+		} else if (!id.equals(other.id))
 			return false;
 		if (lastUpdate == null) {
 			if (other.lastUpdate != null)
@@ -202,8 +202,8 @@ public class IdentityQuestGroupEntity {
 	@Override
 	public String toString() {
 		return String
-				.format("IdentityQuestGroupEntity [identityQuestGrpId=%s, name=%s, status=%s, companyOwnerId=%s, createDate=%s, createdBy=%s, lastUpdate=%s, lastUpdatedBy=%s, identityQuestions=%s]",
-						identityQuestGrpId, name, status, companyOwnerId,
+				.format("IdentityQuestGroupEntity [id=%s, name=%s, status=%s, companyOwnerId=%s, createDate=%s, createdBy=%s, lastUpdate=%s, lastUpdatedBy=%s, identityQuestions=%s]",
+						id, name, status, companyOwnerId,
 						createDate, createdBy, lastUpdate, lastUpdatedBy,
 						identityQuestions);
 	}

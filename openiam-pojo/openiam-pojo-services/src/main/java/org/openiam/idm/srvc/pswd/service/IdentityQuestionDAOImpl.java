@@ -24,13 +24,13 @@ public class IdentityQuestionDAOImpl extends BaseDaoImpl<IdentityQuestionEntity,
 			criteria.add(Restrictions.eq("userId", example.getUserId()));
 		}
 		if(example.getIdentityQuestGrp() != null) {
-			criteria.add(Restrictions.eq("identityQuestGrp.identityQuestGrpId", example.getIdentityQuestGrp().getIdentityQuestGrpId()));
+			criteria.add(Restrictions.eq("identityQuestGrp.identityQuestGrpId", example.getIdentityQuestGrp().getId()));
 		}
 		return criteria;
 	}
 
 	@Override
 	protected String getPKfieldName() {
-		return "identityQuestionId";
+		return "id";
 	}
 }

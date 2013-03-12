@@ -22,6 +22,4 @@ public class IdentityAnswerSearchBean extends AbstractSearchBean<UserIdentityAns
 	public void setUserId(String userId) {
 		this.userId = userId;
 	}
-	
-	
 }

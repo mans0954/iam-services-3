@@ -2,10 +2,14 @@ package org.openiam.idm.srvc.pswd.domain;
 
 import java.io.Serializable;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.GenericGenerator;
@@ -21,13 +25,11 @@ public class UserIdentityAnswerEntity implements Serializable {
     @GeneratedValue(generator = "system-uuid")
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
     @Column(name = "IDENTITY_ANS_ID", length = 32)
-	private String identityAnsId;
+	private String id;
 	
-	@Column(name = "IDENTITY_QUESTION_ID", length = 32)
-	private String identityQuestionId;
-	
-	@Column(name = "QUESTION_TEXT")
-	private String questionText;
+	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinColumn(name="IDENTITY_QUESTION_ID", referencedColumnName="IDENTITY_QUESTION_ID", insertable = false, updatable = false)
+	private IdentityQuestionEntity identityQuestion;
 	
 	@Column(name = "USER_ID", length = 32)
 	private String userId;
@@ -35,28 +37,20 @@ public class UserIdentityAnswerEntity implements Serializable {
 	@Column(name = "QUESTION_ANSWER")
 	private String questionAnswer;
 
-	public String getIdentityAnsId() {
-		return identityAnsId;
+	public String getId() {
+		return id;
 	}
 
-	public void setIdentityAnsId(String identityAnsId) {
-		this.identityAnsId = identityAnsId;
+	public void setId(String id) {
+		this.id = id;
 	}
 
-	public String getIdentityQuestionId() {
-		return identityQuestionId;
+	public IdentityQuestionEntity getIdentityQuestion() {
+		return identityQuestion;
 	}
 
-	public void setIdentityQuestionId(String identityQuestionId) {
-		this.identityQuestionId = identityQuestionId;
-	}
-
-	public String getQuestionText() {
-		return questionText;
-	}
-
-	public void setQuestionText(String questionText) {
-		this.questionText = questionText;
+	public void setIdentityQuestion(IdentityQuestionEntity identityQuestion) {
+		this.identityQuestion = identityQuestion;
 	}
 
 	public String getUserId() {
@@ -80,15 +74,13 @@ public class UserIdentityAnswerEntity implements Serializable {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result
-				+ ((identityAnsId == null) ? 0 : identityAnsId.hashCode());
+				+ ((id == null) ? 0 : id.hashCode());
 		result = prime
 				* result
-				+ ((identityQuestionId == null) ? 0 : identityQuestionId
+				+ ((identityQuestion == null) ? 0 : identityQuestion
 						.hashCode());
 		result = prime * result
 				+ ((questionAnswer == null) ? 0 : questionAnswer.hashCode());
-		result = prime * result
-				+ ((questionText == null) ? 0 : questionText.hashCode());
 		result = prime * result + ((userId == null) ? 0 : userId.hashCode());
 		return result;
 	}
@@ -102,25 +94,20 @@ public class UserIdentityAnswerEntity implements Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		UserIdentityAnswerEntity other = (UserIdentityAnswerEntity) obj;
-		if (identityAnsId == null) {
-			if (other.identityAnsId != null)
+		if (id == null) {
+			if (other.id != null)
 				return false;
-		} else if (!identityAnsId.equals(other.identityAnsId))
+		} else if (!id.equals(other.id))
 			return false;
-		if (identityQuestionId == null) {
-			if (other.identityQuestionId != null)
+		if (identityQuestion == null) {
+			if (other.identityQuestion != null)
 				return false;
-		} else if (!identityQuestionId.equals(other.identityQuestionId))
+		} else if (!identityQuestion.equals(other.identityQuestion))
 			return false;
 		if (questionAnswer == null) {
 			if (other.questionAnswer != null)
 				return false;
 		} else if (!questionAnswer.equals(other.questionAnswer))
-			return false;
-		if (questionText == null) {
-			if (other.questionText != null)
-				return false;
-		} else if (!questionText.equals(other.questionText))
 			return false;
 		if (userId == null) {
 			if (other.userId != null)
@@ -133,9 +120,8 @@ public class UserIdentityAnswerEntity implements Serializable {
 	@Override
 	public String toString() {
 		return String
-				.format("UserIdentityAnswerEntity [identityAnsId=%s, identityQuestionId=%s, questionText=%s, userId=%s, questionAnswer=%s]",
-						identityAnsId, identityQuestionId, questionText,
-						userId, questionAnswer);
+				.format("UserIdentityAnswerEntity [identityAnsId=%s, identityQuestion=%s, userId=%s, questionAnswer=%s]",
+						id, identityQuestion, userId, questionAnswer);
 	}
 	
 	

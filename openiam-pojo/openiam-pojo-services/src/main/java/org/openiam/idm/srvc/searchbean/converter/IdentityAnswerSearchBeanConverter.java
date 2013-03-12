@@ -12,7 +12,7 @@ public class IdentityAnswerSearchBeanConverter implements SearchBeanConverter<Us
 	@Override
 	public UserIdentityAnswerEntity convert(final IdentityAnswerSearchBean searchBean) {
 		final UserIdentityAnswerEntity entity = new UserIdentityAnswerEntity();
-		entity.setIdentityAnsId(StringUtils.trimToNull(searchBean.getKey()));
+		entity.setId(StringUtils.trimToNull(searchBean.getKey()));
 		entity.setUserId(StringUtils.trimToNull(searchBean.getUserId()));
 		return entity;
 	}

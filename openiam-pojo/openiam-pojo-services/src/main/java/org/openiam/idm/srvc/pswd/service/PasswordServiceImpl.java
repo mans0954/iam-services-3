@@ -35,9 +35,11 @@ import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
+import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 import org.openiam.idm.srvc.policy.domain.PolicyObjectAssocEntity;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
+import org.openiam.idm.srvc.policy.service.PolicyDAO;
 import org.openiam.idm.srvc.policy.service.PolicyDataService;
 import org.openiam.idm.srvc.policy.service.PolicyObjectAssocDAO;
 import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
@@ -84,6 +86,9 @@ public class PasswordServiceImpl implements PasswordService {
     
     @Autowired
     private PolicyObjectAssocDAO policyObjectAssocDao;
+    
+    @Autowired
+    private PolicyDAO policyDAO;
     
     @Autowired
     @Qualifier("cryptor")
@@ -299,6 +304,54 @@ public class PasswordServiceImpl implements PasswordService {
 
         return getPasswordPolicyByUser(domainId, user);
     }
+    
+    @Override
+	public PolicyEntity getPasswordPolicyForUser(final String domainId, final UserEntity user) {
+    	// Find a password policy for this user
+        // order of search, type, classification, domain, global
+
+        PolicyObjectAssocEntity policyAssocEntity = null;
+
+        log.info("User type and classifcation=" + user.getUserId() + " "
+                + user.getUserTypeInd());
+
+        if (user.getClassification() != null) {
+            log.info("Looking for associate by classification.");
+            policyAssocEntity = policyObjectAssocDao.findAssociationByLevel(
+                    "CLASSIFICATION", user.getClassification());
+            if (policyAssocEntity != null) {
+                return getPolicyEntity(policyAssocEntity);
+            }
+        }
+
+        // look to see if a policy exists for the type of user
+        if (user.getUserTypeInd() != null) {
+            log.info("Looking for associate by type.");
+            policyAssocEntity = policyObjectAssocDao.findAssociationByLevel(
+                    "TYPE", user.getUserTypeInd());
+            log.info("PolicyAssoc found=" + policyAssocEntity);
+            if (policyAssocEntity != null) {
+                return getPolicyEntity(policyAssocEntity);
+            }
+        }
+
+        if (domainId != null) {
+            log.info("Looking for associate by domain.");
+            policyAssocEntity = policyObjectAssocDao.findAssociationByLevel(
+                    "DOMAIN", domainId);
+            if (policyAssocEntity != null) {
+                return getPolicyEntity(policyAssocEntity);
+            }
+        }
+        log.info("Using global association password policy.");
+        // did not find anything - get the global policy
+        policyAssocEntity = policyObjectAssocDao.findAssociationByLevel(
+                "GLOBAL", "GLOBAL");
+        if (policyAssocEntity == null) {
+            return null;
+        }
+        return getPolicyEntity(policyAssocEntity);
+	}
 
     @Override
     public Policy getPasswordPolicyByUser(String domainId, UserEntity user) {
@@ -346,6 +399,10 @@ public class PasswordServiceImpl implements PasswordService {
             return null;
         }
         return getPolicy(policyAssocEntity);
+    }
+    
+    private PolicyEntity getPolicyEntity(final PolicyObjectAssocEntity policyAssoc) {
+    	return policyDAO.findById(policyAssoc.getPolicyId());
     }
 
     private Policy getPolicy(PolicyObjectAssocEntity policyAssoc) {

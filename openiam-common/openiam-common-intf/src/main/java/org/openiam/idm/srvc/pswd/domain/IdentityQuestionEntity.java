@@ -25,7 +25,7 @@ public class IdentityQuestionEntity {
     @GeneratedValue(generator = "system-uuid")
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
     @Column(name = "IDENTITY_QUESTION_ID", length = 32)
-	private String identityQuestionId;
+	private String id;
 	
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name="IDENTITY_QUEST_GRP_ID", referencedColumnName="IDENTITY_QUEST_GRP_ID", insertable = false, updatable = false)
@@ -45,11 +45,11 @@ public class IdentityQuestionEntity {
 	@Column(name = "USER_ID", length = 32)
 	private String userId;
 	
-	public String getIdentityQuestionId() {
-		return identityQuestionId;
+	public String getId() {
+		return id;
 	}
-	public void setIdentityQuestionId(String identityQuestionId) {
-		this.identityQuestionId = identityQuestionId;
+	public void setId(String id) {
+		this.id = id;
 	}
 	public IdentityQuestGroupEntity getIdentityQuestGrp() {
 		return identityQuestGrp;

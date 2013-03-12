@@ -24,6 +24,7 @@ package org.openiam.idm.srvc.pswd.service;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.IdentityAnswerSearchBean;
 import org.openiam.idm.searchbeans.IdentityQuestionSearchBean;
+import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.pswd.dto.IdentityQuestion;
 import org.openiam.idm.srvc.pswd.dto.UserIdentityAnswer;
 
@@ -41,6 +42,9 @@ import java.util.List;
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/pswd/service", name = "ChallengeResponseWebService")
 public interface ChallengeResponseService {
     
+	@WebMethod
+	public Integer getNumOfRequiredQuestions(final String userId, final String domainId);
+	
 	@WebMethod
 	public List<IdentityQuestion> findQuestionBeans(@WebParam(name = "searchBean", targetNamespace = "") final IdentityQuestionSearchBean searchBean, 
 									  				@WebParam(name = "from", targetNamespace = "") int from, 
