@@ -18,7 +18,7 @@ public class IdentityQuestionSearchBeanConverter implements SearchBeanConverter<
 			entity.setIdentityQuestGrp(group);
 		}
 		
-		entity.setUserId(StringUtils.trimToNull(searchBean.getUserId()));
+		entity.setActive(searchBean.isActive());
 		entity.setId(StringUtils.trimToNull(searchBean.getKey()));
 		return entity;
 	}

@@ -43,7 +43,8 @@ import java.util.List;
 public interface ChallengeResponseService {
     
 	@WebMethod
-	public Integer getNumOfRequiredQuestions(final String userId, final String domainId);
+	public Integer getNumOfRequiredQuestions(@WebParam(name = "userId", targetNamespace = "") final String userId, 
+											 @WebParam(name = "domainId", targetNamespace = "") final String domainId);
 	
 	@WebMethod
 	public List<IdentityQuestion> findQuestionBeans(@WebParam(name = "searchBean", targetNamespace = "") final IdentityQuestionSearchBean searchBean, 

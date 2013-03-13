@@ -28,7 +28,7 @@ public class UserIdentityAnswerEntity implements Serializable {
 	private String id;
 	
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinColumn(name="IDENTITY_QUESTION_ID", referencedColumnName="IDENTITY_QUESTION_ID", insertable = false, updatable = false)
+    @JoinColumn(name="IDENTITY_QUESTION_ID", referencedColumnName="IDENTITY_QUESTION_ID", insertable = true, updatable = true)
 	private IdentityQuestionEntity identityQuestion;
 	
 	@Column(name = "USER_ID", length = 32)

@@ -242,4 +242,32 @@
             <b>mngSysObjectMatchs</b>
         </field>
     </mapping>
+    
+    
+    <mapping>
+		<class-a>org.openiam.idm.srvc.pswd.domain.IdentityQuestGroupEntity</class-a>
+		<class-b>org.openiam.idm.srvc.pswd.dto.IdentityQuestGroup</class-b>
+		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="dto2entityShallowDozerMapper">
+			<a>identityQuestions</a>
+			<b>identityQuestions</b>
+		</field>
+    </mapping>
+    
+    <mapping>
+    	<class-a>org.openiam.idm.srvc.pswd.domain.UserIdentityAnswerEntity</class-a>
+    	<class-b>org.openiam.idm.srvc.pswd.dto.UserIdentityAnswer</class-b>
+    	<field>
+    		<a>identityQuestion.id</a>
+    		<b>questionId</b>
+    	</field>
+    </mapping>
+    
+    <mapping>
+    	<class-a>org.openiam.idm.srvc.pswd.domain.IdentityQuestionEntity</class-a>
+    	<class-b>org.openiam.idm.srvc.pswd.dto.IdentityQuestion</class-b>
+    	<field>
+    		<a>identityQuestGrp.id</a>
+    		<b>identityQuestGrpId</b>
+    	</field>
+    </mapping>
 </mappings>

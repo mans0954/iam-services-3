@@ -202,10 +202,9 @@ public class IdentityQuestGroupEntity {
 	@Override
 	public String toString() {
 		return String
-				.format("IdentityQuestGroupEntity [id=%s, name=%s, status=%s, companyOwnerId=%s, createDate=%s, createdBy=%s, lastUpdate=%s, lastUpdatedBy=%s, identityQuestions=%s]",
+				.format("IdentityQuestGroupEntity [id=%s, name=%s, status=%s, companyOwnerId=%s, createDate=%s, createdBy=%s, lastUpdate=%s, lastUpdatedBy=%s]",
 						id, name, status, companyOwnerId,
-						createDate, createdBy, lastUpdate, lastUpdatedBy,
-						identityQuestions);
+						createDate, createdBy, lastUpdate, lastUpdatedBy);
 	}
 	
 	

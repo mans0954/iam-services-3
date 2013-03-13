@@ -37,9 +37,7 @@ import org.openiam.idm.srvc.pswd.domain.IdentityQuestionEntity;
         "id",
         "identityQuestGrpId",
         "questionText",
-        "required",
-        "active",
-        "userId"
+        "active"
 })
 @DozerDTOCorrespondence(IdentityQuestionEntity.class)
 public class IdentityQuestion extends BaseObject implements Serializable {
@@ -51,9 +49,7 @@ public class IdentityQuestion extends BaseObject implements Serializable {
     protected String id;
     protected String identityQuestGrpId;
     protected String questionText;
-    protected boolean required = false;
     protected boolean active = true;
-    protected String userId;
 
     public IdentityQuestion() {
     }
@@ -73,22 +69,6 @@ public class IdentityQuestion extends BaseObject implements Serializable {
     public void setQuestionText(String questionText) {
         this.questionText = questionText;
     }
-
-    public String getUserId() {
-        return this.userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
-	public boolean isRequired() {
-		return required;
-	}
-
-	public void setRequired(boolean required) {
-		this.required = required;
-	}
 
 	public boolean isActive() {
 		return active;

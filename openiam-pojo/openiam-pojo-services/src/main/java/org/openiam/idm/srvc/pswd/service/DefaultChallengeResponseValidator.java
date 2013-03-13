@@ -28,6 +28,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.BaseObject;
+import org.openiam.base.ws.ResponseCode;
+import org.openiam.base.ws.exception.BasicDataServiceException;
 import org.openiam.exception.data.IdentityAnswerNotFoundException;
 import org.openiam.exception.data.PrincipalNotFoundException;
 import org.openiam.idm.searchbeans.IdentityAnswerSearchBean;
@@ -176,6 +178,11 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 		if(entity.getIdentityQuestion() != null && StringUtils.isNotBlank(entity.getIdentityQuestion().getId())) {
 			entity.setIdentityQuestion(questionDAO.findById(entity.getIdentityQuestion().getId()));
 		}
+		
+		if(StringUtils.isBlank(entity.getQuestionAnswer())) {
+			throw new BasicDataServiceException(ResponseCode.NO_ANSWER_TO_QUESTION);
+		}
+		
 		answerDAO.merge(entity);
 	}
 

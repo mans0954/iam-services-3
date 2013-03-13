@@ -236,4 +236,32 @@
             <b>mngSysObjectMatchs</b>
         </field-exclude>
     </mapping>
+    
+    
+    <mapping>
+		<class-a>org.openiam.idm.srvc.pswd.domain.IdentityQuestGroupEntity</class-a>
+		<class-b>org.openiam.idm.srvc.pswd.dto.IdentityQuestGroup</class-b>
+		<field-exclude>
+			<a>identityQuestions</a>
+			<b>identityQuestions</b>
+		</field-exclude>
+    </mapping>
+    
+    <mapping>
+    	<class-a>org.openiam.idm.srvc.pswd.domain.UserIdentityAnswerEntity</class-a>
+    	<class-b>org.openiam.idm.srvc.pswd.dto.UserIdentityAnswer</class-b>
+    	<field>
+    		<a>identityQuestion.id</a>
+    		<b>questionId</b>
+    	</field>
+    </mapping>
+    
+    <mapping>
+    	<class-a>org.openiam.idm.srvc.pswd.domain.IdentityQuestionEntity</class-a>
+    	<class-b>org.openiam.idm.srvc.pswd.dto.IdentityQuestion</class-b>
+    	<field>
+    		<a>identityQuestGrp.id</a>
+    		<b>identityQuestGrpId</b>
+    	</field>
+    </mapping>
 </mappings>

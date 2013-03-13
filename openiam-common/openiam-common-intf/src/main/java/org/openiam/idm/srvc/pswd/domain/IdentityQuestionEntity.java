@@ -34,16 +34,9 @@ public class IdentityQuestionEntity {
 	@Column(name = "QUESTION_TEXT")
 	private String questionText;
 	
-	@Column(name = "REQUIRED")
-    @Type(type = "yes_no")
-	private boolean required = false;
-	
 	@Column(name = "ACTIVE")
     @Type(type = "yes_no")
 	private boolean active = true;
-	
-	@Column(name = "USER_ID", length = 32)
-	private String userId;
 	
 	public String getId() {
 		return id;
@@ -63,24 +56,60 @@ public class IdentityQuestionEntity {
 	public void setQuestionText(String questionText) {
 		this.questionText = questionText;
 	}
-	public boolean isRequired() {
-		return required;
-	}
-	public void setRequired(boolean required) {
-		this.required = required;
-	}
 	public boolean isActive() {
 		return active;
 	}
 	public void setActive(boolean active) {
 		this.active = active;
 	}
-	public String getUserId() {
-		return userId;
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (active ? 1231 : 1237);
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime
+				* result
+				+ ((identityQuestGrp == null) ? 0 : identityQuestGrp.hashCode());
+		result = prime * result
+				+ ((questionText == null) ? 0 : questionText.hashCode());
+		return result;
 	}
-	public void setUserId(String userId) {
-		this.userId = userId;
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		IdentityQuestionEntity other = (IdentityQuestionEntity) obj;
+		if (active != other.active)
+			return false;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		if (identityQuestGrp == null) {
+			if (other.identityQuestGrp != null)
+				return false;
+		} else if (!identityQuestGrp.equals(other.identityQuestGrp))
+			return false;
+		if (questionText == null) {
+			if (other.questionText != null)
+				return false;
+		} else if (!questionText.equals(other.questionText))
+			return false;
+		return true;
 	}
+	@Override
+	public String toString() {
+		return String
+				.format("IdentityQuestionEntity [id=%s, identityQuestGrp=%s, questionText=%s, active=%s]",
+						id, (identityQuestGrp != null) ? identityQuestGrp.getId() : null, questionText, active);
+	}
+	
 	
 	
 }

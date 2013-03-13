@@ -21,11 +21,10 @@
 package org.openiam.idm.srvc.pswd.service;
 
 import java.util.Date;
-import java.util.LinkedList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-import javax.jws.WebMethod;
-import javax.jws.WebParam;
 import javax.jws.WebService;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -42,7 +41,6 @@ import org.openiam.dozer.converter.UserIdentityAnswerDozerConverter;
 import org.openiam.idm.searchbeans.IdentityAnswerSearchBean;
 import org.openiam.idm.searchbeans.IdentityQuestionSearchBean;
 import org.openiam.idm.srvc.audit.service.AuditHelper;
-import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.policy.domain.PolicyAttributeEntity;
@@ -55,16 +53,12 @@ import org.openiam.idm.srvc.pswd.domain.UserIdentityAnswerEntity;
 import org.openiam.idm.srvc.pswd.dto.ChallengeResponseUser;
 import org.openiam.idm.srvc.pswd.dto.IdentityQuestion;
 import org.openiam.idm.srvc.pswd.dto.UserIdentityAnswer;
-import org.openiam.idm.srvc.searchbean.converter.IdentityAnswerSearchBeanConverter;
-import org.openiam.idm.srvc.searchbean.converter.IdentityQuestionSearchBeanConverter;
 import org.openiam.idm.srvc.secdomain.domain.SecurityDomainEntity;
 import org.openiam.idm.srvc.secdomain.service.SecurityDomainDAO;
 import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -254,8 +248,18 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
 			 }
 			 String requestId = "R" + UUIDGen.getUUID();
 	        
+			 /* check for duplicates */
+			 final Set<String> questionIdSet = new HashSet<String>();
 			 for(final UserIdentityAnswer answer : answerList) {
-				 saveAnswer(answer);
+				 if(questionIdSet.contains(answer.getQuestionId())) {
+					 throw new BasicDataServiceException(ResponseCode.IDENTICAL_QUESTIONS);
+				 }
+				 questionIdSet.add(answer.getQuestionId());
+			 }
+			 
+			 for(final UserIdentityAnswer answer : answerList) {
+				 final UserIdentityAnswerEntity entity = answerDozerConverter.convertToEntity(answer, true);
+				 getResponseValidator().saveAnswer(entity);
 			 }
 
 			 // add to audit log and update the user record that challenge response
@@ -266,9 +270,12 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
 			 usr.setDateChallengeRespChanged(new Date(System.currentTimeMillis()));
 			 userMgr.updateUserWithDependent(usr, false);
 
+			 /*
+			  * This was throwing errors - removing for now
 			 auditHelper.addLog("SET CHALLENGE QUESTIONS", null, null,
 	                "IDM SERVICE", userId, "PASSWORD", "CHALLENGE QUESTION", null,
 	                null, "SUCCESS", null, null, null, requestId, null, null, null);
+			*/
 		 } catch(BasicDataServiceException e) {
 			 response.setErrorCode(e.getCode());
 			 response.setStatus(ResponseStatus.FAILURE);
