@@ -22,6 +22,10 @@
 package org.openiam.idm.srvc.user.ws;
 
 import org.apache.log4j.Logger;
+import org.mule.api.MuleContext;
+import org.mule.api.MuleException;
+import org.mule.api.context.MuleContextAware;
+import org.mule.module.client.MuleClient;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
@@ -35,6 +39,8 @@ import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
+import org.openiam.idm.srvc.msg.dto.NotificationParam;
+import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -43,6 +49,7 @@ import org.openiam.idm.srvc.user.dto.*;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -59,7 +66,7 @@ import java.util.*;
 		targetNamespace = "urn:idm.openiam.org/srvc/user/service", 
 		serviceName = "UserDataWebService",
 		portName = "UserDataWebServicePort")
-public class UserDataWebServiceImpl implements UserDataWebService {
+public class UserDataWebServiceImpl implements UserDataWebService,MuleContextAware {
 	
 	private static Logger log = Logger.getLogger(UserDataWebServiceImpl.class);
 	
@@ -87,7 +94,17 @@ public class UserDataWebServiceImpl implements UserDataWebService {
     
     @Autowired
     private PhoneDozerConverter phoneDozerConverter;
-	
+
+    private MuleContext muleContext;
+
+    public void setMuleContext(MuleContext ctx) {
+        muleContext = ctx;
+    }
+    @Value("${openiam.service_base}")
+    private String serviceHost;
+    @Value("${openiam.idm.ws.path}")
+    private String serviceContext;
+
     @Override
 	public Response addAddress(final Address val) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
@@ -766,7 +783,7 @@ public class UserDataWebServiceImpl implements UserDataWebService {
                          @WebParam(name = "from", targetNamespace = "") int from,
                          @WebParam(name = "size", targetNamespace = "") int size){
         final List<UserEntity> userList = userManager.findBeans(userSearchBean, from, size);
-        return userDozerConverter.convertToDTOList(userList, false);
+        return userDozerConverter.convertToDTOList(userList, userSearchBean.isDeepCopy());
     }
 
     @Override
@@ -1019,6 +1036,11 @@ public class UserDataWebServiceImpl implements UserDataWebService {
                 supervisorEntity = supervisorDozerConverter.convertToEntity(supervisor, true);
             String userId = userManager.saveUserInfo(userEntity, supervisorEntity);
             user.setUserId(userId);
+
+            if (user.getNotifyUserViaEmail()) {
+                sendCredentialsToUser(user, user.getLogin(),user.getPassword());
+            }
+
             response.setUser(user);
         } catch(BasicDataServiceException e) {
             response.setErrorCode(e.getCode());
@@ -1102,5 +1124,30 @@ public class UserDataWebServiceImpl implements UserDataWebService {
     @Override
     public Integer getNumOfPhonesForUser(String userId){
         return userManager.getNumOfPhonesForUser(userId);
+    }
+
+    private void sendCredentialsToUser(User user, String identity, String password) {
+
+        try {
+
+            NotificationRequest request = new NotificationRequest();
+            request.setUserId(user.getUserId());
+            request.setNotificationType("NEW_USER_EMAIL");
+
+            request.getParamList().add(new NotificationParam("IDENTITY", identity));
+            request.getParamList().add(new NotificationParam("PSWD", password));
+
+            MuleClient client = new MuleClient(muleContext);
+
+            Map<String, String> msgPropMap = new HashMap<String, String>();
+            msgPropMap.put("SERVICE_HOST", serviceHost);
+            msgPropMap.put("SERVICE_CONTEXT", serviceContext);
+
+            client.sendAsync("vm://notifyUserByEmailMessage", request, msgPropMap);
+
+        } catch (MuleException me) {
+            log.error(me.toString());
+        }
+
     }
 }
