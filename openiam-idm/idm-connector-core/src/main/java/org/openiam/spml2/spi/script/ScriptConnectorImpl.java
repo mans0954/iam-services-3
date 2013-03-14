@@ -25,7 +25,6 @@ import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemObjectMatchDAO;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
-import org.openiam.script.ScriptFactory;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.spml2.base.AbstractSpml2Complete;
 import org.openiam.spml2.interf.ConnectorService;
@@ -34,6 +33,8 @@ import org.openiam.spml2.msg.password.*;
 import org.openiam.spml2.msg.suspend.ResumeRequestType;
 import org.openiam.spml2.msg.suspend.SuspendRequestType;
 import org.openiam.spml2.spi.ldap.LdapConnectorImpl;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import javax.jws.WebParam;
 import javax.jws.WebService;
@@ -58,7 +59,10 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete implements Connec
     protected ManagedSystemWebService managedSysService;
     protected ManagedSystemObjectMatchDAO managedSysObjectMatchDao;
     protected ResourceDataService resourceDataService;
-    protected String scriptEngine;
+    
+    @Autowired
+    @Qualifier("configurableGroovyScriptEngine")
+    private ScriptIntegration scriptRunner;
 
     public AddResponseType add(AddRequestType reqType) {
         String targetID = reqType.getTargetID();
@@ -233,10 +237,9 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete implements Connec
     private ConnectorService createConnector(ManagedSysDto managedSys) throws ClassNotFoundException, IOException {
         String connectorPath = "/connector/" + managedSys.getName() + ".groovy";
 
-        ScriptIntegration se = ScriptFactory.createModule(this.scriptEngine);
         Map<String, Object> bindingMap = new HashMap<String, Object>();
         bindingMap.put("managedSys", managedSys);
-        return (ConnectorService) se.instantiateClass(bindingMap, connectorPath);
+        return (ConnectorService) scriptRunner.instantiateClass(bindingMap, connectorPath);
     }
 
     public ManagedSystemWebService getManagedSysService() {
@@ -261,13 +264,5 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete implements Connec
 
     public void setResourceDataService(ResourceDataService resourceDataService) {
         this.resourceDataService = resourceDataService;
-    }
-
-    public String getScriptEngine() {
-        return scriptEngine;
-    }
-
-    public void setScriptEngine(String scriptEngine) {
-        this.scriptEngine = scriptEngine;
     }
 }

@@ -37,10 +37,10 @@ import org.openiam.idm.srvc.auth.ws.LoginDataWebService;
 import org.openiam.idm.srvc.batch.dto.BatchTask;
 import org.openiam.idm.srvc.batch.service.BatchDataService;
 import org.openiam.idm.srvc.policy.service.PolicyDataService;
-import org.openiam.script.ScriptFactory;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -66,12 +66,15 @@ public class NightlyTask implements ApplicationContextAware {
     protected LoginDataWebService loginManager;
     protected PolicyDataService policyDataService;
     protected BatchDataService batchService;
-    protected String scriptEngine;
     @Autowired
     protected AuditHelper auditHelper;
 
     @Value("${IS_PRIMARY}")
     private boolean isPrimary;
+    
+    @Autowired
+    @Qualifier("configurableGroovyScriptEngine")
+    private ScriptIntegration scriptRunner;
 
     // used to inject the application context into the groovy scripts
     public static ApplicationContext ac;
@@ -79,21 +82,12 @@ public class NightlyTask implements ApplicationContextAware {
     public void execute() {
         log.debug("NightlyBatchJob called.");
 
-        ScriptIntegration se = null;
         Map<String, Object> bindingMap = new HashMap<String, Object>();
         bindingMap.put("context", ac);
 
         if (!isPrimary) {
             log.debug("Scheduler: Not primary instance");
             return;
-        }
-
-        try {
-            se = ScriptFactory.createModule(this.scriptEngine);
-        } catch (Exception e) {
-            log.error(e);
-            return;
-
         }
 
         // get the list of domains
@@ -134,7 +128,7 @@ public class NightlyTask implements ApplicationContextAware {
                         bindingMap.put("parentRequestId", requestId);
 
                         try {
-                            Integer output = (Integer) se.execute(bindingMap,
+                            Integer output = (Integer) scriptRunner.execute(bindingMap,
                                     task.getTaskUrl());
                             if (output.intValue() == 0) {
                                 auditHelper.addLog(task.getTaskName(), null,
@@ -200,14 +194,6 @@ public class NightlyTask implements ApplicationContextAware {
 
     public void setBatchService(BatchDataService batchService) {
         this.batchService = batchService;
-    }
-
-    public String getScriptEngine() {
-        return scriptEngine;
-    }
-
-    public void setScriptEngine(String scriptEngine) {
-        this.scriptEngine = scriptEngine;
     }
 
     public AuditHelper getAuditHelper() {

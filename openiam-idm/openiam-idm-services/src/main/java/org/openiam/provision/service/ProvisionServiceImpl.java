@@ -91,7 +91,6 @@ import org.openiam.provision.resp.LookupUserResponse;
 import org.openiam.provision.resp.PasswordResponse;
 import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleUser;
-import org.openiam.script.ScriptFactory;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.spml2.interf.ConnectorService;
 import org.openiam.spml2.msg.AddRequestType;
@@ -104,6 +103,7 @@ import org.openiam.spml2.msg.StatusCodeType;
 import org.openiam.spml2.msg.password.SetPasswordRequestType;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -131,6 +131,10 @@ public class ProvisionServiceImpl implements ProvisionService,
     
     @Autowired
     private PasswordGenerator passwordGenerator;
+    
+    @Autowired
+    @Qualifier("configurableGroovyScriptEngine")
+    private ScriptIntegration scriptRunner;
 
     protected ManagedSystemWebService managedSysService;
     protected RoleDataService roleDataService;
@@ -177,7 +181,6 @@ public class ProvisionServiceImpl implements ProvisionService,
         Organization org = null;
         Map<String, ManagedSysAttributes> managedSysMap = new HashMap<String, ManagedSysAttributes>();
 
-        ScriptIntegration se = null;
         String secDomain = null;
         String password = null;
 
@@ -187,17 +190,11 @@ public class ProvisionServiceImpl implements ProvisionService,
 
         password = passwordGenerator.generatePassword(10);
 
-        try {
-            se = ScriptFactory.createModule(this.scriptEngine);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
         bindingMap.put("context", ac);
 
         String gmSysKey = null;
         try {
-            gmSysKey = (String) se.execute(bindingMap,
+            gmSysKey = (String) scriptRunner.execute(bindingMap,
                     "provision/globalManagerSyskey.groovy");
         } catch (ScriptEngineException e) {
             log.error(e);
@@ -245,14 +242,14 @@ public class ProvisionServiceImpl implements ProvisionService,
         /* -- Temp hack -- */
         String networxId = null;
         try {
-            networxId = (String) se.execute(bindingMap,
+            networxId = (String) scriptRunner.execute(bindingMap,
                     "provision/networxId.groovy");
         } catch (ScriptEngineException e) {
             log.error(e);
         }
         String globalManagerId = null;
         try {
-            globalManagerId = (String) se.execute(bindingMap,
+            globalManagerId = (String) scriptRunner.execute(bindingMap,
                     "provision/globalManagerId.groovy");
         } catch (ScriptEngineException e) {
             log.error(e);
@@ -851,7 +848,6 @@ public class ProvisionServiceImpl implements ProvisionService,
         List<Login> principalList = provUser.getPrincipalList();
         String password = passwordGenerator.generatePassword(10);
 
-        ScriptIntegration se = null;
         Organization org = null;
         if (origUser.getCompanyId() != null) {
             org = orgManager.getOrganization(origUser.getCompanyId());
@@ -865,29 +861,23 @@ public class ProvisionServiceImpl implements ProvisionService,
         bindingMap.put("password", password);
         bindingMap.put("lg", primaryLogin);
 
-        try {
-            se = ScriptFactory.createModule(this.scriptEngine);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
         String networxId = null;
         try {
-            networxId = (String) se.execute(bindingMap,
+            networxId = (String) scriptRunner.execute(bindingMap,
                     "provision/networxId.groovy");
         } catch (ScriptEngineException ge) {
             log.error(ge);
         }
         String globalManagerId = null;
         try {
-            globalManagerId = (String) se.execute(bindingMap,
+            globalManagerId = (String) scriptRunner.execute(bindingMap,
                     "provision/globalManagerId.groovy");
         } catch (ScriptEngineException ge) {
             log.error(ge);
         }
         String gmSysKey = null;
         try {
-            gmSysKey = (String) se.execute(bindingMap,
+            gmSysKey = (String) scriptRunner.execute(bindingMap,
                     "provision/globalManagerSyskey.groovy");
         } catch (ScriptEngineException ge) {
             log.error(ge);

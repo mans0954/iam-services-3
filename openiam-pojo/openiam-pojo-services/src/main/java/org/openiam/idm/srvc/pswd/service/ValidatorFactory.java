@@ -25,9 +25,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.script.ScriptFactory;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -44,8 +45,9 @@ public class ValidatorFactory implements ApplicationContextAware {
 	
 	protected static final Log log = LogFactory.getLog(ValidatorFactory.class);
 	
-	@Value("${org.openiam.groovy.script.engine}")
-	protected String scriptEngine;
+	@Autowired
+    @Qualifier("configurableGroovyScriptEngine")
+    private ScriptIntegration scriptRunner;
 	
 	public static final String OBJECT_TYPE_JAVA = "java";
 	public static final String OBJECT_TYPE_GROOVY = "groovy";
@@ -66,15 +68,12 @@ public class ValidatorFactory implements ApplicationContextAware {
 	 * @return
 	 */
 	public ChallengeResponseValidator createValidator(String className, String objType) {
-		ScriptIntegration se = null;
-		
 		if (objType.equalsIgnoreCase(ValidatorFactory.OBJECT_TYPE_JAVA)) {
 			return (ChallengeResponseValidator)ac.getBean(className);
 		}else {
 			// the object is defined as a groovy script.
 			try {
-				se = ScriptFactory.createModule(this.scriptEngine);
-                return (ChallengeResponseValidator)se.instantiateClass(null, className);
+                return (ChallengeResponseValidator)scriptRunner.instantiateClass(null, className);
 			}catch(Exception e) {
 				log.error(e);
 				e.printStackTrace();

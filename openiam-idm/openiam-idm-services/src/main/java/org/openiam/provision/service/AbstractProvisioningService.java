@@ -65,13 +65,13 @@ import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.provision.type.ExtensibleUser;
-import org.openiam.script.ScriptFactory;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.spml2.msg.*;
 import org.openiam.spml2.msg.ResponseType;
 import org.openiam.spml2.msg.password.SetPasswordRequestType;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -101,7 +101,6 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
     protected String defaultProvisioningModel;
     protected SysConfiguration sysConfiguration;
     protected ResourceDataService resourceDataService;
-    protected String scriptEngine;
     protected OrganizationDataService orgManager;
     protected PasswordService passwordDS;
     @Autowired
@@ -116,6 +115,10 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
     protected DeprovisionSelectedResourceHelper deprovisionSelectedResource;
 
     MuleContext muleContext;
+    
+    @Autowired
+    @Qualifier("configurableGroovyScriptEngine")
+    private ScriptIntegration scriptRunner;
 
     protected static final String MATCH_PARAM = "matchParam";
     protected static final String TARGET_SYSTEM_IDENTITY_STATUS = "targetSystemIdentityStatus";
@@ -291,14 +294,6 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
     public void setResourceDataService(ResourceDataService resourceDataService) {
         this.resourceDataService = resourceDataService;
-    }
-
-    public String getScriptEngine() {
-        return scriptEngine;
-    }
-
-    public void setScriptEngine(String scriptEngine) {
-        this.scriptEngine = scriptEngine;
     }
 
     public OrganizationDataService getOrgManager() {
@@ -766,9 +761,7 @@ public ProvisionUserResponse createUser(ProvisionUser user, List<IdmAuditLog> lo
 
     protected ProvisionServicePreProcessor createProvPreProcessScript(String scriptName) {
         try {
-            ScriptIntegration se = null;
-            se = ScriptFactory.createModule(scriptEngine);
-            return (ProvisionServicePreProcessor) se.instantiateClass(null, scriptName);
+            return (ProvisionServicePreProcessor) scriptRunner.instantiateClass(null, scriptName);
         } catch (Exception ce) {
             log.error(ce);
             return null;
@@ -779,9 +772,7 @@ public ProvisionUserResponse createUser(ProvisionUser user, List<IdmAuditLog> lo
 
     protected ProvisionServicePostProcessor createProvPostProcessScript(String scriptName) {
         try {
-            ScriptIntegration se = null;
-            se = ScriptFactory.createModule(scriptEngine);
-            return (ProvisionServicePostProcessor) se.instantiateClass(null, scriptName);
+            return (ProvisionServicePostProcessor) scriptRunner.instantiateClass(null, scriptName);
         } catch (Exception ce) {
             log.error(ce);
             return null;
@@ -2475,9 +2466,7 @@ public ProvisionUserResponse createUser(ProvisionUser user, List<IdmAuditLog> lo
 
     protected PreProcessor createPreProcessScript(String scriptName) {
         try {
-            ScriptIntegration se = null;
-            se = ScriptFactory.createModule(scriptEngine);
-            return (PreProcessor) se.instantiateClass(null, scriptName);
+            return (PreProcessor) scriptRunner.instantiateClass(null, scriptName);
         } catch (Exception ce) {
             log.error(ce);
             return null;
@@ -2487,9 +2476,7 @@ public ProvisionUserResponse createUser(ProvisionUser user, List<IdmAuditLog> lo
 
     protected PostProcessor createPostProcessScript(String scriptName) {
         try {
-            ScriptIntegration se = null;
-            se = ScriptFactory.createModule(scriptEngine);
-            return (PostProcessor) se.instantiateClass(null, scriptName);
+            return (PostProcessor) scriptRunner.instantiateClass(null, scriptName);
         } catch (Exception ce) {
             log.error(ce);
             return null;

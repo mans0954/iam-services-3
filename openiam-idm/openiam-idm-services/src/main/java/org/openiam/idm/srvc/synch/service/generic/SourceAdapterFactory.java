@@ -25,9 +25,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.openiam.idm.srvc.synch.service.SourceAdapter;
-import org.openiam.script.ScriptFactory;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -42,8 +43,11 @@ import java.io.IOException;
 public class SourceAdapterFactory implements  ApplicationContextAware {
 
 	private static final Log log = LogFactory.getLog(SourceAdapterFactory.class);
-	private String scriptEngine;
 	public static ApplicationContext ac;
+	
+	@Autowired
+    @Qualifier("configurableGroovyScriptEngine")
+    private ScriptIntegration scriptRunner;
 	
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		ac = applicationContext;
@@ -51,7 +55,6 @@ public class SourceAdapterFactory implements  ApplicationContextAware {
 	
 	
 	public SourceAdapter create(SynchConfig config) throws ClassNotFoundException, IOException {
-		ScriptIntegration se = null;
 		SourceAdapter adpt = null;
 		
 		String adapterType = config.getSynchAdapter();
@@ -60,14 +63,7 @@ public class SourceAdapterFactory implements  ApplicationContextAware {
 				if (adapterType.equalsIgnoreCase("CUSTOM") &&
 					( adapterType  != null &&  adapterType.length() > 0)) {
 					// custom adapter- written groovy
-					try {
-						se = ScriptFactory.createModule(scriptEngine); 
-					}catch(Exception e) {
-						log.error(e);
-						e.printStackTrace();
-						return null;
-					}
-					adpt =  (SourceAdapter)se.instantiateClass(null, customScript);
+					adpt =  (SourceAdapter)scriptRunner.instantiateClass(null, customScript);
 	
 				}else {
 
@@ -90,14 +86,4 @@ public class SourceAdapterFactory implements  ApplicationContextAware {
 		return null;
 		
 	}
-
-	public String getScriptEngine() {
-		return scriptEngine;
-	}
-
-	public void setScriptEngine(String scriptEngine) {
-		this.scriptEngine = scriptEngine;
-	}
-
-
 }

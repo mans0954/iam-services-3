@@ -31,40 +31,34 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.ResourceBundle;
-import org.openiam.exception.ScriptEngineException;
 
-/**
- * @author suneet
+import javax.annotation.PostConstruct;
+
+import org.openiam.exception.ScriptEngineException;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+/* 
+ * Spring bean created through XML. Not using annotations, as the actual implementation of the 
+ * interface is configurable via the properties file
  */
 public class GroovyScriptEngineIntegration implements ScriptIntegration {
 
+	@Value("${org.openiam.groovy.script.root}")
+	private String scriptRoot;
+	
     protected static final Log log = LogFactory.getLog(GroovyScriptEngineIntegration.class);
 
-    static protected ResourceBundle res = ResourceBundle.getBundle("securityconf");
-    static String[] roots = null;
-    static GroovyScriptEngine gse = null;
-
-    Binding binding = new Binding();
-
-    public GroovyScriptEngineIntegration() {
-    }
-
-    static public void init() {
-        if (gse == null) {
-            String scriptPath = res.getString("scriptRoot");
-            roots = new String[]{scriptPath};
-            try {
-                gse = new GroovyScriptEngine(roots);
-            } catch (IOException io) {
-                log.error("Could not instantiate GroovyScriptEngine", io);
-            }
-        }
+    private GroovyScriptEngine gse = null;
+    
+    @PostConstruct
+    public void init() throws IOException {
+    	gse = new GroovyScriptEngine(new String[]{scriptRoot});
     }
 
     @Override
     public Object execute(Map<String, Object> bindingMap, String scriptName) throws ScriptEngineException {
-        init();
-
+    	final Binding binding = new Binding();
         try {
             if (bindingMap != null) {
                 for (String key : bindingMap.keySet()) {
@@ -90,8 +84,7 @@ public class GroovyScriptEngineIntegration implements ScriptIntegration {
 
         GroovyClassLoader gcl = new GroovyClassLoader();
         try {
-            String scriptPath = res.getString("scriptRoot");
-            String fullPath = scriptPath + scriptName;
+            String fullPath = scriptRoot + scriptName;
             Class cl = gcl.parseClass(new File(fullPath));
             Object instance = cl.newInstance();
 

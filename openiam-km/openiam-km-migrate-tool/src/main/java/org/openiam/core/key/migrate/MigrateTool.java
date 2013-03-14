@@ -76,8 +76,6 @@ public class MigrateTool {
 
 
     private static String readKey(String keyFile) {
-//        String path = res.getString("MS_KEY_LOC");
-//        String filename = "cayo.dat";
         try {
             BufferedInputStream stream =  new BufferedInputStream(new FileInputStream(keyFile));
             int len = stream.available();

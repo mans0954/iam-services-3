@@ -28,7 +28,7 @@ import java.util.ResourceBundle;
  */
 public class SHA2Hash implements HashDigest, InitializingBean {
 	
-	@Value("${MS_KEY_LOC}")
+	@Value("${org.openiam.ms.key.location}")
 	private String keyLocation;
 	
 	private byte[] key = null;

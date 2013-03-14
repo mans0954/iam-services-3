@@ -21,6 +21,10 @@ public class SpringContextProvider implements ApplicationContextAware {
 		return ctx.getBean(beanName);
 	}
 	
+	public static <T> T getBean(final String beanName, final Class<T> clazz) {
+		return ctx.getBean(beanName, clazz);
+	}
+	
 	public static void autowire(final Object toAutowire) {
 		if(toAutowire != null) {
 			ctx.getAutowireCapableBeanFactory().autowireBean(toAutowire);

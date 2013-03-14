@@ -8,9 +8,9 @@ import org.openiam.core.dao.ReportDataDao;
 import org.openiam.core.domain.ReportInfo;
 import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.srvc.report.dto.ReportDataDto;
-import org.openiam.script.ScriptFactory;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,8 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class ReportDataServiceImpl implements ReportDataService {
 
-	@Value("${org.openiam.groovy.script.engine}")
-    private String scriptEngine;
+	@Autowired
+    @Qualifier("configurableGroovyScriptEngine")
+    private ScriptIntegration scriptRunner;
 
     @Autowired
     private ReportDataDao reportDao;
@@ -32,8 +33,7 @@ public class ReportDataServiceImpl implements ReportDataService {
             throw new IllegalArgumentException("Invalid parameter list: report with name="+reportName + " was not found in Database");
         }
 
-        ScriptIntegration se = ScriptFactory.createModule(scriptEngine);
-        ReportDataSetBuilder dataSourceBuilder = (ReportDataSetBuilder) se.instantiateClass(Collections.EMPTY_MAP, "/reports/"+reportInfo.getDatasourceFilePath());
+        ReportDataSetBuilder dataSourceBuilder = (ReportDataSetBuilder) scriptRunner.instantiateClass(Collections.EMPTY_MAP, "/reports/"+reportInfo.getDatasourceFilePath());
 
         return dataSourceBuilder.getReportData(reportParams);
     }

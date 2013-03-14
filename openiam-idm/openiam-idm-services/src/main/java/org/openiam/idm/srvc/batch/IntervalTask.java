@@ -21,10 +21,10 @@ import org.openiam.idm.srvc.auth.ws.LoginDataWebService;
 import org.openiam.idm.srvc.batch.dto.BatchTask;
 import org.openiam.idm.srvc.batch.service.BatchDataService;
 import org.openiam.idm.srvc.policy.service.PolicyDataService;
-import org.openiam.script.ScriptFactory;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -51,7 +51,6 @@ public class IntervalTask implements ApplicationContextAware, MuleContextAware {
 
     protected LoginDataWebService loginManager;
     protected PolicyDataService policyDataService;
-    protected String scriptEngine;
     @Autowired
     protected AuditHelper auditHelper;
 
@@ -65,6 +64,10 @@ public class IntervalTask implements ApplicationContextAware, MuleContextAware {
     
     @Value("${openiam.idm.ws.path}")
     private String serviceContext;
+    
+    @Autowired
+    @Qualifier("configurableGroovyScriptEngine")
+    private ScriptIntegration scriptRunner;
 
     public static ApplicationContext ac;
 
@@ -82,17 +85,8 @@ public class IntervalTask implements ApplicationContextAware, MuleContextAware {
             }
         }
 
-        ScriptIntegration se = null;
         Map<String, Object> bindingMap = new HashMap<String, Object>();
         bindingMap.put("context", ac);
-
-        try {
-            se = ScriptFactory.createModule(this.scriptEngine);
-        } catch (Exception e) {
-            log.error(e);
-            return;
-
-        }
 
         // get the list of domains
         List<BatchTask> taskList = batchService
@@ -134,7 +128,7 @@ public class IntervalTask implements ApplicationContextAware, MuleContextAware {
                         bindingMap.put("parentRequestId", requestId);
 
                         try {
-                            Integer output = (Integer) se.execute(bindingMap,
+                            Integer output = (Integer) scriptRunner.execute(bindingMap,
                                     task.getTaskUrl());
                             if (output.intValue() == 0) {
                                 auditHelper.addLog(task.getTaskName(), null,
@@ -219,14 +213,6 @@ public class IntervalTask implements ApplicationContextAware, MuleContextAware {
 
     public void setPolicyDataService(PolicyDataService policyDataService) {
         this.policyDataService = policyDataService;
-    }
-
-    public String getScriptEngine() {
-        return scriptEngine;
-    }
-
-    public void setScriptEngine(String scriptEngine) {
-        this.scriptEngine = scriptEngine;
     }
 
     public AuditHelper getAuditHelper() {

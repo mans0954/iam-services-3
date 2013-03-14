@@ -120,7 +120,6 @@
         <property name="managedSysService" ref="managedSysService" />
         <property name="managedSysObjectMatchDao" ref="managedSysObjectMatchDAO" />
         <property name="resourceDataService" ref="resourceDataService" />
-        <property name="scriptEngine" value="${org.openiam.groovy.script.engine}" />
 
     </bean>
 

@@ -12,8 +12,9 @@ import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.LookupUserResponse;
 import org.openiam.provision.service.ProvisionService;
 import org.openiam.provision.type.ExtensibleAttribute;
-import org.openiam.script.ScriptFactory;
 import org.openiam.script.ScriptIntegration;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -32,7 +33,10 @@ public class CreateIdmAccountCommand implements ReconciliationCommand {
     private ProvisionService provisionService;
     private ReconciliationSituation config;
     private static final Log log = LogFactory.getLog(CreateIdmAccountCommand.class);
-    private static String scriptEngine = "org.openiam.script.GroovyScriptEngineIntegration";
+    
+    @Autowired
+    @Qualifier("configurableGroovyScriptEngine")
+    private ScriptIntegration scriptRunner;
 
     public CreateIdmAccountCommand(ProvisionService provisionService, ReconciliationSituation config) {
         this.provisionService = provisionService;
@@ -49,8 +53,7 @@ public class CreateIdmAccountCommand implements ReconciliationCommand {
                 line.put(attr.getName(), attr.getValue());
             }
             try {
-                ScriptIntegration se = ScriptFactory.createModule(scriptEngine);
-                PopulationScript script = (PopulationScript)se.instantiateClass(null, config.getScript());
+                PopulationScript script = (PopulationScript)scriptRunner.instantiateClass(null, config.getScript());
                 ProvisionUser pUser = new ProvisionUser();
                 int retval = script.execute(line, pUser);
                 if(retval == 0){

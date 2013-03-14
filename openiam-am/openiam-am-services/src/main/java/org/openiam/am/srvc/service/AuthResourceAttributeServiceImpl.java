@@ -15,7 +15,6 @@ import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDataService;
-import org.openiam.script.ScriptFactory;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,9 +44,10 @@ public class AuthResourceAttributeServiceImpl implements AuthResourceAttributeSe
     private LoginDataService loginManager;
     @Autowired
     private UserDataService userManager;
+    
     @Autowired
-    @Qualifier("scriptEngine")
-    private String scriptEngine;
+    @Qualifier("configurableGroovyScriptEngine")
+    private ScriptIntegration scriptRunner;
     
     @Autowired
     private AuthAttributeProcessor authAttributeProcessor;
@@ -258,24 +258,19 @@ public class AuthResourceAttributeServiceImpl implements AuthResourceAttributeSe
 
     private String executeGroovyScript(final UserEntity user, final Map<String, UserAttributeEntity> userAttributeEntityMap, String amPolicyUrl) {
         String result="";
-        if(this.scriptEngine!=null && !this.scriptEngine.trim().isEmpty()){
-            try {
- //               if(userAttributeEntityMap!=null && !userAttributeEntityMap.isEmpty()){
-                    ScriptIntegration se = ScriptFactory.createModule(this.scriptEngine);
-                    Map<String, Object> bindingMap = new HashMap<String, Object>();
-                    bindingMap.put("userAttributeMap", userAttributeEntityMap);
-                    bindingMap.put("applicationContext",applicationContext);
-                    bindingMap.put("user", user);
+        try {
+        	Map<String, Object> bindingMap = new HashMap<String, Object>();
+        	bindingMap.put("userAttributeMap", userAttributeEntityMap);
+        	bindingMap.put("applicationContext",applicationContext);
+        	bindingMap.put("user", user);
 
-                    if(!amPolicyUrl.startsWith("/"))
-                        amPolicyUrl="/"+amPolicyUrl;
-                    AuthResourceAttributeMapper mapper = (AuthResourceAttributeMapper) se.instantiateClass(null, amPolicyUrl);
-                    mapper.init(bindingMap);
-                    result=mapper.mapAttribute();
-                //}
-            } catch (Exception e) {
-                log.error(e.getMessage(),e);
-            }
+        	if(!amPolicyUrl.startsWith("/"))
+        		amPolicyUrl="/"+amPolicyUrl;
+        	AuthResourceAttributeMapper mapper = (AuthResourceAttributeMapper) scriptRunner.instantiateClass(null, amPolicyUrl);
+        	mapper.init(bindingMap);
+        	result=mapper.mapAttribute();
+        } catch (Exception e) {
+            log.error(e.getMessage(),e);
         }
         return result;
     }

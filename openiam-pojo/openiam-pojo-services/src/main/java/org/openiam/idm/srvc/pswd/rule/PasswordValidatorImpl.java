@@ -42,7 +42,6 @@ import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
 import org.openiam.idm.srvc.secdomain.service.SecurityDomainDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDAO;
-import org.openiam.script.ScriptFactory;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,8 +73,9 @@ public class PasswordValidatorImpl implements PasswordValidator {
     @Qualifier("cryptor")
     protected Cryptor cryptor;
     
-    @Value("${org.openiam.groovy.script.engine}")
-    protected String scriptEngine;
+    @Autowired
+    @Qualifier("configurableGroovyScriptEngine")
+    private ScriptIntegration scriptRunner;
     
     @Autowired
     protected KeyManagementService keyManagementService;
@@ -104,7 +104,6 @@ public class PasswordValidatorImpl implements PasswordValidator {
             throws ObjectNotFoundException, IOException {
         Class cls = null;
         AbstractPasswordRule rule = null;
-        ScriptIntegration se = null;
 
         // get the password policy for this domain
         // SecurityDomain securityDomain = secDomainService.getSecurityDomain(
@@ -148,15 +147,7 @@ public class PasswordValidatorImpl implements PasswordValidator {
                                 throw new ObjectNotFoundException();
                             }
                         } else {
-                            try {
-                                se = ScriptFactory
-                                        .createModule(this.scriptEngine);
-                            } catch (Exception e) {
-                                log.error(e);
-                                e.printStackTrace();
-                                return null;
-                            }
-                            rule = (AbstractPasswordRule) se.instantiateClass(
+                            rule = (AbstractPasswordRule) scriptRunner.instantiateClass(
                                     null, strRule);
 
                         }

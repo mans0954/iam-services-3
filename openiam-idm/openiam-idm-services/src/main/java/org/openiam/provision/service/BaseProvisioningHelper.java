@@ -32,13 +32,13 @@ import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.script.ScriptFactory;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.spml2.msg.DeleteRequestType;
 import org.openiam.spml2.msg.PSOIdentifierType;
 import org.openiam.spml2.msg.ResponseType;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -61,7 +61,6 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
     protected String defaultProvisioningModel;
     protected SysConfiguration sysConfiguration;
     protected ResourceDataService resourceDataService;
-    protected String scriptEngine;
     protected OrganizationDataService orgManager;
     protected PasswordService passwordDS;
     @Autowired
@@ -69,6 +68,10 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
     protected ConnectorAdapter connectorAdapter;
     protected RemoteConnectorAdapter remoteConnectorAdapter;
 
+    @Autowired
+    @Qualifier("configurableGroovyScriptEngine")
+    private ScriptIntegration scriptRunner;
+    
     @Autowired
     protected ProvisionConnectorWebService connectorService;
 
@@ -112,9 +115,7 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
     /* Helper methods for Pre and Post processing scripts */
     protected PreProcessor createPreProcessScript(String scriptName) {
         try {
-            ScriptIntegration se = null;
-            se = ScriptFactory.createModule(scriptEngine);
-            return (PreProcessor) se.instantiateClass(null, scriptName);
+            return (PreProcessor) scriptRunner.instantiateClass(null, scriptName);
         } catch (Exception ce) {
             log.error(ce);
             return null;
@@ -125,9 +126,7 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
 
     protected PostProcessor createPostProcessScript(String scriptName) {
         try {
-            ScriptIntegration se = null;
-            se = ScriptFactory.createModule(scriptEngine);
-            return (PostProcessor) se.instantiateClass(null, scriptName);
+            return (PostProcessor) scriptRunner.instantiateClass(null, scriptName);
         } catch (Exception ce) {
             log.error(ce);
             return null;
@@ -348,14 +347,6 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
 
     public void setResourceDataService(ResourceDataService resourceDataService) {
         this.resourceDataService = resourceDataService;
-    }
-
-    public String getScriptEngine() {
-        return scriptEngine;
-    }
-
-    public void setScriptEngine(String scriptEngine) {
-        this.scriptEngine = scriptEngine;
     }
 
     public OrganizationDataService getOrgManager() {

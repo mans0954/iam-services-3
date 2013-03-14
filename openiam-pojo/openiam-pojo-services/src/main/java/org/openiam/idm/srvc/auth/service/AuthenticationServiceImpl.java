@@ -79,7 +79,6 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
-import org.openiam.script.ScriptFactory;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.BeansException;
@@ -139,9 +138,6 @@ public class AuthenticationServiceImpl implements AuthenticationService, Applica
 
     @Autowired
     private AuditLogUtil auditLogUtil;
-
-    @Value("${org.openiam.groovy.script.engine}")
-    private String scriptEngine;
     
     @Autowired
     private SysConfiguration sysConfiguration;
@@ -154,6 +150,10 @@ public class AuthenticationServiceImpl implements AuthenticationService, Applica
     
     @Value("${org.openiam.core.login.login.module.default}")
     private String defaultLoginModule;
+    
+    @Autowired
+    @Qualifier("configurableGroovyScriptEngine")
+    private ScriptIntegration scriptRunner;
     
     private ApplicationContext ctx;
     private BeanFactory beanFactory;
@@ -465,10 +465,8 @@ public class AuthenticationServiceImpl implements AuthenticationService, Applica
                 bindingMap.put("login", lg);
                 bindingMap.put("user", user);
 
-                ScriptIntegration se = ScriptFactory
-                        .createModule(this.scriptEngine);
                 try {
-                    loginModName = (String) se.execute(bindingMap,
+                    loginModName = (String) scriptRunner.execute(bindingMap,
                             selPolicy.getValue1());
                 } catch (ScriptEngineException e) {
                     log.error(e);

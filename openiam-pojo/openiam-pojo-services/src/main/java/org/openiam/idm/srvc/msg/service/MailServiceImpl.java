@@ -14,10 +14,10 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.ws.UserDataWebService;
-import org.openiam.script.ScriptFactory;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -29,10 +29,13 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
     private String subjectPrefix;
     private String optionalBccAddress;
 
-    protected String scriptEngine;
     protected UserDataService userManager;
     @Autowired
     protected AuditHelper auditHelper;
+    
+    @Autowired
+    @Qualifier("configurableGroovyScriptEngine")
+    private ScriptIntegration scriptRunner;
 
     public static ApplicationContext ac;
 
@@ -172,9 +175,7 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
     private String createEmailBody(Map<String, Object> bindingMap,
             String emailScript) {
         try {
-            ScriptIntegration se = ScriptFactory
-                    .createModule(this.scriptEngine);
-            return (String) se.execute(bindingMap, emailScript);
+            return (String) scriptRunner.execute(bindingMap, emailScript);
         } catch (Exception e) {
             log.error("createEmailBody():" + e.toString());
             return null;
@@ -215,14 +216,6 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 
     public void setMailSender(MailSender mailSender) {
         this.mailSender = mailSender;
-    }
-
-    public String getScriptEngine() {
-        return scriptEngine;
-    }
-
-    public void setScriptEngine(String scriptEngine) {
-        this.scriptEngine = scriptEngine;
     }
 
     public void setApplicationContext(ApplicationContext applicationContext)

@@ -79,7 +79,6 @@ import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.provision.type.ExtensibleUser;
-import org.openiam.script.ScriptFactory;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.spml2.msg.*;
 import org.openiam.spml2.msg.ResponseType;
@@ -87,6 +86,7 @@ import org.openiam.spml2.msg.password.SetPasswordRequestType;
 import org.openiam.spml2.msg.suspend.ResumeRequestType;
 import org.openiam.spml2.msg.suspend.SuspendRequestType;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import javax.jws.WebMethod;
 import javax.jws.WebService;
@@ -113,6 +113,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     
     @Autowired
     private PasswordGenerator passwordGenerator;
+    
+    @Autowired
+    @Qualifier("configurableGroovyScriptEngine")
+    private ScriptIntegration scriptRunner;
 
     public Response testConnectionConfig(String managedSysId) {
         return validateConnection.testConnection(managedSysId, muleContext);
@@ -124,7 +128,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     public ProvisionUserResponse addUser(ProvisionUser user) {
         ProvisionUserResponse resp = new ProvisionUserResponse();
 
-        ScriptIntegration se = null;
         Map<String, Object> bindingMap = new HashMap<String, Object>();
         Organization org = null;
         IdmAuditLog auditLog = null;
@@ -142,15 +145,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             // start date is in the future
             // flag says that we should prov after the startdate
             user.setStatus(UserStatusEnum.PENDING_START_DATE);
-        }
-
-        try {
-            se = ScriptFactory.createModule(this.scriptEngine);
-        } catch (Exception e) {
-            log.error(e);
-            resp.setStatus(ResponseStatus.FAILURE);
-            resp.setErrorCode(ResponseCode.FAIL_OTHER);
-            return resp;
         }
 
         if (user.getUser().getCompanyId() != null) {
@@ -189,7 +183,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         if (user.getPrincipalList() == null
                 || user.getPrincipalList().isEmpty()) {
             // build the list
-            buildPrimaryPrincipal(user, bindingMap, se);
+            buildPrimaryPrincipal(user, bindingMap, scriptRunner);
 
         } else {
             primaryLogin = user.getPrimaryPrincipal(sysConfiguration
@@ -199,7 +193,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     && !primaryLogin.getPassword().trim().isEmpty()) {
                 customPassword = true;
             } else {
-                setPrimaryIDPassword(user, bindingMap, se);
+                setPrimaryIDPassword(user, bindingMap, scriptRunner);
             }
         }
 
@@ -436,7 +430,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 + managedSysId);
                         // build the primary identity
                         String newPrincipalName = buildPrincipalName(attrMap,
-                                se, bindingMap);
+                        		scriptRunner, bindingMap);
 
                         log.debug(" - New principalName = " + newPrincipalName);
 
@@ -490,7 +484,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                         // attributes are built using groovy script rules
                         ExtensibleUser extUser = buildFromRules(user, attrMap,
-                                se, managedSysId,
+                        		scriptRunner, managedSysId,
                                 sysConfiguration.getDefaultSecurityDomain(),
                                 bindingMap, user.getCreatedBy());
 
@@ -1385,7 +1379,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
    // 	populate(pUser);
         ProvisionUserResponse resp = new ProvisionUserResponse();
         String requestId = "R" + UUIDGen.getUUID();
-        ScriptIntegration se = null;
         Map<String, Object> bindingMap = new HashMap<String, Object>();
         Organization org = null;
         String primaryLogin = null;
@@ -1407,15 +1400,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         List<LoginEntity> newPrincipalList = loginDozerConverter.convertToEntityList(pUser.getPrincipalList(), true);
 
-
-        try {
-            se = ScriptFactory.createModule(this.scriptEngine);
-        } catch (Exception e) {
-            log.error(e);
-            resp.setStatus(ResponseStatus.FAILURE);
-            resp.setErrorCode(ResponseCode.FAIL_OTHER);
-            return resp;
-        }
         if (pUser.getUser().getCompanyId() != null) {
             org = orgManager.getOrganization(pUser.getUser().getCompanyId());
         }
@@ -1758,7 +1742,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 }
 
 							ExtensibleUser extUser = buildFromRules(pUser,
-									attrMap, se, managedSysId, primaryIdentity
+									attrMap, scriptRunner, managedSysId, primaryIdentity
 											.getDomainId(), bindingMap,
 									pUser.getUser().getLastUpdatedBy());
 
@@ -1898,7 +1882,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                             // what the new object will look like
 							ExtensibleUser extUser = buildModifyFromRules(
-                                    pUser, mLg, attrMap, se, managedSysId, mLg
+                                    pUser, mLg, attrMap, scriptRunner, managedSysId, mLg
                                     .getDomainId(), bindingMap,
                                     pUser.getUser().getLastUpdatedBy());
 

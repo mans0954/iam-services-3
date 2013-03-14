@@ -66,7 +66,6 @@
         <property name="batchService" ref="batchDataService" />
         <property name="loginManager" ref="loginWS" />
         <!-- 		<property name="policyDataService" ref="policyDataService" /> -->
-        <property name="scriptEngine" value="${org.openiam.groovy.script.engine}" />
         <!-- 		<property name="auditHelper" ref="auditHelper" /> -->
     </bean>
 
@@ -74,7 +73,6 @@
         <property name="batchService" ref="batchDataService" />
         <property name="loginManager" ref="loginWS" />
         <property name="policyDataService" ref="policyDataService" />
-        <property name="scriptEngine" value="${org.openiam.groovy.script.engine}" />
         <!-- 		<property name="auditHelper" ref="auditHelper" /> -->
     </bean>
 
@@ -97,7 +95,6 @@
         <property name="connectorWsdl" value="WEB-INF/wsdl/ConnectorService.wsdl" />
         <property name="defaultProvisioningModel" value="ROLE" />
         <property name="resourceDataService" ref="resourceDataService" />
-        <property name="scriptEngine" value="${org.openiam.groovy.script.engine}" />
         <property name="orgManager" ref="orgManager" />
         <property name="passwordDS" ref="passwordManager" />
         <!--         <property name="auditHelper" ref="auditHelper" /> -->
@@ -122,7 +119,6 @@
         <property name="connectorWsdl" value="WEB-INF/wsdl/ConnectorService.wsdl" />
         <property name="defaultProvisioningModel" value="ROLE" />
         <property name="resourceDataService" ref="resourceDataService" />
-        <property name="scriptEngine" value="${org.openiam.groovy.script.engine}" />
         <property name="orgManager" ref="orgManager" />
         <property name="passwordDS" ref="passwordManager" />
         <!--property name="addUser" ref="addUser" / -->
@@ -258,13 +254,9 @@
         <property name="sessionFactory" ref="sessionFactory" />
     </bean>
 
-    <bean id="adapterFactory" class="org.openiam.idm.srvc.synch.srcadapter.AdapterFactory" >
-        <property name="scriptEngine" value="${org.openiam.groovy.script.engine}" />
-    </bean>
+    <bean id="adapterFactory" class="org.openiam.idm.srvc.synch.srcadapter.AdapterFactory" />
 
-    <bean id="matchRuleFactory" class="org.openiam.idm.srvc.synch.srcadapter.MatchRuleFactory" >
-        <property name="scriptEngine" value="${org.openiam.groovy.script.engine}" />
-    </bean>
+    <bean id="matchRuleFactory" class="org.openiam.idm.srvc.synch.srcadapter.MatchRuleFactory" />
 
 
 
@@ -302,7 +294,6 @@
         <property name="roleDataService" ref="roleDataService" />
         <property name="userMgr" ref="userManager" />
         <!-- 		<property name="auditHelper" ref="auditHelper" /> -->
-        <property name="scriptEngine" value="${org.openiam.groovy.script.engine}" />
     </bean>
 
 
@@ -326,9 +317,7 @@
         <property name="adaptorFactory" ref="genericObjAdapterFactory" />
     </bean>
 
-    <bean id="genericObjAdapterFactory" class="org.openiam.idm.srvc.synch.service.generic.SourceAdapterFactory" >
-        <property name="scriptEngine" value="${org.openiam.groovy.script.engine}" />
-    </bean>
+    <bean id="genericObjAdapterFactory" class="org.openiam.idm.srvc.synch.service.generic.SourceAdapterFactory" />
 
     <bean id="genericObjCsvAdapter" class="org.openiam.idm.srvc.synch.service.generic.CSVAdapterForGenericObject" >
         <property name="matchRuleFactory" ref="matchRuleFactory" />
@@ -337,7 +326,6 @@
         <property name="userMgr" ref="userManager" />
         <!--         <property name="auditHelper" ref="auditHelper" /> -->
         <property name="adapterMap" ref="adapterMap" />
-        <!--<property name="scriptEngine" value="${org.openiam.groovy.script.engine}" />-->
 
     </bean>
 

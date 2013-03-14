@@ -32,7 +32,7 @@ public class SHA1Hash implements HashDigest, InitializingBean {
 	
 	private byte[] key = null;
 	
-	@Value("${MS_KEY_LOC}")
+	@Value("${org.openiam.ms.key.location}")
 	private String keyLocation;
 
 	@Override

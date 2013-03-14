@@ -63,10 +63,6 @@
             </list>
         </property>
     </bean>
-
-    <bean id="scriptEngine" class="java.lang.String" factory-method="valueOf">
-        <constructor-arg index="0" value="${org.openiam.groovy.script.engine}" />
-    </bean>
     
     <bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
     	<property name="triggers">

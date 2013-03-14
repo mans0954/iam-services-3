@@ -98,6 +98,7 @@
 	</bean>
 	-->
 
+	<bean id="configurableGroovyScriptEngine" class="${org.openiam.groovy.script.engine}"/>
 			
 	<!-- Service Beans -->
 	<bean id="serviceManager" class="org.openiam.idm.srvc.service.service.ServiceMgr">
@@ -165,9 +166,7 @@
 	-->
 	
 	<!--
-	<bean id="validatorFactory" class="org.openiam.idm.srvc.pswd.service.ValidatorFactory" >
-		<property name="scriptEngine" value="${org.openiam.groovy.script.engine}" />
-	</bean>
+	<bean id="validatorFactory" class="org.openiam.idm.srvc.pswd.service.ValidatorFactory" />
 	-->
 	
 	<!--
@@ -254,7 +253,6 @@
 		<property name="subjectPrefix" value="${mail.defaultSubjectPrefix}" />
 		<property name="optionalBccAddress" value="${mail.optionalBccAddress}" />
 		<property name="userManager" ref="userManager" />
-		<property name="scriptEngine" value="${org.openiam.groovy.script.engine}" />
 		
 	</bean>
 	
