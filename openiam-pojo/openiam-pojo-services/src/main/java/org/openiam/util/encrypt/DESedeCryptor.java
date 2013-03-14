@@ -30,37 +30,11 @@ import org.openiam.exception.EncryptionException;
  */
 public class DESedeCryptor implements Cryptor {
 
-	private byte[] key = null;
 	private BufferedBlockCipher cipher = null;
-	static protected ResourceBundle res = ResourceBundle.getBundle("securityconf");
 	
 	private static final Log log = LogFactory.getLog(DESedeCryptor.class);
-	   
-	public void readKey() {
-		String path = res.getString("MS_KEY_LOC");
-		String filename = "cayo.dat";
-		try {
-			BufferedInputStream stream =  new BufferedInputStream(new FileInputStream(path + "/" + filename));
-			int len = stream.available();
-			key = new byte[len];
-			stream.read(key, 0,len);
-			stream.close();
-		}catch(IOException io) {
-			io.printStackTrace();
-		}
-	}
 	
-	public void setKey(byte[] ky) {
-		key = ky;
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.openiam.util.encrypt.Cryptor#encrypt(java.lang.String)
-	 */
 	public String encrypt(byte[] key,String input) throws EncryptionException {
-//		if (key == null) {
-//			readKey();
-//		}
 
 		KeyParameter kp = new KeyParameter(key);
 		cipher = new PaddedBufferedBlockCipher(	new CBCBlockCipher(new DESedeEngine()));
@@ -82,14 +56,7 @@ public class DESedeCryptor implements Cryptor {
 	
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.openiam.util.encrypt.Cryptor#encryptTobyte(java.lang.String)
-	 */
 	public byte[] encryptTobyte(byte[] key, String input) {
-//		if (key == null) {
-//			readKey();
-//		}
-
 		KeyParameter kp = new KeyParameter(key);
 		cipher = new PaddedBufferedBlockCipher(	new CBCBlockCipher(new DESedeEngine()));
 		cipher.init(true, kp);
@@ -106,17 +73,11 @@ public class DESedeCryptor implements Cryptor {
 		return result;
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.openiam.util.encrypt.Cryptor#decrypt(java.lang.String)
-	 */
 	public String decrypt(byte[] key, String input) throws EncryptionException {
 		byte[] result = null;
 		byte[] inputByteAry = null;
 		int len = 0;
-		 
-//		if (key == null) {
-//			readKey();
-//		}
+	
 		KeyParameter kp = new KeyParameter(key);
 		cipher = new PaddedBufferedBlockCipher(	new CBCBlockCipher(new DESedeEngine()));
 		cipher.init(false, kp);

@@ -7,6 +7,7 @@ import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import javax.jws.WebService;
 import org.openiam.idm.srvc.audit.export.AuditEventHandlerFactory;
 import org.openiam.idm.srvc.audit.export.ExportAuditEvent;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 @WebService(endpointInterface = "org.openiam.idm.srvc.audit.ws.PublishAuditEventWebService",
@@ -16,11 +17,14 @@ import org.openiam.idm.srvc.audit.export.ExportAuditEvent;
 public class PublishAuditEventWebServiceImpl implements PublishAuditEventWebService{
     protected static final Log l = LogFactory.getLog(PublishAuditEventWebServiceImpl.class);
 
+    @Autowired
+    private AuditEventHandlerFactory auditEventHandlerFactory;
+    
     public void publishEvent(IdmAuditLog log) {
 
         l.debug("PublishEvent operation called..");
 
-        ExportAuditEvent eventHandler =  AuditEventHandlerFactory.createInstance();
+        ExportAuditEvent eventHandler =  auditEventHandlerFactory.createInstance();
         if (eventHandler == null) {
             return;
         }
@@ -35,7 +39,7 @@ public class PublishAuditEventWebServiceImpl implements PublishAuditEventWebServ
     public boolean isAlive() {
         l.debug("PublishEvent isAlive() called..");
 
-        ExportAuditEvent eventHandler =  AuditEventHandlerFactory.createInstance();
+        ExportAuditEvent eventHandler =  auditEventHandlerFactory.createInstance();
         if (eventHandler == null) {
             return false;
         }

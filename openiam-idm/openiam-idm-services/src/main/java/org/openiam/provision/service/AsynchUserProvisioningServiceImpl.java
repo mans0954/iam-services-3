@@ -27,6 +27,7 @@ import org.mule.api.MuleContext;
 import org.mule.api.context.MuleContextAware;
 import org.mule.module.client.MuleClient;
 import org.openiam.provision.dto.ProvisionUser;
+import org.springframework.beans.factory.annotation.Value;
 
 import javax.jws.WebService;
 import java.util.*;
@@ -45,9 +46,11 @@ public class AsynchUserProvisioningServiceImpl implements MuleContextAware, Asyn
     protected ProvisionService provisionService;
     MuleContext muleContext;
 
-    static protected ResourceBundle res = ResourceBundle.getBundle("datasource");
-    static String serviceHost = res.getString("openiam.service_base");
-	static String serviceContext = res.getString("openiam.idm.ws.path");
+    @Value("${openiam.service_base}")
+    private String serviceHost;
+    
+    @Value("${openiam.idm.ws.path}")
+    private String serviceContext;
 
     /* (non-Javadoc)
       * @see org.openiam.provision.service.ProvisionService#addUser(org.openiam.provision.dto.ProvisionUser)

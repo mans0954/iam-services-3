@@ -48,6 +48,7 @@ import org.openiam.idm.srvc.auth.sso.SSOTokenModule;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
+import org.springframework.beans.factory.annotation.Value;
 // import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
 // import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.springframework.context.annotation.Scope;
@@ -65,22 +66,26 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
     private static final Log log = LogFactory
             .getLog(ActiveDirectoryLoginModule.class);
 
-    static protected ResourceBundle res = ResourceBundle
-            .getBundle("datasource");
-    static protected ResourceBundle secres = ResourceBundle
-            .getBundle("securityconf");
+    @Value("${login.ad.host}")
+    private String host;
+    
+    @Value("${login.ad.basedn}")
+    private String baseDn;
+    
+    @Value("${login.ad.username}")
+    private String adminUserName;
+    
+    @Value("${login.ad.password}")
+    private String adminPassword;
+    
+    @Value("${login.ad.protocol}")
+    private String protocol;
 
-    static String host = res.getString("login.ad.host");
-    static String baseDn = res.getString("login.ad.basedn");
-    static String adminUserName = res.getString("login.ad.username");
-    static String adminPassword = res.getString("login.ad.password");
-    static String protocol = res.getString("login.ad.protocol");
-
+    @Value("${KEYSTORE}")
     static String keystore;
     LdapContext ctxLdap = null;
 
     public ActiveDirectoryLoginModule() {
-        keystore = secres.getString("KEYSTORE");
     }
 
     /*
@@ -239,7 +244,6 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
         // LdapContext ctxLdap = null;
         Hashtable<String, String> envDC = new Hashtable();
 
-        keystore = secres.getString("KEYSTORE");
         System.setProperty("javax.net.ssl.trustStore", keystore);
 
         log.info("Connecting to AD using principal=" + userName);

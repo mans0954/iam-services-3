@@ -52,6 +52,7 @@ import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -66,9 +67,6 @@ public class LDAPLoginModule extends AbstractLoginModule {
 
     private static final Log log = LogFactory.getLog(LDAPLoginModule.class);
 
-    static protected ResourceBundle secres = ResourceBundle
-            .getBundle("securityconf");
-
     String host = null;
     String baseDn = null;
     String adminUserName = null;
@@ -79,7 +77,8 @@ public class LDAPLoginModule extends AbstractLoginModule {
     String managedSysId = null;
     String dn = null;
 
-    static String keystore;
+    @Value("${KEYSTORE}")
+    private String keystore;
     LdapContext ctxLdap = null;
 
     public LDAPLoginModule() {
@@ -423,7 +422,6 @@ public class LDAPLoginModule extends AbstractLoginModule {
         // LdapContext ctxLdap = null;
         Hashtable<String, String> envDC = new Hashtable();
 
-        keystore = secres.getString("KEYSTORE");
         System.setProperty("javax.net.ssl.trustStore", keystore);
 
         log.info("Connecting to ldap using principal=" + userName);

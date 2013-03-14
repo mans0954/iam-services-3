@@ -25,6 +25,7 @@ import org.openiam.script.ScriptFactory;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -56,14 +57,14 @@ public class IntervalTask implements ApplicationContextAware, MuleContextAware {
 
     protected MuleContext muleContext;
 
-    static protected ResourceBundle res = ResourceBundle
-            .getBundle("datasource");
+    @Value("${IS_PRIMARY}")
+    private boolean isPrimary;
 
-    static boolean isPrimary = Boolean
-            .parseBoolean(res.getString("IS_PRIMARY"));
-
-    static String serviceHost = res.getString("PRIMARY_HOST");
-    static String serviceContext = res.getString("openiam.idm.ws.path");
+    @Value("${PRIMARY_HOST}")
+    private String serviceHost;
+    
+    @Value("${openiam.idm.ws.path}")
+    private String serviceContext;
 
     public static ApplicationContext ac;
 

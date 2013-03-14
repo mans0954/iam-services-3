@@ -9,6 +9,7 @@ import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.provision.dto.PasswordSync;
 import org.openiam.provision.dto.ProvisionUser;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,9 +31,12 @@ public abstract class AbstractPostProcessor implements ProvisionServicePostProce
 
     private static final Log log = LogFactory.getLog(AbstractPostProcessor.class);
 
-    final static private ResourceBundle res = ResourceBundle.getBundle("datasource");
-    final static private String serviceHost = res.getString("openiam.service_base");
-    final static private String serviceContext = res.getString("openiam.idm.ws.path");
+    @Value("${openiam.service_base}")
+    private String serviceHost;
+    
+    @Value("${openiam.idm.ws.path}")
+    private String serviceContext;
+
 
     public void setMuleContext(MuleContext ctx) {
         muleContext = ctx;

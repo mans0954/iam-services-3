@@ -79,7 +79,7 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
         for (String resourceId : resourceList) {
 
             bindingMap.put("IDENTITY", lg);
-            bindingMap.put("RESOURCE", res);
+            //bindingMap.put("RESOURCE", res);
 
             Resource res = resourceDataService.getResource(resourceId);
             if (res != null) {

@@ -2,6 +2,13 @@ package org.openiam.idm.srvc.audit.export;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.stereotype.Component;
 
 import java.util.ResourceBundle;
 
@@ -12,35 +19,43 @@ import java.util.ResourceBundle;
  * Time: 11:40 PM
  * To change this template use File | Settings | File Templates.
  */
-public class AuditEventHandlerFactory {
+@Component
+public class AuditEventHandlerFactory implements BeanFactoryAware {
 
-    static protected ResourceBundle res = ResourceBundle.getBundle("securityconf");
+	@Value("${EXPORT_AUDIT_EVENT_HANDLER}")
+	private String handlerName;
+	
+	private BeanFactory beanFactory;
+	
     private static final Log log = LogFactory.getLog(AuditEventHandlerFactory.class);
 
-    public static ExportAuditEvent createInstance() {
+    public ExportAuditEvent createInstance() {
 
 
 		try {
-            String handlerName =  res.getString("EXPORT_AUDIT_EVENT_HANDLER");
-            if (handlerName == null || handlerName.length() == 0) {
-                return null;
-            }
-
-            Class cls = Class.forName(handlerName);
-			return (ExportAuditEvent)cls.newInstance();
-        }catch(ClassNotFoundException cnfe ) {
-              log.error(cnfe.getMessage(),cnfe);
-        }catch(IllegalAccessException ia) {
-			log.error(ia.getMessage(),ia);
-
-		}catch(InstantiationException ie) {
-			log.error(ie.getMessage(),ie);
-		}catch(Exception e) {
-            log.error(e.getMessage(),e);
+			
+			String beanName = handlerName;
+			
+			/* in case the property has a classname instead of spring bean name */
+			try {
+				beanName = Class.forName(handlerName).getAnnotation(Component.class).value();
+			} catch(Throwable e) {
+				
+			}
+			
+			return beanFactory.getBean(beanName, ExportAuditEvent.class);
+        } catch(Throwable e ) {
+        	log.error(e);
         }
 		return null;
 
 
     }
+
+	@Override
+	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+		this.beanFactory = beanFactory;
+	}
+
 
 }

@@ -49,7 +49,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
 
     private static final Log log = LogFactory.getLog(ManagedSystemWebServiceImpl.class);
 	protected Cryptor cryptor;
-	static protected ResourceBundle res = ResourceBundle.getBundle("securityconf");
+
 	boolean encrypt = true;	// default encryption setting
 
     @Override

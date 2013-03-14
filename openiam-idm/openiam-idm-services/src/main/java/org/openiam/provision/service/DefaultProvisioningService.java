@@ -110,6 +110,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     private ProvisionConnectorWebService connectorService;
     @Autowired
     private PasswordHistoryDozerConverter passwordHistoryDozerConverter;
+    
+    @Autowired
+    private PasswordGenerator passwordGenerator;
 
     public Response testConnectionConfig(String managedSysId) {
         return validateConnection.testConnection(managedSysId, muleContext);
@@ -1069,7 +1072,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                             // pre-processing
                             bindingMap.put("IDENTITY", l);
-                            bindingMap.put("RESOURCE", res);
+                            //bindingMap.put("RESOURCE", res);
 
                             Resource res = null;
                             String resourceId = mSys.getResourceId();
@@ -2087,8 +2090,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     mLg.setPasswordChangeCount(0);
                     mLg.setIsLocked(0);
                     // change the password to a random scrambled password
-                    String scrambledPassword = PasswordGenerator
-                            .generatePassword(10);
+                    String scrambledPassword = passwordGenerator.generatePassword(10);
                     try {
                         mLg.setPassword(loginManager
                                 .encryptPassword(mLg.getUserId(), scrambledPassword));
@@ -2197,7 +2199,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         String password = passwordSync.getPassword();
         if (password == null || password.length() == 0) {
             // autogenerate the password
-            password = String.valueOf(PasswordGenerator.generatePassword(8));
+            password = String.valueOf(passwordGenerator.generatePassword(8));
         }
         String encPassword = null;
         try {
@@ -2692,7 +2694,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
             }
             // post-process
-            if (res != null) {
+            //if (res != null) {
                 String postProcessScript = getResProperty(resource.getResourceProps(), "POST_PROCESS");
                 if (postProcessScript != null && !postProcessScript.isEmpty()) {
                     PostProcessor ppScript = createPostProcessScript(postProcessScript);
@@ -2700,7 +2702,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         executePostProcess(ppScript, bindingMap, null, "SET_PASSWORD", connectorSuccess);
                     }
                 }
-            }
+                //}
 
 
         }

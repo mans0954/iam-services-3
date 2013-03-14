@@ -18,6 +18,7 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionUser;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -39,11 +40,11 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
     protected LoginDataService loginManager;
     protected RoleDataService roleDataService;
 
-    static protected ResourceBundle res = ResourceBundle
-            .getBundle("datasource");
-
-    static String serviceHost = res.getString("openiam.service_base");
-    static String serviceContext = res.getString("openiam.idm.ws.path");
+    @Value("${openiam.service_base}")
+    private String serviceHost;
+    
+    @Value("${openiam.idm.ws.path}")
+    private String serviceContext;
 
     public abstract SyncResponse startSynch(SynchConfig config);
 

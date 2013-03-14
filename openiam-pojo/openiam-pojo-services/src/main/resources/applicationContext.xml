@@ -166,7 +166,7 @@
 	
 	<!--
 	<bean id="validatorFactory" class="org.openiam.idm.srvc.pswd.service.ValidatorFactory" >
-		<property name="scriptEngine" value="org.openiam.script.GroovyScriptEngineIntegration" />
+		<property name="scriptEngine" value="${org.openiam.groovy.script.engine}" />
 	</bean>
 	-->
 	
@@ -254,7 +254,7 @@
 		<property name="subjectPrefix" value="${mail.defaultSubjectPrefix}" />
 		<property name="optionalBccAddress" value="${mail.optionalBccAddress}" />
 		<property name="userManager" ref="userManager" />
-		<property name="scriptEngine" value="org.openiam.script.GroovyScriptEngineIntegration" />
+		<property name="scriptEngine" value="${org.openiam.groovy.script.engine}" />
 		
 	</bean>
 	

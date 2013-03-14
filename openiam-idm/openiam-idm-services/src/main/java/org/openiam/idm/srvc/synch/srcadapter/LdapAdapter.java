@@ -49,6 +49,7 @@ import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.service.ProvisionService;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 
 import javax.naming.Context;
@@ -82,6 +83,8 @@ public class LdapAdapter implements SourceAdapter {
 
     protected LineObject rowHeader = new LineObject();
     protected ProvisionUser pUser = new ProvisionUser();
+    
+    @Value("${KEYSTORE}")
     private String keystore;
 
     public static ApplicationContext ac;
@@ -93,8 +96,6 @@ public class LdapAdapter implements SourceAdapter {
     
     @Autowired
     private UserDozerConverter userDozerConverter;
-
-    static protected ResourceBundle secres = ResourceBundle.getBundle("securityconf");
 
     LdapContext ctx = null;
 
@@ -478,7 +479,6 @@ public class LdapAdapter implements SourceAdapter {
     private boolean connect(SynchConfig config) throws NamingException {
 
         Hashtable<String, String> envDC = new Hashtable();
-        keystore = secres.getString("KEYSTORE");
         System.setProperty("javax.net.ssl.trustStore", keystore);
 
         String hostUrl = config.getSrcHost(); //   managedSys.getHostUrl();

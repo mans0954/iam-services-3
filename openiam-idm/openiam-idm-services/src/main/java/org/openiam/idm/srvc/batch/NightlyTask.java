@@ -41,6 +41,7 @@ import org.openiam.script.ScriptFactory;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -69,9 +70,8 @@ public class NightlyTask implements ApplicationContextAware {
     @Autowired
     protected AuditHelper auditHelper;
 
-    static protected ResourceBundle res = ResourceBundle
-            .getBundle("datasource");
-    boolean isPrimary = Boolean.parseBoolean(res.getString("IS_PRIMARY"));
+    @Value("${IS_PRIMARY}")
+    private boolean isPrimary;
 
     // used to inject the application context into the groovy scripts
     public static ApplicationContext ac;

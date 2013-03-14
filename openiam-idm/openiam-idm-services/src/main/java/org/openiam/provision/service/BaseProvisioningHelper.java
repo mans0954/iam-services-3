@@ -39,6 +39,7 @@ import org.openiam.spml2.msg.PSOIdentifierType;
 import org.openiam.spml2.msg.ResponseType;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -81,12 +82,11 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
 
     protected MuleContext muleContext;
 
-    final static protected ResourceBundle res = ResourceBundle
-            .getBundle("datasource");
-    final static protected String serviceHost = res
-            .getString("openiam.service_base");
-    final static protected String serviceContext = res
-            .getString("openiam.idm.ws.path");
+    @Value("${openiam.service_base}")
+    private String serviceHost;
+    
+    @Value("${openiam.idm.ws.path}")
+    private String serviceContext;
 
     protected static final Log log = LogFactory
             .getLog(BaseProvisioningHelper.class);

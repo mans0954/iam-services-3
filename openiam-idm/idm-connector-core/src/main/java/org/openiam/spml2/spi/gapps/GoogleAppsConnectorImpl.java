@@ -29,6 +29,7 @@ import org.openiam.spml2.msg.password.*;
 import org.openiam.spml2.msg.suspend.ResumeRequestType;
 import org.openiam.spml2.msg.suspend.SuspendRequestType;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import javax.jws.WebParam;
 import javax.jws.WebService;
@@ -53,8 +54,6 @@ public class GoogleAppsConnectorImpl implements ConnectorService {
 
     private static final Log log = LogFactory
             .getLog(GoogleAppsConnectorImpl.class);
-    static protected ResourceBundle res = ResourceBundle
-            .getBundle("securityconf");
 
     protected ManagedSystemWebService managedSysService;
     protected ManagedSystemObjectMatchDAO managedSysObjectMatchDao;
@@ -74,16 +73,20 @@ public class GoogleAppsConnectorImpl implements ConnectorService {
         // TODO Auto-generated method stub
         return false;
     }
+    
+    @Value("${KEYSTORE}")
+    private String trustStore;
+    
+    @Value("${KEYSTORE_PSWD}")
+    private String trustStorePassword;
 
     public void init() {
         String filename = System.getProperty("java.home")
                 + "/lib/security/cacerts".replace('/', File.separatorChar);
         System.out.println("filenname=" + filename);
         String password = "changeit";
-        System.setProperty("javax.net.ssl.trustStore",
-                res.getString("KEYSTORE"));
-        System.setProperty("javax.net.ssl.trustStorePassword",
-                res.getString("KEYSTORE_PSWD"));
+        System.setProperty("javax.net.ssl.trustStore", trustStore);
+        System.setProperty("javax.net.ssl.trustStorePassword", trustStorePassword);
     }
 
     public AddResponseType add(AddRequestType reqType) {

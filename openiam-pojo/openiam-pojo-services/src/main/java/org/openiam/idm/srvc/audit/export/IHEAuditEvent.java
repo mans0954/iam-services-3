@@ -16,6 +16,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.idm.srvc.audit.constant.CustomIdmAuditLogType;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 /**
  * Implementation to export IHE (Healthcare) Audit Events
@@ -23,10 +25,26 @@ import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
  * Date: 9/18/11
  * Time: 10:47 PM
  */
+@Component("iheAuditEvent")
 public class IHEAuditEvent implements ExportAuditEvent {
 
-    static protected ResourceBundle res = ResourceBundle
-            .getBundle("securityconf");
+	@Value("${ATNA_EXCLUDE_PRINCIPAL}")
+	private String excludePrincipal;
+	
+	@Value("${ATNA_KEYSTORE_PATH}")
+	private String keyStorePath;
+
+	@Value("${ATNA_STORE_PASSWORD}")
+	private String clientKeyStorePassword;
+	
+	@Value("${ATNA_CLIENT_PASSWORD}")
+	private String clientKeyPassword;
+	
+	@Value("${ATNA_HOST}")
+	private String atnaHost;
+	
+	@Value("${ATNA_PORT}")
+	private int atnaPort;
 
     private static final Log l = LogFactory.getLog(IHEAuditEvent.class);
 
@@ -42,7 +60,6 @@ public class IHEAuditEvent implements ExportAuditEvent {
 
         }
 
-        String excludePrincipal = res.getString("ATNA_EXCLUDE_PRINCIPAL");
         if (excludePrincipal != null && excludePrincipal.length() > 0) {
             if (log.getPrincipal() != null) {
                 if (excludePrincipal.equalsIgnoreCase(log.getPrincipal())) {
@@ -92,15 +109,6 @@ public class IHEAuditEvent implements ExportAuditEvent {
     public boolean isAlive() {
         l.debug("isAlive test called. ");
 
-        String keyStorePath = res.getString("ATNA_KEYSTORE_PATH"); // "/opt/openiam/client.jks";
-
-        String clientKeyStorePassword = res.getString("ATNA_STORE_PASSWORD"); // "clientKeyStorePassword";
-        String clientKeyPassword = res.getString("ATNA_CLIENT_PASSWORD"); // "clientKeyPassword";
-
-        String ip = res.getString("ATNA_HOST");
-        String sPort = res.getString("ATNA_PORT");
-        int port = Integer.valueOf(sPort);
-
         char[] keyStorePasswordByteArray = clientKeyStorePassword.toCharArray();
         char[] keyPasswordByteArray = clientKeyPassword.toCharArray();
 
@@ -124,7 +132,7 @@ public class IHEAuditEvent implements ExportAuditEvent {
 
             SSLSocketFactory socketFactory = sslContext.getSocketFactory();
 
-            SSLSocket socket = (SSLSocket) socketFactory.createSocket(ip, port);
+            SSLSocket socket = (SSLSocket) socketFactory.createSocket(atnaHost, atnaPort);
 
             socket.setEnabledProtocols(new String[] { "TLSv1" });
 
@@ -149,15 +157,6 @@ public class IHEAuditEvent implements ExportAuditEvent {
     private void sendMessage(byte[] bAry) {
 
         l.debug("IHEAuditEvent Sending Message...");
-
-        String keyStorePath = res.getString("ATNA_KEYSTORE_PATH"); // "/opt/openiam/client.jks";
-
-        String clientKeyStorePassword = res.getString("ATNA_STORE_PASSWORD"); // "clientKeyStorePassword";
-        String clientKeyPassword = res.getString("ATNA_CLIENT_PASSWORD"); // "clientKeyPassword";
-
-        String ip = res.getString("ATNA_HOST");
-        String sPort = res.getString("ATNA_PORT");
-        int port = Integer.valueOf(sPort);
 
         if (bAry == null || bAry.length < 10) {
             return;
@@ -186,7 +185,7 @@ public class IHEAuditEvent implements ExportAuditEvent {
 
             SSLSocketFactory socketFactory = sslContext.getSocketFactory();
 
-            SSLSocket socket = (SSLSocket) socketFactory.createSocket(ip, port);
+            SSLSocket socket = (SSLSocket) socketFactory.createSocket(atnaHost, atnaPort);
 
             socket.setEnabledProtocols(new String[] { "TLSv1" });
 

@@ -28,12 +28,16 @@ import java.util.List;
 import java.util.Map;
 import javax.naming.ldap.LdapContext;
 import org.openiam.util.encrypt.SHA1Hash;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Implements directory specific extensions for standard LDAP v3
  * User: suneetshah
  */
 public class LdapV3 implements Directory{
+	
+	@Autowired
+	private PasswordGenerator passwordGenerator;
     
     Map<String, Object> objectMap = new HashMap<String, Object>();
     private static final Log log = LogFactory.getLog(LdapV3.class);
@@ -50,7 +54,7 @@ public class LdapV3 implements Directory{
 
     public ModificationItem[] suspend(SuspendRequestType request)  {
 
-        String scrambledPswd =	PasswordGenerator.generatePassword(10);
+        String scrambledPswd =	passwordGenerator.generatePassword(10);
         
         hash.HexEncodedHash( "{ssha}" + hash.hash(scrambledPswd));
 
@@ -96,7 +100,7 @@ public class LdapV3 implements Directory{
 
         }else if ( "DISABLE".equalsIgnoreCase(onDelete)) {
 
-            String scrambledPswd =	PasswordGenerator.generatePassword(10);
+            String scrambledPswd =	passwordGenerator.generatePassword(10);
 
             ModificationItem[] mods = new ModificationItem[1];
             mods[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("userPassword", scrambledPswd));

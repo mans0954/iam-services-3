@@ -12,6 +12,7 @@ import org.openiam.spml2.msg.StatusCodeType;
 import org.openiam.spml2.msg.suspend.SuspendRequestType;
 import org.openiam.spml2.spi.common.SuspendCommand;
 import org.openiam.spml2.util.msg.ResponseBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -27,6 +28,8 @@ import java.text.ParseException;
  */
 public class AppTableSuspendCommand extends AbstractAppTableCommand implements SuspendCommand {
 
+	@Autowired
+	private PasswordGenerator passwordGenerator;
 
     public ResponseType suspend(final SuspendRequestType request) {
         final ResponseType response = new ResponseType();
@@ -38,7 +41,7 @@ public class AppTableSuspendCommand extends AbstractAppTableCommand implements S
         /* targetID -  */
         final String targetID = psoID.getTargetID();
 
-        final String password = PasswordGenerator.generatePassword(10);
+        final String password = passwordGenerator.generatePassword(10);
 
         final ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
         if(managedSys == null) {

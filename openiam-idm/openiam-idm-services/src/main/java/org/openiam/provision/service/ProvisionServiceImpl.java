@@ -128,6 +128,9 @@ public class ProvisionServiceImpl implements ProvisionService,
 
     @Autowired
     private ProvisionConnectorWebService connectorService;
+    
+    @Autowired
+    private PasswordGenerator passwordGenerator;
 
     protected ManagedSystemWebService managedSysService;
     protected RoleDataService roleDataService;
@@ -182,7 +185,7 @@ public class ProvisionServiceImpl implements ProvisionService,
 
         Map<String, Object> bindingMap = new HashMap<String, Object>();
 
-        password = PasswordGenerator.generatePassword(10);
+        password = passwordGenerator.generatePassword(10);
 
         try {
             se = ScriptFactory.createModule(this.scriptEngine);
@@ -846,7 +849,7 @@ public class ProvisionServiceImpl implements ProvisionService,
         }
 
         List<Login> principalList = provUser.getPrincipalList();
-        String password = PasswordGenerator.generatePassword(10);
+        String password = passwordGenerator.generatePassword(10);
 
         ScriptIntegration se = null;
         Organization org = null;
@@ -1747,7 +1750,7 @@ public class ProvisionServiceImpl implements ProvisionService,
         String password = passwordSync.getPassword();
         if (password == null || password.length() == 0) {
             // autogenerate the password
-            password = String.valueOf(PasswordGenerator.generatePassword(8));
+            password = String.valueOf(passwordGenerator.generatePassword(8));
         }
         if (!passwordSync.getManagedSystemId().equals("0")) {
             // update the connector directly

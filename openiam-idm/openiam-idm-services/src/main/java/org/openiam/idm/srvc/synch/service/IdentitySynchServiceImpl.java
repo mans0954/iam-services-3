@@ -48,6 +48,7 @@ import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.dto.UserResourceAssociation;
 import org.openiam.provision.service.ProvisionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 /**
  * @author suneet
@@ -64,10 +65,11 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
     @Autowired
     private UserDozerConverter userDozerConverter;
 
-    static protected ResourceBundle res = ResourceBundle.getBundle("datasource");
-
-    static String serviceHost = res.getString("openiam.service_base");
-    static String serviceContext = res.getString("openiam.idm.ws.path");
+    @Value("${openiam.service_base}")
+    private String serviceHost;
+    
+    @Value("${openiam.idm.ws.path}")
+    private String serviceContext;
 
 	
 	private static final Log log = LogFactory.getLog(IdentitySynchServiceImpl.class);

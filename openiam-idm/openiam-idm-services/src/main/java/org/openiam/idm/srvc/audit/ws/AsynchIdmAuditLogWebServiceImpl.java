@@ -9,6 +9,7 @@ import org.mule.module.client.MuleClient;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.export.AuditEventHandlerFactory;
 import org.openiam.idm.srvc.audit.export.ExportAuditEvent;
+import org.springframework.beans.factory.annotation.Value;
 
 
 import javax.jws.WebService;
@@ -26,10 +27,11 @@ public class AsynchIdmAuditLogWebServiceImpl implements AsynchIdmAuditLogWebServ
     protected MuleContext muleContext;
     protected static final Log l = LogFactory.getLog(AsynchIdmAuditLogWebServiceImpl.class);
 
-    static protected ResourceBundle res = ResourceBundle.getBundle("datasource");
-
-    static String serviceHost = res.getString("openiam.service_base");
-    static String serviceContext = res.getString("openiam.idm.ws.path");
+    @Value("${openiam.service_base}")
+    private String serviceHost;
+    
+    @Value("${openiam.idm.ws.path}")
+    private String serviceContext;
 
 
     public void createLog(IdmAuditLog log) {

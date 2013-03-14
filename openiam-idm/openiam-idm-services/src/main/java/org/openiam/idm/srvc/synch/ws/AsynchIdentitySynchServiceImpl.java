@@ -31,6 +31,7 @@ import org.openiam.base.ws.Response;
 import org.openiam.idm.srvc.synch.dto.BulkMigrationConfig;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.openiam.idm.srvc.synch.service.IdentitySynchService;
+import org.springframework.beans.factory.annotation.Value;
 
 import javax.jws.WebParam;
 import javax.jws.WebService;
@@ -52,10 +53,12 @@ public class AsynchIdentitySynchServiceImpl implements AsynchIdentitySynchServic
 
     protected IdentitySynchService synchService;
     protected static final Log log = LogFactory.getLog(AsynchIdentitySynchServiceImpl.class);
-    static protected ResourceBundle res = ResourceBundle.getBundle("datasource");
 
-    static String serviceHost = res.getString("openiam.service_base");
-    static String serviceContext = res.getString("openiam.idm.ws.path");
+    @Value("${openiam.service_base}")
+    private String serviceHost;
+    
+    @Value("${openiam.idm.ws.path}")
+    private String serviceContext;
 
     public void startSynchronization(
             SynchConfig config) {

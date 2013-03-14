@@ -45,6 +45,7 @@ import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.service.ProvisionService;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -56,7 +57,6 @@ public class LdapAdapterForGenericObject implements SourceAdapter {
 
     protected LineObject rowHeader = new LineObject();
     protected ProvisionUser pUser = new ProvisionUser();
-    private String keystore;
 
     public static ApplicationContext ac;
 
@@ -66,8 +66,8 @@ public class LdapAdapterForGenericObject implements SourceAdapter {
     protected AuditHelper auditHelper;
     protected MatchRuleFactory matchRuleFactory;
 
-    static protected ResourceBundle secres = ResourceBundle
-            .getBundle("securityconf");
+    @Value("${KEYSTORE}")
+    private String keystore;
 
     LdapContext ctx = null;
 
@@ -116,7 +116,6 @@ public class LdapAdapterForGenericObject implements SourceAdapter {
     private boolean connect(SynchConfig config) throws NamingException {
 
         Hashtable<String, String> envDC = new Hashtable();
-        keystore = secres.getString("KEYSTORE");
         System.setProperty("javax.net.ssl.trustStore", keystore);
 
         String hostUrl = config.getSrcHost(); // managedSys.getHostUrl();

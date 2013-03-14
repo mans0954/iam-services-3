@@ -11,13 +11,15 @@ import org.openiam.idm.srvc.report.dto.ReportDataDto;
 import org.openiam.script.ScriptFactory;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ReportDataServiceImpl implements ReportDataService {
 
-    private static final String scriptEngine = "org.openiam.script.GroovyScriptEngineIntegration";
+	@Value("${org.openiam.groovy.script.engine}")
+    private String scriptEngine;
 
     @Autowired
     private ReportDataDao reportDao;

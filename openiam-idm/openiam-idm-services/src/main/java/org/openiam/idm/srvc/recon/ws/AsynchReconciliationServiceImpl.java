@@ -29,6 +29,7 @@ import org.mule.api.context.MuleContextAware;
 import org.mule.module.client.MuleClient;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.idm.srvc.recon.service.ReconciliationService;
+import org.springframework.beans.factory.annotation.Value;
 
 import javax.jws.WebService;
 import java.util.HashMap;
@@ -50,10 +51,12 @@ public class AsynchReconciliationServiceImpl implements AsynchReconciliationServ
 	
 	protected ReconciliationService reconService;
 	protected static final Log log = LogFactory.getLog(AsynchReconciliationServiceImpl.class);
-	static protected ResourceBundle res = ResourceBundle.getBundle("datasource");
 	
-	static String serviceHost = res.getString("openiam.service_base");
-	static String serviceContext = res.getString("openiam.idm.ws.path");
+	@Value("${openiam.service_base}")
+	private String serviceHost;
+	
+	@Value("${openiam.idm.ws.path}")
+	private String serviceContext;
 	
 	public void startReconciliation(
 			ReconciliationConfig config) {

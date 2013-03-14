@@ -72,6 +72,7 @@ import org.openiam.spml2.msg.ResponseType;
 import org.openiam.spml2.msg.password.SetPasswordRequestType;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -149,12 +150,12 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
     @Autowired
     protected UserRoleDozerConverter userRoleDozerConverter;
 
-    final static protected ResourceBundle res = ResourceBundle
-            .getBundle("datasource");
-    final static protected String serviceHost = res
-            .getString("openiam.service_base");
-    final static protected String serviceContext = res
-            .getString("openiam.idm.ws.path");
+    @Value("${openiam.service_base}")
+    protected String serviceHost;
+    
+    @Value("${openiam.idm.ws.path}")
+    protected String serviceContext;
+
 
     public void setMuleContext(MuleContext ctx) {
         log.debug("Provisioning - setMuleContext called.");
