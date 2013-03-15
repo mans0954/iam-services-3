@@ -58,7 +58,7 @@
 		</property>
 	</bean>
 
-	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+	<bean id="pojoProperties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
 		<property name="locations">
   			<list>
 				<value>classpath:datasource.properties</value>
@@ -72,6 +72,10 @@
 			</list>
 		</property>
 		<property name="ignoreResourceNotFound" value="true" />
+	</bean>
+	
+	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="properties" ref="pojoProperties" />
 	</bean>
 
     <bean id="dbType" class="java.lang.String" factory-method="valueOf">
@@ -246,15 +250,15 @@
 	</bean>		
 	
 	<!-- Email Beans --> 
+	<!--
 	<bean id="mailService" class="org.openiam.idm.srvc.msg.service.MailServiceImpl">
-		<!-- property name="mailSender" ref="emailSender" / -->
 		<property name="mailSender" ref="mailSender" />
 		<property name="defaultSender" value="${mail.defaultSender}" />
 		<property name="subjectPrefix" value="${mail.defaultSubjectPrefix}" />
 		<property name="optionalBccAddress" value="${mail.optionalBccAddress}" />
 		<property name="userManager" ref="userManager" />
-		
 	</bean>
+	-->
 	
 	<bean id="emailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
 		<property name="host" value="${mail.host}" />
