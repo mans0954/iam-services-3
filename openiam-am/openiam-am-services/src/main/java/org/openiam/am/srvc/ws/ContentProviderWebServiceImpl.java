@@ -123,7 +123,7 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             response.setResponseValue(contentProviderDozerConverter.convertToDTO(entity, true));
 
         } catch(BasicDataServiceException e) {
-            log.error(e.getMessage(), e);
+            log.info(e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
         } catch(Throwable e) {

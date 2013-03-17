@@ -140,7 +140,7 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
      *
      * @return possible object is {@link org.openiam.idm.srvc.org.dto.OrganizationAttribute }
      */
-    public Map<String, org.openiam.idm.srvc.org.dto.OrganizationAttribute> getAttributes() {
+    public Map<String, OrganizationAttribute> getAttributes() {
         return attributes;
     }
 
@@ -149,7 +149,7 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
      *
      * @param attributes allowed object is {@link org.openiam.idm.srvc.org.dto.OrganizationAttribute }
      */
-    public void setAttributes(Map<String, org.openiam.idm.srvc.org.dto.OrganizationAttribute> attributes) {
+    public void setAttributes(Map<String, OrganizationAttribute> attributes) {
         this.attributes = attributes;
     }
 
