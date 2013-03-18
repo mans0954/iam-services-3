@@ -105,18 +105,21 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             	}
             }
 
-            final List<ContentProviderEntity> result = contentProviderService.getProviderByDomainPattern(
-                    provider.getDomainPattern(), provider.getIsSSL());
-            if(CollectionUtils.isNotEmpty(result)) {
-            	if(StringUtils.isBlank(provider.getId())) {
-            		throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_DOMAIN_PATTERN_EXISTS);
-            	} else {
-            		for(final ContentProviderEntity test : result) {
-            			if(!StringUtils.equals(provider.getId(), test.getId())) {
-            				throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_DOMAIN_PATTERN_EXISTS);
-            			}
-            		}
-            	}
+            if(provider.getId()==null){
+                // if provider is new, test for unique domain+ssl
+                final List<ContentProviderEntity> result = contentProviderService.getProviderByDomainPattern(
+                        provider.getDomainPattern(), provider.getIsSSL());
+                if(CollectionUtils.isNotEmpty(result)) {
+                    if(StringUtils.isBlank(provider.getId())) {
+                        throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_DOMAIN_PATTERN_EXISTS);
+                    } else {
+                        for(final ContentProviderEntity test : result) {
+                            if(!StringUtils.equals(provider.getId(), test.getId())) {
+                                throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_DOMAIN_PATTERN_EXISTS);
+                            }
+                        }
+                    }
+                }
             }
 
             ContentProviderEntity entity = contentProviderService.saveContentProvider(contentProviderDozerConverter.convertToEntity(provider,true));
