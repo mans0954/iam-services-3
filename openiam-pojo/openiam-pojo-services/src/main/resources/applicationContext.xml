@@ -103,6 +103,8 @@
 	-->
 
 	<bean id="configurableGroovyScriptEngine" class="${org.openiam.groovy.script.engine}"/>
+	
+	<bean id="configurableAuditLogEventHandler" class="${org.openiam.log.audit.iheevent.context.class}" />
 			
 	<!-- Service Beans -->
 	<bean id="serviceManager" class="org.openiam.idm.srvc.service.service.ServiceMgr">
