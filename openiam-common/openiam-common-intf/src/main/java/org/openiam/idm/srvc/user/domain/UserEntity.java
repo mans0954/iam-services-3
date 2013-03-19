@@ -19,6 +19,7 @@ import org.hibernate.annotations.Filter;
 import org.hibernate.annotations.FilterDef;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.ParamDef;
+import org.hibernate.annotations.Where;
 import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.AnalyzerDef;
 import org.hibernate.search.annotations.DocumentId;
@@ -190,75 +191,6 @@ public class UserEntity {
     @Column(name = "PASSWORD_THEME", length = 20)
     private String passwordTheme;
 
-    @Column(name = "COUNTRY", length = 30)
-    private String country;
-
-    @Column(name = "BLDG_NUM", length = 10)
-    private String bldgNum;
-
-    @Column(name = "STREET_DIRECTION", length = 20)
-    private String streetDirection;
-
-    @Column(name = "SUITE", length = 20)
-    private String suite;
-
-    @Column(name = "ADDRESS1", length = 45)
-    private String address1;
-
-    @Column(name = "ADDRESS2", length = 45)
-    private String address2;
-
-    @Column(name = "ADDRESS3", length = 45)
-    private String address3;
-
-    @Column(name = "ADDRESS4", length = 45)
-    private String address4;
-
-    @Column(name = "ADDRESS5", length = 45)
-    private String address5;
-
-    @Column(name = "ADDRESS6", length = 45)
-    private String address6;
-
-    @Column(name = "ADDRESS7", length = 45)
-    private String address7;
-
-    @Column(name = "CITY", length = 30)
-    private String city;
-
-    @Column(name = "STATE", length = 15)
-    private String state;
-
-    @Column(name = "POSTAL_CD", length = 10)
-    private String postalCd;
-
-    @Column(name = "EMAIL_ADDRESS", length = 320)
-    @Fields ({
-        @Field(index = Index.TOKENIZED),
-        @Field(name = "email", index = Index.TOKENIZED, store = Store.YES)
-    })
-    private String email;
-
-    @Column(name = "AREA_CD", length = 10)
-    @Fields ({
-        @Field(index = Index.UN_TOKENIZED),
-        @Field(name = "areaCd", index = Index.UN_TOKENIZED, store = Store.YES)
-    })
-    private String areaCd;
-
-    @Column(name = "COUNTRY_CD", length = 10)
-    private String countryCd;
-
-    @Column(name = "PHONE_NBR", length = 50)
-    @Fields ({
-        @Field(index = Index.TOKENIZED),
-        @Field(name = "phoneNbr", index = Index.TOKENIZED, store = Store.YES)
-    })
-    private String phoneNbr;
-
-    @Column(name = "PHONE_EXT", length = 20)
-    private String phoneExt;
-
     @Column(name = "SHOW_IN_SEARCH")
     private Integer showInSearch = new Integer(0);
 
@@ -285,24 +217,30 @@ public class UserEntity {
     private Map<String, UserAttributeEntity> userAttributes = new HashMap<String, UserAttributeEntity>(0);
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "parent", fetch = FetchType.LAZY)
+    /*
     @Filter(
             name = "parentTypeFilter",
             condition = ":parentFilter = PARENT_TYPE"
     )
+    */
     private Set<AddressEntity> addresses = new HashSet<AddressEntity>(0);
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "parent", fetch = FetchType.LAZY)
+    /*
     @Filter(
             name = "parentTypeFilter",
             condition = ":parentFilter = PARENT_TYPE"
     )
+    */
     private Set<PhoneEntity> phones = new HashSet<PhoneEntity>(0);
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "parent", fetch = FetchType.LAZY)
+    /*
     @Filter(
             name = "parentTypeFilter",
             condition = ":parentFilter = PARENT_TYPE"
     )
+    */
     private Set<EmailAddressEntity> emailAddresses = new HashSet<EmailAddressEntity>(0);
 
     @Column(name = "SYSTEM_FLAG",length = 1)
@@ -632,157 +570,166 @@ public class UserEntity {
         this.passwordTheme = passwordTheme;
     }
 
-    public String getCountry() {
-        return country;
-    }
-
-    public void setCountry(String country) {
-        this.country = country;
-    }
-
-    public String getBldgNum() {
-        return bldgNum;
-    }
-
-    public void setBldgNum(String bldgNum) {
-        this.bldgNum = bldgNum;
-    }
-
-    public String getStreetDirection() {
-        return streetDirection;
-    }
-
-    public void setStreetDirection(String streetDirection) {
-        this.streetDirection = streetDirection;
-    }
-
-    public String getSuite() {
-        return suite;
-    }
-
-    public void setSuite(String suite) {
-        this.suite = suite;
-    }
-
-    public String getAddress1() {
-        return address1;
-    }
-
-    public void setAddress1(String address1) {
-        this.address1 = address1;
-    }
-
-    public String getAddress2() {
-        return address2;
-    }
-
-    public void setAddress2(String address2) {
-        this.address2 = address2;
-    }
-
-    public String getAddress3() {
-        return address3;
-    }
-
-    public void setAddress3(String address3) {
-        this.address3 = address3;
-    }
-
-    public String getAddress4() {
-        return address4;
-    }
-
-    public void setAddress4(String address4) {
-        this.address4 = address4;
-    }
-
-    public String getAddress5() {
-        return address5;
-    }
-
-    public void setAddress5(String address5) {
-        this.address5 = address5;
-    }
-
-    public String getAddress6() {
-        return address6;
-    }
-
-    public void setAddress6(String address6) {
-        this.address6 = address6;
-    }
-
-    public String getAddress7() {
-        return address7;
-    }
-
-    public void setAddress7(String address7) {
-        this.address7 = address7;
-    }
-
-    public String getCity() {
-        return city;
-    }
-
-    public void setCity(String city) {
-        this.city = city;
-    }
-
-    public String getState() {
-        return state;
-    }
-
-    public void setState(String state) {
-        this.state = state;
-    }
-
-    public String getPostalCd() {
-        return postalCd;
-    }
-
-    public void setPostalCd(String postalCd) {
-        this.postalCd = postalCd;
-    }
-
+//    public String getCountry() {
+//        return country;
+//    }
+//
+//    public void setCountry(String country) {
+//        this.country = country;
+//    }
+//
+//    public String getBldgNum() {
+//        return bldgNum;
+//    }
+//
+//    public void setBldgNum(String bldgNum) {
+//        this.bldgNum = bldgNum;
+//    }
+//
+//    public String getStreetDirection() {
+//        return streetDirection;
+//    }
+//
+//    public void setStreetDirection(String streetDirection) {
+//        this.streetDirection = streetDirection;
+//    }
+//
+//    public String getSuite() {
+//        return suite;
+//    }
+//
+//    public void setSuite(String suite) {
+//        this.suite = suite;
+//    }
+//
+//    public String getAddress1() {
+//        return address1;
+//    }
+//
+//    public void setAddress1(String address1) {
+//        this.address1 = address1;
+//    }
+//
+//    public String getAddress2() {
+//        return address2;
+//    }
+//
+//    public void setAddress2(String address2) {
+//        this.address2 = address2;
+//    }
+//
+//    public String getAddress3() {
+//        return address3;
+//    }
+//
+//    public void setAddress3(String address3) {
+//        this.address3 = address3;
+//    }
+//
+//    public String getAddress4() {
+//        return address4;
+//    }
+//
+//    public void setAddress4(String address4) {
+//        this.address4 = address4;
+//    }
+//
+//    public String getAddress5() {
+//        return address5;
+//    }
+//
+//    public void setAddress5(String address5) {
+//        this.address5 = address5;
+//    }
+//
+//    public String getAddress6() {
+//        return address6;
+//    }
+//
+//    public void setAddress6(String address6) {
+//        this.address6 = address6;
+//    }
+//
+//    public String getAddress7() {
+//        return address7;
+//    }
+//
+//    public void setAddress7(String address7) {
+//        this.address7 = address7;
+//    }
+//
+//    public String getCity() {
+//        return city;
+//    }
+//
+//    public void setCity(String city) {
+//        this.city = city;
+//    }
+//
+//    public String getState() {
+//        return state;
+//    }
+//
+//    public void setState(String state) {
+//        this.state = state;
+//    }
+//
+//    public String getPostalCd() {
+//        return postalCd;
+//    }
+//
+//    public void setPostalCd(String postalCd) {
+//        this.postalCd = postalCd;
+//    }
+    @Deprecated
     public String getEmail() {
-        return email;
+        String defaultEmail = null;
+        if(this.emailAddresses!=null && !this.emailAddresses.isEmpty()){
+            for (EmailAddressEntity email: this.emailAddresses){
+                   if(email.getIsDefault()){
+                       defaultEmail = email.getEmailAddress();
+                       break;
+                   }
+            }
+        }
+        return defaultEmail;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getAreaCd() {
-        return areaCd;
-    }
-
-    public void setAreaCd(String areaCd) {
-        this.areaCd = areaCd;
-    }
-
-    public String getCountryCd() {
-        return countryCd;
-    }
-
-    public void setCountryCd(String countryCd) {
-        this.countryCd = countryCd;
-    }
-
-    public String getPhoneNbr() {
-        return phoneNbr;
-    }
-
-    public void setPhoneNbr(String phoneNbr) {
-        this.phoneNbr = phoneNbr;
-    }
-
-    public String getPhoneExt() {
-        return phoneExt;
-    }
-
-    public void setPhoneExt(String phoneExt) {
-        this.phoneExt = phoneExt;
-    }
+//    public void setEmail(String email) {
+//        this.email = email;
+//    }
+//
+//    public String getAreaCd() {
+//        return areaCd;
+//    }
+//
+//    public void setAreaCd(String areaCd) {
+//        this.areaCd = areaCd;
+//    }
+//
+//    public String getCountryCd() {
+//        return countryCd;
+//    }
+//
+//    public void setCountryCd(String countryCd) {
+//        this.countryCd = countryCd;
+//    }
+//
+//    public String getPhoneNbr() {
+//        return phoneNbr;
+//    }
+//
+//    public void setPhoneNbr(String phoneNbr) {
+//        this.phoneNbr = phoneNbr;
+//    }
+//
+//    public String getPhoneExt() {
+//        return phoneExt;
+//    }
+//
+//    public void setPhoneExt(String phoneExt) {
+//        this.phoneExt = phoneExt;
+//    }
 
     public Integer getShowInSearch() {
         return showInSearch;
@@ -927,28 +874,28 @@ public class UserEntity {
 
         UserEntity that = (UserEntity) o;
 
-        if (address1 != null ? !address1.equals(that.address1) : that.address1 != null) return false;
-        if (address2 != null ? !address2.equals(that.address2) : that.address2 != null) return false;
-        if (address3 != null ? !address3.equals(that.address3) : that.address3 != null) return false;
-        if (address4 != null ? !address4.equals(that.address4) : that.address4 != null) return false;
-        if (address5 != null ? !address5.equals(that.address5) : that.address5 != null) return false;
-        if (address6 != null ? !address6.equals(that.address6) : that.address6 != null) return false;
-        if (address7 != null ? !address7.equals(that.address7) : that.address7 != null) return false;
+//        if (address1 != null ? !address1.equals(that.address1) : that.address1 != null) return false;
+//        if (address2 != null ? !address2.equals(that.address2) : that.address2 != null) return false;
+//        if (address3 != null ? !address3.equals(that.address3) : that.address3 != null) return false;
+//        if (address4 != null ? !address4.equals(that.address4) : that.address4 != null) return false;
+//        if (address5 != null ? !address5.equals(that.address5) : that.address5 != null) return false;
+//        if (address6 != null ? !address6.equals(that.address6) : that.address6 != null) return false;
+//        if (address7 != null ? !address7.equals(that.address7) : that.address7 != null) return false;
         if (addresses != null ? !addresses.equals(that.addresses) : that.addresses != null) return false;
         if (alternateContactId != null ? !alternateContactId.equals(that.alternateContactId) : that.alternateContactId != null)
             return false;
-        if (areaCd != null ? !areaCd.equals(that.areaCd) : that.areaCd != null) return false;
+//        if (areaCd != null ? !areaCd.equals(that.areaCd) : that.areaCd != null) return false;
         if (birthdate != null ? !birthdate.equals(that.birthdate) : that.birthdate != null) return false;
-        if (bldgNum != null ? !bldgNum.equals(that.bldgNum) : that.bldgNum != null) return false;
-        if (city != null ? !city.equals(that.city) : that.city != null) return false;
+//        if (bldgNum != null ? !bldgNum.equals(that.bldgNum) : that.bldgNum != null) return false;
+//        if (city != null ? !city.equals(that.city) : that.city != null) return false;
         if (classification != null ? !classification.equals(that.classification) : that.classification != null)
             return false;
         if (companyId != null ? !companyId.equals(that.companyId) : that.companyId != null) return false;
         if (companyOwnerId != null ? !companyOwnerId.equals(that.companyOwnerId) : that.companyOwnerId != null)
             return false;
         if (costCenter != null ? !costCenter.equals(that.costCenter) : that.costCenter != null) return false;
-        if (country != null ? !country.equals(that.country) : that.country != null) return false;
-        if (countryCd != null ? !countryCd.equals(that.countryCd) : that.countryCd != null) return false;
+//        if (country != null ? !country.equals(that.country) : that.country != null) return false;
+//        if (countryCd != null ? !countryCd.equals(that.countryCd) : that.countryCd != null) return false;
         if (createDate != null ? !createDate.equals(that.createDate) : that.createDate != null) return false;
         if (createdBy != null ? !createdBy.equals(that.createdBy) : that.createdBy != null) return false;
         if (dateChallengeRespChanged != null ? !dateChallengeRespChanged.equals(that.dateChallengeRespChanged) : that.dateChallengeRespChanged != null)
@@ -959,7 +906,7 @@ public class UserEntity {
         if (deptCd != null ? !deptCd.equals(that.deptCd) : that.deptCd != null) return false;
         if (deptName != null ? !deptName.equals(that.deptName) : that.deptName != null) return false;
         if (division != null ? !division.equals(that.division) : that.division != null) return false;
-        if (email != null ? !email.equals(that.email) : that.email != null) return false;
+//        if (email != null ? !email.equals(that.email) : that.email != null) return false;
         if (emailAddresses != null ? !emailAddresses.equals(that.emailAddresses) : that.emailAddresses != null)
             return false;
         if (employeeId != null ? !employeeId.equals(that.employeeId) : that.employeeId != null) return false;
@@ -982,21 +929,21 @@ public class UserEntity {
         if (nickname != null ? !nickname.equals(that.nickname) : that.nickname != null) return false;
         if (passwordTheme != null ? !passwordTheme.equals(that.passwordTheme) : that.passwordTheme != null)
             return false;
-        if (phoneExt != null ? !phoneExt.equals(that.phoneExt) : that.phoneExt != null) return false;
-        if (phoneNbr != null ? !phoneNbr.equals(that.phoneNbr) : that.phoneNbr != null) return false;
+//        if (phoneExt != null ? !phoneExt.equals(that.phoneExt) : that.phoneExt != null) return false;
+//        if (phoneNbr != null ? !phoneNbr.equals(that.phoneNbr) : that.phoneNbr != null) return false;
         if (phones != null ? !phones.equals(that.phones) : that.phones != null) return false;
-        if (postalCd != null ? !postalCd.equals(that.postalCd) : that.postalCd != null) return false;
+//        if (postalCd != null ? !postalCd.equals(that.postalCd) : that.postalCd != null) return false;
         if (prefix != null ? !prefix.equals(that.prefix) : that.prefix != null) return false;
         if (secondaryStatus != that.secondaryStatus) return false;
         if (sex != null ? !sex.equals(that.sex) : that.sex != null) return false;
         if (showInSearch != null ? !showInSearch.equals(that.showInSearch) : that.showInSearch != null) return false;
         if (startDate != null ? !startDate.equals(that.startDate) : that.startDate != null) return false;
-        if (state != null ? !state.equals(that.state) : that.state != null) return false;
+//        if (state != null ? !state.equals(that.state) : that.state != null) return false;
         if (status != that.status) return false;
-        if (streetDirection != null ? !streetDirection.equals(that.streetDirection) : that.streetDirection != null)
-            return false;
+//        if (streetDirection != null ? !streetDirection.equals(that.streetDirection) : that.streetDirection != null)
+//            return false;
         if (suffix != null ? !suffix.equals(that.suffix) : that.suffix != null) return false;
-        if (suite != null ? !suite.equals(that.suite) : that.suite != null) return false;
+//        if (suite != null ? !suite.equals(that.suite) : that.suite != null) return false;
         if (title != null ? !title.equals(that.title) : that.title != null) return false;
         if (userAttributes != null ? !userAttributes.equals(that.userAttributes) : that.userAttributes != null)
             return false;

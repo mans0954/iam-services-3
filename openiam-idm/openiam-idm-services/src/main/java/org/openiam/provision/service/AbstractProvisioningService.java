@@ -547,7 +547,7 @@ public ProvisionUserResponse createUser(ProvisionUser user, List<IdmAuditLog> lo
 
         if (!containsEmail("EMAIL1", emailSet)) {
 
-            EmailAddress e = new EmailAddress(user.getEmail(), "EMAIL1", "", ContactConstants.PARENT_TYPE_USER, true);
+            EmailAddress e = new EmailAddress(user.getEmail(), "EMAIL1", "", true);
             user.getEmailAddresses().add(e);
 
         }
@@ -572,18 +572,18 @@ public ProvisionUserResponse createUser(ProvisionUser user, List<IdmAuditLog> lo
 
 
     }
-
+    @Deprecated
     private void associatePhone(ProvisionUser user) {
-        if (user.getPhoneNbr() == null || user.getPhoneNbr().isEmpty()) {
-            return;
-
-        }
-        Set<Phone> phoneSet = user.getPhones();
-
-        if (!containsPhone("DESK PHONE", phoneSet)) {
-            Phone p = new Phone("DESK PHONE",  user.getAreaCd(), user.getCountryCd(), "", user.getPhoneNbr(), user.getPhoneExt(), true, null);
-            user.getPhones().add(p);
-        }
+//        if (user.getPhoneNbr() == null || user.getPhoneNbr().isEmpty()) {
+//            return;
+//
+//        }
+//        Set<Phone> phoneSet = user.getPhones();
+//
+//        if (!containsPhone("DESK PHONE", phoneSet)) {
+//            Phone p = new Phone("DESK PHONE",  user.getAreaCd(), user.getCountryCd(), "", user.getPhoneNbr(), user.getPhoneExt(), true, null);
+//            user.getPhones().add(p);
+//        }
     }
 
     private boolean containsPhone(String name, Set<Phone> phoneSet) {

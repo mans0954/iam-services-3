@@ -40,10 +40,6 @@ import org.springframework.stereotype.Repository;
 @Repository("userSearchDAO")
 public class UserSearchDAO extends AbstractHibernateSearchDao<UserEntity, UserSearchBean, String> {
 	
-	@Autowired
-	@Qualifier("shallowDozerMapper")
-	protected Mapper shallowDozerMapper;
-	
 	@Override
 	protected Query parse(UserSearchBean query) {
 		final BooleanQuery luceneQuery = new BooleanQuery();
@@ -67,6 +63,7 @@ public class UserSearchDAO extends AbstractHibernateSearchDao<UserEntity, UserSe
 			luceneQuery.add(clause, BooleanClause.Occur.MUST);
 		}
 		
+		/*
 		clause = buildTokenizedClause("email", query.getEmailAddress());
 		if(clause != null) {
 			luceneQuery.add(clause, BooleanClause.Occur.MUST);
@@ -81,67 +78,15 @@ public class UserSearchDAO extends AbstractHibernateSearchDao<UserEntity, UserSe
 		if(clause != null) {
 			luceneQuery.add(clause, BooleanClause.Occur.MUST);
 		}
+		*/
 		
 		clause = buildExactClause("organization", query.getOrganizationId());
 		if(clause != null) {
 			luceneQuery.add(clause, BooleanClause.Occur.MUST);
 		}
 		
-		/*
-		clause = buildPrincipalClause(query.getPrincipal());
-		if(clause != null) {
-			luceneQuery.add(clause, BooleanClause.Occur.MUST);
-		}
-		
-		clause = buildGroupQuery(query.getGroupIdSet());
-		if(clause != null) {
-			luceneQuery.add(clause, BooleanClause.Occur.MUST);
-		}
-		
-		clause = buildRoleQuery(query.getRoleIdSet());
-		if(clause != null) {
-			luceneQuery.add(clause, BooleanClause.Occur.MUST);
-		}
-		*/
 		return luceneQuery;
 	}
-	
-	/*
-	private Query buildGroupQuery(final Collection<String> groupIdSet) {
-		BooleanQuery paramsQuery = null;
-		if(CollectionUtils.isNotEmpty(groupIdSet)) {
-			paramsQuery = new BooleanQuery();
-			for(final String groupId : groupIdSet) {
-				final Query query = buildExactClause("groups.groupId", groupId);
-				if(query != null) {
-					paramsQuery.add(query, BooleanClause.Occur.SHOULD);
-				}
-			}
-		}
-		return paramsQuery;
-	}
-	
-	private Query buildRoleQuery(final Collection<String> roleIdSet) {
-		BooleanQuery paramsQuery = null;
-		if(CollectionUtils.isNotEmpty(roleIdSet)) {
-			paramsQuery = new BooleanQuery();
-			for(final String roleId : roleIdSet) {
-				final Query query = buildExactClause("roles.roleId", roleId);
-				if(query != null) {
-					paramsQuery.add(query, BooleanClause.Occur.SHOULD);
-				}
-			}
-		}
-		return paramsQuery;
-	}
-	
-	private Query buildPrincipalClause(final String principalName) {
-		if(StringUtils.isNotBlank(principalName)) {
-			return buildTokenizedClause("principal.login", principalName);
-		}
-		return null;
-    }
-    */
 
 	@Override
 	protected Class<UserEntity> getEntityClass() {

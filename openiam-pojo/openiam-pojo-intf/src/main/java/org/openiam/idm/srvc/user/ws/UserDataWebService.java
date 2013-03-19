@@ -272,24 +272,6 @@ public interface UserDataWebService {
             String addressId);
 
     /* (non-Javadoc)
-      * @see org.openiam.idm.srvc.user.service.UserDataService#getAddressByName(java.lang.String, java.lang.String)
-      */
-    @WebMethod
-    public Address getAddressByName(
-            @WebParam(name = "userId", targetNamespace = "")
-            String userId,
-            @WebParam(name = "addressName", targetNamespace = "")
-            String addressName);
-
-    /* (non-Javadoc)
-      * @see org.openiam.idm.srvc.user.service.UserDataService#getDefaultAddress(java.lang.String)
-      */
-    @WebMethod
-    public Address getDefaultAddress(
-            @WebParam(name = "userId", targetNamespace = "")
-            String userId);
-
-    /* (non-Javadoc)
       * @see org.openiam.idm.srvc.user.service.UserDataService#getAddressList(java.lang.String)
       */
     @WebMethod
@@ -343,24 +325,6 @@ public interface UserDataWebService {
     public Phone getPhoneById(
             @WebParam(name = "addressId", targetNamespace = "")
             String addressId);
-
-    /* (non-Javadoc)
-      * @see org.openiam.idm.srvc.user.service.UserDataService#getPhoneByName(java.lang.String, java.lang.String)
-      */
-    @WebMethod
-    public Phone getPhoneByName(
-            @WebParam(name = "userId", targetNamespace = "")
-            String userId,
-            @WebParam(name = "addressName", targetNamespace = "")
-            String addressName);
-
-    /* (non-Javadoc)
-      * @see org.openiam.idm.srvc.user.service.UserDataService#getDefaultPhone(java.lang.String)
-      */
-    @WebMethod
-    public Phone getDefaultPhone(
-            @WebParam(name = "userId", targetNamespace = "")
-            String userId);
 
     /* (non-Javadoc)
       * @see org.openiam.idm.srvc.user.service.UserDataService#getPhoneList(java.lang.String)
@@ -421,24 +385,6 @@ public interface UserDataWebService {
     public EmailAddress getEmailAddressById(
             @WebParam(name = "addressId", targetNamespace = "")
             String addressId);
-
-    /* (non-Javadoc)
-      * @see org.openiam.idm.srvc.user.service.UserDataService#getEmailAddressByName(java.lang.String, java.lang.String)
-      */
-    @WebMethod
-    public EmailAddress getEmailAddressByName(
-            @WebParam(name = "userId", targetNamespace = "")
-            String userId,
-            @WebParam(name = "addressName", targetNamespace = "")
-            String addressName);
-
-    /* (non-Javadoc)
-      * @see org.openiam.idm.srvc.user.service.UserDataService#getDefaultEmailAddress(java.lang.String)
-      */
-    @WebMethod
-    public EmailAddress getDefaultEmailAddress(
-            @WebParam(name = "userId", targetNamespace = "")
-            String userId);
 
     /* (non-Javadoc)
       * @see org.openiam.idm.srvc.user.service.UserDataService#getEmailAddressList(java.lang.String)

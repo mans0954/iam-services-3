@@ -1,0 +1,21 @@
+use openiam;
+
+ALTER TABLE USERS DROP COLUMN PHONE_EXT,
+                  DROP COLUMN PHONE_NBR,
+                  DROP COLUMN COUNTRY_CD,
+                  DROP COLUMN AREA_CD,
+                  DROP COLUMN EMAIL_ADDRESS,
+                  DROP COLUMN POSTAL_CD,
+                  DROP COLUMN STATE,
+                  DROP COLUMN CITY,
+                  DROP COLUMN ADDRESS7,
+                  DROP COLUMN ADDRESS6,
+                  DROP COLUMN ADDRESS5,
+                  DROP COLUMN ADDRESS4,
+                  DROP COLUMN ADDRESS3,
+                  DROP COLUMN ADDRESS2,
+                  DROP COLUMN ADDRESS1,
+                  DROP COLUMN SUITE,
+                  DROP COLUMN STREET_DIRECTION,
+                  DROP COLUMN BLDG_NUM,
+                  DROP COLUMN COUNTRY;

@@ -16,63 +16,6 @@ import java.util.Map;
  * @author Suneet Shah
  */
 public interface PhoneDAO extends BaseDao<PhoneEntity, String> {
-  
-    /**
-     * Persist a map of Phone objects at one time. Handles add, update, delete.
-     *
-     * @param parentId
-     * @param parentType
-     * @param adrMap
-     */
-    void savePhoneMap(String parentId, String parentType, Map<String, PhoneEntity> adrMap);
-
-    /**
-     * Returns a Map of EmailAddress objects for the parentId and parentType combination.
-     * The map is keyed on the address.description. Address.description indicates
-     * the type of address that we have; ie. Shipping, Billing, etc.
-     *
-     * @param parentId
-     * @param parentType
-     * @return
-     */
-    Map<String, PhoneEntity> findByParent(String parentId, String parentType);
-
-    /**
-     * Returns a List of EmailAddress objects for the parentId and parentType combination.
-     *
-     * @param parentId
-     * @param parentType
-     * @return
-     */
-    public List<PhoneEntity> findByParentAsList(String parentId, String parentType);
-
-
-    /**
-     * Removes all EmailAddresses for a parent
-     *
-     * @param parentId
-     * @param parentType
-     */
-    void removeByParent(String parentId, String parentType);
-
-    /**
-     * Returns a default address for the parentId and parentType combination.
-     * Returns null if a match is not found.
-     *
-     * @return
-     */
-    PhoneEntity findDefault(String parentId, String parentType);
-
-    /**
-     * Return an address object that matches the Name. Returns null if a match
-     * is not found.
-     *
-     * @param name
-     * @param parentId
-     * @param parentType
-     * @return
-     */
-    PhoneEntity findByName(String name, String parentId, String parentType);
-
+	public void removeByUserId(final String userId);
 
 }

@@ -18,53 +18,5 @@ import java.util.Map;
 public interface AddressDAO extends BaseDao<AddressEntity, String> {
 
 
-    /**
-     * Returns a Map of Address objects for the parentId and parentType combination.
-     * The map is keyed on the address.description. Address.description indicates
-     * the type of address that we have; ie. Shipping, Billing, etc.
-     *
-     * @param parentId
-     * @param parentType
-     * @return
-     */
-    Map<String, AddressEntity> findByParent(String parentId, String parentType);
-
-    /**
-     * Returns a List of Address objects for the parentId and parentType combination.
-     *
-     * @param parentId
-     * @param parentType
-     * @return
-     */
-    public List<AddressEntity> findByParentAsList(String parentId, String parentType);
-
-
-    /**
-     * Removes all address for a parent
-     *
-     * @param parentId
-     * @param parentType
-     */
-    void removeByParent(String parentId, String parentType);
-
-    /**
-     * Returns a default address for the parentId and parentType combination.
-     * Returns null if a match is not found.
-     *
-     * @return
-     */
-    AddressEntity findDefault(String parentId, String parentType);
-
-    /**
-     * Return an address object that matches the Name field. Returns null if a match
-     * is not found.
-     *
-     * @param name
-     * @param parentId
-     * @param parentType
-     * @return
-     */
-    AddressEntity findByName(String name, String parentId, String parentType);
-
-
+	public void removeByUserId(final String userId);
 }

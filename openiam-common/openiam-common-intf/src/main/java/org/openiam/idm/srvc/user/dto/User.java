@@ -71,27 +71,9 @@ import java.util.*;
         "nickname",
         "maidenName",
         "passwordTheme",
-        "country",
-        "bldgNum",
-        "streetDirection",
-        "suite",
-        "address1",
-        "address2",
-        "address3",
-        "address4",
-        "address5",
-        "address6",
-        "address7",
-        "city",
-        "state",
-        "postalCd",
         "email",
         "showInSearch",
         "delAdmin",
-        "areaCd",
-        "countryCd",
-        "phoneNbr",
-        "phoneExt",
         "principalList",
         "supervisor",
         "alternateContactId",
@@ -198,43 +180,7 @@ public class User extends org.openiam.base.BaseObject {
 
     protected String passwordTheme;
 
-    protected String country;
-
-    protected String bldgNum;
-
-    protected String streetDirection;
-
-    protected String suite;
-
-    protected String address1;
-
-    protected String address2;
-
-    protected String address3;
-
-    protected String address4;
-
-    protected String address5;
-
-    protected String address6;
-
-    protected String address7;
-
-    protected String city;
-
-    protected String state;
-
-    protected String postalCd;
-
     protected String email;
-
-    protected String areaCd;
-
-    protected String countryCd;
-
-    protected String phoneNbr;
-
-    protected String phoneExt;
 
     protected Integer showInSearch = new Integer(0);
 
@@ -735,144 +681,6 @@ public class User extends org.openiam.base.BaseObject {
         this.deptName = deptName;
     }
 
-    public String getCountry() {
-        return country;
-    }
-
-    public void setCountry(String country) {
-        this.country = country;
-    }
-
-    public String getBldgNum() {
-        return bldgNum;
-    }
-
-    public void setBldgNum(String bldgNum) {
-        this.bldgNum = bldgNum;
-    }
-
-    public String getStreetDirection() {
-        return streetDirection;
-    }
-
-    public void setStreetDirection(String streetDirection) {
-        this.streetDirection = streetDirection;
-    }
-
-    public String getAddress1() {
-        return address1;
-    }
-
-    public void setAddress1(String address1) {
-        this.address1 = address1;
-    }
-
-    public String getAddress2() {
-        return address2;
-    }
-
-    public void setAddress2(String address2) {
-        this.address2 = address2;
-    }
-
-    public String getAddress3() {
-        return address3;
-    }
-
-    public void setAddress3(String address3) {
-        this.address3 = address3;
-    }
-
-    public String getAddress4() {
-        return address4;
-    }
-
-    public void setAddress4(String address4) {
-        this.address4 = address4;
-    }
-
-    public String getAddress5() {
-        return address5;
-    }
-
-    public void setAddress5(String address5) {
-        this.address5 = address5;
-    }
-
-    public String getAddress6() {
-        return address6;
-    }
-
-    public void setAddress6(String address6) {
-        this.address6 = address6;
-    }
-
-    public String getAddress7() {
-        return address7;
-    }
-
-    public void setAddress7(String address7) {
-        this.address7 = address7;
-    }
-
-    public String getCity() {
-        return city;
-    }
-
-    public void setCity(String city) {
-        this.city = city;
-    }
-
-    public String getState() {
-        return state;
-    }
-
-    public void setState(String state) {
-        this.state = state;
-    }
-
-    public String getPostalCd() {
-        return postalCd;
-    }
-
-    public void setPostalCd(String postalCd) {
-        this.postalCd = postalCd;
-    }
-
-    public String getAreaCd() {
-        return areaCd;
-    }
-
-    public void setAreaCd(String areaCd) {
-        this.areaCd = areaCd;
-    }
-
-    public String getCountryCd() {
-        return countryCd;
-    }
-
-    public void setCountryCd(String countryCd) {
-        this.countryCd = countryCd;
-    }
-
-    public String getPhoneNbr() {
-        return phoneNbr;
-    }
-
-    public void setPhoneNbr(String phoneNbr) {
-        this.phoneNbr = phoneNbr;
-    }
-
-    public String getPhoneExt() {
-        return phoneExt;
-    }
-
-    public void setPhoneExt(String phoneExt) {
-        this.phoneExt = phoneExt;
-    }
-    
-    
-
     /*
      public Set<Phone> getPhones() {
          return phones;
@@ -906,6 +714,18 @@ public class User extends org.openiam.base.BaseObject {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    @Deprecated
+    public Phone getDefaultPhone() {
+        if(this.phones!=null && !this.phones.isEmpty()){
+            for (Phone p: this.phones){
+                if(p.getIsDefault()){
+                    return p;
+                }
+            }
+        }
+        return null;
     }
 
     public UserStatusEnum getStatus() {
@@ -1005,90 +825,12 @@ public class User extends org.openiam.base.BaseObject {
         this.securityDomain = securityDomain;
     }
 
-    public String getSuite() {
-        return suite;
-    }
-
-    public void setSuite(String suite) {
-        this.suite = suite;
-    }
-
     public void updateUser(User newUser) {
-        if (newUser.getAddress1() != null) {
-            if (newUser.getAddress1().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-                this.address1 = null;
-            } else {
-                this.address1 = newUser.getAddress1();
-            }
-        }
-        if (newUser.getAddress2() != null) {
-            if (newUser.getAddress2().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-                this.address2 = null;
-            } else {
-                this.address2 = newUser.getAddress2();
-            }
-        }
-        if (newUser.getAddress3() != null) {
-            if (newUser.getAddress3().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-                this.address3 = null;
-            } else {
-                this.address3 = newUser.getAddress3();
-            }
-        }
-        if (newUser.getAddress4() != null) {
-            if (newUser.getAddress4().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-                this.address4 = null;
-            } else {
-                this.address4 = newUser.getAddress4();
-            }
-        }
-        if (newUser.getAddress5() != null) {
-            if (newUser.getAddress5().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-                this.address5 = null;
-            } else {
-                this.address5 = newUser.getAddress5();
-            }
-        }
-        if (newUser.getAddress6() != null) {
-            if (newUser.getAddress6().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-                this.address6 = null;
-            } else {
-                this.address6 = newUser.getAddress6();
-            }
-        }
-        if (newUser.getAddress7() != null) {
-            if (newUser.getAddress7().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-                this.address7 = null;
-            } else {
-                this.address7 = newUser.getAddress7();
-            }
-        }
-        if (newUser.getAreaCd() != null) {
-            if (newUser.getAreaCd().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-                this.areaCd = null;
-            } else {
-                this.areaCd = newUser.getAreaCd();
-            }
-        }
         if (newUser.getBirthdate() != null) {
             if (newUser.getBirthdate().equals(BaseConstants.NULL_DATE)) {
                 this.birthdate = null;
             } else {
                 this.birthdate = newUser.getBirthdate();
-            }
-        }
-        if (newUser.getBldgNum() != null) {
-            if (newUser.getBldgNum().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-                this.bldgNum = null;
-            } else {
-                this.bldgNum = newUser.getBldgNum();
-            }
-        }
-        if (newUser.getCity() != null) {
-            if (newUser.getCity().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-                this.city = null;
-            } else {
-                this.city = newUser.getCity();
             }
         }
         if (newUser.getClassification() != null) {
@@ -1110,20 +852,6 @@ public class User extends org.openiam.base.BaseObject {
                 this.costCenter = null;
             } else {
                 this.costCenter = newUser.getCostCenter();
-            }
-        }
-        if (newUser.getCountry() != null) {
-            if (newUser.getCountry().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-                this.country = null;
-            } else {
-                this.country = newUser.getCountry();
-            }
-        }
-        if (newUser.getCountryCd() != null) {
-            if (newUser.getCountryCd().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-                this.countryCd = null;
-            } else {
-                this.countryCd = newUser.getCountryCd();
             }
         }
         if (newUser.getDeptCd() != null) {
@@ -1253,27 +981,6 @@ public class User extends org.openiam.base.BaseObject {
                 this.passwordTheme = newUser.getPasswordTheme();
             }
         }
-        if (newUser.getPhoneExt() != null) {
-            if (newUser.getPhoneExt().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-                this.phoneExt = null;
-            } else {
-                this.phoneExt = newUser.getPhoneExt();
-            }
-        }
-        if (newUser.getPhoneNbr() != null) {
-            if (newUser.getPhoneNbr().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-                this.phoneNbr = null;
-            } else {
-                this.phoneNbr = newUser.getPhoneNbr();
-            }
-        }
-        if (newUser.getPostalCd() != null) {
-            if (newUser.getPostalCd().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-                this.postalCd = null;
-            } else {
-                this.postalCd = newUser.getPostalCd();
-            }
-        }
         if (newUser.getPrefix() != null) {
             if (newUser.getPrefix().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
                 this.prefix = null;
@@ -1301,20 +1008,6 @@ public class User extends org.openiam.base.BaseObject {
 
         if (newUser.getStatus() != null) {
             this.status = newUser.getStatus();
-        }
-        if (newUser.getStreetDirection() != null) {
-            if (newUser.getStreetDirection().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-                this.streetDirection = null;
-            } else {
-                this.streetDirection = newUser.getStreetDirection();
-            }
-        }
-        if (newUser.getState() != null) {
-            if (newUser.getState().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-                this.state = null;
-            } else {
-                this.state = newUser.getState();
-            }
         }
         if (newUser.getSuffix() != null) {
             if (newUser.getSuffix().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
@@ -1521,28 +1214,16 @@ public class User extends org.openiam.base.BaseObject {
 
         User user = (User) o;
 
-        if (address1 != null ? !address1.equals(user.address1) : user.address1 != null) return false;
-        if (address2 != null ? !address2.equals(user.address2) : user.address2 != null) return false;
-        if (address3 != null ? !address3.equals(user.address3) : user.address3 != null) return false;
-        if (address4 != null ? !address4.equals(user.address4) : user.address4 != null) return false;
-        if (address5 != null ? !address5.equals(user.address5) : user.address5 != null) return false;
-        if (address6 != null ? !address6.equals(user.address6) : user.address6 != null) return false;
-        if (address7 != null ? !address7.equals(user.address7) : user.address7 != null) return false;
         if (addresses != null ? !addresses.equals(user.addresses) : user.addresses != null) return false;
         if (alternateContactId != null ? !alternateContactId.equals(user.alternateContactId) : user.alternateContactId != null)
             return false;
-        if (areaCd != null ? !areaCd.equals(user.areaCd) : user.areaCd != null) return false;
         if (birthdate != null ? !birthdate.equals(user.birthdate) : user.birthdate != null) return false;
-        if (bldgNum != null ? !bldgNum.equals(user.bldgNum) : user.bldgNum != null) return false;
-        if (city != null ? !city.equals(user.city) : user.city != null) return false;
         if (classification != null ? !classification.equals(user.classification) : user.classification != null)
             return false;
         if (companyId != null ? !companyId.equals(user.companyId) : user.companyId != null) return false;
         if (companyOwnerId != null ? !companyOwnerId.equals(user.companyOwnerId) : user.companyOwnerId != null)
             return false;
         if (costCenter != null ? !costCenter.equals(user.costCenter) : user.costCenter != null) return false;
-        if (country != null ? !country.equals(user.country) : user.country != null) return false;
-        if (countryCd != null ? !countryCd.equals(user.countryCd) : user.countryCd != null) return false;
         if (createDate != null ? !createDate.equals(user.createDate) : user.createDate != null) return false;
         if (createdBy != null ? !createdBy.equals(user.createdBy) : user.createdBy != null) return false;
         if (dateChallengeRespChanged != null ? !dateChallengeRespChanged.equals(user.dateChallengeRespChanged) : user.dateChallengeRespChanged != null)
@@ -1576,10 +1257,7 @@ public class User extends org.openiam.base.BaseObject {
         if (nickname != null ? !nickname.equals(user.nickname) : user.nickname != null) return false;
         if (passwordTheme != null ? !passwordTheme.equals(user.passwordTheme) : user.passwordTheme != null)
             return false;
-        if (phoneExt != null ? !phoneExt.equals(user.phoneExt) : user.phoneExt != null) return false;
-        if (phoneNbr != null ? !phoneNbr.equals(user.phoneNbr) : user.phoneNbr != null) return false;
         if (phones != null ? !phones.equals(user.phones) : user.phones != null) return false;
-        if (postalCd != null ? !postalCd.equals(user.postalCd) : user.postalCd != null) return false;
         if (prefix != null ? !prefix.equals(user.prefix) : user.prefix != null) return false;
         if (principalList != null ? !principalList.equals(user.principalList) : user.principalList != null)
             return false;
@@ -1589,12 +1267,8 @@ public class User extends org.openiam.base.BaseObject {
         if (sex != null ? !sex.equals(user.sex) : user.sex != null) return false;
         if (showInSearch != null ? !showInSearch.equals(user.showInSearch) : user.showInSearch != null) return false;
         if (startDate != null ? !startDate.equals(user.startDate) : user.startDate != null) return false;
-        if (state != null ? !state.equals(user.state) : user.state != null) return false;
         if (status != user.status) return false;
-        if (streetDirection != null ? !streetDirection.equals(user.streetDirection) : user.streetDirection != null)
-            return false;
         if (suffix != null ? !suffix.equals(user.suffix) : user.suffix != null) return false;
-        if (suite != null ? !suite.equals(user.suite) : user.suite != null) return false;
         if (supervisor != null ? !supervisor.equals(user.supervisor) : user.supervisor != null) return false;
         if (title != null ? !title.equals(user.title) : user.title != null) return false;
         if (userAttributes != null ? !userAttributes.equals(user.userAttributes) : user.userAttributes != null)
@@ -1651,25 +1325,7 @@ public class User extends org.openiam.base.BaseObject {
                 ", nickname='" + nickname + '\'' +
                 ", maidenName='" + maidenName + '\'' +
                 ", passwordTheme='" + passwordTheme + '\'' +
-                ", country='" + country + '\'' +
-                ", bldgNum='" + bldgNum + '\'' +
-                ", streetDirection='" + streetDirection + '\'' +
-                ", suite='" + suite + '\'' +
-                ", address1='" + address1 + '\'' +
-                ", address2='" + address2 + '\'' +
-                ", address3='" + address3 + '\'' +
-                ", address4='" + address4 + '\'' +
-                ", address5='" + address5 + '\'' +
-                ", address6='" + address6 + '\'' +
-                ", address7='" + address7 + '\'' +
-                ", city='" + city + '\'' +
-                ", state='" + state + '\'' +
-                ", postalCd='" + postalCd + '\'' +
                 ", email='" + email + '\'' +
-                ", areaCd='" + areaCd + '\'' +
-                ", countryCd='" + countryCd + '\'' +
-                ", phoneNbr='" + phoneNbr + '\'' +
-                ", phoneExt='" + phoneExt + '\'' +
                 ", showInSearch=" + showInSearch +
                 ", delAdmin=" + delAdmin +
                 ", principalList=" + principalList +
