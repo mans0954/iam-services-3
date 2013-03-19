@@ -7,7 +7,6 @@ import org.dozer.Mapper;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.dto.LoginAttribute;
-import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.user.dto.*;
@@ -34,25 +33,13 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 	@Test
 	public void testUserConversion() {
 		final User user = new User();
-		user.setAddress1(rs(5));
-		user.setAddress2(rs(5));
-		user.setAddress3(rs(5));
-		user.setAddress4(rs(5));
-		user.setAddress5(rs(5));
-		user.setAddress6(rs(5));
-		user.setAddress7(rs(5));
-		
+
 		user.setAlternateContactId(rs(2));
-		user.setAreaCd(rs(2));
 		user.setBirthdate(new Date());
-		user.setBldgNum(rs(2));
-		user.setCity(rs(2));
 		user.setClassification(rs(2));
 		user.setCompanyId(rs(2));
 		user.setCompanyOwnerId(rs(2));
 		user.setCostCenter(rs(2));
-		user.setCountry(rs(2));
-		user.setCountryCd(rs(2));
 		user.setDateChallengeRespChanged(new Date());
 		user.setDatePasswordChanged(new Date());
 		user.setDelAdmin(2);
@@ -91,9 +78,6 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		phones.add(new Phone(rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), true, rs(2)));
 		phones.add(new Phone(rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), true, rs(2)));
 		user.setPhones(phones);
-		user.setPhoneExt(rs(2));
-		user.setPhoneNbr(rs(2));
-		user.setPostalCd(rs(2));
 		user.setPrefix(rs(2));
 		
 		final List<Login> principalList = new LinkedList<Login>();
@@ -107,12 +91,9 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		user.setSex(rs(2));
 		user.setShowInSearch(2);
 		user.setStartDate(new Date());
-		user.setState(rs(2));
 		user.setStatus(UserStatusEnum.ACTIVE);
-		user.setStreetDirection(rs(2));
 		user.setSuffix(rs(2));
-		user.setSuite(rs(2));
-		
+
 		final Supervisor supervisor = new Supervisor();
 		supervisor.setComments(rs(4));
 		supervisor.setEmployee(null);
@@ -297,13 +278,6 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 	}
 	
 	private void compareUser(final User original, final User copy, final boolean isDeep) {
-		Assert.assertEquals(original.getAddress1(), copy.getAddress1());
-		Assert.assertEquals(original.getAddress2(), copy.getAddress2());
-		Assert.assertEquals(original.getAddress3(), copy.getAddress3());
-		Assert.assertEquals(original.getAddress4(), copy.getAddress4());
-		Assert.assertEquals(original.getAddress5(), copy.getAddress5());
-		Assert.assertEquals(original.getAddress6(), copy.getAddress6());
-		Assert.assertEquals(original.getAddress7(), copy.getAddress7());
 		if(isDeep) {
 			//Assert.assertEquals(user.getAddresses(), copy.getAddresses());
 		} else {
@@ -311,16 +285,11 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		}
 		
 		Assert.assertEquals(original.getAlternateContactId(), copy.getAlternateContactId());
-		Assert.assertEquals(original.getAreaCd(), copy.getAreaCd());
 		Assert.assertEquals(original.getBirthdate(), copy.getBirthdate());
-		Assert.assertEquals(original.getBldgNum(), copy.getBldgNum());
-		Assert.assertEquals(original.getCity(), copy.getCity());
 		Assert.assertEquals(original.getClassification(), copy.getClassification());
 		Assert.assertEquals(original.getCompanyId(), copy.getCompanyId());
 		Assert.assertEquals(original.getCompanyOwnerId(), copy.getCompanyOwnerId());
 		Assert.assertEquals(original.getCostCenter(), copy.getCostCenter());
-		Assert.assertEquals(original.getCountry(), copy.getCountry());
-		Assert.assertEquals(original.getCountryCd(), copy.getCountryCd());
 		Assert.assertEquals(original.getDateChallengeRespChanged(), copy.getDateChallengeRespChanged());
 		Assert.assertEquals(original.getDatePasswordChanged(), copy.getDatePasswordChanged());
 		Assert.assertEquals(original.getDelAdmin(), copy.getDelAdmin());
@@ -359,9 +328,6 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		} else {
 			Assert.assertTrue(CollectionUtils.isEmpty(copy.getPhones()));
 		}
-		Assert.assertEquals(original.getPhoneExt(), copy.getPhoneExt());
-		Assert.assertEquals(original.getPhoneNbr(), copy.getPhoneNbr());
-		Assert.assertEquals(original.getPostalCd(), copy.getPostalCd());
 		Assert.assertEquals(original.getPrefix(), copy.getPrefix());
 		
 		if(isDeep) {
@@ -378,12 +344,9 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		Assert.assertEquals(original.getSex(), copy.getSex());
 		Assert.assertEquals(original.getShowInSearch(), copy.getShowInSearch());
 		Assert.assertEquals(original.getStartDate(), copy.getStartDate());
-		Assert.assertEquals(original.getState(), copy.getState());
 		Assert.assertEquals(original.getStatus(), copy.getStatus());
-		Assert.assertEquals(original.getStreetDirection(), copy.getStreetDirection());
 		Assert.assertEquals(original.getSuffix(), copy.getSuffix());
-		Assert.assertEquals(original.getSuite(), copy.getSuite());
-		
+
 		if(isDeep) {
 			//Assert.assertEquals(original.getSupervisor(), copy.getSupervisor());
 		} else {

@@ -572,18 +572,18 @@ public ProvisionUserResponse createUser(ProvisionUser user, List<IdmAuditLog> lo
 
 
     }
-
+    @Deprecated
     private void associatePhone(ProvisionUser user) {
-        if (user.getPhoneNbr() == null || user.getPhoneNbr().isEmpty()) {
-            return;
-
-        }
-        Set<Phone> phoneSet = user.getPhones();
-
-        if (!containsPhone("DESK PHONE", phoneSet)) {
-            Phone p = new Phone("DESK PHONE",  user.getAreaCd(), user.getCountryCd(), "", user.getPhoneNbr(), user.getPhoneExt(), true, null);
-            user.getPhones().add(p);
-        }
+//        if (user.getPhoneNbr() == null || user.getPhoneNbr().isEmpty()) {
+//            return;
+//
+//        }
+//        Set<Phone> phoneSet = user.getPhones();
+//
+//        if (!containsPhone("DESK PHONE", phoneSet)) {
+//            Phone p = new Phone("DESK PHONE",  user.getAreaCd(), user.getCountryCd(), "", user.getPhoneNbr(), user.getPhoneExt(), true, null);
+//            user.getPhones().add(p);
+//        }
     }
 
     private boolean containsPhone(String name, Set<Phone> phoneSet) {

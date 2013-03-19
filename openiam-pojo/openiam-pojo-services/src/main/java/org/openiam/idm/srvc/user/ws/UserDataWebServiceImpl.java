@@ -857,6 +857,9 @@ public class UserDataWebServiceImpl implements UserDataWebService,MuleContextAwa
 			}
 			
 			final PhoneEntity entity = phoneDozerConverter.convertToEntity(val, true);
+			UserEntity user = new UserEntity();
+            user.setUserId(val.getParentId());
+            entity.setParent(user);
 			userManager.updatePhone(entity);
 		} catch(BasicDataServiceException e) {
     		response.setErrorCode(e.getCode());

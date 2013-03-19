@@ -21,19 +21,6 @@
  */
 package org.openiam.provision.service;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.AttributeOperationEnum;
@@ -48,13 +35,12 @@ import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.provision.type.ExtensibleAddress;
-import org.openiam.provision.type.ExtensibleAttribute;
-import org.openiam.provision.type.ExtensibleEmailAddress;
-import org.openiam.provision.type.ExtensibleGroup;
-import org.openiam.provision.type.ExtensiblePhone;
-import org.openiam.provision.type.ExtensibleRole;
-import org.openiam.provision.type.ExtensibleUser;
+import org.openiam.provision.type.*;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * User to extract the full list of attributes in a User object that is used for 
@@ -683,24 +669,7 @@ public class UserAttributeHelper {
 		newUser.setNickname(user.getNickname());
 		newUser.setMaidenName(user.getMaidenName());
 		newUser.setPasswordTheme(user.getPasswordTheme());
-	    newUser.setCountry( user.getCountry());            
-	    newUser.setBldgNum( user.getBldgNum()); 
-	    newUser.setStreetDirection( user.getStreetDirection());
-		newUser.setAddress1( user.getAddress1());
-		newUser.setAddress2( user.getAddress2() );
-		newUser.setAddress3( user.getAddress3() );            
-		newUser.setAddress4( user.getAddress4() );            
-		newUser.setAddress5(user.getAddress5());     
-		newUser.setAddress6( user.getAddress6() );  
-		newUser.setAddress7(user.getAddress7() );
-		newUser.setCity( user.getCity() );
-		newUser.setState( user.getState() );
-		newUser.setPostalCd( user.getPostalCd());
 		newUser.setEmail( user.getEmail() );
-		newUser.setAreaCd( user.getAreaCd() );       
-		newUser.setCountryCd( user.getCountryCd());
-		newUser.setPhoneNbr( user.getPhoneNbr() );
-		newUser.setPhoneExt( user.getPhoneExt() );
 		newUser.setShowInSearch(user.getShowInSearch());
 		newUser.setAlternateContactId( user.getAlternateContactId());
 

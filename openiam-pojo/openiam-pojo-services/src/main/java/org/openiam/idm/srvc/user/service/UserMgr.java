@@ -504,6 +504,7 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
+    @Transactional
     public void addAddress(AddressEntity val) {
         if (val == null)
             throw new NullPointerException("val is null");
@@ -513,10 +514,14 @@ public class UserMgr implements UserDataService {
 
         UserEntity parent = userDao.findById(val.getParent().getUserId());
         val.setParent(parent);
+
+        updateDefaultFlagForAddress(val, val.getIsDefault(), parent);
+
         addressDao.save(val);
     }
 
     @Override
+    @Transactional
     public void addAddressSet(Collection<AddressEntity> adrSet) {
         if (adrSet == null || adrSet.size() == 0)
             return;
@@ -529,26 +534,58 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
+    @Transactional
     public void updateAddress(AddressEntity val) {
         if (val == null)
             throw new NullPointerException("val is null");
         if (val.getAddressId() == null)
             throw new NullPointerException("AddressId is null");
         if (val.getParent() == null)
-            throw new NullPointerException(
-                    "userId for the address is not defined.");
+            throw new NullPointerException("userId for the address is not defined.");
+
+        AddressEntity entity  = addressDao.findById(val.getAddressId());
         UserEntity parent = userDao.findById(val.getParent().getUserId());
-        val.setParent(parent);
-        addressDao.update(val);
+
+        if(entity!=null){
+            entity.setIsActive(val.getIsActive());
+            entity.setBldgNumber(val.getName());
+            entity.setAddress1(val.getAddress1());
+            entity.setAddress2(val.getAddress2());
+            entity.setCity(val.getCity());
+            entity.setPostalCd(val.getPostalCd());
+            entity.setState(val.getState());
+            entity.setName(val.getName());
+            entity.setParent(parent);
+
+            if(entity.getIsDefault()!=val.getIsDefault()){
+                updateDefaultFlagForAddress(entity, val.getIsDefault(), parent);
+            }
+        }
+        addressDao.update(entity);
     }
 
     @Override
+    @Transactional
     public void removeAddress(final String addressId) {
-        final AddressEntity entity = addressDao.findById(addressId);
+        final AddressEntity entity = addressDao.findById(addressId, "parent");
+
+        if(entity.getIsDefault()){
+            AddressEntity example = new AddressEntity();
+            example.setParent(entity.getParent());
+            List<AddressEntity> addresses = addressDao.getByExample(example);
+
+            AddressEntity defaultAddress = getAddressByDefaultFlag(addresses, false);
+            if(defaultAddress!=null){
+                defaultAddress.setIsDefault(true);
+                defaultAddress.setParent(entity.getParent());
+                addressDao.update(defaultAddress);
+            }
+        }
         addressDao.delete(entity);
     }
 
     @Override
+    @Transactional
     public void removeAllAddresses(String userId) {
         if (userId == null)
             throw new NullPointerException("userId is null");
@@ -582,21 +619,25 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
+    @Transactional
     public void addPhone(PhoneEntity val) {
         if (val == null)
             throw new NullPointerException("val is null");
 
         if (val.getParent() == null)
             throw new NullPointerException(
-                    "parentId for the address is not defined.");
+                    "parentId for the phone is not defined.");
 
         UserEntity parent = userDao.findById(val.getParent().getUserId());
         val.setParent(parent);
+
+        updateDefaultFlagForPhone(val, val.getIsDefault(), parent);
 
         phoneDao.save(val);
     }
 
     @Override
+    @Transactional
     public void addPhoneSet(Collection<PhoneEntity> phoneSet) {
         if (phoneSet == null || phoneSet.size() == 0)
             return;
@@ -609,26 +650,57 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
+    @Transactional
     public void updatePhone(PhoneEntity val) {
         if (val == null)
             throw new NullPointerException("val is null");
         if (val.getPhoneId() == null)
             throw new NullPointerException("PhoneId is null");
         if (val.getParent() == null)
-            throw new NullPointerException(
-                    "parentId for the address is not defined.");
+            throw new NullPointerException("parentId for the address is not defined.");
+
+        PhoneEntity entity  = phoneDao.findById(val.getPhoneId());
         UserEntity parent = userDao.findById(val.getParent().getUserId());
-        val.setParent(parent);
-        phoneDao.update(val);
+
+        if(entity!=null){
+            entity.setAreaCd(val.getAreaCd());
+            entity.setName(val.getName());
+            entity.setIsActive(val.getIsActive());
+            entity.setParent(parent);
+            entity.setPhoneExt(val.getPhoneExt());
+            entity.setPhoneNbr(val.getPhoneNbr());
+
+            if(entity.getIsDefault()!=val.getIsDefault()){
+                updateDefaultFlagForPhone(entity, val.getIsDefault(), parent);
+            }
+        }
+        phoneDao.update(entity);
     }
 
+
     @Override
+    @Transactional
     public void removePhone(final String phoneId) {
-    	final PhoneEntity entity = phoneDao.findById(phoneId);
+    	final PhoneEntity entity = phoneDao.findById(phoneId,"parent");
+
+        if(entity.getIsDefault()){
+            PhoneEntity example = new PhoneEntity();
+            example.setParent(entity.getParent());
+            List<PhoneEntity> phones = phoneDao.getByExample(example);
+
+            PhoneEntity defaultPhone = getPhoneByDefaultFlag(phones, false);
+            if(defaultPhone!=null){
+	            defaultPhone.setIsDefault(true);
+	            defaultPhone.setParent(entity.getParent());
+	            phoneDao.update(defaultPhone);
+            }
+        }
+
         phoneDao.delete(entity);
     }
 
     @Override
+    @Transactional
     public void removeAllPhones(String userId) {
         if (userId == null)
             throw new NullPointerException("userId is null");
@@ -660,6 +732,7 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
+    @Transactional
     public void addEmailAddress(EmailAddressEntity val) {
         if (val == null)
             throw new NullPointerException("val is null");
@@ -669,10 +742,14 @@ public class UserMgr implements UserDataService {
 
         UserEntity userEntity = userDao.findById(val.getParent().getUserId());
         val.setParent(userEntity);
+
+        updateDefaultFlagForEmail(val, val.getIsDefault(), userEntity);
+
         emailAddressDao.save(val);
     }
 
     @Override
+    @Transactional
     public void addEmailAddressSet(Collection<EmailAddressEntity> adrSet) {
         if (adrSet == null || adrSet.size() == 0)
             return;
@@ -685,6 +762,7 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
+    @Transactional
     public void updateEmailAddress(EmailAddressEntity val) {
         if (val == null)
             throw new NullPointerException("val is null");
@@ -693,21 +771,50 @@ public class UserMgr implements UserDataService {
         if (val.getParent() == null)
             throw new NullPointerException(
                     "parentId for the address is not defined.");
-        UserEntity userEntity = userDao.findById(val.getParent().getUserId());
-        val.setParent(userEntity);
-        emailAddressDao.update(val);
+
+        EmailAddressEntity entity  = emailAddressDao.findById(val.getEmailId());
+        UserEntity parent = userDao.findById(val.getParent().getUserId());
+
+        if(entity!=null){
+            entity.setEmailAddress(val.getEmailAddress());
+            entity.setName(val.getName());
+            entity.setDescription(val.getDescription());
+            entity.setParent(parent);
+            entity.setIsActive(val.getIsActive());
+
+            if(entity.getIsDefault()!=val.getIsDefault()){
+                updateDefaultFlagForEmail(entity, val.getIsDefault(), parent);
+            }
+        }
+        emailAddressDao.update(entity);
     }
 
     @Override
+    @Transactional
     public void removeEmailAddress(final String emailAddressId) {
         if (emailAddressId == null)
             throw new NullPointerException("val is null");
         
-        final EmailAddressEntity entity = emailAddressDao.findById(emailAddressId);
+        final EmailAddressEntity entity = emailAddressDao.findById(emailAddressId, "parent");
+
+        if(entity.getIsDefault()){
+            EmailAddressEntity example = new EmailAddressEntity();
+            example.setParent(entity.getParent());
+            List<EmailAddressEntity> emailList = emailAddressDao.getByExample(example);
+
+            EmailAddressEntity defaultEmail = getEmailAddressByDefaultFlag(emailList, false);
+            if(defaultEmail!=null){
+                defaultEmail.setIsDefault(true);
+                defaultEmail.setParent(entity.getParent());
+                emailAddressDao.update(defaultEmail);
+            }
+        }
+
         emailAddressDao.delete(entity);
     }
 
     @Override
+    @Transactional
     public void removeAllEmailAddresses(String userId) {
         if (userId == null)
             throw new NullPointerException("userId is null");
@@ -1135,5 +1242,145 @@ public class UserMgr implements UserDataService {
                 origUserEntity.setDelAdmin(newUserEntity.getDelAdmin());
             }
         }
+    }
+
+    @Transactional
+    private void updateDefaultFlagForPhone(PhoneEntity targetEntity, boolean newDefaultValue, UserEntity parent){
+        // update default flag
+        // 1. get all default phone for user and iterate them
+        PhoneEntity example = new PhoneEntity();
+        example.setParent(parent);
+        List<PhoneEntity> phones = phoneDao.getByExample(example);
+
+        PhoneEntity defaultPhone = getPhoneByDefaultFlag(phones, true);
+
+        if(defaultPhone==null){
+            targetEntity.setIsDefault(true);
+        } else {
+            if(defaultPhone.getPhoneId().equals(targetEntity.getPhoneId())){
+                // the same entity
+                // check if default flag is unset
+                if(!newDefaultValue){
+                    // need to set new default phone
+                    defaultPhone = getPhoneByDefaultFlag(phones, false);
+                    if(defaultPhone!=null){
+                        defaultPhone.setIsDefault(true);
+                        defaultPhone.setParent(parent);
+                        phoneDao.update(defaultPhone);
+                    }
+                }
+            } else {
+                if(newDefaultValue){
+                    // unset default entity
+                    defaultPhone.setIsDefault(false);
+                    defaultPhone.setParent(parent);
+                    phoneDao.update(defaultPhone);
+                }
+            }
+            targetEntity.setIsDefault(newDefaultValue);
+        }
+    }
+
+    @Transactional
+    private void updateDefaultFlagForAddress(AddressEntity targetEntity, boolean newDefaultValue, UserEntity parent){
+        // update default flag
+        // 1. get all default phone for user and iterate them
+        AddressEntity example = new AddressEntity();
+        example.setParent(parent);
+        List<AddressEntity> addresses = addressDao.getByExample(example);
+
+        AddressEntity defaultAddress = getAddressByDefaultFlag(addresses, true);
+
+        if(defaultAddress==null){
+            targetEntity.setIsDefault(true);
+        } else {
+            if(defaultAddress.getAddressId().equals(targetEntity.getAddressId())){
+                // the same entity
+                // check if default flag is unset
+                if(!newDefaultValue){
+                    // need to set new default phone
+                    defaultAddress = getAddressByDefaultFlag(addresses, false);
+                    if(defaultAddress!=null){
+                        defaultAddress.setIsDefault(true);
+                        defaultAddress.setParent(parent);
+                        addressDao.update(defaultAddress);
+                    }
+                }
+            } else {
+                if(newDefaultValue){
+                    // unset default entity
+                    defaultAddress.setIsDefault(false);
+                    defaultAddress.setParent(parent);
+                    addressDao.update(defaultAddress);
+                }
+            }
+            targetEntity.setIsDefault(newDefaultValue);
+        }
+    }
+
+    @Transactional
+    private void updateDefaultFlagForEmail(EmailAddressEntity targetEntity, boolean newDefaultValue, UserEntity parent){
+        // update default flag
+        // 1. get all default phone for user and iterate them
+        EmailAddressEntity example = new EmailAddressEntity();
+        example.setParent(parent);
+        List<EmailAddressEntity> emailList = emailAddressDao.getByExample(example);
+
+        EmailAddressEntity defaultEmail = getEmailAddressByDefaultFlag(emailList, true);
+
+        if(defaultEmail==null){
+            targetEntity.setIsDefault(true);
+        } else {
+            if(defaultEmail.getEmailId().equals(targetEntity.getEmailId())){
+                // the same entity
+                // check if default flag is unset
+                if(!newDefaultValue){
+                    // need to set new default phone
+                    defaultEmail = getEmailAddressByDefaultFlag(emailList, false);
+                    if(defaultEmail!=null){
+                        defaultEmail.setIsDefault(true);
+                        defaultEmail.setParent(parent);
+                        emailAddressDao.update(defaultEmail);
+                    }
+                }
+            } else {
+                if(newDefaultValue){
+                    // unset default entity
+                    defaultEmail.setIsDefault(false);
+                    defaultEmail.setParent(parent);
+                    emailAddressDao.update(defaultEmail);
+                }
+            }
+            targetEntity.setIsDefault(newDefaultValue);
+        }
+    }
+
+    private PhoneEntity getPhoneByDefaultFlag(List<PhoneEntity> phones, boolean isDefault) {
+        if(phones!=null && !phones.isEmpty()){
+            for(PhoneEntity  p : phones){
+                if(p.getIsDefault()==isDefault)
+                    return p;
+            }
+        }
+        return null;
+    }
+    private AddressEntity getAddressByDefaultFlag(List<AddressEntity> addressEntityList, boolean isDefault) {
+        if(addressEntityList!=null && !addressEntityList.isEmpty()){
+            for(AddressEntity  a : addressEntityList){
+                if(a.getIsDefault()==isDefault)
+                    return a;
+            }
+        }
+        return null;
+    }
+
+    private EmailAddressEntity getEmailAddressByDefaultFlag(List<EmailAddressEntity> emailList, boolean isDefault) {
+        if(emailList!=null && !emailList.isEmpty()){
+            for(EmailAddressEntity  e : emailList){
+                if(e.getIsDefault()==isDefault)
+                    return e;
+            }
+        }
+        return null;
     }
 }
