@@ -20,26 +20,18 @@ import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
+import javax.annotation.PostConstruct;
+
 @Repository("emailAddressDAO")
 public class EmailAddressDAOImpl extends BaseDaoImpl<EmailAddressEntity, String> implements EmailAddressDAO {  
 
 	private static final Log log = LogFactory.getLog(AddressDAOImpl.class);
-
-	public EmailAddressEntity findByName(String name, String parentId, String parentType) {
-
-
-		Session session = sessionFactory.getCurrentSession();
-        Criteria criteria = session.createCriteria(EmailAddressEntity.class)
-                .createAlias("parent","p")
-                .add(Restrictions.eq("p.userId",parentId))
-                .add(Restrictions.eq("parentType",parentType))
-                .add(Restrictions.eq("name",name));
-
-		List<EmailAddressEntity> result = (List<EmailAddressEntity>)criteria.list();
-		if (result == null || result.size() == 0)
-			return null;
-		return result.get(0);	
-
+	
+	private String DELETE_BY_USER_ID = "DELETE FROM %s e WHERE e.parent.userId = :userId";
+	
+	@PostConstruct
+	public void initSQL() {
+		DELETE_BY_USER_ID = String.format(DELETE_BY_USER_ID, domainClass.getSimpleName());
 	}
 
     @Override
@@ -74,161 +66,15 @@ public class EmailAddressDAOImpl extends BaseDaoImpl<EmailAddressEntity, String>
                     criteria.add(Restrictions.eq("parent.userId", email.getParent().getUserId()));
                 }
             }
-            
-            if (StringUtils.isNotBlank(email.getParentType())) {
-                criteria.add(Restrictions.eq("parentType", email.getParentType()));
-            }
         }
         return criteria;
     }
 
-    public Map<String, EmailAddressEntity> findByParent(String parentId, String parentType) {
-
-		
-		Map<String, EmailAddressEntity> adrMap = new HashMap<String,EmailAddressEntity>();
-
-		List<EmailAddressEntity> addrList = findByParentAsList(parentId, parentType);
-		if (addrList == null)
-			return null;
-		int size = addrList.size();
-		for (int i=0; i<size; i++) {
-			EmailAddressEntity adr = addrList.get(i);
-			//adrMap.put(adr.getDescription(), adr);
-			adrMap.put(adr.getEmailId(), adr);
-		}
-		if (adrMap.isEmpty())
-			return null;
-		return adrMap;
-	}
-
-	public List<EmailAddressEntity> findByParentAsList(String parentId, String parentType) {
-
-
-		Session session = sessionFactory.getCurrentSession();
-        Criteria criteria = session.createCriteria(EmailAddressEntity.class)
-                .createAlias("parent","p")
-                .add(Restrictions.eq("p.userId",parentId))
-                .add(Restrictions.eq("parentType",parentType));
-
-		List<EmailAddressEntity> result = (List<EmailAddressEntity>)criteria.list();
-		if (result == null || result.size() == 0)
-			return null;
-		return result;		
-	}
-
-	public EmailAddressEntity findDefault(String parentId, String parentType) {
-
-
-		Session session = sessionFactory.getCurrentSession();
-		Criteria criteria = session.createCriteria(EmailAddressEntity.class)
-                .createAlias("parent","p")
-                .add(Restrictions.eq("p.userId",parentId))
-                .add(Restrictions.eq("parentType",parentType))
-                .add(Restrictions.eq("isDefault",true));
-
-		return (EmailAddressEntity)criteria.uniqueResult();
-	}
-
-	public void removeByParent(String parentId, String parentType) {
-		Session session = sessionFactory.getCurrentSession();
-		Query qry = session.createQuery("delete org.openiam.idm.srvc.continfo.domain.EmailAddressEntity a " +
-				" where a.parent.userId = :parentId and   " +
-				" 		a.parentType = :parentType");
-		qry.setString("parentId", parentId);
-		qry.setString("parentType", parentType);
-		qry.executeUpdate();	
-		
-	}
-
-	
-	public void saveEmailAddressMap(String parentId, String parentType, Map<String, EmailAddressEntity> adrMap) {
-		// get the current map and then compare each record with the map that has been passed in.
-		Map<String, EmailAddressEntity> currentMap =  this.findByParent(parentId, parentType);
-		if (currentMap != null) {
-			Iterator<EmailAddressEntity> it = currentMap.values().iterator();
-			while (it.hasNext()) {
-				EmailAddressEntity curEmail =  it.next();
-				EmailAddressEntity newEmail = adrMap.get(curEmail.getEmailId());
-				if (newEmail == null) {
-					delete(curEmail);
-				}else {
-					this.update(newEmail);
-				}
-					
-			}
-		}
-		// add the new records in currentMap that are not in the existing records
-		Collection<EmailAddressEntity> adrCol = adrMap.values();
-		Iterator<EmailAddressEntity> itr = adrCol.iterator();
-		while (itr.hasNext()) {
-			EmailAddressEntity newEmail = itr.next();
-			EmailAddressEntity curEmail = null;
-			if (currentMap != null ) {
-				curEmail = currentMap.get(newEmail.getEmailId());
-			}
-			if (curEmail == null) {
-				save(newEmail);
-			}
-		}		
-	}
-
-	public EmailAddressEntity[] findByParentAsArray(String parentId, String parentType) {
-
-		List<EmailAddressEntity> result = this.findByParentAsList(parentId, parentType);
-		if (result == null || result.size() == 0)
-			return null;
-		return (EmailAddressEntity[])result.toArray();
-	}
-
-
-
-	public void saveEmailAddressArray(String parentId, String parentType,	EmailAddressEntity[] emailAry) {
-		int len = emailAry.length;
-
-		Map<String, EmailAddressEntity> currentMap =  this.findByParent(parentId, parentType);
-		if (currentMap != null) {
-			Set<String> keys = currentMap.keySet();
-			Iterator<String> it = keys.iterator();
-			int ctr = 0;
-			while (it.hasNext()) {
-				String key = it.next();
-				EmailAddressEntity newEmail = getEmailFromArray(emailAry, key);
-				EmailAddressEntity curEmail = currentMap.get(key);
-				if (newEmail == null) {
-					// address was removed - deleted
-					delete(curEmail);
-				}else if (!curEmail.equals(newEmail)) {
-					// object changed
-					this.update(newEmail);
-				}
-			}
-		}
-		// add the new records in currentMap that are not in the existing records
-		for (int i=0; i<len; i++) {
-			EmailAddressEntity curAdr = null;
-			EmailAddressEntity  email = emailAry[i];
-			String key =  email.getEmailId();
-			if (currentMap != null )  {
-				curAdr = currentMap.get(key);
-			}
-			if (curAdr == null) {
-				// new address object
-				save(email);
-			}
-		}
-		
-	}
-
-	private EmailAddressEntity getEmailFromArray(EmailAddressEntity[] adrAry, String id) {
-		EmailAddressEntity adr = null;
-		int len = adrAry.length;
-		for (int i=0;i<len;i++) {
-			EmailAddressEntity tempAdr = adrAry[i];
-			if (tempAdr.getEmailId().equals(id)) {
-				return tempAdr;
-			}
-		}
-		return adr;
+    @Override
+    public void removeByUserId(final String userId) {
+    	final Query qry = getSession().createQuery(DELETE_BY_USER_ID);
+		qry.setString("userId", userId);
+		qry.executeUpdate();
 	}
 
 

@@ -107,10 +107,6 @@ public interface UserDataService {
 
     public AddressEntity getAddressById(String addressId);
 
-    public AddressEntity getAddressByName(String userId, String addressName);
-
-    public AddressEntity getDefaultAddress(String userId);
-
     public List<AddressEntity> getAddressList(String userId);
 
     public List<AddressEntity> getAddressList(String userId, Integer size, Integer from);
@@ -127,10 +123,6 @@ public interface UserDataService {
 
     public PhoneEntity getPhoneById(String addressId);
 
-    public PhoneEntity getPhoneByName(String userId, String addressName);
-
-    public PhoneEntity getDefaultPhone(String userId);
-
     public List<PhoneEntity> getPhoneList(String userId);
 
     public List<PhoneEntity> getPhoneList(String userId, Integer size, Integer from);
@@ -146,11 +138,6 @@ public interface UserDataService {
     public void removeAllEmailAddresses(String userId);
 
     public EmailAddressEntity getEmailAddressById(String addressId);
-
-    public EmailAddressEntity getEmailAddressByName(String userId,
-                                              String addressName);
-
-    public EmailAddressEntity getDefaultEmailAddress(String userId);
 
     public List<EmailAddressEntity> getEmailAddressList(String userId);
     public List<EmailAddressEntity> getEmailAddressList(String userId, Integer size, Integer from);

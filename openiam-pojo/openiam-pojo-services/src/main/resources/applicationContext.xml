@@ -127,6 +127,8 @@
 			<list>
 			  <ref bean="userSearchDAO" />
 			  <ref bean="loginSearchDAO" />
+			  <ref bean="emailSearchDAO" />
+			  <ref bean="phoneSearchDAO" />
 			</list>
 		</property>
 	</bean>

@@ -19,6 +19,7 @@ import org.hibernate.annotations.Filter;
 import org.hibernate.annotations.FilterDef;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.ParamDef;
+import org.hibernate.annotations.Where;
 import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.AnalyzerDef;
 import org.hibernate.search.annotations.DocumentId;
@@ -285,24 +286,30 @@ public class UserEntity {
     private Map<String, UserAttributeEntity> userAttributes = new HashMap<String, UserAttributeEntity>(0);
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "parent", fetch = FetchType.LAZY)
+    /*
     @Filter(
             name = "parentTypeFilter",
             condition = ":parentFilter = PARENT_TYPE"
     )
+    */
     private Set<AddressEntity> addresses = new HashSet<AddressEntity>(0);
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "parent", fetch = FetchType.LAZY)
+    /*
     @Filter(
             name = "parentTypeFilter",
             condition = ":parentFilter = PARENT_TYPE"
     )
+    */
     private Set<PhoneEntity> phones = new HashSet<PhoneEntity>(0);
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "parent", fetch = FetchType.LAZY)
+    /*
     @Filter(
             name = "parentTypeFilter",
             condition = ":parentFilter = PARENT_TYPE"
     )
+    */
     private Set<EmailAddressEntity> emailAddresses = new HashSet<EmailAddressEntity>(0);
 
     @Column(name = "SYSTEM_FLAG",length = 1)

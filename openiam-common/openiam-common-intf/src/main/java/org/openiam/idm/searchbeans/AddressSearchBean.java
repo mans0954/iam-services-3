@@ -10,13 +10,13 @@ import java.io.Serializable;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AddressSearchBean", propOrder = {
-        "parentId",
-        "parentType"
+        "parentId"/*,
+        "parentType"*/
 })
 public class AddressSearchBean  extends AbstractSearchBean<Address, String> implements SearchBean<Address, String>,
         Serializable {
     private String parentId;
-    private String parentType;
+    //private String parentType;
 
     public String getParentId() {
         return parentId;
@@ -26,6 +26,7 @@ public class AddressSearchBean  extends AbstractSearchBean<Address, String> impl
         this.parentId = parentId;
     }
 
+    /*
     public String getParentType() {
         return parentType;
     }
@@ -33,4 +34,5 @@ public class AddressSearchBean  extends AbstractSearchBean<Address, String> impl
     public void setParentType(String parentType) {
         this.parentType = parentType;
     }
+    */
 }

@@ -19,24 +19,9 @@ public class AddressDAOTouchTest extends AbstractTransactionalTestNGSpringContex
     private void touchFindById() {
         addressDAO.findById("");
     }
-
+    
     @Test
-    private void touchFindByName() {
-        addressDAO.findByName("","","");
-    }
-
-    @Test
-    private void touchFindByParent() {
-        addressDAO.findByParent("","");
-    }
-
-    @Test
-    private void touchFindByParentAsList() {
-        addressDAO.findByParentAsList("","");
-    }
-
-    @Test
-    private void touchFindByDefault() {
-        addressDAO.findDefault("","");
+    public void touchRemoveByUserId() {
+    	addressDAO.removeByUserId("");
     }
 }

@@ -23,8 +23,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-@ManagedResource(objectName="org.openiam.authorization.manager:name=LuceneReindexService")
+//@ManagedResource(objectName="org.openiam.authorization.manager:name=LuceneReindexService")
 public class LuceneReindexService implements InitializingBean/*, Runnable*/ {
 
 	private Date lastReindexTimestamp = new Date();
@@ -50,7 +51,8 @@ public class LuceneReindexService implements InitializingBean/*, Runnable*/ {
     }
 	
 	//called by spring
-	@ManagedOperation(description="Reindex Lucene")
+	//@ManagedOperation(description="Reindex Lucene")
+	@Transactional
 	public void sweep() {
 		log.info("Checking if Lucene indecies should be reindexed..");	
 		boolean wasSynchronized = false;

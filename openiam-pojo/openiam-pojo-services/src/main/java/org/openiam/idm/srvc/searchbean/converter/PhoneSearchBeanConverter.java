@@ -12,7 +12,6 @@ public class PhoneSearchBeanConverter implements SearchBeanConverter<PhoneEntity
     public PhoneEntity convert(PhoneSearchBean searchBean) {
         final PhoneEntity phone = new PhoneEntity();
         phone.setPhoneId(searchBean.getKey());
-        phone.setParentType(searchBean.getParentType());
 
         if(searchBean.getParentId() != null && searchBean.getParentId().trim().length() > 0) {
             final UserEntity parent = new UserEntity();

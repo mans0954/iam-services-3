@@ -1,11 +1,14 @@
 package org.openiam.idm.srvc.continfo.dto;
 
+import java.util.Date;
+
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
 // Generated Jun 12, 2007 10:46:13 PM by Hibernate Tools 3.2.0.beta8
@@ -28,37 +31,44 @@ import javax.xml.bind.annotation.XmlType;
         "phoneNbr",
         "phoneType",
         "name",
-        "operation"
+        "operation",
+        "lastUpdate",
+        "createDate"
 })
 @DozerDTOCorrespondence(PhoneEntity.class)
 public class Phone implements java.io.Serializable {
 
     // Fields
-    protected AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
+	private AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
 
     private String phoneId;
 
-    protected boolean isActive = true;
+    private boolean isActive = true;
 
-    protected String areaCd;
+    private String areaCd;
 
-    protected String countryCd;
+    private String countryCd;
 
-    protected String description;
+    private String description;
 
-    protected boolean isDefault = false;
+    private boolean isDefault = false;
 
-    protected String parentType;
+    private String parentType;
 
-    protected String phoneExt;
+    private String phoneExt;
 
-    protected String phoneNbr;
+    private String phoneNbr;
 
-    protected String name;
+    private String name;
 
-    protected String phoneType;
+    private String phoneType;
 
-    protected String parentId;
+    private String parentId;
+    
+    private Date lastUpdate;
+    
+    @XmlSchemaType(name = "dateTime")
+    private Date createDate;
     // Constructors
 
     /**
@@ -173,6 +183,13 @@ public class Phone implements java.io.Serializable {
         this.isDefault = isDefault;
     }
 
+    public Date getLastUpdate() {
+		return lastUpdate;
+	}
+
+	public void setLastUpdate(Date lastUpdate) {
+		this.lastUpdate = lastUpdate;
+	}
 
     /**
      * Returns the Id of the parent that owns this address. The parent may be another entity like a
@@ -252,65 +269,124 @@ public class Phone implements java.io.Serializable {
     public void setParentId(String parentId) {
         this.parentId = parentId;
     }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Phone phone = (Phone) o;
-
-        if (areaCd != null ? !areaCd.equals(phone.areaCd) : phone.areaCd != null) return false;
-        if (countryCd != null ? !countryCd.equals(phone.countryCd) : phone.countryCd != null) return false;
-        if (description != null ? !description.equals(phone.description) : phone.description != null) return false;
-        if (isActive != phone.isActive)  return false;
-        if (isDefault != phone.isDefault) return false;
-        if (name != null ? !name.equals(phone.name) : phone.name != null) return false;
-        if (operation != phone.operation) return false;
-        if (parentId != null ? !parentId.equals(phone.parentId) : phone.parentId != null) return false;
-        if (parentType != null ? !parentType.equals(phone.parentType) : phone.parentType != null) return false;
-        if (phoneExt != null ? !phoneExt.equals(phone.phoneExt) : phone.phoneExt != null) return false;
-        if (phoneId != null ? !phoneId.equals(phone.phoneId) : phone.phoneId != null) return false;
-        if (phoneNbr != null ? !phoneNbr.equals(phone.phoneNbr) : phone.phoneNbr != null) return false;
-        if (phoneType != null ? !phoneType.equals(phone.phoneType) : phone.phoneType != null) return false;
-
-        return true;
+    
+    public Date getCreateDate() {
+        return this.createDate;
     }
 
-    @Override
-    public int hashCode() {
-        int result = operation != null ? operation.hashCode() : 0;
-        result = 31 * result + (phoneId != null ? phoneId.hashCode() : 0);
-        result = 31 * result + Boolean.valueOf(isActive).hashCode();
-        result = 31 * result + (areaCd != null ? areaCd.hashCode() : 0);
-        result = 31 * result + (countryCd != null ? countryCd.hashCode() : 0);
-        result = 31 * result + (description != null ? description.hashCode() : 0);
-        result = 31 * result + Boolean.valueOf(isDefault).hashCode();
-        result = 31 * result + (parentType != null ? parentType.hashCode() : 0);
-        result = 31 * result + (phoneExt != null ? phoneExt.hashCode() : 0);
-        result = 31 * result + (phoneNbr != null ? phoneNbr.hashCode() : 0);
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (phoneType != null ? phoneType.hashCode() : 0);
-        result = 31 * result + (parentId != null ? parentId.hashCode() : 0);
-        return result;
+    public void setCreateDate(Date createDate) {
+        this.createDate = createDate;
     }
 
-    @Override
-    public String toString() {
-        return "Phone{" +
-                "operation=" + operation +
-                ", isActive=" + isActive +
-                ", areaCd='" + areaCd + '\'' +
-                ", countryCd='" + countryCd + '\'' +
-                ", description='" + description + '\'' +
-                ", isDefault=" + isDefault + '\'' +
-                ", parentId='" + parentId + '\'' +
-                ", parentType='" + parentType + '\'' +
-                ", phoneExt='" + phoneExt + '\'' +
-                ", phoneId='" + phoneId + '\'' +
-                ", phoneNbr='" + phoneNbr + '\'' +
-                ", name='" + name + '\'' +
-                ", phoneType='" + phoneType + '\'' +
-                '}';
-    }
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((areaCd == null) ? 0 : areaCd.hashCode());
+		result = prime * result
+				+ ((countryCd == null) ? 0 : countryCd.hashCode());
+		result = prime * result
+				+ ((createDate == null) ? 0 : createDate.hashCode());
+		result = prime * result
+				+ ((description == null) ? 0 : description.hashCode());
+		result = prime * result + (isActive ? 1231 : 1237);
+		result = prime * result + (isDefault ? 1231 : 1237);
+		result = prime * result
+				+ ((lastUpdate == null) ? 0 : lastUpdate.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result
+				+ ((operation == null) ? 0 : operation.hashCode());
+		result = prime * result
+				+ ((parentId == null) ? 0 : parentId.hashCode());
+		result = prime * result
+				+ ((parentType == null) ? 0 : parentType.hashCode());
+		result = prime * result
+				+ ((phoneExt == null) ? 0 : phoneExt.hashCode());
+		result = prime * result + ((phoneId == null) ? 0 : phoneId.hashCode());
+		result = prime * result
+				+ ((phoneNbr == null) ? 0 : phoneNbr.hashCode());
+		result = prime * result
+				+ ((phoneType == null) ? 0 : phoneType.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Phone other = (Phone) obj;
+		if (areaCd == null) {
+			if (other.areaCd != null)
+				return false;
+		} else if (!areaCd.equals(other.areaCd))
+			return false;
+		if (countryCd == null) {
+			if (other.countryCd != null)
+				return false;
+		} else if (!countryCd.equals(other.countryCd))
+			return false;
+		if (createDate == null) {
+			if (other.createDate != null)
+				return false;
+		} else if (!createDate.equals(other.createDate))
+			return false;
+		if (description == null) {
+			if (other.description != null)
+				return false;
+		} else if (!description.equals(other.description))
+			return false;
+		if (isActive != other.isActive)
+			return false;
+		if (isDefault != other.isDefault)
+			return false;
+		if (lastUpdate == null) {
+			if (other.lastUpdate != null)
+				return false;
+		} else if (!lastUpdate.equals(other.lastUpdate))
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		if (operation != other.operation)
+			return false;
+		if (parentId == null) {
+			if (other.parentId != null)
+				return false;
+		} else if (!parentId.equals(other.parentId))
+			return false;
+		if (parentType == null) {
+			if (other.parentType != null)
+				return false;
+		} else if (!parentType.equals(other.parentType))
+			return false;
+		if (phoneExt == null) {
+			if (other.phoneExt != null)
+				return false;
+		} else if (!phoneExt.equals(other.phoneExt))
+			return false;
+		if (phoneId == null) {
+			if (other.phoneId != null)
+				return false;
+		} else if (!phoneId.equals(other.phoneId))
+			return false;
+		if (phoneNbr == null) {
+			if (other.phoneNbr != null)
+				return false;
+		} else if (!phoneNbr.equals(other.phoneNbr))
+			return false;
+		if (phoneType == null) {
+			if (other.phoneType != null)
+				return false;
+		} else if (!phoneType.equals(other.phoneType))
+			return false;
+		return true;
+	}
+
+	
 }

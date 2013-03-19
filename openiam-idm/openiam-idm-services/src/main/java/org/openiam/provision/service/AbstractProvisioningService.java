@@ -547,7 +547,7 @@ public ProvisionUserResponse createUser(ProvisionUser user, List<IdmAuditLog> lo
 
         if (!containsEmail("EMAIL1", emailSet)) {
 
-            EmailAddress e = new EmailAddress(user.getEmail(), "EMAIL1", "", ContactConstants.PARENT_TYPE_USER, true);
+            EmailAddress e = new EmailAddress(user.getEmail(), "EMAIL1", "", true);
             user.getEmailAddresses().add(e);
 
         }

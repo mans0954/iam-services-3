@@ -1,7 +1,20 @@
 package org.openiam.idm.srvc.continfo.domain;
 
+import java.util.Date;
+
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
+import org.hibernate.search.annotations.DocumentId;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.FieldBridge;
+import org.hibernate.search.annotations.Fields;
+import org.hibernate.search.annotations.Index;
+import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.Store;
+import org.openiam.core.dao.lucene.LuceneId;
+import org.openiam.core.dao.lucene.LuceneLastUpdate;
+import org.openiam.core.dao.lucene.bridge.OrganizationBridge;
+import org.openiam.core.dao.lucene.bridge.UserBridge;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -11,11 +24,14 @@ import javax.persistence.*;
 @Entity
 @Table(name = "EMAIL_ADDRESS")
 @DozerDTOCorrespondence(EmailAddress.class)
+@Indexed
 public class EmailAddressEntity {
     @Id
     @GeneratedValue(generator = "system-uuid")
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
     @Column(name = "EMAIL_ID", length = 32, nullable = false)
+    @LuceneId
+    @DocumentId
     private String emailId;
 
     @Column(name = "ACTIVE")
@@ -25,6 +41,10 @@ public class EmailAddressEntity {
     @Column(name = "DESCRIPTION", length = 100)
     private String description;
 
+    @Fields ({
+        @Field(index = Index.TOKENIZED),
+        @Field(name = "emailAddress", index = Index.TOKENIZED, store = Store.YES)
+    })
     @Column(name = "EMAIL_ADDRESS", length = 320)
     private String emailAddress;
 
@@ -34,26 +54,22 @@ public class EmailAddressEntity {
 
     @ManyToOne
     @JoinColumn(name = "PARENT_ID")
+    @Field(name="parent", bridge=@FieldBridge(impl=UserBridge.class), store=Store.YES)
     private UserEntity parent;
-
-    @Column(name = "PARENT_TYPE", length = 30)
-    private String parentType;
 
     @Column(name = "NAME", length = 40)
     private String name;
+    
+    @Column(name = "LAST_UPDATE", length = 19)
+    @LuceneLastUpdate
+    private Date lastUpdate;
+    
+    @Column(name="CREATE_DATE",length=19)
+    @Temporal(TemporalType.TIMESTAMP)
+    protected Date createDate;
 
     public EmailAddressEntity() {
     }
-
-//    public EmailAddressEntity(final EmailAddress emailAddress, final UserEntity parent) {
-//        this.emailId = emailAddress.getEmailId();
-//        this.isActive = emailAddress.isActive();
-//        this.description = emailAddress.getDescription();
-//        this.isDefault = emailAddress.getIsDefault();
-//        this.parentType = emailAddress.getParentType();
-//        this.name = emailAddress.getName();
-//        this.parent = parent;
-//    }
 
     public String getEmailId() {
         return emailId;
@@ -103,14 +119,6 @@ public class EmailAddressEntity {
         this.parent = parent;
     }
 
-    public String getParentType() {
-        return parentType;
-    }
-
-    public void setParentType(String parentType) {
-        this.parentType = parentType;
-    }
-
     public String getName() {
         return name;
     }
@@ -119,35 +127,93 @@ public class EmailAddressEntity {
         this.name = name;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+    public Date getLastUpdate() {
+		return lastUpdate;
+	}
 
-        EmailAddressEntity that = (EmailAddressEntity) o;
+	public void setLastUpdate(Date lastUpdate) {
+		this.lastUpdate = lastUpdate;
+	}
+	
+	public Date getCreateDate() {
+		return createDate;
+	}
 
-        if (description != null ? !description.equals(that.description) : that.description != null) return false;
-        if (emailAddress != null ? !emailAddress.equals(that.emailAddress) : that.emailAddress != null) return false;
-        if (emailId != null ? !emailId.equals(that.emailId) : that.emailId != null) return false;
-        if (isActive != that.isActive) return false;
-        if (isDefault != that.isDefault) return false;
-        if (name != null ? !name.equals(that.name) : that.name != null) return false;
-        if (parent != null ? !parent.equals(that.parent) : that.parent != null) return false;
-        if (parentType != null ? !parentType.equals(that.parentType) : that.parentType != null) return false;
+	public void setCreateDate(Date createDate) {
+		this.createDate = createDate;
+	}
 
-        return true;
-    }
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((createDate == null) ? 0 : createDate.hashCode());
+		result = prime * result
+				+ ((description == null) ? 0 : description.hashCode());
+		result = prime * result
+				+ ((emailAddress == null) ? 0 : emailAddress.hashCode());
+		result = prime * result + ((emailId == null) ? 0 : emailId.hashCode());
+		result = prime * result + (isActive ? 1231 : 1237);
+		result = prime * result + (isDefault ? 1231 : 1237);
+		result = prime * result
+				+ ((lastUpdate == null) ? 0 : lastUpdate.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + ((parent == null) ? 0 : parent.hashCode());
+		return result;
+	}
 
-    @Override
-    public int hashCode() {
-        int result = emailId != null ? emailId.hashCode() : 0;
-        result = 31 * result + Boolean.valueOf(isActive).hashCode();
-        result = 31 * result + (description != null ? description.hashCode() : 0);
-        result = 31 * result + (emailAddress != null ? emailAddress.hashCode() : 0);
-        result = 31 * result +  Boolean.valueOf(isDefault).hashCode();
-        result = 31 * result + (parent != null ? parent.hashCode() : 0);
-        result = 31 * result + (parentType != null ? parentType.hashCode() : 0);
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        return result;
-    }
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		EmailAddressEntity other = (EmailAddressEntity) obj;
+		if (createDate == null) {
+			if (other.createDate != null)
+				return false;
+		} else if (!createDate.equals(other.createDate))
+			return false;
+		if (description == null) {
+			if (other.description != null)
+				return false;
+		} else if (!description.equals(other.description))
+			return false;
+		if (emailAddress == null) {
+			if (other.emailAddress != null)
+				return false;
+		} else if (!emailAddress.equals(other.emailAddress))
+			return false;
+		if (emailId == null) {
+			if (other.emailId != null)
+				return false;
+		} else if (!emailId.equals(other.emailId))
+			return false;
+		if (isActive != other.isActive)
+			return false;
+		if (isDefault != other.isDefault)
+			return false;
+		if (lastUpdate == null) {
+			if (other.lastUpdate != null)
+				return false;
+		} else if (!lastUpdate.equals(other.lastUpdate))
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		if (parent == null) {
+			if (other.parent != null)
+				return false;
+		} else if (!parent.equals(other.parent))
+			return false;
+		return true;
+	}
+
+	
+	
 }

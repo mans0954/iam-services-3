@@ -42,14 +42,6 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		user.setAddress6(rs(5));
 		user.setAddress7(rs(5));
 		
-		final Set<Address> addressSet = new HashSet<Address>();
-		addressSet.add(new Address(rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), true, rs(2)));
-		addressSet.add(new Address(rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), false, rs(2)));
-		addressSet.add(new Address(rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), false, rs(2)));
-		addressSet.add(new Address(rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), false, rs(2)));
-		addressSet.add(new Address(rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), rs(2), false, rs(2)));
-		user.setAddresses(addressSet);
-		
 		user.setAlternateContactId(rs(2));
 		user.setAreaCd(rs(2));
 		user.setBirthdate(new Date());

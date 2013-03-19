@@ -12,7 +12,6 @@ public class AddressSearchBeanConverter implements SearchBeanConverter<AddressEn
     public AddressEntity convert(AddressSearchBean searchBean) {
         final AddressEntity address = new AddressEntity();
         address.setAddressId(searchBean.getKey());
-        address.setParentType(searchBean.getParentType());
 
         if(searchBean.getParentId() != null && searchBean.getParentId().trim().length() > 0) {
             final UserEntity parent = new UserEntity();

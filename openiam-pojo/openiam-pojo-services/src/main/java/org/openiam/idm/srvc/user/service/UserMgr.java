@@ -19,7 +19,9 @@ import org.openiam.idm.srvc.continfo.dto.ContactConstants;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.continfo.service.AddressDAO;
 import org.openiam.idm.srvc.continfo.service.EmailAddressDAO;
+import org.openiam.idm.srvc.continfo.service.EmailSearchDAO;
 import org.openiam.idm.srvc.continfo.service.PhoneDAO;
+import org.openiam.idm.srvc.continfo.service.PhoneSearchDAO;
 import org.openiam.idm.srvc.grp.service.UserGroupDAO;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.role.service.UserRoleDAO;
@@ -86,6 +88,12 @@ public class UserMgr implements UserDataService {
     
     @Autowired
     private LoginSearchDAO loginSearchDAO;
+    
+    @Autowired
+    private EmailSearchDAO emailSearchDAO;
+    
+    @Autowired
+    private PhoneSearchDAO phoneSearchDAO;
 
     @Autowired
     private KeyManagementService keyManagementService;
@@ -163,7 +171,6 @@ public class UserMgr implements UserDataService {
             EmailAddressEntity emailAdr = it.next();
             if (emailAdr.getParent() == null) {
                 emailAdr.setParent(userDao.findById(user.getUserId()));
-                emailAdr.setParentType(ContactConstants.PARENT_TYPE_USER);
             }
         }
 
@@ -278,6 +285,19 @@ public class UserMgr implements UserDataService {
 		
 		if(CollectionUtils.isNotEmpty(searchBean.getGroupIdSet())) {
 			nonEmptyListOfLists.add(userGroupDAO.getUserIdsInGroup(searchBean.getGroupIdSet(), 0, MAX_USER_SEARCH_RESULTS));
+		}
+		
+		if(StringUtils.isNotBlank(searchBean.getEmailAddress())) {
+			final EmailSearchBean emailSearchBean = new EmailSearchBean();
+			emailSearchBean.setEmail(searchBean.getEmailAddress());
+			nonEmptyListOfLists.add(emailSearchDAO.findUserIds(0, MAX_USER_SEARCH_RESULTS, emailSearchBean));
+		}
+		
+		if(StringUtils.isNotBlank(searchBean.getPhoneAreaCd()) || StringUtils.isNotBlank(searchBean.getPhoneNbr())) {
+			final PhoneSearchBean phoneSearchBean = new PhoneSearchBean();
+			phoneSearchBean.setPhoneAreaCd(StringUtils.trimToNull(searchBean.getPhoneAreaCd()));
+			phoneSearchBean.setPhoneNbr(StringUtils.trimToNull(searchBean.getPhoneNbr()));
+			nonEmptyListOfLists.add(phoneSearchDAO.findUserIds(0, MAX_USER_SEARCH_RESULTS, phoneSearchBean));
 		}
 		
 		//remove null or empty lists
@@ -491,7 +511,6 @@ public class UserMgr implements UserDataService {
         if (val.getParent() == null)
             throw new NullPointerException("userId for the address is not defined.");
 
-        val.setParentType(ContactConstants.PARENT_TYPE_USER);
         UserEntity parent = userDao.findById(val.getParent().getUserId());
         val.setParent(parent);
         addressDao.save(val);
@@ -518,10 +537,6 @@ public class UserMgr implements UserDataService {
         if (val.getParent() == null)
             throw new NullPointerException(
                     "userId for the address is not defined.");
-        if (val.getParentType() == null) {
-            throw new NullPointerException(
-                    "parentType for the address is not defined.");
-        }
         UserEntity parent = userDao.findById(val.getParent().getUserId());
         val.setParent(parent);
         addressDao.update(val);
@@ -537,7 +552,8 @@ public class UserMgr implements UserDataService {
     public void removeAllAddresses(String userId) {
         if (userId == null)
             throw new NullPointerException("userId is null");
-        addressDao.removeByParent(userId, ContactConstants.PARENT_TYPE_USER);
+        
+        addressDao.removeByUserId(userId);
 
     }
 
@@ -546,25 +562,6 @@ public class UserMgr implements UserDataService {
         if (addressId == null)
             throw new NullPointerException("addressId is null");
         return addressDao.findById(addressId);
-    }
-
-    @Override
-    public AddressEntity getAddressByName(String userId, String addressName) {
-        if (userId == null)
-            throw new NullPointerException("userId is null");
-        if (addressName == null)
-            throw new NullPointerException("userId is null");
-
-        return addressDao.findByName(addressName, userId,
-                ContactConstants.PARENT_TYPE_USER);
-    }
-
-    @Override
-    public AddressEntity getDefaultAddress(String userId) {
-        if (userId == null)
-            throw new NullPointerException("userId is null");
-        return addressDao
-                .findDefault(userId, ContactConstants.PARENT_TYPE_USER);
     }
 
     @Override
@@ -580,7 +577,7 @@ public class UserMgr implements UserDataService {
 
         AddressSearchBean searchBean = new AddressSearchBean();
         searchBean.setParentId(userId);
-        searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
+        /*searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);*/
         return addressDao.getByExample(addressSearchBeanConverter.convert(searchBean), from, size);
     }
 
@@ -593,7 +590,6 @@ public class UserMgr implements UserDataService {
             throw new NullPointerException(
                     "parentId for the address is not defined.");
 
-        val.setParentType(ContactConstants.PARENT_TYPE_USER);
         UserEntity parent = userDao.findById(val.getParent().getUserId());
         val.setParent(parent);
 
@@ -621,10 +617,6 @@ public class UserMgr implements UserDataService {
         if (val.getParent() == null)
             throw new NullPointerException(
                     "parentId for the address is not defined.");
-        if (val.getParentType() == null) {
-            throw new NullPointerException(
-                    "parentType for the address is not defined.");
-        }
         UserEntity parent = userDao.findById(val.getParent().getUserId());
         val.setParent(parent);
         phoneDao.update(val);
@@ -640,7 +632,7 @@ public class UserMgr implements UserDataService {
     public void removeAllPhones(String userId) {
         if (userId == null)
             throw new NullPointerException("userId is null");
-        phoneDao.removeByParent(userId, ContactConstants.PARENT_TYPE_USER);
+        phoneDao.removeByUserId(userId);
 
     }
 
@@ -649,25 +641,6 @@ public class UserMgr implements UserDataService {
         if (addressId == null)
             throw new NullPointerException("addressId is null");
         return phoneDao.findById(addressId);
-    }
-
-    @Override
-    public PhoneEntity getPhoneByName(String userId, String addressName) {
-        if (userId == null)
-            throw new NullPointerException("userId is null");
-        if (addressName == null)
-            throw new NullPointerException("userId is null");
-
-        return phoneDao.findByName(addressName, userId,
-                ContactConstants.PARENT_TYPE_USER);
-    }
-
-    @Override
-    public PhoneEntity getDefaultPhone(String userId) {
-        if (userId == null)
-            throw new NullPointerException("userId is null");
-
-        return phoneDao.findDefault(userId, ContactConstants.PARENT_TYPE_USER);
     }
 
     @Override
@@ -682,7 +655,7 @@ public class UserMgr implements UserDataService {
 
         PhoneSearchBean searchBean = new PhoneSearchBean();
         searchBean.setParentId(userId);
-        searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
+        //searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
         return phoneDao.getByExample(phoneSearchBeanConverter.convert(searchBean), from, size);
     }
 
@@ -694,7 +667,6 @@ public class UserMgr implements UserDataService {
             throw new NullPointerException(
                     "parentId for the address is not defined.");
 
-        val.setParentType(ContactConstants.PARENT_TYPE_USER);
         UserEntity userEntity = userDao.findById(val.getParent().getUserId());
         val.setParent(userEntity);
         emailAddressDao.save(val);
@@ -721,10 +693,6 @@ public class UserMgr implements UserDataService {
         if (val.getParent() == null)
             throw new NullPointerException(
                     "parentId for the address is not defined.");
-        if (val.getParentType() == null) {
-            throw new NullPointerException(
-                    "parentType for the address is not defined.");
-        }
         UserEntity userEntity = userDao.findById(val.getParent().getUserId());
         val.setParent(userEntity);
         emailAddressDao.update(val);
@@ -743,8 +711,7 @@ public class UserMgr implements UserDataService {
     public void removeAllEmailAddresses(String userId) {
         if (userId == null)
             throw new NullPointerException("userId is null");
-        emailAddressDao.removeByParent(userId,
-                ContactConstants.PARENT_TYPE_USER);
+        emailAddressDao.removeByUserId(userId);
 
     }
 
@@ -753,26 +720,6 @@ public class UserMgr implements UserDataService {
         if (addressId == null)
             throw new NullPointerException("addressId is null");
         return emailAddressDao.findById(addressId);
-    }
-
-    @Override
-    public EmailAddressEntity getEmailAddressByName(String userId, String addressName) {
-        if (userId == null)
-            throw new NullPointerException("userId is null");
-        if (addressName == null)
-            throw new NullPointerException("userId is null");
-
-        return emailAddressDao.findByName(addressName, userId,
-                ContactConstants.PARENT_TYPE_USER);
-    }
-
-    @Override
-    public EmailAddressEntity getDefaultEmailAddress(String userId) {
-        if (userId == null)
-            throw new NullPointerException("userId is null");
-
-        return emailAddressDao.findDefault(userId,
-                ContactConstants.PARENT_TYPE_USER);
     }
 
     @Override
@@ -788,7 +735,7 @@ public class UserMgr implements UserDataService {
 
         EmailSearchBean searchBean = new EmailSearchBean();
         searchBean.setParentId(userId);
-        searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
+        //searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
         return emailAddressDao.getByExample(emailAddressSearchBeanConverter.convert(searchBean), from, size);
     }
 
@@ -993,21 +940,21 @@ public class UserMgr implements UserDataService {
     public Integer getNumOfEmailsForUser( String userId){
         EmailSearchBean searchBean = new EmailSearchBean();
         searchBean.setParentId(userId);
-        searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
+        //searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
         return emailAddressDao.count(emailAddressSearchBeanConverter.convert(searchBean));
     }
 
     public Integer getNumOfAddressesForUser(String userId){
         AddressSearchBean searchBean = new AddressSearchBean();
         searchBean.setParentId(userId);
-        searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
+        //searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
         return addressDao.count(addressSearchBeanConverter.convert(searchBean));
     }
 
     public Integer getNumOfPhonesForUser(String userId){
         PhoneSearchBean searchBean = new PhoneSearchBean();
         searchBean.setParentId(userId);
-        searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
+        //searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
         return phoneDao.count(phoneSearchBeanConverter.convert(searchBean));
     }
 
