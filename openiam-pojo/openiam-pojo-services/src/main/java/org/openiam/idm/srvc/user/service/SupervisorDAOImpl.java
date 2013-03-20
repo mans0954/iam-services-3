@@ -35,8 +35,7 @@ public class SupervisorDAOImpl extends BaseDaoImpl<SupervisorEntity, String> imp
      * @return
      */
     public List<SupervisorEntity> findEmployees(String supervisorId) {
-    	Session session = sessionFactory.getCurrentSession();
-        Criteria criteria = session.createCriteria(SupervisorEntity.class)
+        Criteria criteria = getCriteria()
                 .createAlias("supervisor","s")
                 .add(Restrictions.eq("s.userId",supervisorId))
                 .addOrder(Order.asc("supervisor.userId"));
@@ -57,8 +56,7 @@ public class SupervisorDAOImpl extends BaseDaoImpl<SupervisorEntity, String> imp
     }
 
     public List<SupervisorEntity> findSupervisors(String employeeId) {
-    	Session session = sessionFactory.getCurrentSession();
-        Criteria criteria = session.createCriteria(SupervisorEntity.class)
+        Criteria criteria = getCriteria()
                 .createAlias("supervisor","s")
                 .add(Restrictions.eq("s.userId",employeeId));
 
@@ -67,8 +65,7 @@ public class SupervisorDAOImpl extends BaseDaoImpl<SupervisorEntity, String> imp
     }
     
     public SupervisorEntity findPrimarySupervisor(String employeeId) {
-    	Session session = sessionFactory.getCurrentSession();
-    	Criteria criteria = session.createCriteria(SupervisorEntity.class)
+    	Criteria criteria = getCriteria()
                 .createAlias("employee","e")
                 .add(Restrictions.eq("e.userId",employeeId))
                 .add(Restrictions.eq("isPrimarySuper",1))

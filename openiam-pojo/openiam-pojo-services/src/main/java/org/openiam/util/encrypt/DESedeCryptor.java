@@ -24,14 +24,14 @@ import org.openiam.exception.EncryptionException;
  */
 public class DESedeCryptor implements Cryptor {
 
-	private BufferedBlockCipher cipher = null;
+	//private BufferedBlockCipher cipher = null;
 	
 	private static final Log log = LogFactory.getLog(DESedeCryptor.class);
 	
 	public String encrypt(byte[] key,String input) throws EncryptionException {
 
 		KeyParameter kp = new KeyParameter(key);
-		cipher = new PaddedBufferedBlockCipher(	new CBCBlockCipher(new DESedeEngine()));
+        BufferedBlockCipher cipher = new PaddedBufferedBlockCipher(	new CBCBlockCipher(new DESedeEngine()));
 		cipher.init(true, kp);
 		
 		byte[] inputByteAry = input.getBytes();
@@ -52,7 +52,7 @@ public class DESedeCryptor implements Cryptor {
 	
 	public byte[] encryptTobyte(byte[] key, String input) {
 		KeyParameter kp = new KeyParameter(key);
-		cipher = new PaddedBufferedBlockCipher(	new CBCBlockCipher(new DESedeEngine()));
+        BufferedBlockCipher cipher = new PaddedBufferedBlockCipher(	new CBCBlockCipher(new DESedeEngine()));
 		cipher.init(true, kp);
 		
 		byte[] inputByteAry = input.getBytes();
@@ -72,7 +72,7 @@ public class DESedeCryptor implements Cryptor {
 		byte[] inputByteAry = null;
 		int len = 0;
 		KeyParameter kp = new KeyParameter(key);
-		cipher = new PaddedBufferedBlockCipher(	new CBCBlockCipher(new DESedeEngine()));
+        BufferedBlockCipher cipher = new PaddedBufferedBlockCipher(	new CBCBlockCipher(new DESedeEngine()));
 		cipher.init(false, kp);
 		try {
 			inputByteAry =  Hex.decode(input);

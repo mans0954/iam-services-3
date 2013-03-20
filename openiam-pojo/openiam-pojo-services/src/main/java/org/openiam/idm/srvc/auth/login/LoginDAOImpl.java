@@ -29,7 +29,7 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements
 
     public int changeIdentity(String principal, String pswd, String userId,
             String managedSysId) {
-        Session session = sessionFactory.getCurrentSession();
+        Session session = getSession();
         String hq = " UPDATE LoginEntity l " + " set l.login = :principal,  "
                 + "     l.password = :pswd," + "	   l.passwordChangeCount = 0,"
                 + " 	   l.isLocked = 0, " + "	   l.authFailCount = 0	 "
@@ -73,7 +73,7 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements
                 + " FROM 	LOGIN  "
                 + " WHERE SERVICE_ID = :serviceId AND UPPER(LOGIN) = :login AND MANAGED_SYS_ID = :managedSysId  ";
 
-        Session session = sessionFactory.getCurrentSession();
+        Session session = getSession();
 
         SQLQuery qry = session.createSQLQuery(select);
         qry.addEntity(LoginEntity.class);
@@ -93,7 +93,7 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements
     }
 
     public List<LoginEntity> findAllLoginByManagedSys(String managedSysId) {
-        Session session = sessionFactory.getCurrentSession();
+        Session session = getSession();
         Query qry = session
                 .createQuery("from org.openiam.idm.srvc.auth.domain.LoginEntity l "
                         + " where l.managedSysId = :managedSysId order by l.login asc ");
@@ -105,7 +105,7 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements
     public List<LoginEntity> getLoginSublist(int startPos, int size) {
         StringBuilder sql = new StringBuilder();
         sql.append("from ").append(LoginEntity.class.getName()).append(" l");
-        return (List<LoginEntity>) sessionFactory.getCurrentSession()
+        return (List<LoginEntity>) getSession()
                 .createQuery(sql.toString()).setFirstResult(startPos)
                 .setMaxResults(size).list();
     }
@@ -114,12 +114,12 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT count(l.password) from ")
                 .append(LoginEntity.class.getName()).append(" l");
-        return (Long) sessionFactory.getCurrentSession()
+        return (Long) getSession()
                 .createQuery(sql.toString()).uniqueResult();
     }
 
     public List<LoginEntity> findUser(String userId) {
-        Session session = sessionFactory.getCurrentSession();
+        Session session = getSession();
         Query qry = session
                 .createQuery("from org.openiam.idm.srvc.auth.domain.LoginEntity l "
                         + " where l.userId = :userId order by l.status desc, l.managedSysId asc ");
@@ -129,7 +129,7 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements
     }
 
     public List<LoginEntity> findLoginByDomain(String domain) {
-        Session session = sessionFactory.getCurrentSession();
+        Session session = getSession();
         Query qry = session
                 .createQuery("from org.openiam.idm.srvc.auth.domain.LoginEntity l "
                         + " where l.domainId = :domain ");
@@ -140,7 +140,7 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements
 
     public LoginEntity findLoginByManagedSys(String domain, String managedSys,
             String userId) {
-        Session session = sessionFactory.getCurrentSession();
+        Session session = getSession();
         Query qry = session
                 .createQuery("from org.openiam.idm.srvc.auth.domain.LoginEntity l "
                         + " where l.domainId = :domain and "
@@ -160,7 +160,7 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements
 
     public List<LoginEntity> findLoginByManagedSys(String principalName,
             String managedSysId) {
-        Session session = sessionFactory.getCurrentSession();
+        Session session = getSession();
         Query qry = session
                 .createQuery("from org.openiam.idm.srvc.auth.domain.LoginEntity l "
                         + " where  "
@@ -174,7 +174,7 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements
     }
 
     public LoginEntity findByPasswordResetToken(String token) {
-        Session session = sessionFactory.getCurrentSession();
+        Session session = getSession();
         Query qry = session
                 .createQuery("from org.openiam.idm.srvc.auth.domain.LoginEntity l "
                         + " where  l.pswdResetToken = :token  ");
@@ -184,7 +184,7 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements
     }
 
     public List<LoginEntity> findLockedUsers(Date startTime) {
-        Session session = sessionFactory.getCurrentSession();
+        Session session = getSession();
         Query qry = session
                 .createQuery("from org.openiam.idm.srvc.auth.domain.LoginEntity l "
                         + " where l.isLocked = 1 and  "
@@ -211,7 +211,7 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements
             int autoUnlockTime) {
 
         log.debug("bulkUnlock operation in LoginDAO called.");
-        Session session = sessionFactory.getCurrentSession();
+        Session session = getSession();
 
         String userQry = " UPDATE org.openiam.idm.srvc.user.domain.UserEntity u  "
                 + " SET u.secondaryStatus = null "
@@ -324,7 +324,7 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements
 
         }
 
-        Session session = sessionFactory.getCurrentSession();
+        Session session = getSession();
         Query qry = session.createQuery(sql.toString());
 
         qry.setString("managedSys", managedSysId);
@@ -375,7 +375,7 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements
                 " from org.openiam.idm.srvc.auth.dto.Login l where "
                         + " l.pwdExp BETWEEN :startDate and :endDate");
 
-        Session session = sessionFactory.getCurrentSession();
+        Session session = getSession();
         Query qry = session.createQuery(sql);
         qry.setDate("startDate", expDate);
         qry.setDate("endDate", endDate);
@@ -409,7 +409,7 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements
                 " from org.openiam.idm.srvc.auth.domain.LoginEntity l where "
                         + " l.pwdExp BETWEEN :startDate and :endDate");
 
-        Session session = sessionFactory.getCurrentSession();
+        Session session = getSession();
         Query qry = session.createQuery(sql);
         qry.setDate("startDate", expDate);
         qry.setDate("endDate", endDate);
@@ -430,7 +430,7 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements
      */
     public int bulkResetPasswordChangeCount() {
         log.debug("bulkResetPasswordChangeCount operation in LoginDAO called.");
-        Session session = sessionFactory.getCurrentSession();
+        Session session = getSession();
 
         String loginQry = " UPDATE org.openiam.idm.srvc.auth.domain.LoginEntity l  "
                 + " SET l.passwordChangeCount = 0 ";

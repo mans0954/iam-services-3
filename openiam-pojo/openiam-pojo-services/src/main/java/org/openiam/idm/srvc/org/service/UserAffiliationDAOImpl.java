@@ -32,7 +32,7 @@ public class UserAffiliationDAOImpl extends BaseDaoImpl<UserAffiliationEntity, S
 	
 	@Override
 	public List<OrganizationEntity> findOrgAffiliationsByUser(String userId) {
-		Session session = sessionFactory.getCurrentSession();
+		Session session = getSession();
 
 		Query qry = session.createQuery("select org from org.openiam.idm.srvc.org.domain.OrganizationEntity as org, org.openiam.idm.srvc.org.domain.UserAffiliationEntity ua " +
 						" where ua.user.userId = :userId and ua.organization.orgId = org.orgId " +

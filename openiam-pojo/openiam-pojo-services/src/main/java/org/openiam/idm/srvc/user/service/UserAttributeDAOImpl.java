@@ -32,8 +32,7 @@ public class UserAttributeDAOImpl extends BaseDaoImpl<UserAttributeEntity, Strin
 	}
 	@Transactional
 	public void deleteUserAttributes(String userId) {
-		Session session = sessionFactory.getCurrentSession();
-		Query qry = session.createQuery("delete "+this.domainClass.getName()+ " ua where ua.userId = :userId ");
+		Query qry = getSession().createQuery("delete "+this.domainClass.getName()+ " ua where ua.userId = :userId ");
 		qry.setString("userId", userId);
 		qry.executeUpdate();
 	}

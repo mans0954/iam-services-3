@@ -9,6 +9,7 @@ import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.springframework.test.context.testng.AbstractTransactionalTestNGSpringContextTests;
 import org.springframework.test.context.transaction.TransactionConfiguration;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 //@Transactional
 //@TransactionConfiguration(defaultRollback = true)
 @ContextConfiguration(locations={"classpath:test-integration-environment.xml","classpath:test-esb-integration.xml"})
-public class RenewTokenTest extends AbstractTransactionalTestNGSpringContextTests {
+public class RenewTokenTest extends AbstractTestNGSpringContextTests {
 
     @Autowired
     @Qualifier("authServiceClient")
@@ -59,7 +60,7 @@ public class RenewTokenTest extends AbstractTransactionalTestNGSpringContextTest
         Assert.assertNotNull(token);
     }
 
-    @Test(threadPoolSize = 10, invocationCount = 100,  timeOut = 10000)
+    @Test(threadPoolSize = 20, invocationCount = 1000)
     //@Test
     public void renewTokenTest(){
         int threadId = counter.incrementAndGet();
