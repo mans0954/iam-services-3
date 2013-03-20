@@ -51,8 +51,6 @@ public class KeyManagementServiceImpl implements KeyManagementService {
     private Integer            iterationCount;
     private JksManager         jksManager;
     
-//    private final Object semaphore = new Object();
-
     @Autowired
     private Cryptor            cryptor;
     @Autowired
@@ -89,32 +87,9 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         }
     }
 
-//    public void setJksFile(String jksFile) {
-//        this.jksFile = jksFile;
-//    }
-//
-//    public void setJksPassword(String jksPassword) {
-//        this.jksPassword = jksPassword;
-//    }
-//
-//
-//    public void setIterationCount(Integer iterationCount) {
-//        this.iterationCount = iterationCount;
-//    }
-//
-//    @Required
-//    public void setKeyPassword(String keyPassword) {
-//        this.keyPassword = keyPassword;
-//    }
-//
-//    public void setCryptor(Cryptor cryptor) {
-//        this.cryptor = cryptor;
-//    }
-
     @Override
     public byte[] getUserKey(String userId, String keyName) throws EncryptionException {
     	
-//    	synchronized(semaphore){
 	    	byte[] masterKey = new byte[0];
 	        try {
 	            masterKey = getPrimaryKey(JksManager.KEYSTORE_ALIAS, this.keyPassword);
@@ -133,7 +108,6 @@ public class KeyManagementServiceImpl implements KeyManagementService {
 	            log.error(e.getMessage(), e);
 	            throw new EncryptionException(e);
 	        }
-//    	}
     }
 
     @Override
