@@ -51,7 +51,7 @@ public class ResourceRoleDAOImpl extends BaseDaoImpl<ResourceRoleEntity, Resourc
 
 	@Override
 	public void deleteByRoleId(String roleId) {
-		final Session session = sessionFactory.getCurrentSession();
+		final Session session = getSession();
 		final Query qry = session.createQuery(DELETE_BY_ROLE_ID);
 		qry.setString("roleId", roleId);
 		qry.executeUpdate();

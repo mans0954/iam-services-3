@@ -32,7 +32,7 @@ public class UserNoteDAOImpl extends BaseDaoImpl<UserNoteEntity, String> impleme
 	 * @param userId
 	 */
 	public void deleteUserNotes(String userId) {
-		Session session = sessionFactory.getCurrentSession();
+		Session session = getSession();
 		Query qry = session.createQuery("delete "+this.domainClass.getName()+" un  where un.userId = :userId ");
 		qry.setString("userId", userId);
 		qry.executeUpdate();

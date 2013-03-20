@@ -37,7 +37,7 @@ public class MetadataElementDAOImpl extends
     @Override
     public void removeByParentId(String id) {
         try {
-            Session session = sessionFactory.getCurrentSession();
+            Session session = getSession();
             Query qry = session.createQuery("delete from "
                     + domainClass.getSimpleName()
                     + " me where me.metadataTypeId = :id_t");

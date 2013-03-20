@@ -59,7 +59,7 @@ public class PolicyDAOImpl extends BaseDaoImpl<PolicyEntity, String> implements
     @Override
     public int removePolicyAttributes(String policyID) {
         try {
-            Session session = sessionFactory.getCurrentSession();
+            Session session = getSession();
             Query qry = session.createQuery("delete " + domainClass.getName()
                     + "as pa where" + " pa.policyId =:policyID ");
             qry.setString("policyID", policyID);

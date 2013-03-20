@@ -413,7 +413,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         log.debug("search select: " + select);
 
 
-        Session session = sessionFactory.getCurrentSession();
+        Session session = getSession();
 
         SQLQuery qry = session.createSQLQuery(select);
         qry.addEntity(UserEntity.class);
@@ -981,7 +981,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         log.debug("search select: " + select);
 
 
-        Session session = sessionFactory.getCurrentSession();
+        Session session = getSession();
 
         SQLQuery qry = session.createSQLQuery(select);
         qry.addEntity(UserEntity.class);

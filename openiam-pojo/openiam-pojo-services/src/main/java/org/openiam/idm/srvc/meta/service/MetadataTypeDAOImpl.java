@@ -39,7 +39,7 @@ public class MetadataTypeDAOImpl extends
         categorySet.add(cat);
 
         try {
-            sessionFactory.getCurrentSession().save(type);
+        	getSession().save(type);
             log.debug("persist type successful");
         } catch (RuntimeException re) {
             re.printStackTrace();
