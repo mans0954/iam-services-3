@@ -82,6 +82,6 @@ public interface ChallengeResponseService {
      * @return
      * @throws RemoteException
      */
-    boolean isResponseValid(String domainId, String login, String managedSysId, String questGrpId, List<UserIdentityAnswer> answerList);
+    boolean isResponseValid(String domainId, String userId, List<UserIdentityAnswer> answerList);
 
 }

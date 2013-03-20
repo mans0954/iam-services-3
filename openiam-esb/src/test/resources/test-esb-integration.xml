@@ -25,15 +25,7 @@
 
         <property name="minPoolSize" value="1"/>
         <property name="maxPoolSize" value="2"/>
-        <property name="maxStatements" value="${openiam.hibernate.max_statement}"/>
-        <property name="idleConnectionTestPeriod" value="${openiam.hibernate.idle_test_period}"/>
         <property name="loginTimeout" value="300"/>
-        <property name="acquireIncrement" value="${openiam.hibernate.acquireIncrement}" />
-        <property name="acquireRetryAttempts" value="${openiam.hibernate.acquireRetryAttempts}"/>
-        <property name="acquireRetryDelay" value="${openiam.hibernate.acquireRetryDelay}"/>
-        <property name="breakAfterAcquireFailure" value="${openiam.hibernate.breakAfterAcquireFailure}"/>
-        <property name="automaticTestTable" value="${openiam.hibernate.automaticTestTable}"/>
-        <property name="testConnectionOnCheckin" value="${openiam.hibernate.testConnectionOnCheckin}"/>
      </bean>
      
      <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">

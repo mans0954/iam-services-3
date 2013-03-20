@@ -69,10 +69,10 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
     @Autowired
     private LoginDataService loginManager;
 
-    @Value("${challengeResponse.respValidatorObjName}")
+    @Value("${org.openiam.challenge.response.validator.object.name}")
     private String respValidatorObjName;
     
-    @Value("${challengeResponse.respValidatorObjType}")
+    @Value("${org.openiam.challenge.response.validator.object.type}")
     private String respValidatorObjType;
     
     @Autowired
@@ -287,16 +287,14 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
 		 return response;
     }
 
-    public boolean isResponseValid(String domainId, String login,
-            String managedSysId, String questGrpId,
-            List<UserIdentityAnswer> newAnswerList) {
+    public boolean isResponseValid(String domainId, String userId, List<UserIdentityAnswer> newAnswerList) {
 
         int requiredCorrect = newAnswerList.size();
 
         // get the password policy to determine how many answers are required.
-        final Policy polcy = passwordMgr.getPasswordPolicy(domainId, login,
-                managedSysId);
-        final PolicyAttribute attr = polcy.getAttribute("QUEST_ANSWER_CORRECT");
+        final UserEntity user = userDAO.findById(userId);
+        final PolicyEntity policy = passwordMgr.getPasswordPolicyForUser(domainId, user);
+        final PolicyAttributeEntity attr = policy.getAttribute("QUEST_ANSWER_CORRECT");
 
         if (attr != null) {
             if (StringUtils.isNotBlank(attr.getValue1())) {
@@ -307,14 +305,9 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
         /*
          * Validate that there are no null responses
          */
-        final ChallengeResponseUser req = new ChallengeResponseUser();
-        req.setDomain(StringUtils.trimToNull(domainId));
-        req.setManagedSysId(StringUtils.trimToNull(managedSysId));
-        req.setPrincipal(StringUtils.trimToNull(login));
-        req.setQuestionGroup(StringUtils.trimToNull(questGrpId));
 
         final List<UserIdentityAnswerEntity> entityList = answerDozerConverter.convertToEntityList(newAnswerList, true);
-        return getResponseValidator().isResponseValid(req, entityList, requiredCorrect);
+        return getResponseValidator().isResponseValid(userId, entityList, requiredCorrect);
 
     }
     

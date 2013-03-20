@@ -20,6 +20,9 @@ public class UserIdentityAnswerDAOImpl extends BaseDaoImpl<UserIdentityAnswerEnt
 		if(StringUtils.isNotBlank(example.getUserId())) {
 			criteria.add(Restrictions.eq("userId", example.getUserId()));
 		}
+		if(example.getIdentityQuestion() != null) {
+			criteria.add(Restrictions.eq("identityQuestion.id", example.getIdentityQuestion().getId()));
+		}
 		return criteria;
 	}
 
