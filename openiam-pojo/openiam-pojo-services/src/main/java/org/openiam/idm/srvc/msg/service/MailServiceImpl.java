@@ -9,6 +9,8 @@ import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 import javax.jws.WebService;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.idm.srvc.audit.service.AuditHelper;
@@ -151,7 +153,9 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
     }
 
     private boolean sendEmailForUser(NotificationRequest req) {
-        log.debug("sendNotification userId = " + req.getUserId());
+    	if(log.isDebugEnabled()) {
+    		log.debug(String.format("sendNotification userId = %s", req.getUserId()));
+    	}
         // get the user object
         if (req.getUserId() == null) {
             return false;
@@ -160,17 +164,17 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
         if (usr == null) {
             return false;
         }
-        log.debug("Email address=" + usr.getEmail());
+        if(log.isDebugEnabled()) {
+        	log.debug(String.format("Email address=%s", usr.getEmail()));
+        }
 
-        if (usr.getEmail() == null || usr.getEmail().length() == 0) {
-            log.error("Send notfication failed. Email was null for userId="
-                    + usr.getUserId());
+        if (StringUtils.isBlank(usr.getEmail())) {
+            log.error(String.format("Send notfication failed. Email was null for userId=%s", usr.getUserId()));
             return false;
         }
 
         if (!isEmailValid(usr.getEmail())) {
-            log.error("Send notfication failed. Email was is not valid for userId="
-                    + usr.getUserId() + " - " + usr.getEmail());
+            log.error(String.format("Send notfication failed. Email was is not valid for userId=%s - %s",usr.getUserId(), usr.getEmail()));
             return false;
         }
         String[] emailDetails = fetchEmailDetails(req.getNotificationType());
@@ -204,10 +208,9 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
     private String[] fetchEmailDetails(String notificationType) {
         // for each notification, there will be entry in the property file
         String notificationDetl = properties.getProperty(notificationType);
-        String[] details = notificationDetl.split(";", 2);
-        if (details.length < 2) {
-            log.warn("Mail not sent, invalid notificationType: "
-                    + notificationType);
+        String[] details = StringUtils.split(notificationDetl, ";");
+        if (details == null || details.length < 2) {
+            log.warn(String.format("Mail not sent, invalid notificationType: %s", notificationType));
             return null;
         }
         return details;
