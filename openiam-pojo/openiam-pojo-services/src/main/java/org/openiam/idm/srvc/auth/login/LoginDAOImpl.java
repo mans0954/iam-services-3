@@ -93,13 +93,7 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements
     }
 
     public List<LoginEntity> findAllLoginByManagedSys(String managedSysId) {
-        Session session = getSession();
-        Query qry = session
-                .createQuery("from org.openiam.idm.srvc.auth.domain.LoginEntity l "
-                        + " where l.managedSysId = :managedSysId order by l.login asc ");
-        qry.setString("managedSysId", managedSysId);
-        return (List<LoginEntity>) qry.list();
-
+    	return getCriteria().add(Restrictions.eq("managedSysId", managedSysId)).list();
     }
 
     public List<LoginEntity> getLoginSublist(int startPos, int size) {

@@ -25,11 +25,6 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
         implements BaseDao<T, PrimaryKey> {
     protected final Logger log = Logger.getLogger(this.getClass());
     protected final Class<T> domainClass;
-
-    @Autowired
-    @Qualifier("sessionFactory")
-    @Deprecated
-    protected SessionFactory sessionFactory;
     
 	@Autowired
 	public void setTemplate(final @Qualifier("hibernateTemplate") HibernateTemplate hibernateTemplate) {
