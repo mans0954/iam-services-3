@@ -69,6 +69,10 @@ public class URIFederationResponse extends Response {
 		this.server = server;
 	}
 
+	public List<URIPatternRuleToken> getRuleTokenList() {
+		return ruleTokenList;
+	}
+
 	@Override
 	public String toString() {
 		return String
