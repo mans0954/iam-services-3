@@ -57,3 +57,5 @@ ddl/39.drop_parent_type.sql
 ddl/40.create_fk_constraints_on_email_phone_address.sql
 ddl/41.drop_contact_columns_from_user.sql
 ddl/42.drop_unused_views.sql
+ddl/43.alter_language_table.sql
+dml/18.insert_languages.sql

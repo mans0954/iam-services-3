@@ -16,8 +16,8 @@ public class CategoryLanguageEmbeddableId implements java.io.Serializable {
     private static final long serialVersionUID = 1L;
     @Column(name = "CATEGORY_ID", length = 32, nullable = false)
     private String categoryId;
-    @Column(name = "LANGUAGE_CD", length = 5, nullable = false)
-    private String languageCd;
+    @Column(name = "LANGUAGE_ID", length = 5, nullable = false)
+    private String languageId;
 
     public CategoryLanguageEmbeddableId() {
     }
@@ -30,12 +30,12 @@ public class CategoryLanguageEmbeddableId implements java.io.Serializable {
         this.categoryId = categoryId;
     }
 
-    public String getLanguageCd() {
-        return this.languageCd;
+    public String getLanguageId() {
+        return this.languageId;
     }
 
-    public void setLanguageCd(String languageCd) {
-        this.languageCd = languageCd;
+    public void setLanguageId(String languageCd) {
+        this.languageId = languageCd;
     }
 
     public boolean equals(Object other) {
@@ -51,10 +51,10 @@ public class CategoryLanguageEmbeddableId implements java.io.Serializable {
                 .getCategoryId() != null
                 && castOther.getCategoryId() != null && this.getCategoryId()
                 .equals(castOther.getCategoryId())))
-                && ((this.getLanguageCd() == castOther.getLanguageCd()) || (this
-                .getLanguageCd() != null
-                && castOther.getLanguageCd() != null && this
-                .getLanguageCd().equals(castOther.getLanguageCd())));
+                && ((this.getLanguageId() == castOther.getLanguageId()) || (this
+                .getLanguageId() != null
+                && castOther.getLanguageId() != null && this
+                .getLanguageId().equals(castOther.getLanguageId())));
     }
 
     public int hashCode() {
@@ -66,7 +66,7 @@ public class CategoryLanguageEmbeddableId implements java.io.Serializable {
                 .hashCode());
         result = 37
                 * result
-                + (getLanguageCd() == null ? 0 : this.getLanguageCd()
+                + (getLanguageId() == null ? 0 : this.getLanguageId()
                 .hashCode());
         return result;
     }
