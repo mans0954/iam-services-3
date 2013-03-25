@@ -1,6 +1,6 @@
 package org.openiam.idm.srvc.lang.service;
 
-import org.openiam.idm.srvc.lang.dto.Language;
+import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 
 /**
  * <code>LanguageDataService</code> provides a service to manage the
@@ -18,14 +18,14 @@ public interface LanguageDataService {
      *
      * @param lg
      */
-    public void addLanguage(Language lg);
+    public void addLanguage(LanguageEntity lg);
 
     /**
      * Updates an existing language in the list
      *
      * @param lg
      */
-    public void updateLanguage(Language lg);
+    public void updateLanguage(LanguageEntity lg);
 
     /**
      * Removes a languages from the list of languages
@@ -39,7 +39,7 @@ public interface LanguageDataService {
      *
      * @return
      */
-    public Language[] allLanguages();
+    public LanguageEntity[] allLanguages();
 
     /**
      * Returns the language specified by the language
@@ -47,7 +47,7 @@ public interface LanguageDataService {
      * @param languageCd
      * @return
      */
-    public Language getLanguage(String languageCd);
+    public LanguageEntity getLanguage(String languageCd);
 
 
 }

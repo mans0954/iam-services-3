@@ -290,13 +290,13 @@
 	</bean>
 
 	<!-- Language Beans -->
-	<bean id="languageDataService" class="org.openiam.idm.srvc.lang.service.LanguageDataServiceImpl" >
-		<property name="languageDao" ref="languageDAO" />
-	</bean>
+	<!--<bean id="languageDataService" class="org.openiam.idm.srvc.lang.service.LanguageDataServiceImpl" >-->
+		<!--<property name="languageDao" ref="languageDAO" />-->
+	<!--</bean>-->
 	
-	<bean id="languageDAO" class="org.openiam.idm.srvc.lang.service.LanguageDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"></property>		
-	</bean>		
+	<!--<bean id="languageDAO" class="org.openiam.idm.srvc.lang.service.LanguageDAOImpl" >-->
+		<!--<property name="sessionFactory" ref="sessionFactory"></property>		-->
+	<!--</bean>		-->
 	<!-- Location Beans -->
 	<bean id="locationDataService" class="org.openiam.idm.srvc.loc.service.LocationDataServiceImpl" >
 		<property name="locationDao" ref="locationDAO" />
@@ -389,7 +389,7 @@
 
 				<!-- <value>org/openiam/idm/srvc/res/service/ResourceType.hbm.xml</value> -->
 				<!--value>org/openiam/idm/srvc/res/service/ResourceUser.hbm.xml</value-->
-				<value>org/openiam/idm/srvc/lang/service/Language.hbm.xml</value>
+				<!--<value>org/openiam/idm/srvc/lang/service/Language.hbm.xml</value>-->
 				<value>org/openiam/idm/srvc/loc/service/Location.hbm.xml</value>
 
 				<!--
@@ -448,7 +448,8 @@
                                                org.openiam.idm.srvc.policy.domain*,
                                                org.openiam.idm.srvc.audit.domain*,
                                                org.openiam.idm.srvc.pswd.domain*,
-                                               org.openiam.idm.srvc.secdomain.domain*
+                                               org.openiam.idm.srvc.secdomain.domain*,
+                                               org.openiam.idm.srvc.lang.domain*
                                                "/>
 
 	</bean>
@@ -554,11 +555,11 @@
     <aop:advisor advice-ref="txAdvice" pointcut-ref="policyOperation"/>
   </aop:config> 
 
-  <aop:config>
-    <aop:pointcut id="languageOperation" expression="execution(* org.openiam.idm.srvc.lang.service.LanguageDataService.*(..))"/>
-    <aop:advisor advice-ref="txAdvice" pointcut-ref="languageOperation"/>
-  </aop:config> 
-   
+  <!--<aop:config>-->
+    <!--<aop:pointcut id="languageOperation" expression="execution(* org.openiam.idm.srvc.lang.service.LanguageDataService.*(..))"/>-->
+    <!--<aop:advisor advice-ref="txAdvice" pointcut-ref="languageOperation"/>-->
+  <!--</aop:config> -->
+   <!---->
     <aop:config>
     <aop:pointcut id="locationOperation" expression="execution(* org.openiam.idm.srvc.loc.ws.LocationDataWebService.*(..))"/>
     <aop:advisor advice-ref="txAdvice" pointcut-ref="locationOperation"/>

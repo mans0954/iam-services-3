@@ -122,4 +122,9 @@
         <class-a>org.openiam.idm.srvc.secdomain.domain.SecurityDomainEntity</class-a>
         <class-b>org.openiam.idm.srvc.secdomain.dto.SecurityDomain</class-b>
     </mapping>
+
+    <mapping>
+        <class-a>org.openiam.idm.srvc.lang.domain.LanguageEntity</class-a>
+        <class-b>org.openiam.idm.srvc.lang.dto.Language</class-b>
+    </mapping>
 </mappings>
