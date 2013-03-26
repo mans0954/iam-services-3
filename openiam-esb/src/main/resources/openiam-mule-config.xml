@@ -251,7 +251,21 @@
 					<spring-object bean="resourceDataService" />
 				</component>
 			</service>
-		</model>	
+		</model>
+		
+		<model name="metadataElementTemplateServiceModel">
+			<service name="metadataElementTemplateService">
+				<inbound>
+					<inbound-endpoint address="${webservice.path}MetadataElementTemplateWebService" 		exchange-pattern="request-response">
+						<cxf:jaxws-service />
+					</inbound-endpoint>
+				</inbound>
+				<component>
+					<spring-object bean="metadataElementTemplateWebService" />
+				</component>
+			</service>
+		</model>
+		
 
 		<model name="orgDataServiceModel">
 			<service name="orgDataService">

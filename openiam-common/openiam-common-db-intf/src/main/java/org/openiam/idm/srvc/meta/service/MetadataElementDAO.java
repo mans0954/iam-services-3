@@ -11,9 +11,6 @@ import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
  */
 public interface MetadataElementDAO extends
         BaseDao<MetadataElementEntity, String> {
-
-    void removeByParentId(String id);
-
     List<MetadataElementEntity> findbyCategoryType(String categoryType);
 
 }

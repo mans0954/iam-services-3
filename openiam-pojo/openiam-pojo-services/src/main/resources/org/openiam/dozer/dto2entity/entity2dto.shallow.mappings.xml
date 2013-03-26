@@ -171,8 +171,8 @@
 			<b>metadataTypeId</b>
 		</field>
 		<field-exclude>
-			<a>template</a>
-			<b>template</b>
+			<a>templateSet</a>
+			<b>templateSet</b>
 		</field-exclude>
 		<field-exclude>
 			<a>defaultValueLanguageSet</a>
