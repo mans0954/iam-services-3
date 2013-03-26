@@ -157,6 +157,58 @@
 			<b>userRoles</b>
 		</field>
 	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.meta.domain.MetadataElementEntity</class-a>
+		<class-b>org.openiam.idm.srvc.meta.dto.MetadataElement</class-b>
+		<field>
+			<a>metadataType.metadataTypeId</a>
+			<b>metadataTypeId</b>
+		</field>
+		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter" custom-converter-param="dto2entityDeepDozerMapper">
+			<a>template</a>
+			<b>template</b>
+		</field>
+		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter" custom-converter-param="dto2entityDeepDozerMapper">
+			<a>defaultValueLanguageSet</a>
+			<b>defaultValueLanguageSet</b>
+		</field>
+		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="dto2entityShallowDozerMapper">
+			<a>languageSet</a>
+			<b>languageSet</b>
+		</field>
+		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="dto2entityShallowDozerMapper">
+			<a>validValues</a>
+			<b>validValues</b>
+		</field>
+	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity</class-a>
+		<class-b>org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplate</class-b>
+		<field>
+			<a>resource.resourceId</a>
+			<b>resourceId</b>
+		</field>
+		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="dto2entityShallowDozerMapper">
+			<a>metadataElements</a>
+			<b>metadataElements</b>
+		</field>
+	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.meta.domain.MetadataValidValueEntity</class-a>
+		<class-b>org.openiam.idm.srvc.meta.dto.MetadataValidValue</class-b>
+		<field>
+			<a>entity.id</a>
+			<b>metadataEntityId</b>
+		</field>
+		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="dto2entityShallowDozerMapper">
+			<a>languageSet</a>
+			<b>languageSet</b>
+		</field>
+	</mapping>
+	
 	<mapping>
 		<class-a>org.openiam.idm.srvc.meta.domain.MetadataTypeEntity</class-a>
 		<class-b>org.openiam.idm.srvc.meta.dto.MetadataType</class-b>

@@ -59,3 +59,6 @@ ddl/41.drop_contact_columns_from_user.sql
 ddl/42.drop_unused_views.sql
 ddl/43.alter_language_table.sql
 dml/18.insert_languages.sql
+ddl/44.edit_metadata_element_table.sql
+ddl/45.ui_widget_schema.sql
+ddl/46.edit_metdata_type.sql

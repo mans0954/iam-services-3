@@ -81,7 +81,7 @@ public class MetadataServiceTouchTest extends
     public void removeMetadataElement() {
         metadataService.removeMetadataElement(metadataService
                 .addMetadataElement(new MetadataElement())
-                .getMetadataElementId());
+                .getId());
     }
 
     @Test

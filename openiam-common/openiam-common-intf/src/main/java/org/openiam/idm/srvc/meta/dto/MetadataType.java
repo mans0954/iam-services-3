@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.meta.dto;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -17,16 +18,21 @@ import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
  * <code>MetadataType</code> represents a metdata type instance.
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "MetadataType", propOrder = { "metadataTypeId", "description",
-        "active", "syncManagedSys", "elementAttributes", "categories" })
+@XmlType(name = "MetadataType", propOrder = { 
+		"metadataTypeId", 
+		"description",
+        "active", 
+        "syncManagedSys", 
+        "elementAttributes", 
+        "categories" })
 @DozerDTOCorrespondence(MetadataTypeEntity.class)
-public class MetadataType implements java.io.Serializable {
+public class MetadataType implements Serializable {
 
     private String metadataTypeId;
     private String description;
 
-    private int active = 0;
-    private int syncManagedSys = 0;
+    private boolean active;
+    private boolean syncManagedSys;
 
     protected Map<String, MetadataElement> elementAttributes = new HashMap<String, MetadataElement>(
             0);
@@ -77,45 +83,52 @@ public class MetadataType implements java.io.Serializable {
         this.categories = categories;
     }
 
-    /*
-     * public boolean isActive() { if (active == 0) return false; return true; }
-     */
+	public void setActive(boolean active) {
+		this.active = active;
+	}
 
-    public int getActive() {
-        return active;
-    }
+	public void setSyncManagedSys(boolean syncManagedSys) {
+		this.syncManagedSys = syncManagedSys;
+	}
 
-    public void setActive(int active) {
-        this.active = active;
-    }
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (active ? 1231 : 1237);
+		result = prime * result
+				+ ((description == null) ? 0 : description.hashCode());
+		result = prime * result
+				+ ((metadataTypeId == null) ? 0 : metadataTypeId.hashCode());
+		result = prime * result + (syncManagedSys ? 1231 : 1237);
+		return result;
+	}
 
-    /**
-     * Flag indicating where the object should be synch'd with a managed system
-     *
-     * @return
-     */
-    /*
-     * public boolean isSyncManagedSys() { if ( syncManagedSys == 0) return
-     * false; return true; }
-     */
-    public int getSyncManagedSys() {
-        return syncManagedSys;
-    }
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		MetadataType other = (MetadataType) obj;
+		if (active != other.active)
+			return false;
+		if (description == null) {
+			if (other.description != null)
+				return false;
+		} else if (!description.equals(other.description))
+			return false;
+		if (metadataTypeId == null) {
+			if (other.metadataTypeId != null)
+				return false;
+		} else if (!metadataTypeId.equals(other.metadataTypeId))
+			return false;
+		if (syncManagedSys != other.syncManagedSys)
+			return false;
+		return true;
+	}
 
-    /**
-     * Sets a flag indicating where the object should be synch'd with a managed system
-     *
-     * @param syncManagedSys
-     */
-    public void setSyncManagedSys(int syncManagedSys) {
-        this.syncManagedSys = syncManagedSys;
-    }
-
-    @Override
-    public String toString() {
-        return "MetadataType{" + "metadataTypeId='" + metadataTypeId + '\''
-                + ", description='" + description + '\'' + ", active=" + active
-                + ", syncManagedSys=" + syncManagedSys + ", elementAttributes="
-                + elementAttributes + ", categories=" + categories + '}';
-    }
+   
 }

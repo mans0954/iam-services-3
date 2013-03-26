@@ -66,11 +66,6 @@
 	</mapping>
 
 	<mapping>
-		<class-a>org.openiam.idm.srvc.meta.domain.MetadataElementEntity</class-a>
-		<class-b>org.openiam.idm.srvc.meta.dto.MetadataElement</class-b>
-	</mapping>	
-	
-	<mapping>
 		<class-a>org.openiam.idm.srvc.cat.domain.CategoryTypeEntity</class-a>
 		<class-b>org.openiam.idm.srvc.cat.dto.CategoryType</class-b>
 	</mapping>
@@ -127,4 +122,21 @@
         <class-a>org.openiam.idm.srvc.lang.domain.LanguageEntity</class-a>
         <class-b>org.openiam.idm.srvc.lang.dto.Language</class-b>
     </mapping>
+    
+    <mapping>
+		<class-a>org.openiam.idm.srvc.lang.domain.LanguageMappingEntity</class-a>
+		<class-b>org.openiam.idm.srvc.lang.dto.LanguageMapping</class-b>
+		<field>
+			<a>language.languageId</a>
+			<b>languageId</b>
+		</field>
+		<field>
+			<a>language.locale</a>
+			<b>languageLocale</b>
+		</field>
+		<field>
+			<a>language.name</a>
+			<b>languageName</b>
+		</field>
+	</mapping>
 </mappings>

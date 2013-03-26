@@ -58,8 +58,8 @@ public class MetadataWebServiceImpl implements MetadataWebService {
         MetadataElementResponse resp = new MetadataElementResponse(
                 ResponseStatus.SUCCESS);
         metadataService.addMetadataElement(metadataElement);
-        if (metadataElement.getMetadataElementId() == null
-                || metadataElement.getMetadataElementId().isEmpty()) {
+        if (metadataElement.getId() == null
+                || metadataElement.getId().isEmpty()) {
             resp.setStatus(ResponseStatus.FAILURE);
         } else {
             resp.setMetadataElement(metadataElement);
@@ -238,8 +238,8 @@ public class MetadataWebServiceImpl implements MetadataWebService {
         MetadataElementResponse resp = new MetadataElementResponse(
                 ResponseStatus.SUCCESS);
         metadataService.updateMetadataElement(element);
-        if (element.getMetadataElementId() == null
-                || element.getMetadataElementId().isEmpty()) {
+        if (element.getId() == null
+                || element.getId().isEmpty()) {
             resp.setStatus(ResponseStatus.FAILURE);
         } else {
             resp.setMetadataElement(element);

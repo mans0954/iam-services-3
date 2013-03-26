@@ -494,7 +494,7 @@ public class AuthenticationServiceImpl implements AuthenticationService, Applica
                 loginModule.setAuthPolicyId(authPolicyId);
             }
 
-        } catch (Exception ie) {
+        } catch (Throwable ie) {
             log.error(ie.getMessage(), ie);
             // throw (new
             // AuthenticationException(AuthenticationConstants.INTERNAL_ERROR,ie.getMessage(),ie));
@@ -557,6 +557,7 @@ public class AuthenticationServiceImpl implements AuthenticationService, Applica
                 }
                 return authResp;
             } catch (Throwable e) {
+            	log.error("Unknown Exception", e);
                 authResp.setStatus(ResponseStatus.FAILURE);
                 authResp.setAuthErrorCode(AuthenticationConstants.INTERNAL_ERROR);
                 authResp.setAuthErrorMessage(e.getMessage());
