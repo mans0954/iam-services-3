@@ -47,10 +47,11 @@ public class MetadataElementPageTemplateEntity implements Serializable {
     @JoinColumn(name = "RESOURCE_ID")
 	private ResourceEntity resource;
 	
-	@OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "template", fetch = FetchType.LAZY)
-	private Set<MetadataElementEntity> metadataElements;
+//	@OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "template", fetch = FetchType.LAZY)
+//	private Set<MetadataElementEntity> metadataElements;
 
-	
+    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "template", fetch = FetchType.LAZY)
+    private Set<MetadataElementPageTemplateXrefEntity> metadataElements;
 	
 	public String getId() {
 		return id;
@@ -64,11 +65,28 @@ public class MetadataElementPageTemplateEntity implements Serializable {
 		return resource;
 	}
 
-	public Set<MetadataElementEntity> getMetadataElements() {
+
+	public Set<MetadataElementPageTemplateXrefEntity> getMetadataElements() {
 		return metadataElements;
 	}
 
-	@Override
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setResource(ResourceEntity resource) {
+        this.resource = resource;
+    }
+
+    public void setMetadataElements(Set<MetadataElementPageTemplateXrefEntity> metadataElements) {
+        this.metadataElements = metadataElements;
+    }
+
+    @Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;

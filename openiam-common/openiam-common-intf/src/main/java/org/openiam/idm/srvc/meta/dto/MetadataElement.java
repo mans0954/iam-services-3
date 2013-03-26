@@ -1,14 +1,14 @@
 package org.openiam.idm.srvc.meta.dto;
 
-import java.io.Serializable;
-import java.util.Set;
+import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.lang.dto.LanguageMapping;
+import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
-import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.idm.srvc.lang.dto.LanguageMapping;
-import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
+import java.io.Serializable;
+import java.util.Set;
 
 // Generated Nov 4, 2008 12:11:29 AM by Hibernate Tools 3.2.2.GA
 
@@ -26,7 +26,7 @@ import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
         "required", 
         "selfEditable",
         "attributeName",
-        "template",
+        "templateSet",
         "staticDefaultValue",
         "languageSet",
         "validValues",
@@ -45,7 +45,7 @@ public class MetadataElement implements Serializable {
     private boolean required;
     private String attributeName;
     private boolean selfEditable;
-    private MetadataElementPageTemplate template;
+    private Set<MetadataElementPageTemplateXref> templateSet;
     private Set<LanguageMapping> languageSet;
     private Set<MetadataValidValue> validValues;
     private String staticDefaultValue;
@@ -118,15 +118,24 @@ public class MetadataElement implements Serializable {
 		this.attributeName = attributeName;
 	}
 
-	public MetadataElementPageTemplate getTemplate() {
-		return template;
-	}
+//	public MetadataElementPageTemplate getTemplate() {
+//		return template;
+//	}
+//
+//	public void setTemplate(MetadataElementPageTemplate template) {
+//		this.template = template;
+//	}
 
-	public void setTemplate(MetadataElementPageTemplate template) {
-		this.template = template;
-	}
 
-	public Set<LanguageMapping> getLanguageSet() {
+    public Set<MetadataElementPageTemplateXref> getTemplateSet() {
+        return templateSet;
+    }
+
+    public void setTemplateSet(Set<MetadataElementPageTemplateXref> templateSet) {
+        this.templateSet = templateSet;
+    }
+
+    public Set<LanguageMapping> getLanguageSet() {
 		return languageSet;
 	}
 

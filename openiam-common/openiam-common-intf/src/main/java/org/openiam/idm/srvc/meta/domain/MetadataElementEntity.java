@@ -67,9 +67,12 @@ public class MetadataElementEntity implements Serializable {
     @JoinColumn(name = "TYPE_ID")
     private MetadataTypeEntity metadataType;
     
-    @ManyToOne
-    @JoinColumn(name = "TEMPLATE_ID")
-    private MetadataElementPageTemplateEntity template;
+//    @ManyToOne
+//    @JoinColumn(name = "TEMPLATE_ID")
+//    private MetadataElementPageTemplateEntity template;
+
+    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "metadataElement", fetch = FetchType.LAZY)
+    private Set<MetadataElementPageTemplateXrefEntity> templateSet;
     
     @OneToMany(cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
     @JoinColumn(name = "REFERENCE_ID", insertable = true, updatable = true)
@@ -152,15 +155,24 @@ public class MetadataElementEntity implements Serializable {
 		this.metadataType = metadataType;
 	}
 
-	public MetadataElementPageTemplateEntity getTemplate() {
-		return template;
-	}
+//	public MetadataElementPageTemplateEntity getTemplate() {
+//		return template;
+//	}
+//
+//	public void setTemplate(MetadataElementPageTemplateEntity template) {
+//		this.template = template;
+//	}
 
-	public void setTemplate(MetadataElementPageTemplateEntity template) {
-		this.template = template;
-	}
 
-	public Set<LanguageMappingEntity> getLanguageSet() {
+    public Set<MetadataElementPageTemplateXrefEntity> getTemplateSet() {
+        return templateSet;
+    }
+
+    public void setTemplateSet(Set<MetadataElementPageTemplateXrefEntity> templateSet) {
+        this.templateSet = templateSet;
+    }
+
+    public Set<LanguageMappingEntity> getLanguageSet() {
 		return languageSet;
 	}
 

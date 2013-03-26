@@ -1,14 +1,13 @@
 package org.openiam.idm.srvc.meta.dto;
 
-import java.io.Serializable;
-import java.util.Set;
+import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
-
-import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity;
+import java.io.Serializable;
+import java.util.Set;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "MetaElementPageTemplate", propOrder = {
@@ -23,7 +22,7 @@ public class MetadataElementPageTemplate implements Serializable {
 	private String id;
 	private String name;
 	private String resourceId;
-	private Set<MetadataElement> metadataElements;
+	private Set<MetadataElementPageTemplateXref> metadataElements;
 	
 	
 	
@@ -45,10 +44,10 @@ public class MetadataElementPageTemplate implements Serializable {
 	public void setResourceId(String resourceId) {
 		this.resourceId = resourceId;
 	}
-	public Set<MetadataElement> getMetadataElements() {
+	public Set<MetadataElementPageTemplateXref> getMetadataElements() {
 		return metadataElements;
 	}
-	public void setMetadataElements(Set<MetadataElement> metadataElements) {
+	public void setMetadataElements(Set<MetadataElementPageTemplateXref> metadataElements) {
 		this.metadataElements = metadataElements;
 	}
 	@Override
