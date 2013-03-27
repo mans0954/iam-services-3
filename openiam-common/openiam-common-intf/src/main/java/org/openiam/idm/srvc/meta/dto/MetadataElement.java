@@ -31,7 +31,8 @@ import java.util.Set;
         "languageSet",
         "validValues",
         "dataType",
-        "defaultValueLanguageSet"
+        "defaultValueLanguageSet",
+        "resourceId"
 })
 @DozerDTOCorrespondence(MetadataElementEntity.class)
 public class MetadataElement implements Serializable {
@@ -50,6 +51,7 @@ public class MetadataElement implements Serializable {
     private Set<MetadataValidValue> validValues;
     private String staticDefaultValue;
     private Set<LanguageMapping> defaultValueLanguageSet;
+    private String resourceId;
 
     public MetadataElement() {
     }
@@ -168,6 +170,14 @@ public class MetadataElement implements Serializable {
 		this.defaultValueLanguageSet = defaultValueLanguageSet;
 	}
 
+	public String getResourceId() {
+		return resourceId;
+	}
+
+	public void setResourceId(String resourceId) {
+		this.resourceId = resourceId;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -184,6 +194,8 @@ public class MetadataElement implements Serializable {
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result
 				+ ((metadataTypeId == null) ? 0 : metadataTypeId.hashCode());
+		result = prime * result
+				+ ((resourceId == null) ? 0 : resourceId.hashCode());
 		result = prime * result + (required ? 1231 : 1237);
 		result = prime * result + (selfEditable ? 1231 : 1237);
 		return result;
@@ -229,6 +241,11 @@ public class MetadataElement implements Serializable {
 			if (other.metadataTypeId != null)
 				return false;
 		} else if (!metadataTypeId.equals(other.metadataTypeId))
+			return false;
+		if (resourceId == null) {
+			if (other.resourceId != null)
+				return false;
+		} else if (!resourceId.equals(other.resourceId))
 			return false;
 		if (required != other.required)
 			return false;

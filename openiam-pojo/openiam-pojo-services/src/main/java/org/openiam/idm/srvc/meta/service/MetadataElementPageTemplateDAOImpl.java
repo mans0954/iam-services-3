@@ -11,8 +11,6 @@ import org.springframework.stereotype.Repository;
 @Repository("metadataElementPageTemplateDAO")
 public class MetadataElementPageTemplateDAOImpl extends BaseDaoImpl<MetadataElementPageTemplateEntity, String> implements MetadataElementPageTemplateDAO {
 
-	
-	
 	@Override
 	protected Criteria getExampleCriteria(final MetadataElementPageTemplateEntity entity) {
 		final Criteria criteria = getCriteria();

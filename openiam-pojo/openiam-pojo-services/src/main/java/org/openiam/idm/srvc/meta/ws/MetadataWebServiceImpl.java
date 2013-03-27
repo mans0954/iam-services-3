@@ -21,13 +21,30 @@
 package org.openiam.idm.srvc.meta.ws;
 
 import java.util.List;
+
+import javax.jws.WebMethod;
+import javax.jws.WebParam;
 import javax.jws.WebService;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.openiam.base.ws.Response;
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.base.ws.exception.BasicDataServiceException;
+import org.openiam.dozer.converter.MetaDataElementDozerConverter;
 import org.openiam.dozer.converter.MetaDataTypeDozerConverter;
+import org.openiam.idm.searchbeans.MetadataElementSearchBean;
+import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
+import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.meta.service.MetadataService;
+import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
+import org.openiam.idm.srvc.searchbean.converter.MetadataElementSearchBeanConverter;
+import org.openiam.idm.srvc.searchbean.converter.MetadataTypeSearchBeanConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -36,263 +53,146 @@ import org.springframework.stereotype.Service;
  * @author suneet
  * @version 2.1
  */
-@WebService(endpointInterface = "org.openiam.idm.srvc.meta.ws.MetadataWebService", targetNamespace = "urn:idm.openiam.org/srvc/meta/service", portName = "MetadataWebServicePort", serviceName = "MetadataWebService")
+@WebService(endpointInterface = "org.openiam.idm.srvc.meta.ws.MetadataWebService", 
+			targetNamespace = "urn:idm.openiam.org/srvc/meta/service", 
+			portName = "MetadataWebServicePort", 
+			serviceName = "MetadataWebService")
 @Service("metadataWS")
 public class MetadataWebServiceImpl implements MetadataWebService {
     @Autowired
-    MetadataService metadataService;
+    private MetadataService metadataService;
 
     @Autowired
-    MetaDataTypeDozerConverter metaDataTypeDozerConverter;
+    private MetaDataTypeDozerConverter metaDataTypeDozerConverter;
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.meta.ws.MetadataWebService#addMetadataElement(org
-     * .openiam.idm.srvc.meta.dto.MetadataElement)
-     */
-    public MetadataElementResponse addMetadataElement(
-            MetadataElement metadataElement) {
+    @Autowired
+    private MetaDataElementDozerConverter metaDataElementDozerConverter;
+    
+    @Autowired
+    private MetadataElementSearchBeanConverter metadataElementSearchBeanConverter;
+    
+    @Autowired
+    private MetadataTypeSearchBeanConverter metadataTypeSearchBeanConverter;
+    
+    @Autowired
+    private MetadataTypeDAO metadataTypeDAO;
+    
+    private static Logger LOG = Logger.getLogger(MetadataWebServiceImpl.class);
 
-        MetadataElementResponse resp = new MetadataElementResponse(
-                ResponseStatus.SUCCESS);
-        metadataService.addMetadataElement(metadataElement);
-        if (metadataElement.getId() == null
-                || metadataElement.getId().isEmpty()) {
-            resp.setStatus(ResponseStatus.FAILURE);
-        } else {
-            resp.setMetadataElement(metadataElement);
-        }
-        return resp;
-
+    @Override
+    public List<MetadataElement> getMetadataElementByType(final String typeId) {
+        final List<MetadataElementEntity> entityList = metadataService.getMetadataElementByType(typeId);
+        return (entityList != null) ? metaDataElementDozerConverter.convertToDTOList(entityList, true) : null;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.meta.ws.MetadataWebService#addMetadataType(org.openiam
-     * .idm.srvc.meta.dto.MetadataType)
-     */
-    public MetadataTypeResponse addMetadataType(MetadataType type) {
-        MetadataTypeResponse resp = new MetadataTypeResponse(
-                ResponseStatus.SUCCESS);
-        metadataService.addMetadataType(type);
-        if (type.getMetadataTypeId() == null
-                || type.getMetadataTypeId().isEmpty()) {
-            resp.setStatus(ResponseStatus.FAILURE);
-        } else {
-            resp.setMetadataType(type);
-        }
-        return resp;
+    @Override
+    public List<MetadataType> getTypesInCategory(final String categoryId) {
+    	final List<MetadataTypeEntity> entityList = metadataService.getTypesInCategory(categoryId);
+    	return (entityList != null) ? metaDataTypeDozerConverter.convertToDTOList(entityList, true) : null;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.meta.ws.MetadataWebService#addTypeToCategory(java
-     * .lang.String, java.lang.String)
-     */
-    public Response addTypeToCategory(String typeId, String categoryId) {
-        Response resp = new Response(ResponseStatus.SUCCESS);
-        metadataService.addTypeToCategory(typeId, categoryId);
-        return resp;
+    @Override
+    public List<MetadataElement> getAllElementsForCategoryType(final String categoryType) {
+    	final List<MetadataElementEntity> entityList = metadataService.getAllElementsForCategoryType(categoryType);
+    	return (entityList != null) ? metaDataElementDozerConverter.convertToDTOList(entityList, true) : null;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.meta.ws.MetadataWebService#getMetadataElementById
-     * (java.lang.String)
-     */
-    public MetadataElementResponse getMetadataElementById(String elementId) {
-        MetadataElementResponse resp = new MetadataElementResponse(
-                ResponseStatus.SUCCESS);
-        MetadataElement element = metadataService
-                .getMetadataElementById(elementId);
-        if (element == null) {
-            resp.setStatus(ResponseStatus.FAILURE);
-        } else {
-            resp.setMetadataElement(element);
-        }
-        return resp;
-    }
+	@Override
+	public List<MetadataElement> findElementBeans(final MetadataElementSearchBean searchBean, final int from, final int size) {
+		final MetadataElementEntity entity = metadataElementSearchBeanConverter.convert(searchBean);
+		final List<MetadataElementEntity> entityList = metadataService.findBeans(entity, from, size);
+		return (entityList != null) ? metaDataElementDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy()) : null;
+	}
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.meta.ws.MetadataWebService#getMetadataElementByType
-     * (java.lang.String)
-     */
-    public MetadataElementArrayResponse getMetadataElementByType(String typeId) {
-        MetadataElementArrayResponse resp = new MetadataElementArrayResponse(
-                ResponseStatus.SUCCESS);
-        MetadataElement[] element = metadataService
-                .getMetadataElementByType(typeId);
-        if (element == null) {
-            resp.setStatus(ResponseStatus.FAILURE);
-        } else {
-            resp.setMetadataElementAry(element);
-        }
-        return resp;
-    }
+	@Override
+	public List<MetadataType> findTypeBeans(final MetadataTypeSearchBean searchBean, final int from, final int size) {
+		final MetadataTypeEntity entity = metadataTypeSearchBeanConverter.convert(searchBean);
+		final List<MetadataTypeEntity> entityList = metadataService.findBeans(entity, from, size);
+		return (entityList != null) ? metaDataTypeDozerConverter.convertToDTOList(entityList, true) : null;
+	}
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.meta.ws.MetadataWebService#getMetadataType(java.
-     * lang.String)
-     */
-    public MetadataTypeResponse getMetadataType(String typeId) {
-        MetadataTypeResponse resp = new MetadataTypeResponse(
-                ResponseStatus.SUCCESS);
-        MetadataType type = metadataService.getMetadataType(typeId);
-        if (type == null) {
-            resp.setStatus(ResponseStatus.FAILURE);
-        } else {
-            resp.setMetadataType(type);
-        }
-        return resp;
-    }
+	@Override
+	public Response saveMetadataType(final MetadataType dto) {
+		final Response response = new Response();
+		try {
+			if(dto == null) {
+				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+			}
+			
+			final MetadataTypeEntity entity = metaDataTypeDozerConverter.convertToEntity(dto, true);
+			metadataService.save(entity);
+		} catch(BasicDataServiceException e) {
+			response.setErrorCode(e.getCode());
+			response.setResponseValue(ResponseStatus.FAILURE);
+		} catch(Throwable e) {
+			LOG.error("Unknown Error", e);
+			response.setResponseValue(ResponseStatus.FAILURE);
+		}
+		return response;
+	}
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.openiam.idm.srvc.meta.ws.MetadataWebService#getMetadataTypes()
-     */
-    public MetadataTypeArrayResponse getMetadataTypes() {
-        MetadataTypeArrayResponse resp = new MetadataTypeArrayResponse(
-                ResponseStatus.SUCCESS);
-        MetadataType[] typeAry = metadataService.getMetadataTypes();
-        if (typeAry == null) {
-            resp.setStatus(ResponseStatus.FAILURE);
-        } else {
-            resp.setMetadataTypeAry(typeAry);
-        }
-        return resp;
-    }
+	@Override
+	public Response saveMetadataEntity(final MetadataElement dto) {
+		final Response response = new Response();
+		try {
+			if(dto == null) {
+				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+			}
+				
+			final MetadataElementEntity entity = metaDataElementDozerConverter.convertToEntity(dto, true);
+			if(StringUtils.isBlank(entity.getAttributeName())) {
+				throw new BasicDataServiceException(ResponseCode.ATTRIBUTE_NAME_MISSING);
+			}
+			
+			if(entity.getMetadataType() == null) {
+				throw new BasicDataServiceException(ResponseCode.METADATA_TYPE_MISSING);
+			}
+			
+			metadataService.save(entity);
+		} catch(BasicDataServiceException e) {
+			response.setErrorCode(e.getCode());
+			response.setResponseValue(ResponseStatus.FAILURE);
+		} catch(Throwable e) {
+			LOG.error("Unknown Error", e);
+			response.setResponseValue(ResponseStatus.FAILURE);
+		}
+		return response;
+	}
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.meta.ws.MetadataWebService#getTypesInCategory(java
-     * .lang.String)
-     */
-    public List<MetadataType> getTypesInCategory(String categoryId) {
-        return metadataService.getTypesInCategory(categoryId);
-    }
+	@Override
+	public Response deleteMetadataType(final String id) {
+		final Response response = new Response();
+		try {
+			if(StringUtils.isBlank(id)) {
+				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+			}
+			metadataService.deleteMetdataType(id);
+		} catch(BasicDataServiceException e) {
+			response.setErrorCode(e.getCode());
+			response.setResponseValue(ResponseStatus.FAILURE);
+		} catch(Throwable e) {
+			LOG.error("Unknown Error", e);
+			response.setResponseValue(ResponseStatus.FAILURE);
+		}
+		return response;
+	}
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.meta.ws.MetadataWebService#removeMetadataElement
-     * (java.lang.String)
-     */
-    public Response removeMetadataElement(String elementId) {
-        Response resp = new Response(ResponseStatus.SUCCESS);
-        metadataService.removeMetadataElement(elementId);
-        return resp;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.meta.ws.MetadataWebService#removeMetadataType(java
-     * .lang.String)
-     */
-    public Response removeMetadataType(String typeId) {
-        Response resp = new Response(ResponseStatus.SUCCESS);
-        metadataService.removeMetadataType(typeId);
-        return resp;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.meta.ws.MetadataWebService#removeTypeFromCategory
-     * (java.lang.String, java.lang.String)
-     */
-    public Response removeTypeFromCategory(String typeId, String categoryId) {
-        Response resp = new Response(ResponseStatus.SUCCESS);
-        metadataService.removeTypeFromCategory(typeId, categoryId);
-        return resp;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.meta.ws.MetadataWebService#updateMetadataElement
-     * (org.openiam.idm.srvc.meta.dto.MetadataElement)
-     */
-    public MetadataElementResponse updateMetadataElement(MetadataElement element) {
-        MetadataElementResponse resp = new MetadataElementResponse(
-                ResponseStatus.SUCCESS);
-        metadataService.updateMetadataElement(element);
-        if (element.getId() == null
-                || element.getId().isEmpty()) {
-            resp.setStatus(ResponseStatus.FAILURE);
-        } else {
-            resp.setMetadataElement(element);
-        }
-        return resp;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.meta.ws.MetadataWebService#updateMetdataType(org
-     * .openiam.idm.srvc.meta.dto.MetadataType)
-     */
-    public MetadataTypeResponse updateMetdataType(MetadataType type) {
-        MetadataTypeResponse resp = new MetadataTypeResponse(
-                ResponseStatus.SUCCESS);
-        metadataService.updateMetdataType(type);
-        if (type.getMetadataTypeId() == null
-                || type.getMetadataTypeId().isEmpty()) {
-            resp.setStatus(ResponseStatus.FAILURE);
-        } else {
-            resp.setMetadataType(type);
-        }
-        return resp;
-    }
-
-    public MetadataService getMetadataService() {
-        return metadataService;
-    }
-
-    public void setMetadataService(MetadataService metadataService) {
-        this.metadataService = metadataService;
-    }
-
-    public MetadataElementArrayResponse getAllElementsForCategoryType(
-            String categoryType) {
-
-        MetadataElementArrayResponse resp = new MetadataElementArrayResponse(
-                ResponseStatus.SUCCESS);
-        List<MetadataElement> elementList = metadataService
-                .getAllElementsForCategoryType(categoryType);
-
-        if (elementList == null) {
-            resp.setStatus(ResponseStatus.FAILURE);
-        } else {
-            int size = elementList.size();
-            MetadataElement[] elementAry = new MetadataElement[size];
-            elementList.toArray(elementAry);
-            resp.setMetadataElementAry(elementAry);
-        }
-        return resp;
-
-    }
-
+	@Override
+	public Response deleteMetadataElement(final String id) {
+		final Response response = new Response();
+		try {
+			if(StringUtils.isBlank(id)) {
+				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+			}
+			
+			metadataService.deleteMetdataElement(id);
+		} catch(BasicDataServiceException e) {
+			response.setErrorCode(e.getCode());
+			response.setResponseValue(ResponseStatus.FAILURE);
+		} catch(Throwable e) {
+			LOG.error("Unknown Error", e);
+			response.setResponseValue(ResponseStatus.FAILURE);
+		}
+		return response;
+	}
 }

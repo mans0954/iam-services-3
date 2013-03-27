@@ -10,11 +10,5 @@ import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
  * @author suneet
  */
 public interface MetadataTypeDAO extends BaseDao<MetadataTypeEntity, String> {
-
-    void addCategoryToType(String typeId, String categoryId);
-
-    void removeCategoryFromType(String typeId, String categoryId);
-
-    List<MetadataTypeEntity> findTypesInCategory(String categoryId);
-
+    public List<MetadataTypeEntity> findTypesInCategory(String categoryId);
 }

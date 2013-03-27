@@ -162,6 +162,10 @@
 		<class-a>org.openiam.idm.srvc.meta.domain.MetadataElementEntity</class-a>
 		<class-b>org.openiam.idm.srvc.meta.dto.MetadataElement</class-b>
 		<field>
+			<a>resource.resourceId</a>
+			<b>resourceId</b>
+		</field>
+		<field>
 			<a>metadataType.metadataTypeId</a>
 			<b>metadataTypeId</b>
 		</field>

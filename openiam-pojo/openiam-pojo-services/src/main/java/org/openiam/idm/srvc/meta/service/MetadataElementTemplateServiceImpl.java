@@ -25,8 +25,14 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 
 	@Override
 	public void save(final MetadataElementPageTemplateEntity template) {
-		if(StringUtils.isNotBlank(template.getId())) {
-			
+		if(template != null) {
+			if(StringUtils.isNotBlank(template.getId())) {
+				final MetadataElementPageTemplateEntity dbEntity = pageTemplateDAO.findById(template.getId());
+				if(dbEntity != null) {
+					template.setResource(dbEntity.getResource());
+				}
+			}
+			pageTemplateDAO.merge(template);
 		}
 	}
 

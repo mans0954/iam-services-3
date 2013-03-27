@@ -70,6 +70,10 @@ public class MetadataElementEntity implements Serializable {
 //    @ManyToOne
 //    @JoinColumn(name = "TEMPLATE_ID")
 //    private MetadataElementPageTemplateEntity template;
+    
+	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinColumn(name="RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = false, updatable = false)
+	private ResourceEntity resource;
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "metadataElement", fetch = FetchType.LAZY)
     private Set<MetadataElementPageTemplateXrefEntity> templateSet;
@@ -203,6 +207,14 @@ public class MetadataElementEntity implements Serializable {
 	public void setDefaultValueLanguageSet(
 			Set<LanguageMappingEntity> defaultValueLanguageSet) {
 		this.defaultValueLanguageSet = defaultValueLanguageSet;
+	}
+	
+	public ResourceEntity getResource() {
+		return resource;
+	}
+
+	public void setResource(ResourceEntity resource) {
+		this.resource = resource;
 	}
 
 	@Override
