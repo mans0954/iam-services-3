@@ -173,13 +173,13 @@
 			<a>templateSet</a>
 			<b>templateSet</b>
 		</field>
-		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter" custom-converter-param="dto2entityDeepDozerMapper">
-			<a>defaultValueLanguageSet</a>
-			<b>defaultValueLanguageSet</b>
+		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityMapConverterWithKeyString" custom-converter-param="dto2entityShallowDozerMapper">
+			<a>defaultValueLanguageMap</a>
+			<b>defaultValueLanguageMap</b>
 		</field>
-		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="dto2entityShallowDozerMapper">
-			<a>languageSet</a>
-			<b>languageSet</b>
+		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityMapConverterWithKeyString" custom-converter-param="dto2entityShallowDozerMapper">
+			<a>languageMap</a>
+			<b>languageMap</b>
 		</field>
 		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="dto2entityShallowDozerMapper">
 			<a>validValues</a>
@@ -207,9 +207,9 @@
 			<a>entity.id</a>
 			<b>metadataEntityId</b>
 		</field>
-		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="dto2entityShallowDozerMapper">
-			<a>languageSet</a>
-			<b>languageSet</b>
+		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityMapConverterWithKeyString" custom-converter-param="dto2entityShallowDozerMapper">
+			<a>languageMap</a>
+			<b>languageMap</b>
 		</field>
 	</mapping>
 	

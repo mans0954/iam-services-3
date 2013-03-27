@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.meta.domain;
 
 import java.io.Serializable;
+import java.util.Map;
 import java.util.Set;
 
 import javax.persistence.Cacheable;
@@ -13,6 +14,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.MapKey;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
@@ -48,7 +50,8 @@ public class MetadataValidValueEntity implements Serializable {
 	@OneToMany(cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
     @JoinColumn(name = "REFERENCE_ID", insertable = true, updatable = true)
 	@Where(clause="REFERENCE_TYPE='MetadataValidValueEntity'")
-	private Set<LanguageMappingEntity> languageSet;
+    @MapKey(name = "languageId")
+    private Map<String, LanguageMappingEntity> languageMap;
 
 	
 	
@@ -76,12 +79,12 @@ public class MetadataValidValueEntity implements Serializable {
 		this.uiValue = uiValue;
 	}
 
-	public Set<LanguageMappingEntity> getLanguageSet() {
-		return languageSet;
+	public Map<String, LanguageMappingEntity> getLanguageMap() {
+		return languageMap;
 	}
 
-	public void setLanguageSet(Set<LanguageMappingEntity> languageSet) {
-		this.languageSet = languageSet;
+	public void setLanguageMap(Map<String, LanguageMappingEntity> languageMap) {
+		this.languageMap = languageMap;
 	}
 
 	@Override

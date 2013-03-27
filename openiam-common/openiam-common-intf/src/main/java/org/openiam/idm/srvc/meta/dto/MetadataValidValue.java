@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.meta.dto;
 
 import java.io.Serializable;
+import java.util.Map;
 import java.util.Set;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -17,7 +18,7 @@ import org.openiam.idm.srvc.meta.domain.MetadataValidValueEntity;
 		"id",
         "uiValue",
         "metadataEntityId",
-        "languageSet"
+        "languageMap"
 })
 @DozerDTOCorrespondence(MetadataValidValueEntity.class)
 public class MetadataValidValue implements Serializable {
@@ -25,7 +26,7 @@ public class MetadataValidValue implements Serializable {
 	private String id;
 	private String uiValue;
 	private String metadataEntityId;
-	private Set<LanguageMapping> languageSet;
+	private Map<String, LanguageMapping> languageMap;
 	public String getId() {
 		return id;
 	}
@@ -44,11 +45,12 @@ public class MetadataValidValue implements Serializable {
 	public void setMetadataEntityId(String metadataEntityId) {
 		this.metadataEntityId = metadataEntityId;
 	}
-	public Set<LanguageMapping> getLanguageSet() {
-		return languageSet;
+	
+	public Map<String, LanguageMapping> getLanguageMap() {
+		return languageMap;
 	}
-	public void setLanguageSet(Set<LanguageMapping> languageSet) {
-		this.languageSet = languageSet;
+	public void setLanguageMap(Map<String, LanguageMapping> languageMap) {
+		this.languageMap = languageMap;
 	}
 	@Override
 	public int hashCode() {

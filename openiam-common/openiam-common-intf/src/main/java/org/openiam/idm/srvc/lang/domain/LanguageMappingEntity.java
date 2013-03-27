@@ -31,9 +31,8 @@ public class LanguageMappingEntity implements Serializable {
     @Column(name = "ID", length = 32)
 	private String id;
 	
-	@ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.EAGER)
-    @JoinColumn(name = "LANGUAGE_ID", insertable = false, updatable = false)
-	private LanguageEntity language;
+	@Column(name="LANGUAGE_ID", nullable=false, length=32)
+	private String languageId;
 	
 	@Column(name="REFERENCE_TYPE", nullable=false)
     @Enumerated(value=EnumType.STRING)
@@ -69,14 +68,6 @@ public class LanguageMappingEntity implements Serializable {
 		this.id = id;
 	}
 
-	public LanguageEntity getLanguage() {
-		return language;
-	}
-
-	public void setLanguage(LanguageEntity language) {
-		this.language = language;
-	}
-
 	public String getValue() {
 		return value;
 	}
@@ -85,13 +76,21 @@ public class LanguageMappingEntity implements Serializable {
 		this.value = value;
 	}
 
+	public String getLanguageId() {
+		return languageId;
+	}
+
+	public void setLanguageId(String languageId) {
+		this.languageId = languageId;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result
-				+ ((language == null) ? 0 : language.hashCode());
+				+ ((languageId == null) ? 0 : languageId.hashCode());
 		result = prime * result
 				+ ((referenceId == null) ? 0 : referenceId.hashCode());
 		result = prime * result
@@ -114,10 +113,10 @@ public class LanguageMappingEntity implements Serializable {
 				return false;
 		} else if (!id.equals(other.id))
 			return false;
-		if (language == null) {
-			if (other.language != null)
+		if (languageId == null) {
+			if (other.languageId != null)
 				return false;
-		} else if (!language.equals(other.language))
+		} else if (!languageId.equals(other.languageId))
 			return false;
 		if (referenceId == null) {
 			if (other.referenceId != null)

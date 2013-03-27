@@ -13,8 +13,6 @@ import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
 @XmlType(name = "LanguageMapping", propOrder = {
         "id",
         "languageId",
-        "languageLocale",
-        "languageName",
         "referenceId",
         "referenceType",
         "value"
@@ -23,8 +21,6 @@ import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
 public class LanguageMapping implements Serializable {
 	private String id;
 	private String languageId;
-	private String languageLocale;
-	private String languageName;
 	private String referenceId;
 	private String referenceType;
 	private String value;
@@ -39,18 +35,6 @@ public class LanguageMapping implements Serializable {
 	}
 	public void setLanguageId(String languageId) {
 		this.languageId = languageId;
-	}
-	public String getLanguageLocale() {
-		return languageLocale;
-	}
-	public void setLanguageLocale(String languageLocale) {
-		this.languageLocale = languageLocale;
-	}
-	public String getLanguageName() {
-		return languageName;
-	}
-	public void setLanguageName(String languageName) {
-		this.languageName = languageName;
 	}
 	public String getReferenceId() {
 		return referenceId;
@@ -78,10 +62,6 @@ public class LanguageMapping implements Serializable {
 		result = prime * result
 				+ ((languageId == null) ? 0 : languageId.hashCode());
 		result = prime * result
-				+ ((languageLocale == null) ? 0 : languageLocale.hashCode());
-		result = prime * result
-				+ ((languageName == null) ? 0 : languageName.hashCode());
-		result = prime * result
 				+ ((referenceId == null) ? 0 : referenceId.hashCode());
 		result = prime * result
 				+ ((referenceType == null) ? 0 : referenceType.hashCode());
@@ -106,16 +86,6 @@ public class LanguageMapping implements Serializable {
 			if (other.languageId != null)
 				return false;
 		} else if (!languageId.equals(other.languageId))
-			return false;
-		if (languageLocale == null) {
-			if (other.languageLocale != null)
-				return false;
-		} else if (!languageLocale.equals(other.languageLocale))
-			return false;
-		if (languageName == null) {
-			if (other.languageName != null)
-				return false;
-		} else if (!languageName.equals(other.languageName))
 			return false;
 		if (referenceId == null) {
 			if (other.referenceId != null)

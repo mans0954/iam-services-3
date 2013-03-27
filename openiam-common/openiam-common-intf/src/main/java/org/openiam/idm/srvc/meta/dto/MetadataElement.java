@@ -8,6 +8,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
+import java.util.Map;
 import java.util.Set;
 
 // Generated Nov 4, 2008 12:11:29 AM by Hibernate Tools 3.2.2.GA
@@ -28,10 +29,10 @@ import java.util.Set;
         "attributeName",
         "templateSet",
         "staticDefaultValue",
-        "languageSet",
+        "languageMap",
         "validValues",
         "dataType",
-        "defaultValueLanguageSet",
+        "defaultValueLanguageMap",
         "resourceId"
 })
 @DozerDTOCorrespondence(MetadataElementEntity.class)
@@ -47,10 +48,10 @@ public class MetadataElement implements Serializable {
     private String attributeName;
     private boolean selfEditable;
     private Set<MetadataElementPageTemplateXref> templateSet;
-    private Set<LanguageMapping> languageSet;
+    private Map<String, LanguageMapping> languageMap;
     private Set<MetadataValidValue> validValues;
     private String staticDefaultValue;
-    private Set<LanguageMapping> defaultValueLanguageSet;
+    private Map<String, LanguageMapping> defaultValueLanguageMap;
     private String resourceId;
 
     public MetadataElement() {
@@ -137,12 +138,12 @@ public class MetadataElement implements Serializable {
         this.templateSet = templateSet;
     }
 
-    public Set<LanguageMapping> getLanguageSet() {
-		return languageSet;
+	public Map<String, LanguageMapping> getLanguageMap() {
+		return languageMap;
 	}
 
-	public void setLanguageSet(Set<LanguageMapping> languageSet) {
-		this.languageSet = languageSet;
+	public void setLanguageMap(Map<String, LanguageMapping> languageMap) {
+		this.languageMap = languageMap;
 	}
 
 	public Set<MetadataValidValue> getValidValues() {
@@ -161,21 +162,21 @@ public class MetadataElement implements Serializable {
 		this.staticDefaultValue = staticDefaultValue;
 	}
 
-	public Set<LanguageMapping> getDefaultValueLanguageSet() {
-		return defaultValueLanguageSet;
-	}
-
-	public void setDefaultValueLanguageSet(
-			Set<LanguageMapping> defaultValueLanguageSet) {
-		this.defaultValueLanguageSet = defaultValueLanguageSet;
-	}
-
 	public String getResourceId() {
 		return resourceId;
 	}
 
 	public void setResourceId(String resourceId) {
 		this.resourceId = resourceId;
+	}
+
+	public Map<String, LanguageMapping> getDefaultValueLanguageMap() {
+		return defaultValueLanguageMap;
+	}
+
+	public void setDefaultValueLanguageMap(
+			Map<String, LanguageMapping> defaultValueLanguageMap) {
+		this.defaultValueLanguageMap = defaultValueLanguageMap;
 	}
 
 	@Override

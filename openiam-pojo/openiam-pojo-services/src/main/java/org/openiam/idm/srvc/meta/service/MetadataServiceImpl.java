@@ -67,8 +67,8 @@ public class MetadataServiceImpl implements MetadataService {
 			if(StringUtils.isNotBlank(entity.getId())) {
 				final MetadataElementEntity dbEntity = metadataElementDao.findById(entity.getId());
 				if(dbEntity != null) {
-					entity.setDefaultValueLanguageSet(dbEntity.getDefaultValueLanguageSet());
-					entity.setLanguageSet(dbEntity.getLanguageSet());
+					entity.setDefaultValueLanguageMap(dbEntity.getDefaultValueLanguageMap());
+					entity.setLanguageMap(dbEntity.getLanguageMap());
 					entity.setMetadataType(dbEntity.getMetadataType());
 					entity.setTemplateSet(dbEntity.getTemplateSet());
 					entity.setValidValues(dbEntity.getValidValues());

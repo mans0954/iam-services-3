@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.meta.domain;
 
 import java.io.Serializable;
+import java.util.Map;
 import java.util.Set;
 
 import javax.persistence.Cacheable;
@@ -13,6 +14,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.MapKey;
+import javax.persistence.MapKeyColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.PrimaryKeyJoinColumn;
@@ -81,7 +84,8 @@ public class MetadataElementEntity implements Serializable {
     @OneToMany(cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
     @JoinColumn(name = "REFERENCE_ID", insertable = true, updatable = true)
 	@Where(clause="REFERENCE_TYPE='MetadataElementEntity'")
-	private Set<LanguageMappingEntity> languageSet;
+    @MapKey(name = "languageId")
+    private Map<String, LanguageMappingEntity> languageMap;
     
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "entity", fetch = FetchType.LAZY)
     private Set<MetadataValidValueEntity> validValues;
@@ -92,7 +96,8 @@ public class MetadataElementEntity implements Serializable {
     @OneToMany(cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
     @JoinColumn(name = "REFERENCE_ID", insertable = true, updatable = true)
 	@Where(clause="REFERENCE_TYPE='MetadataElementDefaultValues'")
-	private Set<LanguageMappingEntity> defaultValueLanguageSet;
+    @MapKey(name = "languageId")
+	private Map<String, LanguageMappingEntity> defaultValueLanguageMap;
     
 
 	public String getId() {
@@ -176,12 +181,12 @@ public class MetadataElementEntity implements Serializable {
         this.templateSet = templateSet;
     }
 
-    public Set<LanguageMappingEntity> getLanguageSet() {
-		return languageSet;
+	public Map<String, LanguageMappingEntity> getLanguageMap() {
+		return languageMap;
 	}
 
-	public void setLanguageSet(Set<LanguageMappingEntity> languageSet) {
-		this.languageSet = languageSet;
+	public void setLanguageMap(Map<String, LanguageMappingEntity> languageMap) {
+		this.languageMap = languageMap;
 	}
 
 	public Set<MetadataValidValueEntity> getValidValues() {
@@ -200,15 +205,17 @@ public class MetadataElementEntity implements Serializable {
 		this.staticDefaultValue = staticDefaultValue;
 	}
 
-	public Set<LanguageMappingEntity> getDefaultValueLanguageSet() {
-		return defaultValueLanguageSet;
+	
+	
+	public Map<String, LanguageMappingEntity> getDefaultValueLanguageMap() {
+		return defaultValueLanguageMap;
 	}
 
-	public void setDefaultValueLanguageSet(
-			Set<LanguageMappingEntity> defaultValueLanguageSet) {
-		this.defaultValueLanguageSet = defaultValueLanguageSet;
+	public void setDefaultValueLanguageMap(
+			Map<String, LanguageMappingEntity> defaultValueLanguageMap) {
+		this.defaultValueLanguageMap = defaultValueLanguageMap;
 	}
-	
+
 	public ResourceEntity getResource() {
 		return resource;
 	}
