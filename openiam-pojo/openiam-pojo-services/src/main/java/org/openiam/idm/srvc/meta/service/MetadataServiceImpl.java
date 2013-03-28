@@ -11,10 +11,13 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.dozer.converter.MetaDataElementDozerConverter;
 import org.openiam.dozer.converter.MetaDataTypeDozerConverter;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
+import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
+import org.openiam.idm.srvc.searchbean.converter.MetadataElementSearchBeanConverter;
+import org.openiam.idm.srvc.searchbean.converter.MetadataTypeSearchBeanConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +34,12 @@ public class MetadataServiceImpl implements MetadataService {
     
     @Autowired
     private MetadataElementDAO metadataElementDao;
+    
+    @Autowired
+    private MetadataElementSearchBeanConverter metadataElementSearchBeanConverter;
+    
+    @Autowired
+    private MetadataTypeSearchBeanConverter metadataTypeSearchBeanConverter;
 
     private static final Log log = LogFactory.getLog(MetadataServiceImpl.class);
 
@@ -52,13 +61,21 @@ public class MetadataServiceImpl implements MetadataService {
     }
 
 	@Override
-	public List<MetadataElementEntity> findBeans(final MetadataElementEntity entity, final int from, final int size) {
+	public List<MetadataElementEntity> findBeans(final MetadataElementSearchBean searchBean, final int from, final int size) {
+		final MetadataElementEntity entity = metadataElementSearchBeanConverter.convert(searchBean);
 		return metadataElementDao.getByExample(entity, from, size);
 	}
 	
 	@Override
-	public List<MetadataTypeEntity> findBeans(final MetadataTypeEntity entity, final int from, final int size) {
-		return metadataTypeDao.getByExample(entity, from, size);
+	public List<MetadataTypeEntity> findBeans(final MetadataTypeSearchBean searchBean, final int from, final int size) {
+		List<MetadataTypeEntity> retVal = null;
+		if(searchBean.hasMultipleKeys()) {
+			retVal = metadataTypeDao.findByIds(searchBean.getKeys());
+		} else {
+			final MetadataTypeEntity entity = metadataTypeSearchBeanConverter.convert(searchBean);
+			retVal = metadataTypeDao.getByExample(entity, from, size);
+		}
+		return retVal;
 	}
 
 	@Override
@@ -107,5 +124,24 @@ public class MetadataServiceImpl implements MetadataService {
 		if(entity != null) {
 			metadataTypeDao.delete(entity);
 		}
+	}
+
+	@Override
+	public int count(final MetadataElementSearchBean searchBean) {
+		final MetadataElementEntity entity = metadataElementSearchBeanConverter.convert(searchBean);
+		return metadataElementDao.count(entity);
+	}
+
+	@Override
+	public int count(final MetadataTypeSearchBean searchBean) {
+		int retVal = 0;
+		if(searchBean.hasMultipleKeys()) {
+			final List<MetadataTypeEntity> entityList = metadataTypeDao.findByIds(searchBean.getKeys());
+			retVal = (entityList != null) ? entityList.size() : 0;
+		} else {
+			final MetadataTypeEntity entity = metadataTypeSearchBeanConverter.convert(searchBean);
+			retVal = metadataTypeDao.count(entity);
+		}
+		return retVal;
 	}
 }

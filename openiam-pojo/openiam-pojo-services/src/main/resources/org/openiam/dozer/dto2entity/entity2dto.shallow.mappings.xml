@@ -206,6 +206,23 @@
 	</mapping>
 	
 	<mapping>
+		<class-a>org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateXrefEntity</class-a>
+		<class-b>org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplateXref</class-b>
+		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter" custom-converter-param="dto2entityShallowDozerMapper">
+			<a>id</a>
+			<b>id</b>
+		</field>
+		<field-exclude>
+			<a>template</a>
+			<b>template</b>
+		</field-exclude>
+		<field-exclude>
+			<a>metadataElement</a>
+			<b>metadataElement</b>
+		</field-exclude>
+	</mapping>
+	
+	<mapping>
 		<class-a>org.openiam.idm.srvc.meta.domain.MetadataValidValueEntity</class-a>
 		<class-b>org.openiam.idm.srvc.meta.dto.MetadataValidValue</class-b>
 		<field>

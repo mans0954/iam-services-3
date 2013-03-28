@@ -99,15 +99,13 @@ public class MetadataWebServiceImpl implements MetadataWebService {
 
 	@Override
 	public List<MetadataElement> findElementBeans(final MetadataElementSearchBean searchBean, final int from, final int size) {
-		final MetadataElementEntity entity = metadataElementSearchBeanConverter.convert(searchBean);
-		final List<MetadataElementEntity> entityList = metadataService.findBeans(entity, from, size);
+		final List<MetadataElementEntity> entityList = metadataService.findBeans(searchBean, from, size);
 		return (entityList != null) ? metaDataElementDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy()) : null;
 	}
 
 	@Override
 	public List<MetadataType> findTypeBeans(final MetadataTypeSearchBean searchBean, final int from, final int size) {
-		final MetadataTypeEntity entity = metadataTypeSearchBeanConverter.convert(searchBean);
-		final List<MetadataTypeEntity> entityList = metadataService.findBeans(entity, from, size);
+		final List<MetadataTypeEntity> entityList = metadataService.findBeans(searchBean, from, size);
 		return (entityList != null) ? metaDataTypeDozerConverter.convertToDTOList(entityList, true) : null;
 	}
 
@@ -194,5 +192,15 @@ public class MetadataWebServiceImpl implements MetadataWebService {
 			response.setResponseValue(ResponseStatus.FAILURE);
 		}
 		return response;
+	}
+
+	@Override
+	public int countElementBeans(final MetadataElementSearchBean searchBean) {
+		return metadataService.count(searchBean);
+	}
+
+	@Override
+	public int countTypeBeans(final MetadataTypeSearchBean searchBean) {
+		return metadataService.count(searchBean);
 	}
 }

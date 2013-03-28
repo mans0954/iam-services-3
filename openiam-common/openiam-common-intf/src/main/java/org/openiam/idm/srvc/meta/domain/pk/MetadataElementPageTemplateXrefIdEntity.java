@@ -1,8 +1,13 @@
 package org.openiam.idm.srvc.meta.domain.pk;
 
 import javax.persistence.Column;
+
+import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.meta.dto.pk.MetadataElementPageTemplateXrefId;
+
 import java.io.Serializable;
 
+@DozerDTOCorrespondence(MetadataElementPageTemplateXrefId.class)
 public class MetadataElementPageTemplateXrefIdEntity implements Serializable {
     @Column(name="TEMPLATE_ID", length = 32, nullable = false)
     private String metadataElementPageTemplateId;
@@ -15,51 +20,55 @@ public class MetadataElementPageTemplateXrefIdEntity implements Serializable {
     }
     public MetadataElementPageTemplateXrefIdEntity() {
     }
+	public String getMetadataElementPageTemplateId() {
+		return metadataElementPageTemplateId;
+	}
+	public void setMetadataElementPageTemplateId(
+			String metadataElementPageTemplateId) {
+		this.metadataElementPageTemplateId = metadataElementPageTemplateId;
+	}
+	public String getMetadataElementId() {
+		return metadataElementId;
+	}
+	public void setMetadataElementId(String metadataElementId) {
+		this.metadataElementId = metadataElementId;
+	}
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime
+				* result
+				+ ((metadataElementId == null) ? 0 : metadataElementId
+						.hashCode());
+		result = prime
+				* result
+				+ ((metadataElementPageTemplateId == null) ? 0
+						: metadataElementPageTemplateId.hashCode());
+		return result;
+	}
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		MetadataElementPageTemplateXrefIdEntity other = (MetadataElementPageTemplateXrefIdEntity) obj;
+		if (metadataElementId == null) {
+			if (other.metadataElementId != null)
+				return false;
+		} else if (!metadataElementId.equals(other.metadataElementId))
+			return false;
+		if (metadataElementPageTemplateId == null) {
+			if (other.metadataElementPageTemplateId != null)
+				return false;
+		} else if (!metadataElementPageTemplateId
+				.equals(other.metadataElementPageTemplateId))
+			return false;
+		return true;
+	}
 
-    public String getMetadataElementPageTemplateId() {
-        return metadataElementPageTemplateId;
-    }
-
-    public void setMetadataElementPageTemplateId(String metadataElementPageTemplateId) {
-        metadataElementPageTemplateId = metadataElementPageTemplateId;
-    }
-
-    public String getMetadataElementId() {
-        return metadataElementId;
-    }
-
-    public void setMetadataElementId(String metadataElementId) {
-        metadataElementId = metadataElementId;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-
-        MetadataElementPageTemplateXrefIdEntity that = (MetadataElementPageTemplateXrefIdEntity) o;
-
-        if (metadataElementId != null ? !metadataElementId.equals(that.metadataElementId) :
-            that.metadataElementId != null) {
-            return false;
-        }
-        if (metadataElementPageTemplateId != null ?
-            !metadataElementPageTemplateId.equals(that.metadataElementPageTemplateId) :
-            that.metadataElementPageTemplateId != null) {
-            return false;
-        }
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = metadataElementPageTemplateId != null ? metadataElementPageTemplateId.hashCode() : 0;
-        result = 31 * result + (metadataElementId != null ? metadataElementId.hashCode() : 0);
-        return result;
-    }
+   
 }

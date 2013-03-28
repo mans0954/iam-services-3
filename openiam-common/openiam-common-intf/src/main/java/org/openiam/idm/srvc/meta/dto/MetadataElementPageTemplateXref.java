@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.meta.dto;
 
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateXrefEntity;
+import org.openiam.idm.srvc.meta.dto.pk.MetadataElementPageTemplateXrefId;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -10,30 +11,17 @@ import java.io.Serializable;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "MetadataElementPageTemplateXref", propOrder = {
-        "metadataElementPageTemplateId",
-        "metadataElementId",
+        "id",
+        "template",
+        "metadataElement",
         "displayOrder" })
 @DozerDTOCorrespondence(MetadataElementPageTemplateXrefEntity.class)
 public class MetadataElementPageTemplateXref implements Serializable {
-    private String metadataElementPageTemplateId;
-    private String metadataElementId;
+	private MetadataElementPageTemplateXrefId id;
+    private MetadataElementPageTemplate template;
+    private MetadataElement metadataElement;
     private Integer displayOrder;
-
-    public String getMetadataElementPageTemplateId() {
-        return metadataElementPageTemplateId;
-    }
-
-    public void setMetadataElementPageTemplateId(String metadataElementPageTemplateId) {
-        this.metadataElementPageTemplateId = metadataElementPageTemplateId;
-    }
-
-    public String getMetadataElementId() {
-        return metadataElementId;
-    }
-
-    public void setMetadataElementId(String metadataElementId) {
-        this.metadataElementId = metadataElementId;
-    }
+    
 
     public Integer getDisplayOrder() {
         return displayOrder;
@@ -43,38 +31,62 @@ public class MetadataElementPageTemplateXref implements Serializable {
         this.displayOrder = displayOrder;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
+	public MetadataElementPageTemplateXrefId getId() {
+		return id;
+	}
 
-        MetadataElementPageTemplateXref that = (MetadataElementPageTemplateXref) o;
+	public void setId(MetadataElementPageTemplateXrefId id) {
+		this.id = id;
+	}
 
-        if (displayOrder != null ? !displayOrder.equals(that.displayOrder) : that.displayOrder != null) {
-            return false;
-        }
-        if (metadataElementId != null ? !metadataElementId.equals(that.metadataElementId) :
-            that.metadataElementId != null) {
-            return false;
-        }
-        if (metadataElementPageTemplateId != null ?
-            !metadataElementPageTemplateId.equals(that.metadataElementPageTemplateId) :
-            that.metadataElementPageTemplateId != null) {
-            return false;
-        }
+	public MetadataElementPageTemplate getTemplate() {
+		return template;
+	}
 
-        return true;
-    }
+	public void setTemplate(MetadataElementPageTemplate template) {
+		this.template = template;
+	}
 
-    @Override
-    public int hashCode() {
-        int result = metadataElementPageTemplateId != null ? metadataElementPageTemplateId.hashCode() : 0;
-        result = 31 * result + (metadataElementId != null ? metadataElementId.hashCode() : 0);
-        result = 31 * result + (displayOrder != null ? displayOrder.hashCode() : 0);
-        return result;
-    }
+	public MetadataElement getMetadataElement() {
+		return metadataElement;
+	}
+
+	public void setMetadataElement(MetadataElement metadataElement) {
+		this.metadataElement = metadataElement;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((displayOrder == null) ? 0 : displayOrder.hashCode());
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		MetadataElementPageTemplateXref other = (MetadataElementPageTemplateXref) obj;
+		if (displayOrder == null) {
+			if (other.displayOrder != null)
+				return false;
+		} else if (!displayOrder.equals(other.displayOrder))
+			return false;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		return true;
+	}
+
+    
+    
 }

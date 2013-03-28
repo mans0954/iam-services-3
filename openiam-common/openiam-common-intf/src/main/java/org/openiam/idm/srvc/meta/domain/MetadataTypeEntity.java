@@ -52,6 +52,9 @@ public class MetadataTypeEntity implements Serializable {
     @Column(name = "SYNC_MANAGED_SYS")
     @Type(type = "yes_no")
     private boolean syncManagedSys;
+    
+    @Column(name="GROUPING", length=100)
+    private String grouping;
 
     @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, cascade = { CascadeType.ALL })
     @JoinColumn(name = "TYPE_ID", referencedColumnName = "TYPE_ID")
@@ -122,6 +125,14 @@ public class MetadataTypeEntity implements Serializable {
 		this.syncManagedSys = syncManagedSys;
 	}
 
+	public String getGrouping() {
+		return grouping;
+	}
+
+	public void setGrouping(String grouping) {
+		this.grouping = grouping;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -129,6 +140,8 @@ public class MetadataTypeEntity implements Serializable {
 		result = prime * result + (active ? 1231 : 1237);
 		result = prime * result
 				+ ((description == null) ? 0 : description.hashCode());
+		result = prime * result
+				+ ((grouping == null) ? 0 : grouping.hashCode());
 		result = prime * result
 				+ ((metadataTypeId == null) ? 0 : metadataTypeId.hashCode());
 		result = prime * result + (syncManagedSys ? 1231 : 1237);
@@ -151,6 +164,11 @@ public class MetadataTypeEntity implements Serializable {
 				return false;
 		} else if (!description.equals(other.description))
 			return false;
+		if (grouping == null) {
+			if (other.grouping != null)
+				return false;
+		} else if (!grouping.equals(other.grouping))
+			return false;
 		if (metadataTypeId == null) {
 			if (other.metadataTypeId != null)
 				return false;
@@ -161,5 +179,5 @@ public class MetadataTypeEntity implements Serializable {
 		return true;
 	}
 
-    
+	
 }

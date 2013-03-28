@@ -38,6 +38,10 @@ public class MetadataTypeDAOImpl extends
     	} else {
     		criteria.add(Restrictions.eq("active", entity.isActive()));
     		criteria.add(Restrictions.eq("syncManagedSys", entity.isSyncManagedSys()));
+    		
+    		if(StringUtils.isNotBlank(entity.getGrouping())) {
+    			criteria.add(Restrictions.eq("grouping", entity.getGrouping()));
+    		}
     	}
     	return criteria;
 	}

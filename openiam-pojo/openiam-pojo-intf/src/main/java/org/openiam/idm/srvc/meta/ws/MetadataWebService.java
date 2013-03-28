@@ -64,6 +64,12 @@ public interface MetadataWebService {
     									    final @WebParam(name = "size", targetNamespace = "") int size);
     
     @WebMethod
+    public int countElementBeans(final @WebParam(name = "searchBean", targetNamespace = "") MetadataElementSearchBean searchBean);
+    
+    @WebMethod
+    public int countTypeBeans(final @WebParam(name = "searchBean", targetNamespace = "") MetadataTypeSearchBean searchBean);
+    
+    @WebMethod
     public Response saveMetadataType(final @WebParam(name = "dto", targetNamespace = "") MetadataType dto);
     
     @WebMethod

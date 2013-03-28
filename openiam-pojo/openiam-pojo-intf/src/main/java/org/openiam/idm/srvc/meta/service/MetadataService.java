@@ -2,6 +2,8 @@ package org.openiam.idm.srvc.meta.service;
 
 import java.util.List;
 
+import org.openiam.idm.searchbeans.MetadataElementSearchBean;
+import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
@@ -37,9 +39,13 @@ public interface MetadataService {
      */
 	public List<MetadataTypeEntity> getTypesInCategory(String categoryId);
 	
-	public List<MetadataElementEntity> findBeans(final MetadataElementEntity entity, final int from, final int size);
+	public List<MetadataElementEntity> findBeans(final MetadataElementSearchBean searchBean, final int from, final int size);
 	
-	public List<MetadataTypeEntity> findBeans(final MetadataTypeEntity entity, final int from, final int size);
+	public List<MetadataTypeEntity> findBeans(final MetadataTypeSearchBean searchBean, final int from, final int size);
+	
+	public int count(final MetadataElementSearchBean searchBean);
+	
+	public int count(final MetadataTypeSearchBean searchBean);
 	
 	public void save(final MetadataElementEntity entity);
 

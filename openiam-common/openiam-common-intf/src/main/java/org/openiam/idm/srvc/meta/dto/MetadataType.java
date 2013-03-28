@@ -24,7 +24,9 @@ import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
         "active", 
         "syncManagedSys", 
         "elementAttributes", 
-        "categories" })
+        "categories",
+        "grouping"
+})
 @DozerDTOCorrespondence(MetadataTypeEntity.class)
 public class MetadataType implements Serializable {
 
@@ -33,6 +35,8 @@ public class MetadataType implements Serializable {
 
     private boolean active;
     private boolean syncManagedSys;
+    
+    private String grouping;
 
     protected Map<String, MetadataElement> elementAttributes = new HashMap<String, MetadataElement>(
             0);
@@ -91,6 +95,22 @@ public class MetadataType implements Serializable {
 		this.syncManagedSys = syncManagedSys;
 	}
 
+	public String getGrouping() {
+		return grouping;
+	}
+
+	public void setGrouping(String grouping) {
+		this.grouping = grouping;
+	}
+
+	public boolean isActive() {
+		return active;
+	}
+
+	public boolean isSyncManagedSys() {
+		return syncManagedSys;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -98,6 +118,8 @@ public class MetadataType implements Serializable {
 		result = prime * result + (active ? 1231 : 1237);
 		result = prime * result
 				+ ((description == null) ? 0 : description.hashCode());
+		result = prime * result
+				+ ((grouping == null) ? 0 : grouping.hashCode());
 		result = prime * result
 				+ ((metadataTypeId == null) ? 0 : metadataTypeId.hashCode());
 		result = prime * result + (syncManagedSys ? 1231 : 1237);
@@ -120,6 +142,11 @@ public class MetadataType implements Serializable {
 				return false;
 		} else if (!description.equals(other.description))
 			return false;
+		if (grouping == null) {
+			if (other.grouping != null)
+				return false;
+		} else if (!grouping.equals(other.grouping))
+			return false;
 		if (metadataTypeId == null) {
 			if (other.metadataTypeId != null)
 				return false;
@@ -130,5 +157,5 @@ public class MetadataType implements Serializable {
 		return true;
 	}
 
-   
+	
 }
