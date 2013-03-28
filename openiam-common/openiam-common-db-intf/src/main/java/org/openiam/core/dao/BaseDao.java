@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 
+import org.openiam.idm.searchbeans.SearchBean;
+
 public interface BaseDao<T, PrimaryKey extends Serializable> {
 
   T findById(PrimaryKey id);
@@ -38,5 +40,9 @@ public interface BaseDao<T, PrimaryKey extends Serializable> {
   
   List<T> getByExample(T t, int startAt, int size);
   List<T> getByExample(T t);
+  
+  List<T> getByExample(SearchBean searchBean);
+  List<T> getByExample(SearchBean searchBean, int from, int size);
+  int count(SearchBean searchBean);
   int count(T t);
 }

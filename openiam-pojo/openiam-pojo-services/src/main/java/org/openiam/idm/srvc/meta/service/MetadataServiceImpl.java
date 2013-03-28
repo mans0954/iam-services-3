@@ -24,7 +24,6 @@ import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
-import org.openiam.idm.srvc.searchbean.converter.MetadataElementSearchBeanConverter;
 import org.openiam.idm.srvc.searchbean.converter.MetadataTypeSearchBeanConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,9 +42,6 @@ public class MetadataServiceImpl implements MetadataService {
     
     @Autowired
     private MetadataElementDAO metadataElementDao;
-    
-    @Autowired
-    private MetadataElementSearchBeanConverter metadataElementSearchBeanConverter;
     
     @Autowired
     private MetadataTypeSearchBeanConverter metadataTypeSearchBeanConverter;
@@ -84,8 +80,7 @@ public class MetadataServiceImpl implements MetadataService {
 		if(searchBean.hasMultipleKeys()) {
 			retVal = metadataElementDao.findByIds(searchBean.getKeys());
 		} else {
-			final MetadataElementEntity entity = metadataElementSearchBeanConverter.convert(searchBean);
-			retVal = metadataElementDao.getByExample(entity, from, size);
+			retVal = metadataElementDao.getByExample(searchBean, from, size);
 		}
 		return retVal;
 	}
@@ -119,7 +114,6 @@ public class MetadataServiceImpl implements MetadataService {
 				final ResourceEntity resource = new ResourceEntity();
 				resource.setName(String.format("%s_%s", entity.getAttributeName(), "" + System.currentTimeMillis()));
 	            resource.setResourceType(resourceTypeDAO.findById(uiWidgetResourceType));
-	            resource.setResourceId(null);
 	            resourceDAO.save(resource);
 	            entity.setResource(resource);
 				entity.setMetadataType(metadataTypeDao.findById(entity.getMetadataType().getMetadataTypeId()));
@@ -160,8 +154,7 @@ public class MetadataServiceImpl implements MetadataService {
 
 	@Override
 	public int count(final MetadataElementSearchBean searchBean) {
-		final MetadataElementEntity entity = metadataElementSearchBeanConverter.convert(searchBean);
-		return metadataElementDao.count(entity);
+		return metadataElementDao.count(searchBean);
 	}
 
 	@Override

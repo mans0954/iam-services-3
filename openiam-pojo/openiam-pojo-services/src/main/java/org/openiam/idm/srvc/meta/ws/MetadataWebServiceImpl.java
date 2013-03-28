@@ -43,7 +43,6 @@ import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.meta.service.MetadataService;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
-import org.openiam.idm.srvc.searchbean.converter.MetadataElementSearchBeanConverter;
 import org.openiam.idm.srvc.searchbean.converter.MetadataTypeSearchBeanConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -67,9 +66,6 @@ public class MetadataWebServiceImpl implements MetadataWebService {
 
     @Autowired
     private MetaDataElementDozerConverter metaDataElementDozerConverter;
-    
-    @Autowired
-    private MetadataElementSearchBeanConverter metadataElementSearchBeanConverter;
     
     @Autowired
     private MetadataTypeSearchBeanConverter metadataTypeSearchBeanConverter;
