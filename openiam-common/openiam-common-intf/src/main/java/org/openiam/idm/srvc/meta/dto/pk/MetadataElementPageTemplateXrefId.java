@@ -7,7 +7,16 @@ import org.openiam.idm.srvc.meta.domain.pk.MetadataElementPageTemplateXrefIdEnti
 
 @DozerDTOCorrespondence(MetadataElementPageTemplateXrefIdEntity.class)
 public class MetadataElementPageTemplateXrefId implements Serializable {
+	
+	public MetadataElementPageTemplateXrefId() {
+		
+	}
 
+	public MetadataElementPageTemplateXrefId(final String metadataElementPageTemplateId, final String metadataElementId) {
+		this.metadataElementPageTemplateId = metadataElementPageTemplateId;
+		this.metadataElementId = metadataElementId;
+	}
+	
 	private String metadataElementPageTemplateId;
 	private String metadataElementId;
 	

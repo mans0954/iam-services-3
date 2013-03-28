@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.meta.domain;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -179,6 +180,17 @@ public class MetadataElementEntity implements Serializable {
 
     public void setTemplateSet(Set<MetadataElementPageTemplateXrefEntity> templateSet) {
         this.templateSet = templateSet;
+    }
+    
+    public void addTemplate(final MetadataElementPageTemplateXrefEntity xref) {
+    	if(this.templateSet == null) {
+    		this.templateSet = new HashSet<MetadataElementPageTemplateXrefEntity>();
+    	}
+    	
+    	//TODO:  is this right?  displayOrder is taken into account in equals()
+    	if(!templateSet.contains(xref)) {
+    		templateSet.add(xref);
+    	}
     }
 
 	public Map<String, LanguageMappingEntity> getLanguageMap() {

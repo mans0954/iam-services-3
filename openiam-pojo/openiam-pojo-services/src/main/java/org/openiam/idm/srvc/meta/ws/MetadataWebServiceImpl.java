@@ -119,6 +119,7 @@ public class MetadataWebServiceImpl implements MetadataWebService {
 			
 			final MetadataTypeEntity entity = metaDataTypeDozerConverter.convertToEntity(dto, true);
 			metadataService.save(entity);
+			response.setResponseValue(entity.getMetadataTypeId());
 		} catch(BasicDataServiceException e) {
 			response.setErrorCode(e.getCode());
 			response.setResponseValue(ResponseStatus.FAILURE);
@@ -147,6 +148,7 @@ public class MetadataWebServiceImpl implements MetadataWebService {
 			}
 			
 			metadataService.save(entity);
+			response.setResponseValue(entity.getId());
 		} catch(BasicDataServiceException e) {
 			response.setErrorCode(e.getCode());
 			response.setResponseValue(ResponseStatus.FAILURE);

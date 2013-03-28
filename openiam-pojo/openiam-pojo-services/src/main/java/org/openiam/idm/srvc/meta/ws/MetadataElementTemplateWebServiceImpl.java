@@ -64,6 +64,7 @@ public class MetadataElementTemplateWebServiceImpl implements MetadataElementTem
 			final MetadataElementPageTemplateEntity entity = templateDozerConverter.convertToEntity(template, true);
 			templateService.save(entity);
 			response.setStatus(ResponseStatus.SUCCESS);
+			response.setResponseValue(entity.getId());
 		} catch(BasicDataServiceException e) {
 			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);

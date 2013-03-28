@@ -2,9 +2,12 @@ package org.openiam.idm.srvc.meta.service;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -13,6 +16,7 @@ import org.openiam.dozer.converter.MetaDataTypeDozerConverter;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateXrefEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
@@ -82,15 +86,28 @@ public class MetadataServiceImpl implements MetadataService {
 	public void save(MetadataElementEntity entity) {
 		if(entity != null) {
 			if(StringUtils.isNotBlank(entity.getId())) {
+				final Set<MetadataElementPageTemplateXrefEntity> incomingXrefs = (entity.getTemplateSet() != null) ? 
+						new HashSet<MetadataElementPageTemplateXrefEntity>(entity.getTemplateSet()) : 
+						new HashSet<MetadataElementPageTemplateXrefEntity>();
 				final MetadataElementEntity dbEntity = metadataElementDao.findById(entity.getId());
 				if(dbEntity != null) {
-					entity.setDefaultValueLanguageMap(dbEntity.getDefaultValueLanguageMap());
-					entity.setLanguageMap(dbEntity.getLanguageMap());
+					//entity.setDefaultValueLanguageMap(dbEntity.getDefaultValueLanguageMap());
+					//entity.setLanguageMap(dbEntity.getLanguageMap());
 					entity.setMetadataType(dbEntity.getMetadataType());
-					entity.setTemplateSet(dbEntity.getTemplateSet());
-					entity.setValidValues(dbEntity.getValidValues());
+					if(CollectionUtils.isNotEmpty(dbEntity.getTemplateSet())) {
+						for(final MetadataElementPageTemplateXrefEntity xref : dbEntity.getTemplateSet()) {
+							entity.addTemplate(xref);
+						}
+					}
+					//entity.setTemplateSet(dbEntity.getTemplateSet());
+					//entity.setValidValues(dbEntity.getValidValues());
 					entity.setResource(dbEntity.getResource());
 				}
+				/*
+				if(CollectionUtils.isNotEmpty(incomingXrefs)) {
+					
+				}
+				*/
 			}
 			metadataElementDao.merge(entity);
 		}
