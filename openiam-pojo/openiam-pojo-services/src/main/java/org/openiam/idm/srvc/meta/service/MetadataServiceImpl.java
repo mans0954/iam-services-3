@@ -20,9 +20,14 @@ import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateXrefEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
+import org.openiam.idm.srvc.res.service.ResourceDAO;
+import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.searchbean.converter.MetadataElementSearchBeanConverter;
 import org.openiam.idm.srvc.searchbean.converter.MetadataTypeSearchBeanConverter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -44,6 +49,15 @@ public class MetadataServiceImpl implements MetadataService {
     
     @Autowired
     private MetadataTypeSearchBeanConverter metadataTypeSearchBeanConverter;
+    
+    @Autowired
+    private ResourceTypeDAO resourceTypeDAO;
+    
+    @Autowired
+    private ResourceDAO resourceDAO;
+    
+    @Value("${org.openiam.resource.type.ui.widget}")
+    private String uiWidgetResourceType;
 
     private static final Log log = LogFactory.getLog(MetadataServiceImpl.class);
 
@@ -66,8 +80,14 @@ public class MetadataServiceImpl implements MetadataService {
 
 	@Override
 	public List<MetadataElementEntity> findBeans(final MetadataElementSearchBean searchBean, final int from, final int size) {
-		final MetadataElementEntity entity = metadataElementSearchBeanConverter.convert(searchBean);
-		return metadataElementDao.getByExample(entity, from, size);
+		List<MetadataElementEntity> retVal = null;
+		if(searchBean.hasMultipleKeys()) {
+			retVal = metadataElementDao.findByIds(searchBean.getKeys());
+		} else {
+			final MetadataElementEntity entity = metadataElementSearchBeanConverter.convert(searchBean);
+			retVal = metadataElementDao.getByExample(entity, from, size);
+		}
+		return retVal;
 	}
 	
 	@Override
@@ -86,28 +106,23 @@ public class MetadataServiceImpl implements MetadataService {
 	public void save(MetadataElementEntity entity) {
 		if(entity != null) {
 			if(StringUtils.isNotBlank(entity.getId())) {
-				final Set<MetadataElementPageTemplateXrefEntity> incomingXrefs = (entity.getTemplateSet() != null) ? 
-						new HashSet<MetadataElementPageTemplateXrefEntity>(entity.getTemplateSet()) : 
-						new HashSet<MetadataElementPageTemplateXrefEntity>();
 				final MetadataElementEntity dbEntity = metadataElementDao.findById(entity.getId());
 				if(dbEntity != null) {
 					//entity.setDefaultValueLanguageMap(dbEntity.getDefaultValueLanguageMap());
 					//entity.setLanguageMap(dbEntity.getLanguageMap());
 					entity.setMetadataType(dbEntity.getMetadataType());
-					if(CollectionUtils.isNotEmpty(dbEntity.getTemplateSet())) {
-						for(final MetadataElementPageTemplateXrefEntity xref : dbEntity.getTemplateSet()) {
-							entity.addTemplate(xref);
-						}
-					}
-					//entity.setTemplateSet(dbEntity.getTemplateSet());
+					entity.setTemplateSet(dbEntity.getTemplateSet());
 					//entity.setValidValues(dbEntity.getValidValues());
 					entity.setResource(dbEntity.getResource());
 				}
-				/*
-				if(CollectionUtils.isNotEmpty(incomingXrefs)) {
-					
-				}
-				*/
+			} else {
+				final ResourceEntity resource = new ResourceEntity();
+				resource.setName(String.format("%s_%s", entity.getAttributeName(), "" + System.currentTimeMillis()));
+	            resource.setResourceType(resourceTypeDAO.findById(uiWidgetResourceType));
+	            resource.setResourceId(null);
+	            resourceDAO.save(resource);
+	            entity.setResource(resource);
+				entity.setMetadataType(metadataTypeDao.findById(entity.getMetadataType().getMetadataTypeId()));
 			}
 			metadataElementDao.merge(entity);
 		}

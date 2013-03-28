@@ -1,9 +1,13 @@
 package org.openiam.idm.searchbeans;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -13,10 +17,12 @@ import org.openiam.idm.srvc.meta.dto.MetadataElement;
 	"required",
 	"attributeName",
 	"selfEditable",
-	"templateId"
+	"templateId",
+	"keySet"
 })
 public class MetadataElementSearchBean extends AbstractSearchBean<MetadataElement, String> implements SearchBean<MetadataElement, String> {
 
+	private Set<String> keySet;
 	private String metadataTypeId;
 	private boolean auditable;
 	private boolean required;
@@ -60,5 +66,35 @@ public class MetadataElementSearchBean extends AbstractSearchBean<MetadataElemen
 		this.templateId = templateId;
 	}
 	
+	@Override
+	public void setKey(final String key) {
+		if(keySet == null) {
+			keySet = new HashSet<String>();
+		}
+		keySet.add(key);
+	}
 	
+	public Set<String> getKeys() {
+		return keySet;
+	}
+	
+	public void addKey(final String key) {
+		if(this.keySet == null) {
+			this.keySet = new HashSet<String>();
+		}
+		this.keySet.add(key);
+	}
+	
+	public boolean hasMultipleKeys() {
+		return (keySet != null && keySet.size() > 1);
+	}
+	
+	public void setKeys(final Set<String> keySet) {
+		this.keySet = keySet;
+	}
+	
+	@Override
+	public String getKey() {
+		return (CollectionUtils.isNotEmpty(keySet)) ? keySet.iterator().next() : null;
+	}
 }

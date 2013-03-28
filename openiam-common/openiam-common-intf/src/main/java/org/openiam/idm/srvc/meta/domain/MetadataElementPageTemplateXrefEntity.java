@@ -22,11 +22,11 @@ public class MetadataElementPageTemplateXrefEntity implements Serializable {
     @Column(name="DISPLAY_ORDER", nullable = false)
     private Integer displayOrder;
 
-    @ManyToOne
+    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch=FetchType.LAZY)
     @JoinColumn(name = "TEMPLATE_ID", insertable = false, updatable = false)
     private MetadataElementPageTemplateEntity template;
 
-    @ManyToOne
+    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch=FetchType.LAZY)
     @JoinColumn(name = "METADATA_ELEMENT_ID", insertable = false, updatable = false)
     private MetadataElementEntity metadataElement;
 
