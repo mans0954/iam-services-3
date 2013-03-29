@@ -291,7 +291,20 @@
 					<spring-object bean="metadataWS" />
 				</component>
 			</service>
-		</model>	
+		</model>
+		
+		<model name="languageServiceModel">
+			<service name="languageService">
+				<inbound>
+					<inbound-endpoint address="${webservice.path}LanguageWebService" 		exchange-pattern="request-response">
+						<cxf:jaxws-service />
+					</inbound-endpoint>
+				</inbound>
+				<component>
+					<spring-object bean="languageWebService" />
+				</component>
+			</service>
+		</model>
 
 		<model name="emailServiceModel">
 			<service name="emailService">

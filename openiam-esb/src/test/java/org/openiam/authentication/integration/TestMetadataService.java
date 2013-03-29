@@ -6,6 +6,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
+import org.openiam.idm.srvc.lang.service.LanguageWebService;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplate;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
@@ -30,9 +31,19 @@ public class TestMetadataService extends AbstractTestNGSpringContextTests {
 	@Qualifier("metadataTemplateServiceClient")
 	private MetadataElementTemplateWebService templateWebService;
 	
+	@Autowired
+	@Qualifier("languageServiceClient")
+	private LanguageWebService languageWS;
+	
 	 @BeforeClass
 	 protected void setUp() throws Exception {
 		 
+	 }
+	 
+
+	 @Test
+	 public void testLanguages() {
+		 Assert.assertTrue(CollectionUtils.isNotEmpty(languageWS.getAll()));
 	 }
 	
 	@Test
@@ -80,7 +91,7 @@ public class TestMetadataService extends AbstractTestNGSpringContextTests {
 	}
 	
 	@Test
-	public void testCreateUpdateAndDelete() {
+	public void testCreateAndDeleteType() {
 		/* create */
 		final MetadataType type = new MetadataType();
 		type.setGrouping("" + System.currentTimeMillis());
@@ -93,6 +104,29 @@ public class TestMetadataService extends AbstractTestNGSpringContextTests {
 		assertSuccess(deleteResponse);
 		
 		Assert.assertNull(metadataWebService.findTypeById((String)saveResponse.getResponseValue()));
+	}
+	
+	@Test
+	public void testCreateUpdateAndDeleteSimpleTemplate() {
+		/* create */
+		MetadataElementPageTemplate template = new MetadataElementPageTemplate();
+		template.setName(System.currentTimeMillis() + "");
+		final Response saveResponse = templateWebService.save(template);
+		assertSuccess(saveResponse);
+		Assert.assertNotNull(saveResponse.getResponseValue());
+		template = templateWebService.findById((String)saveResponse.getResponseValue());
+		
+		final String newName = "" + System.currentTimeMillis();
+		template.setName(newName);
+		final Response updateResponse = templateWebService.save(template);
+		assertSuccess(updateResponse);
+		Assert.assertEquals(templateWebService.findById(template.getId()).getName(), newName);
+		
+		/* delete */
+		final Response deleteResponse = templateWebService.delete(template.getId());
+		assertSuccess(deleteResponse);
+		
+		Assert.assertNull(templateWebService.findById(template.getId()));
 	}
 	
 	private void assertSuccess(final Response response) {

@@ -157,4 +157,12 @@
 	  <property name="serviceClass" value="org.openiam.idm.srvc.meta.ws.MetadataElementTemplateWebService"/>
 	  <property name="address" value="${openiam.service_host}${openiam.idm.ws.path}MetadataElementTemplateWebService"/>
 	</bean>	
+	
+	<bean id="languageServiceClient" class="org.openiam.idm.srvc.lang.service.LanguageWebService"
+		  factory-bean="languageServiceClientFactory" factory-method="create"/>
+
+	<bean id="languageServiceClientFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
+	  <property name="serviceClass" value="org.openiam.idm.srvc.lang.service.LanguageWebService"/>
+	  <property name="address" value="${openiam.service_host}${openiam.idm.ws.path}LanguageWebService"/>
+	</bean>
 </beans>
