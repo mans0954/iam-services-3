@@ -12,16 +12,20 @@ import java.io.Serializable;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "MetadataElementPageTemplateXref", propOrder = {
         "id",
-        "template",
-        "metadataElement",
         "displayOrder" })
 @DozerDTOCorrespondence(MetadataElementPageTemplateXrefEntity.class)
 public class MetadataElementPageTemplateXref implements Serializable {
 	private MetadataElementPageTemplateXrefId id;
-    private MetadataElementPageTemplate template;
-    private MetadataElement metadataElement;
     private Integer displayOrder;
     
+    public MetadataElementPageTemplateXref() {
+    	
+    }
+    
+    public MetadataElementPageTemplateXref(final String templateId, final String metadataElementId, final Integer displayOrder) {
+    	this.id = new MetadataElementPageTemplateXrefId(templateId, metadataElementId);
+    	this.displayOrder = displayOrder;
+    }
 
     public Integer getDisplayOrder() {
         return displayOrder;
@@ -37,22 +41,6 @@ public class MetadataElementPageTemplateXref implements Serializable {
 
 	public void setId(MetadataElementPageTemplateXrefId id) {
 		this.id = id;
-	}
-
-	public MetadataElementPageTemplate getTemplate() {
-		return template;
-	}
-
-	public void setTemplate(MetadataElementPageTemplate template) {
-		this.template = template;
-	}
-
-	public MetadataElement getMetadataElement() {
-		return metadataElement;
-	}
-
-	public void setMetadataElement(MetadataElement metadataElement) {
-		this.metadataElement = metadataElement;
 	}
 
 	@Override

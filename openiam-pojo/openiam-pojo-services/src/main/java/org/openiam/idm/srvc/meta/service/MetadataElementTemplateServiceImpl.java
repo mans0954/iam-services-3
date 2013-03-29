@@ -6,11 +6,14 @@ import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openiam.idm.searchbeans.MetadataElementPageTemplateSearchBean;
 import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateXrefEntity;
+import org.openiam.idm.srvc.meta.domain.pk.MetadataElementPageTemplateXrefIdEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
+import org.openiam.idm.srvc.searchbean.converter.MetadataElementTemplateSearchBeanConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -34,17 +37,34 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 	@Autowired
 	private ResourceTypeDAO resourceTypeDAO;
 	
+	@Autowired
+	private MetadataElementTemplateSearchBeanConverter templateSearchBeanConverter;
+	
 	@Value("${org.openiam.resource.type.ui.template}")
     private String uiTemplateResourceType;
 
 	@Override
-	public List<MetadataElementPageTemplateEntity> findBeans(final MetadataElementPageTemplateEntity entity, final int from, final int size) {
-		return pageTemplateDAO.getByExample(entity, from, size);
+	public List<MetadataElementPageTemplateEntity> findBeans(final MetadataElementPageTemplateSearchBean searchBean, final int from, final int size) {
+		List<MetadataElementPageTemplateEntity> retVal = null;
+		if(searchBean.hasMultipleKeys()) {
+			retVal = pageTemplateDAO.findByIds(searchBean.getKeys());
+		} else {
+			final MetadataElementPageTemplateEntity entity = templateSearchBeanConverter.convert(searchBean);
+			retVal = pageTemplateDAO.getByExample(entity, from, size);
+		}
+		return retVal;
 	}
 
 	@Override
-	public int count(final MetadataElementPageTemplateEntity entity) {
-		return pageTemplateDAO.count(entity);
+	public int count(final MetadataElementPageTemplateSearchBean searchBean) {
+		int count = 0;
+		if(searchBean.hasMultipleKeys()) {
+			count = pageTemplateDAO.findByIds(searchBean.getKeys()).size();
+		} else {
+			final MetadataElementPageTemplateEntity entity = templateSearchBeanConverter.convert(searchBean);
+			count = pageTemplateDAO.count(entity);
+		}
+		return count;
 	}
 
 	@Override
@@ -68,14 +88,17 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 			if(CollectionUtils.isNotEmpty(entity.getMetadataElements())) {
 				for(final MetadataElementPageTemplateXrefEntity xref : entity.getMetadataElements()) {
 					if(xref != null) {
-						if(xref.getId() != null) {
-							final MetadataElementPageTemplateXrefEntity dbXref = xrefDAO.findById(xref.getId());
+						final MetadataElementPageTemplateXrefIdEntity id = xref.getId();
+						if(id != null && StringUtils.isNotBlank(id.getMetadataElementId())) {
+							final String metaElementId = id.getMetadataElementId();
+							final MetadataElementPageTemplateXrefEntity dbXref = xrefDAO.findById(id);
 							if(dbXref != null) {
 								renewedXrefs.add(dbXref);
+							} else {
+								xref.setTemplate(entity);
+								xref.setMetadataElement(elementDAO.findById(metaElementId));
+								renewedXrefs.add(xref);
 							}
-						} else {
-							xref.setTemplate(entity);
-							xref.setMetadataElement(elementDAO.findById(xref.getMetadataElement().getId()));
 						}
 					}
 				}

@@ -1,6 +1,8 @@
 package org.openiam.authentication.integration;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.openiam.base.ws.Response;
@@ -9,6 +11,7 @@ import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
 import org.openiam.idm.srvc.lang.service.LanguageWebService;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplate;
+import org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplateXref;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.meta.ws.MetadataElementTemplateWebService;
 import org.openiam.idm.srvc.meta.ws.MetadataWebService;
@@ -127,6 +130,59 @@ public class TestMetadataService extends AbstractTestNGSpringContextTests {
 		assertSuccess(deleteResponse);
 		
 		Assert.assertNull(templateWebService.findById(template.getId()));
+	}
+	
+	@Test
+	public void testMetadataTemplateXrefs() {
+		final MetadataType type = metadataWebService.findTypeBeans(new MetadataTypeSearchBean(), 0, Integer.MAX_VALUE).get(0);
+		
+		/* create */
+		MetadataElementPageTemplate template = new MetadataElementPageTemplate();
+		template.setName(System.currentTimeMillis() + "");
+		Response templateSaveResponse = templateWebService.save(template);
+		assertSuccess(templateSaveResponse);
+		Assert.assertNotNull(templateSaveResponse.getResponseValue());
+		
+		template = templateWebService.findById((String)templateSaveResponse.getResponseValue());
+		
+		/* create */
+		MetadataElement element = new MetadataElement();
+		element.setAttributeName(System.currentTimeMillis() + "");
+		element.setMetadataTypeId(type.getMetadataTypeId());
+		Response elementSaveResponse = metadataWebService.saveMetadataEntity(element);
+		assertSuccess(elementSaveResponse);
+		Assert.assertNotNull(elementSaveResponse.getResponseValue());
+		element = metadataWebService.findElementById((String)elementSaveResponse.getResponseValue());
+		
+		/* add xref */
+		MetadataElementPageTemplateXref xref = getXref(template, element, 2);
+		template.addMetdataElement(xref);
+		templateWebService.save(template);
+		
+		templateSaveResponse = templateWebService.save(template);
+		assertSuccess(templateSaveResponse);
+		
+		template = templateWebService.findById(template.getId());
+		Assert.assertTrue(CollectionUtils.isNotEmpty(template.getMetadataElements()));
+		template.removeMetdataElement(xref);
+		Assert.assertTrue(CollectionUtils.isEmpty(template.getMetadataElements()));
+		
+		templateSaveResponse = templateWebService.save(template);
+		assertSuccess(templateSaveResponse);
+		
+		template = templateWebService.findById(template.getId());
+		Assert.assertTrue(CollectionUtils.isEmpty(template.getMetadataElements()));
+		
+		
+		/* delete */
+		final Response deleteResponse = templateWebService.delete(template.getId());
+		assertSuccess(deleteResponse);
+		Assert.assertNull(templateWebService.findById(template.getId()));
+	}
+	
+	private MetadataElementPageTemplateXref getXref(final MetadataElementPageTemplate template, final MetadataElement element, final Integer order) {
+		final MetadataElementPageTemplateXref xref = new MetadataElementPageTemplateXref(template.getId(), element.getId(), order);
+		return xref;
 	}
 	
 	private void assertSuccess(final Response response) {
