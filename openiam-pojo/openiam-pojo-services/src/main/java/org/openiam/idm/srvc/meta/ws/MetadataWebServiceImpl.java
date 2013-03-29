@@ -104,6 +104,24 @@ public class MetadataWebServiceImpl implements MetadataWebService {
 		final List<MetadataTypeEntity> entityList = metadataService.findBeans(searchBean, from, size);
 		return (entityList != null) ? metaDataTypeDozerConverter.convertToDTOList(entityList, true) : null;
 	}
+	
+	@Override
+	public MetadataElement findElementById(final String id) {
+		final MetadataElementSearchBean searchBean = new MetadataElementSearchBean();
+		searchBean.setKey(id);
+		searchBean.setDeepCopy(true);
+		final List<MetadataElement> dtoList = findElementBeans(searchBean, 0, 1);
+		return (CollectionUtils.isNotEmpty(dtoList)) ? dtoList.get(0) : null;
+	}
+
+	@Override
+	public MetadataType findTypeById(final String id) {
+		final MetadataTypeSearchBean searchBean = new MetadataTypeSearchBean();
+		searchBean.setKey(id);
+		searchBean.setDeepCopy(true);
+		final List<MetadataType> dtoList = findTypeBeans(searchBean, 0, 1);
+		return (CollectionUtils.isNotEmpty(dtoList)) ? dtoList.get(0) : null;
+	}
 
 	@Override
 	public Response saveMetadataType(final MetadataType dto) {
@@ -116,6 +134,7 @@ public class MetadataWebServiceImpl implements MetadataWebService {
 			final MetadataTypeEntity entity = metaDataTypeDozerConverter.convertToEntity(dto, true);
 			metadataService.save(entity);
 			response.setResponseValue(entity.getMetadataTypeId());
+			response.setStatus(ResponseStatus.SUCCESS);
 		} catch(BasicDataServiceException e) {
 			response.setErrorCode(e.getCode());
 			response.setResponseValue(ResponseStatus.FAILURE);
@@ -145,6 +164,7 @@ public class MetadataWebServiceImpl implements MetadataWebService {
 			
 			metadataService.save(entity);
 			response.setResponseValue(entity.getId());
+			response.setStatus(ResponseStatus.SUCCESS);
 		} catch(BasicDataServiceException e) {
 			response.setErrorCode(e.getCode());
 			response.setResponseValue(ResponseStatus.FAILURE);
@@ -163,6 +183,7 @@ public class MetadataWebServiceImpl implements MetadataWebService {
 				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
 			}
 			metadataService.deleteMetdataType(id);
+			response.setStatus(ResponseStatus.SUCCESS);
 		} catch(BasicDataServiceException e) {
 			response.setErrorCode(e.getCode());
 			response.setResponseValue(ResponseStatus.FAILURE);
@@ -182,6 +203,7 @@ public class MetadataWebServiceImpl implements MetadataWebService {
 			}
 			
 			metadataService.deleteMetdataElement(id);
+			response.setStatus(ResponseStatus.SUCCESS);
 		} catch(BasicDataServiceException e) {
 			response.setErrorCode(e.getCode());
 			response.setResponseValue(ResponseStatus.FAILURE);

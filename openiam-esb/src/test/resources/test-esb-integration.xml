@@ -141,4 +141,20 @@
 	  <property name="serviceClass" value="org.openiam.idm.srvc.pswd.ws.PasswordWebService"/>
 	  <property name="address" value="${openiam.service_host}${openiam.idm.ws.path}PasswordWebService"/>
 	</bean>
+	
+	<bean id="metadataServiceClient" class="org.openiam.idm.srvc.meta.ws.MetadataWebService"
+          factory-bean="metadataServiceClientFactory" factory-method="create"/>
+
+	<bean id="metadataServiceClientFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
+	  <property name="serviceClass" value="org.openiam.idm.srvc.meta.ws.MetadataWebService"/>
+	  <property name="address" value="${openiam.service_host}${openiam.idm.ws.path}MetadataWebService"/>
+	</bean>	
+	
+	<bean id="metadataTemplateServiceClient" class="org.openiam.idm.srvc.meta.ws.MetadataElementTemplateWebService"
+		  factory-bean="metadataTemplateServiceClientFactory" factory-method="create"/>
+
+	<bean id="metadataTemplateServiceClientFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
+	  <property name="serviceClass" value="org.openiam.idm.srvc.meta.ws.MetadataElementTemplateWebService"/>
+	  <property name="address" value="${openiam.service_host}${openiam.idm.ws.path}MetadataElementTemplateWebService"/>
+	</bean>	
 </beans>

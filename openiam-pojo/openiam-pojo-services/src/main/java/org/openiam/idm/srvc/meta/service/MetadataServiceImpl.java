@@ -28,6 +28,7 @@ import org.openiam.idm.srvc.searchbean.converter.MetadataTypeSearchBeanConverter
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Data service implementation for Metadata.
@@ -98,6 +99,7 @@ public class MetadataServiceImpl implements MetadataService {
 	}
 
 	@Override
+	@Transactional
 	public void save(MetadataElementEntity entity) {
 		if(entity != null) {
 			if(StringUtils.isNotBlank(entity.getId())) {
@@ -118,11 +120,17 @@ public class MetadataServiceImpl implements MetadataService {
 	            entity.setResource(resource);
 				entity.setMetadataType(metadataTypeDao.findById(entity.getMetadataType().getMetadataTypeId()));
 			}
-			metadataElementDao.merge(entity);
+			
+			if(StringUtils.isBlank(entity.getId())) {
+				metadataElementDao.save(entity);
+			} else {
+				metadataElementDao.merge(entity);
+			}
 		}
 	}
 
 	@Override
+	@Transactional
 	public void save(MetadataTypeEntity entity) {
 		if(entity != null) {
 			if(StringUtils.isNotBlank(entity.getMetadataTypeId())) {
@@ -132,11 +140,16 @@ public class MetadataServiceImpl implements MetadataService {
 					entity.setElementAttributes(dbEntity.getElementAttributes());
 				}
 			}
-			metadataTypeDao.merge(entity);
+			if(StringUtils.isBlank(entity.getMetadataTypeId())) {
+				metadataTypeDao.save(entity);
+			} else {
+				metadataTypeDao.merge(entity);
+			}
 		}
 	}
 	
 	@Override
+	@Transactional
 	public void deleteMetdataElement(String id) {
 		final MetadataElementEntity entity = metadataElementDao.findById(id);
 		if(entity != null) {
@@ -145,6 +158,7 @@ public class MetadataServiceImpl implements MetadataService {
 	}
 
 	@Override
+	@Transactional
 	public void deleteMetdataType(String id) {
 		final MetadataTypeEntity entity = metadataTypeDao.findById(id);
 		if(entity != null) {

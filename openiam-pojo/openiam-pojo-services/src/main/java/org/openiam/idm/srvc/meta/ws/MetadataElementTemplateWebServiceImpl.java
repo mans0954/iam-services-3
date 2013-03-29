@@ -79,7 +79,7 @@ public class MetadataElementTemplateWebServiceImpl implements MetadataElementTem
 	public Response delete(final String templateId) {
 		final Response response = new Response();
 		try {
-			if(StringUtils.isNotBlank(templateId)) {
+			if(StringUtils.isBlank(templateId)) {
 				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
 			}
 			

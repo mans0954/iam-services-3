@@ -80,4 +80,10 @@ public interface MetadataWebService {
     
     @WebMethod
     public Response deleteMetadataElement(final @WebParam(name = "id", targetNamespace = "") String id);
+    
+    @WebMethod
+    public MetadataElement findElementById(final @WebParam(name = "id", targetNamespace = "") String id);
+    
+    @WebMethod
+    public MetadataType findTypeById(final @WebParam(name = "id", targetNamespace = "") String id);
 }
