@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -15,9 +16,12 @@ import org.openiam.dozer.converter.MetaDataElementDozerConverter;
 import org.openiam.dozer.converter.MetaDataTypeDozerConverter;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
+import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateXrefEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataValidValueEntity;
+import org.openiam.idm.srvc.meta.domain.WhereClauseConstants;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
@@ -102,6 +106,26 @@ public class MetadataServiceImpl implements MetadataService {
 	@Transactional
 	public void save(MetadataElementEntity entity) {
 		if(entity != null) {
+			if(MapUtils.isNotEmpty(entity.getLanguageMap())) {
+				for(final LanguageMappingEntity mapValue : entity.getLanguageMap().values()) {
+					setReferenceType(mapValue, WhereClauseConstants.META_ELEMENT_REFERENCE_TYPE);
+				}
+			}
+			if(MapUtils.isNotEmpty(entity.getDefaultValueLanguageMap())) {
+				for(final LanguageMappingEntity mapValue : entity.getDefaultValueLanguageMap().values()) {
+					setReferenceType(mapValue, WhereClauseConstants.META_ELEMENT_DEFAULT_VALUE_REFERENCE_TYPE);
+				}
+			}
+			if(CollectionUtils.isNotEmpty(entity.getValidValues())) {
+				for(final MetadataValidValueEntity validValue : entity.getValidValues()) {
+					if(validValue != null && MapUtils.isNotEmpty(validValue.getLanguageMap())) {
+						for(final LanguageMappingEntity mapValue : validValue.getLanguageMap().values()) {
+							setReferenceType(mapValue, WhereClauseConstants.VALID_VALUES_REFERENCE_TYPE);
+						}
+					}
+				}
+			}
+			
 			if(StringUtils.isNotBlank(entity.getId())) {
 				final MetadataElementEntity dbEntity = metadataElementDao.findById(entity.getId());
 				if(dbEntity != null) {
@@ -126,6 +150,12 @@ public class MetadataServiceImpl implements MetadataService {
 			} else {
 				metadataElementDao.merge(entity);
 			}
+		}
+	}
+	
+	private void setReferenceType(final LanguageMappingEntity entity, final String referenceType) {
+		if(entity != null) {
+			entity.setReferenceType(referenceType);
 		}
 	}
 
