@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.meta.domain;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -196,6 +197,15 @@ public class MetadataElementEntity implements Serializable {
 	public Map<String, LanguageMappingEntity> getLanguageMap() {
 		return languageMap;
 	}
+	
+	public void addLanguageMap(final Map<String, LanguageMappingEntity> languageMap) {
+		if(languageMap != null) {
+			if(this.languageMap == null) {
+				this.languageMap = new HashMap<String, LanguageMappingEntity>();
+			}
+			this.languageMap.putAll(languageMap);
+		}
+	}
 
 	public void setLanguageMap(Map<String, LanguageMappingEntity> languageMap) {
 		this.languageMap = languageMap;
@@ -221,6 +231,15 @@ public class MetadataElementEntity implements Serializable {
 	
 	public Map<String, LanguageMappingEntity> getDefaultValueLanguageMap() {
 		return defaultValueLanguageMap;
+	}
+	
+	public void addDefaultValueLanguageMap(final Map<String, LanguageMappingEntity> defaultValueLanguageMap) {
+		if(defaultValueLanguageMap != null) {
+			if(this.defaultValueLanguageMap == null) {
+				this.defaultValueLanguageMap = new HashMap<String, LanguageMappingEntity>();
+			}
+			this.defaultValueLanguageMap.putAll(defaultValueLanguageMap);
+		}
 	}
 
 	public void setDefaultValueLanguageMap(

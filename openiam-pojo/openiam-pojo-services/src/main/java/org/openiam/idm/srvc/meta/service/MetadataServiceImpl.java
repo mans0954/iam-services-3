@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.meta.service;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -57,6 +58,9 @@ public class MetadataServiceImpl implements MetadataService {
     @Autowired
     private ResourceDAO resourceDAO;
     
+    @Autowired
+    private MetadataValidValueDAO validValueDAO;
+    
     @Value("${org.openiam.resource.type.ui.widget}")
     private String uiWidgetResourceType;
 
@@ -106,56 +110,112 @@ public class MetadataServiceImpl implements MetadataService {
 	@Transactional
 	public void save(MetadataElementEntity entity) {
 		if(entity != null) {
-			if(MapUtils.isNotEmpty(entity.getLanguageMap())) {
-				for(final LanguageMappingEntity mapValue : entity.getLanguageMap().values()) {
-					setReferenceType(mapValue, WhereClauseConstants.META_ELEMENT_REFERENCE_TYPE);
-				}
-			}
-			if(MapUtils.isNotEmpty(entity.getDefaultValueLanguageMap())) {
-				for(final LanguageMappingEntity mapValue : entity.getDefaultValueLanguageMap().values()) {
-					setReferenceType(mapValue, WhereClauseConstants.META_ELEMENT_DEFAULT_VALUE_REFERENCE_TYPE);
-				}
-			}
-			if(CollectionUtils.isNotEmpty(entity.getValidValues())) {
-				for(final MetadataValidValueEntity validValue : entity.getValidValues()) {
-					if(validValue != null && MapUtils.isNotEmpty(validValue.getLanguageMap())) {
-						for(final LanguageMappingEntity mapValue : validValue.getLanguageMap().values()) {
-							setReferenceType(mapValue, WhereClauseConstants.VALID_VALUES_REFERENCE_TYPE);
-						}
-					}
-				}
-			}
-			
-			if(StringUtils.isNotBlank(entity.getId())) {
-				final MetadataElementEntity dbEntity = metadataElementDao.findById(entity.getId());
-				if(dbEntity != null) {
-					//entity.setDefaultValueLanguageMap(dbEntity.getDefaultValueLanguageMap());
-					//entity.setLanguageMap(dbEntity.getLanguageMap());
-					entity.setMetadataType(dbEntity.getMetadataType());
-					entity.setTemplateSet(dbEntity.getTemplateSet());
-					//entity.setValidValues(dbEntity.getValidValues());
-					entity.setResource(dbEntity.getResource());
-				}
-			} else {
+			if(StringUtils.isBlank(entity.getId())) {
 				final ResourceEntity resource = new ResourceEntity();
 				resource.setName(String.format("%s_%s", entity.getAttributeName(), "" + System.currentTimeMillis()));
 	            resource.setResourceType(resourceTypeDAO.findById(uiWidgetResourceType));
 	            resourceDAO.save(resource);
 	            entity.setResource(resource);
 				entity.setMetadataType(metadataTypeDao.findById(entity.getMetadataType().getMetadataTypeId()));
-			}
-			
-			if(StringUtils.isBlank(entity.getId())) {
+				
+				final Map<String, LanguageMappingEntity> languageMap = entity.getLanguageMap();
+				final Map<String, LanguageMappingEntity> defaultValueLanguageMap = entity.getDefaultValueLanguageMap();
+				final Set<MetadataValidValueEntity> validValues = entity.getValidValues();
+				entity.setLanguageMap(null);
+				entity.setDefaultValueLanguageMap(null);
+				entity.setValidValues(null);
+				
 				metadataElementDao.save(entity);
+				entity.addLanguageMap(languageMap);
+				entity.addDefaultValueLanguageMap(defaultValueLanguageMap);
+				addOrReplaceValidValues(entity, validValues);
+				doCollectionsArithmetic(entity);
+				metadataElementDao.update(entity);
 			} else {
+				/* save off */
+				final Map<String, LanguageMappingEntity> languageMap = entity.getLanguageMap();
+				final Map<String, LanguageMappingEntity> defaultValueLanguageMap = entity.getDefaultValueLanguageMap();
+				final Set<MetadataValidValueEntity> validValues = entity.getValidValues();
+				
+				final MetadataElementEntity dbEntity = metadataElementDao.findById(entity.getId());
+				entity.setValidValues(dbEntity.getValidValues());
+				entity.setLanguageMap(dbEntity.getLanguageMap());
+				entity.setDefaultValueLanguageMap(dbEntity.getDefaultValueLanguageMap());
+				entity.addLanguageMap(languageMap);
+				entity.addDefaultValueLanguageMap(defaultValueLanguageMap);
+				addOrReplaceValidValues(entity, validValues);
+				doCollectionsArithmetic(entity);
+			
+				/* don't let the caller update these */
+				entity.setMetadataType(dbEntity.getMetadataType());
+				entity.setTemplateSet(dbEntity.getTemplateSet());
+				entity.setResource(dbEntity.getResource());
+			
 				metadataElementDao.merge(entity);
 			}
 		}
 	}
 	
-	private void setReferenceType(final LanguageMappingEntity entity, final String referenceType) {
+
+	private void addOrReplaceValidValues(final MetadataElementEntity entity, final Set<MetadataValidValueEntity> validValues) {
+		if(entity != null) {
+			if(entity.getValidValues() == null) {
+				entity.setValidValues(new HashSet<MetadataValidValueEntity>());
+			}
+			final Set<MetadataValidValueEntity> persistentSet = entity.getValidValues();
+			if(CollectionUtils.isEmpty(validValues)) {
+				persistentSet.clear();
+			} else {
+				final Set<String> idsToFlush = new HashSet<String>();
+				for(final MetadataValidValueEntity validValue : validValues) {
+					if(StringUtils.isNotBlank(validValue.getId())) {
+						idsToFlush.add(validValue.getId());
+					}
+				}
+				for(final Iterator<MetadataValidValueEntity> it = persistentSet.iterator(); it.hasNext();) {
+					final MetadataValidValueEntity validValue = it.next();
+					if(idsToFlush.contains(validValue.getId())) {
+						it.remove();
+					}
+				}
+				persistentSet.addAll(validValues);
+			}
+		}
+	}
+	
+	private void doCollectionsArithmetic(final MetadataElementEntity entity) {
+		if(MapUtils.isNotEmpty(entity.getLanguageMap())) {
+			for(final LanguageMappingEntity mapValue : entity.getLanguageMap().values()) {
+				setReferenceType(mapValue, WhereClauseConstants.META_ELEMENT_REFERENCE_TYPE, entity.getId());
+			}
+		}
+		if(MapUtils.isNotEmpty(entity.getDefaultValueLanguageMap())) {
+			for(final LanguageMappingEntity mapValue : entity.getDefaultValueLanguageMap().values()) {
+				setReferenceType(mapValue, WhereClauseConstants.META_ELEMENT_DEFAULT_VALUE_REFERENCE_TYPE, entity.getId());
+			}
+		}
+		
+		if(CollectionUtils.isNotEmpty(entity.getValidValues())) {
+			for(final MetadataValidValueEntity validValue : entity.getValidValues()) {
+				if(validValue != null) {
+					if(StringUtils.isBlank(validValue.getId())) {
+						validValueDAO.save(validValue);
+					} 
+					
+					if(MapUtils.isNotEmpty(validValue.getLanguageMap())) {
+						for(final LanguageMappingEntity mapValue : validValue.getLanguageMap().values()) {
+							setReferenceType(mapValue, WhereClauseConstants.VALID_VALUES_REFERENCE_TYPE, validValue.getId());
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	private void setReferenceType(final LanguageMappingEntity entity, final String referenceType, final String referenceId) {
 		if(entity != null) {
 			entity.setReferenceType(referenceType);
+			entity.setReferenceId(referenceId);
 		}
 	}
 

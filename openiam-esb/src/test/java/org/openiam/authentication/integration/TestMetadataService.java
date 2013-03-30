@@ -1,18 +1,27 @@
 package org.openiam.authentication.integration;
 
+import groovy.xml.Entity;
+
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.RandomStringUtils;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
+import org.openiam.idm.srvc.lang.dto.Language;
+import org.openiam.idm.srvc.lang.dto.LanguageMapping;
 import org.openiam.idm.srvc.lang.service.LanguageWebService;
+import org.openiam.idm.srvc.meta.domain.WhereClauseConstants;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplate;
 import org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplateXref;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
+import org.openiam.idm.srvc.meta.dto.MetadataValidValue;
 import org.openiam.idm.srvc.meta.ws.MetadataElementTemplateWebService;
 import org.openiam.idm.srvc.meta.ws.MetadataWebService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -180,9 +189,64 @@ public class TestMetadataService extends AbstractTestNGSpringContextTests {
 		Assert.assertNull(templateWebService.findById(template.getId()));
 	}
 	
+	@Test
+	public void testMetdataEntityCollections() {
+		final List<Language> languageList = languageWS.getAll();
+		final MetadataType type = metadataWebService.findTypeBeans(new MetadataTypeSearchBean(), 0, Integer.MAX_VALUE).get(0);
+		
+		MetadataElement element = new MetadataElement();
+		element.setAttributeName(System.currentTimeMillis() + "");
+		element.setMetadataTypeId(type.getMetadataTypeId());
+		
+		Response elementSaveResponse = metadataWebService.saveMetadataEntity(element);
+		assertSuccess(elementSaveResponse);
+		Assert.assertNotNull(elementSaveResponse.getResponseValue());
+		element = metadataWebService.findElementById((String)elementSaveResponse.getResponseValue());
+		
+		element.setDefaultValueLanguageMap(getLanguageMap(element.getId(), WhereClauseConstants.META_ELEMENT_DEFAULT_VALUE_REFERENCE_TYPE));
+		element.setLanguageMap(getLanguageMap(element.getId(), WhereClauseConstants.META_ELEMENT_REFERENCE_TYPE));
+		element.setValidValues(getValidValues(element));
+		elementSaveResponse = metadataWebService.saveMetadataEntity(element);
+		assertSuccess(elementSaveResponse);
+		element = metadataWebService.findElementById((String)elementSaveResponse.getResponseValue());
+		Assert.assertEquals(element.getLanguageMap().size(), languageList.size());
+		Assert.assertEquals(element.getDefaultValueLanguageMap().size(), languageList.size());
+		Assert.assertTrue(CollectionUtils.isNotEmpty(element.getValidValues()));
+		
+		final Response deleteResponse = metadataWebService.deleteMetadataElement(element.getId());
+		assertSuccess(deleteResponse);
+		Assert.assertNull(metadataWebService.findElementById(element.getId()));
+	}
+	
 	private MetadataElementPageTemplateXref getXref(final MetadataElementPageTemplate template, final MetadataElement element, final Integer order) {
 		final MetadataElementPageTemplateXref xref = new MetadataElementPageTemplateXref(template.getId(), element.getId(), order);
 		return xref;
+	}
+	
+	private Map<String, LanguageMapping> getLanguageMap(final String referenceId, final String referenceType) {
+		final List<Language> languageList = languageWS.getAll();
+		final Map<String, LanguageMapping> languageMap = new HashMap<String, LanguageMapping>();
+		for(final Language language : languageList) {
+			final LanguageMapping mapping = new LanguageMapping();
+			mapping.setLanguageId(language.getLanguageId());
+			mapping.setReferenceId(referenceId);
+			mapping.setReferenceType(referenceType);
+			mapping.setValue(RandomStringUtils.randomAlphanumeric(3));
+			languageMap.put(language.getLanguageId(), mapping);
+		}
+		return languageMap;
+	}
+	
+	private Set<MetadataValidValue> getValidValues(final MetadataElement element) {
+		final Set<MetadataValidValue> retVal = new HashSet<MetadataValidValue>();
+		for(int i = 0; i < 6; i++) {
+			final MetadataValidValue value = new MetadataValidValue();
+			value.setLanguageMap(getLanguageMap(null, WhereClauseConstants.VALID_VALUES_REFERENCE_TYPE));
+			value.setMetadataEntityId(element.getId());
+			value.setUiValue(RandomStringUtils.randomAlphanumeric(3));
+			retVal.add(value);
+		}
+		return retVal;
 	}
 	
 	private void assertSuccess(final Response response) {
