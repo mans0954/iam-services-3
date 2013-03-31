@@ -50,8 +50,8 @@ public class MetadataValidValueEntity implements Serializable {
 	@Column(name="UI_VALUE", length=200)
 	private String uiValue;
 	
-	@OneToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
-    @JoinColumn(name = "REFERENCE_ID", referencedColumnName="ID")
+	@OneToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY, mappedBy="referenceId")
+    //@JoinColumn(name = "REFERENCE_ID", referencedColumnName="ID")
 	@Where(clause="REFERENCE_TYPE='MetadataValidValueEntity'")
     @MapKey(name = "languageId")
 	@Fetch(FetchMode.SUBSELECT)

@@ -4,8 +4,10 @@ import groovy.xml.Entity;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -208,6 +210,26 @@ public class TestMetadataService extends AbstractTestNGSpringContextTests {
 		Assert.assertEquals(element.getDefaultValueLanguageMap().size(), languageList.size());
 		Assert.assertEquals(element.getValidValues().size(), 6);
 		
+		/* remove one mapping from each collection, confirm that it was delted from DB */
+		final Iterator<Entry<String, LanguageMapping>> defaultIterator = element.getDefaultValueLanguageMap().entrySet().iterator();
+		defaultIterator.next();
+		defaultIterator.remove();
+		
+		final Iterator<Entry<String, LanguageMapping>> languageIterator = element.getLanguageMap().entrySet().iterator();
+		languageIterator.next();
+		languageIterator.remove();
+		
+		final Iterator<MetadataValidValue> validValueIterator = element.getValidValues().iterator();
+		validValueIterator.next();
+		validValueIterator.remove();
+		
+		elementSaveResponse  = metadataWebService.saveMetadataEntity(element);
+		assertSuccess(elementSaveResponse);
+		element = metadataWebService.findElementById((String)elementSaveResponse.getResponseValue());
+		Assert.assertEquals(element.getLanguageMap().size(), languageList.size());
+		Assert.assertEquals(element.getDefaultValueLanguageMap().size(), languageList.size());
+		Assert.assertEquals(element.getValidValues().size(), 5);
+		
 		final Response deleteResponse = metadataWebService.deleteMetadataElement(element.getId());
 		assertSuccess(deleteResponse);
 		Assert.assertNull(metadataWebService.findElementById(element.getId()));
@@ -237,7 +259,7 @@ public class TestMetadataService extends AbstractTestNGSpringContextTests {
 		Assert.assertEquals(element.getDefaultValueLanguageMap().size(), languageList.size());
 		Assert.assertEquals(element.getValidValues().size(), 6);
 		
-		/*
+		/* remove all collections - confirm removed */
 		element.setDefaultValueLanguageMap(new HashMap<String, LanguageMapping>());
 		element.setLanguageMap(new HashMap<String, LanguageMapping>());
 		elementSaveResponse = metadataWebService.saveMetadataEntity(element);
@@ -245,7 +267,6 @@ public class TestMetadataService extends AbstractTestNGSpringContextTests {
 		element = metadataWebService.findElementById((String)elementSaveResponse.getResponseValue());
 		Assert.assertEquals(element.getLanguageMap().size(), languageList.size());
 		Assert.assertEquals(element.getDefaultValueLanguageMap().size(), languageList.size());
-		*/
 		
 		final Response deleteResponse = metadataWebService.deleteMetadataElement(element.getId());
 		assertSuccess(deleteResponse);
