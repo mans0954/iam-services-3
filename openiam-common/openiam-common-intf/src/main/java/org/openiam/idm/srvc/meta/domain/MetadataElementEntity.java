@@ -24,6 +24,8 @@ import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.Where;
@@ -83,10 +85,11 @@ public class MetadataElementEntity implements Serializable {
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "metadataElement", fetch = FetchType.LAZY)
     private Set<MetadataElementPageTemplateXrefEntity> templateSet;
     
-    @OneToMany(cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
-    @JoinColumn(name = "REFERENCE_ID", insertable = true, updatable = true)
+    @OneToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "REFERENCE_ID", referencedColumnName="METADATA_ID")
 	@Where(clause="REFERENCE_TYPE='MetadataElementEntity'")
     @MapKey(name = "languageId")
+    @Fetch(FetchMode.SUBSELECT)
     private Map<String, LanguageMappingEntity> languageMap;
     
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "entity", fetch = FetchType.LAZY)
@@ -95,10 +98,11 @@ public class MetadataElementEntity implements Serializable {
     @Column(name="STATIC_DEFAULT_VALUE", length=400)
     private String staticDefaultValue;
     
-    @OneToMany(cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
-    @JoinColumn(name = "REFERENCE_ID", insertable = true, updatable = true)
+    @OneToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "REFERENCE_ID", referencedColumnName="METADATA_ID")
 	@Where(clause="REFERENCE_TYPE='MetadataElementDefaultValues'")
     @MapKey(name = "languageId")
+    @Fetch(FetchMode.SUBSELECT)
 	private Map<String, LanguageMappingEntity> defaultValueLanguageMap;
     
 
@@ -197,15 +201,6 @@ public class MetadataElementEntity implements Serializable {
 	public Map<String, LanguageMappingEntity> getLanguageMap() {
 		return languageMap;
 	}
-	
-	public void addLanguageMap(final Map<String, LanguageMappingEntity> languageMap) {
-		if(languageMap != null) {
-			if(this.languageMap == null) {
-				this.languageMap = new HashMap<String, LanguageMappingEntity>();
-			}
-			this.languageMap.putAll(languageMap);
-		}
-	}
 
 	public void setLanguageMap(Map<String, LanguageMappingEntity> languageMap) {
 		this.languageMap = languageMap;
@@ -226,20 +221,9 @@ public class MetadataElementEntity implements Serializable {
 	public void setStaticDefaultValue(String staticDefaultValue) {
 		this.staticDefaultValue = staticDefaultValue;
 	}
-
-	
 	
 	public Map<String, LanguageMappingEntity> getDefaultValueLanguageMap() {
 		return defaultValueLanguageMap;
-	}
-	
-	public void addDefaultValueLanguageMap(final Map<String, LanguageMappingEntity> defaultValueLanguageMap) {
-		if(defaultValueLanguageMap != null) {
-			if(this.defaultValueLanguageMap == null) {
-				this.defaultValueLanguageMap = new HashMap<String, LanguageMappingEntity>();
-			}
-			this.defaultValueLanguageMap.putAll(defaultValueLanguageMap);
-		}
 	}
 
 	public void setDefaultValueLanguageMap(
