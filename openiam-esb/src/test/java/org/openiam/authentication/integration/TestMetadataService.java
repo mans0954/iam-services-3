@@ -200,11 +200,13 @@ public class TestMetadataService extends AbstractTestNGSpringContextTests {
 		
 		element.setDefaultValueLanguageMap(getLanguageMap(element.getId(), WhereClauseConstants.META_ELEMENT_DEFAULT_VALUE_REFERENCE_TYPE));
 		element.setLanguageMap(getLanguageMap(element.getId(), WhereClauseConstants.META_ELEMENT_REFERENCE_TYPE));
+		element.setValidValues(getValidValues(element));
 		Response elementSaveResponse  = metadataWebService.saveMetadataEntity(element);
 		assertSuccess(elementSaveResponse);
 		element = metadataWebService.findElementById((String)elementSaveResponse.getResponseValue());
 		Assert.assertEquals(element.getLanguageMap().size(), languageList.size());
 		Assert.assertEquals(element.getDefaultValueLanguageMap().size(), languageList.size());
+		Assert.assertEquals(element.getValidValues().size(), 6);
 		
 		final Response deleteResponse = metadataWebService.deleteMetadataElement(element.getId());
 		assertSuccess(deleteResponse);
@@ -227,11 +229,13 @@ public class TestMetadataService extends AbstractTestNGSpringContextTests {
 		
 		element.setDefaultValueLanguageMap(getLanguageMap(element.getId(), WhereClauseConstants.META_ELEMENT_DEFAULT_VALUE_REFERENCE_TYPE));
 		element.setLanguageMap(getLanguageMap(element.getId(), WhereClauseConstants.META_ELEMENT_REFERENCE_TYPE));
+		element.setValidValues(getValidValues(element));
 		elementSaveResponse = metadataWebService.saveMetadataEntity(element);
 		assertSuccess(elementSaveResponse);
 		element = metadataWebService.findElementById((String)elementSaveResponse.getResponseValue());
 		Assert.assertEquals(element.getLanguageMap().size(), languageList.size());
 		Assert.assertEquals(element.getDefaultValueLanguageMap().size(), languageList.size());
+		Assert.assertEquals(element.getValidValues().size(), 6);
 		
 		/*
 		element.setDefaultValueLanguageMap(new HashMap<String, LanguageMapping>());

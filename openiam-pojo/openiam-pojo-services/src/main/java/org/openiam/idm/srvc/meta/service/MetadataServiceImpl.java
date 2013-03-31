@@ -118,6 +118,7 @@ public class MetadataServiceImpl implements MetadataService {
 		if(entity != null) {
 			final Map<String, LanguageMappingEntity> languageMap = entity.getLanguageMap();
 			final Map<String, LanguageMappingEntity> defaultValueLanguageMap = entity.getDefaultValueLanguageMap();
+			final Set<MetadataValidValueEntity> validValues = entity.getValidValues();
 			
 			if(StringUtils.isBlank(entity.getId())) {
 				final ResourceEntity resource = new ResourceEntity();
@@ -135,8 +136,8 @@ public class MetadataServiceImpl implements MetadataService {
 				metadataElementDao.save(entity);
 				entity.setLanguageMap(mergeLanguageMaps(entity.getLanguageMap(), languageMap));
 				entity.setDefaultValueLanguageMap(mergeLanguageMaps(entity.getDefaultValueLanguageMap(), defaultValueLanguageMap));
+				entity.setValidValues(mergeValidValues(entity.getValidValues(), validValues));
 				doCollectionsArithmetic(entity);
-				metadataElementDao.merge(entity);
 			} else {
 				final MetadataElementEntity dbEntity = metadataElementDao.findById(entity.getId());
 				entity.setValidValues(dbEntity.getValidValues());
@@ -145,16 +146,23 @@ public class MetadataServiceImpl implements MetadataService {
 				
 				entity.setLanguageMap(mergeLanguageMaps(entity.getLanguageMap(), languageMap));
 				entity.setDefaultValueLanguageMap(mergeLanguageMaps(entity.getDefaultValueLanguageMap(), defaultValueLanguageMap));
-				entity.setValidValues(dbEntity.getValidValues());
+				entity.setValidValues(mergeValidValues(dbEntity.getValidValues(), validValues));
 				doCollectionsArithmetic(entity);
 			
 				/* don't let the caller update these */
 				entity.setMetadataType(dbEntity.getMetadataType());
 				entity.setTemplateSet(dbEntity.getTemplateSet());
 				entity.setResource(dbEntity.getResource());
-			
-				metadataElementDao.merge(entity);
 			}
+			
+			if(CollectionUtils.isNotEmpty(entity.getValidValues())) {
+				for(final MetadataValidValueEntity validValue : entity.getValidValues()) {
+					validValue.setEntity(entity);
+					save(validValue);
+				}
+			}
+			
+			metadataElementDao.merge(entity);
 		}
 	}
 	
@@ -219,6 +227,48 @@ public class MetadataServiceImpl implements MetadataService {
 		return retVal;
 	}
 	
+	private Set<MetadataValidValueEntity> mergeValidValues(final Set<MetadataValidValueEntity> persistentSet, Set<MetadataValidValueEntity> transientSet) {
+		final Set<MetadataValidValueEntity> retval = (persistentSet != null) ? persistentSet : new HashSet<MetadataValidValueEntity>();
+		transientSet = (transientSet != null) ? transientSet : new HashSet<MetadataValidValueEntity>();
+		
+		/* add new entities */
+		for(final MetadataValidValueEntity transientEntity : transientSet) {
+			boolean exists = false;
+			if(StringUtils.isNotBlank(transientEntity.getId())) {
+				for(final MetadataValidValueEntity persistentEntity : retval) {
+					if(StringUtils.equals(persistentEntity.getId(), transientEntity.getId())) {
+						transientEntity.setUiValue(persistentEntity.getUiValue());
+						exists = true;
+					}
+				}
+			}
+			
+			if(!exists) {
+				retval.add(transientEntity);
+			}
+		}
+		
+		/* purge old entities */
+		for(final Iterator<MetadataValidValueEntity> it = retval.iterator(); it.hasNext();) {
+			boolean exists = false;
+			final MetadataValidValueEntity persistentEntity = it.next();
+			if(StringUtils.isNotBlank(persistentEntity.getId())) {
+				for(final MetadataValidValueEntity transientEntity : transientSet) {
+					if(StringUtils.equals(persistentEntity.getId(), transientEntity.getId())) {
+						transientEntity.setUiValue(persistentEntity.getUiValue());
+						exists = true;
+					}
+				}
+			
+				if(!exists) {
+					it.remove();
+				}
+			}
+		}
+		
+		return retval;
+	}
+	
 	private void doCollectionsArithmetic(final MetadataElementEntity entity) {
 		if(MapUtils.isNotEmpty(entity.getLanguageMap())) {
 			for(final LanguageMappingEntity mapValue : entity.getLanguageMap().values()) {
@@ -228,6 +278,15 @@ public class MetadataServiceImpl implements MetadataService {
 		if(MapUtils.isNotEmpty(entity.getDefaultValueLanguageMap())) {
 			for(final LanguageMappingEntity mapValue : entity.getDefaultValueLanguageMap().values()) {
 				setReferenceType(mapValue, WhereClauseConstants.META_ELEMENT_DEFAULT_VALUE_REFERENCE_TYPE, entity.getId());
+			}
+		}
+		if(CollectionUtils.isNotEmpty(entity.getValidValues())) {
+			for(final MetadataValidValueEntity validValue : entity.getValidValues()) {
+				if(MapUtils.isNotEmpty(validValue.getLanguageMap())) {
+					for(final LanguageMappingEntity mapValue : validValue.getLanguageMap().values()) {
+						setReferenceType(mapValue, WhereClauseConstants.VALID_VALUES_REFERENCE_TYPE, validValue.getId());
+					}
+				}
 			}
 		}
 	}
@@ -327,16 +386,13 @@ public class MetadataServiceImpl implements MetadataService {
 			entity.setEntity(metadataElementDao.findById(entity.getEntity().getId()));
 			validValueDAO.save(entity);
 			entity.setLanguageMap(mergeLanguageMaps(entity.getLanguageMap(), languageMap));
-			setLanguageMetadata(entity);
-			validValueDAO.update(entity);
 		} else {
 			final MetadataValidValueEntity dbEntity = validValueDAO.findById(entity.getId());
 			entity.setEntity(dbEntity.getEntity());
-			entity.setLanguageMap(dbEntity.getLanguageMap());
-			entity.setLanguageMap(mergeLanguageMaps(entity.getLanguageMap(), languageMap));
-			setLanguageMetadata(entity);
-			validValueDAO.merge(entity);
+			entity.setLanguageMap(mergeLanguageMaps(dbEntity.getLanguageMap(), languageMap));
 		}
+		setLanguageMetadata(entity);
+		validValueDAO.merge(entity);
 	}
 	
 	private void setLanguageMetadata(final MetadataValidValueEntity entity) {
