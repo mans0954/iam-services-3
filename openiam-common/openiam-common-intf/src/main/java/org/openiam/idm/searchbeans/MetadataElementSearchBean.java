@@ -12,7 +12,7 @@ import org.openiam.idm.srvc.meta.dto.MetadataElement;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "MetadataElementSearchBean", propOrder = {
-	"metadataTypeId",
+	"typeIdSet",
 	"auditable",
 	"required",
 	"attributeName",
@@ -23,17 +23,18 @@ import org.openiam.idm.srvc.meta.dto.MetadataElement;
 public class MetadataElementSearchBean extends AbstractSearchBean<MetadataElement, String> implements SearchBean<MetadataElement, String> {
 
 	private Set<String> keySet;
-	private String metadataTypeId;
+	private Set<String> typeIdSet;
 	private boolean auditable;
 	private boolean required;
 	private String attributeName;
 	private boolean selfEditable;
 	private String templateId;
-	public String getMetadataTypeId() {
-		return metadataTypeId;
+	
+	public Set<String> getTypeIdSet() {
+		return typeIdSet;
 	}
-	public void setMetadataTypeId(String metadataTypeId) {
-		this.metadataTypeId = metadataTypeId;
+	public void setTypeIdSet(Set<String> typeIdSet) {
+		this.typeIdSet = typeIdSet;
 	}
 	public boolean isAuditable() {
 		return auditable;

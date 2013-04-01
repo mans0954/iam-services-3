@@ -41,9 +41,6 @@ public class LanguageDataServiceImpl implements LanguageDataService {
 	private LanguageDAO languageDao;
 	
 	
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.lang.service.LanguageDataService#addLanguage(org.openiam.idm.srvc.lang.dto.Language)
-	 */
     @Transactional
 	public void addLanguage(LanguageEntity lg) {
 		if (lg == null) {
@@ -53,22 +50,10 @@ public class LanguageDataServiceImpl implements LanguageDataService {
 
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.lang.service.LanguageDataService#allLanguages()
-	 */
-	public LanguageEntity[] allLanguages() {
-		List<LanguageEntity> lgList = languageDao.findAll();
-		if (lgList == null || lgList.isEmpty())
-			return null;
-		int size = lgList.size();
-        LanguageEntity[] lgAry = new LanguageEntity[size];
-		lgList.toArray(lgAry);
-		return lgAry;
+	public List<LanguageEntity> allLanguages() {
+		return languageDao.findAll();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.lang.service.LanguageDataService#getLanguage(java.lang.String)
-	 */
 	public LanguageEntity getLanguage(String languageId) {
 
 		if (languageId == null) {
@@ -77,9 +62,6 @@ public class LanguageDataServiceImpl implements LanguageDataService {
 		return languageDao.findById(languageId);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.lang.service.LanguageDataService#removeLanguage(java.lang.String)
-	 */
     @Transactional
 	public void removeLanguage(String languageId) {
 		if (languageId == null) {
@@ -89,9 +71,6 @@ public class LanguageDataServiceImpl implements LanguageDataService {
 		languageDao.delete(lg);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.lang.service.LanguageDataService#updateLanguage(org.openiam.idm.srvc.lang.dto.Language)
-	 */
     @Transactional
 	public void updateLanguage(LanguageEntity lg) {
 		if (lg == null) {

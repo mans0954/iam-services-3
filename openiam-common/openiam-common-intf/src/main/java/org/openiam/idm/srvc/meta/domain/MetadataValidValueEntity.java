@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.meta.domain;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -20,6 +21,8 @@ import javax.persistence.Table;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Where;
 import org.openiam.dozer.DozerDTOCorrespondence;
@@ -47,10 +50,11 @@ public class MetadataValidValueEntity implements Serializable {
 	@Column(name="UI_VALUE", length=200)
 	private String uiValue;
 	
-	@OneToMany(cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
-    @JoinColumn(name = "REFERENCE_ID", insertable = true, updatable = true)
+	@OneToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY, mappedBy="referenceId")
+    //@JoinColumn(name = "REFERENCE_ID", referencedColumnName="ID")
 	@Where(clause="REFERENCE_TYPE='MetadataValidValueEntity'")
     @MapKey(name = "languageId")
+	@Fetch(FetchMode.SUBSELECT)
     private Map<String, LanguageMappingEntity> languageMap;
 
 	

@@ -273,7 +273,7 @@ public class UserEntity {
     @Fetch(FetchMode.SUBSELECT)
     private Set<UserRoleEntity> userRoles = new HashSet<UserRoleEntity>(0);
 
-    @ManyToOne(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
+    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
     @JoinColumn(name="COMPANY_ID", referencedColumnName="COMPANY_ID", insertable = false, updatable = false)
     @Field(name="organization", bridge=@FieldBridge(impl=OrganizationBridge.class), store=Store.YES)
     private OrganizationEntity organization;

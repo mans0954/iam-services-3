@@ -7,6 +7,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -50,6 +51,23 @@ public class MetadataElementPageTemplate implements Serializable {
 	public void setMetadataElements(Set<MetadataElementPageTemplateXref> metadataElements) {
 		this.metadataElements = metadataElements;
 	}
+	public void addMetdataElement(final MetadataElementPageTemplateXref xref) {
+		if(xref != null) {
+			if(this.metadataElements == null) {
+				this.metadataElements = new HashSet<MetadataElementPageTemplateXref>();
+			}
+			this.metadataElements.add(xref);
+		}
+	}
+	
+	public void removeMetdataElement(final MetadataElementPageTemplateXref xref) {
+		if(xref != null) {
+			if(this.metadataElements != null) {
+				this.metadataElements.remove(xref);
+			}
+		}
+	}
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;

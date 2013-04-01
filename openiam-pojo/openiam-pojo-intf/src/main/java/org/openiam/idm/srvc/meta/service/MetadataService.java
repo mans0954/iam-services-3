@@ -6,6 +6,7 @@ import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataValidValueEntity;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 
@@ -54,4 +55,7 @@ public interface MetadataService {
 	public void save(final MetadataTypeEntity entity);
 	
 	public void deleteMetdataType(final String id);
+	
+	public void save(final MetadataValidValueEntity entity);
+	public void delteMetaValidValue(final String validValueId);
 }

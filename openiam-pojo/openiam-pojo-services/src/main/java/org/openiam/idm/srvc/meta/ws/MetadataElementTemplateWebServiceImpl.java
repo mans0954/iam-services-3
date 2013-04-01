@@ -42,15 +42,13 @@ public class MetadataElementTemplateWebServiceImpl implements MetadataElementTem
 
 	@Override
 	public List<MetadataElementPageTemplate> findBeans(final MetadataElementPageTemplateSearchBean searchBean, final int from, final int size) {
-		final MetadataElementPageTemplateEntity entity = templateSearchBeanConverter.convert(searchBean);
-		final List<MetadataElementPageTemplateEntity> entityList = templateService.findBeans(entity, from, size);
+		final List<MetadataElementPageTemplateEntity> entityList = templateService.findBeans(searchBean, from, size);
 		return (entityList != null) ? templateDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy()) : null;
 	}
 
 	@Override
 	public int count(final MetadataElementPageTemplateSearchBean searchBean) {
-		final MetadataElementPageTemplateEntity entity = templateSearchBeanConverter.convert(searchBean);
-		return templateService.count(entity);
+		return templateService.count(searchBean);
 	}
 
 	@Override
@@ -79,7 +77,7 @@ public class MetadataElementTemplateWebServiceImpl implements MetadataElementTem
 	public Response delete(final String templateId) {
 		final Response response = new Response();
 		try {
-			if(StringUtils.isNotBlank(templateId)) {
+			if(StringUtils.isBlank(templateId)) {
 				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
 			}
 			

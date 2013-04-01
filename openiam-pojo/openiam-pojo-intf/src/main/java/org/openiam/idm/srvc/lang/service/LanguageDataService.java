@@ -1,5 +1,7 @@
 package org.openiam.idm.srvc.lang.service;
 
+import java.util.List;
+
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 
 /**
@@ -35,11 +37,11 @@ public interface LanguageDataService {
     public void removeLanguage(String langCd);
 
     /**
-     * Returns an array of all languages
+     * Returns an list of all languages
      *
      * @return
      */
-    public LanguageEntity[] allLanguages();
+    public List<LanguageEntity> allLanguages();
 
     /**
      * Returns the language specified by the language

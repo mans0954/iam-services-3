@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.meta.domain;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -23,6 +24,8 @@ import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.Where;
@@ -82,10 +85,11 @@ public class MetadataElementEntity implements Serializable {
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "metadataElement", fetch = FetchType.LAZY)
     private Set<MetadataElementPageTemplateXrefEntity> templateSet;
     
-    @OneToMany(cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
-    @JoinColumn(name = "REFERENCE_ID", insertable = true, updatable = true)
+    @OneToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY, mappedBy="referenceId")
+    //@JoinColumn(name = "REFERENCE_ID", referencedColumnName="METADATA_ID")
 	@Where(clause="REFERENCE_TYPE='MetadataElementEntity'")
     @MapKey(name = "languageId")
+    @Fetch(FetchMode.SUBSELECT)
     private Map<String, LanguageMappingEntity> languageMap;
     
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "entity", fetch = FetchType.LAZY)
@@ -94,10 +98,11 @@ public class MetadataElementEntity implements Serializable {
     @Column(name="STATIC_DEFAULT_VALUE", length=400)
     private String staticDefaultValue;
     
-    @OneToMany(cascade={CascadeType.ALL}, fetch = FetchType.LAZY)
-    @JoinColumn(name = "REFERENCE_ID", insertable = true, updatable = true)
+    @OneToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY, mappedBy="referenceId")
+    //@JoinColumn(name = "REFERENCE_ID", referencedColumnName="METADATA_ID")
 	@Where(clause="REFERENCE_TYPE='MetadataElementDefaultValues'")
     @MapKey(name = "languageId")
+    @Fetch(FetchMode.SUBSELECT)
 	private Map<String, LanguageMappingEntity> defaultValueLanguageMap;
     
 
@@ -216,8 +221,6 @@ public class MetadataElementEntity implements Serializable {
 	public void setStaticDefaultValue(String staticDefaultValue) {
 		this.staticDefaultValue = staticDefaultValue;
 	}
-
-	
 	
 	public Map<String, LanguageMappingEntity> getDefaultValueLanguageMap() {
 		return defaultValueLanguageMap;

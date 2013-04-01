@@ -53,7 +53,7 @@ public interface UserDataService {
      *
      * @param id
      */
-    public void removeUser(String id);
+    public void removeUser(String id) throws Exception;
 
 
     public UserEntity getUserByName(String firstName, String lastName);
