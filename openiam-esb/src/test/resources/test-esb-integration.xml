@@ -165,4 +165,13 @@
 	  <property name="serviceClass" value="org.openiam.idm.srvc.lang.service.LanguageWebService"/>
 	  <property name="address" value="${openiam.service_host}${openiam.idm.ws.path}LanguageWebService"/>
 	</bean>
+	
+	<bean id="contentProviderServiceClient" class="org.openiam.am.srvc.ws.ContentProviderWebService"
+          factory-bean="contentProviderServiceFactory" factory-method="create"/>
+
+
+    <bean id="contentProviderServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
+        <property name="serviceClass" value="org.openiam.am.srvc.ws.ContentProviderWebService"/>
+        <property name="address" value="${openiam.service_host}${openiam.idm.ws.path}ContentProviderWebService"/>
+    </bean>
 </beans>

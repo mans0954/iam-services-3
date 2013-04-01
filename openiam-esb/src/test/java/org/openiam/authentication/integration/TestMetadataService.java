@@ -12,6 +12,11 @@ import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang.StringUtils;
+import org.openiam.am.srvc.dto.ContentProvider;
+import org.openiam.am.srvc.dto.URIPattern;
+import org.openiam.am.srvc.searchbeans.ContentProviderSearchBean;
+import org.openiam.am.srvc.ws.ContentProviderWebService;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
@@ -49,6 +54,10 @@ public class TestMetadataService extends AbstractTestNGSpringContextTests {
 	@Qualifier("languageServiceClient")
 	private LanguageWebService languageWS;
 	
+	@Autowired
+	@Qualifier("contentProviderServiceClient")
+	private ContentProviderWebService contentProviderWS;
+	
 	 @BeforeClass
 	 protected void setUp() throws Exception {
 		 
@@ -61,33 +70,40 @@ public class TestMetadataService extends AbstractTestNGSpringContextTests {
 	 }
 	
 	@Test
-	public void testSearchTest() {
-		 final MetadataTypeSearchBean typeSearchBean = new MetadataTypeSearchBean();
-		 typeSearchBean.setGrouping("UI_WIDGET");
-		 typeSearchBean.setActive(true);
-		 List<MetadataType> typeList = metadataWebService.findTypeBeans(typeSearchBean, 0, Integer.MAX_VALUE);
-		 Assert.assertTrue(CollectionUtils.isNotEmpty(typeList));
-	}
-	
-	@Test
 	public void testCreateAndDeleteEmptyTemplate() {
+		final ContentProviderSearchBean cpSearchBean = new ContentProviderSearchBean();
+		cpSearchBean.setDeepCopy(true);
+		final List<ContentProvider> cpList = contentProviderWS.findBeans(cpSearchBean, 0, 1);
+		final URIPattern pattern = (CollectionUtils.isNotEmpty(cpList) && CollectionUtils.isNotEmpty(cpList.get(0).getPatternSet())) ? 
+				cpList.get(0).getPatternSet().iterator().next() : null;
+		
 		/* create */
-		final MetadataElementPageTemplate template = new MetadataElementPageTemplate();
+		MetadataElementPageTemplate template = new MetadataElementPageTemplate();
 		template.setName(System.currentTimeMillis() + "");
+		template.setUriPatternId((pattern != null) ? pattern.getId() : null);
 		final Response saveResponse = templateWebService.save(template);
 		assertSuccess(saveResponse);
 		Assert.assertNotNull(saveResponse.getResponseValue());
+		
+		template = templateWebService.findById((String)saveResponse.getResponseValue());
+		Assert.assertNotNull(template);
+		if(pattern != null) {
+			Assert.assertTrue(StringUtils.isNotBlank(template.getUriPatternId()));
+		}
 		
 		/* delete */
 		final Response deleteResponse = templateWebService.delete((String)saveResponse.getResponseValue());
 		assertSuccess(deleteResponse);
 		
 		Assert.assertNull(templateWebService.findById((String)saveResponse.getResponseValue()));
+		if(pattern != null) {
+			Assert.assertNotNull(contentProviderWS.getURIPattern(pattern.getId()));
+		}
 	}
 	
 	@Test
 	public void testCreateAndDeleteEmptyElement() {
-		final MetadataType type = metadataWebService.findTypeBeans(new MetadataTypeSearchBean(), 0, Integer.MAX_VALUE).get(0);
+		final MetadataType type = getAllMetatypes().get(0);
 		
 		/* create */
 		final MetadataElement element = new MetadataElement();
@@ -145,7 +161,7 @@ public class TestMetadataService extends AbstractTestNGSpringContextTests {
 	
 	@Test
 	public void testMetadataTemplateXrefs() {
-		final MetadataType type = metadataWebService.findTypeBeans(new MetadataTypeSearchBean(), 0, Integer.MAX_VALUE).get(0);
+		final MetadataType type = getAllMetatypes().get(0);
 		
 		/* create */
 		MetadataElementPageTemplate template = new MetadataElementPageTemplate();
@@ -194,7 +210,7 @@ public class TestMetadataService extends AbstractTestNGSpringContextTests {
 	@Test
 	public void testMetdataEntityCollectionsBulk() {
 		final List<Language> languageList = languageWS.getAll();
-		final MetadataType type = metadataWebService.findTypeBeans(new MetadataTypeSearchBean(), 0, Integer.MAX_VALUE).get(0);
+		final MetadataType type = getAllMetatypes().get(0);
 		
 		MetadataElement element = new MetadataElement();
 		element.setAttributeName(System.currentTimeMillis() + "");
@@ -238,7 +254,7 @@ public class TestMetadataService extends AbstractTestNGSpringContextTests {
 	@Test
 	public void testMetdataEntityCollectionsIncremental() {
 		final List<Language> languageList = languageWS.getAll();
-		final MetadataType type = metadataWebService.findTypeBeans(new MetadataTypeSearchBean(), 0, Integer.MAX_VALUE).get(0);
+		final MetadataType type = getAllMetatypes().get(0);
 		
 		MetadataElement element = new MetadataElement();
 		element.setAttributeName(System.currentTimeMillis() + "");
@@ -308,5 +324,12 @@ public class TestMetadataService extends AbstractTestNGSpringContextTests {
 		Assert.assertNotNull(response);
 		Assert.assertNotNull(response.getStatus());
 		Assert.assertEquals(response.getStatus(), ResponseStatus.SUCCESS);
+	}
+	
+	private List<MetadataType> getAllMetatypes() {
+		final MetadataTypeSearchBean searchBean = new MetadataTypeSearchBean();
+		searchBean.setActive(true);
+		searchBean.setSyncManagedSys(true);
+		return metadataWebService.findTypeBeans(searchBean, 0, Integer.MAX_VALUE);
 	}
 }

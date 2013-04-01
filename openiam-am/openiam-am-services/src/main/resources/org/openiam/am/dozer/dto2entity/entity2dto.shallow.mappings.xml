@@ -130,6 +130,10 @@
             <a>metaEntitySet</a>
             <b>metaEntitySet</b>
         </field-exclude>
+        <field-exclude>
+        	<a>pageTemplates</a>
+        	<b>pageTemplates</b>
+        </field-exclude>
     </mapping>
 
     <mapping>

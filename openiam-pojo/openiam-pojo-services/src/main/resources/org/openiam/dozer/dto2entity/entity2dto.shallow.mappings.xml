@@ -199,6 +199,10 @@
 			<a>resource.resourceId</a>
 			<b>resourceId</b>
 		</field>
+		<field>
+			<a>uriPattern.id</a>
+			<b>uriPatternId</b>
+		</field>
 		<field-exclude>
 			<a>metadataElements</a>
 			<b>metadataElements</b>

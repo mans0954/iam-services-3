@@ -18,7 +18,8 @@ import java.util.Set;
         "isPublic",
         "resourceId",
         "resourceName",
-        "metaEntitySet"
+        "metaEntitySet",
+        "pageTemplates"
 })
 @DozerDTOCorrespondence(URIPatternEntity.class)
 public class URIPattern implements Serializable {
@@ -31,6 +32,7 @@ public class URIPattern implements Serializable {
 	private String resourceId;
     private String resourceName;
 	private Set<URIPatternMeta> metaEntitySet;
+	private Set<URIPattern> pageTemplates;
 	public String getId() {
 		return id;
 	}
@@ -81,8 +83,16 @@ public class URIPattern implements Serializable {
     public void setResourceName(String resourceName) {
         this.resourceName = resourceName;
     }
+    
+    
 
-    @Override
+    public Set<URIPattern> getPageTemplates() {
+		return pageTemplates;
+	}
+	public void setPageTemplates(Set<URIPattern> pageTemplates) {
+		this.pageTemplates = pageTemplates;
+	}
+	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;

@@ -19,6 +19,7 @@ import javax.persistence.Table;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
+import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplate;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
@@ -39,19 +40,16 @@ public class MetadataElementPageTemplateEntity implements Serializable {
 	@Column(name = "NAME", length = 40)
 	private String name;
 	
-	/*
-	@ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
-    @JoinColumn(name = "RESOURCE_ID", insertable = false, updatable = false)
-    */
 	@ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
     @JoinColumn(name = "RESOURCE_ID")
 	private ResourceEntity resource;
 	
-//	@OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "template", fetch = FetchType.LAZY)
-//	private Set<MetadataElementEntity> metadataElements;
-
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "template", fetch = FetchType.LAZY)
     private Set<MetadataElementPageTemplateXrefEntity> metadataElements;
+    
+    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY, optional=true)
+    @JoinColumn(name = "URI_PATTERN_ID", insertable=true, updatable=true, nullable=true)
+    private URIPatternEntity uriPattern;
 	
 	public String getId() {
 		return id;
@@ -86,12 +84,24 @@ public class MetadataElementPageTemplateEntity implements Serializable {
         this.metadataElements = metadataElements;
     }
 
-    @Override
+    public URIPatternEntity getUriPattern() {
+		return uriPattern;
+	}
+
+	public void setUriPattern(URIPatternEntity uriPattern) {
+		this.uriPattern = uriPattern;
+	}
+
+	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result
+				+ ((resource == null) ? 0 : resource.hashCode());
+		result = prime * result
+				+ ((uriPattern == null) ? 0 : uriPattern.hashCode());
 		return result;
 	}
 
@@ -114,8 +124,19 @@ public class MetadataElementPageTemplateEntity implements Serializable {
 				return false;
 		} else if (!name.equals(other.name))
 			return false;
+		if (resource == null) {
+			if (other.resource != null)
+				return false;
+		} else if (!resource.equals(other.resource))
+			return false;
+		if (uriPattern == null) {
+			if (other.uriPattern != null)
+				return false;
+		} else if (!uriPattern.equals(other.uriPattern))
+			return false;
 		return true;
 	}
+
 	
 	
 }

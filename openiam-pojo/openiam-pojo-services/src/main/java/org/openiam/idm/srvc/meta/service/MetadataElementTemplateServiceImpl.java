@@ -6,6 +6,8 @@ import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openiam.am.srvc.dao.URIPatternDao;
+import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.idm.searchbeans.MetadataElementPageTemplateSearchBean;
 import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateXrefEntity;
@@ -36,6 +38,9 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 	
 	@Autowired
 	private ResourceTypeDAO resourceTypeDAO;
+	
+	@Autowired
+	private URIPatternDao uriPatternDAO;
 	
 	@Autowired
 	private MetadataElementTemplateSearchBeanConverter templateSearchBeanConverter;
@@ -83,6 +88,12 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 	            resourceDAO.save(resource);
 	            entity.setResource(resource);
 			}
+			
+			URIPatternEntity uriPattern = null;
+			if(entity.getUriPattern() != null && StringUtils.isNotBlank(entity.getUriPattern().getId())) {
+				uriPattern = uriPatternDAO.findById(entity.getUriPattern().getId());
+			}
+			entity.setUriPattern(uriPattern);
 			
 			final Set<MetadataElementPageTemplateXrefEntity> renewedXrefs = new LinkedHashSet<MetadataElementPageTemplateXrefEntity>();
 			if(CollectionUtils.isNotEmpty(entity.getMetadataElements())) {

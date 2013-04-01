@@ -4,6 +4,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.openiam.am.srvc.dto.URIPattern;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 
 import javax.persistence.*;
@@ -47,6 +48,9 @@ public class URIPatternEntity implements Serializable {
 	@OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "pattern")
 	private Set<URIPatternMetaEntity> metaEntitySet;
 
+	@OneToMany(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, mappedBy="uriPattern")
+	private Set<MetadataElementPageTemplateEntity> pageTemplates;
+	
 	public String getId() {
 		return id;
 	}
@@ -118,7 +122,16 @@ public class URIPatternEntity implements Serializable {
         this.resourceId = resourceId;
     }
 
-    @Override
+    public Set<MetadataElementPageTemplateEntity> getPageTemplates() {
+		return pageTemplates;
+	}
+
+	public void setPageTemplates(
+			Set<MetadataElementPageTemplateEntity> pageTemplates) {
+		this.pageTemplates = pageTemplates;
+	}
+
+	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
