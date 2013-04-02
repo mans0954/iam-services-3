@@ -7,6 +7,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.BaseConstants;
 import org.openiam.base.SysConfiguration;
+import org.openiam.core.dao.UserKeyDao;
 import org.openiam.idm.searchbeans.*;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
@@ -94,6 +95,8 @@ public class UserMgr implements UserDataService {
     
     @Autowired
     private PhoneSearchDAO phoneSearchDAO;
+    @Autowired
+    private UserKeyDao userKeyDao;
 
     @Autowired
     private KeyManagementService keyManagementService;
@@ -205,7 +208,7 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
-    public void removeUser(String id) {
+    public void removeUser(String id) throws Exception {
         if (id == null)
             throw new NullPointerException("user id is null");
 
@@ -216,6 +219,8 @@ public class UserMgr implements UserDataService {
         removeAllNotes(id);
         removeAllEmailAddresses(id);
 
+
+        userKeyDao.deleteByUserId(id);
         userDao.delete(userDao.findById(id));
     }
 
