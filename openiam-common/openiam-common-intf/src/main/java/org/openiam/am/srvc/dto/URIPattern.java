@@ -2,6 +2,7 @@ package org.openiam.am.srvc.dto;
 
 import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplate;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -32,7 +33,7 @@ public class URIPattern implements Serializable {
 	private String resourceId;
     private String resourceName;
 	private Set<URIPatternMeta> metaEntitySet;
-	private Set<URIPattern> pageTemplates;
+	private Set<MetadataElementPageTemplate> pageTemplates;
 	public String getId() {
 		return id;
 	}
@@ -84,12 +85,10 @@ public class URIPattern implements Serializable {
         this.resourceName = resourceName;
     }
     
-    
-
-    public Set<URIPattern> getPageTemplates() {
+	public Set<MetadataElementPageTemplate> getPageTemplates() {
 		return pageTemplates;
 	}
-	public void setPageTemplates(Set<URIPattern> pageTemplates) {
+	public void setPageTemplates(Set<MetadataElementPageTemplate> pageTemplates) {
 		this.pageTemplates = pageTemplates;
 	}
 	@Override

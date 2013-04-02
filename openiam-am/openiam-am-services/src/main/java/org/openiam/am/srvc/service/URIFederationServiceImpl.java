@@ -244,9 +244,11 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 							}
 						}
 					}
+					response.setPatternId(pattern.getId());
 				}
 			}
 			
+			response.setCpId(cp.getId());
 			response.setServer(cp.getNextServer());
 			response.setStatus(ResponseStatus.SUCCESS);
 		} catch(BasicDataServiceException e) {
