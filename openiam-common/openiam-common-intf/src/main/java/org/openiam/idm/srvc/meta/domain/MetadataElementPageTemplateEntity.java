@@ -11,6 +11,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
@@ -18,6 +19,8 @@ import javax.persistence.Table;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
@@ -47,9 +50,15 @@ public class MetadataElementPageTemplateEntity implements Serializable {
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "template", fetch = FetchType.LAZY)
     private Set<MetadataElementPageTemplateXrefEntity> metadataElements;
     
-    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY, optional=true)
-    @JoinColumn(name = "URI_PATTERN_ID", insertable=true, updatable=true, nullable=true)
-    private URIPatternEntity uriPattern;
+    //@ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY, optional=true)
+    //@JoinColumn(name = "URI_PATTERN_ID", insertable=true, updatable=true, nullable=true)
+    
+    @ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
+    @JoinTable(name = "METADATA_ELEMENT_TEMPLATE_URI_PATTERN_XREF",
+            joinColumns = {@JoinColumn(name = "TEMPLATE_ID")},
+            inverseJoinColumns = {@JoinColumn(name = "URI_PATTERN_ID")})
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<URIPatternEntity> uriPatterns;
 	
 	public String getId() {
 		return id;
@@ -84,12 +93,12 @@ public class MetadataElementPageTemplateEntity implements Serializable {
         this.metadataElements = metadataElements;
     }
 
-    public URIPatternEntity getUriPattern() {
-		return uriPattern;
+	public Set<URIPatternEntity> getUriPatterns() {
+		return uriPatterns;
 	}
 
-	public void setUriPattern(URIPatternEntity uriPattern) {
-		this.uriPattern = uriPattern;
+	public void setUriPatterns(Set<URIPatternEntity> uriPatterns) {
+		this.uriPatterns = uriPatterns;
 	}
 
 	@Override
@@ -100,8 +109,6 @@ public class MetadataElementPageTemplateEntity implements Serializable {
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result
 				+ ((resource == null) ? 0 : resource.hashCode());
-		result = prime * result
-				+ ((uriPattern == null) ? 0 : uriPattern.hashCode());
 		return result;
 	}
 
@@ -128,11 +135,6 @@ public class MetadataElementPageTemplateEntity implements Serializable {
 			if (other.resource != null)
 				return false;
 		} else if (!resource.equals(other.resource))
-			return false;
-		if (uriPattern == null) {
-			if (other.uriPattern != null)
-				return false;
-		} else if (!uriPattern.equals(other.uriPattern))
 			return false;
 		return true;
 	}

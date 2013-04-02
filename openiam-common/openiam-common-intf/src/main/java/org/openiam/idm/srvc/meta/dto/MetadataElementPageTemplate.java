@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.meta.dto;
 
+import org.openiam.am.srvc.dto.URIPattern;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity;
 
@@ -16,7 +17,7 @@ import java.util.Set;
         "name",
         "resourceId",
         "metadataElements",
-        "uriPatternId"
+        "uriPatterns"
 })
 @DozerDTOCorrespondence(MetadataElementPageTemplateEntity.class)
 public class MetadataElementPageTemplate implements Serializable {
@@ -24,7 +25,7 @@ public class MetadataElementPageTemplate implements Serializable {
 	private String id;
 	private String name;
 	private String resourceId;
-	private String uriPatternId;
+	private Set<URIPattern> uriPatterns;
 	private Set<MetadataElementPageTemplateXref> metadataElements;
 	
 	
@@ -70,12 +71,24 @@ public class MetadataElementPageTemplate implements Serializable {
 		}
 	}
 	
-	public String getUriPatternId() {
-		return uriPatternId;
+	
+	
+	public Set<URIPattern> getUriPatterns() {
+		return uriPatterns;
 	}
-	public void setUriPatternId(String uriPatternId) {
-		this.uriPatternId = uriPatternId;
+	public void setUriPatterns(Set<URIPattern> uriPatterns) {
+		this.uriPatterns = uriPatterns;
 	}
+	
+	public void addPattern(final URIPattern pattern) {
+		if(pattern != null) {
+			if(this.uriPatterns == null) {
+				this.uriPatterns = new HashSet<URIPattern>();
+			}
+			this.uriPatterns.add(pattern);
+		}
+	}
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -84,8 +97,6 @@ public class MetadataElementPageTemplate implements Serializable {
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result
 				+ ((resourceId == null) ? 0 : resourceId.hashCode());
-		result = prime * result
-				+ ((uriPatternId == null) ? 0 : uriPatternId.hashCode());
 		return result;
 	}
 	@Override
@@ -111,11 +122,6 @@ public class MetadataElementPageTemplate implements Serializable {
 			if (other.resourceId != null)
 				return false;
 		} else if (!resourceId.equals(other.resourceId))
-			return false;
-		if (uriPatternId == null) {
-			if (other.uriPatternId != null)
-				return false;
-		} else if (!uriPatternId.equals(other.uriPatternId))
 			return false;
 		return true;
 	}

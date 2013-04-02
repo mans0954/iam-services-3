@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.meta.service;
 
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -89,11 +90,19 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 	            entity.setResource(resource);
 			}
 			
-			URIPatternEntity uriPattern = null;
-			if(entity.getUriPattern() != null && StringUtils.isNotBlank(entity.getUriPattern().getId())) {
-				uriPattern = uriPatternDAO.findById(entity.getUriPattern().getId());
+			final Set<URIPatternEntity> transietSet = entity.getUriPatterns();
+			if(CollectionUtils.isNotEmpty(transietSet)) {
+				final Set<URIPatternEntity> persistentSet = new HashSet<URIPatternEntity>();
+				for(final URIPatternEntity transientEntity : transietSet) {
+					if(transientEntity != null && StringUtils.isNotBlank(transientEntity.getId())) {
+						final URIPatternEntity pattern = uriPatternDAO.findById(transientEntity.getId());
+						if(pattern != null) {
+							persistentSet.add(pattern);
+						}
+					}
+				}
+				entity.setUriPatterns(persistentSet);
 			}
-			entity.setUriPattern(uriPattern);
 			
 			final Set<MetadataElementPageTemplateXrefEntity> renewedXrefs = new LinkedHashSet<MetadataElementPageTemplateXrefEntity>();
 			if(CollectionUtils.isNotEmpty(entity.getMetadataElements())) {

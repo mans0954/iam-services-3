@@ -194,9 +194,9 @@
 			<a>resource.resourceId</a>
 			<b>resourceId</b>
 		</field>
-		<field>
-			<a>uriPattern.id</a>
-			<b>uriPatternId</b>
+		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="dto2entityDeepDozerMapper">
+			<a>uriPatterns</a>
+			<b>uriPatterns</b>
 		</field>
 		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="dto2entityDeepDozerMapper">
 			<a>metadataElements</a>

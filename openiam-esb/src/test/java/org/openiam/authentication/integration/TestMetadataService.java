@@ -80,7 +80,7 @@ public class TestMetadataService extends AbstractTestNGSpringContextTests {
 		/* create */
 		MetadataElementPageTemplate template = new MetadataElementPageTemplate();
 		template.setName(System.currentTimeMillis() + "");
-		template.setUriPatternId((pattern != null) ? pattern.getId() : null);
+		template.addPattern(pattern);
 		final Response saveResponse = templateWebService.save(template);
 		assertSuccess(saveResponse);
 		Assert.assertNotNull(saveResponse.getResponseValue());
@@ -88,7 +88,7 @@ public class TestMetadataService extends AbstractTestNGSpringContextTests {
 		template = templateWebService.findById((String)saveResponse.getResponseValue());
 		Assert.assertNotNull(template);
 		if(pattern != null) {
-			Assert.assertTrue(StringUtils.isNotBlank(template.getUriPatternId()));
+			Assert.assertTrue(CollectionUtils.isNotEmpty(template.getUriPatterns()));
 		}
 		
 		/* delete */

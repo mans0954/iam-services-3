@@ -1,5 +1,7 @@
 package org.openiam.am.srvc.domain;
 
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.openiam.am.srvc.dto.URIPattern;
@@ -8,6 +10,7 @@ import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 
 import javax.persistence.*;
+
 import java.io.Serializable;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -48,7 +51,12 @@ public class URIPatternEntity implements Serializable {
 	@OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "pattern")
 	private Set<URIPatternMetaEntity> metaEntitySet;
 
-	@OneToMany(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, mappedBy="uriPattern")
+	//@OneToMany(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, mappedBy="uriPattern")
+	@ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
+    @JoinTable(name = "METADATA_ELEMENT_TEMPLATE_URI_PATTERN_XREF",
+            joinColumns = {@JoinColumn(name = "URI_PATTERN_ID")},
+            inverseJoinColumns = {@JoinColumn(name = "TEMPLATE_ID")})
+    @Fetch(FetchMode.SUBSELECT)
 	private Set<MetadataElementPageTemplateEntity> pageTemplates;
 	
 	public String getId() {
