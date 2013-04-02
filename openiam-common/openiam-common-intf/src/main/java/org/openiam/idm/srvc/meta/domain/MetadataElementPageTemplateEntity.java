@@ -44,7 +44,7 @@ public class MetadataElementPageTemplateEntity implements Serializable {
 	private String name;
 	
 	@ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
-    @JoinColumn(name = "RESOURCE_ID")
+    @JoinColumn(name = "RESOURCE_ID", insertable=true, updatable=false)
 	private ResourceEntity resource;
 	
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "template", fetch = FetchType.LAZY)

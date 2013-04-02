@@ -145,6 +145,7 @@ public class TestMetadataService extends AbstractTestNGSpringContextTests {
 		assertSuccess(saveResponse);
 		Assert.assertNotNull(saveResponse.getResponseValue());
 		template = templateWebService.findById((String)saveResponse.getResponseValue());
+		Assert.assertNotNull(template.getResourceId());
 		
 		final String newName = "" + System.currentTimeMillis();
 		template.setName(newName);
@@ -171,6 +172,7 @@ public class TestMetadataService extends AbstractTestNGSpringContextTests {
 		Assert.assertNotNull(templateSaveResponse.getResponseValue());
 		
 		template = templateWebService.findById((String)templateSaveResponse.getResponseValue());
+		Assert.assertNotNull(template.getResourceId());
 		
 		/* create */
 		MetadataElement element = new MetadataElement();
@@ -180,6 +182,7 @@ public class TestMetadataService extends AbstractTestNGSpringContextTests {
 		assertSuccess(elementSaveResponse);
 		Assert.assertNotNull(elementSaveResponse.getResponseValue());
 		element = metadataWebService.findElementById((String)elementSaveResponse.getResponseValue());
+		Assert.assertNotNull(element.getResourceId());
 		
 		/* add xref */
 		MetadataElementPageTemplateXref xref = getXref(template, element, 2);
@@ -222,6 +225,7 @@ public class TestMetadataService extends AbstractTestNGSpringContextTests {
 		Response elementSaveResponse  = metadataWebService.saveMetadataEntity(element);
 		assertSuccess(elementSaveResponse);
 		element = metadataWebService.findElementById((String)elementSaveResponse.getResponseValue());
+		Assert.assertNotNull(element.getResourceId());
 		Assert.assertEquals(element.getLanguageMap().size(), languageList.size());
 		Assert.assertEquals(element.getDefaultValueLanguageMap().size(), languageList.size());
 		Assert.assertEquals(element.getValidValues().size(), 6);
@@ -265,6 +269,7 @@ public class TestMetadataService extends AbstractTestNGSpringContextTests {
 		Assert.assertNotNull(elementSaveResponse.getResponseValue());
 		element = metadataWebService.findElementById((String)elementSaveResponse.getResponseValue());
 		
+		Assert.assertNotNull(element.getResourceId());
 		element.setDefaultValueLanguageMap(getLanguageMap(element.getId(), WhereClauseConstants.META_ELEMENT_DEFAULT_VALUE_REFERENCE_TYPE));
 		element.setLanguageMap(getLanguageMap(element.getId(), WhereClauseConstants.META_ELEMENT_REFERENCE_TYPE));
 		element.setValidValues(getValidValues(element));
