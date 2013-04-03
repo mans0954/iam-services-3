@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.meta.domain;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.Cacheable;
@@ -99,6 +100,15 @@ public class MetadataElementPageTemplateEntity implements Serializable {
 
 	public void setUriPatterns(Set<URIPatternEntity> uriPatterns) {
 		this.uriPatterns = uriPatterns;
+	}
+	
+	public void addURIPattern(final URIPatternEntity entity) {
+		if(entity != null) {
+			if(this.uriPatterns == null) {
+				this.uriPatterns = new HashSet<URIPatternEntity>();
+			}
+			this.uriPatterns.add(entity);
+		}
 	}
 
 	@Override

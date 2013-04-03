@@ -418,4 +418,9 @@ public class MetadataServiceImpl implements MetadataService {
 			validValueDAO.delete(entity);
 		}
 	}
+
+	@Override
+	public List<MetadataTypeEntity> getAllMetadataTypes() {
+		return metadataTypeDao.findAll();
+	}
 }

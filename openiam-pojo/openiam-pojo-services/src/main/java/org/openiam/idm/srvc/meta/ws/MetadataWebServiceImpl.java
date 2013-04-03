@@ -223,4 +223,11 @@ public class MetadataWebServiceImpl implements MetadataWebService {
 	public int countTypeBeans(final MetadataTypeSearchBean searchBean) {
 		return metadataService.count(searchBean);
 	}
+
+	@Override
+	@WebMethod
+	public List<MetadataType> getAllMetadataTypes() {
+		final List<MetadataTypeEntity> entityList = metadataService.getAllMetadataTypes();
+    	return (entityList != null) ? metaDataTypeDozerConverter.convertToDTOList(entityList, true) : null;
+	}
 }
