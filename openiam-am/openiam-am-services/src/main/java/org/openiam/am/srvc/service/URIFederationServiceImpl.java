@@ -234,7 +234,7 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 									final  URIPatternRule rule = ctx.getBean(springBeanName, URIPatternRule.class);
 									if(rule != null) {
 										final Set<URIPatternMetaValue> valueSet = meta.getMetaValueSet();
-										final URIPatternRuleToken ruleToken = rule.process(userId, uri, type, valueSet);
+										final URIPatternRuleToken ruleToken = rule.process(userId, uri, type, valueSet, pattern, cp);
 										response.addRuleToken(ruleToken);
 									}
 								} catch(Throwable e) {
@@ -244,9 +244,11 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 							}
 						}
 					}
+					response.setPatternId(pattern.getId());
 				}
 			}
 			
+			response.setCpId(cp.getId());
 			response.setServer(cp.getNextServer());
 			response.setStatus(ResponseStatus.SUCCESS);
 		} catch(BasicDataServiceException e) {

@@ -1,8 +1,10 @@
 package org.openiam.am.srvc.uriauth.dto;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -23,7 +25,9 @@ import org.openiam.base.ws.ResponseStatus;
 @XmlType(name = "URIFederationResponse", propOrder = {
 	"requiredAuthLevel",
 	"ruleTokenList",
-	"server"
+	"server",
+	"patternId",
+	"cpId"
 })
 public class URIFederationResponse extends Response {
 
@@ -35,6 +39,8 @@ public class URIFederationResponse extends Response {
 	private Integer requiredAuthLevel;
 	private List<URIPatternRuleToken> ruleTokenList;
 	private ContentProviderServer server;
+	private String patternId;
+	private String cpId;
 	
 	public ResponseStatus getStatus() {
 		return status;
@@ -71,6 +77,22 @@ public class URIFederationResponse extends Response {
 
 	public List<URIPatternRuleToken> getRuleTokenList() {
 		return ruleTokenList;
+	}
+
+	public String getPatternId() {
+		return patternId;
+	}
+
+	public void setPatternId(String patternId) {
+		this.patternId = patternId;
+	}
+
+	public String getCpId() {
+		return cpId;
+	}
+
+	public void setCpId(String cpId) {
+		this.cpId = cpId;
 	}
 
 	@Override

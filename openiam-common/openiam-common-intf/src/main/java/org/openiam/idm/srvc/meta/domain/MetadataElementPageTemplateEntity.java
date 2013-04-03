@@ -11,6 +11,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
@@ -18,7 +19,10 @@ import javax.persistence.Table;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
+import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplate;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
@@ -39,19 +43,22 @@ public class MetadataElementPageTemplateEntity implements Serializable {
 	@Column(name = "NAME", length = 40)
 	private String name;
 	
-	/*
-	@ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
-    @JoinColumn(name = "RESOURCE_ID", insertable = false, updatable = false)
-    */
 	@ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
-    @JoinColumn(name = "RESOURCE_ID")
+    @JoinColumn(name = "RESOURCE_ID", insertable=true, updatable=false)
 	private ResourceEntity resource;
 	
-//	@OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "template", fetch = FetchType.LAZY)
-//	private Set<MetadataElementEntity> metadataElements;
-
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "template", fetch = FetchType.LAZY)
     private Set<MetadataElementPageTemplateXrefEntity> metadataElements;
+    
+    //@ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY, optional=true)
+    //@JoinColumn(name = "URI_PATTERN_ID", insertable=true, updatable=true, nullable=true)
+    
+    @ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
+    @JoinTable(name = "METADATA_ELEMENT_TEMPLATE_URI_PATTERN_XREF",
+            joinColumns = {@JoinColumn(name = "TEMPLATE_ID")},
+            inverseJoinColumns = {@JoinColumn(name = "URI_PATTERN_ID")})
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<URIPatternEntity> uriPatterns;
 	
 	public String getId() {
 		return id;
@@ -86,12 +93,22 @@ public class MetadataElementPageTemplateEntity implements Serializable {
         this.metadataElements = metadataElements;
     }
 
-    @Override
+	public Set<URIPatternEntity> getUriPatterns() {
+		return uriPatterns;
+	}
+
+	public void setUriPatterns(Set<URIPatternEntity> uriPatterns) {
+		this.uriPatterns = uriPatterns;
+	}
+
+	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result
+				+ ((resource == null) ? 0 : resource.hashCode());
 		return result;
 	}
 
@@ -114,8 +131,14 @@ public class MetadataElementPageTemplateEntity implements Serializable {
 				return false;
 		} else if (!name.equals(other.name))
 			return false;
+		if (resource == null) {
+			if (other.resource != null)
+				return false;
+		} else if (!resource.equals(other.resource))
+			return false;
 		return true;
 	}
+
 	
 	
 }

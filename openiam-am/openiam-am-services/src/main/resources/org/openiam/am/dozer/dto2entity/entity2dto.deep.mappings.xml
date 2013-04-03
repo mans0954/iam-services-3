@@ -133,6 +133,10 @@
             <a>metaEntitySet</a>
             <b>metaEntitySet</b>
         </field>
+        <field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="amDto2entityShallowDozerMapper">
+        	<a>pageTemplates</a>
+        	<b>pageTemplates</b>
+        </field>
     </mapping>
 
     <mapping>

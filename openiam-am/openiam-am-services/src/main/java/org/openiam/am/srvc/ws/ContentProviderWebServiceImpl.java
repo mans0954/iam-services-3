@@ -240,7 +240,9 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
         provider.setId(providerId);
         example.setContentProvider(provider);
 
-        return uriPatternDozerConverter.convertToDTOList(contentProviderService.getUriPatternsList(example, from, size), true);
+        final List<URIPatternEntity> entityList = contentProviderService.getUriPatternsList(example, from, size);
+        final List<URIPattern> dtoList = uriPatternDozerConverter.convertToDTOList(entityList, true);
+        return dtoList;
     }
 
     @Override

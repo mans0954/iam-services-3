@@ -1,11 +1,14 @@
 package org.openiam.idm.srvc.meta.service;
 
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openiam.am.srvc.dao.URIPatternDao;
+import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.idm.searchbeans.MetadataElementPageTemplateSearchBean;
 import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateXrefEntity;
@@ -36,6 +39,9 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 	
 	@Autowired
 	private ResourceTypeDAO resourceTypeDAO;
+	
+	@Autowired
+	private URIPatternDao uriPatternDAO;
 	
 	@Autowired
 	private MetadataElementTemplateSearchBeanConverter templateSearchBeanConverter;
@@ -82,6 +88,20 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 	            resource.setResourceType(resourceTypeDAO.findById(uiTemplateResourceType));
 	            resourceDAO.save(resource);
 	            entity.setResource(resource);
+			}
+			
+			final Set<URIPatternEntity> transietSet = entity.getUriPatterns();
+			if(CollectionUtils.isNotEmpty(transietSet)) {
+				final Set<URIPatternEntity> persistentSet = new HashSet<URIPatternEntity>();
+				for(final URIPatternEntity transientEntity : transietSet) {
+					if(transientEntity != null && StringUtils.isNotBlank(transientEntity.getId())) {
+						final URIPatternEntity pattern = uriPatternDAO.findById(transientEntity.getId());
+						if(pattern != null) {
+							persistentSet.add(pattern);
+						}
+					}
+				}
+				entity.setUriPatterns(persistentSet);
 			}
 			
 			final Set<MetadataElementPageTemplateXrefEntity> renewedXrefs = new LinkedHashSet<MetadataElementPageTemplateXrefEntity>();
