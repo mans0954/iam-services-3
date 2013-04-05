@@ -29,7 +29,8 @@ import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
         "value",
         "attrGroup",
         "operation",
-        "required"
+        "required",
+        "elementId"
 })
 @DozerDTOCorrespondence(UserAttributeEntity.class)
 public class UserAttribute extends BaseObject {
@@ -49,6 +50,8 @@ public class UserAttribute extends BaseObject {
     protected Boolean required = Boolean.TRUE;
 
     protected String userId;
+    
+    private String elementId;
     // Constructors
 
     /**
@@ -164,7 +167,15 @@ public class UserAttribute extends BaseObject {
         this.userId = userId;
     }
 
-    @Override
+    public String getElementId() {
+		return elementId;
+	}
+
+	public void setElementId(String elementId) {
+		this.elementId = elementId;
+	}
+
+	@Override
     public String toString() {
         return "UserAttribute{" +
                 "id='" + id + '\'' +
@@ -177,36 +188,82 @@ public class UserAttribute extends BaseObject {
                 '}';
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((attrGroup == null) ? 0 : attrGroup.hashCode());
+		result = prime * result
+				+ ((elementId == null) ? 0 : elementId.hashCode());
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime
+				* result
+				+ ((metadataElementId == null) ? 0 : metadataElementId
+						.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result
+				+ ((operation == null) ? 0 : operation.hashCode());
+		result = prime * result
+				+ ((required == null) ? 0 : required.hashCode());
+		result = prime * result + ((userId == null) ? 0 : userId.hashCode());
+		result = prime * result + ((value == null) ? 0 : value.hashCode());
+		return result;
+	}
 
-        UserAttribute that = (UserAttribute) o;
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		UserAttribute other = (UserAttribute) obj;
+		if (attrGroup == null) {
+			if (other.attrGroup != null)
+				return false;
+		} else if (!attrGroup.equals(other.attrGroup))
+			return false;
+		if (elementId == null) {
+			if (other.elementId != null)
+				return false;
+		} else if (!elementId.equals(other.elementId))
+			return false;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		if (metadataElementId == null) {
+			if (other.metadataElementId != null)
+				return false;
+		} else if (!metadataElementId.equals(other.metadataElementId))
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		if (operation != other.operation)
+			return false;
+		if (required == null) {
+			if (other.required != null)
+				return false;
+		} else if (!required.equals(other.required))
+			return false;
+		if (userId == null) {
+			if (other.userId != null)
+				return false;
+		} else if (!userId.equals(other.userId))
+			return false;
+		if (value == null) {
+			if (other.value != null)
+				return false;
+		} else if (!value.equals(other.value))
+			return false;
+		return true;
+	}
 
-        if (attrGroup != null ? !attrGroup.equals(that.attrGroup) : that.attrGroup != null) return false;
-        if (id != null ? !id.equals(that.id) : that.id != null) return false;
-        if (metadataElementId != null ? !metadataElementId.equals(that.metadataElementId) : that.metadataElementId != null)
-            return false;
-        if (name != null ? !name.equals(that.name) : that.name != null) return false;
-        if (operation != that.operation) return false;
-        if (required != null ? !required.equals(that.required) : that.required != null) return false;
-        if (userId != null ? !userId.equals(that.userId) : that.userId != null) return false;
-        if (value != null ? !value.equals(that.value) : that.value != null) return false;
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (metadataElementId != null ? metadataElementId.hashCode() : 0);
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (value != null ? value.hashCode() : 0);
-        result = 31 * result + (attrGroup != null ? attrGroup.hashCode() : 0);
-        result = 31 * result + (operation != null ? operation.hashCode() : 0);
-        result = 31 * result + (required != null ? required.hashCode() : 0);
-        result = 31 * result + (userId != null ? userId.hashCode() : 0);
-        return result;
-    }
+    
 }

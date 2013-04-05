@@ -33,6 +33,7 @@ import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 
 @Entity
 @Table(name = "METADATA_ELEMENT")
@@ -105,6 +106,8 @@ public class MetadataElementEntity implements Serializable {
     @Fetch(FetchMode.SUBSELECT)
 	private Map<String, LanguageMappingEntity> defaultValueLanguageMap;
     
+    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "element", fetch = FetchType.LAZY)
+    private Set<UserAttributeEntity> userAttributes;
 
 	public String getId() {
 		return id;
@@ -237,6 +240,14 @@ public class MetadataElementEntity implements Serializable {
 
 	public void setResource(ResourceEntity resource) {
 		this.resource = resource;
+	}
+
+	public Set<UserAttributeEntity> getUserAttributes() {
+		return userAttributes;
+	}
+
+	public void setUserAttributes(Set<UserAttributeEntity> userAttributes) {
+		this.userAttributes = userAttributes;
 	}
 
 	@Override

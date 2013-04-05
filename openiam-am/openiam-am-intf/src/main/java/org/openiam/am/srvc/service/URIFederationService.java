@@ -1,5 +1,6 @@
 package org.openiam.am.srvc.service;
 
+import org.openiam.am.srvc.dto.URIPattern;
 import org.openiam.am.srvc.uriauth.dto.URIFederationResponse;
 
 public interface URIFederationService {

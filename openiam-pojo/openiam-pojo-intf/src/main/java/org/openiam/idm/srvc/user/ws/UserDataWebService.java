@@ -176,6 +176,8 @@ public interface UserDataWebService {
             @WebParam(name = "userId", targetNamespace = "")
             String userId);
 
+    @WebMethod
+    public List<UserAttribute> getUserAttributes(@WebParam(name = "userId", targetNamespace = "") String userId);
 
     /* (non-Javadoc)
       * @see org.openiam.idm.srvc.user.service.UserDataService#addNote(org.openiam.idm.srvc.user.dto.UserNote)

@@ -9,6 +9,8 @@ import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
+import org.openiam.idm.srvc.meta.dto.PageTempate;
+import org.openiam.idm.srvc.meta.dto.TemplateRequest;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;

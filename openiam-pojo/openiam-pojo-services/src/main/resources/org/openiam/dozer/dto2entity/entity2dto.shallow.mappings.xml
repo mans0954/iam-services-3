@@ -190,6 +190,10 @@
 			<a>validValues</a>
 			<b>validValues</b>
 		</field-exclude>
+		<field-exclude>
+			<a>userAttributes</a>
+			<b>userAttributes</b>
+		</field-exclude>
 	</mapping>
 	
 	<mapping>

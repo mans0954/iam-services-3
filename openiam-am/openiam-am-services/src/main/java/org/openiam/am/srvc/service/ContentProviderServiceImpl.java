@@ -100,6 +100,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
             resource.setName(resourceTypeId+"_"+provider.getName());
             resource.setResourceType(resourceType);
             resource.setResourceId(null);
+            resource.setIsPublic(true);
             resourceDao.save(resource);
 
             provider.setId(null);
@@ -249,6 +250,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
             resource.setName(patternResourceTypeId+"_"+provider.getId()+"_"+pattern.getPattern());
             resource.setResourceType(resourceType);
             resource.setResourceId(null);
+            resource.setIsPublic(true);
             resourceDao.add(resource);
 
 

@@ -10,6 +10,8 @@ import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.MetadataElementPageTemplateSearchBean;
 import org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplate;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
+import org.openiam.idm.srvc.meta.dto.PageTempate;
+import org.openiam.idm.srvc.meta.dto.TemplateRequest;
 
 
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/meta/ws", name = "MetadataElementTemplateWebService")
@@ -32,4 +34,8 @@ public interface MetadataElementTemplateWebService {
 	 
 	 @WebMethod
 	 public MetadataElementPageTemplate findById(final @WebParam(name = "templateId", targetNamespace = "") String templateId);
+	 
+
+	 @WebMethod
+	 public PageTempate getTemplate(final @WebParam(name = "template", targetNamespace = "") TemplateRequest request);
 }

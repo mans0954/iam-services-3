@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.meta.dto;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.lang.dto.LanguageMapping;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
+import org.openiam.idm.srvc.user.dto.UserAttribute;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -33,7 +34,8 @@ import java.util.Set;
         "validValues",
         "dataType",
         "defaultValueLanguageMap",
-        "resourceId"
+        "resourceId",
+        "userAttributes"
 })
 @DozerDTOCorrespondence(MetadataElementEntity.class)
 public class MetadataElement implements Serializable {
@@ -52,6 +54,7 @@ public class MetadataElement implements Serializable {
     private Set<MetadataValidValue> validValues;
     private String staticDefaultValue;
     private Map<String, LanguageMapping> defaultValueLanguageMap;
+    private Set<UserAttribute> userAttributes;
     private String resourceId;
 
     public MetadataElement() {
@@ -178,6 +181,14 @@ public class MetadataElement implements Serializable {
 			Map<String, LanguageMapping> defaultValueLanguageMap) {
 		this.defaultValueLanguageMap = defaultValueLanguageMap;
 	}
+	
+	public Set<UserAttribute> getUserAttributes() {
+		return userAttributes;
+	}
+
+	public void setUserAttributes(Set<UserAttribute> userAttributes) {
+		this.userAttributes = userAttributes;
+	}
 
 	@Override
 	public int hashCode() {
@@ -254,6 +265,4 @@ public class MetadataElement implements Serializable {
 			return false;
 		return true;
 	}
-    
-    
 }

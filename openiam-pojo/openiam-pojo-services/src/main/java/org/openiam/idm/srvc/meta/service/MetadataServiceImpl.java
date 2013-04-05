@@ -143,6 +143,7 @@ public class MetadataServiceImpl implements MetadataService {
 				entity.setValidValues(dbEntity.getValidValues());
 				entity.setLanguageMap(dbEntity.getLanguageMap());
 				entity.setDefaultValueLanguageMap(dbEntity.getDefaultValueLanguageMap());
+				entity.setUserAttributes(dbEntity.getUserAttributes());
 				
 				entity.setLanguageMap(mergeLanguageMaps(entity.getLanguageMap(), languageMap));
 				entity.setDefaultValueLanguageMap(mergeLanguageMaps(entity.getDefaultValueLanguageMap(), defaultValueLanguageMap));
