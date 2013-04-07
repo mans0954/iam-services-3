@@ -292,7 +292,7 @@ public class TestPageTemplateService extends AbstractTestNGSpringContextTests {
 		final List<Language> languageList = languageWS.getAll();
 		Language language = null;
 		for(final Language l : languageList) {
-			if(l.getLocale().equals(locale)) {
+			if(l.hasLocale(locale)) {
 				language = l;
 				break;
 			}

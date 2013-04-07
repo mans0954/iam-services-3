@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 
 public interface LanguageDAO  extends BaseDao<LanguageEntity, String> {
+	public LanguageEntity getByLocale(final String locale);
 }

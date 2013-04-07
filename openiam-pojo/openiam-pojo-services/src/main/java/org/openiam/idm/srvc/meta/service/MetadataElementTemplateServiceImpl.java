@@ -198,19 +198,12 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 			}
 		}
 		
-		final String localeName = request.getLocaleName();
+		final LanguageEntity targetLanguage = getLanguage(request);
 		boolean isSelfServiceRequest = request.isSelfserviceRequest();
 		
 		final String userId = StringUtils.trimToNull(request.getUserId());
 		PageTempate template = null;
 		if(entity != null) {
-			final List<LanguageEntity> languageList = languageDAO.findAll();
-			final Map<String, LanguageEntity> languageMap = new HashMap<String, LanguageEntity>();
-			if(CollectionUtils.isNotEmpty(languageList)) {
-				for(final LanguageEntity languageEntity : languageList) {
-					languageMap.put(languageEntity.getLocale(), languageEntity);
-				}
-			}
 			final Map<String, List<UserAttributeEntity>> metadataElementId2UserAttributeMap = new HashMap<String, List<UserAttributeEntity>>();
 			if(userId != null) {
 				final List<UserAttributeEntity> attributeList = attributeDAO.findUserAttributes(userId);
@@ -241,8 +234,7 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 							if(userId == null || elementEntity.isPublic() || !isSelfServiceRequest || isEntitled(userId, elementEntity.getResource().getResourceId())) {
 								final PageElement pageElement = new PageElement(elementEntity, order);
 								
-								if(StringUtils.isNotEmpty(localeName)) {
-									final LanguageEntity targetLanguage = languageMap.get(localeName);
+								if(targetLanguage != null) {
 									if(targetLanguage != null) {
 										pageElement.setDisplayName(getLanguageValue(targetLanguage, elementEntity.getLanguageMap()));
 										pageElement.setDefaultValue(getLanguageValue(targetLanguage, elementEntity.getDefaultValueLanguageMap()));
@@ -274,6 +266,16 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 			}
 		}
 		return template;
+	}
+	
+	private LanguageEntity getLanguage(final TemplateRequest request) {
+		LanguageEntity entity = null;
+		if(StringUtils.isNotBlank(request.getLanguageId())) {
+			entity = languageDAO.findById(request.getLanguageId());
+		} else if(StringUtils.isNotBlank(request.getLocaleName())) {
+			entity = languageDAO.getByLocale(request.getLocaleName());
+		}
+		return entity;
 	}
 	
 	private String getLanguageValue(final LanguageEntity targetLanguage, final Map<String, LanguageMappingEntity> languageMap) {
