@@ -32,11 +32,14 @@ import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.meta.dto.MetadataValidValue;
 import org.openiam.idm.srvc.meta.dto.PageElement;
 import org.openiam.idm.srvc.meta.dto.PageElementValidValue;
+import org.openiam.idm.srvc.meta.dto.PageElementValue;
 import org.openiam.idm.srvc.meta.dto.PageTempate;
 import org.openiam.idm.srvc.meta.dto.TemplateRequest;
 import org.openiam.idm.srvc.meta.ws.MetadataElementTemplateWebService;
 import org.openiam.idm.srvc.meta.ws.MetadataWebService;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
+import org.openiam.idm.srvc.user.dto.UserAttribute;
+import org.openiam.idm.srvc.user.ws.UserDataWebService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
@@ -73,10 +76,14 @@ public class TestPageTemplateService extends AbstractTestNGSpringContextTests {
 	@Resource(name="resourceServiceClient")
 	private ResourceDataService resourceDataService;
 	
+    @Resource(name = "userServiceClient")
+    protected UserDataWebService userDataWebService;
+	
 	private ContentProvider cp;
 	private URIPattern pattern;
 	private MetadataElementPageTemplate template;
 	private List<MetadataElement> elementList = new LinkedList<MetadataElement>();
+	private Map<String, List<UserAttribute>> attributeMap = new HashMap<String, List<UserAttribute>>();
 	
 	private static final String userId = "3000";
 	private static final String locale = "en_EN";
@@ -117,7 +124,7 @@ public class TestPageTemplateService extends AbstractTestNGSpringContextTests {
 		 assertSuccess(saveResponse);
 		 Assert.assertNotNull(template);
 		 
-		 resourceDataService.addUserToResource(template.getResourceId(), userId);
+		 //resourceDataService.addUserToResource(template.getResourceId(), userId);
 		 
 		 final List<MetadataType> typeList = getAllMetatypes();
 		 if(CollectionUtils.isNotEmpty(typeList)) {
@@ -152,11 +159,28 @@ public class TestPageTemplateService extends AbstractTestNGSpringContextTests {
 				 final MetadataElement savedElement = metadataWebService.findElementById((String)saveResponse.getResponseValue());
 				 elementList.add(savedElement);
 				 
-				 resourceDataService.addUserToResource(savedElement.getResourceId(), userId);
+				 for(int i = 0; i < 4; i++) {
+					 final UserAttribute attribute = new UserAttribute();
+					 attribute.setMetadataElementId(savedElement.getId());
+					 attribute.setName(RandomStringUtils.randomAlphanumeric(3));
+					 attribute.setUserId(userId);
+					 attribute.setValue(RandomStringUtils.randomAlphanumeric(3));
+					 saveResponse = userDataWebService.addAttribute(attribute);
+					 assertSuccess(saveResponse);
+					 final String attributeId = (String)saveResponse.getResponseValue();
+					 
+					 final UserAttribute savedAttribute = userDataWebService.getAttribute(attributeId);
+					 if(!attributeMap.containsKey(savedElement.getId())) {
+						 attributeMap.put(savedElement.getId(), new LinkedList<UserAttribute>());
+					 }
+					 attributeMap.get(savedElement.getId()).add(savedAttribute);
+				 }
+				 
+				 //resourceDataService.addUserToResource(savedElement.getResourceId(), userId);
 				 idx++;
 			 }
 		 }
-		 authManagerWS.refreshCache();
+		 //authManagerWS.refreshCache();
 	 }
 	 
 	 @AfterClass
@@ -217,19 +241,38 @@ public class TestPageTemplateService extends AbstractTestNGSpringContextTests {
 				
 				Assert.assertEquals(displayName, metaElement.getLanguageMap().get(languageId).getValue());
 				Assert.assertEquals(defaultValue, metaElement.getDefaultValueLanguageMap().get(languageId).getValue());
-				if(CollectionUtils.isNotEmpty(element.getValidValues())) {
-					for(final PageElementValidValue validValue : element.getValidValues()) {
-						final MetadataValidValue validValueObj = getValidValue(metaElement, validValue.getId());
-						
-						final String validValueDisplayName = validValue.getDisplayName();
-						final String value = validValue.getValue();
-						
-						Assert.assertEquals(validValueDisplayName, validValueObj.getLanguageMap().get(languageId).getValue());
-						Assert.assertEquals(value, validValueObj.getUiValue());
-					}
+				
+				Assert.assertTrue(CollectionUtils.isNotEmpty(element.getValidValues()));
+				for(final PageElementValidValue validValue : element.getValidValues()) {
+					final MetadataValidValue validValueObj = getValidValue(metaElement, validValue.getId());
+					
+					final String validValueDisplayName = validValue.getDisplayName();
+					final String value = validValue.getValue();
+					
+					Assert.assertEquals(validValueDisplayName, validValueObj.getLanguageMap().get(languageId).getValue());
+					Assert.assertEquals(value, validValueObj.getUiValue());
+				}
+				
+				Assert.assertTrue(CollectionUtils.isNotEmpty(element.getUserValues()));
+				for(final PageElementValue value : element.getUserValues()) {
+					final UserAttribute attribute = getUserAttribute(metaElement.getId(), value.getUserAttributeId());
+					Assert.assertEquals(attribute.getValue(), value.getValue());
 				}
 			}
 		}
+	}
+	
+	private UserAttribute getUserAttribute(final String elementId, final String attributeId) {
+		UserAttribute retVal = null;
+		if(attributeMap.containsKey(elementId)) {
+			for(final UserAttribute attribute : attributeMap.get(elementId)) {
+				if(attribute.getId().equals(attributeId)) {
+					retVal = attribute;
+					break;
+				}
+			}
+		}
+		return retVal;
 	}
 	
 	private MetadataValidValue getValidValue(final MetadataElement element, final String validValueId) {

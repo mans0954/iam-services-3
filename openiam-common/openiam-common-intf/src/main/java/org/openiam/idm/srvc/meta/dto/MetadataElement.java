@@ -38,7 +38,8 @@ import java.util.Set;
         "dataType",
         "defaultValueLanguageMap",
         "resourceId",
-        "userAttributes"
+        "userAttributes",
+        "isPublic"
 })
 @DozerDTOCorrespondence(MetadataElementEntity.class)
 public class MetadataElement implements Serializable {
@@ -59,6 +60,7 @@ public class MetadataElement implements Serializable {
     private Map<String, LanguageMapping> defaultValueLanguageMap;
     private Set<UserAttribute> userAttributes;
     private String resourceId;
+    private boolean isPublic = true;
 
     public MetadataElement() {
     }
@@ -219,6 +221,13 @@ public class MetadataElement implements Serializable {
 	public void setUserAttributes(Set<UserAttribute> userAttributes) {
 		this.userAttributes = userAttributes;
 	}
+	
+	public boolean getIsPublic() {
+		return isPublic;
+	}
+	public void setIsPublic(boolean isPublic) {
+		this.isPublic = isPublic;
+	}
 
 	@Override
 	public int hashCode() {
@@ -240,6 +249,7 @@ public class MetadataElement implements Serializable {
 				+ ((resourceId == null) ? 0 : resourceId.hashCode());
 		result = prime * result + (required ? 1231 : 1237);
 		result = prime * result + (selfEditable ? 1231 : 1237);
+		result = prime * result + (isPublic ? 1231 : 1237);
 		return result;
 	}
 
@@ -292,6 +302,8 @@ public class MetadataElement implements Serializable {
 		if (required != other.required)
 			return false;
 		if (selfEditable != other.selfEditable)
+			return false;
+		if (isPublic != other.isPublic)
 			return false;
 		return true;
 	}

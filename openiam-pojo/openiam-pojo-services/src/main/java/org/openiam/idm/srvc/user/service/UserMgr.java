@@ -394,7 +394,7 @@ public class UserMgr implements UserDataService {
         	UserEntity userEntity = userDao.findById(attribute.getUserId());
         	attribute.setUser(userEntity);
         	attribute.setElement(userAttribute.getElement());
-        	userAttributeDao.update(attribute);
+        	userAttributeDao.merge(attribute);
         }
     }
 

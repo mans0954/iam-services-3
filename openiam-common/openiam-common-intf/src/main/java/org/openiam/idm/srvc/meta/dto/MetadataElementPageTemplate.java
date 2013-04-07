@@ -17,7 +17,8 @@ import java.util.Set;
         "name",
         "resourceId",
         "metadataElements",
-        "uriPatterns"
+        "uriPatterns",
+        "isPublic"
 })
 @DozerDTOCorrespondence(MetadataElementPageTemplateEntity.class)
 public class MetadataElementPageTemplate implements Serializable {
@@ -27,7 +28,7 @@ public class MetadataElementPageTemplate implements Serializable {
 	private String resourceId;
 	private Set<URIPattern> uriPatterns;
 	private Set<MetadataElementPageTemplateXref> metadataElements;
-	
+	private boolean isPublic = true;
 	
 	
 	public String getId() {
@@ -89,6 +90,13 @@ public class MetadataElementPageTemplate implements Serializable {
 		}
 	}
 	
+	public boolean getIsPublic() {
+		return isPublic;
+	}
+	public void setIsPublic(boolean isPublic) {
+		this.isPublic = isPublic;
+	}
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -97,6 +105,7 @@ public class MetadataElementPageTemplate implements Serializable {
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result
 				+ ((resourceId == null) ? 0 : resourceId.hashCode());
+		result = prime * result + (isPublic ? 1231 : 1237);
 		return result;
 	}
 	@Override
@@ -122,6 +131,8 @@ public class MetadataElementPageTemplate implements Serializable {
 			if (other.resourceId != null)
 				return false;
 		} else if (!resourceId.equals(other.resourceId))
+			return false;
+		if (isPublic != other.isPublic)
 			return false;
 		return true;
 	}

@@ -32,7 +32,7 @@
         <class-b>org.openiam.idm.srvc.user.dto.UserAttribute</class-b>
         <field>
         	<a>element.id</a>
-        	<b>elementId</b>
+        	<b>metadataElementId</b>
         </field>
     </mapping>
 

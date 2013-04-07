@@ -29,8 +29,8 @@ import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
         "value",
         "attrGroup",
         "operation",
-        "required",
-        "elementId"
+        "required"/*,
+        "elementId"*/
 })
 @DozerDTOCorrespondence(UserAttributeEntity.class)
 public class UserAttribute extends BaseObject {
@@ -51,7 +51,7 @@ public class UserAttribute extends BaseObject {
 
     protected String userId;
     
-    private String elementId;
+    //private String elementId;
     // Constructors
 
     /**
@@ -167,6 +167,7 @@ public class UserAttribute extends BaseObject {
         this.userId = userId;
     }
 
+    /*
     public String getElementId() {
 		return elementId;
 	}
@@ -174,6 +175,7 @@ public class UserAttribute extends BaseObject {
 	public void setElementId(String elementId) {
 		this.elementId = elementId;
 	}
+	*/
 
 	@Override
     public String toString() {
@@ -194,8 +196,10 @@ public class UserAttribute extends BaseObject {
 		int result = super.hashCode();
 		result = prime * result
 				+ ((attrGroup == null) ? 0 : attrGroup.hashCode());
+		/*
 		result = prime * result
 				+ ((elementId == null) ? 0 : elementId.hashCode());
+		*/
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime
 				* result
@@ -225,11 +229,13 @@ public class UserAttribute extends BaseObject {
 				return false;
 		} else if (!attrGroup.equals(other.attrGroup))
 			return false;
+		/*
 		if (elementId == null) {
 			if (other.elementId != null)
 				return false;
 		} else if (!elementId.equals(other.elementId))
 			return false;
+		*/
 		if (id == null) {
 			if (other.id != null)
 				return false;

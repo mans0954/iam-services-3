@@ -75,6 +75,10 @@ public class MetadataElementEntity implements Serializable {
     @JoinColumn(name = "TYPE_ID")
     private MetadataTypeEntity metadataType;
     
+	@Column(name = "IS_PUBLIC", nullable = false)
+	@Type(type = "yes_no")
+	private boolean isPublic = true;
+    
 //    @ManyToOne
 //    @JoinColumn(name = "TEMPLATE_ID")
 //    private MetadataElementPageTemplateEntity template;
@@ -249,6 +253,16 @@ public class MetadataElementEntity implements Serializable {
 	public void setUserAttributes(Set<UserAttributeEntity> userAttributes) {
 		this.userAttributes = userAttributes;
 	}
+	
+	
+
+	public boolean isPublic() {
+		return isPublic;
+	}
+
+	public void setPublic(boolean isPublic) {
+		this.isPublic = isPublic;
+	}
 
 	@Override
 	public int hashCode() {
@@ -270,6 +284,7 @@ public class MetadataElementEntity implements Serializable {
 				* result
 				+ ((staticDefaultValue == null) ? 0 : staticDefaultValue
 						.hashCode());
+		result = prime * result + (isPublic ? 1231 : 1237);
 		return result;
 	}
 
@@ -303,6 +318,8 @@ public class MetadataElementEntity implements Serializable {
 			if (other.id != null)
 				return false;
 		} else if (!id.equals(other.id))
+			return false;
+		if (isPublic != other.isPublic)
 			return false;
 		if (metadataType == null) {
 			if (other.metadataType != null)

@@ -169,6 +169,7 @@ public class UserDataWebServiceImpl implements UserDataWebService,MuleContextAwa
 			
 			final UserAttributeEntity entity = userAttributeDozerConverter.convertToEntity(attribute, true);
 			userManager.addAttribute(entity);
+			response.setResponseValue(entity.getId());
 		} catch(BasicDataServiceException e) {
     		response.setErrorCode(e.getCode());
     		response.setStatus(ResponseStatus.FAILURE);

@@ -24,8 +24,10 @@ public class UserAttributeEntity {
     @Column(name = "ID", length = 32, nullable = false)
     private String id;
 
+    /*
     @Column(name = "METADATA_ID", length = 20)
     private String metadataElementId;
+	*/
 
     @Column(name = "NAME", length = 50)
     private String name;
@@ -41,7 +43,7 @@ public class UserAttributeEntity {
     private UserEntity user;
     
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
-    @JoinColumn(name = "METADATA_ELEMENT_ID", insertable = true, updatable = false, nullable=true)
+    @JoinColumn(name = "METADATA_ID", insertable = true, updatable = false, nullable=true)
     private MetadataElementEntity element;
 
     public UserAttributeEntity() {
@@ -55,6 +57,7 @@ public class UserAttributeEntity {
         this.id = id;
     }
 
+    /*
     public String getMetadataElementId() {
         return metadataElementId;
     }
@@ -62,6 +65,7 @@ public class UserAttributeEntity {
     public void setMetadataElementId(String metadataElementId) {
         this.metadataElementId = metadataElementId;
     }
+    */
 
     public String getName() {
         return name;
@@ -111,10 +115,12 @@ public class UserAttributeEntity {
 		int result = 1;
 		result = prime * result + ((element == null) ? 0 : element.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		/*
 		result = prime
 				* result
 				+ ((metadataElementId == null) ? 0 : metadataElementId
 						.hashCode());
+		*/
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + ((userId == null) ? 0 : userId.hashCode());
 		result = prime * result + ((value == null) ? 0 : value.hashCode());
@@ -140,11 +146,13 @@ public class UserAttributeEntity {
 				return false;
 		} else if (!id.equals(other.id))
 			return false;
+		/*
 		if (metadataElementId == null) {
 			if (other.metadataElementId != null)
 				return false;
 		} else if (!metadataElementId.equals(other.metadataElementId))
 			return false;
+		*/
 		if (name == null) {
 			if (other.name != null)
 				return false;
