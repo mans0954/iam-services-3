@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -26,6 +27,7 @@ import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateXrefEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataValidValueEntity;
 import org.openiam.idm.srvc.meta.domain.WhereClauseConstants;
+import org.openiam.idm.srvc.meta.domain.pk.MetadataElementPageTemplateXrefIdEntity;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
@@ -132,6 +134,7 @@ public class MetadataServiceImpl implements MetadataService {
 				entity.setLanguageMap(null);
 				entity.setDefaultValueLanguageMap(null);
 				entity.setValidValues(null);
+				entity.setTemplateSet(null);
 				
 				metadataElementDao.save(entity);
 				entity.setLanguageMap(mergeLanguageMaps(entity.getLanguageMap(), languageMap));

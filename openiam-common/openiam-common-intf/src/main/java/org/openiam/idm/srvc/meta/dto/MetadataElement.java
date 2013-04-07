@@ -9,6 +9,9 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
@@ -148,6 +151,15 @@ public class MetadataElement implements Serializable {
 	public void setLanguageMap(Map<String, LanguageMapping> languageMap) {
 		this.languageMap = languageMap;
 	}
+	
+	public void addLanguage(final LanguageMapping mapping) {
+		if(mapping != null) {
+			if(this.languageMap == null) {
+				this.languageMap = new HashMap<String, LanguageMapping>();
+			}
+			this.languageMap.put(mapping.getId(), mapping);
+		}
+	}
 
 	public Set<MetadataValidValue> getValidValues() {
 		return validValues;
@@ -155,6 +167,15 @@ public class MetadataElement implements Serializable {
 
 	public void setValidValues(Set<MetadataValidValue> validValues) {
 		this.validValues = validValues;
+	}
+	
+	public void addValidValue(final MetadataValidValue value) {
+		if(value != null) {
+			if(this.validValues == null) {
+				this.validValues = new HashSet<MetadataValidValue>();
+			}
+			this.validValues.add(value);
+		}
 	}
 
 	public String getStaticDefaultValue() {
@@ -175,6 +196,15 @@ public class MetadataElement implements Serializable {
 
 	public Map<String, LanguageMapping> getDefaultValueLanguageMap() {
 		return defaultValueLanguageMap;
+	}
+	
+	public void addDefaultValue(final LanguageMapping mapping) {
+		if(mapping != null) {
+			if(this.defaultValueLanguageMap == null) {
+				this.defaultValueLanguageMap = new HashMap<String, LanguageMapping>();
+			}
+			this.defaultValueLanguageMap.put(mapping.getId(), mapping);
+		}
 	}
 
 	public void setDefaultValueLanguageMap(

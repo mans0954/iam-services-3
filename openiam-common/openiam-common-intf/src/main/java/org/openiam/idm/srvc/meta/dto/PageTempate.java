@@ -57,4 +57,45 @@ public class PageTempate implements Serializable{
 	public void setPageElements(TreeSet<PageElement> pageElements) {
 		this.pageElements = pageElements;
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((pageElements == null) ? 0 : pageElements.hashCode());
+		result = prime * result
+				+ ((templateId == null) ? 0 : templateId.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		PageTempate other = (PageTempate) obj;
+		if (pageElements == null) {
+			if (other.pageElements != null)
+				return false;
+		} else if (!pageElements.equals(other.pageElements))
+			return false;
+		if (templateId == null) {
+			if (other.templateId != null)
+				return false;
+		} else if (!templateId.equals(other.templateId))
+			return false;
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		return "PageTempate [templateId=" + templateId + ", pageElements="
+				+ pageElements + "]";
+	}
+	
+	
 }

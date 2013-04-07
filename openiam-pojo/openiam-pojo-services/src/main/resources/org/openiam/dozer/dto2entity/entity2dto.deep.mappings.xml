@@ -169,7 +169,7 @@
 			<a>metadataType.metadataTypeId</a>
 			<b>metadataTypeId</b>
 		</field>
-		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter" custom-converter-param="dto2entityDeepDozerMapper">
+		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="dto2entityShallowDozerMapper">
 			<a>templateSet</a>
 			<b>templateSet</b>
 		</field>

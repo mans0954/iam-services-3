@@ -31,7 +31,7 @@ public class MetadataElementPageTemplateDAOImpl extends BaseDaoImpl<MetadataElem
 				for(final URIPatternEntity pattern : entity.getUriPatterns()) {
 					patternIdSet.add(pattern.getId());
 				}
-				criteria.add(Restrictions.in("uriPatterns.id", patternIdSet));
+				criteria.createAlias("uriPatterns", "patterns").add( Restrictions.in("patterns.id", patternIdSet));
 			}
 		}
 		return criteria;
