@@ -34,11 +34,16 @@ public class LanguageEntity implements Serializable {
     @Column(name = "IS_USED")
     @Type(type = "yes_no")
     private boolean isUsed=false;
-    
+
+    @Column(name="LANGUAGE_CODE", length = 2)
+    private String languageCode;
+
     @OneToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY, mappedBy="language")
     @MapKey(name = "locale")
     @Fetch(FetchMode.SUBSELECT)
     private Map<String, LanguageLocaleEntity> locales;
+
+
 
     public String getLanguageId() {
         return languageId;
@@ -76,7 +81,15 @@ public class LanguageEntity implements Serializable {
 		this.isUsed = isUsed;
 	}
 
-	@Override
+    public String getLanguageCode() {
+        return languageCode;
+    }
+
+    public void setLanguageCode(String languageCode) {
+        this.languageCode = languageCode;
+    }
+
+    @Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
