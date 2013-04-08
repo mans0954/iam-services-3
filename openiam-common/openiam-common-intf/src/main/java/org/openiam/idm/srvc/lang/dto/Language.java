@@ -14,7 +14,8 @@ import java.util.Map;
         "languageId",
         "name",
         "locales",
-        "isUsed"
+        "isUsed",
+        "languageCode"
 })
 @DozerDTOCorrespondence(LanguageEntity.class)
 public class Language implements Serializable {
@@ -22,6 +23,9 @@ public class Language implements Serializable {
         private String languageId;
         private String name;
         private boolean isUsed=false;
+        private String languageCode;
+
+
         private Map<String, LanguageLocale> locales;
 
         public String getLanguageId() {
@@ -64,7 +68,15 @@ public class Language implements Serializable {
 			this.isUsed = isUsed;
 		}
 
-		@Override
+        public String getLanguageCode() {
+            return languageCode;
+        }
+
+        public void setLanguageCode(String languageCode) {
+            this.languageCode = languageCode;
+        }
+
+        @Override
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
