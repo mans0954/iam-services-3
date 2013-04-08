@@ -3,11 +3,15 @@ package org.openiam.idm.srvc.meta.dto;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.lang.dto.LanguageMapping;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
+import org.openiam.idm.srvc.user.dto.UserAttribute;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
@@ -33,7 +37,9 @@ import java.util.Set;
         "validValues",
         "dataType",
         "defaultValueLanguageMap",
-        "resourceId"
+        "resourceId",
+        "userAttributes",
+        "isPublic"
 })
 @DozerDTOCorrespondence(MetadataElementEntity.class)
 public class MetadataElement implements Serializable {
@@ -52,7 +58,9 @@ public class MetadataElement implements Serializable {
     private Set<MetadataValidValue> validValues;
     private String staticDefaultValue;
     private Map<String, LanguageMapping> defaultValueLanguageMap;
+    private Set<UserAttribute> userAttributes;
     private String resourceId;
+    private boolean isPublic = true;
 
     public MetadataElement() {
     }
@@ -145,6 +153,15 @@ public class MetadataElement implements Serializable {
 	public void setLanguageMap(Map<String, LanguageMapping> languageMap) {
 		this.languageMap = languageMap;
 	}
+	
+	public void addLanguage(final LanguageMapping mapping) {
+		if(mapping != null) {
+			if(this.languageMap == null) {
+				this.languageMap = new HashMap<String, LanguageMapping>();
+			}
+			this.languageMap.put(mapping.getId(), mapping);
+		}
+	}
 
 	public Set<MetadataValidValue> getValidValues() {
 		return validValues;
@@ -152,6 +169,15 @@ public class MetadataElement implements Serializable {
 
 	public void setValidValues(Set<MetadataValidValue> validValues) {
 		this.validValues = validValues;
+	}
+	
+	public void addValidValue(final MetadataValidValue value) {
+		if(value != null) {
+			if(this.validValues == null) {
+				this.validValues = new HashSet<MetadataValidValue>();
+			}
+			this.validValues.add(value);
+		}
 	}
 
 	public String getStaticDefaultValue() {
@@ -173,10 +199,34 @@ public class MetadataElement implements Serializable {
 	public Map<String, LanguageMapping> getDefaultValueLanguageMap() {
 		return defaultValueLanguageMap;
 	}
+	
+	public void addDefaultValue(final LanguageMapping mapping) {
+		if(mapping != null) {
+			if(this.defaultValueLanguageMap == null) {
+				this.defaultValueLanguageMap = new HashMap<String, LanguageMapping>();
+			}
+			this.defaultValueLanguageMap.put(mapping.getId(), mapping);
+		}
+	}
 
 	public void setDefaultValueLanguageMap(
 			Map<String, LanguageMapping> defaultValueLanguageMap) {
 		this.defaultValueLanguageMap = defaultValueLanguageMap;
+	}
+	
+	public Set<UserAttribute> getUserAttributes() {
+		return userAttributes;
+	}
+
+	public void setUserAttributes(Set<UserAttribute> userAttributes) {
+		this.userAttributes = userAttributes;
+	}
+	
+	public boolean getIsPublic() {
+		return isPublic;
+	}
+	public void setIsPublic(boolean isPublic) {
+		this.isPublic = isPublic;
 	}
 
 	@Override
@@ -199,6 +249,7 @@ public class MetadataElement implements Serializable {
 				+ ((resourceId == null) ? 0 : resourceId.hashCode());
 		result = prime * result + (required ? 1231 : 1237);
 		result = prime * result + (selfEditable ? 1231 : 1237);
+		result = prime * result + (isPublic ? 1231 : 1237);
 		return result;
 	}
 
@@ -252,8 +303,8 @@ public class MetadataElement implements Serializable {
 			return false;
 		if (selfEditable != other.selfEditable)
 			return false;
+		if (isPublic != other.isPublic)
+			return false;
 		return true;
 	}
-    
-    
 }

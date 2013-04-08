@@ -190,6 +190,10 @@
 			<a>validValues</a>
 			<b>validValues</b>
 		</field-exclude>
+		<field-exclude>
+			<a>userAttributes</a>
+			<b>userAttributes</b>
+		</field-exclude>
 	</mapping>
 	
 	<mapping>
@@ -322,5 +326,14 @@
     		<a>identityQuestGrp.id</a>
     		<b>identityQuestGrpId</b>
     	</field>
+    </mapping>
+    
+    <mapping>
+        <class-a>org.openiam.idm.srvc.lang.domain.LanguageEntity</class-a>
+        <class-b>org.openiam.idm.srvc.lang.dto.Language</class-b>
+        <field-exclude>
+        	<a>locales</a>
+        	<b>locales</b>
+        </field-exclude>
     </mapping>
 </mappings>

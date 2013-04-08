@@ -78,11 +78,7 @@ public class LanguageDataServiceImpl implements LanguageDataService {
 		}
         LanguageEntity l = getLanguage(lg.getLanguageId());
         if(l!=null){
-		    l.setName(lg.getName());
-            l.setLocale(lg.getLocale());
-            l.setIsUsed(lg.getIsUsed());
-
-            languageDao.update(l);
+            languageDao.merge(l);
         }
 	}
 }

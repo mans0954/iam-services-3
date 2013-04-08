@@ -58,8 +58,9 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
 
     @Override
     public ContentProvider getContentProvider(String providerId) {
-        return contentProviderDozerConverter.convertToDTO(contentProviderService.getContentProvider(providerId),
-                                                                 true);
+    	final ContentProviderEntity entity = contentProviderService.getContentProvider(providerId);
+        final ContentProvider dto = (entity != null) ? contentProviderDozerConverter.convertToDTO(entity, true) : null;
+        return dto;
     }
 
     @Override

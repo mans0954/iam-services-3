@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.meta.domain;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.Cacheable;
@@ -22,6 +23,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
 import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplate;
@@ -59,6 +61,10 @@ public class MetadataElementPageTemplateEntity implements Serializable {
             inverseJoinColumns = {@JoinColumn(name = "URI_PATTERN_ID")})
     @Fetch(FetchMode.SUBSELECT)
     private Set<URIPatternEntity> uriPatterns;
+    
+	@Column(name = "IS_PUBLIC", nullable = false)
+	@Type(type = "yes_no")
+	private boolean isPublic = true;
 	
 	public String getId() {
 		return id;
@@ -100,6 +106,23 @@ public class MetadataElementPageTemplateEntity implements Serializable {
 	public void setUriPatterns(Set<URIPatternEntity> uriPatterns) {
 		this.uriPatterns = uriPatterns;
 	}
+	
+	public void addURIPattern(final URIPatternEntity entity) {
+		if(entity != null) {
+			if(this.uriPatterns == null) {
+				this.uriPatterns = new HashSet<URIPatternEntity>();
+			}
+			this.uriPatterns.add(entity);
+		}
+	}
+	
+	public boolean isPublic() {
+		return isPublic;
+	}
+
+	public void setPublic(boolean isPublic) {
+		this.isPublic = isPublic;
+	}
 
 	@Override
 	public int hashCode() {
@@ -109,6 +132,7 @@ public class MetadataElementPageTemplateEntity implements Serializable {
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result
 				+ ((resource == null) ? 0 : resource.hashCode());
+		result = prime * result + (isPublic ? 1231 : 1237);
 		return result;
 	}
 
@@ -135,6 +159,8 @@ public class MetadataElementPageTemplateEntity implements Serializable {
 			if (other.resource != null)
 				return false;
 		} else if (!resource.equals(other.resource))
+			return false;
+		if (isPublic != other.isPublic)
 			return false;
 		return true;
 	}

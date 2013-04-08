@@ -17,6 +17,8 @@ import org.openiam.dozer.converter.MetadataElementTemplateDozerConverter;
 import org.openiam.idm.searchbeans.MetadataElementPageTemplateSearchBean;
 import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity;
 import org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplate;
+import org.openiam.idm.srvc.meta.dto.PageTempate;
+import org.openiam.idm.srvc.meta.dto.TemplateRequest;
 import org.openiam.idm.srvc.meta.service.MetadataElementTemplateService;
 import org.openiam.idm.srvc.searchbean.converter.MetadataElementTemplateSearchBeanConverter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -100,5 +102,10 @@ public class MetadataElementTemplateWebServiceImpl implements MetadataElementTem
 		searchBean.setDeepCopy(true);
 		final List<MetadataElementPageTemplate> foundList = findBeans(searchBean, 0, 1);
 		return (CollectionUtils.isNotEmpty(foundList)) ? foundList.get(0) : null;
+	}
+
+	@Override
+	public PageTempate getTemplate(final TemplateRequest request) {
+		return templateService.getTemplate(request);
 	}
 }

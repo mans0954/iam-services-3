@@ -25,6 +25,8 @@ import org.openiam.idm.srvc.continfo.service.PhoneDAO;
 import org.openiam.idm.srvc.continfo.service.PhoneSearchDAO;
 import org.openiam.idm.srvc.grp.service.UserGroupDAO;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
+import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
+import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
 import org.openiam.idm.srvc.role.service.UserRoleDAO;
 import org.openiam.idm.srvc.searchbean.converter.AddressSearchBeanConverter;
 import org.openiam.idm.srvc.searchbean.converter.EmailAddressSearchBeanConverter;
@@ -108,6 +110,9 @@ public class UserMgr implements UserDataService {
     private AddressSearchBeanConverter addressSearchBeanConverter;
     @Autowired
     private PhoneSearchBeanConverter phoneSearchBeanConverter;
+    
+    @Autowired
+    private MetadataElementDAO metadataElementDAO;
     
     @Value("${org.openiam.user.search.max.results}")
     private int MAX_USER_SEARCH_RESULTS;
@@ -365,6 +370,12 @@ public class UserMgr implements UserDataService {
 
         UserEntity userEntity = userDao.findById(attribute.getUserId());
         attribute.setUser(userEntity);
+        
+        MetadataElementEntity element = null;
+        if(attribute.getElement() != null && StringUtils.isNotEmpty(attribute.getElement().getId())) {
+        	element = metadataElementDAO.findById(attribute.getElement().getId());
+        }
+        attribute.setElement(element);
 
         userAttributeDao.save(attribute);
     }
@@ -378,10 +389,13 @@ public class UserMgr implements UserDataService {
             throw new NullPointerException(
                     "User has not been associated with this attribute.");
         }
-        UserEntity userEntity = userDao.findById(attribute.getUserId());
-        attribute.setUser(userEntity);
-
-        userAttributeDao.update(attribute);
+        final UserAttributeEntity userAttribute = userAttributeDao.findById(attribute.getId());
+        if(userAttribute != null) {
+        	UserEntity userEntity = userDao.findById(attribute.getUserId());
+        	attribute.setUser(userEntity);
+        	attribute.setElement(userAttribute.getElement());
+        	userAttributeDao.merge(attribute);
+        }
     }
 
     @Override

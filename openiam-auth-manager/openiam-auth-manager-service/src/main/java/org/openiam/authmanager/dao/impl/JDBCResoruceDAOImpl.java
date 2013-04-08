@@ -26,9 +26,9 @@ public class JDBCResoruceDAOImpl extends AbstractJDBCDao implements ResourceDAO 
 	private static final RowMapper<AuthorizationResource> rowMapper = new ResourceMapper();
 	private static final RowMapper<AuthorizationMenu> menuMapper = new MenuMapper();
 	
-	private String GET_ALL = "SELECT RESOURCE_ID AS RESOURCE_ID, NAME AS NAME FROM %s.RES";
+	private String GET_ALL = "SELECT RESOURCE_ID AS RESOURCE_ID, NAME AS NAME, IS_PUBLIC AS IS_PUBLIC FROM %s.RES";
 	private String GET_ALL_MENUS = "SELECT RESOURCE_ID AS RESOURCE_ID, URL AS MENU_URL, NAME AS MENU_NAME, DISPLAY_ORDER AS DISPLAY_ORDER, IS_PUBLIC AS IS_PUBLIC FROM %s.RES WHERE RESOURCE_TYPE_ID = ?";
-	private String GET_AUTH_MENU_BY_ID = "SELECT RESOURCE_ID AS RESOURCE_ID, URL AS MENU_URL, NAME AS MENU_NAME, DISPLAY_ORDER AS DISPLAY_ORDER FROM %s.RES WHERE RESOURCE_TYPE_ID = ? AND RESOURCE_ID = ?";
+	private String GET_AUTH_MENU_BY_ID = "SELECT RESOURCE_ID AS RESOURCE_ID, URL AS MENU_URL, NAME AS MENU_NAME, DISPLAY_ORDER AS DISPLAY_ORDER, IS_PUBLIC AS IS_PUBLIC FROM %s.RES WHERE RESOURCE_TYPE_ID = ? AND RESOURCE_ID = ?";
 	
 	@Override
 	protected void initSqlStatements() {
@@ -87,6 +87,7 @@ public class JDBCResoruceDAOImpl extends AbstractJDBCDao implements ResourceDAO 
 			final AuthorizationResource resource = new AuthorizationResource();
 			resource.setId(rs.getString("RESOURCE_ID"));
 			resource.setName(rs.getString("NAME"));
+			resource.setPublic("Y".equals(rs.getString("IS_PUBLIC")));
 			return resource;
 		}
 		

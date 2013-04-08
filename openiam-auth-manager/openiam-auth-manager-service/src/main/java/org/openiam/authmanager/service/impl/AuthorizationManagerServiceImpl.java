@@ -61,6 +61,7 @@ import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.authmanager.common.model.AuthorizationManagerLoginId;
 import org.openiam.idm.srvc.grp.ws.GroupResponse;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
+import org.openiam.thread.Sweepable;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,7 +84,7 @@ import org.springframework.util.StopWatch;
  */
 @Service("authorizationManagerService")
 @ManagedResource(objectName="org.openiam.authorization.manager:name=authorizationManagerService")
-public class AuthorizationManagerServiceImpl implements AuthorizationManagerService, InitializingBean, ApplicationContextAware/*, Runnable*/ {
+public class AuthorizationManagerServiceImpl implements AuthorizationManagerService, InitializingBean, ApplicationContextAware, Sweepable/*, Runnable*/ {
 
 	private ApplicationContext ctx;
 	

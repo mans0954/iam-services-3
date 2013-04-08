@@ -30,6 +30,10 @@
     <mapping>
         <class-a>org.openiam.idm.srvc.user.domain.UserAttributeEntity</class-a>
         <class-b>org.openiam.idm.srvc.user.dto.UserAttribute</class-b>
+        <field>
+        	<a>element.id</a>
+        	<b>metadataElementId</b>
+        </field>
     </mapping>
 
     <mapping>
@@ -117,11 +121,6 @@
         <class-a>org.openiam.idm.srvc.secdomain.domain.SecurityDomainEntity</class-a>
         <class-b>org.openiam.idm.srvc.secdomain.dto.SecurityDomain</class-b>
     </mapping>
-
-    <mapping>
-        <class-a>org.openiam.idm.srvc.lang.domain.LanguageEntity</class-a>
-        <class-b>org.openiam.idm.srvc.lang.dto.Language</class-b>
-    </mapping>
     
     <mapping>
 		<class-a>org.openiam.idm.srvc.lang.domain.LanguageMappingEntity</class-a>
@@ -139,6 +138,15 @@
 		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter" custom-converter-param="dto2entityShallowDozerMapper">
 			<a>id</a>
 			<b>id</b>
+		</field>
+	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.lang.domain.LanguageLocaleEntity</class-a>
+		<class-b>org.openiam.idm.srvc.lang.dto.LanguageLocale</class-b>
+		<field>
+			<a>language.languageId</a>
+			<b>languageId</b>
 		</field>
 	</mapping>
 </mappings>

@@ -53,6 +53,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 import java.util.*;
@@ -168,6 +169,7 @@ public class UserDataWebServiceImpl implements UserDataWebService,MuleContextAwa
 			
 			final UserAttributeEntity entity = userAttributeDozerConverter.convertToEntity(attribute, true);
 			userManager.addAttribute(entity);
+			response.setResponseValue(entity.getId());
 		} catch(BasicDataServiceException e) {
     		response.setErrorCode(e.getCode());
     		response.setStatus(ResponseStatus.FAILURE);
@@ -1116,4 +1118,12 @@ public class UserDataWebServiceImpl implements UserDataWebService,MuleContextAwa
         }
 
     }
+
+	@Override
+	public List<UserAttribute> getUserAttributes(final String userId) {
+		final UserEntity user = userManager.getUser(userId);
+		final List<UserAttributeEntity> attributes = (user != null && user.getUserAttributes() != null) ? 
+				new ArrayList<UserAttributeEntity>(user.getUserAttributes().values()) : null;
+		return (attributes != null) ? userAttributeDozerConverter.convertToDTOList(attributes, true) : null;
+	}
 }

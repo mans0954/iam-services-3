@@ -33,6 +33,7 @@ import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 
 @Entity
 @Table(name = "METADATA_ELEMENT")
@@ -74,6 +75,10 @@ public class MetadataElementEntity implements Serializable {
     @JoinColumn(name = "TYPE_ID")
     private MetadataTypeEntity metadataType;
     
+	@Column(name = "IS_PUBLIC", nullable = false)
+	@Type(type = "yes_no")
+	private boolean isPublic = true;
+    
 //    @ManyToOne
 //    @JoinColumn(name = "TEMPLATE_ID")
 //    private MetadataElementPageTemplateEntity template;
@@ -105,6 +110,8 @@ public class MetadataElementEntity implements Serializable {
     @Fetch(FetchMode.SUBSELECT)
 	private Map<String, LanguageMappingEntity> defaultValueLanguageMap;
     
+    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "element", fetch = FetchType.LAZY)
+    private Set<UserAttributeEntity> userAttributes;
 
 	public String getId() {
 		return id;
@@ -239,6 +246,24 @@ public class MetadataElementEntity implements Serializable {
 		this.resource = resource;
 	}
 
+	public Set<UserAttributeEntity> getUserAttributes() {
+		return userAttributes;
+	}
+
+	public void setUserAttributes(Set<UserAttributeEntity> userAttributes) {
+		this.userAttributes = userAttributes;
+	}
+	
+	
+
+	public boolean isPublic() {
+		return isPublic;
+	}
+
+	public void setPublic(boolean isPublic) {
+		this.isPublic = isPublic;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -259,6 +284,7 @@ public class MetadataElementEntity implements Serializable {
 				* result
 				+ ((staticDefaultValue == null) ? 0 : staticDefaultValue
 						.hashCode());
+		result = prime * result + (isPublic ? 1231 : 1237);
 		return result;
 	}
 
@@ -292,6 +318,8 @@ public class MetadataElementEntity implements Serializable {
 			if (other.id != null)
 				return false;
 		} else if (!id.equals(other.id))
+			return false;
+		if (isPublic != other.isPublic)
 			return false;
 		if (metadataType == null) {
 			if (other.metadataType != null)

@@ -20,6 +20,8 @@ package org.openiam.idm.srvc.lang.service;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.Criteria;
+import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.springframework.stereotype.Repository;
@@ -37,4 +39,11 @@ public class LanguageDAOImpl extends BaseDaoImpl<LanguageEntity, String> impleme
     protected String getPKfieldName() {
         return "languageId";
     }
+
+	@Override
+	public LanguageEntity getByLocale(String locale) {
+		final Criteria criteria = getCriteria();
+		criteria.createAlias("locales", "locale").add( Restrictions.eq("locale.locale", locale));
+		return (LanguageEntity)criteria.uniqueResult();
+	}
 }

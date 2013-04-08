@@ -41,6 +41,8 @@ import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
+import org.openiam.idm.srvc.meta.dto.PageTempate;
+import org.openiam.idm.srvc.meta.dto.TemplateRequest;
 import org.openiam.idm.srvc.meta.service.MetadataService;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
 import org.openiam.idm.srvc.searchbean.converter.MetadataTypeSearchBeanConverter;
@@ -222,5 +224,12 @@ public class MetadataWebServiceImpl implements MetadataWebService {
 	@Override
 	public int countTypeBeans(final MetadataTypeSearchBean searchBean) {
 		return metadataService.count(searchBean);
+	}
+
+	@Override
+	@WebMethod
+	public List<MetadataType> getAllMetadataTypes() {
+		final List<MetadataTypeEntity> entityList = metadataService.getAllMetadataTypes();
+    	return (entityList != null) ? metaDataTypeDozerConverter.convertToDTOList(entityList, true) : null;
 	}
 }
