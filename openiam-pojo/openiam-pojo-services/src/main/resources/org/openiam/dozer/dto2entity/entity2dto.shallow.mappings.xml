@@ -160,7 +160,70 @@
     	<field-exclude>
     		<a>categories</a>
     		<b>categories</b>
-    	</field-exclude>		
+    	</field-exclude>
+	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.meta.domain.MetadataElementEntity</class-a>
+		<class-b>org.openiam.idm.srvc.meta.dto.MetadataElement</class-b>
+		<field>
+			<a>resource.resourceId</a>
+			<b>resourceId</b>
+		</field>
+		<field>
+			<a>metadataType.metadataTypeId</a>
+			<b>metadataTypeId</b>
+		</field>
+		<field-exclude>
+			<a>templateSet</a>
+			<b>templateSet</b>
+		</field-exclude>
+		<field-exclude>
+			<a>defaultValueLanguageMap</a>
+			<b>defaultValueLanguageMap</b>
+		</field-exclude>
+		<field-exclude>
+			<a>languageMap</a>
+			<b>languageMap</b>
+		</field-exclude>
+		<field-exclude>
+			<a>validValues</a>
+			<b>validValues</b>
+		</field-exclude>
+		<field-exclude>
+			<a>userAttributes</a>
+			<b>userAttributes</b>
+		</field-exclude>
+	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity</class-a>
+		<class-b>org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplate</class-b>
+		<field>
+			<a>resource.resourceId</a>
+			<b>resourceId</b>
+		</field>
+		<field-exclude>
+			<a>uriPatterns</a>
+			<b>uriPatterns</b>
+		</field-exclude>
+		<field-exclude>
+			<a>metadataElements</a>
+			<b>metadataElements</b>
+		</field-exclude>
+	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.meta.domain.MetadataValidValueEntity</class-a>
+		<class-b>org.openiam.idm.srvc.meta.dto.MetadataValidValue</class-b>
+		<field>
+			<a>entity.id</a>
+			<b>metadataEntityId</b>
+		</field>
+		<field-exclude>
+			<a>languageMap</a>
+			<b>languageMap</b>
+		</field-exclude>
 	</mapping>
 
 	<mapping>
@@ -263,5 +326,14 @@
     		<a>identityQuestGrp.id</a>
     		<b>identityQuestGrpId</b>
     	</field>
+    </mapping>
+    
+    <mapping>
+        <class-a>org.openiam.idm.srvc.lang.domain.LanguageEntity</class-a>
+        <class-b>org.openiam.idm.srvc.lang.dto.Language</class-b>
+        <field-exclude>
+        	<a>locales</a>
+        	<b>locales</b>
+        </field-exclude>
     </mapping>
 </mappings>

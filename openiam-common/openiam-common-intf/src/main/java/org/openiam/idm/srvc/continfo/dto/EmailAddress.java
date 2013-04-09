@@ -1,14 +1,16 @@
 package org.openiam.idm.srvc.continfo.dto;
 
+import java.io.Serializable;
+import java.util.Date;
+
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
-
-// Generated Jun 12, 2007 10:46:13 PM by Hibernate Tools 3.2.0.beta8
 
 /**
  * EmailAddress transfer object
@@ -22,31 +24,35 @@ import javax.xml.bind.annotation.XmlType;
         "emailId",
         "isDefault",
         "parentId",
-        "parentType",
         "name",
-        "operation"
+        "operation",
+        "lastUpdate",
+        "createDate"
 })
 @DozerDTOCorrespondence(EmailAddressEntity.class)
-public class EmailAddress implements java.io.Serializable {
+public class EmailAddress implements Serializable {
 
     // Fields
-    protected AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
+	private AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
 
     private String emailId;
 
-    protected boolean isActive = true;
+    private boolean isActive = true;
 
-    protected String description;
+    private String description;
 
-    protected String emailAddress;
+    private String emailAddress;
 
-    protected boolean isDefault = false;
+    private boolean isDefault = false;
 
-    protected String parentType;
+    private String name;
 
-    protected String name;
-
-    protected String parentId;
+    private String parentId;
+    
+    private Date lastUpdate;
+    
+    @XmlSchemaType(name = "dateTime")
+    private Date createDate;
     // Constructors
 
     /**
@@ -60,25 +66,6 @@ public class EmailAddress implements java.io.Serializable {
      */
     public EmailAddress(String emailId) {
         this.emailId = emailId;
-    }
-
-//    public EmailAddress(EmailAddressEntity emailAddressEntity) {
-//        this.emailId = emailAddressEntity.getEmailId();
-//        this.isActive = emailAddressEntity.getActive();
-//        this.description = emailAddressEntity.getDescription();
-//        this.emailAddress = emailAddressEntity.getEmailAddress();
-//        this.isDefault = emailAddressEntity.getDefault();
-//        this.parentType = emailAddressEntity.getParentType();
-//        this.name = emailAddressEntity.getName();
-//        this.parentId = emailAddressEntity.getParent() != null ? emailAddressEntity.getParent().getUserId() : "";
-//    }
-
-    public EmailAddress(String emailAddress, String name, String parentId, String parentType, boolean aDefault) {
-        this.emailAddress = emailAddress;
-        this.name = name;
-        this.parentId = parentId;
-        this.parentType = parentType;
-        this.isDefault = aDefault;
     }
 
     /**
@@ -138,25 +125,6 @@ public class EmailAddress implements java.io.Serializable {
     }
 
     /**
-     * Returns the type of the parent.
-     *
-     * @return
-     */
-    public String getParentType() {
-        return parentType;
-    }
-
-    /**
-     * Sets the type of the parent.  While the parent type can be anything you choose, a few
-     * constants are defined in the ContactConstants clss.
-     *
-     * @param parentType
-     */
-    public void setParentType(String parentType) {
-        this.parentType = parentType;
-    }
-
-    /**
      * Indicates if the address is currently active if the value is
      * true and inactive if the value false.
      *
@@ -190,52 +158,95 @@ public class EmailAddress implements java.io.Serializable {
         this.parentId = parentId;
     }
 
-    @Override
-    public String toString() {
-        return "EmailAddress{" +
-                "operation=" + operation +
-                ", isActive=" + isActive +
-                ", description='" + description + '\'' +
-                ", emailAddress='" + emailAddress + '\'' +
-                ", emailId='" + emailId + '\'' +
-                ", isDefault=" + isDefault +
-                ", parentId='" + parentId +
-                ", parentType='" + parentType + '\'' +
-                ", name='" + name + '\'' +
-                '}';
+    public Date getLastUpdate() {
+		return lastUpdate;
+	}
+
+	public void setLastUpdate(Date lastUpdate) {
+		this.lastUpdate = lastUpdate;
+	}
+	
+	public Date getCreateDate() {
+        return this.createDate;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        EmailAddress that = (EmailAddress) o;
-
-        if (description != null ? !description.equals(that.description) : that.description != null) return false;
-        if (emailAddress != null ? !emailAddress.equals(that.emailAddress) : that.emailAddress != null) return false;
-        if (emailId != null ? !emailId.equals(that.emailId) : that.emailId != null) return false;
-        if (isActive != that.isActive) return false;
-        if (isDefault !=that.isDefault) return false;
-        if (name != null ? !name.equals(that.name) : that.name != null) return false;
-        if (operation != that.operation) return false;
-        if (parentId != null ? !parentId.equals(that.parentId) : that.parentId != null) return false;
-        if (parentType != null ? !parentType.equals(that.parentType) : that.parentType != null) return false;
-
-        return true;
+    public void setCreateDate(Date createDate) {
+        this.createDate = createDate;
     }
 
-    @Override
-    public int hashCode() {
-        int result = operation != null ? operation.hashCode() : 0;
-        result = 31 * result + (emailId != null ? emailId.hashCode() : 0);
-        result = 31 * result + Boolean.valueOf(isActive).hashCode();
-        result = 31 * result + (description != null ? description.hashCode() : 0);
-        result = 31 * result + (emailAddress != null ? emailAddress.hashCode() : 0);
-        result = 31 * result + Boolean.valueOf(isDefault).hashCode();
-        result = 31 * result + (parentType != null ? parentType.hashCode() : 0);
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (parentId != null ? parentId.hashCode() : 0);
-        return result;
-    }
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((createDate == null) ? 0 : createDate.hashCode());
+		result = prime * result
+				+ ((description == null) ? 0 : description.hashCode());
+		result = prime * result
+				+ ((emailAddress == null) ? 0 : emailAddress.hashCode());
+		result = prime * result + ((emailId == null) ? 0 : emailId.hashCode());
+		result = prime * result + (isActive ? 1231 : 1237);
+		result = prime * result + (isDefault ? 1231 : 1237);
+		result = prime * result
+				+ ((lastUpdate == null) ? 0 : lastUpdate.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result
+				+ ((operation == null) ? 0 : operation.hashCode());
+		result = prime * result
+				+ ((parentId == null) ? 0 : parentId.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		EmailAddress other = (EmailAddress) obj;
+		if (createDate == null) {
+			if (other.createDate != null)
+				return false;
+		} else if (!createDate.equals(other.createDate))
+			return false;
+		if (description == null) {
+			if (other.description != null)
+				return false;
+		} else if (!description.equals(other.description))
+			return false;
+		if (emailAddress == null) {
+			if (other.emailAddress != null)
+				return false;
+		} else if (!emailAddress.equals(other.emailAddress))
+			return false;
+		if (emailId == null) {
+			if (other.emailId != null)
+				return false;
+		} else if (!emailId.equals(other.emailId))
+			return false;
+		if (isActive != other.isActive)
+			return false;
+		if (isDefault != other.isDefault)
+			return false;
+		if (lastUpdate == null) {
+			if (other.lastUpdate != null)
+				return false;
+		} else if (!lastUpdate.equals(other.lastUpdate))
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		if (operation != other.operation)
+			return false;
+		if (parentId == null) {
+			if (other.parentId != null)
+				return false;
+		} else if (!parentId.equals(other.parentId))
+			return false;
+		return true;
+	}
 }

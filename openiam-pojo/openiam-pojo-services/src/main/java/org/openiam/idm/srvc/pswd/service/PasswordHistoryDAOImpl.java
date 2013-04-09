@@ -50,14 +50,14 @@ public class PasswordHistoryDAOImpl extends BaseDaoImpl<PasswordHistoryEntity, S
     public List<PasswordHistoryEntity> getSublist(int startPos, int size) {
         StringBuilder sql = new StringBuilder();
         sql.append("from ").append(PasswordHistory.class.getName()).append(" pwd");
-        return (List<PasswordHistoryEntity>)sessionFactory.getCurrentSession().createQuery(sql.toString()).setFirstResult(startPos).setMaxResults(size).list();
+        return (List<PasswordHistoryEntity>)getSession().createQuery(sql.toString()).setFirstResult(startPos).setMaxResults(size).list();
     }
 
     @Override
     public Long getCount() {
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT count(pwd.pwdHistoryId) from ").append(PasswordHistory.class.getName()).append(" pwd");
-        return (Long)sessionFactory.getCurrentSession().createQuery(sql.toString()).uniqueResult();
+        return (Long)getSession().createQuery(sql.toString()).uniqueResult();
     }
 
 	@Override

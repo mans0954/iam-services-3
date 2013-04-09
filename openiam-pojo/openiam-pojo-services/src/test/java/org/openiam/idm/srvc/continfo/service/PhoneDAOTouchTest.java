@@ -27,38 +27,13 @@ public class PhoneDAOTouchTest extends AbstractTransactionalTestNGSpringContextT
     }
 
     @Test
-    public void touchFindByName() {
-        phoneDAO.findByName("", "", "");
-    }
-
-    @Test
-    public void touchFindByParent() {
-        phoneDAO.findByParent("", "");
-    }
-
-    @Test
-    public void touchFindByParentAsList() {
-        phoneDAO.findByParentAsList("", "");
-    }
-
-    @Test
-    public void touchFindDefault() {
-        phoneDAO.findDefault("", "");
+    public void touchRemoveByUserId() {
+    	phoneDAO.removeByUserId("");
     }
 
     @Test
     public void touchRemove() {
         phoneDAO.delete(new PhoneEntity());
-    }
-
-    @Test
-    public void touchRemoveByParent() {
-        phoneDAO.removeByParent("", "");
-    }
-
-    @Test
-    public void touchSavePhoneMap() {
-        phoneDAO.savePhoneMap("", "", Collections.EMPTY_MAP);
     }
 
     @Test

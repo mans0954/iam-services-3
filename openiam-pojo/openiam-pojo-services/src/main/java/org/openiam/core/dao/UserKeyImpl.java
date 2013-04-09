@@ -21,14 +21,13 @@ public class UserKeyImpl extends BaseDaoImpl<UserKey, String> implements UserKey
     @Override
     @Transactional
     public void deleteByUserId(String userId) throws Exception {
-        sessionFactory.getCurrentSession()
-                      .createQuery("delete from " + this.domainClass.getName() + " obj where obj.userId=?")
-                      .setParameter(0, userId).executeUpdate();
+        getSession().createQuery("delete from " + this.domainClass.getName() + " obj where obj.userId=?")
+                    .setParameter(0, userId).executeUpdate();
     }
 
     @Override
     public UserKey getByUserIdKeyName(String userId, String keyName) throws Exception {
-        List<UserKey> result = (List<UserKey>) sessionFactory.getCurrentSession().createQuery(
+        List<UserKey> result = (List<UserKey>) getSession().createQuery(
                 "select obj from " + this.domainClass.getName() + " obj where obj.userId=:userId and obj.name=:keyName")
                                                              .setParameter("userId", userId).setParameter("keyName", keyName).list();
 
@@ -40,7 +39,7 @@ public class UserKeyImpl extends BaseDaoImpl<UserKey, String> implements UserKey
 
     @Override
     public List<UserKey> getByUserId(String userId)throws Exception {
-        return (List<UserKey>) sessionFactory.getCurrentSession().createQuery(
+        return (List<UserKey>) getSession().createQuery(
                 "select obj from " + this.domainClass.getName() + " obj where obj.userId=:userId")
                                                              .setParameter("userId", userId).list();
     }
@@ -49,6 +48,6 @@ public class UserKeyImpl extends BaseDaoImpl<UserKey, String> implements UserKey
     public List<UserKey> getSublist(int startPos, int size)throws Exception{
         StringBuilder sql = new StringBuilder();
         sql.append("from ").append(this.domainClass.getName()).append(" uk");
-        return (List<UserKey>)sessionFactory.getCurrentSession().createQuery(sql.toString()).setFirstResult(startPos).setMaxResults(size).list();
+        return (List<UserKey>)getSession().createQuery(sql.toString()).setFirstResult(startPos).setMaxResults(size).list();
     }
 }

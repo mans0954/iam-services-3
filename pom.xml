@@ -160,7 +160,7 @@
         <mockito.version>1.9.0</mockito.version>
         <hsqldb.version>1.8.0.10</hsqldb.version>
         
-    	<skipTests>false</skipTests>
+    	<skipTests>true</skipTests>
 	</properties>
 
 	<dependencyManagement>

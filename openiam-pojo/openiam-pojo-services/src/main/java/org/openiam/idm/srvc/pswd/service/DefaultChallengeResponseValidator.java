@@ -79,22 +79,22 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 	private static final Log log = LogFactory.getLog(DefaultChallengeResponseValidator.class);
 	
 	@Override
-	public boolean isResponseValid(ChallengeResponseUser req, List<UserIdentityAnswerEntity> newAnswerList, int requiredCorrectAns) {
-		final int correctAns = getNumOfCorrectAnswers(req, newAnswerList);
-		if (correctAns >= requiredCorrectAns) {
+	public boolean isResponseValid(String userId, List<UserIdentityAnswerEntity> newAnswerList, int requiredCorrectAns) {
+		final int correctAns = getNumOfCorrectAnswers(userId, newAnswerList);
+		if (correctAns >= requiredCorrectAns && requiredCorrectAns > 0) {
 			return true;
 		}
 		return false;
 		
 	}
 
-	private int getNumOfCorrectAnswers(final ChallengeResponseUser req, final List<UserIdentityAnswerEntity> newAnswerList) {
+	private int getNumOfCorrectAnswers(final String userId, final List<UserIdentityAnswerEntity> newAnswerList) {
 		int correctAns = 0;
 		
-		LoginEntity lg = loginManager.getLoginByManagedSys(req.getDomain(), req.getPrincipal(), req.getManagedSysId());
+		LoginEntity lg = loginManager.getPrimaryIdentity(userId);
 		
 		if (lg == null) {
-			throw new PrincipalNotFoundException("Login object not found for login=" + req.getPrincipal());
+			throw new PrincipalNotFoundException(String.format("Login object not found for userId=%s", userId));
 		}
 		// get the answers in the system to validate the response.
 		final List<UserIdentityAnswerEntity> savedAnsList = answersByUser(lg.getUserId());

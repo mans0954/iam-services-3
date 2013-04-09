@@ -1,11 +1,14 @@
 package org.openiam.idm.srvc.continfo.dto;
 
+import java.util.Date;
+
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
 // Generated Jun 12, 2007 10:46:13 PM by Hibernate Tools 3.2.0.beta8
@@ -33,11 +36,12 @@ import javax.xml.bind.annotation.XmlType;
         "description",
         "isDefault",
         "parentId",
-        "parentType",
         "postalCd",
         "state",
         "name",
-        "operation"
+        "operation",
+        "createDate",
+        "lastUpdate"
 })
 @DozerDTOCorrespondence(AddressEntity.class)
 public class Address implements java.io.Serializable {
@@ -78,8 +82,6 @@ public class Address implements java.io.Serializable {
 
     protected boolean isDefault = false;
 
-    protected String parentType;
-
     protected String postalCd;
 
     protected String state;
@@ -87,6 +89,11 @@ public class Address implements java.io.Serializable {
     protected String name;
 
     protected String parentId;
+    
+    private Date lastUpdate;
+    
+    @XmlSchemaType(name = "dateTime")
+    private Date createDate;
     // Constructors
 
 
@@ -96,89 +103,14 @@ public class Address implements java.io.Serializable {
     public Address() {
     }
 
-//    public Address(AddressEntity addressEntity) {
-//        this.addressId = addressEntity.getAddressId();
-//        this.isActive = addressEntity.getActive();
-//        this.bldgNumber = addressEntity.getBldgNumber();
-//        this.streetDirection = addressEntity.getStreetDirection();
-//        this.suite = addressEntity.getSuite();
-//        this.address1 = addressEntity.getAddress1();
-//        this.address2 = addressEntity.getAddress2();
-//        this.address3 = addressEntity.getAddress3();
-//        this.address4 = addressEntity.getAddress4();
-//        this.address5 = addressEntity.getAddress5();
-//        this.address6 = addressEntity.getAddress6();
-//        this.address7 = addressEntity.getAddress7();
-//        this.city = addressEntity.getCity();
-//        this.country = addressEntity.getCountry();
-//        this.description = addressEntity.getDescription();
-//        this.parentType = addressEntity.getParentType();
-//        this.postalCd = addressEntity.getPostalCd();
-//        this.state = addressEntity.getState();
-//        this.name = addressEntity.getName();
-//        this.parentId = addressEntity.getParent() != null ? addressEntity.getParent().getUserId() : "";
-//    }
-
     /**
      * minimal constructor
      */
     public Address(String addressId) {
         this.addressId = addressId;
     }
-
-    /**
-     * full constructor
-     */
-    public Address(String addressId, String country, String address1,
-                   String address2,
-                   String address3, String address4, String address5, String address6, String address7,
-                   String city, String state, String postalCd,
-                   boolean isDefault, String description) {
-        this.addressId = addressId;
-        this.country = country;
-        this.address1 = address1;
-        this.address2 = address2;
-        this.address3 = address3;
-        this.address4 = address4;
-        this.address5 = address5;
-        this.address6 = address6;
-        this.address7 = address7;
-        this.city = city;
-        this.state = state;
-        this.postalCd = postalCd;
-        this.isDefault = isDefault;
-        this.description = description;
-    }
-
-
-    @Override
-    public String toString() {
-        return "Address{" +
-                "operation=" + operation +
-                ", isActive=" + isActive +
-                ", bldgNumber='" + bldgNumber + '\'' +
-                ", streetDirection='" + streetDirection + '\'' +
-                ", suite='" + suite + '\'' +
-                ", address1='" + address1 + '\'' +
-                ", address2='" + address2 + '\'' +
-                ", address3='" + address3 + '\'' +
-                ", address4='" + address4 + '\'' +
-                ", address5='" + address5 + '\'' +
-                ", address6='" + address6 + '\'' +
-                ", address7='" + address7 + '\'' +
-                ", addressId='" + addressId + '\'' +
-                ", city='" + city + '\'' +
-                ", country='" + country + '\'' +
-                ", description='" + description + '\'' +
-                ", isDefault=" + isDefault + '\'' +
-                ", parentId='" + parentId + '\'' +
-                ", parentType='" + parentType + '\'' +
-                ", postalCd='" + postalCd + '\'' +
-                ", state='" + state + '\'' +
-                ", name='" + name + '\'' +
-                '}';
-    }
-
+    
+    
     public void updateAddress(Address adr) {
         this.address1 = adr.getAddress1();
         this.address2 = adr.getAddress2();
@@ -281,25 +213,6 @@ public class Address implements java.io.Serializable {
      */
     public String getParentId() {
         return parentId;
-    }
-
-    /**
-     * Returns the type of the parent.
-     *
-     * @return
-     */
-    public String getParentType() {
-        return parentType;
-    }
-
-    /**
-     * Sets the type of the parent.  While the parent type can be anything you choose, a few
-     * constants are defined in the ContactConstants clss.
-     *
-     * @param parentType
-     */
-    public void setParentType(String parentType) {
-        this.parentType = parentType;
     }
 
     /**
@@ -406,63 +319,186 @@ public class Address implements java.io.Serializable {
     public void setParentId(String parentId) {
         this.parentId = parentId;
     }
+    
+    public Date getLastUpdate() {
+		return lastUpdate;
+	}
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Address address = (Address) o;
-
-        if (address1 != null ? !address1.equals(address.address1) : address.address1 != null) return false;
-        if (address2 != null ? !address2.equals(address.address2) : address.address2 != null) return false;
-        if (address3 != null ? !address3.equals(address.address3) : address.address3 != null) return false;
-        if (address4 != null ? !address4.equals(address.address4) : address.address4 != null) return false;
-        if (address5 != null ? !address5.equals(address.address5) : address.address5 != null) return false;
-        if (address6 != null ? !address6.equals(address.address6) : address.address6 != null) return false;
-        if (address7 != null ? !address7.equals(address.address7) : address.address7 != null) return false;
-        if (addressId != null ? !addressId.equals(address.addressId) : address.addressId != null) return false;
-        if (bldgNumber != null ? !bldgNumber.equals(address.bldgNumber) : address.bldgNumber != null) return false;
-        if (city != null ? !city.equals(address.city) : address.city != null) return false;
-        if (country != null ? !country.equals(address.country) : address.country != null) return false;
-        if (description != null ? !description.equals(address.description) : address.description != null) return false;
-        if (isActive != address.isActive) return false;
-        if (isDefault != address.isDefault) return false;
-        if (name != null ? !name.equals(address.name) : address.name != null) return false;
-        if (parentId != null ? !parentId.equals(address.parentId) : address.parentId != null) return false;
-        if (parentType != null ? !parentType.equals(address.parentType) : address.parentType != null) return false;
-        if (postalCd != null ? !postalCd.equals(address.postalCd) : address.postalCd != null) return false;
-        if (state != null ? !state.equals(address.state) : address.state != null) return false;
-        if (streetDirection != null ? !streetDirection.equals(address.streetDirection) : address.streetDirection != null)
-            return false;
-        if (suite != null ? !suite.equals(address.suite) : address.suite != null) return false;
-
-        return true;
+	public void setLastUpdate(Date lastUpdate) {
+		this.lastUpdate = lastUpdate;
+	}
+	
+	public Date getCreateDate() {
+        return this.createDate;
     }
 
-    @Override
-    public int hashCode() {
-        int result = addressId != null ? addressId.hashCode() : 0;
-        result = 31 * result + Boolean.valueOf(isActive).hashCode();
-        result = 31 * result + (bldgNumber != null ? bldgNumber.hashCode() : 0);
-        result = 31 * result + (streetDirection != null ? streetDirection.hashCode() : 0);
-        result = 31 * result + (suite != null ? suite.hashCode() : 0);
-        result = 31 * result + (address1 != null ? address1.hashCode() : 0);
-        result = 31 * result + (address2 != null ? address2.hashCode() : 0);
-        result = 31 * result + (address3 != null ? address3.hashCode() : 0);
-        result = 31 * result + (address4 != null ? address4.hashCode() : 0);
-        result = 31 * result + (address5 != null ? address5.hashCode() : 0);
-        result = 31 * result + (address6 != null ? address6.hashCode() : 0);
-        result = 31 * result + (address7 != null ? address7.hashCode() : 0);
-        result = 31 * result + (city != null ? city.hashCode() : 0);
-        result = 31 * result + (country != null ? country.hashCode() : 0);
-        result = 31 * result + (description != null ? description.hashCode() : 0);
-        result = 31 * result + Boolean.valueOf(isDefault).hashCode();
-        result = 31 * result + (parentType != null ? parentType.hashCode() : 0);
-        result = 31 * result + (postalCd != null ? postalCd.hashCode() : 0);
-        result = 31 * result + (state != null ? state.hashCode() : 0);
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (parentId != null ? parentId.hashCode() : 0);
-        return result;
+    public void setCreateDate(Date createDate) {
+        this.createDate = createDate;
     }
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((address1 == null) ? 0 : address1.hashCode());
+		result = prime * result
+				+ ((address2 == null) ? 0 : address2.hashCode());
+		result = prime * result
+				+ ((address3 == null) ? 0 : address3.hashCode());
+		result = prime * result
+				+ ((address4 == null) ? 0 : address4.hashCode());
+		result = prime * result
+				+ ((address5 == null) ? 0 : address5.hashCode());
+		result = prime * result
+				+ ((address6 == null) ? 0 : address6.hashCode());
+		result = prime * result
+				+ ((address7 == null) ? 0 : address7.hashCode());
+		result = prime * result
+				+ ((addressId == null) ? 0 : addressId.hashCode());
+		result = prime * result
+				+ ((bldgNumber == null) ? 0 : bldgNumber.hashCode());
+		result = prime * result + ((city == null) ? 0 : city.hashCode());
+		result = prime * result + ((country == null) ? 0 : country.hashCode());
+		result = prime * result
+				+ ((createDate == null) ? 0 : createDate.hashCode());
+		result = prime * result
+				+ ((description == null) ? 0 : description.hashCode());
+		result = prime * result + (isActive ? 1231 : 1237);
+		result = prime * result + (isDefault ? 1231 : 1237);
+		result = prime * result
+				+ ((lastUpdate == null) ? 0 : lastUpdate.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result
+				+ ((operation == null) ? 0 : operation.hashCode());
+		result = prime * result
+				+ ((parentId == null) ? 0 : parentId.hashCode());
+		result = prime * result
+				+ ((postalCd == null) ? 0 : postalCd.hashCode());
+		result = prime * result + ((state == null) ? 0 : state.hashCode());
+		result = prime * result
+				+ ((streetDirection == null) ? 0 : streetDirection.hashCode());
+		result = prime * result + ((suite == null) ? 0 : suite.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Address other = (Address) obj;
+		if (address1 == null) {
+			if (other.address1 != null)
+				return false;
+		} else if (!address1.equals(other.address1))
+			return false;
+		if (address2 == null) {
+			if (other.address2 != null)
+				return false;
+		} else if (!address2.equals(other.address2))
+			return false;
+		if (address3 == null) {
+			if (other.address3 != null)
+				return false;
+		} else if (!address3.equals(other.address3))
+			return false;
+		if (address4 == null) {
+			if (other.address4 != null)
+				return false;
+		} else if (!address4.equals(other.address4))
+			return false;
+		if (address5 == null) {
+			if (other.address5 != null)
+				return false;
+		} else if (!address5.equals(other.address5))
+			return false;
+		if (address6 == null) {
+			if (other.address6 != null)
+				return false;
+		} else if (!address6.equals(other.address6))
+			return false;
+		if (address7 == null) {
+			if (other.address7 != null)
+				return false;
+		} else if (!address7.equals(other.address7))
+			return false;
+		if (addressId == null) {
+			if (other.addressId != null)
+				return false;
+		} else if (!addressId.equals(other.addressId))
+			return false;
+		if (bldgNumber == null) {
+			if (other.bldgNumber != null)
+				return false;
+		} else if (!bldgNumber.equals(other.bldgNumber))
+			return false;
+		if (city == null) {
+			if (other.city != null)
+				return false;
+		} else if (!city.equals(other.city))
+			return false;
+		if (country == null) {
+			if (other.country != null)
+				return false;
+		} else if (!country.equals(other.country))
+			return false;
+		if (createDate == null) {
+			if (other.createDate != null)
+				return false;
+		} else if (!createDate.equals(other.createDate))
+			return false;
+		if (description == null) {
+			if (other.description != null)
+				return false;
+		} else if (!description.equals(other.description))
+			return false;
+		if (isActive != other.isActive)
+			return false;
+		if (isDefault != other.isDefault)
+			return false;
+		if (lastUpdate == null) {
+			if (other.lastUpdate != null)
+				return false;
+		} else if (!lastUpdate.equals(other.lastUpdate))
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		if (operation != other.operation)
+			return false;
+		if (parentId == null) {
+			if (other.parentId != null)
+				return false;
+		} else if (!parentId.equals(other.parentId))
+			return false;
+		if (postalCd == null) {
+			if (other.postalCd != null)
+				return false;
+		} else if (!postalCd.equals(other.postalCd))
+			return false;
+		if (state == null) {
+			if (other.state != null)
+				return false;
+		} else if (!state.equals(other.state))
+			return false;
+		if (streetDirection == null) {
+			if (other.streetDirection != null)
+				return false;
+		} else if (!streetDirection.equals(other.streetDirection))
+			return false;
+		if (suite == null) {
+			if (other.suite != null)
+				return false;
+		} else if (!suite.equals(other.suite))
+			return false;
+		return true;
+	}
+
+   
 }

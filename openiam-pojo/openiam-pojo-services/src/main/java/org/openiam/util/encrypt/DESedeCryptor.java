@@ -6,20 +6,14 @@
  */
 package org.openiam.util.encrypt;
 
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.ResourceBundle;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.Logger;
-import org.bouncycastle.crypto.*;
-import org.bouncycastle.crypto.params.*;
-import org.bouncycastle.crypto.paddings.*;
-import org.bouncycastle.crypto.engines.*;
-import org.bouncycastle.crypto.modes.*;
-import org.bouncycastle.util.encoders.*;
+import org.bouncycastle.crypto.BufferedBlockCipher;
+import org.bouncycastle.crypto.engines.DESedeEngine;
+import org.bouncycastle.crypto.modes.CBCBlockCipher;
+import org.bouncycastle.crypto.paddings.PaddedBufferedBlockCipher;
+import org.bouncycastle.crypto.params.KeyParameter;
+import org.bouncycastle.util.encoders.Hex;
 import org.openiam.exception.EncryptionException;
 
 
@@ -30,14 +24,14 @@ import org.openiam.exception.EncryptionException;
  */
 public class DESedeCryptor implements Cryptor {
 
-	private BufferedBlockCipher cipher = null;
+	//private BufferedBlockCipher cipher = null;
 	
 	private static final Log log = LogFactory.getLog(DESedeCryptor.class);
 	
 	public String encrypt(byte[] key,String input) throws EncryptionException {
 
 		KeyParameter kp = new KeyParameter(key);
-		cipher = new PaddedBufferedBlockCipher(	new CBCBlockCipher(new DESedeEngine()));
+        BufferedBlockCipher cipher = new PaddedBufferedBlockCipher(	new CBCBlockCipher(new DESedeEngine()));
 		cipher.init(true, kp);
 		
 		byte[] inputByteAry = input.getBytes();
@@ -58,7 +52,7 @@ public class DESedeCryptor implements Cryptor {
 	
 	public byte[] encryptTobyte(byte[] key, String input) {
 		KeyParameter kp = new KeyParameter(key);
-		cipher = new PaddedBufferedBlockCipher(	new CBCBlockCipher(new DESedeEngine()));
+        BufferedBlockCipher cipher = new PaddedBufferedBlockCipher(	new CBCBlockCipher(new DESedeEngine()));
 		cipher.init(true, kp);
 		
 		byte[] inputByteAry = input.getBytes();
@@ -77,9 +71,8 @@ public class DESedeCryptor implements Cryptor {
 		byte[] result = null;
 		byte[] inputByteAry = null;
 		int len = 0;
-	
 		KeyParameter kp = new KeyParameter(key);
-		cipher = new PaddedBufferedBlockCipher(	new CBCBlockCipher(new DESedeEngine()));
+        BufferedBlockCipher cipher = new PaddedBufferedBlockCipher(	new CBCBlockCipher(new DESedeEngine()));
 		cipher.init(false, kp);
 		try {
 			inputByteAry =  Hex.decode(input);
@@ -87,7 +80,7 @@ public class DESedeCryptor implements Cryptor {
 	        len = cipher.processBytes(inputByteAry, 0, inputByteAry.length, result, 0);
         	len += cipher.doFinal(result,len);        	
         }catch(Exception e) {
-			log.error(e.getMessage());
+			log.error(e.getMessage(), e);
 			throw new EncryptionException(e);
         }      
  		return new String(result,0,len);

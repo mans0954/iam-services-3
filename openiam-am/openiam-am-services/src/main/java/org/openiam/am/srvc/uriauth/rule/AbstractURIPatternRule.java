@@ -5,6 +5,8 @@ import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openiam.am.srvc.dto.ContentProvider;
+import org.openiam.am.srvc.dto.URIPattern;
 import org.openiam.am.srvc.dto.URIPatternMetaType;
 import org.openiam.am.srvc.dto.URIPatternMetaValue;
 import org.openiam.am.srvc.service.AuthAttributeProcessor;
@@ -19,7 +21,9 @@ public abstract class AbstractURIPatternRule implements URIPatternRule {
 	@Override
 	public URIPatternRuleToken process(final String userId, final URI uri,
 									   final URIPatternMetaType metaType, 
-									   final Set<URIPatternMetaValue> valueSet) throws Exception {
+									   final Set<URIPatternMetaValue> valueSet,
+									   final URIPattern pattern,
+									   final ContentProvider contentProvider) throws Exception {
 		final URIPatternRuleToken token = new URIPatternRuleToken(metaType);
 		if(CollectionUtils.isNotEmpty(valueSet)) {
 			for(final URIPatternMetaValue metaValue : valueSet) {
@@ -36,7 +40,7 @@ public abstract class AbstractURIPatternRule implements URIPatternRule {
 				}
 			}
 		}
-		postProcess(userId, uri, metaType, valueSet, token);
+		postProcess(userId, uri, metaType, valueSet, token, pattern, contentProvider);
 		return token;
 	}
 
@@ -45,7 +49,9 @@ public abstract class AbstractURIPatternRule implements URIPatternRule {
 							   final URI uri, 
 							   final URIPatternMetaType metaType, 
 							   final Set<URIPatternMetaValue> valueSet,
-							   final URIPatternRuleToken token) {
+							   final URIPatternRuleToken token,
+							   final URIPattern pattern,
+							   final ContentProvider contentProvider) {
 		
 	}
 }

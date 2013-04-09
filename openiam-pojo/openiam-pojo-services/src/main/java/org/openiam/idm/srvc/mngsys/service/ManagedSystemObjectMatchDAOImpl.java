@@ -31,7 +31,7 @@ public class ManagedSystemObjectMatchDAOImpl extends BaseDaoImpl<ManagedSystemOb
 	 * @return
 	 */
 	public List<ManagedSystemObjectMatchEntity> findBySystemId(String managedSystemId, String objectType) {
-		Session session = sessionFactory.getCurrentSession();
+		Session session = getSession();
 		Query qry = session.createQuery("from org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity sys " +
 						" where sys.managedSys = :managedSystemId  and sys.objectType = :objectType" );
 		qry.setString("managedSystemId", managedSystemId);

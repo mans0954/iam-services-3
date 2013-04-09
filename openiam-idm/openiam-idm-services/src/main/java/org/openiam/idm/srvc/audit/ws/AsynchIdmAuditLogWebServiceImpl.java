@@ -7,7 +7,6 @@ import org.mule.api.MuleException;
 import org.mule.api.context.MuleContextAware;
 import org.mule.module.client.MuleClient;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
-import org.openiam.idm.srvc.audit.export.AuditEventHandlerFactory;
 import org.openiam.idm.srvc.audit.export.ExportAuditEvent;
 import org.springframework.beans.factory.annotation.Value;
 

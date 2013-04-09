@@ -110,6 +110,10 @@
             <b>contentProviderId</b>
         </field>
         <field>
+        	<a>contentProvider.name</a>
+        	<b>contentProviderName</b>
+        </field>
+        <field>
             <a>pattern</a>
             <b>pattern</b>
         </field>
@@ -132,6 +136,10 @@
         <field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="amDto2entityShallowDozerMapper">
             <a>metaEntitySet</a>
             <b>metaEntitySet</b>
+        </field>
+        <field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="amDto2entityShallowDozerMapper">
+        	<a>pageTemplates</a>
+        	<b>pageTemplates</b>
         </field>
     </mapping>
 

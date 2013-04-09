@@ -83,4 +83,11 @@ public interface AuthorizationManagerWebService {
 	public RolesForUserResponse getRolesFor(
 			@WebParam(name = "request", targetNamespace = "") final UserRequest request
 			);
+	
+	/**
+	 * This method should NOT be called, as the internal ESB mechanisms will do this.  However, just in case, it's here.
+	 * This method will refresh the cache
+	 */
+	@WebMethod
+	public void refreshCache();
 }

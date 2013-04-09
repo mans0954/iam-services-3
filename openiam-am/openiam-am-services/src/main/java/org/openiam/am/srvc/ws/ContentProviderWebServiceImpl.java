@@ -58,8 +58,9 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
 
     @Override
     public ContentProvider getContentProvider(String providerId) {
-        return contentProviderDozerConverter.convertToDTO(contentProviderService.getContentProvider(providerId),
-                                                                 true);
+    	final ContentProviderEntity entity = contentProviderService.getContentProvider(providerId);
+        final ContentProvider dto = (entity != null) ? contentProviderDozerConverter.convertToDTO(entity, true) : null;
+        return dto;
     }
 
     @Override
@@ -105,25 +106,28 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             	}
             }
 
-            final List<ContentProviderEntity> result = contentProviderService.getProviderByDomainPattern(
-                    provider.getDomainPattern(), provider.getIsSSL());
-            if(CollectionUtils.isNotEmpty(result)) {
-            	if(StringUtils.isBlank(provider.getId())) {
-            		throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_DOMAIN_PATTERN_EXISTS);
-            	} else {
-            		for(final ContentProviderEntity test : result) {
-            			if(!StringUtils.equals(provider.getId(), test.getId())) {
-            				throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_DOMAIN_PATTERN_EXISTS);
-            			}
-            		}
-            	}
+            if(provider.getId()==null){
+                // if provider is new, test for unique domain+ssl
+                final List<ContentProviderEntity> result = contentProviderService.getProviderByDomainPattern(
+                        provider.getDomainPattern(), provider.getIsSSL());
+                if(CollectionUtils.isNotEmpty(result)) {
+                    if(StringUtils.isBlank(provider.getId())) {
+                        throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_DOMAIN_PATTERN_EXISTS);
+                    } else {
+                        for(final ContentProviderEntity test : result) {
+                            if(!StringUtils.equals(provider.getId(), test.getId())) {
+                                throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_DOMAIN_PATTERN_EXISTS);
+                            }
+                        }
+                    }
+                }
             }
 
             ContentProviderEntity entity = contentProviderService.saveContentProvider(contentProviderDozerConverter.convertToEntity(provider,true));
             response.setResponseValue(contentProviderDozerConverter.convertToDTO(entity, true));
 
         } catch(BasicDataServiceException e) {
-            log.error(e.getMessage(), e);
+            log.info(e);
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
         } catch(Throwable e) {
@@ -237,7 +241,9 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
         provider.setId(providerId);
         example.setContentProvider(provider);
 
-        return uriPatternDozerConverter.convertToDTOList(contentProviderService.getUriPatternsList(example, from, size), true);
+        final List<URIPatternEntity> entityList = contentProviderService.getUriPatternsList(example, from, size);
+        final List<URIPattern> dtoList = uriPatternDozerConverter.convertToDTOList(entityList, true);
+        return dtoList;
     }
 
     @Override

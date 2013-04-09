@@ -27,38 +27,13 @@ public class EmailAddressDAOTouchTest extends AbstractTransactionalTestNGSpringC
     }
 
     @Test
-    public void touchFindByName() {
-        emailAddressDAO.findByName("", "", "");
-    }
-
-    @Test
-    public void touchFindByParent() {
-        emailAddressDAO.findByParent("", "");
-    }
-
-    @Test
-    public void touchFindByParentAsList() {
-        emailAddressDAO.findByParentAsList("", "");
-    }
-
-    @Test
-    public void touchDefault() {
-        emailAddressDAO.findDefault("", "");
-    }
-
-    @Test
     public void touchRemove() {
         emailAddressDAO.delete(new EmailAddressEntity());
     }
 
     @Test
-    public void touchRemoveByParent() {
-        emailAddressDAO.removeByParent("", "");
-    }
-
-    @Test
-    public void touch() {
-        emailAddressDAO.saveEmailAddressMap("", "", Collections.<String, EmailAddressEntity>emptyMap());
+    public void touchRemoveByUserId() {
+        emailAddressDAO.removeByUserId("");
     }
 
     @Test

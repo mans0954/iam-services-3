@@ -1,5 +1,7 @@
 package org.openiam.idm.searchbeans;
 
-public interface SearchBean<T, K> {
+import java.io.Serializable;
+
+public interface SearchBean<T, K> extends Serializable {
 
 }

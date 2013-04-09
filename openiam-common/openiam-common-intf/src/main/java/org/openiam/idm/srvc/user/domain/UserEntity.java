@@ -19,6 +19,7 @@ import org.hibernate.annotations.Filter;
 import org.hibernate.annotations.FilterDef;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.ParamDef;
+import org.hibernate.annotations.Where;
 import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.AnalyzerDef;
 import org.hibernate.search.annotations.DocumentId;
@@ -190,75 +191,6 @@ public class UserEntity {
     @Column(name = "PASSWORD_THEME", length = 20)
     private String passwordTheme;
 
-    @Column(name = "COUNTRY", length = 30)
-    private String country;
-
-    @Column(name = "BLDG_NUM", length = 10)
-    private String bldgNum;
-
-    @Column(name = "STREET_DIRECTION", length = 20)
-    private String streetDirection;
-
-    @Column(name = "SUITE", length = 20)
-    private String suite;
-
-    @Column(name = "ADDRESS1", length = 45)
-    private String address1;
-
-    @Column(name = "ADDRESS2", length = 45)
-    private String address2;
-
-    @Column(name = "ADDRESS3", length = 45)
-    private String address3;
-
-    @Column(name = "ADDRESS4", length = 45)
-    private String address4;
-
-    @Column(name = "ADDRESS5", length = 45)
-    private String address5;
-
-    @Column(name = "ADDRESS6", length = 45)
-    private String address6;
-
-    @Column(name = "ADDRESS7", length = 45)
-    private String address7;
-
-    @Column(name = "CITY", length = 30)
-    private String city;
-
-    @Column(name = "STATE", length = 15)
-    private String state;
-
-    @Column(name = "POSTAL_CD", length = 10)
-    private String postalCd;
-
-    @Column(name = "EMAIL_ADDRESS", length = 320)
-    @Fields ({
-        @Field(index = Index.TOKENIZED),
-        @Field(name = "email", index = Index.TOKENIZED, store = Store.YES)
-    })
-    private String email;
-
-    @Column(name = "AREA_CD", length = 10)
-    @Fields ({
-        @Field(index = Index.UN_TOKENIZED),
-        @Field(name = "areaCd", index = Index.UN_TOKENIZED, store = Store.YES)
-    })
-    private String areaCd;
-
-    @Column(name = "COUNTRY_CD", length = 10)
-    private String countryCd;
-
-    @Column(name = "PHONE_NBR", length = 50)
-    @Fields ({
-        @Field(index = Index.TOKENIZED),
-        @Field(name = "phoneNbr", index = Index.TOKENIZED, store = Store.YES)
-    })
-    private String phoneNbr;
-
-    @Column(name = "PHONE_EXT", length = 20)
-    private String phoneExt;
-
     @Column(name = "SHOW_IN_SEARCH")
     private Integer showInSearch = new Integer(0);
 
@@ -285,24 +217,30 @@ public class UserEntity {
     private Map<String, UserAttributeEntity> userAttributes = new HashMap<String, UserAttributeEntity>(0);
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "parent", fetch = FetchType.LAZY)
+    /*
     @Filter(
             name = "parentTypeFilter",
             condition = ":parentFilter = PARENT_TYPE"
     )
+    */
     private Set<AddressEntity> addresses = new HashSet<AddressEntity>(0);
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "parent", fetch = FetchType.LAZY)
+    /*
     @Filter(
             name = "parentTypeFilter",
             condition = ":parentFilter = PARENT_TYPE"
     )
+    */
     private Set<PhoneEntity> phones = new HashSet<PhoneEntity>(0);
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "parent", fetch = FetchType.LAZY)
+    /*
     @Filter(
             name = "parentTypeFilter",
             condition = ":parentFilter = PARENT_TYPE"
     )
+    */
     private Set<EmailAddressEntity> emailAddresses = new HashSet<EmailAddressEntity>(0);
 
     @Column(name = "SYSTEM_FLAG",length = 1)
@@ -335,7 +273,7 @@ public class UserEntity {
     @Fetch(FetchMode.SUBSELECT)
     private Set<UserRoleEntity> userRoles = new HashSet<UserRoleEntity>(0);
 
-    @ManyToOne(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
+    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
     @JoinColumn(name="COMPANY_ID", referencedColumnName="COMPANY_ID", insertable = false, updatable = false)
     @Field(name="organization", bridge=@FieldBridge(impl=OrganizationBridge.class), store=Store.YES)
     private OrganizationEntity organization;
@@ -632,157 +570,166 @@ public class UserEntity {
         this.passwordTheme = passwordTheme;
     }
 
-    public String getCountry() {
-        return country;
-    }
-
-    public void setCountry(String country) {
-        this.country = country;
-    }
-
-    public String getBldgNum() {
-        return bldgNum;
-    }
-
-    public void setBldgNum(String bldgNum) {
-        this.bldgNum = bldgNum;
-    }
-
-    public String getStreetDirection() {
-        return streetDirection;
-    }
-
-    public void setStreetDirection(String streetDirection) {
-        this.streetDirection = streetDirection;
-    }
-
-    public String getSuite() {
-        return suite;
-    }
-
-    public void setSuite(String suite) {
-        this.suite = suite;
-    }
-
-    public String getAddress1() {
-        return address1;
-    }
-
-    public void setAddress1(String address1) {
-        this.address1 = address1;
-    }
-
-    public String getAddress2() {
-        return address2;
-    }
-
-    public void setAddress2(String address2) {
-        this.address2 = address2;
-    }
-
-    public String getAddress3() {
-        return address3;
-    }
-
-    public void setAddress3(String address3) {
-        this.address3 = address3;
-    }
-
-    public String getAddress4() {
-        return address4;
-    }
-
-    public void setAddress4(String address4) {
-        this.address4 = address4;
-    }
-
-    public String getAddress5() {
-        return address5;
-    }
-
-    public void setAddress5(String address5) {
-        this.address5 = address5;
-    }
-
-    public String getAddress6() {
-        return address6;
-    }
-
-    public void setAddress6(String address6) {
-        this.address6 = address6;
-    }
-
-    public String getAddress7() {
-        return address7;
-    }
-
-    public void setAddress7(String address7) {
-        this.address7 = address7;
-    }
-
-    public String getCity() {
-        return city;
-    }
-
-    public void setCity(String city) {
-        this.city = city;
-    }
-
-    public String getState() {
-        return state;
-    }
-
-    public void setState(String state) {
-        this.state = state;
-    }
-
-    public String getPostalCd() {
-        return postalCd;
-    }
-
-    public void setPostalCd(String postalCd) {
-        this.postalCd = postalCd;
-    }
-
+//    public String getCountry() {
+//        return country;
+//    }
+//
+//    public void setCountry(String country) {
+//        this.country = country;
+//    }
+//
+//    public String getBldgNum() {
+//        return bldgNum;
+//    }
+//
+//    public void setBldgNum(String bldgNum) {
+//        this.bldgNum = bldgNum;
+//    }
+//
+//    public String getStreetDirection() {
+//        return streetDirection;
+//    }
+//
+//    public void setStreetDirection(String streetDirection) {
+//        this.streetDirection = streetDirection;
+//    }
+//
+//    public String getSuite() {
+//        return suite;
+//    }
+//
+//    public void setSuite(String suite) {
+//        this.suite = suite;
+//    }
+//
+//    public String getAddress1() {
+//        return address1;
+//    }
+//
+//    public void setAddress1(String address1) {
+//        this.address1 = address1;
+//    }
+//
+//    public String getAddress2() {
+//        return address2;
+//    }
+//
+//    public void setAddress2(String address2) {
+//        this.address2 = address2;
+//    }
+//
+//    public String getAddress3() {
+//        return address3;
+//    }
+//
+//    public void setAddress3(String address3) {
+//        this.address3 = address3;
+//    }
+//
+//    public String getAddress4() {
+//        return address4;
+//    }
+//
+//    public void setAddress4(String address4) {
+//        this.address4 = address4;
+//    }
+//
+//    public String getAddress5() {
+//        return address5;
+//    }
+//
+//    public void setAddress5(String address5) {
+//        this.address5 = address5;
+//    }
+//
+//    public String getAddress6() {
+//        return address6;
+//    }
+//
+//    public void setAddress6(String address6) {
+//        this.address6 = address6;
+//    }
+//
+//    public String getAddress7() {
+//        return address7;
+//    }
+//
+//    public void setAddress7(String address7) {
+//        this.address7 = address7;
+//    }
+//
+//    public String getCity() {
+//        return city;
+//    }
+//
+//    public void setCity(String city) {
+//        this.city = city;
+//    }
+//
+//    public String getState() {
+//        return state;
+//    }
+//
+//    public void setState(String state) {
+//        this.state = state;
+//    }
+//
+//    public String getPostalCd() {
+//        return postalCd;
+//    }
+//
+//    public void setPostalCd(String postalCd) {
+//        this.postalCd = postalCd;
+//    }
+    @Deprecated
     public String getEmail() {
-        return email;
+        String defaultEmail = null;
+        if(this.emailAddresses!=null && !this.emailAddresses.isEmpty()){
+            for (EmailAddressEntity email: this.emailAddresses){
+                   if(email.getIsDefault()){
+                       defaultEmail = email.getEmailAddress();
+                       break;
+                   }
+            }
+        }
+        return defaultEmail;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getAreaCd() {
-        return areaCd;
-    }
-
-    public void setAreaCd(String areaCd) {
-        this.areaCd = areaCd;
-    }
-
-    public String getCountryCd() {
-        return countryCd;
-    }
-
-    public void setCountryCd(String countryCd) {
-        this.countryCd = countryCd;
-    }
-
-    public String getPhoneNbr() {
-        return phoneNbr;
-    }
-
-    public void setPhoneNbr(String phoneNbr) {
-        this.phoneNbr = phoneNbr;
-    }
-
-    public String getPhoneExt() {
-        return phoneExt;
-    }
-
-    public void setPhoneExt(String phoneExt) {
-        this.phoneExt = phoneExt;
-    }
+//    public void setEmail(String email) {
+//        this.email = email;
+//    }
+//
+//    public String getAreaCd() {
+//        return areaCd;
+//    }
+//
+//    public void setAreaCd(String areaCd) {
+//        this.areaCd = areaCd;
+//    }
+//
+//    public String getCountryCd() {
+//        return countryCd;
+//    }
+//
+//    public void setCountryCd(String countryCd) {
+//        this.countryCd = countryCd;
+//    }
+//
+//    public String getPhoneNbr() {
+//        return phoneNbr;
+//    }
+//
+//    public void setPhoneNbr(String phoneNbr) {
+//        this.phoneNbr = phoneNbr;
+//    }
+//
+//    public String getPhoneExt() {
+//        return phoneExt;
+//    }
+//
+//    public void setPhoneExt(String phoneExt) {
+//        this.phoneExt = phoneExt;
+//    }
 
     public Integer getShowInSearch() {
         return showInSearch;
@@ -921,90 +868,324 @@ public class UserEntity {
 	}
 
 	@Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime
+				* result
+				+ ((alternateContactId == null) ? 0 : alternateContactId
+						.hashCode());
+		result = prime * result
+				+ ((birthdate == null) ? 0 : birthdate.hashCode());
+		result = prime * result
+				+ ((classification == null) ? 0 : classification.hashCode());
+		result = prime * result
+				+ ((companyId == null) ? 0 : companyId.hashCode());
+		result = prime * result
+				+ ((companyOwnerId == null) ? 0 : companyOwnerId.hashCode());
+		result = prime * result
+				+ ((costCenter == null) ? 0 : costCenter.hashCode());
+		result = prime * result
+				+ ((createDate == null) ? 0 : createDate.hashCode());
+		result = prime * result
+				+ ((createdBy == null) ? 0 : createdBy.hashCode());
+		result = prime
+				* result
+				+ ((dateChallengeRespChanged == null) ? 0
+						: dateChallengeRespChanged.hashCode());
+		result = prime
+				* result
+				+ ((datePasswordChanged == null) ? 0 : datePasswordChanged
+						.hashCode());
+		result = prime * result
+				+ ((delAdmin == null) ? 0 : delAdmin.hashCode());
+		result = prime * result + ((deptCd == null) ? 0 : deptCd.hashCode());
+		result = prime * result
+				+ ((deptName == null) ? 0 : deptName.hashCode());
+		result = prime * result
+				+ ((division == null) ? 0 : division.hashCode());
+		result = prime * result
+				+ ((employeeId == null) ? 0 : employeeId.hashCode());
+		result = prime * result
+				+ ((employeeType == null) ? 0 : employeeType.hashCode());
+		result = prime * result
+				+ ((firstName == null) ? 0 : firstName.hashCode());
+		result = prime * result + ((jobCode == null) ? 0 : jobCode.hashCode());
+		result = prime * result
+				+ ((lastDate == null) ? 0 : lastDate.hashCode());
+		result = prime * result
+				+ ((lastName == null) ? 0 : lastName.hashCode());
+		result = prime * result
+				+ ((lastUpdate == null) ? 0 : lastUpdate.hashCode());
+		result = prime * result
+				+ ((lastUpdatedBy == null) ? 0 : lastUpdatedBy.hashCode());
+		result = prime * result
+				+ ((locationCd == null) ? 0 : locationCd.hashCode());
+		result = prime * result
+				+ ((locationName == null) ? 0 : locationName.hashCode());
+		result = prime * result
+				+ ((maidenName == null) ? 0 : maidenName.hashCode());
+		result = prime * result
+				+ ((mailCode == null) ? 0 : mailCode.hashCode());
+		result = prime * result
+				+ ((managerId == null) ? 0 : managerId.hashCode());
+		result = prime * result
+				+ ((metadataTypeId == null) ? 0 : metadataTypeId.hashCode());
+		result = prime * result
+				+ ((middleInit == null) ? 0 : middleInit.hashCode());
+		result = prime * result
+				+ ((nickname == null) ? 0 : nickname.hashCode());
+		result = prime * result
+				+ ((organization == null) ? 0 : organization.hashCode());
+		result = prime * result
+				+ ((passwordTheme == null) ? 0 : passwordTheme.hashCode());
+		result = prime * result + ((prefix == null) ? 0 : prefix.hashCode());
+		result = prime * result
+				+ ((secondaryStatus == null) ? 0 : secondaryStatus.hashCode());
+		result = prime * result + ((sex == null) ? 0 : sex.hashCode());
+		result = prime * result
+				+ ((showInSearch == null) ? 0 : showInSearch.hashCode());
+		result = prime * result
+				+ ((startDate == null) ? 0 : startDate.hashCode());
+		result = prime * result + ((status == null) ? 0 : status.hashCode());
+		result = prime * result + ((suffix == null) ? 0 : suffix.hashCode());
+		result = prime * result
+				+ ((systemFlag == null) ? 0 : systemFlag.hashCode());
+		result = prime * result + ((title == null) ? 0 : title.hashCode());
+		result = prime * result + ((userId == null) ? 0 : userId.hashCode());
+		result = prime * result
+				+ ((userOwnerId == null) ? 0 : userOwnerId.hashCode());
+		result = prime * result
+				+ ((userTypeInd == null) ? 0 : userTypeInd.hashCode());
+		return result;
+	}
 
-        UserEntity that = (UserEntity) o;
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		UserEntity other = (UserEntity) obj;
+		if (alternateContactId == null) {
+			if (other.alternateContactId != null)
+				return false;
+		} else if (!alternateContactId.equals(other.alternateContactId))
+			return false;
+		if (birthdate == null) {
+			if (other.birthdate != null)
+				return false;
+		} else if (!birthdate.equals(other.birthdate))
+			return false;
+		if (classification == null) {
+			if (other.classification != null)
+				return false;
+		} else if (!classification.equals(other.classification))
+			return false;
+		if (companyId == null) {
+			if (other.companyId != null)
+				return false;
+		} else if (!companyId.equals(other.companyId))
+			return false;
+		if (companyOwnerId == null) {
+			if (other.companyOwnerId != null)
+				return false;
+		} else if (!companyOwnerId.equals(other.companyOwnerId))
+			return false;
+		if (costCenter == null) {
+			if (other.costCenter != null)
+				return false;
+		} else if (!costCenter.equals(other.costCenter))
+			return false;
+		if (createDate == null) {
+			if (other.createDate != null)
+				return false;
+		} else if (!createDate.equals(other.createDate))
+			return false;
+		if (createdBy == null) {
+			if (other.createdBy != null)
+				return false;
+		} else if (!createdBy.equals(other.createdBy))
+			return false;
+		if (dateChallengeRespChanged == null) {
+			if (other.dateChallengeRespChanged != null)
+				return false;
+		} else if (!dateChallengeRespChanged
+				.equals(other.dateChallengeRespChanged))
+			return false;
+		if (datePasswordChanged == null) {
+			if (other.datePasswordChanged != null)
+				return false;
+		} else if (!datePasswordChanged.equals(other.datePasswordChanged))
+			return false;
+		if (delAdmin == null) {
+			if (other.delAdmin != null)
+				return false;
+		} else if (!delAdmin.equals(other.delAdmin))
+			return false;
+		if (deptCd == null) {
+			if (other.deptCd != null)
+				return false;
+		} else if (!deptCd.equals(other.deptCd))
+			return false;
+		if (deptName == null) {
+			if (other.deptName != null)
+				return false;
+		} else if (!deptName.equals(other.deptName))
+			return false;
+		if (division == null) {
+			if (other.division != null)
+				return false;
+		} else if (!division.equals(other.division))
+			return false;
+		if (employeeId == null) {
+			if (other.employeeId != null)
+				return false;
+		} else if (!employeeId.equals(other.employeeId))
+			return false;
+		if (employeeType == null) {
+			if (other.employeeType != null)
+				return false;
+		} else if (!employeeType.equals(other.employeeType))
+			return false;
+		if (firstName == null) {
+			if (other.firstName != null)
+				return false;
+		} else if (!firstName.equals(other.firstName))
+			return false;
+		if (jobCode == null) {
+			if (other.jobCode != null)
+				return false;
+		} else if (!jobCode.equals(other.jobCode))
+			return false;
+		if (lastDate == null) {
+			if (other.lastDate != null)
+				return false;
+		} else if (!lastDate.equals(other.lastDate))
+			return false;
+		if (lastName == null) {
+			if (other.lastName != null)
+				return false;
+		} else if (!lastName.equals(other.lastName))
+			return false;
+		if (lastUpdate == null) {
+			if (other.lastUpdate != null)
+				return false;
+		} else if (!lastUpdate.equals(other.lastUpdate))
+			return false;
+		if (lastUpdatedBy == null) {
+			if (other.lastUpdatedBy != null)
+				return false;
+		} else if (!lastUpdatedBy.equals(other.lastUpdatedBy))
+			return false;
+		if (locationCd == null) {
+			if (other.locationCd != null)
+				return false;
+		} else if (!locationCd.equals(other.locationCd))
+			return false;
+		if (locationName == null) {
+			if (other.locationName != null)
+				return false;
+		} else if (!locationName.equals(other.locationName))
+			return false;
+		if (maidenName == null) {
+			if (other.maidenName != null)
+				return false;
+		} else if (!maidenName.equals(other.maidenName))
+			return false;
+		if (mailCode == null) {
+			if (other.mailCode != null)
+				return false;
+		} else if (!mailCode.equals(other.mailCode))
+			return false;
+		if (managerId == null) {
+			if (other.managerId != null)
+				return false;
+		} else if (!managerId.equals(other.managerId))
+			return false;
+		if (metadataTypeId == null) {
+			if (other.metadataTypeId != null)
+				return false;
+		} else if (!metadataTypeId.equals(other.metadataTypeId))
+			return false;
+		if (middleInit == null) {
+			if (other.middleInit != null)
+				return false;
+		} else if (!middleInit.equals(other.middleInit))
+			return false;
+		if (nickname == null) {
+			if (other.nickname != null)
+				return false;
+		} else if (!nickname.equals(other.nickname))
+			return false;
+		if (organization == null) {
+			if (other.organization != null)
+				return false;
+		} else if (!organization.equals(other.organization))
+			return false;
+		if (passwordTheme == null) {
+			if (other.passwordTheme != null)
+				return false;
+		} else if (!passwordTheme.equals(other.passwordTheme))
+			return false;
+		if (prefix == null) {
+			if (other.prefix != null)
+				return false;
+		} else if (!prefix.equals(other.prefix))
+			return false;
+		if (secondaryStatus != other.secondaryStatus)
+			return false;
+		if (sex == null) {
+			if (other.sex != null)
+				return false;
+		} else if (!sex.equals(other.sex))
+			return false;
+		if (showInSearch == null) {
+			if (other.showInSearch != null)
+				return false;
+		} else if (!showInSearch.equals(other.showInSearch))
+			return false;
+		if (startDate == null) {
+			if (other.startDate != null)
+				return false;
+		} else if (!startDate.equals(other.startDate))
+			return false;
+		if (status != other.status)
+			return false;
+		if (suffix == null) {
+			if (other.suffix != null)
+				return false;
+		} else if (!suffix.equals(other.suffix))
+			return false;
+		if (systemFlag == null) {
+			if (other.systemFlag != null)
+				return false;
+		} else if (!systemFlag.equals(other.systemFlag))
+			return false;
+		if (title == null) {
+			if (other.title != null)
+				return false;
+		} else if (!title.equals(other.title))
+			return false;
+		if (userId == null) {
+			if (other.userId != null)
+				return false;
+		} else if (!userId.equals(other.userId))
+			return false;
+		if (userOwnerId == null) {
+			if (other.userOwnerId != null)
+				return false;
+		} else if (!userOwnerId.equals(other.userOwnerId))
+			return false;
+		if (userTypeInd == null) {
+			if (other.userTypeInd != null)
+				return false;
+		} else if (!userTypeInd.equals(other.userTypeInd))
+			return false;
+		return true;
+	}
 
-        if (address1 != null ? !address1.equals(that.address1) : that.address1 != null) return false;
-        if (address2 != null ? !address2.equals(that.address2) : that.address2 != null) return false;
-        if (address3 != null ? !address3.equals(that.address3) : that.address3 != null) return false;
-        if (address4 != null ? !address4.equals(that.address4) : that.address4 != null) return false;
-        if (address5 != null ? !address5.equals(that.address5) : that.address5 != null) return false;
-        if (address6 != null ? !address6.equals(that.address6) : that.address6 != null) return false;
-        if (address7 != null ? !address7.equals(that.address7) : that.address7 != null) return false;
-        if (addresses != null ? !addresses.equals(that.addresses) : that.addresses != null) return false;
-        if (alternateContactId != null ? !alternateContactId.equals(that.alternateContactId) : that.alternateContactId != null)
-            return false;
-        if (areaCd != null ? !areaCd.equals(that.areaCd) : that.areaCd != null) return false;
-        if (birthdate != null ? !birthdate.equals(that.birthdate) : that.birthdate != null) return false;
-        if (bldgNum != null ? !bldgNum.equals(that.bldgNum) : that.bldgNum != null) return false;
-        if (city != null ? !city.equals(that.city) : that.city != null) return false;
-        if (classification != null ? !classification.equals(that.classification) : that.classification != null)
-            return false;
-        if (companyId != null ? !companyId.equals(that.companyId) : that.companyId != null) return false;
-        if (companyOwnerId != null ? !companyOwnerId.equals(that.companyOwnerId) : that.companyOwnerId != null)
-            return false;
-        if (costCenter != null ? !costCenter.equals(that.costCenter) : that.costCenter != null) return false;
-        if (country != null ? !country.equals(that.country) : that.country != null) return false;
-        if (countryCd != null ? !countryCd.equals(that.countryCd) : that.countryCd != null) return false;
-        if (createDate != null ? !createDate.equals(that.createDate) : that.createDate != null) return false;
-        if (createdBy != null ? !createdBy.equals(that.createdBy) : that.createdBy != null) return false;
-        if (dateChallengeRespChanged != null ? !dateChallengeRespChanged.equals(that.dateChallengeRespChanged) : that.dateChallengeRespChanged != null)
-            return false;
-        if (datePasswordChanged != null ? !datePasswordChanged.equals(that.datePasswordChanged) : that.datePasswordChanged != null)
-            return false;
-        if (delAdmin != null ? !delAdmin.equals(that.delAdmin) : that.delAdmin != null) return false;
-        if (deptCd != null ? !deptCd.equals(that.deptCd) : that.deptCd != null) return false;
-        if (deptName != null ? !deptName.equals(that.deptName) : that.deptName != null) return false;
-        if (division != null ? !division.equals(that.division) : that.division != null) return false;
-        if (email != null ? !email.equals(that.email) : that.email != null) return false;
-        if (emailAddresses != null ? !emailAddresses.equals(that.emailAddresses) : that.emailAddresses != null)
-            return false;
-        if (employeeId != null ? !employeeId.equals(that.employeeId) : that.employeeId != null) return false;
-        if (employeeType != null ? !employeeType.equals(that.employeeType) : that.employeeType != null) return false;
-        if (firstName != null ? !firstName.equals(that.firstName) : that.firstName != null) return false;
-        if (jobCode != null ? !jobCode.equals(that.jobCode) : that.jobCode != null) return false;
-        if (lastDate != null ? !lastDate.equals(that.lastDate) : that.lastDate != null) return false;
-        if (lastName != null ? !lastName.equals(that.lastName) : that.lastName != null) return false;
-        if (lastUpdate != null ? !lastUpdate.equals(that.lastUpdate) : that.lastUpdate != null) return false;
-        if (lastUpdatedBy != null ? !lastUpdatedBy.equals(that.lastUpdatedBy) : that.lastUpdatedBy != null)
-            return false;
-        if (locationCd != null ? !locationCd.equals(that.locationCd) : that.locationCd != null) return false;
-        if (locationName != null ? !locationName.equals(that.locationName) : that.locationName != null) return false;
-        if (maidenName != null ? !maidenName.equals(that.maidenName) : that.maidenName != null) return false;
-        if (mailCode != null ? !mailCode.equals(that.mailCode) : that.mailCode != null) return false;
-        if (managerId != null ? !managerId.equals(that.managerId) : that.managerId != null) return false;
-        if (metadataTypeId != null ? !metadataTypeId.equals(that.metadataTypeId) : that.metadataTypeId != null)
-            return false;
-        if (middleInit != null ? !middleInit.equals(that.middleInit) : that.middleInit != null) return false;
-        if (nickname != null ? !nickname.equals(that.nickname) : that.nickname != null) return false;
-        if (passwordTheme != null ? !passwordTheme.equals(that.passwordTheme) : that.passwordTheme != null)
-            return false;
-        if (phoneExt != null ? !phoneExt.equals(that.phoneExt) : that.phoneExt != null) return false;
-        if (phoneNbr != null ? !phoneNbr.equals(that.phoneNbr) : that.phoneNbr != null) return false;
-        if (phones != null ? !phones.equals(that.phones) : that.phones != null) return false;
-        if (postalCd != null ? !postalCd.equals(that.postalCd) : that.postalCd != null) return false;
-        if (prefix != null ? !prefix.equals(that.prefix) : that.prefix != null) return false;
-        if (secondaryStatus != that.secondaryStatus) return false;
-        if (sex != null ? !sex.equals(that.sex) : that.sex != null) return false;
-        if (showInSearch != null ? !showInSearch.equals(that.showInSearch) : that.showInSearch != null) return false;
-        if (startDate != null ? !startDate.equals(that.startDate) : that.startDate != null) return false;
-        if (state != null ? !state.equals(that.state) : that.state != null) return false;
-        if (status != that.status) return false;
-        if (streetDirection != null ? !streetDirection.equals(that.streetDirection) : that.streetDirection != null)
-            return false;
-        if (suffix != null ? !suffix.equals(that.suffix) : that.suffix != null) return false;
-        if (suite != null ? !suite.equals(that.suite) : that.suite != null) return false;
-        if (title != null ? !title.equals(that.title) : that.title != null) return false;
-        if (userAttributes != null ? !userAttributes.equals(that.userAttributes) : that.userAttributes != null)
-            return false;
-        if (userId != null ? !userId.equals(that.userId) : that.userId != null) return false;
-        if (userNotes != null ? !userNotes.equals(that.userNotes) : that.userNotes != null) return false;
-        if (userOwnerId != null ? !userOwnerId.equals(that.userOwnerId) : that.userOwnerId != null) return false;
-        if (userTypeInd != null ? !userTypeInd.equals(that.userTypeInd) : that.userTypeInd != null) return false;
-
-        return true;
-    }
+	
 }

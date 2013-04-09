@@ -18,126 +18,39 @@ package org.openiam.idm.srvc.lang.service;
  *  along with OpenIAM.  If not, see <http://www.gnu.org/licenses/>. *
  */
 
-import java.util.List;
-import javax.naming.InitialContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.HibernateException;
-import org.hibernate.LockMode;
-import org.hibernate.Query;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.lang.dto.Language;
-
-import static org.hibernate.criterion.Example.create;
+import org.hibernate.Criteria;
+import org.hibernate.criterion.Restrictions;
+import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.idm.srvc.lang.domain.LanguageEntity;
+import org.springframework.stereotype.Repository;
 
 /**
  * DAO to manage the list of languages.
  * @see org.openiam.idm.srvc.lang.dto.Language
  * @author Suneet Shah
  */
-public class LanguageDAOImpl implements LanguageDAO {
-
+@Repository("languageDAO")
+public class LanguageDAOImpl extends BaseDaoImpl<LanguageEntity, String> implements LanguageDAO {
 	private static final Log log = LogFactory.getLog(LanguageDAOImpl.class);
 
-	private SessionFactory sessionFactory;
+    @Override
+    protected String getPKfieldName() {
+        return "languageId";
+    }
 
-	
-	public void setSessionFactory(SessionFactory session) {
-		   this.sessionFactory = session;
+	@Override
+	public LanguageEntity getByLocale(String locale) {
+		final Criteria criteria = getCriteria();
+		criteria.createAlias("locales", "locale").add( Restrictions.eq("locale.locale", locale));
+		return (LanguageEntity)criteria.uniqueResult();
 	}
 
-	protected SessionFactory getSessionFactory() {
-		try {
-			return (SessionFactory) new InitialContext().lookup("SessionFactory");
-		} catch (Exception e) {
-			log.error("Could not locate SessionFactory in JNDI", e);
-			throw new IllegalStateException(
-					"Could not locate SessionFactory in JNDI");
-		}
+	@Override
+	public LanguageEntity getByCode(String languageCode) {
+		final Criteria criteria = getCriteria();
+		criteria.add(Restrictions.eq("languageCode", languageCode));
+		return (LanguageEntity)criteria.uniqueResult();
 	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.lang.service.LanguageDAO#add(org.openiam.idm.srvc.lang.dto.Language)
-	 */
-	public void add(Language transientInstance) {
-		log.debug("persisting Language instance");
-		try {
-			sessionFactory.getCurrentSession().persist(transientInstance);
-			log.debug("persist successful");
-		} catch (HibernateException re) {
-			log.error("persist failed", re);
-			throw re;
-		}
-	}
-
-
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.lang.service.LanguageDAO#remove(org.openiam.idm.srvc.lang.dto.Language)
-	 */
-	public void remove(Language persistentInstance) {
-		log.debug("deleting Language instance");
-		try {
-			sessionFactory.getCurrentSession().delete(persistentInstance);
-			log.debug("delete successful");
-		} catch (HibernateException re) {
-			log.error("delete failed", re);
-			throw re;
-		}
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.lang.service.LanguageDAO#update(org.openiam.idm.srvc.lang.dto.Language)
-	 */
-	public Language update(Language detachedInstance) {
-		log.debug("merging Language instance");
-		try {
-			Language result = (Language) sessionFactory.getCurrentSession()
-					.merge(detachedInstance);
-			log.debug("merge successful");
-			return result;
-		} catch (HibernateException re) {
-			log.error("merge failed", re);
-			throw re;
-		}
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.lang.service.LanguageDAO#findById(java.lang.String)
-	 */
-	public Language findById(java.lang.String id) {
-		log.debug("getting Language instance with id: " + id);
-		try {
-			Language instance = (Language) sessionFactory.getCurrentSession()
-					.get("org.openiam.idm.srvc.lang.dto.Language", id);
-			if (instance == null) {
-				log.debug("get successful, no instance found");
-			} else {
-				log.debug("get successful, instance found");
-			}
-			return instance;
-		} catch (HibernateException re) {
-			log.error("get failed", re);
-			throw re;
-		}
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.lang.service.LanguageDAO#findAllLanguages()
-	 */
-	public List<Language> findAllLanguages() {
-		try {
-			Session session = sessionFactory.getCurrentSession();
-			Query qry = session.createQuery("from org.openiam.idm.srvc.lang.dto.Language l " +
-					" order by l.name asc");
-			List<Language> results = (List<Language>)qry.list();
-			return results;
-		} catch (HibernateException re) {
-			log.error("get failed", re);
-			throw re;
-		}
-	}
-
 }

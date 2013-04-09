@@ -8,7 +8,7 @@ import javax.xml.bind.annotation.XmlType;
  * CategoryLanguageId is the PrimaryKey for the CategoryLanguage object
  */
 
-@XmlType(name = "categoryLanguageId", propOrder = { "categoryId", "languageCd" })
+@XmlType(name = "categoryLanguageId", propOrder = { "categoryId", "languageId" })
 public class CategoryLanguageId implements java.io.Serializable {
 
     /**
@@ -16,7 +16,7 @@ public class CategoryLanguageId implements java.io.Serializable {
      */
     private static final long serialVersionUID = 1L;
     private String categoryId;
-    private String languageCd;
+    private String languageId;
 
     public CategoryLanguageId() {
     }
@@ -29,12 +29,12 @@ public class CategoryLanguageId implements java.io.Serializable {
         this.categoryId = categoryId;
     }
 
-    public String getLanguageCd() {
-        return this.languageCd;
+    public String getLanguageId() {
+        return this.languageId;
     }
 
-    public void setLanguageCd(String languageCd) {
-        this.languageCd = languageCd;
+    public void setLanguageId(String languageCd) {
+        this.languageId = languageCd;
     }
 
     public boolean equals(Object other) {
@@ -50,10 +50,10 @@ public class CategoryLanguageId implements java.io.Serializable {
                 .getCategoryId() != null
                 && castOther.getCategoryId() != null && this.getCategoryId()
                 .equals(castOther.getCategoryId())))
-                && ((this.getLanguageCd() == castOther.getLanguageCd()) || (this
-                .getLanguageCd() != null
-                && castOther.getLanguageCd() != null && this
-                .getLanguageCd().equals(castOther.getLanguageCd())));
+                && ((this.getLanguageId() == castOther.getLanguageId()) || (this
+                .getLanguageId() != null
+                && castOther.getLanguageId() != null && this
+                .getLanguageId().equals(castOther.getLanguageId())));
     }
 
     public int hashCode() {
@@ -65,7 +65,7 @@ public class CategoryLanguageId implements java.io.Serializable {
                 .hashCode());
         result = 37
                 * result
-                + (getLanguageCd() == null ? 0 : this.getLanguageCd()
+                + (getLanguageId() == null ? 0 : this.getLanguageId()
                 .hashCode());
         return result;
     }

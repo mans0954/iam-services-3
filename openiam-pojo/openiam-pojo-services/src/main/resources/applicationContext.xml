@@ -65,10 +65,12 @@
 				<value>classpath:iam-plugin.properties</value>
                 <value>classpath:securityconf.properties</value>
                 <value>classpath:openiam.esb.properties</value>
+                <value>classpath:notification.properties</value>
 				<value>file:/data/openiam/conf/datasource.properties</value>
 		        <value>file:/data/openiam/conf/iam-plugin.properties</value>
                 <value>file:/data/openiam/conf/securityconf.properties</value>
                 <value>file:/data/openiam/conf/openiam.esb.properties</value>
+                <value>file:/data/openiam/conf/notification.properties</value>
 			</list>
 		</property>
 		<property name="ignoreResourceNotFound" value="true" />
@@ -103,6 +105,8 @@
 	-->
 
 	<bean id="configurableGroovyScriptEngine" class="${org.openiam.groovy.script.engine}"/>
+	
+	<bean id="configurableAuditLogEventHandler" class="${org.openiam.log.audit.iheevent.context.class}" />
 			
 	<!-- Service Beans -->
 	<bean id="serviceManager" class="org.openiam.idm.srvc.service.service.ServiceMgr">
@@ -127,6 +131,8 @@
 			<list>
 			  <ref bean="userSearchDAO" />
 			  <ref bean="loginSearchDAO" />
+			  <ref bean="emailSearchDAO" />
+			  <ref bean="phoneSearchDAO" />
 			</list>
 		</property>
 	</bean>
@@ -284,13 +290,13 @@
 	</bean>
 
 	<!-- Language Beans -->
-	<bean id="languageDataService" class="org.openiam.idm.srvc.lang.service.LanguageDataServiceImpl" >
-		<property name="languageDao" ref="languageDAO" />
-	</bean>
+	<!--<bean id="languageDataService" class="org.openiam.idm.srvc.lang.service.LanguageDataServiceImpl" >-->
+		<!--<property name="languageDao" ref="languageDAO" />-->
+	<!--</bean>-->
 	
-	<bean id="languageDAO" class="org.openiam.idm.srvc.lang.service.LanguageDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"></property>		
-	</bean>		
+	<!--<bean id="languageDAO" class="org.openiam.idm.srvc.lang.service.LanguageDAOImpl" >-->
+		<!--<property name="sessionFactory" ref="sessionFactory"></property>		-->
+	<!--</bean>		-->
 	<!-- Location Beans -->
 	<bean id="locationDataService" class="org.openiam.idm.srvc.loc.service.LocationDataServiceImpl" >
 		<property name="locationDao" ref="locationDAO" />
@@ -383,7 +389,7 @@
 
 				<!-- <value>org/openiam/idm/srvc/res/service/ResourceType.hbm.xml</value> -->
 				<!--value>org/openiam/idm/srvc/res/service/ResourceUser.hbm.xml</value-->
-				<value>org/openiam/idm/srvc/lang/service/Language.hbm.xml</value>
+				<!--<value>org/openiam/idm/srvc/lang/service/Language.hbm.xml</value>-->
 				<value>org/openiam/idm/srvc/loc/service/Location.hbm.xml</value>
 
 				<!--
@@ -442,20 +448,20 @@
                                                org.openiam.idm.srvc.policy.domain*,
                                                org.openiam.idm.srvc.audit.domain*,
                                                org.openiam.idm.srvc.pswd.domain*,
-                                               org.openiam.idm.srvc.secdomain.domain*
+                                               org.openiam.idm.srvc.secdomain.domain*,
+                                               org.openiam.idm.srvc.lang.domain*
                                                "/>
 
 	</bean>
-	
 	<util:properties id="hibernateProperties" location="classpath:openiam.search.hibernate.properties">
 		<prop key="hibernate.dialect">${openiam.hibernate.dialect}</prop>	
-		<prop key="hibernate.show_sql">true</prop>
-		<prop key="hibernate.generate_statistics">true</prop>
+		<prop key="hibernate.show_sql">${openiam.hibernate.show.sql}</prop>
+		<prop key="hibernate.generate_statistics">${openiam.hibernate.generate.statistics}</prop>
 		<!--prop key="hibernate.cache.provider_class">org.hibernate.cache.EhCacheProvider</prop-->
-        <prop key="hibernate.cache.use_second_level_cache">false</prop>
-        <prop key="hibernate.cache.use_query_cache">false</prop>
-        <prop key="hibernate.use_sql_comments">true</prop>
-        <prop key="hibernate.connection.autoReconnect">true</prop>
+        <prop key="hibernate.cache.use_second_level_cache">${openiam.hibernate.second.level.cache.enabled}</prop>
+        <prop key="hibernate.cache.use_query_cache">${openiam.hibernate.query.cache.enabled}</prop>
+        <prop key="hibernate.use_sql_comments">${openiam.hibernate.sql.comments.enabled}</prop>
+        <prop key="hibernate.connection.autoReconnect">${openiam.hibernate.auto.connect.enabled}</prop>
 		<prop key="hibernate.validationQuery">${openiam.hibernate.validationQuery}</prop>
 	</util:properties>
   	
@@ -465,47 +471,7 @@
 
   
   	<jee:jndi-lookup jndi-name="${datasource.jndi.name}" id="dataSource" />
-	<!-- Local DataSource that works in any environment -->
-	<!-- Note that DriverManagerDataSource does not pool; it is not intended for production -->
-	<!-- See JPetStore for an example of using Commons DBCP BasicDataSource as alternative -->
-	<!-- See Image Database for an example of using C3P0 ComboPooledDataSource as alternative -->
-
-	<!--
-     <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
-        <property name="driverClass" value="${openiam.driver_classname}" />
-        <property name="jdbcUrl" value="${openiam.driver_url}" />
-        <property name="user" value="${openiam.username}" />
-        <property name="password" value="${openiam.password}"/>
-
-        <property name="minPoolSize" value="${openiam.hibernate.minPoolSize}"/>
-        <property name="maxPoolSize" value="${openiam.hibernate.maxPoolSize}"/>
-        <property name="maxStatements" value="${openiam.hibernate.max_statement}"/>
-        <property name="idleConnectionTestPeriod" value="${openiam.hibernate.idle_test_period}"/>
-        <property name="loginTimeout" value="300"/>
-        <property name="acquireIncrement" value="${openiam.hibernate.acquireIncrement}" />
-        <property name="acquireRetryAttempts" value="${openiam.hibernate.acquireRetryAttempts}"/>
-        <property name="acquireRetryDelay" value="${openiam.hibernate.acquireRetryDelay}"/>
-        <property name="breakAfterAcquireFailure" value="${openiam.hibernate.breakAfterAcquireFailure}"/>
-        <property name="automaticTestTable" value="${openiam.hibernate.automaticTestTable}"/>
-        <property name="testConnectionOnCheckin" value="${openiam.hibernate.testConnectionOnCheckin}"/>
-     </bean>
-	-->
-
-
-
-	<!-- JNDI DataSource for J2EE environments -->
-	<!-- 
-	<jee:jndi-lookup id="dataSource" jndi-name="java:openiamDS"/>
-	-->
-<!--  
-	<bean id="dataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
-		<property name="jndiName">
-			<value>java:comp/env/jdbc/openiamDS</value>
-		</property>
-	</bean>
--->
-
-
+  	
     <bean id="exporter"
               class="org.springframework.jmx.export.MBeanExporter"
               lazy-init="false">
@@ -589,11 +555,11 @@
     <aop:advisor advice-ref="txAdvice" pointcut-ref="policyOperation"/>
   </aop:config> 
 
-  <aop:config>
-    <aop:pointcut id="languageOperation" expression="execution(* org.openiam.idm.srvc.lang.service.LanguageDataService.*(..))"/>
-    <aop:advisor advice-ref="txAdvice" pointcut-ref="languageOperation"/>
-  </aop:config> 
-   
+  <!--<aop:config>-->
+    <!--<aop:pointcut id="languageOperation" expression="execution(* org.openiam.idm.srvc.lang.service.LanguageDataService.*(..))"/>-->
+    <!--<aop:advisor advice-ref="txAdvice" pointcut-ref="languageOperation"/>-->
+  <!--</aop:config> -->
+   <!---->
     <aop:config>
     <aop:pointcut id="locationOperation" expression="execution(* org.openiam.idm.srvc.loc.ws.LocationDataWebService.*(..))"/>
     <aop:advisor advice-ref="txAdvice" pointcut-ref="locationOperation"/>

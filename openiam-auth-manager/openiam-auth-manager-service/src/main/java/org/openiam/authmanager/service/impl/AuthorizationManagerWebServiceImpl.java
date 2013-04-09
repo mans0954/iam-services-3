@@ -27,6 +27,7 @@ import org.openiam.authmanager.ws.response.ResourcesForUserResponse;
 import org.openiam.authmanager.ws.response.RolesForUserResponse;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.thread.Sweepable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -215,5 +216,10 @@ public class AuthorizationManagerWebServiceImpl implements AuthorizationManagerW
 		if(StringUtils.isBlank(request.getUserId()) && request.getLoginId() == null) {
 			throw new AuthorizationManagerRuntimeException("No User Id and Login Id Specified on the User Object");	
 		}
+	}
+
+	@Override
+	public void refreshCache() {
+		((Sweepable)authManagerService).sweep();
 	}
 }

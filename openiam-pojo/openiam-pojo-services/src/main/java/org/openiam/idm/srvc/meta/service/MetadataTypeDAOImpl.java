@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -30,43 +31,22 @@ public class MetadataTypeDAOImpl extends
     private CategoryDAO categoryDao;
 
     @Override
-    public void addCategoryToType(String typeId, String categoryId) {
-        CategoryEntity cat = categoryDao.findById(categoryId);
-        if (cat == null)
-            return;
-        MetadataTypeEntity type = findById(typeId);
-        Set<CategoryEntity> categorySet = type.getCategories();
-        categorySet.add(cat);
+	protected Criteria getExampleCriteria(final MetadataTypeEntity entity) {
+    	final Criteria criteria = getCriteria();
+    	if(StringUtils.isNotBlank(entity.getMetadataTypeId())) {
+    		criteria.add(Restrictions.eq("metadataTypeId", entity.getMetadataTypeId()));
+    	} else {
+    		criteria.add(Restrictions.eq("active", entity.isActive()));
+    		criteria.add(Restrictions.eq("syncManagedSys", entity.isSyncManagedSys()));
+    		
+    		if(StringUtils.isNotBlank(entity.getGrouping())) {
+    			criteria.add(Restrictions.eq("grouping", entity.getGrouping()));
+    		}
+    	}
+    	return criteria;
+	}
 
-        try {
-            sessionFactory.getCurrentSession().save(type);
-            log.debug("persist type successful");
-        } catch (RuntimeException re) {
-            re.printStackTrace();
-            log.error("persist failed", re);
-            throw re;
-        }
-    }
-
-    @Override
-    public void removeCategoryFromType(String typeId, String categoryId) {
-
-        MetadataTypeEntity type = findById(typeId);
-        org.hibernate.Hibernate.initialize(type.getCategories());
-        Set<CategoryEntity> categorySet = type.getCategories();
-        if (categorySet == null || categorySet.isEmpty()) {
-            return;
-        }
-        Iterator<CategoryEntity> it = categorySet.iterator();
-        while (it.hasNext()) {
-            CategoryEntity cat = it.next();
-            if (cat.getCategoryId().equalsIgnoreCase(categoryId)) {
-                it.remove();
-            }
-        }
-    }
-
-    @SuppressWarnings("unchecked")
+	@SuppressWarnings("unchecked")
     @Override
     public List<MetadataTypeEntity> findTypesInCategory(String categoryId) {
     	final Criteria criteria = getCriteria().createAlias("categories", "category").add(Restrictions.eq("category.categoryId", categoryId));

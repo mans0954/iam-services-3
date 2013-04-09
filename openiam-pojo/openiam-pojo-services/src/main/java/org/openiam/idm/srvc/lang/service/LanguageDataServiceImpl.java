@@ -21,23 +21,28 @@
  */
 package org.openiam.idm.srvc.lang.service;
 
-import java.util.List;
+import org.openiam.idm.srvc.lang.domain.LanguageEntity;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import org.openiam.idm.srvc.lang.dto.Language;
+import java.util.List;
 
 /**
  * @author suneet
  *
  */
+@Service("languageDataService")
 public class LanguageDataServiceImpl implements LanguageDataService {
 
-	LanguageDAO languageDao;
+    @Autowired
+    @Qualifier("languageDAO")
+	private LanguageDAO languageDao;
 	
 	
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.lang.service.LanguageDataService#addLanguage(org.openiam.idm.srvc.lang.dto.Language)
-	 */
-	public void addLanguage(Language lg) {
+    @Transactional
+	public void addLanguage(LanguageEntity lg) {
 		if (lg == null) {
 			throw new NullPointerException("lg is null");
 		}
@@ -45,61 +50,35 @@ public class LanguageDataServiceImpl implements LanguageDataService {
 
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.lang.service.LanguageDataService#allLanguages()
-	 */
-	public Language[] allLanguages() {
-		List<Language> lgList = languageDao.findAllLanguages();
-		if (lgList == null || lgList.isEmpty())
-			return null;
-		int size = lgList.size();
-		Language[] lgAry = new Language[size];
-		lgList.toArray(lgAry);
-		return lgAry;
-		
-		
+	public List<LanguageEntity> allLanguages() {
+		return languageDao.findAll();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.lang.service.LanguageDataService#getLanguage(java.lang.String)
-	 */
-	public Language getLanguage(String languageCd) {
+	public LanguageEntity getLanguage(String languageId) {
 
-		if (languageCd == null) {
+		if (languageId == null) {
 			throw new NullPointerException("languageCd is null");
 		}
-		return languageDao.findById(languageCd);
+		return languageDao.findById(languageId);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.lang.service.LanguageDataService#removeLanguage(java.lang.String)
-	 */
-	public void removeLanguage(String langCd) {
-		if (langCd == null) {
+    @Transactional
+	public void removeLanguage(String languageId) {
+		if (languageId == null) {
 			throw new NullPointerException("languageCd is null");
 		}
-		Language lg = new Language(langCd);
-		languageDao.remove(lg);
-
+        LanguageEntity lg = getLanguage(languageId);
+		languageDao.delete(lg);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.lang.service.LanguageDataService#updateLanguage(org.openiam.idm.srvc.lang.dto.Language)
-	 */
-	public void updateLanguage(Language lg) {
+    @Transactional
+	public void updateLanguage(LanguageEntity lg) {
 		if (lg == null) {
 			throw new NullPointerException("lg is null");
 		}
-		languageDao.update(lg);
-
+        LanguageEntity l = getLanguage(lg.getLanguageId());
+        if(l!=null){
+            languageDao.merge(l);
+        }
 	}
-
-	public LanguageDAO getLanguageDao() {
-		return languageDao;
-	}
-
-	public void setLanguageDao(LanguageDAO languageDao) {
-		this.languageDao = languageDao;
-	}
-
 }

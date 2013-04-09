@@ -20,20 +20,6 @@
  */
 package org.openiam.provision.service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.jws.WebParam;
-import javax.jws.WebService;
-import javax.xml.namespace.QName;
-import javax.xml.ws.Service;
-import javax.xml.ws.soap.SOAPBinding;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -93,19 +79,20 @@ import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.spml2.interf.ConnectorService;
-import org.openiam.spml2.msg.AddRequestType;
-import org.openiam.spml2.msg.DeleteRequestType;
-import org.openiam.spml2.msg.ModificationType;
-import org.openiam.spml2.msg.ModifyRequestType;
-import org.openiam.spml2.msg.PSOIdentifierType;
-import org.openiam.spml2.msg.ResponseType;
-import org.openiam.spml2.msg.StatusCodeType;
+import org.openiam.spml2.msg.*;
 import org.openiam.spml2.msg.password.SetPasswordRequestType;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+
+import javax.jws.WebParam;
+import javax.jws.WebService;
+import javax.xml.namespace.QName;
+import javax.xml.ws.Service;
+import javax.xml.ws.soap.SOAPBinding;
+import java.util.*;
 
 /**
  * @author suneet
@@ -1333,22 +1320,10 @@ public class ProvisionServiceImpl implements ProvisionService,
     }
 
     private void updatePrimaryUserInfo(User origUser, User newUser) {
-        origUser.setAddress1(newUser.getAddress1());
-        origUser.setAddress2(newUser.getAddress2());
-        origUser.setAddress3(newUser.getAddress3());
-        origUser.setAddress4(newUser.getAddress4());
-        origUser.setAddress5(newUser.getAddress5());
-        origUser.setAddress6(newUser.getAddress6());
-        origUser.setAddress7(newUser.getAddress7());
-        origUser.setAreaCd(newUser.getAreaCd());
         origUser.setBirthdate(newUser.getBirthdate());
-        origUser.setBldgNum(newUser.getBldgNum());
-        origUser.setCity(newUser.getCity());
         origUser.setClassification(newUser.getClassification());
         origUser.setCompanyId(newUser.getCompanyId());
         origUser.setCostCenter(newUser.getCostCenter());
-        origUser.setCountry(newUser.getCountry());
-        origUser.setCountryCd(newUser.getCountryCd());
         origUser.setDeptCd(newUser.getDeptCd());
         origUser.setDeptName(newUser.getDeptName());
         origUser.setDivision(newUser.getDivision());
@@ -1368,16 +1343,11 @@ public class ProvisionServiceImpl implements ProvisionService,
         origUser.setMiddleInit(newUser.getMiddleInit());
         origUser.setNickname(newUser.getNickname());
         origUser.setPasswordTheme(newUser.getPasswordTheme());
-        origUser.setPhoneExt(newUser.getPhoneExt());
-        origUser.setPhoneNbr(newUser.getPhoneNbr());
-        origUser.setPostalCd(newUser.getPostalCd());
         origUser.setPrefix(newUser.getPrefix());
         origUser.setSecondaryStatus(newUser.getSecondaryStatus());
         origUser.setSex(newUser.getSex());
         origUser.setStartDate(newUser.getStartDate());
         origUser.setStatus(newUser.getStatus());
-        origUser.setStreetDirection(newUser.getStreetDirection());
-        origUser.setState(newUser.getState());
         origUser.setSuffix(newUser.getSuffix());
         origUser.setTitle(newUser.getTitle());
         origUser.setUserTypeInd(newUser.getUserTypeInd());

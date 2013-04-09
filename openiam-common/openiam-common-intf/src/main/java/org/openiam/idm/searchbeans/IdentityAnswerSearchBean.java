@@ -9,10 +9,12 @@ import org.openiam.idm.srvc.pswd.dto.UserIdentityAnswer;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "IdentityAnswerSearchBean", propOrder = {
-	"userId"
+	"userId",
+	"questionId"
 })
 public class IdentityAnswerSearchBean extends AbstractSearchBean<UserIdentityAnswer, String> implements SearchBean<UserIdentityAnswer, String> {
 
+	private String questionId;
 	private String userId;
 
 	public String getUserId() {
@@ -22,4 +24,14 @@ public class IdentityAnswerSearchBean extends AbstractSearchBean<UserIdentityAns
 	public void setUserId(String userId) {
 		this.userId = userId;
 	}
+
+	public String getQuestionId() {
+		return questionId;
+	}
+
+	public void setQuestionId(String questionId) {
+		this.questionId = questionId;
+	}
+	
+	
 }

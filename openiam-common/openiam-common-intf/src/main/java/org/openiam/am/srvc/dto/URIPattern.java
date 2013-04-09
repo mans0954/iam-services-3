@@ -2,6 +2,7 @@ package org.openiam.am.srvc.dto;
 
 import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplate;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -13,24 +14,28 @@ import java.util.Set;
 @XmlType(name = "URIPattern", propOrder = {
         "id",
         "contentProviderId",
+        "contentProviderName",
         "authLevel",
         "pattern",
         "isPublic",
         "resourceId",
         "resourceName",
-        "metaEntitySet"
+        "metaEntitySet",
+        "pageTemplates"
 })
 @DozerDTOCorrespondence(URIPatternEntity.class)
 public class URIPattern implements Serializable {
 
 	private String id;
 	private String contentProviderId;
+	private String contentProviderName;
 	private String pattern;
 	private AuthLevel authLevel;
 	private boolean isPublic;
 	private String resourceId;
     private String resourceName;
 	private Set<URIPatternMeta> metaEntitySet;
+	private Set<MetadataElementPageTemplate> pageTemplates;
 	public String getId() {
 		return id;
 	}
@@ -81,8 +86,20 @@ public class URIPattern implements Serializable {
     public void setResourceName(String resourceName) {
         this.resourceName = resourceName;
     }
-
-    @Override
+    
+	public Set<MetadataElementPageTemplate> getPageTemplates() {
+		return pageTemplates;
+	}
+	public void setPageTemplates(Set<MetadataElementPageTemplate> pageTemplates) {
+		this.pageTemplates = pageTemplates;
+	}
+	public String getContentProviderName() {
+		return contentProviderName;
+	}
+	public void setContentProviderName(String contentProviderName) {
+		this.contentProviderName = contentProviderName;
+	}
+	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;

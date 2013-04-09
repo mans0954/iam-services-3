@@ -85,6 +85,23 @@ public class BaseObject implements java.io.Serializable {
     }
 
 	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((objectState == null) ? 0 : objectState.hashCode());
+		result = prime * result
+				+ ((requestClientIP == null) ? 0 : requestClientIP.hashCode());
+		result = prime * result
+				+ ((requestorDomain == null) ? 0 : requestorDomain.hashCode());
+		result = prime * result
+				+ ((requestorLogin == null) ? 0 : requestorLogin.hashCode());
+		result = prime * result
+				+ ((selected == null) ? 0 : selected.hashCode());
+		return result;
+	}
+
+	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;

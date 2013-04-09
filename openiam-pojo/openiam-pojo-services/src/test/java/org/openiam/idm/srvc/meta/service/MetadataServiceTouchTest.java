@@ -28,33 +28,8 @@ public class MetadataServiceTouchTest extends
     CategoryDataService categoryDataService;
 
     @Test
-    public void addMetadataElement() {
-        metadataService.addMetadataElement(new MetadataElement());
-    }
-
-    @Test
-    public void addMetadataType() {
-        metadataService.addMetadataType(this.addMetadataTypeRecord());
-    }
-
-    @Test
-    public void addTypeToCategory() {
-        metadataService
-                .addTypeToCategory(
-                        metadataService.addMetadataType(
-                                this.addMetadataTypeRecord())
-                                .getMetadataTypeId(), categoryDataService
-                                .addCategory(new Category()).getCategoryId());
-    }
-
-    @Test
     public void getAllElementsForCategoryType() {
         metadataService.getAllElementsForCategoryType("");
-    }
-
-    @Test
-    public void getMetadataElementById() {
-        metadataService.getMetadataElementById("");
     }
 
     @Test
@@ -63,41 +38,8 @@ public class MetadataServiceTouchTest extends
     }
 
     @Test
-    public void getMetadataType() {
-        metadataService.getMetadataType("");
-    }
-
-    @Test
-    public void getMetadataTypes() {
-        metadataService.getMetadataTypes();
-    }
-
-    @Test
     public void getTypesInCategory() {
         metadataService.getTypesInCategory("");
-    }
-
-    @Test
-    public void removeMetadataElement() {
-        metadataService.removeMetadataElement(metadataService
-                .addMetadataElement(new MetadataElement())
-                .getMetadataElementId());
-    }
-
-    @Test
-    public void removeMetadataType() {
-        MetadataType mt = metadataService.addMetadataType(this
-                .addMetadataTypeRecord());
-        metadataService.removeMetadataType(mt.getMetadataTypeId());
-    }
-
-    @Test
-    public void removeTypeFromCategory() {
-        metadataService
-                .removeTypeFromCategory(
-                        metadataService.addMetadataType(new MetadataType())
-                                .getMetadataTypeId(), categoryDataService
-                                .addCategory(new Category()).getCategoryId());
     }
 
     private MetadataType addMetadataTypeRecord() {

@@ -16,7 +16,8 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AuthorizationResource", propOrder = {
         "name",
-        "inheritFromParent"
+        "inheritFromParent",
+        "isPublic"
 })
 public class AuthorizationResource extends AbstractAuthorizationEntity implements Serializable  {
 
@@ -28,6 +29,8 @@ public class AuthorizationResource extends AbstractAuthorizationEntity implement
 	private String name;
 	
 	private boolean inheritFromParent = true;
+	
+	private boolean isPublic = false;
 	
 	/*
 	private BitSet linearBitSet = new BitSet();
@@ -47,6 +50,14 @@ public class AuthorizationResource extends AbstractAuthorizationEntity implement
 	
 	public boolean isInheritFromParent() {
 		return inheritFromParent;
+	}
+
+	public boolean isPublic() {
+		return isPublic;
+	}
+
+	public void setPublic(boolean isPublic) {
+		this.isPublic = isPublic;
 	}
 
 	public void addParentResoruce(final AuthorizationResource resource) {

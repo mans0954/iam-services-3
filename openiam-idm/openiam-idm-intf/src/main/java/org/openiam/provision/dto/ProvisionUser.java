@@ -23,13 +23,11 @@ package org.openiam.provision.dto;
 
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.res.dto.Resource;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -147,24 +145,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         this.nickname = user.getNickname();
         this.maidenName = user.getMaidenName();
         this.passwordTheme = user.getPasswordTheme();
-        this.country = user.getCountry();
-        this.bldgNum = user.getBldgNum();
-        this.streetDirection = user.getStreetDirection();
-        this.address1 = user.getAddress1();
-        this.address2 = user.getAddress2();
-        this.address3 = user.getAddress3();
-        this.address4 = user.getAddress4();
-        this.address5 = user.getAddress5();
-        this.address6 = user.getAddress6();
-        this.address7 = user.getAddress7();
-        this.city = user.getCity();
-        this.state = user.getState();
-        this.postalCd = user.getPostalCd();
         this.email = user.getEmail();
-        this.areaCd = user.getAreaCd();
-        this.countryCd = user.getCountryCd();
-        this.phoneNbr = user.getPhoneNbr();
-        this.phoneExt = user.getPhoneExt();
         this.showInSearch = user.getShowInSearch();
         this.delAdmin = user.getDelAdmin();
         this.alternateContactId = user.getAlternateContactId();
@@ -226,24 +207,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         user.setNickname(nickname);
         user.setMaidenName(maidenName);
         user.setPasswordTheme(passwordTheme);
-        user.setCountry(country);
-        user.setBldgNum(bldgNum);
-        user.setStreetDirection(streetDirection);
-        user.setAddress1(address1);
-        user.setAddress2(address2);
-        user.setAddress3(address3);
-        user.setAddress4(address4);
-        user.setAddress5(address5);
-        user.setAddress6(address6);
-        user.setAddress7(address3);
-        user.setCity(city);
-        user.setState(state);
-        user.setPostalCd(postalCd);
         user.setEmail(email);
-        user.setAreaCd(areaCd);
-        user.setCountryCd(countryCd);
-        user.setPhoneNbr(phoneNbr);
-        user.setPhoneExt(phoneExt);
 
         user.setUserNotes(userNotes);
         user.setUserAttributes(userAttributes);
@@ -463,7 +427,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
      * of the values that a User already has This can cause the provisioning
      * scripts to fail
      *
-     * @param origUser
+     * @param user
      */
     public void updateMissingUserAttributes(User user) {
 
@@ -573,59 +537,8 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         if (passwordTheme == null) {
             passwordTheme = user.getPasswordTheme();
         }
-        if (country == null) {
-            country = user.getCountry();
-        }
-        if (bldgNum == null) {
-            bldgNum = user.getBldgNum();
-        }
-        if (streetDirection == null) {
-            streetDirection = user.getStreetDirection();
-        }
-        if (address1 == null) {
-            address1 = user.getAddress1();
-        }
-        if (address2 == null) {
-            address2 = user.getAddress2();
-        }
-        if (address3 == null) {
-            address3 = user.getAddress3();
-        }
-        if (address4 == null) {
-            address4 = user.getAddress4();
-        }
-        if (address5 == null) {
-            address5 = user.getAddress5();
-        }
-        if (address6 == null) {
-            address6 = user.getAddress6();
-        }
-        if (address7 == null) {
-            address7 = user.getAddress7();
-        }
-        if (city == null) {
-            city = user.getCity();
-        }
-        if (state == null) {
-            state = user.getState();
-        }
-        if (postalCd == null) {
-            postalCd = user.getPostalCd();
-        }
         if (email == null) {
             email = user.getEmail();
-        }
-        if (areaCd == null) {
-            areaCd = user.getAreaCd();
-        }
-        if (countryCd == null) {
-            countryCd = user.getCountryCd();
-        }
-        if (phoneNbr == null) {
-            phoneNbr = user.getPhoneNbr();
-        }
-        if (phoneExt == null) {
-            phoneExt = user.getPhoneExt();
         }
         if (showInSearch == null) {
             showInSearch = user.getShowInSearch();

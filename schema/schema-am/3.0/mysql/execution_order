@@ -16,3 +16,4 @@ ddl/9.drop_context_path.sql
 dml/8.additional_am_user_attributes.sql
 dml/9.remove_unused_cp_menus.sql
 dml/10.name_qualifier_attrs.sql
+dml/11.remove_user_email_reference.sql

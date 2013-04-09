@@ -64,8 +64,11 @@ import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
+import org.openiam.idm.srvc.policy.domain.PolicyAttributeEntity;
+import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
+import org.openiam.idm.srvc.policy.service.PolicyDAO;
 import org.openiam.idm.srvc.policy.service.PolicyDataService;
 import org.openiam.idm.srvc.pswd.service.PasswordService;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
@@ -94,6 +97,7 @@ import org.springframework.jmx.export.annotation.ManagedAttribute;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 // import edu.emory.mathcs.backport.java.util.Arrays;
 
@@ -130,7 +134,7 @@ public class AuthenticationServiceImpl implements AuthenticationService, Applica
     private UserDataService userManager;
     
     @Autowired
-    private PolicyDataService policyDataService;
+    private PolicyDAO policyDao;
     
     @Autowired
     @Qualifier("cryptor")
@@ -362,7 +366,6 @@ public class AuthenticationServiceImpl implements AuthenticationService, Applica
 
         AuthenticationContext ctx = null;
         AbstractLoginModule loginModule = null;
-        Policy authPolicy = null;
         String loginModName = null;
         LoginModuleSelector modSel = new LoginModuleSelector();
 
@@ -381,10 +384,9 @@ public class AuthenticationServiceImpl implements AuthenticationService, Applica
         // Determine which login module to use
         // - get the Authentication policy for the domain
         String authPolicyId = secDomain.getAuthnPolicyId();
-        authPolicy = policyDataService.getPolicy(authPolicyId);
-        PolicyAttribute modType = authPolicy.getAttribute("LOGIN_MOD_TYPE");
-        PolicyAttribute defaultModule = authPolicy
-                .getAttribute("DEFAULT_LOGIN_MOD");
+        final PolicyEntity authPolicy = policyDao.findById(authPolicyId);
+        PolicyAttributeEntity modType = authPolicy.getAttribute("LOGIN_MOD_TYPE");
+        PolicyAttributeEntity defaultModule = authPolicy.getAttribute("DEFAULT_LOGIN_MOD");
         loginModName = defaultModule.getValue1();
         if (modType != null) {
             // modSel.setModuleType( Integer.parseInt(modType.getValue1()));
@@ -450,7 +452,7 @@ public class AuthenticationServiceImpl implements AuthenticationService, Applica
 
             ctx = AuthContextFactory.createContext(authContextClass);
 
-            PolicyAttribute selPolicy = authPolicy
+            PolicyAttributeEntity selPolicy = authPolicy
                     .getAttribute("LOGIN_MODULE_SEL_POLCY");
             if (selPolicy != null && StringUtils.isNotBlank(selPolicy.getValue1())) {
 
@@ -472,17 +474,6 @@ public class AuthenticationServiceImpl implements AuthenticationService, Applica
                     log.error(e);
                 }
 
-            } else {
-                log.debug("retrieving default login module for policy");
-
-                // test code
-                Set<PolicyAttribute> attSet = authPolicy.getPolicyAttributes();
-                Iterator<PolicyAttribute> it = attSet.iterator();
-                /*
-                 * while( it.hasNext() ) { PolicyAttribute attr = it.next();
-                 * System.out.println("Name=" + attr.getName()); }
-                 */
-
             }
 
             if (modSel.getModuleType() == LoginModuleSelector.MODULE_TYPE_LOGIN_MODULE) {
@@ -503,7 +494,7 @@ public class AuthenticationServiceImpl implements AuthenticationService, Applica
                 loginModule.setAuthPolicyId(authPolicyId);
             }
 
-        } catch (Exception ie) {
+        } catch (Throwable ie) {
             log.error(ie.getMessage(), ie);
             // throw (new
             // AuthenticationException(AuthenticationConstants.INTERNAL_ERROR,ie.getMessage(),ie));
@@ -566,6 +557,7 @@ public class AuthenticationServiceImpl implements AuthenticationService, Applica
                 }
                 return authResp;
             } catch (Throwable e) {
+            	log.error("Unknown Exception", e);
                 authResp.setStatus(ResponseStatus.FAILURE);
                 authResp.setAuthErrorCode(AuthenticationConstants.INTERNAL_ERROR);
                 authResp.setAuthErrorMessage(e.getMessage());
@@ -910,7 +902,7 @@ public class AuthenticationServiceImpl implements AuthenticationService, Applica
 
         final SecurityDomainEntity secDomain = securityDomainDAO.findById(sysConfiguration.getDefaultSecurityDomain());
 
-        Policy plcy = policyDataService.getPolicy(secDomain.getAuthnPolicyId());
+        PolicyEntity plcy = policyDao.findById(secDomain.getAuthnPolicyId());
         String attrValue = getPolicyAttribute(plcy.getPolicyAttributes(),
                 "FAILED_AUTH_COUNT");
         String tokenLife = getPolicyAttribute(plcy.getPolicyAttributes(),
@@ -1008,11 +1000,11 @@ public class AuthenticationServiceImpl implements AuthenticationService, Applica
 
     }
 
-    private String getPolicyAttribute(Set<PolicyAttribute> attr, String name) {
+    private String getPolicyAttribute(Set<PolicyAttributeEntity> attr, String name) {
         assert name != null : "Name parameter is null";
 
-        for (PolicyAttribute policyAtr : attr) {
-            if (policyAtr.getName().equalsIgnoreCase(name)) {
+        for (PolicyAttributeEntity policyAtr : attr) {
+        	if(StringUtils.equalsIgnoreCase(policyAtr.getName(), name)) {
                 return policyAtr.getValue1();
             }
         }
@@ -1073,7 +1065,7 @@ public class AuthenticationServiceImpl implements AuthenticationService, Applica
                 sub.getSsoToken().getExpirationTime().getTime(), sub
                         .getSsoToken().getToken(), sub.getUserId());
 
-        authStateDao.saveAuthState(state);
+        //authStateDao.saveAuthState(state);
     }
 
     /*

@@ -53,6 +53,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 import java.util.*;
@@ -168,6 +169,7 @@ public class UserDataWebServiceImpl implements UserDataWebService,MuleContextAwa
 			
 			final UserAttributeEntity entity = userAttributeDozerConverter.convertToEntity(attribute, true);
 			userManager.addAttribute(entity);
+			response.setResponseValue(entity.getId());
 		} catch(BasicDataServiceException e) {
     		response.setErrorCode(e.getCode());
     		response.setStatus(ResponseStatus.FAILURE);
@@ -389,12 +391,6 @@ public class UserDataWebServiceImpl implements UserDataWebService,MuleContextAwa
 	}
 
     @Override
-	public Address getAddressByName(String userId, String addressName) {
-		final AddressEntity adr = userManager.getAddressByName(userId, addressName);
-		return addressDozerConverter.convertToDTO(adr, false);
-	}
-
-    @Override
 	public List<Address> getAddressList(String userId) {
         return this.getAddressListByPage(userId, Integer.MAX_VALUE, 0);
 	}
@@ -417,33 +413,8 @@ public class UserDataWebServiceImpl implements UserDataWebService,MuleContextAwa
 	}
 
     @Override
-	public Address getDefaultAddress(String userId) {
-		final AddressEntity adr = userManager.getDefaultAddress(userId);
-		return addressDozerConverter.convertToDTO(adr, false);
-	}
-
-    @Override
-	public EmailAddress getDefaultEmailAddress(String userId) {
-		final EmailAddressEntity adr = userManager.getDefaultEmailAddress(userId);
-		return emailAddressDozerConverter.convertToDTO(adr, false);
-	}
-
-    @Override
-	public Phone getDefaultPhone(String userId) {
-		final PhoneEntity ph = userManager.getDefaultPhone(userId);
-		return phoneDozerConverter.convertToDTO(ph, false);
-	}
-
-    @Override
 	public EmailAddress getEmailAddressById(String addressId) {
 		final EmailAddressEntity adr = userManager.getEmailAddressById(addressId);
-		return emailAddressDozerConverter.convertToDTO(adr, false);
-	}
-
-    @Override
-	public EmailAddress getEmailAddressByName(String userId,
-			String addressName) {
-		final EmailAddressEntity adr = userManager.getEmailAddressByName(userId, addressName);
 		return emailAddressDozerConverter.convertToDTO(adr, false);
 	}
 
@@ -473,12 +444,6 @@ public class UserDataWebServiceImpl implements UserDataWebService,MuleContextAwa
     @Override
 	public Phone getPhoneById(String addressId) {
 		final PhoneEntity ph = userManager.getPhoneById(addressId);
-		return phoneDozerConverter.convertToDTO(ph, false);
-	}
-
-    @Override
-	public Phone getPhoneByName(String userId, String addressName) {
-		final PhoneEntity ph = userManager.getPhoneByName(userId, addressName);
 		return phoneDozerConverter.convertToDTO(ph, false);
 	}
 
@@ -894,6 +859,9 @@ public class UserDataWebServiceImpl implements UserDataWebService,MuleContextAwa
 			}
 			
 			final PhoneEntity entity = phoneDozerConverter.convertToEntity(val, true);
+			UserEntity user = new UserEntity();
+            user.setUserId(val.getParentId());
+            entity.setParent(user);
 			userManager.updatePhone(entity);
 		} catch(BasicDataServiceException e) {
     		response.setErrorCode(e.getCode());
@@ -1150,4 +1118,12 @@ public class UserDataWebServiceImpl implements UserDataWebService,MuleContextAwa
         }
 
     }
+
+	@Override
+	public List<UserAttribute> getUserAttributes(final String userId) {
+		final UserEntity user = userManager.getUser(userId);
+		final List<UserAttributeEntity> attributes = (user != null && user.getUserAttributes() != null) ? 
+				new ArrayList<UserAttributeEntity>(user.getUserAttributes().values()) : null;
+		return (attributes != null) ? userAttributeDozerConverter.convertToDTOList(attributes, true) : null;
+	}
 }

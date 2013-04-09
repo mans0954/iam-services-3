@@ -27,6 +27,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.PostConstruct;
+import javax.sql.rowset.spi.SyncResolver;
+
 import java.util.*;
 
 /**
@@ -48,7 +50,7 @@ public class KeyManagementServiceImpl implements KeyManagementService {
     private String             cookieKeyPassword;
     private Integer            iterationCount;
     private JksManager         jksManager;
-
+    
     @Autowired
     private Cryptor            cryptor;
     @Autowired
@@ -85,48 +87,27 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         }
     }
 
-//    public void setJksFile(String jksFile) {
-//        this.jksFile = jksFile;
-//    }
-//
-//    public void setJksPassword(String jksPassword) {
-//        this.jksPassword = jksPassword;
-//    }
-//
-//
-//    public void setIterationCount(Integer iterationCount) {
-//        this.iterationCount = iterationCount;
-//    }
-//
-//    @Required
-//    public void setKeyPassword(String keyPassword) {
-//        this.keyPassword = keyPassword;
-//    }
-//
-//    public void setCryptor(Cryptor cryptor) {
-//        this.cryptor = cryptor;
-//    }
-
     @Override
     public byte[] getUserKey(String userId, String keyName) throws EncryptionException {
-        byte[] masterKey = new byte[0];
-        try {
-            masterKey = getPrimaryKey(JksManager.KEYSTORE_ALIAS, this.keyPassword);
-
-            if(masterKey == null || masterKey.length == 0) {
-                throw new IllegalAccessException("Cannot get master key to decrypt user keys");
-            }
-
-            UserKey uk = userKeyDao.getByUserIdKeyName(userId, keyName);
-            if(uk == null) {
-                return null;
-            }
-
-            return jksManager.decodeKey(cryptor.decrypt(masterKey, uk.getKey()));
-        } catch(Exception e) {
-            log.error(e.getMessage(), e);
-            throw new EncryptionException(e);
-        }
+    	
+	    	byte[] masterKey = new byte[0];
+	        try {
+	            masterKey = getPrimaryKey(JksManager.KEYSTORE_ALIAS, this.keyPassword);
+	
+	            if(masterKey == null || masterKey.length == 0) {
+	                throw new IllegalAccessException("Cannot get master key to decrypt user keys");
+	            }
+	
+	            UserKey uk = userKeyDao.getByUserIdKeyName(userId, keyName);
+	            if(uk == null) {
+	                return null;
+	            }
+	
+	            return jksManager.decodeKey(cryptor.decrypt(masterKey, uk.getKey()));
+	        } catch(Exception e) {
+	            log.error(e.getMessage(), e);
+	            throw new EncryptionException(e);
+	        }
     }
 
     @Override

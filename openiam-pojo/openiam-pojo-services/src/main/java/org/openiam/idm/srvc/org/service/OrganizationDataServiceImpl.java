@@ -225,7 +225,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 				dbOrg.setSymbol(entity.getSymbol());
 				entity = dbOrg;
 			}
-			
+
 			if(StringUtils.isNotBlank(entity.getOrgId())) {
 				orgDao.update(entity);
 			} else {

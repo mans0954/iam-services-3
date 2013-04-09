@@ -16,6 +16,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.log4j.Logger;
 import org.openiam.core.dao.lucene.HibernateSearchDao;
+import org.openiam.thread.Sweepable;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -23,9 +24,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jmx.export.annotation.ManagedOperation;
 import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-@ManagedResource(objectName="org.openiam.authorization.manager:name=LuceneReindexService")
-public class LuceneReindexService implements InitializingBean/*, Runnable*/ {
+//@ManagedResource(objectName="org.openiam.authorization.manager:name=LuceneReindexService")
+public class LuceneReindexService implements InitializingBean, Sweepable/*, Runnable*/ {
 
 	private Date lastReindexTimestamp = new Date();
 	private Map<String, HibernateSearchDao> daoMap;
@@ -50,7 +52,8 @@ public class LuceneReindexService implements InitializingBean/*, Runnable*/ {
     }
 	
 	//called by spring
-	@ManagedOperation(description="Reindex Lucene")
+	//@ManagedOperation(description="Reindex Lucene")
+	@Transactional
 	public void sweep() {
 		log.info("Checking if Lucene indecies should be reindexed..");	
 		boolean wasSynchronized = false;

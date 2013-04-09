@@ -5,6 +5,7 @@ import org.apache.log4j.Logger;
 import org.hibernate.*;
 import org.hibernate.criterion.Example;
 import org.hibernate.criterion.Restrictions;
+import org.openiam.idm.searchbeans.SearchBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.orm.hibernate3.HibernateTemplate;
@@ -25,11 +26,6 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
         implements BaseDao<T, PrimaryKey> {
     protected final Logger log = Logger.getLogger(this.getClass());
     protected final Class<T> domainClass;
-
-    @Autowired
-    @Qualifier("sessionFactory")
-    @Deprecated
-    protected SessionFactory sessionFactory;
     
 	@Autowired
 	public void setTemplate(final @Qualifier("hibernateTemplate") HibernateTemplate hibernateTemplate) {
@@ -66,6 +62,16 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
     protected Criteria getExampleCriteria(T t) {
         return getCriteria().add(Example.create(t));
     }
+    
+    protected Criteria getExampleCriteria(final SearchBean searchBean) {
+    	throw new UnsupportedOperationException("Method must be overridden");
+    }
+    
+    @Override
+    public int count(final SearchBean searchBean) {
+    	 return ((Number) getExampleCriteria(searchBean).setProjection(rowCount())
+                 .uniqueResult()).intValue();
+    }
 
     @Override
     public List<T> getByExample(T t, int startAt, int size) {
@@ -79,6 +85,25 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
         }
 
         return (List<T>) criteria.list();
+    }
+    
+    @Override
+    public List<T> getByExample(final SearchBean searchBean) {
+    	return getByExample(searchBean, -1, -1);
+    }
+    
+    @Override
+    public List<T> getByExample(final SearchBean searchBean, int from, int size) {
+    	 final Criteria criteria = getExampleCriteria(searchBean);
+         if (from > -1) {
+             criteria.setFirstResult(from);
+         }
+
+         if (size > -1) {
+             criteria.setMaxResults(size);
+         }
+
+         return (List<T>) criteria.list();
     }
 
     @Override

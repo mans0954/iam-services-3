@@ -54,7 +54,7 @@ public class CategoryDAOImpl extends BaseDaoImpl<CategoryEntity, String>
      * @return
      */
     public int removeGroupList(String catIdList) {
-        Session session = sessionFactory.getCurrentSession();
+        Session session = getSession();
         Query qry = session.createQuery("delete " + domainClass.getName()
                 + " as cat where cat.categoryId in (" + catIdList + ")");
         return qry.executeUpdate();
