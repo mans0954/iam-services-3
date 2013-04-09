@@ -1,5 +1,13 @@
 package org.openiam.idm.srvc.auth.login;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
+
+import javax.jws.WebService;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -30,14 +38,6 @@ import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.jws.WebService;
-
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-
 @Service("loginManager")
 @WebService(endpointInterface = "org.openiam.idm.srvc.auth.login.LoginDataService", targetNamespace = "urn:idm.openiam.org/srvc/auth/service", serviceName = "LoginWebService")
 public class LoginDataServiceImpl implements LoginDataService {
@@ -52,7 +52,7 @@ public class LoginDataServiceImpl implements LoginDataService {
 	protected LoginAttributeDAO loginAttrDao;
 	
 	@Autowired
-	private SecurityDomainDAO securityDomainDAO;
+	private SecurityDomainDAO secDomainDAO;
     
 	@Autowired
 	protected SecurityDomainDataService secDomainService;
@@ -107,7 +107,7 @@ public class LoginDataServiceImpl implements LoginDataService {
             throw new NullPointerException("Login is null");
         }
 
-        SecurityDomainEntity secDomain = securityDomainDAO.findById(secDomainId);
+        SecurityDomainEntity secDomain = secDomainDAO.findById(secDomainId);
         if (secDomain == null) {
             throw new AuthenticationException(
                     AuthenticationConstants.RESULT_INVALID_DOMAIN);
@@ -128,7 +128,7 @@ public class LoginDataServiceImpl implements LoginDataService {
         return loginDao.getRecord(login, sysId, domainId);
     }
 
-    public List<LoginEntity> getLoginByManagedSys(String principalName,
+    public List<LoginEntity> getLoginDetailsByManagedSys(String principalName,
             String managedSysId) {
         if (principalName == null) {
             throw new NullPointerException("principalName is null");
@@ -557,7 +557,7 @@ public class LoginDataServiceImpl implements LoginDataService {
     }
 
 	@Override
-	public LoginEntity getLogin(final String loginId) {
+	public LoginEntity getLoginDetails(final String loginId) {
 		return loginDao.findById(loginId);
 	}
 

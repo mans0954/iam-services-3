@@ -30,7 +30,7 @@ public interface LoginDataService {
     
     public void removeLogin(String domainId, String principal, String managedSysId);
     
-    public LoginEntity getLogin(final String loginId);
+    public LoginEntity getLoginDetails(final String loginId);
 
     public LoginEntity getLogin(String domainId, String principal) throws AuthenticationException;
 
@@ -169,7 +169,7 @@ public interface LoginDataService {
     public int changeIdentityName(String newPrincipalName, String newPassword,
                                   String userId, String managedSysId, String domainId);
 
-    public List<LoginEntity> getLoginByManagedSys(String principalName, String managedSysId);
+    public List<LoginEntity> getLoginDetailsByManagedSys(String principalName, String managedSysId);
 
     LoginEntity getPasswordResetToken(String token);
 

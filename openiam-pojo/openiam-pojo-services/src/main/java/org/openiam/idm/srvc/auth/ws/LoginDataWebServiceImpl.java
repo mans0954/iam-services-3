@@ -173,7 +173,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
     public LoginResponse getPrincipalByManagedSys(String principalName,
                                                   String managedSysId) {
         final LoginResponse resp = new LoginResponse(ResponseStatus.SUCCESS);
-        final List<LoginEntity> lgList = loginDS.getLoginByManagedSys(principalName, managedSysId);
+        final List<LoginEntity> lgList = loginDS.getLoginDetailsByManagedSys(principalName, managedSysId);
 		if (lgList == null ) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
@@ -343,7 +343,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	
 	@Override
 	public Login findById(final String loginId) {
-		final LoginEntity entity = loginDS.getLogin(loginId);
+		final LoginEntity entity = loginDS.getLoginDetails(loginId);
 		return (entity != null) ? loginDozerConverter.convertToDTO(entity, true) : null;
 	}
 

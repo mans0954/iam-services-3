@@ -73,10 +73,10 @@ public class Login implements java.io.Serializable {
     protected String pwdEquivalentToken;
 
     @XmlSchemaType(name = "dateTime")
-    protected Date pwdChanged;
+    private Date pwdChanged;
 
     @XmlSchemaType(name = "dateTime")
-    protected Date pwdExp;
+    private Date pwdExp;
 
     protected int firstTimeLogin;
 
@@ -87,10 +87,10 @@ public class Login implements java.io.Serializable {
     protected String status;
 
     @XmlSchemaType(name = "dateTime")
-    protected Date gracePeriod;
+    private Date gracePeriod;
 
     @XmlSchemaType(name = "dateTime")
-    protected Date createDate;
+    private Date createDate;
 
     protected String createdBy;
 
@@ -99,12 +99,12 @@ public class Login implements java.io.Serializable {
     protected Integer authFailCount = new Integer(0);
 
     @XmlSchemaType(name = "dateTime")
-    protected Date lastAuthAttempt;
+    private Date lastAuthAttempt;
 
     protected String canonicalName;
 
     @XmlSchemaType(name = "dateTime")
-    protected Date lastLogin;
+    private Date lastLogin;
 
     protected Integer isDefault = new Integer(0);
 
@@ -113,14 +113,14 @@ public class Login implements java.io.Serializable {
     protected String lastLoginIP;
 
     @XmlSchemaType(name = "dateTime")
-    protected Date prevLogin;
+    private Date prevLogin;
 
     protected String prevLoginIP;
 
     protected String pswdResetToken;
 
     @XmlSchemaType(name = "dateTime")
-    protected Date pswdResetTokenExp;
+    private Date pswdResetTokenExp;
 
     protected Set<LoginAttribute> loginAttributes = new HashSet<LoginAttribute>(0);
     
