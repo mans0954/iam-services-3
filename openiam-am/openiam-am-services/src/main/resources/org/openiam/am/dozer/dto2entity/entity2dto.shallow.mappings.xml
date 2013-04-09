@@ -107,6 +107,10 @@
             <b>contentProviderId</b>
         </field>
         <field>
+        	<a>contentProvider.name</a>
+        	<b>contentProviderName</b>
+        </field>
+        <field>
             <a>pattern</a>
             <b>pattern</b>
         </field>

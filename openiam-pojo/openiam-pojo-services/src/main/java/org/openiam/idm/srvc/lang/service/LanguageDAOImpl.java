@@ -46,4 +46,11 @@ public class LanguageDAOImpl extends BaseDaoImpl<LanguageEntity, String> impleme
 		criteria.createAlias("locales", "locale").add( Restrictions.eq("locale.locale", locale));
 		return (LanguageEntity)criteria.uniqueResult();
 	}
+
+	@Override
+	public LanguageEntity getByCode(String languageCode) {
+		final Criteria criteria = getCriteria();
+		criteria.add(Restrictions.eq("languageCode", languageCode));
+		return (LanguageEntity)criteria.uniqueResult();
+	}
 }

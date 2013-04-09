@@ -272,8 +272,15 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 		LanguageEntity entity = null;
 		if(StringUtils.isNotBlank(request.getLanguageId())) {
 			entity = languageDAO.findById(request.getLanguageId());
-		} else if(StringUtils.isNotBlank(request.getLocaleName())) {
-			entity = languageDAO.getByLocale(request.getLocaleName());
+		} else {
+			if(StringUtils.isNotBlank(request.getLanguageCode())) {
+				entity = languageDAO.getByCode(request.getLanguageCode());
+			}
+			
+			if(entity == null && StringUtils.isNotBlank(request.getLocaleName())) {
+				entity = languageDAO.getByLocale(request.getLocaleName());
+			}
+				
 		}
 		return entity;
 	}

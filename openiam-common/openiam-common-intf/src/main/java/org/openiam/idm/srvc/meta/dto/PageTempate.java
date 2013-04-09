@@ -46,9 +46,11 @@ public class PageTempate implements Serializable{
 	 * Called only by JSTL
 	 * @return
 	 */
+	/*
 	public List<PageElement> getElements() {
 		return (pageElements != null) ? new ArrayList<PageElement>(pageElements) : null;
 	}
+	*/
 
 	public TreeSet<PageElement> getPageElements() {
 		return pageElements;

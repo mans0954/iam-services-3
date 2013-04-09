@@ -232,8 +232,8 @@ public class TestPageTemplateService extends AbstractTestNGSpringContextTests {
 		request.setPatternId(pattern.getId());
 		final PageTempate template = templateWebService.getTemplate(request);
 		Assert.assertNotNull(template);
-		if(CollectionUtils.isNotEmpty(template.getElements())) {
-			for(final PageElement element : template.getElements()) {
+		if(CollectionUtils.isNotEmpty(template.getPageElements())) {
+			for(final PageElement element : template.getPageElements()) {
 				final MetadataElement metaElement = getElement(element.getElementId());
 				
 				final String displayName = element.getDisplayName();

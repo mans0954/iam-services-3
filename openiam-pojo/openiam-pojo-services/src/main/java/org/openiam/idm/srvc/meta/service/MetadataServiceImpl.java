@@ -177,25 +177,12 @@ public class MetadataServiceImpl implements MetadataService {
 		transientMap = (transientMap != null) ? transientMap : new HashMap<String, LanguageMappingEntity>();
 		final Map<String, LanguageMappingEntity> retVal = (persistentMap != null) ? persistentMap : new HashMap<String, LanguageMappingEntity>();
 		
-		/* remove stale entries */
-		for(final Iterator<Entry<String, LanguageMappingEntity>> it = retVal.entrySet().iterator(); it.hasNext();) {
-			final Entry<String, LanguageMappingEntity> persistentEntry = it.next();
-			final LanguageMappingEntity persistentEntity = persistentEntry.getValue();
-			boolean found = false;
-			for(final LanguageMappingEntity transientEntry : transientMap.values()) {
-				if(StringUtils.equals(transientEntry.getLanguageId(), persistentEntity.getLanguageId())) {
-					found = true;
-					break;
-				}
-			}
-			if(!found) {
-				/*
-				if(!deleteMap.containsKey(persistentEntity.getReferenceType())) {
-					deleteMap.put(persistentEntity.getReferenceType(), new HashSet<String>());
-				}
-				deleteMap.get(persistentEntity.getReferenceType()).add(persistentEntity.getReferenceId());
+		/* remove empty strings */
+		for(final Iterator<Entry<String, LanguageMappingEntity>> it = transientMap.entrySet().iterator(); it.hasNext();) {
+			final Entry<String, LanguageMappingEntity> entry = it.next();
+			final LanguageMappingEntity entity = entry.getValue();
+			if(StringUtils.isBlank(entity.getValue())) {
 				it.remove();
-				*/
 			}
 		}
 		
@@ -212,9 +199,11 @@ public class MetadataServiceImpl implements MetadataService {
 		for(final LanguageMappingEntity transientEntry : transientMap.values()) {
 			boolean found = false;
 			for(final LanguageMappingEntity persistentEntry : retVal.values()) {
-				if(StringUtils.equals(transientEntry.getLanguageId(), persistentEntry.getLanguageId())) {
-					found = true;
-					break;
+				if(StringUtils.isNotEmpty(transientEntry.getValue())) {
+					if(StringUtils.equals(transientEntry.getLanguageId(), persistentEntry.getLanguageId())) {
+						found = true;
+						break;
+					}
 				}
 			}
 			if(!found) {
