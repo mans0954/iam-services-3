@@ -3,6 +3,8 @@ package org.openiam.idm.srvc.user.service;
 // Generated Jun 12, 2007 10:46:15 PM by Hibernate Tools 3.2.0.beta8
 
 import java.util.List;
+import java.util.Set;
+
 import javax.naming.InitialContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -22,6 +24,9 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Repository("userAttributeDAO")
 public class UserAttributeDAOImpl extends BaseDaoImpl<UserAttributeEntity, String> implements UserAttributeDAO {
+	
+	
+	
     @Override
     protected String getPKfieldName() {
         return "id";
@@ -37,5 +42,11 @@ public class UserAttributeDAOImpl extends BaseDaoImpl<UserAttributeEntity, Strin
 		qry.executeUpdate();
 	}
 
+	@Override
+	public List<UserAttributeEntity> findUserAttributes(final String userId, final Set<String> metadataElementIds) {
+		final Criteria criteria = getCriteria().add(Restrictions.eq("userId", userId));
+		criteria.add(Restrictions.in("element.id", metadataElementIds));
+		return criteria.list();
+	}
 }
 

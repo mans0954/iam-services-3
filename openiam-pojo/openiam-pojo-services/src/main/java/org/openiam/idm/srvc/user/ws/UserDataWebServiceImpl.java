@@ -39,6 +39,9 @@ import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
+import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
+import org.openiam.idm.srvc.meta.exception.PageTemplateException;
+import org.openiam.idm.srvc.meta.service.MetadataElementTemplateService;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
@@ -51,6 +54,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import javax.jws.WebMethod;
@@ -95,6 +99,9 @@ public class UserDataWebServiceImpl implements UserDataWebService,MuleContextAwa
     
     @Autowired
     private PhoneDozerConverter phoneDozerConverter;
+    
+    @Autowired
+    private MetadataElementTemplateService pageTemplateService;
 
     private MuleContext muleContext;
 
@@ -1125,5 +1132,31 @@ public class UserDataWebServiceImpl implements UserDataWebService,MuleContextAwa
 		final List<UserAttributeEntity> attributes = (user != null && user.getUserAttributes() != null) ? 
 				new ArrayList<UserAttributeEntity>(user.getUserAttributes().values()) : null;
 		return (attributes != null) ? userAttributeDozerConverter.convertToDTOList(attributes, true) : null;
+	}
+
+	@Override
+	@Transactional
+	public SaveTemplateProfileResponse saveUserProfile(UserProfileRequestModel request) {
+		 final SaveTemplateProfileResponse response = new SaveTemplateProfileResponse(ResponseStatus.SUCCESS);
+	        try {
+	            if(request == null || request.getUser() == null) {
+	                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+	            }
+	            
+	            pageTemplateService.saveTemplate(request);
+	        } catch(PageTemplateException e) {
+	        	response.setCurrentValue(e.getCurrentValue());
+	        	response.setElementName(e.getElementName());
+	        	response.setErrorCode(e.getCode());
+	            response.setStatus(ResponseStatus.FAILURE);
+	        } catch(BasicDataServiceException e) {
+	            response.setErrorCode(e.getCode());
+	            response.setStatus(ResponseStatus.FAILURE);
+	        } catch(Throwable e) {
+	            log.error("Can't perform operation", e);
+	            response.setErrorText(e.getMessage());
+	            response.setStatus(ResponseStatus.FAILURE);
+	        }
+	        return response;
 	}
 }
