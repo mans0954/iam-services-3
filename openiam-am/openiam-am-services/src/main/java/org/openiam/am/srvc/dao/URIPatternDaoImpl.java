@@ -3,6 +3,7 @@ package org.openiam.am.srvc.dao;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
+import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.core.dao.BaseDaoImpl;
@@ -28,7 +29,9 @@ public class URIPatternDaoImpl extends BaseDaoImpl<URIPatternEntity, String> imp
             }
 
             if(entity.getPattern()!=null && StringUtils.isNotEmpty(entity.getPattern())){
-                criteria.add(Restrictions.eq("pattern", entity.getPattern()));
+                MatchMode matchMode = MatchMode.ANYWHERE;
+                criteria.add(Restrictions.ilike("pattern", entity.getPattern(), MatchMode.ANYWHERE));
+//                criteria.add(Restrictions.eq("pattern", entity.getPattern()));
             }
         }
         return criteria;

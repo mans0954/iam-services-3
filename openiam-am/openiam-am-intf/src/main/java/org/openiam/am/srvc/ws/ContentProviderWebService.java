@@ -2,6 +2,7 @@ package org.openiam.am.srvc.ws;
 
 import org.openiam.am.srvc.dto.*;
 import org.openiam.am.srvc.searchbeans.ContentProviderSearchBean;
+import org.openiam.am.srvc.searchbeans.URIPatternSearchBean;
 import org.openiam.base.ws.Response;
 
 import javax.jws.WebMethod;
@@ -75,12 +76,20 @@ public interface ContentProviderWebService {
 
 
     @WebMethod
+    @Deprecated
     public  List<URIPattern> getUriPatternsForProvider(@WebParam(name = "providerId", targetNamespace = "") String providerId,
                                                        @WebParam(name = "from", targetNamespace = "") Integer from,
                                                        @WebParam(name = "size", targetNamespace = "") Integer size);
 
     @WebMethod
+    @Deprecated
     public  Integer getNumOfUriPatternsForProvider(@WebParam(name = "providerId", targetNamespace = "") String providerId);
+    @WebMethod
+    public List<URIPattern> findUriPatterns(@WebParam(name = "searchBean", targetNamespace = "") URIPatternSearchBean searchBean,
+                                            @WebParam(name = "from", targetNamespace = "") Integer from,
+                                            @WebParam(name = "size", targetNamespace = "") Integer size);
+    @WebMethod
+    public Integer getNumOfUriPatterns(@WebParam(name = "searchBean", targetNamespace = "") URIPatternSearchBean searchBean);
 
     @WebMethod
     public URIPattern getURIPattern(@WebParam(name = "patternId", targetNamespace = "") String patternId);
