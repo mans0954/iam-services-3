@@ -1143,6 +1143,8 @@ public class UserDataWebServiceImpl implements UserDataWebService,MuleContextAwa
 	                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 	            }
 	            
+	            final UserEntity userEntity = userDozerConverter.convertToEntity(request.getUser(), true);
+	            userManager.saveUserInfo(userEntity, null);
 	            pageTemplateService.saveTemplate(request);
 	        } catch(PageTemplateException e) {
 	        	response.setCurrentValue(e.getCurrentValue());
