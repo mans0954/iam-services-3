@@ -567,7 +567,7 @@ public class UserMgr implements UserDataService {
 
         if(entity!=null){
             entity.setIsActive(val.getIsActive());
-            entity.setBldgNumber(val.getName());
+            entity.setBldgNumber(val.getBldgNumber());
             entity.setAddress1(val.getAddress1());
             entity.setAddress2(val.getAddress2());
             entity.setCity(val.getCity());

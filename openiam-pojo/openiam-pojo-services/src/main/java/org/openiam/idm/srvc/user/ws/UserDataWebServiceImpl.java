@@ -21,6 +21,8 @@
  */
 package org.openiam.idm.srvc.user.ws;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.mule.api.MuleContext;
 import org.mule.api.MuleException;
@@ -55,7 +57,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
@@ -1144,8 +1145,44 @@ public class UserDataWebServiceImpl implements UserDataWebService,MuleContextAwa
 	            }
 	            
 	            final UserEntity userEntity = userDozerConverter.convertToEntity(request.getUser(), true);
-	            userManager.saveUserInfo(userEntity, null);
 	            pageTemplateService.saveTemplate(request);
+	            userManager.saveUserInfo(userEntity, null);
+	            
+	            final List<EmailAddressEntity> emailList = emailAddressDozerConverter.convertToEntityList(request.getEmails(), true);
+	            if(CollectionUtils.isNotEmpty(emailList)) {
+	            	for(final EmailAddressEntity email : emailList) {
+	            		email.setParent(userEntity);
+	            		if(StringUtils.isBlank(email.getEmailId())) {
+	            			userManager.addEmailAddress(email);
+	            		} else {
+	            			userManager.updateEmailAddress(email);
+	            		}
+	            	}
+	            }
+	            
+	            final List<AddressEntity> addressList = addressDozerConverter.convertToEntityList(request.getAddresses(), true);
+	            if(CollectionUtils.isNotEmpty(addressList)) {
+	            	for(final AddressEntity address : addressList) {
+	            		address.setParent(userEntity);
+	            		if(StringUtils.isBlank(address.getAddressId())) {
+	            			userManager.addAddress(address);
+	            		} else {
+	            			userManager.updateAddress(address);
+	            		}
+	            	}
+	            }
+	            
+	            final List<PhoneEntity> phoneList = phoneDozerConverter.convertToEntityList(request.getPhones(), true);
+	            if(CollectionUtils.isNotEmpty(phoneList)) {
+	            	for(final PhoneEntity phone : phoneList) {
+	            		phone.setParent(userEntity);
+	            		if(StringUtils.isBlank(phone.getPhoneId())) {
+	            			userManager.addPhone(phone);
+	            		} else {
+	            			userManager.updatePhone(phone);
+	            		}
+	            	}
+	            }
 	        } catch(PageTemplateException e) {
 	        	response.setCurrentValue(e.getCurrentValue());
 	        	response.setElementName(e.getElementName());
