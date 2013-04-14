@@ -1145,10 +1145,9 @@ public class UserDataWebServiceImpl implements UserDataWebService,MuleContextAwa
 	            }
 	            
 	            final UserEntity userEntity = userDozerConverter.convertToEntity(request.getUser(), true);
-	            pageTemplateService.saveTemplate(request);
-	            userManager.saveUserInfo(userEntity, null);
+	            final UserEntity dbEntity = userManager.getUser(request.getUser().getUserId());
 	            
-	            final List<EmailAddressEntity> emailList = emailAddressDozerConverter.convertToEntityList(request.getEmails(), true);
+	            final List<EmailAddressEntity> emailList = emailAddressDozerConverter.convertToEntityList(request.getEmails(), true);	            
 	            if(CollectionUtils.isNotEmpty(emailList)) {
 	            	for(final EmailAddressEntity email : emailList) {
 	            		email.setParent(userEntity);
@@ -1156,6 +1155,25 @@ public class UserDataWebServiceImpl implements UserDataWebService,MuleContextAwa
 	            			userManager.addEmailAddress(email);
 	            		} else {
 	            			userManager.updateEmailAddress(email);
+	            		}
+	            	}
+	            }
+	            
+	            /* figure out the emails to delete */
+	            if(CollectionUtils.isNotEmpty(dbEntity.getEmailAddresses())) {
+	            	for(final Iterator<EmailAddressEntity> it = dbEntity.getEmailAddresses().iterator(); it.hasNext();) {
+	            		final EmailAddressEntity dbEmail = it.next();
+	            		boolean contains = false;
+	            		if(CollectionUtils.isNotEmpty(emailList)) {
+	            			for(final EmailAddressEntity email : emailList) {
+	            				if(StringUtils.equals(email.getEmailId(), dbEmail.getEmailId())) {
+	            					contains = true;
+	            				}
+	            			}
+	            		}
+	            		
+	            		if(!contains) {
+	            			it.remove();
 	            		}
 	            	}
 	            }
@@ -1172,6 +1190,25 @@ public class UserDataWebServiceImpl implements UserDataWebService,MuleContextAwa
 	            	}
 	            }
 	            
+	            /* figure out the emails to delete */
+	            if(CollectionUtils.isNotEmpty(dbEntity.getAddresses())) {
+	            	for(final Iterator<AddressEntity> it = dbEntity.getAddresses().iterator(); it.hasNext();) {
+	            		final AddressEntity dbAddress = it.next();
+	            		boolean contains = false;
+	            		if(CollectionUtils.isNotEmpty(addressList)) {
+	            			for(final AddressEntity address : addressList) {
+	            				if(StringUtils.equals(address.getAddressId(), dbAddress.getAddressId())) {
+	            					contains = true;
+	            				}
+	            			}
+	            		}
+	            		
+	            		if(!contains) {
+	            			it.remove();
+	            		}
+	            	}
+	            }
+	            
 	            final List<PhoneEntity> phoneList = phoneDozerConverter.convertToEntityList(request.getPhones(), true);
 	            if(CollectionUtils.isNotEmpty(phoneList)) {
 	            	for(final PhoneEntity phone : phoneList) {
@@ -1183,6 +1220,29 @@ public class UserDataWebServiceImpl implements UserDataWebService,MuleContextAwa
 	            		}
 	            	}
 	            }
+	            
+	            /* figure out the phones to delete */
+	            if(CollectionUtils.isNotEmpty(dbEntity.getPhones())) {
+	            	for(final Iterator<PhoneEntity> it = dbEntity.getPhones().iterator(); it.hasNext();) {
+	            		final PhoneEntity dbPhone = it.next();
+	            		boolean contains = false;
+	            		if(CollectionUtils.isNotEmpty(phoneList)) {
+	            			for(final PhoneEntity phone : phoneList) {
+	            				if(StringUtils.equals(phone.getPhoneId(), dbPhone.getPhoneId())) {
+	            					contains = true;
+	            				}
+	            			}
+	            		}
+	            		
+	            		if(!contains) {
+	            			it.remove();
+	            		}
+	            	}
+	            }
+	            
+	            pageTemplateService.saveTemplate(request);
+	            userManager.mergeUserFields(dbEntity, userEntity);
+	            userManager.updateUser(dbEntity);
 	        } catch(PageTemplateException e) {
 	        	response.setCurrentValue(e.getCurrentValue());
 	        	response.setElementName(e.getElementName());

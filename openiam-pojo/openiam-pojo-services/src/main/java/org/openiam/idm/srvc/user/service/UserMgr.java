@@ -1084,7 +1084,7 @@ public class UserMgr implements UserDataService {
         return phoneDao.count(phoneSearchBeanConverter.convert(searchBean));
     }
 
-    private void mergeUserFields(UserEntity origUserEntity, UserEntity newUserEntity){
+    public void mergeUserFields(UserEntity origUserEntity, UserEntity newUserEntity){
         if (newUserEntity.getBirthdate() != null) {
             if (newUserEntity.getBirthdate().equals(BaseConstants.NULL_DATE)) {
                 origUserEntity.setBirthdate(null);

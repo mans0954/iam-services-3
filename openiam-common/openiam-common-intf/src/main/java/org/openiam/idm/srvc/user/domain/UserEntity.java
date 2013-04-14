@@ -11,6 +11,7 @@ import javax.persistence.*;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.solr.analysis.LowerCaseFilterFactory;
 import org.apache.solr.analysis.StandardTokenizerFactory;
 import org.hibernate.annotations.Fetch;

@@ -48,7 +48,7 @@ public class AddressEntity {
     @Type(type = "yes_no")
     private boolean isDefault = false;
 
-    @Column(name = "BLDG_NUM", length = 45)
+    @Column(name = "BLDG_NUM", length = 100)
     private String bldgNumber;
 
     @Column(name = "STREET_DIRECTION", length = 20)
@@ -78,10 +78,10 @@ public class AddressEntity {
     @Column(name = "ADDRESS7", length = 45)
     private String address7;
 
-    @Column(name = "CITY", length = 45)
+    @Column(name = "CITY", length = 100)
     private String city;
 
-    @Column(name = "COUNTRY", length = 30)
+    @Column(name = "COUNTRY", length = 100)
     private String country;
 
     @Column(name = "DESCRIPTION", length = 100)
@@ -92,13 +92,13 @@ public class AddressEntity {
     @Field(name="parent", bridge=@FieldBridge(impl=UserBridge.class), store=Store.YES)
     private UserEntity parent;
 
-    @Column(name = "POSTAL_CD", length = 10)
+    @Column(name = "POSTAL_CD", length = 100)
     private String postalCd;
 
-    @Column(name = "STATE", length = 15)
+    @Column(name = "STATE", length = 100)
     private String state;
 
-    @Column(name = "NAME", length = 40)
+    @Column(name = "NAME", length = 100)
     private String name;
     
     @Column(name = "LAST_UPDATE", length = 19)
