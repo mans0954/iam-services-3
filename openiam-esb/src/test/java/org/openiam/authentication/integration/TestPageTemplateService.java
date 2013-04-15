@@ -133,7 +133,7 @@ public class TestPageTemplateService extends AbstractTestNGSpringContextTests {
 				 final MetadataElement element = new MetadataElement();
 				 element.setAttributeName(RandomStringUtils.randomAlphanumeric(4));
 				 element.setMetadataTypeId(type.getMetadataTypeId());
-				 element.setSelfEditable(true);
+				 element.setIsSelfEditable(true);
 				 element.setStaticDefaultValue(RandomStringUtils.randomAlphabetic(4));
 				 element.setDefaultValueLanguageMap(getLanguageMap(languageList));
 				 element.setLanguageMap(getLanguageMap(languageList));

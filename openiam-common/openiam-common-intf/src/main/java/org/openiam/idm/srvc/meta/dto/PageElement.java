@@ -1,20 +1,15 @@
 package org.openiam.idm.srvc.meta.dto;
 
+import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlType;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
-import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
-import org.openiam.idm.srvc.meta.dto.MetadataElement;
-import org.openiam.idm.srvc.meta.dto.MetadataType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "PageElement", 
@@ -54,7 +49,7 @@ public class PageElement implements Serializable {
 		this.elementId = element.getId();
 		this.attributeName = element.getAttributeName();
 		this.required = element.isRequired();
-		this.editable = element.isSelfEditable();
+		this.editable = element.getIsSelfEditable();
 	}
 
 	public Integer getOrder() {
