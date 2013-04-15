@@ -155,6 +155,7 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 							final String metaElementId = id.getMetadataElementId();
 							final MetadataElementPageTemplateXrefEntity dbXref = xrefDAO.findById(id);
 							if(dbXref != null) {
+								dbXref.setDisplayOrder(xref.getDisplayOrder());
 								renewedXrefs.add(dbXref);
 							} else {
 								xref.setTemplate(entity);
