@@ -49,6 +49,9 @@ public class MetadataValidValueEntity implements Serializable {
 	
 	@Column(name="UI_VALUE", length=200)
 	private String uiValue;
+
+    @Column(name="DISPLAY_ORDER")
+    private Integer displayOrder;
 	
 	@OneToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY, mappedBy="referenceId")
     //@JoinColumn(name = "REFERENCE_ID", referencedColumnName="ID")
@@ -83,7 +86,15 @@ public class MetadataValidValueEntity implements Serializable {
 		this.uiValue = uiValue;
 	}
 
-	public Map<String, LanguageMappingEntity> getLanguageMap() {
+    public Integer getDisplayOrder() {
+        return displayOrder;
+    }
+
+    public void setDisplayOrder(Integer displayOrder) {
+        this.displayOrder = displayOrder;
+    }
+
+    public Map<String, LanguageMappingEntity> getLanguageMap() {
 		return languageMap;
 	}
 
