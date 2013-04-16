@@ -1,5 +1,7 @@
 package org.openiam.idm.srvc.meta.dto;
 
+import org.openiam.idm.srvc.meta.comparator.PageElementComparator;
+import org.openiam.idm.srvc.meta.comparator.PageElementValidValueComparator;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -10,6 +12,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "PageElement", 
@@ -36,7 +39,7 @@ public class PageElement implements Serializable {
 	private boolean required;
 	private boolean editable;
 	
-	private List<PageElementValidValue> validValues;
+	private TreeSet<PageElementValidValue> validValues =  new TreeSet<PageElementValidValue>(PageElementValidValueComparator.INSTANCE);
 	private Set<PageElementValue> userValues;
 	
 	public PageElement() {
@@ -133,18 +136,21 @@ public class PageElement implements Serializable {
 		this.editable = editable;
 	}
 
-	public List<PageElementValidValue> getValidValues() {
+	public Set<PageElementValidValue> getValidValues() {
 		return validValues;
 	}
 
 	public void setValidValues(List<PageElementValidValue> validValues) {
-		this.validValues = validValues;
+		this.validValues = new TreeSet<PageElementValidValue>(PageElementValidValueComparator.INSTANCE);
+		if(validValues != null) {
+			this.validValues.addAll(validValues);
+		}
 	}
 	
 	public void addValidValue(final PageElementValidValue validValue) {
 		if(validValue != null) {
 			if(this.validValues == null) {
-				this.validValues = new LinkedList<PageElementValidValue>();
+				this.validValues = new TreeSet<PageElementValidValue>(PageElementValidValueComparator.INSTANCE);
 			}
 			this.validValues.add(validValue);
 		}

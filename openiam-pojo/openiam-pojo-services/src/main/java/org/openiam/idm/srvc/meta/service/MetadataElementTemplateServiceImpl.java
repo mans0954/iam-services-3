@@ -243,13 +243,17 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 								if(targetLanguage != null) {
 									if(targetLanguage != null) {
 										pageElement.setDisplayName(getLanguageValue(targetLanguage, elementEntity.getLanguageMap()));
-										pageElement.setDefaultValue(getLanguageValue(targetLanguage, elementEntity.getDefaultValueLanguageMap()));
+										pageElement.setDefaultValue(elementEntity.getStaticDefaultValue());
+										if(StringUtils.isBlank(pageElement.getDefaultValue())) {
+											pageElement.setDefaultValue(getLanguageValue(targetLanguage, elementEntity.getDefaultValueLanguageMap()));
+										}
 										if(CollectionUtils.isNotEmpty(elementEntity.getValidValues())) {
 											for(final MetadataValidValueEntity validValueEntity : elementEntity.getValidValues()) {
 												final String validValueId = validValueEntity.getId();
 												final String value = validValueEntity.getUiValue();
 												final String displayName = getLanguageValue(targetLanguage, validValueEntity.getLanguageMap());
-												pageElement.addValidValue(new PageElementValidValue(validValueId, value, displayName));
+												final Integer displayOrder = validValueEntity.getDisplayOrder();
+												pageElement.addValidValue(new PageElementValidValue(validValueId, value, displayName, displayOrder));
 											}
 										}
 									}
