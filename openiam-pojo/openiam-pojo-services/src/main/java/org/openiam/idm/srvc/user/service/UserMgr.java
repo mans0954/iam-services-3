@@ -567,7 +567,7 @@ public class UserMgr implements UserDataService {
 
         if(entity!=null){
             entity.setIsActive(val.getIsActive());
-            entity.setBldgNumber(val.getName());
+            entity.setBldgNumber(val.getBldgNumber());
             entity.setAddress1(val.getAddress1());
             entity.setAddress2(val.getAddress2());
             entity.setCity(val.getCity());
@@ -1084,7 +1084,7 @@ public class UserMgr implements UserDataService {
         return phoneDao.count(phoneSearchBeanConverter.convert(searchBean));
     }
 
-    private void mergeUserFields(UserEntity origUserEntity, UserEntity newUserEntity){
+    public void mergeUserFields(UserEntity origUserEntity, UserEntity newUserEntity){
         if (newUserEntity.getBirthdate() != null) {
             if (newUserEntity.getBirthdate().equals(BaseConstants.NULL_DATE)) {
                 origUserEntity.setBirthdate(null);

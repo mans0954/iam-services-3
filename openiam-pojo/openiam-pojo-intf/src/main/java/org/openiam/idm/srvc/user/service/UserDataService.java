@@ -199,4 +199,6 @@ public interface UserDataService {
 
     public Integer getNumOfAddressesForUser(String userId);
     public Integer getNumOfPhonesForUser(String userId);
+    
+    public void mergeUserFields(UserEntity origUserEntity, UserEntity newUserEntity);
 }

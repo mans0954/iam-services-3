@@ -443,7 +443,7 @@ public class PasswordServiceImpl implements PasswordService {
         		for (PasswordHistoryEntity hist : historyList) {
         			String pwd = hist.getPassword();
         			try {
-        				LoginEntity login = loginManager.getLogin(hist.getLoginId());
+        				LoginEntity login = loginManager.getLoginDetails(hist.getLoginId());
         				decrypt = cryptor.decrypt(keyManagementService.getUserKey(
         						login.getUserId(), KeyName.password.name()), pwd);
         			} catch (Exception e) {

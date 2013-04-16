@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.meta.dto;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -46,16 +47,20 @@ public class PageTempate implements Serializable{
 	 * Called only by JSTL
 	 * @return
 	 */
+	/*
 	public List<PageElement> getElements() {
 		return (pageElements != null) ? new ArrayList<PageElement>(pageElements) : null;
 	}
+	*/
 
 	public TreeSet<PageElement> getPageElements() {
 		return pageElements;
 	}
 
-	public void setPageElements(TreeSet<PageElement> pageElements) {
-		this.pageElements = pageElements;
+	public void setPageElements(Collection<PageElement> pageElements) {
+		final TreeSet<PageElement> treeSet = new TreeSet<PageElement>(PageElementComparator.INSTANCE);
+		treeSet.addAll(pageElements);
+		this.pageElements = treeSet;
 	}
 
 	@Override

@@ -5,6 +5,7 @@ import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
+import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
 import org.openiam.idm.srvc.user.dto.*;
 
 import javax.jws.WebMethod;
@@ -499,4 +500,7 @@ public interface UserDataWebService {
 
     @WebMethod
     public Integer getNumOfPhonesForUser(@WebParam(name = "userId", targetNamespace = "") String userId);
+    
+    @WebMethod
+    public SaveTemplateProfileResponse saveUserProfile(@WebParam(name = "userId", targetNamespace = "") final UserProfileRequestModel request);
 }

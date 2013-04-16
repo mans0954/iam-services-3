@@ -57,7 +57,7 @@ public class EmailAddressEntity {
     @Field(name="parent", bridge=@FieldBridge(impl=UserBridge.class), store=Store.YES)
     private UserEntity parent;
 
-    @Column(name = "NAME", length = 40)
+    @Column(name = "NAME", length = 100)
     private String name;
     
     @Column(name = "LAST_UPDATE", length = 19)

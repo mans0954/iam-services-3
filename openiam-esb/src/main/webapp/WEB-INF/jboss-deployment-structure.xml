@@ -4,12 +4,14 @@
     <exclusions>
         <module name="org.apache" />
         <module name="org.hibernate" />
+        <module name="org.apache.cxf" />
     </exclusions>
     <!-- This allows you to define additional dependencies, it is the same as using the Dependencies: manifest attribute -->
     <dependencies>
-      <module name="openiam.conf" />
+<!--       <module name="openiam.conf" /> -->
       <module name="com.mysql" />
-    </dependencies>
+      <module name="org.bouncycastle" slot="main" export="true" />
+      </dependencies>
   </deployment>
 
 </jboss-deployment-structure>

@@ -177,25 +177,12 @@ public class MetadataServiceImpl implements MetadataService {
 		transientMap = (transientMap != null) ? transientMap : new HashMap<String, LanguageMappingEntity>();
 		final Map<String, LanguageMappingEntity> retVal = (persistentMap != null) ? persistentMap : new HashMap<String, LanguageMappingEntity>();
 		
-		/* remove stale entries */
-		for(final Iterator<Entry<String, LanguageMappingEntity>> it = retVal.entrySet().iterator(); it.hasNext();) {
-			final Entry<String, LanguageMappingEntity> persistentEntry = it.next();
-			final LanguageMappingEntity persistentEntity = persistentEntry.getValue();
-			boolean found = false;
-			for(final LanguageMappingEntity transientEntry : transientMap.values()) {
-				if(StringUtils.equals(transientEntry.getLanguageId(), persistentEntity.getLanguageId())) {
-					found = true;
-					break;
-				}
-			}
-			if(!found) {
-				/*
-				if(!deleteMap.containsKey(persistentEntity.getReferenceType())) {
-					deleteMap.put(persistentEntity.getReferenceType(), new HashSet<String>());
-				}
-				deleteMap.get(persistentEntity.getReferenceType()).add(persistentEntity.getReferenceId());
+		/* remove empty strings */
+		for(final Iterator<Entry<String, LanguageMappingEntity>> it = transientMap.entrySet().iterator(); it.hasNext();) {
+			final Entry<String, LanguageMappingEntity> entry = it.next();
+			final LanguageMappingEntity entity = entry.getValue();
+			if(StringUtils.isBlank(entity.getValue())) {
 				it.remove();
-				*/
 			}
 		}
 		
@@ -208,13 +195,31 @@ public class MetadataServiceImpl implements MetadataService {
 			}
 		}
 		
+		/* remove old entries */
+		for(final Iterator<Entry<String, LanguageMappingEntity>> it = retVal.entrySet().iterator(); it.hasNext();) {
+			final Entry<String, LanguageMappingEntity> entry = it.next();
+			final LanguageMappingEntity persistentEntry = entry.getValue();
+			boolean contains = false;
+			for(final LanguageMappingEntity transientEntry : transientMap.values()) {
+				if(StringUtils.equals(transientEntry.getLanguageId(), persistentEntry.getLanguageId())) {
+					contains = true;
+				}
+			}
+			
+			if(!contains) {
+				it.remove();
+			}
+		}
+		
 		/* add new entries */
 		for(final LanguageMappingEntity transientEntry : transientMap.values()) {
 			boolean found = false;
 			for(final LanguageMappingEntity persistentEntry : retVal.values()) {
-				if(StringUtils.equals(transientEntry.getLanguageId(), persistentEntry.getLanguageId())) {
-					found = true;
-					break;
+				if(StringUtils.isNotEmpty(transientEntry.getValue())) {
+					if(StringUtils.equals(transientEntry.getLanguageId(), persistentEntry.getLanguageId())) {
+						found = true;
+						break;
+					}
 				}
 			}
 			if(!found) {
@@ -266,6 +271,16 @@ public class MetadataServiceImpl implements MetadataService {
 			
 				if(!exists) {
 					it.remove();
+				}
+			}
+		}
+		
+		/* now that you have the valid values to persist, update the underlying collections */
+		for(final Iterator<MetadataValidValueEntity> it = retval.iterator(); it.hasNext();) {
+			final MetadataValidValueEntity persistentEntity = it.next();
+			for(final MetadataValidValueEntity transientEntity : transientSet) {
+				if(StringUtils.equals(persistentEntity.getId(), transientEntity.getId())) {
+					mergeLanguageMaps(persistentEntity.getLanguageMap(), transientEntity.getLanguageMap());
 				}
 			}
 		}
@@ -326,6 +341,7 @@ public class MetadataServiceImpl implements MetadataService {
 	public void deleteMetdataElement(String id) {
 		final MetadataElementEntity entity = metadataElementDao.findById(id);
 		if(entity != null) {
+			/*
 			final Map<String, Set<String>> languageDeleteMap = new HashMap<String, Set<String>>();
 			if(CollectionUtils.isNotEmpty(entity.getValidValues())) {
 				for(final MetadataValidValueEntity validValue : entity.getValidValues()) {
@@ -338,7 +354,7 @@ public class MetadataServiceImpl implements MetadataService {
 			for(final String referenceType : languageDeleteMap.keySet()) {
 				languageMappingDAO.deleteByReferenceTypeAndIds(languageDeleteMap.get(referenceType), referenceType);
 			}
-			
+			*/
 			metadataElementDao.delete(entity);
 		}
 	}

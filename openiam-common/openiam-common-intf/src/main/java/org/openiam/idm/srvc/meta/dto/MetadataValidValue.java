@@ -1,16 +1,14 @@
 package org.openiam.idm.srvc.meta.dto;
 
-import java.io.Serializable;
-import java.util.Map;
-import java.util.Set;
+import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.lang.dto.LanguageMapping;
+import org.openiam.idm.srvc.meta.domain.MetadataValidValueEntity;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
-
-import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.idm.srvc.lang.dto.LanguageMapping;
-import org.openiam.idm.srvc.meta.domain.MetadataValidValueEntity;
+import java.io.Serializable;
+import java.util.Map;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "MetadataValidValue", 
@@ -18,14 +16,16 @@ import org.openiam.idm.srvc.meta.domain.MetadataValidValueEntity;
 		"id",
         "uiValue",
         "metadataEntityId",
+        "displayOrder",
         "languageMap"
 })
 @DozerDTOCorrespondence(MetadataValidValueEntity.class)
-public class MetadataValidValue implements Serializable {
+public class MetadataValidValue implements Serializable, Comparable<MetadataValidValue> {
 
 	private String id;
 	private String uiValue;
 	private String metadataEntityId;
+    private Integer displayOrder;
 	private Map<String, LanguageMapping> languageMap;
 	public String getId() {
 		return id;
@@ -45,8 +45,16 @@ public class MetadataValidValue implements Serializable {
 	public void setMetadataEntityId(String metadataEntityId) {
 		this.metadataEntityId = metadataEntityId;
 	}
-	
-	public Map<String, LanguageMapping> getLanguageMap() {
+
+    public Integer getDisplayOrder() {
+        return displayOrder;
+    }
+
+    public void setDisplayOrder(Integer displayOrder) {
+        this.displayOrder = displayOrder;
+    }
+
+    public Map<String, LanguageMapping> getLanguageMap() {
 		return languageMap;
 	}
 	public void setLanguageMap(Map<String, LanguageMapping> languageMap) {
@@ -89,8 +97,10 @@ public class MetadataValidValue implements Serializable {
 			return false;
 		return true;
 	}
-	
-	
-	
-	
+
+
+    @Override
+    public int compareTo(MetadataValidValue o) {
+        return this.displayOrder.compareTo(o.displayOrder);
+    }
 }

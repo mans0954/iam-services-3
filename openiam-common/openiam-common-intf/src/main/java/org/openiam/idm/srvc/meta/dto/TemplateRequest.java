@@ -12,7 +12,9 @@ import javax.xml.bind.annotation.XmlType;
 		"patternId",
 		"templateId",
 		"languageId",
-		"isSelfserviceRequest"
+		"languageCode",
+		"isSelfserviceRequest",
+		"requestURI"
 })
 public class TemplateRequest {
 
@@ -21,6 +23,8 @@ public class TemplateRequest {
 	private String languageId;
 	private String patternId;
 	private String templateId;
+	private String languageCode;
+	private String requestURI;
 	private boolean isSelfserviceRequest;
 	public String getUserId() {
 		return userId;
@@ -57,6 +61,18 @@ public class TemplateRequest {
 	}
 	public void setLanguageId(String languageId) {
 		this.languageId = languageId;
+	}
+	public String getLanguageCode() {
+		return languageCode;
+	}
+	public void setLanguageCode(String languageCode) {
+		this.languageCode = languageCode;
+	}
+	public String getRequestURI() {
+		return requestURI;
+	}
+	public void setRequestURI(String requestURI) {
+		this.requestURI = requestURI;
 	}
 	
 }

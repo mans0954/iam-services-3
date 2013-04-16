@@ -11,7 +11,9 @@ import org.openiam.am.srvc.domain.URIPatternMetaEntity;
 import org.openiam.am.srvc.dozer.converter.*;
 import org.openiam.am.srvc.dto.*;
 import org.openiam.am.srvc.searchbeans.ContentProviderSearchBean;
+import org.openiam.am.srvc.searchbeans.URIPatternSearchBean;
 import org.openiam.am.srvc.searchbeans.converter.ContentProviderSearchBeanConverter;
+import org.openiam.am.srvc.searchbeans.converter.URIPatternSearchBeanConverter;
 import org.openiam.am.srvc.service.ContentProviderService;
 import org.openiam.am.srvc.uriauth.exception.InvalidPatternException;
 import org.openiam.am.srvc.uriauth.model.URIPatternTree;
@@ -38,6 +40,9 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     private ContentProviderDozerConverter contentProviderDozerConverter;
     @Autowired
     private ContentProviderSearchBeanConverter contentProviderSearchBeanConverter;
+    @Autowired
+    private URIPatternSearchBeanConverter uriPatternSearchBeanConverter;
+
     @Autowired
     private AuthLevelDozerConverter authLevelDozerConverter;
 
@@ -235,6 +240,7 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     }
 
     @Override
+    @Deprecated
     public List<URIPattern> getUriPatternsForProvider(String providerId, Integer from, Integer size) {
         URIPatternEntity example = new URIPatternEntity();
         ContentProviderEntity provider = new ContentProviderEntity();
@@ -247,6 +253,7 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     }
 
     @Override
+    @Deprecated
     public Integer getNumOfUriPatternsForProvider(String providerId) {
         URIPatternEntity example = new URIPatternEntity();
         ContentProviderEntity provider = new ContentProviderEntity();
@@ -254,6 +261,17 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
         example.setContentProvider(provider);
 
         return contentProviderService.getNumOfUriPatterns(example);
+    }
+
+    @Override
+    public List<URIPattern> findUriPatterns(URIPatternSearchBean searchBean, Integer from, Integer size) {
+        final List<URIPatternEntity> entityList = contentProviderService.getUriPatternsList(uriPatternSearchBeanConverter.convert(searchBean), from, size);
+        return uriPatternDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy());
+    }
+
+    @Override
+    public Integer getNumOfUriPatterns(URIPatternSearchBean searchBean) {
+        return contentProviderService.getNumOfUriPatterns(uriPatternSearchBeanConverter.convert(searchBean));
     }
 
     @Override

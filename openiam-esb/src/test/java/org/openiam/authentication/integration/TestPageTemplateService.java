@@ -133,7 +133,7 @@ public class TestPageTemplateService extends AbstractTestNGSpringContextTests {
 				 final MetadataElement element = new MetadataElement();
 				 element.setAttributeName(RandomStringUtils.randomAlphanumeric(4));
 				 element.setMetadataTypeId(type.getMetadataTypeId());
-				 element.setSelfEditable(true);
+				 element.setIsSelfEditable(true);
 				 element.setStaticDefaultValue(RandomStringUtils.randomAlphabetic(4));
 				 element.setDefaultValueLanguageMap(getLanguageMap(languageList));
 				 element.setLanguageMap(getLanguageMap(languageList));
@@ -232,8 +232,8 @@ public class TestPageTemplateService extends AbstractTestNGSpringContextTests {
 		request.setPatternId(pattern.getId());
 		final PageTempate template = templateWebService.getTemplate(request);
 		Assert.assertNotNull(template);
-		if(CollectionUtils.isNotEmpty(template.getElements())) {
-			for(final PageElement element : template.getElements()) {
+		if(CollectionUtils.isNotEmpty(template.getPageElements())) {
+			for(final PageElement element : template.getPageElements()) {
 				final MetadataElement metaElement = getElement(element.getElementId());
 				
 				final String displayName = element.getDisplayName();

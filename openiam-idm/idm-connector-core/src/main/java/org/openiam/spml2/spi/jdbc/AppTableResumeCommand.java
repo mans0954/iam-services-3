@@ -45,7 +45,7 @@ public class AppTableResumeCommand extends AbstractAppTableCommand implements Re
         /* targetID -  */
         final String targetID = psoID.getTargetID();
 
-        List<LoginEntity> loginList = loginManager.getLoginByManagedSys(principalName, targetID);
+        List<LoginEntity> loginList = loginManager.getLoginDetailsByManagedSys(principalName, targetID);
         if (loginList == null || loginList.isEmpty()) {
         	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_IDENTIFIER, "Principal not found");
             return response;

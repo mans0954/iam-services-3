@@ -32,8 +32,12 @@ public class ContentProviderTree {
 	
 	public ContentProviderNode find(final URI uri) {
 		ContentProviderNode retVal = null;
-		final String key = getKey(uri);
-		final TreeSet<ContentProviderNode> nodeSet = sortedSetMap.get(key);
+		final StringBuilder key = new StringBuilder(getKey(uri));
+		final int port = uri.getPort();
+		if(port != -1 ) { /* handles localhost:8080, etc */
+			key.append(":").append(uri.getPort());
+		}
+		final TreeSet<ContentProviderNode> nodeSet = sortedSetMap.get(key.toString());
 		if(CollectionUtils.isNotEmpty(nodeSet)) {
 			final boolean isSSL = StringUtils.equalsIgnoreCase("https", uri.getScheme());
 			for(final Iterator<ContentProviderNode> it = nodeSet.descendingIterator(); it.hasNext();) {

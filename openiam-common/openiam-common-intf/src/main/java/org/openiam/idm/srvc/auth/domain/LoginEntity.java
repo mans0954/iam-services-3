@@ -66,15 +66,13 @@ public class LoginEntity implements java.io.Serializable {
     @Column(name="PWD_EQUIVALENT_TOKEN",length=255)
     protected String pwdEquivalentToken;
 
-    @XmlSchemaType(name = "dateTime")
     @Column(name="PWD_CHANGED",length=19)
     @Temporal(TemporalType.TIMESTAMP)
-    protected Date pwdChanged;
+    private Date pwdChanged;
 
-    @XmlSchemaType(name = "dateTime")
     @Column(name="PWD_EXP",length=19)
     @Temporal(TemporalType.TIMESTAMP)
-    protected Date pwdExp;
+    private Date pwdExp;
 
     @Column(name="FIRST_TIME_LOGIN",nullable = false)
     protected int firstTimeLogin;
@@ -88,15 +86,13 @@ public class LoginEntity implements java.io.Serializable {
     @Column(name="STATUS",length = 20)
     protected String status;
 
-    @XmlSchemaType(name = "dateTime")
     @Column(name="GRACE_PERIOD",length=19)
     @Temporal(TemporalType.TIMESTAMP)
-    protected Date gracePeriod;
+    private Date gracePeriod;
 
-    @XmlSchemaType(name = "dateTime")
     @Column(name="CREATE_DATE",length=19)
     @Temporal(TemporalType.TIMESTAMP)
-    protected Date createDate;
+    private Date createDate;
 
     @Column(name="CREATED_BY",length = 32)
     protected String createdBy;
@@ -107,18 +103,16 @@ public class LoginEntity implements java.io.Serializable {
     @Column(name="AUTH_FAIL_COUNT")
     protected Integer authFailCount = 0;
 
-    @XmlSchemaType(name = "dateTime")
     @Column(name="LAST_AUTH_ATTEMPT",length = 19)
     @Temporal(TemporalType.TIMESTAMP)
-    protected Date lastAuthAttempt;
+    private Date lastAuthAttempt;
 
     @Column(name="CANONICAL_NAME",length = 100)
     protected String canonicalName;
 
-    @XmlSchemaType(name = "dateTime")
     @Column(name="LAST_LOGIN",length = 19)
     @Temporal(TemporalType.TIMESTAMP)
-    protected Date lastLogin;
+    private Date lastLogin;
 
     @Column(name="IS_DEFAULT")
     protected Integer isDefault = 0;
@@ -129,10 +123,9 @@ public class LoginEntity implements java.io.Serializable {
     @Column(name="LAST_LOGIN_IP")
     protected String lastLoginIP;
 
-    @XmlSchemaType(name = "dateTime")
     @Column(name="PREV_LOGIN",length = 19)
     @Temporal(TemporalType.TIMESTAMP)
-    protected Date prevLogin;
+    private Date prevLogin;
 
     @Column(name="PREV_LOGIN_IP")
     protected String prevLoginIP;
@@ -140,10 +133,9 @@ public class LoginEntity implements java.io.Serializable {
     @Column(name="PSWD_RESET_TOKEN")
     protected String pswdResetToken;
 
-    @XmlSchemaType(name = "dateTime")
     @Column(name="PSWD_RESET_TOKEN_EXP",length = 19)
     @Temporal(TemporalType.TIMESTAMP)
-    protected Date pswdResetTokenExp;
+    private Date pswdResetTokenExp;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "LOGIN_ID")

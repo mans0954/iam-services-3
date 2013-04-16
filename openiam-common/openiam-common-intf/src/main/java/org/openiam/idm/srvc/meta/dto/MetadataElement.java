@@ -11,7 +11,6 @@ import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
@@ -113,11 +112,11 @@ public class MetadataElement implements Serializable {
 		this.required = required;
 	}
 
-	public boolean isSelfEditable() {
+	public boolean getIsSelfEditable() {
 		return selfEditable;
 	}
 
-	public void setSelfEditable(boolean selfEditable) {
+	public void setIsSelfEditable(boolean selfEditable) {
 		this.selfEditable = selfEditable;
 	}
 

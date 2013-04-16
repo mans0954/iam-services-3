@@ -14,6 +14,7 @@ import java.util.Set;
 @XmlType(name = "URIPattern", propOrder = {
         "id",
         "contentProviderId",
+        "contentProviderName",
         "authLevel",
         "pattern",
         "isPublic",
@@ -27,6 +28,7 @@ public class URIPattern implements Serializable {
 
 	private String id;
 	private String contentProviderId;
+	private String contentProviderName;
 	private String pattern;
 	private AuthLevel authLevel;
 	private boolean isPublic;
@@ -90,6 +92,12 @@ public class URIPattern implements Serializable {
 	}
 	public void setPageTemplates(Set<MetadataElementPageTemplate> pageTemplates) {
 		this.pageTemplates = pageTemplates;
+	}
+	public String getContentProviderName() {
+		return contentProviderName;
+	}
+	public void setContentProviderName(String contentProviderName) {
+		this.contentProviderName = contentProviderName;
 	}
 	@Override
 	public int hashCode() {

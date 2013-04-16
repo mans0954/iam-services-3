@@ -67,3 +67,4 @@ dml/19.page_template_menu.sql
 dml/20.ui_resource_types.sql
 dml/21.insert_ui_field_type.sql
 ddl/48.add_locale_xref.sql
+ddl/49.modify_user_contact_tables.sql

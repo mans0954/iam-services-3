@@ -21,6 +21,8 @@
  */
 package org.openiam.idm.srvc.user.ws;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.mule.api.MuleContext;
 import org.mule.api.MuleException;
@@ -39,6 +41,9 @@ import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
+import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
+import org.openiam.idm.srvc.meta.exception.PageTemplateException;
+import org.openiam.idm.srvc.meta.service.MetadataElementTemplateService;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
@@ -51,7 +56,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
@@ -95,6 +100,9 @@ public class UserDataWebServiceImpl implements UserDataWebService,MuleContextAwa
     
     @Autowired
     private PhoneDozerConverter phoneDozerConverter;
+    
+    @Autowired
+    private MetadataElementTemplateService pageTemplateService;
 
     private MuleContext muleContext;
 
@@ -1125,5 +1133,129 @@ public class UserDataWebServiceImpl implements UserDataWebService,MuleContextAwa
 		final List<UserAttributeEntity> attributes = (user != null && user.getUserAttributes() != null) ? 
 				new ArrayList<UserAttributeEntity>(user.getUserAttributes().values()) : null;
 		return (attributes != null) ? userAttributeDozerConverter.convertToDTOList(attributes, true) : null;
+	}
+
+	@Override
+	@Transactional
+	public SaveTemplateProfileResponse saveUserProfile(UserProfileRequestModel request) {
+		 final SaveTemplateProfileResponse response = new SaveTemplateProfileResponse(ResponseStatus.SUCCESS);
+	        try {
+	            if(request == null || request.getUser() == null) {
+	                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+	            }
+	            
+	            final UserEntity userEntity = userDozerConverter.convertToEntity(request.getUser(), true);
+	            final UserEntity dbEntity = userManager.getUser(request.getUser().getUserId());
+	            
+	            final List<EmailAddressEntity> emailList = emailAddressDozerConverter.convertToEntityList(request.getEmails(), true);	            
+	            if(CollectionUtils.isNotEmpty(emailList)) {
+	            	for(final EmailAddressEntity email : emailList) {
+	            		email.setParent(userEntity);
+	            		if(StringUtils.isBlank(email.getEmailId())) {
+	            			userManager.addEmailAddress(email);
+	            		} else {
+	            			userManager.updateEmailAddress(email);
+	            		}
+	            	}
+	            }
+	            
+	            /* figure out the emails to delete */
+	            if(CollectionUtils.isNotEmpty(dbEntity.getEmailAddresses())) {
+	            	for(final Iterator<EmailAddressEntity> it = dbEntity.getEmailAddresses().iterator(); it.hasNext();) {
+	            		final EmailAddressEntity dbEmail = it.next();
+	            		boolean contains = false;
+	            		if(CollectionUtils.isNotEmpty(emailList)) {
+	            			for(final EmailAddressEntity email : emailList) {
+	            				if(StringUtils.equals(email.getEmailId(), dbEmail.getEmailId())) {
+	            					contains = true;
+	            				}
+	            			}
+	            		}
+	            		
+	            		if(!contains) {
+	            			it.remove();
+	            		}
+	            	}
+	            }
+	            
+	            final List<AddressEntity> addressList = addressDozerConverter.convertToEntityList(request.getAddresses(), true);
+	            if(CollectionUtils.isNotEmpty(addressList)) {
+	            	for(final AddressEntity address : addressList) {
+	            		address.setParent(userEntity);
+	            		if(StringUtils.isBlank(address.getAddressId())) {
+	            			userManager.addAddress(address);
+	            		} else {
+	            			userManager.updateAddress(address);
+	            		}
+	            	}
+	            }
+	            
+	            /* figure out the emails to delete */
+	            if(CollectionUtils.isNotEmpty(dbEntity.getAddresses())) {
+	            	for(final Iterator<AddressEntity> it = dbEntity.getAddresses().iterator(); it.hasNext();) {
+	            		final AddressEntity dbAddress = it.next();
+	            		boolean contains = false;
+	            		if(CollectionUtils.isNotEmpty(addressList)) {
+	            			for(final AddressEntity address : addressList) {
+	            				if(StringUtils.equals(address.getAddressId(), dbAddress.getAddressId())) {
+	            					contains = true;
+	            				}
+	            			}
+	            		}
+	            		
+	            		if(!contains) {
+	            			it.remove();
+	            		}
+	            	}
+	            }
+	            
+	            final List<PhoneEntity> phoneList = phoneDozerConverter.convertToEntityList(request.getPhones(), true);
+	            if(CollectionUtils.isNotEmpty(phoneList)) {
+	            	for(final PhoneEntity phone : phoneList) {
+	            		phone.setParent(userEntity);
+	            		if(StringUtils.isBlank(phone.getPhoneId())) {
+	            			userManager.addPhone(phone);
+	            		} else {
+	            			userManager.updatePhone(phone);
+	            		}
+	            	}
+	            }
+	            
+	            /* figure out the phones to delete */
+	            if(CollectionUtils.isNotEmpty(dbEntity.getPhones())) {
+	            	for(final Iterator<PhoneEntity> it = dbEntity.getPhones().iterator(); it.hasNext();) {
+	            		final PhoneEntity dbPhone = it.next();
+	            		boolean contains = false;
+	            		if(CollectionUtils.isNotEmpty(phoneList)) {
+	            			for(final PhoneEntity phone : phoneList) {
+	            				if(StringUtils.equals(phone.getPhoneId(), dbPhone.getPhoneId())) {
+	            					contains = true;
+	            				}
+	            			}
+	            		}
+	            		
+	            		if(!contains) {
+	            			it.remove();
+	            		}
+	            	}
+	            }
+	            
+	            pageTemplateService.saveTemplate(request);
+	            userManager.mergeUserFields(dbEntity, userEntity);
+	            userManager.updateUser(dbEntity);
+	        } catch(PageTemplateException e) {
+	        	response.setCurrentValue(e.getCurrentValue());
+	        	response.setElementName(e.getElementName());
+	        	response.setErrorCode(e.getCode());
+	            response.setStatus(ResponseStatus.FAILURE);
+	        } catch(BasicDataServiceException e) {
+	            response.setErrorCode(e.getCode());
+	            response.setStatus(ResponseStatus.FAILURE);
+	        } catch(Throwable e) {
+	            log.error("Can't perform operation", e);
+	            response.setErrorText(e.getMessage());
+	            response.setStatus(ResponseStatus.FAILURE);
+	        }
+	        return response;
 	}
 }
