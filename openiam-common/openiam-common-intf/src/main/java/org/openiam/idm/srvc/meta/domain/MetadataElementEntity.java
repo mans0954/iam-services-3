@@ -90,7 +90,7 @@ public class MetadataElementEntity implements Serializable {
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "metadataElement", fetch = FetchType.LAZY)
     private Set<MetadataElementPageTemplateXrefEntity> templateSet;
     
-    @OneToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY, mappedBy="referenceId")
+    @OneToMany(cascade={CascadeType.ALL}, fetch = FetchType.LAZY, mappedBy="referenceId", orphanRemoval=true)
     //@JoinColumn(name = "REFERENCE_ID", referencedColumnName="METADATA_ID")
 	@Where(clause="REFERENCE_TYPE='MetadataElementEntity'")
     @MapKey(name = "languageId")
@@ -103,7 +103,7 @@ public class MetadataElementEntity implements Serializable {
     @Column(name="STATIC_DEFAULT_VALUE", length=400)
     private String staticDefaultValue;
     
-    @OneToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY, mappedBy="referenceId")
+    @OneToMany(cascade={CascadeType.ALL}, fetch = FetchType.LAZY, mappedBy="referenceId", orphanRemoval=true)
     //@JoinColumn(name = "REFERENCE_ID", referencedColumnName="METADATA_ID")
 	@Where(clause="REFERENCE_TYPE='MetadataElementDefaultValues'")
     @MapKey(name = "languageId")

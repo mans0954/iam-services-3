@@ -395,7 +395,10 @@ public enum ResponseCode {
 	UNAUTHORIZED("UNAUTHORIZED"),
 	
 	@XmlEnumValue("INVALID_VALUE")
-	INVALID_VALUE("INVALID_VALUE");
+	INVALID_VALUE("INVALID_VALUE"),
+	
+	@XmlEnumValue("REQUIRED")
+	REQUIRED("REQUIRED");
 	
     private final String value;
 

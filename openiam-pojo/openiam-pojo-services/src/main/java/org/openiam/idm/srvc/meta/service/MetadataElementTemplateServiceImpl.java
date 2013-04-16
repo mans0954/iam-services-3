@@ -389,7 +389,6 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 				final String elementId = pageElement.getElementId();
 				if(elementId != null && elementMap.containsKey(elementId)) {
 					MetadataElementEntity element = elementMap.get(elementId);
-					
 					/* if the user is entitled to the element, do CRUD logic on the attributes */
 					if(isEntitled(userId, element)) {
 						if(CollectionUtils.isEmpty(pageElement.getUserValues())) { /* none sent - signals delete */
@@ -399,6 +398,11 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 						} else { /* attributes sent - figure out weather to save or update */
 							
 							for(final PageElementValue elementValue : pageElement.getUserValues()) {
+								if(pageElement.isEditable() && pageElement.isRequired() && StringUtils.isBlank(elementValue.getValue())) {
+									final PageTemplateException exception =  new PageTemplateException(ResponseCode.REQUIRED);
+									exception.setElementName(getElementName(element, targetLanguage));
+									throw exception;
+								}
 								
 								if(!isValid(elementValue, element, targetLanguage)) {
 									final PageTemplateException exception =  new PageTemplateException(ResponseCode.INVALID_VALUE);

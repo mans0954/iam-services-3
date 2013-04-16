@@ -195,6 +195,22 @@ public class MetadataServiceImpl implements MetadataService {
 			}
 		}
 		
+		/* remove old entries */
+		for(final Iterator<Entry<String, LanguageMappingEntity>> it = retVal.entrySet().iterator(); it.hasNext();) {
+			final Entry<String, LanguageMappingEntity> entry = it.next();
+			final LanguageMappingEntity persistentEntry = entry.getValue();
+			boolean contains = false;
+			for(final LanguageMappingEntity transientEntry : transientMap.values()) {
+				if(StringUtils.equals(transientEntry.getLanguageId(), persistentEntry.getLanguageId())) {
+					contains = true;
+				}
+			}
+			
+			if(!contains) {
+				it.remove();
+			}
+		}
+		
 		/* add new entries */
 		for(final LanguageMappingEntity transientEntry : transientMap.values()) {
 			boolean found = false;
@@ -259,6 +275,16 @@ public class MetadataServiceImpl implements MetadataService {
 			}
 		}
 		
+		/* now that you have the valid values to persist, update the underlying collections */
+		for(final Iterator<MetadataValidValueEntity> it = retval.iterator(); it.hasNext();) {
+			final MetadataValidValueEntity persistentEntity = it.next();
+			for(final MetadataValidValueEntity transientEntity : transientSet) {
+				if(StringUtils.equals(persistentEntity.getId(), transientEntity.getId())) {
+					mergeLanguageMaps(persistentEntity.getLanguageMap(), transientEntity.getLanguageMap());
+				}
+			}
+		}
+		
 		return retval;
 	}
 	
@@ -315,6 +341,7 @@ public class MetadataServiceImpl implements MetadataService {
 	public void deleteMetdataElement(String id) {
 		final MetadataElementEntity entity = metadataElementDao.findById(id);
 		if(entity != null) {
+			/*
 			final Map<String, Set<String>> languageDeleteMap = new HashMap<String, Set<String>>();
 			if(CollectionUtils.isNotEmpty(entity.getValidValues())) {
 				for(final MetadataValidValueEntity validValue : entity.getValidValues()) {
@@ -327,7 +354,7 @@ public class MetadataServiceImpl implements MetadataService {
 			for(final String referenceType : languageDeleteMap.keySet()) {
 				languageMappingDAO.deleteByReferenceTypeAndIds(languageDeleteMap.get(referenceType), referenceType);
 			}
-			
+			*/
 			metadataElementDao.delete(entity);
 		}
 	}
