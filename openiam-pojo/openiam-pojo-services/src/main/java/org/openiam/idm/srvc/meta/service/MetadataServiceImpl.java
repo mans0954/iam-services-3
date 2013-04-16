@@ -246,7 +246,7 @@ public class MetadataServiceImpl implements MetadataService {
 			if(StringUtils.isNotBlank(transientEntity.getId())) {
 				for(final MetadataValidValueEntity persistentEntity : retval) {
 					if(StringUtils.equals(persistentEntity.getId(), transientEntity.getId())) {
-						transientEntity.setUiValue(persistentEntity.getUiValue());
+						//transientEntity.setUiValue(persistentEntity.getUiValue());
 						exists = true;
 					}
 				}
@@ -264,7 +264,7 @@ public class MetadataServiceImpl implements MetadataService {
 			if(StringUtils.isNotBlank(persistentEntity.getId())) {
 				for(final MetadataValidValueEntity transientEntity : transientSet) {
 					if(StringUtils.equals(persistentEntity.getId(), transientEntity.getId())) {
-						transientEntity.setUiValue(persistentEntity.getUiValue());
+						//transientEntity.setUiValue(persistentEntity.getUiValue());
 						exists = true;
 					}
 				}
@@ -280,6 +280,8 @@ public class MetadataServiceImpl implements MetadataService {
 			final MetadataValidValueEntity persistentEntity = it.next();
 			for(final MetadataValidValueEntity transientEntity : transientSet) {
 				if(StringUtils.equals(persistentEntity.getId(), transientEntity.getId())) {
+					persistentEntity.setUiValue(transientEntity.getUiValue());
+					persistentEntity.setDisplayOrder(transientEntity.getDisplayOrder());
 					mergeLanguageMaps(persistentEntity.getLanguageMap(), transientEntity.getLanguageMap());
 				}
 			}
