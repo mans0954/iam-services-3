@@ -24,28 +24,21 @@ package org.openiam.idm.srvc.mngsys.service;
 import java.util.List;
 
 import org.hibernate.SessionFactory;
+import org.openiam.core.dao.BaseDao;
+import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 
 /**
  * @author suneet
- *
+ * 
  */
-public interface AttributeMapDAO {
+public interface AttributeMapDAO extends BaseDao<AttributeMapEntity, String> {
 
-	void setSessionFactory(SessionFactory session);
+	List<AttributeMapEntity> findByResourceId(String resourceId);
 
-    AttributeMap add(AttributeMap instance);
+	List<AttributeMapEntity> findAllAttributeMaps();
 
-	void remove(AttributeMap persistentInstance);
-
-	AttributeMap update(AttributeMap detachedInstance);
-
-	AttributeMap findById(java.lang.String id);
-	
-	List<AttributeMap> findByResourceId(String resourceId);
-	
-	List<AttributeMap> findAllAttributeMaps();
-	
 	int removeResourceAttributeMaps(String resourceId);
 
 }

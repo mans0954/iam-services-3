@@ -81,6 +81,15 @@
             <b>loginAttributes</b>
         </field>
     </mapping>
+    
+      <mapping>
+        <class-a>org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity</class-a>
+        <class-b>org.openiam.idm.srvc.mngsys.dto.AttributeMap</class-b>
+        <field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter" custom-converter-param="dto2entityShallowDozerMapper">
+            <a>attributePolicy</a>
+            <b>attributePolicy</b>
+        </field>
+    </mapping>
 
 
     <mapping>

@@ -198,15 +198,10 @@
 
     <bean id="managedSysService" class="org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebServiceImpl" >
         <property name="approverAssociationDao" ref="approverAssociationDAO" />
-        <property name="attributeMapDao" ref="attributeMapDAO" />
         <property name="cryptor" ref="cryptor" />
     </bean>
 
     <bean id="approverAssociationDAO" class="org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAOImpl" >
-        <property name="sessionFactory" ref="sessionFactory"></property>
-    </bean>
-
-    <bean id="attributeMapDAO" class="org.openiam.idm.srvc.mngsys.service.AttributeMapDAOImpl" >
         <property name="sessionFactory" ref="sessionFactory"></property>
     </bean>
 

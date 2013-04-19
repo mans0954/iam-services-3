@@ -1,63 +1,97 @@
-package org.openiam.idm.srvc.mngsys.dto;
+package org.openiam.idm.srvc.mngsys.domain;
 
 import java.util.Date;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlSchemaType;
-import javax.xml.bind.annotation.XmlType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 
-import org.apache.commons.lang.StringUtils;
+import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
+import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
+import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 import org.openiam.idm.srvc.policy.dto.Policy;
 
 /**
- * AttributeMap represents the mapping between an attribute in the target system
- * and an attribute policy.
+ * @author zaporozhec
  */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "AttributeMap", propOrder = { "attributeMapId", "managedSysId",
-		"resourceId", "mapForObjectType", "attributeName",
-		"targetAttributeName", "authoritativeSrc", "attributePolicy", "rule",
-		"status", "startDate", "endDate", "storeInIamdb", "selected",
-		"dataType", "defaultValue" })
-@DozerDTOCorrespondence(AttributeMapEntity.class)
-public class AttributeMap implements java.io.Serializable {
-
+@Entity
+@Table(name = "ATTRIBUTE_MAP")
+@DozerDTOCorrespondence(AttributeMap.class)
+public class AttributeMapEntity implements java.io.Serializable {
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -4584242607384442243L;
+	private static final long serialVersionUID = 1L;
+
+	@Id
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "uuid")
+	@Column(name = "ATTRIBUTE_MAP_ID", length = 32, nullable = false)
 	private String attributeMapId;
+
+	@Column(name = "MANAGED_SYS_ID", length = 32)
 	private String managedSysId;
+
+	@Column(name = "RESOURCE_ID", length = 32)
 	private String resourceId;
+
+	@Column(name = "MAP_FOR_OBJECT_TYPE", length = 20)
 	private String mapForObjectType;
+
+	@Column(name = "ATTRIBUTE_NAME", length = 50)
 	private String attributeName;
+
+	@Column(name = "TARGET_ATTRIBUTE_NAME", length = 50)
 	private String targetAttributeName;
+
+	@Column(name = "AUTHORITATIVE_SRC", length = 11)
 	private Integer authoritativeSrc;
-	private Policy attributePolicy;
+
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "ATTRIBUTE_POLICY_ID", nullable = false, updatable = false)
+	private PolicyEntity attributePolicy;
+
+	@Column(name = "RULE_TEXT")
 	private String rule;
+
+	@Column(name = "STATUS", length = 20)
 	private String status;
-	@XmlSchemaType(name = "dateTime")
+
+	@Column(name = "START_DATE", length = 19)
+	@Temporal(TemporalType.TIMESTAMP)
 	private Date startDate;
-	@XmlSchemaType(name = "dateTime")
+
+	@Column(name = "END_DATE", length = 19)
+	@Temporal(TemporalType.TIMESTAMP)
 	private Date endDate;
+	@Column(name = "STORE_IN_IAMDB", length = 11)
 	private Integer storeInIamdb;
+
+	@Transient
 	private Boolean selected = new Boolean(false);
 	/* Data type of the attribute */
+	@Column(name = "DATA_TYPE", length = 20)
 	private String dataType;
+	@Column(name = "DEFAULT_VALUE", length = 32)
 	private String defaultValue;
 
-	public AttributeMap() {
+	public AttributeMapEntity() {
 	}
 
-	public AttributeMap(String attributeMapId, String managedSysId) {
+	public AttributeMapEntity(String attributeMapId, String managedSysId) {
 		this.attributeMapId = attributeMapId;
 		this.managedSysId = managedSysId;
 	}
 
-	public AttributeMap(String attributeMapId, String managedSysId,
+	public AttributeMapEntity(String attributeMapId, String managedSysId,
 			String resourceId, String mapForObjectType, String attributeName,
 			String targetAttributeName, Integer authoritativeSrc, String rule,
 			String status, Date startDate, Date endDate, Integer storeInIamdb) {
@@ -171,11 +205,11 @@ public class AttributeMap implements java.io.Serializable {
 		this.storeInIamdb = storeInIamdb;
 	}
 
-	public Policy getAttributePolicy() {
+	public PolicyEntity getAttributePolicy() {
 		return attributePolicy;
 	}
 
-	public void setAttributePolicy(Policy attributePolicy) {
+	public void setAttributePolicy(PolicyEntity attributePolicy) {
 		this.attributePolicy = attributePolicy;
 	}
 

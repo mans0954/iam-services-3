@@ -1,27 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:aop="http://www.springframework.org/schema/aop"
-       xmlns:tx="http://www.springframework.org/schema/tx"
-       xmlns:util="http://www.springframework.org/schema/util"
-       xmlns:jee="http://www.springframework.org/schema/jee"
-       xmlns:context="http://www.springframework.org/schema/context"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:jee="http://www.springframework.org/schema/jee" xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
     					http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
     					http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
     					http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd
     					http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd
     					http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-3.0.xsd">
 
-    <context:annotation-config />
-    <context:component-scan base-package="org.openiam.idm.srvc.org.service,
+	<context:annotation-config />
+	<context:component-scan
+		base-package="org.openiam.idm.srvc.org.service,
     								      org.openiam.core,
     								      org.openiam.idm.srvc*,
     								      org.openiam.dozer.converter" />
 
 	<bean id="springContextProvider" class="org.openiam.util.SpringContextProvider" />
-	
+
 	<bean id="deepDozerMapper" class="org.dozer.DozerBeanMapper">
 		<property name="mappingFiles">
 			<list>
@@ -30,7 +28,7 @@
 			</list>
 		</property>
 	</bean>
-	
+
 	<bean id="shallowDozerMapper" class="org.dozer.DozerBeanMapper">
 		<property name="mappingFiles">
 			<list>
@@ -39,233 +37,216 @@
 			</list>
 		</property>
 	</bean>
-	
+
 	<bean id="dto2entityShallowDozerMapper" class="org.dozer.DozerBeanMapper">
 		<property name="mappingFiles">
 			<list>
-				<value>org/openiam/dozer/dto2entity/entity2dto.common.mappings.xml</value>
-				<value>org/openiam/dozer/dto2entity/entity2dto.shallow.mappings.xml</value>
-			</list>
-		</property>
-	</bean>
-	
-	<bean id="dto2entityDeepDozerMapper" class="org.dozer.DozerBeanMapper">
-		<property name="mappingFiles">
-			<list>
-				<value>org/openiam/dozer/dto2entity/entity2dto.common.mappings.xml</value>
-				<value>org/openiam/dozer/dto2entity/entity2dto.deep.mappings.xml</value>
+				<value>org/openiam/dozer/dto2entity/entity2dto.common.mappings.xml
+				</value>
+				<value>org/openiam/dozer/dto2entity/entity2dto.shallow.mappings.xml
+				</value>
 			</list>
 		</property>
 	</bean>
 
-	<bean id="pojoProperties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+	<bean id="dto2entityDeepDozerMapper" class="org.dozer.DozerBeanMapper">
+		<property name="mappingFiles">
+			<list>
+				<value>org/openiam/dozer/dto2entity/entity2dto.common.mappings.xml
+				</value>
+				<value>org/openiam/dozer/dto2entity/entity2dto.deep.mappings.xml
+				</value>
+			</list>
+		</property>
+	</bean>
+
+	<bean id="pojoProperties"
+		class="org.springframework.beans.factory.config.PropertiesFactoryBean">
 		<property name="locations">
-  			<list>
+			<list>
 				<value>classpath:datasource.properties</value>
 				<value>classpath:iam-plugin.properties</value>
-                <value>classpath:securityconf.properties</value>
-                <value>classpath:openiam.esb.properties</value>
-                <value>classpath:notification.properties</value>
+				<value>classpath:securityconf.properties</value>
+				<value>classpath:openiam.esb.properties</value>
+				<value>classpath:notification.properties</value>
 				<value>file:/data/openiam/conf/datasource.properties</value>
-		        <value>file:/data/openiam/conf/iam-plugin.properties</value>
-                <value>file:/data/openiam/conf/securityconf.properties</value>
-                <value>file:/data/openiam/conf/openiam.esb.properties</value>
-                <value>file:/data/openiam/conf/notification.properties</value>
+				<value>file:/data/openiam/conf/iam-plugin.properties</value>
+				<value>file:/data/openiam/conf/securityconf.properties</value>
+				<value>file:/data/openiam/conf/openiam.esb.properties</value>
+				<value>file:/data/openiam/conf/notification.properties</value>
 			</list>
 		</property>
 		<property name="ignoreResourceNotFound" value="true" />
 	</bean>
-	
-	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+
+	<bean
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
 		<property name="properties" ref="pojoProperties" />
 	</bean>
 
-    <bean id="dbType" class="java.lang.String" factory-method="valueOf">
-        <constructor-arg index="0" value="${openiam.dbType}" />
-    </bean>
-	
+	<bean id="dbType" class="java.lang.String" factory-method="valueOf">
+		<constructor-arg index="0" value="${openiam.dbType}" />
+	</bean>
+
 	<bean id="sysConfiguration" class="org.openiam.base.SysConfiguration">
 		<property name="defaultManagedSysId" value="${openiam.default_managed_sys}" />
 		<property name="defaultSecurityDomain" value="${openiam.default_sec_domain}" />
 	</bean>
 
-    <!-- HEARTBEAT Beans -->
+	<!-- HEARTBEAT Beans -->
 
-    <bean id="heartBeat" class="org.openiam.idm.srvc.health.HeartBeatWebServiceImpl">
-    </bean>
-
-	<bean id="defaultLoginModuleManager" class="org.openiam.idm.srvc.auth.spi.DefaultLoginModule" >
+	<bean id="heartBeat" class="org.openiam.idm.srvc.health.HeartBeatWebServiceImpl">
 	</bean>
 
-	<!--
-	<bean id="defaultSSOToken" class="org.openiam.idm.srvc.auth.sso.DefaultTokenModule" >
-        <property name="cryptor" ref="cryptor" />
-        <property name="keyManagementService" ref="keyManagementService" />
+	<bean id="defaultLoginModuleManager" class="org.openiam.idm.srvc.auth.spi.DefaultLoginModule">
 	</bean>
-	-->
 
-	<bean id="configurableGroovyScriptEngine" class="${org.openiam.groovy.script.engine}"/>
-	
+	<!-- <bean id="defaultSSOToken" class="org.openiam.idm.srvc.auth.sso.DefaultTokenModule" 
+		> <property name="cryptor" ref="cryptor" /> <property name="keyManagementService" 
+		ref="keyManagementService" /> </bean> -->
+
+	<bean id="configurableGroovyScriptEngine" class="${org.openiam.groovy.script.engine}" />
+
 	<bean id="configurableAuditLogEventHandler" class="${org.openiam.log.audit.iheevent.context.class}" />
-			
+
 	<!-- Service Beans -->
 	<bean id="serviceManager" class="org.openiam.idm.srvc.service.service.ServiceMgr">
 		<constructor-arg ref="serviceDAO"></constructor-arg>
 	</bean>
-	
+
 	<bean id="serviceDAO" class="org.openiam.idm.srvc.service.service.ServiceDAOImpl">
-		<property name="sessionFactory" ref="sessionFactory"></property>		
+		<property name="sessionFactory" ref="sessionFactory"></property>
 	</bean>
 
- <!-- QueryDataService  -->
-	<bean id="queryWS" class="org.openiam.idm.srvc.qry.ws.QueryDataWebServiceImpl" >
+	<!-- QueryDataService -->
+	<bean id="queryWS" class="org.openiam.idm.srvc.qry.ws.QueryDataWebServiceImpl">
 		<property name="queryService" ref="queryDataService" />
 	</bean>
-	
-	<bean id="queryDataService" class="org.openiam.idm.srvc.qry.service.QueryDataServiceImpl" >
-		<property name="sessionFactory" ref="sessionFactory"></property>	
-	</bean>	
-	
+
+	<bean id="queryDataService" class="org.openiam.idm.srvc.qry.service.QueryDataServiceImpl">
+		<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
+
 	<bean id="luceneReindexService" class="org.openiam.idm.srvc.lucene.LuceneReindexService">
 		<property name="hibernateSearchDAOs">
 			<list>
-			  <ref bean="userSearchDAO" />
-			  <ref bean="loginSearchDAO" />
-			  <ref bean="emailSearchDAO" />
-			  <ref bean="phoneSearchDAO" />
+				<ref bean="userSearchDAO" />
+				<ref bean="loginSearchDAO" />
+				<ref bean="emailSearchDAO" />
+				<ref bean="phoneSearchDAO" />
 			</list>
 		</property>
 	</bean>
-	
-	<!-- Thread Scheduling - not using annotations since the interval must be configurable -->
-	<!--
-	<bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
-    	<property name="triggers">
-        	<list>
-        		<bean class="org.springframework.scheduling.quartz.SimpleTriggerBean">
-        			 <property name="startDelay" value="${org.openiam.lucene.reindex.threadsweep}" />
-        			 <property name="repeatInterval" value="${org.openiam.lucene.reindex.threadsweep}" />
-        			 <property name="jobDetail">
-						<bean class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
-							<property name="targetObject" ref="luceneReindexService" />
-						  	<property name="targetMethod" value="sweep" />
-						  	<property name="concurrent" value="false" />
-						</bean>
-        			 </property>
-        		</bean>
-        	</list>
-     	</property>
-	</bean>
-	-->
+
+	<!-- Thread Scheduling - not using annotations since the interval must be 
+		configurable -->
+	<!-- <bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean"> 
+		<property name="triggers"> <list> <bean class="org.springframework.scheduling.quartz.SimpleTriggerBean"> 
+		<property name="startDelay" value="${org.openiam.lucene.reindex.threadsweep}" 
+		/> <property name="repeatInterval" value="${org.openiam.lucene.reindex.threadsweep}" 
+		/> <property name="jobDetail"> <bean class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"> 
+		<property name="targetObject" ref="luceneReindexService" /> <property name="targetMethod" 
+		value="sweep" /> <property name="concurrent" value="false" /> </bean> </property> 
+		</bean> </list> </property> </bean> -->
 
 	<bean id="seqGenDAO" class="org.openiam.base.id.SequenceGenDAOImpl">
-		<property name="sessionFactory" ref="sessionFactory"></property>		
+		<property name="sessionFactory" ref="sessionFactory"></property>
 	</bean>
-	
+
 	<!-- Password Beans -->
-	<!--
-	<bean id="challengeResponse" class="org.openiam.idm.srvc.pswd.service.ChallengeResponseServiceImpl" >
-		<property name="identityQuestGroupDao" ref="identityQuestGroupDAO" />
-		<property name="identityQuestDao" ref="identityQuestDAO" />
-		<property name="identityAnswerDao" ref="identityAnswerDAO" />	
-		<property name="loginManager" ref="loginManager" />	
-		
-		<property name="userMgr" ref="userManager" />	
-		<property name="passwordMgr" ref="passwordManager" />	
-	</bean>
-	-->
-	
-	<!--
-	<bean id="validatorFactory" class="org.openiam.idm.srvc.pswd.service.ValidatorFactory" />
-	-->
-	
-	<!--
-	<bean id="challengeResponseValidator" class="org.openiam.idm.srvc.pswd.service.DefaultChallengeResponseValidator" >
-		<property name="identityQuestDao" ref="identityQuestDAO" />
-		<property name="identityAnswerDao" ref="identityAnswerDAO" />
-		<property name="loginManager" ref="loginManager" />	
-	</bean>
-	-->
+	<!-- <bean id="challengeResponse" class="org.openiam.idm.srvc.pswd.service.ChallengeResponseServiceImpl" 
+		> <property name="identityQuestGroupDao" ref="identityQuestGroupDAO" /> <property 
+		name="identityQuestDao" ref="identityQuestDAO" /> <property name="identityAnswerDao" 
+		ref="identityAnswerDAO" /> <property name="loginManager" ref="loginManager" 
+		/> <property name="userMgr" ref="userManager" /> <property name="passwordMgr" 
+		ref="passwordManager" /> </bean> -->
 
-	<!--
-	<bean id="identityQuestGroupDAO" class="org.openiam.idm.srvc.pswd.service.IdentityQuestGroupDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"></property>		
-	</bean>	
-	<bean id="identityQuestDAO" class="org.openiam.idm.srvc.pswd.service.IdentityQuestionDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"></property>		
-	</bean>	
-	<bean id="identityAnswerDAO" class="org.openiam.idm.srvc.pswd.service.UserIdentityAnswerDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"></property>		
-	</bean>		
-	-->
-		<!-- Policy Beans -->
-<!-- 	<bean id="policyDataService" class="org.openiam.idm.srvc.policy.service.PolicyDataServiceImpl" > -->
-<!-- 		<property name="policyDefDao" ref="policyDefDAO" /> -->
-<!-- 		<property name="policyDao" ref="policyDAO" /> -->
-<!-- 		<property name="policyDefParamDao" ref="policyDefParamDAO" /> -->
-<!-- 		<property name="objectAssoc" ref="policyObjectAssocDAO" /> -->
-<!-- 		<property name="dozerUtils" ref="dozerUtils" /> -->
-<!-- 	</bean> -->
-		
-<!-- 	<bean id="policyDefDAO" class="org.openiam.idm.srvc.policy.service.PolicyDefDAOImpl" > -->
-<!-- 		<property name="sessionFactory" ref="sessionFactory"></property>		 -->
-<!-- 	</bean>	 -->
-<!-- 	<bean id="policyDefParamDAO" class="org.openiam.idm.srvc.policy.service.PolicyDefParamDAOImpl" > -->
-<!-- 		<property name="sessionFactory" ref="sessionFactory"></property>		 -->
-<!-- 	</bean>	 -->
-<!-- 	<bean id="policyDAO" class="org.openiam.idm.srvc.policy.service.PolicyDAOImpl" > -->
-<!-- 		<property name="sessionFactory" ref="sessionFactory"></property>		 -->
-<!-- 	</bean>	 -->
+	<!-- <bean id="validatorFactory" class="org.openiam.idm.srvc.pswd.service.ValidatorFactory" 
+		/> -->
 
-    <!-- Reference Data Beans -->
-	<bean id="refDataService" class="org.openiam.idm.srvc.cd.service.ReferenceDataServiceImpl" >
+	<!-- <bean id="challengeResponseValidator" class="org.openiam.idm.srvc.pswd.service.DefaultChallengeResponseValidator" 
+		> <property name="identityQuestDao" ref="identityQuestDAO" /> <property name="identityAnswerDao" 
+		ref="identityAnswerDAO" /> <property name="loginManager" ref="loginManager" 
+		/> </bean> -->
+
+	<!-- <bean id="identityQuestGroupDAO" class="org.openiam.idm.srvc.pswd.service.IdentityQuestGroupDAOImpl" 
+		> <property name="sessionFactory" ref="sessionFactory"></property> </bean> 
+		<bean id="identityQuestDAO" class="org.openiam.idm.srvc.pswd.service.IdentityQuestionDAOImpl" 
+		> <property name="sessionFactory" ref="sessionFactory"></property> </bean> 
+		<bean id="identityAnswerDAO" class="org.openiam.idm.srvc.pswd.service.UserIdentityAnswerDAOImpl" 
+		> <property name="sessionFactory" ref="sessionFactory"></property> </bean> -->
+	<!-- Policy Beans -->
+	<!-- <bean id="policyDataService" class="org.openiam.idm.srvc.policy.service.PolicyDataServiceImpl" 
+		> -->
+	<!-- <property name="policyDefDao" ref="policyDefDAO" /> -->
+	<!-- <property name="policyDao" ref="policyDAO" /> -->
+	<!-- <property name="policyDefParamDao" ref="policyDefParamDAO" /> -->
+	<!-- <property name="objectAssoc" ref="policyObjectAssocDAO" /> -->
+	<!-- <property name="dozerUtils" ref="dozerUtils" /> -->
+	<!-- </bean> -->
+
+	<!-- <bean id="policyDefDAO" class="org.openiam.idm.srvc.policy.service.PolicyDefDAOImpl" 
+		> -->
+	<!-- <property name="sessionFactory" ref="sessionFactory"></property> -->
+	<!-- </bean> -->
+	<!-- <bean id="policyDefParamDAO" class="org.openiam.idm.srvc.policy.service.PolicyDefParamDAOImpl" 
+		> -->
+	<!-- <property name="sessionFactory" ref="sessionFactory"></property> -->
+	<!-- </bean> -->
+	<!-- <bean id="policyDAO" class="org.openiam.idm.srvc.policy.service.PolicyDAOImpl" 
+		> -->
+	<!-- <property name="sessionFactory" ref="sessionFactory"></property> -->
+	<!-- </bean> -->
+
+	<!-- Reference Data Beans -->
+	<bean id="refDataService"
+		class="org.openiam.idm.srvc.cd.service.ReferenceDataServiceImpl">
 		<property name="refDao" ref="refDAO" />
 	</bean>
 
-	<bean id="refDAO" class="org.openiam.idm.srvc.cd.service.ReferenceDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"></property>		
-	</bean>	
+	<bean id="refDAO" class="org.openiam.idm.srvc.cd.service.ReferenceDAOImpl">
+		<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
 
-	<!-- Notification and Message Delivery Beans --> 
-	<bean id="messageWS" class="org.openiam.idm.srvc.msg.ws.SysMessageWebServiceImpl" >
+	<!-- Notification and Message Delivery Beans -->
+	<bean id="messageWS" class="org.openiam.idm.srvc.msg.ws.SysMessageWebServiceImpl">
 		<property name="msgService" ref="sysMessageService" />
 	</bean>
-	
-	<bean id="sysMessageService" class="org.openiam.idm.srvc.msg.service.SysMessageServiceImpl" >
+
+	<bean id="sysMessageService" class="org.openiam.idm.srvc.msg.service.SysMessageServiceImpl">
 		<property name="msgDao" ref="sysMessageDAO" />
 	</bean>
 
-	<bean id="sysMessageDAO" class="org.openiam.idm.srvc.msg.service.SysMessageDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"></property>		
-	</bean>	
+	<bean id="sysMessageDAO" class="org.openiam.idm.srvc.msg.service.SysMessageDAOImpl">
+		<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
 
-	<bean id="orgPolicyWS" class="org.openiam.idm.srvc.orgpolicy.ws.OrgPolicyWebServiceImpl" >
+	<bean id="orgPolicyWS"
+		class="org.openiam.idm.srvc.orgpolicy.ws.OrgPolicyWebServiceImpl">
 		<property name="acceptService" ref="orgPolicyService" />
 	</bean>
-	
-	<bean id="orgPolicyService" class="org.openiam.idm.srvc.orgpolicy.service.OrgPolicyServiceImpl" >
+
+	<bean id="orgPolicyService"
+		class="org.openiam.idm.srvc.orgpolicy.service.OrgPolicyServiceImpl">
 		<property name="acceptanceDao" ref="orgPolicyDAO" />
 		<property name="userLogDao" ref="orgPolicyLogDAO" />
 	</bean>
 
-	<bean id="orgPolicyDAO" class="org.openiam.idm.srvc.orgpolicy.service.OrgPolicyDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"></property>		
-	</bean>	
-	<bean id="orgPolicyLogDAO" class="org.openiam.idm.srvc.orgpolicy.service.OrgPolicyUserLogDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"></property>		
-	</bean>		
-	
-	<!-- Email Beans --> 
-	<!--
-	<bean id="mailService" class="org.openiam.idm.srvc.msg.service.MailServiceImpl">
-		<property name="mailSender" ref="mailSender" />
-		<property name="defaultSender" value="${mail.defaultSender}" />
-		<property name="subjectPrefix" value="${mail.defaultSubjectPrefix}" />
-		<property name="optionalBccAddress" value="${mail.optionalBccAddress}" />
-		<property name="userManager" ref="userManager" />
+	<bean id="orgPolicyDAO" class="org.openiam.idm.srvc.orgpolicy.service.OrgPolicyDAOImpl">
+		<property name="sessionFactory" ref="sessionFactory"></property>
 	</bean>
-	-->
-	
+	<bean id="orgPolicyLogDAO"
+		class="org.openiam.idm.srvc.orgpolicy.service.OrgPolicyUserLogDAOImpl">
+		<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
+
+	<!-- Email Beans -->
+	<!-- <bean id="mailService" class="org.openiam.idm.srvc.msg.service.MailServiceImpl"> 
+		<property name="mailSender" ref="mailSender" /> <property name="defaultSender" 
+		value="${mail.defaultSender}" /> <property name="subjectPrefix" value="${mail.defaultSubjectPrefix}" 
+		/> <property name="optionalBccAddress" value="${mail.optionalBccAddress}" 
+		/> <property name="userManager" ref="userManager" /> </bean> -->
+
 	<bean id="emailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
 		<property name="host" value="${mail.host}" />
 		<property name="port" value="${mail.port}" />
@@ -274,10 +255,10 @@
 		<property name="javaMailProperties">
 			<props>
 				<prop key="mail.smtp.auth">false</prop>
-			 	<prop key="mail.smtp.starttls.enable">false</prop>
+				<prop key="mail.smtp.starttls.enable">false</prop>
 			</props>
-		</property> 
-		
+		</property>
+
 	</bean>
 
 	<bean id="mailSender" class=" org.openiam.idm.srvc.msg.service.MailSender">
@@ -286,154 +267,171 @@
 		<property name="username" value="${mail.username}" />
 		<property name="password" value="${mail.password}" />
 		<property name="auth" value="false" />
-		<property name="starttls" value="false" />	
+		<property name="starttls" value="false" />
 	</bean>
 
 	<!-- Language Beans -->
-	<!--<bean id="languageDataService" class="org.openiam.idm.srvc.lang.service.LanguageDataServiceImpl" >-->
-		<!--<property name="languageDao" ref="languageDAO" />-->
-	<!--</bean>-->
-	
-	<!--<bean id="languageDAO" class="org.openiam.idm.srvc.lang.service.LanguageDAOImpl" >-->
-		<!--<property name="sessionFactory" ref="sessionFactory"></property>		-->
-	<!--</bean>		-->
+	<!--<bean id="languageDataService" class="org.openiam.idm.srvc.lang.service.LanguageDataServiceImpl" 
+		> -->
+	<!--<property name="languageDao" ref="languageDAO" /> -->
+	<!--</bean> -->
+
+	<!--<bean id="languageDAO" class="org.openiam.idm.srvc.lang.service.LanguageDAOImpl" 
+		> -->
+	<!--<property name="sessionFactory" ref="sessionFactory"></property> -->
+	<!--</bean> -->
 	<!-- Location Beans -->
-	<bean id="locationDataService" class="org.openiam.idm.srvc.loc.service.LocationDataServiceImpl" >
+	<bean id="locationDataService"
+		class="org.openiam.idm.srvc.loc.service.LocationDataServiceImpl">
 		<property name="locationDao" ref="locationDAO" />
 	</bean>
-	<bean id="locationWS" class="org.openiam.idm.srvc.loc.ws.LocationDataWebServiceImpl" >
+	<bean id="locationWS" class="org.openiam.idm.srvc.loc.ws.LocationDataWebServiceImpl">
 		<property name="locationDS" ref="locationDataService" />
 	</bean>
-	
-	<bean id="locationDAO" class="org.openiam.idm.srvc.loc.service.LocationDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"></property>		
-	</bean>		
-	
+
+	<bean id="locationDAO" class="org.openiam.idm.srvc.loc.service.LocationDAOImpl">
+		<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
+
 	<!-- Utility Beans -->
-	<bean id="cryptor" class="org.openiam.util.encrypt.DESedeCryptor" >
+	<bean id="cryptor" class="org.openiam.util.encrypt.DESedeCryptor">
 	</bean>
-	<bean id="hash" class="org.openiam.util.encrypt.SHA2Hash" >
+	<bean id="hash" class="org.openiam.util.encrypt.SHA2Hash">
 	</bean>
-    <bean id="hash1" class="org.openiam.util.encrypt.SHA1Hash" >
-    </bean>
+	<bean id="hash1" class="org.openiam.util.encrypt.SHA1Hash">
+	</bean>
 
 
 
-    <!-- Batch related beans -->
-	<bean id="batchDataService" class="org.openiam.idm.srvc.batch.service.BatchDataServiceImpl" >
+	<!-- Batch related beans -->
+	<bean id="batchDataService" class="org.openiam.idm.srvc.batch.service.BatchDataServiceImpl">
 		<property name="batchDao" ref="batchConfigDAO" />
 	</bean>
-	<bean id="batchConfigDAO" class="org.openiam.idm.srvc.batch.service.BatchConfigDAOImpl" >
-		<property name="sessionFactory" ref="sessionFactory"></property>		
-	</bean>	
-	
-	
-	<!-- Key Management beans -->
-    <!--<bean id="keyManagementService" class="org.openiam.idm.srvc.key.service.KeyManagementServiceImpl">-->
-        <!--<property name="jksFile" value="${iam.jks.path}" />-->
-        <!--<property name="jksPassword"  value="${iam.jks.password}"  />-->
-        <!--<property name="keyPassword"  value="${iam.jks.key.password}"  />-->
-        <!--<property name="cryptor"  ref="cryptor"  />-->
-    <!--</bean>-->
-	<!-- ========================= RESOURCE DEFINITIONS ========================= -->
-<!-- 
-	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-	    <property name="locations">
-	        <value>classpath:datasource.properties</value>
-	    </property>
+	<bean id="batchConfigDAO" class="org.openiam.idm.srvc.batch.service.BatchConfigDAOImpl">
+		<property name="sessionFactory" ref="sessionFactory"></property>
 	</bean>
--->	
-	
+
+
+	<!-- Key Management beans -->
+	<!--<bean id="keyManagementService" class="org.openiam.idm.srvc.key.service.KeyManagementServiceImpl"> -->
+	<!--<property name="jksFile" value="${iam.jks.path}" /> -->
+	<!--<property name="jksPassword" value="${iam.jks.password}" /> -->
+	<!--<property name="keyPassword" value="${iam.jks.key.password}" /> -->
+	<!--<property name="cryptor" ref="cryptor" /> -->
+	<!--</bean> -->
+	<!-- ========================= RESOURCE DEFINITIONS ========================= -->
+	<!-- <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"> 
+		<property name="locations"> <value>classpath:datasource.properties</value> 
+		</property> </bean> -->
+
 	<!-- Hibernate SessionFactory -->
-	<bean id="sessionFactory" class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
-		<property name="dataSource" ref="dataSource"/>
-		<!--
-		<property name="jtaTransactionManager">
-	  		<bean factory-bean="transactionManager" factory-method="getTransactionManager" />
-		</property>
-		-->
+	<bean id="sessionFactory"
+		class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<!-- <property name="jtaTransactionManager"> <bean factory-bean="transactionManager" 
+			factory-method="getTransactionManager" /> </property> -->
 		<property name="mappingResources">
 			<list>
 				<value>org/openiam/idm/srvc/service/service/Service.hbm.xml</value>
-				<value>org/openiam/idm/srvc/service/service/ServiceConfig.hbm.xml</value>
-				<value>org/openiam/idm/srvc/service/service/RequestForm.hbm.xml</value>
-				<value>org/openiam/idm/srvc/service/service/RequestApprover.hbm.xml</value>
+				<value>org/openiam/idm/srvc/service/service/ServiceConfig.hbm.xml
+				</value>
+				<value>org/openiam/idm/srvc/service/service/RequestForm.hbm.xml
+				</value>
+				<value>org/openiam/idm/srvc/service/service/RequestApprover.hbm.xml
+				</value>
 
 				<!-- Metadata Maps -->
 				<!-- <value>org/openiam/idm/srvc/meta/service/MetadataElement.hbm.xml</value> -->
 				<!-- <value>org/openiam/idm/srvc/meta/service/MetadataType.hbm.xml</value> -->
-				
+
 				<!-- Category Maps -->
-<!-- 				<value>org/openiam/idm/srvc/cat/service/Category.hbm.xml</value> -->
-<!-- 				<value>org/openiam/idm/srvc/cat/service/CategoryLanguage.hbm.xml</value> -->
-<!-- 				<value>org/openiam/idm/srvc/cat/service/CategoryType.hbm.xml</value> -->
-<!-- 				<value>org/openiam/idm/srvc/audit/service/IdmAuditLog.hbm.xml</value> -->
+				<!-- <value>org/openiam/idm/srvc/cat/service/Category.hbm.xml</value> -->
+				<!-- <value>org/openiam/idm/srvc/cat/service/CategoryLanguage.hbm.xml</value> -->
+				<!-- <value>org/openiam/idm/srvc/cat/service/CategoryType.hbm.xml</value> -->
+				<!-- <value>org/openiam/idm/srvc/audit/service/IdmAuditLog.hbm.xml</value> -->
 				<!-- Menu Maps -->
-				<!-- <value>org/openiam/idm/srvc/menu/service/Menu.hbm.xml</value>-->
+				<!-- <value>org/openiam/idm/srvc/menu/service/Menu.hbm.xml</value> -->
 				<!-- <value>org/openiam/idm/srvc/menu/service/Permission.hbm.xml</value> -->
 				<!-- Util Maps -->
 				<value>org/openiam/base/id/SequenceGen.hbm.xml</value>
 				<value>org/openiam/idm/srvc/cd/service/ReferenceData.hbm.xml</value>
 				<!-- Audit log Maps -->
-				<!--<value>org/openiam/idm/srvc/auth/login/Login.hbm.xml</value>-->
-				<!--<value>org/openiam/idm/srvc/auth/login/LoginAttribute.hbm.xml</value>-->
-				<!--<value>org/openiam/idm/srvc/auth/login/AuthState.hbm.xml</value>-->
-				<!--  Policy Maps -->
-<!-- 				<value>org/openiam/idm/srvc/policy/service/Policy.hbm.xml</value> -->
-<!-- 				<value>org/openiam/idm/srvc/policy/service/PolicyAttribute.hbm.xml</value> -->
-<!-- 				<value>org/openiam/idm/srvc/policy/service/PolicyDef.hbm.xml</value> -->
-<!-- 				<value>org/openiam/idm/srvc/policy/service/PolicyDefParam.hbm.xml</value> -->
-<!-- 				<value>org/openiam/idm/srvc/policy/service/PolicyObjectAssoc.hbm.xml</value> -->
+				<!--<value>org/openiam/idm/srvc/auth/login/Login.hbm.xml</value> -->
+				<!--<value>org/openiam/idm/srvc/auth/login/LoginAttribute.hbm.xml</value> -->
+				<!--<value>org/openiam/idm/srvc/auth/login/AuthState.hbm.xml</value> -->
+				<!-- Policy Maps -->
+				<!-- <value>org/openiam/idm/srvc/policy/service/Policy.hbm.xml</value> -->
+				<!-- <value>org/openiam/idm/srvc/policy/service/PolicyAttribute.hbm.xml</value> -->
+				<!-- <value>org/openiam/idm/srvc/policy/service/PolicyDef.hbm.xml</value> -->
+				<!-- <value>org/openiam/idm/srvc/policy/service/PolicyDefParam.hbm.xml</value> -->
+				<!-- <value>org/openiam/idm/srvc/policy/service/PolicyObjectAssoc.hbm.xml</value> -->
 
-				<!--<value>org/openiam/idm/srvc/secdomain/service/SecurityDomain.hbm.xml</value>--> 
+				<!--<value>org/openiam/idm/srvc/secdomain/service/SecurityDomain.hbm.xml</value> -->
 
 				<!-- <value>org/openiam/idm/srvc/res/service/ResourceType.hbm.xml</value> -->
-				<!--value>org/openiam/idm/srvc/res/service/ResourceUser.hbm.xml</value-->
-				<!--<value>org/openiam/idm/srvc/lang/service/Language.hbm.xml</value>-->
+				<!--value>org/openiam/idm/srvc/res/service/ResourceUser.hbm.xml</value -->
+				<!--<value>org/openiam/idm/srvc/lang/service/Language.hbm.xml</value> -->
 				<value>org/openiam/idm/srvc/loc/service/Location.hbm.xml</value>
 
-				<!--
-				<value>org/openiam/idm/srvc/pswd/service/IdentityQuestGroup.hbm.xml</value>
-				<value>org/openiam/idm/srvc/pswd/service/IdentityQuestion.hbm.xml</value>
-				<value>org/openiam/idm/srvc/pswd/service/UserIdentityAnswer.hbm.xml</value>
-				-->
-				<!--
-				<value>org/openiam/idm/srvc/pswd/service/PwdHistory.hbm.xml</value>
-				-->
+				<!-- <value>org/openiam/idm/srvc/pswd/service/IdentityQuestGroup.hbm.xml</value> 
+					<value>org/openiam/idm/srvc/pswd/service/IdentityQuestion.hbm.xml</value> 
+					<value>org/openiam/idm/srvc/pswd/service/UserIdentityAnswer.hbm.xml</value> -->
+				<!-- <value>org/openiam/idm/srvc/pswd/service/PwdHistory.hbm.xml</value> -->
 
-                <!-- Move map entries to the IDM project. Should not be part of the general project  -->
+				<!-- Move map entries to the IDM project. Should not be part of the general 
+					project -->
 
-  			    <value>org/openiam/idm/srvc/recon/service/ReconciliationConfig.hbm.xml</value>
-				<value>org/openiam/idm/srvc/recon/service/ReconciliationResult.hbm.xml</value>
-				<value>org/openiam/idm/srvc/recon/service/ReconciliationSituation.hbm.xml</value>
-				<value>org/openiam/idm/srvc/recon/service/ReconResultDetail.hbm.xml</value>
-				<value>org/openiam/idm/srvc/synch/service/SynchConfig.hbm.xml</value>
-				<value>org/openiam/idm/srvc/synch/service/SynchConfigDataMapping.hbm.xml</value>
-				<value>org/openiam/idm/srvc/synch/service/SynchActivityLog.hbm.xml</value>
-				<value>org/openiam/idm/srvc/synch/service/ActivityLogDetail.hbm.xml</value>
+				<value>org/openiam/idm/srvc/recon/service/ReconciliationConfig.hbm.xml
+				</value>
+				<value>org/openiam/idm/srvc/recon/service/ReconciliationResult.hbm.xml
+				</value>
+				<value>org/openiam/idm/srvc/recon/service/ReconciliationSituation.hbm.xml
+				</value>
+				<value>org/openiam/idm/srvc/recon/service/ReconResultDetail.hbm.xml
+				</value>
+				<value>org/openiam/idm/srvc/synch/service/SynchConfig.hbm.xml
+				</value>
+				<value>org/openiam/idm/srvc/synch/service/SynchConfigDataMapping.hbm.xml
+				</value>
+				<value>org/openiam/idm/srvc/synch/service/SynchActivityLog.hbm.xml
+				</value>
+				<value>org/openiam/idm/srvc/synch/service/ActivityLogDetail.hbm.xml
+				</value>
 
-                <value>org/openiam/idm/srvc/mngsys/service/ApproverAssoc.hbm.xml</value>
+				<value>org/openiam/idm/srvc/mngsys/service/ApproverAssoc.hbm.xml
+				</value>
 
-				<value>org/openiam/idm/srvc/prov/request/service/ProvisionRequest.hbm.xml</value>
-				<value>org/openiam/idm/srvc/prov/request/service/RequestApprover.hbm.xml</value>
-				<value>org/openiam/idm/srvc/prov/request/service/RequestAttachment.hbm.xml</value>
-				<value>org/openiam/idm/srvc/prov/request/service/RequestAttribute.hbm.xml</value>
-				<value>org/openiam/idm/srvc/prov/request/service/RequestUser.hbm.xml</value>
+				<value>org/openiam/idm/srvc/prov/request/service/ProvisionRequest.hbm.xml
+				</value>
+				<value>org/openiam/idm/srvc/prov/request/service/RequestApprover.hbm.xml
+				</value>
+				<value>org/openiam/idm/srvc/prov/request/service/RequestAttachment.hbm.xml
+				</value>
+				<value>org/openiam/idm/srvc/prov/request/service/RequestAttribute.hbm.xml
+				</value>
+				<value>org/openiam/idm/srvc/prov/request/service/RequestUser.hbm.xml
+				</value>
 
-                <!-- End idm maps -->
+				<!-- End idm maps -->
 
-				<value>org/openiam/idm/srvc/msg/service/NotificationConfig.hbm.xml</value>
-				<value>org/openiam/idm/srvc/orgpolicy/service/OrgPolicy.hbm.xml</value>
-				<value>org/openiam/idm/srvc/orgpolicy/service/OrgPolicyUserLog.hbm.xml</value>
-				<value>org/openiam/idm/srvc/batch/service/BatchConfig.hbm.xml</value>
-				<value>org/openiam/idm/srvc/rpt/qryobject/dto/UserLoginStatusReport.hbm.xml</value>
+				<value>org/openiam/idm/srvc/msg/service/NotificationConfig.hbm.xml
+				</value>
+				<value>org/openiam/idm/srvc/orgpolicy/service/OrgPolicy.hbm.xml
+				</value>
+				<value>org/openiam/idm/srvc/orgpolicy/service/OrgPolicyUserLog.hbm.xml
+				</value>
+				<value>org/openiam/idm/srvc/batch/service/BatchConfig.hbm.xml
+				</value>
+				<value>org/openiam/idm/srvc/rpt/qryobject/dto/UserLoginStatusReport.hbm.xml
+				</value>
 
 
-                <!--<value>org/openiam/am/srvc/webres/WebResourceAttribute.hbm.xml</value>-->
+				<!--<value>org/openiam/am/srvc/webres/WebResourceAttribute.hbm.xml</value> -->
 			</list>
 		</property>
 		<property name="hibernateProperties" ref="hibernateProperties" />
-	    <property name="packagesToScan" value="org.openiam.core.domain*,
+		<property name="packagesToScan"
+			value="org.openiam.core.domain*,
 											   org.openiam.idm.srvc.grp.domain*,
 											   org.openiam.idm.srvc.role.domain*,
                                                org.openiam.idm.srvc.user.domain*,
@@ -450,159 +448,174 @@
                                                org.openiam.idm.srvc.pswd.domain*,
                                                org.openiam.idm.srvc.secdomain.domain*,
                                                org.openiam.idm.srvc.lang.domain*
-                                               "/>
+                                               " />
 
 	</bean>
-	<util:properties id="hibernateProperties" location="classpath:openiam.search.hibernate.properties">
-		<prop key="hibernate.dialect">${openiam.hibernate.dialect}</prop>	
+	<util:properties id="hibernateProperties"
+		location="classpath:openiam.search.hibernate.properties">
+		<prop key="hibernate.dialect">${openiam.hibernate.dialect}</prop>
 		<prop key="hibernate.show_sql">${openiam.hibernate.show.sql}</prop>
 		<prop key="hibernate.generate_statistics">${openiam.hibernate.generate.statistics}</prop>
-		<!--prop key="hibernate.cache.provider_class">org.hibernate.cache.EhCacheProvider</prop-->
-        <prop key="hibernate.cache.use_second_level_cache">${openiam.hibernate.second.level.cache.enabled}</prop>
-        <prop key="hibernate.cache.use_query_cache">${openiam.hibernate.query.cache.enabled}</prop>
-        <prop key="hibernate.use_sql_comments">${openiam.hibernate.sql.comments.enabled}</prop>
-        <prop key="hibernate.connection.autoReconnect">${openiam.hibernate.auto.connect.enabled}</prop>
+		<!--prop key="hibernate.cache.provider_class">org.hibernate.cache.EhCacheProvider</prop -->
+		<prop key="hibernate.cache.use_second_level_cache">${openiam.hibernate.second.level.cache.enabled}</prop>
+		<prop key="hibernate.cache.use_query_cache">${openiam.hibernate.query.cache.enabled}</prop>
+		<prop key="hibernate.use_sql_comments">${openiam.hibernate.sql.comments.enabled}</prop>
+		<prop key="hibernate.connection.autoReconnect">${openiam.hibernate.auto.connect.enabled}</prop>
 		<prop key="hibernate.validationQuery">${openiam.hibernate.validationQuery}</prop>
 	</util:properties>
-  	
-  	<bean id="hibernateTemplate" class="org.springframework.orm.hibernate3.HibernateTemplate">
-  		<property name="sessionFactory" ref="sessionFactory" />
-  	</bean>
 
-  
-  	<jee:jndi-lookup jndi-name="${datasource.jndi.name}" id="dataSource" />
-  	
-    <bean id="exporter"
-              class="org.springframework.jmx.export.MBeanExporter"
-              lazy-init="false">
-            <property name="autodetect" value="true" />
-            <property name="namingStrategy" ref="namingStrategy" />
-            <property name="assembler" ref="assembler" />
-    </bean>
-    <bean id="attributeSource"
-            class="org.springframework.jmx.export.annotation.AnnotationJmxAttributeSource"/>
-    <bean id="assembler"
-            class="org.springframework.jmx.export.assembler.MetadataMBeanInfoAssembler">
-        <property name="attributeSource" ref="attributeSource"/>
-    </bean>
-    <bean id="namingStrategy"
-        class="org.springframework.jmx.export.naming.MetadataNamingStrategy">
-        <property name="attributeSource" ref="attributeSource"/>
-    </bean>
+	<bean id="hibernateTemplate" class="org.springframework.orm.hibernate3.HibernateTemplate">
+		<property name="sessionFactory" ref="sessionFactory" />
+	</bean>
 
-	<!--
-	<bean id="transactionManager" class="org.springframework.transaction.jta.JtaTransactionManager">
-		<property name="transactionManagerName" value="${transaction.manager.name}" />
-    	<property name="userTransactionName" value="${transaction.user.name}" />
-  	</bean>
-  	-->
-	<bean id="transactionManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager">
-    	<property name="sessionFactory" ref="sessionFactory"/>
-  	</bean>
+
+	<jee:jndi-lookup jndi-name="${datasource.jndi.name}"
+		id="dataSource" />
+
+	<bean id="exporter" class="org.springframework.jmx.export.MBeanExporter"
+		lazy-init="false">
+		<property name="autodetect" value="true" />
+		<property name="namingStrategy" ref="namingStrategy" />
+		<property name="assembler" ref="assembler" />
+	</bean>
+	<bean id="attributeSource"
+		class="org.springframework.jmx.export.annotation.AnnotationJmxAttributeSource" />
+	<bean id="assembler"
+		class="org.springframework.jmx.export.assembler.MetadataMBeanInfoAssembler">
+		<property name="attributeSource" ref="attributeSource" />
+	</bean>
+	<bean id="namingStrategy"
+		class="org.springframework.jmx.export.naming.MetadataNamingStrategy">
+		<property name="attributeSource" ref="attributeSource" />
+	</bean>
+
+	<!-- <bean id="transactionManager" class="org.springframework.transaction.jta.JtaTransactionManager"> 
+		<property name="transactionManagerName" value="${transaction.manager.name}" 
+		/> <property name="userTransactionName" value="${transaction.user.name}" 
+		/> </bean> -->
+	<bean id="transactionManager"
+		class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+		<property name="sessionFactory" ref="sessionFactory" />
+	</bean>
 
 	<!-- enable the configuration of transactional behavior based on annotations -->
-  	<tx:annotation-driven transaction-manager="transactionManager"/>
+	<tx:annotation-driven transaction-manager="transactionManager" />
 
 
-  <tx:advice id="txAdvice" transaction-manager="transactionManager">
-    <!-- the transactional semantics... -->
-    <tx:attributes>
-      <!-- all methods starting with 'get' are read-only -->
-      <tx:method name="get*" read-only="true" propagation="SUPPORTS" />
-      <tx:method name="start*" read-only="true" propagation="NOT_SUPPORTED" />
-      <tx:method name="send*" read-only="true" propagation="NOT_SUPPORTED" />
-      <!-- other methods use the default transaction settings (see below) -->
-      <tx:method name="*" propagation="REQUIRED" rollback-for="RuntimeException"/>
+	<tx:advice id="txAdvice" transaction-manager="transactionManager">
+		<!-- the transactional semantics... -->
+		<tx:attributes>
+			<!-- all methods starting with 'get' are read-only -->
+			<tx:method name="get*" read-only="true" propagation="SUPPORTS" />
+			<tx:method name="start*" read-only="true" propagation="NOT_SUPPORTED" />
+			<tx:method name="send*" read-only="true" propagation="NOT_SUPPORTED" />
+			<!-- other methods use the default transaction settings (see below) -->
+			<tx:method name="*" propagation="REQUIRED" rollback-for="RuntimeException" />
 
-    </tx:attributes>
-  </tx:advice>
-
-
+		</tx:attributes>
+	</tx:advice>
 
 
-  <!-- ensure that the above transactional advice runs for any execution
-      of an operation defined by the FooService interface -->
-      
-  
-  <aop:config>
-    <aop:pointcut id="serviceOperation" expression="execution(* org.openiam.idm.srvc.service.service.ServiceMgr.*(..))"/>
-    <aop:advisor advice-ref="txAdvice" pointcut-ref="serviceOperation"/>
-  </aop:config>
-
-  <aop:config>
-    <aop:pointcut id="userOperation" expression="execution(* org.openiam.idm.srvc.user.ws.UserDataWebService.*(..))"/>
-    <aop:advisor advice-ref="txAdvice" pointcut-ref="userOperation"/>
-  </aop:config>  	
-
-  <aop:config>
-    <aop:pointcut id="auditOperation" expression="execution(* org.openiam.idm.srvc.audit.ws.IdmAuditLogWebDataService.*(..))"/>
-    <aop:advisor advice-ref="txAdvice" pointcut-ref="auditOperation"/>
-  </aop:config>   
 
 
-  <aop:config>
-    <aop:pointcut id="auditHelperOperation" expression="execution(* org.openiam.idm.srvc.audit.service.AuditHelperImpl.*(..))"/>
-    <aop:advisor advice-ref="txAdvice" pointcut-ref="auditHelperOperation"/>
-  </aop:config>   
+	<!-- ensure that the above transactional advice runs for any execution of 
+		an operation defined by the FooService interface -->
 
-  <aop:config>
-    <aop:pointcut id="secDomainDataOperation" expression="execution(* org.openiam.idm.srvc.secdomain.service.SecurityDomainDataService.*(..))"/>
-    <aop:advisor advice-ref="txAdvice" pointcut-ref="secDomainDataOperation"/>
-  </aop:config> 
 
-  <aop:config>
-    <aop:pointcut id="policyOperation" expression="execution(* org.openiam.idm.srvc.policy.service.PolicyDataService.*(..))"/>
-    <aop:advisor advice-ref="txAdvice" pointcut-ref="policyOperation"/>
-  </aop:config> 
+	<aop:config>
+		<aop:pointcut id="serviceOperation"
+			expression="execution(* org.openiam.idm.srvc.service.service.ServiceMgr.*(..))" />
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="serviceOperation" />
+	</aop:config>
 
-  <!--<aop:config>-->
-    <!--<aop:pointcut id="languageOperation" expression="execution(* org.openiam.idm.srvc.lang.service.LanguageDataService.*(..))"/>-->
-    <!--<aop:advisor advice-ref="txAdvice" pointcut-ref="languageOperation"/>-->
-  <!--</aop:config> -->
+	<aop:config>
+		<aop:pointcut id="userOperation"
+			expression="execution(* org.openiam.idm.srvc.user.ws.UserDataWebService.*(..))" />
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="userOperation" />
+	</aop:config>
+
+	<aop:config>
+		<aop:pointcut id="auditOperation"
+			expression="execution(* org.openiam.idm.srvc.audit.ws.IdmAuditLogWebDataService.*(..))" />
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="auditOperation" />
+	</aop:config>
+
+
+	<aop:config>
+		<aop:pointcut id="auditHelperOperation"
+			expression="execution(* org.openiam.idm.srvc.audit.service.AuditHelperImpl.*(..))" />
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="auditHelperOperation" />
+	</aop:config>
+
+	<aop:config>
+		<aop:pointcut id="secDomainDataOperation"
+			expression="execution(* org.openiam.idm.srvc.secdomain.service.SecurityDomainDataService.*(..))" />
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="secDomainDataOperation" />
+	</aop:config>
+
+	<aop:config>
+		<aop:pointcut id="policyOperation"
+			expression="execution(* org.openiam.idm.srvc.policy.service.PolicyDataService.*(..))" />
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="policyOperation" />
+	</aop:config>
+
+	<!--<aop:config> -->
+	<!--<aop:pointcut id="languageOperation" expression="execution(* org.openiam.idm.srvc.lang.service.LanguageDataService.*(..))"/> -->
+	<!--<aop:advisor advice-ref="txAdvice" pointcut-ref="languageOperation"/> -->
+	<!--</aop:config> -->
    <!---->
-    <aop:config>
-    <aop:pointcut id="locationOperation" expression="execution(* org.openiam.idm.srvc.loc.ws.LocationDataWebService.*(..))"/>
-    <aop:advisor advice-ref="txAdvice" pointcut-ref="locationOperation"/>
-  </aop:config> 
+	<aop:config>
+		<aop:pointcut id="locationOperation"
+			expression="execution(* org.openiam.idm.srvc.loc.ws.LocationDataWebService.*(..))" />
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="locationOperation" />
+	</aop:config>
 
-    <aop:config>
-    <aop:pointcut id="authenticationOperation" expression="execution(* org.openiam.idm.srvc.auth.service.AuthenticationService.*(..))"/>
-    <aop:advisor advice-ref="txAdvice" pointcut-ref="authenticationOperation"/>
-  </aop:config>   
+	<aop:config>
+		<aop:pointcut id="authenticationOperation"
+			expression="execution(* org.openiam.idm.srvc.auth.service.AuthenticationService.*(..))" />
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="authenticationOperation" />
+	</aop:config>
 
-  <aop:config>
-    <aop:pointcut id="passwordOperation" expression="execution(* org.openiam.idm.srvc.pswd.ws.PasswordWebService.*(..))"/>
-    <aop:advisor advice-ref="txAdvice" pointcut-ref="passwordOperation"/>
-  </aop:config>        
+	<aop:config>
+		<aop:pointcut id="passwordOperation"
+			expression="execution(* org.openiam.idm.srvc.pswd.ws.PasswordWebService.*(..))" />
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="passwordOperation" />
+	</aop:config>
 
-  <aop:config>
-    <aop:pointcut id="challengeResponseOperation" expression="execution(* org.openiam.idm.srvc.pswd.service.ChallengeResponseService.*(..))"/>
-    <aop:advisor advice-ref="txAdvice" pointcut-ref="challengeResponseOperation"/>
-  </aop:config>  
+	<aop:config>
+		<aop:pointcut id="challengeResponseOperation"
+			expression="execution(* org.openiam.idm.srvc.pswd.service.ChallengeResponseService.*(..))" />
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="challengeResponseOperation" />
+	</aop:config>
 
-  <aop:config>
-    <aop:pointcut id="referenceDataOperation" expression="execution(* org.openiam.idm.srvc.cd.service.ReferenceDataService.*(..))"/>
-    <aop:advisor advice-ref="txAdvice" pointcut-ref="referenceDataOperation"/>
-  </aop:config>
+	<aop:config>
+		<aop:pointcut id="referenceDataOperation"
+			expression="execution(* org.openiam.idm.srvc.cd.service.ReferenceDataService.*(..))" />
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="referenceDataOperation" />
+	</aop:config>
 
-  <aop:config>
-    <aop:pointcut id="orgPolicyAcceptanceOperation" expression="execution(* org.openiam.idm.srvc.orgpolicy.ws.OrgPolicyWebService.*(..))"/>
-    <aop:advisor advice-ref="txAdvice" pointcut-ref="orgPolicyAcceptanceOperation"/>
-  </aop:config>
-  
-  <aop:config>
-    <aop:pointcut id="sysMessageOperation" expression="execution(* org.openiam.idm.srvc.msg.ws.SysMessageWebService.*(..))"/>
-    <aop:advisor advice-ref="txAdvice" pointcut-ref="sysMessageOperation"/>
-  </aop:config>
+	<aop:config>
+		<aop:pointcut id="orgPolicyAcceptanceOperation"
+			expression="execution(* org.openiam.idm.srvc.orgpolicy.ws.OrgPolicyWebService.*(..))" />
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="orgPolicyAcceptanceOperation" />
+	</aop:config>
 
-  <aop:config>
-    <aop:pointcut id="batchOperation" expression="execution(* org.openiam.idm.srvc.batch.service.BatchDataServiceImpl.*(..))"/>
-    <aop:advisor advice-ref="txAdvice" pointcut-ref="batchOperation"/>
-  </aop:config>    
+	<aop:config>
+		<aop:pointcut id="sysMessageOperation"
+			expression="execution(* org.openiam.idm.srvc.msg.ws.SysMessageWebService.*(..))" />
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="sysMessageOperation" />
+	</aop:config>
 
-  <aop:config>
-    <aop:pointcut id="queryOperation" expression="execution(* org.openiam.idm.srvc.batch.service.BatchDataServiceImpl.*(..))"/>
-    <aop:advisor advice-ref="txAdvice" pointcut-ref="queryOperation"/>
-  </aop:config>    
+	<aop:config>
+		<aop:pointcut id="batchOperation"
+			expression="execution(* org.openiam.idm.srvc.batch.service.BatchDataServiceImpl.*(..))" />
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="batchOperation" />
+	</aop:config>
+
+	<aop:config>
+		<aop:pointcut id="queryOperation"
+			expression="execution(* org.openiam.idm.srvc.batch.service.BatchDataServiceImpl.*(..))" />
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="queryOperation" />
+	</aop:config>
 </beans>
 
