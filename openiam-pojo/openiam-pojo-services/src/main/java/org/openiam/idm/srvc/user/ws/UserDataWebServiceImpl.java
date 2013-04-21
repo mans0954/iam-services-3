@@ -1147,17 +1147,13 @@ public class UserDataWebServiceImpl implements UserDataWebService,MuleContextAwa
 	            final UserEntity userEntity = userDozerConverter.convertToEntity(request.getUser(), true);
 	            final UserEntity dbEntity = userManager.getUser(request.getUser().getUserId());
 	            
-	            final List<EmailAddressEntity> emailList = emailAddressDozerConverter.convertToEntityList(request.getEmails(), true);	            
-	            if(CollectionUtils.isNotEmpty(emailList)) {
-	            	for(final EmailAddressEntity email : emailList) {
-	            		email.setParent(userEntity);
-	            		if(StringUtils.isBlank(email.getEmailId())) {
-	            			userManager.addEmailAddress(email);
-	            		} else {
-	            			userManager.updateEmailAddress(email);
-	            		}
-	            	}
-	            }
+	            final List<EmailAddressEntity> emailList = emailAddressDozerConverter.convertToEntityList(request.getEmails(), true);	 
+	            final List<AddressEntity> addressList = addressDozerConverter.convertToEntityList(request.getAddresses(), true);
+	            final List<PhoneEntity> phoneList = phoneDozerConverter.convertToEntityList(request.getPhones(), true);
+	            
+	            saveEmails(userEntity, emailList);
+	            saveAddresses(userEntity, addressList);
+	            savePhones(userEntity, phoneList);
 	            
 	            /* figure out the emails to delete */
 	            if(CollectionUtils.isNotEmpty(dbEntity.getEmailAddresses())) {
@@ -1178,18 +1174,6 @@ public class UserDataWebServiceImpl implements UserDataWebService,MuleContextAwa
 	            	}
 	            }
 	            
-	            final List<AddressEntity> addressList = addressDozerConverter.convertToEntityList(request.getAddresses(), true);
-	            if(CollectionUtils.isNotEmpty(addressList)) {
-	            	for(final AddressEntity address : addressList) {
-	            		address.setParent(userEntity);
-	            		if(StringUtils.isBlank(address.getAddressId())) {
-	            			userManager.addAddress(address);
-	            		} else {
-	            			userManager.updateAddress(address);
-	            		}
-	            	}
-	            }
-	            
 	            /* figure out the emails to delete */
 	            if(CollectionUtils.isNotEmpty(dbEntity.getAddresses())) {
 	            	for(final Iterator<AddressEntity> it = dbEntity.getAddresses().iterator(); it.hasNext();) {
@@ -1205,18 +1189,6 @@ public class UserDataWebServiceImpl implements UserDataWebService,MuleContextAwa
 	            		
 	            		if(!contains) {
 	            			it.remove();
-	            		}
-	            	}
-	            }
-	            
-	            final List<PhoneEntity> phoneList = phoneDozerConverter.convertToEntityList(request.getPhones(), true);
-	            if(CollectionUtils.isNotEmpty(phoneList)) {
-	            	for(final PhoneEntity phone : phoneList) {
-	            		phone.setParent(userEntity);
-	            		if(StringUtils.isBlank(phone.getPhoneId())) {
-	            			userManager.addPhone(phone);
-	            		} else {
-	            			userManager.updatePhone(phone);
 	            		}
 	            	}
 	            }
@@ -1257,5 +1229,95 @@ public class UserDataWebServiceImpl implements UserDataWebService,MuleContextAwa
 	            response.setStatus(ResponseStatus.FAILURE);
 	        }
 	        return response;
+	}
+
+	@Override
+	public SaveTemplateProfileResponse createNewUserProfile(final NewUserProfileRequestModel request) {
+		final SaveTemplateProfileResponse response = new SaveTemplateProfileResponse(ResponseStatus.SUCCESS);
+        try {
+            if(request == null || request.getUser() == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            }
+            
+            final UserEntity userEntity = userDozerConverter.convertToEntity(request.getUser(), true);
+            if(StringUtils.isBlank(userEntity.getFirstName())) {
+            	throw new BasicDataServiceException(ResponseCode.FIRST_NAME_REQUIRED);
+            }
+            if(StringUtils.isBlank(userEntity.getLastName())) {
+            	throw new BasicDataServiceException(ResponseCode.LAST_NAME_REQUIRED);
+            }
+            if(CollectionUtils.isEmpty(request.getEmails())) {
+            	throw new BasicDataServiceException(ResponseCode.EMAIL_REQUIRED);
+            }
+            if(CollectionUtils.isEmpty(request.getLoginList())) {
+            	throw new BasicDataServiceException(ResponseCode.LOGIN_REQUIRED);
+            }
+            
+            
+            final List<EmailAddressEntity> emailList = emailAddressDozerConverter.convertToEntityList(request.getEmails(), true);	 
+            final List<AddressEntity> addressList = addressDozerConverter.convertToEntityList(request.getAddresses(), true);
+            final List<PhoneEntity> phoneList = phoneDozerConverter.convertToEntityList(request.getPhones(), true);
+            
+            userManager.saveUserInfo(userEntity, null);
+            
+            /* now set the user on the template */
+            request.getUser().setUserId(userEntity.getUserId());
+            pageTemplateService.saveTemplate(request);
+            saveEmails(userEntity, emailList);
+            saveAddresses(userEntity, addressList);
+            savePhones(userEntity, phoneList);
+        } catch(PageTemplateException e) {
+        	response.setCurrentValue(e.getCurrentValue());
+        	response.setElementName(e.getElementName());
+        	response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+        } catch(BasicDataServiceException e) {
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+        } catch(Throwable e) {
+            log.error("Can't perform operation", e);
+            response.setErrorText(e.getMessage());
+            response.setStatus(ResponseStatus.FAILURE);
+        }
+        return response;
+	}
+	
+	private void savePhones(final UserEntity userEntity, List<PhoneEntity> phoneList) {
+        if(CollectionUtils.isNotEmpty(phoneList)) {
+        	for(final PhoneEntity phone : phoneList) {
+        		phone.setParent(userEntity);
+        		if(StringUtils.isBlank(phone.getPhoneId())) {
+        			userManager.addPhone(phone);
+        		} else {
+        			userManager.updatePhone(phone);
+        		}
+        	}
+        }
+	}
+	
+	private void saveEmails(final UserEntity userEntity, final List<EmailAddressEntity> emailList) {
+		if(CollectionUtils.isNotEmpty(emailList)) {
+        	for(final EmailAddressEntity email : emailList) {
+        		email.setParent(userEntity);
+        		if(StringUtils.isBlank(email.getEmailId())) {
+        			userManager.addEmailAddress(email);
+        		} else {
+        			userManager.updateEmailAddress(email);
+        		}
+        	}
+        }
+	}
+	
+	private void saveAddresses(final UserEntity userEntity, final List<AddressEntity> addressList) {
+		if(CollectionUtils.isNotEmpty(addressList)) {
+        	for(final AddressEntity address : addressList) {
+        		address.setParent(userEntity);
+        		if(StringUtils.isBlank(address.getAddressId())) {
+        			userManager.addAddress(address);
+        		} else {
+        			userManager.updateAddress(address);
+        		}
+        	}
+        }
 	}
 }
