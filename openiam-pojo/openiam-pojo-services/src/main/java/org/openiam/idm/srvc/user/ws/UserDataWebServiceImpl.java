@@ -34,7 +34,10 @@ import org.openiam.base.ws.ResponseStatus;
 import org.openiam.base.ws.exception.BasicDataServiceException;
 import org.openiam.dozer.converter.*;
 import org.openiam.idm.searchbeans.UserSearchBean;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.idm.srvc.auth.login.LoginDAO;
+import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
@@ -46,6 +49,11 @@ import org.openiam.idm.srvc.meta.exception.PageTemplateException;
 import org.openiam.idm.srvc.meta.service.MetadataElementTemplateService;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
+import org.openiam.idm.srvc.msg.service.MailService;
+import org.openiam.idm.srvc.pswd.service.PasswordGenerator;
+import org.openiam.idm.srvc.pswd.service.PasswordService;
+import org.openiam.idm.srvc.role.domain.UserRoleEntity;
+import org.openiam.idm.srvc.role.service.UserRoleDAO;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -103,6 +111,21 @@ public class UserDataWebServiceImpl implements UserDataWebService,MuleContextAwa
     
     @Autowired
     private MetadataElementTemplateService pageTemplateService;
+    
+    @Autowired
+    private LoginDozerConverter loginDozerConverter;
+    
+    @Autowired
+    private LoginDAO loginDAO;
+    
+    @Autowired
+    private LoginDataService loginDataService;
+    
+    @Autowired
+    private UserRoleDAO userRoleDAO;
+    
+	@Autowired
+	private MailService mailService;
 
     private MuleContext muleContext;
 
@@ -1231,15 +1254,21 @@ public class UserDataWebServiceImpl implements UserDataWebService,MuleContextAwa
 	        return response;
 	}
 
+	//TODO:  when IDM is ready, this will need to be moved into activit, and use the provisioning service
 	@Override
+	@Transactional
 	public SaveTemplateProfileResponse createNewUserProfile(final NewUserProfileRequestModel request) {
 		final SaveTemplateProfileResponse response = new SaveTemplateProfileResponse(ResponseStatus.SUCCESS);
         try {
-            if(request == null || request.getUser() == null) {
+            if(request == null || 
+               request.getUser() == null || 
+               CollectionUtils.isEmpty(request.getLoginList()) ||
+               StringUtils.isBlank(request.getRequestorId())) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
             
             final UserEntity userEntity = userDozerConverter.convertToEntity(request.getUser(), true);
+            userEntity.setStatus(UserStatusEnum.PENDING_INITIAL_LOGIN);
             if(StringUtils.isBlank(userEntity.getFirstName())) {
             	throw new BasicDataServiceException(ResponseCode.FIRST_NAME_REQUIRED);
             }
@@ -1253,19 +1282,77 @@ public class UserDataWebServiceImpl implements UserDataWebService,MuleContextAwa
             	throw new BasicDataServiceException(ResponseCode.LOGIN_REQUIRED);
             }
             
-            
-            final List<EmailAddressEntity> emailList = emailAddressDozerConverter.convertToEntityList(request.getEmails(), true);	 
-            final List<AddressEntity> addressList = addressDozerConverter.convertToEntityList(request.getAddresses(), true);
-            final List<PhoneEntity> phoneList = phoneDozerConverter.convertToEntityList(request.getPhones(), true);
+            final UserEntity requestor = userManager.getUser(request.getRequestorId());
+            if(requestor == null) {
+            	throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            }
             
             userManager.saveUserInfo(userEntity, null);
+            
+            
+            /* didn't use 'true' hibernate for this, since the entity mappings are done via IDs */
+            final List<LoginEntity> principalList = loginDozerConverter.convertToEntityList(request.getLoginList(), true);
+            
+            
+            final String plaintextPassword = PasswordGenerator.generatePassword(10);
+            final String encryptedPassword = loginDataService.encryptPassword(userEntity.getUserId(), plaintextPassword);
+            final String login = principalList.get(0).getLogin();
+            log.info(String.format("User password is: %s", plaintextPassword));
+            for(final LoginEntity loginEntity : principalList) {
+            	loginEntity.setUserId(userEntity.getUserId());
+            	loginEntity.setCreateDate(new Date());
+            	loginEntity.setFirstTimeLogin(1);
+            	loginEntity.setResetPassword(1);
+            	loginEntity.setPwdExp(new Date(0));
+            	loginEntity.setGracePeriod(new Date(0));
+            	loginEntity.setPassword(encryptedPassword);
+            	loginDAO.save(loginEntity);
+            }
+            
+            if(CollectionUtils.isNotEmpty(request.getRoleIds())) {
+            	for(final String roleId : request.getRoleIds()) {
+            		if(StringUtils.isNotBlank(roleId)) {
+            			final UserRoleEntity userRole = new UserRoleEntity();
+            			userRole.setRoleId(roleId);
+            			userRole.setUserId(userEntity.getUserId());
+            			userRoleDAO.save(userRole);
+            		}
+            	}
+            }
             
             /* now set the user on the template */
             request.getUser().setUserId(userEntity.getUserId());
             pageTemplateService.saveTemplate(request);
+            
+            final List<EmailAddressEntity> emailList = emailAddressDozerConverter.convertToEntityList(request.getEmails(), true);	 
+            final List<AddressEntity> addressList = addressDozerConverter.convertToEntityList(request.getAddresses(), true);
+            final List<PhoneEntity> phoneList = phoneDozerConverter.convertToEntityList(request.getPhones(), true);
             saveEmails(userEntity, emailList);
             saveAddresses(userEntity, addressList);
             savePhones(userEntity, phoneList);
+            if(CollectionUtils.isNotEmpty(emailList)) {
+            	userEntity.setEmailAddresses(new HashSet<EmailAddressEntity>(emailList));
+            }
+            if(CollectionUtils.isNotEmpty(phoneList)) {
+            	userEntity.setPhones(new HashSet<PhoneEntity>(phoneList));
+            }
+            if(CollectionUtils.isNotEmpty(addressList)) {
+            	userEntity.setAddresses(new HashSet<AddressEntity>(addressList));
+            }
+            userManager.updateUser(userEntity);
+            
+            final NotificationRequest notificationRequest = new NotificationRequest();
+            notificationRequest.setUserId(userEntity.getUserId());
+            notificationRequest.setNotificationType("NEW_USER_EMAIL");
+            notificationRequest.getParamList().add(new NotificationParam("IDENTITY",  login));
+            notificationRequest.getParamList().add(new NotificationParam("PSWD", plaintextPassword));
+            notificationRequest.getParamList().add(new NotificationParam("USER_ID", userEntity.getUserId()));
+            final boolean sendEmailResult = mailService.sendNotification(notificationRequest);
+            if(!sendEmailResult) {
+            	throw new BasicDataServiceException(ResponseCode.SEND_EMAIL_FAILED);
+            }
+            
+            response.setResponseValue(userEntity.getUserId());
         } catch(PageTemplateException e) {
         	response.setCurrentValue(e.getCurrentValue());
         	response.setElementName(e.getElementName());

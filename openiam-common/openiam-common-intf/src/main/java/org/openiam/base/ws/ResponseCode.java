@@ -410,7 +410,10 @@ public enum ResponseCode {
 	EMAIL_REQUIRED("EMAIL_REQUIRED"),
 	
 	@XmlEnumValue("LOGIN_REQUIRED")
-	LOGIN_REQUIRED("LOGIN_REQUIRED");
+	LOGIN_REQUIRED("LOGIN_REQUIRED"),
+	
+	@XmlEnumValue("SEND_EMAIL_FAILED")
+	SEND_EMAIL_FAILED("SEND_EMAIL_FAILED");
 	
     private final String value;
 

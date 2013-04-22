@@ -235,9 +235,9 @@ public class DefaultLoginModule extends AbstractLoginModule {
             loginManager.updateLogin(lg);
 
             // check the user status
-            if (user.getStatus().equals(UserStatusEnum.PENDING_INITIAL_LOGIN) ||
+            if (UserStatusEnum.PENDING_INITIAL_LOGIN.equals(user.getStatus()) ||
             // after the start date
-                    user.getStatus().equals(UserStatusEnum.PENDING_START_DATE)) {
+                    UserStatusEnum.PENDING_START_DATE.equals(user.getStatus())) {
                 user.setStatus(UserStatusEnum.ACTIVE);
                 userManager.updateUser(user);
             }

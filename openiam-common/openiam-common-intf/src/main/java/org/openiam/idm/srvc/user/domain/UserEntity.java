@@ -831,6 +831,15 @@ public class UserEntity {
     public List<LoginEntity> getPrincipalList() {
         return principalList;
     }
+    
+    public void addLogin(final LoginEntity loginEntity) {
+    	if(loginEntity != null) {
+    		if(this.principalList == null) {
+    			this.principalList = new LinkedList<LoginEntity>();
+    		}
+    		this.principalList.add(loginEntity);
+    	}
+    }
 
     public void setPrincipalList(List<LoginEntity> principalList) {
         this.principalList = principalList;
