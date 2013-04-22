@@ -24,13 +24,11 @@ package org.openiam.provision.dto;
 import org.openiam.base.BaseObject;
 import org.openiam.provision.type.ExtensibleAttribute;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Password object used for synchronization
@@ -44,6 +42,7 @@ import javax.xml.bind.annotation.XmlType;
     "principal",
     "password",
     "requestorId",
+    "sendPasswordToUser",
     "passThruAttributes",
     "attributeList"
 })
@@ -59,7 +58,7 @@ public class PasswordSync extends BaseObject  {
 	String principal;
 	String password;
 	String requestorId;
-
+    boolean sendPasswordToUser = false;
     boolean passThruAttributes = true;
     List<ExtensibleAttribute> attributeList = new ArrayList<ExtensibleAttribute>();
 	
@@ -112,6 +111,14 @@ public class PasswordSync extends BaseObject  {
 
     public void setAttributeList(List<ExtensibleAttribute> attributeList) {
         this.attributeList = attributeList;
+    }
+
+    public boolean getSendPasswordToUser() {
+        return sendPasswordToUser;
+    }
+
+    public void setSendPasswordToUser(boolean sendPasswordToUser) {
+        this.sendPasswordToUser = sendPasswordToUser;
     }
 }
 

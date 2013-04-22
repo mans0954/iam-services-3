@@ -137,6 +137,27 @@ public interface LoginDataWebService {
             String password);
 
     /**
+     * Sets a new password for the identity and updates the support attributes such as locked account flag.
+     *
+     * @param domainId
+     * @param principal
+     * @param managedSysId
+     * @param password
+     * @return
+     */
+    @WebMethod
+    public Response resetPasswordAndNotifyUser(
+            @WebParam(name = "domainId", targetNamespace = "")
+            String domainId,
+            @WebParam(name = "principal", targetNamespace = "")
+            String principal,
+            @WebParam(name = "managedSysId", targetNamespace = "")
+            String managedSysId,
+            @WebParam(name = "password", targetNamespace = "")
+            String password,
+            @WebParam(name = "password", targetNamespace = "")
+            boolean notifyUserViaEmail);
+    /**
      * Encrypts the password string.
      *
      * @param password
