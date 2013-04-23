@@ -344,98 +344,100 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 		final String userId = request.getUser().getUserId();
 		final LanguageEntity targetLanguage = getLanguage(request);
 		
-		if(pageTemplate == null || request.getUser() == null || request.getUser().getUserId() == null || targetLanguage == null) {
-			throw new PageTemplateException(ResponseCode.INVALID_ARGUMENTS);
-		}
-	
-		final MetadataElementPageTemplateEntity template = pageTemplateDAO.findById(pageTemplate.getTemplateId());
-		if(template == null) {
-			throw new PageTemplateException(ResponseCode.OBJECT_NOT_FOUND);
-		}
-		
-		/* only allow access if the user is entitled to the template */
-		if(!isEntitled(userId, template)) {
-			throw new PageTemplateException(ResponseCode.UNAUTHORIZED);
-		}
-			
-		/* get element map from template */
-		final Map<String, MetadataElementEntity> elementMap = getMetadataElementMap(template);
-		
-		/* create user attribute maps for fast access */
-		final List<UserAttributeEntity> attributes = attributeDAO.findUserAttributes(userId, elementMap.keySet());
-		final Map<String, UserAttributeEntity> id2UserAttributeMap = new HashMap<String, UserAttributeEntity>();
-		final Map<String, List<UserAttributeEntity>> metadataId2UserAttributeMap = new HashMap<String, List<UserAttributeEntity>>();
-		if(CollectionUtils.isNotEmpty(attributes)) {
-			for(final UserAttributeEntity attribute : attributes) {
-				final String elementId = attribute.getElement().getId();
-				id2UserAttributeMap.put(attribute.getId(), attribute);
-				if(!metadataId2UserAttributeMap.containsKey(elementId)) {
-					metadataId2UserAttributeMap.put(elementId, new LinkedList<UserAttributeEntity>());
-				}
-				metadataId2UserAttributeMap.get(elementId).add(attribute);
+		if(pageTemplate != null) {
+			if(request.getUser() == null || request.getUser().getUserId() == null || targetLanguage == null) {
+				throw new PageTemplateException(ResponseCode.INVALID_ARGUMENTS);
 			}
-		}
 		
-		/* sets to hold persistent and new attributes */
-		final List<UserAttributeEntity> deleteList = new LinkedList<UserAttributeEntity>();
-		final List<UserAttributeEntity> updateList = new LinkedList<UserAttributeEntity>();
-		final List<UserAttributeEntity> saveList = new LinkedList<UserAttributeEntity>();
-		
-		final UserEntity user = userDAO.findById(userId);
-		
-		/* loop through all elements sent in the request */
-		if(CollectionUtils.isNotEmpty(pageTemplate.getPageElements())) {
-			for(final PageElement pageElement : pageTemplate.getPageElements()) {
-				final String elementId = pageElement.getElementId();
-				if(elementId != null && elementMap.containsKey(elementId)) {
-					MetadataElementEntity element = elementMap.get(elementId);
-					/* if the user is entitled to the element, do CRUD logic on the attributes */
-					if(isEntitled(userId, element)) {
-						if(CollectionUtils.isEmpty(pageElement.getUserValues())) { /* none sent - signals delete */
-							if(metadataId2UserAttributeMap.containsKey(elementId)) {
-								deleteList.addAll(metadataId2UserAttributeMap.get(elementId));
-							}
-						} else { /* attributes sent - figure out weather to save or update */
-							
-							for(final PageElementValue elementValue : pageElement.getUserValues()) {
-								if(pageElement.isEditable() && pageElement.isRequired() && StringUtils.isBlank(elementValue.getValue())) {
-									final PageTemplateException exception =  new PageTemplateException(ResponseCode.REQUIRED);
-									exception.setElementName(getElementName(element, targetLanguage));
-									throw exception;
+			final MetadataElementPageTemplateEntity template = pageTemplateDAO.findById(pageTemplate.getTemplateId());
+			if(template == null) {
+				throw new PageTemplateException(ResponseCode.OBJECT_NOT_FOUND);
+			}
+			
+			/* only allow access if the user is entitled to the template */
+			if(!isEntitled(userId, template)) {
+				throw new PageTemplateException(ResponseCode.UNAUTHORIZED);
+			}
+				
+			/* get element map from template */
+			final Map<String, MetadataElementEntity> elementMap = getMetadataElementMap(template);
+			
+			/* create user attribute maps for fast access */
+			final List<UserAttributeEntity> attributes = attributeDAO.findUserAttributes(userId, elementMap.keySet());
+			final Map<String, UserAttributeEntity> id2UserAttributeMap = new HashMap<String, UserAttributeEntity>();
+			final Map<String, List<UserAttributeEntity>> metadataId2UserAttributeMap = new HashMap<String, List<UserAttributeEntity>>();
+			if(CollectionUtils.isNotEmpty(attributes)) {
+				for(final UserAttributeEntity attribute : attributes) {
+					final String elementId = attribute.getElement().getId();
+					id2UserAttributeMap.put(attribute.getId(), attribute);
+					if(!metadataId2UserAttributeMap.containsKey(elementId)) {
+						metadataId2UserAttributeMap.put(elementId, new LinkedList<UserAttributeEntity>());
+					}
+					metadataId2UserAttributeMap.get(elementId).add(attribute);
+				}
+			}
+			
+			/* sets to hold persistent and new attributes */
+			final List<UserAttributeEntity> deleteList = new LinkedList<UserAttributeEntity>();
+			final List<UserAttributeEntity> updateList = new LinkedList<UserAttributeEntity>();
+			final List<UserAttributeEntity> saveList = new LinkedList<UserAttributeEntity>();
+			
+			final UserEntity user = userDAO.findById(userId);
+			
+			/* loop through all elements sent in the request */
+			if(CollectionUtils.isNotEmpty(pageTemplate.getPageElements())) {
+				for(final PageElement pageElement : pageTemplate.getPageElements()) {
+					final String elementId = pageElement.getElementId();
+					if(elementId != null && elementMap.containsKey(elementId)) {
+						MetadataElementEntity element = elementMap.get(elementId);
+						/* if the user is entitled to the element, do CRUD logic on the attributes */
+						if(isEntitled(userId, element)) {
+							if(CollectionUtils.isEmpty(pageElement.getUserValues())) { /* none sent - signals delete */
+								if(metadataId2UserAttributeMap.containsKey(elementId)) {
+									deleteList.addAll(metadataId2UserAttributeMap.get(elementId));
 								}
+							} else { /* attributes sent - figure out weather to save or update */
 								
-								if(!isValid(elementValue, element, targetLanguage)) {
-									final PageTemplateException exception =  new PageTemplateException(ResponseCode.INVALID_VALUE);
-									exception.setCurrentValue(elementValue.getValue());
-									exception.setElementName(getElementName(element, targetLanguage));
-									throw exception;
-								}
-								
-								/* new attribute */
-								if(StringUtils.isBlank(elementValue.getUserAttributeId())) {
-									
-									/* only create if there's a value */
-									if(StringUtils.isNotBlank(elementValue.getValue())) {
-										final UserAttributeEntity userAttribute = new UserAttributeEntity();
-										userAttribute.setElement(element);
-										userAttribute.setName(String.format("%s_%s", element.getAttributeName(), System.nanoTime()));
-										userAttribute.setUser(user);
-										userAttribute.setUserId(userId);
-										userAttribute.setValue(elementValue.getValue());
-										saveList.add(userAttribute);
+								for(final PageElementValue elementValue : pageElement.getUserValues()) {
+									if(pageElement.isEditable() && pageElement.isRequired() && StringUtils.isBlank(elementValue.getValue())) {
+										final PageTemplateException exception =  new PageTemplateException(ResponseCode.REQUIRED);
+										exception.setElementName(getElementName(element, targetLanguage));
+										throw exception;
 									}
-								} else { /* update, if possible */
-									final UserAttributeEntity attribute = id2UserAttributeMap.get(elementValue.getUserAttributeId());
-									if(attribute != null) {
-										/* if the value is not empty, it's a possible update */
+									
+									if(!isValid(elementValue, element, targetLanguage)) {
+										final PageTemplateException exception =  new PageTemplateException(ResponseCode.INVALID_VALUE);
+										exception.setCurrentValue(elementValue.getValue());
+										exception.setElementName(getElementName(element, targetLanguage));
+										throw exception;
+									}
+									
+									/* new attribute */
+									if(StringUtils.isBlank(elementValue.getUserAttributeId())) {
+										
+										/* only create if there's a value */
 										if(StringUtils.isNotBlank(elementValue.getValue())) {
-											/* only update if the value changed - optimization */
-											if(!StringUtils.equals(attribute.getValue(), elementValue.getValue())) {
-												attribute.setValue(elementValue.getValue());
-												updateList.add(attribute);
+											final UserAttributeEntity userAttribute = new UserAttributeEntity();
+											userAttribute.setElement(element);
+											userAttribute.setName(String.format("%s_%s", element.getAttributeName(), System.nanoTime()));
+											userAttribute.setUser(user);
+											userAttribute.setUserId(userId);
+											userAttribute.setValue(elementValue.getValue());
+											saveList.add(userAttribute);
+										}
+									} else { /* update, if possible */
+										final UserAttributeEntity attribute = id2UserAttributeMap.get(elementValue.getUserAttributeId());
+										if(attribute != null) {
+											/* if the value is not empty, it's a possible update */
+											if(StringUtils.isNotBlank(elementValue.getValue())) {
+												/* only update if the value changed - optimization */
+												if(!StringUtils.equals(attribute.getValue(), elementValue.getValue())) {
+													attribute.setValue(elementValue.getValue());
+													updateList.add(attribute);
+												}
+											} else { /* the value is empty - signals delete */
+												deleteList.add(attribute);
 											}
-										} else { /* the value is empty - signals delete */
-											deleteList.add(attribute);
 										}
 									}
 								}
@@ -444,19 +446,19 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 					}
 				}
 			}
-		}
-		
-		/* assuming that the collections have been populated, persist them */
-		for(final UserAttributeEntity entity : deleteList) {
-			attributeDAO.delete(entity);
-		}
-		
-		for(final UserAttributeEntity entity : updateList) {
-			attributeDAO.update(entity);
-		}
-		
-		for(final UserAttributeEntity entity : saveList) {
-			attributeDAO.save(entity);
+			
+			/* assuming that the collections have been populated, persist them */
+			for(final UserAttributeEntity entity : deleteList) {
+				attributeDAO.delete(entity);
+			}
+			
+			for(final UserAttributeEntity entity : updateList) {
+				attributeDAO.update(entity);
+			}
+			
+			for(final UserAttributeEntity entity : saveList) {
+				attributeDAO.save(entity);
+			}
 		}
 	}
 	

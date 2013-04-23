@@ -1262,8 +1262,7 @@ public class UserDataWebServiceImpl implements UserDataWebService,MuleContextAwa
         try {
             if(request == null || 
                request.getUser() == null || 
-               CollectionUtils.isEmpty(request.getLoginList()) ||
-               StringUtils.isBlank(request.getRequestorId())) {
+               CollectionUtils.isEmpty(request.getLoginList())) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
             
@@ -1280,19 +1279,17 @@ public class UserDataWebServiceImpl implements UserDataWebService,MuleContextAwa
             }
             if(CollectionUtils.isEmpty(request.getLoginList())) {
             	throw new BasicDataServiceException(ResponseCode.LOGIN_REQUIRED);
-            }
+            }    
             
-            final UserEntity requestor = userManager.getUser(request.getRequestorId());
-            if(requestor == null) {
-            	throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            
+            final List<LoginEntity> principalList = loginDozerConverter.convertToEntityList(request.getLoginList(), true);
+            for(final LoginEntity loginEntity : principalList) {
+            	if(loginDataService.getLoginByManagedSys(loginEntity.getDomainId(), loginEntity.getLogin(), loginEntity.getManagedSysId()) != null) {
+            		throw new BasicDataServiceException(ResponseCode.LOGIN_EXISTS);
+            	}
             }
             
             userManager.saveUserInfo(userEntity, null);
-            
-            
-            /* didn't use 'true' hibernate for this, since the entity mappings are done via IDs */
-            final List<LoginEntity> principalList = loginDozerConverter.convertToEntityList(request.getLoginList(), true);
-            
             
             final String plaintextPassword = PasswordGenerator.generatePassword(10);
             final String encryptedPassword = loginDataService.encryptPassword(userEntity.getUserId(), plaintextPassword);
