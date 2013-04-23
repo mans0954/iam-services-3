@@ -155,7 +155,7 @@ public interface LoginDataWebService {
             String managedSysId,
             @WebParam(name = "password", targetNamespace = "")
             String password,
-            @WebParam(name = "password", targetNamespace = "")
+            @WebParam(name = "notifyUserViaEmail", targetNamespace = "")
             boolean notifyUserViaEmail);
     /**
      * Encrypts the password string.

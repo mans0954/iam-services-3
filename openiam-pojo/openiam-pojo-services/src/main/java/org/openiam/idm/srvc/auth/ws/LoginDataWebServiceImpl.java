@@ -283,7 +283,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 
                 Response respPwd = this.decryptPassword(loginEntity.getUserId(), password);
 
-                if(respPwd.getStatus()!=ResponseStatus.SUCCESS){
+                if(respPwd.getStatus()==ResponseStatus.SUCCESS){
                     UserEntity user =  userService.getUser(loginEntity.getUserId());
                     String pwd = (String)respPwd.getResponseValue();
                     if(user!=null){
@@ -298,9 +298,9 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
                         paramList.add(new NotificationParam(MailTemplateParameters.IDENTITY.value(), principal));
                         paramList.add(new NotificationParam(MailTemplateParameters.PASSWORD.value(), pwd));
                         paramList.add(new NotificationParam(MailTemplateParameters.FIRST_NAME.value(), user.getFirstName()));
-                        paramList.add(new NotificationParam(MailTemplateParameters.FIRST_NAME.value(), user.getLastName()));
+                        paramList.add(new NotificationParam(MailTemplateParameters.LAST_NAME.value(), user.getLastName()));
 
-
+                        request.setParamList(paramList);
 
                         mailService.sendNotification(request);
                     }

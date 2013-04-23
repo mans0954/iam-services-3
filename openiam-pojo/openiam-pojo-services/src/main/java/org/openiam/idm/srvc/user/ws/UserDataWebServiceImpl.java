@@ -25,9 +25,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.mule.api.MuleContext;
-import org.mule.api.MuleException;
 import org.mule.api.context.MuleContextAware;
-import org.mule.module.client.MuleClient;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
@@ -51,7 +49,6 @@ import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.msg.service.MailService;
 import org.openiam.idm.srvc.pswd.service.PasswordGenerator;
-import org.openiam.idm.srvc.pswd.service.PasswordService;
 import org.openiam.idm.srvc.role.domain.UserRoleEntity;
 import org.openiam.idm.srvc.role.service.UserRoleDAO;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
@@ -66,7 +63,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 import java.util.*;
@@ -1125,9 +1121,7 @@ public class UserDataWebServiceImpl implements UserDataWebService,MuleContextAwa
         return userManager.getNumOfPhonesForUser(userId);
     }
 
-    private void sendCredentialsToUser(User user, String identity, String password) {
-
-        try {
+    private void sendCredentialsToUser(User user, String identity, String password) throws BasicDataServiceException {
 
             NotificationRequest request = new NotificationRequest();
             request.setUserId(user.getUserId());
@@ -1136,18 +1130,10 @@ public class UserDataWebServiceImpl implements UserDataWebService,MuleContextAwa
             request.getParamList().add(new NotificationParam("IDENTITY", identity));
             request.getParamList().add(new NotificationParam("PSWD", password));
 
-            MuleClient client = new MuleClient(muleContext);
-
-            Map<String, String> msgPropMap = new HashMap<String, String>();
-            msgPropMap.put("SERVICE_HOST", serviceHost);
-            msgPropMap.put("SERVICE_CONTEXT", serviceContext);
-
-            client.sendAsync("vm://notifyUserByEmailMessage", request, msgPropMap);
-
-        } catch (MuleException me) {
-            log.error(me.toString());
-        }
-
+            final boolean sendEmailResult = mailService.sendNotification(request);
+            if(!sendEmailResult) {
+                throw new BasicDataServiceException(ResponseCode.SEND_EMAIL_FAILED);
+            }
     }
 
 	@Override
