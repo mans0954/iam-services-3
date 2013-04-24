@@ -205,7 +205,7 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 		}
 		
 		final LanguageEntity targetLanguage = getLanguage(request);
-		boolean isSelfServiceRequest = request.isSelfserviceRequest();
+		boolean isAdminRequest = request.isAdminRequest();
 		
 		final String userId = StringUtils.trimToNull(request.getUserId());
 		PageTempate template = null;
@@ -227,7 +227,7 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 			/*
 			 * If the user is unknown (self registration), the template is public, it's an admin request, or if the user is entitled to the template, create one
 			 */
-			if(entity.isPublic() || !isSelfServiceRequest || isEntitled(userId, entity.getResource().getResourceId())) {
+			if(entity.isPublic() || isAdminRequest || isEntitled(userId, entity.getResource().getResourceId())) {
 				template = new PageTempate();
 				template.setTemplateId(entity.getId());
 				if(CollectionUtils.isNotEmpty(entity.getMetadataElements())) {
@@ -237,7 +237,7 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 						
 						final MetadataElementEntity elementEntity = elementDAO.findById(elementId);
 						if(elementEntity != null) {
-							if(elementEntity.isPublic() || !isSelfServiceRequest || isEntitled(userId, elementEntity.getResource().getResourceId())) {
+							if(elementEntity.isPublic() || isAdminRequest || isEntitled(userId, elementEntity.getResource().getResourceId())) {
 								final PageElement pageElement = new PageElement(elementEntity, order);
 								
 								if(targetLanguage != null) {
