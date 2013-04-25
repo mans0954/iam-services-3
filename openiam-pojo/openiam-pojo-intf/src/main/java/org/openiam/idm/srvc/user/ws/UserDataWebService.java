@@ -487,7 +487,7 @@ public interface UserDataWebService {
 
     @WebMethod
     public Response enableDisableUser(@WebParam(name = "userId", targetNamespace = "")final String userId,
-                                      @WebParam(name = "userId", targetNamespace = "")final UserStatusEnum secondaryStatus);
+                                      @WebParam(name = "secondaryStatus", targetNamespace = "")final UserStatusEnum secondaryStatus);
 
     @WebMethod
     public Response activateUser(@WebParam(name = "userId", targetNamespace = "")final String userId);

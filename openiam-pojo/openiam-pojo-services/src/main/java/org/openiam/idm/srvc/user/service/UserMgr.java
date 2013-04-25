@@ -982,7 +982,7 @@ public class UserMgr implements UserDataService {
         Set<EmailAddressEntity> emailAddressList = newUserEntity.getEmailAddresses();
 
         newUserEntity.setPrincipalList(null);
-        newUserEntity.setEmailAddresses(null);
+       // newUserEntity.setEmailAddresses(null);
 
         this.addUser(newUserEntity);
 
@@ -1005,7 +1005,9 @@ public class UserMgr implements UserDataService {
             }
         }
         if(emailAddressList!=null && !emailAddressList.isEmpty()){
-            validateEmailAddress(newUserEntity, emailAddressList);
+            for(final EmailAddressEntity email : emailAddressList) {
+                email.setParent(newUserEntity);
+            }
             this.addEmailAddressSet(emailAddressList);
         }
         return newUserEntity.getUserId();
