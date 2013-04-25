@@ -22,6 +22,7 @@ import org.openiam.dozer.converter.ResourceUserDozerConverter;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
+import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourceGroupEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
@@ -33,97 +34,63 @@ import org.openiam.idm.srvc.res.dto.*;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.service.RoleDAO;
+import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.searchbean.converter.ResourceSearchBeanConverter;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDAO;
+import org.openiam.idm.srvc.user.service.UserDataService;
+import org.openiam.idm.srvc.user.service.UserMgr;
 import org.openiam.idm.srvc.user.ws.UserDataWebService;
 import org.openiam.util.DozerMappingType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service("resourceDataService")
 @WebService(endpointInterface = "org.openiam.idm.srvc.res.service.ResourceDataService", targetNamespace = "urn:idm.openiam.org/srvc/res/service", portName = "ResourceDataWebServicePort", serviceName = "ResourceDataWebService")
-@Transactional
 public class ResourceDataServiceImpl implements ResourceDataService {
 
 	@Autowired
 	private ResourceDozerConverter resourceConverter;
 	
 	@Autowired
-	private ResourceRoleDozerConverter resourceRoleConverter;
-	
-	@Autowired
 	private ResourcePropDozerConverter resourcePropConverter;
-	
-	@Autowired
-    private ResourceDAO resourceDao;
-	
-	@Autowired
-    private ResourceTypeDAO resourceTypeDao;
-	
-	@Autowired
-    private ResourcePropDAO resourcePropDao;
-	
-	@Autowired
-    private ResourceRoleDAO resourceRoleDao;
-    
-    @Autowired
-    private ResourceUserDAO resourceUserDao;
-    
-    @Autowired
-    private GroupDAO groupDAO;
-    
-    @Autowired
-    private RoleDAO roleDAO;
-    
-    @Autowired
-    private UserDAO userDAO;
     
     @Autowired
     private ResourceTypeDozerConverter resourceTypeConverter;
     
-
     @Autowired
-    private ResourceGroupDAO resourceGroupDAO;
+    private ResourceService resourceService;
+    
+    @Autowired
+    private UserDataService userManager;
+    
+    @Autowired
+    private GroupDataService groupService;
+    
+    @Autowired
+    private RoleDataService roleService;
 
     private static final Log log = LogFactory.getLog(ResourceDataServiceImpl.class);
-
-    @Autowired
-    private ResourceSearchBeanConverter resourceSearchBeanConverter;
     
     @Autowired
     private ResourceUserDozerConverter resourceUserConverter;
 
     public Resource getResource(String resourceId) {
-    	Resource resource = null;
-    	if(resourceId != null) {
-    		 final ResourceEntity entity = resourceDao.findById(resourceId);
-    		 if(entity != null) {
-    			 resource = resourceConverter.convertToDTO(entity, true);
-    		 }
-    	}
+    	final ResourceEntity entity = resourceService.findResourceById(resourceId);
+    	final Resource resource = (entity != null) ? resourceConverter.convertToDTO(entity, true) : null;
     	return resource;
     }
 
     @WebMethod
     public int count(final ResourceSearchBean searchBean) {
-    	final ResourceEntity entity = resourceSearchBeanConverter.convert(searchBean);
-    	return resourceDao.count(entity);
+    	return resourceService.count(searchBean);
     }
 
     @Override
     public List<Resource> findBeans(final ResourceSearchBean searchBean, final int from, final int size) {
-        final ResourceEntity resource = resourceSearchBeanConverter.convert(searchBean);
         final DozerMappingType mappingType = (searchBean.isDeepCopy()) ? DozerMappingType.DEEP : DozerMappingType.SHALLOW;
-        List<ResourceEntity> resultsEntities = null;
-        if (Boolean.TRUE.equals(searchBean.getRootsOnly())) {
-            resultsEntities = resourceDao.getRootResources(resource, from, size);
-        } else {
-            resultsEntities = resourceDao.getByExample(resource, from, size);
-        }
-        
+        final List<ResourceEntity> resultsEntities = resourceService.findBeans(searchBean, from, size);
         return resourceConverter.convertToDTOList(resultsEntities, DozerMappingType.DEEP.equals(mappingType));
     }
     
@@ -149,7 +116,7 @@ public class ResourceDataServiceImpl implements ResourceDataService {
     		
     		
     		/* duplicate name check */
-    		final ResourceEntity nameCheck = resourceDao.findByName(entity.getName());
+    		final ResourceEntity nameCheck = resourceService.findResourceByName(entity.getName());
     		if(nameCheck != null) {
     			if(StringUtils.isBlank(entity.getResourceId())) {
     				throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
@@ -162,26 +129,7 @@ public class ResourceDataServiceImpl implements ResourceDataService {
     			throw new BasicDataServiceException(ResponseCode.INVALID_RESOURCE_TYPE);
     		}
     		
-    		/* merge */
-    		if(StringUtils.isNotBlank(entity.getResourceId())) {
-    			final ResourceEntity dbObject = resourceDao.findById(resource.getResourceId());
-    			if(dbObject == null) {
-    				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
-    			}
-    			//TODO: extend this merge
-    			dbObject.setResourceType(entity.getResourceType());
-    			dbObject.setDescription(entity.getDescription());
-    			dbObject.setDomain(entity.getDomain());
-    			dbObject.setIsPublic(entity.getIsPublic());
-    			dbObject.setIsSSL(entity.getIsSSL());
-    			dbObject.setManagedSysId(entity.getManagedSysId());
-    			dbObject.setName(entity.getName());
-    			dbObject.setURL(entity.getURL());
-    			resourceDao.update(dbObject);
-    		} else {
-    			resourceDao.save(entity);
-    		}
-    		
+    		resourceService.save(entity);
     		response.setResponseValue(entity.getResourceId());
     	} catch(BasicDataServiceException e) {
     		response.setErrorCode(e.getCode());
@@ -202,7 +150,7 @@ public class ResourceDataServiceImpl implements ResourceDataService {
     		}
     		
     		final ResourceTypeEntity entity = resourceTypeConverter.convertToEntity(val, true);
-    		resourceTypeDao.save(entity);
+    		resourceService.save(entity);
     		response.setResponseValue(entity.getResourceTypeId());
     	} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
@@ -215,10 +163,10 @@ public class ResourceDataServiceImpl implements ResourceDataService {
     	return response;
     }
 
-    public ResourceType getResourceType(String resourceTypeId) {
+    public ResourceType getResourceType(String id) {
     	ResourceType retVal = null;
-    	if(resourceTypeId != null) {
-    		final ResourceTypeEntity entity = resourceTypeDao.findById(resourceTypeId);
+    	if(id != null) {
+    		final ResourceTypeEntity entity = resourceService.findResourceTypeById(id);
     		if(entity != null) {
     			retVal = resourceTypeConverter.convertToDTO(entity, false);
     		}
@@ -234,7 +182,8 @@ public class ResourceDataServiceImpl implements ResourceDataService {
     		}
     		
     		final ResourceTypeEntity entity = resourceTypeConverter.convertToEntity(resourceType, false);
-    		resourceTypeDao.update(entity);
+    		resourceService.save(entity);
+    		response.setResponseValue(entity.getResourceTypeId());
     	} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
@@ -247,7 +196,7 @@ public class ResourceDataServiceImpl implements ResourceDataService {
     }
 
     public List<ResourceType> getAllResourceTypes() {
-        final List<ResourceTypeEntity> resourceTypeEntities = resourceTypeDao.findAll();
+        final List<ResourceTypeEntity> resourceTypeEntities = resourceService.getAllResourceTypes();
         return resourceTypeConverter.convertToDTOList(resourceTypeEntities, false);
     }
 
@@ -267,12 +216,6 @@ public class ResourceDataServiceImpl implements ResourceDataService {
     		}
     		
     		final ResourcePropEntity entity = resourcePropConverter.convertToEntity(prop, false);
-    		if(StringUtils.isNotBlank(prop.getResourcePropId())) {
-    			final ResourcePropEntity dbObject = resourcePropDao.findById(prop.getResourcePropId());
-    			if(dbObject == null) {
-    				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
-    			}
-    		}
     		
     		if(StringUtils.isBlank(entity.getName())) {
     			throw new BasicDataServiceException(ResponseCode.NO_NAME);
@@ -286,11 +229,7 @@ public class ResourceDataServiceImpl implements ResourceDataService {
     			throw new BasicDataServiceException(ResponseCode.RESOURCE_PROP_RESOURCE_ID_MISSING);
     		}
     		
-    		if(StringUtils.isNotBlank(entity.getResourcePropId())) {
-    			resourcePropDao.update(entity);
-    		} else {
-    			resourcePropDao.save(entity);
-    		}
+    		resourceService.save(entity);
     		response.setResponseValue(entity.getResourcePropId());
     	} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
@@ -310,12 +249,7 @@ public class ResourceDataServiceImpl implements ResourceDataService {
     			throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
     		}
     		
-    		final ResourcePropEntity entity = resourcePropDao.findById(resourcePropId);
-    		if(entity == null) {
-    			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
-    		}
-    		
-    		resourcePropDao.delete(entity);
+    		resourceService.deleteResourceProp(resourcePropId);
     	} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
@@ -335,11 +269,7 @@ public class ResourceDataServiceImpl implements ResourceDataService {
     			throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
     		}
     		
-    		final ResourceUserEntity entity = resourceUserDao.getRecord(resourceId, userId);
-    		if(entity != null) {
-    			resourceUserDao.delete(entity);
-    		}
-    		
+    		resourceService.deleteResourceUser(userId, resourceId);
     	} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
@@ -359,14 +289,14 @@ public class ResourceDataServiceImpl implements ResourceDataService {
     			throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
     		}
     		
-    		final ResourceUserEntity entity = resourceUserDao.getRecord(resourceId, userId);
+    		final ResourceUserEntity entity = resourceService.getResourceUser(userId, resourceId);
     		
     		if(entity != null) {
     			throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
     		}
     		
-    		final ResourceEntity resource = resourceDao.findById(resourceId);
-    		final UserEntity user = userDAO.findById(userId);
+    		final ResourceEntity resource = resourceService.findResourceById(resourceId);
+    		final UserEntity user = userManager.getUser(userId);
     		if(resource == null || user == null) {
     			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
     		}
@@ -375,7 +305,7 @@ public class ResourceDataServiceImpl implements ResourceDataService {
     		toSave.setUserId(userId);
     		toSave.setResourceId(resourceId);
     		
-    		resourceUserDao.save(toSave);
+    		resourceService.save(toSave);
     	} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
@@ -392,31 +322,7 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 	public Response deleteResource(final String resourceId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {
-			final ResourceEntity entity = resourceDao.findById(resourceId);
-			if(entity == null) {
-				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-			}
-			
-			/*
-			if(CollectionUtils.isNotEmpty(entity.getChildResources())) {
-				throw new BasicDataServiceException(ResponseCode.HANGING_CHILDREN);
-			}
-			
-			if(CollectionUtils.isNotEmpty(entity.getResourceGroups())) {
-				throw new BasicDataServiceException(ResponseCode.HANGING_GROUPS);
-			}
-			
-			if(CollectionUtils.isNotEmpty(entity.getResourceRoles())) {
-				throw new BasicDataServiceException(ResponseCode.HANGING_ROLES);
-			}
-			*/
-			resourceGroupDAO.deleteByResourceId(resourceId);
-			resourceRoleDao.deleteByResourceId(resourceId);
-			resourceUserDao.deleteByResourceId(resourceId);
-			resourceDao.delete(entity);
-		} catch(BasicDataServiceException e) {
-			response.setStatus(ResponseStatus.FAILURE);
-			response.setErrorCode(e.getCode());
+			resourceService.deleteResource(resourceId);
 		} catch(Throwable e) {
 			log.error("Can't delete resource", e);
 			response.setStatus(ResponseStatus.FAILURE);
@@ -427,40 +333,24 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 
 	@Override
 	public List<Resource> getChildResources(final String resourceId, final int from, final int size) {
-		final ResourceEntity example = new ResourceEntity();
-		final ResourceEntity parent = new ResourceEntity();
-		parent.setResourceId(resourceId);
-		example.addParentResource(parent);
-		final List<ResourceEntity> resultList = resourceDao.getByExample(example, from, size);
+		final List<ResourceEntity> resultList = resourceService.getChildResources(resourceId, from, size);
 		return resourceConverter.convertToDTOList(resultList, false);
 	}
 
 	@Override
 	public int getNumOfChildResources(final String resourceId) {
-		final ResourceEntity example = new ResourceEntity();
-		final ResourceEntity parent = new ResourceEntity();
-		parent.setResourceId(resourceId);
-		example.addParentResource(parent);
-		return resourceDao.count(example);
+		return resourceService.getNumOfChildResources(resourceId);
 	}
 	
 	@Override
 	public List<Resource> getParentResources(final  String resourceId, final int from, final int size) {
-		final ResourceEntity example = new ResourceEntity();
-		final ResourceEntity child = new ResourceEntity();
-		child.setResourceId(resourceId);
-		example.addChildResource(child);
-		final List<ResourceEntity> resultList = resourceDao.getByExample(example, from, size);
+		final List<ResourceEntity> resultList = resourceService.getParentResources(resourceId, from, size);
 		return resourceConverter.convertToDTOList(resultList, false);
 	}
 
 	@Override
 	public int getNumOfParentResources(final String resourceId) {
-		final ResourceEntity example = new ResourceEntity();
-		final ResourceEntity child = new ResourceEntity();
-		child.setResourceId(resourceId);
-		example.addChildResource(child);
-		return resourceDao.count(example);
+		return resourceService.getNumOfParentResources(resourceId);
 	}
 
 	@Override
@@ -471,12 +361,12 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
 			
-			final ResourceEntity parent = resourceDao.findById(resourceId);
+			final ResourceEntity parent = resourceService.findResourceById(resourceId);
 			if(parent == null) {
 				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
 			}
 			
-			final ResourceEntity child = resourceDao.findById(memberResourceId);
+			final ResourceEntity child = resourceService.findResourceById(memberResourceId);
 			if(child == null) {
 				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
 			}
@@ -498,8 +388,7 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 				throw new BasicDataServiceException(ResponseCode.CIRCULAR_DEPENDENCY);
 			}
 			
-			parent.addChildResource(child);
-			resourceDao.save(parent);
+			resourceService.addChildResource(resourceId, memberResourceId);
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
@@ -538,18 +427,17 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
 			
-			final ResourceEntity parent = resourceDao.findById(resourceId);
+			final ResourceEntity parent = resourceService.findResourceById(resourceId);
 			if(parent == null) {
 				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
 			}
 			
-			final ResourceEntity child = resourceDao.findById(memberResourceId);
+			final ResourceEntity child = resourceService.findResourceById(memberResourceId);
 			if(child == null) {
 				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
 			}
 			
-			parent.removeChildResource(child);
-			resourceDao.save(parent);
+			resourceService.deleteChildResource(resourceId, memberResourceId);
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
@@ -569,23 +457,19 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
 			
-			final ResourceEntity resource = resourceDao.findById(resourceId);
-			final GroupEntity group = groupDAO.findById(groupId);
+			final ResourceEntity resource = resourceService.findResourceById(resourceId);
+			final GroupEntity group = groupService.getGroup(groupId);
 			
 			if(resource == null || group == null) {
 				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
 			}
 			
-			final ResourceGroupEntity record = resourceGroupDAO.getRecord(resourceId, groupId);
+			final ResourceGroupEntity record = resourceService.getResourceGroup(resourceId, groupId);
 			if(record != null) {
 				throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
 			}
 			
-			final ResourceGroupEntity entity = new ResourceGroupEntity();
-			entity.setGroupId(groupId);
-			entity.setResourceId(resourceId);
-			
-			resourceGroupDAO.save(entity);
+			resourceService.addResourceGroup(resourceId, groupId);
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
@@ -605,15 +489,12 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
 			
-			final ResourceEntity resource = resourceDao.findById(resourceId);
+			final ResourceEntity resource = resourceService.findResourceById(resourceId);
 			if(resource == null) {
 				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
 			}
 			
-			final ResourceGroupEntity entity = resourceGroupDAO.getRecord(resourceId, groupId);
-			if(entity != null) {
-				resourceGroupDAO.delete(entity);
-			}
+			resourceService.deleteResourceGroup(resourceId, groupId);
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
@@ -633,22 +514,18 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
 			
-			final ResourceEntity resource = resourceDao.findById(resourceId);
-			final RoleEntity role = roleDAO.findById(roleId);
+			final ResourceEntity resource = resourceService.findResourceById(resourceId);
+			final RoleEntity role = roleService.getRole(roleId);
 			if(resource == null && role == null) {
 				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
 			}
 			
-			final ResourceRoleEmbeddableId id = new ResourceRoleEmbeddableId(roleId, resourceId);
-			final ResourceRoleEntity dbObject = resourceRoleDao.findById(id);
+			final ResourceRoleEntity dbObject = resourceService.getResourceRole(resourceId, roleId); 
 			if(dbObject != null) {
 				throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
 			}
 			
-			final ResourceRoleEntity entity = new ResourceRoleEntity();
-			entity.setId(id);
-			resourceRoleDao.save(entity);
-			
+			resourceService.saveResourceRole(resourceId, roleId);
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
@@ -668,13 +545,7 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
 			
-			final ResourceRoleEmbeddableId id = new ResourceRoleEmbeddableId(roleId, resourceId);
-			final ResourceRoleEntity dbObject = resourceRoleDao.findById(id);
-			if(dbObject == null) {
-				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
-			}
-			
-			resourceRoleDao.delete(dbObject);
+			resourceService.deleteResourceRole(resourceId, roleId);
 			
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
@@ -689,36 +560,36 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 
 	@Override
 	public int getNumOfResourcesForRole(final String roleId) {
-		return resourceDao.getNumOfResourcesForRole(roleId);
+		return resourceService.getNumOfResourcesForRole(roleId);
 	}
 
 	@Override
 	public List<Resource> getResourcesForRole(final String roleId, final int from, final int size) {
-		final List<ResourceEntity> entityList = resourceDao.getResourcesForRole(roleId, from, size);
+		final List<ResourceEntity> entityList = resourceService.getResourcesForRole(roleId, from, size);
 		final List<Resource> resourceList = resourceConverter.convertToDTOList(entityList, false);
 		return resourceList;
 	}
 
 	@Override
 	public int getNumOfResourceForGroup(final String groupId) {
-		return resourceDao.getNumOfResourcesForGroup(groupId);
+		return resourceService.getNumOfResourceForGroup(groupId);
 	}
 
 	@Override
 	public List<Resource> getResourcesForGroup(final String groupId, final int from, final int size) {
-		final List<ResourceEntity> entityList = resourceDao.getResourcesForGroup(groupId, from, size);
+		final List<ResourceEntity> entityList = resourceService.getResourcesForGroup(groupId, from, size);
 		final List<Resource> resourceList = resourceConverter.convertToDTOList(entityList, false);
 		return resourceList;
 	}
 
 	@Override
 	public int getNumOfResourceForUser(final String userId) {
-		return resourceDao.getNumOfResourcesForUser(userId);
+		return resourceService.getNumOfResourceForUser(userId);
 	}
 
 	@Override
 	public List<Resource> getResourcesForUser(final String userId, final int from, final int size) {
-		final List<ResourceEntity> entityList = resourceDao.getResourcesForUser(userId, from, size);
+		final List<ResourceEntity> entityList = resourceService.getResourcesForUser(userId, from, size);
 		final List<Resource> resourceList = resourceConverter.convertToDTOList(entityList, false);
 		return resourceList;
 	}
