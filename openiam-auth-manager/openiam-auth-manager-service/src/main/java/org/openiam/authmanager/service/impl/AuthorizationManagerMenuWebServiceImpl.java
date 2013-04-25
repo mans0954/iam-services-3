@@ -43,6 +43,7 @@ import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceGroupDAO;
 import org.openiam.idm.srvc.res.service.ResourceRoleDAO;
+import org.openiam.idm.srvc.res.service.ResourceService;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.res.service.ResourceUserDAO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,6 +76,9 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 	
 	@Autowired
 	private ResourceUserDAO resourceUserDAO;
+	
+	@Autowired
+	private ResourceService resourceService;
 	
 	@Override
 	public AuthorizationMenu getMenuTreeForUserId(final MenuRequest request) {
@@ -116,7 +120,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 	}
 	
 	@Override
-	@Transactional
+	//@Transactional
 	public MenuSaveResponse deleteMenuTree(final String rootId) {
 		final MenuSaveResponse response = new MenuSaveResponse();
 		response.setStatus(ResponseStatus.SUCCESS);
@@ -145,7 +149,8 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 				throw new AuthorizationMenuException(ResponseCode.HANGING_ROLES, resource.getName());
 			}
 			
-			resourceDAO.delete(resource);
+			resourceService.deleteResource(rootId);
+			//resourceDAO.delete(resource);
 		} catch(AuthorizationMenuException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getResponseCode());
@@ -157,7 +162,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 	}
 
 	@Override
-	@Transactional
+	//@Transactional
 	public MenuSaveResponse saveMenuTree(final AuthorizationMenu root) {
 		final MenuSaveResponse response = new MenuSaveResponse();
 		response.setStatus(ResponseStatus.SUCCESS);
@@ -339,19 +344,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 					}
 				}
 				
-				if(CollectionUtils.isNotEmpty(resourcesToCreate)) {
-					resourceDAO.save(resourcesToCreate);
-				}
-				
-				if(CollectionUtils.isNotEmpty(resourcesToUpdate)) {
-					resourceDAO.save(resourcesToUpdate);
-				}
-				
-				if(CollectionUtils.isNotEmpty(resourcesToDelete)) {
-					for(final ResourceEntity resource : resourcesToDelete) {
-						resourceDAO.delete(resource);
-					}
-				}
+				menuService.processTreeUpdate(resourcesToCreate, resourcesToUpdate, resourcesToDelete);
 			}
 		} catch(AuthorizationMenuException e) {
 			response.setStatus(ResponseStatus.FAILURE);
@@ -458,7 +451,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 	}
 
 	@Override
-	@Transactional
+	//@Transactional
 	public Response entitle(final MenuEntitlementsRequest menuEntitlementsRequest) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {
@@ -472,57 +465,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
 			
-			if(StringUtils.equalsIgnoreCase("user", principalType)) {
-				final String userId = principalId;
-				if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getDisentitled())) {
-					resourceUserDAO.deleteByUserId(userId, menuEntitlementsRequest.getDisentitled());
-				}
-				
-				if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getNewlyEntitled())) {
-					final List<ResourceUserEntity> entityList = new ArrayList<ResourceUserEntity>(menuEntitlementsRequest.getNewlyEntitled().size());
-					for(final String resourceId : menuEntitlementsRequest.getNewlyEntitled()) {
-						final ResourceUserEntity entity = new ResourceUserEntity();
-						entity.setUserId(userId);
-						entity.setResourceId(resourceId);
-						entityList.add(entity);
-					}
-					resourceUserDAO.save(entityList);
-				}
-			} else if(StringUtils.equalsIgnoreCase("group", principalType)) {
-				final String groupId = principalId;
-				if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getDisentitled())) {
-					resourceGroupDAO.deleteByGroupId(groupId, menuEntitlementsRequest.getDisentitled());
-				}
-				
-				if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getNewlyEntitled())) {
-					final List<ResourceGroupEntity> entityList = new ArrayList<ResourceGroupEntity>(menuEntitlementsRequest.getNewlyEntitled().size());
-					for(final String resourceId : menuEntitlementsRequest.getNewlyEntitled()) {
-						final ResourceGroupEntity entity = new ResourceGroupEntity();
-						entity.setGroupId(groupId);
-						entity.setResourceId(resourceId);
-						entityList.add(entity);
-					}
-					resourceGroupDAO.save(entityList);
-				}
-			} else if(StringUtils.equalsIgnoreCase("role", principalType)) {
-				final String roleId = principalId;
-				if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getDisentitled())) {
-					resourceRoleDAO.deleteByRoleId(roleId, menuEntitlementsRequest.getDisentitled());
-				}
-				
-				if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getNewlyEntitled())) {
-					final List<ResourceRoleEntity> entityList = new ArrayList<ResourceRoleEntity>(menuEntitlementsRequest.getNewlyEntitled().size());
-					for(final String resourceId : menuEntitlementsRequest.getNewlyEntitled()) {
-						final ResourceRoleEntity entity = new ResourceRoleEntity();
-						final ResourceRoleEmbeddableId id = new ResourceRoleEmbeddableId(roleId, resourceId);
-						entity.setId(id);
-						entityList.add(entity);
-					}
-					resourceRoleDAO.save(entityList);
-				}
-			} else {
-				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-			}
+			menuService.entitle(menuEntitlementsRequest);
 			
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
