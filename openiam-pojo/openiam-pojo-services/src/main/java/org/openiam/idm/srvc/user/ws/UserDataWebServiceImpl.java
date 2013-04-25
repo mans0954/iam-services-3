@@ -1048,8 +1048,6 @@ public class UserDataWebServiceImpl implements UserDataWebService,MuleContextAwa
         return response;
     }
 
-
-
     @Override
     public Response deleteUser(final String userId){
         final Response response = new Response(ResponseStatus.SUCCESS);
@@ -1123,17 +1121,17 @@ public class UserDataWebServiceImpl implements UserDataWebService,MuleContextAwa
 
     private void sendCredentialsToUser(User user, String identity, String password) throws BasicDataServiceException {
 
-            NotificationRequest request = new NotificationRequest();
-            request.setUserId(user.getUserId());
-            request.setNotificationType("NEW_USER_EMAIL");
-
-            request.getParamList().add(new NotificationParam("IDENTITY", identity));
-            request.getParamList().add(new NotificationParam("PSWD", password));
-
-            final boolean sendEmailResult = mailService.sendNotification(request);
-            if(!sendEmailResult) {
-                throw new BasicDataServiceException(ResponseCode.SEND_EMAIL_FAILED);
-            }
+	    	final NotificationRequest notificationRequest = new NotificationRequest();
+	        notificationRequest.setUserId(user.getUserId());
+	        notificationRequest.setNotificationType("NEW_USER_EMAIL");
+	        notificationRequest.getParamList().add(new NotificationParam("IDENTITY",  identity));
+	        notificationRequest.getParamList().add(new NotificationParam("PSWD", password));
+	        notificationRequest.getParamList().add(new NotificationParam("USER_ID", user.getUserId()));
+	        final boolean sendEmailResult = mailService.sendNotification(notificationRequest);
+	        if(!sendEmailResult) {
+	        	throw new BasicDataServiceException(ResponseCode.SEND_EMAIL_FAILED);
+	        }
+        
     }
 
 	@Override

@@ -529,10 +529,10 @@
     <aop:advisor advice-ref="txAdvice" pointcut-ref="serviceOperation"/>
   </aop:config>
 
-  <aop:config>
-    <aop:pointcut id="userOperation" expression="execution(* org.openiam.idm.srvc.user.ws.UserDataWebService.*(..))"/>
-    <aop:advisor advice-ref="txAdvice" pointcut-ref="userOperation"/>
-  </aop:config>  	
+  <!--<aop:config>-->
+    <!--<aop:pointcut id="userOperation" expression="execution(* org.openiam.idm.srvc.user.ws.UserDataWebService.*(..))"/>-->
+    <!--<aop:advisor advice-ref="txAdvice" pointcut-ref="userOperation"/>-->
+  <!--</aop:config>-->
 
   <aop:config>
     <aop:pointcut id="auditOperation" expression="execution(* org.openiam.idm.srvc.audit.ws.IdmAuditLogWebDataService.*(..))"/>

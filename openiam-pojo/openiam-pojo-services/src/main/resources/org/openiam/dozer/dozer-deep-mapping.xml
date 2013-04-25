@@ -146,14 +146,7 @@
 		</field>
 	</mapping>
 	
-	<mapping>
-		<class-a>org.openiam.idm.srvc.res.dto.ResourceUser</class-a>
-		<class-b>org.openiam.idm.srvc.res.dto.ResourceUser</class-b>
-		<field custom-converter="org.openiam.dozer.PersistentObjectConverter" custom-converter-param="deepDozerMapper">
-			<a>id</a>
-			<b>id</b>
-		</field>
-	</mapping>
+
 		<mapping>
 		 <class-a>org.openiam.idm.srvc.meta.dto.MetadataType</class-a>
 		<class-b>org.openiam.idm.srvc.meta.dto.MetadataType</class-b>
@@ -205,5 +198,54 @@
 			<a>policyAttributes</a>
 			<b>policyAttributes</b> 
 		</field>
-	</mapping>	
+	</mapping>
+
+    <mapping>
+        <class-a>org.openiam.idm.srvc.user.domain.UserEntity</class-a>
+        <class-b>org.openiam.idm.srvc.user.domain.UserEntity</class-b>
+        <field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+            <a >userNotes</a>
+            <b>userNotes</b>
+        </field>
+        <field custom-converter="org.openiam.dozer.MapConverterWithKeyString" custom-converter-param="shallowDozerMapper">
+            <a>userAttributes</a>
+            <b>userAttributes</b>
+        </field>
+        <field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+            <a>addresses</a>
+            <b>addresses</b>
+        </field>
+        <field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+            <a>phones</a>
+            <b>phones</b>
+        </field>
+        <field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+            <a>emailAddresses</a>
+            <b>emailAddresses</b>
+        </field>
+        <field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+            <a>principalList</a>
+            <b>principalList</b>
+        </field>
+        <field-exclude>
+            <a>userKeys</a>
+            <b>userKeys</b>
+        </field-exclude>
+        <field-exclude>
+            <a>userGroups</a>
+            <b>userGroups</b>
+        </field-exclude>
+        <field-exclude>
+            <a>resourceUsers</a>
+            <b>resourceUsers</b>
+        </field-exclude>
+        <field-exclude>
+            <a>userRoles</a>
+            <b>userRoles</b>
+        </field-exclude>
+        <field-exclude>
+            <a>organization</a>
+            <b>organization</b>
+        </field-exclude>
+    </mapping>
 </mappings>
