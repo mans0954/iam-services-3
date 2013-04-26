@@ -135,21 +135,6 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#getLogin(java.lang.String, java.lang.String)
-	 */
-	public LoginResponse getLogin(String domainId, String principal)
-			throws AuthenticationException {
-		final LoginResponse resp = new LoginResponse(ResponseStatus.SUCCESS);
-		final LoginEntity lg = loginDS.getLogin(domainId, principal);
-		if (lg == null ) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setPrincipal(loginDozerConverter.convertToDTO(lg, false)); 
-		}
-		return resp;
-	}
-
-	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#getLoginByDomain(java.lang.String)
 	 */
 	public LoginListResponse getLoginByDomain(String domainId) {

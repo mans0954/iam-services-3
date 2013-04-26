@@ -17,7 +17,7 @@
     <context:annotation-config />
     <context:component-scan base-package="org.openiam.idm.srvc.org.service,
     								      org.openiam.core,
-    								      org.openiam.idm.srvc*,
+    								      org.openiam.idm.srvc,
     								      org.openiam.dozer.converter" />
 
 	<bean id="springContextProvider" class="org.openiam.util.SpringContextProvider" />
@@ -512,7 +512,7 @@
       <tx:method name="start*" read-only="true" propagation="NOT_SUPPORTED" />
       <tx:method name="send*" read-only="true" propagation="NOT_SUPPORTED" />
       <!-- other methods use the default transaction settings (see below) -->
-      <tx:method name="*" propagation="REQUIRED" rollback-for="RuntimeException"/>
+      <tx:method name="*" propagation="REQUIRED" rollback-for="Throwable"/>
 
     </tx:attributes>
   </tx:advice>

@@ -227,15 +227,15 @@
 	</bean>		
 	
 	<!-- Email Beans --> 
+	<!--
 	<bean id="mailService" class="org.openiam.idm.srvc.msg.service.MailServiceImpl">
-		<!-- property name="mailSender" ref="emailSender" / -->
 		<property name="mailSender" ref="mailSender" />
 		<property name="defaultSender" value="${mail.defaultSender}" />
 		<property name="subjectPrefix" value="${mail.defaultSubjectPrefix}" />
 		<property name="optionalBccAddress" value="${mail.optionalBccAddress}" />
 		<property name="userManager" ref="userWS" />
-		
 	</bean>
+	-->
 	
 	<bean id="emailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
 		<property name="host" value="${mail.host}" />

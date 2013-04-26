@@ -41,13 +41,6 @@ public interface LoginDataWebService {
             String managedSysId);
 
     @WebMethod
-    public LoginResponse getLogin(
-            @WebParam(name = "domainId", targetNamespace = "")
-            String domainId,
-            @WebParam(name = "principal", targetNamespace = "")
-            String principal) throws AuthenticationException;
-
-    @WebMethod
     public LoginResponse getLoginByManagedSys(
             @WebParam(name = "domainId", targetNamespace = "")
             String domainId,

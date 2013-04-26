@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 public class ResourceServiceImpl implements ResourceService {
 	
 	@Autowired
@@ -48,7 +49,6 @@ public class ResourceServiceImpl implements ResourceService {
     private ResourceSearchBeanConverter resourceSearchBeanConverter;
 
 	@Override
-	@Transactional
 	public void deleteResource(String resourceId) {
 		if(StringUtils.isNotBlank(resourceId)) {
 			final ResourceEntity entity = resourceDao.findById(resourceId);
@@ -63,7 +63,6 @@ public class ResourceServiceImpl implements ResourceService {
 	}
 
 	@Override
-	@Transactional
 	public void save(ResourceEntity entity) {
 		if(StringUtils.isNotBlank(entity.getResourceId())) {
 			final ResourceEntity dbObject = resourceDao.findById(entity.getResourceId());
@@ -113,7 +112,6 @@ public class ResourceServiceImpl implements ResourceService {
 	}
 
 	@Override
-	@Transactional
 	public void save(ResourceTypeEntity entity) {
 		if(StringUtils.isBlank(entity.getResourceTypeId())) {
 			resourceTypeDao.save(entity);
@@ -133,7 +131,6 @@ public class ResourceServiceImpl implements ResourceService {
 	}
 
 	@Override
-	@Transactional
 	public void save(ResourcePropEntity entity) {
 		if(StringUtils.isBlank(entity.getResourcePropId())) {
 			resourcePropDao.save(entity);
@@ -143,7 +140,6 @@ public class ResourceServiceImpl implements ResourceService {
 	}
 
 	@Override
-	@Transactional
 	public void deleteResourceProp(String id) {
 		final ResourcePropEntity entity = resourcePropDao.findById(id);
 		if(entity != null) {
@@ -152,7 +148,6 @@ public class ResourceServiceImpl implements ResourceService {
 	}
 
 	@Override
-	@Transactional
 	public void deleteResourceUser(String userId, String resourceId) {
 		final ResourceUserEntity entity = resourceUserDao.getRecord(resourceId, userId);
 		if(entity != null) {
@@ -166,7 +161,6 @@ public class ResourceServiceImpl implements ResourceService {
 	}
 
 	@Override
-	@Transactional
 	public void save(ResourceUserEntity entity) {
 		resourceUserDao.save(entity);
 	}
@@ -209,7 +203,6 @@ public class ResourceServiceImpl implements ResourceService {
 	}
 
 	@Override
-	@Transactional
 	public void addChildResource(String parentResourceId, String childResourceId) {
 		final ResourceEntity parent = resourceDao.findById(parentResourceId);
 		final ResourceEntity child = resourceDao.findById(childResourceId);
@@ -218,7 +211,6 @@ public class ResourceServiceImpl implements ResourceService {
 	}
 
 	@Override
-	@Transactional
 	public void deleteChildResource(String resourceId, String childResourceId) {
 		final ResourceEntity parent = resourceDao.findById(resourceId);
 		final ResourceEntity child = resourceDao.findById(childResourceId);
@@ -232,7 +224,6 @@ public class ResourceServiceImpl implements ResourceService {
 	}
 
 	@Override
-	@Transactional
 	public void addResourceGroup(String resourceId, String groupId) {
 		final ResourceGroupEntity entity = new ResourceGroupEntity();
 		entity.setGroupId(groupId);
@@ -241,7 +232,6 @@ public class ResourceServiceImpl implements ResourceService {
 	}
 
 	@Override
-	@Transactional
 	public void deleteResourceGroup(String resourceId, String groupId) {
 		final ResourceGroupEntity entity = getResourceGroup(resourceId, groupId);
 		if(entity != null) {
@@ -256,7 +246,6 @@ public class ResourceServiceImpl implements ResourceService {
 	}
 
 	@Override
-	@Transactional
 	public void saveResourceRole(String resourceId, String roleId) {
 		final ResourceRoleEmbeddableId id = new ResourceRoleEmbeddableId(roleId, resourceId);
 		final ResourceRoleEntity entity = new ResourceRoleEntity();
@@ -265,7 +254,6 @@ public class ResourceServiceImpl implements ResourceService {
 	}
 
 	@Override
-	@Transactional
 	public void deleteResourceRole(String resourceId, String roleId) {
 		final ResourceRoleEmbeddableId id = new ResourceRoleEmbeddableId(roleId, resourceId);
 		final ResourceRoleEntity entity = resourceRoleDao.findById(id);

@@ -506,4 +506,9 @@ public interface UserDataWebService {
     
     @WebMethod
     public SaveTemplateProfileResponse createNewUserProfile(@WebParam(name = "request", targetNamespace = "") final NewUserProfileRequestModel request);
+    
+    @WebMethod
+    public Response sendNewUserEmail(@WebParam(name = "userId", targetNamespace = "") final String userId,
+    								 @WebParam(name = "password", targetNamespace = "") final String password,
+    								 @WebParam(name = "login", targetNamespace = "") final String login);
 }
