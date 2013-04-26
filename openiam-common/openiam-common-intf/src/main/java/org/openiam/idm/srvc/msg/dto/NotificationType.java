@@ -14,11 +14,19 @@ import javax.xml.bind.annotation.XmlType;
 @XmlEnum
 public enum NotificationType {
 
-    
-    @XmlEnumValue("system")
+    @XmlEnumValue("new_hire")
+    NEW_HIRE("NEW_HIRE"),
+    @XmlEnumValue("account_locked")
+    ACCOUNT_LOCKED("ACCOUNT_LOCKED"),
+    @XmlEnumValue("account_expired")
+    ACCOUNT_EXPIRED("ACCOUNT_EXPIRED"),
+    @XmlEnumValue("password_will_expire")
+    PASSWORD_WILL_EXPIRE("PASSWORD_WILL_EXPIRE"),
+     @XmlEnumValue("system")
     SYSTEM("SYSTEM"),
     @XmlEnumValue("configurable")
-    CONFIGURABLE("CONFIGURABLE");;
+    CONFIGURABLE("CONFIGURABLE");
+    
     private String value;
 
     NotificationType(String val) {

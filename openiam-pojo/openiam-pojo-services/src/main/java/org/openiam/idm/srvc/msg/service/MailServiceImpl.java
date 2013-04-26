@@ -75,7 +75,7 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
         log.warn("sendToGroup was called, but is not implemented");
     }
 
-    public void send(String from, String to, String subject, String msg) {
+   /* public void send(String from, String to, String subject, String msg) {
         sendWithCC(from, to, null, subject, msg);
     }
 
@@ -106,7 +106,7 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
         } catch (Exception e) {
             log.error(e.toString());
         }
-    }
+    }*/
     
     public void send(String from, String[] to, String[] cc, String[] bcc, String subject, String msg, boolean isHtmlFormat, String[] attachmentPath) {
         log.debug("To:" + to + ", From:" + from + ", Subject:" + subject +", CC:"+ cc +", BCC:"+ bcc +", MESSG:" + msg +", Attachment:"+ attachmentPath);
@@ -117,24 +117,38 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
         } else {
             message.setFrom(defaultSender);
         }
+        if (to != null && from.length() > 0){
         for (String toString: to){
         	message.addTo(toString);
+        }} else{
+        	 message.setFrom(defaultSender);
         }
+        if (cc != null && from.length() > 0){
         for (String ccString: cc){
         	message.addCc(ccString);
-        }
+        }} 
+        	
+      
         if (subjectPrefix != null) {
             subject = subjectPrefix + " " + subject;
         }
+        if (bcc != null && from.length() > 0){
         for (String bccString: bcc){
         	message.addBcc(bccString);
-        }
+        }}
+        
+        if (subject != null && from.length() > 0){
         message.setSubject(subject);
+        }
+        if (msg != null && from.length() > 0){
         message.setBody(msg);
+        }
+       
         message.setBodyType(isHtmlFormat ? Message.BodyType.HTML_TEXT : Message.BodyType.PLAIN_TEXT);
+        if (attachmentPath != null && from.length() > 0){
         for (String attachmentPathString: attachmentPath){
         	message.addAttachments(attachmentPathString);
-        }
+        }}
         try {
             mailSender.send(message);
         } catch (Exception e) {
@@ -179,8 +193,11 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 
         String emailBody = createEmailBody(bindingMap, emailDetails[SCRIPT_IDX]);
         if (emailBody != null) {
-            sendWithCC(null, req.getTo(), req.getCc(),
-                    emailDetails[SUBJECT_IDX], emailBody);
+        	String[] arr1 = {req.getTo()};
+        	String[] arr2 = {req.getCc()};
+        	String[] arr3 = {emailDetails[SUBJECT_IDX]};
+            send(null, arr1, arr2,
+            		arr3, emailBody, null,false, null);
             return true;
         }
         return false;
@@ -223,7 +240,10 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 
         String emailBody = createEmailBody(bindingMap, emailDetails[SCRIPT_IDX]);
         if (emailBody != null) {
-            send(null, usr.getEmail(), emailDetails[SUBJECT_IDX], emailBody);
+        	String[] arr1={usr.getEmail()};
+        	String[] arr2={emailDetails[SUBJECT_IDX]};
+        	String[] arr3={emailBody};
+            send(null, arr1,arr2, arr3, null, null, false, null);
             return true;
         }
         return false;

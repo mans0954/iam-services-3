@@ -14,15 +14,7 @@ import javax.jws.WebService;
 @WebService
 public interface MailService {
 
-  /*  *//**
-     * Sends an email to a specific user
-     *//*
-    @WebMethod
-    void send(String from, String to, String Subject, String msg);
-
-    @WebMethod
-    void sendWithCC(String from, String to, String cc, String subject, String msg);
-*/
+  
     /**
      * Sends an email all users with OpenIAM
      */
