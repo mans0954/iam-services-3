@@ -21,6 +21,7 @@
  */
 package org.openiam.idm.srvc.msg.service;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.mail.internet.AddressException;
@@ -34,27 +35,32 @@ import org.apache.commons.logging.LogFactory;
  *
  */
 public class Message {
-	InternetAddress to;
-	InternetAddress cc;
-	InternetAddress bcc;
-	List<String> toList;
-	InternetAddress from;
-	String subject;
-	String body;
-	
+	public enum BodyType {
+        PLAIN_TEXT,
+        HTML_TEXT
+    }
+    private List<InternetAddress> to = new LinkedList<InternetAddress>();
+    private List<InternetAddress> cc = new LinkedList<InternetAddress>();
+    private List<InternetAddress> bcc = new LinkedList<InternetAddress>();
+    private InternetAddress from;
+    private String subject;
+    private String body;
+    private BodyType bodyType = BodyType.PLAIN_TEXT;
+    private List<String> attachments = new LinkedList<String>();
+
 	private static final Log log = LogFactory.getLog(Message.class);
-	
-	public InternetAddress getTo() {
+
+	public List<InternetAddress> getTo() {
 		return to;
 	}
-	public void setTo(String to) {
+	public void addTo(String to) {
 		try{
-			this.to = new InternetAddress(to);
+			this.to.add(new InternetAddress(to));
 		}catch(AddressException ae) {
 			log.error(ae);
 		}
 	}
-	public InternetAddress getFrom() {	
+	public InternetAddress getFrom() {
 		return from;
 	}
 	public void setFrom(String fr) {
@@ -77,34 +83,45 @@ public class Message {
 	public void setBody(String body) {
 		this.body = body;
 	}
-	public InternetAddress getCc() {
+	public List<InternetAddress> getCc() {
 		return cc;
 	}
-	public void setCc(String cc) {
+	public void addCc(String cc) {
 		try {
-			this.cc = new InternetAddress( cc );
+			this.cc.add(new InternetAddress(cc));
 		}catch(AddressException ae) {
 			log.error(ae);
 		}
-	}
-	public List<String> getToList() {
-		return toList;
-	}
-	public void setToList(List<String> toList) {
-		this.toList = toList;
-	}
-	public InternetAddress getBcc() {
-		return bcc;
-	}
-	public void setBcc(String bcc) {
-		
-		try {
-			this.bcc = new InternetAddress(bcc);
-		}catch(AddressException ae) {
-			log.error(ae);
-		}
-		
 	}
 
+	public List<InternetAddress> getBcc() {
+		return bcc;
+	}
+
+	public void addBcc(String bcc) {
+
+		try {
+			this.bcc.add(new InternetAddress(bcc));
+		}catch(AddressException ae) {
+			log.error(ae);
+		}
+
+	}
+
+    public BodyType getBodyType() {
+        return bodyType;
+    }
+
+    public void setBodyType(BodyType bodyType) {
+        this.bodyType = bodyType;
+    }
+
+    public List<String> getAttachments() {
+        return attachments;
+    }
+
+    public void addAttachments(String attachmentFilePath) {
+        this.attachments.add(attachmentFilePath);
+    }
 	
 }

@@ -89,18 +89,52 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
         } else {
             message.setFrom(defaultSender);
         }
-        message.setTo(to);
+        message.addTo(to);
         if (cc != null && !cc.isEmpty()) {
-            message.setCc(cc);
+            message.addCc(cc);
         }
         if (subjectPrefix != null) {
             subject = subjectPrefix + " " + subject;
         }
         if (optionalBccAddress != null && !optionalBccAddress.isEmpty()) {
-            message.setBcc(optionalBccAddress);
+            message.addBcc(optionalBccAddress);
         }
         message.setSubject(subject);
         message.setBody(msg);
+        try {
+            mailSender.send(message);
+        } catch (Exception e) {
+            log.error(e.toString());
+        }
+    }
+    
+    public void send(String from, String[] to, String[] cc, String[] bcc, String subject, String msg, boolean isHtmlFormat, String[] attachmentPath) {
+        log.debug("To:" + to + ", From:" + from + ", Subject:" + subject +", CC:"+ cc +", BCC:"+ bcc +", MESSG:" + msg +", Attachment:"+ attachmentPath);
+
+        Message message = new Message();
+        if (from != null && from.length() > 0) {
+            message.setFrom(from);
+        } else {
+            message.setFrom(defaultSender);
+        }
+        for (String toString: to){
+        	message.addTo(toString);
+        }
+        for (String ccString: cc){
+        	message.addCc(ccString);
+        }
+        if (subjectPrefix != null) {
+            subject = subjectPrefix + " " + subject;
+        }
+        for (String bccString: bcc){
+        	message.addBcc(bccString);
+        }
+        message.setSubject(subject);
+        message.setBody(msg);
+        message.setBodyType(isHtmlFormat ? Message.BodyType.HTML_TEXT : Message.BodyType.PLAIN_TEXT);
+        for (String attachmentPathString: attachmentPath){
+        	message.addAttachments(attachmentPathString);
+        }
         try {
             mailSender.send(message);
         } catch (Exception e) {
