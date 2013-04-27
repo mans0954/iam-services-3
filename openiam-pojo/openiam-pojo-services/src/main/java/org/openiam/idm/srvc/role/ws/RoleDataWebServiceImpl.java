@@ -34,6 +34,7 @@ import javax.jws.WebService;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.dozer.DozerBeanMapper;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
@@ -82,6 +83,8 @@ import org.springframework.stereotype.Service;
 		serviceName = "RoleDataWebService")
 @Service("roleWS")
 public class RoleDataWebServiceImpl implements RoleDataWebService {
+	
+	private static Logger LOG = Logger.getLogger(RoleDataWebServiceImpl.class);
 	
 	@Autowired
 	private RoleDataService roleDataService;
@@ -546,6 +549,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
 		} catch(Throwable e) {
+			LOG.error("Can't add child role", e);
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorText(e.getMessage());
 		}
@@ -589,6 +593,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
 		} catch(Throwable e) {
+			LOG.error("Can't remove child role", e);
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorText(e.getMessage());
 		}

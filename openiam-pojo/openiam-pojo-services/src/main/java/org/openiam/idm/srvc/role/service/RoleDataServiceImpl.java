@@ -355,6 +355,7 @@ public class RoleDataServiceImpl implements RoleDataService {
 			if(parent != null && child != null && !parent.hasChildRole(child.getRoleId())) {
 				parent.addChildRole(child);
 			}
+			roleDao.update(parent);
 		}
 	}
 
@@ -366,6 +367,7 @@ public class RoleDataServiceImpl implements RoleDataService {
 			if(parent != null && child != null) {
 				parent.removeChildRole(child.getRoleId());
 			}
+			roleDao.update(parent);
 		}
 	}
 
