@@ -75,9 +75,6 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
     
     @Autowired
     private GroupSearchBeanConverter groupSearchBeanConverter;
-    
-    @Autowired
-    private UserGroupDAO userGroupDAO;
 		
 	private static final Log log = LogFactory.getLog(GroupDataWebServiceImpl.class);
 
@@ -213,7 +210,7 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
 			
-			final UserGroupEntity entity = userGroupDAO.getRecord(groupId, userId);
+			final UserGroupEntity entity = groupManager.getRecord(userId, groupId);
 			
 			if(entity != null) {
 				throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);

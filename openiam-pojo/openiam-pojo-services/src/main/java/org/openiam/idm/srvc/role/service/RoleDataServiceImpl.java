@@ -49,12 +49,6 @@ public class RoleDataServiceImpl implements RoleDataService {
 	
 	@Autowired
 	private RolePolicyDAO rolePolicyDao;
-    
-	@Autowired
-    private UserDozerConverter userDozerConverter;
-    
-	@Autowired
-    private UserRoleDozerConverter userRoleDozerConverter;
 	
 	@Autowired
 	private GroupDAO groupDAO;
@@ -388,5 +382,18 @@ public class RoleDataServiceImpl implements RoleDataService {
 	@Override
 	public int getNumOfRolesForUser(final String userId) {
 		return roleDao.getNumOfRolesForUser(userId);
+	}
+
+	@Override
+	public RoleEntity getRoleByName(String roleName) {
+		final RoleEntity example = new RoleEntity();
+		example.setRoleName(roleName);
+		final List<RoleEntity> nameEntityList = roleDao.getByExample(example);
+		return (CollectionUtils.isNotEmpty(nameEntityList)) ? nameEntityList.get(0) : null;
+	}
+
+	@Override
+	public UserRoleEntity getUserRole(String userId, String roleId) {
+		return userRoleDAO.getRecord(userId, roleId);
 	}
 }
