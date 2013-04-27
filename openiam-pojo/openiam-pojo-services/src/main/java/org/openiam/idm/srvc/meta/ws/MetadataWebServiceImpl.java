@@ -69,12 +69,6 @@ public class MetadataWebServiceImpl implements MetadataWebService {
     @Autowired
     private MetaDataElementDozerConverter metaDataElementDozerConverter;
     
-    @Autowired
-    private MetadataTypeSearchBeanConverter metadataTypeSearchBeanConverter;
-    
-    @Autowired
-    private MetadataTypeDAO metadataTypeDAO;
-    
     private static Logger LOG = Logger.getLogger(MetadataWebServiceImpl.class);
 
     @Override

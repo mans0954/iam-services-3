@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.res.service;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -290,6 +291,12 @@ public class ResourceServiceImpl implements ResourceService {
 	@Override
 	public List<ResourceEntity> getResourcesForUser(String userId, int from, int size) {
 		return resourceDao.getResourcesForUser(userId, from, size);
+	}
+
+	@Override
+	public List<ResourceEntity> findResourcesByIds(
+			Collection<String> resourceIdCollection) {
+		return resourceDao.findByIds(resourceIdCollection);
 	}
 
 }

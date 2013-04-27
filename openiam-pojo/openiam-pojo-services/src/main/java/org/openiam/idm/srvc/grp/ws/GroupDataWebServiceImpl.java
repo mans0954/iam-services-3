@@ -71,9 +71,6 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
     private GroupDozerConverter groupDozerConverter;
     
     @Autowired
-    private UserDozerConverter userDozerConverter;
-    
-    @Autowired
     private GroupAttributeDozerConverter groupAttributeDozerConverter;
     
     @Autowired
@@ -81,9 +78,6 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
     
     @Autowired
     private UserGroupDAO userGroupDAO;
-    
-    @Autowired
-    private GroupDAO groupDAO;
 		
 	private static final Log log = LogFactory.getLog(GroupDataWebServiceImpl.class);
 
@@ -103,11 +97,8 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 				throw new BasicDataServiceException(ResponseCode.NO_NAME);
 			}
 			
-			final GroupEntity example = new GroupEntity();
-			example.setGrpName(group.getGrpName());
-			final List<GroupEntity> foundList = groupDAO.getByExample(example);
-			if(CollectionUtils.isNotEmpty(foundList)) {
-				final GroupEntity found = foundList.get(0);
+			final GroupEntity found = groupManager.getGroupByName(group.getGrpName());
+			if(found != null) {
 				if(StringUtils.isBlank(group.getGrpId()) && found != null) {
 					throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
 				}
@@ -118,20 +109,6 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 			}
 			
 			GroupEntity entity = groupDozerConverter.convertToEntity(group, false);
-			if(StringUtils.isNotBlank(entity.getGrpId())) {
-				final GroupEntity found = groupDAO.findById(entity.getGrpId());
-				found.setGrpName(entity.getGrpName());
-				found.setCompanyId(entity.getCompanyId());
-				found.setDescription(entity.getDescription());
-				found.setInternalGroupId(entity.getInternalGroupId());
-				found.setMetadataTypeId(entity.getMetadataTypeId());
-				found.setOwnerId(entity.getOwnerId());
-				found.setProvisionMethod(entity.getProvisionMethod());
-				found.setProvisionObjName(entity.getProvisionObjName());
-				found.setStatus(entity.getStatus());
-				entity = found;
-			}
-			
 			groupManager.saveGroup(entity);
 			response.setResponseValue(entity.getGrpId());
 		} catch(BasicDataServiceException e) {
@@ -369,8 +346,8 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 				throw new BasicDataServiceException(ResponseCode.CANT_ADD_YOURSELF_AS_CHILD);
 			}
 			
-			final GroupEntity group = groupDAO.findById(groupId);
-			final GroupEntity child = groupDAO.findById(childGroupId);
+			final GroupEntity group = groupManager.getGroup(groupId);
+			final GroupEntity child = groupManager.getGroup(childGroupId);
 			if(group == null || child == null) {
 				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
 			}

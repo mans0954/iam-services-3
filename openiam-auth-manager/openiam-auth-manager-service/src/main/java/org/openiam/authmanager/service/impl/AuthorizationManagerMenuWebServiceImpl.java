@@ -63,21 +63,6 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 	private AuthorizationManagerMenuService menuService;
 	
 	@Autowired
-	private ResourceTypeDAO resourceTypeDAO;
-	
-	@Autowired
-	private ResourceDAO resourceDAO;
-	
-	@Autowired
-	private ResourceRoleDAO resourceRoleDAO;
-	
-	@Autowired
-	private ResourceGroupDAO resourceGroupDAO;
-	
-	@Autowired
-	private ResourceUserDAO resourceUserDAO;
-	
-	@Autowired
 	private ResourceService resourceService;
 	
 	@Override
@@ -125,7 +110,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 		final MenuSaveResponse response = new MenuSaveResponse();
 		response.setStatus(ResponseStatus.SUCCESS);
 		try {
-			final ResourceEntity resource = resourceDAO.findById(rootId);
+			final ResourceEntity resource = resourceService.findResourceById(rootId);
 			
 			if(resource == null) {
 				throw new AuthorizationMenuException(ResponseCode.MENU_DOES_NOT_EXIST, rootId);
@@ -150,7 +135,6 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 			}
 			
 			resourceService.deleteResource(rootId);
-			//resourceDAO.delete(resource);
 		} catch(AuthorizationMenuException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getResponseCode());
@@ -236,7 +220,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 				if(CollectionUtils.isNotEmpty(deletedMenus)) {
 					final List<ResourceEntity> deletedResourceList = new LinkedList<ResourceEntity>();
 					for(final AuthorizationMenu menu : deletedMenus) {
-						final ResourceEntity resource = resourceDAO.findById(menu.getId());
+						final ResourceEntity resource = resourceService.findResourceById(menu.getId());
 						if(resource != null) {
 							deletedResourceList.add(resource);
 						}
@@ -273,11 +257,11 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 					for(final AuthorizationMenu menu : changedMenus) {
 						changedMenuMap.put(menu.getId(), menu);
 					}
-					final List<ResourceEntity> resourceList = resourceDAO.findByIds(changedMenuMap.keySet());
+					final List<ResourceEntity> resourceList = resourceService.findResourcesByIds(changedMenuMap.keySet());
 					for(final ResourceEntity resource : resourceList) {
 						final AuthorizationMenu menu = changedMenuMap.get(resource.getResourceId());	
 						
-						final ResourceEntity existingResource = resourceDAO.findByName(menu.getName());
+						final ResourceEntity existingResource = resourceService.findResourceByName(menu.getName());
 						/* check that, if the user changed the name of the menu, it doesn't conflict with another resource with the same name */
 						if(existingResource != null && !existingResource.getResourceId().equals(resource.getResourceId())) {
 							throw new AuthorizationMenuException(ResponseCode.NAME_TAKEN, resource.getName());
@@ -295,7 +279,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 						final ResourceEntity resource = createResource(menu);
 						newResourceList.add(resource);
 						
-						final ResourceEntity existingResource = resourceDAO.findByName(resource.getName());
+						final ResourceEntity existingResource = resourceService.findResourceByName(resource.getName());
 						/* check that, if the user changed the name of the menu, it doesn't conflict with another resource with the same name */
 						if(existingResource != null) {
 							throw new AuthorizationMenuException(ResponseCode.NAME_TAKEN, resource.getName());
@@ -323,7 +307,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 					for(final ResourceEntity resource : resourcesToCreate) {
 						final String parentId = newResourceName2ParentIdMap.get(resource.getName());
 						if(!resourcesToUpdateMap.containsKey(parentId)) {
-							final ResourceEntity parent = resourceDAO.findById(parentId);
+							final ResourceEntity parent = resourceService.findResourceById(parentId);
 							resourcesToUpdateMap.put(parentId, parent);
 						}
 						final ResourceEntity parent = resourcesToUpdateMap.get(parentId);
@@ -335,7 +319,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 				if(CollectionUtils.isNotEmpty(deletedXrefs)) {
 					for(final ResourceResourceXref xref : deletedXrefs) {
 						if(!resourcesToUpdateMap.containsKey(xref.getResourceId())) {
-							final ResourceEntity resource = resourceDAO.findById(xref.getResourceId());
+							final ResourceEntity resource = resourceService.findResourceById(xref.getResourceId());
 							resourcesToUpdateMap.put(resource.getResourceId(), resource);
 						}
 						final ResourceEntity resource = resourcesToUpdateMap.get(xref.getResourceId());
@@ -362,7 +346,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 		resource.setName(menu.getName());
 		resource.setDisplayOrder(menu.getDisplayOrder());
 		resource.setIsPublic(menu.getIsPublic());
-		resource.setResourceType(resourceTypeDAO.findById(AuthorizationConstants.MENU_ITEM_RESOURCE_TYPE));
+		resource.setResourceType(resourceService.findResourceTypeById(AuthorizationConstants.MENU_ITEM_RESOURCE_TYPE));
 		
 		final ResourcePropEntity displayNameProp = new ResourcePropEntity();
 		displayNameProp.setResourceId(resource.getResourceId());

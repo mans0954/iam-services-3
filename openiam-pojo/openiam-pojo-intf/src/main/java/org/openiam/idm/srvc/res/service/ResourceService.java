@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.res.service;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.openiam.idm.searchbeans.ResourceSearchBean;
@@ -16,6 +17,7 @@ public interface ResourceService {
 	public void deleteResource(final String resourceId);
 	public void save(final ResourceEntity resource);
 	public ResourceEntity findResourceById(final String resourceId);
+	public List<ResourceEntity> findResourcesByIds(final Collection<String> resourceIdCollection);
 	public ResourceEntity findResourceByName(final String name);
 	public int count(final ResourceSearchBean searchBean);
 	public List<ResourceEntity> findBeans(final ResourceSearchBean searchBean, final int from, final int size);
