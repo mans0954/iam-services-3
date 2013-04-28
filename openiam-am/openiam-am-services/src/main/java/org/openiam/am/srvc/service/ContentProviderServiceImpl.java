@@ -97,15 +97,15 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
             }
 
             ResourceEntity resource = new ResourceEntity();
-            resource.setName(resourceTypeId+"_"+provider.getName());
+            resource.setName(resourceTypeId+"_"+provider.getName() + "_" + System.currentTimeMillis());
             resource.setResourceType(resourceType);
             resource.setResourceId(null);
             resource.setIsPublic(false);
             resourceDao.save(resource);
 
             provider.setId(null);
-            provider.setResource(null);
-            provider.setResourceId(resource.getResourceId());
+            provider.setResource(resource);
+            //provider.setResourceId(resource.getResourceId());
 
             contentProviderDao.save(provider);
             entity = provider;
@@ -136,7 +136,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
 
         if(entity!=null){
             // delete resource
-            resourceDataService.deleteResource(entity.getResourceId());
+            resourceDataService.deleteResource(entity.getResource().getResourceId());
             // delete servers for given provider
             contentProviderServerDao.deleteByProvider(providerId);
             // delete patterns
@@ -255,8 +255,8 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
 
 
             pattern.setId(null);
-            pattern.setResource(null);
-            pattern.setResourceId(resource.getResourceId());
+            pattern.setResource(resource);
+            //pattern.setResourceId(resource.getResourceId());
 
             uriPatternDao.save(pattern);
             entity = pattern;
@@ -432,7 +432,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
     private void deleteProviderPattern(URIPatternEntity entity){
         if(entity!=null){
             // delete resource
-            resourceDataService.deleteResource(entity.getResourceId());
+            resourceDataService.deleteResource(entity.getResource().getResourceId());
             // delete meta
             deleteMetaByPattern(entity.getId());
             // delete pattern

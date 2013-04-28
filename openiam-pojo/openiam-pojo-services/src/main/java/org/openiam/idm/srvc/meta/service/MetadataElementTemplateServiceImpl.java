@@ -125,7 +125,7 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 				}
 			} else {
 				final ResourceEntity resource = new ResourceEntity();
-				resource.setName(String.format("%s_%s", entity.getName(), "" + System.currentTimeMillis()));
+				resource.setName(entity.getName() + "_" + System.currentTimeMillis());
 	            resource.setResourceType(resourceTypeDAO.findById(uiTemplateResourceType));
 	            resource.setIsPublic(true);
 	            resourceDAO.save(resource);

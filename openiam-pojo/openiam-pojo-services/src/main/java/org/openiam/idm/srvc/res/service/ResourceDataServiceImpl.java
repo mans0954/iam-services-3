@@ -10,6 +10,12 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.am.srvc.dao.AuthProviderDao;
+import org.openiam.am.srvc.dao.ContentProviderDao;
+import org.openiam.am.srvc.dao.URIPatternDao;
+import org.openiam.am.srvc.domain.AuthProviderEntity;
+import org.openiam.am.srvc.domain.ContentProviderEntity;
+import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
@@ -23,6 +29,11 @@ import org.openiam.idm.searchbeans.ResourceSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
+import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity;
+import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
+import org.openiam.idm.srvc.meta.service.MetadataElementPageTemplateDAO;
+import org.openiam.idm.srvc.policy.service.PolicyDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourceGroupEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
@@ -70,11 +81,25 @@ public class ResourceDataServiceImpl implements ResourceDataService {
     
     @Autowired
     private RoleDataService roleService;
-
-    private static final Log log = LogFactory.getLog(ResourceDataServiceImpl.class);
     
     @Autowired
-    private ResourceUserDozerConverter resourceUserConverter;
+    private AuthProviderDao authProviderDAO;
+    
+    @Autowired
+    private ContentProviderDao contentProviderDAO;
+    
+    @Autowired
+    private MetadataElementDAO metadataElementDAO;
+    
+    @Autowired
+    private MetadataElementPageTemplateDAO templateDAO;
+    
+    @Autowired
+    private URIPatternDao uriPatternDAO;
+    
+    
+
+    private static final Log log = LogFactory.getLog(ResourceDataServiceImpl.class);
 
     public Resource getResource(String resourceId) {
     	final ResourceEntity entity = resourceService.findResourceById(resourceId);
@@ -322,7 +347,41 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 	public Response deleteResource(final String resourceId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {
+			final List<AuthProviderEntity> authProvierList = authProviderDAO.getByResourceId(resourceId);
+			final List<ContentProviderEntity> contentProviderList = contentProviderDAO.getByResourceId(resourceId);
+			final List<MetadataElementEntity> metadataElementList = metadataElementDAO.getByResourceId(resourceId);
+			final List<MetadataElementPageTemplateEntity> pageTemplateList = templateDAO.getByResourceId(resourceId);
+			final List<URIPatternEntity> uriPatternList = uriPatternDAO.getByResourceId(resourceId);
+			
+			if(CollectionUtils.isNotEmpty(authProvierList)) {
+				response.setResponseValue(authProvierList.get(0).getName());
+				throw new BasicDataServiceException(ResponseCode.LINKED_TO_AUTHENTICATION_PROVIDER);
+			}
+			
+			if(CollectionUtils.isNotEmpty(contentProviderList)) {
+				response.setResponseValue(contentProviderList.get(0).getName());
+				throw new BasicDataServiceException(ResponseCode.LINKED_TO_CONTENT_PROVIDER);
+			}
+			
+			if(CollectionUtils.isNotEmpty(metadataElementList)) {
+				response.setResponseValue(metadataElementList.get(0).getAttributeName());
+				throw new BasicDataServiceException(ResponseCode.LINKED_TO_METADATA_ELEMENT);
+			}
+			
+			if(CollectionUtils.isNotEmpty(pageTemplateList)) {
+				response.setResponseValue(pageTemplateList.get(0).getName());
+				throw new BasicDataServiceException(ResponseCode.LINKED_TO_PAGE_TEMPLATE);
+			}
+			
+			if(CollectionUtils.isNotEmpty(uriPatternList)) {
+				response.setResponseValue(uriPatternList.get(0).getPattern());
+				throw new BasicDataServiceException(ResponseCode.LINKED_TO_URI_PATTERN);
+			}
+			
 			resourceService.deleteResource(resourceId);
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
 		} catch(Throwable e) {
 			log.error("Can't delete resource", e);
 			response.setStatus(ResponseStatus.FAILURE);
