@@ -13,4 +13,5 @@ public interface MetadataElementDAO extends
         BaseDao<MetadataElementEntity, String> {
     List<MetadataElementEntity> findbyCategoryType(String categoryType);
 
+    public List<MetadataElementEntity> getByResourceId(final String resourceId);
 }

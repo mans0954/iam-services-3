@@ -17,7 +17,7 @@
     <context:annotation-config />
     <context:component-scan base-package="org.openiam.idm.srvc.org.service,
     								      org.openiam.core,
-    								      org.openiam.idm.srvc*,
+    								      org.openiam.idm.srvc,
     								      org.openiam.dozer.converter" />
 
 	<bean id="springContextProvider" class="org.openiam.util.SpringContextProvider" />
@@ -161,19 +161,6 @@
 	<bean id="seqGenDAO" class="org.openiam.base.id.SequenceGenDAOImpl">
 		<property name="sessionFactory" ref="sessionFactory"></property>		
 	</bean>
-	
-	<!-- Password Beans -->
-	<!--
-	<bean id="challengeResponse" class="org.openiam.idm.srvc.pswd.service.ChallengeResponseServiceImpl" >
-		<property name="identityQuestGroupDao" ref="identityQuestGroupDAO" />
-		<property name="identityQuestDao" ref="identityQuestDAO" />
-		<property name="identityAnswerDao" ref="identityAnswerDAO" />	
-		<property name="loginManager" ref="loginManager" />	
-		
-		<property name="userMgr" ref="userManager" />	
-		<property name="passwordMgr" ref="passwordManager" />	
-	</bean>
-	-->
 	
 	<!--
 	<bean id="validatorFactory" class="org.openiam.idm.srvc.pswd.service.ValidatorFactory" />
@@ -512,7 +499,7 @@
       <tx:method name="start*" read-only="true" propagation="NOT_SUPPORTED" />
       <tx:method name="send*" read-only="true" propagation="NOT_SUPPORTED" />
       <!-- other methods use the default transaction settings (see below) -->
-      <tx:method name="*" propagation="REQUIRED" rollback-for="RuntimeException"/>
+      <tx:method name="*" propagation="REQUIRED" rollback-for="Throwable"/>
 
     </tx:attributes>
   </tx:advice>
@@ -529,10 +516,10 @@
     <aop:advisor advice-ref="txAdvice" pointcut-ref="serviceOperation"/>
   </aop:config>
 
-  <aop:config>
-    <aop:pointcut id="userOperation" expression="execution(* org.openiam.idm.srvc.user.ws.UserDataWebService.*(..))"/>
-    <aop:advisor advice-ref="txAdvice" pointcut-ref="userOperation"/>
-  </aop:config>  	
+  <!--<aop:config>-->
+    <!--<aop:pointcut id="userOperation" expression="execution(* org.openiam.idm.srvc.user.ws.UserDataWebService.*(..))"/>-->
+    <!--<aop:advisor advice-ref="txAdvice" pointcut-ref="userOperation"/>-->
+  <!--</aop:config>-->
 
   <aop:config>
     <aop:pointcut id="auditOperation" expression="execution(* org.openiam.idm.srvc.audit.ws.IdmAuditLogWebDataService.*(..))"/>
@@ -573,12 +560,7 @@
   <aop:config>
     <aop:pointcut id="passwordOperation" expression="execution(* org.openiam.idm.srvc.pswd.ws.PasswordWebService.*(..))"/>
     <aop:advisor advice-ref="txAdvice" pointcut-ref="passwordOperation"/>
-  </aop:config>        
-
-  <aop:config>
-    <aop:pointcut id="challengeResponseOperation" expression="execution(* org.openiam.idm.srvc.pswd.service.ChallengeResponseService.*(..))"/>
-    <aop:advisor advice-ref="txAdvice" pointcut-ref="challengeResponseOperation"/>
-  </aop:config>  
+  </aop:config>
 
   <aop:config>
     <aop:pointcut id="referenceDataOperation" expression="execution(* org.openiam.idm.srvc.cd.service.ReferenceDataService.*(..))"/>

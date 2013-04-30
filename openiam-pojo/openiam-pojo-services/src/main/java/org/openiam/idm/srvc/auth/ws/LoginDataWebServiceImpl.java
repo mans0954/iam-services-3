@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.auth.ws;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.mule.api.MuleException;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
@@ -13,15 +14,20 @@ import org.openiam.idm.searchbeans.LoginSearchBean;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
+import org.openiam.idm.srvc.msg.dto.NotificationParam;
+import org.openiam.idm.srvc.msg.dto.NotificationRequest;
+import org.openiam.idm.srvc.msg.service.MailService;
+import org.openiam.idm.srvc.msg.service.MailTemplateParameters;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
+import org.openiam.idm.srvc.user.service.UserDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.jws.WebMethod;
-import javax.jws.WebParam;
 import javax.jws.WebService;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 
 @WebService(endpointInterface = "org.openiam.idm.srvc.auth.ws.LoginDataWebService", 
@@ -34,9 +40,14 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 
 	@Autowired
 	private LoginDataService loginDS;
+    @Autowired
+    private UserDataService userService;
 	
 	@Autowired
 	private LoginDozerConverter loginDozerConverter;
+
+    @Autowired
+    private MailService mailService;
 	
 	private static final Log log = LogFactory.getLog(LoginDataWebServiceImpl.class);
 	
@@ -120,21 +131,6 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 			return resp;
 		}
 		resp.setResponseValue(pswd);
-		return resp;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#getLogin(java.lang.String, java.lang.String)
-	 */
-	public LoginResponse getLogin(String domainId, String principal)
-			throws AuthenticationException {
-		final LoginResponse resp = new LoginResponse(ResponseStatus.SUCCESS);
-		final LoginEntity lg = loginDS.getLogin(domainId, principal);
-		if (lg == null ) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setPrincipal(loginDozerConverter.convertToDTO(lg, false)); 
-		}
 		return resp;
 	}
 
@@ -251,14 +247,53 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#resetPassword(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
 	 */
 	public Response resetPassword(String domainId, String principal,String managedSysId, String password) {
-		
-		Response resp = new Response(ResponseStatus.SUCCESS);
-		boolean result = loginDS.resetPassword(domainId, principal, managedSysId, password);
-		if (!result) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}
-		return resp;
+		return resetPasswordAndNotifyUser(domainId, principal, managedSysId, password, false);
 	}
+
+    /* (non-Javadoc)
+	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#resetPassword(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+	 */
+    public Response resetPasswordAndNotifyUser(String domainId, String principal,String managedSysId, String password, boolean notifyUserViaEmail) {
+
+        Response resp = new Response(ResponseStatus.SUCCESS);
+        boolean result = loginDS.resetPassword(domainId, principal, managedSysId, password);
+        if (!result) {
+            resp.setStatus(ResponseStatus.FAILURE);
+        }
+
+        if(notifyUserViaEmail){
+            // send email to user with password
+            LoginEntity loginEntity = loginDS.getLoginByManagedSys(domainId, principal, managedSysId);
+            if(loginEntity!=null){
+
+                Response respPwd = this.decryptPassword(loginEntity.getUserId(), password);
+
+                if(respPwd.getStatus()==ResponseStatus.SUCCESS){
+                    UserEntity user =  userService.getUser(loginEntity.getUserId());
+                    String pwd = (String)respPwd.getResponseValue();
+                    if(user!=null){
+                        NotificationRequest request = new NotificationRequest();
+                        request.setUserId(user.getUserId());
+                        request.setNotificationType("USER_PASSWORD_EMAIL");
+
+
+                        List<NotificationParam> paramList = new LinkedList<NotificationParam>();
+
+                        paramList.add(new NotificationParam(MailTemplateParameters.USER_ID.value(), user.getUserId()));
+                        paramList.add(new NotificationParam(MailTemplateParameters.IDENTITY.value(), principal));
+                        paramList.add(new NotificationParam(MailTemplateParameters.PASSWORD.value(), pwd));
+                        paramList.add(new NotificationParam(MailTemplateParameters.FIRST_NAME.value(), user.getFirstName()));
+                        paramList.add(new NotificationParam(MailTemplateParameters.LAST_NAME.value(), user.getLastName()));
+
+                        request.setParamList(paramList);
+
+                        mailService.sendNotification(request);
+                    }
+                }
+            }
+        }
+        return resp;
+    }
 
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#setPassword(java.lang.String, java.lang.String, java.lang.String, java.lang.String)

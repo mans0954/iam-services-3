@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.meta.service;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -11,6 +12,7 @@ import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.springframework.stereotype.Repository;
 
 @Repository("metadataElementPageTemplateDAO")
@@ -33,6 +35,10 @@ public class MetadataElementPageTemplateDAOImpl extends BaseDaoImpl<MetadataElem
 				}
 				criteria.createAlias("uriPatterns", "patterns").add( Restrictions.in("patterns.id", patternIdSet));
 			}
+			
+			if(entity.getResource() != null && StringUtils.isNotEmpty(entity.getResource().getResourceId())) {
+            	criteria.add(Restrictions.eq("resource.resourceId", entity.getResource().getResourceId()));
+            }
 		}
 		return criteria;
 	}
@@ -40,6 +46,15 @@ public class MetadataElementPageTemplateDAOImpl extends BaseDaoImpl<MetadataElem
 	@Override
 	protected String getPKfieldName() {
 		return "id";
+	}
+
+	@Override
+	public List<MetadataElementPageTemplateEntity> getByResourceId(final String resourceId) {
+		final MetadataElementPageTemplateEntity entity = new MetadataElementPageTemplateEntity();
+		final ResourceEntity resource = new ResourceEntity();
+		resource.setResourceId(resourceId);
+		entity.setResource(resource);
+		return getByExample(entity);
 	}
 
 }

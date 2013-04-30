@@ -25,9 +25,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.mule.api.MuleContext;
-import org.mule.api.MuleException;
 import org.mule.api.context.MuleContextAware;
-import org.mule.module.client.MuleClient;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
@@ -51,7 +49,6 @@ import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.msg.service.MailService;
 import org.openiam.idm.srvc.pswd.service.PasswordGenerator;
-import org.openiam.idm.srvc.pswd.service.PasswordService;
 import org.openiam.idm.srvc.role.domain.UserRoleEntity;
 import org.openiam.idm.srvc.role.service.UserRoleDAO;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
@@ -60,13 +57,14 @@ import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.domain.UserNoteEntity;
 import org.openiam.idm.srvc.user.dto.*;
 import org.openiam.idm.srvc.user.service.UserDataService;
+import org.openiam.idm.srvc.user.service.UserProfileService;
+import org.openiam.idm.srvc.user.token.CreateUserToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 import java.util.*;
@@ -109,25 +107,13 @@ public class UserDataWebServiceImpl implements UserDataWebService,MuleContextAwa
     @Autowired
     private PhoneDozerConverter phoneDozerConverter;
     
-    @Autowired
-    private MetadataElementTemplateService pageTemplateService;
-    
-    @Autowired
-    private LoginDozerConverter loginDozerConverter;
-    
-    @Autowired
-    private LoginDAO loginDAO;
-    
-    @Autowired
-    private LoginDataService loginDataService;
-    
-    @Autowired
-    private UserRoleDAO userRoleDAO;
-    
 	@Autowired
 	private MailService mailService;
 
     private MuleContext muleContext;
+    
+    @Autowired
+    private UserProfileService userProfileService;
 
     public void setMuleContext(MuleContext ctx) {
         muleContext = ctx;
@@ -1052,8 +1038,6 @@ public class UserDataWebServiceImpl implements UserDataWebService,MuleContextAwa
         return response;
     }
 
-
-
     @Override
     public Response deleteUser(final String userId){
         final Response response = new Response(ResponseStatus.SUCCESS);
@@ -1125,29 +1109,19 @@ public class UserDataWebServiceImpl implements UserDataWebService,MuleContextAwa
         return userManager.getNumOfPhonesForUser(userId);
     }
 
-    private void sendCredentialsToUser(User user, String identity, String password) {
+    private void sendCredentialsToUser(User user, String identity, String password) throws BasicDataServiceException {
 
-        try {
-
-            NotificationRequest request = new NotificationRequest();
-            request.setUserId(user.getUserId());
-            request.setNotificationType("NEW_USER_EMAIL");
-
-            request.getParamList().add(new NotificationParam("IDENTITY", identity));
-            request.getParamList().add(new NotificationParam("PSWD", password));
-
-            MuleClient client = new MuleClient(muleContext);
-
-            Map<String, String> msgPropMap = new HashMap<String, String>();
-            msgPropMap.put("SERVICE_HOST", serviceHost);
-            msgPropMap.put("SERVICE_CONTEXT", serviceContext);
-
-            client.sendAsync("vm://notifyUserByEmailMessage", request, msgPropMap);
-
-        } catch (MuleException me) {
-            log.error(me.toString());
-        }
-
+	    	final NotificationRequest notificationRequest = new NotificationRequest();
+	        notificationRequest.setUserId(user.getUserId());
+	        notificationRequest.setNotificationType("NEW_USER_EMAIL");
+	        notificationRequest.getParamList().add(new NotificationParam("IDENTITY",  identity));
+	        notificationRequest.getParamList().add(new NotificationParam("PSWD", password));
+	        notificationRequest.getParamList().add(new NotificationParam("USER_ID", user.getUserId()));
+	        final boolean sendEmailResult = mailService.sendNotification(notificationRequest);
+	        if(!sendEmailResult) {
+	        	throw new BasicDataServiceException(ResponseCode.SEND_EMAIL_FAILED);
+	        }
+        
     }
 
 	@Override
@@ -1159,7 +1133,6 @@ public class UserDataWebServiceImpl implements UserDataWebService,MuleContextAwa
 	}
 
 	@Override
-	@Transactional
 	public SaveTemplateProfileResponse saveUserProfile(UserProfileRequestModel request) {
 		 final SaveTemplateProfileResponse response = new SaveTemplateProfileResponse(ResponseStatus.SUCCESS);
 	        try {
@@ -1167,77 +1140,7 @@ public class UserDataWebServiceImpl implements UserDataWebService,MuleContextAwa
 	                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 	            }
 	            
-	            final UserEntity userEntity = userDozerConverter.convertToEntity(request.getUser(), true);
-	            final UserEntity dbEntity = userManager.getUser(request.getUser().getUserId());
-	            
-	            final List<EmailAddressEntity> emailList = emailAddressDozerConverter.convertToEntityList(request.getEmails(), true);	 
-	            final List<AddressEntity> addressList = addressDozerConverter.convertToEntityList(request.getAddresses(), true);
-	            final List<PhoneEntity> phoneList = phoneDozerConverter.convertToEntityList(request.getPhones(), true);
-	            
-	            saveEmails(userEntity, emailList);
-	            saveAddresses(userEntity, addressList);
-	            savePhones(userEntity, phoneList);
-	            
-	            /* figure out the emails to delete */
-	            if(CollectionUtils.isNotEmpty(dbEntity.getEmailAddresses())) {
-	            	for(final Iterator<EmailAddressEntity> it = dbEntity.getEmailAddresses().iterator(); it.hasNext();) {
-	            		final EmailAddressEntity dbEmail = it.next();
-	            		boolean contains = false;
-	            		if(CollectionUtils.isNotEmpty(emailList)) {
-	            			for(final EmailAddressEntity email : emailList) {
-	            				if(StringUtils.equals(email.getEmailId(), dbEmail.getEmailId())) {
-	            					contains = true;
-	            				}
-	            			}
-	            		}
-	            		
-	            		if(!contains) {
-	            			it.remove();
-	            		}
-	            	}
-	            }
-	            
-	            /* figure out the emails to delete */
-	            if(CollectionUtils.isNotEmpty(dbEntity.getAddresses())) {
-	            	for(final Iterator<AddressEntity> it = dbEntity.getAddresses().iterator(); it.hasNext();) {
-	            		final AddressEntity dbAddress = it.next();
-	            		boolean contains = false;
-	            		if(CollectionUtils.isNotEmpty(addressList)) {
-	            			for(final AddressEntity address : addressList) {
-	            				if(StringUtils.equals(address.getAddressId(), dbAddress.getAddressId())) {
-	            					contains = true;
-	            				}
-	            			}
-	            		}
-	            		
-	            		if(!contains) {
-	            			it.remove();
-	            		}
-	            	}
-	            }
-	            
-	            /* figure out the phones to delete */
-	            if(CollectionUtils.isNotEmpty(dbEntity.getPhones())) {
-	            	for(final Iterator<PhoneEntity> it = dbEntity.getPhones().iterator(); it.hasNext();) {
-	            		final PhoneEntity dbPhone = it.next();
-	            		boolean contains = false;
-	            		if(CollectionUtils.isNotEmpty(phoneList)) {
-	            			for(final PhoneEntity phone : phoneList) {
-	            				if(StringUtils.equals(phone.getPhoneId(), dbPhone.getPhoneId())) {
-	            					contains = true;
-	            				}
-	            			}
-	            		}
-	            		
-	            		if(!contains) {
-	            			it.remove();
-	            		}
-	            	}
-	            }
-	            
-	            pageTemplateService.saveTemplate(request);
-	            userManager.mergeUserFields(dbEntity, userEntity);
-	            userManager.updateUser(dbEntity);
+	            userProfileService.saveUserProfile(request);
 	        } catch(PageTemplateException e) {
 	        	response.setCurrentValue(e.getCurrentValue());
 	        	response.setElementName(e.getElementName());
@@ -1254,105 +1157,23 @@ public class UserDataWebServiceImpl implements UserDataWebService,MuleContextAwa
 	        return response;
 	}
 
-	//TODO:  when IDM is ready, this will need to be moved into activit, and use the provisioning service
 	@Override
-	@Transactional
 	public SaveTemplateProfileResponse createNewUserProfile(final NewUserProfileRequestModel request) {
 		final SaveTemplateProfileResponse response = new SaveTemplateProfileResponse(ResponseStatus.SUCCESS);
         try {
             if(request == null || 
                request.getUser() == null || 
-               CollectionUtils.isEmpty(request.getLoginList()) ||
-               StringUtils.isBlank(request.getRequestorId())) {
+               CollectionUtils.isEmpty(request.getLoginList())) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
             
-            final UserEntity userEntity = userDozerConverter.convertToEntity(request.getUser(), true);
-            userEntity.setStatus(UserStatusEnum.PENDING_INITIAL_LOGIN);
-            if(StringUtils.isBlank(userEntity.getFirstName())) {
-            	throw new BasicDataServiceException(ResponseCode.FIRST_NAME_REQUIRED);
-            }
-            if(StringUtils.isBlank(userEntity.getLastName())) {
-            	throw new BasicDataServiceException(ResponseCode.LAST_NAME_REQUIRED);
-            }
-            if(CollectionUtils.isEmpty(request.getEmails())) {
-            	throw new BasicDataServiceException(ResponseCode.EMAIL_REQUIRED);
-            }
-            if(CollectionUtils.isEmpty(request.getLoginList())) {
-            	throw new BasicDataServiceException(ResponseCode.LOGIN_REQUIRED);
-            }
-            
-            final UserEntity requestor = userManager.getUser(request.getRequestorId());
-            if(requestor == null) {
-            	throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            }
-            
-            userManager.saveUserInfo(userEntity, null);
-            
-            
-            /* didn't use 'true' hibernate for this, since the entity mappings are done via IDs */
-            final List<LoginEntity> principalList = loginDozerConverter.convertToEntityList(request.getLoginList(), true);
-            
-            
-            final String plaintextPassword = PasswordGenerator.generatePassword(10);
-            final String encryptedPassword = loginDataService.encryptPassword(userEntity.getUserId(), plaintextPassword);
-            final String login = principalList.get(0).getLogin();
-            log.info(String.format("User password is: %s", plaintextPassword));
-            for(final LoginEntity loginEntity : principalList) {
-            	loginEntity.setUserId(userEntity.getUserId());
-            	loginEntity.setCreateDate(new Date());
-            	loginEntity.setFirstTimeLogin(1);
-            	loginEntity.setResetPassword(1);
-            	loginEntity.setPwdExp(new Date(0));
-            	loginEntity.setGracePeriod(new Date(0));
-            	loginEntity.setPassword(encryptedPassword);
-            	loginDAO.save(loginEntity);
-            }
-            
-            if(CollectionUtils.isNotEmpty(request.getRoleIds())) {
-            	for(final String roleId : request.getRoleIds()) {
-            		if(StringUtils.isNotBlank(roleId)) {
-            			final UserRoleEntity userRole = new UserRoleEntity();
-            			userRole.setRoleId(roleId);
-            			userRole.setUserId(userEntity.getUserId());
-            			userRoleDAO.save(userRole);
-            		}
-            	}
-            }
-            
-            /* now set the user on the template */
-            request.getUser().setUserId(userEntity.getUserId());
-            pageTemplateService.saveTemplate(request);
-            
-            final List<EmailAddressEntity> emailList = emailAddressDozerConverter.convertToEntityList(request.getEmails(), true);	 
-            final List<AddressEntity> addressList = addressDozerConverter.convertToEntityList(request.getAddresses(), true);
-            final List<PhoneEntity> phoneList = phoneDozerConverter.convertToEntityList(request.getPhones(), true);
-            saveEmails(userEntity, emailList);
-            saveAddresses(userEntity, addressList);
-            savePhones(userEntity, phoneList);
-            if(CollectionUtils.isNotEmpty(emailList)) {
-            	userEntity.setEmailAddresses(new HashSet<EmailAddressEntity>(emailList));
-            }
-            if(CollectionUtils.isNotEmpty(phoneList)) {
-            	userEntity.setPhones(new HashSet<PhoneEntity>(phoneList));
-            }
-            if(CollectionUtils.isNotEmpty(addressList)) {
-            	userEntity.setAddresses(new HashSet<AddressEntity>(addressList));
-            }
-            userManager.updateUser(userEntity);
-            
-            final NotificationRequest notificationRequest = new NotificationRequest();
-            notificationRequest.setUserId(userEntity.getUserId());
-            notificationRequest.setNotificationType("NEW_USER_EMAIL");
-            notificationRequest.getParamList().add(new NotificationParam("IDENTITY",  login));
-            notificationRequest.getParamList().add(new NotificationParam("PSWD", plaintextPassword));
-            notificationRequest.getParamList().add(new NotificationParam("USER_ID", userEntity.getUserId()));
-            final boolean sendEmailResult = mailService.sendNotification(notificationRequest);
-            if(!sendEmailResult) {
-            	throw new BasicDataServiceException(ResponseCode.SEND_EMAIL_FAILED);
-            }
-            
-            response.setResponseValue(userEntity.getUserId());
+            final CreateUserToken token = userProfileService.createNewUserProfile(request);
+            final UserEntity userEntity = token.getUser();
+            final String login = token.getLogin();
+            final String plaintextPassword = token.getPassword();
+            response.setUserId(userEntity.getUserId());
+            response.setPlaintextPassword(plaintextPassword);
+            response.setLogin(login);
         } catch(PageTemplateException e) {
         	response.setCurrentValue(e.getCurrentValue());
         	response.setElementName(e.getElementName());
@@ -1368,43 +1189,29 @@ public class UserDataWebServiceImpl implements UserDataWebService,MuleContextAwa
         }
         return response;
 	}
-	
-	private void savePhones(final UserEntity userEntity, List<PhoneEntity> phoneList) {
-        if(CollectionUtils.isNotEmpty(phoneList)) {
-        	for(final PhoneEntity phone : phoneList) {
-        		phone.setParent(userEntity);
-        		if(StringUtils.isBlank(phone.getPhoneId())) {
-        			userManager.addPhone(phone);
-        		} else {
-        			userManager.updatePhone(phone);
-        		}
-        	}
+
+	@Override
+	public Response sendNewUserEmail(final String userId, final String password, final String login) {
+		final Response response = new Response();
+		try {
+			final NotificationRequest notificationRequest = new NotificationRequest();
+            notificationRequest.setUserId(userId);
+            notificationRequest.setNotificationType("NEW_USER_EMAIL");
+            notificationRequest.getParamList().add(new NotificationParam("IDENTITY",  login));
+            notificationRequest.getParamList().add(new NotificationParam("PSWD", password));
+            notificationRequest.getParamList().add(new NotificationParam("USER_ID", userId));
+            final boolean sendEmailResult = mailService.sendNotification(notificationRequest);
+            if(!sendEmailResult) {
+            	throw new BasicDataServiceException(ResponseCode.SEND_EMAIL_FAILED);
+            }
+		} catch(BasicDataServiceException e) {
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+        } catch(Throwable e) {
+            log.error("Can't perform operation", e);
+            response.setErrorText(e.getMessage());
+            response.setStatus(ResponseStatus.FAILURE);
         }
-	}
-	
-	private void saveEmails(final UserEntity userEntity, final List<EmailAddressEntity> emailList) {
-		if(CollectionUtils.isNotEmpty(emailList)) {
-        	for(final EmailAddressEntity email : emailList) {
-        		email.setParent(userEntity);
-        		if(StringUtils.isBlank(email.getEmailId())) {
-        			userManager.addEmailAddress(email);
-        		} else {
-        			userManager.updateEmailAddress(email);
-        		}
-        	}
-        }
-	}
-	
-	private void saveAddresses(final UserEntity userEntity, final List<AddressEntity> addressList) {
-		if(CollectionUtils.isNotEmpty(addressList)) {
-        	for(final AddressEntity address : addressList) {
-        		address.setParent(userEntity);
-        		if(StringUtils.isBlank(address.getAddressId())) {
-        			userManager.addAddress(address);
-        		} else {
-        			userManager.updateAddress(address);
-        		}
-        	}
-        }
+		return response;
 	}
 }

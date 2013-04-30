@@ -27,6 +27,7 @@ import org.openiam.idm.srvc.grp.service.UserGroupDAO;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
+import org.openiam.idm.srvc.res.service.ResourceUserDAO;
 import org.openiam.idm.srvc.role.service.UserRoleDAO;
 import org.openiam.idm.srvc.searchbean.converter.AddressSearchBeanConverter;
 import org.openiam.idm.srvc.searchbean.converter.EmailAddressSearchBeanConverter;
@@ -85,6 +86,8 @@ public class UserMgr implements UserDataService {
     
     @Autowired
     private UserGroupDAO userGroupDAO;
+    @Autowired
+    private ResourceUserDAO resourceUserDAO;
     
     @Autowired
     private UserSearchDAO userSearchDAO;
@@ -225,7 +228,11 @@ public class UserMgr implements UserDataService {
         removeAllEmailAddresses(id);
 
 
+        userGroupDAO.deleteByUserId(id);
+        userRoleDAO.deleteByUserId(id);
+        resourceUserDAO.deleteAllByUserId(id);
         userKeyDao.deleteByUserId(id);
+
         userDao.delete(userDao.findById(id));
     }
 
@@ -982,7 +989,7 @@ public class UserMgr implements UserDataService {
         Set<EmailAddressEntity> emailAddressList = newUserEntity.getEmailAddresses();
 
         newUserEntity.setPrincipalList(null);
-        newUserEntity.setEmailAddresses(null);
+       // newUserEntity.setEmailAddresses(null);
 
         this.addUser(newUserEntity);
 
@@ -1005,7 +1012,9 @@ public class UserMgr implements UserDataService {
             }
         }
         if(emailAddressList!=null && !emailAddressList.isEmpty()){
-            validateEmailAddress(newUserEntity, emailAddressList);
+            for(final EmailAddressEntity email : emailAddressList) {
+                email.setParent(newUserEntity);
+            }
             this.addEmailAddressSet(emailAddressList);
         }
         return newUserEntity.getUserId();

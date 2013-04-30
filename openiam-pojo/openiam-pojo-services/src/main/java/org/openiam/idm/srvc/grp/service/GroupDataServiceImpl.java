@@ -63,15 +63,6 @@ public class GroupDataServiceImpl implements GroupDataService {
 	
 	@Autowired
 	private UserGroupDAO userGroupDao;
-	
-	@Autowired
-	private UserDAO userDao;
-	
-    @Autowired
-    private UserGroupDozerConverter userGroupDozerConverter;
-    
-    @Autowired
-    private UserDozerConverter userDozerConverter;
     
     @Autowired
     private GroupDozerConverter groupDozerConverter;
@@ -129,7 +120,16 @@ public class GroupDataServiceImpl implements GroupDataService {
 	public void saveGroup(final GroupEntity group) {
 		if(group != null) {
 			if(StringUtils.isNotBlank(group.getGrpId())) {
-				groupDao.update(group);
+				final GroupEntity dbGroup = groupDao.findById(group.getGrpId());
+				if(dbGroup != null) {
+					group.setAttributes(dbGroup.getAttributes());
+					group.setChildGroups(dbGroup.getChildGroups());
+					group.setParentGroups(dbGroup.getParentGroups());
+					group.setResourceGroups(dbGroup.getResourceGroups());
+					group.setRoles(dbGroup.getRoles());
+					group.setUserGroups(dbGroup.getUserGroups());
+					groupDao.merge(group);
+				}
 			} else {
 				groupDao.save(group);
 			}
@@ -282,5 +282,18 @@ public class GroupDataServiceImpl implements GroupDataService {
 				group.removeChildGroup(childGroupId);
 			}
 		}
+	}
+
+	@Override
+	public GroupEntity getGroupByName(String groupName) {
+		final GroupEntity example = new GroupEntity();
+		example.setGrpName(groupName);
+		final List<GroupEntity> foundList = groupDao.getByExample(example);
+		return (CollectionUtils.isNotEmpty(foundList)) ? foundList.get(0) : null;
+	}
+
+	@Override
+	public UserGroupEntity getRecord(String userId, String groupId) {
+		return userGroupDao.getRecord(groupId, userId);
 	}
 }

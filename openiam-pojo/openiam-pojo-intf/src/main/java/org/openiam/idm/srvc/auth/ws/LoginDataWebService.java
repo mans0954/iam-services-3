@@ -41,13 +41,6 @@ public interface LoginDataWebService {
             String managedSysId);
 
     @WebMethod
-    public LoginResponse getLogin(
-            @WebParam(name = "domainId", targetNamespace = "")
-            String domainId,
-            @WebParam(name = "principal", targetNamespace = "")
-            String principal) throws AuthenticationException;
-
-    @WebMethod
     public LoginResponse getLoginByManagedSys(
             @WebParam(name = "domainId", targetNamespace = "")
             String domainId,
@@ -136,6 +129,27 @@ public interface LoginDataWebService {
             @WebParam(name = "password", targetNamespace = "")
             String password);
 
+    /**
+     * Sets a new password for the identity and updates the support attributes such as locked account flag.
+     *
+     * @param domainId
+     * @param principal
+     * @param managedSysId
+     * @param password
+     * @return
+     */
+    @WebMethod
+    public Response resetPasswordAndNotifyUser(
+            @WebParam(name = "domainId", targetNamespace = "")
+            String domainId,
+            @WebParam(name = "principal", targetNamespace = "")
+            String principal,
+            @WebParam(name = "managedSysId", targetNamespace = "")
+            String managedSysId,
+            @WebParam(name = "password", targetNamespace = "")
+            String password,
+            @WebParam(name = "notifyUserViaEmail", targetNamespace = "")
+            boolean notifyUserViaEmail);
     /**
      * Encrypts the password string.
      *

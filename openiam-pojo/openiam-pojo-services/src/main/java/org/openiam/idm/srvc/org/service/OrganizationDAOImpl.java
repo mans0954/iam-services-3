@@ -35,15 +35,15 @@ public class OrganizationDAOImpl extends BaseDaoImpl<OrganizationEntity, String>
     public List<OrganizationEntity> findRootOrganizations() {
         final Criteria criteria = getCriteria()
                 .add(Restrictions.isNull("parentId"))
-                .addOrder(Order.asc("organizationName"))
-                .setFetchMode("attributes", FetchMode.JOIN);
+                .addOrder(Order.asc("organizationName"));
+        	  //.setFetchMode("attributes", FetchMode.JOIN);
         return criteria.list();
     }
 
     public List<OrganizationEntity> findAllOrganization() {
         Criteria criteria = getCriteria()
-                .addOrder(Order.asc("organizationName"))
-                .setFetchMode("attributes", FetchMode.JOIN);
+                .addOrder(Order.asc("organizationName"));
+                //.setFetchMode("attributes", FetchMode.JOIN);
         return criteria.list();
     }
 

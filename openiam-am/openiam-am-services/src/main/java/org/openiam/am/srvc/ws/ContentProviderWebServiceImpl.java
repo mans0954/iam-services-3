@@ -283,15 +283,18 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     public Response saveURIPattern(@WebParam(name = "pattern", targetNamespace = "") URIPattern pattern) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
-            if (pattern==null )
+            if (pattern==null ) {
                 throw new  BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            if (pattern.getPattern()==null || pattern.getPattern().trim().isEmpty())
+            }
+            if (StringUtils.isBlank(pattern.getPattern())) {
                 throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_URI_PATTERN_NOT_SET);
-            if (pattern.getContentProviderId()==null || pattern.getContentProviderId().trim().isEmpty())
+            }
+            if (StringUtils.isBlank(pattern.getContentProviderId())) {
                 throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_NOT_SET);
-            if (pattern.getAuthLevel()==null || pattern.getAuthLevel().getId().trim().isEmpty())
+            }
+            if (pattern.getAuthLevel()==null || StringUtils.isBlank(pattern.getAuthLevel().getId())) {
                 throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_AUTH_LEVEL_NOT_SET);
-
+            }
             URIPatternEntity example = new URIPatternEntity();
             ContentProviderEntity cp = new ContentProviderEntity();
             cp.setId(pattern.getContentProviderId());

@@ -1,5 +1,7 @@
 package org.openiam.am.srvc.dao;
 
+import java.util.List;
+
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
@@ -7,6 +9,7 @@ import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +36,10 @@ public class URIPatternDaoImpl extends BaseDaoImpl<URIPatternEntity, String> imp
                 criteria.add(Restrictions.ilike("pattern", entity.getPattern(), MatchMode.ANYWHERE));
 //                criteria.add(Restrictions.eq("pattern", entity.getPattern()));
             }
+            
+            if(entity.getResource() != null && StringUtils.isNotEmpty(entity.getResource().getResourceId())) {
+            	criteria.add(Restrictions.eq("resource.resourceId", entity.getResource().getResourceId()));
+            }
         }
         return criteria;
     }
@@ -52,4 +59,12 @@ public class URIPatternDaoImpl extends BaseDaoImpl<URIPatternEntity, String> imp
         qry.setString("patternId", patternId);
         qry.executeUpdate();
     }
+	@Override
+	public List<URIPatternEntity> getByResourceId(String resourceId) {
+		final URIPatternEntity entity = new URIPatternEntity();
+		final ResourceEntity resource = new ResourceEntity();
+		resource.setResourceId(resourceId);
+		entity.setResource(resource);
+		return getByExample(entity);
+	}
 }

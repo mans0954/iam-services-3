@@ -487,7 +487,7 @@ public interface UserDataWebService {
 
     @WebMethod
     public Response enableDisableUser(@WebParam(name = "userId", targetNamespace = "")final String userId,
-                                      @WebParam(name = "userId", targetNamespace = "")final UserStatusEnum secondaryStatus);
+                                      @WebParam(name = "secondaryStatus", targetNamespace = "")final UserStatusEnum secondaryStatus);
 
     @WebMethod
     public Response activateUser(@WebParam(name = "userId", targetNamespace = "")final String userId);
@@ -506,4 +506,9 @@ public interface UserDataWebService {
     
     @WebMethod
     public SaveTemplateProfileResponse createNewUserProfile(@WebParam(name = "request", targetNamespace = "") final NewUserProfileRequestModel request);
+    
+    @WebMethod
+    public Response sendNewUserEmail(@WebParam(name = "userId", targetNamespace = "") final String userId,
+    								 @WebParam(name = "password", targetNamespace = "") final String password,
+    								 @WebParam(name = "login", targetNamespace = "") final String login);
 }

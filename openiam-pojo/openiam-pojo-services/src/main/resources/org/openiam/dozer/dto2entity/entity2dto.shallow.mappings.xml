@@ -365,7 +365,7 @@
             <b>isPublic</b>
         </field>
         <field>
-            <a>resourceId</a>
+            <a>resource.resourceId</a>
             <b>resourceId</b>
         </field>
         <field>

@@ -209,7 +209,6 @@ public class TestPageTemplateService extends AbstractTestNGSpringContextTests {
 		final TemplateRequest request = new TemplateRequest();
 		request.setUserId(userId);
 		request.setLocaleName(locale);
-		request.setSelfserviceRequest(true);
 		request.setPatternId(pattern.getId());
 		final PageTempate tempalteByPattern = templateWebService.getTemplate(request);
 		Assert.assertNotNull(tempalteByPattern);
@@ -228,7 +227,6 @@ public class TestPageTemplateService extends AbstractTestNGSpringContextTests {
 		final TemplateRequest request = new TemplateRequest();
 		request.setUserId(userId);
 		request.setLocaleName(locale);
-		request.setSelfserviceRequest(true);
 		request.setPatternId(pattern.getId());
 		final PageTempate template = templateWebService.getTemplate(request);
 		Assert.assertNotNull(template);

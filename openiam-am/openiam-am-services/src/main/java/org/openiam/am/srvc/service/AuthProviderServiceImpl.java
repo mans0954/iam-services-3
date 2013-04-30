@@ -184,7 +184,8 @@ public class AuthProviderServiceImpl implements AuthProviderService {
         resource = resourceDao.add(resource);
 
         provider.setProviderId(null);
-        provider.setResourceId(resource.getResourceId());
+        provider.setResource(resource);
+        //provider.setResourceId(resource.getResourceId());
         
         Set<AuthProviderAttributeEntity> providerAttributeSet = provider.getProviderAttributeSet();
         Map<String, AuthResourceAttributeMapEntity> resourceAttributeMap = provider.getResourceAttributeMap();
@@ -226,7 +227,7 @@ public class AuthProviderServiceImpl implements AuthProviderService {
 
             // get resource for provider
             if(provider.getResource()!=null){
-                ResourceEntity resource = resourceDao.findById(entity.getResourceId());
+                ResourceEntity resource = entity.getResource();
                 resource.setURL(provider.getResource().getURL());
                 resourceDao.save(resource);
             }
@@ -250,7 +251,7 @@ public class AuthProviderServiceImpl implements AuthProviderService {
             authResourceAttributeMapDao.deleteByProviderId(providerId);
             this.deleteAuthProviderAttributes(providerId);
             authProviderDao.deleteByPkList(Arrays.asList(new String[]{providerId}));
-            resourceDataService.deleteResource(entity.getResourceId());
+            resourceDataService.deleteResource(entity.getResource().getResourceId());
         }
     }
 
@@ -266,7 +267,7 @@ public class AuthProviderServiceImpl implements AuthProviderService {
         if(providerList!=null && !providerList.isEmpty()){
             for (AuthProviderEntity provider :providerList){
                 pkList.add(provider.getProviderId());
-                resourceIdList.add(provider.getResourceId());
+                resourceIdList.add(provider.getResource().getResourceId());
             }
             authProviderAttributeDao.deleteByProviderList(pkList);
             authResourceAttributeMapDao.deleteByProviderList(pkList);

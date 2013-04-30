@@ -12,9 +12,9 @@
             <a>providerAttributeSet</a>
             <b>providerAttributeSet</b>
         </field>
-        <field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter" custom-converter-param="amDto2entityShallowDozerMapper">
-            <a>resource</a>
-            <b>resource</b>
+        <field>
+            <a>resource.resourceId</a>
+            <b>resourceId</b>
         </field>
         <field custom-converter="org.openiam.dozer.crossentity.CrossEntityMapConverterWithKeyString" custom-converter-param="amDto2entityShallowDozerMapper">
             <a>resourceAttributeMap</a>
@@ -76,7 +76,7 @@
             <b>isSSL</b>
         </field>
         <field>
-            <a>resourceId</a>
+            <a>resource.resourceId</a>
             <b>resourceId</b>
         </field>
         <field>
@@ -126,7 +126,7 @@
             <b>isPublic</b>
         </field>
         <field>
-            <a>resourceId</a>
+            <a>resource.resourceId</a>
             <b>resourceId</b>
         </field>
         <field>

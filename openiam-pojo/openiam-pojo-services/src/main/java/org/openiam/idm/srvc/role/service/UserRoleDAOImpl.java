@@ -33,10 +33,12 @@ public class UserRoleDAOImpl extends BaseDaoImpl<UserRoleEntity, String> impleme
 	private static final Log log = LogFactory.getLog(UserRoleDAOImpl.class);
 	
 	private String DELETE_BY_ROLE_ID = "DELETE FROM %s ur WHERE ur.roleId = :roleId";
-	
+    private static String DELETE_BY_USER_ID = "DELETE FROM %s ug WHERE ug.userId = :userId";
+
 	@PostConstruct
 	public void initSQL() {
 		DELETE_BY_ROLE_ID = String.format(DELETE_BY_ROLE_ID, domainClass.getSimpleName());
+        DELETE_BY_USER_ID = String.format(DELETE_BY_USER_ID, domainClass.getSimpleName());
 	}
 	
 	@Override
@@ -79,6 +81,12 @@ public class UserRoleDAOImpl extends BaseDaoImpl<UserRoleEntity, String> impleme
 		qry.setString("roleId", roleId);
 		qry.executeUpdate();
 	}
+    @Override
+    public void deleteByUserId(String userId) {
+        final Query query = getSession().createQuery(DELETE_BY_USER_ID);
+        query.setParameter("userId", userId);
+        query.executeUpdate();
+    }
 
 	@Override
 	public List<String> getUserIdsInRole(final Collection<String> roleIdList, final int from, final int size) {
