@@ -15,19 +15,56 @@ import java.util.List;
  */
 public interface NotificationService {
 
+    /**
+     * method used for adding notification
+     * @param transientInstance
+     * @return
+     */
     NotificationDto addNotification(NotificationDto transientInstance);
 
+    /**
+     * 
+     * method used for deleting notification by id.
+     * @param id
+     */
     void removeNotification(String id);
 
+    /**
+     * method used for updating notification.
+     * @param detachedInstance
+     * @return
+     */
     NotificationDto updateNotification(NotificationDto detachedInstance);
 
+    /**
+     * method used for getting notification by id.
+     * @param id
+     * @return
+     */
     NotificationDto getNotificationById(java.lang.String id);
 
+    /**
+     * method used for getting notification by using name.
+     * @param name
+     * @return
+     */
     NotificationDto getNotificationByName(String name);
 
+    /**method used for getting all notification.
+     * 
+     * @return
+     */
     List<NotificationDto> getAllNotifications();
 
+    /**
+     * method returning list of configurable notification.
+     * @return
+     */
     List<NotificationDto> getConfigurableNotifications();
 
+    /**
+     * method used to get the  list of System notification
+     * @return
+     */
     List<NotificationDto> getSystemNotifications();
 }

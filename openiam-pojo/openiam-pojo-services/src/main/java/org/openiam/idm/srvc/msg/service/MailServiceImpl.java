@@ -31,247 +31,361 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
 
+import twitter4j.DirectMessage;
+import twitter4j.Status;
+import twitter4j.Twitter;
+import twitter4j.TwitterException;
+import twitter4j.TwitterFactory;
+
 @Service("mailService")
 @WebService(endpointInterface = "org.openiam.idm.srvc.msg.service.MailService", targetNamespace = "urn:idm.openiam.org/srvc/msg", portName = "EmailWebServicePort", serviceName = "EmailWebService")
 public class MailServiceImpl implements MailService, ApplicationContextAware {
 
 	@Autowired
-    private MailSender mailSender;
-    
-    @Value("${mail.defaultSender}")
-    private String defaultSender;
-    
-    @Value("${mail.defaultSubjectPrefix}")
-    private String subjectPrefix;
-    
-    @Value("${mail.optionalBccAddress}")
-    private String optionalBccAddress;
+	private MailSender mailSender;
 
-    @Autowired
-    protected UserDataService userManager;
-    
-    @Autowired
-    protected AuditHelper auditHelper;
-    
-    @Autowired
-    @Qualifier("configurableGroovyScriptEngine")
-    private ScriptIntegration scriptRunner;
-    
-    @Autowired
-    @Qualifier("pojoProperties")
-    private Properties properties;
+	@Value("${mail.defaultSender}")
+	private String defaultSender;
 
-    public static ApplicationContext ac;
+	@Value("${mail.defaultSubjectPrefix}")
+	private String subjectPrefix;
 
-    private static final Log log = LogFactory.getLog(MailServiceImpl.class);
-    private static final int SUBJECT_IDX = 0;
-    private static final int SCRIPT_IDX = 1;
+	@Value("${mail.optionalBccAddress}")
+	private String optionalBccAddress;
 
-    public void sendToAllUsers() {
-        log.warn("sendToAllUsers was called, but is not implemented");
-    }
+	@Autowired
+	protected UserDataService userManager;
 
-    public void sendToGroup(String groupId) {
-        log.warn("sendToGroup was called, but is not implemented");
-    }
+	@Autowired
+	protected AuditHelper auditHelper;
 
-   /* public void send(String from, String to, String subject, String msg) {
-        sendWithCC(from, to, null, subject, msg);
-    }
+	@Autowired
+	@Qualifier("configurableGroovyScriptEngine")
+	private ScriptIntegration scriptRunner;
 
-    public void sendWithCC(String from, String to, String cc, String subject,
-            String msg) {
-        log.debug("To:" + to + ", From:" + from + ", Subject:" + subject);
+	@Autowired
+	@Qualifier("pojoProperties")
+	private Properties properties;
 
-        Message message = new Message();
-        if (from != null && from.length() > 0) {
-            message.setFrom(from);
-        } else {
-            message.setFrom(defaultSender);
-        }
-        message.addTo(to);
-        if (cc != null && !cc.isEmpty()) {
-            message.addCc(cc);
-        }
-        if (subjectPrefix != null) {
-            subject = subjectPrefix + " " + subject;
-        }
-        if (optionalBccAddress != null && !optionalBccAddress.isEmpty()) {
-            message.addBcc(optionalBccAddress);
-        }
-        message.setSubject(subject);
-        message.setBody(msg);
-        try {
-            mailSender.send(message);
-        } catch (Exception e) {
-            log.error(e.toString());
-        }
-    }*/
-    
-    public void send(String from, String[] to, String[] cc, String[] bcc, String subject, String msg, boolean isHtmlFormat, String[] attachmentPath) {
-        log.debug("To:" + to + ", From:" + from + ", Subject:" + subject +", CC:"+ cc +", BCC:"+ bcc +", MESSG:" + msg +", Attachment:"+ attachmentPath);
+	public static ApplicationContext ac;
 
-        Message message = new Message();
-        if (from != null && from.length() > 0) {
-            message.setFrom(from);
-        } else {
-            message.setFrom(defaultSender);
-        }
-        if (to != null && from.length() > 0){
-        for (String toString: to){
-        	message.addTo(toString);
-        }} else{
-        	 message.setFrom(defaultSender);
-        }
-        if (cc != null && from.length() > 0){
-        for (String ccString: cc){
-        	message.addCc(ccString);
-        }} 
-        	
-      
-        if (subjectPrefix != null) {
-            subject = subjectPrefix + " " + subject;
-        }
-        if (bcc != null && from.length() > 0){
-        for (String bccString: bcc){
-        	message.addBcc(bccString);
-        }}
-        
-        if (subject != null && from.length() > 0){
-        message.setSubject(subject);
-        }
-        if (msg != null && from.length() > 0){
-        message.setBody(msg);
-        }
-       
-        message.setBodyType(isHtmlFormat ? Message.BodyType.HTML_TEXT : Message.BodyType.PLAIN_TEXT);
-        if (attachmentPath != null && from.length() > 0){
-        for (String attachmentPathString: attachmentPath){
-        	message.addAttachments(attachmentPathString);
-        }}
-        try {
-            mailSender.send(message);
-        } catch (Exception e) {
-            log.error(e.toString());
-        }
-    }
+	private static final Log log = LogFactory.getLog(MailServiceImpl.class);
+	private static final int SUBJECT_IDX = 0;
+	private static final int SCRIPT_IDX = 1;
 
-    private boolean isEmailValid(String email) {
-        String expression = "^[\\w\\.-]+@([\\w\\-]+\\.)+[A-Z]{2,4}$";
+	public void sendToAllUsers() {
+		log.warn("sendToAllUsers was called, but is not implemented");
+	}
 
-        Pattern pattern = Pattern.compile(expression, Pattern.CASE_INSENSITIVE);
-        Matcher matcher = pattern.matcher(email);
-        return matcher.matches();
-    }
+	public void sendToGroup(String groupId) {
+		log.warn("sendToGroup was called, but is not implemented");
+	}
 
-    public boolean sendNotification(NotificationRequest req) {
-        if (req == null) {
-            return false;
-        }
-        log.debug("Send Notification called with notificationType = "
-                + req.getNotificationType());
+	/*
+	 * public void send(String from, String to, String subject, String msg) {
+	 * sendWithCC(from, to, null, subject, msg); }
+	 */
 
-        if (req.getUserId() != null) {
-            return sendEmailForUser(req);
-        } else if (req.getTo() != null) {
-            return sendCustomEmail(req);
-        }
-        return false;
-    }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.openiam.idm.srvc.msg.service.MailService#sendWithCC(java.lang.String,
+	 * java.lang.String, java.lang.String, java.lang.String, java.lang.String,
+	 * java.lang.String, boolean)
+	 */
+	public void sendEmail(String from, String to, String cc, String subject,
+			String msg, String attachment, boolean isHtmlFormat) {
+		log.debug("To:" + to + ", From:" + from + ", Subject:" + subject
+				+ ", Cc:" + cc + ", Msg:" + msg + ", Attachement:" + attachment
+				+ ", Format:" + isHtmlFormat);
 
-    private boolean sendCustomEmail(NotificationRequest req) {
-        log.debug("sendNotification to = " + req.getTo());
+		Message message = new Message();
+		if (from != null && from.length() > 0) {
+			message.setFrom(from);
+		} else {
+			message.setFrom(defaultSender);
+		}
 
-        String[] emailDetails = fetchEmailDetails(req.getNotificationType());
-        if (emailDetails == null) {
-            return false;
-        }
+		message.addTo(to);
 
-        Map<String, Object> bindingMap = new HashMap<String, Object>();
-        bindingMap.put("context", ac);
-        bindingMap.put("req", req);
+		if (cc != null && !cc.isEmpty()) {
+			message.addCc(cc);
+		}
 
-        String emailBody = createEmailBody(bindingMap, emailDetails[SCRIPT_IDX]);
-        if (emailBody != null) {
-        	String[] arr1 = {req.getTo()};
-        	String[] arr2 = {req.getCc()};
-        	String[] arr3 = {emailDetails[SUBJECT_IDX]};
-            send(null, arr1, arr2,
-            		arr3, emailBody, null,false, null);
-            return true;
-        }
-        return false;
-    }
+		if (subjectPrefix != null) {
+			subject = subjectPrefix + " " + subject;
+		}
+		/*
+		 * if (optionalBccAddress != null && !optionalBccAddress.isEmpty()) {
+		 * message.addBcc(optionalBccAddress); }
+		 */
+		message.setSubject(subject);
+		message.setBody(msg);
+		message.setBodyType(isHtmlFormat ? Message.BodyType.HTML_TEXT
+				: Message.BodyType.PLAIN_TEXT);
+		if (attachment != null && from.length() > 0) {
+			message.addAttachments(attachment);
+		}
+		try {
+			mailSender.send(message);
+		} catch (Exception e) {
+			log.error(e.toString());
+		}
+	}
 
-    private boolean sendEmailForUser(NotificationRequest req) {
-    	if(log.isDebugEnabled()) {
-    		log.debug(String.format("sendNotification userId = %s", req.getUserId()));
-    	}
-        // get the user object
-        if (req.getUserId() == null) {
-            return false;
-        }
-        UserEntity usr = userManager.getUser(req.getUserId());
-        if (usr == null) {
-            return false;
-        }
-        if(log.isDebugEnabled()) {
-        	log.debug(String.format("Email address=%s", usr.getEmail()));
-        }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.openiam.idm.srvc.msg.service.MailService#send(java.lang.String,
+	 * java.lang.String[], java.lang.String[], java.lang.String[],
+	 * java.lang.String, java.lang.String, boolean, java.lang.String[])
+	 */
+	public void sendEmail(String from, String[] to, String[] cc, String[] bcc,
+			String subject, String msg, boolean isHtmlFormat,
+			String[] attachmentPath) {
+		log.debug("To:" + to + ", From:" + from + ", Subject:" + subject
+				+ ", CC:" + cc + ", BCC:" + bcc + ", MESSG:" + msg
+				+ ", Attachment:" + attachmentPath);
 
-        if (StringUtils.isBlank(usr.getEmail())) {
-            log.error(String.format("Send notfication failed. Email was null for userId=%s", usr.getUserId()));
-            return false;
-        }
+		Message message = new Message();
+		if (from != null && from.length() > 0) {
+			message.setFrom(from);
+		} else {
+			message.setFrom(defaultSender);
+		}
+		if (to != null && from.length() > 0) {
+			for (String toString : to) {
+				message.addTo(toString);
+			}
+		} else {
+			message.setFrom(defaultSender);
+		}
+		if (cc != null && from.length() > 0) {
+			for (String ccString : cc) {
+				message.addCc(ccString);
+			}
+		}
 
-        if (!isEmailValid(usr.getEmail())) {
-            log.error(String.format("Send notfication failed. Email was is not valid for userId=%s - %s",usr.getUserId(), usr.getEmail()));
-            return false;
-        }
-        String[] emailDetails = fetchEmailDetails(req.getNotificationType());
-        if (emailDetails == null) {
-            return false;
-        }
+		if (subjectPrefix != null) {
+			subject = subjectPrefix + " " + subject;
+		}
+		if (bcc != null && from.length() > 0) {
+			for (String bccString : bcc) {
+				message.addBcc(bccString);
+			}
+		}
 
-        Map<String, Object> bindingMap = new HashMap<String, Object>();
-        bindingMap.put("context", ac);
-        bindingMap.put("user", usr);
-        bindingMap.put("req", req);
+		if (subject != null && from.length() > 0) {
+			message.setSubject(subject);
+		}
+		if (msg != null && from.length() > 0) {
+			message.setBody(msg);
+		}
 
-        String emailBody = createEmailBody(bindingMap, emailDetails[SCRIPT_IDX]);
-        if (emailBody != null) {
-        	String[] arr1={usr.getEmail()};
-        	String[] arr2={emailDetails[SUBJECT_IDX]};
-        	String[] arr3={emailBody};
-            send(null, arr1,arr2, arr3, null, null, false, null);
-            return true;
-        }
-        return false;
-    }
+		message.setBodyType(isHtmlFormat ? Message.BodyType.HTML_TEXT
+				: Message.BodyType.PLAIN_TEXT);
+		if (attachmentPath != null && from.length() > 0) {
+			for (String attachmentPathString : attachmentPath) {
+				message.addAttachments(attachmentPathString);
+			}
+		}
+		try {
+			mailSender.send(message);
+		} catch (Exception e) {
+			log.error(e.toString());
+		}
+	}
 
-    private String createEmailBody(Map<String, Object> bindingMap,
-            String emailScript) {
-        try {
-            return (String) scriptRunner.execute(bindingMap, emailScript);
-        } catch (Exception e) {
-            log.error("createEmailBody():" + e.toString());
-            return null;
-        }
-    }
+	/**
+	 * @param email
+	 * @return
+	 */
+	private boolean isEmailValid(String email) {
+		String expression = "^[\\w\\.-]+@([\\w\\-]+\\.)+[A-Z]{2,4}$";
 
-    private String[] fetchEmailDetails(String notificationType) {
-        // for each notification, there will be entry in the property file
-        String notificationDetl = properties.getProperty(notificationType);
-        String[] details = StringUtils.split(notificationDetl, ";");
-        if (details == null || details.length < 2) {
-            log.warn(String.format("Mail not sent, invalid notificationType: %s", notificationType));
-            return null;
-        }
-        return details;
-    }
+		Pattern pattern = Pattern.compile(expression, Pattern.CASE_INSENSITIVE);
+		Matcher matcher = pattern.matcher(email);
+		return matcher.matches();
+	}
 
-    public void setApplicationContext(ApplicationContext applicationContext)
-            throws BeansException {
-        ac = applicationContext;
-    }
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.openiam.idm.srvc.msg.service.MailService#sendNotification(org.openiam
+	 * .idm.srvc.msg.dto.NotificationRequest)
+	 */
+	public boolean sendNotification(NotificationRequest req) {
+		if (req == null) {
+			return false;
+		}
+		log.debug("Send Notification called with notificationType = "
+				+ req.getNotificationType());
+
+		if (req.getUserId() != null) {
+			return sendEmailForUser(req);
+		} else if (req.getTo() != null) {
+			return sendCustomEmail(req);
+		}
+		return false;
+	}
+
+	/**
+	 * @param req
+	 * @return
+	 */
+	private boolean sendCustomEmail(NotificationRequest req) {
+		log.debug("sendNotification to = " + req.getTo());
+
+		String[] emailDetails = fetchEmailDetails(req.getNotificationType());
+		if (emailDetails == null) {
+			return false;
+		}
+
+		Map<String, Object> bindingMap = new HashMap<String, Object>();
+		bindingMap.put("context", ac);
+		bindingMap.put("req", req);
+
+		String emailBody = createEmailBody(bindingMap, emailDetails[SCRIPT_IDX]);
+		if (emailBody != null) {
+			String[] arr1 = { req.getTo() };
+			String[] arr2 = { req.getCc() };
+			String[] arr3 = { emailDetails[SUBJECT_IDX] };
+			sendEmail(null, arr1, arr2, arr3, emailBody, null, false, null);
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * @param req
+	 * @return
+	 */
+	private boolean sendEmailForUser(NotificationRequest req) {
+		if (log.isDebugEnabled()) {
+			log.debug(String.format("sendNotification userId = %s",
+					req.getUserId()));
+		}
+		// get the user object
+		if (req.getUserId() == null) {
+			return false;
+		}
+		UserEntity usr = userManager.getUser(req.getUserId());
+		if (usr == null) {
+			return false;
+		}
+		if (log.isDebugEnabled()) {
+			log.debug(String.format("Email address=%s", usr.getEmail()));
+		}
+
+		if (StringUtils.isBlank(usr.getEmail())) {
+			log.error(String.format(
+					"Send notfication failed. Email was null for userId=%s",
+					usr.getUserId()));
+			return false;
+		}
+
+		if (!isEmailValid(usr.getEmail())) {
+			log.error(String
+					.format("Send notfication failed. Email was is not valid for userId=%s - %s",
+							usr.getUserId(), usr.getEmail()));
+			return false;
+		}
+		String[] emailDetails = fetchEmailDetails(req.getNotificationType());
+		if (emailDetails == null) {
+			return false;
+		}
+
+		Map<String, Object> bindingMap = new HashMap<String, Object>();
+		bindingMap.put("context", ac);
+		bindingMap.put("user", usr);
+		bindingMap.put("req", req);
+
+		String emailBody = createEmailBody(bindingMap, emailDetails[SCRIPT_IDX]);
+		if (emailBody != null) {
+			String[] arr1 = { usr.getEmail() };
+			String[] arr2 = { emailDetails[SUBJECT_IDX] };
+			String[] arr3 = { emailBody };
+			sendEmail(null, arr1, arr2, arr3, null, null, false, null);
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * @param bindingMap
+	 * @param emailScript
+	 * @return
+	 */
+	private String createEmailBody(Map<String, Object> bindingMap,
+			String emailScript) {
+		try {
+			return (String) scriptRunner.execute(bindingMap, emailScript);
+		} catch (Exception e) {
+			log.error("createEmailBody():" + e.toString());
+			return null;
+		}
+	}
+
+	/**
+	 * @param notificationType
+	 * @return
+	 */
+	private String[] fetchEmailDetails(String notificationType) {
+		// for each notification, there will be entry in the property file
+		String notificationDetl = properties.getProperty(notificationType);
+		String[] details = StringUtils.split(notificationDetl, ";");
+		if (details == null || details.length < 2) {
+			log.warn(String.format(
+					"Mail not sent, invalid notificationType: %s",
+					notificationType));
+			return null;
+		}
+		return details;
+	}
+
+	public void setApplicationContext(ApplicationContext applicationContext)
+			throws BeansException {
+		ac = applicationContext;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.openiam.idm.srvc.msg.service.MailService#SendTwitterMessage(java.
+	 * lang.String, java.lang.String)
+	 */
+
+	public void tweetPrivateMessage(String userid, String msg) {
+		Twitter twitter = new TwitterFactory().getInstance();
+		try {
+			DirectMessage message = twitter.sendDirectMessage(userid, msg);
+			System.out.println("Direct message successfully sent to "
+					+ message.getRecipientScreenName());
+		} catch (TwitterException te) {
+			te.printStackTrace();
+			System.out.println("Failed to send a direct message: "
+					+ te.getMessage());
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.openiam.idm.srvc.msg.service.MailService#tweetMessage(java.lang.String)
+	 */
+	@Override
+	public void tweetMessage(String status) {
+		 Twitter twitter = new TwitterFactory().getInstance();
+	        try {
+	        	Status stat=twitter.updateStatus(status);
+	            System.out.println("Status successfully Updated to " );
+	          
+	        } catch (TwitterException te) {
+	            te.printStackTrace();
+	            System.out.println("Failed to update Status: " );
+	   
+	        }
+	}
+
 }
