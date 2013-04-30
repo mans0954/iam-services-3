@@ -141,17 +141,18 @@ public abstract class AbstractLoginModule implements LoginModule {
 
     }
 
-    public void setResultCode(LoginEntity lg, Subject sub, Date curDate) {
+    public void setResultCode(LoginEntity lg, Subject sub, Date curDate) throws AuthenticationException {
         if (lg.getFirstTimeLogin() == 1) {
             sub.setResultCode(AuthenticationConstants.RESULT_SUCCESS_FIRST_TIME);
         } else if (lg.getPwdExp() != null) {
-            if ((curDate.after(lg.getPwdExp()) && curDate.before(lg
-                    .getGracePeriod()))) {
+            if ((curDate.after(lg.getPwdExp()) && curDate.before(lg.getGracePeriod()))) {
                 // check for password expiration, but successful login
-                sub.setResultCode(AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP);
+            	sub.setResultCode(AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP);
+            	//throw new AuthenticationException(AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP);
             }
         } else {
-            sub.setResultCode(AuthenticationConstants.RESULT_SUCCESS);
+        	throw new AuthenticationException(AuthenticationConstants.RESULT_PASSWORD_EXPIRED);
+            //sub.setResultCode(AuthenticationConstants.RESULT_SUCCESS);
         }
 
     }
