@@ -69,3 +69,4 @@ dml/21.insert_ui_field_type.sql
 ddl/48.add_locale_xref.sql
 ddl/49.modify_user_contact_tables.sql
 dml/22.selfservice_menus.sql
+ddl/50.modify_metadata_element_valid_values.sql

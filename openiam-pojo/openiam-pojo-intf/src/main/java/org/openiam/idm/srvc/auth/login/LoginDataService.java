@@ -99,7 +99,7 @@ public interface LoginDataService {
      * @param password
      * @return
      */
-    public boolean setPassword(String domainId, String principal, String sysId, String password);
+    public boolean setPassword(String domainId, String principal, String sysId, String password, boolean preventChangeCountIncrement);
 
     /**
      * Sets a new password for the identity and updates the support attributes such as locked account flag.

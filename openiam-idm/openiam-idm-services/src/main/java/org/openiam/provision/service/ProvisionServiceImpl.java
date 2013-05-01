@@ -2041,6 +2041,7 @@ public class ProvisionServiceImpl implements ProvisionService,
         pswd.setManagedSysId(passwordSync.getManagedSystemId());
         pswd.setPrincipal(passwordSync.getPrincipal());
         pswd.setPassword(passwordSync.getPassword());
+        pswd.setSkipPasswordFrequencyCheck(passwordSync.isPreventChangeCountIncrement());
         try {
             PasswordValidationCode rtVal = passwordDS.isPasswordValid(pswd);
             if (rtVal != PasswordValidationCode.SUCCESS) {
@@ -2072,7 +2073,9 @@ public class ProvisionServiceImpl implements ProvisionService,
             boolean retval = loginManager.setPassword(
                     passwordSync.getSecurityDomain(),
                     passwordSync.getPrincipal(),
-                    passwordSync.getManagedSystemId(), encPassword);
+                    passwordSync.getManagedSystemId(), 
+                    encPassword,
+                    passwordSync.isPreventChangeCountIncrement());
             log.info("Setting password for principal = "
                     + passwordSync.getPrincipal());
 
@@ -2168,7 +2171,9 @@ public class ProvisionServiceImpl implements ProvisionService,
             boolean retval = loginManager.setPassword(
                     passwordSync.getSecurityDomain(),
                     passwordSync.getPrincipal(),
-                    passwordSync.getManagedSystemId(), encPassword);
+                    passwordSync.getManagedSystemId(), 
+                    encPassword,
+                    passwordSync.isPreventChangeCountIncrement());
             if (retval) {
                 log.info("-Password changed in openiam repository for user:"
                         + passwordSync.getPrincipal());
@@ -2241,8 +2246,11 @@ public class ProvisionServiceImpl implements ProvisionService,
                         if (syncAllowed) {
 
                             log.info("Sync allowed for sys=" + managedSysId);
-                            retval = loginManager.setPassword(lg.getDomainId(), lg.getLogin(), lg
-                                    .getManagedSysId(), encPassword);
+                            retval = loginManager.setPassword(lg.getDomainId(), 	
+                            								  lg.getLogin(), 
+                            								  lg.getManagedSysId(), 
+                            								  encPassword,
+                            								  passwordSync.isPreventChangeCountIncrement());
 
                             ManagedSysDto managedSys = managedSysService
                                     .getManagedSys(lg.getManagedSysId());

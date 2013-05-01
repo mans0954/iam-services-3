@@ -39,9 +39,8 @@ public class PasswordChangesFrequencyRule extends AbstractPasswordRule {
 		boolean enabled = false;
 				
 		PolicyAttribute attribute = policy.getAttribute("RESET_PER_TIME");
-		if (attribute.getValue1() != null && attribute.getValue1().length() > 0) {
+		if (!skipPasswordFrequencyCheck && attribute.getValue1() != null && attribute.getValue1().length() > 0) {
 			enabled = true;
-
 		}
 		if (enabled) {
 			int changeCount =  lg.getPasswordChangeCount();

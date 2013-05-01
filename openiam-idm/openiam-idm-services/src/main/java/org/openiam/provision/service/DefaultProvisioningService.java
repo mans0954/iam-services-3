@@ -345,12 +345,11 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         if (user.isAddInitialPasswordToHistory() || customPassword) {
             // add the auto generated password to the history so that the user
             // can not use this password as their first password
-            PasswordHistory hist = new PasswordHistory();
+            PasswordHistoryEntity hist = new PasswordHistoryEntity();
             hist.setDateCreated(new Date());
             hist.setLoginId(primaryLogin.getLoginId());
             hist.setPassword(primaryLogin.getPassword());
-            passwordHistoryDao.add(passwordHistoryDozerConverter
-                    .convertToEntity(hist, true));
+            passwordHistoryDao.save(hist);
         }
 
         // Update attributes that will be used by the password policy
@@ -2465,6 +2464,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         pswd.setManagedSysId(passwordSync.getManagedSystemId());
         pswd.setPrincipal(passwordSync.getPrincipal());
         pswd.setPassword(passwordSync.getPassword());
+        pswd.setSkipPasswordFrequencyCheck(passwordSync.isPreventChangeCountIncrement());
         try {
             PasswordValidationCode rtVal = passwordDS.isPasswordValid(pswd);
             if (rtVal != PasswordValidationCode.SUCCESS) {
@@ -2502,7 +2502,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
 
                 boolean retval = loginManager.setPassword(l.getDomainId(), l.getLogin(),
-                        passwordSync.getManagedSystemId(), encPassword);
+                        passwordSync.getManagedSystemId(), encPassword, passwordSync.isPreventChangeCountIncrement());
                 if (retval) {
                     log.debug("-Password changed in openiam repository for user:" + passwordSync.getPrincipal());
 
@@ -2589,7 +2589,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         // update the password in openiam
                         loginManager.setPassword(lg.getDomainId(),
                                 lg.getLogin(), lg.getManagedSysId(),
-                                encPassword);
+                                encPassword, passwordSync.isPreventChangeCountIncrement());
 
                         // update the target system
                         ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
@@ -2774,7 +2774,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     l.getManagedSysId().equalsIgnoreCase(sysConfiguration.getDefaultManagedSysId())) {
 
                 boolean retval = loginManager.setPassword(l.getDomainId(), l.getLogin(),
-                        l.getManagedSysId(), encPassword);
+                        l.getManagedSysId(), encPassword, passwordSync.isPreventChangeCountIncrement());
                 if (retval) {
                     log.debug("-Password changed in openiam repository for user:" + passwordSync.getPrincipal());
 
@@ -2818,7 +2818,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     // update the password in openiam
                     loginManager.setPassword(l.getDomainId(),
                             l.getLogin(), l.getManagedSysId(),
-                            encPassword);
+                            encPassword, passwordSync.isPreventChangeCountIncrement());
 
                     // update the target system
                     ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);

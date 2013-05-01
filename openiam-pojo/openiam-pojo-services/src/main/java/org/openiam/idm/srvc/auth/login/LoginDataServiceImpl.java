@@ -213,7 +213,7 @@ public class LoginDataServiceImpl implements LoginDataService {
      * @return
      */
     public boolean setPassword(String domainId, String login, String sysId,
-            String password) {
+            String password, boolean preventChangeCountIncrement) {
         Calendar cal = Calendar.getInstance();
         Calendar expCal = Calendar.getInstance();
 
@@ -235,10 +235,12 @@ public class LoginDataServiceImpl implements LoginDataService {
         lg.setPwdChanged(cal.getTime());
 
         // increment the change password count
-        if (lg.getPasswordChangeCount() == null) {
-            lg.setPasswordChangeCount(new Integer(1));
-        } else {
-            lg.setPasswordChangeCount(lg.getPasswordChangeCount() + 1);
+        if(!preventChangeCountIncrement) {
+        	if (lg.getPasswordChangeCount() == null) {
+        		lg.setPasswordChangeCount(new Integer(1));
+        	} else {
+        		lg.setPasswordChangeCount(lg.getPasswordChangeCount() + 1);
+        	}
         }
         // password has been changed - we dont need to force a change password
         // on the next login

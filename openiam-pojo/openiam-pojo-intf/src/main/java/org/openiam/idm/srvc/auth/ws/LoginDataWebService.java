@@ -98,6 +98,7 @@ public interface LoginDataWebService {
      * @param password
      * @return
      */
+    /*
     @WebMethod
     public Response setPassword(
             @WebParam(name = "domainId", targetNamespace = "")
@@ -108,6 +109,7 @@ public interface LoginDataWebService {
             String managedSysId,
             @WebParam(name = "password", targetNamespace = "")
             String password);
+	*/
 
     /**
      * Sets a new password for the identity and updates the support attributes such as locked account flag.

@@ -73,7 +73,7 @@ public class PasswordHistoryRule extends AbstractPasswordRule {
 			pswd.setPassword(password);
 			
 			int version =  Integer.parseInt( attribute.getValue1() );
-			List<PasswordHistoryEntity> historyList = passwordHistoryDao.getPasswordHistoryByLoginId(lg.getLogin(), 0, version);
+			List<PasswordHistoryEntity> historyList = passwordHistoryDao.getPasswordHistoryByLoginId(lg.getLoginId(), 0, version);
 			if (historyList == null || historyList.isEmpty()) {
 				// no history
 				return retval;

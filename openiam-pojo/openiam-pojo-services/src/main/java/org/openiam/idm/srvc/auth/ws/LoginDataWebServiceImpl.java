@@ -298,6 +298,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#setPassword(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
 	 */
+    /*
 	public Response setPassword(String domainId, String principal,
 			String managedSysId, String password) {
 		
@@ -309,6 +310,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 		return resp;
 		
 	}
+	*/
 
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#unLockLogin(java.lang.String, java.lang.String, java.lang.String)

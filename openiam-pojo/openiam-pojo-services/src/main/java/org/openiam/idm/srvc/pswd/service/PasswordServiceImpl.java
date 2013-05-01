@@ -419,6 +419,7 @@ public class PasswordServiceImpl implements PasswordService {
      * org.openiam.idm.srvc.policy.dto.Policy) 1 - In History, 0 - Not in
      * history, -1 No policy defined
      */
+    /*
     public int passwordInHistory(Password pswd, Policy policy) {
         // get the list of passwords for this user.
         String decrypt = null;
@@ -443,7 +444,7 @@ public class PasswordServiceImpl implements PasswordService {
         		for (PasswordHistoryEntity hist : historyList) {
         			String pwd = hist.getPassword();
         			try {
-        				LoginEntity login = loginManager.getLoginDetails(hist.getLoginId());
+        				LoginEntity login = loginManager.getLoginDetails(hist.getLogin());
         				decrypt = cryptor.decrypt(keyManagementService.getUserKey(
         						login.getUserId(), KeyName.password.name()), pwd);
         			} catch (Exception e) {
@@ -462,6 +463,7 @@ public class PasswordServiceImpl implements PasswordService {
         }
         return retVal;
     }
+    */
 
     @Override
     public PasswordResetTokenResponse generatePasswordResetToken(
