@@ -211,15 +211,13 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 			} else {
 				/* check entitlements and auth level on patterns */
 				for(final URIPattern pattern : uriPatternToken.getFoundPatterns()) {
-					if(!pattern.getIsPublic()) {
-						if(!isEntitled(userId, pattern.getResourceId())) {
-							throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_PATTERN, pattern.getPattern());
-						}
+					if(!pattern.getIsPublic() && !isEntitled(userId, pattern.getResourceId())) {
+						throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_NOT_ENTITLED_TO_PATTERN, pattern.getPattern());
+					}
 				
-						if(pattern.getAuthLevel().gt(authLevel)) {
-							response.setRequiredAuthLevel(pattern.getAuthLevel().getLevel());
-							throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_AUTH_LEVEL_DOES_NOT_MEET_MIN_AUTH_LEVEL_ON_PATTERN, pattern.getId());
-						}
+					if(pattern.getAuthLevel().gt(authLevel)) {
+						response.setRequiredAuthLevel(pattern.getAuthLevel().getLevel());
+						throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_AUTH_LEVEL_DOES_NOT_MEET_MIN_AUTH_LEVEL_ON_PATTERN, pattern.getId());
 					}
 				}
 			
