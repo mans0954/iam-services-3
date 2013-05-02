@@ -204,7 +204,7 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 			/* means that no matching pattern has been found for this URI (i.e. none configured) - check against the CP */
 			if(uriPatternToken == null || !uriPatternToken.hasPatterns()) {
 				/* means that the Content Provider Auth Level is higher than the current for this user */
-				if(!cp.getIsPublic() && cp.getAuthLevel().gt(authLevel)) {
+				if(cp.getAuthLevel().gt(authLevel)) {
 					response.setRequiredAuthLevel(cp.getAuthLevel().getLevel());
 					throw new BasicDataServiceException(ResponseCode.URI_FEDERATION_AUTH_LEVEL_DOES_NOT_MEET_MIN_AUTH_LEVEL_ON_CP);
 				}
