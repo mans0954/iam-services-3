@@ -334,6 +334,7 @@ public class AuthorizationMenu implements Serializable {
 		menu.displayName = displayName;
 		menu.isPublic = isPublic;
 		menu.isVisible = isVisible;
+		menu.icon = icon;
 		return menu;
 	}
 }
