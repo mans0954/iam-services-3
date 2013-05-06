@@ -36,6 +36,7 @@ import twitter4j.Status;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
+import twitter4j.conf.ConfigurationBuilder;
 
 @Service("mailService")
 @WebService(endpointInterface = "org.openiam.idm.srvc.msg.service.MailService", targetNamespace = "urn:idm.openiam.org/srvc/msg", portName = "EmailWebServicePort", serviceName = "EmailWebService")
@@ -349,7 +350,20 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 			throws BeansException {
 		ac = applicationContext;
 	}
-
+	
+	
+	@Value("${oauth.consumerKey}")
+	private String consumerKey;
+	
+	@Value("${oauth.consumerSecret}")
+	private String consumerSecret;
+	
+	@Value("${oauth.accessToken}")
+	private String accessToken;
+	
+	@Value("${oauth.accessTokenSecret}")
+	private String accessTokenSecret;
+	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -359,14 +373,21 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 	 */
 
 	public void tweetPrivateMessage(String userid, String msg) {
-		Twitter twitter = new TwitterFactory().getInstance();
+		ConfigurationBuilder cb=new ConfigurationBuilder();
+		cb.setDebugEnabled(true)
+		  .setOAuthConsumerKey(consumerKey)
+		  .setOAuthConsumerSecret(consumerSecret)
+		  .setOAuthAccessToken(accessToken)
+		  .setOAuthAccessTokenSecret(accessTokenSecret);
+		TwitterFactory tf = new TwitterFactory(cb.build());
+		Twitter twitter = tf.getInstance();
 		try {
 			DirectMessage message = twitter.sendDirectMessage(userid, msg);
-			System.out.println("Direct message successfully sent to "
+			log.info("Direct message successfully sent to "
 					+ message.getRecipientScreenName());
 		} catch (TwitterException te) {
 			te.printStackTrace();
-			System.out.println("Failed to send a direct message: "
+			log.error("Failed to send a direct message: "
 					+ te.getMessage());
 		}
 	}
@@ -376,16 +397,29 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 	 */
 	@Override
 	public void tweetMessage(String status) {
-		 Twitter twitter = new TwitterFactory().getInstance();
+		ConfigurationBuilder cb=new ConfigurationBuilder();
+		cb.setDebugEnabled(true)
+		  .setOAuthConsumerKey(consumerKey)
+		  .setOAuthConsumerSecret(consumerSecret)
+		  .setOAuthAccessToken(accessToken)
+		  .setOAuthAccessTokenSecret(accessTokenSecret);
+		TwitterFactory tf = new TwitterFactory(cb.build());
+		Twitter twitter = tf.getInstance();
 	        try {
 	        	Status stat=twitter.updateStatus(status);
-	            System.out.println("Status successfully Updated to " );
+	            log.info("Status successfully Updated  " );
 	          
 	        } catch (TwitterException te) {
 	            te.printStackTrace();
-	            System.out.println("Failed to update Status: " );
+	            log.error("Failed to update Status: " + te.getMessage() );
 	   
 	        }
 	}
+	
+	
 
 }
+
+
+	
+
