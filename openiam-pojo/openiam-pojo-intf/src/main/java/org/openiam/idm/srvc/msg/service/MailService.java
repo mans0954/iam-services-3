@@ -66,7 +66,7 @@ public interface MailService {
      * @param isHtmlFormat
      * @param attachmentPath
      */
-    public void sendEmail(String from, String[] to, String[] cc, String[] bcc, String subject, String msg, boolean isHtmlFormat, String[] attachmentPath);
+    public void sendEmails(String from, String[] to, String[] cc, String[] bcc, String subject, String msg, boolean isHtmlFormat, String[] attachmentPath);
     
     /**
      *  sending out direct private message to authorized user on twitter.

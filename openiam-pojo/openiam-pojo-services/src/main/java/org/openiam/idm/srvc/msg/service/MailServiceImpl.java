@@ -141,7 +141,7 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 	 * java.lang.String[], java.lang.String[], java.lang.String[],
 	 * java.lang.String, java.lang.String, boolean, java.lang.String[])
 	 */
-	public void sendEmail(String from, String[] to, String[] cc, String[] bcc,
+	public void sendEmails(String from, String[] to, String[] cc, String[] bcc,
 			String subject, String msg, boolean isHtmlFormat,
 			String[] attachmentPath) {
 		log.debug("To:" + to + ", From:" + from + ", Subject:" + subject
@@ -252,7 +252,7 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 			String[] arr1 = { req.getTo() };
 			String[] arr2 = { req.getCc() };
 			String[] arr3 = { emailDetails[SUBJECT_IDX] };
-			sendEmail(null, arr1, arr2, arr3, emailBody, null, false, null);
+			sendEmails(null, arr1, arr2, arr3, emailBody, null, false, null);
 			return true;
 		}
 		return false;
@@ -307,7 +307,7 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 			String[] arr1 = { usr.getEmail() };
 			String[] arr2 = { emailDetails[SUBJECT_IDX] };
 			String[] arr3 = { emailBody };
-			sendEmail(null, arr1, arr2, arr3, null, null, false, null);
+			sendEmails(null, arr1, arr2, arr3, null, null, false, null);
 			return true;
 		}
 		return false;
