@@ -16,8 +16,8 @@
             <b>resourceAttributeMap</b>
         </field-exclude>
         <field-exclude>
-            <a>resource</a>
-            <b>resource</b>
+            <a>resource.resourceId</a>
+            <b>resourceId</b>
         </field-exclude>
     </mapping>
 
@@ -74,7 +74,7 @@
             <b>isSSL</b>
         </field>
         <field>
-            <a>resourceId</a>
+            <a>resource.resourceId</a>
             <b>resourceId</b>
         </field>
         <field>
@@ -123,7 +123,7 @@
             <b>isPublic</b>
         </field>
         <field>
-            <a>resourceId</a>
+            <a>resource.resourceId</a>
             <b>resourceId</b>
         </field>
         <field>

@@ -152,7 +152,10 @@ public class PasswordValidatorImpl implements PasswordValidator {
 
                         }
                     }
+                    
                     // -- set the parameters
+                    rule.setDomainId(password.getDomainId());
+                    rule.setSkipPasswordFrequencyCheck(password.isSkipPasswordFrequencyCheck());
                     rule.setPassword(password.getPassword());
                     rule.setPrincipal(password.getPrincipal());
                     rule.setManagedSysId(password.getManagedSysId());

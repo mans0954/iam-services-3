@@ -15,14 +15,39 @@ import java.util.List;
  */
 public interface SysMessageService {
 
+    /**
+     * method used for adding message.
+     * @param transientInstance
+     * @return
+     */
     public NotificationConfig addMessage(NotificationConfig transientInstance);
 
+    /**
+     * method used to remove  message by id.
+     * @param id
+     */
     public void removeMessage(String id);
 
+    /**
+     * 
+     * method used for updating message.
+     * @param detachedInstance
+     * @return
+     */
     public NotificationConfig updateMessage(NotificationConfig detachedInstance);
 
+    /**
+     * method used to get message by the id.
+     * @param id
+     * @return
+     */
     public NotificationConfig getMessageById(java.lang.String id);
 
 
+    /**
+     * 
+     * method fetching the list of all messages.
+     * @return
+     */
     public List<NotificationConfig> getAllMessages();
 }

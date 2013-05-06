@@ -140,24 +140,6 @@
 		<property name="sessionFactory" ref="sessionFactory"></property>		
 	</bean>	
 	
-	<!-- Password Beans -->
-	<!--
-	<bean id="challengeResponse" class="org.openiam.idm.srvc.pswd.service.ChallengeResponseServiceImpl" >
-		<property name="cryptor" ref="cryptor" />
-		<property name="identityQuestGroupDao" ref="identityQuestGroupDAO" />
-		<property name="identityQuestDao" ref="identityQuestDAO" />
-		<property name="identityAnswerDao" ref="identityAnswerDAO" />	
-		<property name="loginManager" ref="loginManager" />	
-		
-		<property name="respValidatorFactory" ref="validatorFactory" />
-		<property name="respValidatorObjName" value="${challengeResponse.respValidatorObjName}" />
-		<property name="respValidatorObjType" value="${challengeResponse.respValidatorObjType}" />
-		
-		<property name="userMgr" ref="userManager" />	
-		<property name="passwordMgr" ref="passwordManager" />	
-	</bean>
-	-->
-	
 	<bean id="validatorFactory" class="org.openiam.idm.srvc.pswd.service.ValidatorFactory" />
 	
 	<bean id="challengeResponseValidator" class="org.openiam.idm.srvc.pswd.service.DefaultChallengeResponseValidator" >
@@ -227,15 +209,15 @@
 	</bean>		
 	
 	<!-- Email Beans --> 
+	<!--
 	<bean id="mailService" class="org.openiam.idm.srvc.msg.service.MailServiceImpl">
-		<!-- property name="mailSender" ref="emailSender" / -->
 		<property name="mailSender" ref="mailSender" />
 		<property name="defaultSender" value="${mail.defaultSender}" />
 		<property name="subjectPrefix" value="${mail.defaultSubjectPrefix}" />
 		<property name="optionalBccAddress" value="${mail.optionalBccAddress}" />
 		<property name="userManager" ref="userWS" />
-		
 	</bean>
+	-->
 	
 	<bean id="emailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
 		<property name="host" value="${mail.host}" />

@@ -49,11 +49,13 @@ public class ContentProviderEntity implements Serializable {
     private String contextPath;
     */
 
+	/*
     @Column(name = "RESOURCE_ID", length = 32, nullable = false)
     private String resourceId;
+    */
 	
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinColumn(name="RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = false, updatable = false)
+    @JoinColumn(name="RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = false, nullable=false)
 	private ResourceEntity resource;
 	
 	@OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "contentProvider")
@@ -134,6 +136,7 @@ public class ContentProviderEntity implements Serializable {
 		this.patternSet = patternSet;
 	}
 
+	/*
     public String getResourceId() {
         return resourceId;
     }
@@ -141,6 +144,7 @@ public class ContentProviderEntity implements Serializable {
     public void setResourceId(String resourceId) {
         this.resourceId = resourceId;
     }
+    */
 
     /*
     public String getContextPath() {

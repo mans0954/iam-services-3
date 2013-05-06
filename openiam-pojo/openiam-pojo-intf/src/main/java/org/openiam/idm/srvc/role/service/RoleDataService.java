@@ -22,6 +22,7 @@ import java.util.List;
 public interface RoleDataService {
 	
     public RoleEntity getRole(String roleId);
+    public RoleEntity getRoleByName(final String roleName);
     
     public void saveRole(final RoleEntity role);
     
@@ -174,4 +175,6 @@ public interface RoleDataService {
     
     public List<RoleEntity> getParentRoles(final String roleId, final int from, final int size);
     public int getNumOfParentRoles(final String roleId);
+    
+    public UserRoleEntity getUserRole(final String userId, final String roleId);
 }

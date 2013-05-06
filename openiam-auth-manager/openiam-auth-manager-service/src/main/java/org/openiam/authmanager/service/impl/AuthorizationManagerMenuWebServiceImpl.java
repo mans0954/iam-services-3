@@ -43,6 +43,7 @@ import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceGroupDAO;
 import org.openiam.idm.srvc.res.service.ResourceRoleDAO;
+import org.openiam.idm.srvc.res.service.ResourceService;
 import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.openiam.idm.srvc.res.service.ResourceUserDAO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,19 +63,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 	private AuthorizationManagerMenuService menuService;
 	
 	@Autowired
-	private ResourceTypeDAO resourceTypeDAO;
-	
-	@Autowired
-	private ResourceDAO resourceDAO;
-	
-	@Autowired
-	private ResourceRoleDAO resourceRoleDAO;
-	
-	@Autowired
-	private ResourceGroupDAO resourceGroupDAO;
-	
-	@Autowired
-	private ResourceUserDAO resourceUserDAO;
+	private ResourceService resourceService;
 	
 	@Override
 	public AuthorizationMenu getMenuTreeForUserId(final MenuRequest request) {
@@ -116,12 +105,12 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 	}
 	
 	@Override
-	@Transactional
+	//@Transactional
 	public MenuSaveResponse deleteMenuTree(final String rootId) {
 		final MenuSaveResponse response = new MenuSaveResponse();
 		response.setStatus(ResponseStatus.SUCCESS);
 		try {
-			final ResourceEntity resource = resourceDAO.findById(rootId);
+			final ResourceEntity resource = resourceService.findResourceById(rootId);
 			
 			if(resource == null) {
 				throw new AuthorizationMenuException(ResponseCode.MENU_DOES_NOT_EXIST, rootId);
@@ -145,7 +134,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 				throw new AuthorizationMenuException(ResponseCode.HANGING_ROLES, resource.getName());
 			}
 			
-			resourceDAO.delete(resource);
+			resourceService.deleteResource(rootId);
 		} catch(AuthorizationMenuException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getResponseCode());
@@ -157,7 +146,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 	}
 
 	@Override
-	@Transactional
+	//@Transactional
 	public MenuSaveResponse saveMenuTree(final AuthorizationMenu root) {
 		final MenuSaveResponse response = new MenuSaveResponse();
 		response.setStatus(ResponseStatus.SUCCESS);
@@ -231,7 +220,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 				if(CollectionUtils.isNotEmpty(deletedMenus)) {
 					final List<ResourceEntity> deletedResourceList = new LinkedList<ResourceEntity>();
 					for(final AuthorizationMenu menu : deletedMenus) {
-						final ResourceEntity resource = resourceDAO.findById(menu.getId());
+						final ResourceEntity resource = resourceService.findResourceById(menu.getId());
 						if(resource != null) {
 							deletedResourceList.add(resource);
 						}
@@ -268,11 +257,11 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 					for(final AuthorizationMenu menu : changedMenus) {
 						changedMenuMap.put(menu.getId(), menu);
 					}
-					final List<ResourceEntity> resourceList = resourceDAO.findByIds(changedMenuMap.keySet());
+					final List<ResourceEntity> resourceList = resourceService.findResourcesByIds(changedMenuMap.keySet());
 					for(final ResourceEntity resource : resourceList) {
 						final AuthorizationMenu menu = changedMenuMap.get(resource.getResourceId());	
 						
-						final ResourceEntity existingResource = resourceDAO.findByName(menu.getName());
+						final ResourceEntity existingResource = resourceService.findResourceByName(menu.getName());
 						/* check that, if the user changed the name of the menu, it doesn't conflict with another resource with the same name */
 						if(existingResource != null && !existingResource.getResourceId().equals(resource.getResourceId())) {
 							throw new AuthorizationMenuException(ResponseCode.NAME_TAKEN, resource.getName());
@@ -290,7 +279,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 						final ResourceEntity resource = createResource(menu);
 						newResourceList.add(resource);
 						
-						final ResourceEntity existingResource = resourceDAO.findByName(resource.getName());
+						final ResourceEntity existingResource = resourceService.findResourceByName(resource.getName());
 						/* check that, if the user changed the name of the menu, it doesn't conflict with another resource with the same name */
 						if(existingResource != null) {
 							throw new AuthorizationMenuException(ResponseCode.NAME_TAKEN, resource.getName());
@@ -318,7 +307,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 					for(final ResourceEntity resource : resourcesToCreate) {
 						final String parentId = newResourceName2ParentIdMap.get(resource.getName());
 						if(!resourcesToUpdateMap.containsKey(parentId)) {
-							final ResourceEntity parent = resourceDAO.findById(parentId);
+							final ResourceEntity parent = resourceService.findResourceById(parentId);
 							resourcesToUpdateMap.put(parentId, parent);
 						}
 						final ResourceEntity parent = resourcesToUpdateMap.get(parentId);
@@ -330,7 +319,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 				if(CollectionUtils.isNotEmpty(deletedXrefs)) {
 					for(final ResourceResourceXref xref : deletedXrefs) {
 						if(!resourcesToUpdateMap.containsKey(xref.getResourceId())) {
-							final ResourceEntity resource = resourceDAO.findById(xref.getResourceId());
+							final ResourceEntity resource = resourceService.findResourceById(xref.getResourceId());
 							resourcesToUpdateMap.put(resource.getResourceId(), resource);
 						}
 						final ResourceEntity resource = resourcesToUpdateMap.get(xref.getResourceId());
@@ -339,19 +328,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 					}
 				}
 				
-				if(CollectionUtils.isNotEmpty(resourcesToCreate)) {
-					resourceDAO.save(resourcesToCreate);
-				}
-				
-				if(CollectionUtils.isNotEmpty(resourcesToUpdate)) {
-					resourceDAO.save(resourcesToUpdate);
-				}
-				
-				if(CollectionUtils.isNotEmpty(resourcesToDelete)) {
-					for(final ResourceEntity resource : resourcesToDelete) {
-						resourceDAO.delete(resource);
-					}
-				}
+				menuService.processTreeUpdate(resourcesToCreate, resourcesToUpdate, resourcesToDelete);
 			}
 		} catch(AuthorizationMenuException e) {
 			response.setStatus(ResponseStatus.FAILURE);
@@ -369,7 +346,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 		resource.setName(menu.getName());
 		resource.setDisplayOrder(menu.getDisplayOrder());
 		resource.setIsPublic(menu.getIsPublic());
-		resource.setResourceType(resourceTypeDAO.findById(AuthorizationConstants.MENU_ITEM_RESOURCE_TYPE));
+		resource.setResourceType(resourceService.findResourceTypeById(AuthorizationConstants.MENU_ITEM_RESOURCE_TYPE));
 		
 		final ResourcePropEntity displayNameProp = new ResourcePropEntity();
 		displayNameProp.setResourceId(resource.getResourceId());
@@ -458,7 +435,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 	}
 
 	@Override
-	@Transactional
+	//@Transactional
 	public Response entitle(final MenuEntitlementsRequest menuEntitlementsRequest) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {
@@ -472,57 +449,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
 			
-			if(StringUtils.equalsIgnoreCase("user", principalType)) {
-				final String userId = principalId;
-				if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getDisentitled())) {
-					resourceUserDAO.deleteByUserId(userId, menuEntitlementsRequest.getDisentitled());
-				}
-				
-				if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getNewlyEntitled())) {
-					final List<ResourceUserEntity> entityList = new ArrayList<ResourceUserEntity>(menuEntitlementsRequest.getNewlyEntitled().size());
-					for(final String resourceId : menuEntitlementsRequest.getNewlyEntitled()) {
-						final ResourceUserEntity entity = new ResourceUserEntity();
-						entity.setUserId(userId);
-						entity.setResourceId(resourceId);
-						entityList.add(entity);
-					}
-					resourceUserDAO.save(entityList);
-				}
-			} else if(StringUtils.equalsIgnoreCase("group", principalType)) {
-				final String groupId = principalId;
-				if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getDisentitled())) {
-					resourceGroupDAO.deleteByGroupId(groupId, menuEntitlementsRequest.getDisentitled());
-				}
-				
-				if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getNewlyEntitled())) {
-					final List<ResourceGroupEntity> entityList = new ArrayList<ResourceGroupEntity>(menuEntitlementsRequest.getNewlyEntitled().size());
-					for(final String resourceId : menuEntitlementsRequest.getNewlyEntitled()) {
-						final ResourceGroupEntity entity = new ResourceGroupEntity();
-						entity.setGroupId(groupId);
-						entity.setResourceId(resourceId);
-						entityList.add(entity);
-					}
-					resourceGroupDAO.save(entityList);
-				}
-			} else if(StringUtils.equalsIgnoreCase("role", principalType)) {
-				final String roleId = principalId;
-				if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getDisentitled())) {
-					resourceRoleDAO.deleteByRoleId(roleId, menuEntitlementsRequest.getDisentitled());
-				}
-				
-				if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getNewlyEntitled())) {
-					final List<ResourceRoleEntity> entityList = new ArrayList<ResourceRoleEntity>(menuEntitlementsRequest.getNewlyEntitled().size());
-					for(final String resourceId : menuEntitlementsRequest.getNewlyEntitled()) {
-						final ResourceRoleEntity entity = new ResourceRoleEntity();
-						final ResourceRoleEmbeddableId id = new ResourceRoleEmbeddableId(roleId, resourceId);
-						entity.setId(id);
-						entityList.add(entity);
-					}
-					resourceRoleDAO.save(entityList);
-				}
-			} else {
-				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-			}
+			menuService.entitle(menuEntitlementsRequest);
 			
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);

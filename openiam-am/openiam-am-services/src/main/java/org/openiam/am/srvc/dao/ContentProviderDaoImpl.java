@@ -5,8 +5,10 @@ import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Restrictions;
+import org.openiam.am.srvc.domain.AuthProviderEntity;
 import org.openiam.am.srvc.domain.ContentProviderEntity;
 import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,14 +23,14 @@ public class ContentProviderDaoImpl extends BaseDaoImpl<ContentProviderEntity, S
 	}
 
     @Override
-    protected Criteria getExampleCriteria(final ContentProviderEntity providerEntity) {
+    protected Criteria getExampleCriteria(final ContentProviderEntity entity) {
         final Criteria criteria = getCriteria();
-        if (StringUtils.isNotBlank(providerEntity.getId())) {
-            criteria.add(Restrictions.eq(getPKfieldName(), providerEntity.getId()));
+        if (StringUtils.isNotBlank(entity.getId())) {
+            criteria.add(Restrictions.eq(getPKfieldName(), entity.getId()));
         } else {
 
-            if (StringUtils.isNotEmpty(providerEntity.getName())) {
-                String name = providerEntity.getName();
+            if (StringUtils.isNotEmpty(entity.getName())) {
+                String name = entity.getName();
                 MatchMode matchMode = null;
                 if (StringUtils.indexOf(name, "*") == 0) {
                     matchMode = MatchMode.END;
@@ -47,14 +49,13 @@ public class ContentProviderDaoImpl extends BaseDaoImpl<ContentProviderEntity, S
                     }
                 }
             }
-            if (StringUtils.isNotEmpty(providerEntity.getDomainPattern())) {
-                criteria.add(Restrictions.eq("domainPattern", providerEntity.getDomainPattern()));
+            if (StringUtils.isNotEmpty(entity.getDomainPattern())) {
+                criteria.add(Restrictions.eq("domainPattern", entity.getDomainPattern()));
             }
-            /*
-            if (StringUtils.isNotEmpty(providerEntity.getContextPath())) {
-                criteria.add(Restrictions.eq("contextPath", providerEntity.getContextPath()));
+
+            if(entity.getResource() != null && StringUtils.isNotEmpty(entity.getResource().getResourceId())) {
+            	criteria.add(Restrictions.eq("resource.resourceId", entity.getResource().getResourceId()));
             }
-            */
         }
         return criteria;
     }
@@ -85,4 +86,13 @@ public class ContentProviderDaoImpl extends BaseDaoImpl<ContentProviderEntity, S
         qry.setString("providerId", providerId);
         qry.executeUpdate();
     }
+
+	@Override
+	public List<ContentProviderEntity> getByResourceId(String resourceId) {
+		final ContentProviderEntity entity = new ContentProviderEntity();
+		final ResourceEntity resource = new ResourceEntity();
+		resource.setResourceId(resourceId);
+		entity.setResource(resource);
+		return getByExample(entity);
+	}
 }

@@ -17,7 +17,6 @@ import java.util.List;
  * @author Suneet Shah
  */
 
-@WebService
 public interface LoginDataService {
 
     public void addLogin(LoginEntity principal);
@@ -31,8 +30,6 @@ public interface LoginDataService {
     public void removeLogin(String domainId, String principal, String managedSysId);
     
     public LoginEntity getLoginDetails(final String loginId);
-
-    public LoginEntity getLogin(String domainId, String principal) throws AuthenticationException;
 
     public LoginEntity getLoginByManagedSys(String domainId, String principal, String sysId);
 
@@ -102,7 +99,7 @@ public interface LoginDataService {
      * @param password
      * @return
      */
-    public boolean setPassword(String domainId, String principal, String sysId, String password);
+    public boolean setPassword(String domainId, String principal, String sysId, String password, boolean preventChangeCountIncrement);
 
     /**
      * Sets a new password for the identity and updates the support attributes such as locked account flag.

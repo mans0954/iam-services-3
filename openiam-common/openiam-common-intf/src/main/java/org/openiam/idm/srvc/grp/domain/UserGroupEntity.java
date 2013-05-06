@@ -9,6 +9,7 @@ import org.openiam.idm.srvc.grp.dto.UserGroup;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 
 import javax.persistence.*;
+
 import java.io.Serializable;
 import java.util.Date;
 
@@ -45,7 +46,7 @@ public class UserGroupEntity implements Serializable {
     @Column(name="CREATED_BY",length=20)
     protected String createdBy;
 
-    @ManyToOne(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
+    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
     @JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID", insertable = false, updatable = false)
     private UserEntity user;
 

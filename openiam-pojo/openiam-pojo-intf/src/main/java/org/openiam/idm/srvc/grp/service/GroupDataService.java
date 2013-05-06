@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.grp.service;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
+import org.openiam.idm.srvc.grp.domain.UserGroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupAttribute;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -35,6 +36,7 @@ public interface GroupDataService {
 	public List<GroupEntity> getParentGroups(final String groupId, final int from, final int size);
 	
     public GroupEntity getGroup(String grpId);
+    public GroupEntity getGroupByName(final String groupName);
     
     public List<Group> getCompiledGroupsForUser(final String userId);
     
@@ -113,5 +115,7 @@ public interface GroupDataService {
     
     public void addChildGroup(final String groupId, final String childGroupId);
     public void removeChildGroup(final String groupId, final String childGroupId);
+    
+    public UserGroupEntity getRecord(final String userId, final String groupId);
 
 }

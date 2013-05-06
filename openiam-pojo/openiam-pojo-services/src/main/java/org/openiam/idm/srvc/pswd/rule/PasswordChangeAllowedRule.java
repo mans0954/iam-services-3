@@ -39,7 +39,7 @@ public class PasswordChangeAllowedRule extends AbstractPasswordRule {
 		boolean enabled = false;
 				
 		PolicyAttribute attribute = policy.getAttribute("PASSWORD_CHANGE_ALLOWED");
-		if (attribute.getValue1() != null && attribute.getValue1().length() > 0) {
+		if (!skipPasswordFrequencyCheck && attribute.getValue1() != null && attribute.getValue1().length() > 0) {
 			enabled = true;
 
 		}

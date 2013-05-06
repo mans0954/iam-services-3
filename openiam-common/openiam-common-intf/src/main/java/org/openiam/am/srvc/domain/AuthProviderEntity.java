@@ -26,8 +26,12 @@ public class AuthProviderEntity implements Serializable {
     private String providerType;
     @Column(name = "MANAGED_SYS_ID", length = 32, nullable = false)
     private String managedSysId;
+    
+    /*
     @Column(name = "RESOURCE_ID", length = 32, nullable = false)
     private String resourceId;
+    */
+    
     @Column(name = "NAME", length = 50, nullable = false)
     private String name;
     @Column(name = "DESCRIPTION", length = 255, nullable = true)
@@ -51,7 +55,7 @@ public class AuthProviderEntity implements Serializable {
     private ManagedSysEntity managedSys;
 
     @ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinColumn(name="RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = false, updatable = false)
+    @JoinColumn(name="RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = false, nullable=false)
     private ResourceEntity resource;
 
     @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "provider")
@@ -85,6 +89,7 @@ public class AuthProviderEntity implements Serializable {
         this.managedSysId = managedSysId;
     }
 
+    /*
     public String getResourceId() {
         return resourceId;
     }
@@ -92,6 +97,7 @@ public class AuthProviderEntity implements Serializable {
     public void setResourceId(String resourceId) {
         this.resourceId = resourceId;
     }
+    */
 
     public String getName() {
         return name;

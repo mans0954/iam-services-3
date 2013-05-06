@@ -7,7 +7,10 @@ import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.am.srvc.domain.AuthProviderEntity;
+import org.openiam.am.srvc.domain.ContentProviderEntity;
+import org.openiam.am.srvc.domain.URIPatternEntity;
 import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,20 +24,20 @@ public class AuthProviderDaoImpl extends BaseDaoImpl<AuthProviderEntity, String>
     }
 
     @Override
-    protected Criteria getExampleCriteria(final AuthProviderEntity attribute) {
+    protected Criteria getExampleCriteria(final AuthProviderEntity entity) {
         final Criteria criteria = getCriteria();
-        if (StringUtils.isNotBlank(attribute.getProviderId())) {
-            criteria.add(Restrictions.eq(getPKfieldName(), attribute.getProviderId()));
+        if (StringUtils.isNotBlank(entity.getProviderId())) {
+            criteria.add(Restrictions.eq(getPKfieldName(), entity.getProviderId()));
         } else {
-            if (StringUtils.isNotEmpty(attribute.getProviderType())) {
-                criteria.add(Restrictions.eq("providerType", attribute.getProviderType()));
+            if (StringUtils.isNotEmpty(entity.getProviderType())) {
+                criteria.add(Restrictions.eq("providerType", entity.getProviderType()));
             }
-            if (StringUtils.isNotEmpty(attribute.getManagedSysId())) {
-                criteria.add(Restrictions.eq("managedSysId", attribute.getManagedSysId()));
+            if (StringUtils.isNotEmpty(entity.getManagedSysId())) {
+                criteria.add(Restrictions.eq("managedSysId", entity.getManagedSysId()));
             }
 
-            if (StringUtils.isNotEmpty(attribute.getName())) {
-                String name = attribute.getName();
+            if (StringUtils.isNotEmpty(entity.getName())) {
+                String name = entity.getName();
                 MatchMode matchMode = null;
                 if (StringUtils.indexOf(name, "*") == 0) {
                     matchMode = MatchMode.END;
@@ -52,6 +55,10 @@ public class AuthProviderDaoImpl extends BaseDaoImpl<AuthProviderEntity, String>
                         criteria.add(Restrictions.eq("name", name));
                     }
                 }
+            }
+            
+            if(entity.getResource() != null && StringUtils.isNotEmpty(entity.getResource().getResourceId())) {
+            	criteria.add(Restrictions.eq("resource.resourceId", entity.getResource().getResourceId()));
             }
         }
         return criteria;
@@ -73,4 +80,13 @@ public class AuthProviderDaoImpl extends BaseDaoImpl<AuthProviderEntity, String>
             qry.executeUpdate();
         }
     }
+
+	@Override
+	public List<AuthProviderEntity> getByResourceId(String resourceId) {
+		final AuthProviderEntity entity = new AuthProviderEntity();
+		final ResourceEntity resource = new ResourceEntity();
+		resource.setResourceId(resourceId);
+		entity.setResource(resource);
+		return getByExample(entity);
+	}
 }

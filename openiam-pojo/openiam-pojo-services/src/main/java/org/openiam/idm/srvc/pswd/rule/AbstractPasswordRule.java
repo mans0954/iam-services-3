@@ -38,6 +38,7 @@ import org.openiam.util.encrypt.Cryptor;
  */
 public abstract class AbstractPasswordRule {
 
+	protected boolean skipPasswordFrequencyCheck;
 	protected Policy policy;
 	protected String password;
 	protected String principal;
@@ -47,6 +48,7 @@ public abstract class AbstractPasswordRule {
 	protected PasswordHistoryDAO passwordHistoryDao;
 	protected Cryptor cryptor;
     protected KeyManagementService keyManagementService;
+    protected String domainId;
 
 	public abstract PasswordValidationCode isValid(); 
 	
@@ -121,4 +123,22 @@ public abstract class AbstractPasswordRule {
     public void setKeyManagementService(KeyManagementService keyManagementService) {
         this.keyManagementService = keyManagementService;
     }
+
+	public boolean isSkipPasswordFrequencyCheck() {
+		return skipPasswordFrequencyCheck;
+	}
+
+	public void setSkipPasswordFrequencyCheck(boolean skipPasswordFrequencyCheck) {
+		this.skipPasswordFrequencyCheck = skipPasswordFrequencyCheck;
+	}
+
+	public String getDomainId() {
+		return domainId;
+	}
+
+	public void setDomainId(String domainId) {
+		this.domainId = domainId;
+	}
+    
+    
 }

@@ -552,6 +552,9 @@ public class AuthenticationServiceImpl implements AuthenticationService, Applica
                 case AuthenticationConstants.RESULT_INVALID_CONFIGURATION:
                     authResp.setAuthErrorCode(AuthenticationConstants.RESULT_INVALID_CONFIGURATION);
                     break;
+                case AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP:
+                	authResp.setAuthErrorCode(AuthenticationConstants.RESULT_SUCCESS_PASSWORD_EXP);
+                	break;
                 default:
                     authResp.setAuthErrorCode(AuthenticationConstants.INTERNAL_ERROR);
                 }
@@ -1065,7 +1068,7 @@ public class AuthenticationServiceImpl implements AuthenticationService, Applica
                 sub.getSsoToken().getExpirationTime().getTime(), sub
                         .getSsoToken().getToken(), sub.getUserId());
 
-        //authStateDao.saveAuthState(state);
+        authStateDao.saveAuthState(state);
     }
 
     /*

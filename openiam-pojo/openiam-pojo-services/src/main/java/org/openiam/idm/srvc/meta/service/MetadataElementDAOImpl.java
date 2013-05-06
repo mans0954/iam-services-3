@@ -12,11 +12,13 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Restrictions;
+import org.openiam.am.srvc.domain.ContentProviderEntity;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.searchbeans.MetadataElementSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateXrefEntity;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -76,6 +78,10 @@ public class MetadataElementDAOImpl extends BaseDaoImpl<MetadataElementEntity, S
 				
 				setTemplateCriteria(criteria, templateIdSet);
 			}
+			
+			if(entity.getResource() != null && StringUtils.isNotEmpty(entity.getResource().getResourceId())) {
+            	criteria.add(Restrictions.eq("resource.resourceId", entity.getResource().getResourceId()));
+            }
 		}
 		return criteria;
 	}
@@ -125,5 +131,14 @@ public class MetadataElementDAOImpl extends BaseDaoImpl<MetadataElementEntity, S
     protected String getPKfieldName() {
         return "metadataElementId";
     }
+
+	@Override
+	public List<MetadataElementEntity> getByResourceId(String resourceId) {
+		final MetadataElementEntity entity = new MetadataElementEntity();
+		final ResourceEntity resource = new ResourceEntity();
+		resource.setResourceId(resourceId);
+		entity.setResource(resource);
+		return getByExample(entity);
+	}
 
 }

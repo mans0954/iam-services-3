@@ -34,6 +34,7 @@ import javax.jws.WebService;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.dozer.DozerBeanMapper;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
@@ -49,6 +50,7 @@ import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
+import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.grp.ws.GroupArrayResponse;
 import org.openiam.idm.srvc.grp.ws.GroupListResponse;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
@@ -82,14 +84,10 @@ import org.springframework.stereotype.Service;
 @Service("roleWS")
 public class RoleDataWebServiceImpl implements RoleDataWebService {
 	
+	private static Logger LOG = Logger.getLogger(RoleDataWebServiceImpl.class);
+	
 	@Autowired
 	private RoleDataService roleDataService;
-	
-    @Autowired
-    private GroupDozerConverter groupDozerConverter;
-    
-    @Autowired
-    private UserDozerConverter userDozerConverter;
     
     @Autowired
     private RoleDozerConverter roleDozerConverter;
@@ -104,16 +102,10 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
     private RoleSearchBeanConverter roleSearchBeanConverter;
     
     @Autowired
-    private RoleDAO roleDao;
-    
-    @Autowired
-    private GroupDAO groupDAO;
+    private GroupDataService groupService;
     
     @Autowired
     private SecurityDomainDAO securityDomainDAO;
-    
-    @Autowired
-    private UserRoleDAO userRoleDAO;
 
 	@Override
 	public RoleAttributeResponse addAttribute(RoleAttribute attribute) {
@@ -153,8 +145,8 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
 			
-			final RoleEntity role = roleDao.findById(roleId);
-			final GroupEntity group = groupDAO.findById(groupId);
+			final RoleEntity role =  roleDataService.getRole(roleId);
+			final GroupEntity group = groupService.getGroup(groupId);
 			if(role == null || group == null) {
 				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
 			}
@@ -182,7 +174,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
 			
-			if(userRoleDAO.getRecord(userId, roleId) != null) {
+			if(roleDataService.getUserRole(userId, roleId) != null) {
 				throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
 			}
 			
@@ -268,7 +260,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
 			
-			final RoleEntity entity = roleDao.findById(roleId);
+			final RoleEntity entity = roleDataService.getRole(roleId);
 			if(entity == null) {
 				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
 			}
@@ -355,11 +347,8 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 			}
 			
 			/* check if the name is taken by another entity */
-			final RoleEntity example = new RoleEntity();
-			example.setRoleName(entity.getRoleName());
-			final List<RoleEntity> nameEntityList = roleDao.getByExample(example);
-			if(CollectionUtils.isNotEmpty(nameEntityList)) {
-				final RoleEntity nameEntity = nameEntityList.get(0);
+			final RoleEntity nameEntity = roleDataService.getRoleByName(role.getRoleName());
+			if(nameEntity != null) {
 				if(StringUtils.isBlank(entity.getRoleId()) || !entity.getRoleId().equals(nameEntity.getRoleId())) {
 					throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
 				}
@@ -374,7 +363,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 			}
 			
 			if(StringUtils.isNotBlank(entity.getRoleId())) {
-				final RoleEntity dbObject = roleDao.findById(entity.getRoleId());
+				final RoleEntity dbObject = roleDataService.getRole(entity.getRoleId());
 				if(dbObject == null) {
 					throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
 				}
@@ -537,8 +526,8 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 			if(roleId == null || childRoleId == null) {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
-			final RoleEntity parent = roleDao.findById(roleId);
-			final RoleEntity child = roleDao.findById(childRoleId);
+			final RoleEntity parent = roleDataService.getRole(roleId);
+			final RoleEntity child = roleDataService.getRole(childRoleId);
 			if(parent == null || child == null) {
 				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
 			}
@@ -560,6 +549,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
 		} catch(Throwable e) {
+			LOG.error("Can't add child role", e);
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorText(e.getMessage());
 		}
@@ -592,8 +582,8 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 			if(roleId == null || childRoleId == null) {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
-			final RoleEntity parent = roleDao.findById(roleId);
-			final RoleEntity child = roleDao.findById(childRoleId);
+			final RoleEntity parent = roleDataService.getRole(roleId);
+			final RoleEntity child = roleDataService.getRole(childRoleId);
 			if(parent == null || child == null) {
 				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
 			}
@@ -603,6 +593,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
 		} catch(Throwable e) {
+			LOG.error("Can't remove child role", e);
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorText(e.getMessage());
 		}

@@ -39,7 +39,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service("loginManager")
-@WebService(endpointInterface = "org.openiam.idm.srvc.auth.login.LoginDataService", targetNamespace = "urn:idm.openiam.org/srvc/auth/service", serviceName = "LoginWebService")
 public class LoginDataServiceImpl implements LoginDataService {
 
 	@Autowired
@@ -85,6 +84,7 @@ public class LoginDataServiceImpl implements LoginDataService {
     private static final Log log = LogFactory
             .getLog(LoginDataServiceImpl.class);
 
+    @Deprecated
     public void addLogin(LoginEntity login) {
         if (login == null) {
             throw new NullPointerException("Login is null");
@@ -95,25 +95,6 @@ public class LoginDataServiceImpl implements LoginDataService {
         }
 
         loginDao.save(login);
-    }
-
-    public LoginEntity getLogin(String secDomainId, String login)
-            throws AuthenticationException {
-        if (secDomainId == null) {
-            throw new NullPointerException("service is null");
-        }
-
-        if (login == null) {
-            throw new NullPointerException("Login is null");
-        }
-
-        SecurityDomainEntity secDomain = secDomainDAO.findById(secDomainId);
-        if (secDomain == null) {
-            throw new AuthenticationException(
-                    AuthenticationConstants.RESULT_INVALID_DOMAIN);
-        }
-
-        return loginDao.getRecord(login, secDomain.getAuthSysId(), secDomainId);
     }
 
     public LoginEntity getLoginByManagedSys(String domainId, String login,
@@ -232,7 +213,7 @@ public class LoginDataServiceImpl implements LoginDataService {
      * @return
      */
     public boolean setPassword(String domainId, String login, String sysId,
-            String password) {
+            String password, boolean preventChangeCountIncrement) {
         Calendar cal = Calendar.getInstance();
         Calendar expCal = Calendar.getInstance();
 
@@ -254,10 +235,12 @@ public class LoginDataServiceImpl implements LoginDataService {
         lg.setPwdChanged(cal.getTime());
 
         // increment the change password count
-        if (lg.getPasswordChangeCount() == null) {
-            lg.setPasswordChangeCount(new Integer(1));
-        } else {
-            lg.setPasswordChangeCount(lg.getPasswordChangeCount() + 1);
+        if(!preventChangeCountIncrement) {
+        	if (lg.getPasswordChangeCount() == null) {
+        		lg.setPasswordChangeCount(new Integer(1));
+        	} else {
+        		lg.setPasswordChangeCount(lg.getPasswordChangeCount() + 1);
+        	}
         }
         // password has been changed - we dont need to force a change password
         // on the next login

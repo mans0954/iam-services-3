@@ -1,5 +1,6 @@
 package org.openiam.am.srvc.service;
 
+import org.apache.cxf.interceptor.URIMappingInterceptor;
 import org.openiam.am.srvc.dao.*;
 import org.openiam.am.srvc.domain.*;
 import org.openiam.base.AttributeOperationEnum;
@@ -97,15 +98,15 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
             }
 
             ResourceEntity resource = new ResourceEntity();
-            resource.setName(resourceTypeId+"_"+provider.getName());
+            resource.setName(resourceTypeId+"_"+provider.getName() + "_" + System.currentTimeMillis());
             resource.setResourceType(resourceType);
             resource.setResourceId(null);
             resource.setIsPublic(false);
             resourceDao.save(resource);
 
             provider.setId(null);
-            provider.setResource(null);
-            provider.setResourceId(resource.getResourceId());
+            provider.setResource(resource);
+            //provider.setResourceId(resource.getResourceId());
 
             contentProviderDao.save(provider);
             entity = provider;
@@ -136,13 +137,16 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
 
         if(entity!=null){
             // delete resource
-            resourceDataService.deleteResource(entity.getResourceId());
+            //resourceDataService.deleteResource(entity.getResource().getResourceId());
+            /*
             // delete servers for given provider
             contentProviderServerDao.deleteByProvider(providerId);
             // delete patterns
             deletePatternByProvider(providerId);
             // delete provider
             contentProviderDao.deleteById(providerId);
+            */
+            contentProviderDao.delete(entity);
         }
     }
 
@@ -255,8 +259,8 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
 
 
             pattern.setId(null);
-            pattern.setResource(null);
-            pattern.setResourceId(resource.getResourceId());
+            pattern.setResource(resource);
+            //pattern.setResourceId(resource.getResourceId());
 
             uriPatternDao.save(pattern);
             entity = pattern;
@@ -280,7 +284,10 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
             throw new  IllegalArgumentException("URI Pattern Id not set");
 
         URIPatternEntity entity  = uriPatternDao.findById(patternId);
-        deleteProviderPattern(entity);
+        if(entity != null) {
+        	uriPatternDao.delete(entity);
+        }
+        //deleteProviderPattern(entity);
     }
 
     @Override
@@ -357,7 +364,10 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
             throw new  IllegalArgumentException("Meta Data Id not set");
 
         URIPatternMetaEntity entity  = uriPatternMetaDao.findById(metaId);
-        deletePatternMeta(entity);
+        if(entity != null) {
+        	this.uriPatternMetaDao.delete(entity);
+        }
+        //deletePatternMeta(entity);
     }
 
 
@@ -428,19 +438,22 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
         }
     }
 
+    /*
     @Transactional
     private void deleteProviderPattern(URIPatternEntity entity){
         if(entity!=null){
             // delete resource
-            resourceDataService.deleteResource(entity.getResourceId());
+            //resourceDataService.deleteResource(entity.getResource().getResourceId());
             // delete meta
             deleteMetaByPattern(entity.getId());
             // delete pattern
+            
             uriPatternDao.deleteById(entity.getId());
         }
     }
+    */
 
-
+    /*
     @Transactional
     private void deletePatternByProvider(String providerId){
         URIPatternEntity example = new URIPatternEntity();
@@ -455,7 +468,9 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
             }
         }
     }
+    */
 
+    /*
     @Transactional
     private void deleteMetaByPattern(String patternId){
         URIPatternMetaEntity example = new URIPatternMetaEntity();
@@ -470,12 +485,14 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
             }
         }
     }
-
+    */
+    /*
     @Transactional
     private void deletePatternMeta(URIPatternMetaEntity entity) {
         // delete all values
-        uriPatternMetaValueDao.deleteByMeta(entity.getId());
+        //uriPatternMetaValueDao.deleteByMeta(entity.getId());
         //delete meta data
         uriPatternMetaDao.deleteById(entity.getId());
     }
+    */
 }

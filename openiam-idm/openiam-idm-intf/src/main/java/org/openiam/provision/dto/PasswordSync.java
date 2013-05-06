@@ -24,13 +24,11 @@ package org.openiam.provision.dto;
 import org.openiam.base.BaseObject;
 import org.openiam.provision.type.ExtensibleAttribute;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Password object used for synchronization
@@ -44,8 +42,10 @@ import javax.xml.bind.annotation.XmlType;
     "principal",
     "password",
     "requestorId",
+    "sendPasswordToUser",
     "passThruAttributes",
-    "attributeList"
+    "attributeList",
+    "preventChangeCountIncrement"
 })
 public class PasswordSync extends BaseObject  {
 
@@ -54,14 +54,15 @@ public class PasswordSync extends BaseObject  {
 	 */
 	private static final long serialVersionUID = 2746720616086920826L;
 
-	String securityDomain;
-	String managedSystemId;
-	String principal;
-	String password;
-	String requestorId;
-
-    boolean passThruAttributes = true;
-    List<ExtensibleAttribute> attributeList = new ArrayList<ExtensibleAttribute>();
+	private String securityDomain;
+	private String managedSystemId;
+	private String principal;
+	private String password;
+	private String requestorId;
+	private boolean sendPasswordToUser = false;
+	private boolean passThruAttributes = true;
+	private List<ExtensibleAttribute> attributeList = new ArrayList<ExtensibleAttribute>();
+	private boolean preventChangeCountIncrement;
 	
 	public PasswordSync() {
 		
@@ -113,5 +114,21 @@ public class PasswordSync extends BaseObject  {
     public void setAttributeList(List<ExtensibleAttribute> attributeList) {
         this.attributeList = attributeList;
     }
+
+    public boolean getSendPasswordToUser() {
+        return sendPasswordToUser;
+    }
+
+    public void setSendPasswordToUser(boolean sendPasswordToUser) {
+        this.sendPasswordToUser = sendPasswordToUser;
+    }
+
+	public boolean isPreventChangeCountIncrement() {
+		return preventChangeCountIncrement;
+	}
+
+	public void setPreventChangeCountIncrement(boolean preventChangeCountIncrement) {
+		this.preventChangeCountIncrement = preventChangeCountIncrement;
+	}
 }
 

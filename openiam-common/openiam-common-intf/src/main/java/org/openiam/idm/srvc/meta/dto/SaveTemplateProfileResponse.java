@@ -11,12 +11,18 @@ import org.openiam.base.ws.ResponseStatus;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "SaveTemplateProfileResponse", propOrder = {
 	"currentValue",
-	"elementName"
+	"elementName",
+	"plaintextPassword",
+	"login",
+	"userId"
 })
 public class SaveTemplateProfileResponse extends Response {
 	
 	private String currentValue;
 	private String elementName;
+	private String plaintextPassword;
+	private String login;
+	private String userId;
 
 	public SaveTemplateProfileResponse() {
 		
@@ -40,6 +46,30 @@ public class SaveTemplateProfileResponse extends Response {
 
 	public void setElementName(String elementName) {
 		this.elementName = elementName;
+	}
+
+	public String getPlaintextPassword() {
+		return plaintextPassword;
+	}
+
+	public void setPlaintextPassword(String plaintextPassword) {
+		this.plaintextPassword = plaintextPassword;
+	}
+
+	public String getLogin() {
+		return login;
+	}
+
+	public void setLogin(String login) {
+		this.login = login;
+	}
+
+	public String getUserId() {
+		return userId;
+	}
+
+	public void setUserId(String userId) {
+		this.userId = userId;
 	}
 	
 	
