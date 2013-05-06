@@ -1192,7 +1192,7 @@ public class UserDataWebServiceImpl implements UserDataWebService,MuleContextAwa
 
 	@Override
 	public Response sendNewUserEmail(final String userId, final String password, final String login) {
-		final Response response = new Response();
+		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {
 			final NotificationRequest notificationRequest = new NotificationRequest();
             notificationRequest.setUserId(userId);

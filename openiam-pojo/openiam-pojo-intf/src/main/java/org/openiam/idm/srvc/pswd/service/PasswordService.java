@@ -136,7 +136,9 @@ public interface PasswordService {
      *
      * @return 1 - In History, 0 - Not in history, -1 No policy defined
      */
+    /*
     int passwordInHistory(Password pswd, Policy policy);
+    */
 
     /**
      * Generates a temporary token that can be used as part of Secure challenge response

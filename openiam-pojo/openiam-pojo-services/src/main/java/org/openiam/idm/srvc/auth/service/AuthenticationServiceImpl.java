@@ -1068,7 +1068,7 @@ public class AuthenticationServiceImpl implements AuthenticationService, Applica
                 sub.getSsoToken().getExpirationTime().getTime(), sub
                         .getSsoToken().getToken(), sub.getUserId());
 
-        //authStateDao.saveAuthState(state);
+        authStateDao.saveAuthState(state);
     }
 
     /*

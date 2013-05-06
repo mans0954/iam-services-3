@@ -37,7 +37,8 @@ import javax.xml.bind.annotation.XmlType;
         "password",
         "managedSysId",
         "requestBy",
-        "srcApplicationId"
+        "srcApplicationId",
+        "skipPasswordFrequencyCheck"
 })
 public class Password {
 
@@ -47,13 +48,14 @@ public class Password {
     protected String managedSysId;
     protected String requestBy;
     protected String srcApplicationId;
+    private boolean skipPasswordFrequencyCheck;
 
     public Password() {
         super();
         // TODO Auto-generated constructor stub
     }
 
-
+    /*
     public Password(String domainId, String managedSysId, String password,
                     String principal) {
         super();
@@ -62,6 +64,7 @@ public class Password {
         this.password = password;
         this.principal = principal;
     }
+    */
 
     public String getDomainId() {
         return domainId;
@@ -115,4 +118,13 @@ public class Password {
         this.srcApplicationId = srcApplicationId;
     }
 
+	public boolean isSkipPasswordFrequencyCheck() {
+		return skipPasswordFrequencyCheck;
+	}
+
+	public void setSkipPasswordFrequencyCheck(boolean skipPasswordFrequencyCheck) {
+		this.skipPasswordFrequencyCheck = skipPasswordFrequencyCheck;
+	}
+
+    
 }

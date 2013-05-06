@@ -44,7 +44,8 @@ import java.util.List;
     "requestorId",
     "sendPasswordToUser",
     "passThruAttributes",
-    "attributeList"
+    "attributeList",
+    "preventChangeCountIncrement"
 })
 public class PasswordSync extends BaseObject  {
 
@@ -53,14 +54,15 @@ public class PasswordSync extends BaseObject  {
 	 */
 	private static final long serialVersionUID = 2746720616086920826L;
 
-	String securityDomain;
-	String managedSystemId;
-	String principal;
-	String password;
-	String requestorId;
-    boolean sendPasswordToUser = false;
-    boolean passThruAttributes = true;
-    List<ExtensibleAttribute> attributeList = new ArrayList<ExtensibleAttribute>();
+	private String securityDomain;
+	private String managedSystemId;
+	private String principal;
+	private String password;
+	private String requestorId;
+	private boolean sendPasswordToUser = false;
+	private boolean passThruAttributes = true;
+	private List<ExtensibleAttribute> attributeList = new ArrayList<ExtensibleAttribute>();
+	private boolean preventChangeCountIncrement;
 	
 	public PasswordSync() {
 		
@@ -120,5 +122,13 @@ public class PasswordSync extends BaseObject  {
     public void setSendPasswordToUser(boolean sendPasswordToUser) {
         this.sendPasswordToUser = sendPasswordToUser;
     }
+
+	public boolean isPreventChangeCountIncrement() {
+		return preventChangeCountIncrement;
+	}
+
+	public void setPreventChangeCountIncrement(boolean preventChangeCountIncrement) {
+		this.preventChangeCountIncrement = preventChangeCountIncrement;
+	}
 }
 
