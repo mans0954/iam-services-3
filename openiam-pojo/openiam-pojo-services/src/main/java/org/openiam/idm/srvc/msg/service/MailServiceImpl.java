@@ -155,14 +155,12 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 		} else {
 			message.setFrom(defaultSender);
 		}
-		if (to != null && from.length() > 0) {
+		if (to != null && to.length > 0) {
 			for (String toString : to) {
 				message.addTo(toString);
 			}
-		} else {
-			message.setFrom(defaultSender);
-		}
-		if (cc != null && from.length() > 0) {
+		} 
+		if (cc != null && cc.length > 0) {
 			for (String ccString : cc) {
 				message.addCc(ccString);
 			}
@@ -171,16 +169,16 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 		if (subjectPrefix != null) {
 			subject = subjectPrefix + " " + subject;
 		}
-		if (bcc != null && from.length() > 0) {
+		if (bcc != null && bcc.length > 0) {
 			for (String bccString : bcc) {
 				message.addBcc(bccString);
 			}
 		}
 
-		if (subject != null && from.length() > 0) {
+		if (subject != null && subject.length() > 0) {
 			message.setSubject(subject);
 		}
-		if (msg != null && from.length() > 0) {
+		if (msg != null && msg.length() > 0) {
 			message.setBody(msg);
 		}
 
