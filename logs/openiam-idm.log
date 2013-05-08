@@ -1,0 +1,14 @@
+2013-05-08 22:46:48,514 INFO  [org.openiam.idm.srvc.file.service.FileTouchTest] Could not send Message.
+2013-05-08 22:46:48,514 INFO  [org.openiam.idm.srvc.file.service.FileTouchTest] write test falture
+2013-05-08 22:46:48,515 INFO  [org.openiam.idm.srvc.file.service.FileTouchTest] write test success
+2013-05-08 22:46:48,522 INFO  [org.openiam.idm.srvc.file.service.FileTouchTest] Could not send Message.
+2013-05-08 22:46:48,522 INFO  [org.openiam.idm.srvc.file.service.FileTouchTest] read test falture
+2013-05-08 22:46:48,522 INFO  [org.openiam.idm.srvc.file.service.FileTouchTest] read test success
+2013-05-08 22:47:53,734 INFO  [org.openiam.idm.srvc.file.service.FileTouchTest] Could not send Message.
+2013-05-08 22:47:53,735 INFO  [org.openiam.idm.srvc.file.service.FileTouchTest] write test falture
+2013-05-08 22:47:53,736 INFO  [org.openiam.idm.srvc.file.service.FileTouchTest] write test success
+2013-05-08 22:47:53,743 INFO  [org.openiam.idm.srvc.file.service.FileTouchTest] Could not send Message.
+2013-05-08 22:47:53,744 INFO  [org.openiam.idm.srvc.file.service.FileTouchTest] read test falture
+2013-05-08 22:47:53,744 INFO  [org.openiam.idm.srvc.file.service.FileTouchTest] read test success
+2013-05-09 01:10:17,390 INFO  [org.openiam.idm.srvc.file.service.FileTouchTest] write test success
+2013-05-09 01:10:17,413 INFO  [org.openiam.idm.srvc.file.service.FileTouchTest] read test successTest message write
