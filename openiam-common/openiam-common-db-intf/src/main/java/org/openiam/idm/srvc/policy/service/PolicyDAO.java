@@ -27,15 +27,14 @@ import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 
 /**
  * Data access implementation for Policy
- *
+ * 
  * @author suneet
  */
 public interface PolicyDAO extends BaseDao<PolicyEntity, String> {
 
-    public List<PolicyEntity> findAllPolicies(String policyDefId);
+	public List<PolicyEntity> findAllPolicies(String policyDefId);
 
-    public List<PolicyEntity> findPolicyByName(String policyDefId,
-            String policyName);
+	public List<PolicyEntity> findPolicyByName(String policyDefId,
+			String policyName);
 
-    int removePolicyAttributes(String policyID);
 }

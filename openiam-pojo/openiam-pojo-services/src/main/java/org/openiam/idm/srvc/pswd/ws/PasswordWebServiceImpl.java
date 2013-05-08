@@ -43,93 +43,41 @@ import org.springframework.stereotype.Service;
 
 /**
  * Web service implementation for the PasswordWebService
+ * 
  * @author suneet
- *
+ * 
  */
 @Service("passwordWS")
-@WebService(endpointInterface = "org.openiam.idm.srvc.pswd.ws.PasswordWebService", 
-		targetNamespace = "urn:idm.openiam.org/srvc/pswd/service", 
-		portName = "PasswordWebServicePort",
-		serviceName = "PasswordWebService")
+@WebService(endpointInterface = "org.openiam.idm.srvc.pswd.ws.PasswordWebService", targetNamespace = "urn:idm.openiam.org/srvc/pswd/service", portName = "PasswordWebServicePort", serviceName = "PasswordWebService")
 public class PasswordWebServiceImpl implements PasswordWebService {
 
 	@Autowired
 	PasswordService passwordDS;
-	
-	public Response daysToPasswordExpiration(String domainId, String principal,
-			String managedSysId) {
-		
-		Response resp = new Response( ResponseStatus.SUCCESS );
-		int days = passwordDS.daysToPasswordExpiration(domainId, principal, managedSysId);
-		if (days == -1) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}
-		resp.setResponseValue(new Integer(days));
-		
-		return resp;
-	}
-
-	public PolicyResponse getPasswordPolicy(
-			String domainId, 
-			String principal, 
-			String managedSysId)  {
-		PolicyResponse resp = new PolicyResponse( ResponseStatus.SUCCESS );
-		Policy policy = passwordDS.getPasswordPolicy(domainId, principal, managedSysId); 
-		if (policy == null) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}
-		resp.setPolicy(policy);
-		return resp;
-	}
-
-	public BooleanResponse isPasswordChangeAllowed(String domainId, String principal,
-			String managedSysId) {
-		
-		//Response resp = new Response( ResponseStatus.SUCCESS );
-		boolean retval = passwordDS.isPasswordChangeAllowed(domainId, principal, managedSysId);
-		return new BooleanResponse(retval);
-
-	}
 
 	public Response isPasswordValid(Password pswd)
 			throws ObjectNotFoundException {
 
-		Response resp = new Response( ResponseStatus.SUCCESS );
-		
+		Response resp = new Response(ResponseStatus.SUCCESS);
+
 		PasswordValidationCode cd = passwordDS.isPasswordValid(pswd);
 		if (cd != PasswordValidationCode.SUCCESS) {
 			resp.setStatus(ResponseStatus.FAILURE);
-			resp.setErrorCode(ResponseCode.valueOf(cd.getValue() ));	
-			return resp;				
-		}
-		
-		return resp;
-	}
-
-	public Response passwordChangeCount(String domainId,
-			String principal, String managedSysId) {
-
-		Response resp = new Response( ResponseStatus.SUCCESS );
-		int count = passwordDS.passwordChangeCount(domainId, principal, managedSysId);
-		
-		if ( count == -1 ){
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setResponseValue(new Integer(count));
+			resp.setErrorCode(ResponseCode.valueOf(cd.getValue()));
+			return resp;
 		}
 
 		return resp;
-
 	}
 
+	@Override
+	public PasswordResetTokenResponse generatePasswordResetToken(
+			PasswordResetTokenRequest request) {
+		return passwordDS.generatePasswordResetToken(request);
+	}
 
-    @Override
-    public PasswordResetTokenResponse generatePasswordResetToken( PasswordResetTokenRequest request) {
-        return passwordDS.generatePasswordResetToken(request);
-    }
-
-    @Override
-    public ValidatePasswordResetTokenResponse validatePasswordResetToken(String token) {
-        return passwordDS.validatePasswordResetToken(token);
-    }
+	@Override
+	public ValidatePasswordResetTokenResponse validatePasswordResetToken(
+			String token) {
+		return passwordDS.validatePasswordResetToken(token);
+	}
 }
