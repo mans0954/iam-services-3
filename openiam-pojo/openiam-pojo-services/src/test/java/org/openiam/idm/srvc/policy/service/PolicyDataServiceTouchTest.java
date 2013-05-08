@@ -30,125 +30,33 @@ import org.springframework.test.context.transaction.TransactionConfiguration;
 import org.testng.annotations.Test;
 
 /**
- * PolicyDataService is used create and manage policies. 
- * Enforcement of these policies is handled through policy specific services and policy enforcement points. 
+ * PolicyDataService is used create and manage policies. Enforcement of these
+ * policies is handled through policy specific services and policy enforcement
+ * points.
+ * 
  * @author suneet
- *
+ * 
  */
 
 @ContextConfiguration(locations = { "classpath:applicationContext-test.xml",
-        "classpath:test-application-context.xml" })
+		"classpath:test-application-context.xml" })
 @TransactionConfiguration(transactionManager = "transactionManager", defaultRollback = true)
 public class PolicyDataServiceTouchTest extends
-        AbstractTransactionalTestNGSpringContextTests {
-    @Autowired
-    private PolicyDataService policyDataService;
+		AbstractTransactionalTestNGSpringContextTests {
+	@Autowired
+	private PolicyDataService policyDataService;
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.policy.service.PolicyDataService#getPolicyTypes()
-     */
-    @Test
-    public void getPolicyTypes() {
-        policyDataService.getPolicyTypes();
-    }
+	@Test
+	public void getPolicy() {
+		policyDataService.getPolicy("");
+	}
 
-    @Test
-    public void addPolicyDefinition() {
-        policyDataService.addPolicyDefinition(new PolicyDef());
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.openiam.idm.srvc.policy.service.PolicyDataService#associatePolicyToObject
+	 * (org.openiam.idm.srvc.policy.dto.PolicyObjectAssoc)
+	 */
 
-    }
-
-    @Test
-    public void getPolicyDefinition() {
-        policyDataService.getPolicyDefinition("");
-    }
-
-    @Test
-    public void removePolicyDefinition() {
-        policyDataService.removePolicyDefinition("");
-
-    }
-
-    /**
-     * Returns an array of all policy definitions
-     * @return
-     */
-    @Test
-    public void getAllPolicyDef() {
-        policyDataService.getAllPolicyDef();
-    }
-
-    @Test
-    public void addPolicy() {
-        policyDataService.addPolicy(new Policy());
-    }
-
-    @Test
-    public void getAllPolicies() {
-        policyDataService.getAllPolicies("");
-    }
-
-    @Test
-    public void getPolicy() {
-        policyDataService.getPolicy("");
-    }
-
-    /**
-     * Policy definitions parameters can be further categorized by parameter groups.
-     * @param paramGroup
-     * @return
-     */
-    @Test
-    public void getPolicyDefParamByGroup() {
-        policyDataService.getPolicyDefParamByGroup("", "");
-    }
-
-    @Test
-    public void removePolicy() {
-        policyDataService.removePolicy("");
-    }
-
-    @Test
-    public void isPolicyExist() {
-        policyDataService.isPolicyExist("", "");
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.policy.service.PolicyDataService#associatePolicyToObject
-     * (org.openiam.idm.srvc.policy.dto.PolicyObjectAssoc)
-     */
-    @Test
-    public void associatePolicyToObject() {
-        policyDataService.associatePolicyToObject(new PolicyObjectAssoc());
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.openiam.idm.srvc.policy.service.PolicyDataService#
-     * getAssociationsForPolicy(java.lang.String)
-     */
-    @Test
-    public void getAssociationsForPolicy() {
-        policyDataService.getAssociationsForPolicy("");
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.policy.service.PolicyDataService#updatePolicyAssociation
-     * (org.openiam.idm.srvc.policy.dto.PolicyObjectAssoc)
-     */
-
-    @Test
-    public void findAssociationByLevel() {
-        policyDataService.findAssociationByLevel("", "");
-    }
 }

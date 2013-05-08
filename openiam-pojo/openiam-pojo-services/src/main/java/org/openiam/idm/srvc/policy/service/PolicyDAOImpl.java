@@ -14,66 +14,50 @@ import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 import org.springframework.stereotype.Repository;
 
 /**
- * DAO Implementation for the Policy.
- * @
+ * DAO Implementation for the Policy. @
  */
 @Repository("policyDAO")
 public class PolicyDAOImpl extends BaseDaoImpl<PolicyEntity, String> implements
-        PolicyDAO {
-    @SuppressWarnings("unchecked")
-    @Override
-    public List<PolicyEntity> findAllPolicies(String policyDefId) {
-        log.debug("finding all PolicyEntities instances");
-        try {
+		PolicyDAO {
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<PolicyEntity> findAllPolicies(String policyDefId) {
+		log.debug("finding all PolicyEntities instances");
+		try {
 
-            Criteria cr = this.getCriteria()
-                    .add(Restrictions.eq("policyDefId", policyDefId))
-                    .addOrder(Order.asc("policyId"));
+			Criteria cr = this.getCriteria()
+					.add(Restrictions.eq("policyDefId", policyDefId))
+					.addOrder(Order.asc("policyId"));
 
-            return (List<PolicyEntity>) cr.list();
-        } catch (HibernateException re) {
-            log.error("find all Policies failed", re);
-            throw re;
-        }
-    }
+			return (List<PolicyEntity>) cr.list();
+		} catch (HibernateException re) {
+			log.error("find all Policies failed", re);
+			throw re;
+		}
+	}
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public List<PolicyEntity> findPolicyByName(String policyDefId,
-            String policyName) {
-        log.debug("finding Policy instance by name");
-        try {
-            Criteria cr = this.getCriteria().add(
-                    Restrictions.and(
-                            Restrictions.eq("policyDefId", policyDefId),
-                            Restrictions.eq("name", policyName)));
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<PolicyEntity> findPolicyByName(String policyDefId,
+			String policyName) {
+		log.debug("finding Policy instance by name");
+		try {
+			Criteria cr = this.getCriteria().add(
+					Restrictions.and(
+							Restrictions.eq("policyDefId", policyDefId),
+							Restrictions.eq("name", policyName)));
 
-            return (List<PolicyEntity>) cr.list();
-        } catch (HibernateException re) {
-            log.error("find by example failed", re);
-            throw re;
-        }
+			return (List<PolicyEntity>) cr.list();
+		} catch (HibernateException re) {
+			log.error("find by example failed", re);
+			throw re;
+		}
 
-    }
+	}
 
-    @Override
-    public int removePolicyAttributes(String policyID) {
-        try {
-            Session session = getSession();
-            Query qry = session.createQuery("delete " + domainClass.getName()
-                    + "as pa where" + " pa.policyId =:policyID ");
-            qry.setString("policyID", policyID);
-
-            return qry.executeUpdate();
-        } catch (HibernateException he) {
-            log.error(he);
-            throw he;
-        }
-    }
-
-    @Override
-    protected String getPKfieldName() {
-        return "policyId";
-    }
+	@Override
+	protected String getPKfieldName() {
+		return "policyId";
+	}
 
 }
