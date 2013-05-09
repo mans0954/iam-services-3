@@ -27,30 +27,21 @@ import org.springframework.transaction.annotation.Transactional;
 		targetNamespace = "urn:idm.openiam.org/srvc/secdomain/service", 
 		serviceName = "SecurityDomainWebService",
 		portName = "SecurityDomainWebServicePort")
-@Transactional
 public class SecurityDomainDataServiceImpl implements SecurityDomainDataService {
-
+	
 	@Autowired
-	protected SecurityDomainDAO secDomainDao;
+	private SecurityDomainService domainService;
 	
 	@Autowired
 	private SecurityDomainDozerConverter securityDomainDozerConverter;
   
 	public List<SecurityDomain> getAllSecurityDomains() {
-		final List<SecurityDomainEntity> entityList =  secDomainDao.findAll();
+		final List<SecurityDomainEntity> entityList =  domainService.getAllSecurityDomains();
 		return securityDomainDozerConverter.convertToDTOList(entityList, true);
 	}
   
 	  public List<SecurityDomain> getAllDomainsWithExclude(String excludeDomain) {
-		  final List<SecurityDomain> domainList = getAllSecurityDomains();
-		  if(CollectionUtils.isNotEmpty(domainList)) {
-			  for(final Iterator<SecurityDomain> it = domainList.iterator(); it.hasNext();) {
-				  final SecurityDomain domain = it.next();
-				  if(StringUtils.equalsIgnoreCase(domain.getDomainId(), excludeDomain)) {
-					  it.remove();
-				  }
-			  }
-		  }
-		  return domainList;
+		  final List<SecurityDomainEntity> entityList =  domainService.getAllDomainsWithExclude(excludeDomain);
+		  return securityDomainDozerConverter.convertToDTOList(entityList, true);
 	  }
 }

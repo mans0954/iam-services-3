@@ -52,23 +52,11 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class PolicyDataServiceImpl implements PolicyDataService {
 	@Autowired
-	private PolicyDefDAO policyDefDao;
-	@Autowired
 	private PolicyDAO policyDao;
 	@Autowired
 	private PolicyDefParamDAO policyDefParamDao;
 	@Autowired
-	private PolicyObjectAssocDAO policyObjectAssocDAO;
-	@Autowired
 	private PolicyDozerConverter policyDozerConverter;
-	@Autowired
-	private PolicyDefDozerConverter policyDefDozerConverter;
-	@Autowired
-	private PolicyAttributeDozerConverter policyAttributeDozerConverter;
-	@Autowired
-	private PolicyDefParamDozerConverter policyDefParamDozerConverter;
-	@Autowired
-	private PolicyObjectAssocDozerConverter policyObjectAssocDozerConverter;
 
 	public Policy getPolicy(String policyId) {
 		if (policyId == null) {
