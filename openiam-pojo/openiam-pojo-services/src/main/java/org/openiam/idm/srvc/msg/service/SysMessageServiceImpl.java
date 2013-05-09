@@ -24,14 +24,20 @@ package org.openiam.idm.srvc.msg.service;
 import java.util.List;
 
 import org.openiam.idm.srvc.msg.dto.NotificationConfig;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author suneet
  *
  */
+@Service("sysMessageService")
+@Transactional
 public class SysMessageServiceImpl implements SysMessageService {
 
-	SysMessageDAO msgDao;
+	@Autowired
+	private SysMessageDAO msgDao;
 	
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.msg.service.SysMessageDeliveryService#addMessage(org.openiam.idm.srvc.msg.dto.SysMessageDelivery)
@@ -87,18 +93,5 @@ public class SysMessageServiceImpl implements SysMessageService {
 	public List<NotificationConfig> getAllMessages() {
 		return msgDao.findAll();
 	}
-
-
-
-	public SysMessageDAO getMsgDao() {
-		return msgDao;
-	}
-
-
-
-	public void setMsgDao(SysMessageDAO msgDao) {
-		this.msgDao = msgDao;
-	}
-
 
 }

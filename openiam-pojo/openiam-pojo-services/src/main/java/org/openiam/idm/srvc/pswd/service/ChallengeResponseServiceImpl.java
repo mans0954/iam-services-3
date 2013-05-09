@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 public class ChallengeResponseServiceImpl implements ChallengeResponseService {
 
     @Value("${org.openiam.challenge.response.validator.object.name}")
@@ -95,31 +96,26 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
 	}
 
 	@Override
-	@Transactional
 	public void saveQuestion(IdentityQuestionEntity entity) throws Exception {
 		getResponseValidator().saveQuestion(entity);
 	}
 
 	@Override
-	@Transactional
 	public void deleteQuestion(String questionId) throws Exception {
 		getResponseValidator().deleteQuestion(questionId);
 	}
 
 	@Override
-	@Transactional
 	public void saveAnswer(UserIdentityAnswerEntity entity) throws Exception  {
 		getResponseValidator().saveAnswer(entity);
 	}
 
 	@Override
-	@Transactional
 	public void deleteAnswer(String answerId) throws Exception  {
 		getResponseValidator().deleteAnswer(answerId);
 	}
 
 	@Override
-	@Transactional
 	public void saveAnswers(List<UserIdentityAnswerEntity> answerList) throws Exception  {
 		 getResponseValidator().saveAnswers(answerList);
 

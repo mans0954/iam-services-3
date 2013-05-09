@@ -16,6 +16,7 @@ import org.openiam.idm.srvc.secdomain.domain.SecurityDomainEntity;
 import org.openiam.idm.srvc.secdomain.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 /**
  * Interface to manager the SecurityDomain that clients will access to gain information about SecurityDomain.
  * @author Suneet Shah
@@ -26,6 +27,7 @@ import org.springframework.stereotype.Service;
 		targetNamespace = "urn:idm.openiam.org/srvc/secdomain/service", 
 		serviceName = "SecurityDomainWebService",
 		portName = "SecurityDomainWebServicePort")
+@Transactional
 public class SecurityDomainDataServiceImpl implements SecurityDomainDataService {
 
 	@Autowired

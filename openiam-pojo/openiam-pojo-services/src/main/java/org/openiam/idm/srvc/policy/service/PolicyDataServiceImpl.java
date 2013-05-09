@@ -37,6 +37,7 @@ import org.openiam.idm.srvc.policy.dto.PolicyDefParam;
 import org.openiam.idm.srvc.policy.dto.PolicyObjectAssoc;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * PolicyDataService is used create and manage policies. Enforcement of these
@@ -48,6 +49,7 @@ import org.springframework.stereotype.Service;
  */
 @WebService(endpointInterface = "org.openiam.idm.srvc.policy.service.PolicyDataService", targetNamespace = "urn:idm.openiam.org/srvc/policy/service", portName = "PolicyWebServicePort", serviceName = "PolicyWebService")
 @Service("policyDataService")
+@Transactional
 public class PolicyDataServiceImpl implements PolicyDataService {
 	@Autowired
 	private PolicyDefDAO policyDefDao;

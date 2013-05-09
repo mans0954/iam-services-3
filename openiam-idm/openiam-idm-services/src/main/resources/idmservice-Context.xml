@@ -414,6 +414,7 @@ of an operation defined by the FooService interface -->
 
 
 
+	<!--
     <aop:config>
         <aop:pointcut id="defaultProvisionOperation" expression="execution(* org.openiam.provision.service.DefaultProvisioningService.*(..))"/>
         <aop:advisor advice-ref="txAdvice" pointcut-ref="defaultProvisionOperation"/>
@@ -423,7 +424,6 @@ of an operation defined by the FooService interface -->
         <aop:pointcut id="synchServiceDaoOperation" expression="execution(* org.openiam.idm.srvc.synch.service.SynchConfigDAOImpl.*(..))"/>
         <aop:advisor advice-ref="txAdvice" pointcut-ref="synchServiceDaoOperation"/>
     </aop:config>
-
 
     <aop:config>
         <aop:pointcut id="synchServiceWSOperation" expression="execution(* org.openiam.idm.srvc.synch.ws.IdentitySynchWebServiceImpl.*(..))"/>
@@ -454,6 +454,7 @@ of an operation defined by the FooService interface -->
         <aop:pointcut id="authzOperation" expression="execution(* org.openiam.idm.srvc.authz.ws.AuthorizationWebService.*(..))"/>
         <aop:advisor advice-ref="txAdvice" pointcut-ref="authzOperation"/>
     </aop:config>
+	-->
 
 </beans>
 
