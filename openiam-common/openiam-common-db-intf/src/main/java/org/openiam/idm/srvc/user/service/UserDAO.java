@@ -47,4 +47,5 @@ public interface UserDAO extends BaseDao<UserEntity, String> {
      * @param organizationId - organizationId
      */
     public void disassociateUsersFromOrganization(final String organizationId);
+    public List<UserEntity> getUsersForMSys(String mSysId);
 }
