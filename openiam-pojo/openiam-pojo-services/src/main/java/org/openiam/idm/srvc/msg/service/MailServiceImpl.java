@@ -159,7 +159,7 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 			for (String toString : to) {
 				message.addTo(toString);
 			}
-		} 
+		}
 		if (cc != null && cc.length > 0) {
 			for (String ccString : cc) {
 				message.addCc(ccString);
@@ -248,10 +248,8 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 
 		String emailBody = createEmailBody(bindingMap, emailDetails[SCRIPT_IDX]);
 		if (emailBody != null) {
-			String[] arr1 = { req.getTo() };
-			String[] arr2 = { req.getCc() };
-			String[] arr3 = { emailDetails[SUBJECT_IDX] };
-			sendEmails(null, arr1, arr2, arr3, emailBody, null, false, null);
+			sendEmail(null, req.getTo(), req.getCc(),
+					emailDetails[SUBJECT_IDX], emailBody, null, false);
 			return true;
 		}
 		return false;
@@ -279,8 +277,9 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 		}
 
 		if (StringUtils.isBlank(usr.getEmail())) {
+
 			log.error(String.format(
-					"Send notfication failed. Email was null for userId=%s",
+					"Send notification failed. Email was null for userId=%s",
 					usr.getUserId()));
 			return false;
 		}
@@ -303,10 +302,9 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 
 		String emailBody = createEmailBody(bindingMap, emailDetails[SCRIPT_IDX]);
 		if (emailBody != null) {
-			String[] arr1 = { usr.getEmail() };
-			String[] arr2 = { emailDetails[SUBJECT_IDX] };
-			String[] arr3 = { emailBody };
-			sendEmails(null, arr1, arr2, arr3, null, null, false, null);
+
+			sendEmail(null, usr.getEmail(), null, emailDetails[SUBJECT_IDX],
+					emailBody, null, false);
 			return true;
 		}
 		return false;
@@ -348,20 +346,19 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 			throws BeansException {
 		ac = applicationContext;
 	}
-	
-	
+
 	@Value("${oauth.consumerKey}")
 	private String consumerKey;
-	
+
 	@Value("${oauth.consumerSecret}")
 	private String consumerSecret;
-	
+
 	@Value("${oauth.accessToken}")
 	private String accessToken;
-	
+
 	@Value("${oauth.accessTokenSecret}")
 	private String accessTokenSecret;
-	
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -371,53 +368,48 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 	 */
 
 	public void tweetPrivateMessage(String userid, String msg) {
-		ConfigurationBuilder cb=new ConfigurationBuilder();
-		cb.setDebugEnabled(true)
-		  .setOAuthConsumerKey(consumerKey)
-		  .setOAuthConsumerSecret(consumerSecret)
-		  .setOAuthAccessToken(accessToken)
-		  .setOAuthAccessTokenSecret(accessTokenSecret);
-		TwitterFactory tf = new TwitterFactory(cb.build());
-		Twitter twitter = tf.getInstance();
+
 		try {
-			DirectMessage message = twitter.sendDirectMessage(userid, msg);
+			DirectMessage message = getTwitterInstance().sendDirectMessage(
+					userid, msg);
 			log.info("Direct message successfully sent to "
 					+ message.getRecipientScreenName());
 		} catch (TwitterException te) {
 			te.printStackTrace();
-			log.error("Failed to send a direct message: "
-					+ te.getMessage());
+			log.error("Failed to send a direct message: " + te.getMessage());
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.msg.service.MailService#tweetMessage(java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.openiam.idm.srvc.msg.service.MailService#tweetMessage(java.lang.String
+	 * )
 	 */
 	@Override
 	public void tweetMessage(String status) {
-		ConfigurationBuilder cb=new ConfigurationBuilder();
-		cb.setDebugEnabled(true)
-		  .setOAuthConsumerKey(consumerKey)
-		  .setOAuthConsumerSecret(consumerSecret)
-		  .setOAuthAccessToken(accessToken)
-		  .setOAuthAccessTokenSecret(accessTokenSecret);
+
+		try {
+			Status stat = getTwitterInstance().updateStatus(status);
+			log.info("Status successfully Updated  ");
+
+		} catch (TwitterException te) {
+			te.printStackTrace();
+			log.error("Failed to update Status: " + te.getMessage());
+
+		}
+	}
+
+	public Twitter getTwitterInstance() {
+		ConfigurationBuilder cb = new ConfigurationBuilder();
+		cb.setDebugEnabled(true).setOAuthConsumerKey(consumerKey)
+				.setOAuthConsumerSecret(consumerSecret)
+				.setOAuthAccessToken(accessToken)
+				.setOAuthAccessTokenSecret(accessTokenSecret);
 		TwitterFactory tf = new TwitterFactory(cb.build());
 		Twitter twitter = tf.getInstance();
-	        try {
-	        	Status stat=twitter.updateStatus(status);
-	            log.info("Status successfully Updated  " );
-	          
-	        } catch (TwitterException te) {
-	            te.printStackTrace();
-	            log.error("Failed to update Status: " + te.getMessage() );
-	   
-	        }
+		return twitter;
 	}
-	
-	
 
 }
-
-
-	
-
