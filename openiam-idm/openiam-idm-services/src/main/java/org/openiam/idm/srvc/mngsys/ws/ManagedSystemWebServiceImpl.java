@@ -33,13 +33,9 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
 	protected ManagedSystemService managedSystemService;
 	@Autowired
 	protected ManagedSystemObjectMatchDAO managedSysObjectMatchDao;
-	@Autowired
-	protected PolicyDAO policyDAO;
 	protected ApproverAssociationDAO approverAssociationDao;
 	@Autowired
 	protected UserDataService userManager;
-	@Autowired
-	protected AttributeMapDAO attributeMapDAO;
 	@Autowired
 	protected KeyManagementService keyManagementService;
 	@Autowired
@@ -463,9 +459,8 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
 		if (attributeMapId == null) {
 			throw new IllegalArgumentException("attributeMapId is null");
 		}
-
-		AttributeMapEntity obj = attributeMapDAO.findById(attributeMapId);
-
+		AttributeMapEntity obj = managedSystemService
+				.getAttributeMap(attributeMapId);
 		return obj == null ? null : attributeMapDozerConverter.convertToDTO(
 				obj, true);
 	}
@@ -476,18 +471,16 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
 		}
 		AttributeMapEntity entity = attributeMapDozerConverter.convertToEntity(
 				attributeMap, true);
-		entity.setAttributePolicy(policyDAO.findById(entity
-				.getAttributePolicy().getPolicyId()));
 		return attributeMapDozerConverter.convertToDTO(
-				attributeMapDAO.add(entity), true);
+				managedSystemService.addAttributeMap(entity), true);
 	}
 
 	public AttributeMap updateAttributeMap(AttributeMap attributeMap) {
 		if (attributeMap == null) {
 			throw new IllegalArgumentException("attributeMap object is null");
 		}
-		attributeMapDAO.update(attributeMapDozerConverter.convertToEntity(
-				attributeMap, true));
+		managedSystemService.updateAttributeMap(attributeMapDozerConverter
+				.convertToEntity(attributeMap, true));
 		return attributeMap;
 	}
 
@@ -495,9 +488,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
 		if (attributeMapId == null) {
 			throw new IllegalArgumentException("attributeMapId is null");
 		}
-		AttributeMapEntity amE = attributeMapDAO.findById(attributeMapId);
-		if (amE != null)
-			attributeMapDAO.delete(amE);
+		managedSystemService.removeAttributeMap(attributeMapId);
 	}
 
 	public int removeResourceAttributeMaps(String resourceId) {
@@ -505,22 +496,22 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
 			throw new IllegalArgumentException("resourceId is null");
 		}
 
-		return this.attributeMapDAO.removeResourceAttributeMaps(resourceId);
+		return managedSystemService.removeResourceAttributeMaps(resourceId);
 	}
 
 	public List<AttributeMap> getResourceAttributeMaps(String resourceId) {
 		if (resourceId == null) {
 			throw new IllegalArgumentException("resourceId is null");
 		}
-		List<AttributeMapEntity> amEList = attributeMapDAO
-				.findByResourceId(resourceId);
+		List<AttributeMapEntity> amEList = managedSystemService
+				.getResourceAttributeMaps(resourceId);
 		return amEList == null ? null : attributeMapDozerConverter
 				.convertToDTOList(amEList, true);
 	}
 
 	public List<AttributeMap> getAllAttributeMaps() {
-		List<AttributeMapEntity> amEList = attributeMapDAO
-				.findAllAttributeMaps();
+		List<AttributeMapEntity> amEList = managedSystemService
+				.getAllAttributeMaps();
 		return amEList == null ? null : attributeMapDozerConverter
 				.convertToDTOList(amEList, true);
 	}

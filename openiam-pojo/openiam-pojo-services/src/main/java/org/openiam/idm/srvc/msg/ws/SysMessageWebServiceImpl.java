@@ -29,20 +29,23 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.srvc.msg.dto.NotificationConfig;
 import org.openiam.idm.srvc.msg.service.SysMessageService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 
 /**
  * @author suneet
  *
  */
+@Service("messageWS")
 @WebService(endpointInterface = "org.openiam.idm.srvc.msg.ws.SysMessageWebService", 
 		targetNamespace = "urn:idm.openiam.org/srvc/msg/service", 
 		portName = "SysMessagePort", 
 		serviceName = "SysMessageWebService")
-public class SysMessageWebServiceImpl implements
-		SysMessageWebService {
+public class SysMessageWebServiceImpl implements SysMessageWebService {
 
-	SysMessageService msgService; 
+	@Autowired
+	private SysMessageService msgService; 
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.msg.ws.SysMessageDeliveryWebService#addMessage(org.openiam.idm.srvc.msg.dto.SysMessageDelivery)
 	 */
@@ -111,13 +114,4 @@ public class SysMessageWebServiceImpl implements
 		}
 		return resp;
 	}
-
-	public SysMessageService getMsgService() {
-		return msgService;
-	}
-
-	public void setMsgService(SysMessageService msgService) {
-		this.msgService = msgService;
-	}
-
 }

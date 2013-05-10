@@ -52,7 +52,7 @@ import org.springframework.stereotype.Service;
 public class PasswordWebServiceImpl implements PasswordWebService {
 
 	@Autowired
-	PasswordService passwordDS;
+	private PasswordService passwordDS;
 
 	public Response isPasswordValid(Password pswd)
 			throws ObjectNotFoundException {

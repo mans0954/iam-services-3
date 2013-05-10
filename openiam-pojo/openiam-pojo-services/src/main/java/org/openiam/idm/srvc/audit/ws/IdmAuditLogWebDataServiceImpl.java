@@ -26,6 +26,7 @@ import org.openiam.idm.srvc.audit.dto.SearchAudit;
 import org.openiam.idm.srvc.audit.service.IdmAuditLogDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.jws.WebService;
 import java.util.Date;
@@ -37,9 +38,10 @@ import java.util.List;
  */
 @WebService(endpointInterface = "org.openiam.idm.srvc.audit.ws.IdmAuditLogWebDataService", targetNamespace = "urn:idm.openiam.org/srvc/audit/service", portName = "AuditWebServicePort", serviceName = "AuditService")
 @Service("auditWS")
+@Transactional
 public class IdmAuditLogWebDataServiceImpl implements IdmAuditLogWebDataService {
     @Autowired
-    IdmAuditLogDataService auditDataService;
+    private IdmAuditLogDataService auditDataService;
 
     /*
      * (non-Javadoc)

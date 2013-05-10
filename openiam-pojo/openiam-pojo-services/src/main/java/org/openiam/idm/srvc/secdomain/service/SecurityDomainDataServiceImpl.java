@@ -16,6 +16,7 @@ import org.openiam.idm.srvc.secdomain.domain.SecurityDomainEntity;
 import org.openiam.idm.srvc.secdomain.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 /**
  * Interface to manager the SecurityDomain that clients will access to gain information about SecurityDomain.
  * @author Suneet Shah
@@ -27,28 +28,20 @@ import org.springframework.stereotype.Service;
 		serviceName = "SecurityDomainWebService",
 		portName = "SecurityDomainWebServicePort")
 public class SecurityDomainDataServiceImpl implements SecurityDomainDataService {
-
+	
 	@Autowired
-	protected SecurityDomainDAO secDomainDao;
+	private SecurityDomainService domainService;
 	
 	@Autowired
 	private SecurityDomainDozerConverter securityDomainDozerConverter;
   
 	public List<SecurityDomain> getAllSecurityDomains() {
-		final List<SecurityDomainEntity> entityList =  secDomainDao.findAll();
+		final List<SecurityDomainEntity> entityList =  domainService.getAllSecurityDomains();
 		return securityDomainDozerConverter.convertToDTOList(entityList, true);
 	}
   
 	  public List<SecurityDomain> getAllDomainsWithExclude(String excludeDomain) {
-		  final List<SecurityDomain> domainList = getAllSecurityDomains();
-		  if(CollectionUtils.isNotEmpty(domainList)) {
-			  for(final Iterator<SecurityDomain> it = domainList.iterator(); it.hasNext();) {
-				  final SecurityDomain domain = it.next();
-				  if(StringUtils.equalsIgnoreCase(domain.getDomainId(), excludeDomain)) {
-					  it.remove();
-				  }
-			  }
-		  }
-		  return domainList;
+		  final List<SecurityDomainEntity> entityList =  domainService.getAllDomainsWithExclude(excludeDomain);
+		  return securityDomainDozerConverter.convertToDTOList(entityList, true);
 	  }
 }

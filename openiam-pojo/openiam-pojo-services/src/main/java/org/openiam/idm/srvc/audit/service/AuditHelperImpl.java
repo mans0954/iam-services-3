@@ -29,6 +29,7 @@ import org.openiam.idm.srvc.audit.domain.IdmAuditLogEntity;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Helper class that other modules can use to simplify the audit logging process.
@@ -37,6 +38,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service("auditHelper")
+@Transactional
 public class AuditHelperImpl implements AuditHelper {
     @Autowired
     private IdmAuditLogDAO idmAuditLogDAO;

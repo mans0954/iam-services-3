@@ -109,6 +109,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service("authenticate")
 @WebService(endpointInterface = "org.openiam.idm.srvc.auth.service.AuthenticationService", targetNamespace = "urn:idm.openiam.org/srvc/auth/service", portName = "AuthenticationServicePort", serviceName = "AuthenticationService")
 @ManagedResource(objectName = "openiam:name=authenticationService", description = "Authentication Service")
+@Transactional
 public class AuthenticationServiceImpl implements AuthenticationService, ApplicationContextAware, BeanFactoryAware {
 
 	@Autowired

@@ -82,6 +82,7 @@
      	</property>
 	</bean>
 
+	<!--
     <aop:config>
         <aop:pointcut id="resAttrOperation" expression="execution(* org.openiam.am.srvc.service.WebResourceAttributeServiceImpl.*(..))"/>
         <aop:advisor advice-ref="txAdvice" pointcut-ref="resAttrOperation"/>
@@ -90,7 +91,8 @@
         <aop:pointcut id="webResAttrOperation" expression="execution(* org.openiam.am.srvc.resattr.ws.WebResourceServiceImpl.*(..))"/>
         <aop:advisor advice-ref="txAdvice" pointcut-ref="webResAttrOperation"/>
     </aop:config>
-
+	-->
+	
 </beans>
 
 
