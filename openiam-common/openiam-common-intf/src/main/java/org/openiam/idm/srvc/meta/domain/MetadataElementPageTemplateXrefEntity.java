@@ -10,7 +10,7 @@ import javax.persistence.*;
 import java.io.Serializable;
 
 @Entity
-@Table(name = "METADATA_ELEMENT_PAGE_TEMPLATE_XREF")
+@Table(name = "PAGE_TEMPLATE_XREF")
 @Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(MetadataElementPageTemplateXref.class)
