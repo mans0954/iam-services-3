@@ -26,7 +26,7 @@ public class AuthLevelEntity implements Serializable {
 	@Column(name="AUTH_LEVEL_NAME", length = 100, nullable = false)
 	private String name;
 	
-	@Column(name="LEVEL", nullable = false)
+	@Column(name="AUTH_LEVEL_DIG", nullable = false)
 	private int level;
 
 //    @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "minAuthLevel")
