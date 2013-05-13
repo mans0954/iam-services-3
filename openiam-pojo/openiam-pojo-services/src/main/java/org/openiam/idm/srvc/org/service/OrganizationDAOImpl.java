@@ -1,36 +1,30 @@
 package org.openiam.idm.srvc.org.service;
 
 
-import static org.hibernate.criterion.Projections.rowCount;
-
-import java.util.List;
-import javax.naming.InitialContext;
-
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
-import org.hibernate.FetchMode;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.criterion.Example;
-
+import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
-
 import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.idm.searchbeans.OrganizationSearchBean;
+import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
-
-import org.hibernate.criterion.*;
-
-import org.openiam.idm.srvc.org.dto.*;
+import org.openiam.idm.srvc.searchbean.converter.OrganizationSearchBeanConverter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+import static org.hibernate.criterion.Projections.rowCount;
 
 /**
  * Data access object implementation for OrganizationEntity.
  */
 @Repository("organizationDAO")
 public class OrganizationDAOImpl extends BaseDaoImpl<OrganizationEntity, String> implements OrganizationDAO {
+    @Autowired
+    private OrganizationSearchBeanConverter organizationSearchBeanConverter;
 
     public List<OrganizationEntity> findRootOrganizations() {
         final Criteria criteria = getCriteria()
@@ -45,6 +39,22 @@ public class OrganizationDAOImpl extends BaseDaoImpl<OrganizationEntity, String>
                 .addOrder(Order.asc("organizationName"));
                 //.setFetchMode("attributes", FetchMode.JOIN);
         return criteria.list();
+    }
+
+    @Override
+    protected Criteria getExampleCriteria(final SearchBean searchBean) {
+        Criteria criteria = getCriteria();
+        if(searchBean != null && searchBean instanceof OrganizationSearchBean) {
+            final OrganizationSearchBean organizationSearchBean = (OrganizationSearchBean)searchBean;
+
+            final OrganizationEntity exampleEnity = organizationSearchBeanConverter.convert(organizationSearchBean);
+            criteria = this.getExampleCriteria(exampleEnity);
+
+            if(organizationSearchBean.hasMultipleKeys()) {
+                criteria.add(Restrictions.in(getPKfieldName(), organizationSearchBean.getKeys()));
+            }
+        }
+        return criteria;
     }
 
     @Override

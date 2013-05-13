@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.grp.service;
 
 import org.openiam.base.ws.Response;
+import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.domain.UserGroupEntity;
@@ -106,9 +107,9 @@ public interface GroupDataService {
      * @param search
      * @return
      */
-    public List<GroupEntity> findBeans(final GroupEntity entity, final int from, final int size);
+    public List<GroupEntity> findBeans(final GroupSearchBean searchBean, final int from, final int size);
     
-    public int countBeans(final GroupEntity entity);
+    public int countBeans(final GroupSearchBean searchBean);
     
     public List<GroupEntity> getGroupsForRole(final String roleId, final int from, final int size);
     public int getNumOfGroupsForRole(final String roleId);

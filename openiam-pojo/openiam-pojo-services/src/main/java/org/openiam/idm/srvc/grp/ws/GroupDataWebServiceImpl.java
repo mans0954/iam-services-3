@@ -1,51 +1,31 @@
 package org.openiam.idm.srvc.grp.ws;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Set;
-import java.util.Iterator;
-
-import javax.jws.WebMethod;
-import javax.jws.WebParam;
-import javax.jws.WebService;
-
-
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.dozer.DozerBeanMapper;
-import org.hibernate.HibernateException;
-import org.openiam.idm.searchbeans.GroupSearchBean;
-import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
-import org.openiam.idm.srvc.grp.domain.GroupEntity;
-import org.openiam.idm.srvc.grp.domain.UserGroupEntity;
-import org.openiam.idm.srvc.grp.dto.*;
-import org.openiam.idm.srvc.grp.service.*;
-
-import org.openiam.idm.srvc.role.domain.RoleEntity;
-import org.openiam.idm.srvc.searchbean.converter.GroupSearchBeanConverter;
-import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.user.service.UserDAO;
-import org.openiam.util.DozerMappingType;
-
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.base.ws.exception.BasicDataServiceException;
 import org.openiam.dozer.converter.GroupAttributeDozerConverter;
 import org.openiam.dozer.converter.GroupDozerConverter;
-import org.openiam.dozer.converter.UserDozerConverter;
-import org.openiam.exception.data.DataException;
-import org.openiam.exception.data.ObjectNotFoundException;
+import org.openiam.idm.searchbeans.GroupSearchBean;
+import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
+import org.openiam.idm.srvc.grp.domain.GroupEntity;
+import org.openiam.idm.srvc.grp.domain.UserGroupEntity;
+import org.openiam.idm.srvc.grp.dto.Group;
+import org.openiam.idm.srvc.grp.dto.GroupAttribute;
+import org.openiam.idm.srvc.grp.service.GroupDataService;
+import org.openiam.idm.srvc.searchbean.converter.GroupSearchBeanConverter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Service;
+
+import javax.jws.WebMethod;
+import javax.jws.WebService;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * <code>GroupDataServiceImpl</code> provides a service to manage groups as
@@ -294,15 +274,13 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 
 	@Override
 	public List<Group> findBeans(final GroupSearchBean searchBean, final int from, final int size) {
-		final GroupEntity entity = groupSearchBeanConverter.convert(searchBean);
-		final List<GroupEntity> groupEntityList = groupManager.findBeans(entity, from, size);
+		final List<GroupEntity> groupEntityList = groupManager.findBeans(searchBean, from, size);
 		return groupDozerConverter.convertToDTOList(groupEntityList, (searchBean.isDeepCopy()));
 	}
 
 	@Override
 	public int countBeans(final GroupSearchBean searchBean) {
-		final GroupEntity entity = groupSearchBeanConverter.convert(searchBean);
-		return groupManager.countBeans(entity);
+		return groupManager.countBeans(searchBean);
 	}
 
 	@Override

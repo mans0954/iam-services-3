@@ -5,29 +5,17 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.dozer.converter.RoleDozerConverter;
-import org.openiam.dozer.converter.UserDozerConverter;
-import org.openiam.dozer.converter.UserRoleDozerConverter;
-import org.openiam.exception.data.ObjectNotFoundException;
+import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
-import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
-import org.openiam.idm.srvc.grp.service.UserGroupDAO;
 import org.openiam.idm.srvc.res.service.ResourceRoleDAO;
-import org.openiam.idm.srvc.res.service.ResourceUserDAO;
 import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.domain.RolePolicyEntity;
 import org.openiam.idm.srvc.role.domain.UserRoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.role.dto.RoleAttribute;
-import org.openiam.idm.srvc.role.dto.RoleConstant;
-import org.openiam.idm.srvc.role.dto.RolePolicy;
-import org.openiam.idm.srvc.role.dto.UserRole;
 import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.dto.User;
-
 import org.openiam.idm.srvc.user.service.UserDAO;
-import org.openiam.idm.srvc.user.service.UserDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,7 +46,7 @@ public class RoleDataServiceImpl implements RoleDataService {
 	
 	@Autowired
 	private RoleDozerConverter roleDozerConverter;
-	
+
 	@Autowired
 	private ResourceRoleDAO resourceRoleDAO;
 	
@@ -308,13 +296,15 @@ public class RoleDataServiceImpl implements RoleDataService {
 	}
 
 	@Override
-	public List<RoleEntity> findBeans(RoleEntity example, int from, int size) {
-		return roleDao.getByExample(example, from, size);
+	public List<RoleEntity> findBeans(RoleSearchBean searchBean, int from, int size) {
+        List<RoleEntity> retVal = roleDao.getByExample(searchBean, from, size);
+        return retVal;
 	}
 
 	@Override
-	public int countBeans(RoleEntity example) {
-		return roleDao.count(example);
+	public int countBeans(RoleSearchBean searchBean) {
+        int count = roleDao.count(searchBean);
+        return count;
 	}
 
 	@Override

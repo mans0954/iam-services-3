@@ -8,56 +8,32 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.persistence.*;
-import javax.xml.bind.annotation.XmlSchemaType;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.solr.analysis.LowerCaseFilterFactory;
-import org.apache.solr.analysis.StandardTokenizerFactory;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
-import org.hibernate.annotations.Filter;
 import org.hibernate.annotations.FilterDef;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.ParamDef;
-import org.hibernate.annotations.Where;
-import org.hibernate.search.annotations.Analyzer;
-import org.hibernate.search.annotations.AnalyzerDef;
 import org.hibernate.search.annotations.DocumentId;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Fields;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
-import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
-import org.hibernate.search.annotations.TokenFilterDef;
-import org.hibernate.search.annotations.TokenizerDef;
 import org.openiam.core.dao.lucene.LuceneId;
 import org.openiam.core.dao.lucene.LuceneLastUpdate;
 import org.openiam.core.dao.lucene.bridge.OrganizationBridge;
 import org.openiam.core.domain.UserKey;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
-import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
-import org.openiam.idm.srvc.continfo.dto.Address;
-import org.openiam.idm.srvc.continfo.dto.EmailAddress;
-import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.grp.domain.UserGroupEntity;
-import org.openiam.idm.srvc.grp.dto.UserGroup;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.res.domain.ResourceUserEntity;
-import org.openiam.idm.srvc.res.dto.ResourceUser;
 import org.openiam.idm.srvc.role.domain.UserRoleEntity;
-import org.openiam.idm.srvc.user.dto.Supervisor;
 import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.user.dto.UserAttribute;
-import org.openiam.idm.srvc.user.dto.UserAttributeMapAdapter;
-import org.openiam.idm.srvc.user.dto.UserNote;
-import org.openiam.idm.srvc.user.dto.UserNoteSetAdapter;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 
 @Entity
@@ -279,6 +255,15 @@ public class UserEntity {
     @Field(name="organization", bridge=@FieldBridge(impl=OrganizationBridge.class), store=Store.YES)
     private OrganizationEntity organization;
 
+    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
+    @JoinColumn(name="DIVISION", referencedColumnName="COMPANY_ID", insertable = false, updatable = false)
+    @Field(name="divisionEntity", bridge=@FieldBridge(impl=OrganizationBridge.class), store=Store.YES)
+    private OrganizationEntity divisionEntity;
+
+    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
+    @JoinColumn(name="DEPT_CD", referencedColumnName="COMPANY_ID", insertable = false, updatable = false)
+    @Field(name="department", bridge=@FieldBridge(impl=OrganizationBridge.class), store=Store.YES)
+    private OrganizationEntity department;
 
     public UserEntity() {
     }
@@ -877,7 +862,31 @@ public class UserEntity {
 		this.resourceUsers = resourceUsers;
 	}
 
-	@Override
+//    public OrganizationEntity getOrganization() {
+//        return organization;
+//    }
+//
+//    public void setOrganization(OrganizationEntity organization) {
+//        this.organization = organization;
+//    }
+//
+//    public OrganizationEntity getDivisionEntity() {
+//        return divisionEntity;
+//    }
+//
+//    public void setDivisionEntity(OrganizationEntity divisionEntity) {
+//        this.divisionEntity = divisionEntity;
+//    }
+//
+//    public OrganizationEntity getDepartment() {
+//        return department;
+//    }
+//
+//    public void setDepartment(OrganizationEntity department) {
+//        this.department = department;
+//    }
+
+    @Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;

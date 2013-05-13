@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.user.service;
 
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -1236,86 +1237,8 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements
 						searchBean.getCreateDate()));
 			}
 
-			if (searchBean.getStartDate() != null) {
-				criteria.add(Restrictions.eq("startDate",
-						searchBean.getStartDate()));
-			}
-			if (searchBean.getLastDate() != null) {
-				criteria.add(Restrictions.eq("lastDate",
-						searchBean.getLastDate()));
-			}
-			if (searchBean.getDateOfBirth() != null) {
-				criteria.add(Restrictions.eq("birthdate",
-						searchBean.getDateOfBirth()));
-			}
-			if (StringUtils.isNotEmpty(searchBean.getUserTypeInd())) {
-				criteria.add(Restrictions.eq("userTypeInd",
-						searchBean.getUserTypeInd()));
-			}
-			if (StringUtils.isNotEmpty(searchBean.getClassification())) {
-				criteria.add(Restrictions.eq("classification",
-						searchBean.getClassification()));
-			}
-			if (StringUtils.isNotEmpty(searchBean.getLocationCd())) {
-				criteria.add(Restrictions.eq("locationCd",
-						searchBean.getLocationCd()));
-			}
-			if (StringUtils.isNotEmpty(searchBean.getZipCode())) {
-				criteria.add(Restrictions.eq("postalCd",
-						searchBean.getZipCode()));
-			}
-			if (StringUtils.isNotEmpty(searchBean.getOrganizationId())) {
-				criteria.add(Restrictions.eq("companyId",
-						searchBean.getOrganizationId()));
-			}
-			if (searchBean.getDeptIdList() != null
-					&& !searchBean.getDeptIdList().isEmpty()) {
-				criteria.add(Restrictions.in("deptCd",
-						searchBean.getDeptIdList()));
-			}
-			if (StringUtils.isNotEmpty(searchBean.getPhoneAreaCd())
-					|| StringUtils.isNotEmpty(searchBean.getPhoneNbr())) {
-				if (StringUtils.isNotEmpty(searchBean.getPhoneAreaCd())) {
-					criteria.add(Restrictions.eq("p.areaCd",
-							searchBean.getPhoneAreaCd()));
-				}
-				if (StringUtils.isNotEmpty(searchBean.getPhoneNbr())) {
-					criteria.add(Restrictions.eq("p.phoneNbr",
-							searchBean.getPhoneNbr()));
-				}
-				criteria.createAlias("phones", "p");
-			}
-			if (StringUtils.isNotEmpty(searchBean.getEmailAddress())) {
-				criteria.createAlias("emailAddresses", "em");
-				disjunction = Restrictions.disjunction();
-				disjunction.add(
-						getStringCriterion("em.emailAddress",
-								searchBean.getEmailAddress(),
-								ORACLE_INSENSITIVE)).add(
-						getStringCriterion("email",
-								searchBean.getEmailAddress(),
-								ORACLE_INSENSITIVE));
-				criteria.add(disjunction);
-			}
-			if (CollectionUtils.isNotEmpty(searchBean.getGroupIdSet())) {
-				criteria.createAlias("userGroups", "g");
-				criteria.add(Restrictions.in("g.grpId",
-						searchBean.getGroupIdSet()));
-			}
-			if (searchBean.getDivisionIdList() != null
-					&& !searchBean.getDivisionIdList().isEmpty()) {
-				criteria.add(Restrictions.in("division",
-						searchBean.getDivisionIdList()));
-			}
-			if (StringUtils.isNotEmpty(searchBean.getEmployeeId())) {
-				criteria.add(Restrictions.eq("employeeId",
-						searchBean.getEmployeeId()));
-			}
-			if (CollectionUtils.isNotEmpty(searchBean.getRoleIdSet())) {
-				criteria.createAlias("userRoles", "urv");
-				criteria.add(Restrictions.in("urv.roleId",
-						searchBean.getRoleIdSet()));
-			}
+        if (bOrgIdList) {
+            qry.setParameterList("orgList", search.getOrgIdList());
 
 			if (StringUtils.isNotEmpty(searchBean.getAttributeName())
 					|| StringUtils.isNotEmpty(searchBean.getAttributeValue())

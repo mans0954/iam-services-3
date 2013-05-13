@@ -1,45 +1,25 @@
 package org.openiam.idm.srvc.grp.service;
 
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Set;
-import java.util.Iterator;
-
-import javax.jws.WebService;
-
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.HibernateException;
-import org.openiam.base.ws.Response;
 import org.openiam.dozer.converter.GroupDozerConverter;
-import org.openiam.dozer.converter.UserDozerConverter;
-import org.openiam.dozer.converter.UserGroupDozerConverter;
+import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.domain.UserGroupEntity;
-import org.openiam.idm.srvc.grp.dto.*;
-import org.openiam.idm.srvc.grp.service.GroupAttributeDAO;
-
-import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.res.domain.ResourceGroupEntity;
-import org.openiam.idm.srvc.res.dto.ResourceGroup;
 import org.openiam.idm.srvc.res.service.ResourceGroupDAO;
-import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.user.service.UserDAO;
-
-import org.openiam.exception.data.DataException;
-import org.openiam.exception.data.ObjectNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * <code>GroupDataServiceImpl</code> provides a service to manage groups as
@@ -66,7 +46,7 @@ public class GroupDataServiceImpl implements GroupDataService {
     
     @Autowired
     private GroupDozerConverter groupDozerConverter;
-    
+
     @Autowired
     private ResourceGroupDAO resoruceGroupDAO;
 	
@@ -212,13 +192,15 @@ public class GroupDataServiceImpl implements GroupDataService {
 	}
 
 	@Override
-	public List<GroupEntity> findBeans(GroupEntity entity, int from, int size) {
-		return groupDao.getByExample(entity, from, size);
+	public List<GroupEntity> findBeans(GroupSearchBean searchBean, int from, int size) {
+        List<GroupEntity> retVal = groupDao.getByExample(searchBean, from, size);
+        return retVal;
 	}
 
 	@Override
-	public int countBeans(GroupEntity entity) {
-		return groupDao.count(entity);
+	public int countBeans(GroupSearchBean searchBean) {
+        int count = groupDao.count(searchBean);
+        return count;
 	}
 
 	@Override

@@ -2,54 +2,54 @@ package org.openiam.idm.srvc.role.service;
 
 // Generated Mar 4, 2008 1:12:08 AM by Hibernate Tools 3.2.0.b11
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
-import javax.naming.InitialContext;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
-import org.hibernate.Hibernate;
-import org.hibernate.HibernateException;
-import org.hibernate.LockMode;
 import org.hibernate.Query;
-import org.hibernate.SQLQuery;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.hibernate.criterion.MatchMode;
-import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
-
-import static org.hibernate.criterion.Example.create;
-import static org.hibernate.criterion.Projections.rowCount;
-
 import org.openiam.core.dao.BaseDaoImpl;
-import org.openiam.exception.data.ObjectNotFoundException;
+import org.openiam.idm.searchbeans.RoleSearchBean;
+import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.res.domain.ResourceRoleEmbeddableId;
 import org.openiam.idm.srvc.res.domain.ResourceRoleEntity;
-import org.openiam.idm.srvc.res.dto.ResourceRole;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
-import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.user.service.UserDAO;
-import org.openiam.idm.srvc.grp.domain.GroupEntity;
-import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.grp.service.GroupDAO;
+import org.openiam.idm.srvc.searchbean.converter.RoleSearchBeanConverter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import static org.hibernate.criterion.Projections.rowCount;
 
 @Repository("roleDAO")
 public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements RoleDAO {
 
 	private static final Log log = LogFactory.getLog(RoleDAOImpl.class);
 
-	
-	
+    @Autowired
+    private RoleSearchBeanConverter roleSearchBeanConverter;
+
+    @Override
+    protected Criteria getExampleCriteria(final SearchBean searchBean) {
+        Criteria criteria = getCriteria();
+        if(searchBean != null && searchBean instanceof RoleSearchBean) {
+            final RoleSearchBean roleSearchBean = (RoleSearchBean)searchBean;
+
+            final RoleEntity exampleEnity = roleSearchBeanConverter.convert(roleSearchBean);
+            criteria = this.getExampleCriteria(exampleEnity);
+
+            if(roleSearchBean.hasMultipleKeys()) {
+                criteria.add(Restrictions.in(getPKfieldName(), roleSearchBean.getKeys()));
+            }
+        }
+        return criteria;
+    }
+
 	@Override
 	protected Criteria getExampleCriteria(final RoleEntity entity) {
 		final Criteria criteria = super.getCriteria();

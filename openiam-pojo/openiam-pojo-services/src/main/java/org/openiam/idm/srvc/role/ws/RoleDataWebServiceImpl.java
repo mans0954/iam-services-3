@@ -21,57 +21,36 @@
  */
 package org.openiam.idm.srvc.role.ws;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.jws.WebMethod;
-import javax.jws.WebParam;
-import javax.jws.WebService;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.dozer.DozerBeanMapper;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.base.ws.exception.BasicDataServiceException;
-import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.dozer.converter.GroupDozerConverter;
 import org.openiam.dozer.converter.RoleAttributeDozerConverter;
 import org.openiam.dozer.converter.RoleDozerConverter;
 import org.openiam.dozer.converter.RolePolicyDozerConverter;
-import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
-import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
-import org.openiam.idm.srvc.grp.ws.GroupArrayResponse;
-import org.openiam.idm.srvc.grp.ws.GroupListResponse;
-import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.domain.RolePolicyEntity;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.dto.RoleAttribute;
 import org.openiam.idm.srvc.role.dto.RolePolicy;
-import org.openiam.idm.srvc.role.dto.UserRole;
-import org.openiam.idm.srvc.role.service.RoleDAO;
 import org.openiam.idm.srvc.role.service.RoleDataService;
-import org.openiam.idm.srvc.role.service.UserRoleDAO;
 import org.openiam.idm.srvc.searchbean.converter.RoleSearchBeanConverter;
 import org.openiam.idm.srvc.secdomain.service.SecurityDomainDAO;
-import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.util.DozerMappingType;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Service;
+
+import javax.jws.WebMethod;
+import javax.jws.WebService;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author suneet
@@ -469,16 +448,14 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 
 	@Override
 	public List<Role> findBeans(final RoleSearchBean searchBean, final int from, final int size) {
-		final RoleEntity example = roleSearchBeanConverter.convert(searchBean);
-		final List<RoleEntity> found = roleDataService.findBeans(example, from, size);
+		final List<RoleEntity> found = roleDataService.findBeans(searchBean, from, size);
 		return roleDozerConverter.convertToDTOList(found, (searchBean.isDeepCopy()));
 	}
 
 	@Override
 	@WebMethod
 	public int countBeans(final RoleSearchBean searchBean) {
-		final RoleEntity example = roleSearchBeanConverter.convert(searchBean);
-		return roleDataService.countBeans(example);
+		return roleDataService.countBeans(searchBean);
 	}
 
 	@Override

@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.role.service;
 
+import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
@@ -161,9 +162,9 @@ public interface RoleDataService {
      */
     public List<Role> getUserRolesAsFlatList(final String userId);
     
-    public List<RoleEntity> findBeans(final RoleEntity example, final int from, final int size);
+    public List<RoleEntity> findBeans(final RoleSearchBean searchBean, final int from, final int size);
     
-    public int countBeans(final RoleEntity example);
+    public int countBeans(final RoleSearchBean searchBean);
     
     public List<RoleEntity> getRolesForResource(final String resourceId, final int from, final int size);
     public int getNumOfRolesForResource(final String resourceId);

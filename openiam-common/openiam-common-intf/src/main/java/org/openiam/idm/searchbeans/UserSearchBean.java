@@ -1,8 +1,6 @@
 package org.openiam.idm.searchbeans;
 
 import org.apache.commons.lang.StringUtils;
-import org.openiam.idm.srvc.org.dto.Organization;
-import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.SearchAttribute;
 import org.openiam.idm.srvc.user.dto.User;
 
@@ -11,11 +9,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by: Alexander Duckardt
@@ -52,7 +46,8 @@ import java.util.Set;
         "dateOfBirth",
         "zipCode",
         "delAdmin",
-        "organizationId",
+//        "organizationId",
+        "organizationIdList",
         "deptIdList",
         "divisionIdList",
         "attributeList"
@@ -97,20 +92,35 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
     protected String loggedIn = null;
     protected int delAdmin = 0;
 
-    private String organizationId;
-    
+//    private String organizationId;
+    protected List<String> organizationIdList = new ArrayList<String>();
     protected List<String> deptIdList = new ArrayList<String>();
     protected List<String> divisionIdList = new ArrayList<String>();
     protected List<SearchAttribute> attributeList = new ArrayList<SearchAttribute>();
 
-    public String getOrganizationId() {
-    	return organizationId;
+//    public String getOrganizationId() {
+//    	return organizationId;
+//    }
+//
+//    public void setOrganizationId(final String organizationId) {
+//    	this.organizationId = organizationId;
+//    }
+
+
+    public List<String> getOrganizationIdList() {
+        return organizationIdList;
     }
-    
-    public void setOrganizationId(final String organizationId) {
-    	this.organizationId = organizationId;
+
+    public void setOrganizationIdList(List<String> organizationIdList) {
+        this.organizationIdList = organizationIdList;
     }
-    
+
+    public void addOrganizationId(String organizationId){
+         if(organizationIdList==null)
+             organizationIdList = new ArrayList<String>();
+        organizationIdList.add(organizationId);
+    }
+
     public int getDelAdmin() {
         return delAdmin;
     }
@@ -367,6 +377,17 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
 
     public void setDivisionIdList(List<String> divisionIdList) {
         this.divisionIdList = divisionIdList;
+    }
+
+    public void addDivisionId(String divisionId){
+        if(divisionIdList==null)
+            divisionIdList = new ArrayList<String>();
+        divisionIdList.add(divisionId);
+    }
+    public void addDeptId(String deptId){
+        if(deptIdList==null)
+            deptIdList = new ArrayList<String>();
+        deptIdList.add(deptId);
     }
 
     public List<SearchAttribute> getAttributeList() {

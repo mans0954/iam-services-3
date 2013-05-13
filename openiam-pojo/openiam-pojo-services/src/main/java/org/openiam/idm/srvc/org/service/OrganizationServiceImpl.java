@@ -1,10 +1,6 @@
 package org.openiam.idm.srvc.org.service;
 
-import java.util.List;
-
 import org.apache.commons.lang.StringUtils;
-import org.openiam.base.ws.ResponseCode;
-import org.openiam.base.ws.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
@@ -14,12 +10,14 @@ import org.openiam.idm.srvc.user.service.UserDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class OrganizationServiceImpl implements OrganizationService {
 	
 	@Autowired
     private OrganizationDAO orgDao;
-    
+
     @Autowired
     private UserDAO userDAO;
 
@@ -70,13 +68,15 @@ public class OrganizationServiceImpl implements OrganizationService {
 	}
 
 	@Override
-	public List<OrganizationEntity> findBeans(final OrganizationEntity searchBean, int from, int size) {
-		return orgDao.getByExample(searchBean, from, size);
+	public List<OrganizationEntity> findBeans(final OrganizationSearchBean searchBean, int from, int size) {
+        List<OrganizationEntity> retVal = orgDao.getByExample(searchBean, from, size);
+        return retVal;
 	}
 
 	@Override
-	public int count(final OrganizationEntity searchBean) {
-		return orgDao.count(searchBean);
+	public int count(final OrganizationSearchBean searchBean) {
+        int count = orgDao.count(searchBean);
+        return count;
 	}
 
 	@Override

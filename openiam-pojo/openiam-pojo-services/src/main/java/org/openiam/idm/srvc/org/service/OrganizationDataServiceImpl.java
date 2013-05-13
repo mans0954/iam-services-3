@@ -138,16 +138,14 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 
     @Override
     public List<Organization> findBeans(final OrganizationSearchBean searchBean, final int from, final int size) {
-    	final OrganizationEntity searchEntity = organizationSearchBeanConverter.convert(searchBean);
-        final List<OrganizationEntity> entityList = organizationService.findBeans(searchEntity, from, size);
+        final List<OrganizationEntity> entityList = organizationService.findBeans(searchBean, from, size);
         final List<Organization> resultList = organizationDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy());
         return resultList;
     }
 
     @Override
     public int count(final OrganizationSearchBean searchBean) {
-    	final OrganizationEntity searchEntity = organizationSearchBeanConverter.convert(searchBean);
-    	return organizationService.count(searchEntity);
+    	return organizationService.count(searchBean);
     }
 
 

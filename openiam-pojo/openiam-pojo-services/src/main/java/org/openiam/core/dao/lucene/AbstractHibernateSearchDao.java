@@ -1,37 +1,13 @@
 package org.openiam.core.dao.lucene;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.regex.Pattern;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
 import org.apache.log4j.Logger;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.PrefixQuery;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.Sort;
-import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.*;
 import org.hibernate.CacheMode;
 import org.hibernate.Criteria;
 import org.hibernate.FlushMode;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Order;
@@ -41,22 +17,19 @@ import org.hibernate.search.FullTextQuery;
 import org.hibernate.search.FullTextSession;
 import org.hibernate.search.Search;
 import org.hibernate.search.SearchException;
-import org.hibernate.search.SearchFactory;
-import org.hibernate.search.engine.SearchFactoryImplementor;
-import org.hibernate.search.impl.ImmutableSearchFactory;
-import org.hibernate.search.store.DirectoryProvider;
-import org.hibernate.search.store.DirectoryProviderHelper;
-import org.openiam.core.dao.lucene.HibernateSearchDao;
-import org.openiam.core.dao.lucene.QueryBuilder;
-import org.openiam.core.dao.lucene.SortType;
-import org.openiam.idm.searchbeans.AbstractSearchBean;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.orm.hibernate3.support.HibernateDaoSupport;
-import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.*;
+import java.util.concurrent.locks.ReentrantLock;
 
 public abstract class AbstractHibernateSearchDao<T, Q, KeyType> extends HibernateDaoSupport implements HibernateSearchDao<T, Q, KeyType>, DisposableBean, InitializingBean {
 
@@ -312,6 +285,17 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType> extends Hibernat
         }
     	return null;
 	}
+
+    protected Query buildInClause(final String paramName, final Collection<String> paramValues) {
+        if (paramValues!=null && paramValues.isEmpty() && StringUtils.isNotBlank(paramName)) {
+            final BooleanQuery query = new BooleanQuery();
+            for( String value : paramValues ){
+                query.add(new TermQuery(new Term(paramName, value)), BooleanClause.Occur.SHOULD);
+            }
+            return query;
+        }
+        return null;
+    }
 
     @Override public Date getReindexingCompletedOn() {
     	return reindexingCompletedOn;
