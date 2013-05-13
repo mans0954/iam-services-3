@@ -50,10 +50,7 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 
 	@Autowired
 	private ResourceDozerConverter resourceConverter;
-
-	@Autowired
-	private ResourceRoleDozerConverter resourceRoleConverter;
-
+	
 	@Autowired
 	private ResourcePropDozerConverter resourcePropConverter;
 

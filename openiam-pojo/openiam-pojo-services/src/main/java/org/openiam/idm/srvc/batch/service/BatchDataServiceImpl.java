@@ -26,19 +26,25 @@ import java.util.List;
 import javax.jws.WebService;
 
 import org.openiam.idm.srvc.batch.dto.BatchTask;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Implementation for BatchDataService that will allow you to access and manage batch tasks.
  * @author suneet
  *
  */
+@Service("batchDataService")
 @WebService(endpointInterface = "org.openiam.idm.srvc.batch.service.BatchDataService", 
 		targetNamespace = "urn:idm.openiam.org/srvc/batch/service", 
 		portName = "BatchDataWebServicePort", 
 		serviceName = "BatchDataWebService")
+@Transactional
 public class BatchDataServiceImpl implements BatchDataService {
 
-	BatchConfigDAO  batchDao;
+	@Autowired
+	private BatchConfigDAO  batchDao;
 	
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.batch.service.BatchDataService#getAllTasks()
@@ -62,14 +68,6 @@ public class BatchDataServiceImpl implements BatchDataService {
 			throw new IllegalArgumentException("task is null");
 		}
 		batchDao.update(task);
-	}
-
-	public BatchConfigDAO getBatchDao() {
-		return batchDao;
-	}
-
-	public void setBatchDao(BatchConfigDAO batchDao) {
-		this.batchDao = batchDao;
 	}
 
 	/* (non-Javadoc)

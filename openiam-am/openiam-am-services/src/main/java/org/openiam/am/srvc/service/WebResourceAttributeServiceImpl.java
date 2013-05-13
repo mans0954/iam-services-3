@@ -25,6 +25,7 @@ import java.util.List;
  */
 @Service
 @Deprecated
+@Transactional
 public class WebResourceAttributeServiceImpl implements WebResourceAttributeService {
     protected final Log log = LogFactory.getLog(this.getClass());
     @Autowired

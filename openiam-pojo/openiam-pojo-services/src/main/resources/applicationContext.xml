@@ -110,9 +110,11 @@
 	<bean id="configurableAuditLogEventHandler" class="${org.openiam.log.audit.iheevent.context.class}" />
 
 	<!-- Service Beans -->
+	<!--
 	<bean id="serviceManager" class="org.openiam.idm.srvc.service.service.ServiceMgr">
 		<constructor-arg ref="serviceDAO"></constructor-arg>
 	</bean>
+	-->
 
 	<bean id="serviceDAO" class="org.openiam.idm.srvc.service.service.ServiceDAOImpl">
 		<property name="sessionFactory" ref="sessionFactory"></property>
@@ -199,28 +201,35 @@
 	<!-- </bean> -->
 
 	<!-- Reference Data Beans -->
+	<!--
 	<bean id="refDataService"
 		class="org.openiam.idm.srvc.cd.service.ReferenceDataServiceImpl">
 		<property name="refDao" ref="refDAO" />
 	</bean>
+	-->
 
 	<bean id="refDAO" class="org.openiam.idm.srvc.cd.service.ReferenceDAOImpl">
 		<property name="sessionFactory" ref="sessionFactory"></property>
 	</bean>
 
 	<!-- Notification and Message Delivery Beans -->
+	<!--
 	<bean id="messageWS" class="org.openiam.idm.srvc.msg.ws.SysMessageWebServiceImpl">
 		<property name="msgService" ref="sysMessageService" />
 	</bean>
+	-->
 
+	<!--
 	<bean id="sysMessageService" class="org.openiam.idm.srvc.msg.service.SysMessageServiceImpl">
 		<property name="msgDao" ref="sysMessageDAO" />
 	</bean>
+	-->
 
 	<bean id="sysMessageDAO" class="org.openiam.idm.srvc.msg.service.SysMessageDAOImpl">
 		<property name="sessionFactory" ref="sessionFactory"></property>
 	</bean>
 
+	<!--
 	<bean id="orgPolicyWS"
 		class="org.openiam.idm.srvc.orgpolicy.ws.OrgPolicyWebServiceImpl">
 		<property name="acceptService" ref="orgPolicyService" />
@@ -231,6 +240,7 @@
 		<property name="acceptanceDao" ref="orgPolicyDAO" />
 		<property name="userLogDao" ref="orgPolicyLogDAO" />
 	</bean>
+	-->
 
 	<bean id="orgPolicyDAO" class="org.openiam.idm.srvc.orgpolicy.service.OrgPolicyDAOImpl">
 		<property name="sessionFactory" ref="sessionFactory"></property>
@@ -281,6 +291,7 @@
 	<!--<property name="sessionFactory" ref="sessionFactory"></property> -->
 	<!--</bean> -->
 	<!-- Location Beans -->
+	<!--
 	<bean id="locationDataService"
 		class="org.openiam.idm.srvc.loc.service.LocationDataServiceImpl">
 		<property name="locationDao" ref="locationDAO" />
@@ -288,6 +299,7 @@
 	<bean id="locationWS" class="org.openiam.idm.srvc.loc.ws.LocationDataWebServiceImpl">
 		<property name="locationDS" ref="locationDataService" />
 	</bean>
+	-->
 
 	<bean id="locationDAO" class="org.openiam.idm.srvc.loc.service.LocationDAOImpl">
 		<property name="sessionFactory" ref="sessionFactory"></property>
@@ -304,9 +316,11 @@
 
 
 	<!-- Batch related beans -->
+	<!--
 	<bean id="batchDataService" class="org.openiam.idm.srvc.batch.service.BatchDataServiceImpl">
 		<property name="batchDao" ref="batchConfigDAO" />
 	</bean>
+	-->
 	<bean id="batchConfigDAO" class="org.openiam.idm.srvc.batch.service.BatchConfigDAOImpl">
 		<property name="sessionFactory" ref="sessionFactory"></property>
 	</bean>
@@ -520,14 +534,7 @@
 
 	<!-- ensure that the above transactional advice runs for any execution of 
 		an operation defined by the FooService interface -->
-
-
-	<aop:config>
-		<aop:pointcut id="serviceOperation"
-			expression="execution(* org.openiam.idm.srvc.service.service.ServiceMgr.*(..))" />
-		<aop:advisor advice-ref="txAdvice" pointcut-ref="serviceOperation" />
-	</aop:config>
-
+	<!--
 	<aop:config>
 		<aop:pointcut id="userOperation"
 			expression="execution(* org.openiam.idm.srvc.user.ws.UserDataWebService.*(..))" />
@@ -539,7 +546,6 @@
 			expression="execution(* org.openiam.idm.srvc.audit.ws.IdmAuditLogWebDataService.*(..))" />
 		<aop:advisor advice-ref="txAdvice" pointcut-ref="auditOperation" />
 	</aop:config>
-
 
 	<aop:config>
 		<aop:pointcut id="auditHelperOperation"
@@ -558,12 +564,14 @@
 			expression="execution(* org.openiam.idm.srvc.policy.service.PolicyDataService.*(..))" />
 		<aop:advisor advice-ref="txAdvice" pointcut-ref="policyOperation" />
 	</aop:config>
+	-->
 
 	<!--<aop:config> -->
 	<!--<aop:pointcut id="languageOperation" expression="execution(* org.openiam.idm.srvc.lang.service.LanguageDataService.*(..))"/> -->
 	<!--<aop:advisor advice-ref="txAdvice" pointcut-ref="languageOperation"/> -->
 	<!--</aop:config> -->
    <!---->
+	<!--
 	<aop:config>
 		<aop:pointcut id="locationOperation"
 			expression="execution(* org.openiam.idm.srvc.loc.ws.LocationDataWebService.*(..))" />
@@ -617,5 +625,6 @@
 			expression="execution(* org.openiam.idm.srvc.batch.service.BatchDataServiceImpl.*(..))" />
 		<aop:advisor advice-ref="txAdvice" pointcut-ref="queryOperation" />
 	</aop:config>
+	-->
 </beans>
 

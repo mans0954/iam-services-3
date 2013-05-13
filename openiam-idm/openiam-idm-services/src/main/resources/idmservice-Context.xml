@@ -459,7 +459,7 @@
 		an operation defined by the FooService interface -->
 
 
-
+	<!--
 	<aop:config>
 		<aop:pointcut id="defaultProvisionOperation"
 			expression="execution(* org.openiam.provision.service.DefaultProvisioningService.*(..))" />
@@ -508,6 +508,5 @@
 			expression="execution(* org.openiam.idm.srvc.authz.ws.AuthorizationWebService.*(..))" />
 		<aop:advisor advice-ref="txAdvice" pointcut-ref="authzOperation" />
 	</aop:config>
+	-->
 </beans>
-
-

@@ -31,7 +31,7 @@ import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.MetadataValidValue;
 
 @Entity
-@Table(name = "METADATA_ELEMENT_VALID_VALUES")
+@Table(name = "MD_ELEMENT_VALID_VALUES")
 @Cacheable
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @DozerDTOCorrespondence(MetadataValidValue.class)

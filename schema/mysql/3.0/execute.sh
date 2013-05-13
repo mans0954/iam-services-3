@@ -47,6 +47,16 @@ echo "=============== DONE EXECUTING REPORTS =========================="
 echo ""
 echo ""
 
+
+echo "=============== EXECUTING COPATABILITY ==============================="
+while read R_COM  ; do
+	echo "Executing compatability/$R_COM"
+	mysql --user=root --password=$1 < "compatability/$R_COM"
+done < compatability/execution_order
+echo "=============== DONE EXECUTING COPATABILITY =========================="
+echo ""
+echo ""
+
 if [ "$2" == "new_install" ]
 		then
 			echo "Executing new install script km/dml/reset_passwords.sql"
