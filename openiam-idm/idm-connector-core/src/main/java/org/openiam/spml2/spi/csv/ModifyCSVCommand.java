@@ -19,10 +19,9 @@ import org.openiam.spml2.msg.StatusCodeType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-@Service("modifyCommand")
+@Service
 public class ModifyCSVCommand extends AbstractCSVCommand {
-	@Autowired
-	private org.openiam.idm.parser.csv.CSVParser<ProvisionUser> provisionUserCSVParser;
+
 
 	public ModifyResponseType modify(ModifyRequestType reqType) {
 		ModifyResponseType response = new ModifyResponseType();

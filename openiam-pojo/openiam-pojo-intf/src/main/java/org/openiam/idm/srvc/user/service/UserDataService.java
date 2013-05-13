@@ -201,4 +201,6 @@ public interface UserDataService {
     public Integer getNumOfPhonesForUser(String userId);
     
     public void mergeUserFields(UserEntity origUserEntity, UserEntity newUserEntity);
+
+	List<UserEntity> getUsersForMSys(String mSysId);
 }

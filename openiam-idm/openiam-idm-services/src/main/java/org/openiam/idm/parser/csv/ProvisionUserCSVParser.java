@@ -431,7 +431,7 @@ public class ProvisionUserCSVParser extends
 				newUsers.add(user);
 			}
 		}
-		updateCSV(users, managedSys, attrMapList, ProvisionUser.class,
+		updateCSV(newUsers, managedSys, attrMapList, ProvisionUser.class,
 				UserFields.class, false, source);
 	}
 

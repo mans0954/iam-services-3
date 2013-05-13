@@ -7,7 +7,7 @@ import org.openiam.spml2.msg.LookupResponseType;
 import org.openiam.spml2.msg.StatusCodeType;
 import org.springframework.stereotype.Service;
 
-@Service("lookupCommand")
+@Service
 public class LookupCSVCommand extends AbstractCSVCommand {
 	public LookupResponseType lookup(LookupRequestType reqType) {
 		LookupResponseType response = new LookupResponseType();

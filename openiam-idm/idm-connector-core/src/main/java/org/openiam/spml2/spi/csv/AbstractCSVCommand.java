@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Resource;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -33,6 +35,8 @@ import org.openiam.idm.srvc.res.service.ResourceService;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserMgr;
+import org.openiam.idm.srvc.user.ws.UserDataWebService;
+import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.spml2.msg.ResponseType;
@@ -50,14 +54,13 @@ public class AbstractCSVCommand {
 	@Autowired
 	protected ResourceService resourceDataService;
 	@Autowired
-	@Qualifier("userCSVParser")
 	protected CSVParser<User> userCSVParser;
 	@Autowired
+	protected org.openiam.idm.parser.csv.CSVParser<ProvisionUser> provisionUserCSVParser;
+	@Autowired
 	private MailService mailService;
-	// @Autowired
-	// @Qualifier("userManager")
-	// FIXME
-	private UserMgr userManager;
+	@Resource(name = "userServiceClient")
+	protected UserDataWebService userDataWebService;
 	@Autowired
 	private UserDozerConverter userDozerConverter;
 	@Autowired
@@ -117,8 +120,7 @@ public class AbstractCSVCommand {
 							managedSysId));
 			log.debug("Created Command for: " + situation.getSituation());
 		}
-		List<User> users = userDozerConverter.convertToDTOList(
-				userManager.getUsersForMSys("0"), true);
+		List<User> users = userDataWebService.getByManagedSystem("0");
 		if (users == null) {
 			log.error("user list from DB is empty");
 			response.setStatus(StatusCodeType.FAILURE);

@@ -5,7 +5,7 @@ import org.openiam.spml2.msg.ResponseType;
 import org.openiam.spml2.msg.StatusCodeType;
 import org.springframework.stereotype.Service;
 
-@Service("testCommand")
+@Service
 public class TestCSVCommand extends AbstractCSVCommand {
 	public ResponseType test(ManagedSysEntity managedSys) {
 		ResponseType response = new ResponseType();

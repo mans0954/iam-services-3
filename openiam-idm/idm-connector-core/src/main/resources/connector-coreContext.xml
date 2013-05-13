@@ -209,7 +209,17 @@
 			<ref local="jdbcConnection" />
 		</property>
 	</bean>
+	
+	<bean id="userServiceClient" class="org.openiam.idm.srvc.user.ws.UserDataWebService"
+		factory-bean="userServiceFactory" factory-method="create" lazy-init="false" />
 
+
+	<bean id="userServiceFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
+		<property name="serviceClass"
+			value="org.openiam.idm.srvc.user.ws.UserDataWebService" />
+		<property name="address"
+			value="${openiam.service_host}${openiam.idm.ws.path}UserDataService" />
+	</bean>
 	<!-- End AppTable Connector -->
 
 

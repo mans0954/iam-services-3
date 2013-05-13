@@ -49,13 +49,13 @@ public class CSVConnectorImpl extends AbstractSpml2Complete implements
 	private static final Log log = LogFactory.getLog(CSVConnectorImpl.class);
 	@Autowired
 	private AddCSVCommand addCommand;
-	// @Autowired
+	 @Autowired
 	private TestCSVCommand testCommand;
-	// @Autowired
+	 @Autowired
 	private LookupCSVCommand lookupCommand;
-	// @Autowired
+	 @Autowired
 	private ModifyCSVCommand modifyCommand;
-	// @Autowired
+	 @Autowired
 	private ReconcileCSVCommand reconCommand;
 	@Autowired
 	private ResourceDataService resourceDataService;
