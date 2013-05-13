@@ -68,7 +68,7 @@ public class AbstractCSVCommand {
 	@Value("${iam.files.location}")
 	protected String pathToCSV;
 
-	@Value("${org.openiam.defaultManagedSysId}")
+	@Value("${openiam.default_managed_sys}")
 	protected String defaultManagedSysId;
 
 	// public static ApplicationContext ac;
