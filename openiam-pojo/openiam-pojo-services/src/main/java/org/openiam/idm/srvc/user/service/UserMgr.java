@@ -312,19 +312,23 @@ public class UserMgr implements UserDataService {
 		}
 		
 		//remove null or empty lists
-		for(final Iterator<List<String>> it = nonEmptyListOfLists.iterator(); it.hasNext();) {
-			final List<String> list = it.next();
-			if(CollectionUtils.isEmpty(list)) {
-				it.remove();
-			}
-		}
+//		for(final Iterator<List<String>> it = nonEmptyListOfLists.iterator(); it.hasNext();) {
+//			final List<String> list = it.next();
+//			if(CollectionUtils.isEmpty(list)) {
+//				it.remove();
+//			}
+//		}
 		
 		List<String> finalizedIdList = null;
 		for(final Iterator<List<String>> it = nonEmptyListOfLists.iterator(); it.hasNext();) {
+			List<String> nextSubList = it.next();
+			if(CollectionUtils.isEmpty(nextSubList))
+				nextSubList = Collections.EMPTY_LIST;
+			
 			if(finalizedIdList == null) {
-				finalizedIdList = it.next();
+				finalizedIdList = nextSubList;
 			} else {
-				finalizedIdList = ListUtils.intersection(finalizedIdList, it.next());
+				finalizedIdList = ListUtils.intersection(finalizedIdList, nextSubList);
 			}
 		}
 		

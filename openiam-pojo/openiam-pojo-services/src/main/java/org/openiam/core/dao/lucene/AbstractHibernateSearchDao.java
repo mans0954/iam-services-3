@@ -287,7 +287,7 @@ public abstract class AbstractHibernateSearchDao<T, Q, KeyType> extends Hibernat
 	}
 
     protected Query buildInClause(final String paramName, final Collection<String> paramValues) {
-        if (paramValues!=null && paramValues.isEmpty() && StringUtils.isNotBlank(paramName)) {
+        if (paramValues!=null && !paramValues.isEmpty() && StringUtils.isNotBlank(paramName)) {
             final BooleanQuery query = new BooleanQuery();
             for( String value : paramValues ){
                 query.add(new TermQuery(new Term(paramName, value)), BooleanClause.Occur.SHOULD);

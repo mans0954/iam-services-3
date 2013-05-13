@@ -48,10 +48,13 @@ public class OrganizationDAOImpl extends BaseDaoImpl<OrganizationEntity, String>
             final OrganizationSearchBean organizationSearchBean = (OrganizationSearchBean)searchBean;
 
             final OrganizationEntity exampleEnity = organizationSearchBeanConverter.convert(organizationSearchBean);
+            exampleEnity.setOrgId(null);
             criteria = this.getExampleCriteria(exampleEnity);
 
             if(organizationSearchBean.hasMultipleKeys()) {
                 criteria.add(Restrictions.in(getPKfieldName(), organizationSearchBean.getKeys()));
+            } else if(StringUtils.isNotBlank(organizationSearchBean.getKey())) {
+                criteria.add(Restrictions.eq(getPKfieldName(), organizationSearchBean.getKey()));
             }
         }
         return criteria;

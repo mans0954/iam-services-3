@@ -195,6 +195,10 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
 	public Set<String> getGroupIdSet() {
 		return groupIdSet;
 	}
+
+    public void setGroupIdSet(Set<String> groupIdSet) {
+        this.groupIdSet=groupIdSet;
+    }
 	
 	public void addGroupId(final String groupId) {
 		if(StringUtils.isNotBlank(groupId)) {
@@ -209,8 +213,13 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
 	public Set<String> getRoleIdSet() {
 		return roleIdSet;
 	}
-	
-	public void addRoleId(final String roleId) {
+
+    public void setRoleIdSet(Set<String> roleIdSet) {
+        this.roleIdSet=roleIdSet;
+    }
+
+
+    public void addRoleId(final String roleId) {
 		if(StringUtils.isNotBlank(roleId)) {
 			if(this.roleIdSet == null) {
 				this.roleIdSet = new HashSet<String>();

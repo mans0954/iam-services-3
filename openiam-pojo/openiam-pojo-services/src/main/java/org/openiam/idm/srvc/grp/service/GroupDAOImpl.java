@@ -34,10 +34,13 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
             final GroupSearchBean groupSearchBean = (GroupSearchBean)searchBean;
 
             final GroupEntity exampleEnity = groupSearchBeanConverter.convert(groupSearchBean);
+            exampleEnity.setGrpId(null);
             criteria = this.getExampleCriteria(exampleEnity);
 
             if(groupSearchBean.hasMultipleKeys()) {
                 criteria.add(Restrictions.in(getPKfieldName(), groupSearchBean.getKeys()));
+            }else if(StringUtils.isNotBlank(groupSearchBean.getKey())) {
+                criteria.add(Restrictions.eq(getPKfieldName(), groupSearchBean.getKey()));
             }
         }
         return criteria;

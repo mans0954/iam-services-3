@@ -41,10 +41,13 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
             final RoleSearchBean roleSearchBean = (RoleSearchBean)searchBean;
 
             final RoleEntity exampleEnity = roleSearchBeanConverter.convert(roleSearchBean);
+            exampleEnity.setRoleId(null);
             criteria = this.getExampleCriteria(exampleEnity);
 
             if(roleSearchBean.hasMultipleKeys()) {
                 criteria.add(Restrictions.in(getPKfieldName(), roleSearchBean.getKeys()));
+            }else if(StringUtils.isNotBlank(roleSearchBean.getKey())) {
+                criteria.add(Restrictions.eq(getPKfieldName(), roleSearchBean.getKey()));
             }
         }
         return criteria;
