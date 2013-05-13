@@ -56,7 +56,7 @@ public class AbstractCSVCommand {
 	@Autowired
 	protected CSVParser<User> userCSVParser;
 	@Autowired
-	protected org.openiam.idm.parser.csv.CSVParser<ProvisionUser> provisionUserCSVParser;
+	protected CSVParser<ProvisionUser> provisionUserCSVParser;
 	@Autowired
 	private MailService mailService;
 	@Resource(name = "userServiceClient")
@@ -67,6 +67,9 @@ public class AbstractCSVCommand {
 	private OrganizationDataService orgManager;
 	@Value("${iam.files.location}")
 	protected String pathToCSV;
+
+	@Value("${org.openiam.defaultManagedSysId}")
+	protected String defaultManagedSysId;
 
 	// public static ApplicationContext ac;
 
@@ -120,7 +123,8 @@ public class AbstractCSVCommand {
 							managedSysId));
 			log.debug("Created Command for: " + situation.getSituation());
 		}
-		List<User> users = userDataWebService.getByManagedSystem("0");
+		List<User> users = userDataWebService
+				.getByManagedSystem(defaultManagedSysId);
 		if (users == null) {
 			log.error("user list from DB is empty");
 			response.setStatus(StatusCodeType.FAILURE);
@@ -301,20 +305,17 @@ public class AbstractCSVCommand {
 					used.add(o);
 					continue;
 				}
-				if (o.getPrincipal().replaceFirst("^0*", "")
-						.equals(u.getPrincipal().replaceFirst("^0*", ""))) {
-					if (!isFind) {
-						isFind = true;
-						finded = o;
-						used.add(finded);
-						continue;
-					} else {
-						isMultiple = true;
-						report.add(new ReconciliationReportRow(preffix,
-								ReconciliationReportResults.NOT_UNIQUE_KEY,
-								this.objectToString(hList, attrMapList, u)));
-						break;
-					}
+				if (!isFind) {
+					isFind = true;
+					finded = o;
+					used.add(finded);
+					continue;
+				} else {
+					isMultiple = true;
+					report.add(new ReconciliationReportRow(preffix,
+							ReconciliationReportResults.NOT_UNIQUE_KEY, this
+									.objectToString(hList, attrMapList, u)));
+					break;
 				}
 			}
 

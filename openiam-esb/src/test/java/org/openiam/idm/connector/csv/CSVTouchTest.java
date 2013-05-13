@@ -1,15 +1,16 @@
 package org.openiam.idm.connector.csv;
 
-import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
-import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.spml2.interf.ConnectorService;
 import org.openiam.spml2.msg.AddRequestType;
 import org.openiam.spml2.msg.DeleteRequestType;
+import org.openiam.spml2.msg.LookupRequestType;
 import org.openiam.spml2.msg.ModifyRequestType;
 import org.openiam.spml2.msg.PSOIdentifierType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.annotations.Test;
@@ -21,6 +22,11 @@ public class CSVTouchTest extends AbstractTestNGSpringContextTests {
 	@Autowired
 	@Qualifier("csvConnector")
 	private ConnectorService connectorService;
+	@Autowired
+	@Qualifier("managedSysServiceClient")
+	protected ManagedSystemWebService managedSysServiceClient;
+	@Value("${org.openiam.defaultManagedSysId}")
+	protected String defaultManagedSysId;
 
 	@Test
 	public void addTouchCSVTest() {
@@ -28,11 +34,11 @@ public class CSVTouchTest extends AbstractTestNGSpringContextTests {
 		PSOIdentifierType psoType = new PSOIdentifierType();
 		psoType.setID("sysadmin");
 		addRequest.setPsoID(psoType);
-		addRequest.setTargetID("0");
+		addRequest.setTargetID(defaultManagedSysId);
 		ProvisionUser pu = new ProvisionUser();
 		pu.setEmail("email");
 		pu.setEmployeeId("1");
-		pu.setFirstName("1");
+		pu.setFirstName("firstName_test");
 		addRequest.setpUser(pu);
 		connectorService.add(addRequest);
 	}
@@ -42,12 +48,12 @@ public class CSVTouchTest extends AbstractTestNGSpringContextTests {
 		ModifyRequestType addRequest = new ModifyRequestType();
 		PSOIdentifierType psoType = new PSOIdentifierType();
 		psoType.setID("sysadmin");
-		psoType.setTargetID("0");
+		psoType.setTargetID(defaultManagedSysId);
 		addRequest.setPsoID(psoType);
 		ProvisionUser pu = new ProvisionUser();
-		pu.setEmail("email222");
-		pu.setEmployeeId("15125");
-		pu.setFirstName("14124");
+		pu.setEmail("e@mail.com");
+		pu.setEmployeeId("2");
+		pu.setFirstName("firstName_test_2");
 		addRequest.setpUser(pu);
 		connectorService.modify(addRequest);
 	}
@@ -56,25 +62,30 @@ public class CSVTouchTest extends AbstractTestNGSpringContextTests {
 	public void deleteTouchCSVTest() {
 		DeleteRequestType addRequest = new DeleteRequestType();
 		PSOIdentifierType psoType = new PSOIdentifierType();
-		psoType.setID("sysadmin");
-		psoType.setTargetID("0");
+		psoType.setID("sysadmin2");
+		psoType.setTargetID(defaultManagedSysId);
 		addRequest.setPsoID(psoType);
 		ProvisionUser pu = new ProvisionUser();
-		pu.setEmail("email222");
-		pu.setEmployeeId("15125");
-		pu.setFirstName("14124");
+		pu.setEmail("email@mail.co,");
+		pu.setEmployeeId("1");
+		pu.setFirstName("fn_2");
 		addRequest.setpUser(pu);
 		connectorService.delete(addRequest);
 	}
 
 	@Test
-	public void reconcileTouchCSVTest() {
-		ReconciliationConfig rConf = new ReconciliationConfig();
-		ResourceEntity res = new ResourceEntity();
-		res.setManagedSysId("0");
-		res.setName("TestName");
-		rConf.setResourceId(`)
-		connectorService.reconcileResource(config);
+	public void testTouchCSVTest() {
+		connectorService.testConnection(managedSysServiceClient
+				.getManagedSys(defaultManagedSysId));
 	}
 
+	@Test
+	public void lookupCSVTest() {
+		LookupRequestType lookup = new LookupRequestType();
+		PSOIdentifierType psoType = new PSOIdentifierType();
+		psoType.setID("sysadmin2");
+		psoType.setTargetID(defaultManagedSysId);
+		lookup.setPsoID(psoType);
+		connectorService.lookup(lookup);
+	}
 }
