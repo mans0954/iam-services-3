@@ -1,10 +1,8 @@
 package org.openiam.idm.srvc.org.service;
 
 import org.openiam.core.dao.BaseDao;
+import org.openiam.idm.searchbeans.MembershipOrganizationSearchBean;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
-import org.openiam.idm.srvc.org.dto.OrgClassificationEnum;
-import org.openiam.idm.srvc.org.dto.Organization;
-
 
 import java.util.List;
 
@@ -28,9 +26,9 @@ public interface OrganizationDAO extends BaseDao<OrganizationEntity, String> {
     List<OrganizationEntity> findAllOrganization();
 
 
-    int getNumOfChildOrganizations(final String organizationId);
-    List<OrganizationEntity> getChildOrganizations(final String organizationId, final int from, final int size);
+    int getNumOfChildOrganizations(final MembershipOrganizationSearchBean searchBean);
+    List<OrganizationEntity> getChildOrganizations(final MembershipOrganizationSearchBean searchBean, final int from, final int size);
     
-    int getNumOfParentOrganizations(final String organizationId);
-    List<OrganizationEntity> getParentOrganizations(final String organizationId, final int from, final int size);
+    int getNumOfParentOrganizations(final MembershipOrganizationSearchBean searchBean);
+    List<OrganizationEntity> getParentOrganizations(final MembershipOrganizationSearchBean searchBean, final int from, final int size);
 }

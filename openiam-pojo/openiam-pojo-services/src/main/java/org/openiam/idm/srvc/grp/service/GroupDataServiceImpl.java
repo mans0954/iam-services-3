@@ -6,11 +6,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.dozer.converter.GroupDozerConverter;
 import org.openiam.idm.searchbeans.GroupSearchBean;
+import org.openiam.idm.searchbeans.MembershipGroupSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.domain.UserGroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.res.domain.ResourceGroupEntity;
 import org.openiam.idm.srvc.res.service.ResourceGroupDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -129,18 +129,20 @@ public class GroupDataServiceImpl implements GroupDataService {
 	}
 
 	@Override
-	public List<GroupEntity> getChildGroups(final String groupId, final int from, final int size) {
-		return groupDao.getChildGroups(groupId, from, size);
+	public List<GroupEntity> getChildGroups(final MembershipGroupSearchBean searchBean, final int from, final int size) {
+		return groupDao.getChildGroups(searchBean, from, size);
 	}
 
 	@Override
-	public List<GroupEntity> getParentGroups(final String groupId, final int from, final int size) {
-		return groupDao.getParentGroups(groupId, from, size);
+	public List<GroupEntity> getParentGroups(final MembershipGroupSearchBean searchBean, final int from, final int size) {
+		return groupDao.getParentGroups(searchBean, from, size);
 	}
 	
 	@Override
 	public List<Group> getCompiledGroupsForUser(final String userId) {
-		final List<GroupEntity> groupList = groupDao.getGroupsForUser(userId, 0, Integer.MAX_VALUE);
+        MembershipGroupSearchBean searchBean = new  MembershipGroupSearchBean();
+        searchBean.setUserId(userId);
+		final List<GroupEntity> groupList = groupDao.getEntitlementGroups(searchBean, 0, Integer.MAX_VALUE);
 		final Set<GroupEntity> visitedSet = new HashSet<GroupEntity>();
 		if(CollectionUtils.isNotEmpty(groupList)) {
 			for(final GroupEntity group : groupList) {
@@ -164,15 +166,15 @@ public class GroupDataServiceImpl implements GroupDataService {
 		}
 	}
 
-	@Override
-	public List<GroupEntity> getGroupsForUser(String userId, int from, int size) {
-		return groupDao.getGroupsForUser(userId, from, size);
-	}
-	
-	@Override
-	public int getNumOfGroupsForUser(String userId) {
-		return groupDao.getNumOfGroupsForUser(userId);
-	}
+//	@Override
+//	public List<GroupEntity> getGroupsForUser(String userId, int from, int size) {
+//		return groupDao.getGroupsForUser(userId, from, size);
+//	}
+//
+//	@Override
+//	public int getNumOfGroupsForUser(String userId) {
+//		return groupDao.getNumOfGroupsForUser(userId);
+//	}
 
 	@Override
 	public void saveAttribute(final GroupAttributeEntity attribute) {
@@ -203,43 +205,50 @@ public class GroupDataServiceImpl implements GroupDataService {
         return count;
 	}
 
+//	@Override
+//	public List<GroupEntity> getGroupsForResource(final String resourceId, final int from, final int size) {
+//		final GroupEntity entity = new GroupEntity();
+//
+//		final ResourceGroupEntity resourceGroupEntity = new ResourceGroupEntity();
+//		resourceGroupEntity.setResourceId(resourceId);
+//		entity.addResourceGroup(resourceGroupEntity);
+//		return groupDao.getByExample(entity, from, size);
+//	}
+//
+//	@Override
+//	public int getNumOfGroupsForResource(final String resourceId) {
+//		final GroupEntity entity = new GroupEntity();
+//		final ResourceGroupEntity resourceGroupEntity = new ResourceGroupEntity();
+//		resourceGroupEntity.setResourceId(resourceId);
+//		entity.addResourceGroup(resourceGroupEntity);
+//		return groupDao.count(entity);
+//	}
+
+//	@Override
+//	public List<GroupEntity> getGroupsForRole(String roleId, int from, int size) {
+//		return groupDao.getGroupsForRole(roleId, from, size);
+//	}
+//
+//	@Override
+//	public int getNumOfGroupsForRole(String roleId) {
+//		return groupDao.getNumOfGroupsForRole(roleId);
+//	}
+
+    public List<GroupEntity> getEntitlementGroups(MembershipGroupSearchBean searchBean, int from, int size){
+        return groupDao.getEntitlementGroups(searchBean, from, size);
+    }
+    public int getNumOfEntitlementGroups(MembershipGroupSearchBean searchBean){
+        return groupDao.getNumOfEntitlementGroups(searchBean);
+    }
+
 	@Override
-	public List<GroupEntity> getGroupsForResource(final String resourceId, final int from, final int size) {
-		final GroupEntity entity = new GroupEntity();
-		
-		final ResourceGroupEntity resourceGroupEntity = new ResourceGroupEntity();
-		resourceGroupEntity.setResourceId(resourceId);
-		entity.addResourceGroup(resourceGroupEntity);
-		return groupDao.getByExample(entity, from, size);
-	}
-	
-	@Override
-	public int getNumOfGroupsForResource(final String resourceId) {
-		final GroupEntity entity = new GroupEntity();
-		final ResourceGroupEntity resourceGroupEntity = new ResourceGroupEntity();
-		resourceGroupEntity.setResourceId(resourceId);
-		entity.addResourceGroup(resourceGroupEntity);
-		return groupDao.count(entity);
+	public int getNumOfChildGroups(MembershipGroupSearchBean searchBean) {
+		return groupDao.getNumOfChildGroups(searchBean);
 	}
 
 	@Override
-	public List<GroupEntity> getGroupsForRole(String roleId, int from, int size) {
-		return groupDao.getGroupsForRole(roleId, from, size);
-	}
-
-	@Override
-	public int getNumOfGroupsForRole(String roleId) {
-		return groupDao.getNumOfGroupsForRole(roleId);
-	}
-
-	@Override
-	public int getNumOfChildGroups(String groupId) {
-		return groupDao.getNumOfChildGroups(groupId);
-	}
-
-	@Override
-	public int getNumOfParentGroups(String groupId) {
-		return groupDao.getNumOfParentGroups(groupId);
+	public int getNumOfParentGroups(MembershipGroupSearchBean searchBean) {
+		return groupDao.getNumOfParentGroups(searchBean);
 	}
 
 	@Override

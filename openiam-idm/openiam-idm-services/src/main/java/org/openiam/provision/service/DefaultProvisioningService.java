@@ -40,6 +40,7 @@ import org.openiam.dozer.converter.PasswordHistoryDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.exception.EncryptionException;
 import org.openiam.exception.ObjectNotFoundException;
+import org.openiam.idm.searchbeans.MembershipGroupSearchBean;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
@@ -1436,10 +1437,13 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 		// get the current values
 		List<Role> curRoleList = roleDataService.getUserRolesAsFlatList(pUser
 				.getUserId());
-		List<Group> curGroupList = groupDozerConverter.convertToDTOList(groupManager.getGroupsForUser(pUser
-                .getUserId(), 0, Integer.MAX_VALUE), false);
-		List<LoginEntity> curPrincipalList = loginManager.getLoginByUser(pUser
-				.getUserId());
+
+        // get all groups for user
+        MembershipGroupSearchBean searchBean = new  MembershipGroupSearchBean();
+        searchBean.setUserId(pUser.getUserId());
+		List<Group> curGroupList = groupDozerConverter.convertToDTOList(groupManager.getEntitlementGroups(searchBean, 0, Integer.MAX_VALUE), false);
+
+        List<LoginEntity> curPrincipalList = loginManager.getLoginByUser(pUser.getUserId());
 
 		// get the current user object - update it with the new values and then
 		// save it

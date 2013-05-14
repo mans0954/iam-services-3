@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.org.service;
 
 import org.apache.commons.lang.StringUtils;
+import org.openiam.idm.searchbeans.MembershipOrganizationSearchBean;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
@@ -146,24 +147,24 @@ public class OrganizationServiceImpl implements OrganizationService {
 
 	@Override
 	public List<OrganizationEntity> getParentOrganizations(
-			String organizationId, int from, int size) {
-		return orgDao.getParentOrganizations(organizationId, from, size);
+            MembershipOrganizationSearchBean searchBean, int from, int size) {
+		return orgDao.getParentOrganizations(searchBean, from, size);
 	}
 
 	@Override
 	public List<OrganizationEntity> getChildOrganizations(
-			String organizationId, int from, int size) {
-		return orgDao.getChildOrganizations(organizationId, from, size);
+            MembershipOrganizationSearchBean searchBean, int from, int size) {
+		return orgDao.getChildOrganizations(searchBean, from, size);
 	}
 
 	@Override
-	public int getNumOfParentOrganizations(String organizationId) {
-		return orgDao.getNumOfParentOrganizations(organizationId);
+	public int getNumOfParentOrganizations(MembershipOrganizationSearchBean searchBean) {
+		return orgDao.getNumOfParentOrganizations(searchBean);
 	}
 
 	@Override
-	public int getNumOfChildOrganizations(String organizationId) {
-		return orgDao.getNumOfChildOrganizations(organizationId);
+	public int getNumOfChildOrganizations(MembershipOrganizationSearchBean searchBean) {
+		return orgDao.getNumOfChildOrganizations(searchBean);
 	}
 
 	@Override

@@ -19,6 +19,7 @@ import org.openiam.base.ws.ResponseStatus;
 import org.openiam.base.ws.exception.BasicDataServiceException;
 import org.openiam.dozer.converter.OrganizationAttributeDozerConverter;
 import org.openiam.dozer.converter.OrganizationDozerConverter;
+import org.openiam.idm.searchbeans.MembershipOrganizationSearchBean;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
@@ -325,26 +326,26 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 	}
 
 	@Override
-	public List<Organization> getParentOrganizations(final String organizationId, final int from, final int size) {
-		final List<OrganizationEntity> entityList = organizationService.getParentOrganizations(organizationId, from, size);
+	public List<Organization> getParentOrganizations(final MembershipOrganizationSearchBean searchBean, final int from, final int size) {
+		final List<OrganizationEntity> entityList = organizationService.getParentOrganizations(searchBean, from, size);
 		final List<Organization> organizationList = organizationDozerConverter.convertToDTOList(entityList, false);
 		return organizationList;
 	}
 
 	@Override
-	public List<Organization> getChildOrganizations(final String organizationId, final int from, final int size) {
-		final List<OrganizationEntity> entityList = organizationService.getChildOrganizations(organizationId, from, size);
+	public List<Organization> getChildOrganizations(final MembershipOrganizationSearchBean searchBean, final int from, final int size) {
+		final List<OrganizationEntity> entityList = organizationService.getChildOrganizations(searchBean, from, size);
 		final List<Organization> organizationList = organizationDozerConverter.convertToDTOList(entityList, false);
 		return organizationList;
 	}
 
 	@Override
-	public int getNumOfParentOrganizations(final String organizationId) {
-		return organizationService.getNumOfParentOrganizations(organizationId);
+	public int getNumOfParentOrganizations(final MembershipOrganizationSearchBean searchBean) {
+		return organizationService.getNumOfParentOrganizations(searchBean);
 	}
 
 	@Override
-	public int getNumOfChildOrganizations(final String organizationId) {
-		return organizationService.getNumOfChildOrganizations(organizationId);
+	public int getNumOfChildOrganizations(final MembershipOrganizationSearchBean searchBean) {
+		return organizationService.getNumOfChildOrganizations(searchBean);
 	}
 }

@@ -9,6 +9,7 @@ import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.searchbeans.GroupSearchBean;
+import org.openiam.idm.searchbeans.MembershipGroupSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.res.domain.ResourceGroupEntity;
@@ -118,35 +119,115 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
 	               .add(Restrictions.eq("ug.userId", userId));
 	}
 	
-	@Override
-	public int getNumOfGroupsForUser(String userId) {
-		final Criteria criteria = getGroupsForUserCriteria(userId).setProjection(rowCount());
-		return ((Number)criteria.uniqueResult()).intValue();
-	}
-	
-	public List<GroupEntity> getGroupsForUser(final String userId, final int from, final int size) {
-		final Criteria criteria = getGroupsForUserCriteria(userId);
-		
-		if(from > -1) {
-			criteria.setFirstResult(from);
-		}
-
-		if(size > -1) {
-			criteria.setMaxResults(size);
-		}
-		
-		return criteria.list();
-	}
+//	@Override
+//	public int getNumOfGroupsForUser(MembershipGroupSearchBean searchBean) {
+//		final Criteria criteria = getGroupsForUserCriteria(userId).setProjection(rowCount());
+//		return ((Number)criteria.uniqueResult()).intValue();
+//	}
+//
+//	public List<GroupEntity> getGroupsForUser(final MembershipGroupSearchBean searchBean, final int from, final int size) {
+//		final Criteria criteria = getGroupsForUserCriteria(userId);
+//
+//		if(from > -1) {
+//			criteria.setFirstResult(from);
+//		}
+//
+//		if(size > -1) {
+//			criteria.setMaxResults(size);
+//		}
+//
+//		return criteria.list();
+//	}
 
 	@Override
 	protected String getPKfieldName() {
 		return "grpId";
 	}
 
+//	@Override
+//	public List<GroupEntity> getGroupsForRole(MembershipGroupSearchBean searchBean, int from, int size) {
+//		final Criteria criteria = super.getCriteria();
+//		criteria.createAlias("roles", "roles").add( Restrictions.eq("roles.roleId", roleId));
+//		if(from > -1) {
+//			criteria.setFirstResult(from);
+//		}
+//
+//		if(size > -1) {
+//			criteria.setMaxResults(size);
+//		}
+//		return criteria.list();
+//	}
+//
+//	@Override
+//	public int getNumOfGroupsForRole(MembershipGroupSearchBean searchBean) {
+//		final Criteria criteria = super.getCriteria();
+//		criteria.createAlias("roles", "roles").add( Restrictions.eq("roles.roleId", roleId)).setProjection(rowCount());
+//		return ((Number)criteria.uniqueResult()).intValue();
+//	}
+
+    @Override
+    public List<GroupEntity> getEntitlementGroups(MembershipGroupSearchBean searchBean, int from, int size){
+        final Criteria criteria = getEntitlementGroupsCriteria(searchBean);
+        if(from > -1) {
+            criteria.setFirstResult(from);
+        }
+
+        if(size > -1) {
+            criteria.setMaxResults(size);
+        }
+        return criteria.list();
+
+    }
+
+    @Override
+    public int getNumOfEntitlementGroups(MembershipGroupSearchBean searchBean){
+        final Criteria criteria = getEntitlementGroupsCriteria(searchBean);
+                       criteria.setProjection(rowCount());
+        return ((Number)criteria.uniqueResult()).intValue();
+    }
+
+    private Criteria getEntitlementGroupsCriteria(MembershipGroupSearchBean searchBean){
+        final Criteria criteria = super.getCriteria();
+
+        if(searchBean.getUserId()!=null && !searchBean.getUserId().isEmpty()){
+            criteria.createAlias("userGroups", "ug")
+                    .add(Restrictions.eq("ug.userId", searchBean.getUserId()));
+        }
+
+        if(searchBean.getRoleId()!=null && !searchBean.getRoleId().isEmpty()){
+            criteria.createAlias("roles", "roles").add( Restrictions.eq("roles.roleId", searchBean.getRoleId()));
+        }
+
+        if(searchBean.getResourceId()!=null && !searchBean.getResourceId().isEmpty()){
+            criteria.createAlias("resourceGroups", "resourceGroup").add( Restrictions.eq("resourceGroup.resourceId", searchBean.getResourceId()));
+        }
+
+        if(searchBean.hasMultipleKeys()){
+            criteria.add( Restrictions.in(getPKfieldName(), searchBean.getKeys()));
+        }
+
+        return criteria;
+    }
+
+
+    @Override
+	public int getNumOfChildGroups(MembershipGroupSearchBean searchBean) {
+		final Criteria criteria = getChildGroupsCriteria(searchBean);
+                       criteria.setProjection(rowCount());
+		return ((Number)criteria.uniqueResult()).intValue();
+	}
+
 	@Override
-	public List<GroupEntity> getGroupsForRole(String roleId, int from, int size) {
-		final Criteria criteria = super.getCriteria();
-		criteria.createAlias("roles", "roles").add( Restrictions.eq("roles.roleId", roleId));
+	public int getNumOfParentGroups(MembershipGroupSearchBean searchBean) {
+        final Criteria criteria = getParentGroupsCriteria(searchBean);
+                       criteria.setProjection(rowCount());
+		return ((Number)criteria.uniqueResult()).intValue();
+	}
+
+	@Override
+	public List<GroupEntity> getChildGroups(MembershipGroupSearchBean searchBean, int from, int size) {
+		final Criteria criteria = getChildGroupsCriteria(searchBean);
+
 		if(from > -1) {
 			criteria.setFirstResult(from);
 		}
@@ -158,28 +239,9 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
 	}
 
 	@Override
-	public int getNumOfGroupsForRole(String roleId) {
-		final Criteria criteria = super.getCriteria();
-		criteria.createAlias("roles", "roles").add( Restrictions.eq("roles.roleId", roleId)).setProjection(rowCount());
-		return ((Number)criteria.uniqueResult()).intValue();
-	}
+	public List<GroupEntity> getParentGroups(MembershipGroupSearchBean searchBean, int from, int size) {
+		final Criteria criteria = getParentGroupsCriteria(searchBean);
 
-	@Override
-	public int getNumOfChildGroups(String groupId) {
-		final Criteria criteria = getCriteria().createAlias("parentGroups", "group").add( Restrictions.eq("group.grpId", groupId)).setProjection(rowCount());
-		return ((Number)criteria.uniqueResult()).intValue();
-	}
-
-	@Override
-	public int getNumOfParentGroups(String groupId) {
-		final Criteria criteria = getCriteria().createAlias("childGroups", "group").add( Restrictions.eq("group.grpId", groupId)).setProjection(rowCount());
-		return ((Number)criteria.uniqueResult()).intValue();
-	}
-
-	@Override
-	public List<GroupEntity> getChildGroups(String groupId, int from, int size) {
-		final Criteria criteria = getCriteria().createAlias("parentGroups", "group").add( Restrictions.eq("group.grpId", groupId));
-		
 		if(from > -1) {
 			criteria.setFirstResult(from);
 		}
@@ -190,19 +252,22 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
 		return criteria.list();
 	}
 
-	@Override
-	public List<GroupEntity> getParentGroups(String groupId, int from, int size) {
-		final Criteria criteria = getCriteria().createAlias("childGroups", "group").add( Restrictions.eq("group.grpId", groupId));
-		
-		if(from > -1) {
-			criteria.setFirstResult(from);
-		}
-		
-		if(size > -1) {
-			criteria.setMaxResults(size);
-		}
-		return criteria.list();
-	}
+
+    private Criteria getParentGroupsCriteria(final MembershipGroupSearchBean searchBean) {
+        final Criteria criteria = getCriteria().createAlias("childGroups", "group").add( Restrictions.eq("group.grpId", searchBean.getMembershipGroupId()));
+        if(searchBean.hasMultipleKeys()){
+            criteria.add( Restrictions.in(getPKfieldName(), searchBean.getKeys()));
+        }
+        return criteria;
+    }
+
+    private Criteria getChildGroupsCriteria(final MembershipGroupSearchBean searchBean) {
+        final Criteria criteria = getCriteria().createAlias("parentGroups", "group").add( Restrictions.eq("group.grpId", searchBean.getMembershipGroupId()));
+        if(searchBean.hasMultipleKeys()){
+            criteria.add( Restrictions.in(getPKfieldName(), searchBean.getKeys()));
+        }
+        return criteria;
+    }
 }
 
 

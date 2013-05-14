@@ -1,8 +1,8 @@
 package org.openiam.idm.srvc.grp.service;
 
 import org.openiam.core.dao.BaseDao;
+import org.openiam.idm.searchbeans.MembershipGroupSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
-import org.openiam.idm.srvc.grp.dto.Group;
 
 import java.util.List;
 
@@ -21,15 +21,18 @@ public interface GroupDAO extends BaseDao<GroupEntity, String> {
      */
     List<GroupEntity> findRootGroups(final int from, final int size);
     
-    public int getNumOfGroupsForUser(final String userId);
-    public List<GroupEntity> getGroupsForUser(final String userId, final int from, final int size);
+//    public int getNumOfGroupsForUser(final MembershipGroupSearchBean searchBean);
+//    public List<GroupEntity> getGroupsForUser(final MembershipGroupSearchBean searchBean, final int from, final int size);
     
-    public List<GroupEntity> getGroupsForRole(String roleId, int from, int size);
-    public int getNumOfGroupsForRole(String roleId);
+//    public List<GroupEntity> getGroupsForRole(MembershipGroupSearchBean searchBean, int from, int size);
+//    public int getNumOfGroupsForRole(MembershipGroupSearchBean searchBean);
+
+    public List<GroupEntity> getEntitlementGroups(MembershipGroupSearchBean searchBean, int from, int size);
+    public int getNumOfEntitlementGroups(MembershipGroupSearchBean searchBean);
     
-    public int getNumOfChildGroups(String groupId);
-    public int getNumOfParentGroups(String groupId);
+    public int getNumOfChildGroups(MembershipGroupSearchBean searchBean);
+    public int getNumOfParentGroups(MembershipGroupSearchBean searchBean);
     
-    public List<GroupEntity> getChildGroups(final String groupId, final int from, final int size);
-    public List<GroupEntity> getParentGroups(final String groupId, final int from, final int size);
+    public List<GroupEntity> getChildGroups(final MembershipGroupSearchBean searchBean, final int from, final int size);
+    public List<GroupEntity> getParentGroups(final MembershipGroupSearchBean searchBean, final int from, final int size);
 }

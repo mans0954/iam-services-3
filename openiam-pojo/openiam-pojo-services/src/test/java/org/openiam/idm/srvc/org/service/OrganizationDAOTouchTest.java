@@ -1,8 +1,6 @@
 package org.openiam.idm.srvc.org.service;
 
-import org.openiam.idm.srvc.org.domain.OrganizationEntity;
-import org.openiam.idm.srvc.org.dto.Organization;
-import org.openiam.idm.srvc.org.service.OrganizationDAO;
+import org.openiam.idm.searchbeans.MembershipOrganizationSearchBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTransactionalTestNGSpringContextTests;
@@ -33,11 +31,11 @@ public class OrganizationDAOTouchTest extends AbstractTransactionalTestNGSpringC
     
     @Test
     private void touchGetChildOrganizations() {
-    	orgDAO.getChildOrganizations("", 0, Integer.MAX_VALUE);
+    	orgDAO.getChildOrganizations(new MembershipOrganizationSearchBean(), 0, Integer.MAX_VALUE);
     }
     
     @Test
     private void touchGetParentOrganizations() {
-    	orgDAO.getParentOrganizations("", 0, Integer.MAX_VALUE);
+    	orgDAO.getParentOrganizations(new MembershipOrganizationSearchBean(), 0, Integer.MAX_VALUE);
     }
 }

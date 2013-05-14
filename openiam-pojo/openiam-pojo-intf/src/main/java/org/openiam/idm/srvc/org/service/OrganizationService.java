@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.org.service;
 
+import org.openiam.idm.searchbeans.MembershipOrganizationSearchBean;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
@@ -23,10 +24,10 @@ public interface OrganizationService {
 	public void removeChildOrganization(final String organizationId, final String childOrganizationId);
 	public void addChildOrganization(final String organizationId, final String childOrganizationId);
 	public void deleteOrganization(final String orgId);
-	public List<OrganizationEntity> getParentOrganizations(final String organizationId, final int from, final int size);
-	public List<OrganizationEntity> getChildOrganizations(final String organizationId, final int from, final int size);
-	public int getNumOfParentOrganizations(final String organizationId);
-	public int getNumOfChildOrganizations(final String organizationId);
+	public List<OrganizationEntity> getParentOrganizations(final MembershipOrganizationSearchBean searchBean, final int from, final int size);
+	public List<OrganizationEntity> getChildOrganizations(final MembershipOrganizationSearchBean searchBean, final int from, final int size);
+	public int getNumOfParentOrganizations(final MembershipOrganizationSearchBean searchBean);
+	public int getNumOfChildOrganizations(final MembershipOrganizationSearchBean searchBean);
 	
 	public UserAffiliationEntity getAffiliation(final String userId, final String organizationId);
 }

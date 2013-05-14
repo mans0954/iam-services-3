@@ -7,6 +7,7 @@ import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.idm.searchbeans.MembershipOrganizationSearchBean;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
@@ -107,19 +108,23 @@ public class OrganizationDAOImpl extends BaseDaoImpl<OrganizationEntity, String>
         return "orgId";
     }
     
-    private Criteria getChildOrganizationsCriteria(final String organizationId) {
-		return getCriteria().createAlias("parentOrganizations", "organization").add( Restrictions.eq("organization.orgId", organizationId));
+    private Criteria getChildOrganizationsCriteria(final MembershipOrganizationSearchBean searchBean) {
+        Criteria criteria =  getCriteria().createAlias("parentOrganizations", "organization").add( Restrictions.eq("organization.orgId", searchBean.getMemberShipOrganisationId()));
+        if(searchBean.hasMultipleKeys()){
+            criteria.add(Restrictions.in(getPKfieldName(), searchBean.getKeys()));
+        }
+        return  criteria;
 	}
     
 	@Override
-	public int getNumOfChildOrganizations(String organizationId) {
-		final Criteria criteria = getChildOrganizationsCriteria(organizationId).setProjection(rowCount());
+	public int getNumOfChildOrganizations(MembershipOrganizationSearchBean searchBean) {
+		final Criteria criteria = getChildOrganizationsCriteria(searchBean).setProjection(rowCount());
 		return ((Number)criteria.uniqueResult()).intValue();
 	}
 
 	@Override
-	public List<OrganizationEntity> getChildOrganizations(final String organizationId, final int from, final int size) {
-		final Criteria criteria = getChildOrganizationsCriteria(organizationId);
+	public List<OrganizationEntity> getChildOrganizations(final MembershipOrganizationSearchBean searchBean, final int from, final int size) {
+		final Criteria criteria = getChildOrganizationsCriteria(searchBean);
 		
 		if(from > -1) {
 			criteria.setFirstResult(from);
@@ -131,19 +136,23 @@ public class OrganizationDAOImpl extends BaseDaoImpl<OrganizationEntity, String>
 		return criteria.list();
 	}
 	
-    private Criteria getParentOrganizationsCriteria(final String organizationId) {
-    	return getCriteria().createAlias("childOrganizations", "organization").add( Restrictions.eq("organization.orgId", organizationId));
+    private Criteria getParentOrganizationsCriteria(final MembershipOrganizationSearchBean searchBean) {
+        Criteria criteria =  getCriteria().createAlias("childOrganizations", "organization").add( Restrictions.eq("organization.orgId", searchBean.getMemberShipOrganisationId()));
+        if(searchBean.hasMultipleKeys()){
+            criteria.add(Restrictions.in(getPKfieldName(), searchBean.getKeys()));
+        }
+        return  criteria;
 	}
 	
 	@Override
-	public int getNumOfParentOrganizations(String organizationId) {
-		final Criteria criteria = getParentOrganizationsCriteria(organizationId).setProjection(rowCount());
+	public int getNumOfParentOrganizations(MembershipOrganizationSearchBean searchBean) {
+		final Criteria criteria = getParentOrganizationsCriteria(searchBean).setProjection(rowCount());
 		return ((Number)criteria.uniqueResult()).intValue();
 	}
 
 	@Override
-	public List<OrganizationEntity> getParentOrganizations(final String organizationId, final int from, final int size) {
-		final Criteria criteria = getParentOrganizationsCriteria(organizationId);
+	public List<OrganizationEntity> getParentOrganizations(final MembershipOrganizationSearchBean searchBean, final int from, final int size) {
+		final Criteria criteria = getParentOrganizationsCriteria(searchBean);
 		
 		if(from > -1) {
 			criteria.setFirstResult(from);
