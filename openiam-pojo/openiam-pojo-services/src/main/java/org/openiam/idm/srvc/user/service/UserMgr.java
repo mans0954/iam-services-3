@@ -1409,4 +1409,8 @@ public class UserMgr implements UserDataService {
         }
         return null;
     }
+
+    public List<UserEntity> getUsersForMSys(String mSysId) {
+        return userDao.getUsersForMSys(mSysId);
+    }
 }
