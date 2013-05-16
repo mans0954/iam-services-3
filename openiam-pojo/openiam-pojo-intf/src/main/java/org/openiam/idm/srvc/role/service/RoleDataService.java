@@ -1,15 +1,13 @@
 package org.openiam.idm.srvc.role.service;
 
+import org.openiam.idm.searchbeans.MembershipRoleSearchBean;
 import org.openiam.idm.searchbeans.RoleSearchBean;
-import org.openiam.idm.srvc.grp.domain.GroupEntity;
-import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.domain.RolePolicyEntity;
 import org.openiam.idm.srvc.role.domain.UserRoleEntity;
-import org.openiam.idm.srvc.role.dto.*;
+import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.dto.User;
 
 import java.util.List;
 
@@ -72,8 +70,8 @@ public interface RoleDataService {
      * @param groupId
      * @return
      */
-   public List<RoleEntity> getRolesInGroup(String groupId, final int from, final int size);
-   public int getNumOfRolesForGroup(final String groupId);
+//   public List<RoleEntity> getRolesInGroup(String groupId, final int from, final int size);
+//   public int getNumOfRolesForGroup(final String groupId);
 
 
     /**
@@ -106,8 +104,8 @@ public interface RoleDataService {
     public List<UserRoleEntity> getUserRolesForUser(final String userId, final int from, final int size);
     
     
-    public List<RoleEntity> getRolesForUser(final String userId, final int from, final int size);
-    public int getNumOfRolesForUser(final String userId);
+//    public List<RoleEntity> getRolesForUser(final String userId, final int from, final int size);
+//    public int getNumOfRolesForUser(final String userId);
 
     /**
      * Adds a user to a role using the UserRole object. Similar to addUserToRole, but allows you to update attributes likes start and end date.
@@ -166,16 +164,19 @@ public interface RoleDataService {
     
     public int countBeans(final RoleSearchBean searchBean);
     
-    public List<RoleEntity> getRolesForResource(final String resourceId, final int from, final int size);
-    public int getNumOfRolesForResource(final String resourceId);
+//    public List<RoleEntity> getRolesForResource(final String resourceId, final int from, final int size);
+//    public int getNumOfRolesForResource(final String resourceId);
     
-    public List<RoleEntity> getChildRoles(final String roleId, final int from, final int size);
-    public int getNumOfChildRoles(final String roleId);
+    public List<RoleEntity> getChildRoles(final MembershipRoleSearchBean searchBean, final int from, final int size);
+    public int getNumOfChildRoles(final MembershipRoleSearchBean searchBean);
     public void addChildRole(final String roleId, final String childRoleId);
     public void removeChildRole(final String roleId, final String childRoleId);
     
-    public List<RoleEntity> getParentRoles(final String roleId, final int from, final int size);
-    public int getNumOfParentRoles(final String roleId);
+    public List<RoleEntity> getParentRoles(final MembershipRoleSearchBean searchBean, final int from, final int size);
+    public int getNumOfParentRoles(final MembershipRoleSearchBean searchBean);
     
     public UserRoleEntity getUserRole(final String userId, final String roleId);
+
+    public List<RoleEntity> getEntitlementRoles(MembershipRoleSearchBean searchBean, int from, int size);
+    public int getNumOfEntitlementRoles(MembershipRoleSearchBean searchBean);
 }

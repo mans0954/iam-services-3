@@ -5,6 +5,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.dozer.converter.RoleDozerConverter;
+import org.openiam.idm.searchbeans.MembershipRoleSearchBean;
 import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
@@ -240,10 +241,10 @@ public class RoleDataServiceImpl implements RoleDataService {
 		}
 	}
 
-	@Override
-	public List<RoleEntity> getRolesInGroup(String groupId, int from, int size) {
-		return roleDao.getRolesForGroup(groupId, from, size);
-	}
+//	@Override
+//	public List<RoleEntity> getRolesInGroup(String groupId, int from, int size) {
+//		return roleDao.getRolesForGroup(groupId, from, size);
+//	}
 
 	@Override
 	public List<UserRoleEntity> getUserRolesForUser(String userId, int from, int size) {
@@ -307,34 +308,34 @@ public class RoleDataServiceImpl implements RoleDataService {
         return count;
 	}
 
+//	@Override
+//	public List<RoleEntity> getRolesForResource(final String resourceId, final int from, final int size) {
+//		return roleDao.getRolesForResource(resourceId, from, size);
+//	}
+//
+//	@Override
+//	public int getNumOfRolesForResource(final String resourceId) {
+//		return roleDao.getNumOfRolesForResource(resourceId);
+//	}
+
 	@Override
-	public List<RoleEntity> getRolesForResource(final String resourceId, final int from, final int size) {
-		return roleDao.getRolesForResource(resourceId, from, size);
+	public List<RoleEntity> getChildRoles(MembershipRoleSearchBean searchBean, int from, int size) {
+		return roleDao.getChildRoles(searchBean, from, size);
 	}
 
 	@Override
-	public int getNumOfRolesForResource(final String resourceId) {
-		return roleDao.getNumOfRolesForResource(resourceId);
+	public int getNumOfChildRoles(MembershipRoleSearchBean searchBean) {
+		return roleDao.getNumOfChildRoles(searchBean);
 	}
 
 	@Override
-	public List<RoleEntity> getChildRoles(String roleId, int from, int size) {
-		return roleDao.getChildRoles(roleId, from, size);
+	public List<RoleEntity> getParentRoles(MembershipRoleSearchBean searchBean, int from, int size) {
+		return roleDao.getParentRoles(searchBean, from, size);
 	}
 
 	@Override
-	public int getNumOfChildRoles(String roleId) {
-		return roleDao.getNumOfChildRoles(roleId);
-	}
-
-	@Override
-	public List<RoleEntity> getParentRoles(String roleId, int from, int size) {
-		return roleDao.getParentRoles(roleId, from, size);
-	}
-
-	@Override
-	public int getNumOfParentRoles(String roleId) {
-		return roleDao.getNumOfParentRoles(roleId);
+	public int getNumOfParentRoles(MembershipRoleSearchBean searchBean) {
+		return roleDao.getNumOfParentRoles(searchBean);
 	}
 
 	@Override
@@ -361,20 +362,20 @@ public class RoleDataServiceImpl implements RoleDataService {
 		}
 	}
 
-	@Override
-	public int getNumOfRolesForGroup(String groupId) {
-		return roleDao.getNumOfRolesForGroup(groupId);
-	}
-
-	@Override
-	public List<RoleEntity> getRolesForUser(final String userId, final int from, final int size) {
-		return roleDao.getRolesForUser(userId, from, size);
-	}
-
-	@Override
-	public int getNumOfRolesForUser(final String userId) {
-		return roleDao.getNumOfRolesForUser(userId);
-	}
+//	@Override
+//	public int getNumOfRolesForGroup(String groupId) {
+//		return roleDao.getNumOfRolesForGroup(groupId);
+//	}
+//
+//	@Override
+//	public List<RoleEntity> getRolesForUser(final String userId, final int from, final int size) {
+//		return roleDao.getRolesForUser(userId, from, size);
+//	}
+//
+//	@Override
+//	public int getNumOfRolesForUser(final String userId) {
+//		return roleDao.getNumOfRolesForUser(userId);
+//	}
 
 	@Override
 	public RoleEntity getRoleByName(String roleName) {
@@ -388,4 +389,11 @@ public class RoleDataServiceImpl implements RoleDataService {
 	public UserRoleEntity getUserRole(String userId, String roleId) {
 		return userRoleDAO.getRecord(userId, roleId);
 	}
+
+    public List<RoleEntity> getEntitlementRoles(MembershipRoleSearchBean searchBean, int from, int size){
+        return roleDao.getEntitlementRoles(searchBean, from, size);
+    }
+    public int getNumOfEntitlementRoles(MembershipRoleSearchBean searchBean){
+        return roleDao.getNumOfEntitlementRoles(searchBean);
+    }
 }
