@@ -394,10 +394,6 @@
 				<value>org/openiam/idm/srvc/recon/service/ReconciliationResult.hbm.xml</value>
 				<value>org/openiam/idm/srvc/recon/service/ReconciliationSituation.hbm.xml</value>
 				<value>org/openiam/idm/srvc/recon/service/ReconResultDetail.hbm.xml</value>
-				<value>org/openiam/idm/srvc/synch/service/SynchConfig.hbm.xml</value>
-				<value>org/openiam/idm/srvc/synch/service/SynchConfigDataMapping.hbm.xml</value>
-				<value>org/openiam/idm/srvc/synch/service/SynchActivityLog.hbm.xml</value>
-				<value>org/openiam/idm/srvc/synch/service/ActivityLogDetail.hbm.xml</value>
 
                 <value>org/openiam/idm/srvc/mngsys/service/ApproverAssoc.hbm.xml</value>
 
@@ -426,6 +422,7 @@
                                                org.openiam.idm.srvc.user.domain*,
                                                org.openiam.am.srvc.domain*,
                                                org.openiam.idm.srvc.mngsys.domain*,
+                                               org.openiam.idm.srvc.synch.domain*,
                                                org.openiam.idm.srvc.org.domain*,
 											   org.openiam.idm.srvc.auth.domain*,
 											   org.openiam.idm.srvc.cat.domain*,

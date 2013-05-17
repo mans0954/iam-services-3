@@ -232,33 +232,7 @@
 
     <!-- ========================= Synchronization ========================= -->
 
-    <bean id="synchService" class="org.openiam.idm.srvc.synch.service.IdentitySynchServiceImpl">
-        <property name="synchConfigDao" ref="synchConfigDAO" />
-        <property name="synchConfigMappingDao" ref="synchConfigDataMappingDAO" />
-        <property name="adaptorFactory" ref="adapterFactory" />
-        <property name="userMgr" ref="userManager" />
-        <property name="provisionService" ref="defaultProvision" />
-    </bean>
-    <bean id="synchServiceWS" class="org.openiam.idm.srvc.synch.ws.IdentitySynchWebServiceImpl">
-        <property name="synchService" ref="synchService" />
-    </bean>
-
-    <bean id="asynchSynchServiceWS" class="org.openiam.idm.srvc.synch.ws.AsynchIdentitySynchServiceImpl">
-        <property name="synchService" ref="synchService" />
-    </bean>
-
-    <bean id="synchConfigDAO" class="org.openiam.idm.srvc.synch.service.SynchConfigDAOImpl" >
-        <property name="sessionFactory" ref="sessionFactory" />
-    </bean>
-    <bean id="synchConfigDataMappingDAO" class="org.openiam.idm.srvc.synch.service.SynchConfigDataMappingDAOImpl" >
-        <property name="sessionFactory" ref="sessionFactory" />
-    </bean>
-
-    <bean id="adapterFactory" class="org.openiam.idm.srvc.synch.srcadapter.AdapterFactory" />
-
     <bean id="matchRuleFactory" class="org.openiam.idm.srvc.synch.srcadapter.MatchRuleFactory" />
-
-
 
     <bean id="rdbmsAdapter" class="org.openiam.idm.srvc.synch.srcadapter.RDBMSAdapter" >
         <property name="matchRuleFactory" ref="matchRuleFactory" />

@@ -1,30 +1,23 @@
 package org.openiam.idm.srvc.synch.service;
 
-// Generated May 29, 2010 8:20:09 PM by Hibernate Tools 3.2.2.GA
-
-
 import java.sql.Timestamp;
 import java.util.List;
 
-import org.openiam.idm.srvc.synch.dto.SynchConfig;
+import org.openiam.core.dao.BaseDao;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.idm.srvc.synch.domain.SynchConfigEntity;
 
+public interface SynchConfigDAO extends BaseDao<SynchConfigEntity, String> {
 
-/**
- * Home object for domain model class SynchConfig.
- * @see org.openiam.idm.srvc.pswd.service.SynchConfig
- * @author Hibernate Tools
- */
-public interface  SynchConfigDAO {
+    SynchConfigEntity findById(java.lang.String id) ;
 
-	SynchConfig findById(java.lang.String id) ;
+    SynchConfigEntity add(SynchConfigEntity instance);
 
-	SynchConfig add(SynchConfig instance);
+    SynchConfigEntity merge(SynchConfigEntity instance);
 
-	SynchConfig update(SynchConfig instance);
-
-	void remove(SynchConfig instance);
+	void remove(SynchConfigEntity instance);
 	
-	List<SynchConfig> findAllConfig();
+	List<SynchConfigEntity> findAllConfig();
 	
 	int updateExecTime(String configId, Timestamp execTime);
     int updateLastRecProcessed(String configId,String processTime);

@@ -65,7 +65,6 @@ public class Response implements Serializable {
         this.status = status;
     }
 
-
     public Object getResponseValue() {
         return responseValue;
     }
@@ -88,6 +87,14 @@ public class Response implements Serializable {
 
     public void setErrorText(String errorText) {
         this.errorText = errorText;
+    }
+
+    public boolean isSuccess() {
+        return status.equals(ResponseStatus.SUCCESS);
+    }
+
+    public boolean isFailure() {
+        return status.equals(ResponseStatus.FAILURE);
     }
 
     @Override

@@ -29,16 +29,18 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mule.api.MuleContext;
-import org.mule.api.context.MuleContextAware;
 import org.mule.module.client.MuleClient;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.dozer.converter.SynchConfigDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.idm.srvc.synch.domain.SynchConfigEntity;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
-import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.openiam.idm.srvc.synch.dto.BulkMigrationConfig;
+import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.openiam.idm.srvc.synch.srcadapter.AdapterFactory;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.dto.UserSearch;
@@ -49,21 +51,32 @@ import org.openiam.provision.dto.UserResourceAssociation;
 import org.openiam.provision.service.ProvisionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author suneet
  *
  */
+
+@Service("synchService")
 public class IdentitySynchServiceImpl implements IdentitySynchService {
+    @Autowired
     private SynchConfigDAO synchConfigDao;
-    private SynchConfigDataMappingDAO synchConfigMappingDao;
+    @Autowired
+    private SynchConfigDataMappingDAO synchConfigDataMappingDAO;
+    @Autowired
     private AdapterFactory adaptorFactory;
+
     private MuleContext muleContext;
-    private UserDataService userMgr;
+    @Autowired
+    private UserDataService userManager;
+    @Autowired
     private ProvisionService provisionService;
-    
     @Autowired
     private UserDozerConverter userDozerConverter;
+    @Autowired
+    private SynchConfigDozerConverter synchConfigDozerConverter;
 
     @Value("${openiam.service_base}")
     private String serviceHost;
@@ -71,9 +84,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
     @Value("${openiam.idm.ws.path}")
     private String serviceContext;
 
-	
 	private static final Log log = LogFactory.getLog(IdentitySynchServiceImpl.class);
-
 
     /*
     * The flags for the running tasks are handled by this Thread-Safe Set.
@@ -87,49 +98,49 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.synch.service.IdentitySynchService#getAllConfig()
 	 */
-	public List<SynchConfig> getAllConfig() {
-		List<SynchConfig> configList = synchConfigDao.findAllConfig();
+    @Transactional(readOnly = true)
+	public List<SynchConfigEntity> getAllConfig() {
+		List<SynchConfigEntity> configList = synchConfigDao.findAllConfig();
 		if ( configList != null && !configList.isEmpty()) {
 			return configList;
 		}
 		return null;
 	}
-
-	
-	public SynchConfig findById(java.lang.String id)  {
+    @Transactional(readOnly = true)
+	public SynchConfigEntity findById(java.lang.String id)  {
 		if (id == null) {
 			throw new IllegalArgumentException("id parameter is null");
 		}
 		
 		return synchConfigDao.findById(id);
 	}
-
-	public SynchConfig addConfig(SynchConfig synchConfig) {
+    @Transactional
+	public SynchConfigEntity addConfig(SynchConfigEntity synchConfig) {
 		if (synchConfig == null) {
 			throw new IllegalArgumentException("synchConfig parameter is null");
 		}
 		return synchConfigDao.add(synchConfig);
 		
 	}
-
-	public SynchConfig updateConfig(SynchConfig synchConfig) {
+    @Transactional
+	public SynchConfigEntity mergeConfig(SynchConfigEntity synchConfig) {
 		if (synchConfig == null) {
 			throw new IllegalArgumentException("synchConfig parameter is null");
 		}
-		return synchConfigDao.update(synchConfig);
+		return synchConfigDao.merge(synchConfig);
 				
 	}
-
+    @Transactional
 	public void removeConfig(String configId ) {
 		if (configId == null) {
 			throw new IllegalArgumentException("id parameter is null");
 		}
-		SynchConfig config = synchConfigDao.findById(configId);
+        SynchConfigEntity config = synchConfigDao.findById(configId);
 		synchConfigDao.remove(config);
 		
 	}
-
-	public SyncResponse startSynchronization(SynchConfig config) {
+    @Transactional
+	public SyncResponse startSynchronization(SynchConfigEntity config) {
 
         SyncResponse syncResponse = new SyncResponse(ResponseStatus.SUCCESS);
 
@@ -142,12 +153,14 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
         }
         try {
 
-			SourceAdapter adapt = adaptorFactory.create(config);
+            SynchConfig configDTO = synchConfigDozerConverter.convertToDTO(config, false);
+
+			SourceAdapter adapt = adaptorFactory.create(configDTO);
             adapt.setMuleContext(muleContext);
 
 			long newLastExecTime = System.currentTimeMillis();
 
-            syncResponse = adapt.startSynch(config);
+            syncResponse = adapt.startSynch(configDTO);
 			
 			log.debug("SyncReponse updateTime value=" + syncResponse.getLastRecordTime());
 			
@@ -162,7 +175,6 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
 				synchConfigDao.updateLastRecProcessed(config.getSynchConfigId(),syncResponse.getLastRecProcessed() );
 			}
-
 
 		    log.debug("-startSynchronization COMPLETE.^^^^^^^^");
 
@@ -198,6 +210,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
      * @param configId
      * @return
      */
+    @Transactional
     public SyncResponse addTask(String configId) {
 
         SyncResponse resp = new SyncResponse(ResponseStatus.SUCCESS);
@@ -213,32 +226,35 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
         }
 
     }
-
+    @Transactional
     public void endTask(String configID) {
         runningTask.remove(configID);
-
     }
 
-    public Response testConnection(SynchConfig config) {
+    public Response testConnection(SynchConfigEntity config) {
         try {
-            SourceAdapter adapt = adaptorFactory.create(config);
+            SynchConfig configDTO = synchConfigDozerConverter.convertToDTO(config, false);
+            SourceAdapter adapt = adaptorFactory.create(configDTO);
             adapt.setMuleContext(muleContext);
 
-            return adapt.testConnection(config);
+            return adapt.testConnection(configDTO);
+
         } catch (ClassNotFoundException e) {
             Response resp = new Response(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.CLASS_NOT_FOUND);
             resp.setErrorText(e.getMessage());
+
             return resp;
+
         } catch (IOException e) {
             Response resp = new Response(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.IO_EXCEPTION);
             resp.setErrorText(e.getMessage());
+
             return resp;
         }
     }
-
-
+    @Transactional
     public Response bulkUserMigration(BulkMigrationConfig config) {
 
         Response resp = new Response(ResponseStatus.SUCCESS);
@@ -250,7 +266,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
             return resp;
         }
 
-        List<User> searchResult =  userDozerConverter.convertToDTOList(userMgr.search(search), true);
+        List<User> searchResult =  userDozerConverter.convertToDTOList(userManager.search(search), true);
 
         // all the provisioning service
         for ( User user :  searchResult) {
@@ -309,24 +325,19 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
         }
 
-
         return null;
     }
 
-
     private void invokeOperation(ProvisionUser pUser) {
         try {
-
 
             Map<String, String> msgPropMap = new HashMap<String, String>();
             msgPropMap.put("SERVICE_HOST", serviceHost);
             msgPropMap.put("SERVICE_CONTEXT", serviceContext);
 
-
             //Create the client with the context
             MuleClient client = new MuleClient(muleContext);
             client.sendAsync("vm://provisionServiceModifyMessage", pUser, msgPropMap);
-
 
         } catch (Exception e) {
             log.debug("EXCEPTION:bulkUserMigration");
@@ -368,7 +379,6 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
     private UserSearch buildSearchByRole(final String roleId) {
         UserSearch search = new UserSearch();
 
-
         List<String> roleList = new ArrayList<String>();
         roleList.add(roleId);
         search.setRoleIdList(roleList);
@@ -392,6 +402,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
 
     @Override
+    @Transactional
     public Response resynchRole(final String roleId) {
 
         Response resp = new Response(ResponseStatus.SUCCESS);
@@ -405,8 +416,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
             return resp;
         }
 
-        List<User> searchResult =  userDozerConverter.convertToDTOList(userMgr.search(search), true);
-
+        List<User> searchResult =  userDozerConverter.convertToDTOList(userManager.search(search), true);
 
         if (searchResult == null) {
             resp.setStatus(ResponseStatus.FAILURE);
@@ -439,12 +449,10 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
         }
 
-
         return resp;
     }
 
     public void setMuleContext(MuleContext ctx) {
-
         muleContext = ctx;
      }
 
@@ -452,38 +460,33 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 	    return synchConfigDao;
 	}
 
-
 	public void setSynchConfigDao(SynchConfigDAO synchConfigDao) {
 		this.synchConfigDao = synchConfigDao;
 	}
 
-
-	public SynchConfigDataMappingDAO getSynchConfigMappingDao() {
-		return synchConfigMappingDao;
+	public SynchConfigDataMappingDAO getSynchConfigDataMappingDAO() {
+		return synchConfigDataMappingDAO;
 	}
 
-
-	public void setSynchConfigMappingDao(
-			SynchConfigDataMappingDAO synchConfigMappingDao) {
-		this.synchConfigMappingDao = synchConfigMappingDao;
+	public void setSynchConfigDataMappingDAO(
+			SynchConfigDataMappingDAO synchConfigDataMappingDAO) {
+		this.synchConfigDataMappingDAO = synchConfigDataMappingDAO;
 	}
-
 
 	public AdapterFactory getAdaptorFactory() {
 		return adaptorFactory;
 	}
 
-
 	public void setAdaptorFactory(AdapterFactory adaptorFactory) {
 		this.adaptorFactory = adaptorFactory;
 	}
 
-    public UserDataService getUserMgr() {
-        return userMgr;
+    public UserDataService getUserManager() {
+        return userManager;
     }
 
-    public void setUserMgr(UserDataService userMgr) {
-        this.userMgr = userMgr;
+    public void setUserManager(UserDataService userManager) {
+        this.userManager = userManager;
     }
 
     public ProvisionService getProvisionService() {
@@ -492,5 +495,17 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
     public void setProvisionService(ProvisionService provisionService) {
         this.provisionService = provisionService;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Integer getSynchConfigCountByExample(SynchConfigEntity example) {
+        return synchConfigDao.count(example);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<SynchConfigEntity> getSynchConfigsByExample(SynchConfigEntity example, Integer from, Integer size) {
+        return synchConfigDao.getByExample(example, from, size);
     }
 }

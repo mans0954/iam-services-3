@@ -1,32 +1,17 @@
 package org.openiam.idm.srvc.synch.service;
 
-// Generated May 29, 2010 8:20:09 PM by Hibernate Tools 3.2.2.GA
+import org.openiam.core.dao.BaseDao;
+import org.openiam.idm.srvc.synch.domain.SynchConfigDataMappingEntity;
 
-import java.util.List;
-import javax.naming.InitialContext;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.hibernate.LockMode;
-import org.hibernate.SessionFactory;
-import org.openiam.idm.srvc.synch.dto.SynchConfig;
-import org.openiam.idm.srvc.synch.dto.SynchConfigDataMapping;
+public interface SynchConfigDataMappingDAO extends BaseDao<SynchConfigDataMappingEntity, String> {
 
-import static org.hibernate.criterion.Example.create;
+    SynchConfigDataMappingEntity findById(java.lang.String id) ;
 
-/**
- * Home object for domain model class SynchConfigDataMapping.
- * @see org.openiam.idm.srvc.pswd.service.SynchConfigDataMapping
- * @author Hibernate Tools
- */
-public interface SynchConfigDataMappingDAO {
+    SynchConfigDataMappingEntity add(SynchConfigDataMappingEntity instance);
 
-	SynchConfigDataMapping findById(java.lang.String id) ;
+    SynchConfigDataMappingEntity merge(SynchConfigDataMappingEntity instance);
 
-	SynchConfigDataMapping add(SynchConfigDataMapping instance);
-
-	SynchConfigDataMapping update(SynchConfigDataMapping instance);
-
-	void remove(SynchConfigDataMapping instance);
+	void remove(SynchConfigDataMappingEntity instance);
 	
 	//List<SynchConfigDataMapping> findDataMappingByConfigId(String configId);
 	

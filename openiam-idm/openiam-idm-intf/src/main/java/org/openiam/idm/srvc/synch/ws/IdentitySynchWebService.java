@@ -8,6 +8,9 @@ import org.openiam.base.ws.Response;
 import org.openiam.idm.srvc.synch.dto.BulkMigrationConfig;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
+import org.openiam.idm.srvc.synch.dto.SynchConfigSearchBean;
+
+import java.util.List;
 
 /**
  * Interface for  <code>IdmAuditLogDataService</code>. All audit logging activities 
@@ -28,6 +31,16 @@ public interface IdentitySynchWebService {
 	SynchConfigResponse addConfig(
 			@WebParam(name = "synchConfig", targetNamespace = "")
 			SynchConfig synchConfig);
+
+    @WebMethod
+    SynchConfigResponse mergeConfig(
+            @WebParam(name = "synchConfig", targetNamespace = "")
+            SynchConfig synchConfig);
+
+    @WebMethod
+    Response removeConfig(
+            @WebParam(name = "config", targetNamespace = "")
+            String configId);
 
     @WebMethod
     Response testConnection(
@@ -56,18 +69,18 @@ public interface IdentitySynchWebService {
             final String roleId);
 
 	@WebMethod
-	SynchConfigResponse updateConfig(
-			@WebParam(name = "synchConfig", targetNamespace = "")
-			SynchConfig synchConfig);
-
-	@WebMethod
-	Response removeConfig(
-			@WebParam(name = "config", targetNamespace = "")
-			String configId);
-
-	@WebMethod
 	SyncResponse startSynchronization(
 			@WebParam(name = "config", targetNamespace = "")
 			SynchConfig config);
 
+    @WebMethod
+    public Integer getSynchConfigCount(
+            @WebParam(name = "searchBean", targetNamespace = "")
+            SynchConfigSearchBean searchBean);
+
+    @WebMethod
+    public List<SynchConfig> getSynchConfigs(
+            @WebParam(name = "searchBean", targetNamespace = "") SynchConfigSearchBean searchBean,
+            @WebParam(name = "size", targetNamespace = "") Integer size,
+            @WebParam(name = "from", targetNamespace = "") Integer from);
 }

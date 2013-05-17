@@ -1,21 +1,17 @@
 package org.openiam.idm.srvc.synch.service;
 
-// Generated Sep 2, 2010 12:56:46 AM by Hibernate Tools 3.2.2.GA
-
 import java.util.List;
 import javax.naming.InitialContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.LockMode;
 import org.hibernate.SessionFactory;
-import org.openiam.idm.srvc.synch.dto.SynchActivityLog;
+import org.openiam.idm.srvc.synch.domain.SynchActivityLog;
 
 import static org.hibernate.criterion.Example.create;
 
 /**
  * Home object for domain model class SynchActivityLog.
- * @see org.openiam.idm.srvc.pswd.service.SynchActivityLog
- * @author Hibernate Tools
  */
 public class SynchActivityLogHome {
 

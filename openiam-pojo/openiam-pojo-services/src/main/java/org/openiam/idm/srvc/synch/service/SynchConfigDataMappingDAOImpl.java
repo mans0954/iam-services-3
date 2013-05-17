@@ -2,38 +2,20 @@ package org.openiam.idm.srvc.synch.service;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.SessionFactory;
-import org.openiam.idm.srvc.synch.dto.SynchConfigDataMapping;
+import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.idm.srvc.synch.domain.SynchConfigDataMappingEntity;
+import org.springframework.stereotype.Repository;
 
-import javax.naming.InitialContext;
-
-public class SynchConfigDataMappingDAOImpl implements  SynchConfigDataMappingDAO {
+@Repository("synchConfigDataMappingDAO")
+public class SynchConfigDataMappingDAOImpl extends BaseDaoImpl<SynchConfigDataMappingEntity, String> implements SynchConfigDataMappingDAO {
 
 	private static final Log log = LogFactory
 			.getLog(SynchConfigDataMappingDAOImpl.class);
 
-	private SessionFactory sessionFactory;
-
-	
-	public void setSessionFactory(SessionFactory session) {
-		   this.sessionFactory = session;
-	}
-
-	protected SessionFactory getSessionFactory() {
-		try {
-			return (SessionFactory) new InitialContext()
-					.lookup("SessionFactory");
-		} catch (Exception e) {
-			log.error("Could not locate SessionFactory in JNDI", e);
-			throw new IllegalStateException(
-					"Could not locate SessionFactory in JNDI");
-		}
-	}
-
-	public SynchConfigDataMapping add(SynchConfigDataMapping transientInstance) {
+	public SynchConfigDataMappingEntity add(SynchConfigDataMappingEntity transientInstance) {
 		log.debug("persisting SynchConfig instance");
 		try {
-			sessionFactory.getCurrentSession().persist(transientInstance);
+            getSession().persist(transientInstance);
 			log.debug("persist successful");
 			return transientInstance;
 		} catch (RuntimeException re) {
@@ -41,13 +23,11 @@ public class SynchConfigDataMappingDAOImpl implements  SynchConfigDataMappingDAO
 			throw re;
 		}
 	}
-	
 
-
-	public void remove(SynchConfigDataMapping persistentInstance) {
+	public void remove(SynchConfigDataMappingEntity persistentInstance) {
 		log.debug("deleting SynchConfigDataMapping instance");
 		try {
-			sessionFactory.getCurrentSession().delete(persistentInstance);
+			getSession().delete(persistentInstance);
 			log.debug("delete successful");
 		} catch (RuntimeException re) {
 			log.error("delete failed", re);
@@ -55,27 +35,25 @@ public class SynchConfigDataMappingDAOImpl implements  SynchConfigDataMappingDAO
 		}
 	}
 
-	public SynchConfigDataMapping update(SynchConfigDataMapping detachedInstance) {
+    @Override
+	public SynchConfigDataMappingEntity merge(SynchConfigDataMappingEntity detachedInstance) {
 		log.debug("merging SynchConfigDataMapping instance");
 		try {
-			SynchConfigDataMapping result = (SynchConfigDataMapping) sessionFactory
-					.getCurrentSession().merge(detachedInstance);
+            SynchConfigDataMappingEntity ret = (SynchConfigDataMappingEntity) getSession().merge(detachedInstance);
 			log.debug("merge successful");
-			return result;
+            return ret;
+
 		} catch (RuntimeException re) {
 			log.error("merge failed", re);
 			throw re;
 		}
 	}
 
-	public SynchConfigDataMapping findById(java.lang.String id) {
+	public SynchConfigDataMappingEntity findById(java.lang.String id) {
 		log.debug("getting SynchConfigDataMapping instance with id: " + id);
 		try {
-			SynchConfigDataMapping instance = (SynchConfigDataMapping) sessionFactory
-					.getCurrentSession()
-					.get(
-							"org.openiam.idm.srvc.pswd.service.SynchConfigDataMapping",
-							id);
+            SynchConfigDataMappingEntity instance = (SynchConfigDataMappingEntity) getSession()
+                    .get(SynchConfigDataMappingEntity.class, id);
 			if (instance == null) {
 				log.debug("get successful, no instance found");
 			} else {
@@ -88,4 +66,8 @@ public class SynchConfigDataMappingDAOImpl implements  SynchConfigDataMappingDAO
 		}
 	}
 
+    @Override
+    protected String getPKfieldName() {
+        return "mappingId";
+    }
 }

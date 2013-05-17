@@ -31,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
@@ -40,7 +41,8 @@ import java.io.IOException;
  * @author suneet
  *
  */
-public class AdapterFactory  implements  ApplicationContextAware {
+@Component
+public class AdapterFactory implements ApplicationContextAware {
 
 	private static final Log log = LogFactory.getLog(AdapterFactory.class);
 	private String scriptEngine;
@@ -53,7 +55,6 @@ public class AdapterFactory  implements  ApplicationContextAware {
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		ac = applicationContext;
 	}
-	
 	
 	public SourceAdapter create(SynchConfig config) throws ClassNotFoundException, IOException {
 		SourceAdapter adpt = null;

@@ -230,10 +230,16 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
 
     @Override
     @Transactional
-    public void merge(T t) {
-    	if(t != null) {
-    		getSession().merge(t);
-    	}
+    public T merge(T t) {
+        try {
+            if(t != null) {
+                return (T)getSession().merge(t);
+            }
+        } catch (RuntimeException re) {
+            log.error("merge failed", re);
+            throw re;
+        }
+        return t;
     }
 
     @Transactional

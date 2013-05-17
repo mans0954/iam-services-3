@@ -31,7 +31,9 @@ import org.openiam.base.ws.Response;
 import org.openiam.idm.srvc.synch.dto.BulkMigrationConfig;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.openiam.idm.srvc.synch.service.IdentitySynchService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 import javax.jws.WebParam;
 import javax.jws.WebService;
@@ -43,6 +45,7 @@ import java.util.ResourceBundle;
 /**
  * @author suneet
  */
+@Service("asynchSynchServiceWS")
 @WebService(endpointInterface = "org.openiam.idm.srvc.synch.ws.AsynchIdentitySynchService",
         targetNamespace = "http://www.openiam.org/service/synch",
         portName = "AsynchIdentitySynchServicePort",
@@ -51,7 +54,9 @@ public class AsynchIdentitySynchServiceImpl implements AsynchIdentitySynchServic
 
     protected MuleContext muleContext;
 
+    @Autowired
     protected IdentitySynchService synchService;
+
     protected static final Log log = LogFactory.getLog(AsynchIdentitySynchServiceImpl.class);
 
     @Value("${openiam.service_base}")

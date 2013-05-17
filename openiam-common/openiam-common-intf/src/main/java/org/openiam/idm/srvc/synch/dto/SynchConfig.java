@@ -1,16 +1,9 @@
 package org.openiam.idm.srvc.synch.dto;
 
-import java.sql.Timestamp;
-import java.util.Date;
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
-
-// Generated May 29, 2010 8:20:09 PM by Hibernate Tools 3.2.2.GA
-
-
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "SynchConfig", 
@@ -86,15 +79,12 @@ public class SynchConfig implements java.io.Serializable {
     private String wsUrl;
     private String wsScript;
 
-
-	
 	public SynchConfig() {
 	}
 
 	public SynchConfig(String synchConfigId) {
 		this.synchConfigId = synchConfigId;
 	}
-
 
 	public String getSynchConfigId() {
 		return this.synchConfigId;
@@ -119,8 +109,6 @@ public class SynchConfig implements java.io.Serializable {
 	public void setStatus(String status) {
 		this.status = status;
 	}
-
-
 
 	public String getFileName() {
 		return this.fileName;
@@ -162,7 +150,6 @@ public class SynchConfig implements java.io.Serializable {
 		this.synchFrequency = synchFrequency;
 	}
 
-
 	public String getProcessRule() {
 		return this.processRule;
 	}
@@ -170,7 +157,6 @@ public class SynchConfig implements java.io.Serializable {
 	public void setProcessRule(String processRule) {
 		this.processRule = processRule;
 	}
-
 
 	public String getTransformationRule() {
 		return this.transformationRule;
