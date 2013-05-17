@@ -56,7 +56,7 @@ public class MetadataElementPageTemplateEntity implements Serializable {
     //@JoinColumn(name = "URI_PATTERN_ID", insertable=true, updatable=true, nullable=true)
     
     @ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
-    @JoinTable(name = "METADATA_ELEMENT_TEMPLATE_URI_PATTERN_XREF",
+    @JoinTable(name = "METADATA_URI_XREF",
             joinColumns = {@JoinColumn(name = "TEMPLATE_ID")},
             inverseJoinColumns = {@JoinColumn(name = "URI_PATTERN_ID")})
     @Fetch(FetchMode.SUBSELECT)

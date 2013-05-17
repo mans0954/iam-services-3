@@ -37,226 +37,52 @@ import org.openiam.idm.srvc.policy.dto.PolicyDefParam;
 import org.openiam.idm.srvc.policy.dto.PolicyObjectAssoc;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
- * PolicyDataService is used create and manage policies. 
- * Enforcement of these policies is handled through policy specific services and policy enforcement points. 
+ * PolicyDataService is used create and manage policies. Enforcement of these
+ * policies is handled through policy specific services and policy enforcement
+ * points.
+ * 
  * @author suneet
- *
+ * 
  */
 @WebService(endpointInterface = "org.openiam.idm.srvc.policy.service.PolicyDataService", targetNamespace = "urn:idm.openiam.org/srvc/policy/service", portName = "PolicyWebServicePort", serviceName = "PolicyWebService")
 @Service("policyDataService")
+@Transactional
 public class PolicyDataServiceImpl implements PolicyDataService {
-    @Autowired
-    private PolicyDefDAO policyDefDao;
-    @Autowired
-    private PolicyDAO policyDao;
-    @Autowired
-    private PolicyDefParamDAO policyDefParamDao;
-    @Autowired
-    private PolicyObjectAssocDAO policyObjectAssocDAO;
-    @Autowired
-    private PolicyDozerConverter policyDozerConverter;
-    @Autowired
-    private PolicyDefDozerConverter policyDefDozerConverter;
-    @Autowired
-    private PolicyAttributeDozerConverter policyAttributeDozerConverter;
-    @Autowired
-    private PolicyDefParamDozerConverter policyDefParamDozerConverter;
-    @Autowired
-    private PolicyObjectAssocDozerConverter policyObjectAssocDozerConverter;
+	@Autowired
+	private PolicyDAO policyDao;
+	@Autowired
+	private PolicyDefParamDAO policyDefParamDao;
+	@Autowired
+	private PolicyDozerConverter policyDozerConverter;
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.policy.service.PolicyDataService#getPolicyTypes()
-     */
-    public List<String> getPolicyTypes() {
-        final List<String> typeList = policyDefDao.findAllPolicyTypes();
-        if (CollectionUtils.isEmpty(typeList))
-            return null;
-        return typeList;
-    }
+	public Policy getPolicy(String policyId) {
+		if (policyId == null) {
+			throw new NullPointerException("PolicyId is null");
+		}
+		PolicyEntity p = policyDao.findById(policyId);
+		if (p == null)
+			return null;
+		return policyDozerConverter.convertToDTO(p, true);
+	}
 
-    public void addPolicyDefinition(PolicyDef val) {
-        if (val == null) {
-            throw new NullPointerException("PolicyDef is null");
-        }
-        policyDefDao.save(policyDefDozerConverter.convertToEntity(val, true));
+	public PolicyDefParamDAO getPolicyDefParamDao() {
+		return policyDefParamDao;
+	}
 
-    }
+	public List<Policy> getAllPolicies(String policyDefId) {
+		if (policyDefId == null) {
+			throw new NullPointerException("policyDefId is null");
+		}
+		final List<Policy> policyList = policyDozerConverter.convertToDTOList(
+				policyDao.findAllPolicies(policyDefId), true);
 
-    public PolicyDef getPolicyDefinition(String policyDefId) {
-        if (policyDefId == null) {
-            throw new NullPointerException("policyDefId is null");
-        }
-        PolicyDefEntity pde = policyDefDao.findById(policyDefId);
-        if (pde == null)
-            return null;
-        return policyDefDozerConverter.convertToDTO(pde, false);
+		if (CollectionUtils.isEmpty(policyList)) {
+			return null;
+		}
+		return policyList;
 
-    }
-
-    public void removePolicyDefinition(String definitionId) {
-        if (definitionId == null) {
-            throw new NullPointerException("definitionId is null");
-        }
-        final PolicyDef def = new PolicyDef(definitionId);
-        policyDefDao
-                .delete(policyDefDozerConverter.convertToEntity(def, false));
-
-    }
-
-    public void updatePolicyDefinition(PolicyDef val) {
-        if (val == null) {
-            throw new NullPointerException("PolicyDef is null");
-        }
-        policyDefDao
-                .update(policyDefDozerConverter.convertToEntity(val, false));
-
-    }
-
-    /**
-     * Returns an array of all policy definitions
-     * @return
-     */
-    public List<PolicyDef> getAllPolicyDef() {
-        final List<PolicyDef> defList = policyDefDozerConverter
-                .convertToDTOList(policyDefDao.findAllPolicyDef(), false);
-        if (CollectionUtils.isEmpty(defList))
-            return null;
-        return defList;
-    }
-
-    public void addPolicy(Policy val) {
-        if (val == null) {
-            throw new NullPointerException("Policy is null");
-        }
-        policyDao.save(policyDozerConverter.convertToEntity(val, false));
-
-    }
-
-    public List<Policy> getAllPolicies(String policyDefId) {
-        if (policyDefId == null) {
-            throw new NullPointerException("policyDefId is null");
-        }
-        final List<Policy> policyList = policyDozerConverter.convertToDTOList(
-                policyDao.findAllPolicies(policyDefId), true);
-
-        if (CollectionUtils.isEmpty(policyList)) {
-            return null;
-        }
-        return policyList;
-
-    }
-
-    public Policy getPolicy(String policyId) {
-        if (policyId == null) {
-            throw new NullPointerException("PolicyId is null");
-        }
-        PolicyEntity p = policyDao.findById(policyId);
-        if (p == null)
-            return null;
-        return policyDozerConverter.convertToDTO(p, true);
-    }
-
-    /**
-     * Policy definitions parameters can be further categorized by parameter groups.
-     * @param paramGroup
-     * @return
-     */
-    public List<PolicyDefParam> getPolicyDefParamByGroup(String defId,
-            String paramGroup) {
-        if (paramGroup == null) {
-            throw new NullPointerException("paramGroup is null");
-        }
-        return policyDefParamDozerConverter.convertToDTOList(
-                policyDefParamDao.findPolicyDefParamByGroup(defId, paramGroup),
-                true);
-    }
-
-    public void removePolicy(String policyId) {
-        if (policyId == null) {
-            throw new NullPointerException("PolicyId is null");
-        }
-        final Policy plcy = new Policy(policyId);
-        policyDao.delete(policyDozerConverter.convertToEntity(plcy, false));
-
-    }
-
-    public void updatePolicy(Policy val) {
-        if (val == null) {
-            throw new NullPointerException("Policy is null");
-        }
-        policyDao.update(policyDozerConverter.convertToEntity(val, false));
-
-    }
-
-    public boolean isPolicyExist(String policyType, String policyName) {
-        if (policyType == null) {
-            throw new NullPointerException("policyType is null");
-        }
-        if (policyName == null) {
-            throw new NullPointerException("policyName is null");
-        }
-        return CollectionUtils.isNotEmpty(policyDao.findPolicyByName(
-                policyType, policyName));
-    }
-
-    public PolicyDefParamDAO getPolicyDefParamDao() {
-        return policyDefParamDao;
-    }
-
-    public void setPolicyDefParamDao(PolicyDefParamDAO policyDefParamDao) {
-        this.policyDefParamDao = policyDefParamDao;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.policy.service.PolicyDataService#associatePolicyToObject
-     * (org.openiam.idm.srvc.policy.dto.PolicyObjectAssoc)
-     */
-    public void associatePolicyToObject(PolicyObjectAssoc assoc) {
-        policyObjectAssocDAO.save(policyObjectAssocDozerConverter
-                .convertToEntity(assoc, true));
-
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.openiam.idm.srvc.policy.service.PolicyDataService#
-     * getAssociationsForPolicy(java.lang.String)
-     */
-    public List<PolicyObjectAssoc> getAssociationsForPolicy(String policyId) {
-        return policyObjectAssocDozerConverter.convertToDTOList(
-                policyObjectAssocDAO.findByPolicy(policyId), true);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.policy.service.PolicyDataService#updatePolicyAssociation
-     * (org.openiam.idm.srvc.policy.dto.PolicyObjectAssoc)
-     */
-    public void updatePolicyAssociation(PolicyObjectAssoc assoc) {
-        policyObjectAssocDAO.update(policyObjectAssocDozerConverter
-                .convertToEntity(assoc, true));
-
-    }
-
-    @Override
-    public PolicyObjectAssoc findAssociationByLevel(String level, String value) {
-        PolicyObjectAssocEntity poae = policyObjectAssocDAO
-                .findAssociationByLevel(level, value);
-        if (poae == null)
-            return null;
-        return policyObjectAssocDozerConverter.convertToDTO(
-                policyObjectAssocDAO.findAssociationByLevel(level, value),
-                false);
-    }
+	}
 }

@@ -27,15 +27,23 @@ import java.util.List;
 
 import org.openiam.idm.srvc.orgpolicy.dto.OrgPolicy;
 import org.openiam.idm.srvc.orgpolicy.dto.OrgPolicyUserLog;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author suneet
  *
  */
+@Service("orgPolicyService")
+@Transactional
 public class OrgPolicyServiceImpl implements OrgPolicyService {
 
-	OrgPolicyDAO acceptanceDao;
-	OrgPolicyUserLogDAO userLogDao; 
+	@Autowired
+	private OrgPolicyDAO acceptanceDao;
+	
+	@Autowired
+	private OrgPolicyUserLogDAO userLogDao; 
 	
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.msg.service.SysMessageDeliveryService#addMessage(org.openiam.idm.srvc.msg.dto.SysMessageDelivery)
@@ -112,14 +120,6 @@ public class OrgPolicyServiceImpl implements OrgPolicyService {
 		return acceptanceDao.update(msg);
 	}
 
-	public OrgPolicyDAO getAcceptanceDAO() {
-		return acceptanceDao;
-	}
-
-	public void setAcceptanceDAO(OrgPolicyDAO acceptanceDAO) {
-		this.acceptanceDao = acceptanceDAO;
-	}
-
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.orgpolicy.service.OrgPolicyAcceptanceService#getAllPolicyMessages()
 	 */
@@ -147,28 +147,4 @@ public class OrgPolicyServiceImpl implements OrgPolicyService {
 		userLogDao.add(log);
 		
 	}
-	
-	
-	public OrgPolicyDAO getAcceptanceDao() {
-		return acceptanceDao;
-	}
-
-	public void setAcceptanceDao(OrgPolicyDAO acceptanceDao) {
-		this.acceptanceDao = acceptanceDao;
-	}
-
-	public OrgPolicyUserLogDAO getUserLogDao() {
-		return userLogDao;
-	}
-
-	public void setUserLogDao(OrgPolicyUserLogDAO userLogDao) {
-		this.userLogDao = userLogDao;
-	}
-
-
-
-
-
-
-
 }

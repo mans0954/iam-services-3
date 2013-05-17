@@ -1,6 +1,9 @@
 package org.openiam.idm.srvc.mngsys.service;
 
+import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
+import org.openiam.idm.srvc.policy.service.PolicyDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,74 +13,121 @@ import java.util.List;
 @Service
 public class ManagedSystemServiceImpl implements ManagedSystemService {
 
-    @Autowired
-    private ManagedSysDAO managedSysDAO;
+	@Autowired
+	private ManagedSysDAO managedSysDAO;
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<ManagedSysEntity> getManagedSystemsByExample(ManagedSysEntity example, Integer from, Integer size) {
-        return managedSysDAO.getByExample(example, from, size);
-    }
+	@Autowired
+	protected AttributeMapDAO attributeMapDAO;
 
-    @Override
-    @Transactional(readOnly = true)
-    public Integer getManagedSystemsCountByExample(ManagedSysEntity example) {
-        return managedSysDAO.count(example);
-    }
+	@Autowired
+	protected PolicyDAO policyDAO;
 
-    @Override
-    @Transactional
-    public void addManagedSys(ManagedSysEntity entity) {
-        managedSysDAO.add(entity);
-    }
+	@Override
+	@Transactional(readOnly = true)
+	public List<ManagedSysEntity> getManagedSystemsByExample(
+			ManagedSysEntity example, Integer from, Integer size) {
+		return managedSysDAO.getByExample(example, from, size);
+	}
 
-    @Override
-    @Transactional(readOnly = true)
-    public ManagedSysEntity getManagedSysById(String id) {
-        return managedSysDAO.findById(id);
-    }
+	@Override
+	@Transactional(readOnly = true)
+	public Integer getManagedSystemsCountByExample(ManagedSysEntity example) {
+		return managedSysDAO.count(example);
+	}
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<ManagedSysEntity> getManagedSysByConnectorId(String connectorId) {
-        return managedSysDAO.findbyConnectorId(connectorId);
-    }
+	@Override
+	@Transactional
+	public void addManagedSys(ManagedSysEntity entity) {
+		managedSysDAO.add(entity);
+	}
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<ManagedSysEntity> getManagedSysByDomain(String domainId) {
-        return managedSysDAO.findbyDomain(domainId);
-    }
+	@Override
+	@Transactional(readOnly = true)
+	public ManagedSysEntity getManagedSysById(String id) {
+		return managedSysDAO.findById(id);
+	}
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<ManagedSysEntity> getAllManagedSys() {
-        return managedSysDAO.findAllManagedSys();
-    }
+	@Override
+	@Transactional(readOnly = true)
+	public List<ManagedSysEntity> getManagedSysByConnectorId(String connectorId) {
+		return managedSysDAO.findbyConnectorId(connectorId);
+	}
 
-    @Override
-    @Transactional
-    public void removeManagedSysById(String id) {
-        ManagedSysEntity sysEntity = managedSysDAO.findById(id);
-        managedSysDAO.delete(sysEntity);
-    }
+	@Override
+	@Transactional(readOnly = true)
+	public List<ManagedSysEntity> getManagedSysByDomain(String domainId) {
+		return managedSysDAO.findbyDomain(domainId);
+	}
 
-    @Override
-    @Transactional
-    public void updateManagedSys(ManagedSysEntity entity) {
-        managedSysDAO.update(entity);
-    }
+	@Override
+	@Transactional(readOnly = true)
+	public List<ManagedSysEntity> getAllManagedSys() {
+		return managedSysDAO.findAllManagedSys();
+	}
 
-    @Override
-    @Transactional(readOnly = true)
-    public ManagedSysEntity getManagedSysByResource(String id, String status) {
-        return managedSysDAO.findByResource(id, status);
-    }
+	@Override
+	@Transactional
+	public void removeManagedSysById(String id) {
+		ManagedSysEntity sysEntity = managedSysDAO.findById(id);
+		managedSysDAO.delete(sysEntity);
+	}
 
-    @Override
-    @Transactional(readOnly = true)
-    public ManagedSysEntity getManagedSysByName(String name) {
-        return managedSysDAO.findByName(name);
-    }
+	@Override
+	@Transactional
+	public void updateManagedSys(ManagedSysEntity entity) {
+		managedSysDAO.update(entity);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ManagedSysEntity getManagedSysByResource(String id, String status) {
+		return managedSysDAO.findByResource(id, status);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ManagedSysEntity getManagedSysByName(String name) {
+		return managedSysDAO.findByName(name);
+	}
+
+	@Override
+	public AttributeMapEntity getAttributeMap(String attributeMapId) {
+		return attributeMapDAO.findById(attributeMapId);
+
+	}
+
+	@Override
+	public AttributeMapEntity addAttributeMap(AttributeMapEntity attributeMap) {
+		attributeMap.setAttributePolicy(policyDAO.findById(attributeMap
+				.getAttributePolicy().getPolicyId()));
+		return attributeMapDAO.add(attributeMap);
+	}
+
+	@Override
+	public void updateAttributeMap(AttributeMapEntity attributeMap) {
+		attributeMapDAO.update(attributeMap);
+	}
+
+	@Override
+	public void removeAttributeMap(String attributeMapId) {
+		AttributeMapEntity amE = attributeMapDAO.findById(attributeMapId);
+		if (amE != null)
+			attributeMapDAO.delete(amE);
+	}
+
+	@Override
+	public int removeResourceAttributeMaps(String resourceId) {
+		return attributeMapDAO.removeResourceAttributeMaps(resourceId);
+	}
+
+	@Override
+	public List<AttributeMapEntity> getResourceAttributeMaps(String resourceId) {
+		return attributeMapDAO.findByResourceId(resourceId);
+	}
+
+	@Override
+	public List<AttributeMapEntity> getAllAttributeMaps() {
+		return attributeMapDAO.findAllAttributeMaps();
+	}
 
 }

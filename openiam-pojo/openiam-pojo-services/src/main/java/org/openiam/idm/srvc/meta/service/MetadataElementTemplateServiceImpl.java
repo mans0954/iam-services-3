@@ -398,11 +398,26 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 								}
 							} else { /* attributes sent - figure out weather to save or update */
 								
+								boolean isMultiSelect = element.getMetadataType() != null && StringUtils.equals(element.getMetadataType().getMetadataTypeId(), "MULTI_SELECT");
+								int numRequiredViolations = 0;
 								for(final PageElementValue elementValue : pageElement.getUserValues()) {
-									if(pageElement.isEditable() && pageElement.isRequired() && StringUtils.isBlank(elementValue.getValue())) {
-										final PageTemplateException exception =  new PageTemplateException(ResponseCode.REQUIRED);
-										exception.setElementName(getElementName(element, targetLanguage));
-										throw exception;
+									boolean indexViolatesRequiredFlag = pageElement.isEditable() && pageElement.isRequired() && StringUtils.isBlank(elementValue.getValue());
+									if(indexViolatesRequiredFlag) {
+										numRequiredViolations++;
+									}
+									
+									if(isMultiSelect) {
+										if(numRequiredViolations == pageElement.getUserValues().size()) {
+											final PageTemplateException exception =  new PageTemplateException(ResponseCode.REQUIRED);
+											exception.setElementName(getElementName(element, targetLanguage));
+											throw exception;
+										}
+									} else {
+										if(indexViolatesRequiredFlag) {
+											final PageTemplateException exception =  new PageTemplateException(ResponseCode.REQUIRED);
+											exception.setElementName(getElementName(element, targetLanguage));
+											throw exception;
+										}
 									}
 									
 									if(!isValid(elementValue, element, targetLanguage)) {

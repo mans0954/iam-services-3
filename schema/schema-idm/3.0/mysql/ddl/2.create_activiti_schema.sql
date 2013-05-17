@@ -1,1 +1,0 @@
-CREATE database activiti DEFAULT CHARACTER SET utf8 CHARACTER SET = utf8;

@@ -55,7 +55,7 @@ public class URIPatternEntity implements Serializable {
 
 	//@OneToMany(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, mappedBy="uriPattern")
 	@ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
-    @JoinTable(name = "METADATA_ELEMENT_TEMPLATE_URI_PATTERN_XREF",
+    @JoinTable(name = "METADATA_URI_XREF",
             joinColumns = {@JoinColumn(name = "URI_PATTERN_ID")},
             inverseJoinColumns = {@JoinColumn(name = "TEMPLATE_ID")})
     @Fetch(FetchMode.SUBSELECT)
