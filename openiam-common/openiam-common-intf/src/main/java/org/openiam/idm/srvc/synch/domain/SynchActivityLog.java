@@ -1,4 +1,4 @@
-package org.openiam.idm.srvc.synch.dto;
+package org.openiam.idm.srvc.synch.domain;
 
 
 import java.util.Date;

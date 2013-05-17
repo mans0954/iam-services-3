@@ -124,7 +124,7 @@ public class SynchConfigDAOImpl implements SynchConfigDAO {
 						" 					SET  sc.lastExecTime = :execTime  " +
 						" 					WHERE  sc.synchConfigId = :configId	");
 		
-		qry.setTimestamp("execTime",execTime);
+		qry.setTimestamp("execTime", execTime);
 		qry.setString("configId", configId);
 		
 		return qry.executeUpdate();

@@ -1,4 +1,4 @@
-package org.openiam.idm.srvc.synch.dto;
+package org.openiam.idm.srvc.synch.domain;
 
 // Generated Sep 2, 2010 12:56:46 AM by Hibernate Tools 3.2.2.GA
 
