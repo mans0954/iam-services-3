@@ -90,7 +90,9 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
 
 		if (encrypt && sys.getPswd() != null) {
 			try {
-				sys.setPswd(cryptor.encrypt(null, sys.getPswd()));
+				sys.setPswd(cryptor.encrypt(keyManagementService.getUserKey(
+						sys.getUserId(), KeyName.password.name()), sys
+						.getPswd()));
 			} catch (Exception e) {
 				log.error(e);
 			}
