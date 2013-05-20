@@ -1,5 +1,3 @@
-use activiti;
-
 create table ACT_HI_PROCINST (
     ID_ NVARCHAR2(64) not null,
     PROC_INST_ID_ NVARCHAR2(64) not null,
