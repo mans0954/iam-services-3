@@ -14,6 +14,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -360,9 +361,27 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
     public void setDeptIdList(List<String> deptIdList) {
         this.deptIdList = deptIdList;
     }
+    
+    public void addDeptId(final String deptId) {
+    	if(StringUtils.isNotBlank(deptId)) {
+    		if(this.deptIdList == null) {
+    			this.deptIdList = new LinkedList<String>();
+    		}
+    		this.deptIdList.add(deptId);
+    	}
+    }
 
     public List<String> getDivisionIdList() {
         return divisionIdList;
+    }
+    
+    public void addDivisionId(final String divisionId) {
+    	if(StringUtils.isNotBlank(divisionId)) {
+    		if(this.divisionIdList == null) {
+    			this.divisionIdList = new LinkedList<String>();
+    		}
+    		this.divisionIdList.add(divisionId);
+    	}
     }
 
     public void setDivisionIdList(List<String> divisionIdList) {

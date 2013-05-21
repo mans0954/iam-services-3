@@ -36,12 +36,13 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.UserDozerConverter;
+import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.openiam.idm.srvc.synch.dto.BulkMigrationConfig;
 import org.openiam.idm.srvc.synch.srcadapter.AdapterFactory;
 import org.openiam.idm.srvc.user.service.UserDataService;
-import org.openiam.idm.srvc.user.dto.UserSearch;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.provision.dto.ProvisionUser;
@@ -244,13 +245,15 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
         Response resp = new Response(ResponseStatus.SUCCESS);
 
         // select the user that we need to move
-        UserSearch search = buildSearch(config);
+        UserSearchBean search = buildSearch(config);
+        /*
         if (search.isEmpty()) {
             resp.setStatus(ResponseStatus.FAILURE);
             return resp;
         }
+        */
 
-        List<User> searchResult =  userDozerConverter.convertToDTOList(userMgr.search(search), true);
+        List<User> searchResult =  userDozerConverter.convertToDTOList(userMgr.findBeans(search), true);
 
         // all the provisioning service
         for ( User user :  searchResult) {
@@ -334,22 +337,22 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
         }
     }
 
-    private UserSearch buildSearch(BulkMigrationConfig config){
-        UserSearch search = new UserSearch();
+    private UserSearchBean buildSearch(BulkMigrationConfig config){
+    	UserSearchBean search = new UserSearchBean();
         if (config.getOrganizationId() != null && !config.getOrganizationId().isEmpty()) {
-             search.setOrgId(config.getOrganizationId());
+             search.setOrganizationId(config.getOrganizationId());
         }
 
         if (config.getLastName() != null && !config.getLastName().isEmpty()) {
-            search.setLastName(config.getLastName() + "%");
+            search.setLastName(config.getLastName());
         }
 
         if (config.getDeptId() != null && !config.getDeptId().isEmpty()) {
-            search.setDeptCd(config.getDeptId());
+            search.addDeptId(config.getDeptId());
         }
 
         if (config.getDivision() != null && !config.getDivision().isEmpty()) {
-            search.setDivision(config.getDivision());
+            search.addDivisionId(config.getDivision());
         }
 
         if (config.getAttributeName() != null && !config.getAttributeName().isEmpty()) {
@@ -358,24 +361,12 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
         }
 
         if (config.getUserStatus() != null ) {
-            search.setStatus(config.getUserStatus().toString());
+        	search.setUserStatus(config.getUserStatus().toString());
         }
 
         return search;
 
     }
-
-    private UserSearch buildSearchByRole(final String roleId) {
-        UserSearch search = new UserSearch();
-
-
-        List<String> roleList = new ArrayList<String>();
-        roleList.add(roleId);
-        search.setRoleIdList(roleList);
-
-        return search;
-    }
-
 
     private Role parseRole(String roleStr) {
         String roleId = null;
@@ -398,14 +389,9 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
         log.debug("Resynch Role: " + roleId );
 
-        // select the user that we need to move
-        UserSearch search = buildSearchByRole(roleId);
-        if (search.isEmpty()) {
-            resp.setStatus(ResponseStatus.FAILURE);
-            return resp;
-        }
-
-        List<User> searchResult =  userDozerConverter.convertToDTOList(userMgr.search(search), true);
+        final UserSearchBean searchBean = new UserSearchBean();
+        searchBean.addRoleId(roleId);
+        List<User> searchResult =  userDozerConverter.convertToDTOList(userMgr.findBeans(searchBean), true);
 
 
         if (searchResult == null) {

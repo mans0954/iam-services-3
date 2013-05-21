@@ -272,12 +272,6 @@ public class UserMgr implements UserDataService {
 	}
 
 	@Override
-	@Deprecated
-	public List<UserEntity> search(UserSearch search) {
-		return userDao.search(search);
-	}
-
-	@Override
 	public List<UserEntity> searchByDelegationProperties(
 			DelegationFilterSearch search) {
 		return userDao.findByDelegationProperties(search);

@@ -49,11 +49,6 @@ public class UserDAOTouchTest extends AbstractTransactionalTestNGSpringContextTe
   }
 
   @Test
-  public void touchSearch() {
-      userDAO.search(new UserSearch());
-  }
-
-  @Test
   public void touchUpdate() {
       UserEntity user = new UserEntity();
       userDAO.save(user);
