@@ -120,10 +120,6 @@ public interface UserDataWebService {
 			@WebParam(name = "status", targetNamespace = "") String status);
 
 	@WebMethod
-	public List<User> search(
-			@WebParam(name = "search", targetNamespace = "") UserSearch search);
-
-	@WebMethod
 	public List<User> searchByDelegationProperties(
 			@WebParam(name = "search", targetNamespace = "") DelegationFilterSearch search);
 

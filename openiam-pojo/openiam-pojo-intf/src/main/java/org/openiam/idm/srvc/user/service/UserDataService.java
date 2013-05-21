@@ -63,8 +63,7 @@ public interface UserDataService {
     public List<UserEntity> findUserByOrganization(String orgId);
 
     public List<UserEntity> findUsersByStatus(UserStatusEnum status);
-    @Deprecated
-    public List<UserEntity> search(UserSearch search);
+
     public List<UserEntity> searchByDelegationProperties(DelegationFilterSearch search);
 
     public List<UserEntity> findBeans(UserSearchBean searchBean);

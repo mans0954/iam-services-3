@@ -19,8 +19,6 @@ import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 public interface UserDAO extends BaseDao<UserEntity, String> {
 
     public List<UserEntity> findByLastUpdateRange(Date startDate, Date endDate);
-    @Deprecated
-    public List<UserEntity> search(UserSearch search);
 
     public List<UserEntity> findByDelegationProperties(DelegationFilterSearch search);
 
