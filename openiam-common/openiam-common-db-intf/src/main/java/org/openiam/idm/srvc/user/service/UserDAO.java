@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.user.service;
 
 import org.openiam.core.dao.BaseDao;
+import org.openiam.idm.searchbeans.DelegationFilterSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
@@ -21,6 +22,8 @@ public interface UserDAO extends BaseDao<UserEntity, String> {
     public List<UserEntity> findByLastUpdateRange(Date startDate, Date endDate);
     @Deprecated
     public List<UserEntity> search(UserSearch search);
+
+    public UserEntity findByIdDelFlt(String userId, DelegationFilterSearchBean delegationFilter);
 
     public List<UserEntity> findByDelegationProperties(DelegationFilterSearch search);
 

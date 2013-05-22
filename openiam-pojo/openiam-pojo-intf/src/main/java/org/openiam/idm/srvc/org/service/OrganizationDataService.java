@@ -1,7 +1,6 @@
 package org.openiam.idm.srvc.org.service;
 
 import org.openiam.base.ws.Response;
-import org.openiam.idm.searchbeans.MembershipOrganizationSearchBean;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
@@ -16,13 +15,53 @@ import java.util.List;
 public interface OrganizationDataService {
 
     @WebMethod
-    public List<Organization> getTopLevelOrganizations();
+    public List<Organization> getTopLevelOrganizations(@WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     @WebMethod
-    public Response removeAttribute(final @WebParam(name = "attributeId", targetNamespace = "") String attributeId);
+    public Organization getOrganization(@WebParam(name = "orgId", targetNamespace = "") String orgId,
+                                        @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     @WebMethod
-    public Organization getOrganization(@WebParam(name = "orgId", targetNamespace = "") String orgId);
+    public List<Organization> getOrganizationsForUser(@WebParam(name = "userId", targetNamespace = "") String userId,
+                                                      @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+
+    @WebMethod
+    public List<Organization> getAllOrganizations(@WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+
+    @WebMethod
+    public List<Organization> findBeans(@WebParam(name = "searchBean", targetNamespace = "") OrganizationSearchBean searchBean,
+                                        @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                                        @WebParam(name = "from", targetNamespace = "") int from,
+                                        @WebParam(name = "size", targetNamespace = "") int size);
+
+    @WebMethod
+    public List<Organization> getParentOrganizations(@WebParam(name = "orgId", targetNamespace = "") String orgId,
+                                                     @WebParam(name = "parentClassification", targetNamespace = "") String parentClassification,
+                                                     @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                                                     @WebParam(name = "from", targetNamespace = "") int from,
+                                                     @WebParam(name = "size", targetNamespace = "") int size);
+
+    @WebMethod
+    public List<Organization> getChildOrganizations(@WebParam(name = "orgId", targetNamespace = "") String orgId,
+                                                    @WebParam(name = "childClassification", targetNamespace = "") String childClassification,
+                                                    @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                                                    @WebParam(name = "from", targetNamespace = "") int from,
+                                                    @WebParam(name = "size", targetNamespace = "") int size);
+
+    @WebMethod
+    int count(@WebParam(name="searchBean", targetNamespace="") OrganizationSearchBean searchBean,
+              @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+
+    @WebMethod
+    public int getNumOfParentOrganizations(@WebParam(name = "orgId", targetNamespace = "") String orgId,
+                                           @WebParam(name = "parentClassification", targetNamespace = "") String parentClassification,
+                                           @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+
+    @WebMethod
+    public int getNumOfChildOrganizations(@WebParam(name = "orgId", targetNamespace = "") String orgId,
+                                          @WebParam(name = "childClassification", targetNamespace = "") String childClassification,
+                                          @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+
 
     @WebMethod
     public Response saveOrganization(@WebParam(name = "organization", targetNamespace = "") Organization organization);
@@ -31,58 +70,27 @@ public interface OrganizationDataService {
     public Response saveAttribute(@WebParam(name = "organizationAttribute", targetNamespace = "") OrganizationAttribute organizationAttribute);
 
     @WebMethod
+    public Response addUserToOrg(@WebParam(name = "orgId", targetNamespace = "") String orgId,
+                                 @WebParam(name = "userId", targetNamespace = "") String userId);
+
+    @WebMethod
+    public Response addChildOrganization(@WebParam(name = "organizationId", targetNamespace = "") String organizationId,
+                                         @WebParam(name = "childOrganizationId", targetNamespace = "") String childOrganizationId);
+
+
+    @WebMethod
     public Response deleteOrganization(@WebParam(name = "orgId", targetNamespace = "") String orgId);
 
     @WebMethod
-    public List<Organization> getAllOrganizations();
+    public Response removeUserFromOrg(@WebParam(name = "orgId", targetNamespace = "") String orgId,
+                                      @WebParam(name = "userId", targetNamespace = "") String userId);
 
     @WebMethod
-    public List<Organization> getOrganizationsForUser(@WebParam(name = "userId", targetNamespace = "") String userId);
+    public Response removeAttribute(final @WebParam(name = "attributeId", targetNamespace = "") String attributeId);
 
-    @WebMethod
-    public Response addUserToOrg(
-            @WebParam(name = "orgId", targetNamespace = "")
-            String orgId,
-            @WebParam(name = "userId", targetNamespace = "")
-            String userId);
-
-    @WebMethod
-    public Response removeUserFromOrg(
-            @WebParam(name = "orgId", targetNamespace = "")
-            String orgId,
-            @WebParam(name = "userId", targetNamespace = "")
-            String userId);
-
-    @WebMethod
-    List<Organization> findBeans(@WebParam(name = "searchBean", targetNamespace = "") OrganizationSearchBean searchBean,
-                             @WebParam(name = "from", targetNamespace = "") int from,
-                             @WebParam(name = "size", targetNamespace = "") int size);
-
-    @WebMethod
-    int count(@WebParam(name="searchBean", targetNamespace="") OrganizationSearchBean searchBean);
-    
-    @WebMethod
-    public int getNumOfParentOrganizations(@WebParam(name = "searchBean", targetNamespace = "")
-                                               MembershipOrganizationSearchBean searchBean);
-    
-    @WebMethod
-    public int getNumOfChildOrganizations(@WebParam(name = "searchBean", targetNamespace = "") MembershipOrganizationSearchBean searchBean);
-    
-    @WebMethod
-    public List<Organization> getParentOrganizations(@WebParam(name = "searchBean", targetNamespace = "") MembershipOrganizationSearchBean searchBean,
-                             						 @WebParam(name = "from", targetNamespace = "") int from,
-                             						 @WebParam(name = "size", targetNamespace = "") int size);
-    
-    @WebMethod
-    public List<Organization> getChildOrganizations(@WebParam(name = "searchBean", targetNamespace = "") MembershipOrganizationSearchBean searchBean,
-                             						 @WebParam(name = "from", targetNamespace = "") int from,
-                             						 @WebParam(name = "size", targetNamespace = "") int size);
-    
-    @WebMethod
-    public Response addChildOrganization(@WebParam(name = "organizationId", targetNamespace = "") String organizationId,
-    									 @WebParam(name = "childOrganizationId", targetNamespace = "") String childOrganizationId);
-    
     @WebMethod
     public Response removeChildOrganization(@WebParam(name = "organizationId", targetNamespace = "") String organizationId,
-    									 	@WebParam(name = "childOrganizationId", targetNamespace = "") String childOrganizationId);
+                                            @WebParam(name = "childOrganizationId", targetNamespace = "") String childOrganizationId);
+
+
 }

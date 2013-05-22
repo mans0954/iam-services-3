@@ -173,8 +173,8 @@ public interface UserDataService {
      * @return
      */
     public SupervisorEntity getPrimarySupervisor(String employeeId);
-
     public UserEntity getUser(String id);
+    public UserEntity getUser(String id, String requestorId);
 
     public Map<String, UserAttributeEntity> getAllAttributes(String userId);
 
@@ -203,4 +203,6 @@ public interface UserDataService {
     public void mergeUserFields(UserEntity origUserEntity, UserEntity newUserEntity);
 
 	List<UserEntity> getUsersForMSys(String mSysId);
+
+    public Map<String, UserAttributeEntity> getUserAttributes(String userId);
 }

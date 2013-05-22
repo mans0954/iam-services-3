@@ -84,5 +84,4 @@ public class OrganizationSearchBean extends AbstractSearchBean<Organization, Str
     public void setKeys(final Set<String> keySet) {
         this.keySet = keySet;
     }
-
 }

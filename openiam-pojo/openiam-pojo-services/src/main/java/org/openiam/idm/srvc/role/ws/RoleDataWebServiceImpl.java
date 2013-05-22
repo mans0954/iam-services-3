@@ -31,10 +31,8 @@ import org.openiam.base.ws.exception.BasicDataServiceException;
 import org.openiam.dozer.converter.RoleAttributeDozerConverter;
 import org.openiam.dozer.converter.RoleDozerConverter;
 import org.openiam.dozer.converter.RolePolicyDozerConverter;
-import org.openiam.idm.searchbeans.MembershipRoleSearchBean;
 import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
-import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
@@ -43,7 +41,6 @@ import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.dto.RoleAttribute;
 import org.openiam.idm.srvc.role.dto.RolePolicy;
 import org.openiam.idm.srvc.role.service.RoleDataService;
-import org.openiam.idm.srvc.searchbean.converter.RoleSearchBeanConverter;
 import org.openiam.idm.srvc.secdomain.service.SecurityDomainDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -78,9 +75,6 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
     
     @Autowired
     private RolePolicyDozerConverter rolePolicyDozerConverter;
-    
-    @Autowired
-    private RoleSearchBeanConverter roleSearchBeanConverter;
     
     @Autowired
     private GroupDataService groupService;
@@ -126,7 +120,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
 			
-			final RoleEntity role =  roleDataService.getRole(roleId);
+			final RoleEntity role =  roleDataService.getRole(roleId, null);
 			final GroupEntity group = groupService.getGroup(groupId);
 			if(role == null || group == null) {
 				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
@@ -155,7 +149,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
 			
-			if(roleDataService.getUserRole(userId, roleId) != null) {
+			if(roleDataService.getUserRole(userId, roleId, null) != null) {
 				throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
 			}
 			
@@ -171,10 +165,10 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 	}
 
 	@Override
-	public Role getRole(String roleId) {
+	public Role getRole(String roleId, String requesterId) {
 		Role retVal = null;
 		if(roleId != null) {
-			final RoleEntity entity = roleDataService.getRole(roleId);
+			final RoleEntity entity = roleDataService.getRole(roleId, requesterId);
 			if(entity != null) {
 				retVal = roleDozerConverter.convertToDTO(entity, false);
 			}
@@ -182,24 +176,22 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 		return retVal;
 	}
 
-//	@Override
-//	public List<Role> getRolesInGroup(final String groupId, final int from, final int size) {
-//		final List<RoleEntity> entityList = roleDataService.getRolesInGroup(groupId, from, size);
-//		final List<Role> roleList = roleDozerConverter.convertToDTOList(entityList, false);
-//		return roleList;
-//	}
-//
-//	@Override
-//	public List<Role> getRolesForUser(final String userId, final int from, final int size) {
-//		final List<RoleEntity> entityList = roleDataService.getRolesForUser(userId, from, size);
-//		final List<Role> roleList = roleDozerConverter.convertToDTOList(entityList, false);
-//		return roleList;
-//	}
+	@Override
+	public List<Role> getRolesInGroup(final String groupId, String requesterId, final int from, final int size) {
+		final List<RoleEntity> entityList = roleDataService.getRolesInGroup(groupId, requesterId, from, size);
+		return roleDozerConverter.convertToDTOList(entityList, false);
+	}
+
+	@Override
+	public List<Role> getRolesForUser(final String userId, String requesterId, final int from, final int size) {
+		final List<RoleEntity> entityList = roleDataService.getRolesForUser(userId, requesterId, from, size);
+		return roleDozerConverter.convertToDTOList(entityList, false);
+	}
 	
-//	@Override
-//	public int getNumOfRolesForUser(final String userId) {
-//		return roleDataService.getNumOfRolesForUser(userId);
-//	}
+	@Override
+	public int getNumOfRolesForUser(final String userId, String requesterId) {
+		return roleDataService.getNumOfRolesForUser(userId, requesterId);
+	}
 
 
 	@Override
@@ -328,7 +320,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 			}
 			
 			/* check if the name is taken by another entity */
-			final RoleEntity nameEntity = roleDataService.getRoleByName(role.getRoleName());
+			final RoleEntity nameEntity = roleDataService.getRoleByName(role.getRoleName(), null);
 			if(nameEntity != null) {
 				if(StringUtils.isBlank(entity.getRoleId()) || !entity.getRoleId().equals(nameEntity.getRoleId())) {
 					throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
@@ -344,7 +336,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 			}
 			
 			if(StringUtils.isNotBlank(entity.getRoleId())) {
-				final RoleEntity dbObject = roleDataService.getRole(entity.getRoleId());
+				final RoleEntity dbObject = roleDataService.getRole(entity.getRoleId(), null);
 				if(dbObject == null) {
 					throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
 				}
@@ -449,53 +441,51 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 	}
 
 	@Override
-	public List<Role> findBeans(final RoleSearchBean searchBean, final int from, final int size) {
-		final List<RoleEntity> found = roleDataService.findBeans(searchBean, from, size);
+	public List<Role> findBeans(final RoleSearchBean searchBean, String requesterId, final int from, final int size) {
+		final List<RoleEntity> found = roleDataService.findBeans(searchBean, requesterId, from, size);
 		return roleDozerConverter.convertToDTOList(found, (searchBean.isDeepCopy()));
 	}
 
 	@Override
 	@WebMethod
-	public int countBeans(final RoleSearchBean searchBean) {
-		return roleDataService.countBeans(searchBean);
-	}
-
-//	@Override
-//	public List<Role> getRolesForResource(final String resourceId, final int from, final int size) {
-//		final List<RoleEntity> entityList = roleDataService.getRolesForResource(resourceId, from, size);
-//		return roleDozerConverter.convertToDTOList(entityList, false);
-//	}
-//
-//	@Override
-//	public int getNumOfRolesForResource(final String resourceId) {
-//		return roleDataService.getNumOfRolesForResource(resourceId);
-//	}
-
-	@Override
-	public List<Role> getChildRoles(final MembershipRoleSearchBean searchBean, final  int from, final int size) {
-		final List<RoleEntity> entityList = roleDataService.getChildRoles(searchBean, from, size);
-		final List<Role> roleList = roleDozerConverter.convertToDTOList(entityList, false);
-		return roleList;
+	public int countBeans(final RoleSearchBean searchBean, String requesterId) {
+		return roleDataService.countBeans(searchBean, requesterId);
 	}
 
 	@Override
-	@WebMethod
-	public int getNumOfChildRoles(final MembershipRoleSearchBean searchBean) {
-		return roleDataService.getNumOfChildRoles(searchBean);
+	public List<Role> getRolesForResource(final String resourceId, String requesterId, final int from, final int size) {
+		final List<RoleEntity> entityList = roleDataService.getRolesForResource(resourceId, requesterId, from, size);
+		return roleDozerConverter.convertToDTOList(entityList, false);
+	}
+
+	@Override
+	public int getNumOfRolesForResource(final String resourceId, String requesterId) {
+		return roleDataService.getNumOfRolesForResource(resourceId, requesterId);
+	}
+
+	@Override
+	public List<Role> getChildRoles(final String roleId, String requesterId, final  int from, final int size) {
+		final List<RoleEntity> entityList = roleDataService.getChildRoles(roleId, requesterId, from, size);
+		return roleDozerConverter.convertToDTOList(entityList, false);
 	}
 
 	@Override
 	@WebMethod
-	public List<Role> getParentRoles(final MembershipRoleSearchBean searchBean, final int from, final int size) {
-		final List<RoleEntity> entityList = roleDataService.getParentRoles(searchBean, from, size);
-		final List<Role> roleList = roleDozerConverter.convertToDTOList(entityList, false);
-		return roleList;
+	public int getNumOfChildRoles(final String roleId, String requesterId) {
+		return roleDataService.getNumOfChildRoles(roleId, requesterId);
 	}
 
 	@Override
 	@WebMethod
-	public int getNumOfParentRoles(final MembershipRoleSearchBean searchBean) {
-		return roleDataService.getNumOfParentRoles(searchBean);
+	public List<Role> getParentRoles(final String roleId, String requesterId, final int from, final int size) {
+		final List<RoleEntity> entityList = roleDataService.getParentRoles(roleId, requesterId, from, size);
+		return roleDozerConverter.convertToDTOList(entityList, false);
+	}
+
+	@Override
+	@WebMethod
+	public int getNumOfParentRoles(final String roleId, String requesterId) {
+		return roleDataService.getNumOfParentRoles(roleId, requesterId);
 	}
 
 	@Override
@@ -505,8 +495,8 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 			if(roleId == null || childRoleId == null) {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
-			final RoleEntity parent = roleDataService.getRole(roleId);
-			final RoleEntity child = roleDataService.getRole(childRoleId);
+			final RoleEntity parent = roleDataService.getRole(roleId, null);
+			final RoleEntity child = roleDataService.getRole(childRoleId, null);
 			if(parent == null || child == null) {
 				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
 			}
@@ -561,8 +551,8 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 			if(roleId == null || childRoleId == null) {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
-			final RoleEntity parent = roleDataService.getRole(roleId);
-			final RoleEntity child = roleDataService.getRole(childRoleId);
+			final RoleEntity parent = roleDataService.getRole(roleId, null);
+			final RoleEntity child = roleDataService.getRole(childRoleId, null);
 			if(parent == null || child == null) {
 				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
 			}
@@ -579,17 +569,9 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 		return response;
 	}
 
-    public List<Role> getEntitlementRoles(MembershipRoleSearchBean searchBean, int from, int size){
-        final List<RoleEntity> roleEntityList = roleDataService.getEntitlementRoles(searchBean, from, size);
-        final List<Role> roleList = roleDozerConverter.convertToDTOList(roleEntityList, false);
-        return  roleList;
-    }
-    public int getNumOfEntitlementRoles(MembershipRoleSearchBean searchBean){
-        return roleDataService.getNumOfEntitlementRoles(searchBean);
-    }
 
-//	@Override
-//	public int getNumOfRolesForGroup(final String groupId) {
-//		return roleDataService.getNumOfRolesForGroup(groupId);
-//	}
+	@Override
+	public int getNumOfRolesForGroup(final String groupId, String requesterId) {
+		return roleDataService.getNumOfRolesForGroup(groupId,requesterId);
+	}
 }

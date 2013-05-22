@@ -11,7 +11,6 @@ import org.openiam.base.ws.exception.BasicDataServiceException;
 import org.openiam.dozer.converter.GroupAttributeDozerConverter;
 import org.openiam.dozer.converter.GroupDozerConverter;
 import org.openiam.idm.searchbeans.GroupSearchBean;
-import org.openiam.idm.searchbeans.MembershipGroupSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.domain.UserGroupEntity;
@@ -75,7 +74,7 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 				throw new BasicDataServiceException(ResponseCode.NO_NAME);
 			}
 			
-			final GroupEntity found = groupManager.getGroupByName(group.getGrpName());
+			final GroupEntity found = groupManager.getGroupByName(group.getGrpName(), null);
 			if(found != null) {
 				if(StringUtils.isBlank(group.getGrpId()) && found != null) {
 					throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
@@ -100,10 +99,10 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 	}
 
 	@Override
-	public Group getGroup(final String groupId) {
+	public Group getGroup(final String groupId, final String requesterId) {
 		Group retVal = null;
 		if(StringUtils.isNotBlank(groupId)) {
-			final GroupEntity entity = groupManager.getGroup(groupId);
+			final GroupEntity entity = groupManager.getGroup(groupId, requesterId);
 			retVal = groupDozerConverter.convertToDTO(entity, true);
 		}
 		return retVal;
@@ -129,27 +128,25 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 	}
 	
 	@Override
-	public int getNumOfChildGroups(final MembershipGroupSearchBean searchBean) {
-		return groupManager.getNumOfChildGroups(searchBean);
+	public int getNumOfChildGroups(final String groupId, final String requesterId) {
+		return groupManager.getNumOfChildGroups(groupId, requesterId);
 	}
 
 	@Override
-	public List<Group> getChildGroups(final MembershipGroupSearchBean searchBean, final int from, final int size) {
-		final List<GroupEntity> groupEntityList = groupManager.getChildGroups(searchBean, from, size);
-		final List<Group> groupList = groupDozerConverter.convertToDTOList(groupEntityList, false);
-		return groupList;
+	public List<Group> getChildGroups(final  String groupId, final String requesterId, final int from, final int size) {
+		final List<GroupEntity> groupEntityList = groupManager.getChildGroups(groupId, requesterId, from, size);
+		return groupDozerConverter.convertToDTOList(groupEntityList, false);
 	}
 	
 	@Override
-	public int getNumOfParentGroups(final MembershipGroupSearchBean searchBean) {
-		return groupManager.getNumOfParentGroups(searchBean);
+	public int getNumOfParentGroups(final  String groupId, final String requesterId) {
+		return groupManager.getNumOfParentGroups(groupId, requesterId);
 	}
 
 	@Override
-	public List<Group> getParentGroups(final MembershipGroupSearchBean searchBean, final int from, final int size) {
-		final List<GroupEntity> groupEntityList = groupManager.getParentGroups(searchBean, from, size);
-		final List<Group> groupList = groupDozerConverter.convertToDTOList(groupEntityList, false);
-		return groupList;
+	public List<Group> getParentGroups(final  String groupId, final String requesterId, final int from, final int size) {
+		final List<GroupEntity> groupEntityList = groupManager.getParentGroups(groupId, requesterId, from, size);
+		return groupDozerConverter.convertToDTOList(groupEntityList, false);
 	}
 
 	@Override
@@ -171,18 +168,6 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 		return response;
 	}
 
-//	@Override
-//	public List<Group> getGroupsForUser(final String userId, final int from, final int size) {
-//		final List<GroupEntity> groupEntityList = groupManager.getGroupsForUser(userId, from, size);
-//		final List<Group> groupList = groupDozerConverter.convertToDTOList(groupEntityList, false);
-//		return groupList;
-//	}
-//
-//	@Override
-//	public int getNumOfGroupsForUser(final String userId) {
-//		return groupManager.getNumOfGroupsForUser(userId);
-//	}
-
 	@Override
 	public Response addUserToGroup(final String groupId, final String userId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
@@ -191,7 +176,7 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
 			
-			final UserGroupEntity entity = groupManager.getRecord(userId, groupId);
+			final UserGroupEntity entity = groupManager.getRecord(userId, groupId,null);
 			
 			if(entity != null) {
 				throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
@@ -274,53 +259,48 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 	}
 
 	@Override
-	public List<Group> findBeans(final GroupSearchBean searchBean, final int from, final int size) {
-		final List<GroupEntity> groupEntityList = groupManager.findBeans(searchBean, from, size);
+	public List<Group> findBeans(final GroupSearchBean searchBean, final String requesterId, final int from, final int size) {
+		final List<GroupEntity> groupEntityList = groupManager.findBeans(searchBean, requesterId, from, size);
 		return groupDozerConverter.convertToDTOList(groupEntityList, (searchBean.isDeepCopy()));
 	}
 
 	@Override
-	public int countBeans(final GroupSearchBean searchBean) {
-		return groupManager.countBeans(searchBean);
+	public int countBeans(final GroupSearchBean searchBean, final String requesterId) {
+		return groupManager.countBeans(searchBean, requesterId);
 	}
 
     @Override
-    public List<Group> getEntitlementGroups(MembershipGroupSearchBean searchBean,int from,int size) {
-        final List<GroupEntity> groupEntityList = groupManager.getEntitlementGroups(searchBean, from, size);
-        final List<Group> groupList = groupDozerConverter.convertToDTOList(groupEntityList, false);
-        return  groupList;
+    public List<Group> getGroupsForUser(final String userId, final String requesterId, final int from, final int size) {
+        final List<GroupEntity> groupEntityList = groupManager.getGroupsForUser(userId,requesterId, from, size);
+        return groupDozerConverter.convertToDTOList(groupEntityList, false);
     }
 
     @Override
-    public int getNumOfEntitlementGroups(MembershipGroupSearchBean searchBean) {
-        return groupManager.getNumOfEntitlementGroups(searchBean);
+    public int getNumOfGroupsForUser(final String userId, final String requesterId) {
+        return groupManager.getNumOfGroupsForUser(userId,requesterId);
     }
 
-    //	@Override
-//	public List<Group> getGroupsForResource(final String resourceId, final int from, final int size) {
-//		final List<GroupEntity> groupEntityList = groupManager.getGroupsForResource(resourceId, from, size);
-//		final List<Group> groupList = groupDozerConverter.convertToDTOList(groupEntityList, false);
-//		return groupList;
-//	}
-//
-//	@Override
-//	public int getNumOfGroupsforResource(final String resourceId) {
-//		return groupManager.getNumOfGroupsForResource(resourceId);
-//	}
-//
-//	@Override
-//	@WebMethod
-//	public List<Group> getGroupsForRole(final String roleId, final int from, final int size) {
-//		final List<GroupEntity> entityList = groupManager.getGroupsForRole(roleId, from, size);
-//		final List<Group> groupList = groupDozerConverter.convertToDTOList(entityList, false);
-//		return groupList;
-//	}
-//
-//	@Override
-//	@WebMethod
-//	public int getNumOfGroupsForRole(final String roleId) {
-//		return groupManager.getNumOfGroupsForRole(roleId);
-//	}
+    @Override
+	public List<Group> getGroupsForResource(final String resourceId, final String requesterId, final int from, final int size) {
+		final List<GroupEntity> groupEntityList = groupManager.getGroupsForResource(resourceId, requesterId, from, size);
+		return groupDozerConverter.convertToDTOList(groupEntityList, false);
+	}
+
+	@Override
+	public int getNumOfGroupsforResource(final String resourceId, final String requesterId) {
+		return groupManager.getNumOfGroupsForResource(resourceId, requesterId);
+	}
+
+	@Override
+	public List<Group> getGroupsForRole(final String roleId, final String requesterId, final int from, final int size) {
+		final List<GroupEntity> entityList = groupManager.getGroupsForRole(roleId, requesterId, from, size);
+		return groupDozerConverter.convertToDTOList(entityList, false);
+	}
+
+	@Override
+	public int getNumOfGroupsForRole(final String roleId, final String requesterId) {
+		return groupManager.getNumOfGroupsForRole(roleId, requesterId);
+	}
 
 	@Override
 	public Response addChildGroup(final String groupId, final String childGroupId) {
@@ -334,8 +314,8 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 				throw new BasicDataServiceException(ResponseCode.CANT_ADD_YOURSELF_AS_CHILD);
 			}
 			
-			final GroupEntity group = groupManager.getGroup(groupId);
-			final GroupEntity child = groupManager.getGroup(childGroupId);
+			final GroupEntity group = groupManager.getGroup(groupId, null);
+			final GroupEntity child = groupManager.getGroup(childGroupId, null);
 			if(group == null || child == null) {
 				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
 			}

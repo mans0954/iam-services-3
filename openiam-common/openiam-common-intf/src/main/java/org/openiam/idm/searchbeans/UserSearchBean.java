@@ -50,7 +50,8 @@ import java.util.*;
         "organizationIdList",
         "deptIdList",
         "divisionIdList",
-        "attributeList"
+        "attributeList",
+        "requestorId"
 })
 public class UserSearchBean extends AbstractSearchBean<User, String> implements SearchBean<User, String>,
         Serializable {
@@ -98,7 +99,17 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
     protected List<String> divisionIdList = new ArrayList<String>();
     protected List<SearchAttribute> attributeList = new ArrayList<SearchAttribute>();
 
-//    public String getOrganizationId() {
+    private String requestorId;
+
+    public String getRequestorId() {
+        return requestorId;
+    }
+
+    public void setRequestorId(String requestorId) {
+        this.requestorId = requestorId;
+    }
+
+    //    public String getOrganizationId() {
 //    	return organizationId;
 //    }
 //

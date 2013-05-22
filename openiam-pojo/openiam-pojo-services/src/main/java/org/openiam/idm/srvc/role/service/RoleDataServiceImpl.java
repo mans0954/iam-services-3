@@ -5,7 +5,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.dozer.converter.RoleDozerConverter;
-import org.openiam.idm.searchbeans.MembershipRoleSearchBean;
 import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
@@ -15,8 +14,9 @@ import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.domain.RolePolicyEntity;
 import org.openiam.idm.srvc.role.domain.UserRoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDAO;
+import org.openiam.idm.srvc.user.service.UserDataService;
+import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,6 +44,9 @@ public class RoleDataServiceImpl implements RoleDataService {
 	
 	@Autowired
 	private UserDAO userDAO;
+
+    @Autowired
+    private UserDataService userDataService;
 	
 	@Autowired
 	private RoleDozerConverter roleDozerConverter;
@@ -57,9 +60,16 @@ public class RoleDataServiceImpl implements RoleDataService {
 
 	private static final Log log = LogFactory.getLog(RoleDataServiceImpl.class);
 
+    @Override
+    public RoleEntity getRole(String roleId){
+        return  getRole(roleId, null);
+    }
 	@Override
-	public RoleEntity getRole(String roleId) {
-		return roleDao.findById(roleId);
+	public RoleEntity getRole(String roleId, final String requesterId) {
+        if(DelegationFilterHelper.isAllowed(roleId, getDelegationFilter(requesterId))){
+            return roleDao.findById(roleId);
+        }
+        return null;
 	}
 	
 	@Override
@@ -241,35 +251,35 @@ public class RoleDataServiceImpl implements RoleDataService {
 		}
 	}
 
-//	@Override
-//	public List<RoleEntity> getRolesInGroup(String groupId, int from, int size) {
-//		return roleDao.getRolesForGroup(groupId, from, size);
-//	}
+	@Override
+	public List<RoleEntity> getRolesInGroup(final String groupId, final String requesterId, int from, int size) {
+		return roleDao.getRolesForGroup(groupId, getDelegationFilter(requesterId), from, size);
+	}
 
 	@Override
-	public List<UserRoleEntity> getUserRolesForUser(String userId, int from, int size) {
+	public List<UserRoleEntity> getUserRolesForUser(String userId,  int from, int size) {
 		final UserRoleEntity example = new UserRoleEntity();
 		example.setUserId(userId);
 		return userRoleDao.getByExample(example, from, size);
 	}
 
-	@Override
-	public List<UserEntity> getUsersInRole(final String roleId, int from, int size) {
-		final UserRoleEntity example = new UserRoleEntity();
-		example.setRoleId(roleId);
-		final List<UserRoleEntity> userRoleEntityList = userRoleDao.getByExample(example, from, size);
-		final Set<String> roleIds = new LinkedHashSet<String>();
-		if(CollectionUtils.isNotEmpty(userRoleEntityList)) {
-			for(final UserRoleEntity entity : userRoleEntityList) {
-				roleIds.add(entity.getRoleId());
-			}
-		}
-		return userDAO.findByIds(roleIds, from, size);
-	}
+//	@Override
+//	public List<UserEntity> getUsersInRole(final String roleId, final String requesterId, int from, int size) {
+//		final UserRoleEntity example = new UserRoleEntity();
+//		example.setRoleId(roleId);
+//		final List<UserRoleEntity> userRoleEntityList = userRoleDao.getByExample(example, from, size);
+//		final Set<String> roleIds = new LinkedHashSet<String>();
+//		if(CollectionUtils.isNotEmpty(userRoleEntityList)) {
+//			for(final UserRoleEntity entity : userRoleEntityList) {
+//				roleIds.add(entity.getRoleId());
+//			}
+//		}
+//		return userDAO.findByIds(roleIds, from, size);
+//	}
 
 	@Override
-	public List<RoleEntity> getUserRoles(String userId, int from, int size) {
-		return roleDao.findUserRoles(userId, from, size);
+	public List<RoleEntity> getUserRoles(String userId, final String requesterId, int from, int size) {
+		return roleDao.findUserRoles(userId, getDelegationFilter(requesterId), from, size);
 	}
 
 	@Override
@@ -297,45 +307,55 @@ public class RoleDataServiceImpl implements RoleDataService {
 	}
 
 	@Override
-	public List<RoleEntity> findBeans(RoleSearchBean searchBean, int from, int size) {
-        List<RoleEntity> retVal = roleDao.getByExample(searchBean, from, size);
-        return retVal;
+	public List<RoleEntity> findBeans(RoleSearchBean searchBean, final String requesterId, int from, int size) {
+        Set<String> filter = getDelegationFilter(requesterId);
+        if(StringUtils.isBlank(searchBean.getKey()))
+            searchBean.setKeys(filter);
+        else if(!DelegationFilterHelper.isAllowed(searchBean.getKey(), filter)){
+            return new ArrayList<RoleEntity>(0);
+        }
+        return roleDao.getByExample(searchBean, from, size);
 	}
 
 	@Override
-	public int countBeans(RoleSearchBean searchBean) {
-        int count = roleDao.count(searchBean);
-        return count;
-	}
-
-//	@Override
-//	public List<RoleEntity> getRolesForResource(final String resourceId, final int from, final int size) {
-//		return roleDao.getRolesForResource(resourceId, from, size);
-//	}
-//
-//	@Override
-//	public int getNumOfRolesForResource(final String resourceId) {
-//		return roleDao.getNumOfRolesForResource(resourceId);
-//	}
-
-	@Override
-	public List<RoleEntity> getChildRoles(MembershipRoleSearchBean searchBean, int from, int size) {
-		return roleDao.getChildRoles(searchBean, from, size);
+	public int countBeans(RoleSearchBean searchBean, final String requesterId) {
+        Set<String> filter = getDelegationFilter(requesterId);
+        if(StringUtils.isBlank(searchBean.getKey()))
+            searchBean.setKeys(filter);
+        else if(!DelegationFilterHelper.isAllowed(searchBean.getKey(), filter)){
+            return 0;
+        }
+        return roleDao.count(searchBean);
 	}
 
 	@Override
-	public int getNumOfChildRoles(MembershipRoleSearchBean searchBean) {
-		return roleDao.getNumOfChildRoles(searchBean);
+	public List<RoleEntity> getRolesForResource(final String resourceId, final String requesterId, final int from, final int size) {
+		return roleDao.getRolesForResource(resourceId, getDelegationFilter(requesterId), from, size);
 	}
 
 	@Override
-	public List<RoleEntity> getParentRoles(MembershipRoleSearchBean searchBean, int from, int size) {
-		return roleDao.getParentRoles(searchBean, from, size);
+	public int getNumOfRolesForResource(final String resourceId, final String requesterId) {
+		return roleDao.getNumOfRolesForResource(resourceId, getDelegationFilter(requesterId));
 	}
 
 	@Override
-	public int getNumOfParentRoles(MembershipRoleSearchBean searchBean) {
-		return roleDao.getNumOfParentRoles(searchBean);
+	public List<RoleEntity> getChildRoles(final String roleId, final String requesterId, int from, int size) {
+		return roleDao.getChildRoles(roleId, getDelegationFilter(requesterId), from, size);
+	}
+
+	@Override
+	public int getNumOfChildRoles(final String roleId, final String requesterId) {
+		return roleDao.getNumOfChildRoles(roleId, getDelegationFilter(requesterId));
+	}
+
+	@Override
+	public List<RoleEntity> getParentRoles(final String roleId, final String requesterId, int from, int size) {
+		return roleDao.getParentRoles(roleId, getDelegationFilter(requesterId), from, size);
+	}
+
+	@Override
+	public int getNumOfParentRoles(final String roleId, final String requesterId) {
+		return roleDao.getNumOfParentRoles(roleId, getDelegationFilter(requesterId));
 	}
 
 	@Override
@@ -362,38 +382,40 @@ public class RoleDataServiceImpl implements RoleDataService {
 		}
 	}
 
-//	@Override
-//	public int getNumOfRolesForGroup(String groupId) {
-//		return roleDao.getNumOfRolesForGroup(groupId);
-//	}
-//
-//	@Override
-//	public List<RoleEntity> getRolesForUser(final String userId, final int from, final int size) {
-//		return roleDao.getRolesForUser(userId, from, size);
-//	}
-//
-//	@Override
-//	public int getNumOfRolesForUser(final String userId) {
-//		return roleDao.getNumOfRolesForUser(userId);
-//	}
-
 	@Override
-	public RoleEntity getRoleByName(String roleName) {
-		final RoleEntity example = new RoleEntity();
-		example.setRoleName(roleName);
-		final List<RoleEntity> nameEntityList = roleDao.getByExample(example);
-		return (CollectionUtils.isNotEmpty(nameEntityList)) ? nameEntityList.get(0) : null;
+	public int getNumOfRolesForGroup(String groupId, final String requesterId) {
+		return roleDao.getNumOfRolesForGroup(groupId, getDelegationFilter(requesterId));
 	}
 
 	@Override
-	public UserRoleEntity getUserRole(String userId, String roleId) {
+	public List<RoleEntity> getRolesForUser(final String userId, final String requesterId, final int from, final int size) {
+		return roleDao.getRolesForUser(userId, getDelegationFilter(requesterId), from, size);
+	}
+
+	@Override
+	public int getNumOfRolesForUser(final String userId, final String requesterId) {
+		return roleDao.getNumOfRolesForUser(userId, getDelegationFilter(requesterId));
+	}
+
+	@Override
+	public RoleEntity getRoleByName(String roleName, final String requesterId) {
+        final RoleSearchBean searchBean = new RoleSearchBean();
+        searchBean.setName(roleName);
+        final List<RoleEntity> foundList = this.findBeans(searchBean, requesterId, 0, 1);
+		return (CollectionUtils.isNotEmpty(foundList)) ? foundList.get(0) : null;
+	}
+
+	@Override
+	public UserRoleEntity getUserRole(String userId, String roleId, final String requesterId) {
 		return userRoleDAO.getRecord(userId, roleId);
 	}
 
-    public List<RoleEntity> getEntitlementRoles(MembershipRoleSearchBean searchBean, int from, int size){
-        return roleDao.getEntitlementRoles(searchBean, from, size);
-    }
-    public int getNumOfEntitlementRoles(MembershipRoleSearchBean searchBean){
-        return roleDao.getNumOfEntitlementRoles(searchBean);
+    private Set<String> getDelegationFilter(String requesterId){
+        Set<String> filterData = null;
+        if(StringUtils.isNotBlank(requesterId)){
+            filterData = new HashSet<String>(
+                    DelegationFilterHelper.getRoleFilterFromString(userDataService.getUserAttributes(requesterId)));
+        }
+        return filterData;
     }
 }

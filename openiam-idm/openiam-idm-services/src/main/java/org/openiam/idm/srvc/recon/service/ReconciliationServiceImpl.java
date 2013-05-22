@@ -202,7 +202,7 @@ public class ReconciliationServiceImpl implements ReconciliationService, MuleCon
 
             List<UserEntity> users = new ArrayList<UserEntity>();
             for(ResourceRole rRole: res.getResourceRoles()) {
-                final List<UserEntity> usersInrole = roleDataService.getUsersInRole(rRole.getId().getRoleId(), 0, Integer.MAX_VALUE);
+                final List<UserEntity> usersInrole = userMgr .getUsersForRole(rRole.getId().getRoleId(), 0, Integer.MAX_VALUE);
                 if(CollectionUtils.isNotEmpty(usersInrole)) {
                 	users.addAll(usersInrole);
                 }

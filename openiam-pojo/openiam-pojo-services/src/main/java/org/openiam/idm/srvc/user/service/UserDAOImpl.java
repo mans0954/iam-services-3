@@ -2,27 +2,22 @@ package org.openiam.idm.srvc.user.service;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.hibernate.*;
-
 import org.hibernate.criterion.*;
-
 import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.idm.searchbeans.DelegationFilterSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
-import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
-import org.openiam.idm.srvc.user.dto.UserSearch;
-
 import org.openiam.idm.srvc.user.dto.SearchAttribute;
-
-import javax.naming.InitialContext;
-import java.util.*;
-
+import org.openiam.idm.srvc.user.dto.UserSearch;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 import static org.hibernate.criterion.Projections.rowCount;
 
@@ -43,6 +38,42 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
     protected String getPKfieldName() {
         return "userId";
     }
+
+    @Override
+    public UserEntity findByIdDelFlt(String userId, DelegationFilterSearchBean delegationFilter){
+        Criteria criteria = getCriteria();
+        Disjunction disjunction = Restrictions.disjunction();
+        disjunction.add(Restrictions.isNotNull("systemFlag")).add(
+                Restrictions.ne("systemFlag", "1"));
+        criteria.add(disjunction);
+
+
+        if(delegationFilter.getOrganizationIdSet()!=null && !delegationFilter.getOrganizationIdSet().isEmpty()){
+            criteria.add(Restrictions.in("companyId", delegationFilter.getOrganizationIdSet()));
+        }
+        if(delegationFilter.getDeptIdSet()!=null && !delegationFilter.getDeptIdSet().isEmpty()){
+            criteria.add(Restrictions.in("deptCd", delegationFilter.getDeptIdSet()));
+        }
+        if(delegationFilter.getDivisionIdSet()!=null && !delegationFilter.getDivisionIdSet().isEmpty()){
+            criteria.add(Restrictions.in("division", delegationFilter.getOrganizationIdSet()));
+        }
+
+
+        if(delegationFilter.getGroupIdSet()!=null && !delegationFilter.getGroupIdSet().isEmpty()){
+            criteria.createAlias("userGroups","ug");
+            criteria.add(Restrictions.in("ug.grpId", delegationFilter.getGroupIdSet()));
+        }
+
+        if(delegationFilter.getRoleIdSet()!=null && !delegationFilter.getRoleIdSet().isEmpty()){
+            criteria.createAlias("userRoles","ur");
+            criteria.add(Restrictions.in("ur.roleId", delegationFilter.getRoleIdSet()));
+        }
+
+        criteria.add(Restrictions.eq(getPKfieldName(), userId));
+
+        return (UserEntity)criteria.uniqueResult();
+    }
+
 
     public List<UserEntity> findByLastUpdateRange(Date startDate, Date endDate) {
         log.debug("finding User based on the lastUpdate date range that is provided");
@@ -1264,8 +1295,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
                                              searchBean.getZipCode()));
             }
             if (CollectionUtils.isNotEmpty(searchBean.getOrganizationIdList())) {
-                criteria.add(Restrictions.in("companyId",
-                                             searchBean.getOrganizationIdList()));
+                criteria.add(Restrictions.in("companyId", searchBean.getOrganizationIdList()));
             }
             if (searchBean.getDeptIdList() != null
                 && !searchBean.getDeptIdList().isEmpty()) {

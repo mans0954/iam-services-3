@@ -40,6 +40,7 @@ public interface UserDataWebService {
 	@WebMethod
 	public User getUserWithDependent(
 			@WebParam(name = "id", targetNamespace = "") String id,
+            @WebParam(name = "requestorId", targetNamespace = "") String requestorId,
 			@WebParam(name = "dependants", targetNamespace = "") boolean dependants);
 
 	@WebMethod

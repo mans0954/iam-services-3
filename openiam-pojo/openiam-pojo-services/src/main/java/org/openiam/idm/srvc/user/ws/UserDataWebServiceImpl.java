@@ -22,7 +22,6 @@
 package org.openiam.idm.srvc.user.ws;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.mule.api.MuleContext;
 import org.mule.api.context.MuleContextAware;
@@ -32,10 +31,7 @@ import org.openiam.base.ws.ResponseStatus;
 import org.openiam.base.ws.exception.BasicDataServiceException;
 import org.openiam.dozer.converter.*;
 import org.openiam.idm.searchbeans.UserSearchBean;
-import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.auth.login.LoginDAO;
-import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
@@ -44,13 +40,9 @@ import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
 import org.openiam.idm.srvc.meta.exception.PageTemplateException;
-import org.openiam.idm.srvc.meta.service.MetadataElementTemplateService;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.msg.service.MailService;
-import org.openiam.idm.srvc.pswd.service.PasswordGenerator;
-import org.openiam.idm.srvc.role.domain.UserRoleEntity;
-import org.openiam.idm.srvc.role.service.UserRoleDAO;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -63,7 +55,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.jws.WebParam;
 import javax.jws.WebService;
@@ -540,8 +531,8 @@ public class UserDataWebServiceImpl implements UserDataWebService,
 	}
 
 	@Override
-	public User getUserWithDependent(String id, boolean dependants) {
-		final UserEntity user = userManager.getUser(id);
+	public User getUserWithDependent(String id, String requestorId, boolean dependants) {
+		final UserEntity user = userManager.getUser(id, requestorId);
 		return userDozerConverter.convertToDTO(user, dependants);
 	}
 
@@ -1223,7 +1214,7 @@ public class UserDataWebServiceImpl implements UserDataWebService,
 
 	@Override
 	public List<UserAttribute> getUserAttributes(final String userId) {
-		final UserEntity user = userManager.getUser(userId);
+		final UserEntity user = userManager.getUser(userId, null);
 		final List<UserAttributeEntity> attributes = (user != null && user
 				.getUserAttributes() != null) ? new ArrayList<UserAttributeEntity>(
 				user.getUserAttributes().values()) : null;

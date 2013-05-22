@@ -7,7 +7,6 @@ import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
-import org.openiam.idm.searchbeans.MembershipOrganizationSearchBean;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
@@ -16,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Set;
 
 import static org.hibernate.criterion.Projections.rowCount;
 
@@ -41,6 +41,7 @@ public class OrganizationDAOImpl extends BaseDaoImpl<OrganizationEntity, String>
                 //.setFetchMode("attributes", FetchMode.JOIN);
         return criteria.list();
     }
+
 
     @Override
     protected Criteria getExampleCriteria(final SearchBean searchBean) {
@@ -100,6 +101,7 @@ public class OrganizationDAOImpl extends BaseDaoImpl<OrganizationEntity, String>
                 criteria.add(Restrictions.eq("internalOrgId", organization.getInternalOrgId()));
             }
         }
+        criteria.addOrder(Order.asc("organizationName"));
         return criteria;
     }
 
@@ -108,59 +110,55 @@ public class OrganizationDAOImpl extends BaseDaoImpl<OrganizationEntity, String>
         return "orgId";
     }
     
-    private Criteria getChildOrganizationsCriteria(final MembershipOrganizationSearchBean searchBean) {
-        Criteria criteria =  getCriteria().createAlias("parentOrganizations", "organization").add( Restrictions.eq("organization.orgId", searchBean.getMemberShipOrganisationId()));
-        if(searchBean.hasMultipleKeys()){
-            criteria.add(Restrictions.in(getPKfieldName(), searchBean.getKeys()));
-        }
-        return  criteria;
-	}
-    
-	@Override
-	public int getNumOfChildOrganizations(MembershipOrganizationSearchBean searchBean) {
-		final Criteria criteria = getChildOrganizationsCriteria(searchBean).setProjection(rowCount());
-		return ((Number)criteria.uniqueResult()).intValue();
-	}
 
 	@Override
-	public List<OrganizationEntity> getChildOrganizations(final MembershipOrganizationSearchBean searchBean, final int from, final int size) {
-		final Criteria criteria = getChildOrganizationsCriteria(searchBean);
-		
-		if(from > -1) {
-			criteria.setFirstResult(from);
-		}
-		
-		if(size > -1) {
-			criteria.setMaxResults(size);
-		}
-		return criteria.list();
+	public List<OrganizationEntity> getChildOrganizations(String orgId, Set<String> filter, final int from, final int size) {
+		return getList(getChildOrganizationsCriteria(orgId, filter), from, size);
 	}
-	
-    private Criteria getParentOrganizationsCriteria(final MembershipOrganizationSearchBean searchBean) {
-        Criteria criteria =  getCriteria().createAlias("childOrganizations", "organization").add( Restrictions.eq("organization.orgId", searchBean.getMemberShipOrganisationId()));
-        if(searchBean.hasMultipleKeys()){
-            criteria.add(Restrictions.in(getPKfieldName(), searchBean.getKeys()));
-        }
-        return  criteria;
-	}
+    @Override
+    public List<OrganizationEntity> getParentOrganizations(String orgId, Set<String> filter, final int from, final int size) {
+        return getList(getParentOrganizationsCriteria(orgId, filter), from, size);
+    }
+
 	
 	@Override
-	public int getNumOfParentOrganizations(MembershipOrganizationSearchBean searchBean) {
-		final Criteria criteria = getParentOrganizationsCriteria(searchBean).setProjection(rowCount());
+	public int getNumOfParentOrganizations(String orgId, Set<String> filter) {
+		final Criteria criteria = getParentOrganizationsCriteria(orgId, filter).setProjection(rowCount());
 		return ((Number)criteria.uniqueResult()).intValue();
 	}
+    @Override
+    public int getNumOfChildOrganizations(String orgId, Set<String> filter) {
+        final Criteria criteria = getChildOrganizationsCriteria(orgId, filter).setProjection(rowCount());
+        return ((Number)criteria.uniqueResult()).intValue();
+    }
 
-	@Override
-	public List<OrganizationEntity> getParentOrganizations(final MembershipOrganizationSearchBean searchBean, final int from, final int size) {
-		final Criteria criteria = getParentOrganizationsCriteria(searchBean);
-		
-		if(from > -1) {
-			criteria.setFirstResult(from);
-		}
-		
-		if(size > -1) {
-			criteria.setMaxResults(size);
-		}
-		return criteria.list();
-	}
+
+
+    private List<OrganizationEntity> getList(Criteria criteria, final int from, final int size){
+        if(from > -1) {
+            criteria.setFirstResult(from);
+        }
+
+        if(size > -1) {
+            criteria.setMaxResults(size);
+        }
+        criteria.addOrder(Order.asc("organizationName"));
+        return criteria.list();
+    }
+
+    private Criteria getParentOrganizationsCriteria(String orgId, Set<String> filter) {
+        Criteria criteria =  getCriteria().createAlias("childOrganizations", "organization").add( Restrictions.eq("organization.orgId", orgId));
+        if(filter!=null && !filter.isEmpty()){
+            criteria.add(Restrictions.in(getPKfieldName(), filter));
+        }
+        return  criteria;
+    }
+
+    private Criteria getChildOrganizationsCriteria(String orgId, Set<String> filter) {
+        Criteria criteria =  getCriteria().createAlias("parentOrganizations", "organization").add( Restrictions.eq("organization.orgId", orgId));
+        if(filter!=null && !filter.isEmpty()){
+            criteria.add(Restrictions.in(getPKfieldName(), filter));
+        }
+        return  criteria;
+    }
 }

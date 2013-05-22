@@ -6,12 +6,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.dozer.converter.GroupDozerConverter;
 import org.openiam.idm.searchbeans.GroupSearchBean;
-import org.openiam.idm.searchbeans.MembershipGroupSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.domain.UserGroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.res.service.ResourceGroupDAO;
+import org.openiam.idm.srvc.user.service.UserDataService;
+import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,6 +44,9 @@ public class GroupDataServiceImpl implements GroupDataService {
 	
 	@Autowired
 	private UserGroupDAO userGroupDao;
+
+    @Autowired
+    private UserDataService userDataService;
     
     @Autowired
     private GroupDozerConverter groupDozerConverter;
@@ -55,11 +59,117 @@ public class GroupDataServiceImpl implements GroupDataService {
 	public GroupDataServiceImpl() {
 
 	}
-	
-	public GroupEntity getGroup(final String grpId) {
-		return groupDao.findById(grpId);
+
+    public GroupEntity getGroup(final String grpId) {
+        return getGroup(grpId, null);
+    }
+
+	public GroupEntity getGroup(final String grpId, final String requesterId) {
+        if(DelegationFilterHelper.isAllowed(grpId, getDelegationFilter(requesterId))){
+            return groupDao.findById(grpId);
+        }
+        return null;
 	}
 
+    @Override
+    public GroupEntity getGroupByName(final String groupName, final String requesterId) {
+        final GroupSearchBean searchBean = new GroupSearchBean();
+        searchBean.setName(groupName);
+        final List<GroupEntity> foundList = this.findBeans(searchBean, requesterId, 0, 1);
+        return (CollectionUtils.isNotEmpty(foundList)) ? foundList.get(0) : null;
+    }
+
+    @Override
+    public UserGroupEntity getRecord(final String userId, final String groupId, final String requesterId) {
+        if(DelegationFilterHelper.isAllowed(groupId, getDelegationFilter(requesterId))){
+            return userGroupDao.getRecord(groupId, userId);
+        }
+        return null;
+    }
+
+    @Override
+    public List<GroupEntity> getChildGroups(final String groupId, final String requesterId, final int from, final int size) {
+        return groupDao.getChildGroups(groupId, getDelegationFilter(requesterId), from, size);
+    }
+
+    @Override
+    public List<GroupEntity> getParentGroups(final String groupId, final String requesterId, final int from, final int size) {
+        return groupDao.getParentGroups(groupId, getDelegationFilter(requesterId), from, size);
+    }
+
+
+    @Override
+    public List<GroupEntity> findBeans(final GroupSearchBean searchBean, final  String requesterId, int from, int size) {
+        Set<String> filter = getDelegationFilter(requesterId);
+        if(StringUtils.isBlank(searchBean.getKey()))
+            searchBean.setKeys(filter);
+        else if(!DelegationFilterHelper.isAllowed(searchBean.getKey(), filter)){
+            return new ArrayList<GroupEntity>(0);
+        }
+        return groupDao.getByExample(searchBean, from, size);
+    }
+
+    @Override
+    public List<GroupEntity> getGroupsForUser(final String userId, final String requesterId, int from, int size) {
+        return groupDao.getGroupsForUser(userId, getDelegationFilter(requesterId), from, size);
+    }
+    @Override
+    public List<GroupEntity> getGroupsForResource(final String resourceId, final String requesterId, final int from, final int size) {
+        return groupDao.getGroupsForResource(resourceId, getDelegationFilter(requesterId), from, size);
+    }
+
+    @Override
+    public List<GroupEntity> getGroupsForRole(final String roleId, final String requesterId, int from, int size) {
+        return groupDao.getGroupsForRole(roleId, getDelegationFilter(requesterId), from, size);
+    }
+
+    @Override
+    public int getNumOfGroupsForRole(final String roleId, final String requesterId) {
+        return groupDao.getNumOfGroupsForRole(roleId, getDelegationFilter(requesterId));
+    }
+
+    @Override
+    public int getNumOfGroupsForResource(final String resourceId, final String requesterId) {
+        return groupDao.getNumOfGroupsForResource(resourceId, getDelegationFilter(requesterId));
+    }
+
+    @Override
+    public int getNumOfGroupsForUser(final String userId, final String requesterId) {
+        return groupDao.getNumOfGroupsForUser(userId, getDelegationFilter(requesterId));
+    }
+
+    @Override
+    public int countBeans(final GroupSearchBean searchBean, final String requesterId) {
+        Set<String> filter = getDelegationFilter(requesterId);
+        if(StringUtils.isBlank(searchBean.getKey()))
+            searchBean.setKeys(filter);
+        else if(!DelegationFilterHelper.isAllowed(searchBean.getKey(), filter)){
+            return 0;
+        }
+        return groupDao.count(searchBean);
+    }
+
+    @Override
+    public int getNumOfChildGroups(final String groupId, final String requesterId) {
+        return groupDao.getNumOfChildGroups(groupId, getDelegationFilter(requesterId));
+    }
+
+    @Override
+    public int getNumOfParentGroups(final String groupId, final String requesterId) {
+        return groupDao.getNumOfParentGroups(groupId, getDelegationFilter(requesterId));
+    }
+
+    @Override
+    public List<Group> getCompiledGroupsForUser(final String userId) {
+        final List<GroupEntity> groupList = this.getGroupsForUser(userId, null, 0, Integer.MAX_VALUE);
+        final Set<GroupEntity> visitedSet = new HashSet<GroupEntity>();
+        if(CollectionUtils.isNotEmpty(groupList)) {
+            for(final GroupEntity group : groupList) {
+                visitGroups(group, visitedSet);
+            }
+        }
+        return groupDozerConverter.convertToDTOList(new ArrayList<GroupEntity>(visitedSet), true);
+    }
 	public boolean isUserInCompiledGroupList(String groupId, String userId) {
 		if(groupId != null) {
 			final List<Group> userGroupList =  getCompiledGroupsForUser(userId);
@@ -128,30 +238,6 @@ public class GroupDataServiceImpl implements GroupDataService {
 		}
 	}
 
-	@Override
-	public List<GroupEntity> getChildGroups(final MembershipGroupSearchBean searchBean, final int from, final int size) {
-		return groupDao.getChildGroups(searchBean, from, size);
-	}
-
-	@Override
-	public List<GroupEntity> getParentGroups(final MembershipGroupSearchBean searchBean, final int from, final int size) {
-		return groupDao.getParentGroups(searchBean, from, size);
-	}
-	
-	@Override
-	public List<Group> getCompiledGroupsForUser(final String userId) {
-        MembershipGroupSearchBean searchBean = new  MembershipGroupSearchBean();
-        searchBean.setUserId(userId);
-		final List<GroupEntity> groupList = groupDao.getEntitlementGroups(searchBean, 0, Integer.MAX_VALUE);
-		final Set<GroupEntity> visitedSet = new HashSet<GroupEntity>();
-		if(CollectionUtils.isNotEmpty(groupList)) {
-			for(final GroupEntity group : groupList) {
-				visitGroups(group, visitedSet);
-			}
-		}
-		return groupDozerConverter.convertToDTOList(new ArrayList<GroupEntity>(visitedSet), true);
-	}
-	
 	private void visitGroups(final GroupEntity entity, final Set<GroupEntity> visitedSet) {
 		if(entity != null) {
 			if(!visitedSet.contains(entity)) {
@@ -166,15 +252,6 @@ public class GroupDataServiceImpl implements GroupDataService {
 		}
 	}
 
-//	@Override
-//	public List<GroupEntity> getGroupsForUser(String userId, int from, int size) {
-//		return groupDao.getGroupsForUser(userId, from, size);
-//	}
-//
-//	@Override
-//	public int getNumOfGroupsForUser(String userId) {
-//		return groupDao.getNumOfGroupsForUser(userId);
-//	}
 
 	@Override
 	public void saveAttribute(final GroupAttributeEntity attribute) {
@@ -191,64 +268,6 @@ public class GroupDataServiceImpl implements GroupDataService {
 		if(entity != null) {
 			groupAttrDao.delete(entity);
 		}
-	}
-
-	@Override
-	public List<GroupEntity> findBeans(GroupSearchBean searchBean, int from, int size) {
-        List<GroupEntity> retVal = groupDao.getByExample(searchBean, from, size);
-        return retVal;
-	}
-
-	@Override
-	public int countBeans(GroupSearchBean searchBean) {
-        int count = groupDao.count(searchBean);
-        return count;
-	}
-
-//	@Override
-//	public List<GroupEntity> getGroupsForResource(final String resourceId, final int from, final int size) {
-//		final GroupEntity entity = new GroupEntity();
-//
-//		final ResourceGroupEntity resourceGroupEntity = new ResourceGroupEntity();
-//		resourceGroupEntity.setResourceId(resourceId);
-//		entity.addResourceGroup(resourceGroupEntity);
-//		return groupDao.getByExample(entity, from, size);
-//	}
-//
-//	@Override
-//	public int getNumOfGroupsForResource(final String resourceId) {
-//		final GroupEntity entity = new GroupEntity();
-//		final ResourceGroupEntity resourceGroupEntity = new ResourceGroupEntity();
-//		resourceGroupEntity.setResourceId(resourceId);
-//		entity.addResourceGroup(resourceGroupEntity);
-//		return groupDao.count(entity);
-//	}
-
-//	@Override
-//	public List<GroupEntity> getGroupsForRole(String roleId, int from, int size) {
-//		return groupDao.getGroupsForRole(roleId, from, size);
-//	}
-//
-//	@Override
-//	public int getNumOfGroupsForRole(String roleId) {
-//		return groupDao.getNumOfGroupsForRole(roleId);
-//	}
-
-    public List<GroupEntity> getEntitlementGroups(MembershipGroupSearchBean searchBean, int from, int size){
-        return groupDao.getEntitlementGroups(searchBean, from, size);
-    }
-    public int getNumOfEntitlementGroups(MembershipGroupSearchBean searchBean){
-        return groupDao.getNumOfEntitlementGroups(searchBean);
-    }
-
-	@Override
-	public int getNumOfChildGroups(MembershipGroupSearchBean searchBean) {
-		return groupDao.getNumOfChildGroups(searchBean);
-	}
-
-	@Override
-	public int getNumOfParentGroups(MembershipGroupSearchBean searchBean) {
-		return groupDao.getNumOfParentGroups(searchBean);
 	}
 
 	@Override
@@ -275,16 +294,12 @@ public class GroupDataServiceImpl implements GroupDataService {
 		}
 	}
 
-	@Override
-	public GroupEntity getGroupByName(String groupName) {
-		final GroupEntity example = new GroupEntity();
-		example.setGrpName(groupName);
-		final List<GroupEntity> foundList = groupDao.getByExample(example);
-		return (CollectionUtils.isNotEmpty(foundList)) ? foundList.get(0) : null;
-	}
 
-	@Override
-	public UserGroupEntity getRecord(String userId, String groupId) {
-		return userGroupDao.getRecord(groupId, userId);
-	}
+    private Set<String> getDelegationFilter(String requesterId){
+        Set<String> filterData = null;
+        if(StringUtils.isNotBlank(requesterId)){
+            filterData = new HashSet<String>(DelegationFilterHelper.getGroupFilterFromString(userDataService.getUserAttributes(requesterId)));
+        }
+        return filterData;
+    }
 }

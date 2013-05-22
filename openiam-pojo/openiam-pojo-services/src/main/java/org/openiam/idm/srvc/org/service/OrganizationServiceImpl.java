@@ -1,17 +1,21 @@
 package org.openiam.idm.srvc.org.service;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.openiam.idm.searchbeans.MembershipOrganizationSearchBean;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.domain.UserAffiliationEntity;
+import org.openiam.idm.srvc.org.dto.OrgClassificationEnum;
+import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDAO;
+import org.openiam.idm.srvc.user.service.UserDataService;
+import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.*;
 
 @Service
 public class OrganizationServiceImpl implements OrganizationService {
@@ -27,21 +31,90 @@ public class OrganizationServiceImpl implements OrganizationService {
     
     @Autowired
     private UserAffiliationDAO userAffiliationDAO;
-    
+
+    @Autowired
+    private UserDataService userDataService;
+
     @Override
-	public List<OrganizationEntity> getTopLevelOrganizations() {
+	public List<OrganizationEntity> getTopLevelOrganizations(String requesterId) {
 		return orgDao.findRootOrganizations();
 	}
+    @Override
+    public OrganizationEntity getOrganization(String orgId) {
+        return getOrganization(orgId, null);
+    }
 
 	@Override
-	public OrganizationEntity getOrganization(String orgId) {
-		return orgDao.findById(orgId);
+	public OrganizationEntity getOrganization(String orgId, String requesterId) {
+        if(DelegationFilterHelper.isAllowed(orgId, getDelegationFilter(requesterId, null))){
+            return orgDao.findById(orgId);
+        }
+        return null;
 	}
 
+    @Override
+    public OrganizationEntity getOrganizationByName(final String name, String requesterId){
+        OrganizationSearchBean searchBean = new OrganizationSearchBean();
+        searchBean.setOrganizationName(name);
+        final List<OrganizationEntity> foundList =  this.findBeans(searchBean, requesterId, 0, 1);
+        return (CollectionUtils.isNotEmpty(foundList)) ? foundList.get(0) : null;
+    }
+    @Override
+    public List<OrganizationEntity> getOrganizationsForUser(String userId) {
+        return this.getOrganizationsForUser(userId, null);
+    }
 	@Override
-	public List<OrganizationEntity> getOrganizationsForUser(String userId) {
-		return userAffiliationDAO.findOrgAffiliationsByUser(userId);
+	public List<OrganizationEntity> getOrganizationsForUser(String userId, String requesterId) {
+		return userAffiliationDAO.findOrgAffiliationsByUser(userId, getDelegationFilter(requesterId, null));
 	}
+
+    @Override
+    public List<OrganizationEntity> getAllOrganizations(String requesterId) {
+        return this.findBeans(new OrganizationSearchBean(), requesterId, -1,-1);
+    }
+
+    @Override
+    public List<OrganizationEntity> findBeans(final OrganizationSearchBean searchBean, String requesterId, int from, int size) {
+        Set<String> filter = getDelegationFilter(requesterId, searchBean.getClassification());
+        if(StringUtils.isBlank(searchBean.getKey()))
+            searchBean.setKeys(filter);
+        else if(!DelegationFilterHelper.isAllowed(searchBean.getKey(), filter)){
+            return new ArrayList<OrganizationEntity>(0);
+        }
+        return orgDao.getByExample(searchBean, from, size);
+    }
+
+    @Override
+    public List<OrganizationEntity> getParentOrganizations(String orgId, String parentClassification, String requesterId, int from, int size) {
+        return orgDao.getParentOrganizations(orgId, getDelegationFilter(requesterId, parentClassification), from, size);
+    }
+
+    @Override
+    public List<OrganizationEntity> getChildOrganizations(String orgId, String childClassification, String requesterId, int from, int size) {
+        return orgDao.getChildOrganizations(orgId, getDelegationFilter(requesterId, childClassification), from, size);
+    }
+
+    @Override
+    public int count(final OrganizationSearchBean searchBean, String requesterId) {
+        Set<String> filter = getDelegationFilter(requesterId, searchBean.getClassification());
+        if(StringUtils.isBlank(searchBean.getKey()))
+            searchBean.setKeys(filter);
+        else if(!DelegationFilterHelper.isAllowed(searchBean.getKey(), filter)){
+            return 0;
+        }
+
+        return orgDao.count(searchBean);
+    }
+
+    @Override
+    public int getNumOfParentOrganizations(String orgId, String parentClassification, String requesterId) {
+        return orgDao.getNumOfParentOrganizations(orgId,  getDelegationFilter(requesterId, parentClassification));
+    }
+
+    @Override
+    public int getNumOfChildOrganizations(String orgId, String childClassification, String requesterId) {
+        return orgDao.getNumOfChildOrganizations(orgId,  getDelegationFilter(requesterId, childClassification));
+    }
 
 	@Override
 	public void addUserToOrg(String orgId, String userId) {
@@ -61,23 +134,6 @@ public class OrganizationServiceImpl implements OrganizationService {
 		if(entity != null) {
 			userAffiliationDAO.delete(entity);
 		}
-	}
-
-	@Override
-	public List<OrganizationEntity> getAllOrganizations() {
-		return orgDao.findAllOrganization();
-	}
-
-	@Override
-	public List<OrganizationEntity> findBeans(final OrganizationSearchBean searchBean, int from, int size) {
-        List<OrganizationEntity> retVal = orgDao.getByExample(searchBean, from, size);
-        return retVal;
-	}
-
-	@Override
-	public int count(final OrganizationSearchBean searchBean) {
-        int count = orgDao.count(searchBean);
-        return count;
 	}
 
 	@Override
@@ -146,30 +202,46 @@ public class OrganizationServiceImpl implements OrganizationService {
 	}
 
 	@Override
-	public List<OrganizationEntity> getParentOrganizations(
-            MembershipOrganizationSearchBean searchBean, int from, int size) {
-		return orgDao.getParentOrganizations(searchBean, from, size);
-	}
-
-	@Override
-	public List<OrganizationEntity> getChildOrganizations(
-            MembershipOrganizationSearchBean searchBean, int from, int size) {
-		return orgDao.getChildOrganizations(searchBean, from, size);
-	}
-
-	@Override
-	public int getNumOfParentOrganizations(MembershipOrganizationSearchBean searchBean) {
-		return orgDao.getNumOfParentOrganizations(searchBean);
-	}
-
-	@Override
-	public int getNumOfChildOrganizations(MembershipOrganizationSearchBean searchBean) {
-		return orgDao.getNumOfChildOrganizations(searchBean);
-	}
-
-	@Override
 	public UserAffiliationEntity getAffiliation(String userId,
 			String organizationId) {
 		return userAffiliationDAO.getRecord(userId, organizationId);
 	}
+
+
+    private Set<String> getDelegationFilter(String requestorId, String orgClassification){
+        OrgClassificationEnum classification = null;
+        Set<String> filterData = null;
+        if(StringUtils.isNotBlank(requestorId)){
+            Map<String, UserAttributeEntity> requestorAttributes = userDataService.getUserAttributes(requestorId);
+
+            if(orgClassification!=null)   {
+                classification = OrgClassificationEnum.valueOf(orgClassification);
+                switch (classification){
+                    case DIVISION:
+                        filterData = new HashSet<String>(DelegationFilterHelper.getDivisionFilterFromString(requestorAttributes));
+                        break;
+                    case DEPARTMENT:
+                        filterData = new HashSet<String>(DelegationFilterHelper.getDivisionFilterFromString(requestorAttributes));
+                        break;
+                    case ORGANIZATION:
+                        filterData = new HashSet<String>(DelegationFilterHelper.getDivisionFilterFromString(requestorAttributes));
+                        break;
+                    default:
+                        filterData = getFullOrgFilterList(requestorAttributes);
+                        break;
+                }
+            } else {
+                filterData = getFullOrgFilterList(requestorAttributes);
+            }
+        }
+
+        return filterData;
+    }
+
+    private Set<String> getFullOrgFilterList(Map<String, UserAttributeEntity> attrMap){
+        List<String> filterData = DelegationFilterHelper.getDivisionFilterFromString(attrMap);
+        filterData.addAll(DelegationFilterHelper.getDivisionFilterFromString(attrMap));
+        filterData.addAll(DelegationFilterHelper.getDivisionFilterFromString(attrMap));
+        return new HashSet<String>(filterData);
+    }
 }

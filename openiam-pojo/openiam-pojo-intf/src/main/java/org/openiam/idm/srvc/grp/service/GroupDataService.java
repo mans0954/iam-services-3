@@ -1,7 +1,6 @@
 package org.openiam.idm.srvc.grp.service;
 
 import org.openiam.idm.searchbeans.GroupSearchBean;
-import org.openiam.idm.searchbeans.MembershipGroupSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.domain.UserGroupEntity;
@@ -20,24 +19,35 @@ import java.util.List;
  */
 
 public interface GroupDataService {
+    public GroupEntity getGroup(final String grpId);
+    public GroupEntity getGroup(final String grpId, final String requesterId);
+    public GroupEntity getGroupByName(final String groupName, final String requesterId);
+    public List<Group> getCompiledGroupsForUser(final String userId);
+    public UserGroupEntity getRecord(final String userId, final String groupId, final String requesterId);
+    /**
+     * Returns a list of Group objects that satisfy the search criteria defined through the GroupSearch parameter.
+     *
+     * @param searchBean
+     * @return
+     */
+    public List<GroupEntity> findBeans(final GroupSearchBean searchBean, String requesterId, final int from, final int size);
+    public List<GroupEntity> getChildGroups(final String groupId, final String requesterId, final int from, final int size);
+    public List<GroupEntity> getParentGroups(final String groupId, final String requesterId, final int from, final int size);
+    public List<GroupEntity> getGroupsForResource(final String resourceId, final String requesterId, final int from, final int size);
+    public List<GroupEntity> getGroupsForUser(final String userId, String requesterId, final int from, final int size);
+    public List<GroupEntity> getGroupsForRole(final String roleId, String requesterId, final int from, final int size);
+
+    public int getNumOfGroupsForRole(final String roleId, final String requesterId);
+    public int getNumOfGroupsForUser(final String userId, final String requesterId);
+    public int getNumOfGroupsForResource(final String resourceId, final String requesterId);
+    public int getNumOfChildGroups(final String groupId, final String requesterId);
+    public int getNumOfParentGroups(final String groupId, final String requesterId);
+    public int countBeans(final GroupSearchBean searchBean, final String requesterId);
+
 
 	public void saveGroup(final GroupEntity group);
 	
 	public void deleteGroup(final String groupId);
-	
-	public int getNumOfChildGroups(final MembershipGroupSearchBean searchBean);
-	public List<GroupEntity> getChildGroups(final MembershipGroupSearchBean searchBean, final int from, final int size);
-	
-	public int getNumOfParentGroups(final MembershipGroupSearchBean searchBean);
-	public List<GroupEntity> getParentGroups(final MembershipGroupSearchBean searchBean, final int from, final int size);
-	
-    public GroupEntity getGroup(String grpId);
-    public GroupEntity getGroupByName(final String groupName);
-    
-    public List<Group> getCompiledGroupsForUser(final String userId);
-    
-//    public List<GroupEntity> getGroupsForResource(final String resourceId, final int from, final int size);
-//    public int getNumOfGroupsForResource(final String resourceId);
 
     /**
      * Returns true or false depending on whether a user belongs to a particular
@@ -50,10 +60,6 @@ public interface GroupDataService {
      * @return
      */
     public boolean isUserInCompiledGroupList(String groupId, String userId);
-
-    
-//    public List<GroupEntity> getGroupsForUser(final String userId, final int from, final int size);
-//    public int getNumOfGroupsForUser(final String userId);
 
     /**
      * This method adds the user to a group .<br>
@@ -95,26 +101,7 @@ public interface GroupDataService {
      */
     public void removeAttribute(final String attributeId);
 
-    /**
-     * Returns a list of Group objects that satisfy the search criteria defined through the GroupSearch parameter.
-     *
-     * @param searchBean
-     * @return
-     */
-    public List<GroupEntity> findBeans(final GroupSearchBean searchBean, final int from, final int size);
-    
-    public int countBeans(final GroupSearchBean searchBean);
-    
-//    public List<GroupEntity> getGroupsForRole(final String roleId, final int from, final int size);
-//    public int getNumOfGroupsForRole(final String roleId);
-
-    public List<GroupEntity> getEntitlementGroups(MembershipGroupSearchBean searchBean, int from, int size);
-    public int getNumOfEntitlementGroups(MembershipGroupSearchBean searchBean);
-
-
     public void addChildGroup(final String groupId, final String childGroupId);
     public void removeChildGroup(final String groupId, final String childGroupId);
-    
-    public UserGroupEntity getRecord(final String userId, final String groupId);
 
 }
