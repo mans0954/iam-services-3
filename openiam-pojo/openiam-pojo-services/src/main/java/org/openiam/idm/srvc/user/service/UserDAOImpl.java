@@ -46,7 +46,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements
     public UserEntity findByIdDelFlt(String userId, DelegationFilterSearchBean delegationFilter){
         Criteria criteria = getCriteria();
         Disjunction disjunction = Restrictions.disjunction();
-        disjunction.add(Restrictions.isNotNull("systemFlag")).add(
+        disjunction.add(Restrictions.isNull("systemFlag")).add(
                 Restrictions.ne("systemFlag", "1"));
         criteria.add(disjunction);
 
