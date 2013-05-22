@@ -1,7 +1,6 @@
 package org.openiam.idm.srvc.auth.ws;
 
 import org.openiam.base.ws.Response;
-import org.openiam.exception.AuthenticationException;
 import org.openiam.idm.searchbeans.LoginSearchBean;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
@@ -190,6 +189,12 @@ public interface LoginDataWebService {
             String principal,
             @WebParam(name = "managedSysId", targetNamespace = "")
             String managedSysId);
+
+    @WebMethod
+    Response activateLogin(@WebParam(name = "loginId", targetNamespace = "") String loginId);
+
+    @WebMethod
+    Response deActivateLogin(@WebParam(name = "loginId", targetNamespace = "") String loginId);
 
 
     @WebMethod
