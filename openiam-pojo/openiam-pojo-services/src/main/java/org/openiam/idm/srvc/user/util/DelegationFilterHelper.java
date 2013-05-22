@@ -5,12 +5,12 @@ import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import java.util.*;
 
 public class DelegationFilterHelper {
-    private static final String DLG_FLT_APP="DLG_FLT_APP";
-    private static final String DLG_FLT_DEPT="DLG_FLT_DEPT";
-    private static final String DLG_FLT_DIV="DLG_FLT_DIV";
-    private static final String DLG_FLT_GRP="DLG_FLT_GRP";
-    private static final String DLG_FLT_ORG="DLG_FLT_ORG";
-    private static final String DLG_FLT_ROLE="DLG_FLT_ROLE";
+    public static final String DLG_FLT_APP="DLG_FLT_APP";
+    public static final String DLG_FLT_DEPT="DLG_FLT_DEPT";
+    public static final String DLG_FLT_DIV="DLG_FLT_DIV";
+    public static final String DLG_FLT_GRP="DLG_FLT_GRP";
+    public static final String DLG_FLT_ORG="DLG_FLT_ORG";
+    public static final String DLG_FLT_ROLE="DLG_FLT_ROLE";
 
     private static final String DLG_FLT_SEPARATOR=",";
 
