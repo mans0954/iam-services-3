@@ -78,21 +78,21 @@ public class UserMgr implements UserDataService {
     protected SysConfiguration sysConfiguration;
     @Autowired
     private UserRoleDAO userRoleDAO;
-    
+
     @Autowired
     private UserGroupDAO userGroupDAO;
     @Autowired
     private ResourceUserDAO resourceUserDAO;
-    
+
     @Autowired
     private UserSearchDAO userSearchDAO;
-    
+
     @Autowired
     private LoginSearchDAO loginSearchDAO;
-    
+
     @Autowired
     private EmailSearchDAO emailSearchDAO;
-    
+
     @Autowired
     private PhoneSearchDAO phoneSearchDAO;
     @Autowired
@@ -108,10 +108,10 @@ public class UserMgr implements UserDataService {
     private AddressSearchBeanConverter addressSearchBeanConverter;
     @Autowired
     private PhoneSearchBeanConverter phoneSearchBeanConverter;
-    
+
     @Autowired
     private MetadataElementDAO metadataElementDAO;
-    
+
     @Value("${org.openiam.user.search.max.results}")
     private int MAX_USER_SEARCH_RESULTS;
 
@@ -270,12 +270,6 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
-    @Deprecated
-    public List<UserEntity> search(UserSearch search) {
-        return userDao.search(search);
-    }
-    
-    @Override
     public List<UserEntity> searchByDelegationProperties(DelegationFilterSearch search) {
         return userDao.findByDelegationProperties(search);
     }
@@ -284,7 +278,7 @@ public class UserMgr implements UserDataService {
     public List<UserEntity> findBeans(UserSearchBean searchBean){
         return findBeans(searchBean, -1, -1);
     }
-    
+
     private List<String> getUserIds(final UserSearchBean searchBean) {
     	final List<List<String>> nonEmptyListOfLists = new LinkedList<List<String>>();
 
@@ -317,36 +311,36 @@ public class UserMgr implements UserDataService {
                 searchBean.setDivisionIdList(DelegationFilterHelper.getDivisionFilterFromString(requestorAttributes));
             }
         }
-		
+
 		nonEmptyListOfLists.add(userSearchDAO.findIds(0, MAX_USER_SEARCH_RESULTS, null, searchBean));
-		
+
 		if(StringUtils.isNotBlank(searchBean.getPrincipal())) {
 			final LoginSearchBean loginSearchBean = new LoginSearchBean();
 			loginSearchBean.setLogin(StringUtils.trimToNull(searchBean.getPrincipal()));
 			nonEmptyListOfLists.add(loginSearchDAO.findUserIds(0, MAX_USER_SEARCH_RESULTS, loginSearchBean));
 		}
-		
+
 		if(CollectionUtils.isNotEmpty(searchBean.getRoleIdSet())) {
 			nonEmptyListOfLists.add(userRoleDAO.getUserIdsInRole(searchBean.getRoleIdSet(), 0, MAX_USER_SEARCH_RESULTS));
 		}
-		
+
 		if(CollectionUtils.isNotEmpty(searchBean.getGroupIdSet())) {
 			nonEmptyListOfLists.add(userGroupDAO.getUserIdsInGroup(searchBean.getGroupIdSet(), 0, MAX_USER_SEARCH_RESULTS));
 		}
-		
+
 		if(StringUtils.isNotBlank(searchBean.getEmailAddress())) {
 			final EmailSearchBean emailSearchBean = new EmailSearchBean();
 			emailSearchBean.setEmail(searchBean.getEmailAddress());
 			nonEmptyListOfLists.add(emailSearchDAO.findUserIds(0, MAX_USER_SEARCH_RESULTS, emailSearchBean));
 		}
-		
+
 		if(StringUtils.isNotBlank(searchBean.getPhoneAreaCd()) || StringUtils.isNotBlank(searchBean.getPhoneNbr())) {
 			final PhoneSearchBean phoneSearchBean = new PhoneSearchBean();
 			phoneSearchBean.setPhoneAreaCd(StringUtils.trimToNull(searchBean.getPhoneAreaCd()));
 			phoneSearchBean.setPhoneNbr(StringUtils.trimToNull(searchBean.getPhoneNbr()));
 			nonEmptyListOfLists.add(phoneSearchDAO.findUserIds(0, MAX_USER_SEARCH_RESULTS, phoneSearchBean));
 		}
-		
+
 		//remove null or empty lists
 //		for(final Iterator<List<String>> it = nonEmptyListOfLists.iterator(); it.hasNext();) {
 //			final List<String> list = it.next();
@@ -354,20 +348,20 @@ public class UserMgr implements UserDataService {
 //				it.remove();
 //			}
 //		}
-		
+
 		List<String> finalizedIdList = null;
 		for(final Iterator<List<String>> it = nonEmptyListOfLists.iterator(); it.hasNext();) {
 			List<String> nextSubList = it.next();
 			if(CollectionUtils.isEmpty(nextSubList))
 				nextSubList = Collections.EMPTY_LIST;
-			
+
 			if(finalizedIdList == null) {
 				finalizedIdList = nextSubList;
 			} else {
 				finalizedIdList = ListUtils.intersection(finalizedIdList, nextSubList);
 			}
 		}
-		
+
 		return (finalizedIdList != null) ? finalizedIdList : Collections.EMPTY_LIST;
     }
 
@@ -411,7 +405,7 @@ public class UserMgr implements UserDataService {
 
         UserEntity userEntity = userDao.findById(attribute.getUserId());
         attribute.setUser(userEntity);
-        
+
         MetadataElementEntity element = null;
         if(attribute.getElement() != null && StringUtils.isNotEmpty(attribute.getElement().getId())) {
         	element = metadataElementDAO.findById(attribute.getElement().getId());
@@ -649,7 +643,7 @@ public class UserMgr implements UserDataService {
     public void removeAllAddresses(String userId) {
         if (userId == null)
             throw new NullPointerException("userId is null");
-        
+
         addressDao.removeByUserId(userId);
 
     }
@@ -854,7 +848,7 @@ public class UserMgr implements UserDataService {
     public void removeEmailAddress(final String emailAddressId) {
         if (emailAddressId == null)
             throw new NullPointerException("val is null");
-        
+
         final EmailAddressEntity entity = emailAddressDao.findById(emailAddressId, "parent");
 
         if(entity.getIsDefault()){
@@ -922,7 +916,7 @@ public class UserMgr implements UserDataService {
     public void removeSupervisor(final String supervisorId) {
         if (supervisorId == null)
             throw new NullPointerException("supervisor is null");
-        
+
         final SupervisorEntity entity = supervisorDao.findById(supervisorId);
         supervisorDao.delete(entity);
     }

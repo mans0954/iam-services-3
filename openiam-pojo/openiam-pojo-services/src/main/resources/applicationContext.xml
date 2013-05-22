@@ -84,10 +84,6 @@
 		<property name="properties" ref="pojoProperties" />
 	</bean>
 
-	<bean id="dbType" class="java.lang.String" factory-method="valueOf">
-		<constructor-arg index="0" value="${openiam.dbType}" />
-	</bean>
-
 	<bean id="sysConfiguration" class="org.openiam.base.SysConfiguration">
 		<property name="defaultManagedSysId" value="${openiam.default_managed_sys}" />
 		<property name="defaultSecurityDomain" value="${openiam.default_sec_domain}" />

@@ -1,6 +1,8 @@
 package org.openiam.idm.searchbeans;
 
 import org.apache.commons.lang.StringUtils;
+import org.openiam.idm.srvc.org.dto.Organization;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.SearchAttribute;
 import org.openiam.idm.srvc.user.dto.User;
 
@@ -9,7 +11,12 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Created by: Alexander Duckardt
@@ -104,9 +111,9 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
     public String getRequestorId() {
         return requestorId;
     }
-
-    public void setRequestorId(String requestorId) {
-        this.requestorId = requestorId;
+    
+    public void setOrganizationId(final String organizationId) {
+    	this.organizationId = organizationId;
     }
 
     //    public String getOrganizationId() {

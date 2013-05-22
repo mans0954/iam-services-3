@@ -178,7 +178,7 @@ public class AuthProviderServiceImpl implements AuthProviderService {
         }
 
         ResourceEntity resource = provider.getResource();
-        resource.setName(resourceTypeId+"_"+provider.getName());
+        resource.setName(System.currentTimeMillis() + "_" + provider.getName());
         resource.setResourceType(resourceType);
         resource.setResourceId(null);
         resource = resourceDao.add(resource);

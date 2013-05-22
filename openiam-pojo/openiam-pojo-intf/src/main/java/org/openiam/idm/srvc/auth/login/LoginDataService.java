@@ -26,6 +26,8 @@ public interface LoginDataService {
     public void updateLogin(LoginEntity principal);
 
     public void deleteLogin(final String loginId);
+
+    public void activateDeactivateLogin(String loginId, String status);
     
     public void removeLogin(String domainId, String principal, String managedSysId);
     

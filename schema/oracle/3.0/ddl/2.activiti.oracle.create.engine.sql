@@ -1,5 +1,3 @@
-use activiti;
-
 create table ACT_GE_PROPERTY (
     NAME_ NVARCHAR2(64),
     VALUE_ NVARCHAR2(300),

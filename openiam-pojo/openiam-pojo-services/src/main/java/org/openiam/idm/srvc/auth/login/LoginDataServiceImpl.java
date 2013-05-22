@@ -553,6 +553,14 @@ public class LoginDataServiceImpl implements LoginDataService {
 		}
 	}
 
+    public void activateDeactivateLogin(String loginId, String status){
+        final LoginEntity entity = loginDao.findById(loginId);
+        if(entity != null) {
+            entity.setStatus(status);
+            loginDao.update(entity);
+        }
+    }
+
 	@Override
 	public void mergeLogin(LoginEntity principal) {
 		loginDao.merge(principal);

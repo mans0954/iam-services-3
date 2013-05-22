@@ -789,13 +789,6 @@ public class UserDataWebServiceImpl implements UserDataWebService,
 	}
 
 	@Override
-	@Deprecated
-	public List<User> search(UserSearch search) {
-		final List<UserEntity> userList = userManager.search(search);
-		return userDozerConverter.convertToDTOList(userList, false);
-	}
-
-	@Override
 	public List<User> searchByDelegationProperties(
 			final DelegationFilterSearch search) {
 		final List<UserEntity> userList = userManager

@@ -85,12 +85,12 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
         try {
             if (provider == null)
                 throw new  BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            if (provider.getName()==null || provider.getName().trim().isEmpty())
+            if (provider.getName()==null || StringUtils.isBlank(provider.getName()))
                 throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_NAME_NOT_SET);
-            if (provider.getDomainPattern()==null || provider.getDomainPattern().trim().isEmpty())
+            if (provider.getDomainPattern()==null || StringUtils.isBlank(provider.getDomainPattern()))
                 throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_DOMAIN_PATERN_NOT_SET);
 
-            if (provider.getAuthLevel()==null || provider.getAuthLevel().getId().trim().isEmpty())
+            if (provider.getAuthLevel()==null || StringUtils.isBlank(provider.getAuthLevel().getId()))
                 throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_AUTH_LEVEL_NOT_SET);
 
 //            UNIQUE KEY `UNIQUE_CP_NAME` (`CONTENT_PROVIDER_NAME`),

@@ -1,5 +1,6 @@
 package org.openiam.am.srvc.service;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.cxf.interceptor.URIMappingInterceptor;
 import org.openiam.am.srvc.dao.*;
 import org.openiam.am.srvc.domain.*;
@@ -75,12 +76,15 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
     @Override
     @Transactional
     public ContentProviderEntity saveContentProvider(ContentProviderEntity provider){
-        if (provider == null)
+        if (provider == null) {
             throw new NullPointerException("Content provider not set");
-        if (provider.getName()==null || provider.getName().trim().isEmpty())
+        }
+        if (StringUtils.isBlank(provider.getName())) {
             throw new  IllegalArgumentException("Provider name not set");
-        if (provider.getMinAuthLevel()==null || provider.getMinAuthLevel().getId()==null || provider.getMinAuthLevel().getId().trim().isEmpty())
+        }
+        if (provider.getMinAuthLevel()==null || StringUtils.isBlank(provider.getMinAuthLevel().getId())) {
             throw new  IllegalArgumentException("Auth Level not set for provider");
+        }
 
         AuthLevelEntity authLevel = authLevelDao.findById(provider.getMinAuthLevel().getId());
         if(authLevel==null) {
@@ -222,12 +226,15 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
     @Override
     @Transactional
     public URIPatternEntity saveURIPattern(URIPatternEntity pattern) {
-        if (pattern == null)
+        if (pattern == null) {
             throw new NullPointerException("Invalid agrument ");
-        if (pattern.getPattern()==null || pattern.getPattern().trim().isEmpty())
+        }
+        if (StringUtils.isBlank(pattern.getPattern())) {
             throw new  IllegalArgumentException("Pattern not set");
-        if (pattern.getMinAuthLevel()==null || pattern.getMinAuthLevel().getId()==null || pattern.getMinAuthLevel().getId().trim().isEmpty())
+        }
+        if (pattern.getMinAuthLevel()==null || StringUtils.isBlank(pattern.getMinAuthLevel().getId())) {
             throw new  IllegalArgumentException("Auth Level not set for url pattern");
+        }
 
         AuthLevelEntity authLevel = authLevelDao.findById(pattern.getMinAuthLevel().getId());
         if(authLevel==null) {
@@ -242,7 +249,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
         pattern.setMinAuthLevel(authLevel);
         pattern.setContentProvider(provider);
         URIPatternEntity entity  = null;
-        if(pattern.getId()==null || pattern.getId().trim().isEmpty()){
+        if(StringUtils.isBlank(pattern.getId())) {
             // new provider
             // create resources
             ResourceTypeEntity resourceType = resourceTypeDAO.findById(patternResourceTypeId);
@@ -251,7 +258,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
             }
 
             ResourceEntity resource = new ResourceEntity();
-            resource.setName(patternResourceTypeId+"_"+provider.getId()+"_"+pattern.getPattern());
+            resource.setName(System.currentTimeMillis() + "_" + pattern.getPattern());
             resource.setResourceType(resourceType);
             resource.setResourceId(null);
             resource.setIsPublic(false);

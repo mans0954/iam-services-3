@@ -9,7 +9,6 @@ import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.domain.UserNoteEntity;
 import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
-import org.openiam.idm.srvc.user.dto.UserSearch;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 
 import java.util.Collection;
@@ -63,8 +62,7 @@ public interface UserDataService {
     public List<UserEntity> findUserByOrganization(String orgId);
 
     public List<UserEntity> findUsersByStatus(UserStatusEnum status);
-    @Deprecated
-    public List<UserEntity> search(UserSearch search);
+
     public List<UserEntity> searchByDelegationProperties(DelegationFilterSearch search);
 
     public List<UserEntity> findBeans(UserSearchBean searchBean);

@@ -3,13 +3,11 @@ package org.openiam.idm.srvc.auth.ws;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.mule.api.MuleException;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.base.ws.exception.BasicDataServiceException;
 import org.openiam.dozer.converter.LoginDozerConverter;
-import org.openiam.exception.AuthenticationException;
 import org.openiam.idm.searchbeans.LoginSearchBean;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
@@ -222,6 +220,46 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 		return resp;
 		
 	}
+
+    public Response activateLogin(final String loginId){
+        final LoginResponse resp = new LoginResponse(ResponseStatus.SUCCESS);
+        try {
+            if(StringUtils.isBlank(loginId)) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            }
+
+            loginDS.activateDeactivateLogin(loginId, "ACTIVE");
+        } catch(BasicDataServiceException e) {
+            log.warn(String.format("Error while activating login: %s", e.getMessage()));
+            resp.setErrorCode(e.getCode());
+            resp.setStatus(ResponseStatus.FAILURE);
+        } catch(Throwable e) {
+            resp.setStatus(ResponseStatus.FAILURE);
+            resp.setErrorCode(ResponseCode.INTERNAL_ERROR);
+            log.error("Error while activating login", e);
+        }
+        return resp;
+    }
+
+    public Response deActivateLogin(final String loginId){
+        final LoginResponse resp = new LoginResponse(ResponseStatus.SUCCESS);
+        try {
+            if(StringUtils.isBlank(loginId)) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            }
+
+            loginDS.activateDeactivateLogin(loginId,  "INACTIVE");
+        } catch(BasicDataServiceException e) {
+            log.warn(String.format("Error while deactivating login: %s", e.getMessage()));
+            resp.setErrorCode(e.getCode());
+            resp.setStatus(ResponseStatus.FAILURE);
+        } catch(Throwable e) {
+            resp.setStatus(ResponseStatus.FAILURE);
+            resp.setErrorCode(ResponseCode.INTERNAL_ERROR);
+            log.error("Error while deactivating login", e);
+        }
+        return resp;
+    }
 
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.auth.ws.LoginDataWebService#bulkUnLock(org.openiam.idm.srvc.user.dto.UserStatusEnum)
