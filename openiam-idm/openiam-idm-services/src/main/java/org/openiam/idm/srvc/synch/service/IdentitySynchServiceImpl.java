@@ -340,7 +340,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
     private UserSearchBean buildSearch(BulkMigrationConfig config){
     	UserSearchBean search = new UserSearchBean();
         if (config.getOrganizationId() != null && !config.getOrganizationId().isEmpty()) {
-             search.setOrganizationId(config.getOrganizationId());
+             search.addOrganizationId(config.getOrganizationId());
         }
 
         if (config.getLastName() != null && !config.getLastName().isEmpty()) {
