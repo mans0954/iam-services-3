@@ -414,7 +414,7 @@ public class RoleDataServiceImpl implements RoleDataService {
         Set<String> filterData = null;
         if(StringUtils.isNotBlank(requesterId)){
             filterData = new HashSet<String>(
-                    DelegationFilterHelper.getRoleFilterFromString(userDataService.getUserAttributes(requesterId)));
+                    DelegationFilterHelper.getRoleFilterFromString( userDataService.getUserAttributesDto(requesterId)));
         }
         return filterData;
     }

@@ -9,6 +9,7 @@ import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.domain.UserNoteEntity;
 import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
+import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 
 import java.util.Collection;
@@ -201,6 +202,6 @@ public interface UserDataService {
     public void mergeUserFields(UserEntity origUserEntity, UserEntity newUserEntity);
 
 	List<UserEntity> getUsersForMSys(String mSysId);
-
+    public Map<String, UserAttribute> getUserAttributesDto(String userId);
     public Map<String, UserAttributeEntity> getUserAttributes(String userId);
 }

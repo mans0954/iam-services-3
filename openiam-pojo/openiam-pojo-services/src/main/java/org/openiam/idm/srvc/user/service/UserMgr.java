@@ -8,6 +8,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.base.BaseConstants;
 import org.openiam.base.SysConfiguration;
 import org.openiam.core.dao.UserKeyDao;
+import org.openiam.dozer.converter.UserAttributeDozerConverter;
 import org.openiam.idm.searchbeans.*;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
@@ -32,7 +33,7 @@ import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.domain.UserNoteEntity;
 import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
-import org.openiam.idm.srvc.user.dto.UserSearch;
+import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -108,6 +109,9 @@ public class UserMgr implements UserDataService {
     private AddressSearchBeanConverter addressSearchBeanConverter;
     @Autowired
     private PhoneSearchBeanConverter phoneSearchBeanConverter;
+
+    @Autowired
+    private UserAttributeDozerConverter userAttributeDozerConverter;
 
     @Autowired
     private MetadataElementDAO metadataElementDAO;
@@ -282,33 +286,32 @@ public class UserMgr implements UserDataService {
     private List<String> getUserIds(final UserSearchBean searchBean) {
     	final List<List<String>> nonEmptyListOfLists = new LinkedList<List<String>>();
 
-        if(StringUtils.isNotBlank(searchBean.getRequestorId())){
+        if(StringUtils.isNotBlank(searchBean.getRequesterId())){
             // check and add delegation filter if necessary
-            final UserEntity requestorUser = this.getUser(searchBean.getRequestorId(), null);
-            Map<String, UserAttributeEntity> requestorAttributes = (requestorUser != null && requestorUser.getUserAttributes() != null) ?   requestorUser.getUserAttributes() : null;
+            Map<String, UserAttribute> requesterAttributes = this.getUserAttributesDto(searchBean.getRequesterId());
 
             if((searchBean.getOrganizationIdList()==null || searchBean.getOrganizationIdList().isEmpty())
-                && DelegationFilterHelper.isOrgFilterSet(requestorAttributes)){
-                searchBean.setOrganizationIdList(DelegationFilterHelper.getOrgIdFilterFromString(requestorAttributes));
+                && DelegationFilterHelper.isOrgFilterSet(requesterAttributes)){
+                searchBean.setOrganizationIdList(DelegationFilterHelper.getOrgIdFilterFromString(requesterAttributes));
             }
 
             if((searchBean.getGroupIdSet()==null || searchBean.getGroupIdSet().isEmpty())
-               && DelegationFilterHelper.isGroupFilterSet(requestorAttributes)){
-                searchBean.setGroupIdSet(new HashSet<String>(DelegationFilterHelper.getGroupFilterFromString(requestorAttributes)));
+               && DelegationFilterHelper.isGroupFilterSet(requesterAttributes)){
+                searchBean.setGroupIdSet(new HashSet<String>(DelegationFilterHelper.getGroupFilterFromString(requesterAttributes)));
             }
 
             if((searchBean.getRoleIdSet()==null || searchBean.getRoleIdSet().isEmpty())
-               && DelegationFilterHelper.isRoleFilterSet(requestorAttributes)){
-                searchBean.setRoleIdSet(new HashSet<String>(DelegationFilterHelper.getRoleFilterFromString(requestorAttributes)));
+               && DelegationFilterHelper.isRoleFilterSet(requesterAttributes)){
+                searchBean.setRoleIdSet(new HashSet<String>(DelegationFilterHelper.getRoleFilterFromString(requesterAttributes)));
             }
 
             if((searchBean.getDeptIdList()==null || searchBean.getDeptIdList().isEmpty())
-               && DelegationFilterHelper.isDeptFilterSet(requestorAttributes)){
-                searchBean.setDeptIdList(DelegationFilterHelper.getDeptFilterFromString(requestorAttributes));
+               && DelegationFilterHelper.isDeptFilterSet(requesterAttributes)){
+                searchBean.setDeptIdList(DelegationFilterHelper.getDeptFilterFromString(requesterAttributes));
             }
             if((searchBean.getDivisionIdList()==null || searchBean.getDivisionIdList().isEmpty())
-               && DelegationFilterHelper.isDivisionFilterSet(requestorAttributes)){
-                searchBean.setDivisionIdList(DelegationFilterHelper.getDivisionFilterFromString(requestorAttributes));
+               && DelegationFilterHelper.isDivisionFilterSet(requesterAttributes)){
+                searchBean.setDivisionIdList(DelegationFilterHelper.getDivisionFilterFromString(requesterAttributes));
             }
         }
 
@@ -1444,7 +1447,7 @@ public class UserMgr implements UserDataService {
         DelegationFilterSearchBean filter = new DelegationFilterSearchBean();
 
         if(StringUtils.isNotBlank(requestorId)){
-            Map<String, UserAttributeEntity> requestorAttributes = this.getUserAttributes(requestorId);
+            Map<String, UserAttribute> requestorAttributes = this.getUserAttributesDto(requestorId);
 
             if(DelegationFilterHelper.isOrgFilterSet(requestorAttributes)){
                 filter.setOrganizationIdSet(new HashSet<String>(DelegationFilterHelper.getOrgIdFilterFromString(requestorAttributes)));
@@ -1470,6 +1473,21 @@ public class UserMgr implements UserDataService {
 
     public List<UserEntity> getUsersForMSys(String mSysId) {
         return userDao.getUsersForMSys(mSysId);
+    }
+
+    public Map<String, UserAttribute> getUserAttributesDto(String userId){
+        Map<String, UserAttributeEntity> attributeEntityMap = this.getUserAttributes(userId);
+        if(attributeEntityMap!=null && !attributeEntityMap.isEmpty()){
+            Map<String, UserAttribute> attributeMap = new HashMap<String, UserAttribute>();
+            for(String key:  attributeEntityMap.keySet()) {
+                UserAttributeEntity entity = attributeEntityMap.get(key);
+                if(entity!=null){
+                    attributeMap.put(key, userAttributeDozerConverter.convertToDTO(entity,false));
+                }
+            }
+            return attributeMap;
+        }
+        return null;
     }
 
     public Map<String, UserAttributeEntity> getUserAttributes(String userId){

@@ -298,7 +298,7 @@ public class GroupDataServiceImpl implements GroupDataService {
     private Set<String> getDelegationFilter(String requesterId){
         Set<String> filterData = null;
         if(StringUtils.isNotBlank(requesterId)){
-            filterData = new HashSet<String>(DelegationFilterHelper.getGroupFilterFromString(userDataService.getUserAttributes(requesterId)));
+            filterData = new HashSet<String>(DelegationFilterHelper.getGroupFilterFromString( userDataService.getUserAttributesDto(requesterId)));
         }
         return filterData;
     }

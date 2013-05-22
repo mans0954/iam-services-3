@@ -7,8 +7,8 @@ import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.domain.UserAffiliationEntity;
 import org.openiam.idm.srvc.org.dto.OrgClassificationEnum;
-import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
@@ -70,7 +70,7 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Override
     public List<OrganizationEntity> getAllOrganizations(String requesterId) {
-        return this.findBeans(new OrganizationSearchBean(), requesterId, -1,-1);
+        return this.findBeans(new OrganizationSearchBean(), requesterId, -1, -1);
     }
 
     @Override
@@ -208,37 +208,37 @@ public class OrganizationServiceImpl implements OrganizationService {
 	}
 
 
-    private Set<String> getDelegationFilter(String requestorId, String orgClassification){
+    private Set<String> getDelegationFilter(String requesterId, String orgClassification){
         OrgClassificationEnum classification = null;
         Set<String> filterData = null;
-        if(StringUtils.isNotBlank(requestorId)){
-            Map<String, UserAttributeEntity> requestorAttributes = userDataService.getUserAttributes(requestorId);
+        if(StringUtils.isNotBlank(requesterId)){
+            Map<String, UserAttribute> requesterAttributes = userDataService.getUserAttributesDto(requesterId);
 
             if(orgClassification!=null)   {
                 classification = OrgClassificationEnum.valueOf(orgClassification);
                 switch (classification){
                     case DIVISION:
-                        filterData = new HashSet<String>(DelegationFilterHelper.getDivisionFilterFromString(requestorAttributes));
+                        filterData = new HashSet<String>(DelegationFilterHelper.getDivisionFilterFromString(requesterAttributes));
                         break;
                     case DEPARTMENT:
-                        filterData = new HashSet<String>(DelegationFilterHelper.getDivisionFilterFromString(requestorAttributes));
+                        filterData = new HashSet<String>(DelegationFilterHelper.getDivisionFilterFromString(requesterAttributes));
                         break;
                     case ORGANIZATION:
-                        filterData = new HashSet<String>(DelegationFilterHelper.getDivisionFilterFromString(requestorAttributes));
+                        filterData = new HashSet<String>(DelegationFilterHelper.getDivisionFilterFromString(requesterAttributes));
                         break;
                     default:
-                        filterData = getFullOrgFilterList(requestorAttributes);
+                        filterData = getFullOrgFilterList(requesterAttributes);
                         break;
                 }
             } else {
-                filterData = getFullOrgFilterList(requestorAttributes);
+                filterData = getFullOrgFilterList(requesterAttributes);
             }
         }
 
         return filterData;
     }
 
-    private Set<String> getFullOrgFilterList(Map<String, UserAttributeEntity> attrMap){
+    private Set<String> getFullOrgFilterList(Map<String, UserAttribute> attrMap){
         List<String> filterData = DelegationFilterHelper.getDivisionFilterFromString(attrMap);
         filterData.addAll(DelegationFilterHelper.getDivisionFilterFromString(attrMap));
         filterData.addAll(DelegationFilterHelper.getDivisionFilterFromString(attrMap));
