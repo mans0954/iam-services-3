@@ -393,7 +393,6 @@
 		<property name="provisionService" ref="defaultProvision" />
 		<property name="roleDataService" ref="roleDataService" />
 		<property name="resourceDataService" ref="resourceDataService" />
-		<property name="managedSysService" ref="managedSysService" />
 		<property name="connectorAdapter" ref="connectorAdapter" />
 		<property name="remoteConnectorAdapter" ref="remoteConnectorAdapter" />
 	</bean>

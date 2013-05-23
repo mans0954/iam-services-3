@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.recon.domain;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -18,6 +19,7 @@ import javax.xml.bind.annotation.XmlType;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.policy.domain.PolicyAttributeEntity;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
 
@@ -49,10 +51,19 @@ public class ReconciliationConfigEntity implements java.io.Serializable {
     private String notificationEmailAddress;
     @Column(name = "TARGET_SYS_MATCH_SCRIPT", length = 120)
     private String targetSystemMatchScript;
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinColumn(name = "RECON_CONFIG_ID", referencedColumnName = "RECON_CONFIG_ID")
-    private Set<ReconciliationSituationEntity> situationSet;
 
+    // @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    // @JoinColumn(name = "RECON_CONFIG_ID", referencedColumnName =
+    // "RECON_CONFIG_ID")
+    // private Set<ReconciliationSituationEntity> situationSet;
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "RECON_CONFIG_ID", insertable = false, updatable = false)
+    private Set<ReconciliationSituationEntity> situationSet = new HashSet<ReconciliationSituationEntity>(
+            0);
+
+    
+    
     public String getSeparator() {
         return separator;
     }

@@ -21,7 +21,6 @@
  */
 package org.openiam.idm.srvc.recon.ws;
 
-import javax.jws.WebParam;
 import javax.jws.WebService;
 
 import org.mule.api.MuleContext;
@@ -31,8 +30,6 @@ import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.idm.srvc.recon.dto.ReconciliationResponse;
 import org.openiam.idm.srvc.recon.service.ReconciliationService;
-import org.openiam.idm.srvc.synch.ws.IdentitySynchWebService;
-import org.openiam.idm.srvc.synch.ws.SynchConfigListResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**

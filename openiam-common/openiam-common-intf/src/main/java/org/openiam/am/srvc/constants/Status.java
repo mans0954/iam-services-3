@@ -2,7 +2,7 @@ package org.openiam.am.srvc.constants;
 
 public enum Status {
 
-    ACTIVE("ACTIVE"), INACTIVE("ACTIVE");
+    ACTIVE("ACTIVE"), INACTIVE("INACTIVE");
 
     private String value;
 

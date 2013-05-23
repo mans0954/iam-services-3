@@ -33,14 +33,17 @@ import org.mule.api.MuleContext;
 import org.mule.api.context.MuleContextAware;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.connector.type.RemoteReconciliationConfig;
+import org.openiam.dozer.converter.ManagedSysDozerConverter;
 import org.openiam.dozer.converter.ReconciliationConfigDozerConverter;
 import org.openiam.dozer.converter.ReconciliationSituationDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
+import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
 import org.openiam.idm.srvc.recon.command.ReconciliationCommandFactory;
@@ -83,7 +86,10 @@ public class ReconciliationServiceImpl implements ReconciliationService,
     protected ResourceDataService resourceDataService;
     @Autowired
     protected UserDataService userMgr;
-    protected ManagedSystemWebService managedSysService;
+    @Autowired
+    protected ManagedSystemService managedSysService;
+    @Autowired
+    private ManagedSysDozerConverter managedSysDozerConverter;
     @Autowired
     private ProvisionConnectorWebService connectorService;
 
@@ -135,9 +141,8 @@ public class ReconciliationServiceImpl implements ReconciliationService,
         if (config == null) {
             throw new IllegalArgumentException("config parameter is null");
         }
-        reconConfig.update(reconConfig.add(reconConfigDozerMapper
-                .convertToEntity(config, true)));
-
+        reconConfig
+                .update(reconConfigDozerMapper.convertToEntity(config, true));
     }
 
     public void removeConfigByResourceId(String resourceId) {
@@ -145,7 +150,6 @@ public class ReconciliationServiceImpl implements ReconciliationService,
             throw new IllegalArgumentException("resourceId parameter is null");
         }
         reconConfig.removeByResourceId(resourceId);
-
     }
 
     public void removeConfig(String configId) {
@@ -153,7 +157,6 @@ public class ReconciliationServiceImpl implements ReconciliationService,
             throw new IllegalArgumentException("configId parameter is null");
         }
         reconConfig.delete(reconConfig.findById(configId));
-
     }
 
     public ReconciliationConfig getConfigByResource(String resourceId) {
@@ -194,7 +197,8 @@ public class ReconciliationServiceImpl implements ReconciliationService,
             Resource res = resourceDataService.getResource(config
                     .getResourceId());
             String managedSysId = res.getManagedSysId();
-            ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
+            ManagedSysEntity mSys = managedSysService
+                    .getManagedSysById(managedSysId);
 
             log.debug("ManagedSysId = " + managedSysId);
             log.debug("Getting identities for managedSys");
@@ -329,7 +333,9 @@ public class ReconciliationServiceImpl implements ReconciliationService,
             } else {
 
                 log.debug("Calling reconcileResource local connector");
-                connectorAdapter.reconcileResource(mSys, config, muleContext);
+                connectorAdapter.reconcileResource(
+                        managedSysDozerConverter.convertToDTO(mSys, true),
+                        config, muleContext);
             }
         } catch (Exception e) {
             log.error(e);
@@ -375,10 +381,6 @@ public class ReconciliationServiceImpl implements ReconciliationService,
 
     public void setUserMgr(UserDataService userMgr) {
         this.userMgr = userMgr;
-    }
-
-    public void setManagedSysService(ManagedSystemWebService managedSysService) {
-        this.managedSysService = managedSysService;
     }
 
     public ProvisionConnectorWebService getConnectorService() {
