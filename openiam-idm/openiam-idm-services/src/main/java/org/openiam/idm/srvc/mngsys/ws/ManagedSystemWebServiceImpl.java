@@ -24,7 +24,6 @@ import javax.jws.WebParam;
 import javax.jws.WebService;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ResourceBundle;
 
 @Service("managedSystemWebWebService")
 @WebService(endpointInterface = "org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService", targetNamespace = "urn:idm.openiam.org/srvc/mngsys/service", portName = "ManagedSystemWebServicePort", serviceName = "ManagedSystemWebService")

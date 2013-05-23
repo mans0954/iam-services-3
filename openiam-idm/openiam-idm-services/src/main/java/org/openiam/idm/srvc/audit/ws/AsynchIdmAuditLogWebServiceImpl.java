@@ -15,7 +15,6 @@ import javax.jws.WebService;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 @WebService(endpointInterface = "org.openiam.idm.srvc.audit.ws.AsynchIdmAuditLogWebService",
 		targetNamespace = "urn:idm.openiam.org/srvc/audit/service",

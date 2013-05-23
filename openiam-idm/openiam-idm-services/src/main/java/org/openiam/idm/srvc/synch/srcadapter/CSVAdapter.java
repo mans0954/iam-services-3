@@ -44,6 +44,7 @@ import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.ws.UserResponse;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.service.ProvisionService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 
 import java.io.*;
@@ -70,14 +71,16 @@ public class CSVAdapter extends AbstractSrcAdapter {
 
     private static final Log log = LogFactory.getLog(CSVAdapter.class);
 
-    private static final ResourceBundle res = ResourceBundle.getBundle("datasource");
-
     // synchronization monitor
     private final Object mutex = new Object();
+    
+    @Value("${csvadapter.thread.count}")
+    private int THREAD_COUNT;
+    
+    @Value("${csvadapter.thread.delay.beforestart}")
+    private int THREAD_DELAY_BEFORE_START;
 
     public SyncResponse startSynch(final SynchConfig config) {
-        int THREAD_COUNT = Integer.parseInt(res.getString("csvadapter.thread.count"));
-        int THREAD_DELAY_BEFORE_START = Integer.parseInt(res.getString("csvadapter.thread.delay.beforestart"));
         log.debug("CSV startSynch CALLED.^^^^^^^^");
         System.out.println("CSV startSynch CALLED.^^^^^^^^");
 

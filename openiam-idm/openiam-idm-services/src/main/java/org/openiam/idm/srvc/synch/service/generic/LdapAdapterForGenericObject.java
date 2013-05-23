@@ -20,7 +20,6 @@
 package org.openiam.idm.srvc.synch.service.generic;
 
 import java.util.Hashtable;
-import java.util.ResourceBundle;
 import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.ldap.InitialLdapContext;

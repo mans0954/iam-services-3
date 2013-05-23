@@ -41,6 +41,7 @@ import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.service.ProvisionService;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.io.IOException;
 import java.sql.*;
@@ -65,11 +66,14 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
 
     // synchronization monitor
     private final Object mutex = new Object();
+    
+    @Value("${rdbmsvadapter.thread.count}")
+    private int THREAD_COUNT;
+    
+    @Value("${rdbmsvadapter.thread.delay.beforestart}")
+    private int THREAD_DELAY_BEFORE_START;
 
     public SyncResponse startSynch(final SynchConfig config) {
-
-        int THREAD_COUNT = Integer.parseInt(res.getString("rdbmsvadapter.thread.count"));
-        int THREAD_DELAY_BEFORE_START = Integer.parseInt(res.getString("rdbmsvadapter.thread.delay.beforestart"));
 
         log.debug("RDBMS SYNCH STARTED ^^^^^^^^");
 

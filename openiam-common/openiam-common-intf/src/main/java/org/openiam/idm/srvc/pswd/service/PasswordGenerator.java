@@ -22,7 +22,6 @@
 package org.openiam.idm.srvc.pswd.service;
 
 import java.util.Random;
-import java.util.ResourceBundle;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;

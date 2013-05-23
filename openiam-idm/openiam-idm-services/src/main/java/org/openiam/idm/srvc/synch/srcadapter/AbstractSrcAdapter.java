@@ -3,7 +3,6 @@ package org.openiam.idm.srvc.synch.srcadapter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.concurrent.Future;
 
 import org.apache.commons.logging.Log;
@@ -41,8 +40,6 @@ public abstract class AbstractSrcAdapter implements SourceAdapter, MuleContextAw
     protected final long SHUTDOWN_TIME = 5000;
 
     private static final Log log = LogFactory.getLog(AbstractSrcAdapter.class);
-
-    static protected ResourceBundle res = ResourceBundle.getBundle("datasource");
 
     static protected ApplicationContext applicationContext;
 

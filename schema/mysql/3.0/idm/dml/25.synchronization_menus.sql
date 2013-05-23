@@ -1,16 +1,19 @@
 use openiam;
 
-DELETE FROM resource_prop WHERE resource_id='SYNCDETAIL';
-DELETE FROM resource_role WHERE resource_id='SYNCDETAIL';
-DELETE FROM res_to_res_membership WHERE resource_id='SYNCDETAIL' or member_resource_id='SYNCDETAIL';
-DELETE FROM res WHERE resource_id = 'SYNCDETAIL';
+DELETE FROM res_to_res_membership WHERE MEMBER_RESOURCE_ID IN('SYNCDETAIL');
+DELETE FROM RESOURCE_USER WHERE RESOURCE_ID IN('SYNCDETAIL');
+DELETE FROM RESOURCE_ROLE WHERE RESOURCE_ID IN('SYNCDETAIL');
+DELETE FROM RESOURCE_PROP WHERE RESOURCE_ID IN('SYNCDETAIL');
+DELETE FROM RESOURCE_GROUP WHERE RESOURCE_ID IN('SYNCDETAIL');
+DELETE FROM RES WHERE RESOURCE_ID IN('SYNCDETAIL');
 
-UPDATE res SET url='/webconsole-idm/provisioning/synchronizationlist.html' WHERE resource_id='SYNCUSER';
+UPDATE RES SET URL='/webconsole-idm/provisioning/synchronizationlist.html' WHERE RESOURCE_ID='SYNCUSER';
 
-INSERT INTO res (resource_id, resource_type_id, name, description, url) VALUES ('SYNCUSER_MENU_ITEM', 'MENU_ITEM', 'SYNCUSER_MENU_ITEM', 'Synchronization', '/webconsole-idm/provisioning/synchronizationlist.html');
-INSERT INTO resource_prop (resource_prop_id, resource_id, name, prop_value) VALUES ('SYNCUSER_DESC', 'SYNCUSER_MENU_ITEM', 'MENU_DISPLAY_NAME', 'Synchronization');
-INSERT INTO resource_prop (resource_prop_id, resource_id, name, prop_value) VALUES ('SYNCUSER_PUB', 'SYNCUSER_MENU_ITEM', 'MENU_IS_PUBLIC', 'true');
-INSERT INTO res (resource_id, resource_type_id, name, description, url) VALUES ('SYNCUSER_NEW', 'MENU_ITEM', 'SYNCUSER_NEW', 'Create Synchronization', '/webconsole-idm/provisioning/synchronization.html');
-INSERT INTO resource_prop (resource_prop_id, resource_id, name, prop_value) VALUES ('SYNCUSER_NEW_DESC', 'SYNCUSER_NEW', 'MENU_DISPLAY_NAME', 'Create Synchronization');
-INSERT INTO resource_prop (resource_prop_id, resource_id, name, prop_value) VALUES ('SYNCUSER_NEW_PUB', 'SYNCUSER_NEW', 'MENU_IS_PUBLIC', 'true');
-INSERT INTO res_to_res_membership (resource_id, member_resource_id) VALUES ('SYNCUSER_MENU_ITEM', 'SYNCUSER_NEW');
+INSERT INTO RES (RESOURCE_ID, RESOURCE_TYPE_ID, NAME, DESCRIPTION, URL) VALUES ('SYNCUSER_MENU_ITEM', 'MENU_ITEM', 'SYNCUSER_MENU_ITEM', 'Synchronization', '/webconsole-idm/provisioning/synchronizationlist.html');
+INSERT INTO RESOURCE_PROP (RESOURCE_PROP_ID, RESOURCE_ID, NAME, PROP_VALUE) VALUES ('SYNCUSER_DESC', 'SYNCUSER_MENU_ITEM', 'MENU_DISPLAY_NAME', 'Synchronization');
+INSERT INTO RESOURCE_PROP (RESOURCE_PROP_ID, RESOURCE_ID, NAME, PROP_VALUE) VALUES ('SYNCUSER_PUB', 'SYNCUSER_MENU_ITEM', 'MENU_IS_PUBLIC', 'true');
+
+INSERT INTO RES (RESOURCE_ID, RESOURCE_TYPE_ID, NAME, DESCRIPTION, URL) VALUES ('SYNCUSER_NEW', 'MENU_ITEM', 'SYNCUSER_NEW', 'Create Synchronization', '/webconsole-idm/provisioning/synchronization.html');
+INSERT INTO RESOURCE_PROP (RESOURCE_PROP_ID, RESOURCE_ID, NAME, PROP_VALUE) VALUES ('SYNCUSER_NEW_DESC', 'SYNCUSER_NEW', 'MENU_DISPLAY_NAME', 'Create Synchronization');
+INSERT INTO RESOURCE_PROP (RESOURCE_PROP_ID, RESOURCE_ID, NAME, PROP_VALUE) VALUES ('SYNCUSER_NEW_PUB', 'SYNCUSER_NEW', 'MENU_IS_PUBLIC', 'true');
+INSERT INTO res_to_res_membership (RESOURCE_ID, MEMBER_RESOURCE_ID) VALUES ('SYNCUSER_MENU_ITEM', 'SYNCUSER_NEW');
