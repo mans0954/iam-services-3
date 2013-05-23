@@ -23,15 +23,14 @@ public class GenericObjectSynchServiceImpl implements GenericObjectSynchService 
     protected MuleContext muleContext;
     protected SynchConfigDAO synchConfigDao;
     protected SynchConfigDataMappingDAO synchConfigMappingDao;
-    protected SourceAdapterFactory adaptorFactory;
-
+    protected SourceAdapterFactory adapterFactory;
 
     private static final Log log = LogFactory.getLog(GenericObjectSynchServiceImpl.class);
 
     public SyncResponse startSynchronization(SynchConfig config) {
         log.debug("- Generic Object Synchronization started..^^^^^^^^");
         try {
-            SourceAdapter adapt = adaptorFactory.create(config);
+            SourceAdapter adapt = adapterFactory.create(config);
 
             long newLastExecTime = System.currentTimeMillis();
 
@@ -73,9 +72,7 @@ public class GenericObjectSynchServiceImpl implements GenericObjectSynchService 
             resp.setErrorText(e.getMessage());
             return resp;
         }
-
     }
-
 
     public void setMuleContext(MuleContext ctx) {
 
@@ -98,11 +95,11 @@ public class GenericObjectSynchServiceImpl implements GenericObjectSynchService 
         this.synchConfigMappingDao = synchConfigMappingDao;
     }
 
-    public SourceAdapterFactory getAdaptorFactory() {
-        return adaptorFactory;
+    public SourceAdapterFactory getAdapterFactory() {
+        return adapterFactory;
     }
 
-    public void setAdaptorFactory(SourceAdapterFactory adaptorFactory) {
-        this.adaptorFactory = adaptorFactory;
+    public void setAdapterFactory(SourceAdapterFactory adapterFactory) {
+        this.adapterFactory = adapterFactory;
     }
 }

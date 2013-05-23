@@ -21,6 +21,7 @@
  */
 package org.openiam.idm.srvc.synch.ws;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.jws.WebParam;
@@ -32,14 +33,16 @@ import org.mule.api.MuleContext;
 import org.mule.api.context.MuleContextAware;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.dozer.converter.SynchConfigDozerConverter;
 import org.openiam.idm.srvc.msg.ws.SysMessageResponse;
+import org.openiam.idm.srvc.synch.domain.SynchConfigEntity;
 import org.openiam.idm.srvc.synch.dto.BulkMigrationConfig;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
+import org.openiam.idm.srvc.synch.dto.SynchConfigSearchBean;
+import org.openiam.idm.srvc.synch.searchbeans.converter.SynchConfigSearchBeanConverter;
 import org.openiam.idm.srvc.synch.service.IdentitySynchService;
-import org.openiam.idm.srvc.synch.ws.IdentitySynchWebService;
-import org.openiam.idm.srvc.synch.ws.SynchConfigListResponse;
-
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author suneet
@@ -51,8 +54,14 @@ import org.openiam.idm.srvc.synch.ws.SynchConfigListResponse;
 		serviceName = "IdentitySynchWebService")
 public class IdentitySynchWebServiceImpl implements IdentitySynchWebService, MuleContextAware {
 
-	protected IdentitySynchService synchService;
 	protected static final Log log = LogFactory.getLog(IdentitySynchWebServiceImpl.class);
+    @Autowired
+    protected IdentitySynchService synchService;
+    @Autowired
+    private SynchConfigDozerConverter synchConfigDozerConverter;
+    @Autowired
+    private SynchConfigSearchBeanConverter synchConfigSearchBeanConverter;
+
     protected MuleContext muleContext;
 	
 	/* (non-Javadoc)
@@ -60,41 +69,36 @@ public class IdentitySynchWebServiceImpl implements IdentitySynchWebService, Mul
 	 */
 	public SynchConfigListResponse getAllConfig() {
 		SynchConfigListResponse resp = new SynchConfigListResponse(ResponseStatus.SUCCESS);
-		List<SynchConfig> configList = synchService.getAllConfig();
+		List<SynchConfigEntity> configList = synchService.getAllConfig();
 		if (configList == null || configList.isEmpty()) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
-			resp.setConfigList(configList);
+			resp.setConfigList(synchConfigDozerConverter.convertToDTOList(configList, false));
 		}
 		return resp;
 	}
-
-
 
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.synch.ws.IdentitySynchWebService#addConfig(org.openiam.idm.srvc.synch.dto.SynchConfig)
 	 */
 	public SynchConfigResponse addConfig(SynchConfig synchConfig) {
 		SynchConfigResponse resp = new SynchConfigResponse(ResponseStatus.SUCCESS);
-		SynchConfig config = synchService.addConfig(synchConfig);
+		SynchConfigEntity config = synchService.addConfig(synchConfigDozerConverter.convertToEntity(synchConfig, false));
 		if (config == null || config.getSynchConfigId()==null) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
-			resp.setConfig(config);
+			resp.setConfig(synchConfigDozerConverter.convertToDTO(config, false));
 		}
 		return resp;
 	}
 
     public Response testConnection(@WebParam(name = "synchConfig", targetNamespace = "") SynchConfig config) {
-        synchService.setMuleContext(muleContext);
-        return synchService.testConnection(config);
+        return synchService.testConnection(synchConfigDozerConverter.convertToEntity(config, false));
     }
 
     @Override
     public Response bulkUserMigration(BulkMigrationConfig config) {
-        synchService.setMuleContext(muleContext);
         return synchService.bulkUserMigration(config);
-
     }
 
     @Override
@@ -107,11 +111,11 @@ public class IdentitySynchWebServiceImpl implements IdentitySynchWebService, Mul
     */
 	public SynchConfigResponse findById(String id) {
 		SynchConfigResponse resp = new SynchConfigResponse(ResponseStatus.SUCCESS);
-		SynchConfig config = synchService.findById(id);
+		SynchConfigEntity config = synchService.findById(id);
 		if (config == null || config.getSynchConfigId()==null) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
-			resp.setConfig(config);
+			resp.setConfig(synchConfigDozerConverter.convertToDTO(config, false));
 		}
 		return resp;
 	}
@@ -123,44 +127,42 @@ public class IdentitySynchWebServiceImpl implements IdentitySynchWebService, Mul
 		SysMessageResponse resp = new SysMessageResponse(ResponseStatus.SUCCESS);
 		synchService.removeConfig(configId);
 		return resp;
-		
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.synch.ws.IdentitySynchWebService#updateConfig(org.openiam.idm.srvc.synch.dto.SynchConfig)
-	 */
-	public SynchConfigResponse updateConfig(SynchConfig synchConfig) {
+	public SynchConfigResponse mergeConfig(SynchConfig synchConfig) {
 		SynchConfigResponse resp = new SynchConfigResponse(ResponseStatus.SUCCESS);
-		SynchConfig config = synchService.updateConfig(synchConfig);
+		SynchConfigEntity config = synchService.mergeConfig(synchConfigDozerConverter.convertToEntity(synchConfig, false));
 		if (config == null || config.getSynchConfigId()==null) {
 			resp.setStatus(ResponseStatus.FAILURE);
 		}else {
-			resp.setConfig(config);
+			resp.setConfig(synchConfigDozerConverter.convertToDTO(config, false));
 		}
 		return resp;
 	}
 
-
-     public void setMuleContext(MuleContext ctx) {
-
-		muleContext = ctx;
-
-	}
-
-
-	public IdentitySynchService getSynchService() {
-		return synchService;
-	}
-
-	public void setSynchService(IdentitySynchService synchService) {
-		this.synchService = synchService;
-	}
-
-
-
 	public SyncResponse startSynchronization(SynchConfig config) {
-        synchService.setMuleContext(muleContext);
-		return synchService.startSynchronization(config);
+		return synchService.startSynchronization(synchConfigDozerConverter.convertToEntity(config, false));
 	}
-	
+
+    @Override
+    public Integer getSynchConfigCount(@WebParam(name = "searchBean", targetNamespace = "")SynchConfigSearchBean searchBean) {
+        SynchConfigEntity entity = synchConfigSearchBeanConverter.convert(searchBean);
+        return synchService.getSynchConfigCountByExample(entity);
+    }
+
+    @Override
+    public List<SynchConfig> getSynchConfigs(@WebParam(name = "searchBean", targetNamespace = "") SynchConfigSearchBean searchBean, @WebParam(name = "size", targetNamespace = "") Integer size, @WebParam(name = "from", targetNamespace = "") Integer from) {
+        List<SynchConfig> synchConfigDtos = new LinkedList<SynchConfig>();
+        SynchConfigEntity entity = synchConfigSearchBeanConverter.convert(searchBean);
+        List<SynchConfigEntity> entities = synchService.getSynchConfigsByExample(entity, size, from);
+        if(entities != null) {
+            synchConfigDtos = synchConfigDozerConverter.convertToDTOList(entities, false);
+        }
+        return synchConfigDtos;
+    }
+
+    @Override
+    public void setMuleContext(MuleContext muleContext) {
+        this.muleContext = muleContext;
+    }
 }

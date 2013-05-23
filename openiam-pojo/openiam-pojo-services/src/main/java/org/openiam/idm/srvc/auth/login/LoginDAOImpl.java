@@ -4,6 +4,7 @@ package org.openiam.idm.srvc.auth.login;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import org.apache.commons.logging.Log;
@@ -24,9 +25,6 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements
 
     private static final Log log = LogFactory.getLog(LoginDAOImpl.class);
 
-    @Value("${openiam.dbType}")
-    private String dbType;
-
     public int changeIdentity(String principal, String pswd, String userId,
             String managedSysId) {
         Session session = getSession();
@@ -45,11 +43,8 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements
 
     public LoginEntity getRecord(final String login, final String managedSysId,
             final String domainId) {
-        if (dbType != null && dbType.equalsIgnoreCase("ORACLE_INSENSITIVE")) {
-            return findByIdOracleInsensitive(login, managedSysId, domainId);
-        }
-
-        return (LoginEntity) getCriteria().add(Restrictions.eq("login", login))
+        return (LoginEntity) getCriteria()
+        		.add(Restrictions.eq("lowerCaseLogin", (login != null) ? login.toLowerCase() : null))
                 .add(Restrictions.eq("managedSysId", managedSysId))
                 .add(Restrictions.eq("domainId", domainId)).uniqueResult();
     }
@@ -57,39 +52,6 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements
     @Override
     protected String getPKfieldName() {
         return "id";
-    }
-
-    /*
-     * Gets the LoginID ignoring case.
-     */
-    private LoginEntity findByIdOracleInsensitive(final String login,
-            final String managedSysId, final String domainid) {
-
-        String select = " select /*+ INDEX(IDX_LOGIN_UPPER)  */ "
-                + " SERVICE_ID, LOGIN, MANAGED_SYS_ID, IDENTITY_TYPE, CANONICAL_NAME, USER_ID, PASSWORD, "
-                + " PWD_EQUIVALENT_TOKEN, PWD_CHANGED, PWD_EXP, RESET_PWD, FIRST_TIME_LOGIN, IS_LOCKED, STATUS, "
-                + " GRACE_PERIOD, CREATE_DATE, CREATED_BY, CURRENT_LOGIN_HOST, AUTH_FAIL_COUNT, LAST_AUTH_ATTEMPT, "
-                + " LAST_LOGIN, IS_DEFAULT, PWD_CHANGE_COUNT, LAST_LOGIN_IP, PREV_LOGIN, PREV_LOGIN_IP "
-                + " FROM 	LOGIN  "
-                + " WHERE SERVICE_ID = :serviceId AND UPPER(LOGIN) = :login AND MANAGED_SYS_ID = :managedSysId  ";
-
-        Session session = getSession();
-
-        SQLQuery qry = session.createSQLQuery(select);
-        qry.addEntity(LoginEntity.class);
-
-        qry.setString("serviceId", domainid);
-        qry.setString("login", login);
-        qry.setString("managedSysId", managedSysId);
-
-        try {
-            return (LoginEntity) qry.uniqueResult();
-
-        } catch (Exception e) {
-            log.error(e.toString());
-        }
-        return null;
-
     }
 
     public List<LoginEntity> findAllLoginByManagedSys(String managedSysId) {
@@ -433,4 +395,66 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements
         return qry.executeUpdate();
 
     }
+
+	@Override
+	public void save(LoginEntity entity) {
+		if(entity != null) {
+			entity.setLowerCaseLogin(entity.getLogin());
+		}
+		super.save(entity);
+	}
+
+	@Override
+	public LoginEntity add(LoginEntity entity) {
+		if(entity != null) {
+			entity.setLowerCaseLogin(entity.getLogin());
+		}
+		return super.add(entity);
+	}
+
+	@Override
+	public void update(LoginEntity entity) {
+		if(entity != null) {
+			entity.setLowerCaseLogin(entity.getLogin());
+		}
+		super.update(entity);
+	}
+
+	@Override
+	public LoginEntity merge(LoginEntity entity) {
+		if(entity != null) {
+			entity.setLowerCaseLogin(entity.getLogin());
+		}
+		return super.merge(entity);
+	}
+
+	@Override
+	public void attachDirty(LoginEntity entity) {
+		if(entity != null) {
+			entity.setLowerCaseLogin(entity.getLogin());
+		}
+		super.attachDirty(entity);
+	}
+
+	@Override
+	public void attachClean(LoginEntity entity) {
+		if(entity != null) {
+			entity.setLowerCaseLogin(entity.getLogin());
+		}
+		super.attachClean(entity);
+	}
+
+	@Override
+	public void save(Collection<LoginEntity> entities) {
+		if(entities != null) {
+			for(final LoginEntity entity : entities) {
+				if(entity != null) {
+					entity.setLowerCaseLogin(entity.getLogin());
+				}
+			}
+		}
+		super.save(entities);
+	}
+    
+    
 }

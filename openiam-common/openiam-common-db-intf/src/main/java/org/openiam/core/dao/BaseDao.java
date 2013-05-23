@@ -22,7 +22,7 @@ public interface BaseDao<T, PrimaryKey extends Serializable> {
   
   void update(T t);
   
-  void merge(T t);
+  T merge(T t);
 
   void save(T t);
 

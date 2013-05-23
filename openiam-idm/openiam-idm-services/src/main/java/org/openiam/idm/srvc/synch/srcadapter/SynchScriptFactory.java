@@ -27,11 +27,6 @@ import org.openiam.idm.srvc.synch.service.TransformScript;
 import org.openiam.idm.srvc.synch.service.ValidationScript;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.util.SpringContextProvider;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Component;
-
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 /**
@@ -52,7 +47,6 @@ public class SynchScriptFactory {
 		
 	}
 
-	
 	public static TransformScript createTransformationScript(String scriptName) throws ClassNotFoundException, IOException {
 		
 		return (TransformScript)createScript(scriptName);

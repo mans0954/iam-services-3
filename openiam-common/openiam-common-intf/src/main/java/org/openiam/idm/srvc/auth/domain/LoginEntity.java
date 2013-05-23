@@ -52,6 +52,9 @@ public class LoginEntity implements java.io.Serializable {
     @Column(name="LOGIN",length=320)
     private String login;
     
+    @Column(name="LOWERCASE_LOGIN",length=320)
+    private String lowerCaseLogin;
+    
     @Field(name = "managedSysId", index = Index.UN_TOKENIZED, store = Store.YES)
     @Column(name="MANAGED_SYS_ID",length=50)
     private String managedSysId;
@@ -397,6 +400,16 @@ public class LoginEntity implements java.io.Serializable {
 
 	public void setLastUpdate(Date lastUpdate) {
 		this.lastUpdate = lastUpdate;
+	}
+
+	public String getLowerCaseLogin() {
+		return lowerCaseLogin;
+	}
+
+	public void setLowerCaseLogin(String lowerCaseLogin) {
+		if(lowerCaseLogin != null) {
+			this.lowerCaseLogin = lowerCaseLogin.toLowerCase();
+		}
 	}
 
 	@Override

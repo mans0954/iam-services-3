@@ -34,22 +34,25 @@ import org.apache.commons.csv.CSVStrategy;
 import org.openiam.idm.srvc.audit.service.AuditHelper;
 import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.idm.srvc.synch.dto.LineObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * Scan AD for any new records, changed users, or delete operations and then synchronizes them back into OpenIAM.
  * @author suneet
  *
  */
+@Component("activeDirAdapter")
 public class ActiveDirectoryAdapter {
 
 	protected Map<String,LineObject> lineMap = new HashMap<String,LineObject>();
 	protected LineObject lineHeader = new LineObject();
+    @Autowired
 	protected AuditHelper auditHelper;
 	
 	public void startSynch(String fileName) {
 		Reader reader = null;
-	
-		
+
 		File file = new File(fileName);
 		try {
 			reader = new FileReader(file);
@@ -84,10 +87,9 @@ public class ActiveDirectoryAdapter {
 					// synchronize the call - via jms
 						
 				}
-			
 			}
 			
-		}catch(IOException io) {
+		} catch(IOException io) {
 			io.printStackTrace();
 		}
 		
@@ -117,15 +119,5 @@ public class ActiveDirectoryAdapter {
 		System.out.println("CSVAdapter Test...");
 		ActiveDirectoryAdapter adapter = new ActiveDirectoryAdapter();
 		adapter.startSynch("C:/Doc/clients/exe.cl/previred/UserList.csv");
-		
 	}
-
-	public AuditHelper getAuditHelper() {
-		return auditHelper;
-	}
-
-	public void setAuditHelper(AuditHelper auditHelper) {
-		this.auditHelper = auditHelper;
-	}
-	
 }

@@ -17,60 +17,60 @@
  */
 
 /**
- * 
+ *
  */
 package org.openiam.idm.srvc.synch.dto;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.sql.Timestamp;
 
 /**
  * @author suneet
  *
  */
 public class LineObject implements Cloneable {
-	Map<String,Attribute> columnMap = new HashMap<String, Attribute>();
-	Date lastUpdate = new Date();
+    private Map<String,Attribute> columnMap = new HashMap<String, Attribute>();
+    private Timestamp lastUpdate = null;
 
-	public Map<String, Attribute> getColumnMap() {
-		return columnMap;
-	}
+    public void setColumnMap(Map<String, Attribute> columnMap) {
+        this.columnMap = columnMap;
+    }
 
-	public void setColumnMap(Map<String, Attribute> columnMap) {
-		this.columnMap = columnMap;
-	}
-	
-	public void put(String key,String name, String lineObject) {
-		columnMap.put(key, new Attribute(name,lineObject));
-	}
-	
-	public void put(String key,Attribute attr) {
-	
-		columnMap.put(key, attr);
-	}
-	
-	public Attribute get(String key) {
-		return columnMap.get(key);
-		
-	}
-	protected Object clone() {
-		LineObject obj = new LineObject();
-		Map<String,Attribute> newColumnMap = new HashMap<String, Attribute>();
-		
-		Set<String> keySet = columnMap.keySet();
-		for (String key : keySet) {
-			Attribute a = columnMap.get(key);
-			newColumnMap.put(key, (Attribute)a.clone());
-		}
-		obj.setColumnMap(newColumnMap);
-		return obj;
-		
-	}
-	public LineObject copy() {
-		return (LineObject)clone();
-	}
+    public Map<String, Attribute> getColumnMap() {
+        return columnMap;
+    }
+
+    public void put(String key,String name, String lineObject) {
+        columnMap.put(key, new Attribute(name,lineObject));
+    }
+
+    public void put(String key,Attribute attr) {
+
+        columnMap.put(key, attr);
+    }
+
+    public Attribute get(String key) {
+        return columnMap.get(key);
+
+    }
+    protected Object clone() {
+        LineObject obj = new LineObject();
+        Map<String,Attribute> newColumnMap = new HashMap<String, Attribute>();
+
+        Set<String> keySet = columnMap.keySet();
+        for (String key : keySet) {
+            Attribute a = columnMap.get(key);
+            newColumnMap.put(key, (Attribute)a.clone());
+        }
+        obj.setColumnMap(newColumnMap);
+        return obj;
+
+    }
+    public LineObject copy() {
+        return (LineObject)clone();
+    }
 
     @Override
     public String toString() {
@@ -80,13 +80,11 @@ public class LineObject implements Cloneable {
                 '}';
     }
 
-	public Date getLastUpdate() {
-		return lastUpdate;
-	}
+    public Timestamp getLastUpdate() {
+        return lastUpdate;
+    }
 
-	public void setLastUpdate(Date lastUpdate) {
-		this.lastUpdate = lastUpdate;
-	}
-
-
+    public void setLastUpdate(Timestamp lastUpdate) {
+        this.lastUpdate = lastUpdate;
+    }
 }

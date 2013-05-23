@@ -23,7 +23,6 @@ package org.openiam.idm.srvc.auth.sso;
 
 import java.util.Date;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
 import org.apache.commons.logging.Log;
