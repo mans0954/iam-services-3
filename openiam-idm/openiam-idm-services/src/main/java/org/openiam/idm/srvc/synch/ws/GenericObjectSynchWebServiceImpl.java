@@ -25,16 +25,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mule.api.MuleContext;
 import org.mule.api.context.MuleContextAware;
-import org.openiam.base.ws.Response;
-import org.openiam.base.ws.ResponseStatus;
-import org.openiam.idm.srvc.msg.ws.SysMessageResponse;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.openiam.idm.srvc.synch.service.generic.GenericObjectSynchService;
 
 import javax.jws.WebService;
-import java.util.List;
-
 
 /**
  * @author suneet
@@ -56,13 +51,9 @@ public class GenericObjectSynchWebServiceImpl implements GenericObjectSynchWebSe
         return synchService.startSynchronization(config);
     }
 
-
-     public void setMuleContext(MuleContext ctx) {
-
-		muleContext = ctx;
-
+    public void setMuleContext(MuleContext ctx) {
+        muleContext = ctx;
 	}
-
 
     public GenericObjectSynchService getSynchService() {
         return synchService;

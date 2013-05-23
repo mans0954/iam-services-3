@@ -43,13 +43,11 @@ import org.openiam.idm.srvc.synch.dto.SynchConfigSearchBean;
 import org.openiam.idm.srvc.synch.searchbeans.converter.SynchConfigSearchBeanConverter;
 import org.openiam.idm.srvc.synch.service.IdentitySynchService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 /**
  * @author suneet
  *
  */
-@Service("synchServiceWS")
 @WebService(endpointInterface = "org.openiam.idm.srvc.synch.ws.IdentitySynchWebService", 
 		targetNamespace = "http://www.openiam.org/service/synch", 
 		portName = "IdentitySynchWebServicePort", 
@@ -57,14 +55,14 @@ import org.springframework.stereotype.Service;
 public class IdentitySynchWebServiceImpl implements IdentitySynchWebService, MuleContextAware {
 
 	protected static final Log log = LogFactory.getLog(IdentitySynchWebServiceImpl.class);
-
-    protected MuleContext muleContext;
     @Autowired
     protected IdentitySynchService synchService;
     @Autowired
     private SynchConfigDozerConverter synchConfigDozerConverter;
     @Autowired
     private SynchConfigSearchBeanConverter synchConfigSearchBeanConverter;
+
+    protected MuleContext muleContext;
 	
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.sync.ws.IdentitySynchWebService#getAllConfig()
@@ -95,13 +93,11 @@ public class IdentitySynchWebServiceImpl implements IdentitySynchWebService, Mul
 	}
 
     public Response testConnection(@WebParam(name = "synchConfig", targetNamespace = "") SynchConfig config) {
-        synchService.setMuleContext(muleContext);
         return synchService.testConnection(synchConfigDozerConverter.convertToEntity(config, false));
     }
 
     @Override
     public Response bulkUserMigration(BulkMigrationConfig config) {
-        synchService.setMuleContext(muleContext);
         return synchService.bulkUserMigration(config);
     }
 
@@ -144,20 +140,7 @@ public class IdentitySynchWebServiceImpl implements IdentitySynchWebService, Mul
 		return resp;
 	}
 
-    public void setMuleContext(MuleContext ctx) {
-		muleContext = ctx;
-	}
-
-	public IdentitySynchService getSynchService() {
-		return synchService;
-	}
-
-	public void setSynchService(IdentitySynchService synchService) {
-		this.synchService = synchService;
-	}
-
 	public SyncResponse startSynchronization(SynchConfig config) {
-        synchService.setMuleContext(muleContext);
 		return synchService.startSynchronization(synchConfigDozerConverter.convertToEntity(config, false));
 	}
 
@@ -178,4 +161,8 @@ public class IdentitySynchWebServiceImpl implements IdentitySynchWebService, Mul
         return synchConfigDtos;
     }
 
+    @Override
+    public void setMuleContext(MuleContext muleContext) {
+        this.muleContext = muleContext;
+    }
 }

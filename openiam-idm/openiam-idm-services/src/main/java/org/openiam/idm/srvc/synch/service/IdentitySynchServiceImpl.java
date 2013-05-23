@@ -29,6 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mule.api.MuleContext;
+import org.mule.api.context.MuleContextAware;
 import org.mule.module.client.MuleClient;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.ws.Response;
@@ -36,7 +37,6 @@ import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.SynchConfigDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.synch.domain.SynchConfigEntity;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.BulkMigrationConfig;
@@ -51,7 +51,6 @@ import org.openiam.provision.dto.UserResourceAssociation;
 import org.openiam.provision.service.ProvisionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -59,14 +58,14 @@ import org.springframework.transaction.annotation.Transactional;
  *
  */
 
-@Service("synchService")
-public class IdentitySynchServiceImpl implements IdentitySynchService {
+public class IdentitySynchServiceImpl implements IdentitySynchService, MuleContextAware {
+
     @Autowired
     private SynchConfigDAO synchConfigDao;
     @Autowired
     private SynchConfigDataMappingDAO synchConfigDataMappingDAO;
     @Autowired
-    private AdapterFactory adaptorFactory;
+    private AdapterFactory adapterFactory;
 
     private MuleContext muleContext;
     @Autowired
@@ -106,6 +105,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 		}
 		return null;
 	}
+
     @Transactional(readOnly = true)
 	public SynchConfigEntity findById(java.lang.String id)  {
 		if (id == null) {
@@ -114,6 +114,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 		
 		return synchConfigDao.findById(id);
 	}
+
     @Transactional
 	public SynchConfigEntity addConfig(SynchConfigEntity synchConfig) {
 		if (synchConfig == null) {
@@ -122,6 +123,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 		return synchConfigDao.add(synchConfig);
 		
 	}
+
     @Transactional
 	public SynchConfigEntity mergeConfig(SynchConfigEntity synchConfig) {
 		if (synchConfig == null) {
@@ -130,6 +132,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 		return synchConfigDao.merge(synchConfig);
 				
 	}
+
     @Transactional
 	public void removeConfig(String configId ) {
 		if (configId == null) {
@@ -139,6 +142,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 		synchConfigDao.remove(config);
 		
 	}
+
     @Transactional
 	public SyncResponse startSynchronization(SynchConfigEntity config) {
 
@@ -155,8 +159,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
             SynchConfig configDTO = synchConfigDozerConverter.convertToDTO(config, false);
 
-			SourceAdapter adapt = adaptorFactory.create(configDTO);
-            adapt.setMuleContext(muleContext);
+			SourceAdapter adapt = adapterFactory.create(configDTO);
 
 			long newLastExecTime = System.currentTimeMillis();
 
@@ -167,7 +170,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 			if (syncResponse.getLastRecordTime() == null) {
 			
 				synchConfigDao.updateExecTime(config.getSynchConfigId(), new Timestamp( newLastExecTime ));
-			}else {
+			} else {
 				synchConfigDao.updateExecTime(config.getSynchConfigId(), new Timestamp( syncResponse.getLastRecordTime().getTime() ));
 			}
 
@@ -178,7 +181,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
 		    log.debug("-startSynchronization COMPLETE.^^^^^^^^");
 
-		}catch( ClassNotFoundException cnfe) {
+		} catch( ClassNotFoundException cnfe) {
 
             cnfe.printStackTrace();
 
@@ -187,14 +190,14 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
             syncResponse.setErrorCode(ResponseCode.CLASS_NOT_FOUND);
             syncResponse.setErrorText(cnfe.getMessage());
 
-		}catch(Exception e) {
+		} catch(Exception e) {
 
 
 			log.error(e);
             syncResponse = new SyncResponse(ResponseStatus.FAILURE);
             syncResponse.setErrorText(e.getMessage());
 
-		}finally {
+		} finally {
             endTask(config.getSynchConfigId());
 
             return syncResponse;
@@ -226,6 +229,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
         }
 
     }
+
     @Transactional
     public void endTask(String configID) {
         runningTask.remove(configID);
@@ -234,8 +238,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
     public Response testConnection(SynchConfigEntity config) {
         try {
             SynchConfig configDTO = synchConfigDozerConverter.convertToDTO(config, false);
-            SourceAdapter adapt = adaptorFactory.create(configDTO);
-            adapt.setMuleContext(muleContext);
+            SourceAdapter adapt = adapterFactory.create(configDTO);
 
             return adapt.testConnection(configDTO);
 
@@ -254,6 +257,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
             return resp;
         }
     }
+
     @Transactional
     public Response bulkUserMigration(BulkMigrationConfig config) {
 
@@ -287,7 +291,6 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
                     // add to role
                     r.setOperation(AttributeOperationEnum.ADD);
 
-
                     pUser.getMemberOfRoles().add(r);
 
                 } else {
@@ -296,7 +299,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
                     pUser.getMemberOfRoles().add(r);
                 }
 
-            }else if (config.getTargetResource() != null && !config.getTargetResource().isEmpty()) {
+            } else if (config.getTargetResource() != null && !config.getTargetResource().isEmpty()) {
 
                 List<UserResourceAssociation> uraList = new ArrayList<UserResourceAssociation>();
 
@@ -317,12 +320,10 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
                     pUser.setUserResourceList(uraList);
 
                 }
-
             }
             // send message to provisioning service asynchronously
             //invokeOperation(pUser);
             provisionService.modifyUser(pUser);
-
         }
 
         return null;
@@ -373,7 +374,6 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
         }
 
         return search;
-
     }
 
     private UserSearch buildSearchByRole(final String roleId) {
@@ -385,7 +385,6 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
         return search;
     }
-
 
     private Role parseRole(String roleStr) {
         String roleId = null;
@@ -399,7 +398,6 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
         return r;
     }
-
 
     @Override
     @Transactional
@@ -452,51 +450,6 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
         return resp;
     }
 
-    public void setMuleContext(MuleContext ctx) {
-        muleContext = ctx;
-     }
-
-	public SynchConfigDAO getSynchConfigDao() {
-	    return synchConfigDao;
-	}
-
-	public void setSynchConfigDao(SynchConfigDAO synchConfigDao) {
-		this.synchConfigDao = synchConfigDao;
-	}
-
-	public SynchConfigDataMappingDAO getSynchConfigDataMappingDAO() {
-		return synchConfigDataMappingDAO;
-	}
-
-	public void setSynchConfigDataMappingDAO(
-			SynchConfigDataMappingDAO synchConfigDataMappingDAO) {
-		this.synchConfigDataMappingDAO = synchConfigDataMappingDAO;
-	}
-
-	public AdapterFactory getAdaptorFactory() {
-		return adaptorFactory;
-	}
-
-	public void setAdaptorFactory(AdapterFactory adaptorFactory) {
-		this.adaptorFactory = adaptorFactory;
-	}
-
-    public UserDataService getUserManager() {
-        return userManager;
-    }
-
-    public void setUserManager(UserDataService userManager) {
-        this.userManager = userManager;
-    }
-
-    public ProvisionService getProvisionService() {
-        return provisionService;
-    }
-
-    public void setProvisionService(ProvisionService provisionService) {
-        this.provisionService = provisionService;
-    }
-
     @Override
     @Transactional(readOnly = true)
     public Integer getSynchConfigCountByExample(SynchConfigEntity example) {
@@ -507,5 +460,10 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
     @Transactional(readOnly = true)
     public List<SynchConfigEntity> getSynchConfigsByExample(SynchConfigEntity example, Integer from, Integer size) {
         return synchConfigDao.getByExample(example, from, size);
+    }
+
+    @Override
+    public void setMuleContext(MuleContext muleContext) {
+        this.muleContext = muleContext;
     }
 }

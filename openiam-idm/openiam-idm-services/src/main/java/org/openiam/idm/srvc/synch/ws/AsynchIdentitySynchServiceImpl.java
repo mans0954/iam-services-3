@@ -27,35 +27,29 @@ import org.apache.commons.logging.LogFactory;
 import org.mule.api.MuleContext;
 import org.mule.api.context.MuleContextAware;
 import org.mule.module.client.MuleClient;
-import org.openiam.base.ws.Response;
 import org.openiam.idm.srvc.synch.dto.BulkMigrationConfig;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
-import org.openiam.idm.srvc.synch.service.IdentitySynchService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
-import javax.jws.WebParam;
 import javax.jws.WebService;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.ResourceBundle;
-
 
 /**
  * @author suneet
  */
-@Service("asynchSynchServiceWS")
 @WebService(endpointInterface = "org.openiam.idm.srvc.synch.ws.AsynchIdentitySynchService",
         targetNamespace = "http://www.openiam.org/service/synch",
         portName = "AsynchIdentitySynchServicePort",
         serviceName = "AsynchIdentitySynchService")
-public class AsynchIdentitySynchServiceImpl implements AsynchIdentitySynchService, MuleContextAware {
+public class AsynchIdentitySynchServiceImpl implements AsynchIdentitySynchService, ApplicationContextAware, MuleContextAware {
+
+    protected ApplicationContext applicationContext;
 
     protected MuleContext muleContext;
-
-    @Autowired
-    protected IdentitySynchService synchService;
 
     protected static final Log log = LogFactory.getLog(AsynchIdentitySynchServiceImpl.class);
 
@@ -71,19 +65,15 @@ public class AsynchIdentitySynchServiceImpl implements AsynchIdentitySynchServic
         //	MuleMessage msg = null;
 
         log.debug("A-START SYNCH CALLED...................");
-
         try {
-
 
             Map<String, String> msgPropMap = new HashMap<String, String>();
             msgPropMap.put("SERVICE_HOST", serviceHost);
             msgPropMap.put("SERVICE_CONTEXT", serviceContext);
 
-
             //Create the client with the context
             MuleClient client = new MuleClient(muleContext);
             client.sendAsync("vm://synchronizationMessage", (SynchConfig) config, msgPropMap);
-
 
         } catch (Exception e) {
             log.debug("EXCEPTION:AsynchIdentitySynchService:startSynchronization");
@@ -91,28 +81,23 @@ public class AsynchIdentitySynchServiceImpl implements AsynchIdentitySynchServic
             //e.printStackTrace();
         }
         log.debug("A-START SYNCH END ---------------------");
-
     }
 
     @Override
     public void bulkUserMigration(BulkMigrationConfig config) {
         try {
 
-
             Map<String, String> msgPropMap = new HashMap<String, String>();
             msgPropMap.put("SERVICE_HOST", serviceHost);
             msgPropMap.put("SERVICE_CONTEXT", serviceContext);
-
 
             //Create the client with the context
             MuleClient client = new MuleClient(muleContext);
             client.sendAsync("vm://bulkUserMigrationMessage", (BulkMigrationConfig) config, msgPropMap);
 
-
         } catch (Exception e) {
             log.debug("EXCEPTION:AsynchIdentitySynchService:bulkUserMigration");
             log.error(e);
-
         }
     }
 
@@ -120,38 +105,27 @@ public class AsynchIdentitySynchServiceImpl implements AsynchIdentitySynchServic
     public void resynchRole(final String roleId) {
         try {
 
-
             Map<String, String> msgPropMap = new HashMap<String, String>();
             msgPropMap.put("SERVICE_HOST", serviceHost);
             msgPropMap.put("SERVICE_CONTEXT", serviceContext);
-
 
             //Create the client with the context
             MuleClient client = new MuleClient(muleContext);
             client.sendAsync("vm://resynchRoleMessage", roleId, msgPropMap);
 
-
         } catch (Exception e) {
             log.debug("EXCEPTION:AsynchIdentitySynchService:resynchRole");
             log.error(e);
-
         }
     }
 
-    public IdentitySynchService getSynchService() {
-        return synchService;
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
     }
 
-    public void setSynchService(IdentitySynchService synchService) {
-        this.synchService = synchService;
+    @Override
+    public void setMuleContext(MuleContext muleContext) {
+        this.muleContext = muleContext;
     }
-
-    public void setMuleContext(MuleContext ctx) {
-
-        log.debug("** setMuleContext called. **");
-
-        muleContext = ctx;
-
-    }
-
 }

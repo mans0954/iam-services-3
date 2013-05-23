@@ -1,8 +1,6 @@
 package org.openiam.idm.srvc.synch.service;
 
-import org.mule.api.MuleContext;
 import org.openiam.base.ws.Response;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.synch.domain.SynchConfigEntity;
 import org.openiam.idm.srvc.synch.dto.BulkMigrationConfig;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
@@ -53,8 +51,6 @@ public interface IdentitySynchService {
      * @return
      */
     Response resynchRole(final String roleId);
-
-    public void setMuleContext(MuleContext ctx);
 
     public Integer getSynchConfigCountByExample(SynchConfigEntity example);
 

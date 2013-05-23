@@ -31,16 +31,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-
 
 /**
  * Factory to create source adapters for generic object.
  * @author suneet
  *
  */
-public class SourceAdapterFactory implements  ApplicationContextAware {
+@Component("genericObjAdapterFactory")
+public class SourceAdapterFactory implements ApplicationContextAware {
 
 	private static final Log log = LogFactory.getLog(SourceAdapterFactory.class);
 	public static ApplicationContext ac;
@@ -52,38 +53,32 @@ public class SourceAdapterFactory implements  ApplicationContextAware {
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		ac = applicationContext;
 	}
-	
-	
+
 	public SourceAdapter create(SynchConfig config) throws ClassNotFoundException, IOException {
 		SourceAdapter adpt = null;
 		
 		String adapterType = config.getSynchAdapter();
 		String customScript = config.getCustomAdatperScript(); 
 		if (adapterType != null) {
-				if (adapterType.equalsIgnoreCase("CUSTOM") &&
-					( adapterType  != null &&  adapterType.length() > 0)) {
-					// custom adapter- written groovy
-					adpt =  (SourceAdapter)scriptRunner.instantiateClass(null, customScript);
-	
-				}else {
+            if (adapterType.equalsIgnoreCase("CUSTOM") &&
+                ( adapterType  != null &&  adapterType.length() > 0)) {
 
+                // custom adapter- written groovy
+                adpt =  (SourceAdapter)scriptRunner.instantiateClass(null, customScript);
 
-					if (adapterType.equalsIgnoreCase("CSV")) {
-						return (SourceAdapter)ac.getBean("genericObjCsvAdapter");
-					}				
-					if (adapterType.equalsIgnoreCase("LDAP")) {
-						return (SourceAdapter)ac.getBean("genericObjLdapAdapter");
-					}
+            } else {
 
+                if (adapterType.equalsIgnoreCase("CSV")) {
+                    return (SourceAdapter)ac.getBean("genericObjCsvAdapter");
+                }
+                if (adapterType.equalsIgnoreCase("LDAP")) {
+                    return (SourceAdapter)ac.getBean("genericObjLdapAdapter");
+                }
+            }
 
-				}
-				adpt.setApplicationContext(ac);
-				return adpt;
-				
-
+            return adpt;
 		}
 		
 		return null;
-		
 	}
 }

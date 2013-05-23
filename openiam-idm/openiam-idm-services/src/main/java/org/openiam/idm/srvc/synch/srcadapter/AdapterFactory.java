@@ -23,6 +23,8 @@ package org.openiam.idm.srvc.synch.srcadapter;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.mule.api.MuleContext;
+import org.mule.api.context.MuleContextAware;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.openiam.idm.srvc.synch.service.SourceAdapter;
 import org.openiam.script.ScriptIntegration;
@@ -31,36 +33,41 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-
 
 /**
  * Factory to create the scripts that are used in the synchronization process.
  * @author suneet
  *
  */
-@Component
-public class AdapterFactory implements ApplicationContextAware {
+public class AdapterFactory implements ApplicationContextAware, MuleContextAware {
 
 	private static final Log log = LogFactory.getLog(AdapterFactory.class);
-	private String scriptEngine;
-	public static ApplicationContext ac;
+
+	public static ApplicationContext applicationContext;
+
+    protected MuleContext muleContext;
 	
 	@Autowired
     @Qualifier("configurableGroovyScriptEngine")
     private ScriptIntegration scriptRunner;
-	
+
+    @Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		ac = applicationContext;
+        this.applicationContext = applicationContext;
 	}
-	
-	public SourceAdapter create(SynchConfig config) throws ClassNotFoundException, IOException {
+
+    @Override
+    public void setMuleContext(MuleContext muleContext) {
+        this.muleContext = muleContext;
+    }
+
+    public SourceAdapter create(SynchConfig config) throws ClassNotFoundException, IOException {
 		SourceAdapter adpt = null;
 		
 		String adapterType = config.getSynchAdapter();
-		String customScript = config.getCustomAdatperScript(); 
+		String customScript = config.getCustomAdatperScript();
 		if (adapterType != null) {
 			try {
 				if (adapterType.equalsIgnoreCase("CUSTOM") && 
@@ -68,48 +75,38 @@ public class AdapterFactory implements ApplicationContextAware {
 					// custom adapter- written groovy
 					adpt =  (SourceAdapter)scriptRunner.instantiateClass(null, customScript);
 	
-				}else {
+				} else {
 					// using standard adapter
 					Class cls = null;
 					if (adapterType.equalsIgnoreCase("RDBMS")) {
-						return (SourceAdapter)ac.getBean("rdbmsAdapter");
+						return (SourceAdapter)applicationContext.getBean("rdbmsAdapter");
 					}
 					if (adapterType.equalsIgnoreCase("CSV")) {
-						return (SourceAdapter)ac.getBean("csvAdapter");
+						return (SourceAdapter)applicationContext.getBean("csvAdapter");
 					}				
 					if (adapterType.equalsIgnoreCase("LDAP")) {
-						return (SourceAdapter)ac.getBean("ldapAdapter");
+						return (SourceAdapter)applicationContext.getBean("ldapAdapter");
 					}
 					if (adapterType.equalsIgnoreCase("AD")) {
-						return (SourceAdapter)ac.getBean("activeDirAdapter");
+						return (SourceAdapter)applicationContext.getBean("activeDirAdapter");
 					}
                     if (adapterType.equalsIgnoreCase("WS")) {
-						return (SourceAdapter)ac.getBean("wsAdapter");
+						return (SourceAdapter)applicationContext.getBean("wsAdapter");
 					}
 					adpt = (SourceAdapter)cls.newInstance();
 				}
-				adpt.setApplicationContext(ac);
+
 				return adpt;
 				
-			}catch(IllegalAccessException ia) {
+			} catch(IllegalAccessException ia) {
 				log.error(ia.getMessage(),ia);
 				
-			}catch(InstantiationException ie) {
+			} catch(InstantiationException ie) {
 				log.error(ie.getMessage(),ie);
 			}
 		}
 		
 		return null;
-		
 	}
-
-	public String getScriptEngine() {
-		return scriptEngine;
-	}
-
-	public void setScriptEngine(String scriptEngine) {
-		this.scriptEngine = scriptEngine;
-	}
-
 
 }

@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
-	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:jee="http://www.springframework.org/schema/jee"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
-    					http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
-    					http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
-    					http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-2.5.xsd">
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
 
 	<bean
 		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
@@ -250,49 +247,25 @@
 
 	<!-- ========================= Synchronization ========================= -->
 
-	<bean id="matchRuleFactory" class="org.openiam.idm.srvc.synch.srcadapter.MatchRuleFactory" />
+    <bean id="systemAccount" class="java.lang.String">
+        <constructor-arg value="3000"/>
+    </bean>
 
-	<bean id="rdbmsAdapter" class="org.openiam.idm.srvc.synch.srcadapter.RDBMSAdapter">
-		<property name="matchRuleFactory" ref="matchRuleFactory" />
-		<property name="systemAccount" value="3000" />
-		<property name="loginManager" ref="loginManager" />
-		<property name="roleDataService" ref="roleDataService" />
-		<property name="userMgr" ref="userManager" />
-		<!-- <property name="auditHelper" ref="auditHelper" /> -->
-	</bean>
-	<bean id="csvAdapter" class="org.openiam.idm.srvc.synch.srcadapter.CSVAdapter">
-		<property name="matchRuleFactory" ref="matchRuleFactory" />
-		<property name="systemAccount" value="3000" />
-		<property name="loginManager" ref="loginManager" />
-		<property name="roleDataService" ref="roleDataService" />
-		<property name="userMgr" ref="userManager" />
-		<!-- <property name="auditHelper" ref="auditHelper" /> -->
-	</bean>
+    <bean id="synchService" class="org.openiam.idm.srvc.synch.service.IdentitySynchServiceImpl" />
 
-	<bean id="ldapAdapter" class="org.openiam.idm.srvc.synch.srcadapter.LdapAdapter">
-		<property name="matchRuleFactory" ref="matchRuleFactory" />
-		<property name="systemAccount" value="3000" />
-		<property name="loginManager" ref="loginManager" />
-		<property name="roleDataService" ref="roleDataService" />
-		<property name="userMgr" ref="userManager" />
-		<!-- <property name="auditHelper" ref="auditHelper" /> -->
-	</bean>
-	<bean id="activeDirAdapter"
-		class="org.openiam.idm.srvc.synch.srcadapter.ActiveDirectoryAdapter">
-	</bean>
-	<bean id="wsAdapter" class="org.openiam.idm.srvc.synch.srcadapter.WSAdapter">
-		<property name="matchRuleFactory" ref="matchRuleFactory" />
-		<property name="systemAccount" value="3000" />
-		<property name="loginManager" ref="loginManager" />
-		<property name="roleDataService" ref="roleDataService" />
-		<property name="userMgr" ref="userManager" />
-		<!-- <property name="auditHelper" ref="auditHelper" /> -->
-	</bean>
+    <bean id="synchServiceWS" class="org.openiam.idm.srvc.synch.ws.IdentitySynchWebServiceImpl" />
 
+    <bean id="asynchSynchServiceWS" class="org.openiam.idm.srvc.synch.ws.AsynchIdentitySynchServiceImpl" />
 
-	<bean id="defaultMatchRule"
-		class="org.openiam.idm.srvc.synch.srcadapter.DefaultMatchObjectRule">
-	</bean>
+    <bean id="adapterFactory" class="org.openiam.idm.srvc.synch.srcadapter.AdapterFactory" />
+
+    <bean id="rdbmsAdapter" class="org.openiam.idm.srvc.synch.srcadapter.RDBMSAdapter" />
+
+    <bean id="csvAdapter" class="org.openiam.idm.srvc.synch.srcadapter.CSVAdapter" />
+
+    <bean id="wsAdapter" class="org.openiam.idm.srvc.synch.srcadapter.WSAdapter" />
+
+    <bean id="ldapAdapter" class="org.openiam.idm.srvc.synch.srcadapter.LdapAdapter" />
 
 	<!-- ========================= Synchronization for Generic Objects ========================= -->
 
@@ -300,7 +273,6 @@
 		class="org.openiam.idm.srvc.synch.ws.AsynchGenericObjectSynchServiceImpl">
 		<property name="synchService" ref="genericObjSynchServiceWS" />
 	</bean>
-
 
 	<bean id="genericObjSynchServiceWS"
 		class="org.openiam.idm.srvc.synch.ws.GenericObjectSynchWebServiceImpl">
@@ -311,11 +283,11 @@
 		class="org.openiam.idm.srvc.synch.service.generic.GenericObjectSynchServiceImpl">
 		<property name="synchConfigDao" ref="synchConfigDAO" />
 		<property name="synchConfigMappingDao" ref="synchConfigDataMappingDAO" />
-		<property name="adaptorFactory" ref="genericObjAdapterFactory" />
+		<property name="adapterFactory" ref="genericObjAdapterFactory" />
 	</bean>
 
-	<bean id="genericObjAdapterFactory"
-		class="org.openiam.idm.srvc.synch.service.generic.SourceAdapterFactory" />
+	<!--<bean id="genericObjAdapterFactory"-->
+		<!--class="org.openiam.idm.srvc.synch.service.generic.SourceAdapterFactory" />-->
 
 	<bean id="genericObjCsvAdapter"
 		class="org.openiam.idm.srvc.synch.service.generic.CSVAdapterForGenericObject">

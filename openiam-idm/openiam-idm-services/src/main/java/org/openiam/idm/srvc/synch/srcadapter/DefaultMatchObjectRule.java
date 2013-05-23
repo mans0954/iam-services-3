@@ -2,30 +2,27 @@ package org.openiam.idm.srvc.synch.srcadapter;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.openiam.idm.srvc.synch.service.MatchObjectRule;
 import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.dto.UserSearch;
 import org.openiam.idm.srvc.user.ws.UserDataWebService;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 
+@Component("defaultMatchRule")
 public class DefaultMatchObjectRule implements MatchObjectRule {
 
-	private UserDataWebService userManager = null;
-	public static ApplicationContext ac;
+    @Autowired
+    @Qualifier("userWS")
+	private UserDataWebService userManager;
 	
 	private String matchAttrName = null;
 	private String matchAttrValue = null;
-	
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		ac = applicationContext;
-}
-	
+
 	public User lookup(SynchConfig config, Map<String, Attribute> rowAttr) {
 		UserSearch search = new UserSearch();
 		//Map<String, UserAttribute> atMap = user.getUserAttributes();
@@ -63,11 +60,10 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
 			matchAttrValue = search.getAttributeValue();
 			
 		}
-		
-		userManager = (UserDataWebService) ac.getBean("userWS");
+
 		List<User> userList = userManager.search(search);
 		
-		if (userList != null) {
+		if (userList != null && !userList.isEmpty()) {
 			System.out.println("User matched with existing user...");
 			User u = userList.get(0);
 			return u;

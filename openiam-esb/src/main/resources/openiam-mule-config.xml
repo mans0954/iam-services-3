@@ -254,7 +254,7 @@
 		</model>
 		
 		<model name="metadataElementTemplateServiceModel">
-			<service name="metadataElementTemplateService">
+			<service name="elementTemplateService">
 				<inbound>
 					<inbound-endpoint address="${webservice.path}MetadataElementTemplateWebService" 		exchange-pattern="request-response">
 						<cxf:jaxws-service />
