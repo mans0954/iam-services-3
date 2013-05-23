@@ -13,67 +13,67 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "ResponseErrorCode")
 @XmlEnum
 public enum ResponseCode {
-	
+
 	@XmlEnumValue("resourcePropResourceIdMissing")
 	RESOURCE_PROP_RESOURCE_ID_MISSING("resourcePropResourceIdMissing"),
-	
+
 	@XmlEnumValue("resourcePropValueMissing")
 	RESOURCE_PROP_VALUE_MISSING("resourcePropValueMissing"),
-	
+
 	@XmlEnumValue("resourcePropMissing")
 	RESOURCE_PROP_MISSING("resourcePropMissing"),
-	
+
 	@XmlEnumValue("hangingChildren")
 	HANGING_CHILDREN("hangingChildren"),
-	
+
 	@XmlEnumValue("hangingGroups")
 	HANGING_GROUPS("hangingGroups"),
-	
+
 	@XmlEnumValue("hangingRoles")
 	HANGING_ROLES("hangingRoles"),
-	
+
 	@XmlEnumValue("menuDoesNotExist")
 	MENU_DOES_NOT_EXIST("menuDoesNotExist"),
-	
+
 	@XmlEnumValue("invalidResourceType")
 	INVALID_RESOURCE_TYPE("invalidResourceType"),
-	
+
 	@XmlEnumValue("invalidRoleDomain")
 	INVALID_ROLE_DOMAIN("invalidRoleDomain"),
-	
+
 	@XmlEnumValue("noName")
 	NO_NAME("noName"),
-	
+
 	@XmlEnumValue("nameTaken")
 	NAME_TAKEN("nameTaken"),
-	
+
 	@XmlEnumValue("membershipExists")
 	MEMBERSHIP_EXISTS("membershipExists"),
-	
+
     @XmlEnumValue("resourceTypesNotEqual")
     RESOURCE_TYPES_NOT_EQUAL("resourceTypesNotEqual"),
 
     @XmlEnumValue("relationshipExists")
     RELATIONSHIP_EXISTS("relationshipExists"),
-    
+
     @XmlEnumValue("cantAddYourselfAsChild")
     CANT_ADD_YOURSELF_AS_CHILD("cantAddYourselfAsChild"),
-    
+
     @XmlEnumValue("circularDependency")
     CIRCULAR_DEPENDENCY("circularDependency"),
-	
+
     @XmlEnumValue("objectNotFound")
     OBJECT_NOT_FOUND("objectNotFound"),
-    
+
     @XmlEnumValue("hangingChildRoles")
     ROLE_HANGING_CHILD_ROLES("hangingChildRoles"),
-    
+
     @XmlEnumValue("hangingRoleGroups")
     ROLE_HANGING_GROUPS("hangingRoleGroups"),
-    
+
     @XmlEnumValue("hangingRoleResources")
     ROLE_HANGING_RESOURCES("hangingRoleResources"),
-    
+
     @XmlEnumValue("hangingRoleUsers")
     ROLE_HANGING_USERS("hangingRoleUsers"),
 
@@ -194,6 +194,9 @@ public enum ResponseCode {
     @XmlEnumValue("IO_EXCEPTION")
     IO_EXCEPTION("IO_EXCEPTION"),
 
+    @XmlEnumValue("INTERRUPTED_EXCEPTION")
+    INTERRUPTED_EXCEPTION("INTERRUPTED_EXCEPTION"),
+
     @XmlEnumValue("FILE_EXCEPTION")
     FILE_EXCEPTION("FILE_EXCEPTION"),
 
@@ -306,25 +309,25 @@ public enum ResponseCode {
 
     @XmlEnumValue("CONTENT_PROVIDER_NOT_SET")
     CONTENT_PROVIDER_NOT_SET("CONTENT_PROVIDER_NOT_SET"),
-    
+
     @XmlEnumValue("URI_FEDERATION_CONTENT_PROVIDER_NOT_FOUND")
 	URI_FEDERATION_CONTENT_PROVIDER_NOT_FOUND("URI_FEDERATION_CONTENT_PROVIDER_NOT_FOUND"),
-	
+
 	@XmlEnumValue("URI_FEDERATION_NOT_ENTITLED_TO_CONTENT_PROVIDER")
 	URI_FEDERATION_NOT_ENTITLED_TO_CONTENT_PROVIDER("URI_FEDERATION_NOT_ENTITLED_TO_CONTENT_PROVIDER"),
-	
+
 	@XmlEnumValue("URI_FEDERATION_AUTH_LEVEL_DOES_NOT_MEET_MIN_AUTH_LEVEL_ON_CP")
 	URI_FEDERATION_AUTH_LEVEL_DOES_NOT_MEET_MIN_AUTH_LEVEL_ON_CP("URI_FEDERATION_AUTH_LEVEL_DOES_NOT_MEET_MIN_AUTH_LEVEL_ON_CP"),
-	
+
 	@XmlEnumValue("URI_FEDERATION_NOT_ENTITLED_TO_PATTERN")
 	URI_FEDERATION_NOT_ENTITLED_TO_PATTERN("URI_FEDERATION_NOT_ENTITLED_TO_PATTERN"),
-	
+
 	@XmlEnumValue("URI_FEDERATION_AUTH_LEVEL_DOES_NOT_MEET_MIN_AUTH_LEVEL_ON_PATTERN")
 	URI_FEDERATION_AUTH_LEVEL_DOES_NOT_MEET_MIN_AUTH_LEVEL_ON_PATTERN("URI_FEDERATION_AUTH_LEVEL_DOES_NOT_MEET_MIN_AUTH_LEVEL_ON_PATTERN"),
-	
+
 	@XmlEnumValue("INVALID_URI")
 	INVALID_URI("INVALID_URI"),
-	
+
 	@XmlEnumValue("URI_PATTERN_RULE_PROCESS_ERROR")
 	URI_PATTERN_RULE_PROCESS_ERROR("URI_PATTERN_RULE_PROCESS_ERROR"),
 
@@ -360,31 +363,31 @@ public enum ResponseCode {
 
     @XmlEnumValue("URI_PATTERN_META_NAME_NOT_SET")
     URI_PATTERN_META_NAME_NOT_SET("URI_PATTERN_META_NAME_NOT_SET"),
-    
+
     @XmlEnumValue("INTERNAL_ERROR")
 	INTERNAL_ERROR("INTERNAL_ERROR"),
-	
+
 	@XmlEnumValue("LOGIN_EXISTS")
 	LOGIN_EXISTS("LOGIN_EXISTS"),
 
     @XmlEnumValue("MISSING_REQUIRED_ATTRIBUTE")
     MISSING_REQUIRED_ATTRIBUTE("MISSING_REQUIRED_ATTRIBUTE"),
-    
+
     @XmlEnumValue("NO_IDENTITY_QUESTION")
 	NO_IDENTITY_QUESTION("NO_IDENTITY_QUESTION"),
-	
+
 	@XmlEnumValue("NO_IDENTITY_QUESTION_GROUP")
 	NO_IDENTITY_QUESTION_GROUP("NO_IDENTITY_QUESTION_GROUP"),
-	
+
 	@XmlEnumValue("NO_ANSWER_TO_QUESTION")
 	NO_ANSWER_TO_QUESTION("NO_ANSWER_TO_QUESTION"),
-	
+
 	@XmlEnumValue("IDENTICAL_QUESTIONS")
 	IDENTICAL_QUESTIONS("IDENTICAL_QUESTIONS"),
-	
+
 	@XmlEnumValue("ATTRIBUTE_NAME_MISSING")
 	ATTRIBUTE_NAME_MISSING("ATTRIBUTE_NAME_MISSING"),
-	
+
 	@XmlEnumValue("METADATA_TYPE_MISSING")
 	METADATA_TYPE_MISSING("METADATA_TYPE_MISSING"),
 
@@ -393,43 +396,43 @@ public enum ResponseCode {
 
 	@XmlEnumValue("UNAUTHORIZED")
 	UNAUTHORIZED("UNAUTHORIZED"),
-	
+
 	@XmlEnumValue("INVALID_VALUE")
 	INVALID_VALUE("INVALID_VALUE"),
-	
+
 	@XmlEnumValue("REQUIRED")
 	REQUIRED("REQUIRED"),
-	
+
 	@XmlEnumValue("FIRST_NAME_REQUIRED")
 	FIRST_NAME_REQUIRED("FIRST_NAME_REQUIRED"),
-	
+
 	@XmlEnumValue("LAST_NAME_REQUIRED")
 	LAST_NAME_REQUIRED("LAST_NAME_REQUIRED"),
-	
+
 	@XmlEnumValue("EMAIL_REQUIRED")
 	EMAIL_REQUIRED("EMAIL_REQUIRED"),
-	
+
 	@XmlEnumValue("LOGIN_REQUIRED")
 	LOGIN_REQUIRED("LOGIN_REQUIRED"),
-	
+
 	@XmlEnumValue("SEND_EMAIL_FAILED")
 	SEND_EMAIL_FAILED("SEND_EMAIL_FAILED"),
-	
+
 	@XmlEnumValue("LINKED_TO_AUTHENTICATION_PROVIDER")
 	LINKED_TO_AUTHENTICATION_PROVIDER("LINKED_TO_AUTHENTICATION_PROVIDER"),
-	
+
 	@XmlEnumValue("LINKED_TO_CONTENT_PROVIDER")
 	LINKED_TO_CONTENT_PROVIDER("LINKED_TO_CONTENT_PROVIDER"),
-	
+
 	@XmlEnumValue("LINKED_TO_URI_PATTERN")
 	LINKED_TO_URI_PATTERN("LINKED_TO_URI_PATTERN"),
-	
+
 	@XmlEnumValue("LINKED_TO_METADATA_ELEMENT")
 	LINKED_TO_METADATA_ELEMENT("LINKED_TO_METADATA_ELEMENT"),
-	
+
 	@XmlEnumValue("LINKED_TO_PAGE_TEMPLATE")
 	LINKED_TO_PAGE_TEMPLATE("LINKED_TO_PAGE_TEMPLATE");
-	
+
     private final String value;
 
     ResponseCode(String val) {

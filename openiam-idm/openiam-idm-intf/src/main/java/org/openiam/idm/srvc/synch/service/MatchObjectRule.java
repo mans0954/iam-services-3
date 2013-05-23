@@ -12,12 +12,12 @@ import org.springframework.context.ApplicationContextAware;
  * @author suneet
  *
  */
-public interface MatchObjectRule extends  ApplicationContextAware {
+public interface MatchObjectRule {
 	/**
 	 * Look up the user contained in the user object with in the IDM system.
 	 * The look up will be based on the match criteria defined in the config object.
 	 * @param config
-	 * @param user
+	 * @param rowAttr
 	 * @return
 	 */
 	User lookup(SynchConfig config, Map<String, Attribute> rowAttr);

@@ -4,9 +4,6 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
-// Generated May 29, 2010 8:20:09 PM by Hibernate Tools 3.2.2.GA
-
-
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "SynchConfigDataMapping", 
 		propOrder = { "mappingId",

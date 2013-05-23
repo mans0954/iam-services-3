@@ -21,16 +21,9 @@
  */
 package org.openiam.idm.srvc.synch.service;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlType;
-
 import org.openiam.base.ws.Response;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
-import org.openiam.idm.srvc.synch.dto.SynchRequest;
-import org.springframework.context.ApplicationContextAware;
-import org.mule.api.MuleContext;
 
 /**
  * Interface to implementing source adapters
@@ -38,9 +31,8 @@ import org.mule.api.MuleContext;
  *
  */
 
-public interface SourceAdapter extends  ApplicationContextAware {
+public interface SourceAdapter {
 
 	public SyncResponse startSynch(SynchConfig config);
     public Response testConnection(SynchConfig config);
-    public void setMuleContext(MuleContext ctx);
 }

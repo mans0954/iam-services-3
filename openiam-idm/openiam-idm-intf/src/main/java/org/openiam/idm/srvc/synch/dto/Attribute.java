@@ -109,7 +109,7 @@ public class Attribute implements Cloneable {
         this.name = name;
     }
 
-    public int getColumnNbr() {
+    public int  getColumnNbr() {
 		return columnNbr;
 	}
 
