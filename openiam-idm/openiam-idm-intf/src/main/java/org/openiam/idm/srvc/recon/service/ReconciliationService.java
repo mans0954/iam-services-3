@@ -1,31 +1,28 @@
 package org.openiam.idm.srvc.recon.service;
 
-
 import org.mule.api.MuleContext;
 import org.openiam.idm.srvc.recon.dto.*;
 
 /**
- * Interface for  <code>ReconciliationService</code>. All reconciliation activities are managed through 
- * this service. 
+ * Interface for <code>ReconciliationService</code>. All reconciliation
+ * activities are managed through this service.
  */
 public interface ReconciliationService {
 
-	public ReconciliationConfig addConfig( ReconciliationConfig config) ;
+    public ReconciliationConfig addConfig(ReconciliationConfig config);
 
-    public ReconciliationConfig updateConfig( ReconciliationConfig config) ;
+    public void updateConfig(ReconciliationConfig config);
 
-    public void removeConfigByResourceId( String resourceId) ;
+    public void removeConfigByResourceId(String resourceId);
 
-    public void removeConfig( String configId) ;
+    public void removeConfig(String configId);
 
-    public ReconciliationConfig getConfigByResource( String resourceId);
+    public ReconciliationConfig getConfigByResource(String resourceId);
 
     public ReconciliationConfig getConfigById(String configId);
 
     ReconciliationResponse startReconciliation(ReconciliationConfig config);
 
     public void setMuleContext(MuleContext ctx);
-	
 
 }
-
