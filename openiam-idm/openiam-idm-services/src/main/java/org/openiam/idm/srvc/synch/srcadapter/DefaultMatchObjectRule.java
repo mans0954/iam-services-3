@@ -10,7 +10,7 @@ import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.openiam.idm.srvc.synch.service.MatchObjectRule;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.user.service.UserMgr;
+import org.openiam.idm.srvc.user.service.UserDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 public class DefaultMatchObjectRule implements MatchObjectRule {
 
     @Autowired
-	private UserMgr userManager;
+	private UserDataService userManager;
 
     @Autowired
     private UserDozerConverter userDozerConverter;
