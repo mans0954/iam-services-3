@@ -421,11 +421,11 @@ public class LoginDAOImpl extends BaseDaoImpl<LoginEntity, String> implements
 	}
 
 	@Override
-	public void merge(LoginEntity entity) {
+	public LoginEntity merge(LoginEntity entity) {
 		if(entity != null) {
 			entity.setLowerCaseLogin(entity.getLogin());
 		}
-		super.merge(entity);
+		return super.merge(entity);
 	}
 
 	@Override
