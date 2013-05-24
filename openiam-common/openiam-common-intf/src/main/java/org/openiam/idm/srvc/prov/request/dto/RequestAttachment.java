@@ -18,6 +18,7 @@ import javax.xml.bind.annotation.XmlType;
 	"userId",
     "attachmentDate"
 })
+@Deprecated
 public class RequestAttachment implements java.io.Serializable {
 
 	private String requestAttachmentId;

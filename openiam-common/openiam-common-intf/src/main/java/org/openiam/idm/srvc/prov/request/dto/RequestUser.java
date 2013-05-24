@@ -42,27 +42,6 @@ public class RequestUser implements java.io.Serializable {
 	public RequestUser() {
 	}
 
-
-
-	public RequestUser(String affiliation, String deptCd, String division,
-			String firstName, String lastName, String locationCd,
-			String middleInit, String provRequestId, String reqUserListId,
-			String userId) {
-		super();
-		this.affiliation = affiliation;
-		this.deptCd = deptCd;
-		this.division = division;
-		this.firstName = firstName;
-		this.lastName = lastName;
-		this.locationCd = locationCd;
-		this.middleInit = middleInit;
-		this.requestId = provRequestId;
-		this.reqUserListId = reqUserListId;
-		this.userId = userId;
-	}
-
-
-
 	public String getReqUserListId() {
 		return this.reqUserListId;
 	}

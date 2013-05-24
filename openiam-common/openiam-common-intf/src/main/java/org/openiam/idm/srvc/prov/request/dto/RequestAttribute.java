@@ -4,6 +4,9 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
+import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.prov.request.domain.RequestAttributeEntity;
+
 // Generated Jan 9, 2009 5:33:58 PM by Hibernate Tools 3.2.2.GA
 
 /**
@@ -12,16 +15,17 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "RequestAttribute", propOrder = {
-    "requestAttrId",
+    "id",
     "provRequestId",
     "name",
     "value",
     "metadataTypeId",
     "attrGroup"
 })
+@DozerDTOCorrespondence(RequestAttributeEntity.class)
 public class RequestAttribute implements java.io.Serializable {
 
-	private String requestAttrId;
+	private String id;
 	private String provRequestId;
 	private String name;
 	private String value;
@@ -31,31 +35,13 @@ public class RequestAttribute implements java.io.Serializable {
 	public RequestAttribute() {
 	}
 
-
-
-	public RequestAttribute(String attrGroup, String metadataTypeId,
-			String name, String provRequestId, String requestAttrId,
-			String value) {
-		super();
-		this.attrGroup = attrGroup;
-		this.metadataTypeId = metadataTypeId;
-		this.name = name;
-		this.provRequestId = provRequestId;
-		this.requestAttrId = requestAttrId;
-		this.value = value;
+	public String getId() {
+		return this.id;
 	}
 
-
-
-	public String getRequestAttrId() {
-		return this.requestAttrId;
+	public void setId(String id) {
+		this.id = id;
 	}
-
-	public void setRequestAttrId(String requestAttrId) {
-		this.requestAttrId = requestAttrId;
-	}
-
-
 
 	public String getName() {
 		return this.name;

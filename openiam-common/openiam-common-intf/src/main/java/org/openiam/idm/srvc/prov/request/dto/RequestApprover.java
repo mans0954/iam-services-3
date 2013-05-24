@@ -2,12 +2,15 @@ package org.openiam.idm.srvc.prov.request.dto;
 
 // Generated Jan 9, 2009 5:33:58 PM by Hibernate Tools 3.2.2.GA
 
+import java.io.Serializable;
 import java.util.Date;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
+
+import org.openiam.dozer.DozerDTOCorrespondence;
 
 
 /**
@@ -25,29 +28,23 @@ import javax.xml.bind.annotation.XmlType;
     "comment",
     "status",
     "mngSysGroupId",
-    "managedSysId",
-    "roleDomain"
+    "managedSysId"
 })
-public class RequestApprover implements java.io.Serializable {
+public class RequestApprover implements Serializable {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -404296971055977744L;
-	protected String reqApproverId;
-	protected String approverId;
-	protected Integer approverLevel;
-	protected String approverType;
-	protected String requestId;
-    protected String roleDomain;
-    @XmlSchemaType(name = "dateTime")
-	protected Date actionDate;
-	protected String action;
-	protected String comment;
-	protected String status;
+	private String reqApproverId;
+	private String approverId;
+	private Integer approverLevel;
+	private String approverType;
+	private String requestId;
+	private Date actionDate;
+	private String action;
+	private String comment;
+	private String status;
 	
-	protected String mngSysGroupId;
-	protected String managedSysId;
+	private String mngSysGroupId;
+	private String managedSysId;
 
 
 	public RequestApprover() {
@@ -174,12 +171,4 @@ public class RequestApprover implements java.io.Serializable {
 	public void setApproverLevel(Integer approverLevel) {
 		this.approverLevel = approverLevel;
 	}
-
-    public String getRoleDomain() {
-        return roleDomain;
-    }
-
-    public void setRoleDomain(String roleDomain) {
-        this.roleDomain = roleDomain;
-    }
 }

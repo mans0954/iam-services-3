@@ -17,6 +17,7 @@ import static org.hibernate.criterion.Example.create;
  * @see org.openiam.idm.srvc.prov.RequestUser.RequestUserList
  * @author Hibernate Tools
  */
+@Deprecated
 public class RequestUserListDAOImpl {
 
 	private static final Log log = LogFactory.getLog(RequestUserListDAOImpl.class);
