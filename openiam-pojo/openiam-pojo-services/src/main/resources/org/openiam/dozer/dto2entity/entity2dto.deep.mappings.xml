@@ -518,7 +518,7 @@
 		</class-a>
 		<class-b>org.openiam.idm.srvc.recon.dto.ReconciliationConfig</class-b>
 		<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentListConverter"
 			custom-converter-param="dto2entityShallowDozerMapper">
 			<a>situationSet</a>
 			<b>situationSet</b>

@@ -23,8 +23,10 @@ package org.openiam.idm.srvc.recon.service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
@@ -131,18 +133,55 @@ public class ReconciliationServiceImpl implements ReconciliationService,
         if (config == null) {
             throw new IllegalArgumentException("config parameter is null");
         }
-        return reconConfigDozerMapper.convertToDTO(reconConfig
-                .add(reconConfigDozerMapper.convertToEntity(config, true)),
-                true);
+        List<ReconciliationSituation> sitSet = null;
+        if (!CollectionUtils.isEmpty(config.getSituationSet())) {
+            sitSet = new ArrayList<ReconciliationSituation>(
+                    config.getSituationSet());
+        }
+        config.setSituationSet(null);
+        ReconciliationConfig result = reconConfigDozerMapper.convertToDTO(
+                reconConfig.add(reconConfigDozerMapper.convertToEntity(config,
+                        true)), true);
+        saveSituationSet(sitSet, result.getReconConfigId());
+        result.setSituationSet(sitSet);
+        return result;
 
+    }
+
+    private void saveSituationSet(List<ReconciliationSituation> sitSet,
+            String configId) {
+        if (sitSet != null) {
+            for (ReconciliationSituation s : sitSet) {
+                if (s.getReconConfigId() == null) {
+                    s.setReconConfigId(configId);
+                }
+                if (s.getReconSituationId() == null) {
+                    s.setReconSituationId(reconSituationDAO
+                            .add(reconSituationDozerMapper.convertToEntity(s,
+                                    false)).getReconSituationId());
+                } else {
+                    reconSituationDAO.update(reconSituationDozerMapper
+                            .convertToEntity(s, false));
+                }
+            }
+        }
     }
 
     public void updateConfig(ReconciliationConfig config) {
         if (config == null) {
             throw new IllegalArgumentException("config parameter is null");
         }
+        List<ReconciliationSituation> sitSet = null;
+        if (!CollectionUtils.isEmpty(config.getSituationSet())) {
+            sitSet = new ArrayList<ReconciliationSituation>(
+                    config.getSituationSet());
+        }
+        config.setSituationSet(null);
+
         reconConfig
                 .update(reconConfigDozerMapper.convertToEntity(config, true));
+
+        this.saveSituationSet(sitSet, config.getReconConfigId());
     }
 
     public void removeConfigByResourceId(String resourceId) {

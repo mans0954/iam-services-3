@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.recon.domain;
 
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -12,16 +13,10 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.persistence.Transient;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlType;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.idm.srvc.policy.domain.PolicyAttributeEntity;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
-import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
 
 // Generated May 29, 2010 8:20:09 PM by Hibernate Tools 3.2.2.GA
 
@@ -52,18 +47,11 @@ public class ReconciliationConfigEntity implements java.io.Serializable {
     @Column(name = "TARGET_SYS_MATCH_SCRIPT", length = 120)
     private String targetSystemMatchScript;
 
-    // @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    // @JoinColumn(name = "RECON_CONFIG_ID", referencedColumnName =
-    // "RECON_CONFIG_ID")
-    // private Set<ReconciliationSituationEntity> situationSet;
-
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "RECON_CONFIG_ID", insertable = false, updatable = false)
-    private Set<ReconciliationSituationEntity> situationSet = new HashSet<ReconciliationSituationEntity>(
+    private List<ReconciliationSituationEntity> situationSet = new ArrayList<ReconciliationSituationEntity>(
             0);
 
-    
-    
     public String getSeparator() {
         return separator;
     }
@@ -160,11 +148,11 @@ public class ReconciliationConfigEntity implements java.io.Serializable {
         this.targetSystemMatchScript = targetSystemMatchScript;
     }
 
-    public Set<ReconciliationSituationEntity> getSituationSet() {
+    public List<ReconciliationSituationEntity> getSituationSet() {
         return situationSet;
     }
 
-    public void setSituationSet(Set<ReconciliationSituationEntity> situationSet) {
+    public void setSituationSet(List<ReconciliationSituationEntity> situationSet) {
         this.situationSet = situationSet;
     }
 }

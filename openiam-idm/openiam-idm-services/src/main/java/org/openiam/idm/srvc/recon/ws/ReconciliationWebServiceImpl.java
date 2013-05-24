@@ -21,15 +21,22 @@
  */
 package org.openiam.idm.srvc.recon.ws;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.jws.WebService;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.mule.api.MuleContext;
 import org.mule.api.context.MuleContextAware;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.dozer.converter.ReconciliationSituationDozerConverter;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.idm.srvc.recon.dto.ReconciliationResponse;
+import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
 import org.openiam.idm.srvc.recon.service.ReconciliationService;
+import org.openiam.idm.srvc.recon.service.ReconciliationSituationDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -59,6 +66,7 @@ public class ReconciliationWebServiceImpl implements ReconciliationWebService,
     public ReconciliationConfigResponse updateConfig(ReconciliationConfig config) {
         ReconciliationConfigResponse response = new ReconciliationConfigResponse(
                 ResponseStatus.SUCCESS);
+
         try {
             reconService.updateConfig(config);
         } catch (Exception e) {
