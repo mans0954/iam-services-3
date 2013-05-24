@@ -71,39 +71,6 @@ public class Service implements java.io.Serializable {
         this.serviceId = serviceId;
     }
 
-    /**
-     * full constructor
-     */
-    public Service(String serviceId, String serviceName, String status,
-                   String locationIpAddress, String companyOwnerId, Date startDate,
-                   Date endDate, String licenseKey, String serviceType,
-                   String parentServiceId, String rootResourceId,
-                   String accessControlModel, String param1, String param2,
-                   String param3, String param4, String param5,
-                   Set<RequestApprover> requestApprovers,
-                   Set<ServiceConfig> serviceConfigs, Set<RequestForm> requestForms) {
-        this.serviceId = serviceId;
-        this.serviceName = serviceName;
-        this.status = status;
-        this.locationIpAddress = locationIpAddress;
-        this.companyOwnerId = companyOwnerId;
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.licenseKey = licenseKey;
-        this.serviceType = serviceType;
-        this.parentServiceId = parentServiceId;
-        this.rootResourceId = rootResourceId;
-        this.accessControlModel = accessControlModel;
-        this.param1 = param1;
-        this.param2 = param2;
-        this.param3 = param3;
-        this.param4 = param4;
-        this.param5 = param5;
-        this.requestApprovers = requestApprovers;
-        this.serviceConfigs = serviceConfigs;
-        this.requestForms = requestForms;
-    }
-
     // Property accessors
     public String getServiceId() {
         return this.serviceId;

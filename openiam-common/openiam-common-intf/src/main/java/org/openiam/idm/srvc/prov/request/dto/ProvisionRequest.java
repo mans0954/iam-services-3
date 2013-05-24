@@ -4,6 +4,7 @@ package org.openiam.idm.srvc.prov.request.dto;
 
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -30,14 +31,11 @@ import javax.xml.bind.annotation.XmlType;
     "changeAccessBy",
     "newRoleId",
     "newServiceId",
-    "managedSyses",
-    "requestAttributes",
     "requestApprovers",
-    "requestAttachments",
     "requestUsers",
     "requestForOrgId"
 })
-public class ProvisionRequest implements java.io.Serializable {
+public class ProvisionRequest implements Serializable {
 
 	/**
 	 * 
@@ -60,37 +58,14 @@ public class ProvisionRequest implements java.io.Serializable {
 
     protected String requestForOrgId;
 	
-	protected Set<ManagedSysDto> managedSyses = new HashSet<ManagedSysDto>(0);
-	protected Set<RequestAttribute> requestAttributes = new HashSet<RequestAttribute>(0);
-	protected Set<RequestApprover> requestApprovers = new HashSet<RequestApprover>(0);
-	protected Set<RequestAttachment> requestAttachments = new HashSet<RequestAttachment>(0);
 	protected Set<RequestUser> requestUsers = new HashSet<RequestUser>(0);
+	protected Set<RequestApprover> requestApprovers = new HashSet<RequestApprover>(0);
 
 	public ProvisionRequest() {
 	}
 
 	public ProvisionRequest(String requestId) {
 		this.requestId = requestId;
-	}
-
-	public ProvisionRequest(String requestId, String requestorId, Date requestDate,
-			String status, Date statusDate, String requestReason,
-			Set<ManagedSysDto> managedSyses,
-			Set<RequestAttribute> requestAttributes,
-			Set<RequestApprover> requestApprovers,
-			Set<RequestAttachment> requestAttachments,
-			Set<RequestUser> requestUserLists) {
-		this.requestId = requestId;
-		this.requestorId = requestorId;
-		this.requestDate = requestDate;
-		this.status = status;
-		this.statusDate = statusDate;
-		this.requestReason = requestReason;
-		this.managedSyses = managedSyses;
-		this.requestAttributes = requestAttributes;
-		this.requestApprovers = requestApprovers;
-		this.requestAttachments = requestAttachments;
-		this.requestUsers = requestUserLists;
 	}
 
 	public String getRequestId() {
@@ -139,40 +114,6 @@ public class ProvisionRequest implements java.io.Serializable {
 
 	public void setRequestReason(String requestReason) {
 		this.requestReason = requestReason;
-	}
-
-	public Set<ManagedSysDto> getManagedSyses() {
-		return this.managedSyses;
-	}
-
-	public void setManagedSyses(Set<ManagedSysDto> managedSyses) {
-		this.managedSyses = managedSyses;
-	}
-
-	public Set<RequestAttribute> getRequestAttributes() {
-		return this.requestAttributes;
-	}
-
-	public void setRequestAttributes(Set<RequestAttribute> requestAttributes) {
-		this.requestAttributes = requestAttributes;
-	}
-
-
-
-	public Set<RequestAttachment> getRequestAttachments() {
-		return this.requestAttachments;
-	}
-
-	public void setRequestAttachments(Set<RequestAttachment> requestAttachments) {
-		this.requestAttachments = requestAttachments;
-	}
-
-	public Set<RequestUser> getRequestUsers() {
-		return this.requestUsers;
-	}
-
-	public void setRequestUsers(Set<RequestUser> requestUserLists) {
-		this.requestUsers = requestUserLists;
 	}
 
 	public String getRequestType() {
@@ -240,4 +181,12 @@ public class ProvisionRequest implements java.io.Serializable {
     public void setRequestForOrgId(String requestForOrgId) {
         this.requestForOrgId = requestForOrgId;
     }
+
+	public Set<RequestUser> getRequestUsers() {
+		return requestUsers;
+	}
+
+	public void setRequestUsers(Set<RequestUser> requestUsers) {
+		this.requestUsers = requestUsers;
+	}
 }

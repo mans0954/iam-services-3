@@ -143,7 +143,6 @@ public class ActivitiServiceImpl implements ActivitiService {
 	        if (CollectionUtils.isNotEmpty(approverAssocationList)) {
 	            for (final ApproverAssociation approverAssociation : approverAssocationList) {
 	                String approverType = null;
-	                String roleDomain = null;
 	                String approverId = null;
 	                if (approverAssociation != null) {
 	                    approverType = approverAssociation.getAssociationType();
@@ -156,7 +155,6 @@ public class ActivitiServiceImpl implements ActivitiService {
 	                    /* if the association type is a Role, use the approver Role ID */
 	                    } else if(StringUtils.equalsIgnoreCase(approverAssociation.getAssociationType(), "role")) {
 	                        approverId = approverAssociation.getApproverRoleId();
-	                        roleDomain = approverAssociation.getApproverRoleDomain();
 	
 	                        approverRole = approverAssociation.getApproverRoleId();
 	                        if (approverAssociation.getApplyDelegationFilter() != null) {
@@ -174,7 +172,6 @@ public class ActivitiServiceImpl implements ActivitiService {
 	                    /* add the approver to the list */
 	                    final RequestApprover reqApprover = new RequestApprover(approverId, approverAssociation.getApproverLevel(), approverAssociation.getAssociationType(), "PENDING");
 	                    reqApprover.setApproverType(approverType);
-	                    reqApprover.setRoleDomain(roleDomain);
 	                    provisionRequest.getRequestApprovers().add(reqApprover);
 	                }
 	

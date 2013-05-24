@@ -24,10 +24,7 @@ import javax.xml.bind.annotation.XmlType;
         "notifyUserOnReject",
         "approveNotificationUserType",
         "rejectNotificationUserType",
-        "notifyUserOnApproveName",
-        "notifyUserOnRejectName",
         "approverRoleId",
-        "approverRoleDomain",
         "applyDelegationFilter"
 })
 public class ApproverAssociation implements java.io.Serializable {
@@ -43,7 +40,6 @@ public class ApproverAssociation implements java.io.Serializable {
     private String approverUserId;
 
     private String approverRoleId;
-    private String approverRoleDomain;
     private Integer applyDelegationFilter = new Integer(0);
 
     private String approverName;
@@ -58,11 +54,6 @@ public class ApproverAssociation implements java.io.Serializable {
     /* type of user that we are sending a notification to - User, Supervisor, Target User */
     private String approveNotificationUserType;
     private String rejectNotificationUserType;
-
-
-    /* NOT persisted. For UI use only*/
-    private String notifyUserOnApproveName;
-    private String notifyUserOnRejectName;
 
 
     protected Boolean selected = new Boolean(false);
@@ -177,22 +168,6 @@ public class ApproverAssociation implements java.io.Serializable {
         this.notifyUserOnReject = notifyUserOnReject;
     }
 
-    public String getNotifyUserOnApproveName() {
-        return notifyUserOnApproveName;
-    }
-
-    public void setNotifyUserOnApproveName(String notifyUserOnApproveName) {
-        this.notifyUserOnApproveName = notifyUserOnApproveName;
-    }
-
-    public String getNotifyUserOnRejectName() {
-        return notifyUserOnRejectName;
-    }
-
-    public void setNotifyUserOnRejectName(String notifyUserOnRejectName) {
-        this.notifyUserOnRejectName = notifyUserOnRejectName;
-    }
-
     public String getApproveNotificationUserType() {
         return approveNotificationUserType;
     }
@@ -215,14 +190,6 @@ public class ApproverAssociation implements java.io.Serializable {
 
     public void setApproverRoleId(String approverRoleId) {
         this.approverRoleId = approverRoleId;
-    }
-
-    public String getApproverRoleDomain() {
-        return approverRoleDomain;
-    }
-
-    public void setApproverRoleDomain(String approverRoleDomain) {
-        this.approverRoleDomain = approverRoleDomain;
     }
 
     public Integer getApplyDelegationFilter() {

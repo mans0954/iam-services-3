@@ -34,18 +34,6 @@ public class RequestApprover implements java.io.Serializable {
         this.requestApproverId = requestApproverId;
     }
 
-    /**
-     * full constructor
-     */
-    public RequestApprover(String requestApproverId, Service service,
-                           String approverType, String approverId, String approvalLevel) {
-        this.requestApproverId = requestApproverId;
-        this.service = service;
-        this.approverType = approverType;
-        this.approverId = approverId;
-        this.approvalLevel = approvalLevel;
-    }
-
     // Property accessors
     public String getRequestApproverId() {
         return this.requestApproverId;
