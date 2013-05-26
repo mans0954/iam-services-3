@@ -14,6 +14,7 @@ import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.bpm.request.NewHireRequest;
 import org.openiam.bpm.request.RequestorInformation;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
+import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
@@ -90,8 +91,8 @@ public class RejectNewHireDelegate implements JavaDelegate {
 		final String newHireExecutorId = (String)newHireExecutorIdObj;
 		
 		final String requestType = provisionRequest.getRequestType();
-        final List<ApproverAssociation> approverAssociationList = approverAssociationDao.findApproversByRequestType(requestType, 1);
-        for (final ApproverAssociation approverAssociation : approverAssociationList) {
+        final List<ApproverAssociationEntity> approverAssociationList = approverAssociationDao.findApproversByRequestType(requestType, 1);
+        for (final ApproverAssociationEntity approverAssociation : approverAssociationList) {
             String notifyEmail = null;
             approverAssociation.getApproverUserId();
             String typeOfUserToNotify = approverAssociation.getRejectNotificationUserType();

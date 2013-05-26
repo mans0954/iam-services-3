@@ -18,6 +18,7 @@ import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.auth.ws.LoginResponse;
+import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
@@ -99,10 +100,10 @@ public class AcceptNewHireDelegate implements JavaDelegate {
 		final String newHireExecutorId = (String)newHireExecutorIdObj;
         
         final String requestType = provisionRequest.getRequestType();
-        final List<ApproverAssociation> approverAssociationList = approverAssociationDao.findApproversByRequestType(requestType, 1);
+        final List<ApproverAssociationEntity> approverAssociationList = approverAssociationDao.findApproversByRequestType(requestType, 1);
 
         /* notify the approvers */
-        for (final ApproverAssociation approverAssociation : approverAssociationList) {
+        for (final ApproverAssociationEntity approverAssociation : approverAssociationList) {
             String typeOfUserToNotify = approverAssociation.getApproveNotificationUserType();
             if (StringUtils.isBlank(typeOfUserToNotify)) {
                 typeOfUserToNotify = "USER";

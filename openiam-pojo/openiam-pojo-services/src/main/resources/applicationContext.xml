@@ -406,10 +406,9 @@
 				<!--<value>org/openiam/idm/srvc/synch/service/SynchActivityLog.hbm.xml</value>-->
 				<!--<value>org/openiam/idm/srvc/synch/service/ActivityLogDetail.hbm.xml</value>-->
 
+				<!--
 				<value>org/openiam/idm/srvc/mngsys/service/ApproverAssoc.hbm.xml
 				</value>
-
-				<!--
 				<value>org/openiam/idm/srvc/prov/request/service/ProvisionRequest.hbm.xml
 				</value>
 				<value>org/openiam/idm/srvc/prov/request/service/RequestApprover.hbm.xml

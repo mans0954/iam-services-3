@@ -209,19 +209,23 @@
 	<!-- <property name="auditDataService" ref="auditDataService" /> -->
 	<!-- </bean> -->
 
+	<!--
 	<bean id="managedSysService"
 		class="org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebServiceImpl">
 		<property name="approverAssociationDao" ref="approverAssociationDAO" />
 		<property name="cryptor" ref="cryptor" />
 	</bean>
+	-->
 
 	<bean id="fileWebService" class="org.openiam.idm.srvc.file.ws.FileWebServiceImpl">
 	</bean>
 
+	<!--
 	<bean id="approverAssociationDAO"
 		class="org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAOImpl">
 		<property name="sessionFactory" ref="sessionFactory"></property>
 	</bean>
+	-->
 
 	<!--
 	<bean id="provRequestWS"

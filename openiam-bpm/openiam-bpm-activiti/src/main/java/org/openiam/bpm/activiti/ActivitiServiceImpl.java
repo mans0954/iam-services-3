@@ -35,6 +35,7 @@ import org.openiam.bpm.response.NewHireResponse;
 import org.openiam.bpm.response.TaskListWrapper;
 import org.openiam.bpm.response.TaskWrapper;
 import org.openiam.bpm.util.ActivitiConstants;
+import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAOImpl;
@@ -140,9 +141,9 @@ public class ActivitiServiceImpl implements ActivitiService {
 	        int applyDelegationFilter = 0;
 	        
 	        /* get a list of approvers for this request type */
-			final List<ApproverAssociation> approverAssocationList = approverAssociationDao.findApproversByRequestType(NEW_HIRE_REQUEST_TYPE, 1);
+			final List<ApproverAssociationEntity> approverAssocationList = approverAssociationDao.findApproversByRequestType(NEW_HIRE_REQUEST_TYPE, 1);
 	        if (CollectionUtils.isNotEmpty(approverAssocationList)) {
-	            for (final ApproverAssociation approverAssociation : approverAssocationList) {
+	            for (final ApproverAssociationEntity approverAssociation : approverAssocationList) {
 	                String approverType = null;
 	                String approverId = null;
 	                if (approverAssociation != null) {

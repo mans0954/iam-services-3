@@ -23,4 +23,9 @@
 		<class-a>org.openiam.idm.srvc.prov.request.domain.RequestUserEntity</class-a>
 		<class-b>org.openiam.idm.srvc.prov.request.dto.RequestUser</class-b>
 	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity</class-a>
+		<class-b>org.openiam.idm.srvc.mngsys.dto.ApproverAssociation</class-b>
+	</mapping>
 </mappings>
