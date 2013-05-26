@@ -4,11 +4,6 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
-// Generated Dec 24, 2009 9:53:19 PM by Hibernate Tools 3.2.2.GA
-
-/**
- * Resource Approver
- */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ApproverAssociation", propOrder = {
         "approverAssocId",

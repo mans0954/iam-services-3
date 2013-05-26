@@ -110,11 +110,11 @@
 	<bean id="serviceManager" class="org.openiam.idm.srvc.service.service.ServiceMgr">
 		<constructor-arg ref="serviceDAO"></constructor-arg>
 	</bean>
-	-->
 
 	<bean id="serviceDAO" class="org.openiam.idm.srvc.service.service.ServiceDAOImpl">
 		<property name="sessionFactory" ref="sessionFactory"></property>
 	</bean>
+	-->
 
 	<!-- QueryDataService -->
 	<bean id="queryWS" class="org.openiam.idm.srvc.qry.ws.QueryDataWebServiceImpl">
@@ -342,12 +342,12 @@
 			factory-method="getTransactionManager" /> </property> -->
 		<property name="mappingResources">
 			<list>
+				<!--
 				<value>org/openiam/idm/srvc/service/service/Service.hbm.xml</value>
 				<value>org/openiam/idm/srvc/service/service/ServiceConfig.hbm.xml
 				</value>
 				<value>org/openiam/idm/srvc/service/service/RequestForm.hbm.xml
 				</value>
-				<!--
 				<value>org/openiam/idm/srvc/service/service/RequestApprover.hbm.xml
 				</value>
 				-->
@@ -409,18 +409,18 @@
 				<value>org/openiam/idm/srvc/mngsys/service/ApproverAssoc.hbm.xml
 				</value>
 
+				<!--
 				<value>org/openiam/idm/srvc/prov/request/service/ProvisionRequest.hbm.xml
 				</value>
 				<value>org/openiam/idm/srvc/prov/request/service/RequestApprover.hbm.xml
 				</value>
-				<!--
 				<value>org/openiam/idm/srvc/prov/request/service/RequestAttachment.hbm.xml
 				</value>
 				<value>org/openiam/idm/srvc/prov/request/service/RequestAttribute.hbm.xml
 				</value>
-				-->
 				<value>org/openiam/idm/srvc/prov/request/service/RequestUser.hbm.xml
 				</value>
+				-->
 
 				<!-- End idm maps -->
 

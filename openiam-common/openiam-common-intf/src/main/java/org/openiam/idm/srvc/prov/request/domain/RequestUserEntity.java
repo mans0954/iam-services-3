@@ -1,127 +1,113 @@
-package org.openiam.idm.srvc.prov.request.dto;
+package org.openiam.idm.srvc.prov.request.domain;
 
-import java.io.Serializable;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlType;
-
+import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.idm.srvc.prov.request.domain.RequestUserEntity;
+import org.openiam.idm.srvc.prov.request.dto.RequestUser;
 
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "RequestUser", propOrder = {
-    "id",
-    "requestId",
-    "userId",
-    "firstName",
-    "lastName",
-    "middleInit",
-    "deptCd",
-    "division",
-    "locationCd",
-    "affiliation"
-})
-@DozerDTOCorrespondence(RequestUserEntity.class)
-public class RequestUser implements Serializable {
+@Entity
+@Table(name = "REQUEST_USER")
+@DozerDTOCorrespondence(RequestUser.class)
+public class RequestUserEntity {
 
-	private static final long serialVersionUID = -150644105593130127L;
+	@Id
+    @GeneratedValue(generator = "system-uuid")
+    @GenericGenerator(name = "system-uuid", strategy = "uuid")
+    @Column(name = "REQ_USER_ID", length = 32)
 	private String id;
+	
+	@Column(name = "REQUEST_ID", length = 32)
 	private String requestId;
+	
+	@Column(name = "USER_ID", length = 32)
 	private String userId;
+	
+	@Column(name = "FIRST_NAME", length = 20)
 	private String firstName;
+	
+	@Column(name = "LAST_NAME", length = 20)
 	private String lastName;
+	
+	@Column(name = "MIDDLE_INIT", length = 20)
 	private String middleInit;
+	
+	@Column(name = "DEPT_CD", length = 20)
 	private String deptCd;
+	
+	@Column(name = "DIVISION", length = 20)
 	private String division;
+	
+	@Column(name = "LOCATION_CD", length = 20)
 	private String locationCd;
+	
+	@Column(name = "AFFILIATION", length = 20)
 	private String affiliation;
-
-	public RequestUser() {
-	}
-
+	
 	public String getId() {
-		return this.id;
+		return id;
 	}
-
 	public void setId(String id) {
 		this.id = id;
 	}
-
-
-
-	public String getUserId() {
-		return this.userId;
-	}
-
-	public void setUserId(String userId) {
-		this.userId = userId;
-	}
-
-	public String getFirstName() {
-		return this.firstName;
-	}
-
-	public void setFirstName(String firstName) {
-		this.firstName = firstName;
-	}
-
-	public String getLastName() {
-		return this.lastName;
-	}
-
-	public void setLastName(String lastName) {
-		this.lastName = lastName;
-	}
-
-	public String getMiddleInit() {
-		return this.middleInit;
-	}
-
-	public void setMiddleInit(String middleInit) {
-		this.middleInit = middleInit;
-	}
-
-	public String getDeptCd() {
-		return this.deptCd;
-	}
-
-	public void setDeptCd(String deptCd) {
-		this.deptCd = deptCd;
-	}
-
-	public String getDivision() {
-		return this.division;
-	}
-
-	public void setDivision(String division) {
-		this.division = division;
-	}
-
-	public String getLocationCd() {
-		return this.locationCd;
-	}
-
-	public void setLocationCd(String locationCd) {
-		this.locationCd = locationCd;
-	}
-
-	public String getAffiliation() {
-		return this.affiliation;
-	}
-
-	public void setAffiliation(String affiliation) {
-		this.affiliation = affiliation;
-	}
-
 	public String getRequestId() {
 		return requestId;
 	}
-
 	public void setRequestId(String requestId) {
 		this.requestId = requestId;
 	}
-
+	public String getUserId() {
+		return userId;
+	}
+	public void setUserId(String userId) {
+		this.userId = userId;
+	}
+	public String getFirstName() {
+		return firstName;
+	}
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+	public String getLastName() {
+		return lastName;
+	}
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
+	public String getMiddleInit() {
+		return middleInit;
+	}
+	public void setMiddleInit(String middleInit) {
+		this.middleInit = middleInit;
+	}
+	public String getDeptCd() {
+		return deptCd;
+	}
+	public void setDeptCd(String deptCd) {
+		this.deptCd = deptCd;
+	}
+	public String getDivision() {
+		return division;
+	}
+	public void setDivision(String division) {
+		this.division = division;
+	}
+	public String getLocationCd() {
+		return locationCd;
+	}
+	public void setLocationCd(String locationCd) {
+		this.locationCd = locationCd;
+	}
+	public String getAffiliation() {
+		return affiliation;
+	}
+	public void setAffiliation(String affiliation) {
+		this.affiliation = affiliation;
+	}
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -145,7 +131,6 @@ public class RequestUser implements Serializable {
 		result = prime * result + ((userId == null) ? 0 : userId.hashCode());
 		return result;
 	}
-
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -154,7 +139,7 @@ public class RequestUser implements Serializable {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		RequestUser other = (RequestUser) obj;
+		RequestUserEntity other = (RequestUserEntity) obj;
 		if (affiliation == null) {
 			if (other.affiliation != null)
 				return false;
@@ -207,16 +192,16 @@ public class RequestUser implements Serializable {
 			return false;
 		return true;
 	}
-
 	@Override
 	public String toString() {
-		return "RequestUser [id=" + id + ", requestId=" + requestId
+		return "RequestUserEntity [id=" + id + ", requestId=" + requestId
 				+ ", userId=" + userId + ", firstName=" + firstName
 				+ ", lastName=" + lastName + ", middleInit=" + middleInit
 				+ ", deptCd=" + deptCd + ", division=" + division
 				+ ", locationCd=" + locationCd + ", affiliation=" + affiliation
 				+ "]";
 	}
-
+	
+	
 	
 }

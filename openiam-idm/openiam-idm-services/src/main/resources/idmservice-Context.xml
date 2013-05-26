@@ -223,6 +223,7 @@
 		<property name="sessionFactory" ref="sessionFactory"></property>
 	</bean>
 
+	<!--
 	<bean id="provRequestWS"
 		class="org.openiam.idm.srvc.prov.request.ws.RequestWebServiceImpl">
 		<property name="provRequestService" ref="provRequestService" />
@@ -237,13 +238,13 @@
 		<property name="mailSender" ref="mailService" />
 		<property name="defaultSender" value="${mail.defaultSender}" />
 		<property name="subjectPrefix" value="${mail.defaultSubjectPrefix}" />
-
 	</bean>
 	<bean id="requestDAO"
 		class="org.openiam.idm.srvc.prov.request.service.ProvisionRequestDAOImpl">
 		<property name="sessionFactory" ref="sessionFactory"></property>
 		<property name="maxResultSetSize" value="${fetch.size}" />
 	</bean>
+	-->
 
 	<!-- ========================= Synchronization ========================= -->
 

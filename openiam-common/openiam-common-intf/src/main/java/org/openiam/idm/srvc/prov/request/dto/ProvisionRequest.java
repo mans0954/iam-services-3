@@ -1,8 +1,8 @@
 package org.openiam.idm.srvc.prov.request.dto;
 
-// Generated Jan 9, 2009 5:33:58 PM by Hibernate Tools 3.2.2.GA
-
+import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
+import org.openiam.idm.srvc.prov.request.domain.ProvisionRequestEntity;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -14,12 +14,9 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
-/**
- * Domain object for a provisioning request
- */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ProvisionRequest", propOrder = {
-    "requestId",
+    "id",
     "requestorId",
     "requestDate",
     "status",
@@ -35,45 +32,41 @@ import javax.xml.bind.annotation.XmlType;
     "requestUsers",
     "requestForOrgId"
 })
+@DozerDTOCorrespondence(ProvisionRequestEntity.class)
 public class ProvisionRequest implements Serializable {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -5432383771223874649L;
-	protected String requestId;
-	protected String requestorId;
-	protected Date requestDate;
-	protected String status;
-    @XmlSchemaType(name = "dateTime")
-	protected Date statusDate;
-	protected String requestReason;
-	protected String requestType;
-	protected String requestXML;
-	protected String managedResourceId;
+	private String id;
+	private String requestorId;
+	private Date requestDate;
+	private String status;
+	private Date statusDate;
+	private String requestReason;
+	private String requestType;
+	private String requestXML;
+	private String managedResourceId;
 	
-	protected String changeAccessBy;
-	protected String newRoleId;
-	protected String newServiceId;
+	private String changeAccessBy;
+	private String newRoleId;
+	private String newServiceId;
 
-    protected String requestForOrgId;
+	private String requestForOrgId;
 	
-	protected Set<RequestUser> requestUsers = new HashSet<RequestUser>(0);
-	protected Set<RequestApprover> requestApprovers = new HashSet<RequestApprover>(0);
+	private Set<RequestUser> requestUsers = new HashSet<RequestUser>(0);
+	private Set<RequestApprover> requestApprovers = new HashSet<RequestApprover>(0);
 
 	public ProvisionRequest() {
 	}
 
-	public ProvisionRequest(String requestId) {
-		this.requestId = requestId;
+	public String getId() {
+		return this.id;
 	}
 
-	public String getRequestId() {
-		return this.requestId;
-	}
-
-	public void setRequestId(String requestId) {
-		this.requestId = requestId;
+	public void setId(String id) {
+		this.id = id;
 	}
 
 	public String getRequestorId() {

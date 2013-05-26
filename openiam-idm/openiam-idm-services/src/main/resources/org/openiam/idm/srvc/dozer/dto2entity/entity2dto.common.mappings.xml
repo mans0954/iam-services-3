@@ -9,4 +9,18 @@
         <class-b>org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto</class-b>
     </mapping>
 
+	<mapping>
+		<class-a>org.openiam.idm.srvc.prov.request.domain.RequestApproverEntity</class-a>
+		<class-b>org.openiam.idm.srvc.prov.request.dto.RequestApprover</class-b>
+	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.prov.request.domain.RequestAttributeEntity</class-a>
+		<class-b>org.openiam.idm.srvc.prov.request.dto.RequestAttribute</class-b>
+	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.prov.request.domain.RequestUserEntity</class-a>
+		<class-b>org.openiam.idm.srvc.prov.request.dto.RequestUser</class-b>
+	</mapping>
 </mappings>

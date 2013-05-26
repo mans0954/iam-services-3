@@ -1,178 +1,136 @@
-package org.openiam.idm.srvc.prov.request.dto;
-
-// Generated Jan 9, 2009 5:33:58 PM by Hibernate Tools 3.2.2.GA
+package org.openiam.idm.srvc.prov.request.domain;
 
 import java.io.Serializable;
 import java.util.Date;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlSchemaType;
-import javax.xml.bind.annotation.XmlType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
+import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.idm.srvc.prov.request.domain.RequestApproverEntity;
+import org.openiam.idm.srvc.prov.request.dto.RequestApprover;
 
+@Entity
+@Table(name = "REQ_APPROVER")
+@DozerDTOCorrespondence(RequestApprover.class)
+public class RequestApproverEntity implements Serializable {
 
-/**
- * Object represents an approver for a request.
- */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "RequestApprover", propOrder = {
-    "id",
-    "approverId",
-    "approverLevel",
-    "approverType",
-    "requestId",
-    "actionDate",
-    "action",
-    "comment",
-    "status",
-    "mngSysGroupId",
-    "managedSysId"
-})
-@DozerDTOCorrespondence(RequestApproverEntity.class)
-public class RequestApprover implements Serializable {
-
-	private static final long serialVersionUID = -404296971055977744L;
+	@Id
+    @GeneratedValue(generator = "system-uuid")
+    @GenericGenerator(name = "system-uuid", strategy = "uuid")
+    @Column(name = "REQ_APPROVER_ID", length = 32)
 	private String id;
+	
+	@Column(name = "APPROVER_ID", length = 32)
 	private String approverId;
+	
+	@Column(name = "APPROVER_LEVEL")
 	private Integer approverLevel;
+	
+	@Column(name = "APPROVER_TYPE", length = 20)
 	private String approverType;
+	
+	@Column(name = "REQUEST_ID", length = 32)
 	private String requestId;
+	
+	@Column(name="ACTION_DATE",length=19)
+    @Temporal(TemporalType.TIMESTAMP)
 	private Date actionDate;
+	
+	@Column(name = "ACTION", length = 20)
 	private String action;
+	
+	@Column(name = "CMT", length = 1000)
 	private String comment;
+	
+	@Column(name = "STATUS", length = 20)
 	private String status;
+	
+	@Column(name = "MNG_SYS_GROUP_ID", length = 32)
 	private String mngSysGroupId;
+	
+	@Column(name = "MANAGED_SYS_ID", length = 32)
 	private String managedSysId;
-
-
-	public RequestApprover() {
+	
+	public RequestApproverEntity(String approverId, Integer approverLevel,
+            String approverType, String status) {
+		this.approverId = approverId;
+		this.approverLevel = approverLevel;
+		this.approverType = approverType;
+		this.status = status;
 	}
-
-    public RequestApprover(String approverId, Integer approverLevel,
-                           String approverType, String status) {
-        this.approverId = approverId;
-        this.approverLevel = approverLevel;
-        this.approverType = approverType;
-        this.status = status;
-
-    }
-
-
+	
 	public String getId() {
 		return id;
 	}
-
-
 	public void setId(String id) {
 		this.id = id;
 	}
-
-
 	public String getApproverId() {
 		return approverId;
 	}
-
-
 	public void setApproverId(String approverId) {
 		this.approverId = approverId;
 	}
-
-
-	
-
-
-	public String getApproverType() {
-		return approverType;
-	}
-
-
-	public void setApproverType(String approverType) {
-		this.approverType = approverType;
-	}
-
-
-	public String getRequestId() {
-		return requestId;
-	}
-
-
-	public void setRequestId(String requestId) {
-		this.requestId = requestId;
-	}
-
-
-	public Date getActionDate() {
-		return actionDate;
-	}
-
-
-	public void setActionDate(Date actionDate) {
-		this.actionDate = actionDate;
-	}
-
-
-	public String getAction() {
-		return action;
-	}
-
-
-	public void setAction(String action) {
-		this.action = action;
-	}
-
-
-	public String getComment() {
-		return comment;
-	}
-
-
-	public void setComment(String comment) {
-		this.comment = comment;
-	}
-
-
-	public String getMngSysGroupId() {
-		return mngSysGroupId;
-	}
-
-
-	public void setMngSysGroupId(String mngSysGroupId) {
-		this.mngSysGroupId = mngSysGroupId;
-	}
-
-
-	public String getManagedSysId() {
-		return managedSysId;
-	}
-
-
-	public void setManagedSysId(String managedSysId) {
-		this.managedSysId = managedSysId;
-	}
-
-
-	public String getStatus() {
-		return status;
-	}
-
-
-	public void setStatus(String status) {
-		this.status = status;
-	}
-
-
 	public Integer getApproverLevel() {
 		return approverLevel;
 	}
-
-
 	public void setApproverLevel(Integer approverLevel) {
 		this.approverLevel = approverLevel;
 	}
-
+	public String getApproverType() {
+		return approverType;
+	}
+	public void setApproverType(String approverType) {
+		this.approverType = approverType;
+	}
+	public String getRequestId() {
+		return requestId;
+	}
+	public void setRequestId(String requestId) {
+		this.requestId = requestId;
+	}
+	public Date getActionDate() {
+		return actionDate;
+	}
+	public void setActionDate(Date actionDate) {
+		this.actionDate = actionDate;
+	}
+	public String getAction() {
+		return action;
+	}
+	public void setAction(String action) {
+		this.action = action;
+	}
+	public String getComment() {
+		return comment;
+	}
+	public void setComment(String comment) {
+		this.comment = comment;
+	}
+	public String getStatus() {
+		return status;
+	}
+	public void setStatus(String status) {
+		this.status = status;
+	}
+	public String getMngSysGroupId() {
+		return mngSysGroupId;
+	}
+	public void setMngSysGroupId(String mngSysGroupId) {
+		this.mngSysGroupId = mngSysGroupId;
+	}
+	public String getManagedSysId() {
+		return managedSysId;
+	}
+	public void setManagedSysId(String managedSysId) {
+		this.managedSysId = managedSysId;
+	}
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -197,7 +155,6 @@ public class RequestApprover implements Serializable {
 		result = prime * result + ((status == null) ? 0 : status.hashCode());
 		return result;
 	}
-
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -206,7 +163,7 @@ public class RequestApprover implements Serializable {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		RequestApprover other = (RequestApprover) obj;
+		RequestApproverEntity other = (RequestApproverEntity) obj;
 		if (action == null) {
 			if (other.action != null)
 				return false;
@@ -264,10 +221,9 @@ public class RequestApprover implements Serializable {
 			return false;
 		return true;
 	}
-
 	@Override
 	public String toString() {
-		return "RequestApprover [id=" + id + ", approverId=" + approverId
+		return "RequestApproverEntity [id=" + id + ", approverId=" + approverId
 				+ ", approverLevel=" + approverLevel + ", approverType="
 				+ approverType + ", requestId=" + requestId + ", actionDate="
 				+ actionDate + ", action=" + action + ", comment=" + comment

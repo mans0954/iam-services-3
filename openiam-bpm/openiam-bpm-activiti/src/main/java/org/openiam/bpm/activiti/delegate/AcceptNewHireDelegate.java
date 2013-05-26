@@ -23,6 +23,7 @@ import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.msg.service.MailService;
+import org.openiam.idm.srvc.prov.request.domain.ProvisionRequestEntity;
 import org.openiam.idm.srvc.prov.request.dto.ProvisionRequest;
 import org.openiam.idm.srvc.prov.request.dto.RequestUser;
 import org.openiam.idm.srvc.prov.request.service.RequestDataService;
@@ -93,7 +94,7 @@ public class AcceptNewHireDelegate implements JavaDelegate {
 		
 		final String newUserId = (String)newUserIdObj;
 		final UserEntity newUser = userDAO.findById(newUserId);
-		final ProvisionRequest provisionRequest = provRequestService.getRequest(provisionRequestId);
+		final ProvisionRequestEntity provisionRequest = provRequestService.getRequest(provisionRequestId);
 		final ProvisionUser provisionUser = (ProvisionUser)new XStream().fromXML(provisionRequest.getRequestXML());
 		final String newHireExecutorId = (String)newHireExecutorIdObj;
         
@@ -149,7 +150,7 @@ public class AcceptNewHireDelegate implements JavaDelegate {
                 request.setUserId(notifyUserId);
                 request.setNotificationType("REQUEST_APPROVED");
 
-                request.getParamList().add(new NotificationParam("REQUEST_ID", provisionRequest.getRequestId()));
+                request.getParamList().add(new NotificationParam("REQUEST_ID", provisionRequest.getId()));
                 request.getParamList().add(new NotificationParam("REQUEST_REASON", provisionRequest.getRequestReason()));
                 request.getParamList().add(new NotificationParam("REQUESTOR", String.format("%s %s", approver.getFirstName(), approver.getLastName())));
                 request.getParamList().add(new NotificationParam("TARGET_USER", String.format("%s %s", provisionUser.getFirstName(), provisionUser.getLastName())));

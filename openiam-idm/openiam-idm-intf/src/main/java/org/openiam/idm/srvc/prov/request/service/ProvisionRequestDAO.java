@@ -2,6 +2,8 @@ package org.openiam.idm.srvc.prov.request.service;
 
 import java.util.List;
 
+import org.openiam.core.dao.BaseDao;
+import org.openiam.idm.srvc.prov.request.domain.ProvisionRequestEntity;
 import org.openiam.idm.srvc.prov.request.dto.ProvisionRequest;
 import org.openiam.idm.srvc.prov.request.dto.SearchRequest;
 
@@ -10,18 +12,8 @@ import org.openiam.idm.srvc.prov.request.dto.SearchRequest;
  * @author suneet
  *
  */
-public interface ProvisionRequestDAO {
-
-	public abstract void add(ProvisionRequest transientInstance);
-
-	public abstract void remove(ProvisionRequest persistentInstance);
-
-	public abstract ProvisionRequest update(ProvisionRequest detachedInstance);
-
-	public abstract ProvisionRequest findById(java.lang.String id);
-
-
-	List<ProvisionRequest> search(SearchRequest search);
+public interface ProvisionRequestDAO extends BaseDao<ProvisionRequestEntity, String> {
+	List<ProvisionRequestEntity> search(SearchRequest search);
 	
-	List<ProvisionRequest> findRequestByApprover(String approverId, String status);
+	List<ProvisionRequestEntity> findRequestByApprover(String approverId, String status);
 }

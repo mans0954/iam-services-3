@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.prov.request.service;
 
 import java.util.List;
 
+import org.openiam.idm.srvc.prov.request.domain.ProvisionRequestEntity;
 import org.openiam.idm.srvc.prov.request.dto.ProvisionRequest;
 import org.openiam.idm.srvc.prov.request.dto.SearchRequest;
 import org.openiam.idm.srvc.user.dto.Supervisor;
@@ -11,8 +12,8 @@ import org.openiam.idm.srvc.user.dto.User;
  */
 public interface RequestDataService {
 
-	void addRequest(ProvisionRequest request);
-	void updateRequest(ProvisionRequest request);
+	void addRequest(ProvisionRequestEntity request);
+	void updateRequest(ProvisionRequestEntity request);
 	/**
 	 * Removes a request from the system.
 	 * @param requestId
@@ -32,22 +33,14 @@ public interface RequestDataService {
 	 * @param requestId
 	 * @return
 	 */
-	ProvisionRequest getRequest(String requestId);
+	ProvisionRequestEntity getRequest(String requestId);
 	
 	/**
 	 * Method to carry out adhoc search;
 	 * @param search
 	 * @return
 	 */
-	List<ProvisionRequest> search(SearchRequest search);
+	List<ProvisionRequestEntity> search(SearchRequest search);
 	
-	List<ProvisionRequest> requestByApprover(String approverId, String status);
-
-	
-	void approve(String requestId);
-	
-	void reject(String requestId);
-	
-	
-	
+	List<ProvisionRequestEntity> requestByApprover(String approverId, String status);
 }

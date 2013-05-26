@@ -10,9 +10,11 @@ import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.srvc.prov.request.RequestAttributeDAO;
 import org.openiam.idm.srvc.prov.request.domain.RequestAttributeEntity;
 import org.openiam.idm.srvc.prov.request.dto.RequestAttribute;
+import org.springframework.stereotype.Repository;
 
 import static org.hibernate.criterion.Example.create;
 
+@Repository
 public class RequestAttributeDAOImpl extends BaseDaoImpl<RequestAttributeEntity, String> implements RequestAttributeDAO {
 
 	private static final Log log = LogFactory
