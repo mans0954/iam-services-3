@@ -3,7 +3,6 @@ package org.openiam.idm.srvc.msg.service;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,6 +29,7 @@ import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import twitter4j.DirectMessage;
 import twitter4j.Status;
@@ -215,6 +215,7 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 	 * org.openiam.idm.srvc.msg.service.MailService#sendNotification(org.openiam
 	 * .idm.srvc.msg.dto.NotificationRequest)
 	 */
+	@Transactional
 	public boolean sendNotification(NotificationRequest req) {
 		if (req == null) {
 			return false;

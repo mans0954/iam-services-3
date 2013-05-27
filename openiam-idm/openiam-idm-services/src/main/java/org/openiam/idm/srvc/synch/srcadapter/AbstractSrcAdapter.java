@@ -1,13 +1,17 @@
 package org.openiam.idm.srvc.synch.srcadapter;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
+import java.util.concurrent.Future;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mule.api.MuleContext;
 import org.mule.api.MuleException;
+import org.mule.api.context.MuleContextAware;
 import org.mule.module.client.MuleClient;
+import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.idm.srvc.audit.service.AuditHelper;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.role.service.RoleDataService;
@@ -16,10 +20,13 @@ import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.openiam.idm.srvc.synch.service.SourceAdapter;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionUser;
+import org.openiam.provision.service.ProvisionService;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 /**
  * Abstract class which all Source System adapters must extend
@@ -28,17 +35,33 @@ import org.springframework.context.ApplicationContext;
  * Time: 6:18 PM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class AbstractSrcAdapter implements SourceAdapter {
+public abstract class AbstractSrcAdapter implements SourceAdapter, MuleContextAware, ApplicationContextAware {
 
-    public static ApplicationContext ac;
+    protected final long SHUTDOWN_TIME = 5000;
+
     private static final Log log = LogFactory.getLog(AbstractSrcAdapter.class);
+
+    static protected ApplicationContext applicationContext;
+
+    protected MuleContext muleContext;
+
+    @Autowired
+    protected String systemAccount;
     @Autowired
     protected AuditHelper auditHelper;
-    protected MuleContext muleContext;
-    protected UserDataService userMgr;
-
+    @Autowired
+    protected UserDataService userManager;
+    @Autowired
     protected LoginDataService loginManager;
+    @Autowired
     protected RoleDataService roleDataService;
+    @Autowired
+    @Qualifier("defaultProvision")
+    protected ProvisionService provService;
+    @Autowired
+    protected UserDozerConverter userDozerConverter;
+    @Autowired
+    protected MatchRuleFactory matchRuleFactory;
 
     @Value("${openiam.service_base}")
     private String serviceHost;
@@ -47,11 +70,6 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
     private String serviceContext;
 
     public abstract SyncResponse startSynch(SynchConfig config);
-
-    public void setApplicationContext(ApplicationContext applicationContext)
-            throws BeansException {
-        ac = applicationContext;
-    }
 
     public void addUser(ProvisionUser pUser) {
         long startTime = System.currentTimeMillis();
@@ -98,40 +116,32 @@ public abstract class AbstractSrcAdapter implements SourceAdapter {
                 + (endTime - startTime));
     }
 
-    public void setMuleContext(MuleContext ctx) {
-        muleContext = ctx;
+    /**
+     * This method used for awaiting while all threads will be finished.
+     * Used in multithreading
+     *
+     * @param results
+     * @throws InterruptedException
+     */
+    protected void waitUntilWorkDone(List<Future> results) throws InterruptedException {
+        int successCounter = 0;
+        while(successCounter != results.size()) {
+            successCounter = 0;
+            for(Future future : results) {
+                if(future.isDone()) {
+                    successCounter ++;
+                }
+            }
+            Thread.sleep(500);
+        }
     }
 
-    public UserDataService getUserMgr() {
-        return userMgr;
+    public void setMuleContext(MuleContext muleContext) {
+        this.muleContext = muleContext;
     }
 
-    public void setUserMgr(UserDataService userMgr) {
-        this.userMgr = userMgr;
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
     }
-
-    public AuditHelper getAuditHelper() {
-        return auditHelper;
-    }
-
-    public void setAuditHelper(AuditHelper auditHelper) {
-        this.auditHelper = auditHelper;
-    }
-
-    public LoginDataService getLoginManager() {
-        return loginManager;
-    }
-
-    public void setLoginManager(LoginDataService loginManager) {
-        this.loginManager = loginManager;
-    }
-
-    public RoleDataService getRoleDataService() {
-        return roleDataService;
-    }
-
-    public void setRoleDataService(RoleDataService roleDataService) {
-        this.roleDataService = roleDataService;
-    }
-
 }

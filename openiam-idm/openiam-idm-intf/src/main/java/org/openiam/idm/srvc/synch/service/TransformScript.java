@@ -17,7 +17,7 @@
  */
 
 /**
- * 
+ *
  */
 package org.openiam.idm.srvc.synch.service;
 
@@ -36,20 +36,22 @@ import org.openiam.provision.dto.ProvisionUser;
  *
  */
 public interface TransformScript {
-	static int DELETE = 1;
-	static int DISABLE = 2;
+    static int DELETE = 1;
+    static int DISABLE = 2;
     static int ENABLE = 3;
-	static int NO_DELETE = 0;
-	
-	int execute(LineObject rowObj, ProvisionUser pUser);
+    static int NO_DELETE = 0;
 
-	User getUser();
-	void setUser(User user) ;
-	List<LoginEntity> getPrincipalList() ;
-	void setPrincipalList(List<LoginEntity> principalList);
-	List<Role> getUserRoleList() ;
-	void setUserRoleList(List<Role> userRoleList) ;
-	boolean isNewUser();
-	void setNewUser(boolean isNewUser);
-	
+    int execute(LineObject rowObj, ProvisionUser pUser);
+
+    public void init();
+
+    User getUser();
+    void setUser(User user) ;
+    List<LoginEntity> getPrincipalList() ;
+    void setPrincipalList(List<LoginEntity> principalList);
+    List<Role> getUserRoleList() ;
+    void setUserRoleList(List<Role> userRoleList) ;
+    boolean isNewUser();
+    void setNewUser(boolean isNewUser);
+
 }

@@ -11,120 +11,61 @@ import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.msg.service.MailService;
+import org.openiam.idm.srvc.prov.request.domain.ProvisionRequestEntity;
 import org.openiam.idm.srvc.prov.request.dto.ProvisionRequest;
 import org.openiam.idm.srvc.prov.request.dto.RequestApprover;
 import org.openiam.idm.srvc.prov.request.dto.SearchRequest;
 import org.openiam.idm.srvc.user.dto.Supervisor;
 import org.openiam.idm.srvc.user.service.UserDataService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /*
  * Service implementation to manage provisioning requests
  */
+@Service("provRequestService")
 public class RequestDataServiceImpl implements RequestDataService {
 	private static final Log log = LogFactory.getLog(RequestDataServiceImpl.class);
 	
-
-	protected ProvisionRequestDAO requestDao;
-	protected ManagedSystemWebService managedResource;
-	protected ApproverAssociationDAO approverAssociationDao;
-	protected UserDataService userManager;
-	protected MailService mailSender;
+	@Autowired
+	private ProvisionRequestDAO requestDao;
 	
-	protected String defaultSender;
-	protected String subjectPrefix;
-	
-	
-	public void addRequest(ProvisionRequest request) {
-		if (request == null) {
-			throw new NullPointerException("request is null");
-		}
+	public void addRequest(ProvisionRequestEntity request) {
 		requestDao.add(request);
 
 	}
 
-	public ProvisionRequest getRequest(String requestId) {
-		if (requestId == null) {
-			throw new NullPointerException("requestId is null");
-		}
+	public ProvisionRequestEntity getRequest(String requestId) {
 		return requestDao.findById(requestId);
 	}
 
 	public void removeRequest(String requestId) {
-		if (requestId == null) {
-			throw new NullPointerException("requestId is null");
+		ProvisionRequestEntity request = requestDao.findById(requestId);
+		if(request != null) {
+			requestDao.delete(request);
 		}
-		ProvisionRequest request = new ProvisionRequest();
-		request.setRequestId(requestId);
-		requestDao.remove(request);
 
 	}
 
-	public List<ProvisionRequest> search(SearchRequest search) {
-		
-		log.info("Request:search operation called.");
-		
-		List<ProvisionRequest> reqList = requestDao.search(search);
-		if (reqList == null || reqList.size() == 0)
-			return null;
-		
-		log.info("Request:search found records=" + reqList.size());
-		
-		return reqList;
+	public List<ProvisionRequestEntity> search(SearchRequest search) {
+		return requestDao.search(search);
 	}
 	
-	public List<ProvisionRequest> requestByApprover(String approverId, String status) {
-		List<ProvisionRequest> reqList = requestDao.findRequestByApprover(approverId, status);
-		if (reqList == null || reqList.size() == 0) {
-			return null;
-		}
-		return reqList;
+	public List<ProvisionRequestEntity> requestByApprover(String approverId, String status) {
+		return requestDao.findRequestByApprover(approverId, status);
 	}
 
 	public void setRequestStatus(String requestId, String approverId, String status) {
-		if (requestId == null) {
-			throw new NullPointerException("requestId is null");
-		}
-		if (approverId == null) {
-			throw new NullPointerException("userId is null");
-		}
-		if (status == null) {
-			throw new NullPointerException("status is null");
-		}
-	 	ProvisionRequest request = requestDao.findById(requestId);
+		final ProvisionRequestEntity request = requestDao.findById(requestId);
 		request.setStatus(status);
 		request.setStatusDate(new Date(System.currentTimeMillis()));
-		
-	
 		requestDao.update(request);
 	}
 
-	public void updateRequest(ProvisionRequest request) {
-		if (request == null) {
-			throw new NullPointerException("request is null");
-		}
-		requestDao.update(request);
+	public void updateRequest(ProvisionRequestEntity request) {
+		requestDao.merge(request);
 	}
-
-	public ProvisionRequestDAO getRequestDao() {
-		return requestDao;
-	}
-
-	public void setRequestDao(ProvisionRequestDAO requestDao) {
-		this.requestDao = requestDao;
-	}
-
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.prov.request.service.RequestDataService#approve()
-	 */
-	public void approve(String requestId) {
-		ProvisionRequest req =  getRequest(requestId);
-		req.setStatus("APPROVED");
-		updateRequest(req);
-		
-	}
-
-
 	
 	private Set<RequestApprover> getApprover(List<ApproverAssociation> approverList,	Supervisor supervisor) {
 		Set<RequestApprover> reqApproverList = new HashSet<RequestApprover>();
@@ -168,71 +109,4 @@ public class RequestDataServiceImpl implements RequestDataService {
 		return null;
 		
 	}
-	
-
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.prov.request.service.RequestDataService#reject()
-	 */
-	public void reject(String requestId) {
-		ProvisionRequest req =  getRequest(requestId);
-		req.setStatus("REJECTED");
-		updateRequest(req);
-		
-	}
-
-	public ManagedSystemWebService getManagedResource() {
-		return managedResource;
-	}
-
-	public void setManagedResource(ManagedSystemWebService managedResource) {
-		this.managedResource = managedResource;
-	}
-
-	public UserDataService getUserManager() {
-		return userManager;
-	}
-
-	public void setUserManager(UserDataService userManager) {
-		this.userManager = userManager;
-	}
-
-
-	public String getDefaultSender() {
-		return defaultSender;
-	}
-
-	public void setDefaultSender(String defaultSender) {
-		this.defaultSender = defaultSender;
-	}
-
-	public String getSubjectPrefix() {
-		return subjectPrefix;
-	}
-
-	public void setSubjectPrefix(String subjectPrefix) {
-		this.subjectPrefix = subjectPrefix;
-	}
-
-	public MailService getMailSender() {
-		return mailSender;
-	}
-
-	public void setMailSender(MailService mailSender) {
-		this.mailSender = mailSender;
-	}
-
-	public ApproverAssociationDAO getApproverAssociationDao() {
-		return approverAssociationDao;
-	}
-
-	public void setApproverAssociationDao(
-			ApproverAssociationDAO approverAssociationDao) {
-		this.approverAssociationDao = approverAssociationDao;
-	}
-
-
-
-
-
 }

@@ -1,13 +1,10 @@
 package org.openiam.idm.srvc.synch.service;
 
-import org.mule.api.MuleContext;
 import org.openiam.base.ws.Response;
+import org.openiam.idm.srvc.synch.domain.SynchConfigEntity;
 import org.openiam.idm.srvc.synch.dto.BulkMigrationConfig;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
-import org.openiam.idm.srvc.synch.dto.SynchConfig;
 
-import javax.jws.WebMethod;
-import javax.jws.WebParam;
 import java.util.*;
 
 /**
@@ -16,13 +13,13 @@ import java.util.*;
  */
 public interface IdentitySynchService {
 
-	List<SynchConfig> getAllConfig();
+	List<SynchConfigEntity> getAllConfig();
 
-	SynchConfig findById(java.lang.String id);
+    SynchConfigEntity findById(java.lang.String id);
 
-	SynchConfig addConfig(SynchConfig synchConfig);
+    SynchConfigEntity addConfig(SynchConfigEntity synchConfig);
 
-	SynchConfig updateConfig(SynchConfig synchConfig);
+    SynchConfigEntity mergeConfig(SynchConfigEntity synchConfig);
 
 	void removeConfig(String configId);
 
@@ -31,14 +28,14 @@ public interface IdentitySynchService {
      * @param config
      * @return
      */
-	SyncResponse startSynchronization(SynchConfig config);
+	SyncResponse startSynchronization(SynchConfigEntity config);
 
     /**
      * Tests if the connectivity information for our source system is correct.
      * @param config
      * @return
      */
-    Response testConnection(SynchConfig config);
+    Response testConnection(SynchConfigEntity config);
 
     /**
      * Moves a set of users from resource or role. Users are selected based on some search criteria defined in the
@@ -55,7 +52,8 @@ public interface IdentitySynchService {
      */
     Response resynchRole(final String roleId);
 
+    public Integer getSynchConfigCountByExample(SynchConfigEntity example);
 
-    public void setMuleContext(MuleContext ctx);
+    public List<SynchConfigEntity> getSynchConfigsByExample(SynchConfigEntity example, Integer from, Integer size);
 
 }

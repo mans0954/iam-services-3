@@ -1,6 +1,8 @@
 package org.openiam.idm.srvc.prov.request.ws;
 
 
+import java.util.List;
+
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
@@ -17,33 +19,11 @@ import org.openiam.idm.srvc.user.dto.Supervisor;
 public interface RequestWebService {
 
 	@WebMethod
-	ProvisionReqResponse addRequest(
+	Response addRequest(
 			@WebParam(name = "request", targetNamespace = "")
 			ProvisionRequest request);
-	ProvisionReqResponse updateRequest(ProvisionRequest request);
-	/**
-	 * Removes a request from the system.
-	 * @param requestId
-	 */
-	@WebMethod
-	Response removeRequest(
-			@WebParam(name = "requestId", targetNamespace = "")
-			String requestId);
 	
-	/**
-	 * Sets the status of the request.
-	 * @param requestId
-	 * @param approverId - The person who changed the request
-	 * @param status - New status of the request
-	 */
-	@WebMethod
-	Response setRequestStatus(
-			@WebParam(name = "requestId", targetNamespace = "")
-			String requestId, 
-			@WebParam(name = "approverId", targetNamespace = "")
-			String approverId, 
-			@WebParam(name = "status", targetNamespace = "")
-			String status);
+	Response updateRequest(ProvisionRequest request);
 	
 	/**
 	 * Returns a request
@@ -51,7 +31,7 @@ public interface RequestWebService {
 	 * @return
 	 */
 	@WebMethod
-	ProvisionReqResponse getRequest(
+	ProvisionRequest getRequest(
 			@WebParam(name = "requestId", targetNamespace = "")
 			String requestId);
 	
@@ -61,30 +41,14 @@ public interface RequestWebService {
 	 * @return
 	 */
 	@WebMethod
-	ProvisionReqListResponse search(
+	List<ProvisionRequest> search(
 			@WebParam(name = "search", targetNamespace = "")
 			SearchRequest search);
 	
 	@WebMethod
-	ProvisionReqListResponse requestByApprover(
+	List<ProvisionRequest> requestByApprover(
 			@WebParam(name = "approverId", targetNamespace = "")
 			String approverId, 
 			@WebParam(name = "status", targetNamespace = "")
 			String status);
-	
-
-	
-	
-	@WebMethod
-	Response approve(
-			@WebParam(name = "requestId", targetNamespace = "")
-			String requestId);
-	
-	@WebMethod
-	Response reject(
-			@WebParam(name = "requestId", targetNamespace = "")
-			String requestId);
-	
-	
-	
 }

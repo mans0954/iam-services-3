@@ -12,21 +12,23 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.bpm.util.ActivitiConstants;
-import org.openiam.bpm.request.NewHireRequest;
 import org.openiam.bpm.request.RequestorInformation;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.auth.ws.LoginResponse;
+import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.msg.service.MailService;
+import org.openiam.idm.srvc.prov.request.domain.ProvisionRequestEntity;
 import org.openiam.idm.srvc.prov.request.dto.ProvisionRequest;
 import org.openiam.idm.srvc.prov.request.dto.RequestUser;
 import org.openiam.idm.srvc.prov.request.service.RequestDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.Supervisor;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
@@ -93,15 +95,15 @@ public class AcceptNewHireDelegate implements JavaDelegate {
 		
 		final String newUserId = (String)newUserIdObj;
 		final UserEntity newUser = userDAO.findById(newUserId);
-		final ProvisionRequest provisionRequest = provRequestService.getRequest(provisionRequestId);
-		final ProvisionUser provisionUser = (ProvisionUser)new XStream().fromXML(provisionRequest.getRequestXML());
+		final ProvisionRequestEntity provisionRequest = provRequestService.getRequest(provisionRequestId);
+		final NewUserProfileRequestModel profileModel = (NewUserProfileRequestModel)new XStream().fromXML(provisionRequest.getRequestXML());
 		final String newHireExecutorId = (String)newHireExecutorIdObj;
         
         final String requestType = provisionRequest.getRequestType();
-        final List<ApproverAssociation> approverAssociationList = approverAssociationDao.findApproversByRequestType(requestType, 1);
+        final List<ApproverAssociationEntity> approverAssociationList = approverAssociationDao.findApproversByRequestType(requestType, 1);
 
         /* notify the approvers */
-        for (final ApproverAssociation approverAssociation : approverAssociationList) {
+        for (final ApproverAssociationEntity approverAssociation : approverAssociationList) {
             String typeOfUserToNotify = approverAssociation.getApproveNotificationUserType();
             if (StringUtils.isBlank(typeOfUserToNotify)) {
                 typeOfUserToNotify = "USER";
@@ -119,7 +121,7 @@ public class AcceptNewHireDelegate implements JavaDelegate {
                 }
                 */
             } else if(StringUtils.equalsIgnoreCase(typeOfUserToNotify, "supervisor")) {
-               final Supervisor supVisor = provisionUser.getSupervisor();
+               final Supervisor supVisor = profileModel.getUser().getSupervisor();
                 if (supVisor != null) {
                     notifyUserId = supVisor.getSupervisor().getUserId();
                     //notifyEmail = supVisor.getSupervisor().getEmail();
@@ -149,10 +151,10 @@ public class AcceptNewHireDelegate implements JavaDelegate {
                 request.setUserId(notifyUserId);
                 request.setNotificationType("REQUEST_APPROVED");
 
-                request.getParamList().add(new NotificationParam("REQUEST_ID", provisionRequest.getRequestId()));
+                request.getParamList().add(new NotificationParam("REQUEST_ID", provisionRequest.getId()));
                 request.getParamList().add(new NotificationParam("REQUEST_REASON", provisionRequest.getRequestReason()));
                 request.getParamList().add(new NotificationParam("REQUESTOR", String.format("%s %s", approver.getFirstName(), approver.getLastName())));
-                request.getParamList().add(new NotificationParam("TARGET_USER", String.format("%s %s", provisionUser.getFirstName(), provisionUser.getLastName())));
+                request.getParamList().add(new NotificationParam("TARGET_USER", String.format("%s %s", profileModel.getUser().getFirstName(), profileModel.getUser().getLastName())));
                 request.getParamList().add(new NotificationParam("IDENTITY", identity));
                 request.getParamList().add(new NotificationParam("PSWD", password));
 

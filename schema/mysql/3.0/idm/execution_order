@@ -73,4 +73,5 @@ ddl/50.modify_metadata_element_valid_values.sql
 dml/23.policy_map.sql
 dml/24.pre_beta_menus.sql
 ddl/51.add_login_lowercase.sql
+dml/25.synchronization_menus.sql
 ddl/52.add_fk_to_user.sql

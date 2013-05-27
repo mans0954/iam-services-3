@@ -28,28 +28,34 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Logger;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.base.ws.exception.BasicDataServiceException;
 import org.openiam.bpm.request.AcceptOrRejectNewHireRequest;
 import org.openiam.bpm.request.ClaimNewHireRequest;
-import org.openiam.bpm.request.NewHireRequest;
 import org.openiam.bpm.response.NewHireResponse;
 import org.openiam.bpm.response.TaskListWrapper;
 import org.openiam.bpm.response.TaskWrapper;
 import org.openiam.bpm.util.ActivitiConstants;
+import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
+import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAOImpl;
 import org.openiam.idm.srvc.prov.request.dto.ProvisionRequest;
-import org.openiam.idm.srvc.prov.request.dto.RequestApprover;
+import org.openiam.idm.srvc.prov.request.domain.ProvisionRequestEntity;
+import org.openiam.idm.srvc.prov.request.domain.RequestApproverEntity;
 import org.openiam.idm.srvc.prov.request.service.ProvisionRequestDAO;
 import org.openiam.idm.srvc.prov.request.service.RequestDataService;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
+import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.Supervisor;
 import org.openiam.idm.srvc.user.dto.User;
+import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDAO;
+import org.openiam.idm.srvc.user.service.UserProfileService;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.service.ProvisionService;
@@ -105,14 +111,6 @@ public class ActivitiServiceImpl implements ActivitiService {
 	@Qualifier("resourceDAO")
 	private ResourceDAO resourceDao;
 	
-	@Autowired
-	@Qualifier("userDAO")
-	private UserDAO userDAO;
-	
-	@Autowired
-	@Qualifier("requestDAO")
-	private ProvisionRequestDAO provisionRequstDao;
-	
 	private static final Comparator<Task> taskCreatedTimeComparator = new TaskCreateDateSorter();
 
 	@Override
@@ -126,12 +124,16 @@ public class ActivitiServiceImpl implements ActivitiService {
 
 	@Override
 	@WebMethod
-	public NewHireResponse initiateNewHireRequest(final NewHireRequest newHireRequest) {
-		final NewHireResponse response = new NewHireResponse();
+	public SaveTemplateProfileResponse initiateNewHireRequest(final NewUserProfileRequestModel newHireRequest) {
+		final SaveTemplateProfileResponse response = new SaveTemplateProfileResponse();
 
 		try {
-			final ProvisionRequest provisionRequest = new ProvisionRequest();
-			final ProvisionUser provisionUser = newHireRequest.getProvisionUser();
+			if(newHireRequest == null || newHireRequest.getActivitiRequestType() == null) {
+				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+			}
+			
+			final ProvisionRequestEntity provisionRequest = new ProvisionRequestEntity();
+			final User provisionUser = newHireRequest.getUser();
 			
 			/* get a list of approvers for the new hire request, including information about their organization */
 	        String approverRole = null;
@@ -139,11 +141,10 @@ public class ActivitiServiceImpl implements ActivitiService {
 	        int applyDelegationFilter = 0;
 	        
 	        /* get a list of approvers for this request type */
-			final List<ApproverAssociation> approverAssocationList = approverAssociationDao.findApproversByRequestType(NEW_HIRE_REQUEST_TYPE, 1);
+			final List<ApproverAssociationEntity> approverAssocationList = approverAssociationDao.findApproversByRequestType(NEW_HIRE_REQUEST_TYPE, 1);
 	        if (CollectionUtils.isNotEmpty(approverAssocationList)) {
-	            for (final ApproverAssociation approverAssociation : approverAssocationList) {
+	            for (final ApproverAssociationEntity approverAssociation : approverAssocationList) {
 	                String approverType = null;
-	                String roleDomain = null;
 	                String approverId = null;
 	                if (approverAssociation != null) {
 	                    approverType = approverAssociation.getAssociationType();
@@ -156,7 +157,6 @@ public class ActivitiServiceImpl implements ActivitiService {
 	                    /* if the association type is a Role, use the approver Role ID */
 	                    } else if(StringUtils.equalsIgnoreCase(approverAssociation.getAssociationType(), "role")) {
 	                        approverId = approverAssociation.getApproverRoleId();
-	                        roleDomain = approverAssociation.getApproverRoleDomain();
 	
 	                        approverRole = approverAssociation.getApproverRoleId();
 	                        if (approverAssociation.getApplyDelegationFilter() != null) {
@@ -172,10 +172,9 @@ public class ActivitiServiceImpl implements ActivitiService {
 	                    }
 	
 	                    /* add the approver to the list */
-	                    final RequestApprover reqApprover = new RequestApprover(approverId, approverAssociation.getApproverLevel(), approverAssociation.getAssociationType(), "PENDING");
+	                    final RequestApproverEntity reqApprover = new RequestApproverEntity(approverId, approverAssociation.getApproverLevel(), approverAssociation.getAssociationType(), "PENDING");
 	                    reqApprover.setApproverType(approverType);
-	                    reqApprover.setRoleDomain(roleDomain);
-	                    provisionRequest.getRequestApprovers().add(reqApprover);
+	                    provisionRequest.addRequestApprover(reqApprover);
 	                }
 	
 	            }
@@ -184,7 +183,7 @@ public class ActivitiServiceImpl implements ActivitiService {
 	        /* based on the roleapprovers, add teh users as candidate approvers */
 	        final List<String> requestApproverIds = new LinkedList<String>();
 	        if(CollectionUtils.isNotEmpty(provisionRequest.getRequestApprovers())) {
-	        	for(final RequestApprover requestApprover : provisionRequest.getRequestApprovers()) {
+	        	for(final RequestApproverEntity requestApprover : provisionRequest.getRequestApprovers()) {
 	        		requestApproverIds.add(requestApprover.getApproverId());
 	        	}
 	        }
@@ -192,12 +191,12 @@ public class ActivitiServiceImpl implements ActivitiService {
 			/* set provision user fields before saving request */
 			provisionUser.setUserId(null);
 			provisionUser.setCreateDate(new Date());
-			provisionUser.setCreatedBy(newHireRequest.getCallerUserId());
+			provisionUser.setCreatedBy(newHireRequest.getRequestorUserId());
 			provisionUser.setStatus(UserStatusEnum.PENDING_APPROVAL);
 
 			/* populate the provision request with required values */
 			final Date currentDate = new Date();
-			final String xml = new XStream().toXML(provisionUser);
+			final String xml = new XStream().toXML(newHireRequest);
 			final ResourceEntity newUserResource = resourceDao.findById(NEW_HIRE_REQUEST_TYPE);
 			provisionRequest.setRequestXML(xml);
 			provisionRequest.setStatus("PENDING");
@@ -206,7 +205,7 @@ public class ActivitiServiceImpl implements ActivitiService {
 			provisionRequest.setRequestType(newUserResource.getResourceId());
 			provisionRequest.setRequestType(NEW_HIRE_REQUEST_TYPE);
 			provisionRequest.setRequestReason(String.format("%s FOR %s %s", newUserResource.getDescription(), provisionUser.getFirstName(), provisionUser.getLastName()));
-			provisionRequest.setRequestorId(newHireRequest.getCallerUserId());
+			provisionRequest.setRequestorId(newHireRequest.getRequestorUserId());
 			if(StringUtils.isNotBlank(provisionUser.getCompanyId())) {
 				provisionRequest.setRequestForOrgId(provisionUser.getCompanyId());
 			}
@@ -222,14 +221,17 @@ public class ActivitiServiceImpl implements ActivitiService {
 			
 			/* pass required variables to Activiti, and start the process */
 			final Map<String, Object> variables = new HashMap<String, Object>();
-			variables.put(ActivitiConstants.PROVISION_REQUEST_ID, provisionRequest.getRequestId());
+			variables.put(ActivitiConstants.PROVISION_REQUEST_ID, provisionRequest.getId());
 			variables.put(ActivitiConstants.DELEGATION_FILTER_SEARCH, delegationFilterSearch);
 			variables.put(ActivitiConstants.CANDIDATE_USERS_IDS, requestApproverIds);
 			variables.put(ActivitiConstants.TASK_NAME, String.format("New Hire Request for %s %s", provisionUser.getFirstName(), provisionUser.getLastName()));
-			variables.put(ActivitiConstants.TASK_OWNER, newHireRequest.getCallerUserId());
-			final ProcessInstance processInstance = runtimeService.startProcessInstanceByKey("newHireWithApprovalProcess", variables);
+			variables.put(ActivitiConstants.TASK_OWNER, newHireRequest.getRequestorUserId());
+			final ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(newHireRequest.getActivitiRequestType().getKey(), variables);
 
 			response.setStatus(ResponseStatus.SUCCESS);
+		} catch(BasicDataServiceException e) {
+			response.setErrorCode(e.getCode());
+			response.setStatus(ResponseStatus.FAILURE);
 		} catch(ActivitiException e) {
 			log.info("Activiti Exception", e);
 			response.setStatus(ResponseStatus.FAILURE);
@@ -272,7 +274,7 @@ public class ActivitiServiceImpl implements ActivitiService {
 			}
 			
 			final TaskWrapper taskWrapper = getTask(claimNewHireRequest.getTaskId());
-			final ProvisionRequest provisionRequest = provRequestService.getRequest(taskWrapper.getProvisionRequestId());
+			final ProvisionRequestEntity provisionRequest = provRequestService.getRequest(taskWrapper.getProvisionRequestId());
 			
 			/* claim the process, and set the assignee */
 			taskService.claim(potentialTaskToClaim.getId(), claimNewHireRequest.getCallerUserId());
@@ -284,8 +286,8 @@ public class ActivitiServiceImpl implements ActivitiService {
 			
 			provisionRequest.setStatus(status);
 			provisionRequest.setStatusDate(currentDate);
-	        final Set<RequestApprover> requestApprovers = provisionRequest.getRequestApprovers();
-	        for (final RequestApprover requestApprovder  : requestApprovers ) {
+	        final Set<RequestApproverEntity> requestApprovers = provisionRequest.getRequestApprovers();
+	        for (final RequestApproverEntity requestApprovder  : requestApprovers ) {
 	        	if(StringUtils.equalsIgnoreCase(requestApprovder.getApproverId(), claimNewHireRequest.getCallerUserId())) {
 	        		requestApprovder.setAction(status);
 	            	requestApprovder.setActionDate(currentDate);
@@ -329,11 +331,11 @@ public class ActivitiServiceImpl implements ActivitiService {
 			final String status = "APPROVED";
 			final Date currentDate = new Date();
 			final TaskWrapper taskWrapper = getTask(acceptOrRejectNewHireRequest.getTaskId());
-			final ProvisionRequest provisionRequest = provRequestService.getRequest(taskWrapper.getProvisionRequestId());
+			final ProvisionRequestEntity provisionRequest = provRequestService.getRequest(taskWrapper.getProvisionRequestId());
 			provisionRequest.setStatusDate(currentDate);
 			provisionRequest.setStatus(status);
-	        final Set<RequestApprover> requestApprovers = provisionRequest.getRequestApprovers();
-	        for (final RequestApprover requestApprovder  : requestApprovers ) {
+	        final Set<RequestApproverEntity> requestApprovers = provisionRequest.getRequestApprovers();
+	        for (final RequestApproverEntity requestApprovder  : requestApprovers ) {
 	        	if(StringUtils.equalsIgnoreCase(requestApprovder.getApproverId(), acceptOrRejectNewHireRequest.getCallerUserId())) {
 	        		requestApprovder.setAction(status);
 	            	requestApprovder.setActionDate(currentDate);
@@ -361,7 +363,7 @@ public class ActivitiServiceImpl implements ActivitiService {
         	final Map<String, Object> variables = new HashMap<String, Object>();
         	variables.put(ActivitiConstants.IS_NEW_HIRE_APPROVED, Boolean.TRUE);
         	variables.put(ActivitiConstants.NEW_HIRE_EXECUTOR_ID, acceptOrRejectNewHireRequest.getCallerUserId());
-        	variables.put(ActivitiConstants.PROVISION_REQUEST_ID, provisionRequest.getRequestId());
+        	variables.put(ActivitiConstants.PROVISION_REQUEST_ID, provisionRequest.getId());
         	variables.put(ActivitiConstants.NEW_USER_ID, newUser.getUserId());
         	taskService.complete(assignedTask.getId(), variables);	
         	response.setStatus(ResponseStatus.SUCCESS);
@@ -390,11 +392,11 @@ public class ActivitiServiceImpl implements ActivitiService {
 			
 			/* update the provision request */
 			final TaskWrapper taskWrapper = getTask(acceptOrRejectNewHireRequest.getTaskId());
-			final ProvisionRequest provisionRequest = provRequestService.getRequest(taskWrapper.getProvisionRequestId());
+			final ProvisionRequestEntity provisionRequest = provRequestService.getRequest(taskWrapper.getProvisionRequestId());
 			provisionRequest.setStatusDate(currentDate);
 			provisionRequest.setStatus(status);
-	        final Set<RequestApprover> requestApprovers = provisionRequest.getRequestApprovers();
-	        for (final RequestApprover requestApprovder  : requestApprovers ) {
+	        final Set<RequestApproverEntity> requestApprovers = provisionRequest.getRequestApprovers();
+	        for (final RequestApproverEntity requestApprovder  : requestApprovers ) {
 	        	if(StringUtils.equalsIgnoreCase(requestApprovder.getApproverId(), acceptOrRejectNewHireRequest.getCallerUserId())) {
 	        		requestApprovder.setAction(status);
 	            	requestApprovder.setActionDate(currentDate);
@@ -407,7 +409,7 @@ public class ActivitiServiceImpl implements ActivitiService {
 			final Map<String, Object> variables = new HashMap<String, Object>();
 			variables.put(ActivitiConstants.IS_NEW_HIRE_APPROVED, Boolean.FALSE);
 			variables.put(ActivitiConstants.NEW_HIRE_EXECUTOR_ID, acceptOrRejectNewHireRequest.getCallerUserId());
-			variables.put(ActivitiConstants.PROVISION_REQUEST_ID, provisionRequest.getRequestId());
+			variables.put(ActivitiConstants.PROVISION_REQUEST_ID, provisionRequest.getId());
 			taskService.complete(assignedTask.getId(), variables);
 			response.setStatus(ResponseStatus.SUCCESS);
 		} catch(ActivitiException e) {

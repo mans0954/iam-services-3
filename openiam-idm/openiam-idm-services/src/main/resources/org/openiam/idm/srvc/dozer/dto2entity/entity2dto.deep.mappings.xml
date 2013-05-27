@@ -4,4 +4,16 @@
           xsi:schemaLocation="http://dozer.sourceforge.net
           http://dozer.sourceforge.net/schema/beanmapping.xsd">
 
+	<mapping>
+		<class-a>org.openiam.idm.srvc.prov.request.domain.ProvisionRequestEntity</class-a>
+		<class-b>org.openiam.idm.srvc.prov.request.dto.ProvisionRequest</class-b>
+		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="dto2entityShallowDozerMapper">
+			<a>requestUsers</a>
+			<b>requestUsers</b>
+		</field>
+		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter" custom-converter-param="dto2entityShallowDozerMapper">
+			<a>requestApprovers</a>
+			<b>requestApprovers</b>
+		</field>
+	</mapping>
 </mappings>

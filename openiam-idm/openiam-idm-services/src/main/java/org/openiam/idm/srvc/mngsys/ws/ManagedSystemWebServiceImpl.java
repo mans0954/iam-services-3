@@ -1,12 +1,19 @@
 package org.openiam.idm.srvc.mngsys.ws;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.ws.Response;
+import org.openiam.base.ws.ResponseCode;
+import org.openiam.base.ws.ResponseStatus;
+import org.openiam.base.ws.exception.BasicDataServiceException;
+import org.openiam.dozer.converter.ApproverAssociationDozerConverter;
 import org.openiam.dozer.converter.AttributeMapDozerConverter;
 import org.openiam.dozer.converter.ManagedSysDozerConverter;
 import org.openiam.dozer.converter.ManagedSystemObjectMatchDozerConverter;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
+import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
@@ -18,40 +25,54 @@ import org.openiam.idm.srvc.policy.service.PolicyDataService;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import javax.jws.WebParam;
 import javax.jws.WebService;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.ResourceBundle;
 
-@Service("managedSystemWebWebService")
+@Service("managedSysService")
 @WebService(endpointInterface = "org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService", targetNamespace = "urn:idm.openiam.org/srvc/mngsys/service", portName = "ManagedSystemWebServicePort", serviceName = "ManagedSystemWebService")
 public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
+	
 	@Autowired
-	protected ManagedSystemService managedSystemService;
+	private ManagedSystemService managedSystemService;
+	
 	@Autowired
-	protected ManagedSystemObjectMatchDAO managedSysObjectMatchDao;
-	protected ApproverAssociationDAO approverAssociationDao;
+	private ManagedSystemObjectMatchDAO managedSysObjectMatchDao;
+	
 	@Autowired
-	protected UserDataService userManager;
+	private ApproverAssociationDAO approverAssociationDao;
+	
 	@Autowired
-	protected KeyManagementService keyManagementService;
+	private UserDataService userManager;
+	
+	@Autowired
+	private KeyManagementService keyManagementService;
+	
 	@Autowired
 	private ManagedSysDozerConverter managedSysDozerConverter;
 
 	@Autowired
 	private AttributeMapDozerConverter attributeMapDozerConverter;
+	
 	@Autowired
 	private ManagedSystemObjectMatchDozerConverter managedSystemObjectMatchDozerConverter;
 
 	@Autowired
 	private ManagedSystemSearchBeanConverter managedSystemSearchBeanConverter;
+	
+	@Autowired
+	private ApproverAssociationDozerConverter approverAssociationDozerConverter;
 
 	private static final Log log = LogFactory
 			.getLog(ManagedSystemWebServiceImpl.class);
-	protected Cryptor cryptor;
+	
+	@Autowired
+	@Qualifier("cryptor")
+	private Cryptor cryptor;
 
 	boolean encrypt = true; // default encryption setting
 
@@ -268,15 +289,6 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
 	 * NullPointerException("managedSysId is null"); } return
 	 * resourceApproverDao.findApproversByResource(managedSysId); }
 	 */
-
-	public Cryptor getCryptor() {
-		return cryptor;
-	}
-
-	public void setCryptor(Cryptor cryptor) {
-		this.cryptor = cryptor;
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -296,130 +308,55 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
 	// Approver Association
 	// ================================================================
 
-	public ApproverAssociationDAO getApproverAssociationDao() {
-		return approverAssociationDao;
-	}
 
-	public void setApproverAssociationDao(
-			ApproverAssociationDAO approverAssociationDao) {
-		this.approverAssociationDao = approverAssociationDao;
-	}
-
-	public ApproverAssociation addApproverAssociation(
-			ApproverAssociation approverAssociation) {
-		if (approverAssociation == null) {
-			throw new IllegalArgumentException(
-					"approverAssociation object is null");
+	public Response saveApproverAssociation(final ApproverAssociation approverAssociation) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(approverAssociation == null) {
+				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+			}
+			
+			final ApproverAssociationEntity entity = approverAssociationDozerConverter.convertToEntity(approverAssociation, true);
+			if(StringUtils.isNotBlank(entity.getId())) {
+				approverAssociationDao.merge(entity);
+			} else {
+				approverAssociationDao.save(entity);
+			}
+		} catch(BasicDataServiceException e) {
+			response.setErrorCode(e.getCode());
+			response.setStatus(ResponseStatus.FAILURE);
+		} catch(Throwable e) {
+			log.error(e);
+			response.setStatus(ResponseStatus.FAILURE);
 		}
-
-		return approverAssociationDao.add(approverAssociation);
-	}
-
-	public ApproverAssociation updateApproverAssociation(
-			ApproverAssociation approverAssociation) {
-		if (approverAssociation == null) {
-			throw new IllegalArgumentException(
-					"approverAssociation object is null");
-		}
-
-		return approverAssociationDao.update(approverAssociation);
+		return response;
 	}
 
 	public ApproverAssociation getApproverAssociation(
 			String approverAssociationId) {
-		if (approverAssociationId == null) {
-			throw new IllegalArgumentException("approverAssociationId is null");
-		}
-
-		return approverAssociationDao.findById(approverAssociationId);
+		final ApproverAssociationEntity entity = approverAssociationDao.findById(approverAssociationId);
+		return (entity != null) ? approverAssociationDozerConverter.convertToDTO(entity, true) : null;
 	}
 
-	public void removeApproverAssociation(String approverAssociationId) {
-		if (approverAssociationId == null) {
-			throw new IllegalArgumentException("approverAssociationId is null");
+	public Response removeApproverAssociation(String approverAssociationId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(approverAssociationId == null) {
+				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+			}
+			
+			final ApproverAssociationEntity entity = approverAssociationDao.findById(approverAssociationId);
+			if(entity != null) {
+				approverAssociationDao.delete(entity);
+			}
+		} catch(BasicDataServiceException e) {
+			response.setErrorCode(e.getCode());
+			response.setStatus(ResponseStatus.FAILURE);
+		} catch(Throwable e) {
+			log.error(e);
+			response.setStatus(ResponseStatus.FAILURE);
 		}
-		ApproverAssociation obj = this.approverAssociationDao
-				.findById(approverAssociationId);
-		this.approverAssociationDao.remove(obj);
-	}
-
-	public int removeAllApproverAssociations() {
-		return this.approverAssociationDao.removeAllApprovers();
-	}
-
-	public List<ApproverAssociation> getApproverByRequestType(
-			String requestType, int level) {
-		if (requestType == null) {
-			throw new IllegalArgumentException("requestType is null");
-		}
-		return this.approverAssociationDao.findApproversByRequestType(
-				requestType, level);
-	}
-
-	public List<ApproverAssociation> getAllApproversByRequestType(
-			String requestType) {
-		if (requestType == null) {
-			throw new IllegalArgumentException("requestType is null");
-		}
-		return approverAssociationDao
-				.findAllApproversByRequestType(requestType);
-	}
-
-	public List<ApproverAssociation> getApproversByObjectId(
-			String associationObjId) {
-		if (associationObjId == null) {
-			throw new IllegalArgumentException("associationObjId is null");
-		}
-		return this.approverAssociationDao
-				.findApproversByObjectId(associationObjId);
-	}
-
-	public int removeApproversByObjectId(String associationObjId) {
-		if (associationObjId == null) {
-			throw new IllegalArgumentException("associationObjId is null");
-		}
-		return this.approverAssociationDao
-				.removeApproversByObjectId(associationObjId);
-	}
-
-	// find by RESOURCE, GROUP, ROLE, SUPERVISOR,INDIVIDUAL
-	List<ApproverAssociation> getApproversByObjectType(String associationType) {
-		if (associationType == null) {
-			throw new IllegalArgumentException("associationType is null");
-		}
-		return this.approverAssociationDao
-				.findApproversByObjectType(associationType);
-	}
-
-	public int removeApproversByObjectType(String associationType) {
-		if (associationType == null) {
-			throw new IllegalArgumentException("associationType is null");
-		}
-		return this.approverAssociationDao
-				.removeApproversByObjectType(associationType);
-	}
-
-	List<ApproverAssociation> getApproversByAction(String associationObjId,
-			String action, int level) {
-		if (associationObjId == null) {
-			throw new IllegalArgumentException("associationObjId is null");
-		}
-		return this.approverAssociationDao.findApproversByAction(
-				associationObjId, action, level);
-	}
-
-	List<ApproverAssociation> getApproversByUser(String userId) {
-		if (userId == null) {
-			throw new IllegalArgumentException("userId is null");
-		}
-		return this.approverAssociationDao.findApproversByUser(userId);
-	}
-
-	public int removeApproversByUser(String userId) {
-		if (userId == null) {
-			throw new IllegalArgumentException("userId is null");
-		}
-		return this.approverAssociationDao.removeApproversByUser(userId);
+		return response;
 	}
 
 	/*
