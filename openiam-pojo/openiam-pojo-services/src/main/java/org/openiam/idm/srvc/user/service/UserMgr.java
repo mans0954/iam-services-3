@@ -1491,7 +1491,14 @@ public class UserMgr implements UserDataService {
     }
 
     public Map<String, UserAttributeEntity> getUserAttributes(String userId){
-        final UserEntity user = this.getUser(userId, null);
-        return (user != null && user.getUserAttributes() != null) ?  user.getUserAttributes() : null;
+            Map<String, UserAttributeEntity> result = null;
+            List<UserAttributeEntity> userAttributes = userAttributeDao.findUserAttributes(userId);
+            if (userAttributes != null && !userAttributes.isEmpty()) {
+                result = new HashMap<String, UserAttributeEntity>();
+                for (UserAttributeEntity entity : userAttributes) {
+                    result.put(entity.getName(), entity);
+                }
+            }
+            return result;
     }
 }
