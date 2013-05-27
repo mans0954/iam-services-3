@@ -15,6 +15,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "BaseObject", propOrder = {
         "objectState",
         "selected",
+        "requestorUserId",
         "requestorLogin",
         "requestorDomain",
         "requestClientIP"
@@ -35,6 +36,7 @@ public class BaseObject implements java.io.Serializable {
     protected String objectState = NEW;
 
     // track the source of the request
+    protected String requestorUserId;
     protected String requestorLogin;
     protected String requestorDomain;
     protected String requestClientIP;
@@ -83,6 +85,16 @@ public class BaseObject implements java.io.Serializable {
     public void setRequestClientIP(String requestClientIP) {
         this.requestClientIP = requestClientIP;
     }
+    
+    
+
+	public String getRequestorUserId() {
+		return requestorUserId;
+	}
+
+	public void setRequestorUserId(String requestorUserId) {
+		this.requestorUserId = requestorUserId;
+	}
 
 	@Override
 	public int hashCode() {

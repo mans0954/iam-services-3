@@ -16,7 +16,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.openiam.bpm.util.ActivitiConstants;
-import org.openiam.bpm.request.NewHireRequest;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.msg.service.MailService;
@@ -27,6 +26,7 @@ import org.openiam.idm.srvc.prov.request.dto.RequestApprover;
 import org.openiam.idm.srvc.prov.request.service.RequestDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
+import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
@@ -60,7 +60,7 @@ public class SendNewHireRequestDelegate implements JavaDelegate {
 		SpringContextProvider.autowire(this);
 	}
 
-	private ProvisionUser provisionUser;
+	private NewUserProfileRequestModel profileModel;
 	private ProvisionRequestEntity provisionRequest;
 	private UserEntity requestor;
 	
@@ -80,7 +80,7 @@ public class SendNewHireRequestDelegate implements JavaDelegate {
 		final String provisionRequestId = (String)provisionRequestIdObj;
 		
 		provisionRequest = provRequestService.getRequest(provisionRequestId);
-		provisionUser = (ProvisionUser)new XStream().fromXML(provisionRequest.getRequestXML());
+		profileModel = (NewUserProfileRequestModel)new XStream().fromXML(provisionRequest.getRequestXML());
 		
 		if(CollectionUtils.isNotEmpty(provisionRequest.getRequestApprovers())) {			
 			requestor = userDao.findById(callerId);
@@ -112,7 +112,7 @@ public class SendNewHireRequestDelegate implements JavaDelegate {
         request.getParamList().add(new NotificationParam("REQUEST_ID", provisionRequest.getId()));
         request.getParamList().add(new NotificationParam("REQUEST_REASON", provisionRequest.getRequestReason()));
         request.getParamList().add(new NotificationParam("REQUESTOR",  String.format("%s %s",user.getFirstName(), user.getLastName())));
-        request.getParamList().add(new NotificationParam("TARGET_USER", String.format("%s %s", provisionUser.getFirstName(), provisionUser.getLastName())));
+        request.getParamList().add(new NotificationParam("TARGET_USER", String.format("%s %s", profileModel.getUser().getFirstName(), profileModel.getUser().getLastName())));
         mailService.sendNotification(request);
 	}
 	
@@ -123,7 +123,7 @@ public class SendNewHireRequestDelegate implements JavaDelegate {
         request.getParamList().add(new NotificationParam("REQUEST_ID", provisionRequest.getId()));
         request.getParamList().add(new NotificationParam("REQUEST_REASON", provisionRequest.getRequestReason()));
         request.getParamList().add(new NotificationParam("REQUESTOR", String.format("%s %s",requestor.getFirstName(), requestor.getLastName())));
-        request.getParamList().add(new NotificationParam("TARGET_USER", String.format("%s %s", provisionUser.getFirstName(), provisionUser.getLastName())));
+        request.getParamList().add(new NotificationParam("TARGET_USER", String.format("%s %s", profileModel.getUser().getFirstName(), profileModel.getUser().getLastName())));
         mailService.sendNotification(request);
 
 	}

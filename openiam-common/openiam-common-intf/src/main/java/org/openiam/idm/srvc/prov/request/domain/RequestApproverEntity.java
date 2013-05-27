@@ -57,6 +57,8 @@ public class RequestApproverEntity implements Serializable {
 	@Column(name = "MANAGED_SYS_ID", length = 32)
 	private String managedSysId;
 	
+	public RequestApproverEntity() {}
+	
 	public RequestApproverEntity(String approverId, Integer approverLevel,
             String approverType, String status) {
 		this.approverId = approverId;

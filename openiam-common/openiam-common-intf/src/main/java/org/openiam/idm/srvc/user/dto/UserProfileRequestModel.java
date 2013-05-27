@@ -6,6 +6,8 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
+import org.openiam.base.BaseObject;
+import org.openiam.bpm.util.ActivitiRequestType;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
@@ -14,6 +16,7 @@ import org.openiam.idm.srvc.meta.dto.PageTempate;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "UserProfileRequestModel", 
 	propOrder = { 
+		"activitiRequestType",
 		"user",
         "pageTemplate",
         "languageCode",
@@ -23,8 +26,9 @@ import org.openiam.idm.srvc.meta.dto.PageTempate;
         "phones",
         "addresses"
 })
-public class UserProfileRequestModel {
+public class UserProfileRequestModel extends BaseObject {
 
+	private ActivitiRequestType activitiRequestType;
 	private List<EmailAddress> emails;
 	private List<Phone> phones;
 	private List<Address> addresses;
@@ -91,6 +95,14 @@ public class UserProfileRequestModel {
 
 	public void setAddresses(List<Address> addresses) {
 		this.addresses = addresses;
+	}
+
+	public ActivitiRequestType getActivitiRequestType() {
+		return activitiRequestType;
+	}
+
+	public void setActivitiRequestType(ActivitiRequestType activitiRequestType) {
+		this.activitiRequestType = activitiRequestType;
 	}
 
 	@Override

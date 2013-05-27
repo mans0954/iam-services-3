@@ -3,8 +3,14 @@ package org.openiam.idm.srvc.prov.request.service;
 // Generated Jan 9, 2009 5:33:58 PM by Hibernate Tools 3.2.2.GA
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
 import javax.naming.InitialContext;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
@@ -20,6 +26,7 @@ import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.prov.request.domain.ProvisionRequestEntity;
+import org.openiam.idm.srvc.prov.request.domain.RequestApproverEntity;
 import org.openiam.idm.srvc.prov.request.dto.ProvisionRequest;
 import org.openiam.idm.srvc.prov.request.dto.RequestApprover;
 import org.openiam.idm.srvc.prov.request.dto.SearchRequest;
@@ -34,18 +41,34 @@ public class ProvisionRequestDAOImpl extends BaseDaoImpl<ProvisionRequestEntity,
 	@Value("${fetch.size}")
 	private int maxResultSetSize;
 	
+	@Override
+	protected Criteria getExampleCriteria(ProvisionRequestEntity entity) {
+		final Criteria criteria = getCriteria();
+		if(CollectionUtils.isNotEmpty(entity.getRequestApprovers())) {
+			final Set<String> approverIds = new HashSet<String>();
+			for(final RequestApproverEntity approver : entity.getRequestApprovers()) {
+				approverIds.add(approver.getApproverId());
+			}
+			
+			criteria.createAlias("requestApprovers", "approver").add(
+					Restrictions.in("approver.approverId", approverIds));
+		}
+		
+		if(StringUtils.isNotBlank(entity.getStatus())) {
+			criteria.add(Restrictions.eq("status", entity.getStatus()));
+		}
+		return criteria;
+	}
+
+
+
 	public List<ProvisionRequestEntity> findRequestByApprover(String approverId, String status) {
-		Session session = getSession();
-		Query qry = session.createQuery("select req from org.openiam.idm.srvc.prov.request.dto.ProvisionRequest req, " +
-				" org.openiam.idm.srvc.prov.request.dto.RequestApprover appr " +
-				" where req.requestId = appr.requestId and " +
-				"	    appr.approverId = :approverId and  " +
-				"  		req.status = :status " + 
- 				" order by req.requestDate ");
-		qry.setString("approverId", approverId);
-		qry.setString("status", status);
-		List<ProvisionRequestEntity> results = (List<ProvisionRequestEntity>)qry.list();
-		return results;	
+		final ProvisionRequestEntity example = new ProvisionRequestEntity();
+		final RequestApproverEntity approver = new RequestApproverEntity();
+		approver.setApproverId(approverId);
+		example.addRequestApprover(approver);
+		example.setStatus(status);
+		return getByExample(example);	
 	}
 
 

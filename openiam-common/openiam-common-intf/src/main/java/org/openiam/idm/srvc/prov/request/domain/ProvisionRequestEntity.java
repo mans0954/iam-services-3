@@ -198,6 +198,13 @@ public class ProvisionRequestEntity {
 	public Set<RequestApproverEntity> getRequestApprovers() {
 		return requestApprovers;
 	}
+	
+	public void addRequestApprover(final RequestApproverEntity approver) {
+		if(this.requestApprovers == null) {
+			this.requestApprovers = new HashSet<RequestApproverEntity>();
+		}
+		this.requestApprovers.add(approver);
+	}
 
 	public void setRequestApprovers(Set<RequestApproverEntity> requestApprovers) {
 		this.requestApprovers = requestApprovers;
