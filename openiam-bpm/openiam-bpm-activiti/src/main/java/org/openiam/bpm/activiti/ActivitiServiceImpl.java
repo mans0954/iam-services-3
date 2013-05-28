@@ -36,6 +36,7 @@ import org.openiam.bpm.response.TaskListWrapper;
 import org.openiam.bpm.response.TaskWrapper;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
+import org.openiam.idm.srvc.meta.exception.PageTemplateException;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
@@ -111,6 +112,9 @@ public class ActivitiServiceImpl implements ActivitiService {
 	@Qualifier("resourceDAO")
 	private ResourceDAO resourceDao;
 	
+	@Autowired
+	private UserProfileService userProfileService;
+	
 	private static final Comparator<Task> taskCreatedTimeComparator = new TaskCreateDateSorter();
 
 	@Override
@@ -124,16 +128,19 @@ public class ActivitiServiceImpl implements ActivitiService {
 
 	@Override
 	@WebMethod
-	public SaveTemplateProfileResponse initiateNewHireRequest(final NewUserProfileRequestModel newHireRequest) {
+	public SaveTemplateProfileResponse initiateNewHireRequest(final NewUserProfileRequestModel request) {
 		final SaveTemplateProfileResponse response = new SaveTemplateProfileResponse();
 
 		try {
-			if(newHireRequest == null || newHireRequest.getActivitiRequestType() == null) {
+			if(request == null || request.getActivitiRequestType() == null) {
 				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
 			}
 			
+			/* throws exception if invalid - caught in try/catch */
+			userProfileService.validate(request);
+			
 			final ProvisionRequestEntity provisionRequest = new ProvisionRequestEntity();
-			final User provisionUser = newHireRequest.getUser();
+			final User provisionUser = request.getUser();
 			
 			/* get a list of approvers for the new hire request, including information about their organization */
 	        String approverRole = null;
@@ -191,12 +198,12 @@ public class ActivitiServiceImpl implements ActivitiService {
 			/* set provision user fields before saving request */
 			provisionUser.setUserId(null);
 			provisionUser.setCreateDate(new Date());
-			provisionUser.setCreatedBy(newHireRequest.getRequestorUserId());
+			provisionUser.setCreatedBy(request.getRequestorUserId());
 			provisionUser.setStatus(UserStatusEnum.PENDING_APPROVAL);
 
 			/* populate the provision request with required values */
 			final Date currentDate = new Date();
-			final String xml = new XStream().toXML(newHireRequest);
+			final String xml = new XStream().toXML(request);
 			final ResourceEntity newUserResource = resourceDao.findById(NEW_HIRE_REQUEST_TYPE);
 			provisionRequest.setRequestXML(xml);
 			provisionRequest.setStatus("PENDING");
@@ -205,7 +212,7 @@ public class ActivitiServiceImpl implements ActivitiService {
 			provisionRequest.setRequestType(newUserResource.getResourceId());
 			provisionRequest.setRequestType(NEW_HIRE_REQUEST_TYPE);
 			provisionRequest.setRequestReason(String.format("%s FOR %s %s", newUserResource.getDescription(), provisionUser.getFirstName(), provisionUser.getLastName()));
-			provisionRequest.setRequestorId(newHireRequest.getRequestorUserId());
+			provisionRequest.setRequestorId(request.getRequestorUserId());
 			if(StringUtils.isNotBlank(provisionUser.getCompanyId())) {
 				provisionRequest.setRequestForOrgId(provisionUser.getCompanyId());
 			}
@@ -225,10 +232,15 @@ public class ActivitiServiceImpl implements ActivitiService {
 			variables.put(ActivitiConstants.DELEGATION_FILTER_SEARCH, delegationFilterSearch);
 			variables.put(ActivitiConstants.CANDIDATE_USERS_IDS, requestApproverIds);
 			variables.put(ActivitiConstants.TASK_NAME, String.format("New Hire Request for %s %s", provisionUser.getFirstName(), provisionUser.getLastName()));
-			variables.put(ActivitiConstants.TASK_OWNER, newHireRequest.getRequestorUserId());
-			final ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(newHireRequest.getActivitiRequestType().getKey(), variables);
+			variables.put(ActivitiConstants.TASK_OWNER, request.getRequestorUserId());
+			final ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(request.getActivitiRequestType().getKey(), variables);
 
 			response.setStatus(ResponseStatus.SUCCESS);
+		} catch (PageTemplateException e) {
+			response.setCurrentValue(e.getCurrentValue());
+			response.setElementName(e.getElementName());
+			response.setErrorCode(e.getCode());
+			response.setStatus(ResponseStatus.FAILURE);
 		} catch(BasicDataServiceException e) {
 			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);

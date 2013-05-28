@@ -9,6 +9,7 @@ import org.openiam.idm.srvc.prov.request.service.RequestDataService;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
 import org.openiam.idm.srvc.user.service.UserProfileService;
 import org.openiam.idm.srvc.user.token.CreateUserToken;
+import org.openiam.provision.service.ProvisionService;
 import org.openiam.util.SpringContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -25,6 +26,10 @@ public class CreateNewUser implements JavaDelegate {
 	
 	@Autowired
 	private UserProfileService userProfileService;
+	
+	@Autowired
+	@Qualifier("defaultProvision")
+	private ProvisionService provisionService;
 	
 	public CreateNewUser() {
 		SpringContextProvider.autowire(this);

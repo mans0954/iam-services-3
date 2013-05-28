@@ -336,6 +336,98 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 	private boolean isEntitled(final String userId, final MetadataElementEntity element) {
 		return element.isPublic() || isEntitled(userId, element.getResource());
 	}
+	
+	@Override
+	public void validate(UserProfileRequestModel request) throws PageTemplateException {
+		final PageTempate pageTemplate = request.getPageTemplate();
+		final String userId = (request.getUser() != null) ? request.getUser().getUserId() : null;
+		final LanguageEntity targetLanguage = getLanguage(request);
+	
+		if(pageTemplate != null) {
+			if(request.getUser() == null || targetLanguage == null) {
+				throw new PageTemplateException(ResponseCode.INVALID_ARGUMENTS);
+			}
+		
+			final MetadataElementPageTemplateEntity template = pageTemplateDAO.findById(pageTemplate.getTemplateId());
+			if(template == null) {
+				throw new PageTemplateException(ResponseCode.OBJECT_NOT_FOUND);
+			}
+			
+			/* only allow access if the user is entitled to the template */
+			if(!isEntitled(userId, template)) {
+				throw new PageTemplateException(ResponseCode.UNAUTHORIZED);
+			}
+				
+			/* get element map from template */
+			final Map<String, MetadataElementEntity> elementMap = getMetadataElementMap(template);
+			
+			/* create user attribute maps for fast access */
+			final List<UserAttributeEntity> attributes = attributeDAO.findUserAttributes(userId, elementMap.keySet());
+			final Map<String, UserAttributeEntity> id2UserAttributeMap = new HashMap<String, UserAttributeEntity>();
+			final Map<String, List<UserAttributeEntity>> metadataId2UserAttributeMap = new HashMap<String, List<UserAttributeEntity>>();
+			if(CollectionUtils.isNotEmpty(attributes)) {
+				for(final UserAttributeEntity attribute : attributes) {
+					final String elementId = attribute.getElement().getId();
+					id2UserAttributeMap.put(attribute.getId(), attribute);
+					if(!metadataId2UserAttributeMap.containsKey(elementId)) {
+						metadataId2UserAttributeMap.put(elementId, new LinkedList<UserAttributeEntity>());
+					}
+					metadataId2UserAttributeMap.get(elementId).add(attribute);
+				}
+			}
+			
+			/* loop through all elements sent in the request */
+			if(CollectionUtils.isNotEmpty(pageTemplate.getPageElements())) {
+				for(final PageElement pageElement : pageTemplate.getPageElements()) {
+					final String elementId = pageElement.getElementId();
+					if(elementId != null && elementMap.containsKey(elementId)) {
+						MetadataElementEntity element = elementMap.get(elementId);
+						/* if the user is entitled to the element, do CRUD logic on the attributes */
+						if(isEntitled(userId, element)) {
+							boolean isMultiSelect = element.getMetadataType() != null && StringUtils.equals(element.getMetadataType().getMetadataTypeId(), "MULTI_SELECT");
+							int numRequiredViolations = 0;
+							
+							if(isMultiSelect && pageElement.isEditable() && pageElement.isRequired() && CollectionUtils.isEmpty(pageElement.getUserValues())) {
+								final PageTemplateException exception =  new PageTemplateException(ResponseCode.REQUIRED);
+								exception.setElementName(getElementName(element, targetLanguage));
+								throw exception;
+							}
+							
+							if(CollectionUtils.isNotEmpty(pageElement.getUserValues())) {
+								for(final PageElementValue elementValue : pageElement.getUserValues()) {
+									boolean indexViolatesRequiredFlag = pageElement.isEditable() && pageElement.isRequired() && StringUtils.isBlank(elementValue.getValue());
+									if(indexViolatesRequiredFlag) {
+										numRequiredViolations++;
+									}
+									
+									if(isMultiSelect) {
+										if(numRequiredViolations == pageElement.getUserValues().size()) {
+											final PageTemplateException exception =  new PageTemplateException(ResponseCode.REQUIRED);
+											exception.setElementName(getElementName(element, targetLanguage));
+											throw exception;
+										}
+									} else {
+										if(indexViolatesRequiredFlag) {
+											final PageTemplateException exception =  new PageTemplateException(ResponseCode.REQUIRED);
+											exception.setElementName(getElementName(element, targetLanguage));
+											throw exception;
+										}
+									}
+									
+									if(!isValid(elementValue, element, targetLanguage)) {
+										final PageTemplateException exception =  new PageTemplateException(ResponseCode.INVALID_VALUE);
+										exception.setCurrentValue(elementValue.getValue());
+										exception.setElementName(getElementName(element, targetLanguage));
+										throw exception;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 
 	@Override
 	@Transactional
