@@ -66,18 +66,9 @@ public class SendNewHireRequestDelegate implements JavaDelegate {
 	
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
-		final Object delegationFilterSearchObj = execution.getVariable(ActivitiConstants.DELEGATION_FILTER_SEARCH);
-		final Object provisionRequestIdObj = execution.getVariable(ActivitiConstants.PROVISION_REQUEST_ID);
-		final Object requestorIdObj = execution.getVariable(ActivitiConstants.TASK_OWNER);
-		if(provisionRequestIdObj == null || !(provisionRequestIdObj instanceof String)) {
-			throw new ActivitiException(String.format("No '%s' parameter specified, or object is not of proper type", ActivitiConstants.PROVISION_REQUEST_ID));
-		}
-		if(requestorIdObj == null || !(requestorIdObj instanceof String)) {
-			throw new ActivitiException(String.format("No '%s' parameter specified, or object is not of proper type", ActivitiConstants.TASK_OWNER));
-		}
-		
-		final String callerId = (String)requestorIdObj;
-		final String provisionRequestId = (String)provisionRequestIdObj;
+		final DelegationFilterSearch delegationFilter = (DelegationFilterSearch)execution.getVariable(ActivitiConstants.DELEGATION_FILTER_SEARCH);
+		final String provisionRequestId = (String)execution.getVariable(ActivitiConstants.PROVISION_REQUEST_ID);
+		final String callerId = (String)execution.getVariable(ActivitiConstants.TASK_OWNER);
 		
 		provisionRequest = provRequestService.getRequest(provisionRequestId);
 		profileModel = (NewUserProfileRequestModel)new XStream().fromXML(provisionRequest.getRequestXML());
@@ -92,12 +83,10 @@ public class SendNewHireRequestDelegate implements JavaDelegate {
 				if(!StringUtils.equalsIgnoreCase(requestApprover.getApproverType(), "role")) {
 					sendNotification(requestApprover);
 				} else {
-					if(delegationFilterSearchObj != null && delegationFilterSearchObj instanceof DelegationFilterSearch) {
-						final List<UserEntity> roleApprovers = userManager.searchByDelegationProperties((DelegationFilterSearch)delegationFilterSearchObj);
-						if (CollectionUtils.isNotEmpty(roleApprovers)) {
-							for (final UserEntity approver : roleApprovers) {
-								sendNotificationRequest(approver);
-							}
+					final List<UserEntity> roleApprovers = userManager.searchByDelegationProperties(delegationFilter);
+					if (CollectionUtils.isNotEmpty(roleApprovers)) {
+						for (final UserEntity approver : roleApprovers) {
+							sendNotificationRequest(approver);
 						}
 					}
 	            }

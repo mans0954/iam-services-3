@@ -5,8 +5,9 @@ import java.util.List;
 import javax.jws.WebMethod;
 import javax.jws.WebService;
 
-import org.openiam.bpm.request.AcceptOrRejectNewHireRequest;
-import org.openiam.bpm.request.ClaimNewHireRequest;
+import org.openiam.base.ws.Response;
+import org.openiam.bpm.request.ActivitiClaimRequest;
+import org.openiam.bpm.request.ActivitiRequestDecision;
 import org.openiam.bpm.response.NewHireResponse;
 import org.openiam.bpm.response.TaskListWrapper;
 import org.openiam.bpm.response.TaskWrapper;
@@ -26,13 +27,13 @@ public interface ActivitiService {
 	public SaveTemplateProfileResponse initiateNewHireRequest(final NewUserProfileRequestModel newHireRequest);
 	
 	@WebMethod
-	public NewHireResponse claimNewHireRequest(final ClaimNewHireRequest newHireRequest);
+	public Response claimRequest(final ActivitiClaimRequest newHireRequest);
 	
 	@WebMethod
-	public NewHireResponse acceptNewHireRequest(final AcceptOrRejectNewHireRequest newHireRequest);
+	public Response acceptRequest(final ActivitiRequestDecision newHireRequest);
 	
 	@WebMethod
-	public NewHireResponse rejectNewHireRequest(final AcceptOrRejectNewHireRequest newHireRequest);
+	public Response rejectRequest(final ActivitiRequestDecision newHireRequest);
 	
 	@WebMethod
 	public TaskListWrapper getTasksForUser(final String userId);
