@@ -7,12 +7,6 @@ import javax.xml.bind.annotation.XmlType;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.prov.request.domain.RequestAttributeEntity;
 
-// Generated Jan 9, 2009 5:33:58 PM by Hibernate Tools 3.2.2.GA
-
-/**
- * Object representing attributes of a request. By associating these attributes to Metadata, a request may be extended with new attributes without 
- * having to alter the underlying schema.
- */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "RequestAttribute", propOrder = {
     "id",

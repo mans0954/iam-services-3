@@ -19,8 +19,8 @@ public class AddCandidateUsersTaskListener implements TaskListener {
 	@Override
 	public void notify(DelegateTask delegateTask) {
 		log.info("Add Candidate Users");
-		final Object taskOwnerObj = delegateTask.getExecution().getVariable(ActivitiConstants.TASK_OWNER);
-		final Object taskNameObj = delegateTask.getExecution().getVariable(ActivitiConstants.TASK_NAME);
+		final String taskOwner = StringUtils.trimToNull((String)delegateTask.getExecution().getVariable(ActivitiConstants.TASK_OWNER));
+		final String taskName = (String)delegateTask.getExecution().getVariable(ActivitiConstants.TASK_NAME);
 		final Object candidateUserIdsObj = delegateTask.getExecution().getVariable(ActivitiConstants.CANDIDATE_USERS_IDS);
 		final Collection<String> candidateUsersIds = new ArrayList<String>();
 		if(candidateUserIdsObj != null) {
@@ -45,14 +45,12 @@ public class AddCandidateUsersTaskListener implements TaskListener {
 			delegateTask.addCandidateUser(candidateId);
 		}
 		
-		if(taskNameObj != null && taskNameObj instanceof String && StringUtils.isNotBlank((String)taskNameObj)) {
-			delegateTask.setName((String)taskNameObj);
+		if(StringUtils.isNotBlank(taskName)) {
+			delegateTask.setName(taskName);
 		} else {
 			log.warn(String.format("No task name specified for %s", delegateTask.getId()));
 		}
 		
-		if(taskOwnerObj != null && taskOwnerObj instanceof String && StringUtils.isNotBlank((String)taskOwnerObj)) {
-			delegateTask.setOwner((String)taskOwnerObj);
-		}
+		delegateTask.setOwner(taskOwner);
 	}
 }

@@ -5,4 +5,16 @@
           http://dozer.sourceforge.net/schema/beanmapping.xsd">
 
 
+	<mapping>
+		<class-a>org.openiam.idm.srvc.prov.request.domain.ProvisionRequestEntity</class-a>
+		<class-b>org.openiam.idm.srvc.prov.request.dto.ProvisionRequest</class-b>
+		<field-exclude>
+			<a>requestUsers</a>
+			<b>requestUsers</b>
+		</field-exclude>
+		<field-exclude>
+			<a>requestApprovers</a>
+			<b>requestApprovers</b>
+		</field-exclude>
+	</mapping>
 </mappings>

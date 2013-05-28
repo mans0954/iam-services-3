@@ -1,5 +1,7 @@
 package org.openiam.base;
 
+import java.io.Serializable;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
@@ -14,12 +16,12 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "BaseObject", propOrder = {
         "objectState",
-        "selected",
+        "requestorUserId",
         "requestorLogin",
         "requestorDomain",
         "requestClientIP"
 })
-public class BaseObject implements java.io.Serializable {
+public class BaseObject implements Serializable {
 
     /**
      *
@@ -30,11 +32,10 @@ public class BaseObject implements java.io.Serializable {
     public static final String UPDATE = "UPDATE";
     public static final String DELETE = "DELETE";
 
-    protected Boolean selected = new Boolean(false);
-
     protected String objectState = NEW;
 
     // track the source of the request
+    protected String requestorUserId;
     protected String requestorLogin;
     protected String requestorDomain;
     protected String requestClientIP;
@@ -52,26 +53,22 @@ public class BaseObject implements java.io.Serializable {
         this.objectState = objectState;
     }
 
-    public Boolean getSelected() {
-        return selected;
-    }
-
-    public void setSelected(Boolean selected) {
-        this.selected = selected;
-    }
-
+    @Deprecated
     public String getRequestorLogin() {
         return requestorLogin;
     }
 
+    @Deprecated
     public void setRequestorLogin(String requestorLogin) {
         this.requestorLogin = requestorLogin;
     }
 
+    @Deprecated
     public String getRequestorDomain() {
         return requestorDomain;
     }
 
+    @Deprecated
     public void setRequestorDomain(String requestorDomain) {
         this.requestorDomain = requestorDomain;
     }
@@ -83,6 +80,16 @@ public class BaseObject implements java.io.Serializable {
     public void setRequestClientIP(String requestClientIP) {
         this.requestClientIP = requestClientIP;
     }
+    
+    
+
+	public String getRequestorUserId() {
+		return requestorUserId;
+	}
+
+	public void setRequestorUserId(String requestorUserId) {
+		this.requestorUserId = requestorUserId;
+	}
 
 	@Override
 	public int hashCode() {
@@ -96,8 +103,6 @@ public class BaseObject implements java.io.Serializable {
 				+ ((requestorDomain == null) ? 0 : requestorDomain.hashCode());
 		result = prime * result
 				+ ((requestorLogin == null) ? 0 : requestorLogin.hashCode());
-		result = prime * result
-				+ ((selected == null) ? 0 : selected.hashCode());
 		return result;
 	}
 
@@ -129,11 +134,6 @@ public class BaseObject implements java.io.Serializable {
 			if (other.requestorLogin != null)
 				return false;
 		} else if (!requestorLogin.equals(other.requestorLogin))
-			return false;
-		if (selected == null) {
-			if (other.selected != null)
-				return false;
-		} else if (!selected.equals(other.selected))
 			return false;
 		return true;
 	}

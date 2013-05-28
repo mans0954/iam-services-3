@@ -16,15 +16,17 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.openiam.bpm.util.ActivitiConstants;
-import org.openiam.bpm.request.NewHireRequest;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.msg.service.MailService;
+import org.openiam.idm.srvc.prov.request.domain.ProvisionRequestEntity;
+import org.openiam.idm.srvc.prov.request.domain.RequestApproverEntity;
 import org.openiam.idm.srvc.prov.request.dto.ProvisionRequest;
 import org.openiam.idm.srvc.prov.request.dto.RequestApprover;
 import org.openiam.idm.srvc.prov.request.service.RequestDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
+import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
@@ -58,27 +60,18 @@ public class SendNewHireRequestDelegate implements JavaDelegate {
 		SpringContextProvider.autowire(this);
 	}
 
-	private ProvisionUser provisionUser;
-	private ProvisionRequest provisionRequest;
+	private NewUserProfileRequestModel profileModel;
+	private ProvisionRequestEntity provisionRequest;
 	private UserEntity requestor;
 	
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
-		final Object delegationFilterSearchObj = execution.getVariable(ActivitiConstants.DELEGATION_FILTER_SEARCH);
-		final Object provisionRequestIdObj = execution.getVariable(ActivitiConstants.PROVISION_REQUEST_ID);
-		final Object requestorIdObj = execution.getVariable(ActivitiConstants.TASK_OWNER);
-		if(provisionRequestIdObj == null || !(provisionRequestIdObj instanceof String)) {
-			throw new ActivitiException(String.format("No '%s' parameter specified, or object is not of proper type", ActivitiConstants.PROVISION_REQUEST_ID));
-		}
-		if(requestorIdObj == null || !(requestorIdObj instanceof String)) {
-			throw new ActivitiException(String.format("No '%s' parameter specified, or object is not of proper type", ActivitiConstants.TASK_OWNER));
-		}
-		
-		final String callerId = (String)requestorIdObj;
-		final String provisionRequestId = (String)provisionRequestIdObj;
+		final DelegationFilterSearch delegationFilter = (DelegationFilterSearch)execution.getVariable(ActivitiConstants.DELEGATION_FILTER_SEARCH);
+		final String provisionRequestId = (String)execution.getVariable(ActivitiConstants.PROVISION_REQUEST_ID);
+		final String callerId = (String)execution.getVariable(ActivitiConstants.TASK_OWNER);
 		
 		provisionRequest = provRequestService.getRequest(provisionRequestId);
-		provisionUser = (ProvisionUser)new XStream().fromXML(provisionRequest.getRequestXML());
+		profileModel = (NewUserProfileRequestModel)new XStream().fromXML(provisionRequest.getRequestXML());
 		
 		if(CollectionUtils.isNotEmpty(provisionRequest.getRequestApprovers())) {			
 			requestor = userDao.findById(callerId);
@@ -86,16 +79,14 @@ public class SendNewHireRequestDelegate implements JavaDelegate {
 				throw new ActivitiException(String.format("User with requestorId '%s' does not exist", callerId));
 			}
 		       
-			for (final RequestApprover requestApprover : provisionRequest.getRequestApprovers()) {
+			for (final RequestApproverEntity requestApprover : provisionRequest.getRequestApprovers()) {
 				if(!StringUtils.equalsIgnoreCase(requestApprover.getApproverType(), "role")) {
 					sendNotification(requestApprover);
 				} else {
-					if(delegationFilterSearchObj != null && delegationFilterSearchObj instanceof DelegationFilterSearch) {
-						final List<UserEntity> roleApprovers = userManager.searchByDelegationProperties((DelegationFilterSearch)delegationFilterSearchObj);
-						if (CollectionUtils.isNotEmpty(roleApprovers)) {
-							for (final UserEntity approver : roleApprovers) {
-								sendNotificationRequest(approver);
-							}
+					final List<UserEntity> roleApprovers = userManager.searchByDelegationProperties(delegationFilter);
+					if (CollectionUtils.isNotEmpty(roleApprovers)) {
+						for (final UserEntity approver : roleApprovers) {
+							sendNotificationRequest(approver);
 						}
 					}
 	            }
@@ -107,21 +98,21 @@ public class SendNewHireRequestDelegate implements JavaDelegate {
 		final NotificationRequest request = new NotificationRequest();
         request.setUserId(user.getUserId());
         request.setNotificationType("NEW_PENDING_REQUEST");
-        request.getParamList().add(new NotificationParam("REQUEST_ID", provisionRequest.getRequestId()));
+        request.getParamList().add(new NotificationParam("REQUEST_ID", provisionRequest.getId()));
         request.getParamList().add(new NotificationParam("REQUEST_REASON", provisionRequest.getRequestReason()));
         request.getParamList().add(new NotificationParam("REQUESTOR",  String.format("%s %s",user.getFirstName(), user.getLastName())));
-        request.getParamList().add(new NotificationParam("TARGET_USER", String.format("%s %s", provisionUser.getFirstName(), provisionUser.getLastName())));
+        request.getParamList().add(new NotificationParam("TARGET_USER", String.format("%s %s", profileModel.getUser().getFirstName(), profileModel.getUser().getLastName())));
         mailService.sendNotification(request);
 	}
 	
-	private void sendNotification(final RequestApprover requestApprover) {
+	private void sendNotification(final RequestApproverEntity requestApprover) {
 		final  NotificationRequest request = new NotificationRequest();
         request.setUserId(requestApprover.getApproverId());
         request.setNotificationType("NEW_PENDING_REQUEST");
-        request.getParamList().add(new NotificationParam("REQUEST_ID", provisionRequest.getRequestId()));
+        request.getParamList().add(new NotificationParam("REQUEST_ID", provisionRequest.getId()));
         request.getParamList().add(new NotificationParam("REQUEST_REASON", provisionRequest.getRequestReason()));
         request.getParamList().add(new NotificationParam("REQUESTOR", String.format("%s %s",requestor.getFirstName(), requestor.getLastName())));
-        request.getParamList().add(new NotificationParam("TARGET_USER", String.format("%s %s", provisionUser.getFirstName(), provisionUser.getLastName())));
+        request.getParamList().add(new NotificationParam("TARGET_USER", String.format("%s %s", profileModel.getUser().getFirstName(), profileModel.getUser().getLastName())));
         mailService.sendNotification(request);
 
 	}

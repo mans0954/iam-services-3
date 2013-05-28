@@ -6,6 +6,7 @@ import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 
+import org.openiam.base.ws.Response;
 import org.openiam.idm.srvc.mngsys.dto.*;
 
 /**
@@ -167,32 +168,6 @@ public interface ManagedSystemWebService {
 			@WebParam(name = "obj", targetNamespace = "")
 			ManagedSystemObjectMatch obj);
 	
-	// Approver Association
-	
-
-	/**
-	 * Adds the approver association.
-	 * 
-	 * @param approverAssociation
-	 *            the approver association
-	 * @return the approver association
-	 */
-	@WebMethod
-	ApproverAssociation addApproverAssociation(
-			@WebParam(name = "approverAssociation", targetNamespace = "")
-			ApproverAssociation approverAssociation);
-
-	/**
-	 * Updates approver association.
-	 * 
-	 * @param approverAssociation
-	 *            the approver association
-	 * @return the approver association
-	 */
-	@WebMethod
-	ApproverAssociation updateApproverAssociation(
-			@WebParam(name = "approverAssociation", targetNamespace = "")
-			ApproverAssociation approverAssociation);
 
 	/**
 	 * Gets the approver association.
@@ -213,89 +188,10 @@ public interface ManagedSystemWebService {
 	 *            the approver association id
 	 */
 	@WebMethod
-	void removeApproverAssociation(
+	Response removeApproverAssociation(
 			@WebParam(name = "approverAssociationId", targetNamespace = "")
 			String approverAssociationId);
-
-	/**
-	 * Removes the all approver associations.
-	 * 
-	 * @return the int
-	 */
-	@WebMethod
-	int removeAllApproverAssociations();
-
-	/**
-	 * Gets the approvers by request type.
-	 * 
-	 * @param requestType
-	 *            the request type
-	 * @param level
-	 *            the level
-	 * @return the approvers by request type
-	 */
-	@WebMethod
-	List<ApproverAssociation> getApproverByRequestType(
-			@WebParam(name = "requestType", targetNamespace = "")
-			String requestType,
-			@WebParam(name = "level", targetNamespace = "")
-			int level);
-
-
-	@WebMethod
-	List<ApproverAssociation> getAllApproversByRequestType(
-			@WebParam(name = "requestType", targetNamespace = "")
-			String requestType);
-
-	/**
-	 * Gets the approvers by object id.
-	 * 
-	 * @param associationObjId
-	 *            the association obj id
-	 * @return the approvers by object id
-	 */
-	@WebMethod
-	List<ApproverAssociation> getApproversByObjectId(
-			@WebParam(name = "associationObjId", targetNamespace = "")
-			String associationObjId);
-
-	/**
-	 * Removes the approvers by object id.
-	 * 
-	 * @param associationObjId
-	 *            the association obj id
-	 * @return the int
-	 */
-	@WebMethod
-	int removeApproversByObjectId(
-			@WebParam(name = "associationObjId", targetNamespace = "")
-			String associationObjId);
-
-	/**
-	 * Removes the approvers by object type.
-	 * 
-	 * @param associationType
-	 *            the association type
-	 * @return the int
-	 */
-	@WebMethod
-	int removeApproversByObjectType(
-			@WebParam(name = "associationType", targetNamespace = "")
-			String associationType);
-
-	/**
-	 * Removes the approvers by user.
-	 * 
-	 * @param userId
-	 *            the user id
-	 * @return the int
-	 */
-	@WebMethod
-	int removeApproversByUser(
-			@WebParam(name = "userId", targetNamespace = "")
-			String userId);
 	
-
 	/**
 	 * Gets the attribute map.
 	 * 
@@ -380,4 +276,6 @@ public interface ManagedSystemWebService {
 	@WebMethod
 	List<AttributeMap> getAllAttributeMaps() ;
 	
+	@WebMethod
+	public Response saveApproverAssociation(final @WebParam(name = "approverAssociation", targetNamespace = "") ApproverAssociation approverAssociation);
 }

@@ -11,18 +11,21 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.openiam.bpm.util.ActivitiConstants;
-import org.openiam.bpm.request.NewHireRequest;
 import org.openiam.bpm.request.RequestorInformation;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
+import org.openiam.idm.srvc.continfo.dto.EmailAddress;
+import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.msg.service.MailService;
+import org.openiam.idm.srvc.prov.request.domain.ProvisionRequestEntity;
 import org.openiam.idm.srvc.prov.request.dto.ProvisionRequest;
 import org.openiam.idm.srvc.prov.request.dto.RequestUser;
 import org.openiam.idm.srvc.prov.request.service.RequestDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.Supervisor;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDAO;
@@ -84,13 +87,13 @@ public class RejectNewHireDelegate implements JavaDelegate {
 		
 		final String provisionRequestId = (String)provisionRequestIdObj;
 		
-		final ProvisionRequest provisionRequest = provRequestService.getRequest(provisionRequestId);
-		final ProvisionUser provisionUser = (ProvisionUser)new XStream().fromXML(provisionRequest.getRequestXML());
+		final ProvisionRequestEntity provisionRequest = provRequestService.getRequest(provisionRequestId);
+		final NewUserProfileRequestModel profileModel = (NewUserProfileRequestModel)new XStream().fromXML(provisionRequest.getRequestXML());
 		final String newHireExecutorId = (String)newHireExecutorIdObj;
 		
 		final String requestType = provisionRequest.getRequestType();
-        final List<ApproverAssociation> approverAssociationList = approverAssociationDao.findApproversByRequestType(requestType, 1);
-        for (final ApproverAssociation approverAssociation : approverAssociationList) {
+        final List<ApproverAssociationEntity> approverAssociationList = approverAssociationDao.findApproversByRequestType(requestType, 1);
+        for (final ApproverAssociationEntity approverAssociation : approverAssociationList) {
             String notifyEmail = null;
             approverAssociation.getApproverUserId();
             String typeOfUserToNotify = approverAssociation.getRejectNotificationUserType();
@@ -107,14 +110,14 @@ public class RejectNewHireDelegate implements JavaDelegate {
                 	}
                 }
             } else if (StringUtils.equalsIgnoreCase(typeOfUserToNotify, "supervisor")) {
-                final Supervisor supVisor = provisionUser.getSupervisor();
+                final Supervisor supVisor = profileModel.getUser().getSupervisor();
                 if (supVisor != null) {
                     notifyUserId = supVisor.getSupervisor().getUserId();
                     notifyEmail = supVisor.getSupervisor().getEmail();
                 }
             } else if(StringUtils.equalsIgnoreCase(typeOfUserToNotify, "target_user")) {
             	//notifyUserId = ? /* can't set this - user isn't created on reject, so no ID */
-            	notifyEmail = provisionUser.getEmail();
+            	notifyEmail = getPrimaryEmail(profileModel.getEmails());
             } else { /* send back to original requestor if none of the above */ 
             	notifyUserId = provisionRequest.getRequestorId();
             	if(notifyUserId != null) {
@@ -130,13 +133,31 @@ public class RejectNewHireDelegate implements JavaDelegate {
             request.setUserId(notifyUserId);
             request.setNotificationType("REQUEST_REJECTED");
             request.setTo(notifyEmail);
-            request.getParamList().add(new NotificationParam("REQUEST_ID", provisionRequest.getRequestId()));
+            request.getParamList().add(new NotificationParam("REQUEST_ID", provisionRequest.getId()));
             request.getParamList().add(new NotificationParam("REQUEST_REASON", provisionRequest.getRequestReason()));
             request.getParamList().add(new NotificationParam("REQUESTOR", String.format("%s %s", approver.getFirstName(), approver.getLastName())));
-            request.getParamList().add(new NotificationParam("TARGET_USER", String.format("%s %s", provisionUser.getFirstName(), provisionUser.getLastName())));
+            request.getParamList().add(new NotificationParam("TARGET_USER", String.format("%s %s", profileModel.getUser().getFirstName(), profileModel.getUser().getLastName())));
             mailService.sendNotification(request);
 
         }
 	}
 
+	private String getPrimaryEmail(final List<EmailAddress> addressSet) {
+		String retVal = null;
+		if(CollectionUtils.isNotEmpty(addressSet)) {
+			for(final EmailAddress email : addressSet) {
+				if(email.getIsDefault()) {
+					retVal = email.getEmailAddress();
+					break;
+				}
+			}
+			
+			if(retVal == null) {
+				if(addressSet.size() >= 1) {
+					retVal = addressSet.iterator().next().getEmailAddress();
+				}
+			}
+		}
+		return retVal;
+	}
 }
