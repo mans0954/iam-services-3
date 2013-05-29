@@ -171,9 +171,6 @@ public class UserEntity {
     @Column(name = "SHOW_IN_SEARCH")
     private Integer showInSearch = new Integer(0);
 
-    @Column(name = "DEL_ADMIN")
-    private Integer delAdmin = new Integer(0);
-
     @Column(name = "ALTERNATE_ID", length = 32)
     private String alternateContactId;
 
@@ -725,14 +722,6 @@ public class UserEntity {
         this.showInSearch = showInSearch;
     }
 
-    public Integer getDelAdmin() {
-        return delAdmin;
-    }
-
-    public void setDelAdmin(Integer delAdmin) {
-        this.delAdmin = delAdmin;
-    }
-
     public String getAlternateContactId() {
         return alternateContactId;
     }
@@ -916,8 +905,6 @@ public class UserEntity {
 				* result
 				+ ((datePasswordChanged == null) ? 0 : datePasswordChanged
 						.hashCode());
-		result = prime * result
-				+ ((delAdmin == null) ? 0 : delAdmin.hashCode());
 		result = prime * result + ((deptCd == null) ? 0 : deptCd.hashCode());
 		result = prime * result
 				+ ((deptName == null) ? 0 : deptName.hashCode());
@@ -1038,11 +1025,6 @@ public class UserEntity {
 			if (other.datePasswordChanged != null)
 				return false;
 		} else if (!datePasswordChanged.equals(other.datePasswordChanged))
-			return false;
-		if (delAdmin == null) {
-			if (other.delAdmin != null)
-				return false;
-		} else if (!delAdmin.equals(other.delAdmin))
 			return false;
 		if (deptCd == null) {
 			if (other.deptCd != null)

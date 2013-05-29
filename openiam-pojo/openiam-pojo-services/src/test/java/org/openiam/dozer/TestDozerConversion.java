@@ -42,7 +42,6 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		user.setCostCenter(rs(2));
 		user.setDateChallengeRespChanged(new Date());
 		user.setDatePasswordChanged(new Date());
-		user.setDelAdmin(2);
 		user.setDeptCd(rs(2));
 		user.setDeptName(rs(2));
 		user.setDivision(rs(2));
@@ -292,7 +291,6 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		Assert.assertEquals(original.getCostCenter(), copy.getCostCenter());
 		Assert.assertEquals(original.getDateChallengeRespChanged(), copy.getDateChallengeRespChanged());
 		Assert.assertEquals(original.getDatePasswordChanged(), copy.getDatePasswordChanged());
-		Assert.assertEquals(original.getDelAdmin(), copy.getDelAdmin());
 		Assert.assertEquals(original.getDeptCd(), copy.getDeptCd());
 		Assert.assertEquals(original.getDeptName(), copy.getDeptName());
 		Assert.assertEquals(original.getDivision(), copy.getDivision());

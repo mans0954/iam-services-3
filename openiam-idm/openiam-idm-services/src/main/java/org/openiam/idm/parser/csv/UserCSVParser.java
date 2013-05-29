@@ -178,13 +178,6 @@ public class UserCSVParser extends AbstractCSVParser<User, UserFields>
 				user.setShowInSearch(null);
 			}
 			break;
-		case delAdmin:
-			try {
-				user.setDelAdmin(Integer.valueOf(objValue));
-			} catch (Exception e) {
-				user.setDelAdmin(null);
-			}
-			break;
 		case principalList:
 		case phones:
 		case supervisor:
@@ -348,9 +341,6 @@ public class UserCSVParser extends AbstractCSVParser<User, UserFields>
 			break;
 		case showInSearch:
 			objValue = toString(user.getShowInSearch());
-			break;
-		case delAdmin:
-			objValue = toString(user.getDelAdmin());
 			break;
 		case alternateContactId:
 			objValue = toString(user.getAlternateContactId());

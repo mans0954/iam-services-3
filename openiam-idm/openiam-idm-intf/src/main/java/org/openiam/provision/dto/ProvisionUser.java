@@ -147,7 +147,6 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         this.passwordTheme = user.getPasswordTheme();
         this.email = user.getEmail();
         this.showInSearch = user.getShowInSearch();
-        this.delAdmin = user.getDelAdmin();
         this.alternateContactId = user.getAlternateContactId();
 
         this.createdBy = user.getCreatedBy();
@@ -216,7 +215,6 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         user.setEmailAddresses(emailAddresses);
         user.setAlternateContactId(alternateContactId);
         user.setShowInSearch(showInSearch);
-        user.setDelAdmin(delAdmin);
 
         user.setUserOwnerId(userOwnerId);
         user.setDateChallengeRespChanged(dateChallengeRespChanged);
@@ -543,9 +541,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         if (showInSearch == null) {
             showInSearch = user.getShowInSearch();
         }
-        if (delAdmin == null) {
-            delAdmin = user.getDelAdmin();
-        }
+
         if (alternateContactId == null) {
             alternateContactId = user.getAlternateContactId();
         }

@@ -1316,13 +1316,7 @@ public class UserMgr implements UserDataService {
                 origUserEntity.setAlternateContactId(newUserEntity.getAlternateContactId());
             }
         }
-        if (newUserEntity.getDelAdmin() != null) {
-            if (newUserEntity.getDelAdmin().equals(BaseConstants.NULL_INTEGER)) {
-                origUserEntity.setDelAdmin(0);
-            } else {
-                origUserEntity.setDelAdmin(newUserEntity.getDelAdmin());
-            }
-        }
+
     }
 
     @Transactional
