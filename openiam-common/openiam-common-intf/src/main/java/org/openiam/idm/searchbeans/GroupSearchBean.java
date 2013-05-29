@@ -1,22 +1,25 @@
 package org.openiam.idm.searchbeans;
 
-import java.io.Serializable;
+import org.apache.commons.collections.CollectionUtils;
+import org.openiam.idm.srvc.grp.dto.Group;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
-
-import org.openiam.idm.srvc.grp.dto.Group;
+import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "GroupSearchBean", propOrder = {
+        "keySet",
         "name",
         "isRootsOnly"
 })
 public class GroupSearchBean extends AbstractSearchBean<Group, String> implements SearchBean<Group, String>, Serializable {
 
 	private static final long serialVersionUID = 1L;
-
+    private Set<String> keySet;
 	private String name;
 	private boolean isRootsOnly;
 	
@@ -67,9 +70,39 @@ public class GroupSearchBean extends AbstractSearchBean<Group, String> implement
 	@Override
 	public String toString() {
 		return String.format(
-				"GroupSearchBean [name=%s, isRootsOnly=%s, toString()=%s]",
-				name, isRootsOnly, super.toString());
+				"GroupSearchBean [name=%s, isRootsOnly=%s, keySet=%s, toString()=%s]",
+				name, isRootsOnly, keySet, super.toString());
 	}
-	
-	
+
+    @Override
+    public String getKey() {
+        return (CollectionUtils.isNotEmpty(keySet)) ? keySet.iterator().next() : null;
+    }
+
+    @Override
+    public void setKey(final String key) {
+        if(keySet == null) {
+            keySet = new HashSet<String>();
+        }
+        keySet.add(key);
+    }
+
+    public Set<String> getKeys() {
+        return keySet;
+    }
+
+    public void addKey(final String key) {
+        if(this.keySet == null) {
+            this.keySet = new HashSet<String>();
+        }
+        this.keySet.add(key);
+    }
+
+    public boolean hasMultipleKeys() {
+        return (keySet != null && keySet.size() > 1);
+    }
+
+    public void setKeys(final Set<String> keySet) {
+        this.keySet = keySet;
+    }
 }

@@ -1,8 +1,6 @@
 package org.openiam.idm.searchbeans;
 
 import org.apache.commons.lang.StringUtils;
-import org.openiam.idm.srvc.org.dto.Organization;
-import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.SearchAttribute;
 import org.openiam.idm.srvc.user.dto.User;
 
@@ -11,12 +9,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by: Alexander Duckardt
@@ -53,10 +46,12 @@ import java.util.Set;
         "dateOfBirth",
         "zipCode",
         "delAdmin",
-        "organizationId",
+//        "organizationId",
+        "organizationIdList",
         "deptIdList",
         "divisionIdList",
-        "attributeList"
+        "attributeList",
+        "requesterId"
 })
 public class UserSearchBean extends AbstractSearchBean<User, String> implements SearchBean<User, String>,
         Serializable {
@@ -98,20 +93,36 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
     protected String loggedIn = null;
     protected int delAdmin = 0;
 
-    private String organizationId;
-    
+//    private String organizationId;
+    protected List<String> organizationIdList = new ArrayList<String>();
     protected List<String> deptIdList = new ArrayList<String>();
     protected List<String> divisionIdList = new ArrayList<String>();
     protected List<SearchAttribute> attributeList = new ArrayList<SearchAttribute>();
 
-    public String getOrganizationId() {
-    	return organizationId;
+    private String requesterId;
+
+    public String getRequesterId() {
+        return requesterId;
     }
-    
-    public void setOrganizationId(final String organizationId) {
-    	this.organizationId = organizationId;
+
+    public void setRequesterId(String requesterId) {
+        this.requesterId = requesterId;
     }
-    
+
+    public List<String> getOrganizationIdList() {
+        return organizationIdList;
+    }
+
+    public void setOrganizationIdList(List<String> organizationIdList) {
+        this.organizationIdList = organizationIdList;
+    }
+
+    public void addOrganizationId(String organizationId){
+         if(organizationIdList==null)
+             organizationIdList = new ArrayList<String>();
+        organizationIdList.add(organizationId);
+    }
+
     public int getDelAdmin() {
         return delAdmin;
     }
@@ -186,6 +197,10 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
 	public Set<String> getGroupIdSet() {
 		return groupIdSet;
 	}
+
+    public void setGroupIdSet(Set<String> groupIdSet) {
+        this.groupIdSet=groupIdSet;
+    }
 	
 	public void addGroupId(final String groupId) {
 		if(StringUtils.isNotBlank(groupId)) {
@@ -200,8 +215,13 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
 	public Set<String> getRoleIdSet() {
 		return roleIdSet;
 	}
-	
-	public void addRoleId(final String roleId) {
+
+    public void setRoleIdSet(Set<String> roleIdSet) {
+        this.roleIdSet=roleIdSet;
+    }
+
+
+    public void addRoleId(final String roleId) {
 		if(StringUtils.isNotBlank(roleId)) {
 			if(this.roleIdSet == null) {
 				this.roleIdSet = new HashSet<String>();
@@ -361,31 +381,24 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
     public void setDeptIdList(List<String> deptIdList) {
         this.deptIdList = deptIdList;
     }
-    
-    public void addDeptId(final String deptId) {
-    	if(StringUtils.isNotBlank(deptId)) {
-    		if(this.deptIdList == null) {
-    			this.deptIdList = new LinkedList<String>();
-    		}
-    		this.deptIdList.add(deptId);
-    	}
-    }
 
     public List<String> getDivisionIdList() {
         return divisionIdList;
     }
-    
-    public void addDivisionId(final String divisionId) {
-    	if(StringUtils.isNotBlank(divisionId)) {
-    		if(this.divisionIdList == null) {
-    			this.divisionIdList = new LinkedList<String>();
-    		}
-    		this.divisionIdList.add(divisionId);
-    	}
-    }
 
     public void setDivisionIdList(List<String> divisionIdList) {
         this.divisionIdList = divisionIdList;
+    }
+
+    public void addDivisionId(String divisionId){
+        if(divisionIdList==null)
+            divisionIdList = new ArrayList<String>();
+        divisionIdList.add(divisionId);
+    }
+    public void addDeptId(String deptId){
+        if(deptIdList==null)
+            deptIdList = new ArrayList<String>();
+        deptIdList.add(deptId);
     }
 
     public List<SearchAttribute> getAttributeList() {
@@ -395,4 +408,6 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
     public void setAttributeList(List<SearchAttribute> attributeList) {
         this.attributeList = attributeList;
     }
+
+
 }

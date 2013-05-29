@@ -1,16 +1,18 @@
 package org.openiam.idm.searchbeans;
 
-import java.io.Serializable;
+import org.apache.commons.collections.CollectionUtils;
+import org.openiam.idm.srvc.role.dto.Role;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
-
-import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.idm.srvc.role.dto.Role;
+import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "RoleSearchBean", propOrder = {
+        "keySet",
         "name",
         "serviceId",
         "isRootsOnly"
@@ -18,7 +20,7 @@ import org.openiam.idm.srvc.role.dto.Role;
 public class RoleSearchBean extends AbstractSearchBean<Role, String> implements SearchBean<Role, String>, Serializable {
 
 	private static final long serialVersionUID = 1L;
-
+    private Set<String> keySet;
 	private String name;
 	private String serviceId;
 	private Boolean isRootsOnly;
@@ -89,9 +91,39 @@ public class RoleSearchBean extends AbstractSearchBean<Role, String> implements 
 	@Override
 	public String toString() {
 		return String.format(
-				"RoleSearchBean [name=%s, serviceId=%s, isRootsOnly=%s]", name,
+				"RoleSearchBean [keySet=%s, name=%s, serviceId=%s, isRootsOnly=%s]", keySet, name,
 				serviceId, isRootsOnly);
 	}
 
-	
+    @Override
+    public String getKey() {
+        return (CollectionUtils.isNotEmpty(keySet)) ? keySet.iterator().next() : null;
+    }
+
+    @Override
+    public void setKey(final String key) {
+        if(keySet == null) {
+            keySet = new HashSet<String>();
+        }
+        keySet.add(key);
+    }
+
+    public Set<String> getKeys() {
+        return keySet;
+    }
+
+    public void addKey(final String key) {
+        if(this.keySet == null) {
+            this.keySet = new HashSet<String>();
+        }
+        this.keySet.add(key);
+    }
+
+    public boolean hasMultipleKeys() {
+        return (keySet != null && keySet.size() > 1);
+    }
+
+    public void setKeys(final Set<String> keySet) {
+        this.keySet = keySet;
+    }
 }

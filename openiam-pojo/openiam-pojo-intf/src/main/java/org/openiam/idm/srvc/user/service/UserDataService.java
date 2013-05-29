@@ -1,5 +1,10 @@
 package org.openiam.idm.srvc.user.service;
 
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
@@ -9,17 +14,13 @@ import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.domain.UserNoteEntity;
 import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
-import org.openiam.idm.srvc.user.dto.UserSearch;
+import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-
 /**
- * Service interface that clients will access to gain information about users and related information.
- *
+ * Service interface that clients will access to gain information about users
+ * and related information.
+ * 
  * @author Suneet Shah
  * @version 2
  */
@@ -27,10 +28,10 @@ import java.util.Map;
 public interface UserDataService {
 
     /**
-     * Returns a User object that is associated with the principal.
-     * ManagedSysId refers to a principal that is associated with a particular target system. User 0 to
-     * use the default principal ID.
-     *
+     * Returns a User object that is associated with the principal. ManagedSysId
+     * refers to a principal that is associated with a particular target system.
+     * User 0 to use the default principal ID.
+     * 
      * @param securityDomain
      * @param principal
      * @param managedSysId
@@ -46,15 +47,15 @@ public interface UserDataService {
 
     public void updateUserWithDependent(UserEntity user, boolean dependency);
 
-
     /**
-     * Deletes a user from the system. The developer is responsible for deleting associated objects such as the User-Group and User-Role relationship.
-     * This has been done on purpose to minimize impact on the system through an erroneous call to the delete operation.
-     *
+     * Deletes a user from the system. The developer is responsible for deleting
+     * associated objects such as the User-Group and User-Role relationship.
+     * This has been done on purpose to minimize impact on the system through an
+     * erroneous call to the delete operation.
+     * 
      * @param id
      */
     public void removeUser(String id) throws Exception;
-
 
     public UserEntity getUserByName(String firstName, String lastName);
 
@@ -139,6 +140,7 @@ public interface UserDataService {
     public EmailAddressEntity getEmailAddressById(String addressId);
 
     public List<EmailAddressEntity> getEmailAddressList(String userId);
+
     public List<EmailAddressEntity> getEmailAddressList(String userId, Integer size, Integer from);
 
     public void addSupervisor(SupervisorEntity supervisor);
@@ -150,24 +152,27 @@ public interface UserDataService {
     public SupervisorEntity getSupervisor(String supervisorObjId);
 
     /**
-     * Returns a List of supervisor objects that represents the supervisors for this employee or user.
-     *
+     * Returns a List of supervisor objects that represents the supervisors for
+     * this employee or user.
+     * 
      * @param employeeId
      * @return
      */
     public List<SupervisorEntity> getSupervisors(String employeeId);
 
     /**
-     * Returns a list of Supervisor objects that represents the employees or users for this supervisor
-     *
+     * Returns a list of Supervisor objects that represents the employees or
+     * users for this supervisor
+     * 
      * @param supervisorId
      * @return
      */
     public List<SupervisorEntity> getEmployees(String supervisorId);
 
     /**
-     * Returns the primary supervisor for this employee. Null if no primary is defined.
-     *
+     * Returns the primary supervisor for this employee. Null if no primary is
+     * defined.
+     * 
      * @param employeeId
      * @return
      */
@@ -175,16 +180,21 @@ public interface UserDataService {
 
     public UserEntity getUser(String id);
 
+    public UserEntity getUser(String id, String requestorId);
+
     public Map<String, UserAttributeEntity> getAllAttributes(String userId);
 
-    public List<UserEntity> getUsersForResource(final String resourceId, final int from, final int size);
-    public int getNumOfUsersForResource(final String resourceId);
-    
-    public List<UserEntity> getUsersForGroup(final String groupId, final int from, final int size);
-    public int getNumOfUsersForGroup(final String groupId);
-    
-    public List<UserEntity> getUsersForRole(final String roleId, final int from, final int size);
-    public int getNumOfUsersForRole(final String roleId);
+    public List<UserEntity> getUsersForResource(final String resourceId, String requesterId, final int from, final int size);
+
+    public int getNumOfUsersForResource(final String resourceId, String requesterId);
+
+    public List<UserEntity> getUsersForGroup(final String groupId, String requesterId, final int from, final int size);
+
+    public int getNumOfUsersForGroup(final String groupId, String requesterId);
+
+    public List<UserEntity> getUsersForRole(final String roleId, String requesterId, final int from, final int size);
+
+    public int getNumOfUsersForRole(final String roleId, String requesterId);
 
     public String saveUserInfo(UserEntity userEntity, SupervisorEntity supervisorEntity) throws Exception;
 
@@ -194,12 +204,17 @@ public interface UserDataService {
 
     public void activateUser(String userId);
 
-    public Integer getNumOfEmailsForUser( String userId);
+    public Integer getNumOfEmailsForUser(String userId);
 
     public Integer getNumOfAddressesForUser(String userId);
+
     public Integer getNumOfPhonesForUser(String userId);
-    
+
     public void mergeUserFields(UserEntity origUserEntity, UserEntity newUserEntity);
 
-	List<UserEntity> getUsersForMSys(String mSysId);
+    List<UserEntity> getUsersForMSys(String mSysId);
+
+    public Map<String, UserAttribute> getUserAttributesDto(String userId);
+
+    public Map<String, UserAttributeEntity> getUserAttributes(String userId);
 }

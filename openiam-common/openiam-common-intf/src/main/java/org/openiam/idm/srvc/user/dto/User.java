@@ -73,7 +73,6 @@ import java.util.*;
         "passwordTheme",
         "email",
         "showInSearch",
-        "delAdmin",
         "principalList",
         "supervisor",
         "alternateContactId",
@@ -183,8 +182,6 @@ public class User extends org.openiam.base.BaseObject {
     protected String email;
 
     protected Integer showInSearch = new Integer(0);
-
-    protected Integer delAdmin = new Integer(0);
 
     protected List<Login> principalList = new LinkedList<Login>();
 
@@ -1051,14 +1048,7 @@ public class User extends org.openiam.base.BaseObject {
                 this.alternateContactId = newUser.getAlternateContactId();
             }
         }
-        if (newUser.getDelAdmin() != null) {
-            if (newUser.getDelAdmin().equals(BaseConstants.NULL_INTEGER)) {
-                this.delAdmin = 0;
-            } else {
-                this.delAdmin = newUser.getDelAdmin();
 
-            }
-        }
         if (newUser.getUserOwnerId() != null) {
             if (newUser.getUserOwnerId().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
                 this.userOwnerId = null;
@@ -1135,13 +1125,6 @@ public class User extends org.openiam.base.BaseObject {
         }
     }
 
-    public Integer getDelAdmin() {
-        return delAdmin;
-    }
-
-    public void setDelAdmin(Integer delAdmin) {
-        this.delAdmin = delAdmin;
-    }
 
     public String getUserOwnerId() {
         return userOwnerId;
@@ -1230,7 +1213,6 @@ public class User extends org.openiam.base.BaseObject {
             return false;
         if (datePasswordChanged != null ? !datePasswordChanged.equals(user.datePasswordChanged) : user.datePasswordChanged != null)
             return false;
-        if (delAdmin != null ? !delAdmin.equals(user.delAdmin) : user.delAdmin != null) return false;
         if (deptCd != null ? !deptCd.equals(user.deptCd) : user.deptCd != null) return false;
         if (deptName != null ? !deptName.equals(user.deptName) : user.deptName != null) return false;
         if (division != null ? !division.equals(user.division) : user.division != null) return false;
@@ -1327,7 +1309,6 @@ public class User extends org.openiam.base.BaseObject {
                 ", passwordTheme='" + passwordTheme + '\'' +
                 ", email='" + email + '\'' +
                 ", showInSearch=" + showInSearch +
-                ", delAdmin=" + delAdmin +
                 ", principalList=" + principalList +
                 ", supervisor=" + supervisor +
                 ", alternateContactId='" + alternateContactId + '\'' +

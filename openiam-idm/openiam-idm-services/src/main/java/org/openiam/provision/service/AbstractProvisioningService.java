@@ -1359,7 +1359,7 @@ public ProvisionUserResponse createUser(ProvisionUser user, List<IdmAuditLog> lo
 
             log.debug("- Adding original affiliationList to the user object");
 
-            List<Organization> userAffiliations = orgManager.getOrganizationsForUser(user.getUserId());
+            List<Organization> userAffiliations = orgManager.getOrganizationsForUser(user.getUserId(), null);
             if (userAffiliations != null && !userAffiliations.isEmpty())  {
 
                 user.setUserAffiliations(userAffiliations);
@@ -1370,7 +1370,7 @@ public ProvisionUserResponse createUser(ProvisionUser user, List<IdmAuditLog> lo
         // add roles if not part of the request
         List<Role> userRoleList = user.getMemberOfRoles();
         if ( userRoleList == null || userRoleList.isEmpty()) {
-            List<RoleEntity> curRoles = roleDataService.getUserRoles(user.getUserId(), 0, Integer.MAX_VALUE);
+            List<RoleEntity> curRoles = roleDataService.getUserRoles(user.getUserId(),null, 0, Integer.MAX_VALUE);
             user.setMemberOfRoles(roleDozerConverter.convertToDTOList(curRoles, false));
         }
     }
@@ -2003,7 +2003,7 @@ public ProvisionUserResponse createUser(ProvisionUser user, List<IdmAuditLog> lo
     /* User Org Affiliation */
 
     public void updateUserOrgAffiliation(String userId, List<Organization> newOrgList) {
-        List<Organization>  currentOrgList = orgManager.getOrganizationsForUser(userId);
+        List<Organization>  currentOrgList = orgManager.getOrganizationsForUser(userId, null);
 
 
         if (newOrgList == null) {

@@ -76,3 +76,4 @@ ddl/51.add_login_lowercase.sql
 dml/25.synchronization_menus.sql
 ddl/52.reconcliliation_config.sql
 dml/26.reconciliation_menu.sql
+ddl/53.alter_users_table.sql

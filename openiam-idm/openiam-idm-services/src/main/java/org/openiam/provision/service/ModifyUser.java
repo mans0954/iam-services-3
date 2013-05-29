@@ -184,7 +184,7 @@ public class ModifyUser {
             log.debug("- Adding original affiliationList to the user object");
 
             List<Organization> userAffiliations = orgManager
-                    .getOrganizationsForUser(user.getUserId());
+                    .getOrganizationsForUser(user.getUserId(), null);
             if (userAffiliations != null && !userAffiliations.isEmpty()) {
 
                 user.setUserAffiliations(userAffiliations);
@@ -862,7 +862,7 @@ public class ModifyUser {
     public void updateUserOrgAffiliation(String userId,
             List<Organization> newOrgList) {
         List<Organization> currentOrgList = orgManager
-                .getOrganizationsForUser(userId);
+                .getOrganizationsForUser(userId, null);
 
         if (newOrgList == null) {
             return;
