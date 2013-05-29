@@ -314,13 +314,14 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         return criteria;
     }
 
-    private Criteria getUsersForResourceCriteria(final String resourceId) {
-        return getCriteria().createAlias("resourceUsers", "ru").add(Restrictions.eq("ru.resourceId", resourceId));
-    }
+    // private Criteria getUsersForResourceCriteria(final String resourceId) {
+    // return getCriteria().createAlias("resourceUsers",
+    // "ru").add(Restrictions.eq("ru.resourceId", resourceId));
+    // }
 
     @Override
-    public List<UserEntity> getUsersForResource(final String resourceId, final int from, final int size) {
-        final Criteria criteria = getUsersForResourceCriteria(resourceId);
+    public List<UserEntity> getUsersForResource(final String resourceId, DelegationFilterSearchBean delegationFilter, final int from, final int size) {
+        final Criteria criteria = getUsersEntitlementCriteria(null, null, resourceId, delegationFilter);
 
         if (from > -1) {
             criteria.setFirstResult(from);
@@ -334,18 +335,20 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
     }
 
     @Override
-    public int getNumOfUsersForResource(final String resourceId) {
-        final Criteria criteria = getUsersForResourceCriteria(resourceId).setProjection(rowCount());
+    public int getNumOfUsersForResource(final String resourceId, DelegationFilterSearchBean delegationFilter) {
+        final Criteria criteria = getUsersEntitlementCriteria(null, null, resourceId, delegationFilter).setProjection(rowCount());
         return ((Number) criteria.uniqueResult()).intValue();
     }
 
-    private Criteria getUsersForGroupCriteria(final String groupId) {
-        return getCriteria().createAlias("userGroups", "ug").add(Restrictions.eq("ug.grpId", groupId));
-    }
+    // private Criteria getUsersForGroupCriteria(final String groupId,
+    // DelegationFilterSearchBean delegationFilter) {
+    // return getCriteria().createAlias("userGroups",
+    // "ug").add(Restrictions.eq("ug.grpId", groupId));
+    // }
 
     @Override
-    public List<UserEntity> getUsersForGroup(final String groupId, final int from, final int size) {
-        final Criteria criteria = getUsersForGroupCriteria(groupId);
+    public List<UserEntity> getUsersForGroup(final String groupId, DelegationFilterSearchBean delegationFilter, final int from, final int size) {
+        final Criteria criteria = getUsersEntitlementCriteria(groupId, null, null, delegationFilter);
 
         if (from > -1) {
             criteria.setFirstResult(from);
@@ -359,18 +362,20 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
     }
 
     @Override
-    public int getNumOfUsersForGroup(String groupId) {
-        final Criteria criteria = getUsersForGroupCriteria(groupId).setProjection(rowCount());
+    public int getNumOfUsersForGroup(String groupId, DelegationFilterSearchBean delegationFilter) {
+        final Criteria criteria = getUsersEntitlementCriteria(groupId, null, null, delegationFilter).setProjection(rowCount());
         return ((Number) criteria.uniqueResult()).intValue();
     }
 
-    private Criteria getUsersForRoleCriteria(final String roleId) {
-        return getCriteria().createAlias("userRoles", "ur").add(Restrictions.eq("ur.roleId", roleId));
-    }
+    // private Criteria getUsersForRoleCriteria(final String roleId,
+    // DelegationFilterSearchBean delegationFilter) {
+    // return getCriteria().createAlias("userRoles",
+    // "ur").add(Restrictions.eq("ur.roleId", roleId));
+    // }
 
     @Override
-    public List<UserEntity> getUsersForRole(final String roleId, final int from, final int size) {
-        final Criteria criteria = getUsersForRoleCriteria(roleId);
+    public List<UserEntity> getUsersForRole(final String roleId, DelegationFilterSearchBean delegationFilter, final int from, final int size) {
+        final Criteria criteria = getUsersEntitlementCriteria(null, roleId, null, delegationFilter);
 
         if (from > -1) {
             criteria.setFirstResult(from);
@@ -384,9 +389,49 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
     }
 
     @Override
-    public int getNumOfUsersForRole(final String roleId) {
-        final Criteria criteria = getUsersForRoleCriteria(roleId).setProjection(rowCount());
+    public int getNumOfUsersForRole(final String roleId, DelegationFilterSearchBean delegationFilter) {
+        final Criteria criteria = getUsersEntitlementCriteria(null, roleId, null, delegationFilter).setProjection(rowCount());
         return ((Number) criteria.uniqueResult()).intValue();
+    }
+
+    private Criteria getUsersEntitlementCriteria(final String groupId, final String roleId, final String resourceId,
+                                                 DelegationFilterSearchBean delegationFilter) {
+        Criteria criteria = getCriteria();
+
+        if (StringUtils.isNotEmpty(groupId)) {
+            criteria.createAlias("userGroups", "ug");
+            criteria.add(Restrictions.eq("ug.grpId", groupId));
+        } else if (delegationFilter != null && !delegationFilter.getGroupIdSet().isEmpty()) {
+            criteria.createAlias("userGroups", "ug");
+            criteria.add(Restrictions.in("ug.grpId", delegationFilter.getGroupIdSet()));
+        }
+
+        if (StringUtils.isNotEmpty(roleId)) {
+            criteria.createAlias("userRoles", "ur");
+            criteria.add(Restrictions.eq("ur.roleId", roleId));
+        } else if (delegationFilter != null && !delegationFilter.getRoleIdSet().isEmpty()) {
+            criteria.createAlias("userRoles", "ur");
+            criteria.add(Restrictions.in("ur.roleId", delegationFilter.getRoleIdSet()));
+        }
+
+        if (StringUtils.isNotEmpty(resourceId)) {
+            criteria.createAlias("resourceUsers", "ru").add(Restrictions.eq("ru.resourceId", resourceId));
+        }
+
+        if (delegationFilter != null) {
+            if (delegationFilter.getOrganizationIdSet() != null && !delegationFilter.getOrganizationIdSet().isEmpty()) {
+                criteria.add(Restrictions.in("companyId", delegationFilter.getOrganizationIdSet()));
+            }
+            if (delegationFilter.getDeptIdSet() != null && !delegationFilter.getDeptIdSet().isEmpty()) {
+                criteria.add(Restrictions.in("deptCd", delegationFilter.getDeptIdSet()));
+            }
+            if (delegationFilter.getDivisionIdSet() != null && !delegationFilter.getDivisionIdSet().isEmpty()) {
+                criteria.add(Restrictions.in("division", delegationFilter.getDivisionIdSet()));
+            }
+        }
+        criteria.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
+
+        return criteria;
     }
 
     @Override

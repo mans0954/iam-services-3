@@ -34,6 +34,8 @@ import org.mule.api.context.MuleContextAware;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.connector.type.RemoteReconciliationConfig;
 import org.openiam.dozer.converter.UserDozerConverter;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
+import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
@@ -53,25 +55,23 @@ import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.resp.LookupUserResponse;
 import org.openiam.provision.service.ConnectorAdapter;
-import  org.openiam.provision.service.ProvisionService;
-import org.openiam.idm.srvc.auth.domain.LoginEntity;
-import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.provision.service.ProvisionService;
 import org.openiam.provision.service.RemoteConnectorAdapter;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author suneet
- *
+ * 
  */
 public class ReconciliationServiceImpl implements ReconciliationService, MuleContextAware {
 
-	protected ReconciliationSituationDAO reconSituationDao;
-	protected ReconciliationResultDAO reconResultDao;
-	protected ReconciliationConfigDAO reconConfigDao;
-	protected ReconciliationResultDAO reconResultDetailDao;
+    protected ReconciliationSituationDAO reconSituationDao;
+    protected ReconciliationResultDAO reconResultDao;
+    protected ReconciliationConfigDAO reconConfigDao;
+    protected ReconciliationResultDAO reconResultDetailDao;
     protected MuleContext muleContext;
     protected LoginDataService loginManager;
-    protected  ProvisionService provisionService;
+    protected ProvisionService provisionService;
     protected ResourceDataService resourceDataService;
     protected UserDataService userMgr;
     protected ManagedSystemWebService managedSysService;
@@ -85,30 +85,27 @@ public class ReconciliationServiceImpl implements ReconciliationService, MuleCon
     @Autowired
     private UserDozerConverter userDozerConverter;
 
-
     private static final Log log = LogFactory.getLog(ReconciliationServiceImpl.class);
 
     public ReconciliationConfig addConfig(ReconciliationConfig config) {
         if (config == null) {
-			throw new IllegalArgumentException("config parameter is null");
-		}
-		return reconConfigDao.add(config);
-
+            throw new IllegalArgumentException("config parameter is null");
+        }
+        return reconConfigDao.add(config);
 
     }
 
     public ReconciliationConfig updateConfig(ReconciliationConfig config) {
         if (config == null) {
-                    throw new IllegalArgumentException("config parameter is null");
+            throw new IllegalArgumentException("config parameter is null");
         }
         return reconConfigDao.update(config);
-
 
     }
 
     public void removeConfigByResourceId(String resourceId) {
         if (resourceId == null) {
-                    throw new IllegalArgumentException("resourceId parameter is null");
+            throw new IllegalArgumentException("resourceId parameter is null");
         }
         reconConfigDao.removeByResourceId(resourceId);
 
@@ -116,63 +113,56 @@ public class ReconciliationServiceImpl implements ReconciliationService, MuleCon
 
     public void removeConfig(String configId) {
         if (configId == null) {
-                    throw new IllegalArgumentException("configId parameter is null");
+            throw new IllegalArgumentException("configId parameter is null");
         }
-        ReconciliationConfig config =  reconConfigDao.findById(configId);
+        ReconciliationConfig config = reconConfigDao.findById(configId);
         reconConfigDao.remove(config);
 
     }
 
     public ReconciliationConfig getConfigByResource(String resourceId) {
-    if (resourceId == null) {
-                    throw new IllegalArgumentException("resourceId parameter is null");
-     }
-     return reconConfigDao.findByResourceId(resourceId);
+        if (resourceId == null) {
+            throw new IllegalArgumentException("resourceId parameter is null");
+        }
+        return reconConfigDao.findByResourceId(resourceId);
 
     }
 
     public ReconciliationSituationDAO getReconSituationDao() {
-		return reconSituationDao;
-	}
+        return reconSituationDao;
+    }
 
+    public void setReconSituationDao(ReconciliationSituationDAO reconSituationDao) {
+        this.reconSituationDao = reconSituationDao;
+    }
 
-	public void setReconSituationDao(ReconciliationSituationDAO reconSituationDao) {
-		this.reconSituationDao = reconSituationDao;
-	}
+    public ReconciliationResultDAO getReconResultDao() {
+        return reconResultDao;
+    }
 
+    public void setReconResultDao(ReconciliationResultDAO reconResultDao) {
+        this.reconResultDao = reconResultDao;
+    }
 
-	public ReconciliationResultDAO getReconResultDao() {
-		return reconResultDao;
-	}
+    public ReconciliationConfigDAO getReconConfigDao() {
+        return reconConfigDao;
+    }
 
+    public void setReconConfigDao(ReconciliationConfigDAO reconConfigDao) {
+        this.reconConfigDao = reconConfigDao;
+    }
 
-	public void setReconResultDao(ReconciliationResultDAO reconResultDao) {
-		this.reconResultDao = reconResultDao;
-	}
+    public ReconciliationResultDAO getReconResultDetailDao() {
+        return reconResultDetailDao;
+    }
 
-
-	public ReconciliationConfigDAO getReconConfigDao() {
-		return reconConfigDao;
-	}
-
-
-	public void setReconConfigDao(ReconciliationConfigDAO reconConfigDao) {
-		this.reconConfigDao = reconConfigDao;
-	}
-
-
-	public ReconciliationResultDAO getReconResultDetailDao() {
-		return reconResultDetailDao;
-	}
-
-
-	public void setReconResultDetailDao(ReconciliationResultDAO reconResultDetailDao) {
-		this.reconResultDetailDao = reconResultDetailDao;
-	}
+    public void setReconResultDetailDao(ReconciliationResultDAO reconResultDetailDao) {
+        this.reconResultDetailDao = reconResultDetailDao;
+    }
 
     public ReconciliationConfig getConfigById(String configId) {
-       if (configId == null) {
-                    throw new IllegalArgumentException("configId parameter is null");
+        if (configId == null) {
+            throw new IllegalArgumentException("configId parameter is null");
         }
         return reconConfigDao.findById(configId);
 
@@ -180,62 +170,65 @@ public class ReconciliationServiceImpl implements ReconciliationService, MuleCon
 
     public void setMuleContext(MuleContext ctx) {
 
-       muleContext = ctx;
+        muleContext = ctx;
     }
 
     public ReconciliationResponse startReconciliation(ReconciliationConfig config) {
         try {
-            log.debug("Reconciliation started for configId=" + config.getReconConfigId() + " - resource=" + config.getResourceId() );
+            log.debug("Reconciliation started for configId=" + config.getReconConfigId() + " - resource=" + config.getResourceId());
 
             Resource res = resourceDataService.getResource(config.getResourceId());
-            String managedSysId =  res.getManagedSysId();
+            String managedSysId = res.getManagedSysId();
             ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
 
             log.debug("ManagedSysId = " + managedSysId);
             log.debug("Getting identities for managedSys");
 
             Map<String, ReconciliationCommand> situations = new HashMap<String, ReconciliationCommand>();
-            for(ReconciliationSituation situation : config.getSituationSet()){
-                situations.put(situation.getSituation().trim(), ReconciliationCommandFactory.createCommand(situation.getSituationResp(), situation, managedSysId));
+            for (ReconciliationSituation situation : config.getSituationSet()) {
+                situations.put(situation.getSituation().trim(),
+                               ReconciliationCommandFactory.createCommand(situation.getSituationResp(), situation, managedSysId));
                 log.debug("Created Command for: " + situation.getSituation());
             }
 
             List<UserEntity> users = new ArrayList<UserEntity>();
-            for(ResourceRole rRole: res.getResourceRoles()) {
-                final List<UserEntity> usersInrole = userMgr .getUsersForRole(rRole.getId().getRoleId(), 0, Integer.MAX_VALUE);
-                if(CollectionUtils.isNotEmpty(usersInrole)) {
-                	users.addAll(usersInrole);
+            for (ResourceRole rRole : res.getResourceRoles()) {
+                final List<UserEntity> usersInrole = userMgr.getUsersForRole(rRole.getId().getRoleId(), null, 0, Integer.MAX_VALUE);
+                if (CollectionUtils.isNotEmpty(usersInrole)) {
+                    users.addAll(usersInrole);
                 }
             }
 
-            final List<LoginEntity> principalList =  loginManager.getAllLoginByManagedSys(managedSysId);
+            final List<LoginEntity> principalList = loginManager.getAllLoginByManagedSys(managedSysId);
             if (principalList == null || principalList.isEmpty()) {
                 log.debug("No identities found for managedSysId in IDM repository");
                 ReconciliationResponse resp = new ReconciliationResponse(ResponseStatus.SUCCESS);
                 return resp;
             }
-            for (final UserEntity u  : users ) {
+            for (final UserEntity u : users) {
                 Login l = null;
                 User user = userDozerConverter.convertToDTO(userMgr.getUser(u.getUserId()), true);
                 List<Login> logins = user.getPrincipalList();
-                if(logins != null) {
-                    for(Login login: logins){
-                        if(login.getDomainId().equalsIgnoreCase(mSys.getDomainId()) && login.getManagedSysId().equalsIgnoreCase(managedSysId)){
+                if (logins != null) {
+                    for (Login login : logins) {
+                        if (login.getDomainId().equalsIgnoreCase(mSys.getDomainId()) && login.getManagedSysId().equalsIgnoreCase(managedSysId)) {
                             l = login;
                             break;
                         }
                     }
                 }
-                if(l == null){
-                    if(user.getStatus().equals(UserStatusEnum.DELETED)){
-                        // User is deleted and has no Identity for this managed system -> goto next user
+                if (l == null) {
+                    if (user.getStatus().equals(UserStatusEnum.DELETED)) {
+                        // User is deleted and has no Identity for this managed
+                        // system -> goto next user
                         continue;
                     }
                     // There was never a resource account for this user.
-                    // Possibility: User was created before the managed Sys was associated.
+                    // Possibility: User was created before the managed Sys was
+                    // associated.
                     // Situation: Login Not Found
                     ReconciliationCommand command = situations.get("Login Not Found");
-                    if(command != null){
+                    if (command != null) {
                         log.debug("Call command for IDM Login Not Found");
                         command.execute(l, user, null);
                     }
@@ -246,32 +239,34 @@ public class ReconciliationServiceImpl implements ReconciliationService, MuleCon
                 String principal = l.getLogin();
                 log.debug("looking up identity in resource: " + principal);
 
-                LookupUserResponse lookupResp =  provisionService.getTargetSystemUser(principal, managedSysId);
+                LookupUserResponse lookupResp = provisionService.getTargetSystemUser(principal, managedSysId);
 
-                log.debug("Lookup status for " + principal + " =" +  lookupResp.getStatus());
+                log.debug("Lookup status for " + principal + " =" + lookupResp.getStatus());
 
-                //User user = userMgr.getUserByPrincipal(l.getId().getDomainId(), l.getId().getLogin(), l.getId().getManagedSysId(), true);
+                // User user =
+                // userMgr.getUserByPrincipal(l.getId().getDomainId(),
+                // l.getId().getLogin(), l.getId().getManagedSysId(), true);
 
                 if (lookupResp.getStatus() == ResponseStatus.FAILURE && !l.getStatus().equalsIgnoreCase("INACTIVE")) {
                     // Situation: Resource Delete
                     ReconciliationCommand command = situations.get("Resource Delete");
-                    if(command != null){
+                    if (command != null) {
                         log.debug("Call command for Resource Delete");
                         command.execute(l, user, null);
                     }
                 } else if (lookupResp.getStatus() == ResponseStatus.SUCCESS) {
                     // found entry in managed sys
-                    if(l.getStatus().equalsIgnoreCase("INACTIVE") || user.getStatus().equals(UserStatusEnum.DELETED)) {
+                    if (l.getStatus().equalsIgnoreCase("INACTIVE") || user.getStatus().equals(UserStatusEnum.DELETED)) {
                         // Situation: IDM Delete
                         ReconciliationCommand command = situations.get("IDM Delete");
-                        if(command != null){
+                        if (command != null) {
                             log.debug("Call command for IDM Delete");
                             command.execute(l, user, null);
                         }
                     } else {
                         // Situation: IDM Changed/Resource Changed/Match Found
                         ReconciliationCommand command = situations.get("Match Found");
-                        if(command != null){
+                        if (command != null) {
                             log.debug("Call command for Match Found");
                             command.execute(l, user, null);
                         }
@@ -280,15 +275,13 @@ public class ReconciliationServiceImpl implements ReconciliationService, MuleCon
                 }
             }
 
-
             ProvisionConnectorDto connector = connectorService.getProvisionConnector(mSys.getConnectorId());
 
-            if (connector.getConnectorInterface() != null &&
-                    connector.getConnectorInterface().equalsIgnoreCase("REMOTE")) {
+            if (connector.getConnectorInterface() != null && connector.getConnectorInterface().equalsIgnoreCase("REMOTE")) {
 
                 log.debug("Calling reconcileResource with Remote connector");
                 RemoteReconciliationConfig remoteReconciliationConfig = null;
-                if(config != null) {
+                if (config != null) {
                     remoteReconciliationConfig = new RemoteReconciliationConfig(config);
                     remoteReconciliationConfig.setScriptHandler(mSys.getReconcileResourceHandler());
                 }
@@ -298,13 +291,13 @@ public class ReconciliationServiceImpl implements ReconciliationService, MuleCon
                 log.debug("Calling reconcileResource local connector");
                 connectorAdapter.reconcileResource(mSys, config, muleContext);
             }
-		}catch(Exception e) {
-			log.error(e);
+        } catch (Exception e) {
+            log.error(e);
             e.printStackTrace();
-			ReconciliationResponse resp = new ReconciliationResponse(ResponseStatus.FAILURE);
-			resp.setErrorText(e.getMessage());
-			return resp;
-		}
+            ReconciliationResponse resp = new ReconciliationResponse(ResponseStatus.FAILURE);
+            resp.setErrorText(e.getMessage());
+            return resp;
+        }
         ReconciliationResponse resp = new ReconciliationResponse(ResponseStatus.SUCCESS);
         return resp;
 
