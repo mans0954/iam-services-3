@@ -253,12 +253,12 @@
 				<!-- Move map entries to the IDM project. Should not be part of the general 
 					project -->
 
-				<value>org/openiam/idm/srvc/recon/service/ReconciliationConfig.hbm.xml
-				</value>
+<!-- 				<value>org/openiam/idm/srvc/recon/service/ReconciliationConfig.hbm.xml -->
+<!-- 				</value> -->
 				<value>org/openiam/idm/srvc/recon/service/ReconciliationResult.hbm.xml
 				</value>
-				<value>org/openiam/idm/srvc/recon/service/ReconciliationSituation.hbm.xml
-				</value>
+<!-- 				<value>org/openiam/idm/srvc/recon/service/ReconciliationSituation.hbm.xml -->
+<!-- 				</value> -->
 				<value>org/openiam/idm/srvc/recon/service/ReconResultDetail.hbm.xml
 				</value>
 				<!--<value>org/openiam/idm/srvc/synch/service/SynchConfig.hbm.xml</value>-->
@@ -312,6 +312,7 @@
 											   org.openiam.idm.srvc.cat.domain*,
                                                org.openiam.idm.srvc.continfo.domain*,
                                                org.openiam.idm.srvc.res.domain*,
+                                               org.openiam.idm.srvc.recon.domain*,
                                                org.openiam.idm.srvc.meta.domain*,
                                                org.openiam.idm.srvc.policy.domain*,
                                                org.openiam.idm.srvc.audit.domain*,
