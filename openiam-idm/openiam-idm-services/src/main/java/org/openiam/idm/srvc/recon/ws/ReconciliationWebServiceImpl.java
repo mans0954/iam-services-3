@@ -21,71 +21,76 @@
  */
 package org.openiam.idm.srvc.recon.ws;
 
-import javax.jws.WebParam;
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.jws.WebService;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.mule.api.MuleContext;
 import org.mule.api.context.MuleContextAware;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.dozer.converter.ReconciliationSituationDozerConverter;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.idm.srvc.recon.dto.ReconciliationResponse;
+import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
 import org.openiam.idm.srvc.recon.service.ReconciliationService;
-import org.openiam.idm.srvc.synch.ws.IdentitySynchWebService;
-import org.openiam.idm.srvc.synch.ws.SynchConfigListResponse;
+import org.openiam.idm.srvc.recon.service.ReconciliationSituationDAO;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author suneet
- *
+ * 
  */
-@WebService(endpointInterface = "org.openiam.idm.srvc.recon.ws.ReconciliationWebService", 
-		targetNamespace = "http://www.openiam.org/service/recon", 
-		portName = "ReconciliationWebServicePort", 
-		serviceName = "ReconciliationWebService")
-public class ReconciliationWebServiceImpl implements ReconciliationWebService, MuleContextAware {
-
-	protected ReconciliationService reconService;
+@WebService(endpointInterface = "org.openiam.idm.srvc.recon.ws.ReconciliationWebService", targetNamespace = "http://www.openiam.org/service/recon", portName = "ReconciliationWebServicePort", serviceName = "ReconciliationWebService")
+public class ReconciliationWebServiceImpl implements ReconciliationWebService,
+        MuleContextAware {
+    @Autowired
+    protected ReconciliationService reconService;
     protected MuleContext muleContext;
 
-    public ReconciliationConfigResponse addConfig( ReconciliationConfig config) {
-        ReconciliationConfigResponse response = new ReconciliationConfigResponse(ResponseStatus.SUCCESS);
+    public ReconciliationConfigResponse addConfig(ReconciliationConfig config) {
+        ReconciliationConfigResponse response = new ReconciliationConfigResponse(
+                ResponseStatus.SUCCESS);
         ReconciliationConfig cfg = reconService.addConfig(config);
         if (cfg == null || cfg.getReconConfigId() == null) {
             response.setStatus(ResponseStatus.FAILURE);
-        }else {
+        } else {
             response.setConfig(cfg);
         }
         return response;
 
-
     }
 
-    public ReconciliationConfigResponse updateConfig( ReconciliationConfig config) {
-        ReconciliationConfigResponse response = new ReconciliationConfigResponse(ResponseStatus.SUCCESS);
-        ReconciliationConfig cfg = reconService.updateConfig(config);
-        if (cfg == null || cfg.getReconConfigId() == null) {
+    public ReconciliationConfigResponse updateConfig(ReconciliationConfig config) {
+        ReconciliationConfigResponse response = new ReconciliationConfigResponse(
+                ResponseStatus.SUCCESS);
+
+        try {
+            reconService.updateConfig(config);
+        } catch (Exception e) {
             response.setStatus(ResponseStatus.FAILURE);
-        }else {
-            response.setConfig(cfg);
+            response.setErrorText(e.getMessage());
         }
         return response;
 
     }
 
-    public Response removeConfigByResourceId( String resourceId) {
+    public Response removeConfigByResourceId(String resourceId) {
         Response response = new Response(ResponseStatus.SUCCESS);
         reconService.removeConfigByResourceId(resourceId);
         return response;
 
-
     }
 
-    public ReconciliationConfigResponse getConfigByResource( String resourceId) {
-        ReconciliationConfigResponse response = new ReconciliationConfigResponse(ResponseStatus.SUCCESS);
+    public ReconciliationConfigResponse getConfigByResource(String resourceId) {
+        ReconciliationConfigResponse response = new ReconciliationConfigResponse(
+                ResponseStatus.SUCCESS);
         ReconciliationConfig cfg = reconService.getConfigByResource(resourceId);
         if (cfg == null || cfg.getReconConfigId() == null) {
             response.setStatus(ResponseStatus.FAILURE);
-        }else {
+        } else {
             response.setConfig(cfg);
         }
         return response;
@@ -99,36 +104,36 @@ public class ReconciliationWebServiceImpl implements ReconciliationWebService, M
     }
 
     public ReconciliationService getReconService() {
-		return reconService;
-	}
+        return reconService;
+    }
 
-
-	public void setReconService(ReconciliationService reconService) {
-		this.reconService = reconService;
-	}
+    public void setReconService(ReconciliationService reconService) {
+        this.reconService = reconService;
+    }
 
     public void setMuleContext(MuleContext ctx) {
 
-		muleContext = ctx;
-
-	}
-
-    public ReconciliationResponse startReconciliation( ReconciliationConfig config) {
-       reconService.setMuleContext(muleContext);
-       return reconService.startReconciliation(config);
+        muleContext = ctx;
 
     }
 
-    public ReconciliationConfigResponse getConfigById( String configId) {
-        ReconciliationConfigResponse response = new ReconciliationConfigResponse(ResponseStatus.SUCCESS);
-                ReconciliationConfig cfg = reconService.getConfigById(configId);
-                if (cfg == null || cfg.getReconConfigId() == null) {
-                    response.setStatus(ResponseStatus.FAILURE);
-                }else {
-                    response.setConfig(cfg);
-                }
-                return response;
+    public ReconciliationResponse startReconciliation(
+            ReconciliationConfig config) {
+        reconService.setMuleContext(muleContext);
+        return reconService.startReconciliation(config);
+
+    }
+
+    public ReconciliationConfigResponse getConfigById(String configId) {
+        ReconciliationConfigResponse response = new ReconciliationConfigResponse(
+                ResponseStatus.SUCCESS);
+        ReconciliationConfig cfg = reconService.getConfigById(configId);
+        if (cfg == null || cfg.getReconConfigId() == null) {
+            response.setStatus(ResponseStatus.FAILURE);
+        } else {
+            response.setConfig(cfg);
+        }
+        return response;
 
     }
 }
-

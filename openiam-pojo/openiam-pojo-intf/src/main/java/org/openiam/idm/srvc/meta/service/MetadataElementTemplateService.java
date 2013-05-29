@@ -17,4 +17,5 @@ public interface MetadataElementTemplateService {
 	public void delete(final String id);
 	public PageTempate getTemplate(final TemplateRequest request);
 	public void saveTemplate(final UserProfileRequestModel request) throws PageTemplateException;
+	public void validate(final UserProfileRequestModel request) throws PageTemplateException;
 }

@@ -279,10 +279,12 @@ public class MetadataServiceImpl implements MetadataService {
 		for(final Iterator<MetadataValidValueEntity> it = retval.iterator(); it.hasNext();) {
 			final MetadataValidValueEntity persistentEntity = it.next();
 			for(final MetadataValidValueEntity transientEntity : transientSet) {
-				if(StringUtils.equals(persistentEntity.getId(), transientEntity.getId())) {
-					persistentEntity.setUiValue(transientEntity.getUiValue());
-					persistentEntity.setDisplayOrder(transientEntity.getDisplayOrder());
-					mergeLanguageMaps(persistentEntity.getLanguageMap(), transientEntity.getLanguageMap());
+				if(persistentEntity.getId() != null && transientEntity.getId() != null) {
+					if(StringUtils.equals(persistentEntity.getId(), transientEntity.getId())) {
+						persistentEntity.setUiValue(transientEntity.getUiValue());
+						persistentEntity.setDisplayOrder(transientEntity.getDisplayOrder());
+						mergeLanguageMaps(persistentEntity.getLanguageMap(), transientEntity.getLanguageMap());
+					}
 				}
 			}
 		}

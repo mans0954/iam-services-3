@@ -152,6 +152,34 @@ public class UserProfileServiceImpl implements UserProfileService {
         userManager.mergeUserFields(dbEntity, userEntity);
         userManager.updateUser(dbEntity);
 	}
+	
+	@Override
+	public void validate(NewUserProfileRequestModel request) throws Exception {
+		final UserEntity userEntity = userDozerConverter.convertToEntity(request.getUser(), true);
+		if(StringUtils.isBlank(userEntity.getFirstName())) {
+			throw new BasicDataServiceException(ResponseCode.FIRST_NAME_REQUIRED);
+		}
+		if(StringUtils.isBlank(userEntity.getLastName())) {
+			throw new BasicDataServiceException(ResponseCode.LAST_NAME_REQUIRED);
+		}
+		if(CollectionUtils.isEmpty(request.getEmails())) {
+			throw new BasicDataServiceException(ResponseCode.EMAIL_REQUIRED);
+		}
+		if(CollectionUtils.isEmpty(request.getLoginList())) {
+			throw new BasicDataServiceException(ResponseCode.LOGIN_REQUIRED);
+		} 
+		
+		final List<LoginEntity> principalList = loginDozerConverter.convertToEntityList(request.getLoginList(), true);
+		for(final LoginEntity loginEntity : principalList) {
+			if(StringUtils.isBlank(loginEntity.getLogin())) {
+				throw new BasicDataServiceException(ResponseCode.LOGIN_REQUIRED);
+			} else if(loginDataService.getLoginByManagedSys(loginEntity.getDomainId(), loginEntity.getLogin(), loginEntity.getManagedSysId()) != null) {
+				throw new BasicDataServiceException(ResponseCode.LOGIN_EXISTS);
+			}
+		}
+    
+		pageTemplateService.validate(request);
+	}
 
 	@Override
 	public CreateUserToken createNewUserProfile(NewUserProfileRequestModel request)

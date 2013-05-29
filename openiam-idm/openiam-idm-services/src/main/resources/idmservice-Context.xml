@@ -333,16 +333,12 @@
 
 	<bean id="reconService"
 		class="org.openiam.idm.srvc.recon.service.ReconciliationServiceImpl">
-		<property name="reconSituationDao" ref="reconSituationDAO" />
-		<property name="reconConfigDao" ref="reconConfigDAO" />
 		<property name="reconResultDao" ref="reconResultDAO" />
 		<property name="reconResultDetailDao" ref="reconResultDetailDAO" />
 		<property name="loginManager" ref="loginManager" />
 		<property name="provisionService" ref="defaultProvision" />
 		<property name="roleDataService" ref="roleDataService" />
 		<property name="resourceDataService" ref="resourceDataService" />
-		<property name="userMgr" ref="userManager" />
-		<property name="managedSysService" ref="managedSysService" />
 		<property name="connectorAdapter" ref="connectorAdapter" />
 		<property name="remoteConnectorAdapter" ref="remoteConnectorAdapter" />
 	</bean>
@@ -350,7 +346,6 @@
 
 	<bean id="reconServiceWS"
 		class="org.openiam.idm.srvc.recon.ws.ReconciliationWebServiceImpl">
-		<property name="reconService" ref="reconService" />
 	</bean>
 
 	<bean id="asyncReconciliationServiceWS"

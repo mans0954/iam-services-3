@@ -7,10 +7,10 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "ClaimNewHireRequest", propOrder = {
+@XmlType(name = "ActivitiClaimRequest", propOrder = {
     "taskId"
 })
-public class ClaimNewHireRequest extends RequestorInformation {
+public class ActivitiClaimRequest extends RequestorInformation {
 
 	private String taskId;
 	

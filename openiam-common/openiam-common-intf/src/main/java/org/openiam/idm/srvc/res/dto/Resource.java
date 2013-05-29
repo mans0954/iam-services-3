@@ -256,14 +256,6 @@ public class Resource extends BaseObject {
         URL = uRL;
     }
 
-    public Boolean getSelected() {
-        return selected;
-    }
-
-    public void setSelected(Boolean selected) {
-        this.selected = selected;
-    }
-
     public Set<ResourceGroup> getResourceGroups() {
         return resourceGroups;
     }

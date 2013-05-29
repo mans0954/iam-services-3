@@ -1,5 +1,6 @@
 package org.openiam.bpm.activiti.delegate;
 
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -21,6 +22,7 @@ import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.msg.service.MailService;
 import org.openiam.idm.srvc.prov.request.domain.ProvisionRequestEntity;
+import org.openiam.idm.srvc.prov.request.domain.RequestApproverEntity;
 import org.openiam.idm.srvc.prov.request.dto.ProvisionRequest;
 import org.openiam.idm.srvc.prov.request.dto.RequestUser;
 import org.openiam.idm.srvc.prov.request.service.RequestDataService;
@@ -38,9 +40,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.thoughtworks.xstream.XStream;
 
-public class RejectNewHireDelegate implements JavaDelegate {
+public class RejectProfileProvisionNotifierDelegate implements JavaDelegate {
 
-	private static Logger log = Logger.getLogger(RejectNewHireDelegate.class);
+	private static Logger log = Logger.getLogger(RejectProfileProvisionNotifierDelegate.class);
 	
 	@Autowired
 	@Qualifier("mailService")
@@ -58,9 +60,6 @@ public class RejectNewHireDelegate implements JavaDelegate {
 	private UserDataService userManager;
 	
 	@Autowired
-	private LoginDataService loginDS;
-	
-	@Autowired
 	@Qualifier("provRequestService")
 	private RequestDataService provRequestService;
 	
@@ -68,28 +67,17 @@ public class RejectNewHireDelegate implements JavaDelegate {
 	@Qualifier("userDAO")
 	private UserDAO userDAO;
 	
-	public RejectNewHireDelegate() {
+	public RejectProfileProvisionNotifierDelegate() {
 		SpringContextProvider.autowire(this);
 	}
 	
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
-		log.info("Rejected new hire");
-		
-		final Object provisionRequestIdObj = execution.getVariable(ActivitiConstants.PROVISION_REQUEST_ID);
-		final Object newHireExecutorIdObj = execution.getVariable(ActivitiConstants.NEW_HIRE_EXECUTOR_ID);
-		if(provisionRequestIdObj == null || !(provisionRequestIdObj instanceof String)) {
-			throw new ActivitiException(String.format("No '%s' parameter specified, or object is not of proper type", ActivitiConstants.PROVISION_REQUEST_ID));
-		}
-		if(newHireExecutorIdObj == null || !(newHireExecutorIdObj instanceof String)) {
-			throw new ActivitiException(String.format("No '%s' parameter specified, or object is not of proper type", ActivitiConstants.NEW_HIRE_EXECUTOR_ID));
-		}
-		
-		final String provisionRequestId = (String)provisionRequestIdObj;
+		final String lastCaller = (String)execution.getVariable(ActivitiConstants.EXECUTOR_ID);
+		final String provisionRequestId = (String)execution.getVariable(ActivitiConstants.PROVISION_REQUEST_ID);
 		
 		final ProvisionRequestEntity provisionRequest = provRequestService.getRequest(provisionRequestId);
 		final NewUserProfileRequestModel profileModel = (NewUserProfileRequestModel)new XStream().fromXML(provisionRequest.getRequestXML());
-		final String newHireExecutorId = (String)newHireExecutorIdObj;
 		
 		final String requestType = provisionRequest.getRequestType();
         final List<ApproverAssociationEntity> approverAssociationList = approverAssociationDao.findApproversByRequestType(requestType, 1);
@@ -128,7 +116,7 @@ public class RejectNewHireDelegate implements JavaDelegate {
             	}
             }
 
-            final UserEntity approver = userManager.getUser(newHireExecutorId);
+            final UserEntity approver = userManager.getUser(lastCaller);
             final NotificationRequest request = new NotificationRequest();
             request.setUserId(notifyUserId);
             request.setNotificationType("REQUEST_REJECTED");

@@ -5,14 +5,16 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "AcceptOrRejectNewHireRequest", propOrder = {
+@XmlType(name = "ActivitiRequestDecision", propOrder = {
     "taskId",
-    "comment"
+    "comment",
+    "accepted"
 })
-public class AcceptOrRejectNewHireRequest extends RequestorInformation {
+public class ActivitiRequestDecision extends RequestorInformation {
 
 	private String taskId;
 	private String comment;
+	private boolean accepted;
 	
 	public String getTaskId() {
 		return taskId;
@@ -25,6 +27,12 @@ public class AcceptOrRejectNewHireRequest extends RequestorInformation {
 	}
 	public void setComment(String comment) {
 		this.comment = comment;
+	}
+	public boolean isAccepted() {
+		return accepted;
+	}
+	public void setAccepted(boolean accepted) {
+		this.accepted = accepted;
 	}
 	
 	

@@ -17,9 +17,9 @@ import org.openiam.util.SpringContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-public class SendSelfRegistrationNotification implements JavaDelegate {
+public class NewUserNotification implements JavaDelegate {
 
-	private static Logger log = Logger.getLogger(SendSelfRegistrationNotification.class);
+	private static Logger log = Logger.getLogger(NewUserNotification.class);
 	
 	@Autowired
 	@Qualifier("provRequestService")
@@ -37,7 +37,7 @@ public class SendSelfRegistrationNotification implements JavaDelegate {
 	@Autowired
 	private PasswordService passwordService;
 	
-	public SendSelfRegistrationNotification() {
+	public NewUserNotification() {
 		SpringContextProvider.autowire(this);
 	}
 	
