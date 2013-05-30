@@ -8,6 +8,7 @@ import javax.jws.WebService;
 import org.openiam.base.ws.Response;
 import org.openiam.bpm.request.ActivitiClaimRequest;
 import org.openiam.bpm.request.ActivitiRequestDecision;
+import org.openiam.bpm.request.HistorySearchBean;
 import org.openiam.bpm.response.NewHireResponse;
 import org.openiam.bpm.response.TaskListWrapper;
 import org.openiam.bpm.response.TaskWrapper;
@@ -30,14 +31,17 @@ public interface ActivitiService {
 	public Response claimRequest(final ActivitiClaimRequest newHireRequest);
 	
 	@WebMethod
-	public Response acceptRequest(final ActivitiRequestDecision newHireRequest);
-	
-	@WebMethod
-	public Response rejectRequest(final ActivitiRequestDecision newHireRequest);
+	public Response makeDecision(final ActivitiRequestDecision newHireRequest);
 	
 	@WebMethod
 	public TaskListWrapper getTasksForUser(final String userId);
 	
 	@WebMethod
 	public TaskWrapper getTask(final String taskId);
+	
+	@WebMethod
+	public List<TaskWrapper> getHistory(final HistorySearchBean searchBean, final int from, final int size);
+	
+	@WebMethod
+	public int count(final HistorySearchBean searchBean);
 }

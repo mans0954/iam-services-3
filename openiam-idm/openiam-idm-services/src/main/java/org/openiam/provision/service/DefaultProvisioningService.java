@@ -27,23 +27,22 @@ import org.apache.commons.logging.LogFactory;
 import org.mule.api.MuleContext;
 import org.mule.api.MuleException;
 import org.mule.module.client.MuleClient;
-import org.mule.util.StringUtils;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseObject;
 import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.connector.type.*;
-import org.openiam.dozer.converter.LoginDozerConverter;
+import org.openiam.connector.type.LookupResponse;
+import org.openiam.connector.type.RemoteLookupRequest;
+import org.openiam.connector.type.RemoteUserRequest;
+import org.openiam.connector.type.UserResponse;
 import org.openiam.dozer.converter.PasswordHistoryDozerConverter;
-import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.exception.EncryptionException;
 import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
@@ -57,7 +56,6 @@ import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
 import org.openiam.idm.srvc.pswd.dto.Password;
-import org.openiam.idm.srvc.pswd.dto.PasswordHistory;
 import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
 import org.openiam.idm.srvc.pswd.service.PasswordGenerator;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
@@ -81,8 +79,6 @@ import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.spml2.msg.*;
-import org.openiam.spml2.msg.ResponseType;
-import org.openiam.spml2.msg.password.SetPasswordRequestType;
 import org.openiam.spml2.msg.suspend.ResumeRequestType;
 import org.openiam.spml2.msg.suspend.SuspendRequestType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -148,7 +144,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         }
 
         if (user.getUser().getCompanyId() != null) {
-            org = orgManager.getOrganization(user.getUser().getCompanyId());
+            org = orgManager.getOrganization(user.getUser().getCompanyId(), null);
         }
         // bind the objects to the scripting engine
 
@@ -1275,7 +1271,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 }
             }
         }
-        final List<RoleEntity> roleList = roleDataService.getUserRoles(user.getUserId(), 0, Integer.MAX_VALUE);
+        final List<RoleEntity> roleList = roleDataService.getUserRoles(user.getUserId(), null, 0, Integer.MAX_VALUE);
         if(CollectionUtils.isNotEmpty(roleList)) {
             for(final RoleEntity role : roleList) {
                 final List<Resource> resourceList = resourceDataService.getResourcesForRole(role.getRoleId(), 0, Integer.MAX_VALUE);
@@ -1400,7 +1396,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         List<LoginEntity> newPrincipalList = loginDozerConverter.convertToEntityList(pUser.getPrincipalList(), true);
 
         if (pUser.getUser().getCompanyId() != null) {
-            org = orgManager.getOrganization(pUser.getUser().getCompanyId());
+            org = orgManager.getOrganization(pUser.getUser().getCompanyId(), null);
         }
 
         UserEntity entity = userMgr.getUser(pUser.getUserId());
@@ -1436,10 +1432,11 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 		// get the current values
 		List<Role> curRoleList = roleDataService.getUserRolesAsFlatList(pUser
 				.getUserId());
-		List<Group> curGroupList = groupDozerConverter.convertToDTOList(groupManager.getGroupsForUser(pUser
-                .getUserId(), 0, Integer.MAX_VALUE), false);
-		List<LoginEntity> curPrincipalList = loginManager.getLoginByUser(pUser
-				.getUserId());
+
+        // get all groups for user
+		List<Group> curGroupList = groupDozerConverter.convertToDTOList(groupManager.getGroupsForUser(pUser.getUserId(), null, 0, Integer.MAX_VALUE), false);
+
+        List<LoginEntity> curPrincipalList = loginManager.getLoginByUser(pUser.getUserId());
 
 		// get the current user object - update it with the new values and then
 		// save it

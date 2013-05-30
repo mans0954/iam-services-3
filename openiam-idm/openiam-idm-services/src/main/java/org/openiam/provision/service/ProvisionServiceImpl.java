@@ -207,7 +207,7 @@ public class ProvisionServiceImpl implements ProvisionService,
 
         // temp hack
         if (user.getCompanyId() != null) {
-            org = orgManager.getOrganization(user.getCompanyId());
+            org = orgManager.getOrganization(user.getCompanyId(), null);
         }
         List<Login> principalList = provUser.getPrincipalList();
 
@@ -837,7 +837,7 @@ public class ProvisionServiceImpl implements ProvisionService,
 
         Organization org = null;
         if (origUser.getCompanyId() != null) {
-            org = orgManager.getOrganization(origUser.getCompanyId());
+            org = orgManager.getOrganization(origUser.getCompanyId(), null);
         }
 
         Map<String, Object> bindingMap = new HashMap<String, Object>();

@@ -2,9 +2,9 @@ package org.openiam.idm.srvc.grp.service;
 
 import org.openiam.core.dao.BaseDao;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
-import org.openiam.idm.srvc.grp.dto.Group;
 
 import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -21,15 +21,18 @@ public interface GroupDAO extends BaseDao<GroupEntity, String> {
      */
     List<GroupEntity> findRootGroups(final int from, final int size);
     
-    public int getNumOfGroupsForUser(final String userId);
-    public List<GroupEntity> getGroupsForUser(final String userId, final int from, final int size);
+    public int getNumOfGroupsForUser(final String userId, Set<String> filter);
+    public List<GroupEntity> getGroupsForUser(final String userId, Set<String> filter, final int from, final int size);
     
-    public List<GroupEntity> getGroupsForRole(String roleId, int from, int size);
-    public int getNumOfGroupsForRole(String roleId);
+    public List<GroupEntity> getGroupsForRole(final String roleId, Set<String> filter, int from, int size);
+    public int getNumOfGroupsForRole(final String roleId, Set<String> filter);
+
+    public List<GroupEntity> getGroupsForResource(final String resourceId, Set<String> filter, int from, int size);
+    public int getNumOfGroupsForResource(final String resourceId, Set<String> filter);
     
-    public int getNumOfChildGroups(String groupId);
-    public int getNumOfParentGroups(String groupId);
+    public int getNumOfChildGroups(String groupId, Set<String> filter);
+    public int getNumOfParentGroups(String groupId, Set<String> filter);
     
-    public List<GroupEntity> getChildGroups(final String groupId, final int from, final int size);
-    public List<GroupEntity> getParentGroups(final String groupId, final int from, final int size);
+    public List<GroupEntity> getChildGroups(final String groupId, Set<String> filter, final int from, final int size);
+    public List<GroupEntity> getParentGroups(final String groupId, Set<String> filter, final int from, final int size);
 }

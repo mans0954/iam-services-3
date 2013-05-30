@@ -1,6 +1,5 @@
 package org.openiam.idm.srvc.org.service;
 
-import org.openiam.idm.srvc.org.domain.UserAffiliationEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTransactionalTestNGSpringContextTests;
@@ -20,6 +19,6 @@ public class UserAffiliationDAOTouchTest extends AbstractTransactionalTestNGSpri
 
     @Test
     public void touchFindOrgAffiliationsByUser() {
-        userAffiliationDAO.findOrgAffiliationsByUser("");
+        userAffiliationDAO.findOrgAffiliationsByUser("", null);
     }
 }

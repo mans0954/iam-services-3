@@ -181,13 +181,6 @@ public class ProvisionUserCSVParser extends
 				user.setShowInSearch(null);
 			}
 			break;
-		case delAdmin:
-			try {
-				user.setDelAdmin(Integer.valueOf(objValue));
-			} catch (Exception e) {
-				user.setDelAdmin(null);
-			}
-			break;
 		case principalList:
 		case phones:
 		case supervisor:
@@ -351,9 +344,6 @@ public class ProvisionUserCSVParser extends
 			break;
 		case showInSearch:
 			objValue = toString(user.getShowInSearch());
-			break;
-		case delAdmin:
-			objValue = toString(user.getDelAdmin());
 			break;
 		case alternateContactId:
 			objValue = toString(user.getAlternateContactId());

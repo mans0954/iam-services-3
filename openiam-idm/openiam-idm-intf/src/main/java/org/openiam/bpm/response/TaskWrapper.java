@@ -9,6 +9,7 @@ import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
 import org.activiti.engine.RuntimeService;
+import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.task.Task;
 import org.apache.commons.lang.StringUtils;
 import org.mule.util.concurrent.DaemonThreadFactory;
@@ -31,7 +32,8 @@ import org.openiam.provision.dto.ProvisionUser;
 	"description",
 	"dueDate",
 	"executionId",
-	"provisionRequestId"
+	"provisionRequestId",
+	"endDate"
 })
 public class TaskWrapper {
 
@@ -55,6 +57,9 @@ public class TaskWrapper {
 	
 	private String provisionRequestId;
 	
+	@XmlSchemaType(name = "dateTime")
+	private Date endDate;
+	
 	public TaskWrapper() {
 		
 	}
@@ -73,6 +78,24 @@ public class TaskWrapper {
 		description = task.getDescription();
 		dueDate = task.getDueDate();
 		executionId = task.getExecutionId();
+		setCustomVariables(runtimeService);
+	}
+	
+	public TaskWrapper(final HistoricTaskInstance historyInstance, final RuntimeService runtimeService) {
+		id = historyInstance.getId();
+		name = historyInstance.getName();
+		owner = historyInstance.getOwner();
+		priority = historyInstance.getPriority();
+		processDefinitionId = historyInstance.getProcessDefinitionId();
+		processInstanceId = historyInstance.getProcessInstanceId();
+		taskDefinitionKey = historyInstance.getTaskDefinitionKey();
+		parentTaskId = historyInstance.getParentTaskId();
+		assignee = historyInstance.getAssignee();
+		createdTime = historyInstance.getStartTime();
+		description = historyInstance.getDescription();
+		dueDate = historyInstance.getDueDate();
+		endDate = historyInstance.getEndTime();
+		executionId = historyInstance.getExecutionId();
 		setCustomVariables(runtimeService);
 	}
 	
@@ -206,8 +229,14 @@ public class TaskWrapper {
 	public void setProvisionRequestId(String provisionRequestId) {
 		this.provisionRequestId = provisionRequestId;
 	}
-	
-	
+
+	public Date getEndDate() {
+		return endDate;
+	}
+
+	public void setEndDate(Date endDate) {
+		this.endDate = endDate;
+	}
 
 	@Override
 	public int hashCode() {

@@ -1,18 +1,15 @@
 package org.openiam.idm.srvc.role.ws;
 
-import java.util.List;
-
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.RoleSearchBean;
-import org.openiam.idm.srvc.grp.ws.GroupListResponse;
-import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
+import org.openiam.idm.srvc.role.dto.RoleAttribute;
 import org.openiam.idm.srvc.role.dto.RolePolicy;
-import org.openiam.idm.srvc.role.dto.UserRole;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
+import java.util.List;
 
 /**
  * Interface permitting the management of Roles and related objects such as
@@ -33,9 +30,8 @@ public interface RoleDataWebService {
      * @return
      */
     @WebMethod
-    Role getRole(
-            @WebParam(name = "roleId", targetNamespace = "")
-            String roleId);
+    Role getRole(@WebParam(name = "roleId", targetNamespace = "") String roleId,
+                 @WebParam(name="requesterId", targetNamespace="") String requesterId);
 
     /**
      * Updates an existing role
@@ -43,9 +39,7 @@ public interface RoleDataWebService {
      * @param role
      */
     @WebMethod
-    Response saveRole(
-            @WebParam(name = "role", targetNamespace = "")
-            org.openiam.idm.srvc.role.dto.Role role);
+    Response saveRole(@WebParam(name = "role", targetNamespace = "") Role role);
 
     /**
      * Removes a role.
@@ -53,9 +47,7 @@ public interface RoleDataWebService {
      * @param roleId
      */
     @WebMethod
-    Response removeRole(
-            @WebParam(name = "roleId", targetNamespace = "")
-            String roleId);
+    Response removeRole(@WebParam(name = "roleId", targetNamespace = "")  String roleId);
 
     /** * Attribute Methods ****** */
 
@@ -65,9 +57,7 @@ public interface RoleDataWebService {
      * @param attribute
      */
     @WebMethod
-    RoleAttributeResponse addAttribute(
-            @WebParam(name = "attribute", targetNamespace = "")
-            org.openiam.idm.srvc.role.dto.RoleAttribute attribute);
+    RoleAttributeResponse addAttribute(@WebParam(name = "attribute", targetNamespace = "") RoleAttribute attribute);
 
     /**
      * Update an attribute to the Role object.
@@ -75,18 +65,15 @@ public interface RoleDataWebService {
      * @param attribute
      */
     @WebMethod
-    Response updateAttribute(
-            @WebParam(name = "attribute", targetNamespace = "")
-            org.openiam.idm.srvc.role.dto.RoleAttribute attribute);
+    Response updateAttribute(@WebParam(name = "attribute", targetNamespace = "") RoleAttribute attribute);
 
     /**
      * Removes a RoleAttribute specified by the attribute.
      *
-     * @param attr
+     * @param attributeId
      */
     @WebMethod
-    Response removeAttribute(
-            final @WebParam(name = "attributeId", targetNamespace = "") String attributeId);
+    Response removeAttribute(final @WebParam(name = "attributeId", targetNamespace = "") String attributeId);
 
 
     /** * Role-Group Methods ****** */
@@ -99,10 +86,10 @@ public interface RoleDataWebService {
      * @return
      */
     @WebMethod
-    List<Role> getRolesInGroup(
-            final @WebParam(name = "groupId", targetNamespace = "") String groupId,
-            final @WebParam(name = "from", targetNamespace = "") int from,
-            final @WebParam(name = "size", targetNamespace = "") int size);
+    List<Role> getRolesInGroup(final @WebParam(name = "groupId", targetNamespace = "") String groupId,
+                               final @WebParam(name="requesterId", targetNamespace="") String requesterId,
+                               final @WebParam(name = "from", targetNamespace = "") int from,
+                               final @WebParam(name = "size", targetNamespace = "") int size);
 
 
     /**
@@ -113,15 +100,12 @@ public interface RoleDataWebService {
      * roleService.addRoleToGroup(roleId, groupId);<br>
      * </code>
      *
-     * @param grpId  The group for which the roleId is to be added .
+     * @param groupId  The group for which the roleId is to be added .
      * @param roleId The roleId which is to be added to the group.
      */
     @WebMethod
-    Response addGroupToRole(
-            @WebParam(name = "roleId", targetNamespace = "")
-            String roleId,
-            @WebParam(name = "groupId", targetNamespace = "")
-            String groupId);
+    Response addGroupToRole(@WebParam(name = "roleId", targetNamespace = "") String roleId,
+                            @WebParam(name = "groupId", targetNamespace = "") String groupId);
 
     /**
      * Removes the association between a single group and role.
@@ -130,11 +114,8 @@ public interface RoleDataWebService {
      * @param groupId
      */
     @WebMethod
-    Response removeGroupFromRole(
-            @WebParam(name = "roleId", targetNamespace = "")
-            String roleId,
-            @WebParam(name = "groupId", targetNamespace = "")
-            String groupId);
+    Response removeGroupFromRole(@WebParam(name = "roleId", targetNamespace = "") String roleId,
+                                 @WebParam(name = "groupId", targetNamespace = "") String groupId);
 
     /**
      * This method adds particular user directly to a role.<br>
@@ -148,11 +129,8 @@ public interface RoleDataWebService {
      * @param userId   The userId to which the roleId is to be added .
      */
     @WebMethod
-    Response addUserToRole(
-            @WebParam(name = "roleId", targetNamespace = "")
-            String roleId,
-            @WebParam(name = "userId", targetNamespace = "")
-            String userId);
+    Response addUserToRole(@WebParam(name = "roleId", targetNamespace = "") String roleId,
+                           @WebParam(name = "userId", targetNamespace = "")  String userId);
 
     /**
      * This method removes a particular user directly to a role.
@@ -161,11 +139,8 @@ public interface RoleDataWebService {
      * @param userId
      */
     @WebMethod
-    Response removeUserFromRole(
-            @WebParam(name = "roleId", targetNamespace = "")
-            String roleId,
-            @WebParam(name = "userId", targetNamespace = "")
-            String userId);
+    Response removeUserFromRole(@WebParam(name = "roleId", targetNamespace = "") String roleId,
+                                @WebParam(name = "userId", targetNamespace = "") String userId);
 
     /**
      * Returns an array of Role objects that indicate the Roles a user is
@@ -175,97 +150,100 @@ public interface RoleDataWebService {
      * @return
      */
     @WebMethod
-    List<Role> getRolesForUser(
-            final @WebParam(name = "userId", targetNamespace = "") String userId,
-            final @WebParam(name = "from", targetNamespace = "") int from,
-            final @WebParam(name = "size", targetNamespace = "") int size);
-    
+    List<Role> getRolesForUser(final @WebParam(name = "userId", targetNamespace = "") String userId,
+                               final @WebParam(name="requesterId", targetNamespace="") String requesterId,
+                               final @WebParam(name = "from", targetNamespace = "") int from,
+                               final @WebParam(name = "size", targetNamespace = "") int size);
+
     @WebMethod
-    int getNumOfRolesForUser(final @WebParam(name = "userId", targetNamespace = "") String userId);
+    int getNumOfRolesForUser(final @WebParam(name = "userId", targetNamespace = "") String userId,
+                             final @WebParam(name="requesterId", targetNamespace="") String requesterId);
 
     /**
      * Role Policy Methods ******
      */
 
     @WebMethod
-    public RolePolicyResponse addRolePolicy(
-            @WebParam(name = "rPolicy", targetNamespace = "")
-            RolePolicy rPolicy);
+    public RolePolicyResponse addRolePolicy( @WebParam(name = "rPolicy", targetNamespace = "")RolePolicy rPolicy);
 
 
     /**
      * Update an attribute to the Role object.
      *
-     * @param attribute
+     * @param rolePolicy
      */
     @WebMethod
-    public RolePolicyResponse updateRolePolicy(
-            @WebParam(name = "rolePolicy", targetNamespace = "")
-            RolePolicy rolePolicy);
+    public RolePolicyResponse updateRolePolicy(@WebParam(name = "rolePolicy", targetNamespace = "") RolePolicy rolePolicy);
 
     /**
      * Returns a single RolePolicy object based on the attributeId.
      *
-     * @param attrId
+     * @param rolePolicyId
      * @return
      */
     @WebMethod
-    public RolePolicyResponse getRolePolicy(
-            @WebParam(name = "rolePolicyId", targetNamespace = "")
-            String rolePolicyId);
+    public RolePolicyResponse getRolePolicy(@WebParam(name = "rolePolicyId", targetNamespace = "") String rolePolicyId);
 
     /**
      * Removes a RolePolicy specified by the rPolicy parameter.
      *
-     * @param attr
+     * @param rolePolicyId
      */
     @WebMethod
-    public Response removeRolePolicy(
-            final @WebParam(name = "rolePolicyId", targetNamespace = "") String rolePolicyId);
+    public Response removeRolePolicy(final @WebParam(name = "rolePolicyId", targetNamespace = "") String rolePolicyId);
 
 
     @WebMethod
     public List<Role> findBeans(final @WebParam(name="searchBean", targetNamespace="") RoleSearchBean searchBean,
+                                final @WebParam(name="requesterId", targetNamespace="") String requesterId,
     							final @WebParam(name = "from", targetNamespace = "") int from,
     							final @WebParam(name = "size", targetNamespace = "") int size);
     
     @WebMethod
-    public int countBeans(final @WebParam(name="searchBean", targetNamespace="") RoleSearchBean searchBean);
+    public int countBeans(final @WebParam(name="searchBean", targetNamespace="") RoleSearchBean searchBean,
+                          final @WebParam(name="requesterId", targetNamespace="") String requesterId);
     
     @WebMethod
     public List<Role> getRolesForResource(final @WebParam(name="resourceId", targetNamespace="") String resourceId,
+                                          final @WebParam(name="requesterId", targetNamespace="") String requesterId,
     									  final @WebParam(name = "from", targetNamespace = "") int from,
     									  final @WebParam(name = "size", targetNamespace = "") int size);
-    
+
     @WebMethod
-    public int getNumOfRolesForResource(final @WebParam(name="resourceId", targetNamespace="") String resourceId);
+    public int getNumOfRolesForResource(final @WebParam(name="resourceId", targetNamespace="") String resourceId,
+                                        final @WebParam(name="requesterId", targetNamespace="") String requesterId);
     
     
     @WebMethod
     public List<Role> getChildRoles(final @WebParam(name="roleId", targetNamespace="") String roleId,
+                                    final @WebParam(name="requesterId", targetNamespace="") String requesterId,
 			  					    final @WebParam(name = "from", targetNamespace = "") int from,
 			  						final @WebParam(name = "size", targetNamespace = "") int size);
     
     @WebMethod
-    public int getNumOfChildRoles(final @WebParam(name="roleId", targetNamespace="") String roleId);
+    public int getNumOfChildRoles(final @WebParam(name="roleId", targetNamespace="") String roleId,
+                                  final @WebParam(name="requesterId", targetNamespace="") String requesterId);
     
     @WebMethod
     public List<Role> getParentRoles(final @WebParam(name="roleId", targetNamespace="") String roleId,
+                                     final @WebParam(name="requesterId", targetNamespace="") String requesterId,
 			  						 final @WebParam(name = "from", targetNamespace = "") int from,
 			  						 final @WebParam(name = "size", targetNamespace = "") int size);
     
     @WebMethod
-    public int getNumOfParentRoles(final @WebParam(name="roleId", targetNamespace="") String roleId);
+    public int getNumOfParentRoles(final @WebParam(name="roleId", targetNamespace="") String roleId,
+                                   final @WebParam(name="requesterId", targetNamespace="") String requesterId);
     
     @WebMethod
     public Response addChildRole(final @WebParam(name="roleId", targetNamespace="") String roleId,
-    						 final @WebParam(name="parentRoleId", targetNamespace="") String childRoleId);
+    						     final @WebParam(name="parentRoleId", targetNamespace="") String childRoleId);
     
     @WebMethod
     public Response removeChildRole(final @WebParam(name="roleId", targetNamespace="") String roleId,
-			 					final @WebParam(name="parentRoleId", targetNamespace="") String childRoleId);
+			 					    final @WebParam(name="parentRoleId", targetNamespace="") String childRoleId);
     
     @WebMethod
-    public int getNumOfRolesForGroup(final @WebParam(name="groupId", targetNamespace="") String groupId);
-    
+    public int getNumOfRolesForGroup(final @WebParam(name="groupId", targetNamespace="") String groupId,
+                                     final @WebParam(name="requesterId", targetNamespace="") String requesterId);
+
 }

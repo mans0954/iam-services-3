@@ -126,29 +126,21 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
         if (id == null) {
             return null;
         }
-        return (T) this.getSession().get(domainClass, id);
+        return (T) getCriteria().add(eq(getPKfieldName(), id)).uniqueResult(); //this.getSession().get(domainClass, id);
     }
 
     @SuppressWarnings("unchecked")
     public List<T> findByIds(Collection<PrimaryKey> idCollection) {
-        if (CollectionUtils.isEmpty(idCollection)) {
-            return (List<T>) Collections.EMPTY_LIST;
-        }
-
-        final Criteria criteria = getSession().createCriteria(domainClass).add(
-                Restrictions.in(getPKfieldName(), idCollection));
-        return criteria.list();
+        return findByIds(idCollection,-1,-1);
     }
 
     @SuppressWarnings("unchecked")
-    public List<T> findByIds(Collection<PrimaryKey> idCollection,
-            final int from, final int size) {
+    public List<T> findByIds(Collection<PrimaryKey> idCollection,  final int from, final int size) {
         if (CollectionUtils.isEmpty(idCollection)) {
             return (List<T>) Collections.EMPTY_LIST;
         }
 
-        final Criteria criteria = getSession().createCriteria(domainClass).add(
-                Restrictions.in(getPKfieldName(), idCollection));
+        final Criteria criteria = getCriteria().add( Restrictions.in(getPKfieldName(), idCollection));
 
         if (from > -1) {
             criteria.setFirstResult(from);
@@ -165,8 +157,7 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
         if (id == null) {
             return null;
         }
-        Criteria criteria = getSession()
-                .createCriteria(domainClass).add(eq(getPKfieldName(), id))
+        Criteria criteria = getCriteria().add(eq(getPKfieldName(), id))
                 .setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
         if (fetchFields != null) {
             for (String field : fetchFields) {
@@ -180,13 +171,11 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
 
     @SuppressWarnings({ "unchecked" })
     public List<T> findAll() {
-        return getSession().createCriteria(domainClass)
-                .list();
+        return getCriteria().list();
     }
 
     public Long countAll() {
-        return ((Number) getSession()
-                .createCriteria(domainClass).setProjection(rowCount())
+        return ((Number) getCriteria().setProjection(rowCount())
                 .uniqueResult()).longValue();
     }
     @Transactional

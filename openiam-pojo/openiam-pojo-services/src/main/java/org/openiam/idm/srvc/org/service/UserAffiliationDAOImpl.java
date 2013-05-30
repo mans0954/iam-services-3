@@ -1,23 +1,19 @@
 package org.openiam.idm.srvc.org.service;
 
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
+import org.hibernate.FetchMode;
 import org.hibernate.Query;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.domain.UserAffiliationEntity;
 import org.springframework.stereotype.Repository;
 
-
 import javax.annotation.PostConstruct;
-import javax.naming.InitialContext;
 import java.util.List;
+import java.util.Set;
 
 @Repository("orgAffiliationDAO")
 public class UserAffiliationDAOImpl extends BaseDaoImpl<UserAffiliationEntity, String> implements UserAffiliationDAO {
@@ -31,14 +27,21 @@ public class UserAffiliationDAOImpl extends BaseDaoImpl<UserAffiliationEntity, S
 	
 	
 	@Override
-	public List<OrganizationEntity> findOrgAffiliationsByUser(String userId) {
+	public List<OrganizationEntity> findOrgAffiliationsByUser(String userId, Set<String> filter) {
 		Session session = getSession();
 
-		Query qry = session.createQuery("select org from org.openiam.idm.srvc.org.domain.OrganizationEntity as org, org.openiam.idm.srvc.org.domain.UserAffiliationEntity ua " +
-						" where ua.user.userId = :userId and ua.organization.orgId = org.orgId " +
-						" order by org.organizationName ");
+
+
+		Query qry = session.createQuery("select org from org.openiam.idm.srvc.org.domain.OrganizationEntity as or, org.openiam.idm.srvc.org.domain.UserAffiliationEntity ua " +
+						" where ua.user.userId = :userId and ua.organization.orgId = or.orgId " +
+                        ((filter!=null && !filter.isEmpty())? " and or.orgId in (:orgList)" :"") +
+						" order by or.organizationName ");
 		
 		qry.setString("userId",userId);
+        if(filter!=null && !filter.isEmpty()){
+            qry.setParameterList("orgList", filter);
+        }
+
 
 		List<OrganizationEntity> result = (List<OrganizationEntity>)qry.list();
 		if (result == null || result.size() == 0)

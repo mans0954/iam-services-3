@@ -1,36 +1,31 @@
 package org.openiam.idm.srvc.org.service;
 
 
-import static org.hibernate.criterion.Projections.rowCount;
-
-import java.util.List;
-import javax.naming.InitialContext;
-
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
-import org.hibernate.FetchMode;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.criterion.Example;
-
+import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
-
 import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.idm.searchbeans.OrganizationSearchBean;
+import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
-
-import org.hibernate.criterion.*;
-
-import org.openiam.idm.srvc.org.dto.*;
+import org.openiam.idm.srvc.searchbean.converter.OrganizationSearchBeanConverter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Set;
+
+import static org.hibernate.criterion.Projections.rowCount;
 
 /**
  * Data access object implementation for OrganizationEntity.
  */
 @Repository("organizationDAO")
 public class OrganizationDAOImpl extends BaseDaoImpl<OrganizationEntity, String> implements OrganizationDAO {
+    @Autowired
+    private OrganizationSearchBeanConverter organizationSearchBeanConverter;
 
     public List<OrganizationEntity> findRootOrganizations() {
         final Criteria criteria = getCriteria()
@@ -45,6 +40,26 @@ public class OrganizationDAOImpl extends BaseDaoImpl<OrganizationEntity, String>
                 .addOrder(Order.asc("organizationName"));
                 //.setFetchMode("attributes", FetchMode.JOIN);
         return criteria.list();
+    }
+
+
+    @Override
+    protected Criteria getExampleCriteria(final SearchBean searchBean) {
+        Criteria criteria = getCriteria();
+        if(searchBean != null && searchBean instanceof OrganizationSearchBean) {
+            final OrganizationSearchBean organizationSearchBean = (OrganizationSearchBean)searchBean;
+
+            final OrganizationEntity exampleEnity = organizationSearchBeanConverter.convert(organizationSearchBean);
+            exampleEnity.setOrgId(null);
+            criteria = this.getExampleCriteria(exampleEnity);
+
+            if(organizationSearchBean.hasMultipleKeys()) {
+                criteria.add(Restrictions.in(getPKfieldName(), organizationSearchBean.getKeys()));
+            } else if(StringUtils.isNotBlank(organizationSearchBean.getKey())) {
+                criteria.add(Restrictions.eq(getPKfieldName(), organizationSearchBean.getKey()));
+            }
+        }
+        return criteria;
     }
 
     @Override
@@ -86,6 +101,7 @@ public class OrganizationDAOImpl extends BaseDaoImpl<OrganizationEntity, String>
                 criteria.add(Restrictions.eq("internalOrgId", organization.getInternalOrgId()));
             }
         }
+        criteria.addOrder(Order.asc("organizationName"));
         return criteria;
     }
 
@@ -94,51 +110,55 @@ public class OrganizationDAOImpl extends BaseDaoImpl<OrganizationEntity, String>
         return "orgId";
     }
     
-    private Criteria getChildOrganizationsCriteria(final String organizationId) {
-		return getCriteria().createAlias("parentOrganizations", "organization").add( Restrictions.eq("organization.orgId", organizationId));
-	}
-    
-	@Override
-	public int getNumOfChildOrganizations(String organizationId) {
-		final Criteria criteria = getChildOrganizationsCriteria(organizationId).setProjection(rowCount());
-		return ((Number)criteria.uniqueResult()).intValue();
-	}
 
 	@Override
-	public List<OrganizationEntity> getChildOrganizations(final String organizationId, final int from, final int size) {
-		final Criteria criteria = getChildOrganizationsCriteria(organizationId);
-		
-		if(from > -1) {
-			criteria.setFirstResult(from);
-		}
-		
-		if(size > -1) {
-			criteria.setMaxResults(size);
-		}
-		return criteria.list();
+	public List<OrganizationEntity> getChildOrganizations(String orgId, Set<String> filter, final int from, final int size) {
+		return getList(getChildOrganizationsCriteria(orgId, filter), from, size);
 	}
-	
-    private Criteria getParentOrganizationsCriteria(final String organizationId) {
-    	return getCriteria().createAlias("childOrganizations", "organization").add( Restrictions.eq("organization.orgId", organizationId));
-	}
+    @Override
+    public List<OrganizationEntity> getParentOrganizations(String orgId, Set<String> filter, final int from, final int size) {
+        return getList(getParentOrganizationsCriteria(orgId, filter), from, size);
+    }
+
 	
 	@Override
-	public int getNumOfParentOrganizations(String organizationId) {
-		final Criteria criteria = getParentOrganizationsCriteria(organizationId).setProjection(rowCount());
+	public int getNumOfParentOrganizations(String orgId, Set<String> filter) {
+		final Criteria criteria = getParentOrganizationsCriteria(orgId, filter).setProjection(rowCount());
 		return ((Number)criteria.uniqueResult()).intValue();
 	}
+    @Override
+    public int getNumOfChildOrganizations(String orgId, Set<String> filter) {
+        final Criteria criteria = getChildOrganizationsCriteria(orgId, filter).setProjection(rowCount());
+        return ((Number)criteria.uniqueResult()).intValue();
+    }
 
-	@Override
-	public List<OrganizationEntity> getParentOrganizations(final String organizationId, final int from, final int size) {
-		final Criteria criteria = getParentOrganizationsCriteria(organizationId);
-		
-		if(from > -1) {
-			criteria.setFirstResult(from);
-		}
-		
-		if(size > -1) {
-			criteria.setMaxResults(size);
-		}
-		return criteria.list();
-	}
+
+
+    private List<OrganizationEntity> getList(Criteria criteria, final int from, final int size){
+        if(from > -1) {
+            criteria.setFirstResult(from);
+        }
+
+        if(size > -1) {
+            criteria.setMaxResults(size);
+        }
+        criteria.addOrder(Order.asc("organizationName"));
+        return criteria.list();
+    }
+
+    private Criteria getParentOrganizationsCriteria(String orgId, Set<String> filter) {
+        Criteria criteria =  getCriteria().createAlias("childOrganizations", "organization").add( Restrictions.eq("organization.orgId", orgId));
+        if(filter!=null && !filter.isEmpty()){
+            criteria.add(Restrictions.in(getPKfieldName(), filter));
+        }
+        return  criteria;
+    }
+
+    private Criteria getChildOrganizationsCriteria(String orgId, Set<String> filter) {
+        Criteria criteria =  getCriteria().createAlias("parentOrganizations", "organization").add( Restrictions.eq("organization.orgId", orgId));
+        if(filter!=null && !filter.isEmpty()){
+            criteria.add(Restrictions.in(getPKfieldName(), filter));
+        }
+        return  criteria;
+    }
 }

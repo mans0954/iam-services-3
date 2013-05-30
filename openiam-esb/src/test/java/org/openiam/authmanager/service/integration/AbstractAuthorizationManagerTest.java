@@ -84,7 +84,7 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractTestNGSpr
 		final List<String> userIds = jdbcTemplate.queryForList("SELECT USER_ID FROM USERS LIMIT " + MAX_ITERS, String.class);
 		for(final String userId : userIds) {
 			for(final String url : urlpatterns) {
-				final User user = userDataWebService.getUserWithDependent(userId, true);
+				final User user = userDataWebService.getUserWithDependent(userId,null, true);
 				
 				final List<AuthorizationManagerLoginId> loginIdList = getLoginIdList(user);
 				
@@ -344,8 +344,8 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractTestNGSpr
 	}
 	
 	private void checkRoleMembership(final String userId, final String roleId) {
-		final User user = userDataWebService.getUserWithDependent(userId, true);
-        final Role role = roleDataWebService.getRole(roleId);
+		final User user = userDataWebService.getUserWithDependent(userId,null, true);
+        final Role role = roleDataWebService.getRole(roleId, null);
 		
 		final List<AuthorizationManagerLoginId> loginIdList = getLoginIdList(user);
 		
@@ -358,8 +358,8 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractTestNGSpr
 	}
 	
 	private void checkGroupMembership(final String userId, final String groupId) {
-		final User user = userDataWebService.getUserWithDependent(userId, true);
-		final Group group = groupServiceClient.getGroup(groupId);
+		final User user = userDataWebService.getUserWithDependent(userId,null, true);
+		final Group group = groupServiceClient.getGroup(groupId, null);
 		
 		final List<AuthorizationManagerLoginId> loginIdList = getLoginIdList(user);
 		
@@ -374,7 +374,7 @@ public abstract class AbstractAuthorizationManagerTest extends AbstractTestNGSpr
 	
 	private void checkResourceMembership(final String userId, final String resourceId) {
 		final Resource resource = resourceServiceClient.getResource(resourceId);
-		final User user = userDataWebService.getUserWithDependent(userId, true);
+		final User user = userDataWebService.getUserWithDependent(userId,null, true);
 		
 		checkUser2ResourceEntitlement(user.getUserId(), null, resource.getResourceId(), null);
 		checkUser2ResourceEntitlement(user.getUserId(), null, null, resource.getName());
