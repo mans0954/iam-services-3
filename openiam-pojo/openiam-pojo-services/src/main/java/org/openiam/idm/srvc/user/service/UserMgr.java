@@ -303,36 +303,47 @@ public class UserMgr implements UserDataService {
     private List<String> getUserIds(final UserSearchBean searchBean) {
         final List<List<String>> nonEmptyListOfLists = new LinkedList<List<String>>();
 
+        boolean isOrgFilterSet = false;
+        boolean isDeptFilterSet = false;
+        boolean isDivisionFilterSet = false;
+        boolean isGroupFilterSet = false;
+        boolean isRoleFilterSet = false;
+
         if (StringUtils.isNotBlank(searchBean.getRequesterId())) {
             // check and add delegation filter if necessary
             Map<String, UserAttribute> requesterAttributes = this.getUserAttributesDto(searchBean.getRequesterId());
 
-            if ((searchBean.getOrganizationIdList() == null || searchBean.getOrganizationIdList().isEmpty())
-                && DelegationFilterHelper.isOrgFilterSet(requesterAttributes)) {
+            isOrgFilterSet = DelegationFilterHelper.isOrgFilterSet(requesterAttributes);
+            isDeptFilterSet = DelegationFilterHelper.isDeptFilterSet(requesterAttributes);
+            isDivisionFilterSet = DelegationFilterHelper.isDivisionFilterSet(requesterAttributes);
+            isGroupFilterSet = DelegationFilterHelper.isGroupFilterSet(requesterAttributes);
+            isRoleFilterSet = DelegationFilterHelper.isRoleFilterSet(requesterAttributes);
+
+            if (CollectionUtils.isEmpty(searchBean.getOrganizationIdList()) && isOrgFilterSet) {
                 searchBean.setOrganizationIdList(DelegationFilterHelper.getOrgIdFilterFromString(requesterAttributes));
             }
 
-            if ((searchBean.getGroupIdSet() == null || searchBean.getGroupIdSet().isEmpty())
-                && DelegationFilterHelper.isGroupFilterSet(requesterAttributes)) {
+            if (CollectionUtils.isEmpty(searchBean.getGroupIdSet()) && isGroupFilterSet) {
                 searchBean.setGroupIdSet(new HashSet<String>(DelegationFilterHelper.getGroupFilterFromString(requesterAttributes)));
             }
 
-            if ((searchBean.getRoleIdSet() == null || searchBean.getRoleIdSet().isEmpty())
-                && DelegationFilterHelper.isRoleFilterSet(requesterAttributes)) {
+            if (CollectionUtils.isEmpty(searchBean.getRoleIdSet()) && isRoleFilterSet) {
                 searchBean.setRoleIdSet(new HashSet<String>(DelegationFilterHelper.getRoleFilterFromString(requesterAttributes)));
             }
 
-            if ((searchBean.getDeptIdList() == null || searchBean.getDeptIdList().isEmpty())
-                && DelegationFilterHelper.isDeptFilterSet(requesterAttributes)) {
+            if (CollectionUtils.isEmpty(searchBean.getDeptIdList()) && isDeptFilterSet) {
                 searchBean.setDeptIdList(DelegationFilterHelper.getDeptFilterFromString(requesterAttributes));
             }
-            if ((searchBean.getDivisionIdList() == null || searchBean.getDivisionIdList().isEmpty())
-                && DelegationFilterHelper.isDivisionFilterSet(requesterAttributes)) {
+            if (CollectionUtils.isEmpty(searchBean.getDivisionIdList()) && isDivisionFilterSet) {
                 searchBean.setDivisionIdList(DelegationFilterHelper.getDivisionFilterFromString(requesterAttributes));
             }
         }
 
-        nonEmptyListOfLists.add(userSearchDAO.findIds(0, MAX_USER_SEARCH_RESULTS, null, searchBean));
+        List<String> idList = userSearchDAO.findIds(0, MAX_USER_SEARCH_RESULTS, null, searchBean);
+
+        if (CollectionUtils.isNotEmpty(idList) || (CollectionUtils.isEmpty(idList) && (isOrgFilterSet || isDeptFilterSet || isDivisionFilterSet))) {
+            nonEmptyListOfLists.add(idList);
+        }
 
         if (StringUtils.isNotBlank(searchBean.getPrincipal())) {
             final LoginSearchBean loginSearchBean = new LoginSearchBean();
