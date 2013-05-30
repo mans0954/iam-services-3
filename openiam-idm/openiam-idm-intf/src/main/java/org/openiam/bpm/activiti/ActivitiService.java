@@ -44,4 +44,10 @@ public interface ActivitiService {
 	
 	@WebMethod
 	public int count(final HistorySearchBean searchBean);
+	
+	@WebMethod
+	public Response deleteTask(final String taskId);
+	
+	@WebMethod
+	public Response deleteTaskForUser(final String taskId, final String userId);
 }

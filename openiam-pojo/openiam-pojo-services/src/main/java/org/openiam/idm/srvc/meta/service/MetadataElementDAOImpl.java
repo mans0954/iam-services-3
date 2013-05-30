@@ -129,7 +129,7 @@ public class MetadataElementDAOImpl extends BaseDaoImpl<MetadataElementEntity, S
 
     @Override
     protected String getPKfieldName() {
-        return "metadataElementId";
+        return "id";
     }
 
 	@Override

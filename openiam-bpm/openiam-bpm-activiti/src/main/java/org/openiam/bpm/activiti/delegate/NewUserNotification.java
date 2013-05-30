@@ -22,20 +22,10 @@ public class NewUserNotification implements JavaDelegate {
 	private static Logger log = Logger.getLogger(NewUserNotification.class);
 	
 	@Autowired
-	@Qualifier("provRequestService")
-	private RequestDataService provRequestService;
-	
-	@Autowired
 	private MailService mailService;
 	
 	@Autowired
 	private LoginDataService loginService;
-	
-	@Autowired
-	private KeyManagementService keyManagementService;
-	
-	@Autowired
-	private PasswordService passwordService;
 	
 	public NewUserNotification() {
 		SpringContextProvider.autowire(this);

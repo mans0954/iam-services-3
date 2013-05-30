@@ -8,6 +8,7 @@ public class ActivitiConstants {
 	public static final String NEW_USER_ID = "NewUserId";
 	public static final String CANDIDATE_USERS_IDS = "candidateUsersIds";
 	public static final String TASK_NAME = "TaskName";
+	public static final String TASK_DESCRIPTION = "TaskDescription";
 	public static final String TASK_OWNER = "TaskOwner";
 	public static final String EXECUTOR_ID = "ExecutorId";
 }
