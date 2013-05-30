@@ -39,6 +39,7 @@ import org.openiam.bpm.response.NewHireResponse;
 import org.openiam.bpm.response.TaskListWrapper;
 import org.openiam.bpm.response.TaskWrapper;
 import org.openiam.bpm.util.ActivitiConstants;
+import org.openiam.bpm.util.ActivitiRequestType;
 import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
 import org.openiam.idm.srvc.meta.exception.PageTemplateException;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
@@ -107,10 +108,6 @@ public class ActivitiServiceImpl implements ActivitiService {
 	@Autowired
 	@Qualifier("provRequestService")
 	private RequestDataService provRequestService;
-	
-	@Autowired
-	@Qualifier("defaultProvision")
-	private ProvisionService provisionService;
 	
 	@Autowired
 	@Qualifier("resourceDAO")
@@ -229,14 +226,19 @@ public class ActivitiServiceImpl implements ActivitiService {
 			delegationFilterSearch.setDelAdmin(applyDelegationFilter);
 			delegationFilterSearch.setOrgFilter("%" + userOrg + "%");
 			
+			final ActivitiRequestType requestType = request.getActivitiRequestType();
+			final String taskName = String.format("%s Request for %s %s", requestType.getDescription(), provisionUser.getFirstName(), provisionUser.getLastName());
+			final String taskDescription = taskName;
+			
 			/* pass required variables to Activiti, and start the process */
 			final Map<String, Object> variables = new HashMap<String, Object>();
 			variables.put(ActivitiConstants.PROVISION_REQUEST_ID, provisionRequest.getId());
 			variables.put(ActivitiConstants.DELEGATION_FILTER_SEARCH, delegationFilterSearch);
 			variables.put(ActivitiConstants.CANDIDATE_USERS_IDS, requestApproverIds);
-			variables.put(ActivitiConstants.TASK_NAME, String.format("New Hire Request for %s %s", provisionUser.getFirstName(), provisionUser.getLastName()));
+			variables.put(ActivitiConstants.TASK_NAME, taskName);
+			variables.put(ActivitiConstants.TASK_DESCRIPTION, taskDescription);
 			variables.put(ActivitiConstants.TASK_OWNER, request.getRequestorUserId());
-			final ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(request.getActivitiRequestType().getKey(), variables);
+			final ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(requestType.getKey(), variables);
 
 			response.setStatus(ResponseStatus.SUCCESS);
 		} catch (PageTemplateException e) {
@@ -363,28 +365,17 @@ public class ActivitiServiceImpl implements ActivitiService {
 		return response;
 	}
 	
-	private Task getTaskAssignee(final ActivitiRequestDecision newHireRequest) throws ActivitiException {
-		final List<Task> taskList = taskService.createTaskQuery().taskAssignee(newHireRequest.getCallerUserId()).list();
+	private Task getTaskAssignee(final String taskId, final String userId) {
+		final List<Task> taskList = taskService.createTaskQuery().taskId(taskId).taskAssignee(userId).list();
 		if(CollectionUtils.isEmpty(taskList)) {
 			throw  new ActivitiException("No tasks for user..");
 		}
 		
-		if(StringUtils.isBlank(newHireRequest.getTaskId())) {
-			throw new ActivitiException("No task id specified");
-		}
-		
-		Task assignedTask = null;
-		for(final Task task : taskList) {
-			if(task.getId().equals(newHireRequest.getTaskId())) {
-				assignedTask = task;
-				break;
-			}
-		}
-		
-		if(assignedTask == null) {
-			throw new ActivitiException(String.format("No task '%s' assigned", newHireRequest.getTaskId()));
-		}
-		return assignedTask;
+		return taskList.get(0);
+	}
+	
+	private Task getTaskAssignee(final ActivitiRequestDecision newHireRequest) throws ActivitiException {
+		return getTaskAssignee(newHireRequest.getTaskId(), newHireRequest.getCallerUserId());
 	}
 
 	@Override
@@ -480,5 +471,44 @@ public class ActivitiServiceImpl implements ActivitiService {
 		
 		query.desc();
 		return query;
+	}
+
+	@Override
+	public Response deleteTask(String taskId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			taskService.deleteTask(taskId, true);
+		} catch(ActivitiException e) {
+			log.info("Activiti Exception", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(ResponseCode.USER_STATUS);
+			response.setErrorText(e.getMessage());
+		} catch(Throwable e) {
+			log.error("Error while creating newhire request", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(ResponseCode.USER_STATUS);
+			response.setErrorText(e.getMessage());
+		}
+		return response;
+	}
+
+	@Override
+	public Response deleteTaskForUser(String taskId, String userId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			final Task task = getTaskAssignee(taskId, userId);
+			taskService.deleteTask(task.getId(), true);
+		} catch(ActivitiException e) {
+			log.info("Activiti Exception", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(ResponseCode.USER_STATUS);
+			response.setErrorText(e.getMessage());
+		} catch(Throwable e) {
+			log.error("Error while creating newhire request", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(ResponseCode.USER_STATUS);
+			response.setErrorText(e.getMessage());
+		}
+		return response;
 	}
 }

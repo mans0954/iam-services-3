@@ -260,7 +260,7 @@ public abstract class AbstractCSVParser<T, E extends Enum<E>> {
 	 * Parse from CSV to list of objects
 	 * 
 	 * @param managedSys
-	 * @param attrMapList
+	 * @param attrMapList                                \
 	 * @param clazz
 	 * @return
 	 * @throws Exception

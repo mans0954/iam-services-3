@@ -20,6 +20,7 @@ public class AddCandidateUsersTaskListener implements TaskListener {
 	public void notify(DelegateTask delegateTask) {
 		log.info("Add Candidate Users");
 		final String taskOwner = StringUtils.trimToNull((String)delegateTask.getExecution().getVariable(ActivitiConstants.TASK_OWNER));
+		final String taskDescription = (String)delegateTask.getExecution().getVariable(ActivitiConstants.TASK_DESCRIPTION);
 		final String taskName = (String)delegateTask.getExecution().getVariable(ActivitiConstants.TASK_NAME);
 		final Object candidateUserIdsObj = delegateTask.getExecution().getVariable(ActivitiConstants.CANDIDATE_USERS_IDS);
 		final Collection<String> candidateUsersIds = new ArrayList<String>();
@@ -49,6 +50,10 @@ public class AddCandidateUsersTaskListener implements TaskListener {
 			delegateTask.setName(taskName);
 		} else {
 			log.warn(String.format("No task name specified for %s", delegateTask.getId()));
+		}
+		
+		if(StringUtils.isNotBlank(taskDescription)) {
+			delegateTask.setDescription(taskDescription);
 		}
 		
 		delegateTask.setOwner(taskOwner);

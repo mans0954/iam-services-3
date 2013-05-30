@@ -1,6 +1,7 @@
 package org.openiam.bpm.activiti.delegate;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -81,53 +82,74 @@ public class RejectProfileProvisionNotifierDelegate implements JavaDelegate {
 		
 		final String requestType = provisionRequest.getRequestType();
         final List<ApproverAssociationEntity> approverAssociationList = approverAssociationDao.findApproversByRequestType(requestType, 1);
+        
+        
+        final Set<String> userIdsToNotify = new HashSet<String>();
+        final Set<String> emailsToNotify = new HashSet<String>();
         for (final ApproverAssociationEntity approverAssociation : approverAssociationList) {
-            String notifyEmail = null;
             approverAssociation.getApproverUserId();
             String typeOfUserToNotify = approverAssociation.getRejectNotificationUserType();
             if (StringUtils.isBlank(typeOfUserToNotify)) {
                 typeOfUserToNotify = "USER";
             }
-            String notifyUserId = null;
             if (StringUtils.equalsIgnoreCase(typeOfUserToNotify, "user")) {
-                notifyUserId = approverAssociation.getNotifyUserOnReject();
+            	final String notifyUserId = approverAssociation.getNotifyUserOnReject();
                 if(StringUtils.isNotBlank(notifyUserId)) {
                 	final UserEntity notifyUser = userDAO.findById(notifyUserId);
-                	if(notifyUser != null && notifyUser.getEmailAddresses() != null) {
-                		notifyEmail = notifyUser.getEmail();
+                	if(notifyUser != null) {
+                		userIdsToNotify.add(notifyUser.getUserId());
                 	}
                 }
             } else if (StringUtils.equalsIgnoreCase(typeOfUserToNotify, "supervisor")) {
                 final Supervisor supVisor = profileModel.getUser().getSupervisor();
                 if (supVisor != null) {
-                    notifyUserId = supVisor.getSupervisor().getUserId();
-                    notifyEmail = supVisor.getSupervisor().getEmail();
+                	final String notifyUserId = supVisor.getSupervisor().getUserId();
+                    userIdsToNotify.add(notifyUserId);
                 }
             } else if(StringUtils.equalsIgnoreCase(typeOfUserToNotify, "target_user")) {
             	//notifyUserId = ? /* can't set this - user isn't created on reject, so no ID */
-            	notifyEmail = getPrimaryEmail(profileModel.getEmails());
+            	final String notifyEmail = getPrimaryEmail(profileModel.getEmails());
+            	if(StringUtils.isNotBlank(notifyEmail)) {
+            		emailsToNotify.add(notifyEmail);
+            	}
             } else { /* send back to original requestor if none of the above */ 
-            	notifyUserId = provisionRequest.getRequestorId();
+            	final String notifyUserId = provisionRequest.getRequestorId();
             	if(notifyUserId != null) {
             		final UserEntity requestor = userDAO.findById(notifyUserId);
-            		if(requestor != null && requestor.getEmailAddresses() != null) {
-            			notifyEmail = requestor.getEmail();
+            		if(requestor != null) {
+            			userIdsToNotify.add(requestor.getUserId());
             		}
             	}
             }
-
-            final UserEntity approver = userManager.getUser(lastCaller);
-            final NotificationRequest request = new NotificationRequest();
-            request.setUserId(notifyUserId);
-            request.setNotificationType("REQUEST_REJECTED");
-            request.setTo(notifyEmail);
-            request.getParamList().add(new NotificationParam("REQUEST_ID", provisionRequest.getId()));
-            request.getParamList().add(new NotificationParam("REQUEST_REASON", provisionRequest.getRequestReason()));
-            request.getParamList().add(new NotificationParam("REQUESTOR", String.format("%s %s", approver.getFirstName(), approver.getLastName())));
-            request.getParamList().add(new NotificationParam("TARGET_USER", String.format("%s %s", profileModel.getUser().getFirstName(), profileModel.getUser().getLastName())));
-            mailService.sendNotification(request);
-
         }
+        final UserEntity requestor = userManager.getUser(lastCaller);
+        sendEmails(requestor, provisionRequest, profileModel.getUser(), userIdsToNotify, emailsToNotify);
+	}
+	
+	private void sendEmails(final UserEntity requestor, final ProvisionRequestEntity provisionRequest, final User user, final Set<String> userIds, final Set<String> emailAddresses) {
+		if(CollectionUtils.isNotEmpty(userIds)) {
+			for(final String userId : userIds) {
+				sendEmail(requestor, provisionRequest, user, userId, null);
+			}
+		}
+		
+		if(CollectionUtils.isNotEmpty(emailAddresses)) {
+			for(final String email : emailAddresses) {
+				sendEmail(requestor, provisionRequest, user, null, email);
+			}
+		}
+	}
+	
+	private void sendEmail(final UserEntity requestor, final ProvisionRequestEntity provisionRequest, final User user, final String userId, final String email) {
+        final NotificationRequest request = new NotificationRequest();
+        request.setUserId(userId);
+        request.setNotificationType("REQUEST_REJECTED");
+        request.setTo(email);
+        request.getParamList().add(new NotificationParam("REQUEST_ID", provisionRequest.getId()));
+        request.getParamList().add(new NotificationParam("REQUEST_REASON", provisionRequest.getRequestReason()));
+        request.getParamList().add(new NotificationParam("REQUESTOR", String.format("%s %s", requestor.getFirstName(), requestor.getLastName())));
+        request.getParamList().add(new NotificationParam("TARGET_USER", String.format("%s %s", user.getFirstName(), user.getLastName())));
+        mailService.sendNotification(request);
 	}
 
 	private String getPrimaryEmail(final List<EmailAddress> addressSet) {

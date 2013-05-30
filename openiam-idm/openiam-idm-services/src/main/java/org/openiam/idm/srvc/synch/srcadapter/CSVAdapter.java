@@ -63,16 +63,13 @@ import java.util.concurrent.TimeUnit;
  */
 public class CSVAdapter extends AbstractSrcAdapter {
 
-    private AuditHelper auditHelper;
-
-    private String systemAccount;
-
-    private MatchRuleFactory matchRuleFactory;
-
     private static final Log log = LogFactory.getLog(CSVAdapter.class);
 
     // synchronization monitor
     private final Object mutex = new Object();
+
+    @Value("${org.openiam.upload.root}")
+    private String uploadRoot;
     
     @Value("${csvadapter.thread.count}")
     private int THREAD_COUNT;
@@ -95,7 +92,7 @@ public class CSVAdapter extends AbstractSrcAdapter {
         final IdmAuditLog synchStartLog = auditHelper.logEvent(synchStartLog_);
 
         try {
-            File file = new File(config.getFileName());
+            File file = new File(uploadRoot +"/sync/"+ config.getFileName());
             reader = new FileReader(file);
             CSVParser parser = new CSVParser(reader, CSVStrategy.EXCEL_STRATEGY);
 

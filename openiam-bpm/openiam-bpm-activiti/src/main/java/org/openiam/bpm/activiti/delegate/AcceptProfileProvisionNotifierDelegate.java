@@ -1,6 +1,7 @@
 package org.openiam.bpm.activiti.delegate;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -24,6 +25,7 @@ import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.Supervisor;
+import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
@@ -68,73 +70,86 @@ public class AcceptProfileProvisionNotifierDelegate implements JavaDelegate {
 		final UserEntity newUser = userManager.getUser(newUserId);
 		
 		final ProvisionRequestEntity provisionRequest = provRequestService.getRequest(provisionRequestId);
-		final NewUserProfileRequestModel profileModel = (NewUserProfileRequestModel)new XStream().fromXML(provisionRequest.getRequestXML());
         
         final String requestType = provisionRequest.getRequestType();
         final List<ApproverAssociationEntity> approverAssociationList = approverAssociationDao.findApproversByRequestType(requestType, 1);
 
         /* notify the approvers */
+        final Set<String> userIds = new HashSet<String>();
+        final Set<String> emails = new HashSet<String>();
+        
         for (final ApproverAssociationEntity approverAssociation : approverAssociationList) {
             String typeOfUserToNotify = approverAssociation.getApproveNotificationUserType();
             if (StringUtils.isBlank(typeOfUserToNotify)) {
                 typeOfUserToNotify = "USER";
             }
-            String notifyUserId = null;
             //String notifyEmail = null;
             if (StringUtils.equalsIgnoreCase(typeOfUserToNotify, "user")) {
-                notifyUserId = approverAssociation.getNotifyUserOnApprove();
-                /*
-                if(StringUtils.isNotBlank(notifyUserId)) {
-                	final User notifyUser = userDAO.findById(notifyUserId);
-                	if(notifyUser != null && notifyUser.getEmailAddress() != null) {
-                		notifyEmail = notifyUser.getEmail();
-                	}
+                final String notifyUserId = approverAssociation.getNotifyUserOnApprove();
+                if(notifyUserId != null) {
+                	userIds.add(notifyUserId);
                 }
-                */
             } else if(StringUtils.equalsIgnoreCase(typeOfUserToNotify, "supervisor")) {
             	final List<SupervisorEntity> supervisors = userManager.getSupervisors(newUserId);
                 if (CollectionUtils.isNotEmpty(supervisors)) {
                 	final SupervisorEntity supervisorEntity = supervisors.get(0);
                 	if(supervisorEntity != null && supervisorEntity.getSupervisor() != null) {
-                		notifyUserId = supervisorEntity.getSupervisor().getUserId();
+                		final String notifyUserId = supervisorEntity.getSupervisor().getUserId();
+                		if(notifyUserId != null) {
+                			userIds.add(notifyUserId);
+                		}
                 	}
-                    //notifyEmail = supVisor.getSupervisor().getEmail();
                 }
-            }
-            
-            /* if there's no approver to notify, send it to the original user */
-            if(notifyUserId == null) {
-            	notifyUserId = newUserId;
-            }
-            
-            if (StringUtils.isNotBlank(notifyUserId)) {
-                String identity = null;
-                String password = null;
-
-                final UserEntity approver = userManager.getUser(lastCaller);
-
-                final LoginEntity login = loginDS.getPrimaryIdentity(newUserId);
-                if (login != null) {
-                    identity = login.getLogin();
-                    password = loginDS.decryptPassword(login.getUserId(),login.getPassword());
-                }
-
-
-                final NotificationRequest request = new NotificationRequest();
-                // send a message to this user
-                request.setUserId(notifyUserId);
-                request.setNotificationType("REQUEST_APPROVED");
-
-                request.getParamList().add(new NotificationParam("REQUEST_ID", provisionRequest.getId()));
-                request.getParamList().add(new NotificationParam("REQUEST_REASON", provisionRequest.getRequestReason()));
-                request.getParamList().add(new NotificationParam("REQUESTOR", String.format("%s %s", approver.getFirstName(), approver.getLastName())));
-                request.getParamList().add(new NotificationParam("TARGET_USER", String.format("%s %s", newUser.getFirstName(), newUser.getLastName())));
-                request.getParamList().add(new NotificationParam("IDENTITY", identity));
-                request.getParamList().add(new NotificationParam("PSWD", password));
-
-
-                mailService.sendNotification(request);
             }
         }
+        
+        /* if there's no approver to notify, send it to the original user */
+        if(CollectionUtils.isEmpty(userIds)) {
+        	userIds.add(newUserId);
+        }
+        
+        String identity = null;
+        String password = null;
+
+        final UserEntity approver = userManager.getUser(lastCaller);
+
+        final LoginEntity login = loginDS.getPrimaryIdentity(newUserId);
+        if (login != null) {
+        	identity = login.getLogin();
+        	password = loginDS.decryptPassword(login.getUserId(),login.getPassword());
+        }
+        sendEmails(approver, provisionRequest, newUser, userIds, emails, identity, password);
+	}
+	
+	private void sendEmails(final UserEntity approver, final ProvisionRequestEntity provisionRequest, final UserEntity newUser, 
+							final Set<String> userIds, final Set<String> emailAddresses, final String identity, final String password) {
+		if(CollectionUtils.isNotEmpty(userIds)) {
+			for(final String userId : userIds) {
+				sendEmail(approver, provisionRequest, newUser, userId, null, identity, password);
+			}
+		}
+		
+		if(CollectionUtils.isNotEmpty(emailAddresses)) {
+			for(final String email : emailAddresses) {
+				sendEmail(approver, provisionRequest, newUser, null, email, identity, password);
+			}
+		}
+	}
+	
+	private void sendEmail(final UserEntity approver, final ProvisionRequestEntity provisionRequest, final UserEntity newUser, 
+						   final String userId, final String email, final String identity, final String password) {
+		final NotificationRequest request = new NotificationRequest();
+        request.setUserId(userId);
+        request.setNotificationType("REQUEST_APPROVED");
+        request.setTo(email);
+        request.getParamList().add(new NotificationParam("REQUEST_ID", provisionRequest.getId()));
+        request.getParamList().add(new NotificationParam("REQUEST_REASON", provisionRequest.getRequestReason()));
+        request.getParamList().add(new NotificationParam("REQUESTOR", String.format("%s %s", approver.getFirstName(), approver.getLastName())));
+        request.getParamList().add(new NotificationParam("TARGET_USER", String.format("%s %s", newUser.getFirstName(), newUser.getLastName())));
+        request.getParamList().add(new NotificationParam("IDENTITY", identity));
+        request.getParamList().add(new NotificationParam("PSWD", password));
+
+
+        mailService.sendNotification(request);
 	}
 }
