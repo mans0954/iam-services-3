@@ -297,7 +297,7 @@ public class UserMgr implements UserDataService {
 
     @Override
     public List<UserEntity> findBeans(UserSearchBean searchBean) {
-        return findBeans(searchBean, -1, -1);
+        return findBeans(searchBean, 0, 1);
     }
 
     private List<String> getUserIds(final UserSearchBean searchBean) {
