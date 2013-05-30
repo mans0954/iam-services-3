@@ -53,24 +53,26 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         disjunction.add(Restrictions.isNull("systemFlag")).add(Restrictions.ne("systemFlag", "1"));
         criteria.add(disjunction);
 
-        if (delegationFilter.getOrganizationIdSet() != null && !delegationFilter.getOrganizationIdSet().isEmpty()) {
-            criteria.add(Restrictions.in("companyId", delegationFilter.getOrganizationIdSet()));
-        }
-        if (delegationFilter.getDeptIdSet() != null && !delegationFilter.getDeptIdSet().isEmpty()) {
-            criteria.add(Restrictions.in("deptCd", delegationFilter.getDeptIdSet()));
-        }
-        if (delegationFilter.getDivisionIdSet() != null && !delegationFilter.getDivisionIdSet().isEmpty()) {
-            criteria.add(Restrictions.in("division", delegationFilter.getDivisionIdSet()));
-        }
-
-        if (delegationFilter.getGroupIdSet() != null && !delegationFilter.getGroupIdSet().isEmpty()) {
-            criteria.createAlias("userGroups", "ug");
-            criteria.add(Restrictions.in("ug.grpId", delegationFilter.getGroupIdSet()));
-        }
-
-        if (delegationFilter.getRoleIdSet() != null && !delegationFilter.getRoleIdSet().isEmpty()) {
-            criteria.createAlias("userRoles", "ur");
-            criteria.add(Restrictions.in("ur.roleId", delegationFilter.getRoleIdSet()));
+        if(delegationFilter != null) {
+	        if (CollectionUtils.isNotEmpty(delegationFilter.getOrganizationIdSet())) {
+	            criteria.add(Restrictions.in("companyId", delegationFilter.getOrganizationIdSet()));
+	        }
+	        if (CollectionUtils.isNotEmpty(delegationFilter.getDeptIdSet())) {
+	            criteria.add(Restrictions.in("deptCd", delegationFilter.getDeptIdSet()));
+	        }
+	        if (CollectionUtils.isNotEmpty(delegationFilter.getDivisionIdSet())) {
+	            criteria.add(Restrictions.in("division", delegationFilter.getDivisionIdSet()));
+	        }
+	
+	        if (CollectionUtils.isNotEmpty(delegationFilter.getGroupIdSet())) {
+	            criteria.createAlias("userGroups", "ug");
+	            criteria.add(Restrictions.in("ug.grpId", delegationFilter.getGroupIdSet()));
+	        }
+	
+	        if (CollectionUtils.isNotEmpty(delegationFilter.getRoleIdSet())) {
+	            criteria.createAlias("userRoles", "ur");
+	            criteria.add(Restrictions.in("ur.roleId", delegationFilter.getRoleIdSet()));
+	        }
         }
 
         criteria.add(Restrictions.eq(getPKfieldName(), userId));
@@ -401,7 +403,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         if (StringUtils.isNotEmpty(groupId)) {
             criteria.createAlias("userGroups", "ug");
             criteria.add(Restrictions.eq("ug.grpId", groupId));
-        } else if (delegationFilter != null && !delegationFilter.getGroupIdSet().isEmpty()) {
+        } else if (delegationFilter != null && CollectionUtils.isNotEmpty(delegationFilter.getGroupIdSet())) {
             criteria.createAlias("userGroups", "ug");
             criteria.add(Restrictions.in("ug.grpId", delegationFilter.getGroupIdSet()));
         }
@@ -409,7 +411,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         if (StringUtils.isNotEmpty(roleId)) {
             criteria.createAlias("userRoles", "ur");
             criteria.add(Restrictions.eq("ur.roleId", roleId));
-        } else if (delegationFilter != null && !delegationFilter.getRoleIdSet().isEmpty()) {
+        } else if (delegationFilter != null && CollectionUtils.isNotEmpty(delegationFilter.getRoleIdSet())) {
             criteria.createAlias("userRoles", "ur");
             criteria.add(Restrictions.in("ur.roleId", delegationFilter.getRoleIdSet()));
         }
@@ -419,13 +421,13 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         }
 
         if (delegationFilter != null) {
-            if (delegationFilter.getOrganizationIdSet() != null && !delegationFilter.getOrganizationIdSet().isEmpty()) {
+            if (CollectionUtils.isNotEmpty(delegationFilter.getOrganizationIdSet())) {
                 criteria.add(Restrictions.in("companyId", delegationFilter.getOrganizationIdSet()));
             }
-            if (delegationFilter.getDeptIdSet() != null && !delegationFilter.getDeptIdSet().isEmpty()) {
+            if (CollectionUtils.isNotEmpty(delegationFilter.getDeptIdSet())) {
                 criteria.add(Restrictions.in("deptCd", delegationFilter.getDeptIdSet()));
             }
-            if (delegationFilter.getDivisionIdSet() != null && !delegationFilter.getDivisionIdSet().isEmpty()) {
+            if (CollectionUtils.isNotEmpty(delegationFilter.getDivisionIdSet())) {
                 criteria.add(Restrictions.in("division", delegationFilter.getDivisionIdSet()));
             }
         }
