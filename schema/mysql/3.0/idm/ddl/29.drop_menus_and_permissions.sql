@@ -1,5 +1,0 @@
-use openiam;
-
-DROP TABLE PERMISSIONS;
-
-DROP TABLE MENU;
