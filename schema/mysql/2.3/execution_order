@@ -1,4 +1,0 @@
-ddl/1.mysql_idm_dbcreate.sql
-ddl/2.mysql_schema_common.sql
-ddl/3.mysql_schema_security.sql
-dml/1.mysql_idm_data.sql
