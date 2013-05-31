@@ -70,7 +70,7 @@ public class PolicyEntity implements java.io.Serializable {
     private Integer enablement;
 
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	@JoinColumn(name = "POLICY_ID", insertable = false, updatable = false)
+	@JoinColumn(name = "POLICY_ID", insertable = true, updatable = true)
 	private Set<PolicyAttributeEntity> policyAttributes = new HashSet<PolicyAttributeEntity>(
 			0);
 

@@ -23,11 +23,19 @@
 package org.openiam.idm.srvc.policy.service;
 
 import java.util.List;
+
+import javax.jws.WebMethod;
+import javax.jws.WebParam;
 import javax.jws.WebService;
+
+import org.openiam.base.ws.Response;
+import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyDef;
 import org.openiam.idm.srvc.policy.dto.PolicyDefParam;
 import org.openiam.idm.srvc.policy.dto.PolicyObjectAssoc;
+import org.openiam.idm.srvc.res.dto.Resource;
+
 
 /**
  * @author suneet
@@ -46,5 +54,44 @@ public interface PolicyDataService {
 	 * @return
 	 */
 	Policy getPolicy(String policyId);
+	
+   
+   /**
+    * Adds the policy.
+    *
+    * @param policy the policy
+    * @return the response
+    */
+   Response addPolicy(Policy policy);
+	
+	
+	/**
+	 * Update policy.
+	 *
+	 * @param policy the policy
+	 * @return the response
+	 */
+	Response updatePolicy(Policy  policy);
+	
+	
+	/**
+	 * Delete policy.
+	 *
+	 * @param policyId the policy id
+	 * @return the response
+	 */
+	Response deletePolicy(String policyId);
+	
+	
+	/**
+	 * Gets the all policy attributes.
+	 *
+	 * @param policyDefId the policy def id
+	 * @param pswdGroup the pswd group
+	 * @return the all policy attributes
+	 */
+	List<PolicyDefParam> getAllPolicyAttributes(String policyDefId, String pswdGroup);
+	
+	
 
 }

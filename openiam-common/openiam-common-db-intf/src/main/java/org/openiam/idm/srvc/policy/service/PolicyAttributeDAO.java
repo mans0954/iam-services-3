@@ -23,23 +23,16 @@ package org.openiam.idm.srvc.policy.service;
 
 import java.util.List;
 import org.openiam.core.dao.BaseDao;
-import org.openiam.idm.srvc.policy.domain.PolicyDefParamEntity;
+import org.openiam.idm.srvc.policy.domain.PolicyAttributeEntity;
+import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 
 /**
- * Data access implementation for Policy Definition Parameters
- *
- * @author suneet
+ * Data access implementation for Policy Attribute
+ * 
+ * @author ekta
  */
-public interface PolicyDefParamDAO extends
-        BaseDao<PolicyDefParamEntity, String> {
+public interface PolicyAttributeDAO extends BaseDao<PolicyAttributeEntity, String> {
 
-    /**
-     * Find policy def param by group.
-     *
-     * @param defId the def id
-     * @param group the group
-     * @return the list
-     */
-    List<PolicyDefParamEntity> findPolicyDefParamByGroup(String defId,
-            String group);
+	
+
 }

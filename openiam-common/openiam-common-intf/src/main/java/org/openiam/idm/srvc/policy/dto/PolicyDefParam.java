@@ -26,8 +26,7 @@ import org.openiam.idm.srvc.policy.domain.PolicyDefParamEntity;
         "repeats",
         "policyParamHandler",
         "handlerLanguage",
-        "paramGroup",
-        "policyAttributes"
+        "paramGroup"
 })
 @DozerDTOCorrespondence(PolicyDefParamEntity.class)
 public class PolicyDefParam implements java.io.Serializable {
@@ -48,7 +47,6 @@ public class PolicyDefParam implements java.io.Serializable {
     private String handlerLanguage;
     private String paramGroup;
 
-    private Set<PolicyAttribute> policyAttributes = new HashSet<PolicyAttribute>(0);
 
     public PolicyDefParam() {
     }
@@ -122,13 +120,6 @@ public class PolicyDefParam implements java.io.Serializable {
         this.policyParamHandler = policyParamHandler;
     }
 
-    public Set<PolicyAttribute> getPolicyAttributes() {
-        return this.policyAttributes;
-    }
-
-    public void setPolicyAttributes(Set<PolicyAttribute> policyAttributes) {
-        this.policyAttributes = policyAttributes;
-    }
 
     public String getParamGroup() {
         return paramGroup;
@@ -167,8 +158,7 @@ public class PolicyDefParam implements java.io.Serializable {
                 ", repeats=" + repeats +
                 ", policyParamHandler='" + policyParamHandler + '\'' +
                 ", handlerLanguage='" + handlerLanguage + '\'' +
-                ", paramGroup='" + paramGroup + '\'' +
-                ", policyAttributes=" + policyAttributes +
+                ", paramGroup='" + paramGroup + 
                 '}';
     }
 }
