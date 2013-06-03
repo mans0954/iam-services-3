@@ -33,7 +33,6 @@ import java.io.Serializable;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "DelegationFilterSearch", propOrder = {
-
         "role",
         "delAdmin",
         "orgFilter"
@@ -42,7 +41,7 @@ public class DelegationFilterSearch implements Serializable {
 
 
     protected String role = null;
-    protected int delAdmin = 0;
+    protected boolean delAdmin = false;
     protected String orgFilter = null;
 
 
@@ -57,15 +56,15 @@ public class DelegationFilterSearch implements Serializable {
         this.role = role;
     }
 
-    public int getDelAdmin() {
-        return delAdmin;
-    }
+    public boolean isDelAdmin() {
+		return delAdmin;
+	}
 
-    public void setDelAdmin(int delAdmin) {
-        this.delAdmin = delAdmin;
-    }
+	public void setDelAdmin(boolean delAdmin) {
+		this.delAdmin = delAdmin;
+	}
 
-    public String getOrgFilter() {
+	public String getOrgFilter() {
         return orgFilter;
     }
 

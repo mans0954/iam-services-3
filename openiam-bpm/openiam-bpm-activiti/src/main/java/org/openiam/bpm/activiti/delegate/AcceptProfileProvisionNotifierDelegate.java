@@ -14,6 +14,7 @@ import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
+import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
@@ -40,7 +41,7 @@ public class AcceptProfileProvisionNotifierDelegate implements JavaDelegate {
 	private static Logger log = Logger.getLogger(AcceptProfileProvisionNotifierDelegate.class);
 
 	@Autowired
-	@Qualifier("mailService")
+	@Qualifier("mailService")	
 	private MailService mailService;
 	
 	@Autowired
@@ -79,24 +80,25 @@ public class AcceptProfileProvisionNotifierDelegate implements JavaDelegate {
         final Set<String> emails = new HashSet<String>();
         
         for (final ApproverAssociationEntity approverAssociation : approverAssociationList) {
-            String typeOfUserToNotify = approverAssociation.getApproveNotificationUserType();
-            if (StringUtils.isBlank(typeOfUserToNotify)) {
-                typeOfUserToNotify = "USER";
+        	AssociationType typeOfUserToNotify = approverAssociation.getOnApproveEntityType();
+            if (typeOfUserToNotify == null) {
+            	typeOfUserToNotify = AssociationType.USER;
             }
             //String notifyEmail = null;
-            if (StringUtils.equalsIgnoreCase(typeOfUserToNotify, "user")) {
-                final String notifyUserId = approverAssociation.getNotifyUserOnApprove();
+            if (AssociationType.USER.equals(typeOfUserToNotify)) {
+                final String notifyUserId = approverAssociation.getOnApproveEntityId();
                 if(notifyUserId != null) {
                 	userIds.add(notifyUserId);
                 }
-            } else if(StringUtils.equalsIgnoreCase(typeOfUserToNotify, "supervisor")) {
+            } else if(AssociationType.SUPERVISOR.equals(typeOfUserToNotify)) {
             	final List<SupervisorEntity> supervisors = userManager.getSupervisors(newUserId);
                 if (CollectionUtils.isNotEmpty(supervisors)) {
-                	final SupervisorEntity supervisorEntity = supervisors.get(0);
-                	if(supervisorEntity != null && supervisorEntity.getSupervisor() != null) {
-                		final String notifyUserId = supervisorEntity.getSupervisor().getUserId();
-                		if(notifyUserId != null) {
-                			userIds.add(notifyUserId);
+                	for(final SupervisorEntity supervisorEntity : supervisors) {
+                		if(supervisorEntity != null && supervisorEntity.getSupervisor() != null) {
+                			final String notifyUserId = supervisorEntity.getSupervisor().getUserId();
+                			if(notifyUserId != null) {
+                				userIds.add(notifyUserId);
+                			}
                 		}
                 	}
                 }

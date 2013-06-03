@@ -43,6 +43,7 @@ import org.openiam.bpm.util.ActivitiRequestType;
 import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
 import org.openiam.idm.srvc.meta.exception.PageTemplateException;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
+import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAOImpl;
@@ -145,42 +146,39 @@ public class ActivitiServiceImpl implements ActivitiService {
 			/* get a list of approvers for the new hire request, including information about their organization */
 	        String approverRole = null;
 	        String userOrg = null;
-	        int applyDelegationFilter = 0;
+	        boolean applyDelegationFilter = false;
 	        
 	        /* get a list of approvers for this request type */
 			final List<ApproverAssociationEntity> approverAssocationList = approverAssociationDao.findApproversByRequestType(NEW_HIRE_REQUEST_TYPE, 1);
 	        if (CollectionUtils.isNotEmpty(approverAssocationList)) {
 	            for (final ApproverAssociationEntity approverAssociation : approverAssocationList) {
-	                String approverType = null;
+	            	AssociationType approverType = null;
 	                String approverId = null;
 	                if (approverAssociation != null) {
-	                    approverType = approverAssociation.getAssociationType();
-	
-	                    /* if the association type is a Supervisor, the assigned Supervisor to the User is the approver */
-	                    if(StringUtils.equalsIgnoreCase(approverAssociation.getAssociationType(), "supervisor")) {
-	                    	final Supervisor supVisor = provisionUser.getSupervisor();
-	                        approverId = supVisor.getSupervisor().getUserId();
-	                        
-	                    /* if the association type is a Role, use the approver Role ID */
-	                    } else if(StringUtils.equalsIgnoreCase(approverAssociation.getAssociationType(), "role")) {
-	                        approverId = approverAssociation.getApproverRoleId();
-	
-	                        approverRole = approverAssociation.getApproverRoleId();
-	                        if (approverAssociation.getApplyDelegationFilter() != null) {
-	                            applyDelegationFilter = approverAssociation.getApplyDelegationFilter().intValue();
-	                        }
-	                        if (StringUtils.isNotBlank(provisionUser.getCompanyId())) {
-	                            userOrg = provisionUser.getCompanyId();
-	                        }
-	
-	                    /* otherwise, use the approver id of the association */
-	                    } else {
-	                        approverId = approverAssociation.getApproverUserId();
+	                    approverType = approverAssociation.getApproverEntityType();
+	                    if(approverType != null) {
+	                    	switch(approverType) {
+	                    		case SUPERVISOR:
+	                    			final Supervisor supVisor = provisionUser.getSupervisor();
+	    	                        approverId = supVisor.getSupervisor().getUserId();
+	                    			break;
+	                    		case ROLE:
+	                    			approverId = approverAssociation.getApproverEntityId();
+	                    			approverRole = approverAssociation.getApproverEntityId();
+	                    			applyDelegationFilter = approverAssociation.isApplyDelegationFilter();
+	    	                        if (StringUtils.isNotBlank(provisionUser.getCompanyId())) {
+	    	                            userOrg = provisionUser.getCompanyId();
+	    	                        }
+	                    			break;
+	                    		default:
+	                    			approverId = approverAssociation.getApproverEntityId();
+	                    			break;
+	                    	}
 	                    }
 	
 	                    /* add the approver to the list */
-	                    final RequestApproverEntity reqApprover = new RequestApproverEntity(approverId, approverAssociation.getApproverLevel(), approverAssociation.getAssociationType(), "PENDING");
-	                    reqApprover.setApproverType(approverType);
+	                    final RequestApproverEntity reqApprover = new RequestApproverEntity(approverId, approverAssociation.getApproverLevel(), approverType.getValue(), "PENDING");
+	                    reqApprover.setApproverType(approverType.getValue());
 	                    provisionRequest.addRequestApprover(reqApprover);
 	                }
 	
@@ -468,7 +466,7 @@ public class ActivitiServiceImpl implements ActivitiService {
 		if(StringUtils.isNotBlank(searchBean.getTaskOwnerId())) {
 			query.taskOwner(searchBean.getTaskOwnerId());
 		}
-		
+		query.orderByHistoricTaskInstanceEndTime();
 		query.desc();
 		return query;
 	}

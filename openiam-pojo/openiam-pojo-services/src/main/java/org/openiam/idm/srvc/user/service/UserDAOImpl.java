@@ -102,8 +102,8 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             criteria.add(Restrictions.eq("urv.roleId", search.getRole()));
         }
 
-        if (search.getDelAdmin() == 1) {
-            criteria.add(Restrictions.eq("delAdmin", search.getDelAdmin()));
+        if (search.isDelAdmin()) {
+            criteria.add(Restrictions.eq("delAdmin", search.isDelAdmin()));
             if (search.getOrgFilter() != null) {
                 criteria.createAlias("userAttributes", "ua");
                 criteria.add(Restrictions.eq("ua.name", "DLG_FLT_ORG"));

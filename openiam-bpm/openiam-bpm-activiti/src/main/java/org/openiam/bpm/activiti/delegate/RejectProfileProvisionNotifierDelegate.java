@@ -17,6 +17,7 @@ import org.openiam.bpm.request.RequestorInformation;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
+import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
@@ -87,26 +88,25 @@ public class RejectProfileProvisionNotifierDelegate implements JavaDelegate {
         final Set<String> userIdsToNotify = new HashSet<String>();
         final Set<String> emailsToNotify = new HashSet<String>();
         for (final ApproverAssociationEntity approverAssociation : approverAssociationList) {
-            approverAssociation.getApproverUserId();
-            String typeOfUserToNotify = approverAssociation.getRejectNotificationUserType();
-            if (StringUtils.isBlank(typeOfUserToNotify)) {
-                typeOfUserToNotify = "USER";
+        	AssociationType typeOfUserToNotify = approverAssociation.getOnRejectEntityType();
+            if (typeOfUserToNotify == null) {
+                typeOfUserToNotify = AssociationType.USER;
             }
-            if (StringUtils.equalsIgnoreCase(typeOfUserToNotify, "user")) {
-            	final String notifyUserId = approverAssociation.getNotifyUserOnReject();
+            if (AssociationType.USER.equals(typeOfUserToNotify)) {
+            	final String notifyUserId = approverAssociation.getOnRejectEntityId();
                 if(StringUtils.isNotBlank(notifyUserId)) {
                 	final UserEntity notifyUser = userDAO.findById(notifyUserId);
                 	if(notifyUser != null) {
                 		userIdsToNotify.add(notifyUser.getUserId());
                 	}
                 }
-            } else if (StringUtils.equalsIgnoreCase(typeOfUserToNotify, "supervisor")) {
+            } else if (AssociationType.SUPERVISOR.equals(typeOfUserToNotify)) {
                 final Supervisor supVisor = profileModel.getUser().getSupervisor();
                 if (supVisor != null) {
                 	final String notifyUserId = supVisor.getSupervisor().getUserId();
                     userIdsToNotify.add(notifyUserId);
                 }
-            } else if(StringUtils.equalsIgnoreCase(typeOfUserToNotify, "target_user")) {
+            } else if(AssociationType.TARGET_USER.equals(typeOfUserToNotify)) {
             	//notifyUserId = ? /* can't set this - user isn't created on reject, so no ID */
             	final String notifyEmail = getPrimaryEmail(profileModel.getEmails());
             	if(StringUtils.isNotBlank(notifyEmail)) {

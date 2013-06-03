@@ -1,222 +1,168 @@
 package org.openiam.idm.srvc.mngsys.dto;
 
+import java.io.Serializable;
+
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
+import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ApproverAssociation", propOrder = {
-        "id",
-        "requestType",
-        "action",
-        "associationObjId",
-        "approverUserId",
-        "associationType",
-        "approverLevel",
-        "notifyUserOnApprove",
-        "notifyUserOnReject",
-        "approveNotificationUserType",
-        "rejectNotificationUserType",
-        "approverRoleId",
-        "applyDelegationFilter"
+	"id",
+	"requestType",
+	"applyDelegationFilter",
+	"associationType",
+	"associationEntityId",
+	"approverLevel",
+	"onApproveEntityId",
+	"onRejectEntityId",
+	"onApproveEntityType",
+	"onRejectEntityType",
+	"approverEntityId",
+	"approverEntityType"
 })
 @DozerDTOCorrespondence(ApproverAssociationEntity.class)
-public class ApproverAssociation implements java.io.Serializable {
-
-    /**
-     *
-     */
-    private static final long serialVersionUID = -6664731921635130368L;
-    private String id;
-    private String requestType;
-    private String action;
-    private String associationObjId;
-    private String approverUserId;
-
-    private String approverRoleId;
-    private Integer applyDelegationFilter = new Integer(0);
-
-    private String associationType;
-    private Integer approverLevel;
-
-
-    /* Users to notify based on approval or rejection */
-    private String notifyUserOnApprove;
-    private String notifyUserOnReject;
-
-    /* type of user that we are sending a notification to - User, Supervisor, Target User */
-    private String approveNotificationUserType;
-    private String rejectNotificationUserType;
-
-
-    public ApproverAssociation() {
-    }
-
-
-    public String getId() {
-        return id;
-    }
-
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-
-    public String getRequestType() {
-        return requestType;
-    }
-
-
-    public void setRequestType(String requestType) {
-        this.requestType = requestType;
-    }
-
-
-    public String getAction() {
-        return action;
-    }
-
-
-    public void setAction(String action) {
-        this.action = action;
-    }
-
-
-    public String getAssociationObjId() {
-        return associationObjId;
-    }
-
-
-    public void setAssociationObjId(String associationObjId) {
-        this.associationObjId = associationObjId;
-    }
-
-
-    public String getApproverUserId() {
-        return approverUserId;
-    }
-
-
-    public void setApproverUserId(String approverUserId) {
-        this.approverUserId = approverUserId;
-    }
-
-
-    public String getAssociationType() {
-        return associationType;
-    }
-
-
-    public void setAssociationType(String associationType) {
-        this.associationType = associationType;
-    }
-
-
-    public Integer getApproverLevel() {
-        return approverLevel;
-    }
-
-
-    public void setApproverLevel(Integer approverLevel) {
-        this.approverLevel = approverLevel;
-    }
-
-    public String getNotifyUserOnApprove() {
-        return notifyUserOnApprove;
-    }
-
-    public void setNotifyUserOnApprove(String notifyUserOnApprove) {
-        this.notifyUserOnApprove = notifyUserOnApprove;
-    }
-
-    public String getNotifyUserOnReject() {
-        return notifyUserOnReject;
-    }
-
-    public void setNotifyUserOnReject(String notifyUserOnReject) {
-        this.notifyUserOnReject = notifyUserOnReject;
-    }
-
-    public String getApproveNotificationUserType() {
-        return approveNotificationUserType;
-    }
-
-    public void setApproveNotificationUserType(String approveNotificationUserType) {
-        this.approveNotificationUserType = approveNotificationUserType;
-    }
-
-    public String getRejectNotificationUserType() {
-        return rejectNotificationUserType;
-    }
-
-    public void setRejectNotificationUserType(String rejectNotificationUserType) {
-        this.rejectNotificationUserType = rejectNotificationUserType;
-    }
-
-    public String getApproverRoleId() {
-        return approverRoleId;
-    }
-
-    public void setApproverRoleId(String approverRoleId) {
-        this.approverRoleId = approverRoleId;
-    }
-
-    public Integer getApplyDelegationFilter() {
-        return applyDelegationFilter;
-    }
-
-    public void setApplyDelegationFilter(Integer applyDelegationFilter) {
-        this.applyDelegationFilter = applyDelegationFilter;
-    }
-
-
+public class ApproverAssociation implements Serializable {
+	private String id;
+	private String requestType;
+	private boolean applyDelegationFilter;
+	
+	@Enumerated(EnumType.STRING)
+	private AssociationType associationType;
+	private String associationEntityId;
+	private Integer approverLevel;
+	private String onApproveEntityId;
+	private String onRejectEntityId;
+	
+	@Enumerated(EnumType.STRING)
+	private AssociationType onApproveEntityType;
+	
+	@Enumerated(EnumType.STRING)
+	private AssociationType onRejectEntityType;
+	
+	private String approverEntityId;
+	
+	@Enumerated(EnumType.STRING)
+	private AssociationType approverEntityType;
+	
+	public String getId() {
+		return id;
+	}
+	public void setId(String id) {
+		this.id = id;
+	}
+	public String getRequestType() {
+		return requestType;
+	}
+	public void setRequestType(String requestType) {
+		this.requestType = requestType;
+	}
+	public boolean isApplyDelegationFilter() {
+		return applyDelegationFilter;
+	}
+	public void setApplyDelegationFilter(boolean applyDelegationFilter) {
+		this.applyDelegationFilter = applyDelegationFilter;
+	}
+	public String getAssociationEntityId() {
+		return associationEntityId;
+	}
+	public void setAssociationEntityId(String associationEntityId) {
+		this.associationEntityId = associationEntityId;
+	}
+	public Integer getApproverLevel() {
+		return approverLevel;
+	}
+	public void setApproverLevel(Integer approverLevel) {
+		this.approverLevel = approverLevel;
+	}
+	public String getOnApproveEntityId() {
+		return onApproveEntityId;
+	}
+	public void setOnApproveEntityId(String onApproveEntityId) {
+		this.onApproveEntityId = onApproveEntityId;
+	}
+	public String getOnRejectEntityId() {
+		return onRejectEntityId;
+	}
+	public void setOnRejectEntityId(String onRejectEntityId) {
+		this.onRejectEntityId = onRejectEntityId;
+	}
+	public AssociationType getAssociationType() {
+		return associationType;
+	}
+	public void setAssociationType(AssociationType associationType) {
+		this.associationType = associationType;
+	}
+	public AssociationType getOnApproveEntityType() {
+		return onApproveEntityType;
+	}
+	public void setOnApproveEntityType(AssociationType onApproveEntityType) {
+		this.onApproveEntityType = onApproveEntityType;
+	}
+	public AssociationType getOnRejectEntityType() {
+		return onRejectEntityType;
+	}
+	public void setOnRejectEntityType(AssociationType onRejectEntityType) {
+		this.onRejectEntityType = onRejectEntityType;
+	}
+	public String getApproverEntityId() {
+		return approverEntityId;
+	}
+	public void setApproverEntityId(String approverEntityId) {
+		this.approverEntityId = approverEntityId;
+	}
+	public AssociationType getApproverEntityType() {
+		return approverEntityType;
+	}
+	public void setApproverEntityType(AssociationType approverEntityType) {
+		this.approverEntityType = approverEntityType;
+	}
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((action == null) ? 0 : action.hashCode());
+		result = prime * result + (applyDelegationFilter ? 1231 : 1237);
 		result = prime
 				* result
-				+ ((applyDelegationFilter == null) ? 0 : applyDelegationFilter
+				+ ((approverEntityId == null) ? 0 : approverEntityId.hashCode());
+		result = prime
+				* result
+				+ ((approverEntityType == null) ? 0 : approverEntityType
 						.hashCode());
-		result = prime
-				* result
-				+ ((approveNotificationUserType == null) ? 0
-						: approveNotificationUserType.hashCode());
 		result = prime * result
 				+ ((approverLevel == null) ? 0 : approverLevel.hashCode());
-		result = prime * result
-				+ ((approverRoleId == null) ? 0 : approverRoleId.hashCode());
-		result = prime * result
-				+ ((approverUserId == null) ? 0 : approverUserId.hashCode());
 		result = prime
 				* result
-				+ ((associationObjId == null) ? 0 : associationObjId.hashCode());
+				+ ((associationEntityId == null) ? 0 : associationEntityId
+						.hashCode());
 		result = prime * result
 				+ ((associationType == null) ? 0 : associationType.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime
 				* result
-				+ ((notifyUserOnApprove == null) ? 0 : notifyUserOnApprove
+				+ ((onApproveEntityId == null) ? 0 : onApproveEntityId
 						.hashCode());
 		result = prime
 				* result
-				+ ((notifyUserOnReject == null) ? 0 : notifyUserOnReject
+				+ ((onApproveEntityType == null) ? 0 : onApproveEntityType
 						.hashCode());
 		result = prime
 				* result
-				+ ((rejectNotificationUserType == null) ? 0
-						: rejectNotificationUserType.hashCode());
+				+ ((onRejectEntityId == null) ? 0 : onRejectEntityId.hashCode());
+		result = prime
+				* result
+				+ ((onRejectEntityType == null) ? 0 : onRejectEntityType
+						.hashCode());
 		result = prime * result
 				+ ((requestType == null) ? 0 : requestType.hashCode());
 		return result;
 	}
-
-
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -226,67 +172,45 @@ public class ApproverAssociation implements java.io.Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		ApproverAssociation other = (ApproverAssociation) obj;
-		if (action == null) {
-			if (other.action != null)
-				return false;
-		} else if (!action.equals(other.action))
+		if (applyDelegationFilter != other.applyDelegationFilter)
 			return false;
-		if (applyDelegationFilter == null) {
-			if (other.applyDelegationFilter != null)
+		if (approverEntityId == null) {
+			if (other.approverEntityId != null)
 				return false;
-		} else if (!applyDelegationFilter.equals(other.applyDelegationFilter))
+		} else if (!approverEntityId.equals(other.approverEntityId))
 			return false;
-		if (approveNotificationUserType == null) {
-			if (other.approveNotificationUserType != null)
-				return false;
-		} else if (!approveNotificationUserType
-				.equals(other.approveNotificationUserType))
+		if (approverEntityType != other.approverEntityType)
 			return false;
 		if (approverLevel == null) {
 			if (other.approverLevel != null)
 				return false;
 		} else if (!approverLevel.equals(other.approverLevel))
 			return false;
-		if (approverRoleId == null) {
-			if (other.approverRoleId != null)
+		if (associationEntityId == null) {
+			if (other.associationEntityId != null)
 				return false;
-		} else if (!approverRoleId.equals(other.approverRoleId))
+		} else if (!associationEntityId.equals(other.associationEntityId))
 			return false;
-		if (approverUserId == null) {
-			if (other.approverUserId != null)
-				return false;
-		} else if (!approverUserId.equals(other.approverUserId))
-			return false;
-		if (associationObjId == null) {
-			if (other.associationObjId != null)
-				return false;
-		} else if (!associationObjId.equals(other.associationObjId))
-			return false;
-		if (associationType == null) {
-			if (other.associationType != null)
-				return false;
-		} else if (!associationType.equals(other.associationType))
+		if (associationType != other.associationType)
 			return false;
 		if (id == null) {
 			if (other.id != null)
 				return false;
 		} else if (!id.equals(other.id))
 			return false;
-		if (notifyUserOnApprove == null) {
-			if (other.notifyUserOnApprove != null)
+		if (onApproveEntityId == null) {
+			if (other.onApproveEntityId != null)
 				return false;
-		} else if (!notifyUserOnApprove.equals(other.notifyUserOnApprove))
+		} else if (!onApproveEntityId.equals(other.onApproveEntityId))
 			return false;
-		if (notifyUserOnReject == null) {
-			if (other.notifyUserOnReject != null)
-				return false;
-		} else if (!notifyUserOnReject.equals(other.notifyUserOnReject))
+		if (onApproveEntityType != other.onApproveEntityType)
 			return false;
-		if (rejectNotificationUserType == null) {
-			if (other.rejectNotificationUserType != null)
+		if (onRejectEntityId == null) {
+			if (other.onRejectEntityId != null)
 				return false;
-		} else if (!rejectNotificationUserType
-				.equals(other.rejectNotificationUserType))
+		} else if (!onRejectEntityId.equals(other.onRejectEntityId))
+			return false;
+		if (onRejectEntityType != other.onRejectEntityType)
 			return false;
 		if (requestType == null) {
 			if (other.requestType != null)
@@ -295,22 +219,20 @@ public class ApproverAssociation implements java.io.Serializable {
 			return false;
 		return true;
 	}
-
-
 	@Override
 	public String toString() {
 		return "ApproverAssociation [id=" + id + ", requestType=" + requestType
-				+ ", action=" + action + ", associationObjId="
-				+ associationObjId + ", approverUserId=" + approverUserId
-				+ ", approverRoleId=" + approverRoleId
 				+ ", applyDelegationFilter=" + applyDelegationFilter
-				+ ", associationType=" + associationType + ", approverLevel="
-				+ approverLevel + ", notifyUserOnApprove="
-				+ notifyUserOnApprove + ", notifyUserOnReject="
-				+ notifyUserOnReject + ", approveNotificationUserType="
-				+ approveNotificationUserType + ", rejectNotificationUserType="
-				+ rejectNotificationUserType + "]";
+				+ ", associationType=" + associationType
+				+ ", associationEntityId=" + associationEntityId
+				+ ", approverLevel=" + approverLevel + ", onApproveEntityId="
+				+ onApproveEntityId + ", onRejectEntityId=" + onRejectEntityId
+				+ ", onApproveEntityType=" + onApproveEntityType
+				+ ", onRejectEntityType=" + onRejectEntityType
+				+ ", approverEntityId=" + approverEntityId
+				+ ", approverEntityType=" + approverEntityType + "]";
 	}
-    
-    
+	
+	
+	
 }

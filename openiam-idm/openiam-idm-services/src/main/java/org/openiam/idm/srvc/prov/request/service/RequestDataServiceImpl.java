@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
@@ -75,13 +76,13 @@ public class RequestDataServiceImpl implements RequestDataService {
 			 return null;
 		}
 		ApproverAssociation approver = approverList.get(0);
-		String assocType = approver.getAssociationType();
+		AssociationType assocType = approver.getAssociationType();
 		if (assocType == null) {
 			throw new IllegalArgumentException("Approver association is not defined.");
 		}
 		
 		
-		if (assocType.equalsIgnoreCase("SUPERVISOR")) {
+		if (AssociationType.SUPERVISOR.equals(assocType)) {
 
 			String supervisorUserId = supervisor.getSupervisor().getUserId();
 			RequestApprover app = new RequestApprover();
@@ -92,13 +93,12 @@ public class RequestDataServiceImpl implements RequestDataService {
 			reqApproverList.add(app);
 			return reqApproverList;
 		}
-		if (assocType.equalsIgnoreCase("GROUP") || 
-				assocType.equalsIgnoreCase("ROLE")	) {
+		if (AssociationType.GROUP.equals(assocType) || AssociationType.ROLE.equals(assocType)) {
 
 			for ( ApproverAssociation assoc : approverList) {
 				RequestApprover app = new RequestApprover();
-				app.setApproverType(assocType);
-				app.setApproverId(assoc.getApproverUserId());
+				app.setApproverType(assocType.getValue());
+				app.setApproverId(assoc.getOnApproveEntityId());
 				app.setApproverLevel(app.getApproverLevel());
 				reqApproverList.add(app);
 			}
