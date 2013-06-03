@@ -193,7 +193,20 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 	            if (policy == null) {
 	                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 	            }
-	            
+	            if (StringUtils.isBlank(policy.getName())) {
+	                throw new BasicDataServiceException(ResponseCode.POLICY_NAME_NOT_SET);
+	            }
+
+	            final List<PolicyEntity> found =  policyDao.findPolicyByName(policy.getPolicyDefId(),policy.getName());
+	            if (found != null && found.size()>0) {
+	                if (StringUtils.isBlank(policy.getPolicyId()) && found != null) {
+	                    throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
+	                }
+
+	                if (StringUtils.isNotBlank(policy.getPolicyId()) && !policy.getPolicyId().equals(found.get(0).getPolicyId())) {
+	                    throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
+	                }
+	            }
 	            PolicyEntity pe=policyDozerConverter.convertToEntity(policy, true);
 	            
 	            /* merge */
@@ -266,6 +279,7 @@ public class PolicyDataServiceImpl implements PolicyDataService {
             PolicyEntity pe=policyDao.findById(policyId);
             policyDao.delete(pe);
         } catch (BasicDataServiceException e) {
+        	
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
         } catch (Throwable e) {
