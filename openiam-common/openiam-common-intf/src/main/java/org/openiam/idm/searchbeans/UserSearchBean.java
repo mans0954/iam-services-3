@@ -91,7 +91,7 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
     protected String zipCode;
 
     protected String loggedIn = null;
-    protected int delAdmin = 0;
+    protected boolean delAdmin = false;
 
 //    private String organizationId;
     protected List<String> organizationIdList = new ArrayList<String>();
@@ -122,15 +122,16 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
              organizationIdList = new ArrayList<String>();
         organizationIdList.add(organizationId);
     }
+   
+    public boolean isDelAdmin() {
+		return delAdmin;
+	}
 
-    public int getDelAdmin() {
-        return delAdmin;
-    }
+	public void setDelAdmin(boolean delAdmin) {
+		this.delAdmin = delAdmin;
+	}
 
-    public void setDelAdmin(int delAdmin) {
-        this.delAdmin = delAdmin;
-    }
-    public String getFirstName() {
+	public String getFirstName() {
         return firstName;
     }
 
