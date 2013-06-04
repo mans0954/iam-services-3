@@ -225,27 +225,18 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 					poObject.setRule(pe.getRule());
 					poObject.setRuleSrcUrl(pe.getRuleSrcUrl());
 					poObject.setStatus(pe.getStatus());
-					
+					poObject.setPolicyAttributes(pe.getPolicyAttributes());
 				  //Updating Policy.
 					policyDao.update(poObject);
 					
-					//updating policy attribute.
-					Set<PolicyAttributeEntity>   policyAttributes= pe.getPolicyAttributes();
-					for(PolicyAttributeEntity policyAttribute: policyAttributes){
-						policyAttributeDao.update(policyAttribute);
-					}
-				
+					
+					response.setResponseValue(pe.getPolicyId());
 					
 				} else {
 					//creating new Policy
 					pe =policyDao.add(pe);
 					response.setResponseValue(pe.getPolicyId());
-					//creating new Policy Attribute.
-					/*Set<PolicyAttributeEntity>   policyAttributes= pe.getPolicyAttributes();
-					for(PolicyAttributeEntity policyAttribute: policyAttributes){
-						policyAttribute.setPolicyId(pe.getPolicyId());
-						policyAttributeDao.add(policyAttribute);
-					}*/
+					
 					
 				}
 	        } catch (BasicDataServiceException e) {
