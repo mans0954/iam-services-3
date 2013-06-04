@@ -82,6 +82,7 @@ import org.openiam.spml2.msg.password.ValidatePasswordRequestType;
 import org.openiam.spml2.msg.password.ValidatePasswordResponseType;
 import org.openiam.spml2.msg.suspend.ResumeRequestType;
 import org.openiam.spml2.msg.suspend.SuspendRequestType;
+import org.openiam.spml2.spi.common.LookupAttributeNamesCommand;
 import org.openiam.spml2.spi.ldap.dirtype.Directory;
 import org.openiam.spml2.spi.ldap.dirtype.DirectorySpecificImplFactory;
 import org.openiam.spml2.util.connect.ConnectionFactory;
@@ -89,6 +90,7 @@ import org.openiam.spml2.util.connect.ConnectionManagerConstant;
 import org.openiam.spml2.util.connect.ConnectionMgr;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -127,9 +129,14 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
     protected LdapModifyCommand modifyCommand;
     protected LdapLookupCommand lookupCommand;
     protected LdapDeleteCommand deleteCommand;
+    @Autowired
+    @Qualifier("ldapLookupAttributeNamesCommand")
+    protected LookupAttributeNamesCommand lookupAttributeNamesCommand;
 
     @Autowired
     protected ManagedSystemObjectMatchDozerConverter managedSystemObjectMatchDozerConverter;
+
+
 
     public static ApplicationContext ac;
 
@@ -497,11 +504,7 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
 * LookupAttributeRequestType)
 */
     public LookupAttributeResponseType lookupAttributeNames(LookupAttributeRequestType reqType){
-        LookupAttributeResponseType respType = new LookupAttributeResponseType();
-        respType.setStatus(StatusCodeType.FAILURE);
-        respType.setError(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION);
-
-        return respType;
+        return lookupAttributeNamesCommand.lookupAttributeNames(reqType);
     }
 
     /*

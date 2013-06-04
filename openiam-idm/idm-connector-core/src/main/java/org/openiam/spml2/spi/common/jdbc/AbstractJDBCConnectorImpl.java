@@ -101,20 +101,6 @@ public abstract class AbstractJDBCConnectorImpl extends AbstractSpml2Complete im
         return lookupCommand.lookup(reqType);
     }
 
-    /*
-* (non-Javadoc)
-*
-* @see org.openiam.spml2.interf.SpmlCore#lookupAttributeNames(org.openiam.spml2.msg.
-* LookupAttributeRequestType)
-*/
-    public LookupAttributeResponseType lookupAttributeNames(LookupAttributeRequestType reqType){
-        LookupAttributeResponseType respType = new LookupAttributeResponseType();
-        respType.setStatus(StatusCodeType.FAILURE);
-        respType.setError(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION);
-
-        return respType;
-    }
-
     public ResponseType setPassword( SetPasswordRequestType request) {
         return setPasswordCommand.setPassword(request);
     }

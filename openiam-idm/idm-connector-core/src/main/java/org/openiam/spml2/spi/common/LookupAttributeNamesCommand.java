@@ -5,5 +5,5 @@ import org.openiam.spml2.msg.LookupAttributeResponseType;
 
 
 public interface LookupAttributeNamesCommand {
-    public LookupAttributeResponseType lookup(LookupAttributeRequestType reqType);
+    public LookupAttributeResponseType lookupAttributeNames(LookupAttributeRequestType reqType);
 }
