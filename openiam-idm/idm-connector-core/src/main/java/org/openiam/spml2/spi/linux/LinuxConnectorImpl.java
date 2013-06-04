@@ -308,6 +308,19 @@ public class LinuxConnectorImpl extends AbstractSpml2Complete implements Connect
         return responseType;
     }
 
+    /*
+* (non-Javadoc)
+*
+* @see org.openiam.spml2.interf.SpmlCore#lookupAttributeNames(org.openiam.spml2.msg.
+* LookupAttributeRequestType)
+*/
+    public LookupAttributeResponseType lookupAttributeNames(LookupAttributeRequestType reqType){
+        LookupAttributeResponseType respType = new LookupAttributeResponseType();
+        respType.setStatus(StatusCodeType.FAILURE);
+        respType.setError(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION);
+
+        return respType;
+    }
 
     public ResponseType setPassword(@WebParam(name = "request", targetNamespace = "") SetPasswordRequestType request) {
         log.debug("Set password called");

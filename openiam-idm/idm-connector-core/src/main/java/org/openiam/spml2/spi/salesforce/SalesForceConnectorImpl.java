@@ -9,16 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.spml2.interf.ConnectorService;
-import org.openiam.spml2.msg.AddRequestType;
-import org.openiam.spml2.msg.AddResponseType;
-import org.openiam.spml2.msg.DeleteRequestType;
-import org.openiam.spml2.msg.ErrorCode;
-import org.openiam.spml2.msg.LookupRequestType;
-import org.openiam.spml2.msg.LookupResponseType;
-import org.openiam.spml2.msg.ModifyRequestType;
-import org.openiam.spml2.msg.ModifyResponseType;
-import org.openiam.spml2.msg.ResponseType;
-import org.openiam.spml2.msg.StatusCodeType;
+import org.openiam.spml2.msg.*;
 import org.openiam.spml2.msg.password.ExpirePasswordRequestType;
 import org.openiam.spml2.msg.password.ResetPasswordRequestType;
 import org.openiam.spml2.msg.password.ResetPasswordResponseType;
@@ -100,6 +91,20 @@ public class SalesForceConnectorImpl implements ConnectorService {
 
     public LookupResponseType lookup( LookupRequestType reqType) {
         return lookupCommand.lookup(reqType);
+    }
+
+    /*
+* (non-Javadoc)
+*
+* @see org.openiam.spml2.interf.SpmlCore#lookupAttributeNames(org.openiam.spml2.msg.
+* LookupAttributeRequestType)
+*/
+    public LookupAttributeResponseType lookupAttributeNames(LookupAttributeRequestType reqType){
+        LookupAttributeResponseType respType = new LookupAttributeResponseType();
+        respType.setStatus(StatusCodeType.FAILURE);
+        respType.setError(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION);
+
+        return respType;
     }
 
     public ResponseType setPassword( SetPasswordRequestType request) {
