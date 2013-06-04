@@ -30,12 +30,12 @@ public class ReconciliationResourceAttributeMapEntity implements
     @Column(name = "RECON_RES_ATTR_MAP_ID", length = 32, nullable = false)
     private String reconciliationResourceAttributeMapId;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "ATTR_POLICY_ID", nullable = false, updatable = false)
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "ATTR_POLICY_ID", nullable = true, updatable = true)
     private PolicyEntity attributePolicy;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "DEF_RECON_ATTR_MAP_ID", nullable = false, updatable = false)
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "DEF_RECON_ATTR_MAP_ID", nullable = true, updatable = true)
     private DefaultReconciliationAttributeMapEntity defaultAttributePolicy;
 
     public String getReconciliationResourceAttributeMapId() {

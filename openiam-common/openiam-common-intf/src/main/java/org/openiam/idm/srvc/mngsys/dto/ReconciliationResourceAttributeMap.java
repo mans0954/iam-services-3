@@ -25,7 +25,6 @@ public class ReconciliationResourceAttributeMap implements java.io.Serializable 
     private String reconciliationResourceAttributeMapId;
     private Policy attributePolicy;
     private DefaultReconciliationAttributeMap defaultAttributePolicy;
-    private String attributeMapId;
 
     public String getReconciliationResourceAttributeMapId() {
         return reconciliationResourceAttributeMapId;
@@ -42,14 +41,6 @@ public class ReconciliationResourceAttributeMap implements java.io.Serializable 
 
     public void setAttributePolicy(Policy attributePolicy) {
         this.attributePolicy = attributePolicy;
-    }
-
-    public String getAttributeMapId() {
-        return attributeMapId;
-    }
-
-    public void setAttributeMapId(String attributeMapId) {
-        this.attributeMapId = attributeMapId;
     }
 
     public DefaultReconciliationAttributeMap getDefaultAttributePolicy() {
