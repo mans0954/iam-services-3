@@ -23,6 +23,10 @@ package org.openiam.spml2.spi.jdbc;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.spml2.msg.ErrorCode;
+import org.openiam.spml2.msg.LookupAttributeRequestType;
+import org.openiam.spml2.msg.LookupAttributeResponseType;
+import org.openiam.spml2.msg.StatusCodeType;
 import org.openiam.spml2.spi.common.jdbc.AbstractJDBCConnectorImpl;
 
 import javax.jws.WebService;
@@ -41,5 +45,19 @@ import javax.jws.WebService;
 public class AppTableConnectorImpl extends AbstractJDBCConnectorImpl {
 
     private static final Log log = LogFactory.getLog(AppTableConnectorImpl.class);
+
+    /*
+    * (non-Javadoc)
+    *
+    * @see org.openiam.spml2.interf.SpmlCore#lookupAttributeNames(org.openiam.spml2.msg.
+    * LookupAttributeRequestType)
+    */
+    public LookupAttributeResponseType lookupAttributeNames(LookupAttributeRequestType reqType){
+        LookupAttributeResponseType respType = new LookupAttributeResponseType();
+        respType.setStatus(StatusCodeType.FAILURE);
+        respType.setError(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION);
+
+        return respType;
+    }
 
 }

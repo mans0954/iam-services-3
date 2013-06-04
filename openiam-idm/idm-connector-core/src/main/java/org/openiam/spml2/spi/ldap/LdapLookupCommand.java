@@ -58,6 +58,8 @@ public class LdapLookupCommand extends LdapAbstractCommand {
             conMgr.setApplicationContext(ac);
             LdapContext ldapctx = conMgr.connect(managedSys);
 
+
+
             if (ldapctx == null) {
                 respType.setStatus(StatusCodeType.FAILURE);
                 respType.setError(ErrorCode.DIRECTORY_ERROR);
