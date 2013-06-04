@@ -32,8 +32,21 @@ import org.openiam.idm.srvc.policy.domain.PolicyEntity;
  */
 public interface PolicyDAO extends BaseDao<PolicyEntity, String> {
 
+	/**
+	 * Find all policies.
+	 *
+	 * @param policyDefId the policy def id
+	 * @return the list
+	 */
 	public List<PolicyEntity> findAllPolicies(String policyDefId);
 
+	/**
+	 * Find policy by name.
+	 *
+	 * @param policyDefId the policy def id
+	 * @param policyName the policy name
+	 * @return the list
+	 */
 	public List<PolicyEntity> findPolicyByName(String policyDefId,
 			String policyName);
 

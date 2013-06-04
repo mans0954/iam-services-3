@@ -16,30 +16,41 @@ import org.springframework.stereotype.Repository;
  */
 @Repository("policyDefParamDAO")
 public class PolicyDefParamDAOImpl extends
-        BaseDaoImpl<PolicyDefParamEntity, String> implements PolicyDefParamDAO {
+		BaseDaoImpl<PolicyDefParamEntity, String> implements PolicyDefParamDAO {
 
-    @SuppressWarnings("unchecked")
-    public List<PolicyDefParamEntity> findPolicyDefParamByGroup(String defId,
-            String group) {
-        try {
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.openiam.idm.srvc.policy.service.PolicyDefParamDAO#
+	 * findPolicyDefParamByGroup(java.lang.String, java.lang.String)
+	 */
+	@SuppressWarnings("unchecked")
+	public List<PolicyDefParamEntity> findPolicyDefParamByGroup(String defId,
+			String group) {
+		try {
+			Criteria cr = this.getCriteria();
+			if (group != null) {
+				cr.add(Restrictions.and(Restrictions.eq("paramGroup", group),
+						Restrictions.eq("policyDefId", defId)));
+			} else {
+				cr.add(
 
-            Criteria cr = this.getCriteria().add(
-                    Restrictions.and(Restrictions.eq("paramGroup", group),
-                            Restrictions.eq("policyDefId", defId)));
-            List<PolicyDefParamEntity> result = (List<PolicyDefParamEntity>) cr
-                    .list();
-            if (result == null || result.size() == 0)
-                return null;
-            return result;
-        } catch (HibernateException re) {
-            log.error("findPolicyDefParamByGroup failed", re);
-            throw re;
-        }
-    }
+				Restrictions.eq("policyDefId", defId));
+			}
+			List<PolicyDefParamEntity> result = (List<PolicyDefParamEntity>) cr
+					.list();
+			if (result == null || result.size() == 0)
+				return null;
+			return result;
+		} catch (HibernateException re) {
+			log.error("findPolicyDefParamByGroup failed", re);
+			throw re;
+		}
+	}
 
-    @Override
-    protected String getPKfieldName() {
-        return "defParamId";
-    }
+	@Override
+	protected String getPKfieldName() {
+		return "defParamId";
+	}
 
 }

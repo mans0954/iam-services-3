@@ -62,9 +62,6 @@ public class PolicyDefParamEntity implements java.io.Serializable {
 	@Column(name = "PARAM_GROUP", length = 20)
     private String paramGroup;
 
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	@JoinColumn(name = "DEF_PARAM_ID", insertable = false, updatable = false)
-    private Set<PolicyAttributeEntity> policyAttributes = new HashSet<PolicyAttributeEntity>(0);
 
 	public PolicyDefParamEntity() {
 	}
@@ -138,13 +135,7 @@ public class PolicyDefParamEntity implements java.io.Serializable {
         this.policyParamHandler = policyParamHandler;
     }
 
-    public Set<PolicyAttributeEntity> getPolicyAttributes() {
-        return this.policyAttributes;
-    }
 
-    public void setPolicyAttributes(Set<PolicyAttributeEntity> policyAttributes) {
-        this.policyAttributes = policyAttributes;
-    }
 
     public String getParamGroup() {
         return paramGroup;
@@ -183,8 +174,7 @@ public class PolicyDefParamEntity implements java.io.Serializable {
                 ", repeats=" + repeats +
                 ", policyParamHandler='" + policyParamHandler + '\'' +
                 ", handlerLanguage='" + handlerLanguage + '\'' +
-                ", paramGroup='" + paramGroup + '\'' +
-                ", policyAttributes=" + policyAttributes +
+                ", paramGroup='" + paramGroup + 
                 '}';
     }
 }
