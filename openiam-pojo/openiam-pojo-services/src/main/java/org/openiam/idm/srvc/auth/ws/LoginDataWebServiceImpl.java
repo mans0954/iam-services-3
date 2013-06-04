@@ -488,6 +488,23 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 		return resp;
 	}
 
+	 /**
+     *Returns a list of Login objects which are nearing expiry depending on PWD_EXP_WARN password attribute
+     *If attribute unset, default is assumed to be 5. 
+     *
+     * @param 
+     * @return
+     */
+    public LoginListResponse getUsersNearPswdExpiration(){
+		LoginListResponse resp = new LoginListResponse(ResponseStatus.SUCCESS);
+		List<LoginEntity> lgList = loginDS.getUsersNearPswdExpiration();
+		if (lgList == null ) {
+			resp.setStatus(ResponseStatus.FAILURE);
+		}else {
+			resp.setPrincipalList(loginDozerConverter.convertToDTOList(lgList, false)); 
+		}
+		return resp;
+	}
 
 	public Response changeIdentityName(
 			String newPrincipalName, 
