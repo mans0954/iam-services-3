@@ -378,12 +378,6 @@
 		<class-a>org.openiam.idm.srvc.policy.domain.PolicyDefParamEntity
 		</class-a>
 		<class-b>org.openiam.idm.srvc.policy.dto.PolicyDefParam</class-b>
-		<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
-			custom-converter-param="dto2entityShallowDozerMapper">
-			<a>policyAttributes</a>
-			<b>policyAttributes</b>
-		</field>
 	</mapping>
 	<mapping>
 		<class-a>org.openiam.idm.srvc.policy.domain.PolicyEntity</class-a>

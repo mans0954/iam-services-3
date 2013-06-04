@@ -498,7 +498,26 @@ public class LoginDataServiceImpl implements LoginDataService {
         List<LoginEntity> loginList = loginDao.findUserNearPswdExp(expDays);
         return loginList;
     }
-
+    
+    /**
+     *Returns a list of Login objects which are nearing expiry depending on PWD_WARN password attribute
+     *If attribute unset, default is assumed to be 5. 
+     *
+     * @param 
+     * @return
+     */
+    public List<LoginEntity> getUsersNearPswdExpiration() {
+        Policy plcy =passwordManager.getGlobalPasswordPolicy();
+        int daysToExpiration = 5;
+        String pswdExpValue = getPolicyAttribute(plcy.getPolicyAttributes(),
+                "PWD_EXP_WARN");
+        if (pswdExpValue != null && pswdExpValue.length() > 0 )  {
+        	daysToExpiration = Integer.parseInt(pswdExpValue);
+		}
+        List<LoginEntity> loginList = loginDao.findUserNearPswdExp(daysToExpiration);
+        return loginList;
+    }
+    
     public List<LoginEntity> usersWithPasswordExpYesterday() {
         List<LoginEntity> loginList = loginDao.findUserPswdExpYesterday();
         return loginList;

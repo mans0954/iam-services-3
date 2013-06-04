@@ -21,7 +21,7 @@ def loginManager = ServiceHelper.loginService()
 
 currentDate = new Date(System.currentTimeMillis())
 
-loginList = loginManager.getUserNearPswdExpiration(2).principalList
+loginList = loginManager.getUsersNearPswdExpiration().principalList
 
 
 if (loginList != null ) {
