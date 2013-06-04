@@ -201,7 +201,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
         if (connector.getConnectorInterface() != null &&
                 connector.getConnectorInterface().equalsIgnoreCase("REMOTE")) {
 
-            return remoteAdd(mLg, requestId, mSys, matchObj, extUser, connector, user, idmAuditLog);
+            return remoteAdd(mLg, requestId, mSys, matchObj, extUser, connector, idmAuditLog);
         }
         return localAdd(mLg, requestId, mSys, matchObj, extUser, user, idmAuditLog);
     }
@@ -325,17 +325,20 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
             try {
                 MuleClient client = new MuleClient(muleContext);
 
-                HashMap<String, String> msgPropMap = new HashMap<String, String>();
-                msgPropMap.put(MailTemplateParameters.SERVICE_HOST.value(), serviceHost);
-                msgPropMap.put(MailTemplateParameters.SERVICE_CONTEXT.value(), serviceContext);
-                msgPropMap.put(MailTemplateParameters.USER_ID.value(), user.getUserId());
-                msgPropMap.put(MailTemplateParameters.IDENTITY.value(), identity);
-                msgPropMap.put(MailTemplateParameters.PASSWORD.value(), password);
-                msgPropMap.put(MailTemplateParameters.USER_NAME.value(), name);
-                msgPropMap.put(MailTemplateParameters.FIRST_NAME.value(), user.getFirstName());
-                msgPropMap.put(MailTemplateParameters.LAST_NAME.value(), user.getLastName());
+                HashMap<String, String> msgParamsMap = new HashMap<String, String>();
+                msgParamsMap.put(MailTemplateParameters.SERVICE_HOST.value(), serviceHost);
+                msgParamsMap.put(MailTemplateParameters.SERVICE_CONTEXT.value(), serviceContext);
+                msgParamsMap.put(MailTemplateParameters.USER_ID.value(), user.getUserId());
+                msgParamsMap.put(MailTemplateParameters.IDENTITY.value(), identity);
+                msgParamsMap.put(MailTemplateParameters.PASSWORD.value(), password);
+                msgParamsMap.put(MailTemplateParameters.USER_NAME.value(), name);
+                msgParamsMap.put(MailTemplateParameters.FIRST_NAME.value(), user.getFirstName());
+                msgParamsMap.put(MailTemplateParameters.LAST_NAME.value(), user.getLastName());
 
-                client.sendAsync("vm://notifyUserByEmailMessage", NEW_USER_EMAIL_SUPERVISOR_NOTIFICATION, msgPropMap);
+                Map<String, String> msgProp = new HashMap<String, String>();
+                msgProp.put("SERVICE_HOST", serviceHost);
+                msgProp.put("SERVICE_CONTEXT", serviceContext);
+                client.sendAsync("vm://notifyUserByEmailMessage", new NotificationRequest(NEW_USER_EMAIL_SUPERVISOR_NOTIFICATION, msgParamsMap), msgProp);
 
             } catch (MuleException me) {
                 log.error(me.toString());
@@ -784,6 +787,30 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
         }
     }
 
+    protected String parseUserPrincipal(List<ExtensibleAttribute> extensibleAttributes) {
+        List<AttributeMap> policyAttrMap = managedSysService.getResourceAttributeMaps(sysConfiguration.getDefaultManagedSysId());
+        String principalAttributeName = null;
+        for (AttributeMap attr : policyAttrMap) {
+            String objectType = attr.getMapForObjectType();
+            if (objectType != null) {
+                if (objectType.equalsIgnoreCase("PRINCIPAL")) {
+                    if (attr.getAttributeName().equalsIgnoreCase("PRINCIPAL")) {
+                        principalAttributeName = attr.getAttributeName();
+                        break;
+                    }
+                }
+            }
+        }
+        if (StringUtils.isNotEmpty(principalAttributeName)) {
+            for (ExtensibleAttribute extAttr : extensibleAttributes) {
+                if (extAttr.getName().equalsIgnoreCase(principalAttributeName)) {
+                    return extAttr.getValue();
+                }
+            }
+        }
+        return null;
+    }
+
     /**
      * when a request already contains an identity and password has not been setup, this method generates a password
      * based on our rules.
@@ -879,7 +906,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
         ProvisionServicePreProcessor addPreProcessScript;
         if ( pUser != null) {
-            if (!pUser.isSkipPreprocessor() && (addPreProcessScript = createProvPreProcessScript(preProcessor)) != null) {
+            if (!pUser.isSkipPreprocessor() && (addPreProcessScript = createProvPreProcessScript(preProcessor, bindingMap)) != null) {
                 addPreProcessScript.setMuleContext(muleContext);
                 return executeProvisionPreProcess(addPreProcessScript, bindingMap, pUser, null, operation);
 
@@ -895,7 +922,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
         ProvisionServicePostProcessor addPostProcessScript;
 
         if ( pUser != null) {
-            if (!pUser.isSkipPostProcessor() && (addPostProcessScript = createProvPostProcessScript(postProcessor)) != null) {
+            if (!pUser.isSkipPostProcessor() && (addPostProcessScript = createProvPostProcessScript(postProcessor, bindingMap)) != null) {
                 addPostProcessScript.setMuleContext(muleContext);
                 return executeProvisionPostProcess(addPostProcessScript, bindingMap, pUser, null, operation);
 
@@ -905,36 +932,36 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
         return ProvisioningConstants.SUCCESS;
     }
 
-    protected PreProcessor createPreProcessScript(String scriptName) {
+    protected PreProcessor createPreProcessScript(String scriptName, Map<String, Object> bindingMap) {
         try {
-            return (PreProcessor) scriptRunner.instantiateClass(null, scriptName);
+            return (PreProcessor) scriptRunner.instantiateClass(bindingMap, scriptName);
         } catch (Exception ce) {
             log.error(ce);
             return null;
         }
     }
 
-    protected PostProcessor createPostProcessScript(String scriptName) {
+    protected PostProcessor createPostProcessScript(String scriptName, Map<String, Object> bindingMap) {
         try {
-            return (PostProcessor) scriptRunner.instantiateClass(null, scriptName);
+            return (PostProcessor) scriptRunner.instantiateClass(bindingMap, scriptName);
         } catch (Exception ce) {
             log.error(ce);
             return null;
         }
     }
 
-    protected ProvisionServicePreProcessor createProvPreProcessScript(String scriptName) {
+    protected ProvisionServicePreProcessor createProvPreProcessScript(String scriptName, Map<String, Object> bindingMap) {
         try {
-            return (ProvisionServicePreProcessor) scriptRunner.instantiateClass(null, scriptName);
+            return (ProvisionServicePreProcessor) scriptRunner.instantiateClass(bindingMap, scriptName);
         } catch (Exception ce) {
             log.error(ce);
             return null;
         }
     }
 
-    protected ProvisionServicePostProcessor createProvPostProcessScript(String scriptName) {
+    protected ProvisionServicePostProcessor createProvPostProcessScript(String scriptName, Map<String, Object> bindingMap) {
         try {
-            return (ProvisionServicePostProcessor) scriptRunner.instantiateClass(null, scriptName);
+            return (ProvisionServicePostProcessor) scriptRunner.instantiateClass(bindingMap, scriptName);
         } catch (Exception ce) {
             log.error(ce);
             return null;
@@ -1427,7 +1454,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
             // update the instance variable so that it can passed to the connector with the right operation code
             for (Group g : newGroupList) {
                 g.setOperation(AttributeOperationEnum.ADD);
-                    this.groupManager.addUserToGroup(g.getGrpId(), userId);
+                groupManager.addUserToGroup(g.getGrpId(), userId);
             }
             return;
         }
@@ -2057,13 +2084,13 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                             }
                         }
                     }
-
+                    //TODO check this case was added when StaterBros debug: the ACTIVE status was awerrided with INACTIVE from this condition
                     if (!found) {
                         if ( l.getManagedSysId().equalsIgnoreCase( "0" )) {
                             // primary identity - do not delete. Just disable its status
                             log.debug("Primary identity - chagne its status");
-                            l.setStatus("INACTIVE");
-                            loginManager.updateLogin(l);
+//                            l.setStatus("INACTIVE");
+//                            loginManager.updateLogin(l);
 
                         } else {
 
@@ -2277,9 +2304,8 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
     }
 
     protected boolean remoteAdd(Login mLg, String requestId, ManagedSysDto mSys,
-                              ManagedSystemObjectMatch matchObj, ExtensibleUser extUser,
-                              ProvisionConnectorDto connector,
-                              ProvisionUser user, IdmAuditLog idmAuditLog) {
+                                ManagedSystemObjectMatch matchObj, ExtensibleUser extUser,
+                                ProvisionConnectorDto connector, IdmAuditLog idmAuditLog) {
 
         log.debug("Calling remote connector " + connector.getName());
 
@@ -2299,14 +2325,6 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
         userReq.setScriptHandler(mSys.getAddHandler());
 
         UserResponse resp = remoteConnectorAdapter.addRequest(mSys, userReq, connector, muleContext);
-
-        auditHelper.addLog("ADD IDENTITY", user.getRequestorDomain(), user.getRequestorLogin(),
-                "IDM SERVICE", user.getCreatedBy(), mLg.getManagedSysId(),
-                "USER", user.getUserId(),
-                idmAuditLog.getLogId(), resp.getStatus().toString(), idmAuditLog.getLogId(), "IDENTITY_STATUS",
-                user.getUser().getStatus().toString(),
-                requestId, resp.getErrorCodeAsStr(), user.getSessionId(), resp.getErrorMsgAsStr(),
-                user.getRequestClientIP(), mLg.getLogin(), mLg.getDomainId());
 
         if (resp.getStatus() == StatusCodeType.FAILURE) {
             return false;
