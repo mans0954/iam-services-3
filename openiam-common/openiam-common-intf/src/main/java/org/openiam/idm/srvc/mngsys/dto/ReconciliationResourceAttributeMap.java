@@ -17,7 +17,7 @@ import org.openiam.idm.srvc.policy.dto.Policy;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ReconciliationResourceAttributeMap", propOrder = {
         "reconciliationResourceAttributeMapId", "attributePolicy",
-        "defaultAttributePolicy", "attributeMapId" })
+        "defaultAttributePolicy" })
 @DozerDTOCorrespondence(ReconciliationResourceAttributeMapEntity.class)
 public class ReconciliationResourceAttributeMap implements java.io.Serializable {
 
