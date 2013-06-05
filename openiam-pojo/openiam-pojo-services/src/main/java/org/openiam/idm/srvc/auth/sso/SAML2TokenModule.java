@@ -33,6 +33,7 @@ import org.apache.commons.logging.LogFactory;
 import org.joda.time.DateTime;
 import org.openiam.base.id.UUIDGen;
 import org.openiam.idm.srvc.auth.dto.SSOToken;
+import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.util.encrypt.Cryptor;
 import org.opensaml.Configuration;
 import org.opensaml.common.SAMLObjectBuilder;
@@ -180,6 +181,8 @@ public class SAML2TokenModule implements SSOTokenModule {
 		           ssoTkn.setToken( str);
 		           
 		           ssoTkn.setExpirationTime(notAfterTime.toDate());
+		           ssoTkn.setPrincipal(principal);
+		           ssoTkn.setUserId(userId);
 		           return ssoTkn;
 		   	   
 		       }catch(Exception e) {
@@ -304,7 +307,7 @@ private Subject buildSubject(String userId, String principal, String issuer) {
 
 	}
 
-    public String getDecryptedToken(String token) {
+    public String getDecryptedToken(String userId,String token)throws Exception {
         return null;
     }
 
@@ -325,7 +328,11 @@ private Subject buildSubject(String userId, String principal, String issuer) {
 	public void setTokenLife(int tokenLife) {
 
 	}
-	
+
+    @Override
+    public void setKeyManagementService(KeyManagementService keyManagementService) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
 
 
 }

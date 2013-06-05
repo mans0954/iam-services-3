@@ -2,13 +2,12 @@ package org.openiam.spml2.util.connect;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
-import org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService;
-import org.springframework.beans.BeansException;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
+import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 
 import javax.naming.*;
-import javax.naming.directory.*;
 import javax.naming.ldap.*;
 
 import java.util.*;
@@ -20,27 +19,25 @@ import java.util.*;
  */
 public class LdapConnectionMgr implements ConnectionMgr {
 
-	private String keystore;
 	LdapContext ctxLdap = null;
-	
-	static protected ResourceBundle secres = ResourceBundle.getBundle("securityconf");
 	
     private static final Log log = LogFactory.getLog(LdapConnectionMgr.class);
     public static ApplicationContext ac;
 
+    @Value("${KEYSTORE}")
+    private String keystore;
 
     public LdapConnectionMgr() {
-    	keystore = secres.getString("KEYSTORE");
+    	
     }
     
 
 
-	public LdapContext connect(ManagedSys managedSys)  throws NamingException{
+	public LdapContext connect(ManagedSysDto managedSys)  throws NamingException{
 
 		LdapContext ldapContext = null;
 		Hashtable<String, String> envDC = new Hashtable();
 	
-		keystore = secres.getString("KEYSTORE");
         if (keystore != null && !keystore.isEmpty())  {
 		    System.setProperty("javax.net.ssl.trustStore",keystore);
         }
@@ -89,8 +86,8 @@ public class LdapConnectionMgr implements ConnectionMgr {
             if (secondarySysID != null && !secondarySysID.isEmpty()) {
 
                 // recursively search through the chained list of linked managed systems
-                ManagedSystemDataService managedSysService =  (ManagedSystemDataService) ac.getBean("managedSysService");
-                ManagedSys secondarySys =  managedSysService.getManagedSys(secondarySysID);
+                ManagedSystemWebService managedSysService =  (ManagedSystemWebService) ac.getBean("managedSysService");
+                ManagedSysDto secondarySys =  managedSysService.getManagedSys(secondarySysID);
                 return connect(secondarySys);
 
             }

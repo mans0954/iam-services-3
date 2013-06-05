@@ -6,11 +6,11 @@
 	<groupId>org.openiam</groupId>
 	<artifactId>iam-services</artifactId>
 	<packaging>pom</packaging>
-	<version>2.1.0</version>
+	<version>3.0.0</version>
 
 	<name>OpenIAM Identity Manager</name>
 	<description>openiam is open source Identity and access Management Project</description>
-	<url>http://www.openiam.org</url>
+	<url>http://www.openiam.com</url>
 
 	<inceptionYear>2008</inceptionYear>
 	<developers>
@@ -41,6 +41,42 @@
 				<role>documentation</role>
 			</roles>
 		</developer>
+        <developer>
+            <name>Alexander Duckardt</name>
+            <id>alexander.duckardt</id>
+            <email>alexander.duckardt@openiam.com</email>
+            <roles>
+                <role>developer</role>
+                <role>documentation</role>
+            </roles>
+        </developer>
+        <developer>
+            <name>Lars Nilsen</name>
+            <id>Lars.nilsen</id>
+            <email>lars.nilsent@openiam.com</email>
+            <roles>
+                <role>developer</role>
+                <role>documentation</role>
+            </roles>
+        </developer>
+        <developer>
+            <name>Lev bornovalov</name>
+            <id>lev.bornovalov</id>
+            <email>lev.bornovalov@openiam.com</email>
+            <roles>
+                <role>developer</role>
+                <role>documentation</role>
+            </roles>
+        </developer>
+        <developer>
+            <name>Vitaly Yakunin</name>
+            <id>vitaly.yakunin</id>
+            <email>vitaly.yakunin@openiam.com</email>
+            <roles>
+                <role>developer</role>
+                <role>documentation</role>
+            </roles>
+        </developer>
 	</developers>
 
 	<licenses>
@@ -59,7 +95,7 @@
 	<!--  source configuration management system  -->
 	<issueManagement>
 		<system>JIRA</system>
-		<url>http://jira.openiam.org</url>
+		<url>http://jira.openiam.com</url>
 	</issueManagement>
 
 	<scm>
@@ -70,31 +106,36 @@
 	</scm>
 
 	<modules>
-		<!--<module>iam-interceptor</module-->
-	   <module>openiam-pojo</module>
+	    <module>openiam-pojo</module>
         <module>openiam-idm</module>
         <module>openiam-am</module>
+        <module>openiam-esb</module>
+        <module>openiam-bpm</module>
+		<module>openiam-km</module>
+		<module>openiam-common</module>
+	<module>openiam-security</module>
+		<module>openiam-auth-manager</module>
     </modules>
-
 	<properties>
 		<mule.version>3.3.0</mule.version>
 		<spring.version>3.1.1.RELEASE</spring.version>
-		<cxf.version>2.3.1</cxf.version>
+		<cxf.version>2.5.1</cxf.version>
 		<activemq.version>5.3.2</activemq.version>
 		<xbean.version>3.6</xbean.version>
 		<groovy.version>1.8.6</groovy.version>
 		<googleapps.version>1.41.5</googleapps.version>
-		<bonita.version>5.4.2</bonita.version>
         <hibernate.version>3.6.6.Final</hibernate.version>
         <hibernatesearch.version>3.4.0.Final</hibernatesearch.version>
+        <hibernate.entity.manager.version>3.6.7.Final</hibernate.entity.manager.version>
         <servletapi.version>2.5</servletapi.version>
-        <ehcache.version>2.6.0</ehcache.version>
+        <ehcache.version>2.4.3</ehcache.version>
         <log4j.version>1.2.16</log4j.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <ganymed.version>251beta1</ganymed.version>
         <javax.xml.version>2.1</javax.xml.version>
         <javax.mail.version>1.4.3</javax.mail.version>
         <jstl.version>1.1.2</jstl.version>
+        <commons.lang.version>3.1</commons.lang.version>
         <commons.collections.version>3.2.1</commons.collections.version>
         <commons.pool.version>1.5.3</commons.pool.version>
         <commons.io.version>1.3.1</commons.io.version>
@@ -103,10 +144,10 @@
         <xstream.version>1.3</xstream.version>
         <geronimo.metadata.version>1.1.2</geronimo.metadata.version>
         <apache.commons.csv.version>1.4.1</apache.commons.csv.version>
-        <groovy.wslite.version>0.3</groovy.wslite.version>
+        <!-- groovy.wslite.version>0.5.3</groovy.wslite.version -->
         <aspectj.version>1.6.8</aspectj.version>
         <mysql.version>5.1.6</mysql.version>
-        <junit.version>4.1</junit.version>
+        <testng.version>6.1.1</testng.version>
         <opensaml.version>2.4.1</opensaml.version>
         <xalan.serializer>2.7.1</xalan.serializer>
         <aopalliance.version>1.0</aopalliance.version>
@@ -115,6 +156,12 @@
         <javassist.version>3.12.1.GA</javassist.version>
         <joda.time.version>1.6.2</joda.time.version>
         <antlr.version>2.7.6</antlr.version>
+        <bouncycastle.version>1.47</bouncycastle.version>
+        <mockito.version>1.9.0</mockito.version>
+        <hsqldb.version>1.8.0.10</hsqldb.version>
+        <twitter4j.version>3.0.3</twitter4j.version>
+        
+    	<skipTests>true</skipTests>
 	</properties>
 
 	<dependencyManagement>
@@ -166,7 +213,6 @@
                 <artifactId>mule-transport-servlet</artifactId>
                 <version>${mule.version}</version>
              </dependency>
-
             <!-- Spring Dependencies-->
             <dependency>
                 <groupId>org.springframework</groupId>
@@ -245,7 +291,6 @@
                 <groupId>log4j</groupId>
                 <artifactId>log4j</artifactId>
                 <version>${log4j.version}</version>
-                <scope>provided</scope>
                 <exclusions>
                     <exclusion>
                         <artifactId>jms</artifactId>
@@ -303,7 +348,6 @@
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
                 <version>${commons.io.version}</version>
-                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>commons-codec</groupId>
@@ -321,32 +365,39 @@
                 <groupId>com.thoughtworks.xstream</groupId>
                 <artifactId>xstream</artifactId>
                 <version>${xstream.version}</version>
-                <scope>provided</scope>
             </dependency>
+
+
             <!-- org.apache.cxf dependencies -->
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-core</artifactId>
                 <version>${cxf.version}</version>
-                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-common-utilities</artifactId>
                 <version>${cxf.version}</version>
-                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-frontend-jaxws</artifactId>
                 <version>${cxf.version}</version>
-                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-rt-transports-http</artifactId>
                 <version>${cxf.version}</version>
-                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-tools-common</artifactId>
+                <version>${cxf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-rt-frontend-simple</artifactId>
+                <version>${cxf.version}</version>
             </dependency>
             <!-- org.apache dependencies -->
             <dependency>
@@ -376,13 +427,12 @@
                 <groupId>org.codehaus.groovy</groupId>
                 <artifactId>groovy-all</artifactId>
                 <version>${groovy.version}</version>
-                <scope>provided</scope>
             </dependency>
-            <dependency>
+            <!-- dependency>
                 <groupId>com.github.groovy-wslite</groupId>
                 <artifactId>groovy-wslite</artifactId>
                 <version>${groovy.wslite.version}</version>
-            </dependency>
+            </dependency -->
             <!-- aspectj dependencies -->
             <dependency>
                 <groupId>org.aspectj</groupId>
@@ -401,12 +451,32 @@
                 <version>${mysql.version}</version>
                 <scope>provided</scope>
             </dependency>
-            <!-- junit dependencies  -->
+            <!-- Testing -->
             <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>${junit.version}</version>
+                <groupId>org.testng</groupId>
+                <artifactId>testng</artifactId>
+                <version>${testng.version}</version>
+                <scope>test</scope>
             </dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-all</artifactId>
+                <version>${mockito.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-test</artifactId>
+                <version>${spring.version}</version>
+                <scope>test</scope>
+                </dependency>
+            <dependency>
+                <groupId>hsqldb</groupId>
+                <artifactId>hsqldb</artifactId>
+                <version>${hsqldb.version}</version>
+                <scope>test</scope>
+            </dependency>
+
             <!-- saml libraries and dependancies -->
             <dependency>
                 <groupId>org.opensaml</groupId>
@@ -421,6 +491,10 @@
                         <groupId>xml-apis</groupId>
                         <artifactId>xml-apis</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.bouncycastle</groupId>
+                        <artifactId>bcprov-jdk15</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -430,7 +504,7 @@
                 <version>${xalan.serializer}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>axerces</groupId>
+                        <groupId>xerces</groupId>
                         <artifactId>xercesImpl</artifactId>
                     </exclusion>
                     <exclusion>
@@ -515,6 +589,11 @@
             </dependency>
             <dependency>
                 <groupId>org.openiam</groupId>
+                <artifactId>openiam-am-services</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.openiam</groupId>
                 <artifactId>openiam-idm-intf</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -530,10 +609,34 @@
             </dependency>
             <dependency>
                 <groupId>org.openiam</groupId>
+                <artifactId>idm-connector-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.openiam</groupId>
                 <artifactId>openiam-idm-ee-intf</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>org.openiam</groupId>
+                <artifactId>openiam-idm-ee-services</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.openiam</groupId>
+                <artifactId>openiam-km-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcprov-jdk15on</artifactId>
+                <version>${bouncycastle.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcpkix-jdk15on</artifactId>
+                <version>${bouncycastle.version}</version>
+            </dependency>
 		</dependencies>
 	</dependencyManagement>
 
@@ -572,6 +675,7 @@
                <includes>
                  <include>**/*Test.java</include>
                </includes>
+               <skipTests>${skipTests}</skipTests>
              </configuration>
            </plugin>
            <plugin>
@@ -628,12 +732,20 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
-        
-		    <repository>
-					<id>bonita</id>
-					<url>http://maven.ow2.org/maven2/org/ow2/bonita</url>
-				</repository>
-		
+
+
+        <repository>
+		      <id>openiam01.managed.contegix.com</id>
+		      <name>openiam01.managed.contegix.com-releases</name>
+		      <url>http://artifactory.openiam.org/artifactory/libs-release-local</url>
+		  </repository>
+
+
+	<repository>
+		<id>org.activiti</id>
+		<name>Activiti Maven Repo</name>
+		<url>https://maven.alfresco.com/nexus/content/groups/public</url>
+	</repository>		
 
 
     <repository>

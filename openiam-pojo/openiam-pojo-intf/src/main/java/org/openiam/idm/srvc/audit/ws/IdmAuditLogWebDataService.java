@@ -32,10 +32,15 @@ public interface IdmAuditLogWebDataService {
      * @return
      */
     public IdmAuditLogListResponse search(SearchAudit search);
+    public IdmAuditLogListResponse searchEvents(SearchAudit search, Integer from, Integer size);
+    public Integer countEvents(SearchAudit search);
 
     public void updateLog(IdmAuditLog log);
 
     IdmAuditLogListResponse eventsAboutUser(String principal, Date startDate);
+    public IdmAuditLogListResponse searchEventsAboutUser(String principal, Date startDate, Date endDate, Integer from, Integer size);
+
+    public Integer countEventsAboutUser(String principal, Date startDate, Date endDate);
 
 
 }

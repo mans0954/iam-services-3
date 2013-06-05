@@ -33,12 +33,12 @@
         </property>
         
         <property name="password" type="string">
-            <column name="PASSWORD" length="80">
+            <column name="PASSWORD" length="255">
                 <comment></comment>
             </column>
         </property>
         <property name="pwdEquivalentToken" type="string">
-            <column name="PWD_EQUIVALENT_TOKEN" length="80">
+            <column name="PWD_EQUIVALENT_TOKEN" length="255">
                 <comment></comment>
             </column>
         </property>

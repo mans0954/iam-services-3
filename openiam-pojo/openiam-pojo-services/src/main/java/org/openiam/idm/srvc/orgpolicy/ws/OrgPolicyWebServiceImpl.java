@@ -30,18 +30,22 @@ import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.srvc.orgpolicy.dto.OrgPolicy;
 import org.openiam.idm.srvc.orgpolicy.dto.OrgPolicyUserLog;
 import org.openiam.idm.srvc.orgpolicy.service.OrgPolicyService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * @author suneet
  *
  */
+@Service("orgPolicyWS")
 @WebService(endpointInterface = "org.openiam.idm.srvc.orgpolicy.ws.OrgPolicyWebService", 
 		targetNamespace = "urn:idm.openiam.org/srvc/orgpolicy/service", 
 		portName = "OrgPolicyPort", 
 		serviceName = "OrgPolicyWebService")
 public class OrgPolicyWebServiceImpl implements OrgPolicyWebService {
 
-	OrgPolicyService acceptService;
+	@Autowired
+	private OrgPolicyService acceptService;
 	
 
 	public OrgPolicyResponse addPolicyMessage(OrgPolicy msg) {
@@ -121,15 +125,6 @@ public class OrgPolicyWebServiceImpl implements OrgPolicyWebService {
 		}
 		return resp;
 	}
-
-	public OrgPolicyService getAcceptService() {
-		return acceptService;
-	}
-
-	public void setAcceptService(OrgPolicyService acceptService) {
-		this.acceptService = acceptService;
-	}
-
 
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.orgpolicy.ws.OrgPolicyWebService#getLogEntryForUser(java.lang.String)

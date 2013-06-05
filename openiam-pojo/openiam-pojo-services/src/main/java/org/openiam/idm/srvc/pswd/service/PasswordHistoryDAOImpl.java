@@ -5,147 +5,63 @@ package org.openiam.idm.srvc.pswd.service;
 import java.util.Date;
 import java.util.List;
 import javax.naming.InitialContext;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Restrictions;
+import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
 import org.openiam.idm.srvc.pswd.dto.PasswordHistory;
 import org.openiam.idm.srvc.pswd.dto.UserIdentityAnswer;
+import org.springframework.stereotype.Repository;
 
 import static org.hibernate.criterion.Example.create;
 
-/**
- * Home object for domain model class PwdHistory.
- * @see org.openiam.idm.srvc.pswd.service.PwdHistory
- * @author Hibernate Tools
- */
-public class PasswordHistoryDAOImpl implements PasswordHistoryDAO {
+@Repository("passwordHistoryDAO")
+public class PasswordHistoryDAOImpl extends BaseDaoImpl<PasswordHistoryEntity, String> implements PasswordHistoryDAO {
 
 	private static final Log log = LogFactory.getLog(PasswordHistoryDAOImpl.class);
 
-
-	private SessionFactory sessionFactory;
-
-	
-	public void setSessionFactory(SessionFactory session) {
-		   this.sessionFactory = session;
-	}
-	
-	protected SessionFactory getSessionFactory() {
-		try {
-			return (SessionFactory) new InitialContext()
-					.lookup("SessionFactory");
-		} catch (Exception e) {
-			log.error("Could not locate SessionFactory in JNDI", e);
-			throw new IllegalStateException(
-					"Could not locate SessionFactory in JNDI");
+	@Override
+	public List<PasswordHistoryEntity> getPasswordHistoryByLoginId(final String loginId, final int from, final int size) {
+		final Criteria criteria = getCriteria();
+		criteria.add(Restrictions.eq("loginId", loginId));
+		criteria.addOrder(Order.asc("dateCreated"));
+		if(from > -1) {
+			criteria.setFirstResult(from);
 		}
-	}
 
-	
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO#add(org.openiam.idm.srvc.pswd.dto.PasswordHistory)
-	 */
-	public void add(PasswordHistory transientInstance) {
-		log.debug("persisting PwdHistory instance");
-		try {
-			if (transientInstance != null && transientInstance.getDateCreated() == null) {
-				transientInstance.setDateCreated(new Date(System.currentTimeMillis()));
-			}
-			sessionFactory.getCurrentSession().persist(transientInstance);
-			log.debug("persist successful");
-		} catch (HibernateException re) {
-			log.error("persist failed", re);
-			throw re;
+		if(size > -1) {
+			criteria.setMaxResults(size);
 		}
+		
+		return criteria.list();
 	}
 
+    @Override
+    public List<PasswordHistoryEntity> getSublist(int startPos, int size) {
+        StringBuilder sql = new StringBuilder();
+        sql.append("from ").append(PasswordHistory.class.getName()).append(" pwd");
+        return (List<PasswordHistoryEntity>)getSession().createQuery(sql.toString()).setFirstResult(startPos).setMaxResults(size).list();
+    }
 
+    @Override
+    public Long getCount() {
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT count(pwd.pwdHistoryId) from ").append(PasswordHistory.class.getName()).append(" pwd");
+        return (Long)getSession().createQuery(sql.toString()).uniqueResult();
+    }
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO#remove(org.openiam.idm.srvc.pswd.dto.PasswordHistory)
-	 */
-	public void remove(PasswordHistory persistentInstance) {
-		log.debug("deleting PwdHistory instance");
-		try {
-			sessionFactory.getCurrentSession().delete(persistentInstance);
-			log.debug("delete successful");
-		} catch (HibernateException re) {
-			log.error("delete failed", re);
-			throw re;
-		}
+	@Override
+	protected String getPKfieldName() {
+		return "pwdHistoryId";
 	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO#update(org.openiam.idm.srvc.pswd.dto.PasswordHistory)
-	 */
-	public PasswordHistory update(PasswordHistory detachedInstance) {
-		log.debug("merging PwdHistory instance");
-		try {
-			PasswordHistory result = (PasswordHistory) sessionFactory.getCurrentSession()
-					.merge(detachedInstance);
-			log.debug("merge successful");
-			return result;
-		} catch (HibernateException re) {
-			log.error("merge failed", re);
-			throw re;
-		}
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO#findById(java.lang.String)
-	 */
-	public PasswordHistory findById(java.lang.String id) {
-		log.debug("getting PwdHistory instance with id: " + id);
-		try {
-			PasswordHistory instance = (PasswordHistory) sessionFactory
-					.getCurrentSession().get(
-							"org.openiam.idm.srvc.pswd.dto.PasswordHistory", id);
-			if (instance == null) {
-				log.debug("get successful, no instance found");
-			} else {
-				log.debug("get successful, instance found");
-			}
-			return instance;
-		} catch (HibernateException re) {
-			log.error("get failed", re);
-			throw re;
-		}
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO#findPasswordHistoryByPrincipal(java.lang.String, java.lang.String, java.lang.String)
-	 */
-	public List<PasswordHistory> findPasswordHistoryByPrincipal(
-			String domainId, String principal, String managedSys, int versions) {
-		log.debug("getting PwdHistoryByPrinciPal instance with id: " + principal);
-		try {
-			Session session = sessionFactory.getCurrentSession();
-			Query qry = session.createQuery("from PasswordHistory ph "
-					+ " where ph.serviceId = :domainId and " +
-					  " ph.managedSysId = :managedSys and " +
-					  " ph.login = :principal " +
-					  " order by ph.dateCreated desc ");
-			qry.setString("domainId", domainId);
-			qry.setString("managedSys", managedSys);
-			qry.setString("principal", principal);
-
-			qry.setFetchSize(versions);
-			qry.setMaxResults(versions);	
-			
-			List<PasswordHistory> result = (List<PasswordHistory>) qry.list();
-			if (result == null || result.size() == 0)
-				return null;
-			return result;
-			
-		}catch (HibernateException re) {
-			log.error("get failed", re);
-			throw re;
-		}
-	}
-
-
 }

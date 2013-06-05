@@ -25,8 +25,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.idm.srvc.synch.service.TransformScript;
 import org.openiam.idm.srvc.synch.service.ValidationScript;
-import org.openiam.script.ScriptFactory;
 import org.openiam.script.ScriptIntegration;
+import org.openiam.util.SpringContextProvider;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -39,15 +42,9 @@ import java.io.IOException;
 public class SynchScriptFactory {
 
 	private static final Log log = LogFactory.getLog(SynchScriptFactory.class);
-	private static String scriptEngine = "org.openiam.script.GroovyScriptEngineIntegration";
 	
 	private static Object createScript(String scriptName) throws ClassNotFoundException, IOException {
-		ScriptIntegration se = null;
-
-		se = ScriptFactory.createModule(scriptEngine);
-
-		return (Object)se.instantiateClass(null, scriptName);
-
+		return SpringContextProvider.getBean("configurableGroovyScriptEngine", ScriptIntegration.class).instantiateClass(null, scriptName);
 	}
 	
 	public static ValidationScript createValidationScript(String scriptName) throws ClassNotFoundException, IOException {
@@ -61,11 +58,4 @@ public class SynchScriptFactory {
 		return (TransformScript)createScript(scriptName);
 		
 	}
-	public String getScriptEngine() {
-		return scriptEngine;
-	}
-	public void setScriptEngine(String scriptEngine) {
-		this.scriptEngine = scriptEngine;
-	}
-
 }

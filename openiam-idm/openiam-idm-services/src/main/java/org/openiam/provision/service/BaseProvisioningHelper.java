@@ -1,11 +1,17 @@
 package org.openiam.provision.service;
 
+import java.util.Iterator;
+import java.util.Map;
+import java.util.ResourceBundle;
+import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mule.api.MuleContext;
 import org.openiam.base.SysConfiguration;
+import org.openiam.connector.type.RemoteUserRequest;
 import org.openiam.connector.type.UserRequest;
 import org.openiam.connector.type.UserResponse;
+import org.openiam.dozer.converter.LoginDozerConverter;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditHelper;
 import org.openiam.idm.srvc.audit.service.IdmAuditLogDataService;
@@ -13,11 +19,11 @@ import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
-import org.openiam.idm.srvc.mngsys.dto.ProvisionConnector;
-import org.openiam.idm.srvc.mngsys.service.ConnectorDataService;
-import org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService;
+import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
+import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
+import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
 import org.openiam.idm.srvc.pswd.service.PasswordService;
@@ -26,19 +32,16 @@ import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.script.ScriptFactory;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.spml2.msg.DeleteRequestType;
 import org.openiam.spml2.msg.PSOIdentifierType;
 import org.openiam.spml2.msg.ResponseType;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-
-import java.util.Iterator;
-import java.util.Map;
-import java.util.ResourceBundle;
-import java.util.Set;
 
 /**
  * Base class that will be extended by all the helper classes that will be used by the DefaultProvisioningService
@@ -49,38 +52,50 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
     protected UserDataService userMgr;
     protected LoginDataService loginManager;
     protected LoginDAO loginDao;
-
+    @Autowired
     protected IdmAuditLogDataService auditDataService;
-    protected ManagedSystemDataService managedSysService;
+    protected ManagedSystemWebService managedSysService;
     protected RoleDataService roleDataService;
     protected GroupDataService groupManager;
     protected String connectorWsdl;
     protected String defaultProvisioningModel;
     protected SysConfiguration sysConfiguration;
     protected ResourceDataService resourceDataService;
-    protected String scriptEngine;
     protected OrganizationDataService orgManager;
     protected PasswordService passwordDS;
+    @Autowired
     protected AuditHelper auditHelper;
     protected ConnectorAdapter connectorAdapter;
     protected RemoteConnectorAdapter remoteConnectorAdapter;
-    protected ConnectorDataService connectorService;
+
+    @Autowired
+    @Qualifier("configurableGroovyScriptEngine")
+    private ScriptIntegration scriptRunner;
+    
+    @Autowired
+    protected ProvisionConnectorWebService connectorService;
+
     protected ValidateConnectionConfig validateConnection;
     protected PasswordHistoryDAO passwordHistoryDao;
     protected String preProcessor;
     protected String postProcessor;
 
-    protected  MuleContext muleContext;
+    @Autowired
+    protected LoginDozerConverter loginDozerConverter;
 
+    protected MuleContext muleContext;
 
-    final static protected ResourceBundle res = ResourceBundle.getBundle("datasource");
-    final static protected String serviceHost = res.getString("openiam.service_base");
-    final static protected String serviceContext = res.getString("openiam.idm.ws.path");
+    @Value("${openiam.service_base}")
+    private String serviceHost;
+    
+    @Value("${openiam.idm.ws.path}")
+    private String serviceContext;
 
-    protected static final Log log = LogFactory.getLog(BaseProvisioningHelper.class);
+    protected static final Log log = LogFactory
+            .getLog(BaseProvisioningHelper.class);
 
-
-    protected String getResProperty(Set<ResourceProp> resPropSet, String propertyName) {
+    protected String getResProperty(Set<ResourceProp> resPropSet,
+            String propertyName) {
         String value = null;
 
         if (resPropSet == null) {
@@ -100,9 +115,7 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
     /* Helper methods for Pre and Post processing scripts */
     protected PreProcessor createPreProcessScript(String scriptName) {
         try {
-            ScriptIntegration se = null;
-            se = ScriptFactory.createModule(scriptEngine);
-            return (PreProcessor) se.instantiateClass(null, scriptName);
+            return (PreProcessor) scriptRunner.instantiateClass(null, scriptName);
         } catch (Exception ce) {
             log.error(ce);
             return null;
@@ -113,9 +126,7 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
 
     protected PostProcessor createPostProcessScript(String scriptName) {
         try {
-            ScriptIntegration se = null;
-            se = ScriptFactory.createModule(scriptEngine);
-            return (PostProcessor) se.instantiateClass(null, scriptName);
+            return (PostProcessor) scriptRunner.instantiateClass(null, scriptName);
         } catch (Exception ce) {
             log.error(ce);
             return null;
@@ -124,7 +135,8 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
 
     }
 
-    protected int executePreProcess(PreProcessor ppScript, Map<String, Object> bindingMap, ProvisionUser user, String operation) {
+    protected int executePreProcess(PreProcessor ppScript,
+            Map<String, Object> bindingMap, ProvisionUser user, String operation) {
         if ("ADD".equalsIgnoreCase(operation)) {
             return ppScript.addUser(user, bindingMap);
         }
@@ -140,10 +152,11 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
 
         return 0;
 
-
     }
 
-    protected int executePostProcess(PostProcessor ppScript, Map<String, Object> bindingMap, ProvisionUser user, String operation, boolean success) {
+    protected int executePostProcess(PostProcessor ppScript,
+            Map<String, Object> bindingMap, ProvisionUser user,
+            String operation, boolean success) {
         if ("ADD".equalsIgnoreCase(operation)) {
             return ppScript.addUser(user, bindingMap, success);
         }
@@ -161,14 +174,11 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
         }
         return 0;
 
-
     }
 
     protected ResponseType localDelete(Login l, String requestId,
-                                     PSOIdentifierType idType,
-                                     ManagedSys mSys,
-                                     ProvisionUser user,
-                                     IdmAuditLog auditLog) {
+            PSOIdentifierType idType, ManagedSysDto mSys, ProvisionUser user,
+            IdmAuditLog auditLog) {
 
         log.debug("Local delete for=" + l);
 
@@ -176,8 +186,8 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
         reqType.setRequestID(requestId);
         reqType.setPsoID(idType);
 
-        ResponseType resp = connectorAdapter.deleteRequest(mSys, reqType, muleContext);
-
+        ResponseType resp = connectorAdapter.deleteRequest(mSys, reqType,
+                muleContext);
 
         String logid = null;
         String status = null;
@@ -191,33 +201,28 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
         }
 
         auditHelper.addLog("DELETE IDENTITY", user.getRequestorDomain(), user.getRequestorLogin(),
-                "IDM SERVICE", user.getCreatedBy(), l.getId().getManagedSysId(),
+                "IDM SERVICE", user.getCreatedBy(), l.getManagedSysId(),
                 "IDENTITY", user.getUserId(),
                 logid, status, logid,
                 "IDENTITY_STATUS", "DELETED",
                 requestId, resp.getErrorCodeAsStr(), user.getSessionId(), resp.getErrorMessage(),
-                user.getRequestClientIP(), l.getId().getLogin(), l.getId().getDomainId());
+                user.getRequestClientIP(), l.getLogin(), l.getDomainId());
 
         return resp;
 
 
     }
 
-    protected UserResponse remoteDelete(
-            Login mLg,
-            String requestId,
-            ManagedSys mSys,
-            ProvisionConnector connector,
-            ManagedSystemObjectMatch matchObj,
-            ProvisionUser user,
-            IdmAuditLog auditLog
-    ) {
+    protected UserResponse remoteDelete(Login mLg, String requestId,
+            ManagedSysDto mSys, ProvisionConnectorDto connector,
+            ManagedSystemObjectMatch matchObj, ProvisionUser user,
+            IdmAuditLog auditLog) {
 
-        UserRequest request = new UserRequest();
+        RemoteUserRequest request = new RemoteUserRequest();
 
-        request.setUserIdentity(mLg.getId().getLogin());
+        request.setUserIdentity(mLg.getLogin());
         request.setRequestID(requestId);
-        request.setTargetID(mLg.getId().getManagedSysId());
+        request.setTargetID(mLg.getManagedSysId());
         request.setHostLoginId(mSys.getUserId());
         request.setHostLoginPassword(mSys.getDecryptPassword());
         request.setHostUrl(mSys.getHostUrl());
@@ -226,24 +231,25 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
         }
         request.setOperation("DELETE");
 
+        request.setScriptHandler(mSys.getDeleteHandler());
+
         UserResponse resp = remoteConnectorAdapter.deleteRequest(mSys, request, connector, muleContext);
 
         auditHelper.addLog("DELETE IDENTITY", auditLog.getDomainId(), auditLog.getPrincipal(),
-                "IDM SERVICE", user.getCreatedBy(), mLg.getId().getManagedSysId(),
+                "IDM SERVICE", user.getCreatedBy(), mLg.getManagedSysId(),
                 "IDENTITY", user.getUserId(),
                 auditLog.getLogId(), resp.getStatus().toString(), auditLog.getLogId(), "IDENTITY_STATUS",
                 "DELETED",
                 requestId, resp.getErrorCodeAsStr(), user.getSessionId(), resp.getErrorMsgAsStr(),
-                user.getRequestClientIP(), mLg.getId().getLogin(), mLg.getId().getDomainId());
+                user.getRequestClientIP(), mLg.getLogin(), mLg.getDomainId());
 
         return resp;
 
 
     }
 
-
-
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+    public void setApplicationContext(ApplicationContext applicationContext)
+            throws BeansException {
         ac = applicationContext;
     }
 
@@ -287,11 +293,11 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
         this.auditDataService = auditDataService;
     }
 
-    public ManagedSystemDataService getManagedSysService() {
+    public ManagedSystemWebService getManagedSysService() {
         return managedSysService;
     }
 
-    public void setManagedSysService(ManagedSystemDataService managedSysService) {
+    public void setManagedSysService(ManagedSystemWebService managedSysService) {
         this.managedSysService = managedSysService;
     }
 
@@ -343,14 +349,6 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
         this.resourceDataService = resourceDataService;
     }
 
-    public String getScriptEngine() {
-        return scriptEngine;
-    }
-
-    public void setScriptEngine(String scriptEngine) {
-        this.scriptEngine = scriptEngine;
-    }
-
     public OrganizationDataService getOrgManager() {
         return orgManager;
     }
@@ -387,15 +385,16 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
         return remoteConnectorAdapter;
     }
 
-    public void setRemoteConnectorAdapter(RemoteConnectorAdapter remoteConnectorAdapter) {
+    public void setRemoteConnectorAdapter(
+            RemoteConnectorAdapter remoteConnectorAdapter) {
         this.remoteConnectorAdapter = remoteConnectorAdapter;
     }
 
-    public ConnectorDataService getConnectorService() {
+    public ProvisionConnectorWebService getConnectorService() {
         return connectorService;
     }
 
-    public void setConnectorService(ConnectorDataService connectorService) {
+    public void setConnectorService(ProvisionConnectorWebService connectorService) {
         this.connectorService = connectorService;
     }
 
@@ -403,7 +402,8 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
         return validateConnection;
     }
 
-    public void setValidateConnection(ValidateConnectionConfig validateConnection) {
+    public void setValidateConnection(
+            ValidateConnectionConfig validateConnection) {
         this.validateConnection = validateConnection;
     }
 

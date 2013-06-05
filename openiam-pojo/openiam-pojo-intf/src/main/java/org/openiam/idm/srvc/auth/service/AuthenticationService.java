@@ -42,51 +42,7 @@ public interface AuthenticationService {
             @WebParam(name = "userId", targetNamespace = "")
             String userId) throws LogoutException;
 
-
-    /**
-     * Sets the login and the password and the password related details for a
-     * new user and also authenticates the user. It can add a new login for a
-     * new service for an existing user. <br>
-     * If authentication is successful returns a Subject which has principals,
-     * userGroups userId, authenticating authority, credentials, token and
-     * expiration time. If not successful, a null is returned. <br>
-     * For example:
-     * <p>
-     * <code>
-     *   Login lv = new Login();<br>
-     lv.setLogin(login);<br>
-     lv.setPassword(password);<br>
-     lv.setService(serviceId);<br>
-     lv.setToken(token);<br>
-     lv.setNewUser(false);<br>
-     Subject sub =  authenticationService.authenticate(lv);<br>
-     * </code>
-     *
-     *
-     * @param loginValue
-     *            The bulk accessor class for the PasswordLoginBean.
-     * @return SSOSubject which holds user information
-     */
-    //Subject authenticate(AuthenticationContext ctx) throws AuthenticationException;
-
-    /**
-     * passwordAuth provides a simple approach to enabling password based authentication.
-     *
-     * @param domainId
-     * @param principal
-     * @param password
-     * @return
-     * @throws AuthenticationException
-     */
-/*	@WebMethod
-	Subject passwordAuth(
-			@WebParam(name = "domainId", targetNamespace = "")
-			String domainId, 
-			@WebParam(name = "principal", targetNamespace = "")
-			String principal, 
-			@WebParam(name = "password", targetNamespace = "")
-			String password) throws AuthenticationException;
-*/
+    /*
     @WebMethod
     AuthenticationResponse passwordAuth(
             @WebParam(name = "domainId", targetNamespace = "")
@@ -94,7 +50,8 @@ public interface AuthenticationService {
             @WebParam(name = "principal", targetNamespace = "")
             String principal,
             @WebParam(name = "password", targetNamespace = "")
-            String password);
+            String password) throws Exception;
+	*/
 
     @WebMethod
     AuthenticationResponse login(
@@ -117,13 +74,18 @@ public interface AuthenticationService {
      * @param tokenType - Constant indicating the type of token that being passed.
      * @return SSOSubject which holds user information.
      */
+    /*
     @WebMethod
     Subject authenticateByToken(
+            @WebParam(name = "userId", targetNamespace = "")
+            String userId,
             @WebParam(name = "token", targetNamespace = "")
             String token,
             @WebParam(name = "tokenType", targetNamespace = "")
-            String tokenType) throws AuthenticationException;
+            String tokenType) throws Exception;
+	*/
 
+    /*
     @WebMethod
     BooleanResponse validateToken(
             @WebParam(name = "principal", targetNamespace = "")
@@ -131,7 +93,8 @@ public interface AuthenticationService {
             @WebParam(name = "token", targetNamespace = "")
             String token,
             @WebParam(name = "tokenType", targetNamespace = "")
-            String tokenType);
+            String tokenType) throws Exception;
+	*/
 
     @WebMethod
     Response renewToken(
@@ -142,6 +105,7 @@ public interface AuthenticationService {
             @WebParam(name = "tokenType", targetNamespace = "")
             String tokenType);
 
+    /*
     @WebMethod
     BooleanResponse validateTokenByUser(
             @WebParam(name = "userId", targetNamespace = "")
@@ -149,20 +113,6 @@ public interface AuthenticationService {
             @WebParam(name = "token", targetNamespace = "")
             String token,
             @WebParam(name = "tokenType", targetNamespace = "")
-            String tokenType);
-
-    @WebMethod
-    void updateAppStatus(
-            @WebParam(name = "managedSysId", targetNamespace = "")
-            String managedSysId,
-            @WebParam(name = "principal", targetNamespace = "")
-            String loginId,
-            @WebParam(name = "status", targetNamespace = "")
-            String status,
-            @WebParam(name = "sessionId", targetNamespace = "")
-            String sessionId,
-            @WebParam(name = "token", targetNamespace = "")
-            String token);
-
-
+            String tokenType) throws Exception;
+	*/
 }

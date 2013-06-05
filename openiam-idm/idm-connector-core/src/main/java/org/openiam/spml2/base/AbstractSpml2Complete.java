@@ -120,7 +120,7 @@ public abstract class AbstractSpml2Complete {
 				
 	}
 	
-	protected SSOToken token(String userId, Map tokenParam) {
+	protected SSOToken token(String userId, Map tokenParam) throws Exception {
 
 		tokenParam.put("USER_ID",userId);
 		

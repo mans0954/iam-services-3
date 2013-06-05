@@ -2,1522 +2,816 @@ package org.openiam.idm.srvc.res.service;
 
 import java.util.*;
 
+import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.exception.data.ObjectNotFoundException;
-//import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
-//import org.openiam.idm.srvc.mngsys.service.AttributeMapDAO;
-import org.openiam.idm.srvc.auth.login.LoginDataService;
-import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
+import org.openiam.base.ws.Response;
+import org.openiam.base.ws.ResponseCode;
+import org.openiam.base.ws.ResponseStatus;
+import org.openiam.base.ws.exception.BasicDataServiceException;
+import org.openiam.dozer.converter.ResourceDozerConverter;
+import org.openiam.dozer.converter.ResourcePropDozerConverter;
+import org.openiam.dozer.converter.ResourceRoleDozerConverter;
+import org.openiam.dozer.converter.ResourceTypeDozerConverter;
+import org.openiam.dozer.converter.ResourceUserDozerConverter;
+import org.openiam.idm.searchbeans.ResourceSearchBean;
+import org.openiam.idm.srvc.grp.domain.GroupEntity;
+import org.openiam.idm.srvc.grp.service.GroupDAO;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.domain.ResourceGroupEntity;
+import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
+import org.openiam.idm.srvc.res.domain.ResourceRoleEmbeddableId;
+import org.openiam.idm.srvc.res.domain.ResourceRoleEntity;
+import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
+import org.openiam.idm.srvc.res.domain.ResourceUserEntity;
 import org.openiam.idm.srvc.res.dto.*;
-import org.openiam.idm.srvc.role.service.RoleDataService;
-import org.openiam.idm.srvc.user.service.UserDataService;
-import org.openiam.idm.srvc.org.service.OrganizationDataService;
-import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.user.dto.UserAttribute;
-import org.openiam.idm.srvc.org.dto.Organization;
+import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
+import org.openiam.idm.srvc.role.service.RoleDAO;
+import org.openiam.idm.srvc.searchbean.converter.ResourceSearchBeanConverter;
+import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.service.UserDAO;
+import org.openiam.idm.srvc.user.ws.UserDataWebService;
+import org.openiam.util.DozerMappingType;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Required;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+@Service("resourceDataService")
 @WebService(endpointInterface = "org.openiam.idm.srvc.res.service.ResourceDataService", targetNamespace = "urn:idm.openiam.org/srvc/res/service", portName = "ResourceDataWebServicePort", serviceName = "ResourceDataWebService")
+@Transactional
 public class ResourceDataServiceImpl implements ResourceDataService {
 
-	protected ResourceDAO resourceDao;
-	protected ResourceTypeDAO resourceTypeDao;
-	protected ResourcePropDAO resourcePropDao;
-	protected ResourceRoleDAO resourceRoleDao;
-	protected ResourceUserDAO resourceUserDao;
-    protected ResourcePrivilegeDAO resourcePrivilegeDao;
+	@Autowired
+	private ResourceDozerConverter resourceConverter;
+	
+	@Autowired
+	private ResourcePropDozerConverter resourcePropConverter;
 
-    protected LoginDataService loginManager;
-    protected UserDataService userManager;
-    protected RoleDataService roleDataService;
-    protected OrganizationDataService orgManager;
+	@Autowired
+	private ResourceDAO resourceDao;
+
+	@Autowired
+	private ResourceTypeDAO resourceTypeDao;
+
+	@Autowired
+	private ResourcePropDAO resourcePropDao;
+
+	@Autowired
+	private ResourceRoleDAO resourceRoleDao;
+
+	@Autowired
+	private ResourceUserDAO resourceUserDao;
+
+	@Autowired
+	private GroupDAO groupDAO;
+
+	@Autowired
+	private RoleDAO roleDAO;
+
+	@Autowired
+	private UserDAO userDAO;
+
+	@Autowired
+	private ResourceTypeDozerConverter resourceTypeConverter;
+
+	@Autowired
+	private ResourceGroupDAO resourceGroupDAO;
 
 	private static final Log log = LogFactory
 			.getLog(ResourceDataServiceImpl.class);
 
-	public ResourceDAO getResourceDao() {
-		return resourceDao;
-	}
+	@Autowired
+	private ResourceSearchBeanConverter resourceSearchBeanConverter;
 
-	public void setResourceDao(ResourceDAO resourceDao) {
-		this.resourceDao = resourceDao;
-	}
+	@Autowired
+	private ResourceUserDozerConverter resourceUserConverter;
 
-	public ResourceTypeDAO getResourceTypeDao() {
-		return resourceTypeDao;
-	}
-
-	public void setResourceTypeDao(ResourceTypeDAO resourceTypeDao) {
-		this.resourceTypeDao = resourceTypeDao;
-	}
-
-	public ResourcePropDAO getResourcePropDao() {
-		return resourcePropDao;
-	}
-
-	public void setResourcePropDao(ResourcePropDAO resourcePropDao) {
-		this.resourcePropDao = resourcePropDao;
-	}
-
-	/**
-	 * Gets the resource role dao.
-	 * 
-	 * @return the resource role dao
-	 */
-	public ResourceRoleDAO getResourceRoleDao() {
-		return resourceRoleDao;
-	}
-
-	/**
-	 * Sets the resource role dao.
-	 * 
-	 * @param resourceRoleDao
-	 *            the new resource role dao
-	 */
-	public void setResourceRoleDao(ResourceRoleDAO resourceRoleDao) {
-		this.resourceRoleDao = resourceRoleDao;
-	}
-
- 	//
-	// /**
-	// * Gets the resource user dao.
-	// *
-	// * @return the resource user dao
-	// */
-	// public ResourceUserDAO getResourceUserDao() {
-	// return resourceUserDao;
-	// }
-	//
-	// /**
-	// * Sets the resource user dao.
-	// *
-	// * @param resourceUserDao the new resource user dao
-	// */
-	// public void setResourceUserDao(ResourceUserDAO resourceUserDao) {
-	// this.resourceUserDao = resourceUserDao;
-	// }
-
-	// Resource ---------------------------------------
-
-	/**
-	 * Add a new resource from a transient resource object and sets resourceId
-	 * in the returned object.
-	 * 
-	 * @param resource
-	 * @return
-	 */
-	public Resource addResource(Resource resource) {
-		if (resource == null)
-			throw new IllegalArgumentException("Resource object is null");
-
-		return resourceDao.add(resource);
-	}
-
-	/**
-	 * Add a new resource from a transient resource object. Sets resourceId and
-	 * associates resource with a resource type. Sets category and branch from
-	 * parent.
-	 * 
-	 * @param resource
-	 * @param resourceTypeId
-	 * @return
-	 */
-	// public Resource addChildResource(Resource resource, Resource
-	// resourceParent) {
-	// resource.setResourceParent(resourceParent);
-	// resource.setResourceType(resourceParent.getResourceType());
-	// resource.setCategoryId(resourceParent.getCategoryId());
-	// resource.setBranchId(resourceParent.getBranchId());
-	// return addResource(resource);
-	// }
-
-	/**
-	 * Add a new resource from a transient resource object. Sets resourceId and
-	 * associates resource with a resource type.
-	 * 
-	 * @param resource
-	 * @param resourceTypeId
-	 * @return
-	 */
-	// public Resource addTypedResource(Resource resource, String
-	// resourceTypeId) {
-	// ResourceType resourceType = this.getResourceType(resourceTypeId);
-	// resource.setResourceType(resourceType);
-	// return addResource(resource);
-	// }
-
-	/**
-	 * Find a resource.
-	 * 
-	 * @param resourceId
-	 * 
-	 * @return resource
-	 */
 	public Resource getResource(String resourceId) {
-		if (resourceId == null)
-			throw new IllegalArgumentException("resourceId is null");
-
-		return resourceDao.findById(resourceId);
+		Resource resource = null;
+		if (resourceId != null) {
+			final ResourceEntity entity = resourceDao.findById(resourceId);
+			if (entity != null) {
+				resource = resourceConverter.convertToDTO(entity, true);
+			}
+		}
+		return resource;
 	}
 
-
- 	public Resource getResourceByName(String resourceName) {
-		if (resourceName == null)
-			throw new IllegalArgumentException("resourceName is null");
-
-		return resourceDao.findResourceByName(resourceName);
-
-	}
-	
-    /**
-     * Find resources by name
-     *
-     * @return list of resources
-     */
-    public List<Resource> getResourcesByName(String resourceName) {
-        if (resourceName == null)
-            throw new IllegalArgumentException("resourceName is null");
-
-        List<Resource> resourceList = resourceDao.findResourcesByName(resourceName);
-
-        return resourceList;
-    }
-
-
-    /**
-      * Find resources by example
-      *
-      * @return list of resources
-      */
-    public List<Resource> getResourcesByExample(Resource resource) {
-        return resourceDao.findByExample(resource);
-    }
-
-
-    /**
-     * Find resources which have a specified property
-     *
-     * @param propName
-     * @param propValue
-     * @return
-     */
-    public List<Resource> getResourcesByProperty (String propName, String propValue) {
-        if (propName == null)
-            throw new IllegalArgumentException("propName is null");
-        if (propValue == null)
-            throw new IllegalArgumentException("propValue is null");
-
-        return resourceDao.findResourcesByProperty(propName, propValue);
-
-    }
-
-    /**
-     * Find resource which has a specified set of unique properties
-     *
-     * @param propList
-     * @return
-     */
-    public Resource getResourceByProperties(List<ResourceProp> propList) {
-        if (propList == null)
-            throw new IllegalArgumentException("propList is null");
-
-        return resourceDao.findResourceByProperties(propList);
-
-    }
-
-
-	/**
-	 * Update a resource.
-	 * 
-	 * @param resource
-	 * @return
-	 */
-	public Resource updateResource(Resource resource) {
-		if (resource == null)
-			throw new IllegalArgumentException("resource object is null");
-
-		return resourceDao.update(resource);
+	@WebMethod
+	public int count(final ResourceSearchBean searchBean) {
+		final ResourceEntity entity = resourceSearchBeanConverter
+				.convert(searchBean);
+		return resourceDao.count(entity);
 	}
 
-	/**
-	 * Find all resources
-	 * 
-	 * @return list of resources
-	 */
-	public List<Resource> getAllResources() {
-		List<Resource> resourceList = resourceDao.findAllResources();
+	@Override
+	public List<Resource> findBeans(final ResourceSearchBean searchBean,
+			final int from, final int size) {
+		final ResourceEntity resource = resourceSearchBeanConverter
+				.convert(searchBean);
+		final DozerMappingType mappingType = (searchBean.isDeepCopy()) ? DozerMappingType.DEEP
+				: DozerMappingType.SHALLOW;
+		List<ResourceEntity> resultsEntities = null;
+		if (Boolean.TRUE.equals(searchBean.getRootsOnly())) {
+			resultsEntities = resourceDao
+					.getRootResources(resource, from, size);
+		} else {
+			resultsEntities = resourceDao.getByExample(resource, from, size);
+		}
 
+		return resourceConverter.convertToDTOList(resultsEntities,
+				DozerMappingType.DEEP.equals(mappingType));
+	}
+
+	public Response addResource(Resource resource) {
+		return saveOrUpdateResource(resource);
+	}
+
+	public Response updateResource(Resource resource) {
+		return saveOrUpdateResource(resource);
+	}
+
+	private Response saveOrUpdateResource(final Resource resource) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if (resource == null) {
+				throw new BasicDataServiceException(
+						ResponseCode.OBJECT_NOT_FOUND);
+			}
+
+			ResourceEntity entity = resourceConverter.convertToEntity(resource,
+					true);
+			if (StringUtils.isEmpty(entity.getName())) {
+				throw new BasicDataServiceException(ResponseCode.NO_NAME);
+			}
+
+			/* duplicate name check */
+			final ResourceEntity nameCheck = resourceDao.findByName(entity
+					.getName());
+			if (nameCheck != null) {
+				if (StringUtils.isBlank(entity.getResourceId())) {
+					throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
+				} else if (!nameCheck.getResourceId().equals(
+						entity.getResourceId())) {
+					throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
+				}
+			}
+
+			if (entity.getResourceType() == null) {
+				throw new BasicDataServiceException(
+						ResponseCode.INVALID_RESOURCE_TYPE);
+			}
+
+			/* merge */
+			if (StringUtils.isNotBlank(entity.getResourceId())) {
+				final ResourceEntity dbObject = resourceDao.findById(resource
+						.getResourceId());
+				if (dbObject == null) {
+					throw new BasicDataServiceException(
+							ResponseCode.OBJECT_NOT_FOUND);
+				}
+				// TODO: extend this merge
+				dbObject.setResourceType(entity.getResourceType());
+				dbObject.setDescription(entity.getDescription());
+				dbObject.setDomain(entity.getDomain());
+				dbObject.setIsPublic(entity.getIsPublic());
+				dbObject.setIsSSL(entity.getIsSSL());
+				dbObject.setManagedSysId(entity.getManagedSysId());
+				dbObject.setName(entity.getName());
+				dbObject.setURL(entity.getURL());
+				resourceDao.update(dbObject);
+			} else {
+				resourceDao.save(entity);
+			}
+
+			response.setResponseValue(entity.getResourceId());
+		} catch (BasicDataServiceException e) {
+			response.setErrorCode(e.getCode());
+			response.setStatus(ResponseStatus.FAILURE);
+		} catch (Throwable e) {
+			log.error("Can't save or update resource", e);
+			response.setErrorText(e.getMessage());
+			response.setStatus(ResponseStatus.FAILURE);
+		}
+		return response;
+	}
+
+	public Response addResourceType(ResourceType val) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if (val == null) {
+				throw new BasicDataServiceException(
+						ResponseCode.OBJECT_NOT_FOUND);
+			}
+
+			final ResourceTypeEntity entity = resourceTypeConverter
+					.convertToEntity(val, true);
+			resourceTypeDao.save(entity);
+			response.setResponseValue(entity.getResourceTypeId());
+		} catch (BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch (Throwable e) {
+			log.error("Can't save resource type", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+		return response;
+	}
+
+	public ResourceType getResourceType(String resourceTypeId) {
+		ResourceType retVal = null;
+		if (resourceTypeId != null) {
+			final ResourceTypeEntity entity = resourceTypeDao
+					.findById(resourceTypeId);
+			if (entity != null) {
+				retVal = resourceTypeConverter.convertToDTO(entity, false);
+			}
+		}
+		return retVal;
+	}
+
+	public Response updateResourceType(ResourceType resourceType) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if (resourceType == null) {
+				throw new BasicDataServiceException(
+						ResponseCode.OBJECT_NOT_FOUND);
+			}
+
+			final ResourceTypeEntity entity = resourceTypeConverter
+					.convertToEntity(resourceType, false);
+			resourceTypeDao.update(entity);
+		} catch (BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch (Throwable e) {
+			log.error("Can't save resource type", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+		return response;
+	}
+
+	public List<ResourceType> getAllResourceTypes() {
+		final List<ResourceTypeEntity> resourceTypeEntities = resourceTypeDao
+				.findAll();
+		return resourceTypeConverter.convertToDTOList(resourceTypeEntities,
+				false);
+	}
+
+	public Response addResourceProp(final ResourceProp resourceProp) {
+		return saveOrUpdateResourceProperty(resourceProp);
+	}
+
+	public Response updateResourceProp(final ResourceProp resourceProp) {
+		return saveOrUpdateResourceProperty(resourceProp);
+	}
+
+	private Response saveOrUpdateResourceProperty(final ResourceProp prop) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if (prop == null) {
+				throw new BasicDataServiceException(
+						ResponseCode.INVALID_ARGUMENTS);
+			}
+
+			final ResourcePropEntity entity = resourcePropConverter
+					.convertToEntity(prop, false);
+			if (StringUtils.isNotBlank(prop.getResourcePropId())) {
+				final ResourcePropEntity dbObject = resourcePropDao
+						.findById(prop.getResourcePropId());
+				if (dbObject == null) {
+					throw new BasicDataServiceException(
+							ResponseCode.OBJECT_NOT_FOUND);
+				}
+			}
+
+			if (StringUtils.isBlank(entity.getName())) {
+				throw new BasicDataServiceException(ResponseCode.NO_NAME);
+			}
+
+			if (StringUtils.isBlank(entity.getPropValue())) {
+				throw new BasicDataServiceException(
+						ResponseCode.RESOURCE_PROP_VALUE_MISSING);
+			}
+
+			if (StringUtils.isBlank(entity.getResourceId())) {
+				throw new BasicDataServiceException(
+						ResponseCode.RESOURCE_PROP_RESOURCE_ID_MISSING);
+			}
+
+			if (StringUtils.isNotBlank(entity.getResourcePropId())) {
+				resourcePropDao.update(entity);
+			} else {
+				resourcePropDao.save(entity);
+			}
+			response.setResponseValue(entity.getResourcePropId());
+		} catch (BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch (Throwable e) {
+			log.error("Can't save or update resource property", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+		return response;
+	}
+
+	public Response removeResourceProp(String resourcePropId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if (StringUtils.isBlank(resourcePropId)) {
+				throw new BasicDataServiceException(
+						ResponseCode.INVALID_ARGUMENTS);
+			}
+
+			final ResourcePropEntity entity = resourcePropDao
+					.findById(resourcePropId);
+			if (entity == null) {
+				throw new BasicDataServiceException(
+						ResponseCode.OBJECT_NOT_FOUND);
+			}
+
+			resourcePropDao.delete(entity);
+		} catch (BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch (Throwable e) {
+			log.error("Can't delete resource property", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+		return response;
+	}
+
+	@Override
+	public Response removeUserFromResource(final String resourceId,
+			final String userId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if (resourceId == null || userId == null) {
+				throw new BasicDataServiceException(
+						ResponseCode.INVALID_ARGUMENTS);
+			}
+
+			final ResourceUserEntity entity = resourceUserDao.getRecord(
+					resourceId, userId);
+			if (entity != null) {
+				resourceUserDao.delete(entity);
+			}
+
+		} catch (BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch (Throwable e) {
+			log.error("Can't delete resource", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+		return response;
+	}
+
+	@Override
+	public Response addUserToResource(final String resourceId,
+			final String userId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if (resourceId == null || userId == null) {
+				throw new BasicDataServiceException(
+						ResponseCode.INVALID_ARGUMENTS);
+			}
+
+			final ResourceUserEntity entity = resourceUserDao.getRecord(
+					resourceId, userId);
+
+			if (entity != null) {
+				throw new BasicDataServiceException(
+						ResponseCode.RELATIONSHIP_EXISTS);
+			}
+
+			final ResourceEntity resource = resourceDao.findById(resourceId);
+			final UserEntity user = userDAO.findById(userId);
+			if (resource == null || user == null) {
+				throw new BasicDataServiceException(
+						ResponseCode.OBJECT_NOT_FOUND);
+			}
+
+			final ResourceUserEntity toSave = new ResourceUserEntity();
+			toSave.setUserId(userId);
+			toSave.setResourceId(resourceId);
+
+			resourceUserDao.save(toSave);
+		} catch (BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch (Throwable e) {
+			log.error("Can't delete resource", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+		return response;
+	}
+
+	@Override
+	// @Transactional
+	public Response deleteResource(final String resourceId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			final ResourceEntity entity = resourceDao.findById(resourceId);
+			if (entity == null) {
+				throw new BasicDataServiceException(
+						ResponseCode.INVALID_ARGUMENTS);
+			}
+
+			/*
+			 * if(CollectionUtils.isNotEmpty(entity.getChildResources())) {
+			 * throw new
+			 * BasicDataServiceException(ResponseCode.HANGING_CHILDREN); }
+			 * 
+			 * if(CollectionUtils.isNotEmpty(entity.getResourceGroups())) {
+			 * throw new BasicDataServiceException(ResponseCode.HANGING_GROUPS);
+			 * }
+			 * 
+			 * if(CollectionUtils.isNotEmpty(entity.getResourceRoles())) { throw
+			 * new BasicDataServiceException(ResponseCode.HANGING_ROLES); }
+			 */
+			resourceGroupDAO.deleteByResourceId(resourceId);
+			resourceRoleDao.deleteByResourceId(resourceId);
+			resourceUserDao.deleteByResourceId(resourceId);
+			resourceDao.delete(entity);
+		} catch (BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch (Throwable e) {
+			log.error("Can't delete resource", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+		return response;
+	}
+
+	@Override
+	public List<Resource> getChildResources(final String resourceId,
+			final int from, final int size) {
+		final ResourceEntity example = new ResourceEntity();
+		final ResourceEntity parent = new ResourceEntity();
+		parent.setResourceId(resourceId);
+		example.addParentResource(parent);
+		final List<ResourceEntity> resultList = resourceDao.getByExample(
+				example, from, size);
+		return resourceConverter.convertToDTOList(resultList, false);
+	}
+
+	@Override
+	public int getNumOfChildResources(final String resourceId) {
+		final ResourceEntity example = new ResourceEntity();
+		final ResourceEntity parent = new ResourceEntity();
+		parent.setResourceId(resourceId);
+		example.addParentResource(parent);
+		return resourceDao.count(example);
+	}
+
+	@Override
+	public List<Resource> getParentResources(final String resourceId,
+			final int from, final int size) {
+		final ResourceEntity example = new ResourceEntity();
+		final ResourceEntity child = new ResourceEntity();
+		child.setResourceId(resourceId);
+		example.addChildResource(child);
+		final List<ResourceEntity> resultList = resourceDao.getByExample(
+				example, from, size);
+		return resourceConverter.convertToDTOList(resultList, false);
+	}
+
+	@Override
+	public int getNumOfParentResources(final String resourceId) {
+		final ResourceEntity example = new ResourceEntity();
+		final ResourceEntity child = new ResourceEntity();
+		child.setResourceId(resourceId);
+		example.addChildResource(child);
+		return resourceDao.count(example);
+	}
+
+	@Override
+	public Response addChildResource(final String resourceId,
+			final String memberResourceId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if (StringUtils.isBlank(resourceId)
+					|| StringUtils.isBlank(memberResourceId)) {
+				throw new BasicDataServiceException(
+						ResponseCode.INVALID_ARGUMENTS);
+			}
+
+			final ResourceEntity parent = resourceDao.findById(resourceId);
+			if (parent == null) {
+				throw new BasicDataServiceException(
+						ResponseCode.OBJECT_NOT_FOUND);
+			}
+
+			final ResourceEntity child = resourceDao.findById(memberResourceId);
+			if (child == null) {
+				throw new BasicDataServiceException(
+						ResponseCode.OBJECT_NOT_FOUND);
+			}
+
+			if (parent.hasChildResoruce(child)) {
+				throw new BasicDataServiceException(
+						ResponseCode.RELATIONSHIP_EXISTS);
+			}
+
+			if (!parent.getResourceType().equals(child.getResourceType())) {
+				throw new BasicDataServiceException(
+						ResponseCode.RESOURCE_TYPES_NOT_EQUAL);
+			}
+
+			if (parent.equals(child)) {
+				throw new BasicDataServiceException(
+						ResponseCode.CANT_ADD_YOURSELF_AS_CHILD);
+			}
+
+			/* now check that this doesn't cause a circular dependency */
+			if (causesCircularDependency(parent, child,
+					new HashSet<ResourceEntity>())) {
+				throw new BasicDataServiceException(
+						ResponseCode.CIRCULAR_DEPENDENCY);
+			}
+
+			parent.addChildResource(child);
+			resourceDao.save(parent);
+		} catch (BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch (Throwable e) {
+			log.error("Can't delete resource", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+		return response;
+	}
+
+	private boolean causesCircularDependency(final ResourceEntity parent,
+			final ResourceEntity child, final Set<ResourceEntity> visitedSet) {
+		boolean retval = false;
+		if (parent != null && child != null) {
+			if (!visitedSet.contains(child)) {
+				visitedSet.add(child);
+				if (CollectionUtils.isNotEmpty(parent.getParentResources())) {
+					for (final ResourceEntity entity : parent
+							.getParentResources()) {
+						retval = entity.getResourceId().equals(
+								child.getResourceId());
+						if (retval) {
+							break;
+						}
+						causesCircularDependency(parent, entity, visitedSet);
+					}
+				}
+			}
+		}
+		return retval;
+	}
+
+	@Override
+	public Response deleteChildResource(final String resourceId,
+			final String memberResourceId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if (StringUtils.isBlank(resourceId)
+					|| StringUtils.isBlank(memberResourceId)) {
+				throw new BasicDataServiceException(
+						ResponseCode.INVALID_ARGUMENTS);
+			}
+
+			final ResourceEntity parent = resourceDao.findById(resourceId);
+			if (parent == null) {
+				throw new BasicDataServiceException(
+						ResponseCode.OBJECT_NOT_FOUND);
+			}
+
+			final ResourceEntity child = resourceDao.findById(memberResourceId);
+			if (child == null) {
+				throw new BasicDataServiceException(
+						ResponseCode.OBJECT_NOT_FOUND);
+			}
+
+			parent.removeChildResource(child);
+			resourceDao.save(parent);
+		} catch (BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch (Throwable e) {
+			log.error("Can't delete resource", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+		return response;
+	}
+
+	@Override
+	public Response addGroupToResource(final String resourceId,
+			final String groupId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(groupId)) {
+				throw new BasicDataServiceException(
+						ResponseCode.INVALID_ARGUMENTS);
+			}
+
+			final ResourceEntity resource = resourceDao.findById(resourceId);
+			final GroupEntity group = groupDAO.findById(groupId);
+
+			if (resource == null || group == null) {
+				throw new BasicDataServiceException(
+						ResponseCode.OBJECT_NOT_FOUND);
+			}
+
+			final ResourceGroupEntity record = resourceGroupDAO.getRecord(
+					resourceId, groupId);
+			if (record != null) {
+				throw new BasicDataServiceException(
+						ResponseCode.RELATIONSHIP_EXISTS);
+			}
+
+			final ResourceGroupEntity entity = new ResourceGroupEntity();
+			entity.setGroupId(groupId);
+			entity.setResourceId(resourceId);
+
+			resourceGroupDAO.save(entity);
+		} catch (BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch (Throwable e) {
+			log.error("Can't delete resource", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+		return response;
+	}
+
+	@Override
+	public Response removeGroupToResource(final String resourceId,
+			final String groupId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(groupId)) {
+				throw new BasicDataServiceException(
+						ResponseCode.INVALID_ARGUMENTS);
+			}
+
+			final ResourceEntity resource = resourceDao.findById(resourceId);
+			if (resource == null) {
+				throw new BasicDataServiceException(
+						ResponseCode.OBJECT_NOT_FOUND);
+			}
+
+			final ResourceGroupEntity entity = resourceGroupDAO.getRecord(
+					resourceId, groupId);
+			if (entity != null) {
+				resourceGroupDAO.delete(entity);
+			}
+		} catch (BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch (Throwable e) {
+			log.error("Can't delete resource", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+		return response;
+	}
+
+	@Override
+	public Response addRoleToResource(final String resourceId,
+			final String roleId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(roleId)) {
+				throw new BasicDataServiceException(
+						ResponseCode.INVALID_ARGUMENTS);
+			}
+
+			final ResourceEntity resource = resourceDao.findById(resourceId);
+			final RoleEntity role = roleDAO.findById(roleId);
+			if (resource == null && role == null) {
+				throw new BasicDataServiceException(
+						ResponseCode.OBJECT_NOT_FOUND);
+			}
+
+			final ResourceRoleEmbeddableId id = new ResourceRoleEmbeddableId(
+					roleId, resourceId);
+			final ResourceRoleEntity dbObject = resourceRoleDao.findById(id);
+			if (dbObject != null) {
+				throw new BasicDataServiceException(
+						ResponseCode.RELATIONSHIP_EXISTS);
+			}
+
+			final ResourceRoleEntity entity = new ResourceRoleEntity();
+			entity.setId(id);
+			resourceRoleDao.save(entity);
+
+		} catch (BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch (Throwable e) {
+			log.error("Can't delete resource", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+		return response;
+	}
+
+	@Override
+	public Response removeRoleToResource(final String resourceId,
+			final String roleId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if (StringUtils.isBlank(resourceId) || StringUtils.isBlank(roleId)) {
+				throw new BasicDataServiceException(
+						ResponseCode.INVALID_ARGUMENTS);
+			}
+
+			final ResourceRoleEmbeddableId id = new ResourceRoleEmbeddableId(
+					roleId, resourceId);
+			final ResourceRoleEntity dbObject = resourceRoleDao.findById(id);
+			if (dbObject == null) {
+				throw new BasicDataServiceException(
+						ResponseCode.OBJECT_NOT_FOUND);
+			}
+
+			resourceRoleDao.delete(dbObject);
+
+		} catch (BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch (Throwable e) {
+			log.error("Can't delete resource", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+		return response;
+	}
+
+	@Override
+	public int getNumOfResourcesForRole(final String roleId) {
+		return resourceDao.getNumOfResourcesForRole(roleId);
+	}
+
+	@Override
+	public List<Resource> getResourcesForRole(final String roleId,
+			final int from, final int size) {
+		final List<ResourceEntity> entityList = resourceDao
+				.getResourcesForRole(roleId, from, size);
+		final List<Resource> resourceList = resourceConverter.convertToDTOList(
+				entityList, false);
 		return resourceList;
 	}
 
-	/**
-	 * Remove a resource
-	 * 
-	 * @param resourceId
-	 */
-	public void removeResource(String resourceId) {
-		if (resourceId == null)
-			throw new IllegalArgumentException("resourceId is null");
-		Resource obj = this.resourceDao.findById(resourceId);
-		this.resourceDao.remove(obj);
+	@Override
+	public List<Resource> getResourcesForManagedSys(final String mngSysId,
+			final int from, final int size) {
+		final List<ResourceEntity> entityList = resourceDao
+				.getResourcesForManagedSys(mngSysId, from, size);
+		final List<Resource> resourceList = resourceConverter.convertToDTOList(
+				entityList, false);
+		return resourceList;
 	}
 
-	/**
-	 * Remove all resources
-	 */
-	public int removeAllResources() {
-		return this.resourceDao.removeAllResources();
+	@Override
+	public int getNumOfResourceForGroup(final String groupId) {
+		return resourceDao.getNumOfResourcesForGroup(groupId);
 	}
 
-	// ResourceType -----------------------------------
-
-	/**
-	 * Add a new resource type
-	 * 
-	 * @param val
-	 * @return
-	 */
-	public ResourceType addResourceType(ResourceType val) {
-		if (val == null)
-			throw new IllegalArgumentException("ResourcType is null");
-
-		return resourceTypeDao.add(val);
+	@Override
+	public List<Resource> getResourcesForGroup(final String groupId,
+			final int from, final int size) {
+		final List<ResourceEntity> entityList = resourceDao
+				.getResourcesForGroup(groupId, from, size);
+		final List<Resource> resourceList = resourceConverter.convertToDTOList(
+				entityList, false);
+		return resourceList;
 	}
 
-	/**
-	 * Find a resource type
-	 * 
-	 * @param resourceTypeId
-	 * @return
-	 */
-	public ResourceType getResourceType(String resourceTypeId) {
-		if (resourceTypeId == null)
-			throw new IllegalArgumentException("resourceTypeId is null");
-
-		return resourceTypeDao.findById(resourceTypeId);
+	@Override
+	public int getNumOfResourceForUser(final String userId) {
+		return resourceDao.getNumOfResourcesForUser(userId);
 	}
 
-	/**
-	 * Update a resource type
-	 * 
-	 * @param resourceType
-	 * @return
-	 */
-	public ResourceType updateResourceType(ResourceType resourceType) {
-		if (resourceType == null)
-			throw new IllegalArgumentException("resourceType object is null");
-
-		return resourceTypeDao.update(resourceType);
+	@Override
+	public List<Resource> getResourcesForUser(final String userId,
+			final int from, final int size) {
+		final List<ResourceEntity> entityList = resourceDao
+				.getResourcesForUser(userId, from, size);
+		final List<Resource> resourceList = resourceConverter.convertToDTOList(
+				entityList, false);
+		return resourceList;
 	}
-
-	/**
-	 * Find all resource types
-	 * 
-	 * @return
-	 */
-	public List<ResourceType> getAllResourceTypes() {
-		List<ResourceType> resourceTypeList = resourceTypeDao
-				.findAllResourceTypes();
-
-		return resourceTypeList;
-	}
-
-	/**
-	 * Remove a resource type
-	 * 
-	 * @param resourceTypeId
-	 */
-	public void removeResourceType(String resourceTypeId) {
-		if (resourceTypeId == null)
-			throw new IllegalArgumentException("resourceTypeId is null");
-		ResourceType obj = this.resourceTypeDao.findById(resourceTypeId);
-		this.resourceTypeDao.remove(obj);
-	}
-
-	/**
-	 * Remove all resource types
-	 * 
-	 * @return
-	 */
-	public int removeAllResourceTypes() {
-		return this.resourceTypeDao.removeAllResourceTypes();
-	}
-
-	/**
-	 * Find type of a resource
-	 * 
-	 * @param resourceId
-	 * @return
-	 */
-	public ResourceType findTypeOfResource(String resourceId) {
-		if (resourceId == null)
-			throw new IllegalArgumentException("resourceId is null");
-
-		return resourceDao.findTypeOfResource(resourceId);
-	}
-
-	// /**
-	// * Link metadata type to a resource
-	// *
-	// * @param resourceTypeId
-	// * @param resourceId
-	// */
-	// public void linkTypeToResource(String resourceId, String resourceTypeId)
-	// {
-	// if (resourceTypeId == null)
-	// throw new IllegalArgumentException("resourceTypeId is null");
-	// if (resourceId == null)
-	// throw new IllegalArgumentException("resourceId is null");
-	// this.resourceDao.linkTypeToResource(resourceId, resourceTypeId);
-	// }
-	//
-	// /**
-	// * Unlink type from resource
-	// *
-	// * @param resourceId
-	// */
-	// public void unlinkTypeFromResource(String resourceId) {
-	// if (resourceId == null)
-	// throw new IllegalArgumentException("resourceId is null");
-	//
-	// this.resourceDao.unlinkTypeFromResource(resourceId);
-	// }
-
-	// ResourceProp ---------------------------------------
-
-	/**
-	 * Add a resource property.
-	 * 
-	 * @param resourceProp
-	 * @return
-	 */
-	public ResourceProp addResourceProp(ResourceProp resourceProp) {
-		if (resourceProp == null)
-			throw new IllegalArgumentException("ResourceProp object is null");
-
-		return resourcePropDao.add(resourceProp);
-
-	}
-
-	// /**
-	// * Add a new resource Property from a transient resource Property object.
-	// * Sets resourcePropId and associates resourceProp with a resource.
-	// *
-	// * @param resourceProp
-	// * @param resourceId
-	// * @return
-	// */
-	// public ResourceProp addLinkedResourceProp(ResourceProp resourceProp,
-	// String resourceId) {
-	// if (resourceId == null)
-	// throw new IllegalArgumentException("resourceId is null");
-	// Resource resource = resourceDao.findById(resourceId);
-	//
-	// if (resource == null) {
-	// log.error("Resource not found for resourceId =" + resourceId);
-	// throw new ObjectNotFoundException();
-	// }
-	//		
-	// resourceProp.setResource(resource);
-	// Set<ResourceProp> props = resource.getResourceProps();
-	// if (props == null)
-	// props = new HashSet<ResourceProp>();
-	// props.add(resourceProp);
-	// return resourcePropDao.add(resourceProp);
-	// }
-
-	/**
-	 * Find a resource property.
-	 * 
-	 * @param resourcePropId
-	 * @return
-	 */
-	public ResourceProp getResourceProp(String resourcePropId) {
-		if (resourcePropId == null)
-			throw new IllegalArgumentException("resourcePropId is null");
-
-		return resourcePropDao.findById(resourcePropId);
-	}
-
-	/**
-	 * Update a resource property
-	 * 
-	 * @param resourceProp
-	 */
-	public ResourceProp updateResourceProp(ResourceProp resourceProp) {
-		if (resourceProp == null)
-			throw new IllegalArgumentException("resourceProp object is null");
-
-		return resourcePropDao.update(resourceProp);
-	}
-
-	/**
-	 * Find all resource properties
-	 * 
-	 * @return
-	 */
-	public List<ResourceProp> getAllResourceProps() {
-		List<ResourceProp> resourcePropList = resourcePropDao
-				.findAllResourceProps();
-
-		return resourcePropList;
-	}
-
-	/**
-	 * Remove a resource property
-	 * 
-	 * @param resourcePropId
-	 */
-	public void removeResourceProp(String resourcePropId) {
-		if (resourcePropId == null)
-			throw new IllegalArgumentException("resourcePropId is null");
-		ResourceProp obj = this.resourcePropDao.findById(resourcePropId);
-		this.resourcePropDao.remove(obj);
-	}
-
-	/**
-	 * Remove all resource properties
-	 * 
-	 * @param
-	 */
-	public int removeAllResourceProps() {
-		return this.resourcePropDao.removeAllResourceProps();
-	}
-
-	/**
-	 * Remove properties with a specified resourceId
-	 * 
-	 * @param resourceId
-	 * @return
-	 */
-	public int removePropertiesByResource(String resourceId) {
-		if (resourceId == null)
-			throw new IllegalArgumentException("resourceId is null");
-
-		return this.resourceDao.removePropertiesByResource(resourceId);
-	}
-
-	/**
-	 * Find resource properties
-	 * 
-	 * @param resourceId
-	 * @return
-	 */
-	public List<ResourceProp> findResourceProperties(String resourceId) {
-		if (resourceId == null)
-			throw new IllegalArgumentException("resourceId is null");
-
-		return this.resourceDao.findResourceProperties(resourceId);
-	}
-
-	// /**
-	// * Add a property to a resource
-	// *
-	// * @param resourcePropId
-	// * @param resourceId
-	// */
-	// public void linkPropertyToResource(String resourcePropId, String
-	// resourceId) {
-	// if (resourcePropId == null)
-	// throw new IllegalArgumentException("resourcePropId is null");
-	// if (resourceId == null)
-	// throw new IllegalArgumentException("resourceId is null");
-	//
-	// this.resourceDao.linkPropertyToResource(resourcePropId, resourceId);
-	// }
-	//
-	// /**
-	// * Remove a property from a resource
-	// *
-	// * @param resourcePropId
-	// * @param resourceId
-	// */
-	// public void unlinkPropertyFromResource(String resourcePropId,
-	// String resourceId) {
-	// if (resourcePropId == null)
-	// throw new IllegalArgumentException("resourcePropId is null");
-	// if (resourceId == null)
-	// throw new IllegalArgumentException("resourceId is null");
-	//
-	// this.resourceDao.unlinkPropertyFromResource(resourcePropId, resourceId);
-	// }
-	//
-	// /**
-	// * Remove all properties from a resource
-	// *
-	// * @param resourceId
-	// */
-	// public void unlinkAllPropertiesFromResource(String resourceId) {
-	// if (resourceId == null)
-	// throw new IllegalArgumentException("resourceId is null");
-	//
-	// this.resourceDao.unlinkAllPropertiesFromResource(resourceId);
-	//
-	// }
-
-	// ResourceParent ------------------------------------------------
-
-	/**
-	 * Find resource children
-	 * 
-	 * @param resourceId
-	 * @return
-	 */
-	public List<Resource> getChildResources(String resourceId) {
-		if (resourceId == null)
-			throw new IllegalArgumentException("resourceId is null");
-		return this.resourceDao.getChildResources(resourceId);
-	}
-
-	// /**
-	// * Set a parent resource
-	// *
-	// * @param parentResourceId
-	// * @param childResourceId
-	// */
-	// public void linkResourceToParent(String childResourceId,
-	// String parentResourceId) {
-	// if (parentResourceId == null)
-	// throw new IllegalArgumentException("parentResourceId is null");
-	// if (childResourceId == null)
-	// throw new IllegalArgumentException("childResourceId is null");
-	// this.resourceDao
-	// .linkResourceToParent(childResourceId, parentResourceId);
-	// }
-	//
-	// /**
-	// * Remove a resource parent relationship
-	// *
-	// * @param childResourceId
-	// */
-	// public void unlinkResourceFromParent(String childResourceId) {
-	// if (childResourceId == null)
-	// throw new IllegalArgumentException("childResourceId is null");
-	// this.resourceDao.unlinkResourceFromParent(childResourceId);
-	// }
-	//
-	// resource hierarchy methods
-	// -------------------------------------------------
-
-	/**
-	 * Find a resource and its descendants and return as nested List.
-	 * 
-	 * @param resourceId
-	 *            the resource id
-	 * 
-	 * @return list of nested lists of resource objects
-	 */
-
-	public List<Resource> getResourceTree(String resourceId) {
-
-		List<Resource> resourceTree = new ArrayList<Resource>();
-		resourceTree.add(resourceDao.findById(resourceId));
-
-		List<Resource> resourceChildren = resourceDao
-				.getChildResources(resourceId);
-		resourceTree.addAll(resourceChildren);
-
-		for (Iterator<Resource> it = resourceChildren.iterator(); it.hasNext();) {
-			Resource r = (Resource) it.next();
-			List<Resource> descendents = getResourceTreeHelper(r
-					.getResourceId());
-			if (!((descendents == null) || (descendents.isEmpty()))) {
-				r.setChildResources(new HashSet<Resource>(descendents));
-			}
-		}
-		return resourceTree;
-	}
-
-	/**
-	 * Recursive helper method to get nested resource descendants.
-	 * 
-	 * @param resourceId
-	 *            the resource id
-	 * 
-	 * @return the resource tree helper
-	 */
-	private List<Resource> getResourceTreeHelper(String resourceId) {
-
-		List<Resource> descendents = resourceDao.getChildResources(resourceId);
-
-		for (Iterator<Resource> it = descendents.iterator(); it.hasNext();) {
-			Resource r = (Resource) it.next();
-			List<Resource> nextChildren = resourceDao.getChildResources(r
-					.getResourceId());
-			if (!((nextChildren == null) || (nextChildren.isEmpty()))) {
-				r.setChildResources(new HashSet<Resource>(nextChildren));
-				getResourceTreeHelper(r.getResourceId());
-			}
-		}
-		return descendents;
-	}
-
-	private String getResourceType(Resource r) {
-		String rt = "";
-		ResourceType resType = r.getResourceType();
-		if (resType != null)
-			rt = resType.getResourceTypeId() + ":";
-		return rt;
-	}
-
-	/**
-	 * Find a resource and its descendants and return as an xml tree.
-	 * 
-	 * @param resourceId
-	 *            the resource id
-	 * 
-	 * @return xml string
-	 */
-	public String getResourceTreeXML(String resourceId) {
-		StringBuffer xml = new StringBuffer();
-
-		Resource mainResource = resourceDao.findById(resourceId);
-
-		xml.append("<Resource label='" + getResourceType(mainResource)
-				+ mainResource.getName() + "' resourceId='"
-				+ mainResource.getResourceId() + "'>");
-		// xml.append("<ResourceId label='id'>" + mainResource.getResourceId() +
-		// "</ResourceId>");
-		// xml.append("<ResourceDescription label='desc'>" +
-		// mainResource.getDescription()+ "</ResourceDescription>");
-		// xml.append("<Resources label='child'>");
-
-		// descendants:
-		List<Resource> resourceTree = resourceDao.getChildResources(resourceId);
-		for (Iterator<Resource> it = resourceTree.iterator(); it.hasNext();) {
-			Resource r = (Resource) it.next();
-
-			xml.append("<Resource label='" + getResourceType(r) + r.getName()
-					+ "' resourceId='" + r.getResourceId() + "'>");
-			// xml.append("<ResourceId label='id'>" + r.getResourceId() +
-			// "</ResourceId>");
-			// xml.append("<ResourceDescription label='desc'>" +
-			// r.getDescription()+ "</ResourceDescription>");
-
-			// xml.append(getResourceTreeXmlHelper(r.getResourceId(), xml));
-			getResourceTreeXmlHelper(r.getResourceId(), xml);
-
-			xml.append("</Resource>");
-		}
-
-		// xml.append("</Resources>");
-		xml.append("</Resource>");
-
-		return xml.toString();
-	}
-
-	/**
-	 * Recursive helper method to get nested resource descendants as xml.
-	 * 
-	 * @param resourceId
-	 *            the resource id
-	 * @param xml
-	 *            the xml
-	 * 
-	 * @return the resource tree xml helper
-	 */
-	private StringBuffer getResourceTreeXmlHelper(String resourceId,
-			StringBuffer xml) {
-
-		List<Resource> descendents = resourceDao.getChildResources(resourceId);
-
-		// xml.append("<Resources label='child'>");
-		for (Iterator<Resource> it = descendents.iterator(); it.hasNext();) {
-			Resource r = (Resource) it.next();
-
-			xml.append("<Resource label='" + getResourceType(r) + r.getName()
-					+ "' resourceId='" + r.getResourceId() + "'>");
-			// xml.append("<ResourceId label='id'>" + r.getResourceId() +
-			// "</ResourceId>");
-			// xml.append("<ResourceDescription label='desc'>" +
-			// r.getDescription()+ "</ResourceDescription>");
-			getResourceTreeXmlHelper(r.getResourceId(), xml);
-			xml.append("</Resource>");
-		}
-		// xml.append("</Resources>");
-
-		return xml;
-
-	}
-
-	/**
-	 * Find a resource and all its descendants and put them in a list.
-	 * 
-	 * @param resourceId
-	 *            the resource id
-	 * 
-	 * @return resource list
-	 */
-
-	public List<Resource> getResourceFamily(String resourceId) {
-
-		List<Resource> resourceTree = new ArrayList<Resource>();
-		resourceTree.add(resourceDao.findById(resourceId));
-
-		List<Resource> resourceChildren = resourceDao
-				.getChildResources(resourceId);
-		resourceTree.addAll(resourceChildren);
-
-		for (Iterator<Resource> it = resourceChildren.iterator(); it.hasNext();) {
-			Resource r = (Resource) it.next();
-			List<Resource> descendents = new ArrayList<Resource>();
-			resourceTree.addAll(getResourceFamilyHelper(r.getResourceId(),
-					descendents));
-		}
-		return resourceTree;
-	}
-
-	/**
-	 * Recursive method to get resource descendants in a single non nested list.
-	 * 
-	 * @param resourceId
-	 *            the resource id
-	 * @param descendents
-	 *            the descendents
-	 * 
-	 * @return the resource family helper
-	 */
-	private List<Resource> getResourceFamilyHelper(String resourceId,
-			List<Resource> descendents) {
-
-		List<Resource> children = resourceDao.getChildResources(resourceId);
-		descendents.addAll(children);
-		for (Iterator<Resource> it = children.iterator(); it.hasNext();) {
-			Resource r = (Resource) it.next();
-			getResourceFamilyHelper(r.getResourceId(), descendents);
-		}
-		return descendents;
-	}
-
-	// Resource get methods
-	// =====================================================
-
-	/**
-	 * Find resources having a specified metadata type
-	 * 
-	 * @param resourceTypeId
-	 * @return
-	 */
-	public List<Resource> getResourcesByType(String resourceTypeId) {
-		if (resourceTypeId == null)
-			throw new IllegalArgumentException("resourceTypeId is null");
-		return this.resourceDao.getResourcesByType(resourceTypeId);
-	}
-
-	/**
-	 * Find root resources i.e. resources with null or blank value for parent
-	 * 
-	 * @return
-	 */
-	public List<Resource> getRootResources() {
-		return this.resourceDao.getRootResources();
-	}
-
-	/**
-	 * Find all resources for a specified category.
-	 * 
-	 * @param categoryId
-	 * @return
-	 */
-	public List<Resource> getResourcesByCategory(String categoryId) {
-		if (categoryId == null)
-			throw new IllegalArgumentException("categoryId is null");
-		return this.resourceDao.getResourcesByCategory(categoryId);
-	}
-
-	/**
-	 * Find all resources with a specified branch
-	 * 
-	 * @param branchId
-	 * @return
-	 */
-	public List<Resource> getResourcesByBranch(String branchId) {
-		if (branchId == null)
-			throw new IllegalArgumentException("branchId is null");
-		return this.resourceDao.getResourcesByBranch(branchId);
-
-	}
-
-	/**
-	 * Remove resources having a specified metadata type
-	 * 
-	 * @param resourceTypeId
-	 * @return rows affected
-	 */
-	public int removeResourcesByType(String resourceTypeId) {
-		if (resourceTypeId == null)
-			throw new IllegalArgumentException("resourceTypeId is null");
-		return this.resourceDao.removeResourcesByType(resourceTypeId);
-	}
-
-	/**
-	 * Remove all resources for a specified category.
-	 * 
-	 * @param categoryId
-	 * @return rows affected
-	 */
-	public int removeResourcesByCategory(String categoryId) {
-		if (categoryId == null)
-			throw new IllegalArgumentException("categoryId is null");
-		return this.resourceDao.removeResourcesByCategory(categoryId);
-	}
-
-	/**
-	 * Remove all resources with a specified branch
-	 * 
-	 * @param branchId
-	 * @return rows affected
-	 */
-	public int removeResourcesByBranch(String branchId) {
-		if (branchId == null)
-			throw new IllegalArgumentException("branchId is null");
-		return this.resourceDao.removeResourcesByBranch(branchId);
-
-	}
-
-	// public List<Resource> getResourceNodeTree (String resourceId) {
-	//
-	// List<Resource> resourceList = new ArrayList();
-	//
-	// List<Resource> rootChildren =
-	// resourceDao.getResourcesByParent(resourceId);
-	//
-	// if ( (rootChildren == null)||(rootChildren.isEmpty()) ) {
-	// return resourceList;
-	// }
-	//
-	// for (Iterator<Resource> it = rootChildren.iterator(); it.hasNext(); ) {
-	// Resource r = (Resource) it.next();
-	// resourceList.add(r);
-	// getChildResourcesNodeLevel(r.getResourceId(), resourceList);
-	// }
-	//
-	// return resourceList;
-	//
-	// }
-
-	// public List<Resource> getChildResourcesNodeLevel(String resourceId,
-	// List<Resource> resourceList) {
-	//
-	// Resource res = this.resourceDao.findById(resourceId);
-	// int nodeLevel = res.getNodeLevel();
-	// ++nodeLevel;
-	//
-	// List<Resource> childResources =
-	// resourceDao.getResourcesByParent(resourceId);
-	// if ( (childResources == null)||(childResources.isEmpty()) ) {
-	// return resourceList;
-	// }
-	//
-	// for (Iterator<Resource> it = childResources.iterator(); it.hasNext(); ) {
-	// Resource r = (Resource)it.next();
-	// r.setNodeLevel(nodeLevel);
-	// resourceList.add(r);
-	// getChildResourcesNodeLevel(r.getResourceId(), resourceList);
-	// }
-	//
-	// return resourceList;
-	//
-	// }
-
-	// ResourceRole ---------------------------------------
-
-	/**
-	 * Add a resource role
-	 * 
-	 * @param resourceRole
-	 * @return
-	 */
-	public ResourceRole addResourceRole(ResourceRole resourceRole) {
-
-		if (resourceRole == null)
-			throw new IllegalArgumentException("ResourceRole object is null");
-
-		return resourceRoleDao.add(resourceRole);
-
-	}
-
-	/**
-	 * Find resource role
-	 * 
-	 * @param resourceRoleId
-	 * @return
-	 */
-	public ResourceRole getResourceRole(ResourceRoleId resourceRoleId) {
-		if (resourceRoleId == null)
-			throw new IllegalArgumentException("resourceRoleId is null");
-
-		return resourceRoleDao.findById(resourceRoleId);
-	}
-
-    public List<Role> getRolesForResource(String resourceId) {
-        if (resourceId == null)
-            throw new IllegalArgumentException("resourceRoleId is null");
-
-        return resourceRoleDao.findRolesForResource(resourceId);
-    }
-
-	/**
-	 * Update resource role.
-	 * 
-	 * @param resourceRole
-	 * @return
-	 */
-	public ResourceRole updateResourceRole(ResourceRole resourceRole) {
-		if (resourceRole == null)
-			throw new IllegalArgumentException("resourceRole object is null");
-
-		return resourceRoleDao.update(resourceRole);
-	}
-
-	/**
-	 * Find all resource roles
-	 * 
-	 * @return
-	 */
-	public List<ResourceRole> getAllResourceRoles() {
-		List<ResourceRole> resourceRoleList = resourceRoleDao
-				.findAllResourceRoles();
-
-		return resourceRoleList;
-	}
-
-	/**
-	 * Remove resource role.
-	 * 
-	 * @param resourceRoleId
-	 */
-	public void removeResourceRole(ResourceRoleId resourceRoleId) {
-		if (resourceRoleId == null)
-			throw new IllegalArgumentException("resourceRoleId is null");
-		ResourceRole obj = this.resourceRoleDao.findById(resourceRoleId);
-		this.resourceRoleDao.remove(obj);
-	}
-
-	/**
-	 * Remove all resource roles
-	 * 
-	 */
-	public void removeAllResourceRoles() {
-		this.resourceRoleDao.removeAllResourceRoles();
-	}
-
-	public List<ResourceRole> getResourceRolesByResource(String resourceId) {
-		if (resourceId == null) {
-			throw new IllegalArgumentException("resourceId is null");
-		}
-		return resourceDao.findResourceRolesByResource(resourceId);
-	}
-
-	/**
-	 * Returns a list of Resource objects that are linked to a Role.
-	 * 
-	 * @param domainId
-	 * @param roleId
-	 * @return
-	 */
-	public List<Resource> getResourcesForRole(String domainId, String roleId) {
-		if (domainId == null) {
-			throw new IllegalArgumentException("domainId is null");
-		}
-		if (roleId == null) {
-			throw new IllegalArgumentException("roleId is null");
-		}
-		return resourceDao.findResourcesForRole(domainId, roleId);
-	}
-
-	/**
-	 * Returns a list of Resource objects that are linked to the list of Roles.
-	 * 
-	 * @param domainId
-	 * @param roleIdList
-	 * @return
-	 */
-	public List<Resource> getResourcesForRoles(String domainId,
-			List<String> roleIdList) {
-		if (domainId == null) {
-			throw new IllegalArgumentException("domainId is null");
-		}
-		if (roleIdList == null) {
-			throw new IllegalArgumentException("roleIdList is null");
-		}
-		return resourceDao.findResourcesForRoles(domainId, roleIdList);
-	}
-
-	/**
-	 * Add a resource role privilege
-	 * 
-	 * @param resourceId
-	 *            the resource id
-	 * @param roleId
-	 *            the role id
-	 * @param privilegeId
-	 *            the privilege id
-	 */
-	public void addResourceRolePrivilege(String resourceId, String roleId,
-			String privilegeId) {
-		if (resourceId == null)
-			throw new IllegalArgumentException("resourceId is null");
-		if (roleId == null)
-			throw new IllegalArgumentException("roleId is null");
-		if (privilegeId == null)
-			throw new IllegalArgumentException("privilegeId is null");
-
-		this.resourceDao.addResourceRolePrivilege(resourceId, roleId,
-				privilegeId);
-	}
-
-	/**
-	 * Removes the resource role privilege.
-	 * 
-	 * @param resourceId
-	 *            the resource id
-	 * @param roleId
-	 *            the role id
-	 * @param privilegeId
-	 *            the privilege id
-	 */
-	void removeResourceRolePrivilege(String resourceId, String roleId,
-			String privilegeId) {
-		if (resourceId == null)
-			throw new IllegalArgumentException("resourceId is null");
-		if (roleId == null)
-			throw new IllegalArgumentException("roleId is null");
-		if (privilegeId == null)
-			throw new IllegalArgumentException("privilegeId is null");
-
-		this.resourceDao.removeResourceRolePrivilege(resourceId, roleId,
-				privilegeId);
-	}
-
-	/**
-	 * Removes the all role privileges from resource.
-	 * 
-	 * @param resourceId
-	 *            the resource id
-	 */
-	void removeResourceRolePrivileges(String resourceId) {
-		if (resourceId == null)
-			throw new IllegalArgumentException("resourceId is null");
-
-		this.resourceDao.removeResourceRolePrivileges(resourceId);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.openiam.idm.srvc.res.service.ResourceDataService#addUserToResource
-	 * (org.openiam.idm.srvc.res.dto.ResourceUser)
-	 */
-	public ResourceUser addUserToResource(ResourceUser resourceUser) {
-		if (resourceUser == null) {
-			throw new IllegalArgumentException("ResourceUser object is null");
-		}
-		return resourceUserDao.add(resourceUser);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.openiam.idm.srvc.res.service.ResourceDataService#getUserResources
-	 * (java.lang.String)
-	 */
-	public List<ResourceUser> getUserResources(String userId) {
-		if (userId == null) {
-			throw new IllegalArgumentException("UserId object is null");
-		}
-		return resourceUserDao.findAllResourceForUsers(userId);
-	}
-
-     public List<Resource> getResourceObjForUser(String userId) {
-		if (userId == null) {
-			throw new IllegalArgumentException("UserId object is null");
-		}
-
-        return resourceDao.findResourcesForUserRole(userId) ;
-	}
-
-
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @seeorg.openiam.idm.srvc.res.service.ResourceDataService#
-	 * removeUserFromAllResources(java.lang.String)
-	 */
-	public void removeUserFromAllResources(String userId) {
-		if (userId == null) {
-			throw new IllegalArgumentException("UserId object is null");
-		}
-		resourceUserDao.removeUserFromAllResources(userId);
-	}
-
-	public ResourceUserDAO getResourceUserDao() {
-		return resourceUserDao;
-	}
-
-	public void setResourceUserDao(ResourceUserDAO resourceUserDao) {
-		this.resourceUserDao = resourceUserDao;
-	}
-
-	public boolean isUserAuthorized(String userId, String resourceId) {
-		log.info("isUserAuthorized called.");
-		List<ResourceUser> resList = getUserResources(userId);
-		log.info("- resList= " + resList);
-		if (resList == null) {
-			log.info("resource list for user is null");
-			return false;
-		}
-		for (ResourceUser ru : resList) {
-			log.info("resource id = " + ru.getId().getResourceId());
-			if (ru.getId().getResourceId().equalsIgnoreCase(resourceId)) {
-				return true;
-			}
-		}
-		return false;
-
-	}
-
-
-    public boolean isUserAuthorizedByProperty(String userId, String propertyName, String propertyValue) {
-       log.info("isUserAuthorized called.");
-
-        if (propertyName == null || propertyName.length() == 0) {
-            return false;
-        }
-        if (propertyValue == null || propertyValue.length() == 0) {
-            return false;
-        }
-
-        List<Resource> resList = getResourceObjForUser(userId);
-
-		log.info("- resList= " + resList);
-		if (resList == null) {
-			log.info("resource list for user is null");
-			return false;
-		}
-		for (Resource res : resList) {
-
-            ResourceProp prop =  res.getResourceProperty(propertyName);
-            if (prop != null) {
-                String val = prop.getPropValue();
-                if (val != null && val.length() > 0) {
-                    val = val.toLowerCase();
-                    propertyValue = propertyValue.toLowerCase();
-
-                    if (propertyValue.contains(val)) {
-                        return true;
-                    }
-
-                }
-            }
-		}
-
-		return false;
-
-    }
-
-	public boolean isRoleAuthorized(String domainId, String roleId,
-			String resourceId) {
-		log.info("isUserAuthorized called.");
-
-		List<Resource> resList = this.getResourcesForRole(domainId, roleId);
-		log.info("- resList= " + resList);
-		if (resList == null) {
-			log.info("resource list for user is null");
-			return false;
-		}
-		for (Resource r : resList) {
-			log.info("resource id = " + r.getResourceId());
-			if (r.getResourceId().equalsIgnoreCase(resourceId)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-
-
-    /* Temp hack ---------------------  -------------------------*/
-    
-    public String attributeString(String domainId, String principal) {
-
-        List<String> oidList = new ArrayList<String>();
-        String permitOverRide;
-        String orgName = null;
-        Organization org = null;
-
-        Login principalLg =  loginManager.getLoginByManagedSys(domainId, principal, "0");
-
-        if (principalLg == null) {
-            return null;
-        }
-
-        User usr = userManager.getUserWithDependent(principalLg.getUserId(), true);
-        List<Role> roleList =  roleDataService.getUserRoles(principalLg.getUserId());
-
-
-
-
-        if (usr.getCompanyId() != null && usr.getCompanyId().length() > 0) {
-
-            org = orgManager.getOrganization(usr.getCompanyId());
-            if (org != null && org.getOrganizationName() != null) {
-                orgName = org.getOrganizationName();
-                // oid = org.getAlias();
-              //  addOid(oidList, org.getAlias());
-            }else {
-                orgName = "NA";
-            }
-        }
-
-        UserAttribute attrPermitOverride =  usr.getAttribute("permit-override");
-        if (attrPermitOverride == null  ) {
-            permitOverRide = "N";
-        }else {
-            if ( attrPermitOverride.getValue() == null || !attrPermitOverride.getValue().equalsIgnoreCase("Y")) {
-                permitOverRide = "N";
-            }else {
-                permitOverRide = "Y";
-            }
-
-        }
-        List<Organization> affiliationList = null;
-
-        if (roleContains("EMERGENCY_ROLE", roleList)) {
-
-            log.info("Emergency role found");
-
-
-            affiliationList = orgManager.getAllOrganizations();
-        } else {
-
-            affiliationList =  orgManager.getOrganizationsForUser(principalLg.getUserId());
-        }
-
-        if (affiliationList != null && affiliationList.size() > 0) {
-            Set<Organization> orgSet = new TreeSet<Organization>(affiliationList);
-            orgSet.add(org);
-
-            for (Organization o : orgSet) {
-            //for (Organization o : affiliationList) {
-                if ( o.getAlias() != null && !o.getAlias().isEmpty() ) {
-
-                    addOid(oidList, o.getAlias());
-                }
-
-            }
-        }else {
-            if (org != null && org.getAlias() != null) {
-                addOid(oidList, org.getAlias());
-            }
-
-        }
-
-       // sort objects
-       // role
-        Set<Role> roleSet = new TreeSet<Role>(roleList);
-
-       // oidList
-
-
-
-
-
-        String roleStr = null;
-
-        if (roleList != null && !roleList.isEmpty()) {
-
-            for ( Role r : roleSet) {
-            //for ( Role r : roleList) {
-                if (roleStr == null) {
-                    roleStr = r.getId().getRoleId();
-                }else {
-                    roleStr = roleStr + "," + r.getId().getRoleId();
-                }
-
-            }
-        }
-
-
-
-        StringBuffer headerString = new StringBuffer();
-
-        if (usr.getFirstName() != null && usr.getFirstName().length() > 0) {
-            headerString.append("firstname=" + usr.getFirstName());
-        }else {
-            headerString.append("&firstname=NA");
-        }
-        if (usr.getLastName() != null && usr.getLastName().length() > 0) {
-            headerString.append("&secondname=" + usr.getLastName());
-        }else {
-            headerString.append("&secondname=NA");
-        }
-        headerString.append("&fullname=" + usr.getFirstName() + " " + usr.getLastName());
-        if (roleStr != null && roleStr.length() > 0) {
-            headerString.append("&role=" + roleStr );
-        }else {
-            headerString.append("&role=NO_ROLE");
-        }
-        headerString.append("&organization=" + orgName );
-        headerString.append("&organizationoid=" + getOidString(oidList) );
-
-        headerString.append("&permit=" + permitOverRide );
-
-        return headerString.toString();
-    }
-
-    public LoginDataService getLoginManager() {
-        return loginManager;
-    }
-
-    public void setLoginManager(LoginDataService loginManager) {
-        this.loginManager = loginManager;
-    }
-
-    public UserDataService getUserManager() {
-        return userManager;
-    }
-
-    public void setUserManager(UserDataService userManager) {
-        this.userManager = userManager;
-    }
-
-    public RoleDataService getRoleDataService() {
-        return roleDataService;
-    }
-
-    public void setRoleDataService(RoleDataService roleDataService) {
-        this.roleDataService = roleDataService;
-    }
-
-    private void addOid(List<String> oidList, String newOid) {
-
-        for (String oid : oidList) {
-            if (oid.equalsIgnoreCase(newOid)) {
-                // found - its already in the list
-                return;
-            }
-
-        }
-        oidList.add(newOid);
-    }
-
-    private String getOidString(List<String> oidList) {
-        StringBuffer oid = new StringBuffer();
-
-        int ctr = 0;
-        for ( String o : oidList) {
-
-            if (ctr == 0) {
-                oid.append( o );
-            } else {
-                if (o != null && !o.isEmpty())
-                oid.append("," + o);
-            }
-            ctr++;
-
-
-        }
-        if (oidList.isEmpty()) {
-            return "NA";
-        }
-        return oid.toString();
-
-    }
-
-
-    private boolean roleContains(String roleId, List<Role> roleList) {
-
-        if (roleList == null || roleList.isEmpty()) {
-            return false;
-        }
-
-
-
-        for (Role r : roleList) {
-            if (r != null) {
-                log.info("Checking Role name " + r);
-
-                if (r.getId().getRoleId().equalsIgnoreCase(roleId)) {
-                    return true;
-                }
-            }
-
-        }
-        return false;
-
-    }
-
-    @Override
-    public ResourcePrivilege addResourcePrivilege(ResourcePrivilege resourcePrivilege) {
-        if (resourcePrivilege == null) {
-            throw new IllegalArgumentException("ResourcePrivilege object is null");
-        }
-        return resourcePrivilegeDao.add(resourcePrivilege);
-
-    }
-
-    @Override
-    public void removeResourcePrivilege(String resourcePrivilegeId) {
-        if (resourcePrivilegeId == null) {
-            throw new IllegalArgumentException("resourcePrivilegeId object is null");
-        }
-        resourcePrivilegeDao.remove(new ResourcePrivilege(resourcePrivilegeId));
-    }
-
-    @Override
-    public ResourcePrivilege updateResourcePrivilege( ResourcePrivilege resourcePrivilege) {
-        if (resourcePrivilege == null) {
-            throw new IllegalArgumentException("ResourcePrivilege object is null");
-        }
-        return resourcePrivilegeDao.update(resourcePrivilege);
-    }
-
-    @Override
-    public List<ResourcePrivilege> getPrivilegesByResourceId(String resourceId) {
-        if (resourceId == null) {
-            throw new IllegalArgumentException("resourceId object is null");
-        }
-        return resourcePrivilegeDao.findPrivilegesByResourceId(resourceId);
-
-    }
-
-    @Override
-    public List<ResourcePrivilege> getPrivilegesByEntitlementType( String resourceId,  String type) {
-        if (resourceId == null) {
-            throw new IllegalArgumentException("resourceId object is null");
-        }
-        if (type == null) {
-            throw new IllegalArgumentException("type object is null");
-        }
-        return resourcePrivilegeDao.findPrivilegesByEntitlementType(resourceId, type);
-    }
-
-    public OrganizationDataService getOrgManager() {
-        return orgManager;
-    }
-
-    public void setOrgManager(OrganizationDataService orgManager) {
-        this.orgManager = orgManager;
-    }
-
-    public ResourcePrivilegeDAO getResourcePrivilegeDao() {
-        return resourcePrivilegeDao;
-    }
-
-    public void setResourcePrivilegeDao(ResourcePrivilegeDAO resourcePrivilegeDao) {
-        this.resourcePrivilegeDao = resourcePrivilegeDao;
-    }
 }
-
-
-
-

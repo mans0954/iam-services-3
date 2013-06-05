@@ -2,9 +2,8 @@ package org.openiam.idm.srvc.recon.command;
 
 import org.mule.api.MuleContext;
 import org.mule.api.context.MuleContextAware;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
-import org.openiam.idm.srvc.mngsys.service.ConnectorDataService;
-import org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService;
+import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
+import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
 import org.openiam.idm.srvc.recon.service.ReconciliationCommand;
 import org.openiam.provision.service.ConnectorAdapter;
@@ -31,7 +30,13 @@ public class ReconciliationCommandFactory implements ApplicationContextAware, Mu
         if(name.equalsIgnoreCase("NOTHING")){
             reconCommand = new DoNothingCommand();
         } else if(name.equalsIgnoreCase("DEL_RES_ACCOUNT")){
-            reconCommand = new DeleteResourceAccountCommand((ProvisionService) applicationContext.getBean("defaultProvision"), (ManagedSystemDataService)applicationContext.getBean("managedSysService"), (ConnectorDataService)applicationContext.getBean("connectorService"), (RemoteConnectorAdapter)applicationContext.getBean("remoteConnectorAdapter"), muleContext, managedSysId, (ConnectorAdapter)applicationContext.getBean("connectorAdapter"));
+            reconCommand = new DeleteResourceAccountCommand((ProvisionService) applicationContext.getBean("defaultProvision"),
+                    (ManagedSystemWebService)applicationContext.getBean("managedSysService"),
+                    (ProvisionConnectorWebService)applicationContext.getBean("connectorService"),
+                    (RemoteConnectorAdapter)applicationContext.getBean("remoteConnectorAdapter"),
+                    muleContext,
+                    managedSysId,
+                    (ConnectorAdapter)applicationContext.getBean("connectorAdapter"));
         } else if(name.equalsIgnoreCase("DEL_IDM_ACCOUNT")){
             reconCommand = new DeleteIdmAccountCommand((ProvisionService) applicationContext.getBean("defaultProvision"));
         } else if(name.equalsIgnoreCase("DEL_IDM_USER")){

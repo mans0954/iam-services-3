@@ -22,12 +22,15 @@
 package org.openiam.idm.srvc.pswd.service;
 
 import org.openiam.exception.ObjectNotFoundException;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.pswd.dto.Password;
 import org.openiam.idm.srvc.pswd.dto.PasswordResetTokenRequest;
 import org.openiam.idm.srvc.pswd.dto.PasswordResetTokenResponse;
 import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.pswd.dto.ValidatePasswordResetTokenResponse;
 
@@ -61,7 +64,7 @@ public interface PasswordService {
      * @return
      * @throws ObjectNotFoundException
      */
-    PasswordValidationCode isPasswordValidForUser(Password pswd, User user, Login lg) throws ObjectNotFoundException;
+    PasswordValidationCode isPasswordValidForUser(Password pswd, UserEntity user, LoginEntity lg) throws ObjectNotFoundException;
 
     /**
      * Returns if the password conforms to selected password policy
@@ -72,7 +75,7 @@ public interface PasswordService {
      * @return
      * @throws ObjectNotFoundException
      */
-    PasswordValidationCode isPasswordValidForUserAndPolicy(Password pswd, User user, Login lg, Policy policy) throws ObjectNotFoundException;
+    PasswordValidationCode isPasswordValidForUserAndPolicy(Password pswd, UserEntity user, LoginEntity lg, Policy policy) throws ObjectNotFoundException;
 
     /**
      * Determines if the user is allowed to change their password based on the policy and the number of times that password
@@ -118,14 +121,24 @@ public interface PasswordService {
      * @param user
      * @return
      */
-    Policy getPasswordPolicyByUser(String domainId, User user);
+    Policy getPasswordPolicyByUser(String domainId, UserEntity user);
+    
+    /**
+     * This method exists to REPLACE <b>getPasswordPolicyByUser</b>.  The functionality is the same.
+     * @param domainId
+     * @param user
+     * @return
+     */
+    PolicyEntity getPasswordPolicyForUser(final String domainId, final UserEntity user);
 
     /**
      * Checks to see if a password exists in the history log based on the policy
      *
      * @return 1 - In History, 0 - Not in history, -1 No policy defined
      */
+    /*
     int passwordInHistory(Password pswd, Policy policy);
+    */
 
     /**
      * Generates a temporary token that can be used as part of Secure challenge response

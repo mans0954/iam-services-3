@@ -1,6 +1,6 @@
 package org.openiam.am.srvc.resattr.ws;
 
-import org.openiam.am.srvc.resattr.dto.AttributeMap;
+import org.openiam.am.srvc.dto.AttributeMap;
 import org.openiam.am.srvc.resattr.dto.WebResourceResponse;
 import org.openiam.base.ws.Response;
 
@@ -11,6 +11,7 @@ import java.util.List;
 
 
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/res/service", name = "WebResourceService")
+@Deprecated
 public interface WebResourceService {
 
     @WebMethod

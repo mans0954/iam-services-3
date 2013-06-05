@@ -29,6 +29,7 @@ import org.mule.module.client.MuleClient;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.openiam.idm.srvc.synch.service.generic.GenericObjectSynchService;
+import org.springframework.beans.factory.annotation.Value;
 
 import javax.jws.WebService;
 import java.util.HashMap;
@@ -50,10 +51,12 @@ public class AsynchGenericObjectSynchServiceImpl implements AsynchGenericObjectS
     protected MuleContext muleContext;
 
     protected static final Log log = LogFactory.getLog(AsynchGenericObjectSynchServiceImpl.class);
-    static protected ResourceBundle res = ResourceBundle.getBundle("datasource");
 
-    static String serviceHost = res.getString("openiam.service_base");
-    static String serviceContext = res.getString("openiam.idm.ws.path");
+    @Value("${openiam.service_base}")
+    private String serviceHost;
+    
+    @Value("${openiam.idm.ws.path}")
+    private String serviceContext;
 
 
     public void startSynchronization(SynchConfig config) {

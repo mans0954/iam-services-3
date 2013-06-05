@@ -1,0 +1,1347 @@
+package org.openiam.idm.srvc.user.dto;
+
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openiam.base.AttributeOperationEnum;
+import org.openiam.base.BaseConstants;
+import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.idm.srvc.continfo.dto.Address;
+import org.openiam.idm.srvc.continfo.dto.EmailAddress;
+import org.openiam.idm.srvc.continfo.dto.Phone;
+import org.openiam.idm.srvc.grp.dto.UserGroup;
+import org.openiam.idm.srvc.res.dto.ResourceUser;
+import org.openiam.idm.srvc.role.dto.UserRole;
+import org.openiam.idm.srvc.user.domain.UserEntity;
+
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import java.util.*;
+
+/**
+ * User domain object.  This object is used to transfer data between the service layer
+ * and the client layer.
+ */
+
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "user", propOrder = {
+        "addresses",
+        "birthdate",
+        "companyId",
+        "companyOwnerId",
+        "createDate",
+        "createdBy",
+        "deptCd",
+        "deptName",
+        "emailAddresses",
+        "employeeId",
+        "employeeType",
+        //"expirationDate",
+        "firstName",
+        "jobCode",
+        "lastName",
+        "lastUpdate",
+        "lastUpdatedBy",
+        "locationCd",
+        "locationName",
+        "managerId",
+        "metadataTypeId",
+        "classification",
+        "middleInit",
+        "phones",
+        "prefix",
+        "sex",
+        "status",
+        "secondaryStatus",
+        "suffix",
+        "title",
+        "userAttributes",
+        "userId",
+        "userTypeInd",
+        "userNotes",
+        "division",
+        "costCenter",
+        "startDate",
+        "lastDate",
+        "mailCode",
+        "nickname",
+        "maidenName",
+        "passwordTheme",
+        "email",
+        "showInSearch",
+        "delAdmin",
+        "principalList",
+        "supervisor",
+        "alternateContactId",
+        "securityDomain",
+        "userOwnerId",
+        "datePasswordChanged",
+        "dateChallengeRespChanged",
+        "login",
+        "password",
+        "notifyUserViaEmail"
+})
+@XmlSeeAlso({
+        Login.class,
+        Supervisor.class,
+        UserNote.class,
+        Phone.class,
+        Address.class,
+        EmailAddress.class,
+        UserAttribute.class
+})
+@DozerDTOCorrespondence(UserEntity.class)
+public class User extends org.openiam.base.BaseObject {
+
+
+    protected static final Log log = LogFactory.getLog(User.class);
+    // Fields
+    protected String userId;
+
+    //protected AddressMap addresses; see below
+    @XmlSchemaType(name = "dateTime")
+    protected Date birthdate;
+
+    protected String companyId;
+
+    protected String companyOwnerId;
+
+    @XmlSchemaType(name = "dateTime")
+    protected Date createDate;
+
+    protected String createdBy;
+
+    protected String deptCd;
+
+    protected String deptName;
+
+    protected String employeeId;
+
+    protected String employeeType;
+
+    protected String firstName;
+
+    protected String jobCode;
+
+    protected String lastName;
+
+    @XmlSchemaType(name = "dateTime")
+    protected Date lastUpdate;
+
+    protected String lastUpdatedBy;
+
+    protected String locationCd;
+
+    protected String locationName;
+
+    protected String managerId;
+
+    protected String metadataTypeId;
+
+    protected String classification;
+
+    protected String middleInit;
+
+    protected String prefix;
+
+    protected String sex;
+
+    @Enumerated(EnumType.STRING)
+    protected UserStatusEnum status;
+
+    @Enumerated(EnumType.STRING)
+    protected UserStatusEnum secondaryStatus;
+
+    protected String suffix;
+
+    protected String title;
+
+    protected String userTypeInd;
+
+    protected String division;
+
+    protected String mailCode;
+
+    protected String costCenter;
+
+    @XmlSchemaType(name = "dateTime")
+    protected Date startDate;
+
+    @XmlSchemaType(name = "dateTime")
+    protected Date lastDate;
+
+    protected String nickname;
+
+    protected String maidenName;
+
+    protected String passwordTheme;
+
+    protected String email;
+
+    protected Integer showInSearch = new Integer(0);
+
+    protected Integer delAdmin = new Integer(0);
+
+    protected List<Login> principalList = new LinkedList<Login>();
+
+    protected Supervisor supervisor;
+
+    protected String alternateContactId;
+    protected String securityDomain;
+
+    protected String userOwnerId;
+
+    @XmlSchemaType(name = "dateTime")
+    protected Date datePasswordChanged;
+
+    @XmlSchemaType(name = "dateTime")
+    protected Date dateChallengeRespChanged;
+
+
+    @XmlJavaTypeAdapter(UserNoteSetAdapter.class)
+    protected Set<UserNote> userNotes = new HashSet<UserNote>(0);
+
+
+    @XmlJavaTypeAdapter(UserAttributeMapAdapter.class)
+    protected HashMap<String, UserAttribute> userAttributes = new HashMap<String, UserAttribute>(0);
+
+    protected Set<Address> addresses = new HashSet<Address>(0);
+
+    protected Set<Phone> phones = new HashSet<Phone>(0);
+
+    protected Set<EmailAddress> emailAddresses = new HashSet<EmailAddress>(0);
+    @XmlTransient
+    private Set<UserGroup> userGroups = new HashSet<UserGroup>(0);
+    @XmlTransient
+    private Set<UserRole> userRoles = new HashSet<UserRole>(0);
+    
+    @XmlTransient
+    private Set<ResourceUser> resourceUsers = new HashSet<ResourceUser>();
+
+    // these fields are used only when userWS is used directly without provision
+    private String login;
+    private String password;
+    private Boolean notifyUserViaEmail=true;
+
+    // Constructors
+
+    /**
+     * default constructor
+     */
+    public User() {
+    }
+
+    /**
+     * minimal constructor
+     */
+    public User(String userId) {
+        this.userId = userId;
+    }
+
+
+    // Property accessors
+    public String getUserId() {
+        return this.userId;
+    }
+
+    public void setUserId(String userId) {
+
+        this.userId = userId;
+    }
+    
+    public String getDisplayName() {
+    	String displayName = null;
+    	if(StringUtils.isNotBlank(firstName) && StringUtils.isNotBlank(lastName)) {
+    		displayName = String.format("%s %s", firstName, lastName);
+    	} else if(StringUtils.isNotBlank(firstName)) {
+    		displayName = firstName;
+    	} else if(StringUtils.isNotBlank(lastName)) {
+    		displayName = lastName;
+    	}
+    	return displayName;
+    }
+
+    public String getFirstName() {
+        return this.firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return this.lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public String getMiddleInit() {
+        return this.middleInit;
+    }
+
+    public void setMiddleInit(String middleInit) {
+        this.middleInit = middleInit;
+    }
+
+    public String getTitle() {
+        return this.title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getDeptCd() {
+        return this.deptCd;
+    }
+
+    public void setDeptCd(String dept) {
+        this.deptCd = dept;
+    }
+
+
+    public Date getBirthdate() {
+        return this.birthdate;
+    }
+
+    public void setBirthdate(Date birthdate) {
+        this.birthdate = birthdate;
+    }
+
+    public String getSex() {
+        return this.sex;
+    }
+
+    public void setSex(String sex) {
+        this.sex = sex;
+    }
+
+    public Date getCreateDate() {
+        return this.createDate;
+    }
+
+    public void setCreateDate(Date createDate) {
+        this.createDate = createDate;
+    }
+
+    public String getCreatedBy() {
+        return this.createdBy;
+    }
+
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public Date getLastUpdate() {
+        return this.lastUpdate;
+    }
+
+    public void setLastUpdate(Date lastUpdate) {
+        this.lastUpdate = lastUpdate;
+    }
+
+    public String getLastUpdatedBy() {
+        return this.lastUpdatedBy;
+    }
+
+    public void setLastUpdatedBy(String lastUpdatedBy) {
+        this.lastUpdatedBy = lastUpdatedBy;
+    }
+
+    public String getPrefix() {
+        return this.prefix;
+    }
+
+    public void setPrefix(String prefix) {
+        this.prefix = prefix;
+    }
+
+    public String getSuffix() {
+        return this.suffix;
+    }
+
+    public void setSuffix(String suffix) {
+        this.suffix = suffix;
+    }
+
+    public String getUserTypeInd() {
+        return this.userTypeInd;
+    }
+
+    public void setUserTypeInd(String userTypeInd) {
+        this.userTypeInd = userTypeInd;
+    }
+
+    public String getEmployeeId() {
+        return this.employeeId;
+    }
+
+    public void setEmployeeId(String employeeId) {
+        this.employeeId = employeeId;
+    }
+
+    public String getEmployeeType() {
+        return this.employeeType;
+    }
+
+    public void setEmployeeType(String employeeType) {
+        this.employeeType = employeeType;
+    }
+
+    public String getLocationCd() {
+        return this.locationCd;
+    }
+
+    public void setLocationCd(String locationId) {
+        this.locationCd = locationId;
+    }
+
+    public String getLocationName() {
+        return locationName;
+    }
+
+    public void setLocationName(String locationName) {
+        this.locationName = locationName;
+    }
+
+    public String getCompanyId() {
+        return this.companyId;
+    }
+
+    public void setCompanyId(String companyId) {
+        this.companyId = companyId;
+    }
+
+    public String getCompanyOwnerId() {
+        return this.companyOwnerId;
+    }
+
+    public void setCompanyOwnerId(String companyOwnerId) {
+        this.companyOwnerId = companyOwnerId;
+    }
+
+
+    public String getManagerId() {
+        return this.managerId;
+    }
+
+    public void setManagerId(String managerId) {
+        this.managerId = managerId;
+    }
+
+    public String getJobCode() {
+        return this.jobCode;
+    }
+
+    public void setJobCode(String jobCode) {
+        this.jobCode = jobCode;
+    }
+
+    public String getCostCenter() {
+        return this.costCenter;
+    }
+
+    public void setCostCenter(String costCenter) {
+        this.costCenter = costCenter;
+    }
+
+    public Date getStartDate() {
+        return this.startDate;
+    }
+
+    public void setStartDate(Date startDate) {
+        this.startDate = startDate;
+    }
+
+    public Date getLastDate() {
+        return this.lastDate;
+    }
+
+    public void setLastDate(Date lastDate) {
+        this.lastDate = lastDate;
+    }
+
+
+    public Set<UserNote> getUserNotes() {
+        return userNotes;
+    }
+
+    public void setUserNotes(Set<UserNote> userNotes) {
+        this.userNotes = userNotes;
+    }
+
+    /**
+     * Updates the underlying collection with the UserNote object that is being passed in.
+     * The note is added if its does note exist and updated if its does exist.
+     *
+     * @param note
+     */
+    public void saveNote(UserNote note) {
+        userNotes.add(note);
+    }
+
+    /**
+     * Removes the note object from the underlying collection.
+     *
+     * @param note
+     */
+    public void removeNote(UserNote note) {
+        userNotes.remove(note);
+    }
+
+    /**
+     * Returns the note object for the specified noteId.
+     *
+     * @param noteId
+     * @return
+     */
+    public UserNote getUserNote(String noteId) {
+        UserNote nt = null;
+
+        Iterator<UserNote> it = this.userNotes.iterator();
+        while (it.hasNext()) {
+            nt = it.next();
+            if (nt.getUserNoteId().equals(noteId))
+                return nt;
+        }
+
+        return nt;
+    }
+
+
+    public HashMap<String, UserAttribute> getUserAttributes() {
+        return this.userAttributes;
+    }
+
+    public void setUserAttributes(HashMap<String, UserAttribute> userAttributes) {
+        this.userAttributes = userAttributes;
+    }
+
+
+    /**
+     * Updates the underlying collection with the UserAttribute object that is being passed in.
+     * The attribute is added if its does not exist and updated if its does exist.
+     *
+     * @param attr
+     */
+    public void saveAttribute(UserAttribute attr) {
+        userAttributes.put(attr.getName(), attr);
+    }
+
+    /**
+     * Removes the attribute object from the underlying collection.
+     *
+     * @param attr
+     */
+    public void removeAttributes(UserAttribute attr) {
+        userAttributes.remove(attr.getName());
+    }
+
+    /**
+     * Returns the attribute object that is specified by the NAME parameter.
+     *
+     * @param name - The attribute map is keyed on the NAME property.
+     * @return
+     */
+    public UserAttribute getAttribute(String name) {
+
+        return userAttributes.get(name);
+
+    }
+
+    /**
+     * Returns a Set of addresses. Map is keyed on the Address.description value. This
+     * value should indicate the type of address; HOME, SHIPPING, BILLING, etc.
+     *
+     * @return
+     */
+    public Set<Address> getAddresses() {
+        return addresses;
+    }
+
+    /**
+     * Sets a Set of addresses with a user. Map is keyed on the Address.description value.
+     *
+     * @param addresses
+     */
+    public void setAddresses(Set<Address> addresses) {
+        this.addresses = addresses;
+    }
+
+    public Address getAddressByName(String name) {
+        Iterator<Address> addressIt = addresses.iterator();
+        while (addressIt.hasNext()) {
+            Address adr = addressIt.next();
+            if (adr.getName() != null && adr.getName().equalsIgnoreCase(name)) {
+                return adr;
+            }
+        }
+        return null;
+    }
+
+    public Set<EmailAddress> getEmailAddresses() {
+        return emailAddresses;
+    }
+
+    public void setEmailAddresses(Set<EmailAddress> emailAddresses) {
+        this.emailAddresses = emailAddresses;
+    }
+
+    public EmailAddress getEmailByName(String name) {
+        Iterator<EmailAddress> emailIt = emailAddresses.iterator();
+        while (emailIt.hasNext()) {
+            EmailAddress em = emailIt.next();
+            if (em.getName() != null && em.getName().equalsIgnoreCase(name)) {
+                return em;
+            }
+        }
+        return null;
+    }
+
+    public Set<Phone> getPhones() {
+        return phones;
+    }
+
+    public void setPhones(Set<Phone> phones) {
+        this.phones = phones;
+    }
+
+    public Phone getPhoneByName(String name) {
+        Iterator<Phone> phoneIt = phones.iterator();
+        while (phoneIt.hasNext()) {
+            Phone ph = phoneIt.next();
+            if (ph.getName() != null && ph.getName().equalsIgnoreCase(name)) {
+                return ph;
+            }
+        }
+        return null;
+    }
+
+    public Phone getPhoneById(String id) {
+        Iterator<Phone> phoneIt = phones.iterator();
+        while (phoneIt.hasNext()) {
+            Phone ph = phoneIt.next();
+            if (ph.getName() != null && ph.getName().equalsIgnoreCase(id)) {
+                return ph;
+            }
+        }
+        return null;
+    }
+
+    public Address getAddressById(String id) {
+        Iterator<Address> addressIt = addresses.iterator();
+        while (addressIt.hasNext()) {
+            Address adr = addressIt.next();
+            if (adr.getName() != null && adr.getName().equalsIgnoreCase(id)) {
+                return adr;
+            }
+        }
+        return null;
+    }
+
+    public EmailAddress getEmailAddressById(String id) {
+        Iterator<EmailAddress> emailIt = emailAddresses.iterator();
+        while (emailIt.hasNext()) {
+            EmailAddress em = emailIt.next();
+            if (em.getName() != null && em.getName().equalsIgnoreCase(id)) {
+                return em;
+            }
+        }
+        return null;
+    }
+
+
+    public String getDivision() {
+        return division;
+    }
+
+    public void setDivision(String division) {
+        this.division = division;
+    }
+
+    public String getMailCode() {
+        return mailCode;
+    }
+
+    public void setMailCode(String mailCode) {
+        this.mailCode = mailCode;
+    }
+
+    public String getDeptName() {
+        return deptName;
+    }
+
+    public void setDeptName(String deptName) {
+        this.deptName = deptName;
+    }
+
+    /*
+     public Set<Phone> getPhones() {
+         return phones;
+     }
+
+     public void setPhones(Set<Phone> phones) {
+         this.phones = phones;
+     }
+     */
+
+    /*public Set<EmailAddress> getEmailAddresses() {
+            return emailAddresses;
+        }
+
+        public void setEmailAddresses(Set<EmailAddress> emailAddresses) {
+            this.emailAddresses = emailAddresses;
+        }
+    */
+
+    public Set<ResourceUser> getResourceUsers() {
+		return resourceUsers;
+	}
+
+	public void setResourceUsers(Set<ResourceUser> resourceUsers) {
+		this.resourceUsers = resourceUsers;
+	}
+
+	public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    @Deprecated
+    public Phone getDefaultPhone() {
+        if(this.phones!=null && !this.phones.isEmpty()){
+            for (Phone p: this.phones){
+                if(p.getIsDefault()){
+                    return p;
+                }
+            }
+        }
+        return null;
+    }
+
+    public UserStatusEnum getStatus() {
+        return status;
+    }
+
+    public void setStatus(UserStatusEnum status) {
+        this.status = status;
+    }
+
+    public UserStatusEnum getSecondaryStatus() {
+        return secondaryStatus;
+    }
+
+    public void setSecondaryStatus(UserStatusEnum secondaryStatus) {
+        this.secondaryStatus = secondaryStatus;
+    }
+
+    public String getClassification() {
+        return classification;
+    }
+
+    public void setClassification(String classification) {
+        this.classification = classification;
+    }
+
+
+    public String getMetadataTypeId() {
+        return metadataTypeId;
+    }
+
+    public void setMetadataTypeId(String metadataTypeId) {
+        this.metadataTypeId = metadataTypeId;
+    }
+
+    public String getPasswordTheme() {
+        return passwordTheme;
+    }
+
+    public void setPasswordTheme(String passwordTheme) {
+        this.passwordTheme = passwordTheme;
+    }
+
+    public String getNickname() {
+        return nickname;
+    }
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public String getMaidenName() {
+        return maidenName;
+    }
+
+    public void setMaidenName(String maidenName) {
+        this.maidenName = maidenName;
+    }
+
+    public Integer getShowInSearch() {
+        return showInSearch;
+    }
+
+    public void setShowInSearch(Integer showInSearch) {
+        this.showInSearch = showInSearch;
+    }
+
+    public List<Login> getPrincipalList() {
+        return principalList;
+    }
+
+    public void setPrincipalList(List<Login> principalList) {
+        this.principalList = principalList;
+    }
+
+    public Supervisor getSupervisor() {
+        return supervisor;
+    }
+
+    public void setSupervisor(Supervisor supervisor) {
+        this.supervisor = supervisor;
+    }
+
+    public String getAlternateContactId() {
+        return alternateContactId;
+    }
+
+    public void setAlternateContactId(String alternateContactId) {
+        this.alternateContactId = alternateContactId;
+    }
+
+    public String getSecurityDomain() {
+        return securityDomain;
+    }
+
+    public void setSecurityDomain(String securityDomain) {
+        this.securityDomain = securityDomain;
+    }
+
+    public void updateUser(User newUser) {
+        if (newUser.getBirthdate() != null) {
+            if (newUser.getBirthdate().equals(BaseConstants.NULL_DATE)) {
+                this.birthdate = null;
+            } else {
+                this.birthdate = newUser.getBirthdate();
+            }
+        }
+        if (newUser.getClassification() != null) {
+            if (newUser.getClassification().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.classification = null;
+            } else {
+                this.classification = newUser.getClassification();
+            }
+        }
+        if (newUser.getCompanyId() != null) {
+            if (newUser.getCompanyId().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.companyId = null;
+            } else {
+                this.companyId = newUser.getCompanyId();
+            }
+        }
+        if (newUser.getCostCenter() != null) {
+            if (newUser.getCostCenter().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.costCenter = null;
+            } else {
+                this.costCenter = newUser.getCostCenter();
+            }
+        }
+        if (newUser.getDeptCd() != null) {
+            if (newUser.getDeptCd().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.deptCd = null;
+            } else {
+                this.deptCd = newUser.getDeptCd();
+            }
+        }
+        if (newUser.getDeptName() != null) {
+            if (newUser.getDeptName().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.deptName = null;
+            } else {
+                this.deptName = newUser.getDeptName();
+            }
+        }
+        if (newUser.getDivision() != null) {
+            if (newUser.getDivision().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.division = null;
+            } else {
+                this.division = newUser.getDivision();
+            }
+        }
+        if (newUser.getEmail() != null) {
+            if (newUser.getEmail().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.email = null;
+            } else {
+                this.email = newUser.getEmail();
+            }
+        }
+
+        if (newUser.getEmployeeId() != null) {
+            if (newUser.getEmployeeId().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.employeeId = null;
+            } else {
+                this.employeeId = newUser.getEmployeeId();
+            }
+        }
+        if (newUser.getEmployeeType() != null) {
+            if (newUser.getEmployeeType().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.employeeType = null;
+            } else {
+                this.employeeType = newUser.getEmployeeType();
+            }
+        }
+        if (newUser.getFirstName() != null) {
+            if (newUser.getFirstName().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.firstName = null;
+            } else {
+                this.firstName = newUser.getFirstName();
+            }
+        }
+        if (newUser.getJobCode() != null) {
+            if (newUser.getJobCode().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.jobCode = null;
+            } else {
+                this.jobCode = newUser.getJobCode();
+            }
+        }
+        if (newUser.getLastName() != null) {
+            if (newUser.getLastName().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.lastName = null;
+            } else {
+                this.lastName = newUser.getLastName();
+            }
+        }
+        if (newUser.getLastDate() != null) {
+            if (newUser.getLastDate().equals(BaseConstants.NULL_DATE)) {
+                this.lastDate = null;
+            } else {
+                this.lastDate = newUser.getLastDate();
+            }
+        }
+        if (newUser.getLocationCd() != null) {
+            if (newUser.getLocationCd().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.locationCd = null;
+            } else {
+                this.locationCd = newUser.getLocationCd();
+            }
+        }
+        if (newUser.getLocationName() != null) {
+            if (newUser.getLocationName().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.locationName = null;
+            } else {
+                this.locationName = newUser.getLocationName();
+            }
+        }
+        if (newUser.getMaidenName() != null) {
+            if (newUser.getMaidenName().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.maidenName = null;
+            } else {
+                this.maidenName = newUser.getMaidenName();
+            }
+        }
+        if (newUser.getMailCode() != null) {
+            if (newUser.getMailCode().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.mailCode = newUser.getMailCode();
+            } else {
+                this.mailCode = null;
+            }
+        }
+        if (newUser.getMetadataTypeId() != null) {
+            if (newUser.getMetadataTypeId().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.metadataTypeId = null;
+            } else {
+                this.metadataTypeId = newUser.getMetadataTypeId();
+            }
+        }
+        if (newUser.getMiddleInit() != null) {
+            if (newUser.getMiddleInit().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.middleInit = null;
+            } else {
+                this.middleInit = newUser.getMiddleInit();
+            }
+        }
+        if (newUser.getNickname() != null) {
+            if (newUser.getNickname().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.nickname = null;
+            } else {
+                this.nickname = newUser.getNickname();
+            }
+        }
+        if (newUser.getPasswordTheme() != null) {
+            if (newUser.getPasswordTheme().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.passwordTheme = null;
+            } else {
+                this.passwordTheme = newUser.getPasswordTheme();
+            }
+        }
+        if (newUser.getPrefix() != null) {
+            if (newUser.getPrefix().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.prefix = null;
+            } else {
+                this.prefix = newUser.getPrefix();
+            }
+        }
+        if (newUser.getSecondaryStatus() != null) {
+            this.secondaryStatus = newUser.getSecondaryStatus();
+        }
+        if (newUser.getSex() != null) {
+            if (newUser.getSex().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.sex = null;
+            } else {
+                this.sex = newUser.getSex();
+            }
+        }
+        if (newUser.getStartDate() != null) {
+            if (newUser.getStartDate().equals(BaseConstants.NULL_DATE)) {
+                this.startDate = null;
+            } else {
+                this.startDate = newUser.getStartDate();
+            }
+        }
+
+        if (newUser.getStatus() != null) {
+            this.status = newUser.getStatus();
+        }
+        if (newUser.getSuffix() != null) {
+            if (newUser.getSuffix().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.suffix = null;
+            } else {
+                this.suffix = newUser.getSuffix();
+            }
+        }
+        if (newUser.getShowInSearch() != null) {
+            if (newUser.getShowInSearch().equals(BaseConstants.NULL_INTEGER)) {
+                this.showInSearch = 0;
+            } else {
+                this.showInSearch = newUser.getShowInSearch();
+            }
+        }
+        if (newUser.getTitle() != null) {
+            if (newUser.getTitle().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.title = null;
+            } else {
+                this.title = newUser.getTitle();
+            }
+        }
+        if (newUser.getUserTypeInd() != null) {
+            if (newUser.getUserTypeInd().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.userTypeInd = null;
+            } else {
+                this.userTypeInd = newUser.getUserTypeInd();
+            }
+        }
+        if (newUser.getManagerId() != null) {
+            if (newUser.getManagerId().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.managerId = null;
+            } else {
+                this.managerId = newUser.getManagerId();
+            }
+        }
+        if (newUser.getAlternateContactId() != null) {
+            if (newUser.getAlternateContactId().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.alternateContactId = null;
+            } else {
+                this.alternateContactId = newUser.getAlternateContactId();
+            }
+        }
+        if (newUser.getDelAdmin() != null) {
+            if (newUser.getDelAdmin().equals(BaseConstants.NULL_INTEGER)) {
+                this.delAdmin = 0;
+            } else {
+                this.delAdmin = newUser.getDelAdmin();
+
+            }
+        }
+        if (newUser.getUserOwnerId() != null) {
+            if (newUser.getUserOwnerId().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+                this.userOwnerId = null;
+            } else {
+                this.userOwnerId = newUser.getUserOwnerId();
+            }
+        }
+        if (newUser.getDateChallengeRespChanged() != null) {
+            if (newUser.getDateChallengeRespChanged().equals(BaseConstants.NULL_DATE)) {
+                this.dateChallengeRespChanged = null;
+            } else {
+                this.dateChallengeRespChanged = newUser.getDateChallengeRespChanged();
+            }
+        }
+        if (newUser.getDatePasswordChanged() != null) {
+            if (newUser.getDatePasswordChanged().equals(BaseConstants.NULL_DATE)) {
+                this.datePasswordChanged = null;
+            } else {
+                this.datePasswordChanged = newUser.getDatePasswordChanged();
+            }
+        }
+
+        // check the attributes
+        if (newUser.getUserAttributes() != null) {
+            log.debug("UserAttributes are NOT NULL in newUser object");
+            updateAttributes(newUser.getUserAttributes());
+        } else {
+            log.debug("UserAttributes are NULL in newUser");
+        }
+    }
+
+    protected void updateAttributes(Map<String, UserAttribute> attrMap) {
+        if (attrMap == null || attrMap.isEmpty()) {
+            return;
+        }
+
+        Set<String> keySet = attrMap.keySet();
+
+        for (String s : keySet) {
+            UserAttribute origAttr = userAttributes.get(s);
+            UserAttribute newAttr = attrMap.get(s);
+            if (newAttr.getOperation() == AttributeOperationEnum.NO_CHANGE) {
+                log.debug("- updateAttributes: key=" + " " + s + " = NO_CHANGE");
+
+            } else if (newAttr.getOperation() == AttributeOperationEnum.ADD) {
+                log.debug("- updateAttributes: key=" + " " + s + " = ADD");
+                userAttributes.put(newAttr.getName(), newAttr);
+
+            } else if (newAttr.getOperation() == AttributeOperationEnum.DELETE) {
+                log.debug("- updateAttributes: key=" + " " + s + " = DELETE");
+                userAttributes.remove(origAttr.getName());
+
+            } else if (newAttr.getOperation() == AttributeOperationEnum.REPLACE) {
+                log.debug("- updateAttributes: key=" + " " + s + " = REPLACE");
+                origAttr.setOperation(AttributeOperationEnum.REPLACE);
+                origAttr.setValue(newAttr.getValue());
+                userAttributes.put(origAttr.getName(), origAttr);
+
+            } else {
+                // Operation Attribute was not set
+                if (origAttr == null && newAttr != null) {
+                    // new attribute
+                    log.debug("- updateAttributes: key=" + " " + s + " = DETERMINED ADD");
+                    newAttr.setOperation(AttributeOperationEnum.ADD);
+                    userAttributes.put(newAttr.getName(), newAttr);
+                } else {
+                    log.debug("- updateAttributes: key=" + " " + s + " = DETERMINED REPLACE");
+                    origAttr.setOperation(AttributeOperationEnum.REPLACE);
+                    origAttr.setValue(newAttr.getValue());
+                    userAttributes.put(origAttr.getName(), origAttr);
+                }
+            }
+
+        }
+    }
+
+    public Integer getDelAdmin() {
+        return delAdmin;
+    }
+
+    public void setDelAdmin(Integer delAdmin) {
+        this.delAdmin = delAdmin;
+    }
+
+    public String getUserOwnerId() {
+        return userOwnerId;
+    }
+
+    public void setUserOwnerId(String userOwnerId) {
+        this.userOwnerId = userOwnerId;
+    }
+
+    public Date getDatePasswordChanged() {
+        return datePasswordChanged;
+    }
+
+    public void setDatePasswordChanged(Date datePasswordChanged) {
+        this.datePasswordChanged = datePasswordChanged;
+    }
+
+    public Date getDateChallengeRespChanged() {
+        return dateChallengeRespChanged;
+    }
+
+    public void setDateChallengeRespChanged(Date dateChallengeRespChanged) {
+        this.dateChallengeRespChanged = dateChallengeRespChanged;
+    }
+
+    public Set<UserGroup> getUserGroups() {
+        return userGroups;
+    }
+
+    public void setUserGroups(Set<UserGroup> userGroups) {
+        this.userGroups = userGroups;
+    }
+
+    public Set<UserRole> getUserRoles() {
+        return userRoles;
+    }
+
+    public void setUserRoles(Set<UserRole> userRoles) {
+        this.userRoles = userRoles;
+    }
+
+    public String getLogin() {
+        return login;
+    }
+
+    public void setLogin(String login) {
+        this.login = login;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public Boolean getNotifyUserViaEmail() {
+        return notifyUserViaEmail;
+    }
+
+    public void setNotifyUserViaEmail(Boolean notifyUserViaEmail) {
+        this.notifyUserViaEmail = notifyUserViaEmail;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof User)) return false;
+
+        User user = (User) o;
+
+        if (addresses != null ? !addresses.equals(user.addresses) : user.addresses != null) return false;
+        if (alternateContactId != null ? !alternateContactId.equals(user.alternateContactId) : user.alternateContactId != null)
+            return false;
+        if (birthdate != null ? !birthdate.equals(user.birthdate) : user.birthdate != null) return false;
+        if (classification != null ? !classification.equals(user.classification) : user.classification != null)
+            return false;
+        if (companyId != null ? !companyId.equals(user.companyId) : user.companyId != null) return false;
+        if (companyOwnerId != null ? !companyOwnerId.equals(user.companyOwnerId) : user.companyOwnerId != null)
+            return false;
+        if (costCenter != null ? !costCenter.equals(user.costCenter) : user.costCenter != null) return false;
+        if (createDate != null ? !createDate.equals(user.createDate) : user.createDate != null) return false;
+        if (createdBy != null ? !createdBy.equals(user.createdBy) : user.createdBy != null) return false;
+        if (dateChallengeRespChanged != null ? !dateChallengeRespChanged.equals(user.dateChallengeRespChanged) : user.dateChallengeRespChanged != null)
+            return false;
+        if (datePasswordChanged != null ? !datePasswordChanged.equals(user.datePasswordChanged) : user.datePasswordChanged != null)
+            return false;
+        if (delAdmin != null ? !delAdmin.equals(user.delAdmin) : user.delAdmin != null) return false;
+        if (deptCd != null ? !deptCd.equals(user.deptCd) : user.deptCd != null) return false;
+        if (deptName != null ? !deptName.equals(user.deptName) : user.deptName != null) return false;
+        if (division != null ? !division.equals(user.division) : user.division != null) return false;
+        if (email != null ? !email.equals(user.email) : user.email != null) return false;
+        if (emailAddresses != null ? !emailAddresses.equals(user.emailAddresses) : user.emailAddresses != null)
+            return false;
+        if (employeeId != null ? !employeeId.equals(user.employeeId) : user.employeeId != null) return false;
+        if (employeeType != null ? !employeeType.equals(user.employeeType) : user.employeeType != null) return false;
+        if (firstName != null ? !firstName.equals(user.firstName) : user.firstName != null) return false;
+        if (jobCode != null ? !jobCode.equals(user.jobCode) : user.jobCode != null) return false;
+        if (lastDate != null ? !lastDate.equals(user.lastDate) : user.lastDate != null) return false;
+        if (lastName != null ? !lastName.equals(user.lastName) : user.lastName != null) return false;
+        if (lastUpdate != null ? !lastUpdate.equals(user.lastUpdate) : user.lastUpdate != null) return false;
+        if (lastUpdatedBy != null ? !lastUpdatedBy.equals(user.lastUpdatedBy) : user.lastUpdatedBy != null)
+            return false;
+        if (locationCd != null ? !locationCd.equals(user.locationCd) : user.locationCd != null) return false;
+        if (locationName != null ? !locationName.equals(user.locationName) : user.locationName != null) return false;
+        if (maidenName != null ? !maidenName.equals(user.maidenName) : user.maidenName != null) return false;
+        if (mailCode != null ? !mailCode.equals(user.mailCode) : user.mailCode != null) return false;
+        if (managerId != null ? !managerId.equals(user.managerId) : user.managerId != null) return false;
+        if (metadataTypeId != null ? !metadataTypeId.equals(user.metadataTypeId) : user.metadataTypeId != null)
+            return false;
+        if (middleInit != null ? !middleInit.equals(user.middleInit) : user.middleInit != null) return false;
+        if (nickname != null ? !nickname.equals(user.nickname) : user.nickname != null) return false;
+        if (passwordTheme != null ? !passwordTheme.equals(user.passwordTheme) : user.passwordTheme != null)
+            return false;
+        if (phones != null ? !phones.equals(user.phones) : user.phones != null) return false;
+        if (prefix != null ? !prefix.equals(user.prefix) : user.prefix != null) return false;
+        if (principalList != null ? !principalList.equals(user.principalList) : user.principalList != null)
+            return false;
+        if (secondaryStatus != user.secondaryStatus) return false;
+        if (securityDomain != null ? !securityDomain.equals(user.securityDomain) : user.securityDomain != null)
+            return false;
+        if (sex != null ? !sex.equals(user.sex) : user.sex != null) return false;
+        if (showInSearch != null ? !showInSearch.equals(user.showInSearch) : user.showInSearch != null) return false;
+        if (startDate != null ? !startDate.equals(user.startDate) : user.startDate != null) return false;
+        if (status != user.status) return false;
+        if (suffix != null ? !suffix.equals(user.suffix) : user.suffix != null) return false;
+        if (supervisor != null ? !supervisor.equals(user.supervisor) : user.supervisor != null) return false;
+        if (title != null ? !title.equals(user.title) : user.title != null) return false;
+        if (userAttributes != null ? !userAttributes.equals(user.userAttributes) : user.userAttributes != null)
+            return false;
+        if (userId != null ? !userId.equals(user.userId) : user.userId != null) return false;
+        if (userNotes != null ? !userNotes.equals(user.userNotes) : user.userNotes != null) return false;
+        if (userOwnerId != null ? !userOwnerId.equals(user.userOwnerId) : user.userOwnerId != null) return false;
+        if (userTypeInd != null ? !userTypeInd.equals(user.userTypeInd) : user.userTypeInd != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return userId != null ? userId.hashCode() : 0;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "birthdate=" + birthdate +
+                ", companyId='" + companyId + '\'' +
+                ", companyOwnerId='" + companyOwnerId + '\'' +
+                ", createDate=" + createDate +
+                ", createdBy='" + createdBy + '\'' +
+                ", deptCd='" + deptCd + '\'' +
+                ", deptName='" + deptName + '\'' +
+                ", employeeId='" + employeeId + '\'' +
+                ", employeeType='" + employeeType + '\'' +
+                ", firstName='" + firstName + '\'' +
+                ", jobCode='" + jobCode + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", lastUpdate=" + lastUpdate +
+                ", lastUpdatedBy='" + lastUpdatedBy + '\'' +
+                ", locationCd='" + locationCd + '\'' +
+                ", locationName='" + locationName + '\'' +
+                ", managerId='" + managerId + '\'' +
+                ", metadataTypeId='" + metadataTypeId + '\'' +
+                ", classification='" + classification + '\'' +
+                ", middleInit='" + middleInit + '\'' +
+                ", prefix='" + prefix + '\'' +
+                ", sex='" + sex + '\'' +
+                ", status=" + status +
+                ", secondaryStatus=" + secondaryStatus +
+                ", suffix='" + suffix + '\'' +
+                ", title='" + title + '\'' +
+                ", userId='" + userId + '\'' +
+                ", userTypeInd='" + userTypeInd + '\'' +
+                ", division='" + division + '\'' +
+                ", mailCode='" + mailCode + '\'' +
+                ", costCenter='" + costCenter + '\'' +
+                ", startDate=" + startDate +
+                ", lastDate=" + lastDate +
+                ", nickname='" + nickname + '\'' +
+                ", maidenName='" + maidenName + '\'' +
+                ", passwordTheme='" + passwordTheme + '\'' +
+                ", email='" + email + '\'' +
+                ", showInSearch=" + showInSearch +
+                ", delAdmin=" + delAdmin +
+                ", principalList=" + principalList +
+                ", supervisor=" + supervisor +
+                ", alternateContactId='" + alternateContactId + '\'' +
+                ", securityDomain='" + securityDomain + '\'' +
+                ", userOwnerId='" + userOwnerId + '\'' +
+                ", datePasswordChanged=" + datePasswordChanged +
+                ", dateChallengeRespChanged=" + dateChallengeRespChanged +
+                ", userNotes=" + userNotes +
+                ", userAttributes=" + userAttributes +
+                ", addresses=" + addresses +
+                ", phones=" + phones +
+                ", emailAddresses=" + emailAddresses +
+                '}';
+    }
+
+
+}

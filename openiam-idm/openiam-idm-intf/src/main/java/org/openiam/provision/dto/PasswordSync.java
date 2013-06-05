@@ -24,13 +24,11 @@ package org.openiam.provision.dto;
 import org.openiam.base.BaseObject;
 import org.openiam.provision.type.ExtensibleAttribute;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Password object used for synchronization
@@ -43,12 +41,11 @@ import javax.xml.bind.annotation.XmlType;
     "managedSystemId",
     "principal",
     "password",
-    "srcSystemId",
-    "validateRequest",
     "requestorId",
-    "action",
+    "sendPasswordToUser",
     "passThruAttributes",
-    "attributeList"
+    "attributeList",
+    "preventChangeCountIncrement"
 })
 public class PasswordSync extends BaseObject  {
 
@@ -57,35 +54,19 @@ public class PasswordSync extends BaseObject  {
 	 */
 	private static final long serialVersionUID = 2746720616086920826L;
 
-	String securityDomain;
-	String managedSystemId;
-	String principal;
-	String password;
-	String srcSystemId;
-	boolean validateRequest;
-	String requestorId;
-	String action;
-
-    boolean passThruAttributes = true;
-    List<ExtensibleAttribute> attributeList = new ArrayList<ExtensibleAttribute>();
+	private String securityDomain;
+	private String managedSystemId;
+	private String principal;
+	private String password;
+	private String requestorId;
+	private boolean sendPasswordToUser = false;
+	private boolean passThruAttributes = true;
+	private List<ExtensibleAttribute> attributeList = new ArrayList<ExtensibleAttribute>();
+	private boolean preventChangeCountIncrement;
 	
 	public PasswordSync() {
 		
 	}
-	
-	public PasswordSync(String action, String managedSystemId, String password,
-			String principal, String requestorId, String securityDomain,
-			String srcSystemId, boolean validateRequest) {
-		super();
-		this.action = action;
-		this.managedSystemId = managedSystemId;
-		this.password = password;
-		this.principal = principal;
-		this.requestorId = requestorId;
-		this.securityDomain = securityDomain;
-		this.srcSystemId = srcSystemId;
-		this.validateRequest = validateRequest;
-	}	
 	
 	public String getSecurityDomain() {
 		return securityDomain;
@@ -111,29 +92,11 @@ public class PasswordSync extends BaseObject  {
 	public void setPassword(String password) {
 		this.password = password;
 	}
-	public String getSrcSystemId() {
-		return srcSystemId;
-	}
-	public void setSrcSystemId(String srcSystemId) {
-		this.srcSystemId = srcSystemId;
-	}
-	public boolean isValidateRequest() {
-		return validateRequest;
-	}
-	public void setValidateRequest(boolean validateRequest) {
-		this.validateRequest = validateRequest;
-	}
 	public String getRequestorId() {
 		return requestorId;
 	}
 	public void setRequestorId(String requestorId) {
 		this.requestorId = requestorId;
-	}
-	public String getAction() {
-		return action;
-	}
-	public void setAction(String action) {
-		this.action = action;
 	}
 
     public boolean isPassThruAttributes() {
@@ -151,5 +114,21 @@ public class PasswordSync extends BaseObject  {
     public void setAttributeList(List<ExtensibleAttribute> attributeList) {
         this.attributeList = attributeList;
     }
+
+    public boolean getSendPasswordToUser() {
+        return sendPasswordToUser;
+    }
+
+    public void setSendPasswordToUser(boolean sendPasswordToUser) {
+        this.sendPasswordToUser = sendPasswordToUser;
+    }
+
+	public boolean isPreventChangeCountIncrement() {
+		return preventChangeCountIncrement;
+	}
+
+	public void setPreventChangeCountIncrement(boolean preventChangeCountIncrement) {
+		this.preventChangeCountIncrement = preventChangeCountIncrement;
+	}
 }
 

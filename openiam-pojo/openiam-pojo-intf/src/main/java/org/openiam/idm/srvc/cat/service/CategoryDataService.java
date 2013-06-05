@@ -1,9 +1,7 @@
 package org.openiam.idm.srvc.cat.service;
 
+import java.util.List;
 import org.openiam.idm.srvc.cat.dto.Category;
-
-import javax.jws.WebParam;
-import javax.jws.WebService;
 
 /**
  * Service interface for categories.  Categories are used to provide a classification structure for some objects in OpenIAM.
@@ -35,26 +33,22 @@ import javax.jws.WebService;
  *
  * @author suneet shah
  */
-@WebService(targetNamespace = "urn:idm.openiam.org/srvc/cat/service", name = "CategoryDataWebService")
 public interface CategoryDataService {
 
     /**
      * Adds a new category to the system. CategoryId should not be assigned since is auto-generated
      *
      * @param cat
+     * @return 
      */
-    public void addCategory(
-            @WebParam(name = "cat", targetNamespace = "")
-            Category cat);
+    public Category addCategory(Category cat);
 
     /**
      * Updates an existing category
      *
      * @param cat
      */
-    public void updateCategory(
-            @WebParam(name = "cat", targetNamespace = "")
-            Category cat);
+    public void updateCategory(Category cat);
 
     /**
      * Removes a existing specified by the categoryId. If the nested flag is set to true, then
@@ -71,18 +65,14 @@ public interface CategoryDataService {
      * @param categoryId
      * @return
      */
-    public Category getCategory(
-            @WebParam(name = "categoryId", targetNamespace = "")
-            String categoryId);
+    public Category getCategory(String categoryId);
 
     /**
      * Returns all the categories starting with top level categories.
      *
      * @return
      */
-    public Category[] getAllCategories(
-            @WebParam(name = "nested", targetNamespace = "")
-            boolean nested);
+    public List<Category> getAllCategories(boolean nested);
 
     /**
      * Get all categories for the specified categoryId.
@@ -91,9 +81,5 @@ public interface CategoryDataService {
      * @param nested
      * @return
      */
-    public Category[] getChildCategories(
-            @WebParam(name = "categoryId", targetNamespace = "")
-            String categoryId,
-            @WebParam(name = "nested", targetNamespace = "")
-            boolean nested);
+    public List<Category> getChildCategories(String categoryId, boolean nested);
 }

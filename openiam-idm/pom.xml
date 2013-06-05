@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.openiam</groupId>
     <artifactId>iam-services</artifactId>
-    <version>2.1.0</version>
+    <version>3.0.0</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.openiam</groupId>
@@ -16,11 +16,8 @@
   </properties>
 
   <modules>
-        <module>openiam-idm-intf</module>
+     <module>openiam-idm-intf</module>
 	<module>openiam-idm-services</module>
-
-        <module>openiam-idm-ee-intf</module>
-	<module>openiam-idm-ee-services</module>
 
 	<module>idm-connector-intf</module>
 	<module>idm-connector-core</module>

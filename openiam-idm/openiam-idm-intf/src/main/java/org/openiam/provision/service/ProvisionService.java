@@ -63,7 +63,7 @@ public interface ProvisionService {
 	@WebMethod
 	public ProvisionUserResponse addUser(
 			@WebParam(name = "user", targetNamespace = "")
-			ProvisionUser user);
+			ProvisionUser user) throws Exception;
 	
 	/**
 	 * The modifyUser operation enables the requestor to modify an existing user in appropriate target systems
@@ -112,7 +112,7 @@ public interface ProvisionService {
 	
 	/**
 	 * The setPassword operation enables a requestor to specify a new password for an user across target systems
-	 * @param request
+	 * @param passwordSync
 	 * @return
 	 */
 	@WebMethod

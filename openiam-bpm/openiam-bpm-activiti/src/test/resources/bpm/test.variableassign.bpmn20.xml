@@ -1,0 +1,33 @@
+<definitions id="definitions"
+  targetNamespace="http://activiti.org/bpmn20" 
+  xmlns:activiti="http://activiti.org/bpmn"
+  xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL">
+        
+        <process id="variableAssignment" name="Variable user/group Assignemnt">
+          
+          <startEvent id="theStart" />
+            
+          <sequenceFlow id='flow1' sourceRef='theStart' targetRef='writeReportTask' />
+            
+          <userTask id="writeReportTask" name="Assign to User">
+				<extensionElements>
+					<activiti:taskListener event="create" class="org.openiam.bpm.activiti.tasklistener.AddCandidateUsersTaskListener" />
+				</extensionElements>
+          </userTask>
+           
+          <sequenceFlow id='flow2' sourceRef='writeReportTask' targetRef='theEnd' />
+           
+          <!--   
+          <userTask id="verifyReportTask" name="Verify monthly financial report" activiti:candidateUsers="${verifyReportTaskUsers}">
+            <documentation>
+              Assign a group of users
+            </documentation>
+          </userTask>
+            
+          <sequenceFlow id='flow3' sourceRef='verifyReportTask' targetRef='theEnd' />
+          -->
+          <endEvent id="theEnd" />
+              
+        </process>
+        
+</definitions>

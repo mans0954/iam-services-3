@@ -24,60 +24,51 @@ package org.openiam.provision.service;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.cxf.frontend.ClientProxyFactoryBean;
-import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
 import org.mule.api.MuleContext;
 import org.mule.api.MuleException;
-import org.mule.api.context.MuleContextAware;
 import org.mule.module.client.MuleClient;
 import org.mule.util.StringUtils;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseObject;
-import org.openiam.base.SysConfiguration;
 import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.connector.type.*;
+import org.openiam.dozer.converter.LoginDozerConverter;
+import org.openiam.dozer.converter.PasswordHistoryDozerConverter;
+import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.exception.EncryptionException;
 import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
-import org.openiam.idm.srvc.audit.service.AuditHelper;
-import org.openiam.idm.srvc.audit.service.IdmAuditLogDataService;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.auth.dto.LoginId;
-import org.openiam.idm.srvc.auth.login.LoginDAO;
-import org.openiam.idm.srvc.auth.login.LoginDataService;
+import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
-import org.openiam.idm.srvc.mngsys.dto.ProvisionConnector;
-import org.openiam.idm.srvc.mngsys.service.ConnectorDataService;
-import org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService;
+import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
+import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.org.dto.Organization;
-import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
+import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
 import org.openiam.idm.srvc.pswd.dto.Password;
 import org.openiam.idm.srvc.pswd.dto.PasswordHistory;
 import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
 import org.openiam.idm.srvc.pswd.service.PasswordGenerator;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
-import org.openiam.idm.srvc.pswd.service.PasswordService;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
-import org.openiam.idm.srvc.res.service.ResourceDataService;
+import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.role.dto.RoleId;
-import org.openiam.idm.srvc.role.service.RoleDataService;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.Supervisor;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
-import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.AccountLockEnum;
 import org.openiam.provision.dto.PasswordSync;
 import org.openiam.provision.dto.ProvisionUser;
@@ -88,20 +79,16 @@ import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.provision.type.ExtensibleUser;
-import org.openiam.script.ScriptFactory;
 import org.openiam.script.ScriptIntegration;
-import org.openiam.spml2.interf.ConnectorService;
 import org.openiam.spml2.msg.*;
 import org.openiam.spml2.msg.ResponseType;
 import org.openiam.spml2.msg.password.SetPasswordRequestType;
 import org.openiam.spml2.msg.suspend.ResumeRequestType;
 import org.openiam.spml2.msg.suspend.SuspendRequestType;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import javax.jws.WebMethod;
-import javax.jws.WebParam;
 import javax.jws.WebService;
 import java.util.*;
 
@@ -115,60 +102,21 @@ import java.util.*;
         targetNamespace = "http://www.openiam.org/service/provision",
         portName = "DefaultProvisionControllerServicePort",
         serviceName = "ProvisioningService")
-public class DefaultProvisioningService implements MuleContextAware, ProvisionService, ApplicationContextAware {
+public class DefaultProvisioningService extends AbstractProvisioningService {
 
     private static final Log log = LogFactory.getLog(DefaultProvisioningService.class);
 
-    // used to inject the application context into the groovy scripts
-    public static ApplicationContext ac;
-
-    private UserDataService userMgr;
-    private LoginDataService loginManager;
-    private LoginDAO loginDao;
-
-    private IdmAuditLogDataService auditDataService;
-    private ManagedSystemDataService managedSysService;
-    private RoleDataService roleDataService;
-    private GroupDataService groupManager;
-    private String connectorWsdl;
-    private String defaultProvisioningModel;
-    private SysConfiguration sysConfiguration;
-    private ResourceDataService resourceDataService;
-    private String scriptEngine;
-    private OrganizationDataService orgManager;
-    private PasswordService passwordDS;
-    //private AddUser addUser;
-    //private ModifyUser modifyUser;
-    private AuditHelper auditHelper;
-    //private AttributeListBuilder attrListBuilder;
-    private ConnectorAdapter connectorAdapter;
-    private RemoteConnectorAdapter remoteConnectorAdapter;
-    //private DisableUserDelegate disableUser;
-    private ConnectorDataService connectorService;
-    private ValidateConnectionConfig validateConnection;
-    protected PasswordHistoryDAO passwordHistoryDao;
-    private String preProcessor;
-    private String postProcessor;
-    private DeprovisionSelectedResourceHelper deprovisionSelectedResource;
-
-    MuleContext muleContext;
-
-    private static final String MATCH_PARAM = "matchParam";
-    private static final String TARGET_SYSTEM_IDENTITY_STATUS = "targetSystemIdentityStatus";
-    private static final String TARGET_SYSTEM_IDENTITY = "targetSystemIdentity";
-    private static final String TARGET_SYSTEM_ATTRIBUTES = "targetSystemAttributes";
-
-    private static final String TARGET_SYS_RES_ID = "resourceId";
-    private static final String TARGET_SYS_MANAGED_SYS_ID = "managedSysId";
-    private static final String TARGET_SYS_SECURITY_DOMAIN = "securityDomain";
-
-    private static final String IDENTITY_NEW = "NEW";
-    private static final String IDENTITY_EXIST = "EXIST";
-
-    final static private ResourceBundle res = ResourceBundle.getBundle("datasource");
-    final static private String serviceHost = res.getString("openiam.service_base");
-    final static private String serviceContext = res.getString("openiam.idm.ws.path");
-
+    @Autowired
+    private ProvisionConnectorWebService connectorService;
+    @Autowired
+    private PasswordHistoryDozerConverter passwordHistoryDozerConverter;
+    
+    @Autowired
+    private PasswordGenerator passwordGenerator;
+    
+    @Autowired
+    @Qualifier("configurableGroovyScriptEngine")
+    private ScriptIntegration scriptRunner;
 
     public Response testConnectionConfig(String managedSysId) {
         return validateConnection.testConnection(managedSysId, muleContext);
@@ -180,43 +128,24 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
     public ProvisionUserResponse addUser(ProvisionUser user) {
         ProvisionUserResponse resp = new ProvisionUserResponse();
 
-        ScriptIntegration se = null;
         Map<String, Object> bindingMap = new HashMap<String, Object>();
         Organization org = null;
         IdmAuditLog auditLog = null;
         boolean connectorSuccess = true;
-
-        AddUser addUser = (AddUser) ac.getBean("addUser");
-        AttributeListBuilder attrListBuilder = (AttributeListBuilder) ac.getBean("attributeListBuilder");
-
-        log.debug("Request object being passed to addUser ---->" + user);
+        List<IdmAuditLog> pendingLogItems = new ArrayList<IdmAuditLog>();
+        String requestId = "R" + UUIDGen.getUUID();
 
         // flag to determine if we should provision this user in target systems
         boolean provInTargetSystemNow = true;
 
-        String requestId = "R" + UUIDGen.getUUID();
-
+        // determine if we provision now or in the future
+        // if its in the future then we wont put the user in the target systems
         provInTargetSystemNow = provisionUserNow(user);
         if (!provInTargetSystemNow) {
             // start date is in the future
             // flag says that we should prov after the startdate
             user.setStatus(UserStatusEnum.PENDING_START_DATE);
-
         }
-
-        try {
-            se = ScriptFactory.createModule(this.scriptEngine);
-        } catch (Exception e) {
-            log.error(e);
-            resp.setStatus(ResponseStatus.FAILURE);
-            resp.setErrorCode(ResponseCode.FAIL_OTHER);
-            return resp;
-        }
-
-        //
-
-        //
-
 
         if (user.getUser().getCompanyId() != null) {
             org = orgManager.getOrganization(user.getUser().getCompanyId());
@@ -229,40 +158,48 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
         bindingMap.put("context", ac);
         bindingMap.put("operation", "ADD");
 
-
-        // define rules that need to be executed before a addUser processor is invoked.
-        ProvisionServicePreProcessor addPreProcessScript = createProvPreProcessScript(preProcessor);
-        if (addPreProcessScript != null && !user.isSkipPreprocessor() ) {
-            addPreProcessScript.setMuleContext(muleContext);
-            if (executeProvisionPreProcess(addPreProcessScript, bindingMap, user, null, "ADD") != ProvisioningConstants.SUCCESS) {
-                resp.setStatus(ResponseStatus.FAILURE);
-                resp.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
-                return resp;
-            }
+        // run the pre-processor before the body of the add operation
+        if (callPreProcessor("ADD", user, bindingMap) != ProvisioningConstants.SUCCESS) {
+            resp.setStatus(ResponseStatus.FAILURE);
+            resp.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
+            return resp;
         }
+
+        if (user.getStatus() == null) {
+            resp.setStatus(ResponseStatus.FAILURE);
+            resp.setErrorCode(ResponseCode.MISSING_REQUIRED_ATTRIBUTE);
+            return resp;
+        }
+
+        // make sure that our object as the attribute set that will be used for
+        // audit logging
+        checkAuditingAttributes(user);
 
         // CREATE THE PRIMARY IDENTITY IF IT HAS NOT BEEN PASSED IN
 
-        log.debug("Principals being passed as part of the request object: " + user.getPrincipalList());
         boolean customPassword = false;
         Login primaryLogin = null;
 
-        if (user.getPrincipalList() == null || user.getPrincipalList().isEmpty()) {
+        if (user.getPrincipalList() == null
+                || user.getPrincipalList().isEmpty()) {
             // build the list
-            addUser.buildPrimaryPrincipal(user, bindingMap, se);
+            buildPrimaryPrincipal(user, bindingMap, scriptRunner);
 
         } else {
-            primaryLogin = user.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
+            primaryLogin = user.getPrimaryPrincipal(sysConfiguration
+                    .getDefaultManagedSysId());
             // Check if a custom password is set
-            if (primaryLogin.getPassword() != null && !primaryLogin.getPassword().trim().isEmpty()) {
+            if (primaryLogin.getPassword() != null
+                    && !primaryLogin.getPassword().trim().isEmpty()) {
                 customPassword = true;
             } else {
-                addUser.setPrimaryIDPassword(user, bindingMap, se);
+                setPrimaryIDPassword(user, bindingMap, scriptRunner);
             }
         }
 
         if (primaryLogin == null) {
-            primaryLogin = user.getPrimaryPrincipal(sysConfiguration.getDefaultManagedSysId());
+            primaryLogin = user.getPrimaryPrincipal(sysConfiguration
+                    .getDefaultManagedSysId());
         }
 
         // check if there is a custom password provided in the request
@@ -273,38 +210,55 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
 
         Policy passwordPolicy = user.getPasswordPolicy();
         if (passwordPolicy == null) {
-            passwordPolicy = passwordDS.getPasswordPolicyByUser(primaryLogin.getId().getDomainId(), user.getUser());
+            passwordPolicy = passwordDS.getPasswordPolicyByUser(primaryLogin.getDomainId(), userDozerConverter.convertToEntity(user.getUser(), true));
         }
 
-        // if the password of the primaryIdentity is a custom password validate the password
+        // if the password of the primaryIdentity is a custom password validate
+        // the password
         if (customPassword) {
             Password password = new Password();
-            password.setDomainId(primaryLogin.getId().getDomainId());
-            password.setManagedSysId(primaryLogin.getId().getManagedSysId());
+            password.setDomainId(primaryLogin.getDomainId());
+            password.setManagedSysId(primaryLogin.getManagedSysId());
             password.setPassword(primaryLogin.getPassword());
-            password.setPrincipal(primaryLogin.getId().getLogin());
+            password.setPrincipal(primaryLogin.getLogin());
 
             try {
-                PasswordValidationCode valCode = passwordDS.isPasswordValidForUserAndPolicy(password, user.getUser(), primaryLogin, passwordPolicy);
-                if (valCode == null || valCode != PasswordValidationCode.SUCCESS) {
-                    auditHelper.addLog("CREATE", user.getRequestorDomain(), user.getRequestorLogin(),
-                            "IDM SERVICE", user.getCreatedBy(), "0", "USER", user.getUserId(),
-                            null, "FAIL", null, "USER_STATUS",
-                            user.getUser().getStatus().toString(),
-                            requestId, ResponseCode.FAIL_DECRYPTION.toString(), user.getSessionId(), "Password validation failed",
-                            user.getRequestClientIP(), primaryLogin.getId().getLogin(), primaryLogin.getId().getDomainId());
+                PasswordValidationCode valCode = passwordDS
+                        .isPasswordValidForUserAndPolicy(
+                                password,
+                                userDozerConverter.convertToEntity(user.getUser(), true),
+                                loginDozerConverter.convertToEntity(primaryLogin, true),
+                                passwordPolicy);
+                if (valCode == null
+                        || valCode != PasswordValidationCode.SUCCESS) {
+                    auditHelper.addLog("CREATE", user.getRequestorDomain(),
+                            user.getRequestorLogin(), "IDM SERVICE", user
+                            .getCreatedBy(), "0", "USER", user
+                            .getUserId(), null, "FAIL", null,
+                            "USER_STATUS", user.getUser().getStatus()
+                            .toString(), requestId,
+                            ResponseCode.FAIL_DECRYPTION.toString(), user
+                            .getSessionId(),
+                            "Password validation failed",
+                            user.getRequestClientIP(),
+                            primaryLogin.getLogin(),
+                            primaryLogin.getDomainId());
 
                     resp.setStatus(ResponseStatus.FAILURE);
                     resp.setErrorCode(ResponseCode.FAIL_NEQ_PASSWORD);
                     return resp;
                 }
             } catch (ObjectNotFoundException e) {
-                auditHelper.addLog("CREATE", user.getRequestorDomain(), user.getRequestorLogin(),
-                        "IDM SERVICE", user.getCreatedBy(), "0", "USER", user.getUserId(),
-                        null, "FAIL", null, "USER_STATUS",
-                        user.getUser().getStatus().toString(),
-                        requestId, ResponseCode.FAIL_DECRYPTION.toString(), user.getSessionId(), e.toString(),
-                        user.getRequestClientIP(), primaryLogin.getId().getLogin(), primaryLogin.getId().getDomainId());
+                auditHelper
+                        .addLog("CREATE", user.getRequestorDomain(), user
+                                .getRequestorLogin(), "IDM SERVICE", user
+                                .getCreatedBy(), "0", "USER", user.getUserId(),
+                                null, "FAIL", null, "USER_STATUS", user
+                                .getUser().getStatus().toString(),
+                                requestId, ResponseCode.FAIL_DECRYPTION
+                                .toString(), user.getSessionId(), e
+                                .toString(), user.getRequestClientIP(),
+                                primaryLogin.getLogin(), primaryLogin.getDomainId());
 
                 resp.setStatus(ResponseStatus.FAILURE);
                 resp.setErrorCode(ResponseCode.FAIL_NEQ_PASSWORD);
@@ -313,64 +267,70 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
         }
 
         // validate that this identity does not already exist
-        LoginId dupId = primaryLogin.getId();
-        Login dupPrincipal = loginManager.getLoginByManagedSys(dupId.getDomainId(), dupId.getLogin(), dupId.getManagedSysId());
+        LoginEntity dupPrincipal = loginManager.getLoginByManagedSys(
+                primaryLogin.getDomainId(), primaryLogin.getLogin(), primaryLogin.getManagedSysId());
 
         if (dupPrincipal != null) {
             // identity exists
 
-            auditHelper.addLog("CREATE", user.getRequestorDomain(), user.getRequestorLogin(),
-                    "IDM SERVICE", user.getCreatedBy(), "0", "USER", user.getUserId(),
-                    null, "FAIL", null, "USER_STATUS",
-                    user.getUser().getStatus().toString(),
-                    requestId, "DUPLICATE PRINCIPAL", user.getSessionId(), "Identity already exists:" + dupId.getManagedSysId() + " - " + dupId.getLogin(),
-                    user.getRequestClientIP(), primaryLogin.getId().getLogin(), primaryLogin.getId().getDomainId());
+            auditHelper.addLog("CREATE", user.getRequestorDomain(),
+                    user.getRequestorLogin(), "IDM SERVICE",
+                    user.getCreatedBy(), "0", "USER", user.getUserId(), null,
+                    "FAIL", null, "USER_STATUS", user.getUser().getStatus()
+                    .toString(), requestId, "DUPLICATE PRINCIPAL",
+                    user.getSessionId(),
+                    "Identity already exists:" + primaryLogin.getManagedSysId()
+                            + " - " + primaryLogin.getLogin(),
+                    user.getRequestClientIP(), primaryLogin.getLogin(),
+                    primaryLogin.getDomainId());
 
             resp.setStatus(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.DUPLICATE_PRINCIPAL);
             return resp;
 
-        } else {
-            log.debug("Identity passed duplicate identity check:" + dupId.getManagedSysId() + " - " + dupId.getLogin());
         }
+        // identity passed isDuplicate check
 
-
-        List<IdmAuditLog> pendingLogItems = new ArrayList<IdmAuditLog>();
         /* Create the new user in the openiam repository */
-        resp = addUser.createUser(user, pendingLogItems);
+        resp = createUser(user, pendingLogItems);
 
         if (resp.getStatus() == ResponseStatus.SUCCESS) {
-            auditLog = auditHelper.addLog("CREATE", user.getRequestorDomain(), user.getRequestorLogin(),
-                    "IDM SERVICE", user.getCreatedBy(), "0", "USER", user.getUserId(),
-                    null, "SUCCESS", null, "USER_STATUS",
-                    user.getUser().getStatus().toString(),
-                    requestId, null, user.getSessionId(), null,
-                    user.getRequestClientIP(), primaryLogin.getId().getLogin(), primaryLogin.getId().getDomainId());
-            auditHelper.persistLogList(pendingLogItems, requestId, user.getSessionId());
+            auditLog = auditHelper.addLog("CREATE", user.getRequestorDomain(),
+                    user.getRequestorLogin(), "IDM SERVICE", user
+                    .getCreatedBy(), "0", "USER", user.getUserId(),
+                    null, "SUCCESS", null, "USER_STATUS", user.getUser()
+                    .getStatus().toString(), requestId, null, user
+                    .getSessionId(), null, user.getRequestClientIP(),
+                    primaryLogin.getLogin(), primaryLogin.getDomainId());
+            auditHelper.persistLogList(pendingLogItems, requestId,
+                    user.getSessionId());
 
         } else {
-            auditLog = auditHelper.addLog("CREATE", user.getRequestorDomain(), user.getRequestorLogin(),
-                    "IDM SERVICE", user.getCreatedBy(), "0", "USER", user.getUserId(),
-                    null, "FAIL", null, "USER_STATUS",
-                    user.getUser().getStatus().toString(),
-                    requestId, resp.getErrorCode().toString(), user.getSessionId(), resp.getErrorText(),
-                    user.getRequestClientIP(), primaryLogin.getId().getLogin(), primaryLogin.getId().getDomainId());
+            auditLog = auditHelper.addLog("CREATE", user.getRequestorDomain(),
+                    user.getRequestorLogin(), "IDM SERVICE", user
+                    .getCreatedBy(), "0", "USER", user.getUserId(),
+                    null, "FAIL", null, "USER_STATUS", user.getUser()
+                    .getStatus().toString(), requestId, resp
+                    .getErrorCode().toString(), user.getSessionId(),
+                    resp.getErrorText(), user.getRequestClientIP(),
+                    primaryLogin.getLogin(), primaryLogin.getDomainId());
         }
-
 
         // need decrypted password for use in the connectors:
         String decPassword = null;
         try {
-            decPassword = loginManager.decryptPassword(primaryLogin.getPassword());
+            decPassword = loginManager.decryptPassword(primaryLogin.getUserId(), primaryLogin.getPassword());
         } catch (EncryptionException e) {
 
-            auditHelper.addLog("CREATE", user.getRequestorDomain(), user.getRequestorLogin(),
-                    "IDM SERVICE", user.getCreatedBy(), "0", "USER", user.getUserId(),
-                    null, "FAIL", null, "USER_STATUS",
-                    user.getUser().getStatus().toString(),
-                    requestId, ResponseCode.FAIL_DECRYPTION.toString(), user.getSessionId(), e.toString(),
-                    user.getRequestClientIP(), primaryLogin.getId().getLogin(), primaryLogin.getId().getDomainId());
-
+            auditHelper.addLog("CREATE", user.getRequestorDomain(),
+                    user.getRequestorLogin(), "IDM SERVICE",
+                    user.getCreatedBy(), "0", "USER", user.getUserId(), null,
+                    "FAIL", null, "USER_STATUS", user.getUser().getStatus()
+                    .toString(), requestId,
+                    ResponseCode.FAIL_DECRYPTION.toString(),
+                    user.getSessionId(), e.toString(),
+                    user.getRequestClientIP(), primaryLogin.getLogin(),
+                    primaryLogin.getDomainId());
 
             resp.setStatus(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.FAIL_DECRYPTION);
@@ -379,21 +339,23 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
         bindingMap.put("lg", primaryLogin);
         bindingMap.put("password", decPassword);
 
-        log.debug("Primary identity=" + primaryLogin);
-
+        // if the add password to history flag is on, then add this password to
+        // the history so that its not used again
 
         if (user.isAddInitialPasswordToHistory() || customPassword) {
-            // add the auto generated password to the history so that the user can not use this password as their first password
-            PasswordHistory hist = new PasswordHistory(primaryLogin.getId().getLogin(), primaryLogin.getId().getDomainId(),
-                    primaryLogin.getId().getManagedSysId());
+            // add the auto generated password to the history so that the user
+            // can not use this password as their first password
+            PasswordHistoryEntity hist = new PasswordHistoryEntity();
+            hist.setDateCreated(new Date());
+            hist.setLoginId(primaryLogin.getLoginId());
             hist.setPassword(primaryLogin.getPassword());
-            passwordHistoryDao.add(hist);
+            passwordHistoryDao.save(hist);
         }
 
-
         // Update attributes that will be used by the password policy
-        passwordPolicy = passwordDS.getPasswordPolicy(primaryLogin.getId().getDomainId(), primaryLogin.getId().getLogin(), primaryLogin.getId().getManagedSysId());
-        PolicyAttribute policyAttr = getPolicyAttribute("CHNG_PSWD_ON_RESET", passwordPolicy);
+        passwordPolicy = passwordDS.getPasswordPolicy(primaryLogin.getDomainId(), primaryLogin.getLogin(), primaryLogin.getManagedSysId());
+        PolicyAttribute policyAttr = getPolicyAttribute("CHNG_PSWD_ON_RESET",
+                passwordPolicy);
         if (policyAttr != null) {
             // don't force the user to immediately change it's own password
             if (policyAttr.getValue1().equalsIgnoreCase("1") && !customPassword) {
@@ -404,20 +366,21 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
             // determin the password expiration and grace period dates
             setPasswordExpValues(passwordPolicy, primaryLogin);
 
-            loginManager.updateLogin(primaryLogin);
+            loginManager.updateLogin(loginDozerConverter.convertToEntity(primaryLogin, true));
+
         }
 
-
         // provision the user into the systems that they should have access to.
-
         // get the list of resources for each role that user belongs too.
 
         bindingMap.put("userRole", user.getMemberOfRoles());
 
         if (provInTargetSystemNow) {
-            List<Resource> resourceList = getResourcesForRole(user.getMemberOfRoles());
+            List<Resource> resourceList = getResourcesForRole(user
+                    .getMemberOfRoles());
 
-            // update the resource list to include the resources that have been added directly
+            // update the resource list to include the resources that have been
+            // added directly
             if (resourceList == null) {
 
                 resourceList = new ArrayList<Resource>();
@@ -428,7 +391,8 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
             if (resourceList != null && !resourceList.isEmpty()) {
                 for (Resource res : resourceList) {
 
-                    log.debug("Resource->managedSysId =" + res.getManagedSysId());
+                    log.debug("Resource->managedSysId ="
+                            + res.getManagedSysId());
                     log.debug("Resource->resourceId =" + res.getResourceId());
 
                     String managedSysId = res.getManagedSysId();
@@ -436,125 +400,147 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
                     if (managedSysId != null && managedSysId.length() > 0) {
 
                         bindingMap.put(TARGET_SYS_RES_ID, res.getResourceId());
-                        bindingMap.put(TARGET_SYS_MANAGED_SYS_ID, res.getManagedSysId());
-
+                        bindingMap.put(TARGET_SYS_MANAGED_SYS_ID,
+                                res.getManagedSysId());
 
                         // object that will be sent to the connectors
-                        List<AttributeMap> attrMap = managedSysService.getResourceAttributeMaps(res.getResourceId());
-                        //List<AttributeMap> attrMap = resourceDataService.getResourceAttributeMaps(res.getResourceId());
+                        List<AttributeMap> attrMap = managedSysService
+                                .getResourceAttributeMaps(res.getResourceId());
+                        // List<AttributeMap> attrMap =
+                        // resourceDataService.getResourceAttributeMaps(res.getResourceId());
 
-                        ManagedSys mSys = managedSysService.getManagedSys(managedSysId);
+                        ManagedSysDto mSys = managedSysService
+                                .getManagedSys(managedSysId);
 
                         log.debug("Managed sys =" + mSys);
 
-                        ProvisionConnector connector = connectorService.getConnector(mSys.getConnectorId());
+                        ProvisionConnectorDto connector = connectorService
+                                .getProvisionConnector(mSys.getConnectorId());
 
                         ManagedSystemObjectMatch matchObj = null;
-                        ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(managedSysId, "USER");
+                        ManagedSystemObjectMatch[] matchObjAry = managedSysService
+                                .managedSysObjectParam(managedSysId, "USER");
                         if (matchObjAry != null && matchObjAry.length > 0) {
                             matchObj = matchObjAry[0];
                             bindingMap.put(MATCH_PARAM, matchObj);
                         }
 
-
-                        log.debug(" - Building principal Name for: " + managedSysId);
+                        log.debug(" - Building principal Name for: "
+                                + managedSysId);
                         // build the primary identity
-                        String newPrincipalName = attrListBuilder.buildPrincipalName(attrMap, se, bindingMap);
+                        String newPrincipalName = buildPrincipalName(attrMap,
+                        		scriptRunner, bindingMap);
 
                         log.debug(" - New principalName = " + newPrincipalName);
 
-                        // get the current object as it stands in the target system
-                        LoginId resLoginId = new LoginId(primaryLogin.getId().getDomainId(), newPrincipalName, managedSysId);
+                        // get the current object as it stands in the target
+                        // system
                         Login resLogin = new Login();
-                        resLogin.setId(resLoginId);
+                        resLogin.setLogin(newPrincipalName);
+                        resLogin.setDomainId(primaryLogin.getDomainId());
+                        resLogin.setManagedSysId(managedSysId);
 
+                        Map<String, String> currentValueMap = new HashMap<String, String>();
+                        boolean foundInTarget = false;
 
-                        Map<String, String> currentValueMap = getCurrentObjectAtTargetSystem(resLogin, mSys, connector, matchObj);
-                        log.debug("Values in target system:" + currentValueMap);
-                        // if currentValueMap is null - then add the value - it does not exist in the target system
+                        foundInTarget = getCurrentObjectAtTargetSystem(
+                                resLogin, mSys, connector, matchObj,
+                                currentValueMap);
 
-                        if (currentValueMap == null || currentValueMap.size() == 0) {
-                            // we may have identity for a user, but it my have been deleted from the target system
+                        if (currentValueMap == null
+                                || currentValueMap.size() == 0) {
+                            // we may have identity for a user, but it my have
+                            // been deleted from the target system
                             // we dont need re-generate the identity in this c
-                            bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, IDENTITY_NEW);
-                            bindingMap.put(TARGET_SYSTEM_IDENTITY, newPrincipalName);
+                            bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS,
+                                    IDENTITY_NEW);
                             bindingMap.put(TARGET_SYSTEM_ATTRIBUTES, null);
                         } else {
-                            bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, IDENTITY_EXIST);
-                            bindingMap.put(TARGET_SYSTEM_IDENTITY, newPrincipalName);
-                            bindingMap.put(TARGET_SYSTEM_ATTRIBUTES, currentValueMap);
+                            bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS,
+                                    IDENTITY_EXIST);
+                            bindingMap.put(TARGET_SYSTEM_ATTRIBUTES,
+                                    currentValueMap);
                         }
-                        bindingMap.put(TARGET_SYS_SECURITY_DOMAIN, resLoginId.getDomainId());
+
+                        bindingMap
+                                .put(TARGET_SYSTEM_IDENTITY, newPrincipalName);
+                        bindingMap.put(TARGET_SYS_SECURITY_DOMAIN,
+                                resLogin.getDomainId());
 
                         // pre-processing
-                        String preProcessScript = getResProperty(res.getResourceProps(), "PRE_PROCESS");
-                        if (preProcessScript != null && !preProcessScript.isEmpty()) {
+                        String preProcessScript = getResProperty(
+                                res.getResourceProps(), "PRE_PROCESS");
+                        if (preProcessScript != null
+                                && !preProcessScript.isEmpty()) {
                             PreProcessor ppScript = createPreProcessScript(preProcessScript);
                             if (ppScript != null) {
-                                if (executePreProcess(ppScript, bindingMap, user, "ADD") == ProvisioningConstants.FAIL) {
+                                if (executePreProcess(ppScript, bindingMap,
+                                        user, "ADD") == ProvisioningConstants.FAIL) {
                                     continue;
                                 }
                             }
                         }
 
-
                         // attributes are built using groovy script rules
-                        ExtensibleUser extUser = attrListBuilder.buildFromRules(user, attrMap, se,
-                                managedSysId, sysConfiguration.getDefaultSecurityDomain(),
+                        ExtensibleUser extUser = buildFromRules(user, attrMap,
+                        		scriptRunner, managedSysId,
+                                sysConfiguration.getDefaultSecurityDomain(),
                                 bindingMap, user.getCreatedBy());
-
 
                         List<Login> priList = user.getPrincipalList();
                         if (priList != null) {
                             for (Login l : priList) {
-                                log.debug("identity after builder=" + l.getId());
+                                log.debug("identity after builder=" + l.getLoginId());
                             }
                         } else {
                             log.debug("priList is null");
                         }
 
                         // get the identity linked to this resource / managedsys
-                        Login mLg = getPrincipalForManagedSys(managedSysId, user.getPrincipalList());
+                        Login mLg = getPrincipalForManagedSys(managedSysId,
+                                user.getPrincipalList());
                         if (mLg == null) {
                             mLg = new Login();
                         }
                         mLg.setPassword(primaryLogin.getPassword());
                         mLg.setUserId(primaryLogin.getUserId());
 
-                        log.debug("Creating identity in openiam repository:" + mLg.getId());
+                        log.debug("Creating identity in openiam repository:"
+                                + mLg.getLoginId());
 
                         // validate if the identity exists in the system first
 
-                        Login tempPrincipal = loginManager.getLoginByManagedSys(mLg.getId().getDomainId(), mLg.getId().getLogin(), mLg.getId().getManagedSysId());
+                        connectorSuccess = callConnector(mLg, requestId, mSys,
+                                matchObj, extUser, connector, user, auditLog);
 
-                        if (tempPrincipal == null) {
-                            loginManager.addLogin(mLg);
+                        // only put the identity into the openiam repository if
+                        // we successfully created the identity
+                        if (connectorSuccess) {
 
-                        } else {
-                            log.debug("Skipping the creation of identity in openiam repository. Identity already exists" + mLg.getId());
-                        }
+                            LoginEntity tempPrincipal = loginManager
+                                    .getLoginByManagedSys(mLg.getDomainId(), mLg.getLogin(), mLg.getManagedSysId());
 
+                            if (tempPrincipal == null) {
+                                loginManager.addLogin(loginDozerConverter.convertToEntity(mLg, true));
 
-                        if (connector.getConnectorInterface() != null &&
-                                connector.getConnectorInterface().equalsIgnoreCase("REMOTE")) {
-
-                            connectorSuccess = remoteAdd(mLg, requestId, mSys, matchObj, extUser, connector, user, auditLog);
-
-                        } else {
-
-                            connectorSuccess = localAdd(mLg, requestId, mSys, matchObj, extUser, user, auditLog);
+                            } else {
+                                log.debug("Skipping the creation of identity in openiam repository. Identity already exists"
+                                        + mLg.getLoginId());
+                            }
 
                         }
 
                         // post processing
-                        String postProcessScript = getResProperty(res.getResourceProps(), "POST_PROCESS");
-                        if (postProcessScript != null && !postProcessScript.isEmpty()) {
+                        String postProcessScript = getResProperty(
+                                res.getResourceProps(), "POST_PROCESS");
+                        if (postProcessScript != null
+                                && !postProcessScript.isEmpty()) {
                             PostProcessor ppScript = createPostProcessScript(postProcessScript);
                             if (ppScript != null) {
-                                executePostProcess(ppScript, bindingMap, user, "ADD", connectorSuccess);
+                                executePostProcess(ppScript, bindingMap, user,
+                                        "ADD", connectorSuccess);
                             }
                         }
-
 
                         bindingMap.remove(MATCH_PARAM);
                     }
@@ -564,9 +550,10 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
             }
         }
 
-        // make sure that we have an identity for each domain that this user belongs to
-        addUser.validateIdentitiesExistforSecurityDomain(primaryLogin, user.getMemberOfRoles());
-
+        // make sure that we have an identity for each domain that this user
+        // belongs to
+        validateIdentitiesExistforSecurityDomain(primaryLogin,
+                user.getMemberOfRoles());
 
         /* Response object */
         if (!connectorSuccess) {
@@ -575,14 +562,16 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
         } else {
 
             if (user.isEmailCredentialsToNewUsers()) {
-                sendCredentialsToUser(user, primaryLogin.getId().getLogin(), decPassword);
+                sendCredentialsToUser(user, primaryLogin.getLogin(),
+                        decPassword);
             }
             if (user.isEmailCredentialsToSupervisor()) {
                 if (user.getSupervisor() != null) {
                     Supervisor sv = user.getSupervisor();
                     if (sv != null && sv.getSupervisor() != null) {
-                        sendCredentialsToSupervisor(sv.getSupervisor(), primaryLogin.getId().getLogin(),
-                                decPassword, user.getFirstName() + " " + user.getLastName());
+                        sendCredentialsToSupervisor(sv.getSupervisor(),
+                                primaryLogin.getLogin(), decPassword,
+                                user.getFirstName() + " " + user.getLastName());
                     }
                 }
             }
@@ -593,14 +582,11 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
         bindingMap.put("userAfterAdd", user);
 
         // call the post processor
-        ProvisionServicePostProcessor addPostProcessScript = createProvPostProcessScript(postProcessor);
-        if (addPostProcessScript != null && !user.isSkipPostProcessor()) {
-            addPostProcessScript.setMuleContext(muleContext);
-            if (executeProvisionPostProcess(addPostProcessScript, bindingMap, user, null, "ADD") != ProvisioningConstants.SUCCESS) {
-                resp.setStatus(ResponseStatus.FAILURE);
-                resp.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR);
-                return resp;
-            }
+
+        if (callPostProcessor("ADD", user, bindingMap) != ProvisioningConstants.SUCCESS) {
+            resp.setStatus(ResponseStatus.FAILURE);
+            resp.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
+            return resp;
         }
 
         resp.setUser(user);
@@ -609,24 +595,11 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
 
 
     private boolean provisionUserNow(ProvisionUser user) {
-
         Date curDate = new Date(System.currentTimeMillis());
         Date startDate = user.getStartDate();
 
-        if (startDate == null) {
-            // no startDate specified = assume that we can provision now
-            return true;
-        }
-
-        if (!user.isProvisionOnStartDate()) {
-            return true;
-        }
-
-
-        return !curDate.before(startDate);
-
+        return startDate == null || !user.isProvisionOnStartDate() || !curDate.before(startDate);
     }
-
 
     private void setPasswordExpValues(Policy plcy, Login lg) {
         Calendar cal = Calendar.getInstance();
@@ -652,8 +625,6 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
                 lg.setGracePeriod(cal.getTime());
             }
         }
-
-
     }
 
     private String getPolicyAttribute(Set<PolicyAttribute> attr, String name) {
@@ -740,8 +711,8 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
         }
         for (Login l : principalList) {
             if (mSys != null) {
-                if (l.getId().getManagedSysId().equalsIgnoreCase(mSys)) {
-                    return l;
+                if (l.getManagedSysId().equalsIgnoreCase(mSys)) {
+                	return l;
                 }
             }
 
@@ -752,50 +723,50 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
 
 
     @WebMethod
-    public ProvisionUserResponse deleteByUserId(
-            ProvisionUser user,
-            UserStatusEnum status,
-            String requestorId) {
+    public ProvisionUserResponse deleteByUserId(ProvisionUser user,
+                                                UserStatusEnum status,
+                                                String requestorId) {
 
         log.debug("----deleteByUserId called.------");
 
         IdmAuditLog auditLog = null;
         Map<String, Object> bindingMap = new HashMap<String, Object>();
 
-        ProvisionUserResponse response = new ProvisionUserResponse(ResponseStatus.SUCCESS);
+        ProvisionUserResponse response = new ProvisionUserResponse(
+                ResponseStatus.SUCCESS);
 
-        if (status != UserStatusEnum.DELETED &&
-                status != UserStatusEnum.LEAVE &
-                        status != UserStatusEnum.TERMINATE &&
-                status != UserStatusEnum.RETIRED) {
+        if (status != UserStatusEnum.DELETED && status != UserStatusEnum.LEAVE
+                & status != UserStatusEnum.TERMINATE
+                && status != UserStatusEnum.RETIRED) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(ResponseCode.USER_STATUS);
             return response;
         }
 
-
         String requestId = "R" + UUIDGen.getUUID();
 
-        User usr = this.userMgr.getUserWithDependent(user.getUserId(), false);
+        UserEntity usrEntity = this.userMgr.getUser(user.getUserId());
+        User usr = userDozerConverter.convertToDTO(usrEntity, true);
         if (usr == null) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(ResponseCode.USER_NOT_FOUND);
             return response;
         }
-        ProvisionUser pUser = new ProvisionUser(usr);
+        ProvisionUser pUser = new ProvisionUser();
 
         ProvisionServicePreProcessor deletePreProcessScript = createProvPreProcessScript(preProcessor);
         if (deletePreProcessScript != null && !user.isSkipPreprocessor()) {
             deletePreProcessScript.setMuleContext(muleContext);
-            if (executeProvisionPreProcess(deletePreProcessScript, bindingMap, pUser, null, "DELETE") != ProvisioningConstants.SUCCESS) {
+            if (executeProvisionPreProcess(deletePreProcessScript, bindingMap,
+                    pUser, null, "DELETE") != ProvisioningConstants.SUCCESS) {
                 response.setStatus(ResponseStatus.FAILURE);
                 response.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
                 return response;
             }
         }
 
-        if (usr.getStatus() == UserStatusEnum.DELETED ||
-                usr.getStatus() == UserStatusEnum.TERMINATE) {
+        if (usr.getStatus() == UserStatusEnum.DELETED
+                || usr.getStatus() == UserStatusEnum.TERMINATE) {
             log.debug("User was already deleted. Nothing more to do.");
             return response;
         }
@@ -807,31 +778,31 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
         usr.setSecondaryStatus(null);
         usr.setLastUpdatedBy(requestorId);
         usr.setLastUpdate(new Date(System.currentTimeMillis()));
-        userMgr.updateUserWithDependent(usr, false);
+        userMgr.updateUserWithDependent(userDozerConverter.convertToEntity(usr, true), false);
 
-        Login lRequestor = loginManager.getPrimaryIdentity(requestorId);
-        Login lTargetUser = loginManager.getPrimaryIdentity(usr.getUserId());
+        LoginEntity lRequestor = loginManager.getPrimaryIdentity(requestorId);
+        LoginEntity lTargetUser = loginManager.getPrimaryIdentity(usr.getUserId());
 
         if (lRequestor != null && lTargetUser != null) {
 
-            auditLog = auditHelper.addLog("DELETE", lRequestor.getId().getDomainId(), lRequestor.getId().getLogin(),
-                    "IDM SERVICE", usr.getCreatedBy(), "0", "USER", usr.getUserId(),
-                    null, "SUCCESS", null, "USER_STATUS",
-                    usr.getStatus().toString(),
-                    requestId, null, null, null,
-                    null, lTargetUser.getId().getLogin(), lTargetUser.getId().getDomainId());
+            auditLog = auditHelper.addLog("DELETE", lRequestor.getDomainId(), lRequestor.getLogin(),
+                    "IDM SERVICE", usr.getCreatedBy(), "0", "USER", usr
+                    .getUserId(), null, "SUCCESS", null, "USER_STATUS",
+                    usr.getStatus().toString(), requestId, null, null, null,
+                    null, lTargetUser.getLogin(), lTargetUser.getDomainId());
         } else {
             log.debug("Unable to log disable operation. Of of the following is null:");
             log.debug("Requestor identity=" + lRequestor);
             log.debug("Target identity=" + lTargetUser);
         }
 
-
         // update the identities and set them to inactive
-        List<Login> principalList = loginManager.getLoginByUser(user.getUserId());
+        List<LoginEntity> principalList = loginManager.getLoginByUser(user
+                .getUserId());
         if (principalList != null) {
-            for (Login l : principalList) {
-                if (l.getStatus() != null && !l.getStatus().equalsIgnoreCase("INACTIVE")) {
+            for (LoginEntity l : principalList) {
+                if (l.getStatus() != null
+                        && !l.getStatus().equalsIgnoreCase("INACTIVE")) {
                     l.setStatus("INACTIVE");
                     l.setAuthFailCount(0);
                     l.setPasswordChangeCount(0);
@@ -842,31 +813,45 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
                     if (user.isNotifyTargetSystems()) {
 
                         // only add the connectors if its a secondary identity.
-                        if (!l.getId().getManagedSysId().equalsIgnoreCase(this.sysConfiguration.getDefaultManagedSysId())) {
+                        if (!l.getManagedSysId()
+                                .equalsIgnoreCase(
+                                        this.sysConfiguration
+                                                .getDefaultManagedSysId())) {
 
-                            // some connectors, such as the appTables connector, need data
-                            // about other attributes during a delete - so generate a list of attributes
+                            // some connectors, such as the appTables connector,
+                            // need data
+                            // about other attributes during a delete - so
+                            // generate a list of attributes
 
-                            ManagedSys mSys = managedSysService.getManagedSys(l.getId().getManagedSysId());
-                            ProvisionConnector connector = connectorService.getConnector(mSys.getConnectorId());
+                            ManagedSysDto mSys = managedSysService.getManagedSys(l
+                                    .getManagedSysId());
+                            ProvisionConnectorDto connector = connectorService
+                                    .getProvisionConnector(mSys.getConnectorId());
 
                             ManagedSystemObjectMatch matchObj = null;
-                            ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(mSys.getManagedSysId(), "USER");
+                            ManagedSystemObjectMatch[] matchObjAry = managedSysService
+                                    .managedSysObjectParam(
+                                            mSys.getManagedSysId(), "USER");
 
-                            log.debug("Deleting id=" + l.getId().getLogin());
-                            log.debug("- delete using managed sys id=" + mSys.getManagedSysId());
+                            log.debug("Deleting id=" + l.getLogin());
+                            log.debug("- delete using managed sys id="
+                                    + mSys.getManagedSysId());
 
-                            PSOIdentifierType idType = new PSOIdentifierType(l.getId().getLogin(), null,
-                                    l.getId().getManagedSysId());
+                            PSOIdentifierType idType = new PSOIdentifierType(l
+                                    .getLogin(), null, l
+                                    .getManagedSysId());
 
-                            if (connector.getConnectorInterface() != null &&
-                                    connector.getConnectorInterface().equalsIgnoreCase("REMOTE")) {
+                            if (connector.getConnectorInterface() != null
+                                    && connector.getConnectorInterface()
+                                    .equalsIgnoreCase("REMOTE")) {
 
-                                remoteDelete(l, requestId, mSys, connector, matchObj, user, auditLog);
+                                remoteDelete(loginDozerConverter.convertToDTO(l,true), requestId, mSys, connector,
+                                        matchObj, user, auditLog);
 
                             } else {
 
-                                localDelete(l, requestId, idType, mSys, user, auditLog);
+                                localDelete(loginDozerConverter.convertToDTO(l,true), requestId, idType, mSys, user,
+                                        auditLog);
 
                             }
 
@@ -878,22 +863,20 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
         }
 
         ProvisionServicePostProcessor deletePostProcessScript = createProvPostProcessScript(postProcessor);
-        if (deletePostProcessScript != null && !user.isSkipPostProcessor() ) {
+        if (deletePostProcessScript != null && !user.isSkipPostProcessor()) {
             deletePostProcessScript.setMuleContext(muleContext);
-            if (executeProvisionPostProcess(deletePostProcessScript, bindingMap, pUser, null, "DELETE") != ProvisioningConstants.SUCCESS) {
+            if (executeProvisionPostProcess(deletePostProcessScript,
+                    bindingMap, pUser, null, "DELETE") != ProvisioningConstants.SUCCESS) {
                 response.setStatus(ResponseStatus.FAILURE);
                 response.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR);
                 return response;
             }
         }
 
-
         response.setStatus(ResponseStatus.SUCCESS);
         return response;
 
-
     }
-
 
     /* (non-Javadoc)
       * @see org.openiam.provision.service.ProvisionService#deleteUser(java.lang.String, java.lang.String, java.lang.String)
@@ -922,8 +905,7 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
         String requestId = "R" + UUIDGen.getUUID();
 
         // get the user object associated with this principal
-        Login login = loginManager.getLoginByManagedSys(securityDomain,
-                principal, managedSystemId);
+        final LoginEntity login = loginManager.getLoginByManagedSys(securityDomain, principal, managedSystemId);
         if (login == null) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
@@ -938,7 +920,8 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
         }
 
 
-        User usr = this.userMgr.getUserWithDependent(userId, false);
+        UserEntity entity = userMgr.getUser(userId);
+        User usr = userDozerConverter.convertToDTO(entity, true);
         if (usr == null) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(ResponseCode.USER_NOT_FOUND);
@@ -972,9 +955,9 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
             login.setIsLocked(0);
             loginManager.updateLogin(login);
             // call delete on the connector
-            ManagedSys mSys = managedSysService.getManagedSys(managedSystemId);
+            ManagedSysDto mSys = managedSysService.getManagedSys(managedSystemId);
 
-            ProvisionConnector connector = connectorService.getConnector(mSys.getConnectorId());
+            ProvisionConnectorDto connector = connectorService.getProvisionConnector(mSys.getConnectorId());
 
             ManagedSystemObjectMatch matchObj = null;
             ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(mSys.getManagedSysId(), "USER");
@@ -1009,12 +992,12 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
 
             if (connector.getConnectorInterface() != null &&
                     connector.getConnectorInterface().equalsIgnoreCase("REMOTE")) {
-                UserResponse resp = remoteDelete(login, requestId, mSys, connector, matchObj, new ProvisionUser(usr), auditLog);
+                UserResponse resp = remoteDelete(loginDozerConverter.convertToDTO(login, true), requestId, mSys, connector, matchObj, new ProvisionUser(usr), auditLog);
                 if (resp.getStatus() == StatusCodeType.SUCCESS) {
                     connectorSuccess = true;
                 }
             } else {
-                ResponseType resp = localDelete(login, requestId, idType, mSys, new ProvisionUser(usr), auditLog);
+                ResponseType resp = localDelete(loginDozerConverter.convertToDTO(login, true), requestId, idType, mSys, new ProvisionUser(usr), auditLog);
                 if (resp.getStatus() == StatusCodeType.SUCCESS) {
                     connectorSuccess = true;
                 }
@@ -1035,19 +1018,20 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
             usr.setSecondaryStatus(null);
             usr.setLastUpdatedBy(requestorId);
             usr.setLastUpdate(new Date(System.currentTimeMillis()));
-            userMgr.updateUserWithDependent(usr, false);
+            entity = userDozerConverter.convertToEntity(usr, true);
+            userMgr.updateUserWithDependent(entity, false);
 
-            Login lRequestor = loginManager.getPrimaryIdentity(requestorId);
-            Login lTargetUser = loginManager.getPrimaryIdentity(userId);
+            LoginEntity lRequestor = loginManager.getPrimaryIdentity(requestorId);
+            LoginEntity lTargetUser = loginManager.getPrimaryIdentity(userId);
 
             if (lRequestor != null && lTargetUser != null) {
 
-                auditLog = auditHelper.addLog("DELETE", lRequestor.getId().getDomainId(), lRequestor.getId().getLogin(),
+                auditLog = auditHelper.addLog("DELETE", lRequestor.getDomainId(), lRequestor.getLogin(),
                         "IDM SERVICE", usr.getCreatedBy(), "0", "USER", usr.getUserId(),
                         null, "SUCCESS", null, "USER_STATUS",
                         usr.getStatus().toString(),
                         requestId, null, null, null,
-                        null, lTargetUser.getId().getLogin(), lTargetUser.getId().getDomainId());
+                        null, lTargetUser.getLogin(), lTargetUser.getDomainId());
             } else {
                 log.debug("Unable to log disable operation. Of of the following is null:");
                 log.debug("Requestor identity=" + lRequestor);
@@ -1056,9 +1040,9 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
 
 
             // update the identities and set them to inactive
-            List<Login> principalList = loginManager.getLoginByUser(userId);
+            List<LoginEntity> principalList = loginManager.getLoginByUser(userId);
             if (principalList != null) {
-                for (Login l : principalList) {
+                for (LoginEntity l : principalList) {
                     if (l.getStatus() != null && !l.getStatus().equalsIgnoreCase("INACTIVE")) {
                         l.setStatus("INACTIVE");
                         l.setAuthFailCount(0);
@@ -1067,21 +1051,21 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
                         loginManager.updateLogin(l);
 
                         // only add the connectors if its a secondary identity.
-                        if (!l.getId().getManagedSysId().equalsIgnoreCase(this.sysConfiguration.getDefaultManagedSysId())) {
+                        if (!l.getManagedSysId().equalsIgnoreCase(this.sysConfiguration.getDefaultManagedSysId())) {
 
-                            ManagedSys mSys = managedSysService.getManagedSys(l.getId().getManagedSysId());
+                            ManagedSysDto mSys = managedSysService.getManagedSys(l.getManagedSysId());
 
-                            ProvisionConnector connector = connectorService.getConnector(mSys.getConnectorId());
+                            ProvisionConnectorDto connector = connectorService.getProvisionConnector(mSys.getConnectorId());
 
                             ManagedSystemObjectMatch matchObj = null;
                             ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(mSys.getManagedSysId(), "USER");
 
-                            log.debug("Deleting id=" + l.getId().getLogin());
+                            log.debug("Deleting id=" + l.getLogin());
                             log.debug("- delete using managed sys id=" + mSys.getManagedSysId());
 
                             // pre-processing
                             bindingMap.put("IDENTITY", l);
-                            bindingMap.put("RESOURCE", res);
+                            //bindingMap.put("RESOURCE", res);
 
                             Resource res = null;
                             String resourceId = mSys.getResourceId();
@@ -1101,20 +1085,20 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
                             }
 
 
-                            PSOIdentifierType idType = new PSOIdentifierType(l.getId().getLogin(), null,
-                                    l.getId().getManagedSysId());
+                            PSOIdentifierType idType = new PSOIdentifierType(l.getLogin(), null,
+                                    l.getManagedSysId());
 
                             boolean connectorSuccess = false;
 
                             if (connector.getConnectorInterface() != null &&
                                     connector.getConnectorInterface().equalsIgnoreCase("REMOTE")) {
-                                UserResponse resp = remoteDelete(login, requestId, mSys, connector, matchObj, pUser, auditLog);
+                                UserResponse resp = remoteDelete(loginDozerConverter.convertToDTO(login, true), requestId, mSys, connector, matchObj, pUser, auditLog);
                                 if (resp.getStatus() == StatusCodeType.SUCCESS) {
                                     connectorSuccess = true;
                                 }
 
                             } else {
-                                ResponseType resp = localDelete(login, requestId, idType, mSys, pUser, auditLog);
+                                ResponseType resp = localDelete(loginDozerConverter.convertToDTO(login, true), requestId, idType, mSys, pUser, auditLog);
 
                                 if (resp.getStatus() == StatusCodeType.SUCCESS) {
                                     connectorSuccess = true;
@@ -1190,7 +1174,7 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
             throw new NullPointerException("Operation parameter is null");
         }
 
-        User user = userMgr.getUserWithDependent(userId, false);
+	UserEntity user = userMgr.getUser(userId);
         if (user == null) {
             log.error("UserId " + userId + " not found");
             response.setStatus(ResponseStatus.FAILURE);
@@ -1198,7 +1182,7 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
             return response;
 
         }
-        Login lg = loginManager.getPrimaryIdentity(userId);
+        LoginEntity lg = loginManager.getPrimaryIdentity(userId);
 
         if (operation.equals(AccountLockEnum.LOCKED)) {
             user.setSecondaryStatus(UserStatusEnum.LOCKED);
@@ -1232,17 +1216,17 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
 
         String requestId = "R" + UUIDGen.getUUID();
 
-        Login lRequestor = loginManager.getPrimaryIdentity(requestorId);
+        LoginEntity lRequestor = loginManager.getPrimaryIdentity(requestorId);
 
         String login = null;
         String domain = null;
-        if (lg.getId() != null) {
-            login = lg.getId().getLogin();
-            domain = lg.getId().getDomainId();
+        if (lg != null) {
+            login = lg.getLogin();
+            domain = lg.getDomainId();
         }
 
-        final String logDomainId = (lRequestor != null && lRequestor.getId() != null) ? lRequestor.getId().getDomainId() : null;
-        final String logLoginId = (lRequestor != null && lRequestor.getId() != null) ? lRequestor.getId().getLogin() : null;
+        final String logDomainId = (lRequestor != null) ? lRequestor.getDomainId() : null;
+        final String logLoginId = (lRequestor != null) ? lRequestor.getLogin() : null;
         final String logUserId = (user != null && user.getUserId() != null) ? user.getUserId() : null;
 
         auditHelper.addLog(auditReason, logDomainId, logLoginId,
@@ -1253,15 +1237,14 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
 
 
 
-        final List<Login> loginList = loginManager.getLoginByUser(userId);
-        for(final Login userLogin : loginList) {
+        final List<LoginEntity> loginList = loginManager.getLoginByUser(userId);
+        for(final LoginEntity userLogin : loginList) {
             if(userLogin != null) {
-                final LoginId id = userLogin.getId();
-                if(id != null && id.getManagedSysId() != null && !id.getManagedSysId().equals("0")) {
+                if(userLogin.getManagedSysId() != null && !userLogin.getManagedSysId().equals("0")) {
                     ResponseType responsetype = null;
-                    final String managedSysId = id.getManagedSysId();
-                    final ManagedSys managedSys = managedSysService.getManagedSys(managedSysId);
-                    final PSOIdentifierType psoIdentifierType = new PSOIdentifierType(id.getLogin(), null, managedSysId);
+                    final String managedSysId = userLogin.getManagedSysId();
+                    final ManagedSysDto managedSys = managedSysService.getManagedSys(managedSysId);
+                    final PSOIdentifierType psoIdentifierType = new PSOIdentifierType(userLogin.getLogin(), null, managedSysId);
                     if(AccountLockEnum.LOCKED.equals(operation) || AccountLockEnum.LOCKED_ADMIN.equals(operation)) {
                         final SuspendRequestType suspendCommand = new SuspendRequestType();
                         suspendCommand.setPsoID(psoIdentifierType);
@@ -1292,17 +1275,16 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
                 }
             }
         }
-        final List<Role> roleList = roleDataService.getUserRoles(user.getUserId());
+        final List<RoleEntity> roleList = roleDataService.getUserRoles(user.getUserId(), 0, Integer.MAX_VALUE);
         if(CollectionUtils.isNotEmpty(roleList)) {
-            for(final Role role : roleList) {
-                final RoleId roleId = role.getId();
-                final List<Resource> resourceList = resourceDataService.getResourcesForRole(roleId.getServiceId(), roleId.getRoleId());
+            for(final RoleEntity role : roleList) {
+                final List<Resource> resourceList = resourceDataService.getResourcesForRole(role.getRoleId(), 0, Integer.MAX_VALUE);
                 if(CollectionUtils.isNotEmpty(resourceList)) {
                     for(final Resource resource : resourceList) {
-                        final ManagedSys managedSys = managedSysService.getManagedSys(resource.getManagedSysId());
+                        final ManagedSysDto managedSys = managedSysService.getManagedSys(resource.getManagedSysId());
                         if(managedSys != null) {
                             ResponseType responsetype = null;
-                            final PSOIdentifierType psoIdentifierType = new PSOIdentifierType(lg.getId().getLogin(),null, managedSys.getManagedSysId());
+                            final PSOIdentifierType psoIdentifierType = new PSOIdentifierType(lg.getLogin(),null, managedSys.getManagedSysId());
                             if(AccountLockEnum.LOCKED.equals(operation) || AccountLockEnum.LOCKED_ADMIN.equals(operation)) {
                                 final SuspendRequestType suspendCommand = new SuspendRequestType();
                                 suspendCommand.setPsoID(psoIdentifierType);
@@ -1347,7 +1329,7 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
                                     log.info("connector service client " + client);
 
                                     ResponseType responsetype = null;
-                                    final PSOIdentifierType psoIdentifierType = new PSOIdentifierType(lg.getId().getLogin(),null, lg.getId().getManagedSysId());
+                                    final PSOIdentifierType psoIdentifierType = new PSOIdentifierType(lg.getLogin(),null, lg.getManagedSysId());
 
                                     if(AccountLockEnum.LOCKED.equals(operation) || AccountLockEnum.LOCKED_ADMIN.equals(operation)) {
                                         final SuspendRequestType suspendCommand = new SuspendRequestType();
@@ -1393,37 +1375,36 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
       * @see org.openiam.provision.service.ProvisionService#modifyUser(org.openiam.provision.dto.ProvisionUser)
       */
     public ProvisionUserResponse modifyUser(ProvisionUser pUser) {
+   // 	populate(pUser);
         ProvisionUserResponse resp = new ProvisionUserResponse();
         String requestId = "R" + UUIDGen.getUUID();
-        ScriptIntegration se = null;
         Map<String, Object> bindingMap = new HashMap<String, Object>();
         Organization org = null;
         String primaryLogin = null;
         List<IdmAuditLog> pendingLogItems = new ArrayList<IdmAuditLog>();
 
-        ModifyUser modifyUser = (ModifyUser) ac.getBean("modifyUser");
-        AttributeListBuilder attrListBuilder = (AttributeListBuilder) ac.getBean("attributeListBuilder");
-        modifyUser.init();
+        List<Role> activeRoleList = new ArrayList<Role>();
+	    List<Role> deleteRoleList = new ArrayList<Role>();
+	    List<LoginEntity> principalList = new ArrayList<LoginEntity>();
 
+		// ModifyUser modifyUser = (ModifyUser) ac.getBean("modifyUser");
+		// AttributeListBuilder attrListBuilder = (AttributeListBuilder)
+		// ac.getBean("attributeListBuilder");
+		// modifyUser.init();
 
         log.debug("---DEFAULT PROVISIONING SERVICE: modifyUser called --");
 
-        List<Login> newPrincipalList = pUser.getPrincipalList();
+		log.debug("User passed in with the following Roles: "
+				+ pUser.getMemberOfRoles());
 
+        List<LoginEntity> newPrincipalList = loginDozerConverter.convertToEntityList(pUser.getPrincipalList(), true);
 
-        try {
-            se = ScriptFactory.createModule(this.scriptEngine);
-        } catch (Exception e) {
-            log.error(e);
-            resp.setStatus(ResponseStatus.FAILURE);
-            resp.setErrorCode(ResponseCode.FAIL_OTHER);
-            return resp;
-        }
         if (pUser.getUser().getCompanyId() != null) {
             org = orgManager.getOrganization(pUser.getUser().getCompanyId());
         }
 
-        User origUser = userMgr.getUserWithDependent(pUser.getUserId(), true);
+        UserEntity entity = userMgr.getUser(pUser.getUserId());
+        User origUser = userDozerConverter.convertToDTO(entity, true);
         if (origUser == null || origUser.getUserId() == null) {
             throw new IllegalArgumentException("UserId is not valid. UserId=" + pUser.getUserId());
         }
@@ -1448,55 +1429,82 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
             }
         }
 
+		// make sure that our object as the attribute set that will be used for
+		// audit logging
+		checkAuditingAttributes(pUser);
 
-        // get the current user object - update it with the new values and then save it
+		// get the current values
+		List<Role> curRoleList = roleDataService.getUserRolesAsFlatList(pUser
+				.getUserId());
+		List<Group> curGroupList = groupDozerConverter.convertToDTOList(groupManager.getGroupsForUser(pUser
+                .getUserId(), 0, Integer.MAX_VALUE), false);
+		List<LoginEntity> curPrincipalList = loginManager.getLoginByUser(pUser
+				.getUserId());
 
+		// get the current user object - update it with the new values and then
+		// save it
 
+		// check that a primary identity exists some where
+		LoginEntity curPrimaryIdentity = getPrimaryIdentity("0", curPrincipalList);
 
-        // check that a primary identity exists some where
-        Login curPrimaryIdentity = loginManager.getPrimaryIdentity(pUser.getUserId());
-        if (curPrimaryIdentity == null &&
-                pUser.getPrincipalList() == null) {
+		// Login curPrimaryIdentity =
+		// loginManager.getPrimaryIdentity(pUser.getUserId());
+		if (curPrimaryIdentity == null && pUser.getPrincipalList() == null) {
             log.debug("Identity not found...");
             resp.setStatus(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
             return resp;
         }
 
+		pUser.setObjectState(BaseObject.UPDATE);
+
         // check if the user is missing components
-        modifyUser.addMissingUserComponents(pUser);
+		addMissingUserComponents(pUser, origUser);
 
-        List<Role> curRoleList = roleDataService.getUserRolesAsFlatList(pUser.getUserId());
-        List<Group> curGroupList = groupManager.getUserInGroupsAsFlatList(pUser.getUserId());
-        List<Login> curPrincipalList = loginManager.getLoginByUser(pUser.getUserId());
-
-
-        // make the role and group list before these updates available to the attribute policies
+		// make the role and group list before these updates available to the
+		// attribute policies
         bindingMap.put("currentRoleList", curRoleList);
         bindingMap.put("currentGroupList", curGroupList);
 
-
         // update the openiam repository with the new user information
-        modifyUser.updateUser(pUser, origUser);
+		updateUser(pUser, origUser);
 
         // update the supervisor
-        modifyUser.updateSupervisor(origUser, pUser.getSupervisor());
+		updateSupervisor(origUser, pUser.getSupervisor());
 
         // update the group
-        modifyUser.updateGroupAssociation(origUser.getUserId(), curGroupList, pUser.getMemberOfGroups());
+		updateGroupAssociation(origUser.getUserId(), curGroupList,
+				pUser.getMemberOfGroups());
+
+		log.debug("Pending call to Update Role Association.  Roles passed in equal: "
+				+ pUser.getMemberOfRoles());
 
         // update the role association
-        modifyUser.updateRoleAssociation(origUser.getUserId(), curRoleList, pUser.getMemberOfRoles(), pendingLogItems, pUser, curPrimaryIdentity);
+		updateRoleAssociation(origUser.getUserId(), curRoleList,
+				pUser.getMemberOfRoles(), pendingLogItems, pUser,
+				loginDozerConverter.convertToDTO(curPrimaryIdentity, true),
+                activeRoleList, deleteRoleList);
 
-        modifyUser.updateUserOrgAffiliation(origUser.getUserId(), pUser.getUserAffiliations());
+		updateUserOrgAffiliation(origUser.getUserId(),
+				pUser.getUserAffiliations());
 
-        List<Role> activeRoleList = modifyUser.getActiveRoleList();
+		// List<Role> activeRoleList = modifyUser.getActiveRoleList();
         bindingMap.put("userRole", activeRoleList);
 
         // determine the list of active resources
         //log.debug("Active Role List=" + modifyUser.getActiveRoleList());
-        List<Resource> resourceList = getResourcesForRole(modifyUser.getActiveRoleList());
-        List<Resource> deleteResourceList = getResourcesForRole(modifyUser.getDeleteRoleList());
+
+		// list of resources that a person should have based on their active
+		// roles
+		List<Resource> resourceList = getResourcesForRole(getActiveRoleList(
+				activeRoleList, deleteRoleList));
+		// list of resources that are to be removed based on roles that are to
+		// be deleted
+		List<Resource> deleteResourceList = getResourcesForRole(deleteRoleList);
+
+		// update deleteResource list based on overlapping resource
+		deleteResourceList = adjustForOverlappingResource(resourceList,
+				deleteResourceList);
 
         // add or remove resources that are being associated directly
 
@@ -1509,33 +1517,41 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
 
         applyResourceExceptions(pUser, resourceList, deleteResourceList);
 
-        // if there were changes in the role definition, the update the resource list
-        updateResourceListByRoleChanges(resourceList, deleteResourceList, curPrincipalList);
+		// if there were changes in the role definition, the update the resource
+		// list
+		// SAS - Oct 2 - may be unnecessary
+		// updateResourceListByRoleChanges(resourceList, deleteResourceList,
+		// curPrincipalList);
 
         log.debug("Resources to be added ->> " + resourceList);
         log.debug("Delete the following resources ->> " + deleteResourceList);
 
-        if (deleteResourceList != null && !deleteResourceList.isEmpty()) {
-            if (resourceList != null && !resourceList.isEmpty()) {
-                deleteResourceList.removeAll(resourceList);
-            }
-        }
+		// if (deleteResourceList != null && !deleteResourceList.isEmpty()) {
+		// if (resourceList != null && !resourceList.isEmpty()) {
+		// deleteResourceList.removeAll(resourceList);
+		// }
+		// }
         // determine which resources are new and which ones are existing
         updateResourceState(resourceList, curPrincipalList);
 
         // update the principal list
-        modifyUser.updatePrincipalList(origUser.getUserId(), curPrincipalList, newPrincipalList, deleteResourceList);
+		updatePrincipalList(origUser.getUserId(),
+                loginDozerConverter.convertToDTOList(curPrincipalList, false),
+                loginDozerConverter.convertToDTOList(newPrincipalList, false),
+                deleteResourceList,
+                loginDozerConverter.convertToDTOList(principalList, false));
 
         // get primary identity and bind it for the groovy scripts
         String decPassword = null;
-        Login primaryIdentity = modifyUser.getPrimaryIdentity(this.sysConfiguration.getDefaultManagedSysId());
+		LoginEntity primaryIdentity = getPrimaryIdentity(
+				this.sysConfiguration.getDefaultManagedSysId(), principalList);
         if (primaryIdentity != null) {
-            primaryLogin = primaryIdentity.getId().getLogin();
+			primaryLogin = primaryIdentity.getLogin();
             String password = primaryIdentity.getPassword();
             if (password != null) {
                 try {
 
-                    decPassword = loginManager.decryptPassword(password);
+					decPassword = loginManager.decryptPassword(primaryIdentity.getUserId(), password);
                     bindingMap.put("password", decPassword);
 
                 } catch (EncryptionException e) {
@@ -1546,42 +1562,49 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
             }
             bindingMap.put("lg", primaryIdentity);
         } else {
-            log.debug("Primary identity not found for user=" + origUser.getUserId());
+			log.debug("Primary identity not found for user="
+					+ origUser.getUserId());
         }
 
         log.debug("Binding active roles to scripting");
         log.debug("- role list -> " + activeRoleList);
         log.debug("- Primary Identity : " + primaryIdentity);
 
-        pUser.setMemberOfRoles(activeRoleList);
+		// SAS - Do not change the list of roles
+		pUser.setMemberOfRoles(activeRoleList);
         //  bindingMap.put("user", origUser);
 
         bindingMap.put("user", pUser);
 
-
         log.debug("**Updated orig user=" + origUser);
-        log.debug("-- " + origUser.getUserId() + " " + origUser.getFirstName() + " " + origUser.getLastName());
+		log.debug("-- " + origUser.getUserId() + " " + origUser.getFirstName()
+				+ " " + origUser.getLastName());
 
-
-        // deprovision the identities which are no longer needed.
-        if (deleteResourceList != null && !deleteResourceList.isEmpty()) {
-            // delete these resources which are not needed in the new role assignment
-            log.debug("Deprovisioning resources..");
-
-            deProvisionResources(deleteResourceList, origUser.getUserId(), pUser.getLastUpdatedBy(), requestId);
-        }
         String userStatus = null;
         if (pUser.getUser().getStatus() != null) {
             userStatus = pUser.getUser().getStatus().toString();
         }
-        IdmAuditLog auditLog = auditHelper.addLog("MODIFY", pUser.getRequestorDomain(), pUser.getRequestorLogin(),
-                "IDM SERVICE", origUser.getCreatedBy(), "0", "USER", origUser.getUserId(),
-                null, "SUCCESS", null, "USER_STATUS", userStatus,
-                requestId, null, pUser.getSessionId(), null,
-                pUser.getRequestClientIP(), primaryIdentity.getId().getLogin(), primaryIdentity.getId().getDomainId());
 
-        auditHelper.persistLogList(pendingLogItems, requestId, pUser.getSessionId());
+		IdmAuditLog auditLog = auditHelper.addLog("MODIFY",
+				pUser.getRequestorDomain(), pUser.getRequestorLogin(),
+				"IDM SERVICE", origUser.getCreatedBy(), "0", "USER",
+				origUser.getUserId(), null, "SUCCESS", null, "USER_STATUS",
+				userStatus, requestId, null, pUser.getSessionId(), null,
+				pUser.getRequestClientIP(), primaryIdentity.getLogin(),
+				primaryIdentity.getDomainId());
 
+		auditHelper.persistLogList(pendingLogItems, requestId,
+				pUser.getSessionId());
+
+		// deprovision the identities which are no longer needed.
+		if (deleteResourceList != null && !deleteResourceList.isEmpty()) {
+			// delete these resources which are not needed in the new role
+			// assignment
+
+			deProvisionResources(deleteResourceList, origUser.getUserId(),
+					pUser.getLastUpdatedBy(), requestId, pUser,
+					auditLog.getLogId(), userStatus, origUser);
+		}
 
         if (resourceList != null) {
             log.debug("Resource list is not null.. ");
@@ -1591,32 +1614,33 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
                 String managedSysId = res.getManagedSysId();
 
                 if (pUser.getSrcSystemId() != null) {
-                    if (res.getResourceId().equalsIgnoreCase(pUser.getSrcSystemId())) {
+					if (res.getResourceId().equalsIgnoreCase(
+							pUser.getSrcSystemId())) {
                         continue;
                     }
                 }
 
-
                 bindingMap.put(TARGET_SYS_RES_ID, res.getResourceId());
-                bindingMap.put(TARGET_SYS_MANAGED_SYS_ID, res.getManagedSysId());
-
-
+				bindingMap
+						.put(TARGET_SYS_MANAGED_SYS_ID, res.getManagedSysId());
 
                 if (managedSysId != null) {
 
                     // object that will be sent to the connectors
-                    List<AttributeMap> attrMap = this.managedSysService.getResourceAttributeMaps(res.getResourceId());
-                    //List<AttributeMap> attrMap = resourceDataService.getResourceAttributeMaps(res.getResourceId());
+					List<AttributeMap> attrMap = this.managedSysService
+							.getResourceAttributeMaps(res.getResourceId());
+					// List<AttributeMap> attrMap =
+					// resourceDataService.getResourceAttributeMaps(res.getResourceId());
 
-
-                    ManagedSys mSys = managedSysService.getManagedSys(managedSysId);
+					ManagedSysDto mSys = managedSysService
+							.getManagedSys(managedSysId);
 
                     if (mSys == null || mSys.getConnectorId() == null) {
                         continue;
                     }
 
 
-                    ProvisionConnector connector = connectorService.getConnector(mSys.getConnectorId());
+                    ProvisionConnectorDto connector = connectorService.getProvisionConnector(mSys.getConnectorId());
 
                     ManagedSystemObjectMatch matchObj = null;
                     ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(managedSysId, "USER");
@@ -1631,273 +1655,340 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
                     // determin if this identity exists in IDM or not
                     // if not, do an ADD otherwise, do an update
 
-                    Login mLg = getPrincipalForManagedSys(managedSysId, modifyUser.getPrincipalList());
-                    //Login mLg = getPrincipalForManagedSys(managedSysId, curPrincipalList);
+					Login mLg = getPrincipalForManagedSys(managedSysId,
+                            loginDozerConverter.convertToDTOList(principalList, false));
+					// Login mLg = getPrincipalForManagedSys(managedSysId,
+					// curPrincipalList);
 
-
-                    if (mLg != null && mLg.getId() != null) {
-                        bindingMap.put(TARGET_SYS_SECURITY_DOMAIN, mLg.getId().getDomainId());
+					if (mLg != null && mLg.getLoginId() != null) {
+						bindingMap.put(TARGET_SYS_SECURITY_DOMAIN, mLg
+								.getDomainId());
                     } else {
-                        bindingMap.put(TARGET_SYS_SECURITY_DOMAIN, sysConfiguration.getDefaultSecurityDomain());
+						bindingMap.put(TARGET_SYS_SECURITY_DOMAIN,
+								sysConfiguration.getDefaultSecurityDomain());
                     }
 
                     log.debug("PROCESSING IDENTITY =" + mLg);
 
-                    if (mLg != null && mLg.getOperation() == AttributeOperationEnum.DELETE) {
+                    if (mLg != null/* && mLg.getOperation() == AttributeOperationEnum.DELETE*/) {
 
                         // delete this identity
                         List<Resource> delRes = new ArrayList<Resource>();
                         delRes.add(res);
 
-                        log.debug("DEPROVISIONING IDENTITY FOR RES =" + res.getName());
+						log.debug("DEPROVISIONING IDENTITY FOR RES ="
+								+ res.getName());
 
-                        deProvisionResources(delRes, origUser.getUserId(), pUser.getLastUpdatedBy(), requestId);
+						deProvisionResources(delRes, origUser.getUserId(),
+								pUser.getLastUpdatedBy(), requestId, pUser,
+								auditLog.getLogId(), userStatus, origUser);
 
-                        //deProvisionResources(List<Resource> deleteResourceList, String userId, String requestorId, String requestId)
+						// deProvisionResources(List<Resource>
+						// deleteResourceList, String userId, String
+						// requestorId, String requestId)
 
                     } else {
 
+						Map<String, String> currentValueMap = new HashMap<String, String>();
+						boolean foundIdInTarget = false;
+						if (mLg != null) {
+							// get the attributes at the target system
 
-                        if (res.getObjectState().equalsIgnoreCase(BaseObject.NEW) || mLg == null) {
-                            if (mLg == null) {
+							foundIdInTarget = getCurrentObjectAtTargetSystem(
+									mLg, mSys, connector, matchObj,
+									currentValueMap);
+
+						}
+
+						// if
+						// (res.getObjectState().equalsIgnoreCase(BaseObject.NEW)
+						// || mLg == null) {
+
+						if (mLg == null || !foundIdInTarget) {
                                 // create the secondary identity for this resource
-                                log.debug("Building identity for managedSysId=" + managedSysId);
+							log.debug("Adding new identity to target system. Primary Identity is:"
+									+ primaryIdentity);
 
-                                log.debug("-Building attributes for managedSysId =" + managedSysId);
+							bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS,
+									IDENTITY_NEW);
 
-                                log.debug("-Primary Identity=" + primaryIdentity);
-                                log.debug("-pUser - user=" + pUser.getUser());
+							if (mLg != null) {
+								bindingMap.put(TARGET_SYSTEM_IDENTITY, mLg
+										.getLogin());
+							} else {
+								bindingMap.put(TARGET_SYSTEM_IDENTITY, "");
+							}
 
-                                bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, IDENTITY_NEW);
-                                bindingMap.put(TARGET_SYSTEM_IDENTITY, "");
                                 bindingMap.put(TARGET_SYSTEM_ATTRIBUTES, null);
 
-                                bindingMap.put(TARGET_SYS_SECURITY_DOMAIN,  sysConfiguration.getDefaultSecurityDomain());
-
-
+							bindingMap
+									.put(TARGET_SYS_SECURITY_DOMAIN,
+											sysConfiguration
+													.getDefaultSecurityDomain());
 
                                 // pre-processing
-                                String preProcessScript = getResProperty(res.getResourceProps(), "PRE_PROCESS");
-                                if (preProcessScript != null && !preProcessScript.isEmpty()) {
+							String preProcessScript = getResProperty(
+									res.getResourceProps(), "PRE_PROCESS");
+							if (preProcessScript != null
+									&& !preProcessScript.isEmpty()) {
                                     PreProcessor ppScript = createPreProcessScript(preProcessScript);
                                     if (ppScript != null) {
-                                        if (executePreProcess(ppScript, bindingMap, pUser, "MODIFY") == ProvisioningConstants.FAIL) {
+									if (executePreProcess(ppScript, bindingMap,
+											pUser, "MODIFY") == ProvisioningConstants.FAIL) {
                                             continue;
                                         }
                                     }
                                 }
 
-
-                                ExtensibleUser extUser = attrListBuilder.buildFromRules(pUser, attrMap, se,
-                                        managedSysId, primaryIdentity.getId().getDomainId(),
-                                        bindingMap, pUser.getUser().getLastUpdatedBy());
+							ExtensibleUser extUser = buildFromRules(pUser,
+									attrMap, scriptRunner, managedSysId, primaryIdentity
+											.getDomainId(), bindingMap,
+									pUser.getUser().getLastUpdatedBy());
 
                                 List<Login> priList = pUser.getPrincipalList();
-                                if (priList != null) {
-                                    for (Login l : priList) {
-                                        log.debug("identity after builder=" + l.getId());
-                                    }
-                                } else {
-                                    log.debug("priList is null");
-                                }
+							if (priList != null) {
+								for (Login l : priList) {
+									log.debug("identity after builder="
+											+ l.getLoginId());
+								}
+							} else {
+								log.debug("priList is null");
+							}
 
                                 // build the request
                                 AddRequestType addReqType = new AddRequestType();
-                                // get the identity linked to this resource / managedsys
-                                mLg = getPrincipalForManagedSys(managedSysId, priList);
+							// get the identity linked to this resource /
+							// managedsys
+							mLg = getPrincipalForManagedSys(managedSysId,
+									priList);
                                 if (mLg == null) {
                                     mLg = new Login();
                                 }
                                 // mLg.setPassword(primaryLogin.getPassword());
                                 mLg.setUserId(primaryIdentity.getUserId());
 
-                                bindingMap.put(TARGET_SYS_SECURITY_DOMAIN, mLg.getId().getDomainId());
+							bindingMap.put(TARGET_SYS_SECURITY_DOMAIN, mLg
+									.getDomainId());
 
-                                log.debug("Creating identity in openiam repository:" + mLg.getId());
+							log.debug("Creating identity in openiam repository:"
+									+ mLg.getLoginId());
                                 if (mLg.getPassword() == null) {
                                     mLg.setPassword(primaryIdentity.getPassword());
                                 }
 
-                                Login tempPrincipal = loginManager.getLoginByManagedSys(mLg.getId().getDomainId(), mLg.getId().getLogin(), mLg.getId().getManagedSysId());
+							LoginEntity tempPrincipal = loginManager
+									.getLoginByManagedSys(mLg
+											.getDomainId(), mLg
+											.getLogin(), mLg
+											.getManagedSysId());
 
-                                if (tempPrincipal == null) {
-                                    loginManager.addLogin(mLg);
-                                } else {
-                                    log.debug("Skipping the creation of identity in openiam repository. Identity already exists" + mLg.getId());
+                            if (tempPrincipal == null) {
+								loginManager.addLogin(loginDozerConverter.convertToEntity(mLg,true));
+							} else {
+								log.debug("Skipping the creation of identity in openiam repository. Identity already exists"
+										+ mLg.getLoginId());
                                 }
 
                                 //loginManager.addLogin(mLg);
 
                                 boolean connectorSuccess = false;
 
-                                if (connector.getConnectorInterface() != null &&
-                                        connector.getConnectorInterface().equalsIgnoreCase("REMOTE")) {
+							if (connector.getConnectorInterface() != null
+									&& connector.getConnectorInterface()
+											.equalsIgnoreCase("REMOTE")) {
 
-                                    connectorSuccess = remoteAdd(mLg, requestId, mSys, matchObj, extUser, connector, pUser, auditLog);
+								connectorSuccess = remoteAdd(mLg, requestId,
+										mSys, matchObj, extUser, connector,
+										pUser, auditLog);
 
                                 } else {
 
-                                    PSOIdentifierType idType = new PSOIdentifierType(mLg.getId().getLogin(), null, "target");
+								PSOIdentifierType idType = new PSOIdentifierType(
+										mLg.getLogin(), null, "target");
                                     addReqType.setPsoID(idType);
                                     addReqType.setRequestID(requestId);
-                                    addReqType.setTargetID(mLg.getId().getManagedSysId());
+								addReqType.setTargetID(mLg
+										.getManagedSysId());
                                     addReqType.getData().getAny().add(extUser);
+								log.debug("Creating identity in target system:"
+										+ mLg.getLoginId());
 
-                                    log.debug("Creating identity in target system:" + mLg.getId());
-                                    AddResponseType responseType = connectorAdapter.addRequest(mSys, addReqType, muleContext);
+								AddResponseType responseType = connectorAdapter
+										.addRequest(mSys, addReqType,
+												muleContext);
                                     if (responseType.getStatus() == StatusCodeType.SUCCESS) {
                                         connectorSuccess = true;
                                     }
                                 }
 
                                 // post processing
-                                String postProcessScript = getResProperty(res.getResourceProps(), "POST_PROCESS");
-                                if (postProcessScript != null && !postProcessScript.isEmpty()) {
+							String postProcessScript = getResProperty(
+									res.getResourceProps(), "POST_PROCESS");
+							if (postProcessScript != null
+									&& !postProcessScript.isEmpty()) {
                                     PostProcessor ppScript = createPostProcessScript(postProcessScript);
                                     if (ppScript != null) {
-                                        executePostProcess(ppScript, bindingMap, pUser, "MODIFY", connectorSuccess);
+									executePostProcess(ppScript, bindingMap,
+											pUser, "MODIFY", connectorSuccess);
                                     }
                                 }
 
-
-                                auditHelper.addLog("ADD IDENTITY", pUser.getRequestorDomain(), pUser.getRequestorLogin(),
-                                        "IDM SERVICE", origUser.getCreatedBy(), mLg.getId().getManagedSysId(), "USER", origUser.getUserId(),
-                                        null, "SUCCESS", auditLog.getLogId(), "USER_STATUS",
-                                        userStatus,
-                                        requestId, null, pUser.getSessionId(), null,
-                                        pUser.getRequestClientIP(), mLg.getId().getLogin(), mLg.getId().getDomainId());
-
+							auditHelper.addLog("ADD IDENTITY", pUser
+									.getRequestorDomain(), pUser
+									.getRequestorLogin(), "IDM SERVICE",
+									origUser.getCreatedBy(), mLg
+											.getManagedSysId(), "USER",
+									origUser.getUserId(), null, "SUCCESS",
+									auditLog.getLogId(), "USER_STATUS",
+									userStatus, requestId, null,
+                                    pUser.getSessionId(), null,
+                                    pUser.getRequestClientIP(),
+                                    mLg.getLogin(),
+                                    mLg.getDomainId());
 
                                 bindingMap.remove(MATCH_PARAM);
-                            }
 
                         } else {
 
-                            log.debug("Building attributes for managedSysId =" + managedSysId);
+							// existing identity
 
-                            log.debug("identity for managedSys is not null " + mLg.getId().getLogin());
+							log.debug("Building attributes for managedSysId ="
+									+ managedSysId);
 
-                            // get the current object as it stands in the target system
-                            Map<String, String> currentValueMap = getCurrentObjectAtTargetSystem(mLg, mSys, connector, matchObj);
-                            // if currentValueMap is null - then add the value - it does not exist in the target system
+							log.debug("identity for managedSys is not null "
+									+ mLg.getLogin());
 
-                            if (currentValueMap == null || currentValueMap.size() == 0) {
-                                bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, IDENTITY_NEW);
+							bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS,
+									IDENTITY_EXIST);
+							bindingMap.put(TARGET_SYSTEM_IDENTITY, mLg.getLogin());
+							bindingMap.put(TARGET_SYSTEM_ATTRIBUTES,
+									currentValueMap);
 
-                                // we may have identity for a user, but it my have been deleted from the target system
-                                // we dont need re-generate the identity in this c
-                                bindingMap.put(TARGET_SYSTEM_IDENTITY, mLg.getId().getLogin());
-                                bindingMap.put(TARGET_SYSTEM_ATTRIBUTES, null);
-                            } else {
-                                bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, IDENTITY_EXIST);
-                                bindingMap.put(TARGET_SYSTEM_IDENTITY, mLg.getId().getLogin());
-                                bindingMap.put(TARGET_SYSTEM_ATTRIBUTES, currentValueMap);
-                            }
+							bindingMap.put(TARGET_SYS_SECURITY_DOMAIN, mLg.getDomainId());
 
-                            bindingMap.put(TARGET_SYS_SECURITY_DOMAIN, mLg.getId().getDomainId());
-
-                            String preProcessScript = getResProperty(res.getResourceProps(), "PRE_PROCESS");
-                            if (preProcessScript != null && !preProcessScript.isEmpty()) {
+							String preProcessScript = getResProperty(
+									res.getResourceProps(), "PRE_PROCESS");
+							if (preProcessScript != null
+									&& !preProcessScript.isEmpty()) {
                                 PreProcessor ppScript = createPreProcessScript(preProcessScript);
                                 if (ppScript != null) {
-                                    if (executePreProcess(ppScript, bindingMap, pUser, "MODIFY") == ProvisioningConstants.FAIL) {
+									if (executePreProcess(ppScript, bindingMap,
+											pUser, "MODIFY") == ProvisioningConstants.FAIL) {
                                         continue;
                                     }
                                 }
                             }
 
-
                             // what the new object will look like
-                            ExtensibleUser extUser = attrListBuilder.buildModifyFromRules(pUser,
-                                    mLg, attrMap, se, managedSysId, mLg.getId().getDomainId(), bindingMap,
+							ExtensibleUser extUser = buildModifyFromRules(
+                                    pUser, mLg, attrMap, scriptRunner, managedSysId, mLg
+                                    .getDomainId(), bindingMap,
                                     pUser.getUser().getLastUpdatedBy());
 
-                            // updates the attributes with the correct operation codes
-                            extUser = modifyUser.updateAttributeList(extUser, currentValueMap);
+							// updates the attributes with the correct operation
+							// codes
+							extUser = updateAttributeList(extUser,
+									currentValueMap);
 
-                            // test to see if the updates were carried for forward
-                            List<ExtensibleAttribute> extAttList = extUser.getAttributes();
+							// test to see if the updates were carried for
+							// forward
+							List<ExtensibleAttribute> extAttList = extUser
+									.getAttributes();
                             //
 
                             boolean connectorSuccess = false;
-                            if (connector.getConnectorInterface() != null &&
-                                    connector.getConnectorInterface().equalsIgnoreCase("REMOTE")) {
+							if (connector.getConnectorInterface() != null
+									&& connector.getConnectorInterface()
+											.equalsIgnoreCase("REMOTE")) {
 
-                                if (mLg.getOperation() == AttributeOperationEnum.REPLACE && mLg.getOrigPrincipalName() != null) {
-                                    extAttList.add(new ExtensibleAttribute("ORIG_IDENTITY", mLg.getOrigPrincipalName(), 2, "String"));
+								if (mLg.getOperation() == AttributeOperationEnum.REPLACE
+										&& mLg.getOrigPrincipalName() != null) {
+									extAttList.add(new ExtensibleAttribute(
+											"ORIG_IDENTITY", mLg
+													.getOrigPrincipalName(), 2,
+											"String"));
                                 }
 
-                                UserRequest userReq = new UserRequest();
-                                userReq.setUserIdentity(mLg.getId().getLogin());
+								RemoteUserRequest userReq = new RemoteUserRequest();
+								userReq.setUserIdentity(mLg.getLogin());
                                 userReq.setRequestID(requestId);
-                                userReq.setTargetID(mLg.getId().getManagedSysId());
+								userReq.setTargetID(mLg
+                                        .getManagedSysId());
                                 userReq.setHostLoginId(mSys.getUserId());
-                                userReq.setHostLoginPassword(mSys.getDecryptPassword());
+								userReq.setHostLoginPassword(mSys
+										.getDecryptPassword());
                                 userReq.setHostUrl(mSys.getHostUrl());
                                 userReq.setBaseDN(matchObj.getBaseDn());
-                                userReq.setOperation("ADD");
+								userReq.setOperation("EDIT");
                                 userReq.setUser(extUser);
 
-                                UserResponse respType = remoteConnectorAdapter.modifyRequest(mSys, userReq, connector, muleContext);
+								userReq.setScriptHandler(mSys
+										.getModifyHandler());
+
+								UserResponse respType = remoteConnectorAdapter
+										.modifyRequest(mSys, userReq,
+												connector, muleContext);
                                 if (respType.getStatus() == StatusCodeType.SUCCESS) {
                                     connectorSuccess = true;
                                 }
 
-                                auditHelper.addLog("MODIFY IDENTITY", pUser.getRequestorDomain(), pUser.getRequestorLogin(),
-                                        "IDM SERVICE", origUser.getCreatedBy(), mLg.getId().getManagedSysId(), "USER", origUser.getUserId(),
-                                        null, "SUCCESS", auditLog.getLogId(), "USER_STATUS",
-                                        userStatus,
-                                        requestId, respType.getErrorCodeAsStr(), pUser.getSessionId(),
-                                        respType.getErrorMsgAsStr(),
-                                        pUser.getRequestClientIP(), mLg.getId().getLogin(), mLg.getId().getDomainId());
-
-
                             } else {
-                                PSOIdentifierType idType = new PSOIdentifierType(mLg.getId().getLogin(), null, "target");
-                                idType.setTargetID(mLg.getId().getManagedSysId());
+								PSOIdentifierType idType = new PSOIdentifierType(
+										mLg.getLogin(), null, "target");
+								idType.setTargetID(mLg.getManagedSysId());
                                 modReqType.setPsoID(idType);
                                 modReqType.setRequestID(requestId);
 
-                                // check if this request calls for the identity being renamed
-                                log.debug("Send request to connector - Original Principal Name = " + mLg.getOrigPrincipalName());
+								// check if this request calls for the identity
+								// being renamed
+								log.debug("Send request to connector - Original Principal Name = "
+										+ mLg.getOrigPrincipalName());
 
-                                if (mLg.getOrigPrincipalName() != null) {
-                                    extAttList.add(new ExtensibleAttribute("ORIG_IDENTITY", mLg.getOrigPrincipalName(), 2, "String"));
+								if (mLg.getOrigPrincipalName() != null) {
+									extAttList.add(new ExtensibleAttribute(
+											"ORIG_IDENTITY", mLg
+													.getOrigPrincipalName(), 2,
+											"String"));
 
-                                    //if (mLg.getOrigPrincipalName().equalsIgnoreCase(mLg.getId().getLogin())) {
-                                    //    extAttList.add(new ExtensibleAttribute("ORIG_IDENTITY", mLg.getOrigPrincipalName(), 2, "String"));
+									// if
+									// (mLg.getOrigPrincipalName().equalsIgnoreCase(mLg.getId().getLogin()))
+									// {
+									// extAttList.add(new
+									// ExtensibleAttribute("ORIG_IDENTITY",
+									// mLg.getOrigPrincipalName(), 2,
+									// "String"));
                                     //}
 
-                                }
+								}
 
                                 ModificationType mod = new ModificationType();
+
                                 mod.getData().getAny().add(extUser);
 
-                                List<ModificationType> modTypeList = modReqType.getModification();
+								List<ModificationType> modTypeList = modReqType
+										.getModification();
                                 modTypeList.add(mod);
 
-                                log.debug("Creating identity in target system:" + mLg.getId());
-                                ModifyResponseType respType = connectorAdapter.modifyRequest(mSys, modReqType, muleContext);
+								log.debug("Creating identity in target system:"
+										+ mLg.getLoginId());
+								ModifyResponseType respType = connectorAdapter
+										.modifyRequest(mSys, modReqType,
+												muleContext);
 
                                 if (respType.getStatus() == StatusCodeType.SUCCESS) {
                                     connectorSuccess = true;
                                 }
 
-                                auditHelper.addLog("MODIFY IDENTITY", pUser.getRequestorDomain(), pUser.getRequestorLogin(),
-                                        "IDM SERVICE", origUser.getCreatedBy(), mLg.getId().getManagedSysId(), "USER", origUser.getUserId(),
-                                        null, "SUCCESS", auditLog.getLogId(), "USER_STATUS",
-                                        userStatus,
-                                        requestId, respType.getErrorCodeAsStr(), pUser.getSessionId(), respType.getErrorMessage(),
-                                        pUser.getRequestClientIP(), mLg.getId().getLogin(), mLg.getId().getDomainId());
-
-
                             }
                             // post processing
-                            String postProcessScript = getResProperty(res.getResourceProps(), "POST_PROCESS");
-                            if (postProcessScript != null && !postProcessScript.isEmpty()) {
+							String postProcessScript = getResProperty(
+									res.getResourceProps(), "POST_PROCESS");
+							if (postProcessScript != null
+									&& !postProcessScript.isEmpty()) {
                                 PostProcessor ppScript = createPostProcessScript(postProcessScript);
                                 if (ppScript != null) {
-                                    executePostProcess(ppScript, bindingMap, pUser, "MODIFY", connectorSuccess);
+									executePostProcess(ppScript, bindingMap,
+											pUser, "MODIFY", connectorSuccess);
                                 }
                             }
 
@@ -1907,21 +1998,20 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
                 }
             }
 
-
         }
 
-
-        modifyUser.validateIdentitiesExistforSecurityDomain(primaryIdentity, activeRoleList);
+		validateIdentitiesExistforSecurityDomain(loginDozerConverter.convertToDTO(primaryIdentity, true),
+				activeRoleList);
 
         log.debug("DEFAULT PROVISIONING SERVICE: modifyUser complete");
 
         bindingMap.put("userAfterModify", pUser);
 
-
         ProvisionServicePostProcessor modifyPostProcessScript = createProvPostProcessScript(postProcessor);
         if (modifyPostProcessScript != null && !pUser.isSkipPostProcessor()) {
             modifyPostProcessScript.setMuleContext(muleContext);
-            if (executeProvisionPostProcess(modifyPostProcessScript, bindingMap, pUser, null, "MODIFY") != ProvisioningConstants.SUCCESS) {
+			if (executeProvisionPostProcess(modifyPostProcessScript,
+					bindingMap, pUser, null, "MODIFY") != ProvisioningConstants.SUCCESS) {
                 resp.setStatus(ResponseStatus.FAILURE);
                 resp.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR);
                 return resp;
@@ -1935,14 +2025,14 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
 
     }
 
-    private void updateResourceState(List<Resource> resourceList, List<Login> curPrincipalList) {
+    private void updateResourceState(List<Resource> resourceList, List<LoginEntity> curPrincipalList) {
         if (resourceList == null) {
             return;
         }
-        for (Login l : curPrincipalList) {
+        for (LoginEntity l : curPrincipalList) {
             for (Resource r : resourceList) {
                 if (r.getManagedSysId() != null) {
-                    if (r.getManagedSysId().equalsIgnoreCase(l.getId().getManagedSysId())) {
+                    if (r.getManagedSysId().equalsIgnoreCase(l.getManagedSysId())) {
                         r.setObjectState(BaseObject.UPDATE);
                     }
                 }
@@ -1950,10 +2040,12 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
         }
     }
 
-    private void deProvisionResources(List<Resource> deleteResourceList, String userId, String requestorId, String requestId) {
+    private void deProvisionResources(List<Resource> deleteResourceList,
+                                      String userId, String requestorId, String requestId,
+                                      ProvisionUser pUser, String auditLogId, String status, User origUser) {
         if (deleteResourceList != null) {
 
-            List<Login> identityList = loginManager.getLoginByUser(userId);
+            List<LoginEntity> identityList = loginManager.getLoginByUser(userId);
 
             for (Resource res : deleteResourceList) {
                 String managedSysId = res.getManagedSysId();
@@ -1961,135 +2053,87 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
                 log.debug("Deleting identity for managedSys=" + managedSysId);
 
                 // object that will be sent to the connectors
-                List<AttributeMap> attrMap = managedSysService.getResourceAttributeMaps(res.getResourceId());
-                //List<AttributeMap> attrMap = resourceDataService.getResourceAttributeMaps(res.getResourceId());
+                List<AttributeMap> attrMap = managedSysService
+                        .getResourceAttributeMaps(res.getResourceId());
+                // List<AttributeMap> attrMap =
+                // resourceDataService.getResourceAttributeMaps(res.getResourceId());
 
-                Login mLg = getPrincipalForManagedSys(managedSysId, identityList);
-
+                Login mLg = getPrincipalForManagedSys(managedSysId,
+                        loginDozerConverter.convertToDTOList(identityList,false));
 
                 if (mLg != null) {
                     // make sure the identity exists before we deprovision it.
-                    ManagedSys mSys = managedSysService.getManagedSys(managedSysId);
-                    ProvisionConnector connector = connectorService.getConnector(mSys.getConnectorId());
+                    ManagedSysDto mSys = managedSysService
+                            .getManagedSys(managedSysId);
+                    ProvisionConnectorDto connector = connectorService
+                            .getProvisionConnector(mSys.getConnectorId());
 
                     mLg.setStatus("INACTIVE");
                     mLg.setAuthFailCount(0);
                     mLg.setPasswordChangeCount(0);
                     mLg.setIsLocked(0);
-                    // change the password to a random scrambled passwor
-                    String scrambledPassword = PasswordGenerator.generatePassword(10);
+                    // change the password to a random scrambled password
+                    String scrambledPassword = passwordGenerator.generatePassword(10);
                     try {
-                        mLg.setPassword(loginManager.encryptPassword(scrambledPassword));
+                        mLg.setPassword(loginManager
+                                .encryptPassword(mLg.getUserId(), scrambledPassword));
                     } catch (EncryptionException ee) {
                         log.error(ee);
-                        // put the password in a clean state so that he operation continues
+                        // put the password in a clean state so that the
+                        // operation continues
                         mLg.setPassword(null);
                     }
 
-                    loginManager.updateLogin(mLg);
+                    loginManager.updateLogin(loginDozerConverter.convertToEntity(mLg,true));
 
+                    // LOG THIS EVENT
 
-                    PSOIdentifierType idType = new PSOIdentifierType(mLg.getId().getLogin(), null, managedSysId);
+                    auditHelper.addLog("REMOVE IDENTITY", pUser
+                            .getRequestorDomain(), pUser.getRequestorLogin(),
+                            "IDM SERVICE", origUser.getCreatedBy(), mLg
+                            .getManagedSysId(), "USER", origUser
+                            .getUserId(), null, "SUCCESS", auditLogId,
+                            "USER_STATUS", status, requestId, null, pUser
+                            .getSessionId(), null, pUser
+                            .getRequestClientIP(), mLg
+                            .getLogin(), mLg.getDomainId());
 
+                    PSOIdentifierType idType = new PSOIdentifierType(mLg
+                            .getLogin(), null, managedSysId);
 
-                    if (connector.getConnectorInterface() != null &&
-                            connector.getConnectorInterface().equalsIgnoreCase("REMOTE")) {
+                    if (connector.getConnectorInterface() != null
+                            && connector.getConnectorInterface()
+                            .equalsIgnoreCase("REMOTE")) {
 
-                        UserRequest request = new UserRequest();
+                        RemoteUserRequest request = new RemoteUserRequest();
 
-                        request.setUserIdentity(mLg.getId().getLogin());
+                        request.setUserIdentity(mLg.getLogin());
                         request.setRequestID(requestId);
-                        request.setTargetID(mLg.getId().getManagedSysId());
+                        request.setTargetID(mLg.getManagedSysId());
                         request.setHostLoginId(mSys.getUserId());
                         request.setHostLoginPassword(mSys.getDecryptPassword());
                         request.setHostUrl(mSys.getHostUrl());
 
                         request.setOperation("DELETE");
 
+                        request.setScriptHandler(mSys.getDeleteHandler());
 
-                        remoteConnectorAdapter.deleteRequest(mSys, request, connector, muleContext);
+                        remoteConnectorAdapter.deleteRequest(mSys, request,
+                                connector, muleContext);
 
                     } else {
                         DeleteRequestType reqType = new DeleteRequestType();
                         reqType.setRequestID(requestId);
                         reqType.setPsoID(idType);
 
-
-                        ResponseType delRes = connectorAdapter.deleteRequest(mSys, reqType, muleContext);
+                        ResponseType delRes = connectorAdapter.deleteRequest(
+                                mSys, reqType, muleContext);
 
                     }
 
-
-                    IdmAuditLog auditLog = auditHelper.addLog("DELETE", mLg.getId().getDomainId(), null,
-                            "IDM SERVICE", requestorId, "0", "IDENTITY", mLg.getUserId(),
-                            null, "SUCCESS", null, "IDENTITY_STATUS",
-                            mLg.getStatus(),
-                            requestId, null, null, null);
-
                 }
             }
         }
-
-
-    }
-
-    private Map<String, String> getCurrentObjectAtTargetSystem(Login mLg, ManagedSys mSys, ProvisionConnector connector, ManagedSystemObjectMatch matchObj) {
-
-        String identity = mLg.getId().getLogin();
-
-        log.debug("Getting the current attributes in the target system for =" + identity);
-
-        log.debug("- IsRename: " + mLg.getOrigPrincipalName());
-
-        if (mLg.getOrigPrincipalName() != null && !mLg.getOrigPrincipalName().isEmpty()) {
-            identity = mLg.getOrigPrincipalName();
-        }
-
-
-        Map<String, String> curValueMap = new HashMap<String, String>();
-
-        if (connector.getConnectorInterface() != null &&
-                connector.getConnectorInterface().equalsIgnoreCase("REMOTE")) {
-
-            LookupRequest reqType = new LookupRequest();
-            reqType.setSearchValue(identity);
-
-            reqType.setTargetID(mLg.getId().getManagedSysId());
-            reqType.setHostLoginId(mSys.getUserId());
-            reqType.setHostLoginPassword(mSys.getDecryptPassword());
-            reqType.setHostUrl(mSys.getHostUrl());
-            reqType.setBaseDN(matchObj.getBaseDn());
-
-            LookupResponse lookupRespType = null;
-
-            lookupRespType = remoteConnectorAdapter.lookupRequest(mSys, reqType, connector, muleContext);
-
-            if (lookupRespType == null || lookupRespType.getStatus() == StatusCodeType.FAILURE) {
-                log.debug("Attribute lookup did not find a match.");
-                return null;
-            }
-
-        } else {
-
-            List<ExtensibleAttribute> extAttrList = getTargetSystemUser(identity, mSys.getManagedSysId()).getAttrList();
-            if (extAttrList != null) {
-                for (ExtensibleAttribute obj : extAttrList) {
-                    String name = obj.getName();
-                    String value = obj.getValue();
-                    curValueMap.put(name, value);
-                }
-            } else {
-                log.debug(" - NO attributes found in target system lookup ");
-            }
-
-
-        }
-
-
-        if (curValueMap.size() == 0) {
-            return null;
-        }
-        return curValueMap;
 
     }
 
@@ -2104,7 +2148,7 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
         String requestId = "R" + UUIDGen.getUUID();
 
         // get the user object associated with this principal
-        Login login = loginManager.getLoginByManagedSys(passwordSync.getSecurityDomain(),
+        LoginEntity login = loginManager.getLoginByManagedSys(passwordSync.getSecurityDomain(),
                 passwordSync.getPrincipal(), passwordSync.getManagedSystemId());
         if (login == null) {
             auditHelper.addLog("RESET PASSWORD", passwordSync.getRequestorDomain(), passwordSync.getRequestorLogin(),
@@ -2123,7 +2167,7 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
             response.setErrorCode(ResponseCode.USER_NOT_FOUND);
             return response;
         }
-        User usr = this.userMgr.getUserWithDependent(userId, false);
+        UserEntity usr = this.userMgr.getUser(userId);
         if (usr == null) {
             auditHelper.addLog("RESET PASSWORD", passwordSync.getRequestorDomain(), passwordSync.getRequestorLogin(),
                     "IDM SERVICE", passwordSync.getRequestorId(), "PASSWORD", "PASSWORD", userId, null, "FAILURE", null, null,
@@ -2138,11 +2182,11 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
         String password = passwordSync.getPassword();
         if (password == null || password.length() == 0) {
             // autogenerate the password
-            password = String.valueOf(PasswordGenerator.generatePassword(8));
+            password = String.valueOf(passwordGenerator.generatePassword(8));
         }
         String encPassword = null;
         try {
-            encPassword = loginManager.encryptPassword(password);
+            encPassword = loginManager.encryptPassword(userId, password);
         } catch (EncryptionException e) {
             auditHelper.addLog("RESET PASSWORD", passwordSync.getRequestorDomain(), passwordSync.getRequestorLogin(),
                     "IDM SERVICE", passwordSync.getRequestorId(), passwordSync.getManagedSystemId(), "PASSWORD", userId, null, "FAILURE", null, null,
@@ -2178,18 +2222,18 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
 
         if (passwordSync.getManagedSystemId().equalsIgnoreCase(this.sysConfiguration.getDefaultManagedSysId())) {
             // typical sync
-            List<Login> principalList = loginManager.getLoginByUser(login.getUserId());
+            List<LoginEntity> principalList = loginManager.getLoginByUser(login.getUserId());
             if (principalList != null) {
                 log.debug("PrincipalList size =" + principalList.size());
-                for (Login lg : principalList) {
+                for (LoginEntity lg : principalList) {
                     // get the managed system for the identity - ignore the managed system id that is linked to openiam's repository
                     log.debug("**** Managed System Id in passwordsync object=" + passwordSync.getManagedSystemId());
 
-                    if (!lg.getId().getManagedSysId().equalsIgnoreCase(passwordSync.getManagedSystemId()) &&
-                            !lg.getId().getManagedSysId().equalsIgnoreCase(sysConfiguration.getDefaultManagedSysId())) {
+                    if (!lg.getManagedSysId().equalsIgnoreCase(passwordSync.getManagedSystemId()) &&
+                            !lg.getManagedSysId().equalsIgnoreCase(sysConfiguration.getDefaultManagedSysId())) {
 
                         // determine if you should sync the password or not
-                        String managedSysId = lg.getId().getManagedSysId();
+                        String managedSysId = lg.getManagedSysId();
                         Resource res = resourceDataService.getResource(managedSysId);
 
                         log.debug(" - managedsys id = " + managedSysId);
@@ -2200,12 +2244,12 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
                         if (syncAllowed(res)) {
 
                             log.debug("Sync allowed for sys=" + managedSysId);
-                            loginManager.resetPassword(lg.getId().getDomainId(),
-                                    lg.getId().getLogin(), lg.getId().getManagedSysId(),
+                            loginManager.resetPassword(lg.getDomainId(),
+                                    lg.getLogin(), lg.getManagedSysId(),
                                     encPassword);
 
-                            ManagedSys mSys = managedSysService.getManagedSys(managedSysId);
-                            ProvisionConnector connector = connectorService.getConnector(mSys.getConnectorId());
+                            ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
+                            ProvisionConnectorDto connector = connectorService.getProvisionConnector(mSys.getConnectorId());
 
                             ManagedSystemObjectMatch matchObj = null;
                             ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(managedSysId, "USER");
@@ -2217,11 +2261,11 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
                             if (connector.getConnectorInterface() != null &&
                                     connector.getConnectorInterface().equalsIgnoreCase("REMOTE")) {
 
-                                remoteResetPassword(requestId, lg, password, mSys, matchObj, connector, passwordSync);
+                                remoteResetPassword(requestId, loginDozerConverter.convertToDTO(lg, true), password, mSys, matchObj, connector, passwordSync);
 
 
                             } else {
-                                localResetPassword(requestId, lg, password, mSys, passwordSync);
+                                localResetPassword(requestId, loginDozerConverter.convertToDTO(lg, true), password, mSys, passwordSync);
 
                             }
                         }
@@ -2233,8 +2277,8 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
             // update just the system that was specified
 
 
-            ManagedSys mSys = managedSysService.getManagedSys(passwordSync.getManagedSystemId());
-            ProvisionConnector connector = connectorService.getConnector(mSys.getConnectorId());
+            ManagedSysDto mSys = managedSysService.getManagedSys(passwordSync.getManagedSystemId());
+            ProvisionConnectorDto connector = connectorService.getProvisionConnector(mSys.getConnectorId());
 
 
             ManagedSystemObjectMatch matchObj = null;
@@ -2246,12 +2290,12 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
             if (connector.getConnectorInterface() != null &&
                     connector.getConnectorInterface().equalsIgnoreCase("REMOTE")) {
 
-                remoteResetPassword(requestId, login, password, mSys, matchObj, connector, passwordSync);
+                remoteResetPassword(requestId, loginDozerConverter.convertToDTO(login, true), password, mSys, matchObj, connector, passwordSync);
 
 
             } else {
 
-                localResetPassword(requestId, login, password, mSys, passwordSync);
+                localResetPassword(requestId, loginDozerConverter.convertToDTO(login, true), password, mSys, passwordSync);
 
 
             }
@@ -2276,12 +2320,8 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
         response.setPrincipalName(principalName);
         // get the connector for the managedSystem
 
-        ManagedSys mSys = managedSysService.getManagedSys(managedSysId);
-        ProvisionConnector connector = connectorService.getConnector(mSys.getConnectorId());
-
-        ManagedSystemObjectMatch matchObj = null;
-        ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(managedSysId, "USER");
-
+        ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
+        ProvisionConnectorDto connector = connectorService.getProvisionConnector(mSys.getConnectorId());
 
         // do the lookup
 
@@ -2290,7 +2330,7 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
 
             log.debug("Calling lookupRequest with Remote connector");
 
-            LookupRequest reqType = new LookupRequest();
+            RemoteLookupRequest reqType = new RemoteLookupRequest();
             reqType.setSearchValue(principalName);
 
             reqType.setTargetID(managedSysId);
@@ -2298,12 +2338,9 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
             reqType.setHostLoginPassword(mSys.getDecryptPassword());
             reqType.setHostUrl(mSys.getHostUrl());
 
-            if (matchObj != null) {
-
-                reqType.setBaseDN(matchObj.getBaseDn());
-            }
-
-            LookupResponse responseType = remoteConnectorAdapter.lookupRequest(mSys, reqType, connector, muleContext);
+            reqType.setScriptHandler(mSys.getLookupHandler());
+			LookupResponse responseType = remoteConnectorAdapter.lookupRequest(
+					mSys, reqType, connector, muleContext);
             if (responseType.getStatus() == StatusCodeType.FAILURE) {
                 response.setStatus(ResponseStatus.FAILURE);
                 return response;
@@ -2311,7 +2348,6 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
             //   response.setResponseValue( responseType.getValue() );
 
             return response;
-
 
         } else {
 
@@ -2349,12 +2385,12 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
 
         // get the principalName for this managedSysId
 
-        List<Login> principalList = loginManager.getLoginByUser(userId);
+        List<LoginEntity> principalList = loginManager.getLoginByUser(userId);
 
-        for (Login l : principalList) {
+        for (LoginEntity l : principalList) {
 
-            if (l.getId().getManagedSysId().equalsIgnoreCase(managedSysId)) {
-                return getTargetSystemUser(l.getId().getLogin(), managedSysId);
+            if (l.getManagedSysId().equalsIgnoreCase(managedSysId)) {
+                return getTargetSystemUser(l.getLogin(), managedSysId);
             }
 
         }
@@ -2391,7 +2427,7 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
         String requestId = "R" + UUIDGen.getUUID();
 
         // get the user object associated with this principal
-        Login login = loginManager.getLoginByManagedSys(passwordSync.getSecurityDomain(),
+        LoginEntity login = loginManager.getLoginByManagedSys(passwordSync.getSecurityDomain(),
                 passwordSync.getPrincipal(), passwordSync.getManagedSystemId());
         if (login == null) {
             auditHelper.addLog("SET PASSWORD", passwordSync.getRequestorDomain(), passwordSync.getRequestorLogin(),
@@ -2410,7 +2446,7 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
             response.setErrorCode(ResponseCode.USER_NOT_FOUND);
             return response;
         }
-        User usr = this.userMgr.getUserWithDependent(userId, false);
+        UserEntity usr = userMgr.getUser(userId);
         if (usr == null) {
             auditHelper.addLog("SET PASSWORD", passwordSync.getRequestorDomain(), passwordSync.getRequestorLogin(),
                     "IDM SERVICE", passwordSync.getRequestorId(), "PASSWORD", "PASSWORD", null, null, "FAILURE", null, null,
@@ -2428,6 +2464,7 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
         pswd.setManagedSysId(passwordSync.getManagedSystemId());
         pswd.setPrincipal(passwordSync.getPrincipal());
         pswd.setPassword(passwordSync.getPassword());
+        pswd.setSkipPasswordFrequencyCheck(passwordSync.isPreventChangeCountIncrement());
         try {
             PasswordValidationCode rtVal = passwordDS.isPasswordValid(pswd);
             if (rtVal != PasswordValidationCode.SUCCESS) {
@@ -2450,7 +2487,7 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
 
         String encPassword = null;
         try {
-            encPassword = loginManager.encryptPassword(passwordSync.getPassword());
+            encPassword = loginManager.encryptPassword(usr.getUserId(),passwordSync.getPassword());
         } catch (EncryptionException e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(ResponseCode.FAIL_ENCRYPTION);
@@ -2458,14 +2495,14 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
         }
 
         // make sure that update all the primary identity records
-        List<Login> principalList = loginManager.getLoginByUser(login.getUserId());
+        List<LoginEntity> principalList = loginManager.getLoginByUser(login.getUserId());
         // List<Login> identityList =  loginManager.getLoginByUser(usr.getUserId()) ;
-        for (Login l : principalList) {
-            if (l.getId().getManagedSysId().equalsIgnoreCase(passwordSync.getManagedSystemId())) {
+        for (LoginEntity l : principalList) {
+            if (l.getManagedSysId().equalsIgnoreCase(passwordSync.getManagedSystemId())) {
 
 
-                boolean retval = loginManager.setPassword(l.getId().getDomainId(), l.getId().getLogin(),
-                        passwordSync.getManagedSystemId(), encPassword);
+                boolean retval = loginManager.setPassword(l.getDomainId(), l.getLogin(),
+                        passwordSync.getManagedSystemId(), encPassword, passwordSync.isPreventChangeCountIncrement());
                 if (retval) {
                     log.debug("-Password changed in openiam repository for user:" + passwordSync.getPrincipal());
 
@@ -2473,7 +2510,7 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
                             "IDM SERVICE", passwordSync.getRequestorId(), "PASSWORD", "PASSWORD", usr.getUserId(), null, "SUCCESS", null, null,
                             null,
                             requestId, null, null, null,
-                            passwordSync.getRequestClientIP(), l.getId().getLogin(), l.getId().getDomainId());
+                            passwordSync.getRequestClientIP(), l.getLogin(), l.getDomainId());
 
                     // update the user object that the password was changed
                     usr.setDatePasswordChanged(new Date(System.currentTimeMillis()));
@@ -2493,7 +2530,7 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
                     auditHelper.addLog("SET PASSWORD", passwordSync.getRequestorDomain(), passwordSync.getRequestorLogin(),
                             "IDM SERVICE", passwordSync.getRequestorId(), "PASSWORD", "PASSWORD", usr.getUserId(), null, "FAILURE", null, null,
                             null, requestId, null, null, null,
-                            passwordSync.getRequestClientIP(), l.getId().getLogin(), l.getId().getDomainId());
+                            passwordSync.getRequestClientIP(), l.getLogin(), l.getDomainId());
 
                     Response resp = new Response();
                     resp.setStatus(ResponseStatus.FAILURE);
@@ -2510,14 +2547,14 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
             //List<Login> principalList = loginManager.getLoginByUser(login.getUserId());
             // if (principalList != null) {
             log.debug("PrincipalList size =" + principalList.size());
-            for (Login lg : principalList) {
+            for (LoginEntity lg : principalList) {
                 // get the managed system for the identity - ignore the managed system id that is linked to openiam's repository
                 log.debug("**** Managed System Id in passwordsync object=" + passwordSync.getManagedSystemId());
 
-                if (!lg.getId().getManagedSysId().equalsIgnoreCase(sysConfiguration.getDefaultManagedSysId())) {
+                if (!lg.getManagedSysId().equalsIgnoreCase(sysConfiguration.getDefaultManagedSysId())) {
 
                     // determine if you should sync the password or not
-                    String managedSysId = lg.getId().getManagedSysId();
+                    String managedSysId = lg.getManagedSysId();
                     Resource res = resourceDataService.getResource(managedSysId);
 
                     log.debug(" - managedsys id = " + managedSysId);
@@ -2550,14 +2587,14 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
 
 
                         // update the password in openiam
-                        loginManager.setPassword(lg.getId().getDomainId(),
-                                lg.getId().getLogin(), lg.getId().getManagedSysId(),
-                                encPassword);
+                        loginManager.setPassword(lg.getDomainId(),
+                                lg.getLogin(), lg.getManagedSysId(),
+                                encPassword, passwordSync.isPreventChangeCountIncrement());
 
                         // update the target system
-                        ManagedSys mSys = managedSysService.getManagedSys(managedSysId);
+                        ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
 
-                        ProvisionConnector connector = connectorService.getConnector(mSys.getConnectorId());
+                        ProvisionConnectorDto connector = connectorService.getProvisionConnector(mSys.getConnectorId());
 
                         ManagedSystemObjectMatch matchObj = null;
                         ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(mSys.getManagedSysId(), "USER");
@@ -2568,7 +2605,7 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
                         if (connector.getConnectorInterface() != null &&
                                 connector.getConnectorInterface().equalsIgnoreCase("REMOTE")) {
 
-                            org.openiam.connector.type.ResponseType resp = remoteSetPassword(requestId, lg, passwordSync, mSys, matchObj, connector);
+                            org.openiam.connector.type.ResponseType resp = remoteSetPassword(requestId, loginDozerConverter.convertToDTO(lg, true), passwordSync, mSys, matchObj, connector);
                             if (resp.getStatus() == StatusCodeType.SUCCESS) {
                                 connectorSuccess = true;
                             }
@@ -2576,7 +2613,7 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
 
                         } else {
 
-                            ResponseType resp = localSetPassword(requestId, lg, passwordSync, mSys);
+                            ResponseType resp = localSetPassword(requestId, loginDozerConverter.convertToDTO(lg, true), passwordSync, mSys);
                             if (resp.getStatus() == StatusCodeType.SUCCESS) {
                                 connectorSuccess = true;
                             }
@@ -2602,8 +2639,8 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
             //}
         } else {
             // just the update the managed system that was specified.
-            ManagedSys mSys = managedSysService.getManagedSys(passwordSync.getManagedSystemId());
-            ProvisionConnector connector = connectorService.getConnector(mSys.getConnectorId());
+            ManagedSysDto mSys = managedSysService.getManagedSys(passwordSync.getManagedSystemId());
+            ProvisionConnectorDto connector = connectorService.getProvisionConnector(mSys.getConnectorId());
 
             ManagedSystemObjectMatch matchObj = null;
             ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(mSys.getManagedSysId(), "USER");
@@ -2633,15 +2670,15 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
             if (connector.getConnectorInterface() != null &&
                     connector.getConnectorInterface().equalsIgnoreCase("REMOTE")) {
 
-                remoteSetPassword(requestId, login, passwordSync, mSys, matchObj, connector);
+                remoteSetPassword(requestId, loginDozerConverter.convertToDTO(login, true), passwordSync, mSys, matchObj, connector);
 
             } else {
 
-                localSetPassword(requestId, login, passwordSync, mSys);
+                localSetPassword(requestId, loginDozerConverter.convertToDTO(login, true), passwordSync, mSys);
 
             }
             // post-process
-            if (res != null) {
+            //if (res != null) {
                 String postProcessScript = getResProperty(resource.getResourceProps(), "POST_PROCESS");
                 if (postProcessScript != null && !postProcessScript.isEmpty()) {
                     PostProcessor ppScript = createPostProcessScript(postProcessScript);
@@ -2649,7 +2686,7 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
                         executePostProcess(ppScript, bindingMap, null, "SET_PASSWORD", connectorSuccess);
                     }
                 }
-            }
+                //}
 
 
         }
@@ -2684,7 +2721,7 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
         String requestId = "R" + UUIDGen.getUUID();
 
         // get the user object associated with this principal
-        Login login = loginManager.getLoginByManagedSys(passwordSync.getSecurityDomain(),
+        LoginEntity login = loginManager.getLoginByManagedSys(passwordSync.getSecurityDomain(),
                 passwordSync.getPrincipal(), passwordSync.getManagedSystemId());
         if (login == null) {
             auditHelper.addLog("SET PASSWORD", passwordSync.getRequestorDomain(), passwordSync.getRequestorLogin(),
@@ -2703,7 +2740,7 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
             response.setErrorCode(ResponseCode.USER_NOT_FOUND);
             return response;
         }
-        User usr = this.userMgr.getUserWithDependent(userId, false);
+        UserEntity usr = userMgr.getUser(userId);
         if (usr == null) {
             auditHelper.addLog("SET PASSWORD", passwordSync.getRequestorDomain(), passwordSync.getRequestorLogin(),
                     "IDM SERVICE", passwordSync.getRequestorId(), "PASSWORD", "PASSWORD", null, null, "FAILURE", null, null,
@@ -2720,7 +2757,7 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
 
         String encPassword = null;
         try {
-            encPassword = loginManager.encryptPassword(passwordSync.getPassword());
+            encPassword = loginManager.encryptPassword(userId,passwordSync.getPassword());
         } catch (EncryptionException e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(ResponseCode.FAIL_ENCRYPTION);
@@ -2728,18 +2765,16 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
         }
 
         // make sure that update all the primary identity records
-        List<Login> principalList = loginManager.getLoginByUser(login.getUserId());
+        List<LoginEntity> principalList = loginManager.getLoginByUser(login.getUserId());
         // List<Login> identityList =  loginManager.getLoginByUser(usr.getUserId()) ;
-        for (Login l : principalList) {
+        for (LoginEntity l : principalList) {
             // if the managedsysId is equal to the source or the openiam default ID, then only update the database
             // otherwise do a sync
-            if (l.getId().getManagedSysId().equalsIgnoreCase(passwordSync.getManagedSystemId()) ||
-                    l.getId().getManagedSysId().equalsIgnoreCase(sysConfiguration.getDefaultManagedSysId())) {
+            if (l.getManagedSysId().equalsIgnoreCase(passwordSync.getManagedSystemId()) ||
+                    l.getManagedSysId().equalsIgnoreCase(sysConfiguration.getDefaultManagedSysId())) {
 
-                log.debug("Updating password for " + l.getId());
-
-                boolean retval = loginManager.setPassword(l.getId().getDomainId(), l.getId().getLogin(),
-                        l.getId().getManagedSysId(), encPassword);
+                boolean retval = loginManager.setPassword(l.getDomainId(), l.getLogin(),
+                        l.getManagedSysId(), encPassword, passwordSync.isPreventChangeCountIncrement());
                 if (retval) {
                     log.debug("-Password changed in openiam repository for user:" + passwordSync.getPrincipal());
 
@@ -2747,7 +2782,7 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
                             "IDM SERVICE", passwordSync.getRequestorId(), "PASSWORD", "PASSWORD", usr.getUserId(), null, "SUCCESS", null, null,
                             null,
                             requestId, null, null, null,
-                            passwordSync.getRequestClientIP(), l.getId().getLogin(), l.getId().getDomainId());
+                            passwordSync.getRequestClientIP(), l.getLogin(), l.getDomainId());
 
                     // update the user object that the password was changed
                     usr.setDatePasswordChanged(new Date(curTime));
@@ -2761,7 +2796,7 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
                     auditHelper.addLog("SET PASSWORD", passwordSync.getRequestorDomain(), passwordSync.getRequestorLogin(),
                             "IDM SERVICE", passwordSync.getRequestorId(), "PASSWORD", "PASSWORD", usr.getUserId(), null, "FAILURE", null, null,
                             null, requestId, null, null, null,
-                            passwordSync.getRequestClientIP(), l.getId().getLogin(), l.getId().getDomainId());
+                            passwordSync.getRequestClientIP(), l.getLogin(), l.getDomainId());
 
                     Response resp = new Response();
                     resp.setStatus(ResponseStatus.FAILURE);
@@ -2769,10 +2804,8 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
                 }
             } else {
 
-                log.debug("Synchronizing password from: " + l.getId());
-
                 // determine if you should sync the password or not
-                String managedSysId = l.getId().getManagedSysId();
+                String managedSysId = l.getManagedSysId();
                 Resource res = resourceDataService.getResource(managedSysId);
 
 
@@ -2783,14 +2816,14 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
                     log.debug("Sync allowed for sys=" + managedSysId);
 
                     // update the password in openiam
-                    loginManager.setPassword(l.getId().getDomainId(),
-                            l.getId().getLogin(), l.getId().getManagedSysId(),
-                            encPassword);
+                    loginManager.setPassword(l.getDomainId(),
+                            l.getLogin(), l.getManagedSysId(),
+                            encPassword, passwordSync.isPreventChangeCountIncrement());
 
                     // update the target system
-                    ManagedSys mSys = managedSysService.getManagedSys(managedSysId);
+                    ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
 
-                    ProvisionConnector connector = connectorService.getConnector(mSys.getConnectorId());
+                    ProvisionConnectorDto connector = connectorService.getProvisionConnector(mSys.getConnectorId());
 
                     ManagedSystemObjectMatch matchObj = null;
                     ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(mSys.getManagedSysId(), "USER");
@@ -2803,12 +2836,12 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
                     if (connector.getConnectorInterface() != null &&
                             connector.getConnectorInterface().equalsIgnoreCase("REMOTE")) {
 
-                        remoteSetPassword(requestId, l, passwordSync, mSys, matchObj, connector);
+                        remoteSetPassword(requestId, loginDozerConverter.convertToDTO(l, true), passwordSync, mSys, matchObj, connector);
 
 
                     } else {
 
-                        localSetPassword(requestId, l, passwordSync, mSys);
+                        localSetPassword(requestId, loginDozerConverter.convertToDTO(l, true), passwordSync, mSys);
 
                     }
 
@@ -2878,7 +2911,7 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
 
         log.debug("GetResourcesForRole().....");
         // get the list of ids
-        String domainId = null;
+		String domainId = null;
         List<String> roleIdList = new ArrayList<String>();
 
         if (roleList == null || roleList.isEmpty()) {
@@ -2887,65 +2920,29 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
         for (Role rl : roleList) {
 
             if (rl != null) {
-                // handle the situation where an invalid role is passed in
+				// handle the situation where an invalid role is passed in
 
-                if (domainId == null) {
-                    domainId = rl.getId().getServiceId();
-                }
-                log.debug("-Adding role id to list of roles:" + rl.getId().getRoleId());
-                roleIdList.add(rl.getId().getRoleId());
+				if (domainId == null) {
+					domainId = rl.getServiceId();
+				}
+				log.debug("-Adding role id to list of roles:"
+						+ rl.getRoleId());
+				roleIdList.add(rl.getRoleId());
             }
         }
 
-        if (domainId != null && roleIdList != null) {
-
-            //getResourceForRoleList(domainId, roleIdList);
-            return resourceDataService.getResourcesForRoles(domainId, roleIdList);
+		if (domainId != null && roleIdList != null) {
+            final List<Resource> resourceList = new LinkedList<Resource>();
+            if(CollectionUtils.isNotEmpty(roleIdList)) {
+                for(final String roleId : roleIdList) {
+                    resourceList.addAll(resourceDataService.getResourcesForRole(roleId, 0, Integer.MAX_VALUE));
+                }
+            }
+            return resourceList;
         }
         return null;
     }
 
-    // Check if a resource has been removed from a role that this user still has access to
-    private void updateResourceListByRoleChanges(List<Resource> resourceList, List<Resource> deleteResourceList, List<Login> curPrincipalList) {
-
-        boolean match;
-
-        for (Login l : curPrincipalList) {
-
-            match = false;
-            for (Resource r : resourceList) {
-
-                if (r.getManagedSysId() != null) {
-                    if (l.getId().getManagedSysId().equalsIgnoreCase(r.getManagedSysId())) {
-                        match = true;
-                        break;
-                    }
-                }
-            }
-            if (!match) {
-
-                log.debug("No resource match found for : " + l.getId().getManagedSysId());
-
-                ManagedSys msys = managedSysService.getManagedSys(l.getId().getManagedSysId());
-
-                if (msys != null) {
-                    if (msys.getResourceId() != null) {
-
-                        log.debug("updateResourceListByRoleChanges(): remove resource  " + msys.getResourceId());
-
-                        Resource deletedRes = resourceDataService.getResource(msys.getResourceId());
-                        deleteResourceList.add(deletedRes);
-                    }
-                }
-
-
-            }
-
-
-        }
-
-
-    }
 
     private void applyResourceExceptions(ProvisionUser user, List<Resource> addResourceList, List<Resource> deleteResourceList) {
         List<UserResourceAssociation> userResAssocList = user.getUserResourceList();
@@ -3081,604 +3078,30 @@ public class DefaultProvisioningService implements MuleContextAware, ProvisionSe
     }
 
 
-    /**
-     * ***** Spring methods ************
-     */
 
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        ac = applicationContext;
-    }
 
-    public UserDataService getUserMgr() {
-        return userMgr;
-    }
-
-    public void setUserMgr(UserDataService userMgr) {
-        this.userMgr = userMgr;
-    }
-
-    public LoginDataService getLoginManager() {
-        return loginManager;
-    }
-
-    public void setLoginManager(LoginDataService loginManager) {
-        this.loginManager = loginManager;
-    }
-
-    public LoginDAO getLoginDao() {
-        return loginDao;
-    }
-
-    public void setLoginDao(LoginDAO loginDao) {
-        this.loginDao = loginDao;
-    }
-
-    public IdmAuditLogDataService getAuditDataService() {
-        return auditDataService;
-    }
-
-    public void setAuditDataService(IdmAuditLogDataService auditDataService) {
-        this.auditDataService = auditDataService;
-    }
-
-
-    public ManagedSystemDataService getManagedSysService() {
-        return managedSysService;
-    }
-
-    public void setManagedSysService(ManagedSystemDataService managedSysService) {
-        this.managedSysService = managedSysService;
-    }
-
-    public RoleDataService getRoleDataService() {
-        return roleDataService;
-    }
-
-    public void setRoleDataService(RoleDataService roleDataService) {
-        this.roleDataService = roleDataService;
-    }
-
-    public GroupDataService getGroupManager() {
-        return groupManager;
-    }
-
-    public void setGroupManager(GroupDataService groupManager) {
-        this.groupManager = groupManager;
-    }
-
-    public String getConnectorWsdl() {
-        return connectorWsdl;
-    }
-
-    public void setConnectorWsdl(String connectorWsdl) {
-        this.connectorWsdl = connectorWsdl;
-    }
-
-    public String getDefaultProvisioningModel() {
-        return defaultProvisioningModel;
-    }
-
-    public void setDefaultProvisioningModel(String defaultProvisioningModel) {
-        this.defaultProvisioningModel = defaultProvisioningModel;
-    }
-
-    public SysConfiguration getSysConfiguration() {
-        return sysConfiguration;
-    }
-
-    public void setSysConfiguration(SysConfiguration sysConfiguration) {
-        this.sysConfiguration = sysConfiguration;
-    }
-
-    public ResourceDataService getResourceDataService() {
-        return resourceDataService;
-    }
-
-    public void setResourceDataService(ResourceDataService resourceDataService) {
-        this.resourceDataService = resourceDataService;
-    }
-
-    public String getScriptEngine() {
-        return scriptEngine;
-    }
-
-    public void setScriptEngine(String scriptEngine) {
-        this.scriptEngine = scriptEngine;
-    }
-
-    public OrganizationDataService getOrgManager() {
-        return orgManager;
-    }
-
-    public void setOrgManager(OrganizationDataService orgManager) {
-        this.orgManager = orgManager;
-    }
-
-    public PasswordService getPasswordDS() {
-        return passwordDS;
-    }
-
-    public void setPasswordDS(PasswordService passwordDS) {
-        this.passwordDS = passwordDS;
-    }
-
-
-    public AuditHelper getAuditHelper() {
-        return auditHelper;
-    }
-
-    public void setAuditHelper(AuditHelper auditHelper) {
-        this.auditHelper = auditHelper;
-    }
-
-
-    public ConnectorAdapter getConnectorAdapter() {
-        return connectorAdapter;
-    }
-
-    public void setConnectorAdapter(ConnectorAdapter connectorAdapter) {
-        this.connectorAdapter = connectorAdapter;
-    }
-
-
-    public RemoteConnectorAdapter getRemoteConnectorAdapter() {
-        return remoteConnectorAdapter;
-    }
-
-    public void setRemoteConnectorAdapter(
-            RemoteConnectorAdapter remoteConnectorAdapter) {
-        this.remoteConnectorAdapter = remoteConnectorAdapter;
-    }
-
-    public ConnectorDataService getConnectorService() {
-        return connectorService;
-    }
-
-    public void setConnectorService(ConnectorDataService connectorService) {
-        this.connectorService = connectorService;
-    }
-
-    public ValidateConnectionConfig getValidateConnection() {
-        return validateConnection;
-    }
-
-    public void setValidateConnection(ValidateConnectionConfig validateConnection) {
-        this.validateConnection = validateConnection;
-    }
-
-    /* REMOTE VS LOCAL CONNECTORS */
-
-    private boolean localAdd(Login mLg, String requestId, ManagedSys mSys,
-                             ManagedSystemObjectMatch matchObj, ExtensibleUser extUser,
-                             ProvisionUser user, IdmAuditLog idmAuditLog) {
-
-        AddRequestType addReqType = new AddRequestType();
-
-        PSOIdentifierType idType = new PSOIdentifierType(mLg.getId().getLogin(), null, "target");
-
-        addReqType.setPsoID(idType);
-        addReqType.setRequestID(requestId);
-        addReqType.setTargetID(mLg.getId().getManagedSysId());
-        addReqType.getData().getAny().add(extUser);
-
-        log.debug("Local connector - Creating identity in target system:" + mLg.getId());
-        AddResponseType resp = connectorAdapter.addRequest(mSys, addReqType, muleContext);
-
-        auditHelper.addLog("ADD IDENTITY", user.getRequestorDomain(), user.getRequestorLogin(),
-                "IDM SERVICE", user.getCreatedBy(), mLg.getId().getManagedSysId(),
-                "USER", user.getUserId(),
-                idmAuditLog.getLogId(), resp.getStatus().toString(), idmAuditLog.getLogId(), "IDENTITY_STATUS",
-                mLg.getStatus().toString(),
-                requestId, resp.getErrorCodeAsStr(), user.getSessionId(), resp.getErrorMessage(),
-                user.getRequestorLogin(), mLg.getId().getLogin(), mLg.getId().getDomainId());
-        return resp.getStatus() != StatusCodeType.FAILURE;
-
-
-    }
-
-
-    private boolean remoteAdd(Login mLg, String requestId, ManagedSys mSys,
-                              ManagedSystemObjectMatch matchObj, ExtensibleUser extUser,
-                              ProvisionConnector connector,
-                              ProvisionUser user, IdmAuditLog idmAuditLog) {
-
-        log.debug("Calling remote connector " + connector.getName());
-
-        UserRequest userReq = new UserRequest();
-        userReq.setUserIdentity(mLg.getId().getLogin());
-        userReq.setRequestID(requestId);
-        userReq.setTargetID(mLg.getId().getManagedSysId());
-        userReq.setHostLoginId(mSys.getUserId());
-        userReq.setHostLoginPassword(mSys.getDecryptPassword());
-        userReq.setHostUrl(mSys.getHostUrl());
-        if (matchObj != null) {
-            userReq.setBaseDN(matchObj.getBaseDn());
-        }
-        userReq.setOperation("ADD");
-        userReq.setUser(extUser);
-
-        UserResponse resp = remoteConnectorAdapter.addRequest(mSys, userReq, connector, muleContext);
-
-        auditHelper.addLog("ADD IDENTITY", user.getRequestorDomain(), user.getRequestorLogin(),
-                "IDM SERVICE", user.getCreatedBy(), mLg.getId().getManagedSysId(),
-                "USER", user.getUserId(),
-                idmAuditLog.getLogId(), resp.getStatus().toString(), idmAuditLog.getLogId(), "IDENTITY_STATUS",
-                user.getUser().getStatus().toString(),
-                requestId, resp.getErrorCodeAsStr(), user.getSessionId(), resp.getErrorMsgAsStr(),
-                user.getRequestClientIP(), mLg.getId().getLogin(), mLg.getId().getDomainId());
-
-        if (resp.getStatus() == StatusCodeType.FAILURE) {
-            return false;
-        }
-        return true;
-
-
-    }
-
-    private UserResponse remoteDelete(
-            Login mLg,
-            String requestId,
-            ManagedSys mSys,
-            ProvisionConnector connector,
-            ManagedSystemObjectMatch matchObj,
-            ProvisionUser user,
-            IdmAuditLog auditLog
-    ) {
-
-        UserRequest request = new UserRequest();
-
-        request.setUserIdentity(mLg.getId().getLogin());
-        request.setRequestID(requestId);
-        request.setTargetID(mLg.getId().getManagedSysId());
-        request.setHostLoginId(mSys.getUserId());
-        request.setHostLoginPassword(mSys.getDecryptPassword());
-        request.setHostUrl(mSys.getHostUrl());
-        if (matchObj != null) {
-            request.setBaseDN(matchObj.getBaseDn());
-        }
-        request.setOperation("DELETE");
-
-        UserResponse resp = remoteConnectorAdapter.deleteRequest(mSys, request, connector, muleContext);
-
-        auditHelper.addLog("DELETE IDENTITY", auditLog.getDomainId(), auditLog.getPrincipal(),
-                "IDM SERVICE", user.getCreatedBy(), mLg.getId().getManagedSysId(),
-                "IDENTITY", user.getUserId(),
-                auditLog.getLogId(), resp.getStatus().toString(), auditLog.getLogId(), "IDENTITY_STATUS",
-                "DELETED",
-                requestId, resp.getErrorCodeAsStr(), user.getSessionId(), resp.getErrorMsgAsStr(),
-                user.getRequestClientIP(), mLg.getId().getLogin(), mLg.getId().getDomainId());
-
-        return resp;
-
-
-    }
-
-    private ResponseType localDelete(Login l, String requestId,
-                                     PSOIdentifierType idType,
-                                     ManagedSys mSys,
-                                     ProvisionUser user,
-                                     IdmAuditLog auditLog) {
-
-        log.debug("Local delete for=" + l);
-
-        DeleteRequestType reqType = new DeleteRequestType();
-        reqType.setRequestID(requestId);
-        reqType.setPsoID(idType);
-
-        ResponseType resp = connectorAdapter.deleteRequest(mSys, reqType, muleContext);
-
-
-        String logid = null;
-        String status = null;
-
-        if (resp.getStatus() != null) {
-            status = resp.getStatus().toString();
-        }
-
-        if (auditLog != null) {
-            logid = auditLog.getLogId();
-        }
-
-        auditHelper.addLog("DELETE IDENTITY", user.getRequestorDomain(), user.getRequestorLogin(),
-                "IDM SERVICE", user.getCreatedBy(), l.getId().getManagedSysId(),
-                "IDENTITY", user.getUserId(),
-                logid, status, logid,
-                "IDENTITY_STATUS", "DELETED",
-                requestId, resp.getErrorCodeAsStr(), user.getSessionId(), resp.getErrorMessage(),
-                user.getRequestClientIP(), l.getId().getLogin(), l.getId().getDomainId());
-
-        return resp;
-
-
-    }
-
-    private void localResetPassword(String requestId, Login login,
-                                    String password,
-                                    ManagedSys mSys,
-                                    PasswordSync passwordSync) {
-
-        SetPasswordRequestType pswdReqType = new SetPasswordRequestType();
-        PSOIdentifierType idType = new PSOIdentifierType(login.getId().getLogin(), null,
-                mSys.getManagedSysId());
-        pswdReqType.setPsoID(idType);
-        pswdReqType.setRequestID(requestId);
-        pswdReqType.setPassword(password);
-        ResponseType respType = connectorAdapter.setPasswordRequest(mSys, pswdReqType, muleContext);
-
-        auditHelper.addLog("RESET PASSWORD IDENTITY", passwordSync.getRequestorDomain(), passwordSync.getRequestorLogin(),
-                "IDM SERVICE", null, mSys.getManagedSysId(), "PASSWORD", null, null, respType.getStatus().toString(), "NA", null,
-                null,
-                requestId, respType.getErrorCodeAsStr(), null, respType.getErrorMessage(),
-                null, login.getId().getLogin(), login.getId().getDomainId());
-
-
-    }
-
-    private void remoteResetPassword(String requestId, Login login,
-                                     String password,
-                                     ManagedSys mSys,
-                                     ManagedSystemObjectMatch matchObj,
-                                     ProvisionConnector connector,
-                                     PasswordSync passwordSync) {
-
-        PasswordRequest req = new PasswordRequest();
-        req.setUserIdentity(login.getId().getLogin());
-        req.setRequestID(requestId);
-        req.setTargetID(login.getId().getManagedSysId());
-        req.setHostLoginId(mSys.getUserId());
-        req.setHostLoginPassword(mSys.getPswd());
-        req.setHostUrl(mSys.getHostUrl());
-        req.setBaseDN(matchObj.getBaseDn());
-        req.setOperation("RESET_PASSWORD");
-        req.setPassword(password);
-
-        org.openiam.connector.type.ResponseType respType = remoteConnectorAdapter.resetPasswordRequest(mSys, req, connector, muleContext);
-
-        auditHelper.addLog("RESET PASSWORD IDENTITY", passwordSync.getRequestorDomain(), passwordSync.getRequestorLogin(),
-                "IDM SERVICE", null, mSys.getManagedSysId(), "PASSWORD", null, null, respType.getStatus().toString(), "NA", null,
-                null,
-                requestId, respType.getErrorCodeAsStr(), null, respType.getErrorMsgAsStr(),
-                passwordSync.getRequestClientIP(), login.getId().getLogin(), login.getId().getDomainId());
-
-
-    }
-
-
-    private org.openiam.connector.type.ResponseType remoteSetPassword(String requestId, Login login,
-                                                                      PasswordSync passwordSync,
-                                                                      ManagedSys mSys,
-                                                                      ManagedSystemObjectMatch matchObj,
-                                                                      ProvisionConnector connector) {
-
-        PasswordRequest req = new PasswordRequest();
-        req.setUserIdentity(login.getId().getLogin());
-        req.setRequestID(requestId);
-        req.setTargetID(login.getId().getManagedSysId());
-        req.setHostLoginId(mSys.getUserId());
-        req.setHostLoginPassword(mSys.getPswd());
-        req.setHostUrl(mSys.getHostUrl());
-        req.setBaseDN(matchObj.getBaseDn());
-        req.setOperation("SET_PASSWORD");
-        req.setPassword(passwordSync.getPassword());
-
-        org.openiam.connector.type.ResponseType respType = remoteConnectorAdapter.setPasswordRequest(mSys, req, connector, muleContext);
-
-        auditHelper.addLog("SET PASSWORD IDENTITY", passwordSync.getRequestorDomain(), passwordSync.getRequestorLogin(),
-                "IDM SERVICE", null, "PASSWORD", "PASSWORD", null, null, respType.getStatus().toString(), "NA", null,
-                null,
-                requestId, respType.getErrorCodeAsStr(), null, respType.getErrorMsgAsStr(),
-                passwordSync.getRequestClientIP(), login.getId().getLogin(), login.getId().getDomainId());
-
-        return respType;
-
-
-    }
-
-    private ResponseType localSetPassword(String requestId, Login login,
-                                          PasswordSync passwordSync,
-                                          ManagedSys mSys) {
-
-        SetPasswordRequestType pswdReqType = new SetPasswordRequestType();
-        PSOIdentifierType idType = new PSOIdentifierType(login.getId().getLogin(), null,
-                mSys.getManagedSysId());
-        pswdReqType.setPsoID(idType);
-        pswdReqType.setRequestID(requestId);
-        pswdReqType.setPassword(passwordSync.getPassword());
-
-        // add the extensible attributes is they exist
-
-        if (passwordSync.isPassThruAttributes()) {
-            List<ExtensibleAttribute> attrList = passwordSync.getAttributeList();
-            if (attrList != null) {
-                ExtensibleObject extObj = new ExtensibleObject();
-                extObj.setName("ATTRIBUTES");
-                extObj.setAttributes(attrList);
-                pswdReqType.getAny().add(extObj);
-            }
-
-        }
-
-
-        ResponseType respType = connectorAdapter.setPasswordRequest(mSys, pswdReqType, muleContext);
-
-        auditHelper.addLog("SET PASSWORD IDENTITY", passwordSync.getRequestorDomain(), passwordSync.getRequestorLogin(),
-                "IDM SERVICE", null, "PASSWORD", "PASSWORD", null, null, respType.getStatus().toString(), "NA", null,
-                null,
-                requestId, respType.getErrorCodeAsStr(), null, respType.getErrorMessage(),
-                passwordSync.getRequestClientIP(), login.getId().getLogin(), login.getId().getDomainId());
-        return respType;
-
-    }
-
-    /* Helper methods for Pre and Post processing scripts */
-    private PreProcessor createPreProcessScript(String scriptName) {
-        try {
-            ScriptIntegration se = null;
-            se = ScriptFactory.createModule(scriptEngine);
-            return (PreProcessor) se.instantiateClass(null, scriptName);
-        } catch (Exception ce) {
-            log.error(ce);
-            return null;
-
-        }
-
-    }
-
-    private PostProcessor createPostProcessScript(String scriptName) {
-        try {
-            ScriptIntegration se = null;
-            se = ScriptFactory.createModule(scriptEngine);
-            return (PostProcessor) se.instantiateClass(null, scriptName);
-        } catch (Exception ce) {
-            log.error(ce);
-            return null;
-
-        }
-
-    }
-
-    private ProvisionServicePreProcessor createProvPreProcessScript(String scriptName) {
-        try {
-            ScriptIntegration se = null;
-            se = ScriptFactory.createModule(scriptEngine);
-            return (ProvisionServicePreProcessor) se.instantiateClass(null, scriptName);
-        } catch (Exception ce) {
-            log.error(ce);
-            return null;
-
-        }
-
-    }
-
-    private ProvisionServicePostProcessor createProvPostProcessScript(String scriptName) {
-        try {
-            ScriptIntegration se = null;
-            se = ScriptFactory.createModule(scriptEngine);
-            return (ProvisionServicePostProcessor) se.instantiateClass(null, scriptName);
-        } catch (Exception ce) {
-            log.error(ce);
-            return null;
-
-        }
-
-    }
-
-
-    private int executeProvisionPreProcess(ProvisionServicePreProcessor ppScript, Map<String, Object> bindingMap, ProvisionUser user, PasswordSync passwordSync, String operation) {
-        if ("ADD".equalsIgnoreCase(operation)) {
-            return ppScript.addUser(user, bindingMap);
-        }
-        if ("MODIFY".equalsIgnoreCase(operation)) {
-            return ppScript.modifyUser(user, bindingMap);
-        }
-        if ("DELETE".equalsIgnoreCase(operation)) {
-            return ppScript.deleteUser(user, bindingMap);
-        }
-        if ("SET_PASSWORD".equalsIgnoreCase(operation)) {
-            return ppScript.setPassword(passwordSync, bindingMap);
-        }
-
-        return 0;
-
-
-    }
-
-    private int executeProvisionPostProcess(ProvisionServicePostProcessor ppScript, Map<String, Object> bindingMap, ProvisionUser user, PasswordSync passwordSync, String operation) {
-        if ("ADD".equalsIgnoreCase(operation)) {
-            return ppScript.addUser(user, bindingMap);
-        }
-        if ("MODIFY".equalsIgnoreCase(operation)) {
-            return ppScript.modifyUser(user, bindingMap);
-        }
-        if ("DELETE".equalsIgnoreCase(operation)) {
-            return ppScript.deleteUser(user, bindingMap);
-        }
-        if ("SET_PASSWORD".equalsIgnoreCase(operation)) {
-            return ppScript.setPassword(passwordSync, bindingMap);
-        }
-
-        return 0;
-
-
-    }
-
-
-    private int executePreProcess(PreProcessor ppScript, Map<String, Object> bindingMap, ProvisionUser user, String operation) {
-        if ("ADD".equalsIgnoreCase(operation)) {
-            return ppScript.addUser(user, bindingMap);
-        }
-        if ("MODIFY".equalsIgnoreCase(operation)) {
-            return ppScript.modifyUser(user, bindingMap);
-        }
-        if ("DELETE".equalsIgnoreCase(operation)) {
-            return ppScript.deleteUser(user, bindingMap);
-        }
-        if ("SET_PASSWORD".equalsIgnoreCase(operation)) {
-            return ppScript.setPassword(bindingMap);
-        }
-
-        return 0;
-
-
-    }
-
-    private int executePostProcess(PostProcessor ppScript, Map<String, Object> bindingMap, ProvisionUser user, String operation, boolean success) {
-        if ("ADD".equalsIgnoreCase(operation)) {
-            return ppScript.addUser(user, bindingMap, success);
-        }
-        if ("MODIFY".equalsIgnoreCase(operation)) {
-            return ppScript.modifyUser(user, bindingMap, success);
-
-        }
-        if ("DELETE".equalsIgnoreCase(operation)) {
-            return ppScript.deleteUser(user, bindingMap, success);
-
-        }
-
-        if ("SET_PASSWORD".equalsIgnoreCase(operation)) {
-            return ppScript.setPassword(bindingMap, success);
-        }
-        return 0;
-
-
-    }
+   
 
 
     public void setMuleContext(MuleContext ctx) {
         log.debug("Provisioning - setMuleContext called.");
         muleContext = ctx;
-
-    }
-
-    public PasswordHistoryDAO getPasswordHistoryDao() {
-        return passwordHistoryDao;
     }
 
     public void setPasswordHistoryDao(PasswordHistoryDAO passwordHistoryDao) {
         this.passwordHistoryDao = passwordHistoryDao;
     }
 
-    public String getPreProcessor() {
-        return preProcessor;
-    }
-
     public void setPreProcessor(String preProcessor) {
         this.preProcessor = preProcessor;
-    }
-
-    public String getPostProcessor() {
-        return postProcessor;
     }
 
     public void setPostProcessor(String postProcessor) {
         this.postProcessor = postProcessor;
     }
 
-    public DeprovisionSelectedResourceHelper getDeprovisionSelectedResource() {
-        return deprovisionSelectedResource;
-    }
-
     public void setDeprovisionSelectedResource(DeprovisionSelectedResourceHelper deprovisionSelectedResource) {
         this.deprovisionSelectedResource = deprovisionSelectedResource;
     }
+
 }

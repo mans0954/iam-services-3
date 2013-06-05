@@ -23,19 +23,22 @@ package org.openiam.idm.srvc.loc.service;
 
 import java.util.List;
 
-import javax.jws.WebService;
-
-import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.loc.dto.Location;
 import org.openiam.idm.srvc.loc.dto.LocationSearch;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author suneet
  *
  */
+@Service("locationDataService")
+@Transactional
 public class LocationDataServiceImpl implements LocationDataService {
 
-	LocationDAO locationDao;
+	@Autowired
+	private LocationDAO locationDao;
 	
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.loc.service.LocationDataService#addLocation(org.openiam.idm.srvc.loc.dto.Location)
@@ -92,14 +95,6 @@ public class LocationDataServiceImpl implements LocationDataService {
 		}
 		locationDao.update(lg);
 		
-	}
-
-	public LocationDAO getLocationDao() {
-		return locationDao;
-	}
-
-	public void setLocationDao(LocationDAO locationDao) {
-		this.locationDao = locationDao;
 	}
 
 	/* (non-Javadoc)

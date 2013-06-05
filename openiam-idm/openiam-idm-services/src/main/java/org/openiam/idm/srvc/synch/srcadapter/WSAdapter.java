@@ -27,6 +27,7 @@ import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.idm.srvc.synch.dto.LineObject;
@@ -42,10 +43,10 @@ import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.service.ProvisionService;
-import org.openiam.script.ScriptFactory;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
-import org.openiam.script.ScriptFactory;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.idm.srvc.synch.service.WSOperationCommand;
 import java.util.List;
@@ -65,13 +66,19 @@ public class WSAdapter extends  AbstractSrcAdapter { // implements SourceAdapter
 	protected LineObject rowHeader = new LineObject();
 	protected ProvisionUser pUser = new ProvisionUser();
 	public static ApplicationContext ac;
-    private String scriptEngine;
+    
+	@Autowired
+    @Qualifier("configurableGroovyScriptEngine")
+    private ScriptIntegration scriptRunner;
 
 
 	ProvisionService provService = null;
 	String systemAccount;
 
 	MatchRuleFactory matchRuleFactory;
+	
+    @Autowired
+    private UserDozerConverter userDozerConverter;
 
 	private static final Log log = LogFactory.getLog(WSAdapter.class);
 	private Connection con = null;
@@ -187,7 +194,7 @@ public class WSAdapter extends  AbstractSrcAdapter { // implements SourceAdapter
 						// initialize the transform script
 						if (usr != null) {
 							transformScript.setNewUser(false);
-							transformScript.setUser( userMgr.getUserWithDependent(usr.getUserId(), true) );
+							transformScript.setUser(userDozerConverter.convertToDTO(userMgr.getUser(usr.getUserId()), true));
 							transformScript.setPrincipalList(loginManager.getLoginByUser(usr.getUserId()));
 							transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getUserId()));
 							
@@ -308,15 +315,12 @@ public class WSAdapter extends  AbstractSrcAdapter { // implements SourceAdapter
     }
 
     private WSOperationCommand getServiceCommand(String scriptName) {
-        ScriptIntegration se = null;
-
 
         if (scriptName == null || scriptName.length() == 0) {
             return null;
         }
         try {
-			se = ScriptFactory.createModule(scriptEngine);
-            return (WSOperationCommand)se.instantiateClass(null, scriptName);
+            return (WSOperationCommand)scriptRunner.instantiateClass(null, scriptName);
         }catch(Exception e) {
             log.error(e);
             e.printStackTrace();
@@ -349,13 +353,4 @@ public class WSAdapter extends  AbstractSrcAdapter { // implements SourceAdapter
 	public void setSystemAccount(String systemAccount) {
 		this.systemAccount = systemAccount;
 	}
-
-
-    public String getScriptEngine() {
-        return scriptEngine;
-    }
-
-    public void setScriptEngine(String scriptEngine) {
-        this.scriptEngine = scriptEngine;
-    }
 }

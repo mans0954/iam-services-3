@@ -4,19 +4,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.openiam.dozer.converter.UserDozerConverter;
+import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.openiam.idm.srvc.synch.service.MatchObjectRule;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
-import org.openiam.idm.srvc.user.dto.UserSearch;
+import org.openiam.idm.srvc.user.service.UserMgr;
 import org.openiam.idm.srvc.user.ws.UserDataWebService;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 
 public class DefaultMatchObjectRule implements MatchObjectRule {
 
-	private UserDataWebService userManager = null;
+	private UserDozerConverter userDozerConverter;
+	private UserMgr userManager = null;
 	public static ApplicationContext ac;
 	
 	private String matchAttrName = null;
@@ -27,7 +31,8 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
 }
 	
 	public User lookup(SynchConfig config, Map<String, Attribute> rowAttr) {
-		UserSearch search = new UserSearch();
+		final UserSearchBean searchBean = new UserSearchBean();
+		//UserSearch search = new UserSearch();
 		//Map<String, UserAttribute> atMap = user.getUserAttributes();
 		String srcFieldValue = rowAttr.get(config.getCustomMatchAttr()).getValue();
 		matchAttrValue = srcFieldValue;
@@ -35,16 +40,20 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
 	
 		
 		if (config.getMatchFieldName().equalsIgnoreCase("USERID")) {
-			search.setUserId(srcFieldValue);
+			searchBean.setUserId(srcFieldValue);
+			//search.setUserId(srcFieldValue);
 		}
 		if (config.getMatchFieldName().equalsIgnoreCase("PRINCIPAL")) {
-			search.setPrincipal(srcFieldValue);
+			searchBean.setPrincipal(srcFieldValue);
+			//search.setPrincipal(srcFieldValue);
 		}
 		if (config.getMatchFieldName().equalsIgnoreCase("EMAIL")) {
-			search.setEmailAddress(srcFieldValue);
+			searchBean.setEmailAddress(srcFieldValue);
+			//search.setEmailAddress(srcFieldValue);
 		}	
 		if (config.getMatchFieldName().equalsIgnoreCase("EMPLOYEE_ID")) {
-			search.setEmployeeId(srcFieldValue);
+			searchBean.setEmployeeId(srcFieldValue);
+			//search.setEmployeeId(srcFieldValue);
 		}		
 		if (config.getMatchFieldName().equalsIgnoreCase("ATTRIBUTE")) {
 			System.out.println("- cofiguring search by attribute..");
@@ -54,22 +63,22 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
 			// get the attribute value from the data_set
 			String valueToMatch = rowAttr.get(config.getCustomMatchAttr()).getValue();
 			System.out.println("- src field value=.." + valueToMatch);
+			matchAttrName = config.getCustomMatchAttr();
+			matchAttrValue = valueToMatch;
 			
-			search.setAttributeName(config.getCustomMatchAttr());
-			search.setAttributeValue(valueToMatch);
-			
-			//
-			matchAttrName = search.getAttributeName();
-			matchAttrValue = search.getAttributeValue();
-			
+			searchBean.setAttributeName(matchAttrName);
+			searchBean.setAttributeValue(matchAttrValue);
+			//search.setAttributeName(config.getCustomMatchAttr());
+			//search.setAttributeValue(valueToMatch);
 		}
 		
-		userManager = (UserDataWebService) ac.getBean("userWS");
-		List<User> userList = userManager.search(search).getUserList();
+		userManager = (UserMgr) ac.getBean("userManager");
+		userDozerConverter = (UserDozerConverter) ac.getBean("userDozerConverter");
+		List<UserEntity> userList = userManager.findBeans(searchBean);
 		
 		if (userList != null) {
 			System.out.println("User matched with existing user...");
-			User u = userList.get(0);
+			User u = userDozerConverter.convertToDTO(userList.get(0), true);
 			return u;
 		}		
 		return null;

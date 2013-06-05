@@ -2,11 +2,10 @@ package org.openiam.am.srvc.resattr.ws;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.am.srvc.resattr.dao.WebResourceAttributeDao;
-import org.openiam.am.srvc.resattr.dto.Attribute;
-import org.openiam.am.srvc.resattr.dto.AttributeMap;
+import org.openiam.am.srvc.dto.Attribute;
+import org.openiam.am.srvc.dto.AttributeMap;
 import org.openiam.am.srvc.resattr.dto.WebResourceResponse;
-import org.openiam.am.srvc.resattr.service.WebResourceAttributeService;
+import org.openiam.am.srvc.service.WebResourceAttributeService;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,13 +16,12 @@ import javax.jws.WebService;
 import java.util.List;
 
 @Service("webResource")
+@Deprecated
 @WebService(endpointInterface = "org.openiam.am.srvc.resattr.ws.WebResourceService",
             targetNamespace = "urn:idm.openiam.org/srvc/res/service", portName = "WebResourceServicePort",
             serviceName = "WebResourceService")
 public class WebResourceServiceImpl implements WebResourceService {
     protected final Log log = LogFactory.getLog(this.getClass());
-    @Autowired
-    private WebResourceAttributeDao webResourceAttributeDao;
     @Autowired
     private WebResourceAttributeService webResourceAttributeService;
 

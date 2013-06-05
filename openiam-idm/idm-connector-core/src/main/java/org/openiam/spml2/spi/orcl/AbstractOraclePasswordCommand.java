@@ -1,6 +1,6 @@
 package org.openiam.spml2.spi.orcl;
 
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -16,7 +16,7 @@ public abstract class AbstractOraclePasswordCommand extends AbstractOracleComman
 
     private static final String CHANGE_PASSWORD_SQL = "ALTER USER \"%s\" IDENTIFIED BY \"%s\"";
 
-    protected void changePassword(final ManagedSys managedSys, final String principalName, final String password) throws SQLException, ClassNotFoundException {
+    protected void changePassword(final ManagedSysDto managedSys, final String principalName, final String password) throws SQLException, ClassNotFoundException {
 
         Connection connection = null;
 

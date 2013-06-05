@@ -2,10 +2,17 @@ package org.openiam.idm.srvc.grp.service;
 
 // Generated Jun 12, 2007 10:46:15 PM by Hibernate Tools 3.2.0.beta8
 
+import static org.hibernate.criterion.Projections.rowCount;
+
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.naming.InitialContext;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
@@ -15,283 +22,185 @@ import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Example;
+import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.exception.ConstraintViolationException;
 import org.hibernate.stat.SessionStatistics;
 import org.hibernate.HibernateException;
+import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.exception.data.DataException;
 import org.openiam.exception.data.ObjectNotFoundException;
+import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.grp.dto.GroupSearch;
 
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.domain.ResourceGroupEntity;
+import org.openiam.idm.srvc.res.dto.ResourceGroup;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDAO;
-/**
- * Data access object interface for Group. 
- * @see org.openiam.idm.srvc.grp.dto.Group
- * @author Suneet Shah
- */
-public class GroupDAOImpl implements org.openiam.idm.srvc.grp.service.GroupDAO {
+import org.springframework.stereotype.Repository;
 
-	protected UserDAO userDao;
+@Repository("groupDAO")
+public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements GroupDAO {
 
-	private static final Log log = LogFactory.getLog(GroupDAOImpl.class);
+	@Override
+	protected Criteria getExampleCriteria(GroupEntity group) {
+		final Criteria criteria = getCriteria();
+		if(StringUtils.isNotBlank(group.getGrpId())) {
+			criteria.add(Restrictions.eq("grpId", group.getGrpId()));
+		} else {
+			if (StringUtils.isNotEmpty(group.getGrpName())) {
+                String groupName = group.getGrpName();
+                MatchMode matchMode = null;
+                if (StringUtils.indexOf(groupName, "*") == 0) {
+                    matchMode = MatchMode.END;
+                    groupName = groupName.substring(1);
+                }
+                if (StringUtils.isNotEmpty(groupName) && StringUtils.indexOf(groupName, "*") == groupName.length() - 1) {
+                	groupName = groupName.substring(0, groupName.length() - 1);
+                    matchMode = (matchMode == MatchMode.END) ? MatchMode.ANYWHERE : MatchMode.START;
+                }
 
-	private SessionFactory sessionFactory;
-	private Integer maxResultSetSize;
-
-	
-	public void setSessionFactory(SessionFactory session) {
-		   this.sessionFactory = session;
-	}
-
-	protected SessionFactory getSessionFactory() {
-		try {
-			return (SessionFactory) new InitialContext().lookup("SessionFactory");
-		} catch (Exception e) {
-			log.error("Could not locate SessionFactory in JNDI", e);
-			throw new IllegalStateException(
-					"Could not locate SessionFactory in JNDI");
-		}
-	}
-
-	public void add(Group instance) {
-		log.debug("persisting Group instance");
-		try {
-			sessionFactory.getCurrentSession().persist(instance);	
-		} catch (HibernateException re) {
-			log.error("Group save failed.", re);
-			throw new DataException( re.getMessage(), re.getCause() ); 
-		}		
-	}
-	
-
-
-	public int remove(Group instance) {
-		log.debug("deleting Group instance");
-		try {
-			sessionFactory.getCurrentSession().delete(instance);
-			log.debug("Group id=" + instance.getGrpId() + " successfully updated.");
-			return 1;
-		} catch (HibernateException re) {
-			log.error("Group delete failed", re);
-			throw new DataException( re.getMessage(), re.getCause() ); 
-		}		
-	}
-
-	public void update(Group instance) {
-		log.debug("merging Group instance. GrpId = " + instance.getGrpId());
-		try {
-			sessionFactory.getCurrentSession().merge(instance);
-			log.debug("Group id=" + instance.getGrpId() + " successfully updated.");
-		} catch (HibernateException re) {
-			log.error("Group update failed", re);
-			throw new DataException( re.getMessage(), re.getCause() ); 
-		}	
-	}
-	
-	
-
-	public Group findById(java.lang.String id) {
-	
-		return findById(id,false);
-	
-	}
-
-	public Group findById(java.lang.String id, boolean dependants) {
-		log.debug("getting Grp instance with id: " + id);
-		try {
-			Group instance = (Group) sessionFactory.getCurrentSession().get(
-					"org.openiam.idm.srvc.grp.dto.Group", id);
-			if (instance == null) {
-				log.debug("get successful, no instance found");
-			} else {
-				log.debug("get successful, instance found");
+                if (StringUtils.isNotEmpty(groupName)) {
+                    if (matchMode != null) {
+                        criteria.add(Restrictions.ilike("grpName", groupName, matchMode));
+                    } else {
+                        criteria.add(Restrictions.eq("grpName", groupName));
+                    }
+                }
+            }
+			
+			if(StringUtils.isNotBlank(group.getOwnerId())) {
+				criteria.add(Restrictions.eq("ownerId", group.getOwnerId()));
 			}
 			
-			return instance;
-		} catch (HibernateException re) {
-			log.error("get failed", re);
-			throw new DataException( re.getMessage(), re.getCause() ); 
+			if(StringUtils.isNotBlank(group.getInternalGroupId())) {
+				criteria.add(Restrictions.eq("internalGroupId", group.getInternalGroupId()));
+			}
+            
+            if(CollectionUtils.isNotEmpty(group.getResourceGroups())) {
+            	final Set<String> resourceIds = new HashSet<String>();
+            	for(final ResourceGroupEntity resourceGroupEntity : group.getResourceGroups()) {
+            		if(resourceGroupEntity != null && StringUtils.isNotBlank(resourceGroupEntity.getResourceId())) {
+            			resourceIds.add(resourceGroupEntity.getResourceId());
+            		}
+            	}
+            	
+            	if(CollectionUtils.isNotEmpty(resourceIds)) {
+            		criteria.createAlias("resourceGroups", "resourceGroup").add( Restrictions.in("resourceGroup.resourceId", resourceIds));
+            	}
+            }
 		}
+		return criteria;
 	}
 	
-	public List<Group> search(GroupSearch search) {
-		Session session = sessionFactory.getCurrentSession();
-		Criteria crit = session.createCriteria(Group.class, "grp");
-		crit.setMaxResults(maxResultSetSize);
+	public List<GroupEntity> findRootGroups(final int from, final int size) {
+		final Criteria criteria = getCriteria();
 		
-		if (search.getGrpId() != null && search.getGrpId().length() > 0 ) {
-			log.debug("search: grpId=" + search.getGrpId() );
-			crit.add(Restrictions.eq("grpId",search.getGrpId()));
-		}
-		if (search.getGrpName() != null && search.getGrpName().length() > 0 ) {
-			log.debug("search: grpName=" + search.getGrpName() );
-			crit.add(Restrictions.like("grpName",search.getGrpName()));
-		}
-		if (search.getOwnerId() != null && search.getOwnerId().length() > 0 ) {
-			log.debug("search: ownerId=" + search.getOwnerId() );
-			crit.add(Restrictions.eq("ownerId",search.getOwnerId()));
-		}
-		if (search.getInternalGroupId() != null && search.getInternalGroupId().length() > 0 ) {
-			log.debug("search: interGroupId=" + search.getInternalGroupId() );
-			crit.add(Restrictions.eq("internalGroupId",search.getInternalGroupId()));
-		}
-		crit.addOrder(Order.asc("grpName"));
-		
-		List<Group> results = (List<Group>)crit.list();
-		return results;		
-	}
-	
-	public List<Group> findRootGroups() {
-		Session session = sessionFactory.getCurrentSession();
-		Query qry = session.createQuery("from org.openiam.idm.srvc.grp.dto.Group g " +
-				" where g.parentGrpId is null order by g.grpId asc");
-	//	qry.setCacheable(true);
-		List<Group> results = (List<Group>)qry.list();
-		return results;
-	}
-	public List<Group> findAllGroups() {
-		Session session = sessionFactory.getCurrentSession();
-		Query qry = session.createQuery("from org.openiam.idm.srvc.grp.dto.Group g " +
-				" order by g.grpName asc");
-	//	qry.setCacheable(true);
-		List<Group> results = (List<Group>)qry.list();
-		return results;
-	}
-	
-	public List<Group> findGroupsInRole(String serviceId, String roleId) {
-		Session session = sessionFactory.getCurrentSession();
-		Query qry = session.createQuery(" from  org.openiam.idm.srvc.grp.dto.Group grp " +
-										" 		inner join grp.groupRoles as groupRole " +
-										" where groupRole.role.serviceId = :serviceId and " +
-										" 		groupRole.role.roleId = :roleId ");
-		qry.setString("serviceId", serviceId);
-		qry.setString("roleId", roleId);
-
-		List<Group> results = (List<Group>)qry.list();
-		return results;		
-	}
-	
-	
-
-
-	
-	public List<Group> findChildGroup(String parentGroupId) {
-		Session session = sessionFactory.getCurrentSession();
-		Query qry = session.createQuery("from org.openiam.idm.srvc.grp.dto.Group g where g.parentGrpId = :parentId order by g.grpId asc");
-		qry.setString("parentId", parentGroupId);
-	//	qry.setCacheable(true);
-		List<Group> results = (List<Group>)qry.list();
-		return results;
-	}
-
-	/**
-	 * Removes the groups specified by the groupIdList. groupIdList is a string containing a concatenated
-	 * list of groupIds.
-	 * @param groupIdList
-	 * @return The number of entities deleted.
-	 */
-	public int removeGroupList(String groupIdList) {
-		Session session = sessionFactory.getCurrentSession();
-		Query qry = session.createQuery("delete org.openiam.idm.srvc.grp.dto.Group g  " + 
-					" where g.grpId in (" + groupIdList + ")" );
-		return qry.executeUpdate();		
-	}	
-	
-	public Group findParent(String groupId, boolean dependants) {
-				
-		// get the group object for the groupId
-		Group curGroup = findById(groupId);
-		// TODO Throw exception if the curGroup is null. That means that there is no group for this groupId
-		if (curGroup == null) {
-			log.error("Group for groupId=" + groupId + "  not found.");
-			throw new ObjectNotFoundException();
-		}
-		
-		if (curGroup.getParentGrpId() == null ) {
-			log.debug("groupId=" + groupId + " does not contain a parentGroupId");
-			return null;
-		}
-		
-		// get the parent group object
-		
-		Group parentGroup = findById(curGroup.getParentGrpId());
-		if (parentGroup == null) {
-			log.error("Group for parent groupId=" + curGroup.getParentGrpId()  + "  not found.");
-			throw new ObjectNotFoundException();					
+		if(from > -1) {
+			criteria.setFirstResult(from);
 		}
 
-		return parentGroup;
-		
-	}
-	
-	/**
-	 * Returns a list of Groups that a user is associated with
-	 * @return
-	 */
-	public List<Group> findGroupsForUser(String userId) {
-		Session session = sessionFactory.getCurrentSession();
-		Query qry = session.createQuery("select grp  from Group as grp, UserGroup ug " +
-						" where ug.userId = :userId and grp.grpId = ug.grpId ");
-		
+		if(size > 0) {
+			criteria.setMaxResults(size);
+		}
+		criteria.add(Restrictions.isEmpty("parentGroups"));
 
-		qry.setString("userId", userId);
-		List<Group> result = (List<Group>)qry.list();
-		if (result == null || result.size() == 0)
-			return null;
-		return result;			
+		return (List<GroupEntity>)criteria.list();
 	}
 	
-	public List<Group> findGroupNotLinkedToUser(String userId, String parentGroupId) {
-		
-	   	Session session = sessionFactory.getCurrentSession();
-	    
-    	try{
-    		SQLQuery qry = session.createSQLQuery("SELECT  GRP_ID, GRP_NAME, CREATE_DATE, CREATED_BY, COMPANY_ID,  " +
-    				" PARENT_GRP_ID, INHERIT_FROM_PARENT, PROVISION_METHOD, PROVISION_OBJ_NAME, " +
-    				" TYPE_ID, GROUP_CLASS, GROUP_DESC, STATUS, LAST_UPDATE, LAST_UPDATED_BY, INTERNAL_GROUP_ID, OWNER_ID  " +
-				 "  FROM 	GRP g  " +
-				 "  WHERE g.GRP_ID NOT IN (SELECT GRP_ID FROM USER_GRP ug WHERE ug.USER_ID = :userId ) ");
-	    	
-	    	
-	    	qry.addEntity(Group.class);
-			qry.setString("userId", userId);
-			
+	private Criteria getGroupsForUserCriteria(final String userId) {
+		return getCriteria()
+	               .createAlias("userGroups", "ug")
+	               .add(Restrictions.eq("ug.userId", userId));
+	}
 	
-			List<Group> result = (List<Group>) qry.list();
-			if (result == null || result.size() == 0)
-				return null;
-			return result;		
-	    }catch(HibernateException re) {
-			log.error("findGroupNotLinkedToUser", re);
-			throw new DataException( re.getMessage(), re.getCause() );      		
+	@Override
+	public int getNumOfGroupsForUser(String userId) {
+		final Criteria criteria = getGroupsForUserCriteria(userId).setProjection(rowCount());
+		return ((Number)criteria.uniqueResult()).intValue();
+	}
+	
+	public List<GroupEntity> getGroupsForUser(final String userId, final int from, final int size) {
+		final Criteria criteria = getGroupsForUserCriteria(userId);
+		
+		if(from > -1) {
+			criteria.setFirstResult(from);
 		}
 
+		if(size > -1) {
+			criteria.setMaxResults(size);
+		}
 		
+		return criteria.list();
 	}
 
-
-
-
-
-	public UserDAO getUserDao() {
-		return userDao;
+	@Override
+	protected String getPKfieldName() {
+		return "grpId";
 	}
 
-	public void setUserDao(UserDAO userDao) {
-		this.userDao = userDao;
+	@Override
+	public List<GroupEntity> getGroupsForRole(String roleId, int from, int size) {
+		final Criteria criteria = super.getCriteria();
+		criteria.createAlias("roles", "roles").add( Restrictions.eq("roles.roleId", roleId));
+		if(from > -1) {
+			criteria.setFirstResult(from);
+		}
+		
+		if(size > -1) {
+			criteria.setMaxResults(size);
+		}
+		return criteria.list();
 	}
 
-	public Integer getMaxResultSetSize() {
-		return maxResultSetSize;
+	@Override
+	public int getNumOfGroupsForRole(String roleId) {
+		final Criteria criteria = super.getCriteria();
+		criteria.createAlias("roles", "roles").add( Restrictions.eq("roles.roleId", roleId)).setProjection(rowCount());
+		return ((Number)criteria.uniqueResult()).intValue();
 	}
 
-	public void setMaxResultSetSize(Integer maxResultSetSize) {
-		this.maxResultSetSize = maxResultSetSize;
+	@Override
+	public int getNumOfChildGroups(String groupId) {
+		final Criteria criteria = getCriteria().createAlias("parentGroups", "group").add( Restrictions.eq("group.grpId", groupId)).setProjection(rowCount());
+		return ((Number)criteria.uniqueResult()).intValue();
 	}
-	
+
+	@Override
+	public int getNumOfParentGroups(String groupId) {
+		final Criteria criteria = getCriteria().createAlias("childGroups", "group").add( Restrictions.eq("group.grpId", groupId)).setProjection(rowCount());
+		return ((Number)criteria.uniqueResult()).intValue();
+	}
+
+	@Override
+	public List<GroupEntity> getChildGroups(String groupId, int from, int size) {
+		final Criteria criteria = getCriteria().createAlias("parentGroups", "group").add( Restrictions.eq("group.grpId", groupId));
+		
+		if(from > -1) {
+			criteria.setFirstResult(from);
+		}
+		
+		if(size > -1) {
+			criteria.setMaxResults(size);
+		}
+		return criteria.list();
+	}
+
+	@Override
+	public List<GroupEntity> getParentGroups(String groupId, int from, int size) {
+		final Criteria criteria = getCriteria().createAlias("childGroups", "group").add( Restrictions.eq("group.grpId", groupId));
+		
+		if(from > -1) {
+			criteria.setFirstResult(from);
+		}
+		
+		if(size > -1) {
+			criteria.setMaxResults(size);
+		}
+		return criteria.list();
+	}
 }
 
 

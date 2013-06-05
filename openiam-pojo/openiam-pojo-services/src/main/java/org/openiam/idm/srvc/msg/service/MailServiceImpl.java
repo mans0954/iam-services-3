@@ -1,46 +1,78 @@
 package org.openiam.idm.srvc.msg.service;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.openiam.idm.srvc.audit.service.AuditHelper;
-import org.openiam.idm.srvc.msg.dto.NotificationRequest;
-import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.user.ws.UserDataWebService;
-import org.openiam.script.ScriptFactory;
-import org.openiam.script.ScriptIntegration;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-
-import javax.jws.WebService;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@WebService(endpointInterface = "org.openiam.idm.srvc.msg.service.MailService",
-		targetNamespace = "urn:idm.openiam.org/srvc/msg",
-		portName = "EmailWebServicePort",
-		serviceName = "EmailWebService")
+import javax.annotation.PostConstruct;
+import javax.jws.WebService;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openiam.idm.srvc.audit.service.AuditHelper;
+import org.openiam.idm.srvc.msg.dto.NotificationRequest;
+import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.dto.User;
+import org.openiam.idm.srvc.user.service.UserDataService;
+import org.openiam.idm.srvc.user.ws.UserDataWebService;
+import org.openiam.script.ScriptIntegration;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.config.PropertiesFactoryBean;
+import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.stereotype.Service;
+
+import twitter4j.DirectMessage;
+import twitter4j.Status;
+import twitter4j.Twitter;
+import twitter4j.TwitterException;
+import twitter4j.TwitterFactory;
+import twitter4j.conf.ConfigurationBuilder;
+
+@Service("mailService")
+@WebService(endpointInterface = "org.openiam.idm.srvc.msg.service.MailService", targetNamespace = "urn:idm.openiam.org/srvc/msg", portName = "EmailWebServicePort", serviceName = "EmailWebService")
 public class MailServiceImpl implements MailService, ApplicationContextAware {
 
+	@Autowired
 	private MailSender mailSender;
+
+	@Value("${mail.defaultSender}")
 	private String defaultSender;
+
+	@Value("${mail.defaultSubjectPrefix}")
 	private String subjectPrefix;
+
+	@Value("${mail.optionalBccAddress}")
 	private String optionalBccAddress;
 
-	protected String scriptEngine;
-	protected UserDataWebService userManager;
+	@Autowired
+	protected UserDataService userManager;
+
+	@Autowired
 	protected AuditHelper auditHelper;
+
+	@Autowired
+	@Qualifier("configurableGroovyScriptEngine")
+	private ScriptIntegration scriptRunner;
+
+	@Autowired
+	@Qualifier("pojoProperties")
+	private Properties properties;
 
 	public static ApplicationContext ac;
 
 	private static final Log log = LogFactory.getLog(MailServiceImpl.class);
 	private static final int SUBJECT_IDX = 0;
 	private static final int SCRIPT_IDX = 1;
-
-	static protected ResourceBundle notificationRes = ResourceBundle.getBundle("notification");
 
 	public void sendToAllUsers() {
 		log.warn("sendToAllUsers was called, but is not implemented");
@@ -50,39 +82,125 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 		log.warn("sendToGroup was called, but is not implemented");
 	}
 
-	public void send(String from, String to, String subject, String msg) {
-		sendWithCC(from, to, null, subject, msg);
-	}
+	/*
+	 * public void send(String from, String to, String subject, String msg) {
+	 * sendWithCC(from, to, null, subject, msg); }
+	 */
 
-	public void sendWithCC(String from, String to, String cc, String subject, String msg) {
-		log.debug("To:" + to + ", From:" + from + ", Subject:" + subject);
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.openiam.idm.srvc.msg.service.MailService#sendWithCC(java.lang.String,
+	 * java.lang.String, java.lang.String, java.lang.String, java.lang.String,
+	 * java.lang.String, boolean)
+	 */
+	public void sendEmail(String from, String to, String cc, String subject,
+			String msg, String attachment, boolean isHtmlFormat) {
+		log.debug("To:" + to + ", From:" + from + ", Subject:" + subject
+				+ ", Cc:" + cc + ", Msg:" + msg + ", Attachement:" + attachment
+				+ ", Format:" + isHtmlFormat);
 
 		Message message = new Message();
-		if (from != null && from.length()  > 0) {
+		if (from != null && from.length() > 0) {
 			message.setFrom(from);
 		} else {
 			message.setFrom(defaultSender);
 		}
-		message.setTo(to);
+
+		message.addTo(to);
+
 		if (cc != null && !cc.isEmpty()) {
-			message.setCc(cc);
+			message.addCc(cc);
 		}
+
 		if (subjectPrefix != null) {
 			subject = subjectPrefix + " " + subject;
 		}
-		if (optionalBccAddress != null && !optionalBccAddress.isEmpty()) {
-			message.setBcc(optionalBccAddress);
-		}
+		/*
+		 * if (optionalBccAddress != null && !optionalBccAddress.isEmpty()) {
+		 * message.addBcc(optionalBccAddress); }
+		 */
 		message.setSubject(subject);
 		message.setBody(msg);
+		message.setBodyType(isHtmlFormat ? Message.BodyType.HTML_TEXT
+				: Message.BodyType.PLAIN_TEXT);
+		if (attachment != null && from.length() > 0) {
+			message.addAttachments(attachment);
+		}
 		try {
 			mailSender.send(message);
-		}catch(Exception e) {
+		} catch (Exception e) {
 			log.error(e.toString());
 		}
 	}
 
-	private  boolean isEmailValid(String email){
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.openiam.idm.srvc.msg.service.MailService#send(java.lang.String,
+	 * java.lang.String[], java.lang.String[], java.lang.String[],
+	 * java.lang.String, java.lang.String, boolean, java.lang.String[])
+	 */
+	public void sendEmails(String from, String[] to, String[] cc, String[] bcc,
+			String subject, String msg, boolean isHtmlFormat,
+			String[] attachmentPath) {
+		log.debug("To:" + to + ", From:" + from + ", Subject:" + subject
+				+ ", CC:" + cc + ", BCC:" + bcc + ", MESSG:" + msg
+				+ ", Attachment:" + attachmentPath);
+
+		Message message = new Message();
+		if (from != null && from.length() > 0) {
+			message.setFrom(from);
+		} else {
+			message.setFrom(defaultSender);
+		}
+		if (to != null && to.length > 0) {
+			for (String toString : to) {
+				message.addTo(toString);
+			}
+		}
+		if (cc != null && cc.length > 0) {
+			for (String ccString : cc) {
+				message.addCc(ccString);
+			}
+		}
+
+		if (subjectPrefix != null) {
+			subject = subjectPrefix + " " + subject;
+		}
+		if (bcc != null && bcc.length > 0) {
+			for (String bccString : bcc) {
+				message.addBcc(bccString);
+			}
+		}
+
+		if (subject != null && subject.length() > 0) {
+			message.setSubject(subject);
+		}
+		if (msg != null && msg.length() > 0) {
+			message.setBody(msg);
+		}
+
+		message.setBodyType(isHtmlFormat ? Message.BodyType.HTML_TEXT
+				: Message.BodyType.PLAIN_TEXT);
+		if (attachmentPath != null && from.length() > 0) {
+			for (String attachmentPathString : attachmentPath) {
+				message.addAttachments(attachmentPathString);
+			}
+		}
+		try {
+			mailSender.send(message);
+		} catch (Exception e) {
+			log.error(e.toString());
+		}
+	}
+
+	/**
+	 * @param email
+	 * @return
+	 */
+	private boolean isEmailValid(String email) {
 		String expression = "^[\\w\\.-]+@([\\w\\-]+\\.)+[A-Z]{2,4}$";
 
 		Pattern pattern = Pattern.compile(expression, Pattern.CASE_INSENSITIVE);
@@ -90,11 +208,19 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 		return matcher.matches();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.openiam.idm.srvc.msg.service.MailService#sendNotification(org.openiam
+	 * .idm.srvc.msg.dto.NotificationRequest)
+	 */
 	public boolean sendNotification(NotificationRequest req) {
 		if (req == null) {
 			return false;
 		}
-		log.debug("Send Notification called with notificationType = " + req.getNotificationType());
+		log.debug("Send Notification called with notificationType = "
+				+ req.getNotificationType());
 
 		if (req.getUserId() != null) {
 			return sendEmailForUser(req);
@@ -104,6 +230,10 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 		return false;
 	}
 
+	/**
+	 * @param req
+	 * @return
+	 */
 	private boolean sendCustomEmail(NotificationRequest req) {
 		log.debug("sendNotification to = " + req.getTo());
 
@@ -118,32 +248,46 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 
 		String emailBody = createEmailBody(bindingMap, emailDetails[SCRIPT_IDX]);
 		if (emailBody != null) {
-			sendWithCC(null, req.getTo(), req.getCc(), emailDetails[SUBJECT_IDX], emailBody);
+			sendEmail(null, req.getTo(), req.getCc(),
+					emailDetails[SUBJECT_IDX], emailBody, null, false);
 			return true;
 		}
 		return false;
 	}
 
+	/**
+	 * @param req
+	 * @return
+	 */
 	private boolean sendEmailForUser(NotificationRequest req) {
-		log.debug("sendNotification userId = " + req.getUserId());
+		if (log.isDebugEnabled()) {
+			log.debug(String.format("sendNotification userId = %s",
+					req.getUserId()));
+		}
 		// get the user object
 		if (req.getUserId() == null) {
 			return false;
 		}
-		User usr = userManager.getUserWithDependent(req.getUserId(), true).getUser();
+		UserEntity usr = userManager.getUser(req.getUserId());
 		if (usr == null) {
 			return false;
 		}
-		log.debug("Email address=" + usr.getEmail());
+		if (log.isDebugEnabled()) {
+			log.debug(String.format("Email address=%s", usr.getEmail()));
+		}
 
-		if (usr.getEmail() == null || usr.getEmail().length() == 0) {
-			log.error("Send notfication failed. Email was null for userId=" + usr.getUserId());
+		if (StringUtils.isBlank(usr.getEmail())) {
+
+			log.error(String.format(
+					"Send notification failed. Email was null for userId=%s",
+					usr.getUserId()));
 			return false;
 		}
 
 		if (!isEmailValid(usr.getEmail())) {
-			log.error("Send notfication failed. Email was is not valid for userId=" + usr.getUserId() +
-					" - " + usr.getEmail());
+			log.error(String
+					.format("Send notfication failed. Email was is not valid for userId=%s - %s",
+							usr.getUserId(), usr.getEmail()));
 			return false;
 		}
 		String[] emailDetails = fetchEmailDetails(req.getNotificationType());
@@ -158,98 +302,114 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 
 		String emailBody = createEmailBody(bindingMap, emailDetails[SCRIPT_IDX]);
 		if (emailBody != null) {
-			send(null, usr.getEmail(), emailDetails[SUBJECT_IDX], emailBody);
+
+			sendEmail(null, usr.getEmail(), null, emailDetails[SUBJECT_IDX],
+					emailBody, null, false);
 			return true;
 		}
 		return false;
 	}
 
-	private String createEmailBody(Map<String, Object> bindingMap, String emailScript) {
+	/**
+	 * @param bindingMap
+	 * @param emailScript
+	 * @return
+	 */
+	private String createEmailBody(Map<String, Object> bindingMap,
+			String emailScript) {
 		try {
-			ScriptIntegration se = ScriptFactory.createModule(this.scriptEngine);
-			return (String) se.execute(bindingMap, emailScript);
-		} catch(Exception e) {
+			return (String) scriptRunner.execute(bindingMap, emailScript);
+		} catch (Exception e) {
 			log.error("createEmailBody():" + e.toString());
 			return null;
 		}
 	}
 
+	/**
+	 * @param notificationType
+	 * @return
+	 */
 	private String[] fetchEmailDetails(String notificationType) {
 		// for each notification, there will be entry in the property file
-		String notificationDetl = notificationRes.getString(notificationType);
-		String[] details = notificationDetl.split(";", 2);
-		if (details.length < 2) {
-			log.warn("Mail not sent, invalid notificationType: " + notificationType);
+		String notificationDetl = properties.getProperty(notificationType);
+		String[] details = StringUtils.split(notificationDetl, ";");
+		if (details == null || details.length < 2) {
+			log.warn(String.format(
+					"Mail not sent, invalid notificationType: %s",
+					notificationType));
 			return null;
 		}
 		return details;
 	}
 
-	public String getDefaultSender() {
-		return defaultSender;
-	}
-
-	public void setDefaultSender(String defaultSender) {
-		this.defaultSender = defaultSender;
-	}
-
-	public String getSubjectPrefix() {
-		return subjectPrefix;
-	}
-
-	public void setSubjectPrefix(String subjectPrefix) {
-		this.subjectPrefix = subjectPrefix;
-	}
-
-	public MailSender getMailSender() {
-		return mailSender;
-	}
-
-	public void setMailSender(MailSender mailSender) {
-		this.mailSender = mailSender;
-	}
-
-	public String getScriptEngine() {
-		return scriptEngine;
-	}
-
-	public void setScriptEngine(String scriptEngine) {
-		this.scriptEngine = scriptEngine;
-	}
-
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException  {
+	public void setApplicationContext(ApplicationContext applicationContext)
+			throws BeansException {
 		ac = applicationContext;
 	}
 
-	public UserDataWebService getUserManager() {
-		return userManager;
+	@Value("${oauth.consumerKey}")
+	private String consumerKey;
+
+	@Value("${oauth.consumerSecret}")
+	private String consumerSecret;
+
+	@Value("${oauth.accessToken}")
+	private String accessToken;
+
+	@Value("${oauth.accessTokenSecret}")
+	private String accessTokenSecret;
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.openiam.idm.srvc.msg.service.MailService#SendTwitterMessage(java.
+	 * lang.String, java.lang.String)
+	 */
+
+	public void tweetPrivateMessage(String userid, String msg) {
+
+		try {
+			DirectMessage message = getTwitterInstance().sendDirectMessage(
+					userid, msg);
+			log.info("Direct message successfully sent to "
+					+ message.getRecipientScreenName());
+		} catch (TwitterException te) {
+			te.printStackTrace();
+			log.error("Failed to send a direct message: " + te.getMessage());
+		}
 	}
 
-	public void setUserManager(UserDataWebService userManager) {
-		this.userManager = userManager;
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.openiam.idm.srvc.msg.service.MailService#tweetMessage(java.lang.String
+	 * )
+	 */
+	@Override
+	public void tweetMessage(String status) {
+
+		try {
+			Status stat = getTwitterInstance().updateStatus(status);
+			log.info("Status successfully Updated  ");
+
+		} catch (TwitterException te) {
+			te.printStackTrace();
+			log.error("Failed to update Status: " + te.getMessage());
+
+		}
 	}
 
-	public static ResourceBundle getNotificationRes() {
-		return notificationRes;
+	public Twitter getTwitterInstance() {
+		ConfigurationBuilder cb = new ConfigurationBuilder();
+		cb.setDebugEnabled(true).setOAuthConsumerKey(consumerKey)
+				.setOAuthConsumerSecret(consumerSecret)
+				.setOAuthAccessToken(accessToken)
+				.setOAuthAccessTokenSecret(accessTokenSecret);
+		TwitterFactory tf = new TwitterFactory(cb.build());
+		Twitter twitter = tf.getInstance();
+		return twitter;
 	}
 
-	public static void setNotificationRes(ResourceBundle notificationRes) {
-		MailServiceImpl.notificationRes = notificationRes;
-	}
-
-	public AuditHelper getAuditHelper() {
-		return auditHelper;
-	}
-
-	public void setAuditHelper(AuditHelper auditHelper) {
-		this.auditHelper = auditHelper;
-	}
-
-	public String getOptionalBccAddress() {
-		return optionalBccAddress;
-	}
-
-	public void setOptionalBccAddress(String optionalBccAddress) {
-		this.optionalBccAddress = optionalBccAddress;
-	}
 }

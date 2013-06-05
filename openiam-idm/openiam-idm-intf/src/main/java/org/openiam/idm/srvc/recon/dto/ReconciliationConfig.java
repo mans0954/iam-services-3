@@ -1,29 +1,50 @@
 package org.openiam.idm.srvc.recon.dto;
 
+import java.util.Set;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
-import java.util.Set;
+
 
 // Generated May 29, 2010 8:20:09 PM by Hibernate Tools 3.2.2.GA
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "ReconciliationConfig", 
-		propOrder = { "reconConfigId",
-		"resourceId",
-		"frequency",
-		"status",
-        "situationSet"
-  })
+@XmlType(name = "ReconciliationConfig", propOrder = { "reconConfigId",
+		"resourceId", "frequency", "status", "situationSet", "reportPath",
+		"separator", "endOfLine", "notificationEmailAddress", "targetSystemMatchScript" })
 public class ReconciliationConfig implements java.io.Serializable {
 
+	private static final long serialVersionUID = 431603790346613674L;
 	private String reconConfigId;
 	private String resourceId;
 	private String frequency;
 	private String status;
+	private String separator;
+	private String endOfLine;
+	private String notificationEmailAddress;
+    private String targetSystemMatchScript;
 
-    private Set<ReconciliationSituation> situationSet;
+	// Not saved in DB
+	private String reportPath;
 
+	public String getSeparator() {
+		return separator;
+	}
+
+	public void setSeparator(String separator) {
+		this.separator = separator;
+	}
+
+	public String getEndOfLine() {
+		return endOfLine;
+	}
+
+	public void setEndOfLine(String endOfLine) {
+		this.endOfLine = endOfLine;
+	}
+
+	private Set<ReconciliationSituation> situationSet;
 
 	public ReconciliationConfig() {
 	}
@@ -58,8 +79,6 @@ public class ReconciliationConfig implements java.io.Serializable {
 		this.resourceId = resourceId;
 	}
 
-
-
 	public String getFrequency() {
 		return this.frequency;
 	}
@@ -76,11 +95,42 @@ public class ReconciliationConfig implements java.io.Serializable {
 		this.status = status;
 	}
 
-    public Set<ReconciliationSituation> getSituationSet() {
-        return situationSet;
+	public Set<ReconciliationSituation> getSituationSet() {
+		return situationSet;
+	}
+
+	public void setSituationSet(Set<ReconciliationSituation> situationSet) {
+		this.situationSet = situationSet;
+	}
+
+	public String getReportPath() {
+		return reportPath;
+	}
+
+	public void setReportPath(String reportPath) {
+		this.reportPath = reportPath;
+	}
+
+	/**
+	 * @return the notificationEmailAddress
+	 */
+	public String getNotificationEmailAddress() {
+		return notificationEmailAddress;
+	}
+
+	/**
+	 * @param notificationEmailAddress
+	 *            the notificationEmailAddress to set
+	 */
+	public void setNotificationEmailAddress(String notificationEmailAddress) {
+		this.notificationEmailAddress = notificationEmailAddress;
+	}
+
+    public String getTargetSystemMatchScript() {
+        return targetSystemMatchScript;
     }
 
-    public void setSituationSet(Set<ReconciliationSituation> situationSet) {
-        this.situationSet = situationSet;
+    public void setTargetSystemMatchScript(String targetSystemMatchScript) {
+        this.targetSystemMatchScript = targetSystemMatchScript;
     }
 }

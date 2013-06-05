@@ -7,22 +7,14 @@ import javax.jws.WebParam;
 import javax.jws.WebService;
 
 /**
- * Provides methods to be able to send emails.
+ * Provides methods to be able to send emails and send direct message to authorized users.
  *
  * @author suneet
  */
 @WebService
 public interface MailService {
 
-    /**
-     * Sends an email to a specific user
-     */
-    @WebMethod
-    void send(String from, String to, String Subject, String msg);
-
-    @WebMethod
-    void sendWithCC(String from, String to, String cc, String subject, String msg);
-
+  
     /**
      * Sends an email all users with OpenIAM
      */
@@ -48,4 +40,44 @@ public interface MailService {
     boolean sendNotification(
             @WebParam(name = "req", targetNamespace = "")
             NotificationRequest req);
+    
+    /**
+     * sending a email to one user,cc and having one attachment at time.
+     * @param from
+     * @param to
+     * @param cc
+     * @param subject
+     * @param msg
+     * @param attachement
+     * @param isHtmlFormat 
+     */
+    public void sendEmail(String from, String to, String cc, String subject,
+            String msg ,String attachment ,boolean isHtmlFormat);  
+    
+    /**
+     * 
+     * sending a email from one user to multiple user,cc and bcc having multiple attachement at a time.
+     * @param from
+     * @param to
+     * @param cc
+     * @param bcc
+     * @param subject
+     * @param msg
+     * @param isHtmlFormat
+     * @param attachmentPath
+     */
+    public void sendEmails(String from, String[] to, String[] cc, String[] bcc, String subject, String msg, boolean isHtmlFormat, String[] attachmentPath);
+    
+    /**
+     *  sending out direct private message to authorized user on twitter.
+     * @param userid
+     * @param msg
+     */
+    public void tweetPrivateMessage(String userid, String msg);
+    
+    /**
+     * mmethod used to update status over twitter.
+     * @param status
+     */
+    public void tweetMessage(String status);
 }

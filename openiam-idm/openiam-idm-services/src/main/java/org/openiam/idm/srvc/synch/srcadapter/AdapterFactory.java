@@ -25,9 +25,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.openiam.idm.srvc.synch.service.SourceAdapter;
-import org.openiam.script.ScriptFactory;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -45,13 +46,16 @@ public class AdapterFactory  implements  ApplicationContextAware {
 	private String scriptEngine;
 	public static ApplicationContext ac;
 	
+	@Autowired
+    @Qualifier("configurableGroovyScriptEngine")
+    private ScriptIntegration scriptRunner;
+	
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		ac = applicationContext;
 	}
 	
 	
 	public SourceAdapter create(SynchConfig config) throws ClassNotFoundException, IOException {
-		ScriptIntegration se = null;
 		SourceAdapter adpt = null;
 		
 		String adapterType = config.getSynchAdapter();
@@ -61,14 +65,7 @@ public class AdapterFactory  implements  ApplicationContextAware {
 				if (adapterType.equalsIgnoreCase("CUSTOM") && 
 					( adapterType  != null &&  adapterType.length() > 0)) {
 					// custom adapter- written groovy
-					try {
-						se = ScriptFactory.createModule(scriptEngine); 
-					}catch(Exception e) {
-						log.error(e);
-						e.printStackTrace();
-						return null;
-					}
-					adpt =  (SourceAdapter)se.instantiateClass(null, customScript);
+					adpt =  (SourceAdapter)scriptRunner.instantiateClass(null, customScript);
 	
 				}else {
 					// using standard adapter

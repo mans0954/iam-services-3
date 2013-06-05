@@ -1,10 +1,9 @@
 package org.openiam.spml2.spi.orcl;
 
-import groovy.json.StringEscapeUtils;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
@@ -13,10 +12,10 @@ import org.openiam.spml2.msg.AddResponseType;
 import org.openiam.spml2.msg.ErrorCode;
 import org.openiam.spml2.msg.StatusCodeType;
 import org.openiam.spml2.spi.common.AddCommand;
+import org.openiam.spml2.util.msg.ResponseBuilder;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.text.ParseException;
 import java.util.List;
 
 /**
@@ -36,26 +35,26 @@ public class OracleAddCommand extends  AbstractOracleCommand implements AddComma
         response.setStatus(StatusCodeType.SUCCESS);
 
         final String targetID = reqType.getTargetID();
-        final ManagedSys managedSys = managedSysService.getManagedSys(targetID);
+        final ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
         if(managedSys == null) {
-            populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, String.format("No Managed System with target id: %s", targetID));
+            ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, String.format("No Managed System with target id: %s", targetID));
             return response;
         }
 
         if (StringUtils.isBlank(managedSys.getResourceId())) {
-            populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, "ResourceID is not defined in the ManagedSys Object");
+        	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, "ResourceID is not defined in the ManagedSys Object");
             return response;
         }
 
         final Resource res = resourceDataService.getResource(managedSys.getResourceId());
         if(res == null) {
-            populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, "No resource for managed resource found");
+        	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, "No resource for managed resource found");
             return response;
         }
 
         final String principalName = reqType.getPsoID().getID();
         if(principalName == null) {
-            populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, "No principal sent");
+        	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, "No principal sent");
             return response;
         }
 
@@ -100,7 +99,7 @@ public class OracleAddCommand extends  AbstractOracleCommand implements AddComma
             }
 
             if(StringUtils.isBlank(identifiedBy)) {
-                populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_ATTRIBUTE, "No password specified");
+            	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_ATTRIBUTE, "No password specified");
                 return response;
             }
 
@@ -112,20 +111,20 @@ public class OracleAddCommand extends  AbstractOracleCommand implements AddComma
             con.createStatement().execute(sql);
         } catch (SQLException se) {
             log.error(se);
-            populateResponse(response, StatusCodeType.FAILURE, ErrorCode.SQL_ERROR, se.toString());
+            ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.SQL_ERROR, se.toString());
         } catch (ClassNotFoundException cnfe) {
             log.error(cnfe);
-            populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, cnfe.toString());
+            ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, cnfe.toString());
         } catch(Throwable e) {
             log.error(e);
-            populateResponse(response, StatusCodeType.FAILURE, ErrorCode.OTHER_ERROR, e.toString());
+            ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.OTHER_ERROR, e.toString());
         } finally {
             if (con != null) {
                 try {
                     con.close();
                 } catch (SQLException s) {
                     log.error(s.toString());
-                    populateResponse(response, StatusCodeType.FAILURE, ErrorCode.SQL_ERROR, s.toString());
+                    ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.SQL_ERROR, s.toString());
                 }
             }
         }

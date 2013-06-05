@@ -21,19 +21,6 @@
  */
 package org.openiam.provision.service;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.AttributeOperationEnum;
@@ -48,13 +35,12 @@ import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.provision.type.ExtensibleAddress;
-import org.openiam.provision.type.ExtensibleAttribute;
-import org.openiam.provision.type.ExtensibleEmailAddress;
-import org.openiam.provision.type.ExtensibleGroup;
-import org.openiam.provision.type.ExtensiblePhone;
-import org.openiam.provision.type.ExtensibleRole;
-import org.openiam.provision.type.ExtensibleUser;
+import org.openiam.provision.type.*;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * User to extract the full list of attributes in a User object that is used for 
@@ -131,14 +117,14 @@ public class UserAttributeHelper {
 		if (principalList != null && principalList.size() > 0) {
 			for (Login lg  : principalList) {
 				try {
-					if (lg.getId().getManagedSysId().equalsIgnoreCase("0")) {
-						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY.PRINCIPAL.", lg.getId().getLogin()));
+					if (lg.getManagedSysId().equalsIgnoreCase("0")) {
+						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY.PRINCIPAL.", lg.getLogin()));
 						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_PSWD.PRINCIPAL", lg.getPassword()));
 						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_STATUS.PRINCIPAL", lg.getStatus()));
 					}else {
-						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY." + lg.getId().getManagedSysId(), lg.getId().getLogin()));
-						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_PSWD."+lg.getId().getManagedSysId(), lg.getPassword()));
-						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_STATUS."+lg.getId().getManagedSysId(), lg.getStatus()));
+						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY." + lg.getManagedSysId(), lg.getLogin()));
+						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_PSWD."+lg.getManagedSysId(), lg.getPassword()));
+						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_STATUS."+lg.getManagedSysId(), lg.getStatus()));
 
 					}
 				}catch(Exception e) {
@@ -150,7 +136,7 @@ public class UserAttributeHelper {
 		}
 		/*	Login lg = getPrimaryPrincipal(principalList);
 		if (lg != null) {
-			extUser.getAttributes().add(new ExtensibleAttribute("PRINCIPAL.IDENTITY", lg.getId().getLogin()));
+			extUser.getAttributes().add(new ExtensibleAttribute("PRINCIPAL.IDENTITY", lg.getLogin()));
 			extUser.getAttributes().add(new ExtensibleAttribute("PRINCIPAL.IDENTITY_PSWD", lg.getPassword()));
 		}
 	*/
@@ -185,7 +171,7 @@ public class UserAttributeHelper {
 		}
 		
 		// email
-		Set<EmailAddress> emailAddressList = pUser.getEmailAddress();
+		Set<EmailAddress> emailAddressList = pUser.getEmailAddresses();
 		if (emailAddressList != null) {
 			Iterator<EmailAddress> emailIt = emailAddressList.iterator();
 			while (emailIt.hasNext()) {
@@ -196,7 +182,7 @@ public class UserAttributeHelper {
 		}
 		
 		// phone
-		Set<Phone> phoneList = pUser.getPhone();
+		Set<Phone> phoneList = pUser.getPhones();
 		if (phoneList != null) {
 			Iterator<Phone> phoneIt = phoneList.iterator();
 			while (phoneIt.hasNext()) {
@@ -216,7 +202,7 @@ public class UserAttributeHelper {
 		}
 		for (Login lg  : principalList) {
 			try {
-				if (lg.getId().getManagedSysId().equalsIgnoreCase("0")) {
+				if (lg.getManagedSysId().equalsIgnoreCase("0")) {
 					return lg;
 				}
 			}catch(Exception e) {
@@ -303,27 +289,27 @@ public class UserAttributeHelper {
 	if (principalList != null && principalList.size() > 0) {
 		for (Login lg  : principalList) {
 			try {
-				if (lg.getId().getManagedSysId().equalsIgnoreCase("0")) {
-					extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY.PRINCIPAL.", lg.getId().getLogin(),0, "String"));
+				if (lg.getManagedSysId().equalsIgnoreCase("0")) {
+					extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY.PRINCIPAL.", lg.getLogin(),0, "String"));
 					String p = lg.getPassword();
 					if (p != null && p.length()> 12) {
-						p = loginManager.decryptPassword(p);
+						p = loginManager.decryptPassword(lg.getUserId(),p);
 						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_PSWD.PRINCIPAL",   p ,0, "String"));
 					}else {
 						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_PSWD.PRINCIPAL", p ,0, "String"));
 					}
 					extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_STATUS.PRINCIPAL", lg.getStatus()));
 				}else {
-					extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY." + lg.getId().getManagedSysId(), lg.getId().getLogin(),0, "String"));
+					extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY." + lg.getManagedSysId(), lg.getLogin(),0, "String"));
 					String p = lg.getPassword();
 					if (p != null && p.length()> 12) {
-						p = loginManager.decryptPassword(p);
-						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_PSWD."+lg.getId().getManagedSysId(), p,0, "String"));
+						p = loginManager.decryptPassword(lg.getUserId(),p);
+						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_PSWD."+lg.getManagedSysId(), p,0, "String"));
 					}else {
-						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_PSWD."+lg.getId().getManagedSysId(), p,0, "String"));
+						extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_PSWD."+lg.getManagedSysId(), p,0, "String"));
 					}
-					//extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_PSWD."+lg.getId().getManagedSysId(), lg.getPassword(),0));
-					extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_STATUS."+lg.getId().getManagedSysId(), lg.getStatus()));
+					//extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_PSWD."+lg.getManagedSysId(), lg.getPassword(),0));
+					extUser.getAttributes().add(new ExtensibleAttribute("IDENTITY_STATUS."+lg.getManagedSysId(), lg.getStatus()));
 				}
 			}catch(Exception e) {
 				log.error(e);
@@ -334,7 +320,7 @@ public class UserAttributeHelper {
 	}
 	/*	Login lg = getPrimaryPrincipal(principalList);
 	if (lg != null) {
-		extUser.getAttributes().add(new ExtensibleAttribute("PRINCIPAL.IDENTITY", lg.getId().getLogin()));
+		extUser.getAttributes().add(new ExtensibleAttribute("PRINCIPAL.IDENTITY", lg.getLogin()));
 		extUser.getAttributes().add(new ExtensibleAttribute("PRINCIPAL.IDENTITY_PSWD", lg.getPassword()));
 	}
 */
@@ -400,7 +386,7 @@ public class UserAttributeHelper {
 				if (curRoleList != null) {
 					boolean found = false;
 					for (Role cRl : curRoleList) {
-						if (cRl.getId().getRoleId().equals(rl.getId().getRoleId())) {
+						if (cRl.getRoleId().equals(rl.getRoleId())) {
 							found = true;
 						}
 					}
@@ -422,7 +408,7 @@ public class UserAttributeHelper {
 			if (roleList != null) {
 				boolean found = false;
 				for (Role newRole : roleList) {
-					if (rl.getId().getRoleId().equalsIgnoreCase(newRole.getId().getRoleId())) {
+					if (rl.getRoleId().equalsIgnoreCase(newRole.getRoleId())) {
 						found = true;
 					}
 				}
@@ -455,8 +441,8 @@ public class UserAttributeHelper {
 	
 	// email
 	log.info("Processing emailAddress list");
-	Set<EmailAddress> emailAddressList = getFullEmailList(pUser.getEmailAddress(),
-			origUser2.getEmailAddress() );
+	Set<EmailAddress> emailAddressList = getFullEmailList(pUser.getEmailAddresses(),
+			origUser2.getEmailAddresses() );
 	//Set<EmailAddress> emailAddressList = pUser.getEmailAddress();
 	if (emailAddressList != null) {
 		Iterator<EmailAddress> emailIt = emailAddressList.iterator();
@@ -469,8 +455,8 @@ public class UserAttributeHelper {
 	
 	// phone
 	log.info("Processing phoneList");
-	Set<Phone> phoneList = getFullPhoneList(pUser.getPhone(),
-			origUser2.getPhone() );
+	Set<Phone> phoneList = getFullPhoneList(pUser.getPhones(),
+			origUser2.getPhones() );
 	//Set<Phone> phoneList = pUser.getPhone();
 	if (phoneList != null) {
 		Iterator<Phone> phoneIt = phoneList.iterator();
@@ -683,38 +669,21 @@ public class UserAttributeHelper {
 		newUser.setNickname(user.getNickname());
 		newUser.setMaidenName(user.getMaidenName());
 		newUser.setPasswordTheme(user.getPasswordTheme());
-	    newUser.setCountry( user.getCountry());            
-	    newUser.setBldgNum( user.getBldgNum()); 
-	    newUser.setStreetDirection( user.getStreetDirection());
-		newUser.setAddress1( user.getAddress1());
-		newUser.setAddress2( user.getAddress2() );
-		newUser.setAddress3( user.getAddress3() );            
-		newUser.setAddress4( user.getAddress4() );            
-		newUser.setAddress5(user.getAddress5());     
-		newUser.setAddress6( user.getAddress6() );  
-		newUser.setAddress7(user.getAddress7() );
-		newUser.setCity( user.getCity() );
-		newUser.setState( user.getState() );
-		newUser.setPostalCd( user.getPostalCd());
 		newUser.setEmail( user.getEmail() );
-		newUser.setAreaCd( user.getAreaCd() );       
-		newUser.setCountryCd( user.getCountryCd());
-		newUser.setPhoneNbr( user.getPhoneNbr() );
-		newUser.setPhoneExt( user.getPhoneExt() );
 		newUser.setShowInSearch(user.getShowInSearch());
 		newUser.setAlternateContactId( user.getAlternateContactId());
 
 		
 		// 
-		Map<String, UserAttribute> userAttributes = new HashMap<String, UserAttribute>(0);
+		HashMap<String, UserAttribute> userAttributes = new HashMap<String, UserAttribute>(0);
 		userAttributes.putAll(user.getUserAttributes());
 		newUser.setUserAttributes( userAttributes);
 		
-		newUser.setPhone(user.getPhone() );
+		newUser.setPhones(user.getPhones() );
 		
 		newUser.setAddresses( user.getAddresses() );
 		
-		newUser.setEmailAddress(user.getEmailAddress());
+		newUser.setEmailAddresses(user.getEmailAddresses());
 		
 		return newUser;
 	

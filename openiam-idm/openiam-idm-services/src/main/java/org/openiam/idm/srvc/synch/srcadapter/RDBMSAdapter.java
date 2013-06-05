@@ -27,6 +27,7 @@ import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.idm.srvc.synch.dto.LineObject;
@@ -42,6 +43,7 @@ import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.service.ProvisionService;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
 import java.io.IOException;
@@ -65,6 +67,9 @@ public class RDBMSAdapter extends AbstractSrcAdapter { // implements SourceAdapt
     String systemAccount;
 
     MatchRuleFactory matchRuleFactory;
+    
+    @Autowired
+    private UserDozerConverter userDozerConverter;
 
     private static final Log log = LogFactory.getLog(RDBMSAdapter.class);
     private Connection con = null;
@@ -91,22 +96,9 @@ public class RDBMSAdapter extends AbstractSrcAdapter { // implements SourceAdapt
         synchStartLog.setSynchAttributes("SYNCH_USER", config.getSynchConfigId(), "START", "SYSTEM", requestId);
         synchStartLog = auditHelper.logEvent(synchStartLog);
 
-        synchronized (runningTask) {
-            if(runningTask.contains(config.getSynchConfigId())) {
-                log.debug("**** Synchronization Configuration " + config.getName() + " is already running");
-
-                SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
-                resp.setErrorCode(ResponseCode.FAIL_PROCESS_ALREADY_RUNNING);
-                return resp;
-            }
-            runningTask.add(config.getSynchConfigId());
-        }
-
 
 
         if (!connect(config)) {
-
-            runningTask.remove(config.getSynchConfigId());
 
             SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.FAIL_SQL_ERROR);
@@ -224,7 +216,7 @@ public class RDBMSAdapter extends AbstractSrcAdapter { // implements SourceAdapt
                         // initialize the transform script
                         if (usr != null) {
                             transformScript.setNewUser(false);
-                            transformScript.setUser(userMgr.getUserWithDependent(usr.getUserId(), true));
+                            transformScript.setUser(userDozerConverter.convertToDTO(userMgr.getUser(usr.getUserId()), true));
                             transformScript.setPrincipalList(loginManager.getLoginByUser(usr.getUserId()));
                             transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getUserId()));
 
@@ -279,8 +271,6 @@ public class RDBMSAdapter extends AbstractSrcAdapter { // implements SourceAdapt
 
                 } catch (ClassNotFoundException cnfe) {
 
-                    runningTask.remove(config.getSynchConfigId());
-
                     log.error(cnfe);
 
                     synchStartLog.updateSynchAttributes("FAIL", ResponseCode.CLASS_NOT_FOUND.toString(), cnfe.toString());
@@ -294,7 +284,6 @@ public class RDBMSAdapter extends AbstractSrcAdapter { // implements SourceAdapt
                     return resp;
                 } catch (IOException fe) {
 
-                    runningTask.remove(config.getSynchConfigId());
 
                     log.error(fe);
 
@@ -313,7 +302,6 @@ public class RDBMSAdapter extends AbstractSrcAdapter { // implements SourceAdapt
 
         } catch (SQLException se) {
 
-            runningTask.remove(config.getSynchConfigId());
 
             log.error(se);
             closeConnection();
@@ -327,7 +315,7 @@ public class RDBMSAdapter extends AbstractSrcAdapter { // implements SourceAdapt
             resp.setErrorText(se.toString());
             return resp;
         } finally {
-            runningTask.remove(config.getSynchConfigId());
+
 
             // mark the end of the synch
             IdmAuditLog synchEndLog = new IdmAuditLog();

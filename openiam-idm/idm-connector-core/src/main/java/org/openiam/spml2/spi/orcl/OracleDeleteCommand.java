@@ -1,18 +1,14 @@
 package org.openiam.spml2.spi.orcl;
 
 import org.apache.commons.lang.StringUtils;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.idm.srvc.res.dto.ResourceProp;
-import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.spml2.msg.*;
 import org.openiam.spml2.spi.common.DeleteCommand;
+import org.openiam.spml2.util.msg.ResponseBuilder;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.text.ParseException;
-import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -36,21 +32,21 @@ public class OracleDeleteCommand extends AbstractOracleCommand implements Delete
         final PSOIdentifierType psoID = reqType.getPsoID();
         final String targetID = psoID.getTargetID();
 
-        ManagedSys managedSys = managedSysService.getManagedSys(targetID);
+        ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
 
         if(managedSys == null) {
-            populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, String.format("No Managed System with target id: %s", targetID));
+        	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, String.format("No Managed System with target id: %s", targetID));
             return response;
         }
 
         if (StringUtils.isBlank(managedSys.getResourceId())) {
-            populateResponse(response, StatusCodeType.FAILURE,  ErrorCode.INVALID_CONFIGURATION, "ResourceID is not defined in the ManagedSys Object");
+        	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE,  ErrorCode.INVALID_CONFIGURATION, "ResourceID is not defined in the ManagedSys Object");
             return response;
         }
 
         final Resource res = resourceDataService.getResource(managedSys.getResourceId());
         if(res == null) {
-            populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, "No resource for managed resource found");
+        	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, "No resource for managed resource found");
             return response;
         }
 
@@ -61,20 +57,20 @@ public class OracleDeleteCommand extends AbstractOracleCommand implements Delete
             con.createStatement().execute(sql);
         } catch (SQLException se) {
             log.error(se);
-            populateResponse(response, StatusCodeType.FAILURE, ErrorCode.SQL_ERROR,  se.toString());
+            ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.SQL_ERROR,  se.toString());
         } catch (ClassNotFoundException cnfe) {
             log.error(cnfe);
-            populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION,  cnfe.toString());
+            ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION,  cnfe.toString());
         } catch(Throwable e) {
             log.error(e);
-            populateResponse(response, StatusCodeType.FAILURE, ErrorCode.OTHER_ERROR, e.toString());
+            ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.OTHER_ERROR, e.toString());
         } finally {
             if (con != null) {
                 try {
                     con.close();
                 } catch (SQLException s) {
                     log.error(s);
-                    populateResponse(response, StatusCodeType.FAILURE, ErrorCode.SQL_ERROR,  s.toString());
+                    ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.SQL_ERROR,  s.toString());
                 }
             }
         }

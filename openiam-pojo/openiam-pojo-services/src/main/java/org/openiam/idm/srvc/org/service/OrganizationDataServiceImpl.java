@@ -8,430 +8,345 @@ import javax.jws.*;
 import java.util.*;
 import java.rmi.*;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.hibernate.Hibernate;
+import org.openiam.base.ws.Response;
+import org.openiam.base.ws.ResponseCode;
+import org.openiam.base.ws.ResponseStatus;
+import org.openiam.base.ws.exception.BasicDataServiceException;
+import org.openiam.dozer.converter.OrganizationAttributeDozerConverter;
+import org.openiam.dozer.converter.OrganizationDozerConverter;
+import org.openiam.idm.searchbeans.OrganizationSearchBean;
+import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
+import org.openiam.idm.srvc.org.domain.OrganizationEntity;
+import org.openiam.idm.srvc.org.domain.UserAffiliationEntity;
 import org.openiam.idm.srvc.org.dto.*;
-import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.role.dto.UserRole;
+import org.openiam.idm.srvc.role.domain.RoleEntity;
+import org.openiam.idm.srvc.searchbean.converter.OrganizationSearchBeanConverter;
+import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.service.UserDAO;
+import org.openiam.util.DozerMappingType;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * <code>OrganizationManager</code> provides a service level interface to the
  * Organization components and its dependant objects as well as search
  * capability.<br>
- * 
+ * <p/>
  * Note: The spring configuration file defines MetadataTypes are used to identify Departments and Divisions in the org list.
- * 
+ *
  * @author OpenIAm
  * @version 2
  */
 
-@WebService(endpointInterface="org.openiam.idm.srvc.org.service.OrganizationDataService",
-		targetNamespace="urn:idm.openiam.org/srvc/org/service",
-		portName = "OrganizationDataWebServicePort",
-		serviceName="OrganizationDataWebService")
+@WebService(endpointInterface = "org.openiam.idm.srvc.org.service.OrganizationDataService",
+        targetNamespace = "urn:idm.openiam.org/srvc/org/service",
+        portName = "OrganizationDataWebServicePort",
+        serviceName = "OrganizationDataWebService")
+@Service("orgManager")
+@Transactional
 public class OrganizationDataServiceImpl implements OrganizationDataService {
-
-	protected OrganizationDAO orgDao;
-
-	protected OrganizationAttributeDAO orgAttrDao;
-    protected UserAffiliationDAO orgAffiliationDao;
 	
+	private static final Log log = LogFactory.getLog(OrganizationDataServiceImpl.class);
 	
+	@Autowired
+	private OrganizationService organizationService;
 	
-
-
-	/**
-	 * Returns a list of companies that match the search criteria.
-	 * 
-	 * @param search
-	 * @return
-	 * @throws RemoteException
-	 */
-	// List searchOrganization(OrganizationSearch search) throws
-	// RemoteException;
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.org.service.OrganizationDataService#subOrganizations(java.lang.String)
-	 */
-	public List<Organization> subOrganizations(String orgId) {
-		if (orgId == null) {
-			throw new NullPointerException("orgId is null");
-		}
-		return orgDao.findChildOrganization(orgId);
-		//return testOrgList(orgId);
-
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.org.service.OrganizationDataService#getTopLevelOrganizations()
-	 */
-	public List<Organization> getTopLevelOrganizations() {
-		List<Organization> orgList = orgDao.findRootOrganizations();
-		
-		// initialize the collections
-		for ( Organization org :orgList) {
-			Hibernate.initialize( org.getAttributes() ); 
-		}
-		
-		return orgList;
-		//return testOrgList("myTopLevelOrg");
-	}
-	
-	/**
-	 * Returns a list of all organizations based on a metadataType. The parentId parameter can be used to get 
-	 * values that are nested further in the hierarchy. If parentId is null, the method will search only on the typeId and parentId 
-	 * will be ignored.
-	 * @param typeId
-	 * @param parentId
-	 * @return
-	 */
-   public List<Organization> getOrganizationByType(String typeId, String parentId) {
-		if (typeId == null)
-			throw new NullPointerException("typeId is null");
-		
-	   List<Organization> orgList = orgDao.findOrganizationByType(typeId, parentId);
-	   if (orgList == null) {
-		   return null;
-	   }
-	   return orgList;
-   }
-
-   public List<Organization> getOrganizationByClassification(String parentId, String classification) {
-		if (classification == null)
-			throw new NullPointerException("classification is null");
-		
-	   List<Organization> orgList = orgDao.findOrganizationByClassification(parentId, classification);
-	   if (orgList == null) {
-		   return null;
-	   }
-	   return orgList;
-  }
-   
-   public List<Organization> allDepartments(String parentId) {
-	   return getOrganizationByClassification(parentId, OrgClassificationEnum.DEPARTMENT.toString());
-   }
-   public List<Organization> allDivisions(String parentId) {
-	   return getOrganizationByClassification(parentId, OrgClassificationEnum.DIVISION.toString());  
-   }
-   
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.org.service.OrganizationDataService#addOrganization(org.openiam.idm.srvc.org.dto.Organization)
-	 */
-	public Organization addOrganization(Organization org) {
-		if (org == null)
-			throw new NullPointerException("org object is null");
-
-		return orgDao.add(org); //null pointer here, orgDao seems to be null
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.org.service.OrganizationDataService#updateOrganization(org.openiam.idm.srvc.org.dto.Organization)
-	 */
-	public void updateOrganization(Organization org) {
-		if (org == null)
-			throw new NullPointerException("org object is null");
-		if (org.getOrgId() == null)
-			throw new NullPointerException("org id is null");
-		orgDao.update(org);
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.org.service.OrganizationDataService#removeOrganization(java.lang.String)
-	 */
-	public void removeOrganization(String orgId) {
-		if (orgId == null)
-			throw new NullPointerException("orgId is null");
-
-		Organization instance = new Organization();
-		instance.setOrgId(orgId);  // dont need if new Organization(orgId) constructor available
-		orgDao.remove(instance);
-
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.org.service.OrganizationDataService#isRootOrganization(java.lang.String)
-	 */
-	public boolean isRootOrganization(String orgId) {
-		if (orgId == null)
-			throw new NullPointerException("orgId object is null");
-
-		Organization org = orgDao.findById(orgId);
-		if (org == null) {
-			return false;
-		}
-		if (org.getParentId() == null) {
-			return true;
-		}
-		return false;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.org.service.OrganizationDataService#containsChildren(java.lang.String)
-	 */
-	public boolean containsChildren(String orgId) {
-		if (orgId == null)
-			throw new NullPointerException("orgId object is null");
-
-		List<Organization> orgList = orgDao.findChildOrganization(orgId);
-		if (orgList != null && !orgList.isEmpty()) {
-			return true;
-		}
-		return false;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.org.service.OrganizationDataService#getOrganization(java.lang.String)
-	 */
-	public Organization getOrganization(String orgId) {
-		if (orgId == null)
-			throw new NullPointerException("orgId object is null");
-		
-		System.out.println("In Organization: orgDao=" + orgDao );
-		
-		Organization org = orgDao.findById(orgId);
-		if (org != null) {
-			Hibernate.initialize( org.getAttributes() ); 
-		}else {
-			return null;
-		}
-		return org;
-		
-	}
-
-	/* -------- Methods for Attributes ---------- */
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.org.service.OrganizationDataService#addAttribute(org.openiam.idm.srvc.org.dto.OrganizationAttribute)
-	 */
-	public void addAttribute(OrganizationAttribute attribute) {
-		if (attribute == null)
-			throw new NullPointerException("Attribute can not be null");
-		if (attribute.getAttrId() == null) {
-			throw new NullPointerException("Attribute id is null");
-		}
-		if (attribute.getOrganizationId() == null) {
-			throw new NullPointerException(
-					"OrganizationId has not been associated with this attribute.");
-		}
-
-		orgAttrDao.add(attribute);
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.org.service.OrganizationDataService#updateAttribute(org.openiam.idm.srvc.org.dto.OrganizationAttribute)
-	 */
-	public void updateAttribute(OrganizationAttribute attribute) {
-		if (attribute == null)
-			throw new NullPointerException("Attribute can not be null");
-		if (attribute.getAttrId() == null) {
-			throw new NullPointerException("Attribute id is null");
-		}
-		if (attribute.getOrganizationId() == null) {
-			throw new NullPointerException(
-					"Org has not been associated with this attribute.");
-		}
-
-		orgAttrDao.update(attribute);
-
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.org.service.OrganizationDataService#getAllAttributes(java.lang.String)
-	 */
-	public Map<String, OrganizationAttribute> getAllAttributes(String orgId) {
-
-		Map<String, OrganizationAttribute> attrMap = null;
-
-		if (orgId == null) {
-			throw new NullPointerException("orgId is null");
-		}
-		
-		Organization org = this.orgDao.findById(orgId);
-		
-		attrMap = org.getAttributes();
-		if (attrMap != null && attrMap.isEmpty())
-			return null;
-		return attrMap;
-		
-		//return this.attribMap(orgId);
-
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.org.service.OrganizationDataService#getAttribute(java.lang.String)
-	 */
-	public OrganizationAttribute getAttribute(String attrId) {
-		if (attrId == null) {
-			throw new NullPointerException("attrId is null");
-		}
-		return orgAttrDao.findById(attrId);
-		//return this.orgAttrib(attrId);
-
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.org.service.OrganizationDataService#removeAttribute(org.openiam.idm.srvc.org.dto.OrganizationAttribute)
-	 */
-	public void removeAttribute(OrganizationAttribute attr) {
-		if (attr == null) {
-			throw new NullPointerException("attr is null");
-		}
-		if (attr.getAttrId() == null) {
-			throw new NullPointerException("attrId is null");
-		}
-
-		orgAttrDao.remove(attr);
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.org.service.OrganizationDataService#removeAllAttributes(java.lang.String)
-	 */
-	public void removeAllAttributes(String orgId) {
-		if (orgId == null) {
-			throw new NullPointerException("orgId is null");
-		}
-		orgAttrDao.removeAttributesByParent(orgId);
-
-	}
-
-
-    /* User Affiliation */
-    /**
-	 * Adds a user to a org using the UserOrg object.
-	 */
-	public void assocUserToOrg(UserAffiliation userorg) {
-		if (userorg.getOrganizationId() == null)
-			throw new IllegalArgumentException("organizationId  is null");
-
-		if (userorg.getUserId() == null)
-			throw new IllegalArgumentException("userId object is null");
-
-        userorg.setUserAffiliationId(null);
-        this.orgAffiliationDao.add(userorg);
-
-	}
-
-
-	public void updateUserOrgAssoc(UserAffiliation userorg) {
-		if (userorg.getOrganizationId() == null)
-			throw new IllegalArgumentException("organizationId  is null");
-
-		if (userorg.getUserId() == null)
-			throw new IllegalArgumentException("userId object is null");
-
-        orgAffiliationDao.update(userorg);
-
-	}
-
-
-	public List<Organization> getOrganizationsForUser(String userId) {
-		if (userId == null) {
-			throw new IllegalArgumentException("userId is null");
-		}
-
-        return orgAffiliationDao.findOrgAffiliationsByUser(userId);
-
-	}
-
-
-	public void addUserToOrg(String orgId, String userId) {
-
-		if (orgId == null)
-			throw new IllegalArgumentException("organizationId  is null");
-
-		if (userId == null)
-			throw new IllegalArgumentException("userId object is null");
-
-        UserAffiliation ua = new UserAffiliation(userId,orgId);
-        orgAffiliationDao.add(ua);
-
-
-	}
-
-	public boolean isUserAffilatedWithOrg(String orgId, String userId) {
-
-		if (orgId == null)
-			throw new IllegalArgumentException("organizationId  is null");
-
-		if (userId == null)
-			throw new IllegalArgumentException("userId object is null");
-
-        List<Organization> orgList = orgAffiliationDao.findOrgAffiliationsByUser(userId);
-
-
-		for (Organization org : orgList) {
-            if (org.getOrgId().equals(orgId)) {
-                return true;
-            }
-		}
-		return false;
-	}
-
-	public void removeUserFromOrg(String orgId,	String userId) {
-				if (orgId == null)
-			throw new IllegalArgumentException("organizationId  is null");
-
-		if (userId == null)
-			throw new IllegalArgumentException("userId object is null");
-
-        orgAffiliationDao.removeUserFromOrg(orgId,userId);
-	}
-    /* Spring methods */
-
-
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.org.service.OrganizationDataService#getOrgAttrDao()
-	 */
-	public OrganizationAttributeDAO getOrgAttrDao() {
-		return orgAttrDao;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.org.service.OrganizationDataService#setOrgAttrDao(org.openiam.idm.srvc.org.service.OrganizationAttributeDAO)
-	 */
-	public void setOrgAttrDao(OrganizationAttributeDAO orgAttrDao) {
-		this.orgAttrDao = orgAttrDao;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.org.service.OrganizationDataService#getOrgDao()
-	 */
-	public OrganizationDAO getOrgDao() {
-		return orgDao;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.org.service.OrganizationDataService#setOrgDao(org.openiam.idm.srvc.org.service.OrganizationDAO)
-	 */
-	public void setOrgDao(OrganizationDAO orgDao) {
-		this.orgDao = orgDao;
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.org.service.OrganizationDataService#search(java.lang.String, java.lang.String)
-	 */
-	public List<Organization> search(String name, String type, String classification, String internalOrgId) {
-		return orgDao.search(name, type, classification, internalOrgId);
-	}
-	
-	public List<Organization> getAllOrganizations() {
-		return orgDao.findAllOrganization();
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.org.service.OrganizationDataService#getOrganizationList(java.lang.String, java.lang.String)
-	 */
-	public List<Organization> getOrganizationList(String parentOrgId,
-			String status) {
-		return orgDao.findOrganizationByStatus(parentOrgId, status);
-	}
-
-
-    public UserAffiliationDAO getOrgAffiliationDao() {
-        return orgAffiliationDao;
+    @Autowired
+    private OrganizationSearchBeanConverter organizationSearchBeanConverter;
+    
+    @Autowired
+    private OrganizationDozerConverter organizationDozerConverter;
+    
+    @Autowired
+    private OrganizationAttributeDozerConverter organizationAttributeDozerConverter;
+
+    @Override
+    public List<Organization> getTopLevelOrganizations() {
+        final List<OrganizationEntity> entityList = organizationService.getTopLevelOrganizations();
+        return organizationDozerConverter.convertToDTOList(entityList, false);
     }
 
-    public void setOrgAffiliationDao(UserAffiliationDAO orgAffiliationDao) {
-        this.orgAffiliationDao = orgAffiliationDao;
+    @Override
+    public Organization getOrganization(final String orgId) {
+    	final OrganizationEntity entity = organizationService.getOrganization(orgId);
+    	return organizationDozerConverter.convertToDTO(entity, false);
     }
+
+    @Override
+    public List<Organization> getOrganizationsForUser(String userId) {
+        final List<OrganizationEntity> ogranizationEntity = organizationService.getOrganizationsForUser(userId);
+        return organizationDozerConverter.convertToDTOList(ogranizationEntity, false);
+    }
+
+    @Override
+    public Response addUserToOrg(final String orgId, final String userId) {
+    	final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(orgId != null && userId != null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			if(organizationService.getAffiliation(userId, orgId) != null) {
+				throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
+			}
+			
+			organizationService.addUserToOrg(orgId, userId);
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			log.error("Can't save resource type", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+    	return response;
+    }
+
+    @Override
+    public Response removeUserFromOrg(String orgId, String userId) {
+    	final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(orgId != null && userId != null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			organizationService.removeUserFromOrg(orgId, userId);
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			log.error("Can't save resource type", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+    	return response;
+    }
+
+    @Override
+    public List<Organization> getAllOrganizations() {
+    	final List<OrganizationEntity> entityList = organizationService.getAllOrganizations();
+        return organizationDozerConverter.convertToDTOList(entityList, false);
+    }
+
+
+
+    @Override
+    public List<Organization> findBeans(final OrganizationSearchBean searchBean, final int from, final int size) {
+    	final OrganizationEntity searchEntity = organizationSearchBeanConverter.convert(searchBean);
+        final List<OrganizationEntity> entityList = organizationService.findBeans(searchEntity, from, size);
+        final List<Organization> resultList = organizationDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy());
+        return resultList;
+    }
+
+    @Override
+    public int count(final OrganizationSearchBean searchBean) {
+    	final OrganizationEntity searchEntity = organizationSearchBeanConverter.convert(searchBean);
+    	return organizationService.count(searchEntity);
+    }
+
+
+	@Override
+	public Response removeAttribute(final String attributeId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(attributeId == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			organizationService.removeAttribute(attributeId);
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			log.error("Can't delete occupation attribute", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+    	return response;
+	}
+
+
+	@Override
+	public Response saveOrganization(final Organization organization) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(organization == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			if(organization.getClassification() == null) {
+				organization.setClassification(OrgClassificationEnum.fromStringValue(organization.getClassificaitonAsString()));
+			}
+			
+			OrganizationEntity entity = organizationDozerConverter.convertToEntity(organization, false);
+			organizationService.save(entity);
+			response.setResponseValue(entity.getOrgId());
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			log.error("Can't save resource type", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+    	return response;
+	}
+
+
+	@Override
+	public Response saveAttribute(final OrganizationAttribute attribute) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(attribute == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			if(StringUtils.isBlank(attribute.getOrganizationId())) {
+				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+			}
+			
+			final OrganizationAttributeEntity entity = organizationAttributeDozerConverter.convertToEntity(attribute, false);
+			if(StringUtils.isBlank(entity.getName())) {
+				throw new BasicDataServiceException(ResponseCode.NO_NAME);
+			}
+			
+			organizationService.save(entity);
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			log.error("Can't save resource type", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+    	return response;
+	}
+	
+	@Override
+	public Response removeChildOrganization(final String organizationId, final String childOrganizationId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(organizationId == null || childOrganizationId == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			organizationService.removeChildOrganization(organizationId, childOrganizationId);
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			log.error("Can't save resource type", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+    	return response;
+	}
+
+	@Override
+	public Response addChildOrganization(final String organizationId, final String childOrganizationId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(organizationId == null || childOrganizationId == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			final OrganizationEntity parent = organizationService.getOrganization(organizationId);
+			final OrganizationEntity child = organizationService.getOrganization(childOrganizationId);
+			
+			if(parent == null || child == null) {
+				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+			}
+			
+			if(parent.hasChildOrganization(childOrganizationId)) {
+				throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
+			}
+			
+			if(causesCircularDependency(parent, child, new HashSet<OrganizationEntity>())) {
+				throw new BasicDataServiceException(ResponseCode.CIRCULAR_DEPENDENCY);
+			}
+			
+			if(organizationId.equals(childOrganizationId)) {
+				throw new BasicDataServiceException(ResponseCode.CANT_ADD_YOURSELF_AS_CHILD);
+			}
+			
+			organizationService.addChildOrganization(organizationId, childOrganizationId);
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			log.error("Can't save resource type", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+    	return response;
+	}
+	
+	private boolean causesCircularDependency(final OrganizationEntity parent, final OrganizationEntity child, final Set<OrganizationEntity> visitedSet) {
+		boolean retval = false;
+		if(parent != null && child != null) {
+			if(!visitedSet.contains(child)) {
+				visitedSet.add(child);
+				if(CollectionUtils.isNotEmpty(parent.getParentOrganizations())) {
+					for(final OrganizationEntity entity : parent.getParentOrganizations()) {
+						retval = entity.getOrgId().equals(child.getOrgId());
+						if(retval) {
+							break;
+						}
+						causesCircularDependency(parent, entity, visitedSet);
+					}
+				}
+			}
+		}
+		return retval;
+	}
+
+	@Override
+	public Response deleteOrganization(final String orgId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(orgId == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			organizationService.deleteOrganization(orgId);
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			log.error("Can't save resource type", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+    	return response;
+	}
+
+	@Override
+	public List<Organization> getParentOrganizations(final String organizationId, final int from, final int size) {
+		final List<OrganizationEntity> entityList = organizationService.getParentOrganizations(organizationId, from, size);
+		final List<Organization> organizationList = organizationDozerConverter.convertToDTOList(entityList, false);
+		return organizationList;
+	}
+
+	@Override
+	public List<Organization> getChildOrganizations(final String organizationId, final int from, final int size) {
+		final List<OrganizationEntity> entityList = organizationService.getChildOrganizations(organizationId, from, size);
+		final List<Organization> organizationList = organizationDozerConverter.convertToDTOList(entityList, false);
+		return organizationList;
+	}
+
+	@Override
+	public int getNumOfParentOrganizations(final String organizationId) {
+		return organizationService.getNumOfParentOrganizations(organizationId);
+	}
+
+	@Override
+	public int getNumOfChildOrganizations(final String organizationId) {
+		return organizationService.getNumOfChildOrganizations(organizationId);
+	}
 }

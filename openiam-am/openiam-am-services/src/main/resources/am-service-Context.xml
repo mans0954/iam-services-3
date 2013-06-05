@@ -21,19 +21,78 @@
 	    	<list>
 		        <value>classpath:datasource.properties</value>
 		        <value>classpath:securityconf.properties</value>
+		        <value>file:/data/openiam/conf/datasource.properties</value>
+		        <value>file:/data/openiam/conf/securityconf.properties</value>
 	        </list>
 	    </property>
+	    <property name="ignoreResourceNotFound" value="true" />
 	</bean>
 
+    <bean id="amDeepDozerMapper" class="org.dozer.DozerBeanMapper">
+        <property name="mappingFiles">
+            <list>
+                <value>org/openiam/am/dozer/dozer-common-mapping.xml</value>
+                <value>org/openiam/am/dozer/dozer-deep-mapping.xml</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="amShallowDozerMapper" class="org.dozer.DozerBeanMapper">
+        <property name="mappingFiles">
+            <list>
+                <value>org/openiam/am/dozer/dozer-common-mapping.xml</value>
+                <value>org/openiam/am/dozer/dozer-shallow-mapping.xml</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="amDto2entityShallowDozerMapper" class="org.dozer.DozerBeanMapper">
+        <property name="mappingFiles">
+            <list>
+                <value>org/openiam/am/dozer/dto2entity/entity2dto.common.mappings.xml</value>
+                <value>org/openiam/am/dozer/dto2entity/entity2dto.shallow.mappings.xml</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="amDto2entityDeepDozerMapper" class="org.dozer.DozerBeanMapper">
+        <property name="mappingFiles">
+            <list>
+                <value>org/openiam/am/dozer/dto2entity/entity2dto.common.mappings.xml</value>
+                <value>org/openiam/am/dozer/dto2entity/entity2dto.deep.mappings.xml</value>
+            </list>
+        </property>
+    </bean>
+    
+    <bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+    	<property name="triggers">
+        	<list>
+        		<bean class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+        			 <property name="startDelay" value="${org.openiam.am.uri.federation.threadsweep}" />
+        			 <property name="repeatInterval" value="${org.openiam.am.uri.federation.threadsweep}" />
+        			 <property name="jobDetail">
+						<bean class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+							<property name="targetObject" ref="uriFederationService" />
+						  	<property name="targetMethod" value="sweep" />
+						  	<property name="concurrent" value="false" />
+						</bean>
+        			 </property>
+        		</bean>
+        	</list>
+     	</property>
+	</bean>
+
+	<!--
     <aop:config>
-        <aop:pointcut id="resAttrOperation" expression="execution(* org.openiam.am.srvc.resattr.service.WebResourceAttributeServiceImpl.*(..))"/>
+        <aop:pointcut id="resAttrOperation" expression="execution(* org.openiam.am.srvc.service.WebResourceAttributeServiceImpl.*(..))"/>
         <aop:advisor advice-ref="txAdvice" pointcut-ref="resAttrOperation"/>
     </aop:config>
     <aop:config>
         <aop:pointcut id="webResAttrOperation" expression="execution(* org.openiam.am.srvc.resattr.ws.WebResourceServiceImpl.*(..))"/>
         <aop:advisor advice-ref="txAdvice" pointcut-ref="webResAttrOperation"/>
     </aop:config>
-
+	-->
+	
 </beans>
 
 

@@ -24,6 +24,7 @@ package org.openiam.idm.srvc.synch.service;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -34,18 +35,21 @@ import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.idm.srvc.role.dto.RoleId;
+import org.openiam.dozer.converter.UserDozerConverter;
+import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.openiam.idm.srvc.synch.dto.BulkMigrationConfig;
 import org.openiam.idm.srvc.synch.srcadapter.AdapterFactory;
 import org.openiam.idm.srvc.user.service.UserDataService;
-import org.openiam.idm.srvc.user.dto.UserSearch;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.dto.UserResourceAssociation;
 import org.openiam.provision.service.ProvisionService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 /**
  * @author suneet
@@ -58,15 +62,28 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
     private MuleContext muleContext;
     private UserDataService userMgr;
     private ProvisionService provisionService;
+    
+    @Autowired
+    private UserDozerConverter userDozerConverter;
 
-    static protected ResourceBundle res = ResourceBundle.getBundle("datasource");
-
-    static String serviceHost = res.getString("openiam.service_base");
-    static String serviceContext = res.getString("openiam.idm.ws.path");
+    @Value("${openiam.service_base}")
+    private String serviceHost;
+    
+    @Value("${openiam.idm.ws.path}")
+    private String serviceContext;
 
 	
 	private static final Log log = LogFactory.getLog(IdentitySynchServiceImpl.class);
-	
+
+
+    /*
+    * The flags for the running tasks are handled by this Thread-Safe Set.
+    * It stores the taskIds of the currently executing tasks.
+    * This is faster and as reliable as storing the flags in the database,
+    * if the tasks are only launched from ONE host in a clustered environment.
+    * It is unique for each class-loader, which means unique per war-deployment.
+    */
+    private static Set<String> runningTask = Collections.newSetFromMap(new ConcurrentHashMap());
 	
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.synch.service.IdentitySynchService#getAllConfig()
@@ -114,53 +131,94 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 	}
 
 	public SyncResponse startSynchronization(SynchConfig config) {
-		log.debug("-startSynchronization CALLED.^^^^^^^^");
-		try {
+
+        SyncResponse syncResponse = new SyncResponse(ResponseStatus.SUCCESS);
+
+        log.debug("-startSynchronization CALLED.^^^^^^^^");
+
+        SyncResponse processCheckResponse = addTask(config.getSynchConfigId());
+        if ( processCheckResponse.getStatus() == ResponseStatus.FAILURE ) {
+            return processCheckResponse;
+
+        }
+        try {
+
 			SourceAdapter adapt = adaptorFactory.create(config);
             adapt.setMuleContext(muleContext);
 
 			long newLastExecTime = System.currentTimeMillis();
 
-			SyncResponse resp = adapt.startSynch(config);
+            syncResponse = adapt.startSynch(config);
 			
-			log.debug("SyncReponse updateTime value=" + resp.getLastRecordTime());
+			log.debug("SyncReponse updateTime value=" + syncResponse.getLastRecordTime());
 			
-			if (resp.getLastRecordTime() == null) {
+			if (syncResponse.getLastRecordTime() == null) {
 			
 				synchConfigDao.updateExecTime(config.getSynchConfigId(), new Timestamp( newLastExecTime ));
 			}else {
-				synchConfigDao.updateExecTime(config.getSynchConfigId(), new Timestamp( resp.getLastRecordTime().getTime() ));
+				synchConfigDao.updateExecTime(config.getSynchConfigId(), new Timestamp( syncResponse.getLastRecordTime().getTime() ));
 			}
 
-            if (resp.getLastRecProcessed() != null) {
+            if (syncResponse.getLastRecProcessed() != null) {
 
-				synchConfigDao.updateLastRecProcessed(config.getSynchConfigId(),resp.getLastRecProcessed() );
+				synchConfigDao.updateLastRecProcessed(config.getSynchConfigId(),syncResponse.getLastRecProcessed() );
 			}
 
 
-		log.debug("-startSynchronization COMPLETE.^^^^^^^^");
-			
-			return resp;
+		    log.debug("-startSynchronization COMPLETE.^^^^^^^^");
+
 		}catch( ClassNotFoundException cnfe) {
 
             cnfe.printStackTrace();
 
 			log.error(cnfe);
-			SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
-			resp.setErrorCode(ResponseCode.CLASS_NOT_FOUND);
-			resp.setErrorText(cnfe.getMessage());
-			return resp;
+            syncResponse = new SyncResponse(ResponseStatus.FAILURE);
+            syncResponse.setErrorCode(ResponseCode.CLASS_NOT_FOUND);
+            syncResponse.setErrorText(cnfe.getMessage());
+
 		}catch(Exception e) {
 
-            e.printStackTrace();
 
 			log.error(e);
-			SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
-			resp.setErrorText(e.getMessage());
-			return resp;			
-		}
+            syncResponse = new SyncResponse(ResponseStatus.FAILURE);
+            syncResponse.setErrorText(e.getMessage());
+
+		}finally {
+            endTask(config.getSynchConfigId());
+
+            return syncResponse;
+
+        }
 
 	}
+
+    // manage if the task is running
+
+    /**
+     * Updates the RunningTask list to show that a process is running
+     * @param configId
+     * @return
+     */
+    public SyncResponse addTask(String configId) {
+
+        SyncResponse resp = new SyncResponse(ResponseStatus.SUCCESS);
+        synchronized (runningTask) {
+            if(runningTask.contains(configId)) {
+
+                resp = new SyncResponse(ResponseStatus.FAILURE);
+                resp.setErrorCode(ResponseCode.FAIL_PROCESS_ALREADY_RUNNING);
+                return resp;
+            }
+            runningTask.add(configId);
+            return resp;
+        }
+
+    }
+
+    public void endTask(String configID) {
+        runningTask.remove(configID);
+
+    }
 
     public Response testConnection(SynchConfig config) {
         try {
@@ -187,13 +245,15 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
         Response resp = new Response(ResponseStatus.SUCCESS);
 
         // select the user that we need to move
-        UserSearch search = buildSearch(config);
+        UserSearchBean search = buildSearch(config);
+        /*
         if (search.isEmpty()) {
             resp.setStatus(ResponseStatus.FAILURE);
             return resp;
         }
+        */
 
-        List<User> searchResult =  userMgr.search(search);
+        List<User> searchResult =  userDozerConverter.convertToDTOList(userMgr.findBeans(search), true);
 
         // all the provisioning service
         for ( User user :  searchResult) {
@@ -277,22 +337,22 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
         }
     }
 
-    private UserSearch buildSearch(BulkMigrationConfig config){
-        UserSearch search = new UserSearch();
+    private UserSearchBean buildSearch(BulkMigrationConfig config){
+    	UserSearchBean search = new UserSearchBean();
         if (config.getOrganizationId() != null && !config.getOrganizationId().isEmpty()) {
-             search.setOrgId(config.getOrganizationId());
+             search.setOrganizationId(config.getOrganizationId());
         }
 
         if (config.getLastName() != null && !config.getLastName().isEmpty()) {
-            search.setLastName(config.getLastName() + "%");
+            search.setLastName(config.getLastName());
         }
 
         if (config.getDeptId() != null && !config.getDeptId().isEmpty()) {
-            search.setDeptCd(config.getDeptId());
+            search.addDeptId(config.getDeptId());
         }
 
         if (config.getDivision() != null && !config.getDivision().isEmpty()) {
-            search.setDivision(config.getDivision());
+            search.addDivisionId(config.getDivision());
         }
 
         if (config.getAttributeName() != null && !config.getAttributeName().isEmpty()) {
@@ -301,60 +361,37 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
         }
 
         if (config.getUserStatus() != null ) {
-            search.setStatus(config.getUserStatus().toString());
+        	search.setUserStatus(config.getUserStatus().toString());
         }
 
         return search;
 
     }
 
-    private UserSearch buildSearchByRole(RoleId roleId) {
-        UserSearch search = new UserSearch();
-
-
-        List<String> roleList = new ArrayList<String>();
-        roleList.add(roleId.getRoleId() );
-        search.setRoleIdList(roleList);
-        search.setDomainId(roleId.getServiceId());
-
-        return search;
-    }
-
-
     private Role parseRole(String roleStr) {
-        String domainId = null;
         String roleId = null;
 
         StringTokenizer st = new StringTokenizer(roleStr, "*");
-        if (st.hasMoreTokens()) {
-            domainId = st.nextToken();
-        }
         if (st.hasMoreElements()) {
             roleId = st.nextToken();
         }
-        RoleId id = new RoleId(domainId , roleId);
         Role r = new Role();
-        r.setId(id);
+        r.setRoleId(roleId);
 
         return r;
     }
 
 
     @Override
-    public Response resynchRole(RoleId roleId) {
+    public Response resynchRole(final String roleId) {
 
         Response resp = new Response(ResponseStatus.SUCCESS);
 
         log.debug("Resynch Role: " + roleId );
 
-        // select the user that we need to move
-        UserSearch search = buildSearchByRole(roleId);
-        if (search.isEmpty()) {
-            resp.setStatus(ResponseStatus.FAILURE);
-            return resp;
-        }
-
-        List<User> searchResult =  userMgr.search(search);
+        final UserSearchBean searchBean = new UserSearchBean();
+        searchBean.addRoleId(roleId);
+        List<User> searchResult =  userDozerConverter.convertToDTOList(userMgr.findBeans(searchBean), true);
 
 
         if (searchResult == null) {
@@ -364,7 +401,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService {
 
         // create role object to show role membership
         Role rl = new Role();
-        rl.setId(roleId);
+        rl.setRoleId(roleId);
 
         // all the provisioning service
         for ( User user :  searchResult) {

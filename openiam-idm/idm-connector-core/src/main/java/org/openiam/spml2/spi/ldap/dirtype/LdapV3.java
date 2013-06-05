@@ -2,7 +2,10 @@ package org.openiam.spml2.spi.ldap.dirtype;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.AttributeOperationEnum;
+import org.openiam.base.BaseAttribute;
 import org.openiam.base.SysConfiguration;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
@@ -25,12 +28,16 @@ import java.util.List;
 import java.util.Map;
 import javax.naming.ldap.LdapContext;
 import org.openiam.util.encrypt.SHA1Hash;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Implements directory specific extensions for standard LDAP v3
  * User: suneetshah
  */
 public class LdapV3 implements Directory{
+	
+	@Autowired
+	private PasswordGenerator passwordGenerator;
     
     Map<String, Object> objectMap = new HashMap<String, Object>();
     private static final Log log = LogFactory.getLog(LdapV3.class);
@@ -47,7 +54,7 @@ public class LdapV3 implements Directory{
 
     public ModificationItem[] suspend(SuspendRequestType request)  {
 
-        String scrambledPswd =	PasswordGenerator.generatePassword(10);
+        String scrambledPswd =	passwordGenerator.generatePassword(10);
         
         hash.HexEncodedHash( "{ssha}" + hash.hash(scrambledPswd));
 
@@ -67,12 +74,12 @@ public class LdapV3 implements Directory{
         try {
 
              // get the current password for the user.
-            Login login = loginManager.getLoginByManagedSys(
+            LoginEntity login = loginManager.getLoginByManagedSys(
                     sysConfiguration.getDefaultSecurityDomain(),
                     ldapName,
                     targetID);
             String encPassword = login.getPassword();
-            String decPassword = loginManager.decryptPassword(encPassword);
+            String decPassword = loginManager.decryptPassword(login.getUserId(),encPassword);
 
             ModificationItem[] mods = new ModificationItem[1];
             mods[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("userPassword", decPassword));
@@ -93,7 +100,7 @@ public class LdapV3 implements Directory{
 
         }else if ( "DISABLE".equalsIgnoreCase(onDelete)) {
 
-            String scrambledPswd =	PasswordGenerator.generatePassword(10);
+            String scrambledPswd =	passwordGenerator.generatePassword(10);
 
             ModificationItem[] mods = new ModificationItem[1];
             mods[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("userPassword", scrambledPswd));
@@ -126,7 +133,7 @@ public class LdapV3 implements Directory{
 
     }
 
-    public void updateAccountMembership(List<String> targetMembershipList, String ldapName,
+    public void updateAccountMembership(List<BaseAttribute> targetMembershipList, String ldapName,
                                         ManagedSystemObjectMatch matchObj,  LdapContext ldapctx,
                                         List<ExtensibleObject> requestAttribute) {
 
@@ -148,60 +155,48 @@ public class LdapV3 implements Directory{
 
             }
         }
-
-
-        // see if we need to add additional membership entries
-
+        //
         if (targetMembershipList != null) {
-            for (String s : targetMembershipList) {
-                boolean found = false;
-                if (currentMembershipList != null) {
-                    for (String cur : currentMembershipList) {
-                        if (s.equalsIgnoreCase(cur))  {
-                            found = true;
-                            break;
-                        }
-                    }
-                }
-                if (!found ) {
-                    if ( !isMemberOf(currentMembershipList, s) ) {
+            for (BaseAttribute ba : targetMembershipList) {
+
+                String groupName =  ba.getName();
+                boolean exists = isMemberOf(currentMembershipList, groupName);
+
+                if ( ba.getOperationEnum() == AttributeOperationEnum.DELETE) {
+                    if (exists) {
+                        // remove the group membership
                         try {
+
                             ModificationItem mods[] = new ModificationItem[1];
-                            mods[0] = new ModificationItem(DirContext.ADD_ATTRIBUTE, new BasicAttribute("uniqueMember", ldapName));
-                            ldapctx.modifyAttributes(s, mods);
+                            mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute("uniqueMember", ldapName));
+                            ldapctx.modifyAttributes(groupName, mods);
                         }catch (NamingException ne ) {
                             log.error(ne);
                         }
                     }
                 }
-            }
-        }
-
-        // remove membership
-        if (currentMembershipList != null) {
-            for (String s : currentMembershipList) {
-                boolean found = false;
-                if (targetMembershipList != null) {
-                    for (String cur : targetMembershipList) {
-                        if (s.equalsIgnoreCase(cur))  {
-                            found = true;
-                            break;
+                if (    ba.getOperationEnum() == null
+                        || ba.getOperationEnum() == AttributeOperationEnum.ADD
+                        || ba.getOperationEnum() == AttributeOperationEnum.NO_CHANGE) {
+                    if (!exists) {
+                        // add the user to the group
+                        try {
+                            ModificationItem mods[] = new ModificationItem[1];
+                            mods[0] = new ModificationItem(DirContext.ADD_ATTRIBUTE, new BasicAttribute("uniqueMember", ldapName));
+                            ldapctx.modifyAttributes(groupName, mods);
+                        }catch (NamingException ne ) {
+                            log.error(ne);
                         }
                     }
-                }
-                if (!found ) {
-                    try {
-                        log.debug("Removing current membership from: " + s + " - " + ldapName);
 
-                        ModificationItem mods[] = new ModificationItem[1];
-                        mods[0] = new ModificationItem(DirContext.REMOVE_ATTRIBUTE, new BasicAttribute("uniqueMember", ldapName));
-                        ldapctx.modifyAttributes(s, mods);
-                    }catch (NamingException ne ) {
-                        log.error(ne);
-                    }
                 }
+
+
+
             }
         }
+
+
 
 
     }

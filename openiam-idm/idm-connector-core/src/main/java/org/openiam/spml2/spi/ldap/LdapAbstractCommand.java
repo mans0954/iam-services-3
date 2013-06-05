@@ -2,24 +2,26 @@ package org.openiam.spml2.spi.ldap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.BaseAttribute;
+import org.openiam.dozer.converter.ManagedSystemObjectMatchDozerConverter;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
-import org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService;
+import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemObjectMatchDAO;
-import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
+import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-
-import java.io.UnsupportedEncodingException;
 
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.*;
 import javax.naming.ldap.LdapContext;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -37,9 +39,11 @@ public abstract class LdapAbstractCommand  implements ApplicationContextAware{
 
     protected static final Log log = LogFactory.getLog(LdapAbstractCommand.class);
 
-    protected ManagedSystemDataService managedSysService;
+    protected ManagedSystemWebService managedSysService;
     protected ResourceDataService resourceDataService;
     protected ManagedSystemObjectMatchDAO managedSysObjectMatchDao;
+    @Autowired
+    protected ManagedSystemObjectMatchDozerConverter managedSystemObjectMatchDozerConverter;
     public static ApplicationContext ac;
 
 
@@ -155,7 +159,7 @@ public abstract class LdapAbstractCommand  implements ApplicationContextAware{
 
 
     protected BasicAttributes getBasicAttributes(List<ExtensibleObject> requestAttribute, String idField,
-                                                 List<String> targetMembershipList, boolean groupMembershipEnabled) {
+                                                 List<BaseAttribute> targetMembershipList, boolean groupMembershipEnabled) {
         BasicAttributes attrs = new BasicAttributes();
 
         // add the object class
@@ -207,10 +211,7 @@ public abstract class LdapAbstractCommand  implements ApplicationContextAware{
                         a = generateActiveDirectoryPassword(att.getValue());
                     } else {
                         // add a password to a user separately. If OpenLDAP is not using PPolicy the password is not hashed
-                        //if (!"userPassword".equalsIgnoreCase(att.getName())) {
                         a = new BasicAttribute(att.getName(), att.getValue());
-                        //}
-
                     }
                     if (a != null) {
                         attrs.put(a);
@@ -229,20 +230,15 @@ public abstract class LdapAbstractCommand  implements ApplicationContextAware{
         return attrs;
     }
 
-    protected void buildMembershipList( ExtensibleAttribute att ,List<String>targetMembershipList) {
+    protected void buildMembershipList( ExtensibleAttribute att ,List<BaseAttribute>targetMembershipList) {
 
-        log.debug("buildMembershipList:" + att);
 
         if (att == null)
             return;
 
-        if (att.getValueList() == null || att.getValueList().isEmpty())  {
-            return;
-        }
+        if (att.getAttributeContainer() != null) {
 
-        List<String> valList = att.getValueList();
-        for (String s : valList) {
-            targetMembershipList.add(s);
+            targetMembershipList.addAll( att.getAttributeContainer().getAttributeList() );
 
         }
 
@@ -361,11 +357,11 @@ public abstract class LdapAbstractCommand  implements ApplicationContextAware{
     }
 
 
-    public ManagedSystemDataService getManagedSysService() {
+    public ManagedSystemWebService getManagedSysService() {
         return managedSysService;
     }
 
-    public void setManagedSysService(ManagedSystemDataService managedSysService) {
+    public void setManagedSysService(ManagedSystemWebService managedSysService) {
         this.managedSysService = managedSysService;
     }
 

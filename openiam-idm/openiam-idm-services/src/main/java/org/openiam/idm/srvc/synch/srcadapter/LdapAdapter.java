@@ -28,6 +28,7 @@ import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditHelper;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
@@ -47,6 +48,8 @@ import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.service.ProvisionService;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 
 import javax.naming.Context;
@@ -80,6 +83,8 @@ public class LdapAdapter implements SourceAdapter {
 
     protected LineObject rowHeader = new LineObject();
     protected ProvisionUser pUser = new ProvisionUser();
+    
+    @Value("${KEYSTORE}")
     private String keystore;
 
     public static ApplicationContext ac;
@@ -88,8 +93,9 @@ public class LdapAdapter implements SourceAdapter {
     protected RoleDataService roleDataService;
     protected AuditHelper auditHelper;
     protected MatchRuleFactory matchRuleFactory;
-
-    static protected ResourceBundle secres = ResourceBundle.getBundle("securityconf");
+    
+    @Autowired
+    private UserDozerConverter userDozerConverter;
 
     LdapContext ctx = null;
 
@@ -266,7 +272,7 @@ public class LdapAdapter implements SourceAdapter {
                         // initialize the transform script
                         if (usr != null) {
                             transformScript.setNewUser(false);
-                            transformScript.setUser(userMgr.getUserWithDependent(usr.getUserId(), true));
+                            transformScript.setUser(userDozerConverter.convertToDTO(userMgr.getUser(usr.getUserId()), true));
                             transformScript.setPrincipalList(loginManager.getLoginByUser(usr.getUserId()));
                             transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getUserId()));
 
@@ -339,6 +345,24 @@ public class LdapAdapter implements SourceAdapter {
                     SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
                     resp.setErrorCode(ResponseCode.FILE_EXCEPTION);
                     resp.setErrorText(fe.toString());
+                    return resp;
+
+
+                } catch (Exception e ) {
+
+                    if(runningTask.contains(config.getSynchConfigId())) {
+                        runningTask.remove(config.getSynchConfigId());
+                    }
+
+                    log.error(e);
+
+                    synchStartLog.updateSynchAttributes("FAIL",ResponseCode.FAIL_OTHER.toString() , e.toString());
+                    auditHelper.logEvent(synchStartLog);
+
+
+                    SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
+                    resp.setErrorCode(ResponseCode.FAIL_OTHER);
+                    resp.setErrorText(e.toString());
                     return resp;
 
 
@@ -455,7 +479,6 @@ public class LdapAdapter implements SourceAdapter {
     private boolean connect(SynchConfig config) throws NamingException {
 
         Hashtable<String, String> envDC = new Hashtable();
-        keystore = secres.getString("KEYSTORE");
         System.setProperty("javax.net.ssl.trustStore", keystore);
 
         String hostUrl = config.getSrcHost(); //   managedSys.getHostUrl();

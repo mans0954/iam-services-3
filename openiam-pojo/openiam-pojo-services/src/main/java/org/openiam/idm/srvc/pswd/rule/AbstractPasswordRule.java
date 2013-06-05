@@ -21,10 +21,13 @@
  */
 package org.openiam.idm.srvc.pswd.rule;
 
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.util.encrypt.Cryptor;
 
@@ -35,14 +38,17 @@ import org.openiam.util.encrypt.Cryptor;
  */
 public abstract class AbstractPasswordRule {
 
+	protected boolean skipPasswordFrequencyCheck;
 	protected Policy policy;
 	protected String password;
 	protected String principal;
 	protected String managedSysId;
-	protected User user;
-	protected Login lg;
+	protected UserEntity user;
+	protected LoginEntity lg;
 	protected PasswordHistoryDAO passwordHistoryDao;
 	protected Cryptor cryptor;
+    protected KeyManagementService keyManagementService;
+    protected String domainId;
 
 	public abstract PasswordValidationCode isValid(); 
 	
@@ -78,19 +84,19 @@ public abstract class AbstractPasswordRule {
 		this.managedSysId = managedSysId;
 	}
 
-	public User getUser() {
+	public UserEntity getUser() {
 		return user;
 	}
 
-	public void setUser(User user) {
+	public void setUser(UserEntity user) {
 		this.user = user;
 	}
 
-	public Login getLg() {
+	public LoginEntity getLg() {
 		return lg;
 	}
 
-	public void setLg(Login lg) {
+	public void setLg(LoginEntity lg) {
 		this.lg = lg;
 	}
 
@@ -110,5 +116,29 @@ public abstract class AbstractPasswordRule {
 		this.cryptor = cryptor;
 	}
 
+    public KeyManagementService getKeyManagementService() {
+        return keyManagementService;
+    }
 
+    public void setKeyManagementService(KeyManagementService keyManagementService) {
+        this.keyManagementService = keyManagementService;
+    }
+
+	public boolean isSkipPasswordFrequencyCheck() {
+		return skipPasswordFrequencyCheck;
+	}
+
+	public void setSkipPasswordFrequencyCheck(boolean skipPasswordFrequencyCheck) {
+		this.skipPasswordFrequencyCheck = skipPasswordFrequencyCheck;
+	}
+
+	public String getDomainId() {
+		return domainId;
+	}
+
+	public void setDomainId(String domainId) {
+		this.domainId = domainId;
+	}
+    
+    
 }

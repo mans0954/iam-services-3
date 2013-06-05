@@ -1,7 +1,9 @@
 package org.openiam.spml2.spi.ldap;
 
+import org.openiam.base.BaseAttribute;
 import org.openiam.exception.ConfigurationException;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.provision.type.ExtensibleAttribute;
@@ -33,7 +35,8 @@ public class LdapAddCommand extends LdapAbstractCommand {
 
         AddResponseType response = new AddResponseType();
         response.setStatus(StatusCodeType.SUCCESS);
-        List<String> targetMembershipList = new ArrayList<String>();
+        List<BaseAttribute> targetMembershipList = new ArrayList<BaseAttribute>();
+
         boolean groupMembershipEnabled = true;
 
 
@@ -60,7 +63,7 @@ public class LdapAddCommand extends LdapAbstractCommand {
 
 
         /* A) Use the targetID to look up the connection information under managed systems */
-        ManagedSys managedSys = managedSysService.getManagedSys(targetID);
+        ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
 
 
         ConnectionMgr conMgr = ConnectionFactory.create(ConnectionManagerConstant.LDAP_CONNECTION);
@@ -81,9 +84,9 @@ public class LdapAddCommand extends LdapAbstractCommand {
 
 
             ManagedSystemObjectMatch matchObj = null;
-            List<ManagedSystemObjectMatch> matchObjList = managedSysObjectMatchDao.findBySystemId(targetID, "USER");
+            List<ManagedSystemObjectMatchEntity> matchObjList = managedSysObjectMatchDao.findBySystemId(targetID, "USER");
             if (matchObjList != null && matchObjList.size() > 0) {
-                matchObj = matchObjList.get(0);
+                matchObj = managedSystemObjectMatchDozerConverter.convertToDTO(matchObjList.get(0),false);
             }
 
             log.debug("matchObj = " + matchObj);
@@ -106,7 +109,7 @@ public class LdapAddCommand extends LdapAbstractCommand {
             }
 
 
-            Directory dirSpecificImp  = DirectorySpecificImplFactory.create(managedSys.getHandler1());
+            Directory dirSpecificImp  = DirectorySpecificImplFactory.create(managedSys.getHandler5());
 
 
             log.debug("baseDN=" + matchObj.getBaseDn());
@@ -145,7 +148,6 @@ public class LdapAddCommand extends LdapAbstractCommand {
 
             if (groupMembershipEnabled) {
 
-                log.debug("Updating account membership...");
 
                 dirSpecificImp.updateAccountMembership(targetMembershipList,ldapName,  matchObj, ldapctx, reqType.getData().getAny());
             }

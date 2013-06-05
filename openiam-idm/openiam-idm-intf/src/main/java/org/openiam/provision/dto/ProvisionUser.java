@@ -28,7 +28,6 @@ import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.res.dto.Resource;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -146,24 +145,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         this.nickname = user.getNickname();
         this.maidenName = user.getMaidenName();
         this.passwordTheme = user.getPasswordTheme();
-        this.country = user.getCountry();
-        this.bldgNum = user.getBldgNum();
-        this.streetDirection = user.getStreetDirection();
-        this.address1 = user.getAddress1();
-        this.address2 = user.getAddress2();
-        this.address3 = user.getAddress3();
-        this.address4 = user.getAddress4();
-        this.address5 = user.getAddress5();
-        this.address6 = user.getAddress6();
-        this.address7 = user.getAddress7();
-        this.city = user.getCity();
-        this.state = user.getState();
-        this.postalCd = user.getPostalCd();
         this.email = user.getEmail();
-        this.areaCd = user.getAreaCd();
-        this.countryCd = user.getCountryCd();
-        this.phoneNbr = user.getPhoneNbr();
-        this.phoneExt = user.getPhoneExt();
         this.showInSearch = user.getShowInSearch();
         this.delAdmin = user.getDelAdmin();
         this.alternateContactId = user.getAlternateContactId();
@@ -178,7 +160,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
 
         userNotes = user.getUserNotes();
         userAttributes = user.getUserAttributes();
-        phones = user.getPhone();
+        phones = user.getPhones();
         addresses = user.getAddresses();
         // set the email address in a hibernate friendly manner
 
@@ -225,30 +207,13 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         user.setNickname(nickname);
         user.setMaidenName(maidenName);
         user.setPasswordTheme(passwordTheme);
-        user.setCountry(country);
-        user.setBldgNum(bldgNum);
-        user.setStreetDirection(streetDirection);
-        user.setAddress1(address1);
-        user.setAddress2(address2);
-        user.setAddress3(address3);
-        user.setAddress4(address4);
-        user.setAddress5(address5);
-        user.setAddress6(address6);
-        user.setAddress7(address3);
-        user.setCity(city);
-        user.setState(state);
-        user.setPostalCd(postalCd);
         user.setEmail(email);
-        user.setAreaCd(areaCd);
-        user.setCountryCd(countryCd);
-        user.setPhoneNbr(phoneNbr);
-        user.setPhoneExt(phoneExt);
 
         user.setUserNotes(userNotes);
         user.setUserAttributes(userAttributes);
-        user.setPhone(phones);
+        user.setPhones(phones);
         user.setAddresses(addresses);
-        user.setEmailAddress(emailAddresses);
+        user.setEmailAddresses(emailAddresses);
         user.setAlternateContactId(alternateContactId);
         user.setShowInSearch(showInSearch);
         user.setDelAdmin(delAdmin);
@@ -266,7 +231,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
             return null;
         }
         for (Login l : principalList) {
-            if (l.getId().getManagedSysId().equals(managedSysId)) {
+            if (l.getManagedSysId().equals(managedSysId)) {
                 return l;
             }
         }
@@ -455,5 +420,155 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
 
     public void setSkipPostProcessor(boolean skipPostProcessor) {
         this.skipPostProcessor = skipPostProcessor;
+    }
+
+    /**
+     * Its possible for the user to send service request which is missing most
+     * of the values that a User already has This can cause the provisioning
+     * scripts to fail
+     *
+     * @param user
+     */
+    public void updateMissingUserAttributes(User user) {
+
+        if (birthdate == null) {
+            birthdate = user.getBirthdate();
+        }
+        if (companyId == null) {
+            companyId = user.getCompanyId();
+        }
+        if (companyOwnerId == null) {
+            companyOwnerId = user.getCompanyOwnerId();
+        }
+        if (createDate == null) {
+            createDate = user.getCreateDate();
+        }
+        if (createdBy == null) {
+            createdBy = user.getCreatedBy();
+        }
+        if (deptCd == null) {
+            deptCd = user.getDeptCd();
+        }
+        if (deptName == null) {
+            deptName = user.getDeptName();
+        }
+        if (employeeId == null) {
+            employeeId = user.getEmployeeId();
+        }
+        if (employeeType == null) {
+            employeeType = user.getEmployeeType();
+        }
+
+        if (firstName == null) {
+            firstName = user.getFirstName();
+        }
+        if (jobCode == null) {
+            jobCode = user.getJobCode();
+        }
+        if (lastName == null) {
+            lastName = user.getLastName();
+        }
+        if (lastUpdate == null) {
+            lastUpdate = user.getLastUpdate();
+        }
+        if (lastUpdatedBy == null) {
+            lastUpdatedBy = user.getLastUpdatedBy();
+        }
+        if (locationCd == null) {
+            locationCd = user.getLocationCd();
+        }
+        if (locationName == null) {
+            locationName = user.getLocationName();
+        }
+        if (managerId == null) {
+            managerId = user.getManagerId();
+        }
+        if (metadataTypeId == null) {
+            metadataTypeId = user.getMetadataTypeId();
+        }
+        if (classification == null) {
+            classification = user.getClassification();
+        }
+        if (middleInit == null) {
+            middleInit = user.getMiddleInit();
+        }
+        if (prefix == null) {
+            prefix = user.getPrefix();
+        }
+        if (sex == null) {
+            sex = user.getSex();
+        }
+        if (status == null) {
+            status = user.getStatus();
+        }
+        if (secondaryStatus == null) {
+            secondaryStatus = user.getSecondaryStatus();
+        }
+        if (suffix == null) {
+            suffix = user.getSuffix();
+        }
+        if (title == null) {
+            title = user.getTitle();
+        }
+        if (userTypeInd == null) {
+            userTypeInd = user.getUserTypeInd();
+        }
+        if (division == null) {
+            division = user.getDivision();
+        }
+        if (mailCode == null) {
+            mailCode = user.getMailCode();
+        }
+        if (costCenter == null) {
+            costCenter = user.getCostCenter();
+        }
+        if (startDate == null) {
+            startDate = user.getStartDate();
+        }
+        if (lastDate == null) {
+            lastDate = user.getLastDate();
+        }
+        if (nickname == null) {
+            nickname = user.getNickname();
+        }
+        if (maidenName == null) {
+            maidenName = user.getMaidenName();
+        }
+        if (passwordTheme == null) {
+            passwordTheme = user.getPasswordTheme();
+        }
+        if (email == null) {
+            email = user.getEmail();
+        }
+        if (showInSearch == null) {
+            showInSearch = user.getShowInSearch();
+        }
+        if (delAdmin == null) {
+            delAdmin = user.getDelAdmin();
+        }
+        if (alternateContactId == null) {
+            alternateContactId = user.getAlternateContactId();
+        }
+
+        if (createdBy == null) {
+            createdBy = user.getCreatedBy();
+        }
+        if (startDate == null) {
+            startDate = user.getStartDate();
+        }
+        if (lastDate == null) {
+            lastDate = user.getLastDate();
+        }
+
+        if (userOwnerId == null) {
+            userOwnerId = user.getUserOwnerId();
+        }
+        if (dateChallengeRespChanged == null) {
+            dateChallengeRespChanged = user.getDateChallengeRespChanged();
+        }
+        if (datePasswordChanged == null) {
+            datePasswordChanged = user.getDatePasswordChanged();
+        }
+
     }
 }

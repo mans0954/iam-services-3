@@ -7,14 +7,13 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.datatype.XMLGregorianCalendar;
-import org.openiam.spml2.msg.PSOIdentifierType;
 
 
 /**
  * <p>Java class for ResumeRequestType complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="ResumeRequestType">
  *   &lt;complexContent>
@@ -27,20 +26,23 @@ import org.openiam.spml2.msg.PSOIdentifierType;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
+ *
+ *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ResumeRequest", propOrder = {
-    "userIdentity",
-    "effectiveDate"
+        "userIdentity",
+        "effectiveDate",
+        "scriptHandler"
 })
 public class ResumeRequest    extends RequestType
 {
 
     @XmlElement(required = true)
-	protected String userIdentity;
+    protected String userIdentity;
 
+    @XmlElement
+    protected String scriptHandler;
 
     @XmlSchemaType(name = "dateTime")
     protected XMLGregorianCalendar effectiveDate;
@@ -49,11 +51,11 @@ public class ResumeRequest    extends RequestType
 
     /**
      * Gets the value of the effectiveDate property.
-     * 
+     *
      * @return
      *     possible object is
      *     {@link XMLGregorianCalendar }
-     *     
+     *
      */
     public XMLGregorianCalendar getEffectiveDate() {
         return effectiveDate;
@@ -61,22 +63,29 @@ public class ResumeRequest    extends RequestType
 
     /**
      * Sets the value of the effectiveDate property.
-     * 
+     *
      * @param value
      *     allowed object is
      *     {@link XMLGregorianCalendar }
-     *     
+     *
      */
     public void setEffectiveDate(XMLGregorianCalendar value) {
         this.effectiveDate = value;
     }
 
-	public String getUserIdentity() {
-		return userIdentity;
-	}
+    public String getUserIdentity() {
+        return userIdentity;
+    }
 
-	public void setUserIdentity(String userIdentity) {
-		this.userIdentity = userIdentity;
-	}
+    public void setUserIdentity(String userIdentity) {
+        this.userIdentity = userIdentity;
+    }
 
+    public String getScriptHandler() {
+        return scriptHandler;
+    }
+
+    public void setScriptHandler(String scriptHandler) {
+        this.scriptHandler = scriptHandler;
+    }
 }

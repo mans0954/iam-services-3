@@ -1,5 +1,8 @@
 package org.openiam.idm.srvc.synch.srcadapter;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ResourceBundle;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mule.api.MuleContext;
@@ -14,10 +17,9 @@ import org.openiam.idm.srvc.synch.service.SourceAdapter;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionUser;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
-
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Abstract class which all Source System adapters must extend
@@ -28,126 +30,108 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public abstract class AbstractSrcAdapter implements SourceAdapter {
 
-    /*
-     * The flags for the running tasks are handled by this Thread-Safe Set.
-     * It stores the taskIds of the currently executing tasks.
-     * This is faster and as reliable as storing the flags in the database,
-     * if the tasks are only launched from ONE host in a clustered environment.
-     * It is unique for each class-loader, which means unique per war-deployment.
-     */
-    protected static Set<String> runningTask = Collections.newSetFromMap(new ConcurrentHashMap());
-
     public static ApplicationContext ac;
     private static final Log log = LogFactory.getLog(AbstractSrcAdapter.class);
-
+    @Autowired
     protected AuditHelper auditHelper;
     protected MuleContext muleContext;
-	protected UserDataService userMgr;
+    protected UserDataService userMgr;
 
     protected LoginDataService loginManager;
-	protected RoleDataService roleDataService;
+    protected RoleDataService roleDataService;
 
-    static protected ResourceBundle res = ResourceBundle.getBundle("datasource");
+    @Value("${openiam.service_base}")
+    private String serviceHost;
+    
+    @Value("${openiam.idm.ws.path}")
+    private String serviceContext;
 
-    static String serviceHost = res.getString("openiam.service_base");
-	static String serviceContext = res.getString("openiam.idm.ws.path");
+    public abstract SyncResponse startSynch(SynchConfig config);
 
-
-
-    public abstract SyncResponse startSynch(SynchConfig config) ;
-
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+    public void setApplicationContext(ApplicationContext applicationContext)
+            throws BeansException {
         ac = applicationContext;
     }
 
     public void addUser(ProvisionUser pUser) {
         long startTime = System.currentTimeMillis();
 
-        Map<String,String> msgPropMap =  new HashMap<String,String>();
+        Map<String, String> msgPropMap = new HashMap<String, String>();
         msgPropMap.put("SERVICE_HOST", serviceHost);
         msgPropMap.put("SERVICE_CONTEXT", serviceContext);
 
-
         try {
-            //Create the client with the context
+            // Create the client with the context
             MuleClient client = new MuleClient(muleContext);
-            client.sendAsync("vm://provisionServiceAddMessage", (ProvisionUser)pUser, msgPropMap);
+            client.sendAsync("vm://provisionServiceAddMessage",
+                    (ProvisionUser) pUser, msgPropMap);
 
-        }catch(MuleException me) {
+        } catch (MuleException me) {
 
             log.error(me.getMessage());
         }
         long endTime = System.currentTimeMillis();
-        log.debug("--AddUser:SynchAdapter execution time=" + (endTime-startTime));
+        log.debug("--AddUser:SynchAdapter execution time="
+                + (endTime - startTime));
     }
 
     public void modifyUser(ProvisionUser pUser) {
 
         long startTime = System.currentTimeMillis();
 
-        Map<String,String> msgPropMap =  new HashMap<String,String>();
+        Map<String, String> msgPropMap = new HashMap<String, String>();
         msgPropMap.put("SERVICE_HOST", serviceHost);
         msgPropMap.put("SERVICE_CONTEXT", serviceContext);
 
-
         try {
-            //Create the client with the context
+            // Create the client with the context
             MuleClient client = new MuleClient(muleContext);
-            client.sendAsync("vm://provisionServiceModifyMessage", (ProvisionUser)pUser, msgPropMap);
+            client.sendAsync("vm://provisionServiceModifyMessage",
+                    (ProvisionUser) pUser, msgPropMap);
 
-        }catch(MuleException me) {
+        } catch (MuleException me) {
 
             log.error(me.getMessage());
         }
         long endTime = System.currentTimeMillis();
-        log.debug("--ModifyUser:SynchAdapter execution time=" + (endTime-startTime));
+        log.debug("--ModifyUser:SynchAdapter execution time="
+                + (endTime - startTime));
     }
-
-
-
 
     public void setMuleContext(MuleContext ctx) {
         muleContext = ctx;
     }
 
-	public UserDataService getUserMgr() {
-		return userMgr;
-	}
+    public UserDataService getUserMgr() {
+        return userMgr;
+    }
 
+    public void setUserMgr(UserDataService userMgr) {
+        this.userMgr = userMgr;
+    }
 
-	public void setUserMgr(UserDataService userMgr) {
-		this.userMgr = userMgr;
-	}
+    public AuditHelper getAuditHelper() {
+        return auditHelper;
+    }
 
-
-	public AuditHelper getAuditHelper() {
-		return auditHelper;
-	}
-
-
-	public void setAuditHelper(AuditHelper auditHelper) {
-		this.auditHelper = auditHelper;
-	}
-
+    public void setAuditHelper(AuditHelper auditHelper) {
+        this.auditHelper = auditHelper;
+    }
 
     public LoginDataService getLoginManager() {
         return loginManager;
     }
 
-
     public void setLoginManager(LoginDataService loginManager) {
         this.loginManager = loginManager;
     }
-
 
     public RoleDataService getRoleDataService() {
         return roleDataService;
     }
 
-
     public void setRoleDataService(RoleDataService roleDataService) {
         this.roleDataService = roleDataService;
     }
-
 
 }

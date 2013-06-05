@@ -27,9 +27,9 @@ import org.mule.api.MuleContext;
 import org.mule.api.MuleException;
 import org.mule.api.MuleMessage;
 import org.mule.module.client.MuleClient;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
-import org.openiam.idm.srvc.mngsys.dto.ProvisionConnector;
-import org.openiam.idm.srvc.mngsys.service.ConnectorDataService;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
+import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
+import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.spml2.interf.ConnectorService;
 import org.openiam.spml2.msg.*;
@@ -38,6 +38,7 @@ import org.openiam.spml2.msg.password.ResetPasswordResponseType;
 import org.openiam.spml2.msg.password.SetPasswordRequestType;
 import org.openiam.spml2.msg.suspend.ResumeRequestType;
 import org.openiam.spml2.msg.suspend.SuspendRequestType;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.xml.namespace.QName;
 import javax.xml.ws.Service;
@@ -56,10 +57,10 @@ public class ConnectorAdapter {
 
     protected static final Log log = LogFactory.getLog(ConnectorAdapter.class);
 
-    protected ConnectorDataService connectorService;
+    @Autowired
+    private ProvisionConnectorWebService connectorService;
 
-
-    public AddResponseType addRequest(ManagedSys managedSys, AddRequestType addReqType, MuleContext muleContext) {
+    public AddResponseType addRequest(ManagedSysDto managedSys, AddRequestType addReqType, MuleContext muleContext) {
         AddResponseType respType = new AddResponseType();
         respType.setStatus(StatusCodeType.FAILURE);
 
@@ -70,7 +71,7 @@ public class ConnectorAdapter {
             }
             log.info("ConnectorAdapter:addRequest called. Managed sys =" + managedSys.getManagedSysId());
 
-            ProvisionConnector connector = connectorService.getConnector(managedSys.getConnectorId());
+            ProvisionConnectorDto connector = connectorService.getProvisionConnector(managedSys.getConnectorId());
             log.info("Connector found for " + connector.getConnectorId());
             if (connector != null && (connector.getServiceUrl() != null && connector.getServiceUrl().length() > 0)) {
 
@@ -99,7 +100,7 @@ public class ConnectorAdapter {
 
     }
 
-    public ModifyResponseType modifyRequest(ManagedSys managedSys, ModifyRequestType modReqType, MuleContext muleContext) {
+    public ModifyResponseType modifyRequest(ManagedSysDto managedSys, ModifyRequestType modReqType, MuleContext muleContext) {
         ModifyResponseType respType = new ModifyResponseType();
         respType.setStatus(StatusCodeType.FAILURE);
 
@@ -109,7 +110,7 @@ public class ConnectorAdapter {
             }
             log.debug("ConnectorAdapter:modifyRequest called. Managed sys =" + managedSys.getManagedSysId());
 
-            ProvisionConnector connector = connectorService.getConnector(managedSys.getConnectorId());
+            ProvisionConnectorDto connector = connectorService.getProvisionConnector(managedSys.getConnectorId());
             log.info("Connector found for " + connector.getConnectorId());
             if (connector != null && (connector.getServiceUrl() != null && connector.getServiceUrl().length() > 0)) {
 
@@ -144,7 +145,7 @@ public class ConnectorAdapter {
 
 
 
-    public LookupResponseType lookupRequest(ManagedSys managedSys, LookupRequestType req, MuleContext muleContext) {
+    public LookupResponseType lookupRequest(ManagedSysDto managedSys, LookupRequestType req, MuleContext muleContext) {
         LookupResponseType resp = new LookupResponseType();
         resp.setStatus(StatusCodeType.FAILURE);
 
@@ -154,7 +155,7 @@ public class ConnectorAdapter {
         log.debug("ConnectorAdapter:lookupRequest called. Managed sys =" + managedSys.getManagedSysId());
 
         try {
-            ProvisionConnector connector = connectorService.getConnector(managedSys.getConnectorId());
+            ProvisionConnectorDto connector = connectorService.getProvisionConnector(managedSys.getConnectorId());
             log.info("Connector found for " + connector.getConnectorId());
             if (connector != null && (connector.getServiceUrl() != null && connector.getServiceUrl().length() > 0)) {
 
@@ -189,7 +190,7 @@ public class ConnectorAdapter {
 
     }
 
-    public ResponseType reconcileResource(ManagedSys managedSys, ReconciliationConfig config, MuleContext muleContext){
+    public ResponseType reconcileResource(ManagedSysDto managedSys, ReconciliationConfig config, MuleContext muleContext){
         ResponseType type = new ResponseType();
         type.setStatus(StatusCodeType.FAILURE);
 
@@ -201,7 +202,7 @@ public class ConnectorAdapter {
         log.debug("ConnectorAdapter:reconcile called. Resource =" + config.getResourceId());
 
         try {
-            ProvisionConnector connector = connectorService.getConnector(managedSys.getConnectorId());
+            ProvisionConnectorDto connector = connectorService.getProvisionConnector(managedSys.getConnectorId());
 
             log.debug("Connector found for " + connector.getConnectorId());
 
@@ -229,7 +230,7 @@ public class ConnectorAdapter {
         }
     }
 
-    public ResponseType deleteRequest(ManagedSys managedSys, DeleteRequestType delReqType, MuleContext muleContext) {
+    public ResponseType deleteRequest(ManagedSysDto managedSys, DeleteRequestType delReqType, MuleContext muleContext) {
         ResponseType type = new ResponseType();
         type.setStatus(StatusCodeType.FAILURE);
 
@@ -240,7 +241,7 @@ public class ConnectorAdapter {
 
         try {
 
-            ProvisionConnector connector = connectorService.getConnector(managedSys.getConnectorId());
+            ProvisionConnectorDto connector = connectorService.getProvisionConnector(managedSys.getConnectorId());
             log.info("Connector found for " + connector.getConnectorId());
             if (connector != null && (connector.getServiceUrl() != null && connector.getServiceUrl().length() > 0)) {
 
@@ -267,7 +268,7 @@ public class ConnectorAdapter {
 
     }
 
-    public ResponseType setPasswordRequest(ManagedSys managedSys, SetPasswordRequestType request, MuleContext muleContext) {
+    public ResponseType setPasswordRequest(ManagedSysDto managedSys, SetPasswordRequestType request, MuleContext muleContext) {
         ResponseType type = new ResponseType();
         type.setStatus(StatusCodeType.FAILURE);
 
@@ -278,7 +279,7 @@ public class ConnectorAdapter {
         log.info("ConnectorAdapter:setPasswordRequest called. Managed sys =" + managedSys.getManagedSysId());
         try {
 
-            ProvisionConnector connector = connectorService.getConnector(managedSys.getConnectorId());
+            ProvisionConnectorDto connector = connectorService.getProvisionConnector(managedSys.getConnectorId());
             log.info("Connector found for " + connector.getConnectorId());
             if (connector != null && (connector.getServiceUrl() != null && connector.getServiceUrl().length() > 0)) {
 
@@ -313,7 +314,7 @@ public class ConnectorAdapter {
 
     }
 
-    public ResetPasswordResponseType resetPasswordRequest(ManagedSys managedSys, ResetPasswordRequestType request, MuleContext muleContext) {
+    public ResetPasswordResponseType resetPasswordRequest(ManagedSysDto managedSys, ResetPasswordRequestType request, MuleContext muleContext) {
 
         ResetPasswordResponseType type = new ResetPasswordResponseType();
         type.setStatus(StatusCodeType.FAILURE);
@@ -324,7 +325,7 @@ public class ConnectorAdapter {
         log.debug("ConnectorAdapter:resetPasswordRequest called. Managed sys =" + managedSys.getManagedSysId());
 
         try {
-            ProvisionConnector connector = connectorService.getConnector(managedSys.getConnectorId());
+            ProvisionConnectorDto connector = connectorService.getProvisionConnector(managedSys.getConnectorId());
             log.debug("Connector found for " + connector.getConnectorId());
             if (connector != null && (connector.getServiceUrl() != null && connector.getServiceUrl().length() > 0)) {
 
@@ -358,7 +359,7 @@ public class ConnectorAdapter {
 
     }
 
-    public ResponseType suspendRequest(ManagedSys managedSys, SuspendRequestType request, MuleContext muleContext) {
+    public ResponseType suspendRequest(ManagedSysDto managedSys, SuspendRequestType request, MuleContext muleContext) {
 
         ResponseType type = new ResponseType();
         type.setStatus(StatusCodeType.FAILURE);
@@ -370,7 +371,7 @@ public class ConnectorAdapter {
         log.debug("ConnectorAdapter:suspendRequest called. Managed sys =" + managedSys.getManagedSysId());
 
         try {
-            ProvisionConnector connector = connectorService.getConnector(managedSys.getConnectorId());
+            ProvisionConnectorDto connector = connectorService.getProvisionConnector(managedSys.getConnectorId());
             log.debug("Connector found for " + connector.getConnectorId());
 
             if (connector != null && (connector.getServiceUrl() != null && connector.getServiceUrl().length() > 0)) {
@@ -398,7 +399,7 @@ public class ConnectorAdapter {
 
     }
 
-    public ResponseType resumeRequest(ManagedSys managedSys, ResumeRequestType request, MuleContext muleContext) {
+    public ResponseType resumeRequest(ManagedSysDto managedSys, ResumeRequestType request, MuleContext muleContext) {
 
         ResponseType type = new ResponseType();
         type.setStatus(StatusCodeType.FAILURE);
@@ -409,7 +410,7 @@ public class ConnectorAdapter {
         }
         log.debug("ConnectorAdapter:resumeRequest called. Managed sys =" + managedSys.getManagedSysId());
         try {
-            ProvisionConnector connector = connectorService.getConnector(managedSys.getConnectorId());
+            ProvisionConnectorDto connector = connectorService.getProvisionConnector(managedSys.getConnectorId());
             log.debug("Connector found for " + connector.getConnectorId());
 
             if (connector != null && (connector.getServiceUrl() != null && connector.getServiceUrl().length() > 0)) {
@@ -435,7 +436,7 @@ public class ConnectorAdapter {
 
     }
 
-    public ResponseType testConnection(ManagedSys managedSys, MuleContext muleContext) {
+    public ResponseType testConnection(ManagedSysDto managedSys, MuleContext muleContext) {
 
         ResponseType type = new ResponseType();
         type.setStatus(StatusCodeType.FAILURE);
@@ -448,7 +449,7 @@ public class ConnectorAdapter {
         log.debug("ConnectorAdapter:testConnection called. Managed sys =" + managedSys.getManagedSysId());
 
         try {
-            ProvisionConnector connector = connectorService.getConnector(managedSys.getConnectorId());
+            ProvisionConnectorDto connector = connectorService.getProvisionConnector(managedSys.getConnectorId());
 
             log.debug("Connector found for " + connector.getConnectorId());
 
@@ -479,7 +480,7 @@ public class ConnectorAdapter {
     }
 
 
-    private MuleMessage getService(ProvisionConnector connector, Object reqType, String url, String operation, MuleContext muleContext) throws MuleException {
+    private MuleMessage getService(ProvisionConnectorDto connector, Object reqType, String url, String operation, MuleContext muleContext) throws MuleException {
 
         log.debug("getService: calling DynamicEndpoint...");
         //Create a MuleContextFactory
@@ -536,7 +537,7 @@ public class ConnectorAdapter {
 
         if (operation.equalsIgnoreCase("testConnection")) {
 
-            msg = client.send("vm://dispatchConnectorMsgTestConnection", (ManagedSys) reqType, msgPropMap);
+            msg = client.send("vm://dispatchConnectorMsgTestConnection", (ManagedSysDto) reqType, msgPropMap);
         }
 
         log.debug("Service:: Mule Message object: " + msg.toString());
@@ -547,7 +548,7 @@ public class ConnectorAdapter {
     }
 
 
-    private ConnectorService getService(ProvisionConnector connector) {
+    private ConnectorService getService(ProvisionConnectorDto connector) {
         try {
 
             QName SERVICE_NAME = new QName(connector.getServiceUrl());
@@ -570,15 +571,5 @@ public class ConnectorAdapter {
 
 
     }
-
-
-    public ConnectorDataService getConnectorService() {
-        return connectorService;
-    }
-
-    public void setConnectorService(ConnectorDataService connectorService) {
-        this.connectorService = connectorService;
-    }
-
 
 }

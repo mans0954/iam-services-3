@@ -1,164 +1,105 @@
 package org.openiam.idm.srvc.role.service;
 
 
+import java.util.Collection;
 import java.util.List;
+
+import javax.annotation.PostConstruct;
 import javax.naming.InitialContext;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.Criteria;
 import org.hibernate.LockMode;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.Restrictions;
+import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.idm.srvc.role.domain.UserRoleEntity;
 import org.openiam.idm.srvc.role.dto.UserRole;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
+import org.springframework.stereotype.Repository;
 
 import static org.hibernate.criterion.Example.create;
 
-/**
- * DAO implementation for the UserRole. Manages the relationship between user and role.
- * @see org.openiam.idm.srvc.role.dto.UserRole
- * @author Hibernate Tools
- */
-public class UserRoleDAOImpl implements UserRoleDAO {
+@Repository("userRoleDAO")
+public class UserRoleDAOImpl extends BaseDaoImpl<UserRoleEntity, String> implements UserRoleDAO {
 
 	private static final Log log = LogFactory.getLog(UserRoleDAOImpl.class);
-
-	private SessionFactory sessionFactory;
-
 	
-	public void setSessionFactory(SessionFactory session) {
-		   this.sessionFactory = session;
-	}
+	private String DELETE_BY_ROLE_ID = "DELETE FROM %s ur WHERE ur.roleId = :roleId";
+    private static String DELETE_BY_USER_ID = "DELETE FROM %s ug WHERE ug.userId = :userId";
 
-	protected SessionFactory getSessionFactory() {
-		try {
-			return (SessionFactory) new InitialContext().lookup("SessionFactory");
-		} catch (Exception e) {
-			log.error("Could not locate SessionFactory in JNDI", e);
-			throw new IllegalStateException(
-					"Could not locate SessionFactory in JNDI");
-		}
+	@PostConstruct
+	public void initSQL() {
+		DELETE_BY_ROLE_ID = String.format(DELETE_BY_ROLE_ID, domainClass.getSimpleName());
+        DELETE_BY_USER_ID = String.format(DELETE_BY_USER_ID, domainClass.getSimpleName());
 	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.role.service.UserRoleDAO#add(org.openiam.idm.srvc.role.dto.UserRole)
-	 */
-	public void add(UserRole transientInstance) {
-		log.debug("persisting UserRole instance");
-		try {
-			sessionFactory.getCurrentSession().persist(transientInstance);
-			log.debug("persist successful");
-		} catch (RuntimeException re) {
-			log.error("persist failed", re);
-			throw re;
-		}
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.role.service.UserRoleDAO#remove(org.openiam.idm.srvc.role.dto.UserRole)
-	 */
-	public void remove(UserRole persistentInstance) {
-		log.debug("deleting UserRole instance");
-		try {
-			sessionFactory.getCurrentSession().delete(persistentInstance);
-			log.debug("delete successful");
-		} catch (RuntimeException re) {
-			log.error("delete failed", re);
-			throw re;
-		}
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.role.service.UserRoleDAO#update(org.openiam.idm.srvc.role.dto.UserRole)
-	 */
-	public UserRole update(UserRole detachedInstance) {
-		log.debug("merging UserRole instance");
-		try {
-			UserRole result = (UserRole) sessionFactory.getCurrentSession()
-					.merge(detachedInstance);
-			log.debug("merge successful");
-			return result;
-		} catch (RuntimeException re) {
-			log.error("merge failed", re);
-			throw re;
-		}
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.role.service.UserRoleDAO#findById(java.lang.String)
-	 */
-	public UserRole findById(java.lang.String id) {
-		log.debug("getting UserRole instance with id: " + id);
-		try {
-			UserRole instance = (UserRole) sessionFactory.getCurrentSession()
-					.get("org.openiam.idm.srvc.role.dto.UserRole", id);
-			if (instance == null) {
-				log.debug("get successful, no instance found");
+	
+	@Override
+	protected Criteria getExampleCriteria(final UserRoleEntity entity) {
+		final Criteria criteria = super.getCriteria();
+		if(entity != null) {
+			if(StringUtils.isNotBlank(entity.getUserRoleId())) {
+				criteria.add(Restrictions.eq("userRoleId", entity.getUserRoleId()));
 			} else {
-				log.debug("get successful, instance found");
+				if(StringUtils.isNotBlank(entity.getUserId())) {
+					criteria.add(Restrictions.eq("userId", entity.getUserId()));
+				}
+				
+				if(StringUtils.isNotBlank(entity.getRoleId())) {
+					criteria.add(Restrictions.eq("roleId", entity.getRoleId()));
+				}
 			}
-			return instance;
-		} catch (RuntimeException re) {
-			log.error("get failed", re);
-			throw re;
 		}
-	}
-
-	public List<UserRole> findUserRoleByUser(String userId) {
-		
-		
-		Session session = sessionFactory.getCurrentSession();
-		Query qry = session.createQuery("select ur from UserRole ur " +
-						" where ur.userId = :userId " +
-						" order by ur.roleId ");
-		
-		qry.setString("userId", userId);
-		List<UserRole> result = (List<UserRole>)qry.list();
-		if (result == null || result.size() == 0)
-			return null;
-		return result;			
+		return criteria;
 	}
 	
-	public List<User> findUserByRole(String domainId, String roleId) {
+	@Override
+	public UserRoleEntity getRecord(final String userId, final String roleId) {
+		final UserRoleEntity example = new UserRoleEntity();
+		example.setUserId(userId);
+		example.setRoleId(roleId);
 		
-		log.debug("findUserByRole: domainId=" + domainId);
-		log.debug("findUserByRole: roleId=" + roleId);
-		
-		Session session = sessionFactory.getCurrentSession();
-		Query qry = session.createQuery("select usr from org.openiam.idm.srvc.user.dto.User as usr, UserRole ur " +
-						" where ur.serviceId = :domainId and ur.roleId = :roleId and ur.userId = usr.userId " +
-						" order by usr.lastName, usr.firstName ");
-		
-		qry.setString("domainId",domainId);
-		qry.setString("roleId",roleId);
-		List<User> result = (List<User>)qry.list();
-		if (result == null || result.size() == 0)
-			return null;
-		return result;			
-	}
-	
-	public void removeUserFromRole(String domainId, String roleId,	String userId) {
-		log.debug("removeUserFromRole: userId=" + userId);
-		log.debug("removeUserFromRole: roleId=" + roleId);
-		
-		Session session = sessionFactory.getCurrentSession();
-		Query qry = session.createQuery("delete org.openiam.idm.srvc.role.dto.UserRole ur " + 
-					" where ur.roleId = :roleId and ur.serviceId = :domainId and ur.userId = :userId ");
-		qry.setString("roleId", roleId);
-		qry.setString("domainId", domainId);
-		qry.setString("userId", userId);
-		qry.executeUpdate();	
+		final List<UserRoleEntity> resultList = getByExample(example, 0, 1);
+		return (CollectionUtils.isNotEmpty(resultList)) ? resultList.get(0) : null;
 	}
 
-	public void removeAllUsersInRole(String domainId, String roleId) {
-		log.debug("removeUserFromRole: roleId=" + roleId);
-		
-		Session session = sessionFactory.getCurrentSession();
-		Query qry = session.createQuery("delete org.openiam.idm.srvc.role.dto.UserRole ur " + 
-					" where ur.roleId = :roleId and ur.serviceId = :domainId ");
-		qry.setString("roleId", roleId);
-		qry.setString("domainId", domainId);
-		qry.executeUpdate();			
-	}
+    @Override
+    protected String getPKfieldName() {
+        return "userRoleId";
+    }
 
+	@Override
+	public void deleteByRoleId(String roleId) {
+		final Query qry = getSession().createQuery(DELETE_BY_ROLE_ID);
+		qry.setString("roleId", roleId);
+		qry.executeUpdate();
+	}
+    @Override
+    public void deleteByUserId(String userId) {
+        final Query query = getSession().createQuery(DELETE_BY_USER_ID);
+        query.setParameter("userId", userId);
+        query.executeUpdate();
+    }
+
+	@Override
+	public List<String> getUserIdsInRole(final Collection<String> roleIdList, final int from, final int size) {
+		final Criteria criteria = getCriteria().add(Restrictions.in("roleId", roleIdList)).setProjection(Projections.property("userId"));
+		
+		if(from > -1) {
+			criteria.setFirstResult(from);
+		}
+
+		if(size > 0) {
+			criteria.setMaxResults(size);
+		}
+		
+		return criteria.list();
+	}
 }

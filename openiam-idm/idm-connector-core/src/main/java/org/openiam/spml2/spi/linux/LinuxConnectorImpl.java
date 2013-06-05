@@ -2,8 +2,8 @@ package org.openiam.spml2.spi.linux;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
-import org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
+import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemObjectMatchDAO;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
@@ -36,7 +36,7 @@ import java.util.List;
 public class LinuxConnectorImpl extends AbstractSpml2Complete implements ConnectorService {
     private static final Log log = LogFactory.getLog(LinuxConnectorImpl.class);
 
-    protected ManagedSystemDataService managedSysService;
+    protected ManagedSystemWebService managedSysService;
     protected ManagedSystemObjectMatchDAO managedSysObjectMatchDao;
     protected ResourceDataService resourceDataService;
 
@@ -44,7 +44,7 @@ public class LinuxConnectorImpl extends AbstractSpml2Complete implements Connect
     // ------------------- SSH connection methods
     private SSHConnectionFactory connections = new SSHConnectionFactory();
 
-    private SSHAgent getSSH(ManagedSys managedSys) {
+    private SSHAgent getSSH(ManagedSysDto managedSys) {
         SSHAgent ssh = null;
 
         if (managedSys != null) {
@@ -75,7 +75,7 @@ public class LinuxConnectorImpl extends AbstractSpml2Complete implements Connect
     }
 
     // ---------- Interface
-    public ResponseType testConnection(@WebParam(name = "managedSys", targetNamespace = "") ManagedSys managedSys) {
+    public ResponseType testConnection(@WebParam(name = "managedSys", targetNamespace = "") ManagedSysDto managedSys) {
         String host = managedSys.getHostUrl() + ":" + managedSys.getPort().toString();
         log.debug("Testing SSH connection with Linux host " + host + " (user= " + managedSys.getUserId() + ")");
 
@@ -431,11 +431,11 @@ public class LinuxConnectorImpl extends AbstractSpml2Complete implements Connect
 
 
     // >>>>>>>> Accessor/Mutator Methods for bean
-    public ManagedSystemDataService getManagedSysService() {
+    public ManagedSystemWebService getManagedSysService() {
         return managedSysService;
     }
 
-    public void setManagedSysService(ManagedSystemDataService managedSysService) {
+    public void setManagedSysService(ManagedSystemWebService managedSysService) {
         this.managedSysService = managedSysService;
     }
 

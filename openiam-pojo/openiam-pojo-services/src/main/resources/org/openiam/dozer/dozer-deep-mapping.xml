@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mappings xmlns="http://dozer.sourceforge.net"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://dozer.sourceforge.net
+          http://dozer.sourceforge.net/schema/beanmapping.xsd">
+          
+	<mapping>
+		<class-a>org.openiam.idm.srvc.org.domain.OrganizationEntity</class-a>
+		<class-b>org.openiam.idm.srvc.org.domain.OrganizationEntity</class-b>
+		<field custom-converter="org.openiam.dozer.MapConverterWithKeyString" custom-converter-param="shallowDozerMapper">
+			<a>attributes</a>
+			<b>attributes</b>
+		</field>
+	</mapping>
+          
+	<mapping>
+		<class-a>org.openiam.idm.srvc.user.dto.User</class-a>
+		<class-b>org.openiam.idm.srvc.user.dto.User</class-b>
+		<field custom-converter="org.openiam.dozer.PersistentListConverter" custom-converter-param="shallowDozerMapper">
+			<a>principalList</a>
+			<b>principalList</b>
+		</field>
+		<field custom-converter="org.openiam.dozer.PersistentObjectConverter" custom-converter-param="shallowDozerMapper">
+			<a>supervisor</a>
+			<b>supervisor</b>
+		</field>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+			<a>userNotes</a>
+			<b>userNotes</b>
+		</field>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+			<a>addresses</a>
+			<b>addresses</b>
+		</field>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+			<a>phones</a>
+			<b>phones</b>
+		</field>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+			<a>emailAddresses</a>
+			<b>emailAddresses</b>
+		</field>
+		<field custom-converter="org.openiam.dozer.MapConverterWithKeyString" custom-converter-param="shallowDozerMapper">
+			<a>userAttributes</a>
+			<b>userAttributes</b>
+		</field>
+	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.auth.dto.Login</class-a>
+		<class-b>org.openiam.idm.srvc.auth.dto.Login</class-b>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+			<a>loginAttributes</a>
+			<b>loginAttributes</b>
+		</field>
+	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.user.dto.Supervisor</class-a>
+		<class-b>org.openiam.idm.srvc.user.dto.Supervisor</class-b>
+		<field custom-converter="org.openiam.dozer.PersistentObjectConverter" custom-converter-param="shallowDozerMapper">
+			<a>supervisor</a>
+			<b>supervisor</b>
+		</field>
+		<field custom-converter="org.openiam.dozer.PersistentObjectConverter" custom-converter-param="shallowDozerMapper">
+			<a>employee</a>
+			<b>employee</b>
+		</field>
+	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.grp.domain.GroupEntity</class-a>
+		<class-b>org.openiam.idm.srvc.grp.domain.GroupEntity</class-b>
+		<field custom-converter="org.openiam.dozer.MapConverterWithKeyString" custom-converter-param="shallowDozerMapper">
+			<a>attributes</a>
+			<b>attributes</b>
+		</field>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+			<a>parentGroups</a>
+			<b>parentGroups</b>
+		</field>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+			<a>childGroups</a>
+			<b>childGroups</b>
+		</field>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+			<a>resourceGroups</a>
+			<b>resourceGroups</b>
+		</field>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+			<a>roles</a>
+			<b>roles</b>
+		</field>
+	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.role.domain.RoleEntity</class-a>
+		<class-b>org.openiam.idm.srvc.role.domain.RoleEntity</class-b>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+			<a>groups</a>
+			<b>groups</b>
+		</field>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+			<a>roleAttributes</a>
+			<b>roleAttributes</b>
+		</field>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+			<a>rolePolicy</a>
+			<b>rolePolicy</b>
+		</field>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+			<a>childRoles</a>
+			<b>childRoles</b>
+		</field>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+			<a>parentRoles</a>
+			<b>parentRoles</b>
+		</field>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+			<a>userRoles</a>
+			<b>userRoles</b>
+		</field>
+	</mapping>
+	<mapping>
+		<class-a>org.openiam.idm.srvc.res.dto.Resource</class-a>
+		<class-b>org.openiam.idm.srvc.res.dto.Resource</class-b>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+			<a>resourceRoles</a>
+			<b>resourceRoles</b>
+		</field>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+			<a>resourceProps</a>
+			<b>resourceProps</b>
+		</field>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+			<a>resourceGroups</a>
+			<b>resourceGroups</b>
+		</field>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+			<a>parentResources</a>
+			<b>parentResources</b>
+		</field>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+			<a>childResources</a>
+			<b>childResources</b>
+		</field>
+	</mapping>
+	
+
+		<mapping>
+		 <class-a>org.openiam.idm.srvc.meta.dto.MetadataType</class-a>
+		<class-b>org.openiam.idm.srvc.meta.dto.MetadataType</class-b>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="deepDozerMapper">
+			<a>categories</a>
+			<b>categories</b> 
+		</field>
+		<field custom-converter="org.openiam.dozer.crossentity.CrossEntityMapConverterWithKeyString" custom-converter-param="deepDozerMapper">
+			<a>elementAttributes</a>
+			<b>elementAttributes</b>
+		</field>
+	</mapping>
+		<mapping>
+		 <class-a>org.openiam.idm.srvc.cat.dto.Category</class-a>
+		<class-b>org.openiam.idm.srvc.cat.dto.Category</class-b>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="deepDozerMapper">
+			<a>categoryLanguages</a>
+			<b>categoryLanguages</b> 
+		</field>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="deepDozerMapper">
+			<a>childCategories</a>
+			<b>childCategories</b>
+		</field>
+	</mapping>
+	<mapping>
+		<class-a>org.openiam.idm.srvc.policy.dto.PolicyDef</class-a>
+		<class-b>org.openiam.idm.srvc.policy.dto.PolicyDef</class-b>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="deepDozerMapper">
+			<a>policies</a>
+			<b>policies</b> 
+		</field>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="deepDozerMapper">
+			<a>policyDefParams</a>
+			<b>policyDefParams</b>
+		</field>
+	</mapping>	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.policy.dto.PolicyDefParam</class-a>
+		<class-b>org.openiam.idm.srvc.policy.dto.PolicyDefParam</class-b>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+			<a>policyAttributes</a>
+			<b>policyAttributes</b> 
+		</field>
+	</mapping>		
+	<mapping>
+		<class-a>org.openiam.idm.srvc.policy.dto.Policy</class-a>
+		<class-b>org.openiam.idm.srvc.policy.dto.Policy</class-b>
+		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="deepDozerMapper">
+			<a>policyAttributes</a>
+			<b>policyAttributes</b> 
+		</field>
+	</mapping>
+
+    <mapping>
+        <class-a>org.openiam.idm.srvc.user.domain.UserEntity</class-a>
+        <class-b>org.openiam.idm.srvc.user.domain.UserEntity</class-b>
+        <field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+            <a >userNotes</a>
+            <b>userNotes</b>
+        </field>
+        <field custom-converter="org.openiam.dozer.MapConverterWithKeyString" custom-converter-param="shallowDozerMapper">
+            <a>userAttributes</a>
+            <b>userAttributes</b>
+        </field>
+        <field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+            <a>addresses</a>
+            <b>addresses</b>
+        </field>
+        <field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+            <a>phones</a>
+            <b>phones</b>
+        </field>
+        <field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+            <a>emailAddresses</a>
+            <b>emailAddresses</b>
+        </field>
+        <field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
+            <a>principalList</a>
+            <b>principalList</b>
+        </field>
+        <field-exclude>
+            <a>userKeys</a>
+            <b>userKeys</b>
+        </field-exclude>
+        <field-exclude>
+            <a>userGroups</a>
+            <b>userGroups</b>
+        </field-exclude>
+        <field-exclude>
+            <a>resourceUsers</a>
+            <b>resourceUsers</b>
+        </field-exclude>
+        <field-exclude>
+            <a>userRoles</a>
+            <b>userRoles</b>
+        </field-exclude>
+        <field-exclude>
+            <a>organization</a>
+            <b>organization</b>
+        </field-exclude>
+    </mapping>
+</mappings>

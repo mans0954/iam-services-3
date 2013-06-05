@@ -2,6 +2,8 @@ package org.openiam.idm.srvc.prov.request.dto;
 
 // Generated Jan 9, 2009 5:33:58 PM by Hibernate Tools 3.2.2.GA
 
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
+
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -11,7 +13,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
 /**
  * Domain object for a provisioning request
  */
@@ -59,7 +60,7 @@ public class ProvisionRequest implements java.io.Serializable {
 
     protected String requestForOrgId;
 	
-	protected Set<ManagedSys> managedSyses = new HashSet<ManagedSys>(0);
+	protected Set<ManagedSysDto> managedSyses = new HashSet<ManagedSysDto>(0);
 	protected Set<RequestAttribute> requestAttributes = new HashSet<RequestAttribute>(0);
 	protected Set<RequestApprover> requestApprovers = new HashSet<RequestApprover>(0);
 	protected Set<RequestAttachment> requestAttachments = new HashSet<RequestAttachment>(0);
@@ -74,7 +75,7 @@ public class ProvisionRequest implements java.io.Serializable {
 
 	public ProvisionRequest(String requestId, String requestorId, Date requestDate,
 			String status, Date statusDate, String requestReason,
-			Set<ManagedSys> managedSyses,
+			Set<ManagedSysDto> managedSyses,
 			Set<RequestAttribute> requestAttributes,
 			Set<RequestApprover> requestApprovers,
 			Set<RequestAttachment> requestAttachments,
@@ -140,11 +141,11 @@ public class ProvisionRequest implements java.io.Serializable {
 		this.requestReason = requestReason;
 	}
 
-	public Set<ManagedSys> getManagedSyses() {
+	public Set<ManagedSysDto> getManagedSyses() {
 		return this.managedSyses;
 	}
 
-	public void setManagedSyses(Set<ManagedSys> managedSyses) {
+	public void setManagedSyses(Set<ManagedSysDto> managedSyses) {
 		this.managedSyses = managedSyses;
 	}
 

@@ -91,5 +91,12 @@ public class AuthenticationResponse {
         this.status = status;
     }
 
+	@Override
+	public String toString() {
+		return String
+				.format("AuthenticationResponse [status=%s, subject=%s, authErrorCode=%s, authErrorMessage=%s]",
+						status, subject, authErrorCode, authErrorMessage);
+	}
 
+    
 }

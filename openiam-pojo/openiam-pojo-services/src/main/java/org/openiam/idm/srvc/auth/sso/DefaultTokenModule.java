@@ -31,19 +31,29 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.exception.EncryptionException;
 import org.openiam.idm.srvc.auth.dto.SSOToken;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
+import org.openiam.idm.srvc.key.constant.KeyName;
+import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.util.encrypt.Cryptor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Required;
+import org.springframework.stereotype.Component;
 
 /**
  * Module to create and manage the default token structure used by OpenIAM
  * @author suneet
  *
  */
+@Component("defaultSSOToken")
 public class DefaultTokenModule implements SSOTokenModule {
-
-	static protected ResourceBundle res = ResourceBundle.getBundle("securityconf");
 	private static final Log log = LogFactory.getLog(DefaultTokenModule.class);
 	
+	@Autowired
+	@Qualifier("cryptor")
 	protected Cryptor cryptor;
+	
+	@Autowired
+    protected KeyManagementService keyManagementService;
 	protected int tokenLife;
 
     static final int MIN_AS_MILLIS = 60000;
@@ -51,7 +61,7 @@ public class DefaultTokenModule implements SSOTokenModule {
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.auth.sso.SSOToken#createToken(java.util.Map)
 	 */
-	public SSOToken createToken(Map tokenParam) {
+	public SSOToken createToken(Map tokenParam) throws Exception {
 		long curTime = System.currentTimeMillis();
 		long expTime = getExpirationTime(curTime);
 		String token = null;
@@ -65,13 +75,18 @@ public class DefaultTokenModule implements SSOTokenModule {
 		buf.append(":");
 		buf.append( expirationTime  );
 		
+		final String userId = (String)tokenParam.get("USER_ID");
+		final String principal = (String)tokenParam.get("PRINCIPAL");
+		
 		try {
-			token = cryptor.encrypt(buf.toString());
+			token = cryptor.encrypt(keyManagementService.getUserKey(userId, KeyName.token.name()), buf.toString());
 		}catch(EncryptionException encExcep) {
 			return null;
 		}
 		
 		SSOToken ssoToken = new SSOToken(new Date(curTime), new Date(expTime), token, AuthenticationConstants.OPENIAM_TOKEN  );
+		ssoToken.setPrincipal(principal);
+		ssoToken.setUserId(userId);
 		
 		return  ssoToken;
 
@@ -80,7 +95,7 @@ public class DefaultTokenModule implements SSOTokenModule {
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.auth.sso.SSOToken#isTokenValid(java.lang.String, java.lang.String)
 	 */
-	public boolean isTokenValid(String userId,String principal, String token) {
+	public boolean isTokenValid(String userId,String principal, String token) throws Exception {
 		String decUserId;		// decrypted userid
 		String decTime;			// decrypted time
 
@@ -92,7 +107,7 @@ public class DefaultTokenModule implements SSOTokenModule {
 			log.debug("Token=" + token);
 			log.debug("cryptor =" + cryptor);
 			
-			decString = cryptor.decrypt(token);
+			decString = cryptor.decrypt(keyManagementService.getUserKey(userId, KeyName.token.name()),token);
 		}catch(EncryptionException encExcep) {
 			return false;
 		}
@@ -143,10 +158,10 @@ public class DefaultTokenModule implements SSOTokenModule {
 		return true;
 	}
 
-    public String getDecryptedToken(String token) {
+    public String getDecryptedToken(String userId, String token) throws Exception{
         try {
 
-            return cryptor.decrypt(token);
+            return cryptor.decrypt(keyManagementService.getUserKey(userId, KeyName.token.name()), token);
         }catch(EncryptionException encExcep) {
             return null;
         }
@@ -155,7 +170,7 @@ public class DefaultTokenModule implements SSOTokenModule {
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.auth.sso.SSOToken#refreshToken(java.lang.String, java.lang.String)
 	 */
-	public SSOToken refreshToken(Map tokenParam) {
+	public SSOToken refreshToken(Map tokenParam) throws Exception{
 		return createToken(tokenParam);
 		
 	}
@@ -180,7 +195,8 @@ public class DefaultTokenModule implements SSOTokenModule {
 	}
 
 
-
+	@Override
+	//@Required
 	public void setCryptor(Cryptor cryptor) {
 		this.cryptor = cryptor;
 	}
@@ -188,4 +204,10 @@ public class DefaultTokenModule implements SSOTokenModule {
 	public void setTokenLife(int tokenLife) {
 		this.tokenLife = tokenLife;
 	}
+
+    @Override
+    //@Required
+    public void setKeyManagementService(KeyManagementService keyManagementService) {
+        this.keyManagementService=keyManagementService;
+    }
 }

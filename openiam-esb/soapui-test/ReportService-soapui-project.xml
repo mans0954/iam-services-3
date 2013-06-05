@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<con:soapui-project activeEnvironment="Default" name="ReportService" resourceRoot="" soapui-version="4.5.1" abortOnError="false" runType="SEQUENTIAL" xmlns:con="http://eviware.com/soapui/config"><con:settings/><con:interface xsi:type="con:WsdlInterface" wsaVersion="NONE" name="WebReportServiceServiceSoapBinding" type="wsdl" bindingName="{urn:idm.openiam.org/idm/srvc/report/ws/service}WebReportServiceServiceSoapBinding" soapVersion="1_1" anonymous="optional" definition="file:/C:/work/openIAM/iam-services/openiam-esb/wsdl/ReportService.wsdl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><con:settings/><con:definitionCache type="TEXT" rootPart="file:\C:\work\openIAM\iam-services\openiam-esb\wsdl\ReportService.wsdl"><con:part><con:url>file:\C:\work\openIAM\iam-services\openiam-esb\wsdl\ReportService.wsdl</con:url><con:content><![CDATA[<wsdl:definitions name="WebReportServiceService" targetNamespace="urn:idm.openiam.org/idm/srvc/report/ws/service" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:tns="urn:idm.openiam.org/idm/srvc/report/ws/service" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
+  <wsdl:types>
+    <xs:schema elementFormDefault="unqualified" targetNamespace="urn:idm.openiam.org/idm/srvc/report/ws/service" version="1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+      <xs:element name="createOrUpdateReportInfo" type="tns:createOrUpdateReportInfo"/>
+      <xs:element name="createOrUpdateReportInfoResponse" type="tns:createOrUpdateReportInfoResponse"/>
+      <xs:element name="executeQuery" type="tns:executeQuery"/>
+      <xs:element name="executeQueryResponse" type="tns:executeQueryResponse"/>
+      <xs:element name="getReportDataResponse">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="tns:Response">
+              <xs:sequence>
+                <xs:element minOccurs="0" name="ReportData" type="tns:ReportData"/>
+              </xs:sequence>
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="getReports" type="tns:getReports"/>
+      <xs:element name="getReportsResponse" type="tns:getReportsResponse"/>
+      <xs:element name="reportTable" type="tns:ReportTable"/>
+      <xs:complexType name="createOrUpdateReportInfo">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="reportName" type="xs:string"/>
+          <xs:element minOccurs="0" name="reportDataSource" type="xs:string"/>
+          <xs:element minOccurs="0" name="reportUrl" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="createOrUpdateReportInfoResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="return" type="tns:Response"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="Response">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="errorCode" type="tns:ResponseErrorCode"/>
+          <xs:element minOccurs="0" name="responseValue" type="xs:anyType"/>
+          <xs:element minOccurs="0" name="errorText" type="xs:string"/>
+        </xs:sequence>
+        <xs:attribute name="status" type="tns:ResponseStatus" use="required"/>
+      </xs:complexType>
+      <xs:complexType name="executeQuery">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="reportName" type="xs:string"/>
+          <xs:element minOccurs="0" name="queryParams" type="tns:Property"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="Property">
+        <xs:sequence>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="entry" nillable="true" type="tns:Entry"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="Entry">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="value" type="xs:string"/>
+        </xs:sequence>
+        <xs:attribute name="key" type="xs:string"/>
+      </xs:complexType>
+      <xs:complexType name="executeQueryResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="return">
+            <xs:complexType>
+              <xs:complexContent>
+                <xs:extension base="tns:Response">
+                  <xs:sequence>
+                    <xs:element minOccurs="0" name="ReportData" type="tns:ReportData"/>
+                  </xs:sequence>
+                </xs:extension>
+              </xs:complexContent>
+            </xs:complexType>
+          </xs:element>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="ReportData">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="parameters" type="tns:Property"/>
+          <xs:any maxOccurs="unbounded" minOccurs="0" namespace="##other" processContents="lax"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="ReportTable">
+        <xs:sequence>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="row" nillable="true" type="tns:ReportRow"/>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string"/>
+      </xs:complexType>
+      <xs:complexType name="ReportRow">
+        <xs:sequence>
+          <xs:element maxOccurs="unbounded" minOccurs="0" name="column" nillable="true">
+            <xs:complexType>
+              <xs:sequence>
+                <xs:element minOccurs="0" name="value" type="xs:string"/>
+              </xs:sequence>
+              <xs:attribute name="name" type="xs:string"/>
+            </xs:complexType>
+          </xs:element>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="getReports">
+        <xs:sequence/>
+      </xs:complexType>
+      <xs:complexType name="getReportsResponse">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="return">
+            <xs:complexType>
+              <xs:complexContent>
+                <xs:extension base="tns:Response">
+                  <xs:sequence>
+                    <xs:element maxOccurs="unbounded" minOccurs="0" name="reports" nillable="true" type="tns:ReportDto"/>
+                  </xs:sequence>
+                </xs:extension>
+              </xs:complexContent>
+            </xs:complexType>
+          </xs:element>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:complexType name="ReportDto">
+        <xs:sequence>
+          <xs:element minOccurs="0" name="reportId" type="xs:string"/>
+          <xs:element minOccurs="0" name="reportName" type="xs:string"/>
+          <xs:element minOccurs="0" name="reportDataSource" type="xs:string"/>
+          <xs:element minOccurs="0" name="reportUrl" type="xs:string"/>
+        </xs:sequence>
+      </xs:complexType>
+      <xs:simpleType name="ResponseStatus">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="success"/>
+          <xs:enumeration value="failure"/>
+        </xs:restriction>
+      </xs:simpleType>
+      <xs:simpleType name="ResponseErrorCode">
+        <xs:restriction base="xs:string">
+          <xs:enumeration value="objectNotFound"/>
+          <xs:enumeration value="classNotFound"/>
+          <xs:enumeration value="principalNotFound"/>
+          <xs:enumeration value="userNotFound"/>
+          <xs:enumeration value="userStatus"/>
+          <xs:enumeration value="supervisorlNotFound"/>
+          <xs:enumeration value="DUPLICATE_PRINCIPAL"/>
+          <xs:enumeration value="failPasswordPolicy"/>
+          <xs:enumeration value="groupIdNull"/>
+          <xs:enumeration value="groupIdInvalid"/>
+          <xs:enumeration value="roleIdNull"/>
+          <xs:enumeration value="roleIdInvalid"/>
+          <xs:enumeration value="objectIdInvalid"/>
+          <xs:enumeration value="success"/>
+          <xs:enumeration value="FAIL_SQL_ERORR"/>
+          <xs:enumeration value="FAIL_CONNECTION"/>
+          <xs:enumeration value="FAIL_ALPHA_CHAR_RULE"/>
+          <xs:enumeration value="FAIL_LOWER_CASE_RULE"/>
+          <xs:enumeration value="FAIL_UPPER_CASE_RULE"/>
+          <xs:enumeration value="FAIL_NON_APHANUMERIC_RULE"/>
+          <xs:enumeration value="FAIL_NUMERIC_CHAR_RULE"/>
+          <xs:enumeration value="FAIL_HISTORY_RULE"/>
+          <xs:enumeration value="FAIL_LENGTH_RULE"/>
+          <xs:enumeration value="FAIL_NEQ_NAME"/>
+          <xs:enumeration value="FAIL_NEQ_PASSWORD"/>
+          <xs:enumeration value="FAIL_NEQ_PRINCIPAL"/>
+          <xs:enumeration value="FAIL_PASSWORD_CHANGE_FREQUENCY"/>
+          <xs:enumeration value="PASSWORD_POLICY_NOT_FOUND"/>
+          <xs:enumeration value="FAIL_PASSWORD_CHANGE_ALLOW"/>
+          <xs:enumeration value="FAIL_REJECT_CHARS_IN_PSWD"/>
+          <xs:enumeration value="FAIL_ENCRYPTION"/>
+          <xs:enumeration value="FAIL_DECRYPTION"/>
+          <xs:enumeration value="DIRECTORY_NAMING_EXCEPTION"/>
+          <xs:enumeration value="COMMUNICATION_EXCEPTION"/>
+          <xs:enumeration value="FAIL_CONNECTOR"/>
+          <xs:enumeration value="INVALID_ARGUMENTS"/>
+          <xs:enumeration value="IO_EXCEPTION"/>
+          <xs:enumeration value="FILE_EXCEPTION"/>
+          <xs:enumeration value="SQL_EXCEPTION"/>
+          <xs:enumeration value="WS_SERVICE_EXCEPTION"/>
+          <xs:enumeration value="SYNCHRONIZATION_EXCEPTION"/>
+          <xs:enumeration value="LIMIT_EXCEEDED_EXCEPTION"/>
+          <xs:enumeration value="AUTHENTICATION_EXCEPTION"/>
+          <xs:enumeration value="PERMISSION_EXCEPTION"/>
+          <xs:enumeration value="SERVICE_UNAVAILABLE_EXCEPTION"/>
+          <xs:enumeration value="SCHEMA_VIOLATION_EXCEPTION"/>
+          <xs:enumeration value="FAIL_PREPROCESSOR"/>
+          <xs:enumeration value="FAIL_POSTPROCESSOR"/>
+          <xs:enumeration value="FAIL_PROCESS_ALREADY_RUNNING"/>
+          <xs:enumeration value="FAIL_OTHER"/>
+        </xs:restriction>
+      </xs:simpleType>
+    </xs:schema>
+  </wsdl:types>
+  <wsdl:message name="createOrUpdateReportInfo">
+    <wsdl:part name="parameters" element="tns:createOrUpdateReportInfo"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getReportsResponse">
+    <wsdl:part name="parameters" element="tns:getReportsResponse"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="executeQuery">
+    <wsdl:part name="parameters" element="tns:executeQuery"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="executeQueryResponse">
+    <wsdl:part name="parameters" element="tns:executeQueryResponse"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getReports">
+    <wsdl:part name="parameters" element="tns:getReports"></wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="createOrUpdateReportInfoResponse">
+    <wsdl:part name="parameters" element="tns:createOrUpdateReportInfoResponse"></wsdl:part>
+  </wsdl:message>
+  <wsdl:portType name="ReportService">
+    <wsdl:operation name="createOrUpdateReportInfo">
+      <wsdl:input name="createOrUpdateReportInfo" message="tns:createOrUpdateReportInfo"></wsdl:input>
+      <wsdl:output name="createOrUpdateReportInfoResponse" message="tns:createOrUpdateReportInfoResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="executeQuery">
+      <wsdl:input name="executeQuery" message="tns:executeQuery"></wsdl:input>
+      <wsdl:output name="executeQueryResponse" message="tns:executeQueryResponse"></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getReports">
+      <wsdl:input name="getReports" message="tns:getReports"></wsdl:input>
+      <wsdl:output name="getReportsResponse" message="tns:getReportsResponse"></wsdl:output>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="WebReportServiceServiceSoapBinding" type="tns:ReportService">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="createOrUpdateReportInfo">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="createOrUpdateReportInfo">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="createOrUpdateReportInfoResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="executeQuery">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="executeQuery">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="executeQueryResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getReports">
+      <soap:operation soapAction="" style="document"/>
+      <wsdl:input name="getReports">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getReportsResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="WebReportServiceService">
+    <wsdl:port name="ReportServicePort" binding="tns:WebReportServiceServiceSoapBinding">
+      <soap:address location="http://localhost:9090/ReportServicePort"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>]]></con:content><con:type>http://schemas.xmlsoap.org/wsdl/</con:type></con:part></con:definitionCache><con:endpoints><con:endpoint>http://localhost:9090/idmsrvc/ReportServicePort</con:endpoint></con:endpoints><con:operation isOneWay="false" action="" name="createOrUpdateReportInfo" bindingOperationName="createOrUpdateReportInfo" type="Request-Response" outputName="createOrUpdateReportInfoResponse" inputName="createOrUpdateReportInfo" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call name="Request 1"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost:9090/idmsrvc/ReportServicePort</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="urn:idm.openiam.org/idm/srvc/report/ws/service">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <ser:createOrUpdateReportInfo>
+         <!--Optional:-->
+         <reportName>AUDIT_REPORT</reportName>
+         <!--Optional:-->
+         <reportDataSource>AuditReport.groovy</reportDataSource>
+         <!--Optional:-->
+         <reportUrl>AuditReport.rptdesign</reportUrl>
+      </ser:createOrUpdateReportInfo>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:wsaConfig mustUnderstand="NONE" version="200508" action="urn:idm.openiam.org/idm/srvc/report/ws/service/ReportService/createOrUpdateReportInfo"/><con:wsrmConfig version="1.2"/></con:call></con:operation><con:operation isOneWay="false" action="" name="executeQuery" bindingOperationName="executeQuery" type="Request-Response" outputName="executeQueryResponse" inputName="executeQuery" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call name="Request 1"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost:9090/idmsrvc/ReportServicePort</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="urn:idm.openiam.org/idm/srvc/report/ws/service">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <ser:executeQuery>
+         <!--Optional:-->
+         <reportName>AUDIT_REPORT</reportName>
+         <!--Optional:-->
+         <queryParams>
+            <!--Zero or more repetitions:-->
+            <entry key="ACTION_ID">
+               <!--Optional:-->
+               <value>AUTHENTICATION</value>
+            </entry>
+            <entry key="ACTION_DATETIME_START">
+               <!--Optional:-->
+               <value>2012-10-01</value>
+            </entry>
+            <entry key="ACTION_DATETIME_END">
+               <!--Optional:-->
+               <value>2012-10-30</value>
+            </entry>
+         </queryParams>
+      </ser:executeQuery>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:wsaConfig mustUnderstand="NONE" version="200508" action="urn:idm.openiam.org/idm/srvc/report/ws/service/ReportService/executeQuery"/><con:wsrmConfig version="1.2"/></con:call></con:operation><con:operation isOneWay="false" action="" name="getReports" bindingOperationName="getReports" type="Request-Response" outputName="getReportsResponse" inputName="getReports" receivesAttachments="false" sendsAttachments="false" anonymous="optional"><con:settings/><con:call name="Request 1"><con:settings><con:setting id="com.eviware.soapui.impl.wsdl.WsdlRequest@request-headers">&lt;xml-fragment/></con:setting></con:settings><con:encoding>UTF-8</con:encoding><con:endpoint>http://localhost:9090/idmsrvc/ReportServicePort</con:endpoint><con:request><![CDATA[<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="urn:idm.openiam.org/idm/srvc/report/ws/service">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <ser:getReports/>
+   </soapenv:Body>
+</soapenv:Envelope>]]></con:request><con:jmsConfig JMSDeliveryMode="PERSISTENT"/><con:jmsPropertyConfig/><con:wsaConfig mustUnderstand="NONE" version="200508" action="urn:idm.openiam.org/idm/srvc/report/ws/service/ReportService/getReports"/><con:wsrmConfig version="1.2"/></con:call></con:operation></con:interface><con:properties/><con:wssContainer/><con:databaseConnectionContainer/><con:reporting><con:xmlTemplates/><con:parameters/></con:reporting></con:soapui-project>

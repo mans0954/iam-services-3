@@ -1,26 +1,52 @@
 package org.openiam.idm.srvc.user.service;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.ListUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.BaseConstants;
 import org.openiam.base.SysConfiguration;
-import org.openiam.idm.srvc.meta.dto.MetadataType;
-import org.openiam.idm.srvc.user.dto.*;
-import org.openiam.idm.srvc.user.ws.AttributeListResponse;
-import org.openiam.util.db.Search;
-import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.auth.dto.LoginId;
+import org.openiam.core.dao.UserKeyDao;
+import org.openiam.idm.searchbeans.*;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDAO;
-import org.openiam.idm.srvc.continfo.dto.Address;
+import org.openiam.idm.srvc.auth.login.LoginDataService;
+import org.openiam.idm.srvc.auth.login.lucene.LoginSearchDAO;
+import org.openiam.idm.srvc.continfo.domain.AddressEntity;
+import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
+import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.continfo.dto.ContactConstants;
+import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.continfo.service.AddressDAO;
 import org.openiam.idm.srvc.continfo.service.EmailAddressDAO;
+import org.openiam.idm.srvc.continfo.service.EmailSearchDAO;
 import org.openiam.idm.srvc.continfo.service.PhoneDAO;
-import org.openiam.idm.srvc.continfo.dto.Phone;
-import org.openiam.idm.srvc.continfo.dto.EmailAddress;
+import org.openiam.idm.srvc.continfo.service.PhoneSearchDAO;
+import org.openiam.idm.srvc.grp.service.UserGroupDAO;
+import org.openiam.idm.srvc.key.service.KeyManagementService;
+import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
+import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
+import org.openiam.idm.srvc.res.service.ResourceUserDAO;
+import org.openiam.idm.srvc.role.service.UserRoleDAO;
+import org.openiam.idm.srvc.searchbean.converter.AddressSearchBeanConverter;
+import org.openiam.idm.srvc.searchbean.converter.EmailAddressSearchBeanConverter;
+import org.openiam.idm.srvc.searchbean.converter.PhoneSearchBeanConverter;
+import org.openiam.idm.srvc.user.dao.UserSearchDAO;
+import org.openiam.idm.srvc.user.domain.SupervisorEntity;
+import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
+import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.domain.UserNoteEntity;
+import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
+import org.openiam.idm.srvc.user.dto.UserSearch;
+import org.openiam.idm.srvc.user.dto.UserStatusEnum;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-
-import javax.jws.WebService;
 
 /**
  * Service interface that clients will access to gain information about users
@@ -30,88 +56,91 @@ import javax.jws.WebService;
  * @version 2
  */
 
-// Note: as per spec serviceName goes in impl class and name goes in interface
-
+@Service("userManager")
+@Transactional
 public class UserMgr implements UserDataService {
-
+	@Autowired
+	@Qualifier("userDAO")
 	private UserDAO userDao;
+	@Autowired
+	@Qualifier("userAttributeDAO")
 	private UserAttributeDAO userAttributeDao;
+	@Autowired
+	@Qualifier("userNoteDAO")
 	private UserNoteDAO userNoteDao;
-	private AddressDAO addressDao;
-	private EmailAddressDAO emailAddressDao;
-	private PhoneDAO phoneDao;
+	@Autowired
+	@Qualifier("supervisorDAO")
 	private SupervisorDAO supervisorDao;
+	@Autowired
+	private AddressDAO addressDao;
+	@Autowired
+	private EmailAddressDAO emailAddressDao;
+	@Autowired
+	private PhoneDAO phoneDao;
+	@Autowired
 	protected LoginDAO loginDao;
-    protected SysConfiguration sysConfiguration;
-	
+	@Autowired
+	protected SysConfiguration sysConfiguration;
+	@Autowired
+	private UserRoleDAO userRoleDAO;
+
+	@Autowired
+	private UserGroupDAO userGroupDAO;
+	@Autowired
+	private ResourceUserDAO resourceUserDAO;
+
+	@Autowired
+	private UserSearchDAO userSearchDAO;
+
+	@Autowired
+	private LoginSearchDAO loginSearchDAO;
+
+	@Autowired
+	private EmailSearchDAO emailSearchDAO;
+
+	@Autowired
+	private PhoneSearchDAO phoneSearchDAO;
+	@Autowired
+	private UserKeyDao userKeyDao;
+
+	@Autowired
+	private KeyManagementService keyManagementService;
+	@Autowired
+	private LoginDataService loginManager;
+	@Autowired
+	private EmailAddressSearchBeanConverter emailAddressSearchBeanConverter;
+	@Autowired
+	private AddressSearchBeanConverter addressSearchBeanConverter;
+	@Autowired
+	private PhoneSearchBeanConverter phoneSearchBeanConverter;
+
+	@Autowired
+	private MetadataElementDAO metadataElementDAO;
+
+	@Value("${org.openiam.user.search.max.results}")
+	private int MAX_USER_SEARCH_RESULTS;
+
 	private static final Log log = LogFactory.getLog(UserMgr.class);
 
-	// protected UserMsgProducer userMsgProducer;
-
-	/*
-	 * public UserMgr() {
-	 *  }
-	 */
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#getUser(java.lang.String)
-	 */
-	public User getUser(String id) {
+	@Override
+	public UserEntity getUser(String id) {
 		return userDao.findById(id);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#getUser(java.lang.String,
-	 *      boolean)
-	 */
-	public User getUserWithDependent(String id, boolean dependants) {
-
-		User usr = userDao.findById(id);
-		if (usr == null) {
-			return null;
-		}
-
-		if (!dependants) {
-			return usr;
-		}
-		
-		//	 assemble the various dependant objects
-		org.hibernate.Hibernate.initialize(usr.getPhone());
-		org.hibernate.Hibernate.initialize(usr.getEmailAddress());
-		org.hibernate.Hibernate.initialize(usr.getAddresses());
-		org.hibernate.Hibernate.initialize(usr.getUserAttributes());
-		
-	 	List<Login> principalList = loginDao.findUser(id);
-	 	if (principalList != null) {
-	 		usr.setPrincipalList(principalList);
-	 	}
-		
-	
-		return usr;
-	}
-	
-	public User getUserByPrincipal(String securityDomain, String principal, 
-			String managedSysId, boolean dependants) {
-		// get the login
-		LoginId loginId = new LoginId(securityDomain, principal, managedSysId);
-		Login login = loginDao.findById(loginId);
+	@Override
+	public UserEntity getUserByPrincipal(String securityDomain,
+			String principal, String managedSysId, boolean dependants) {
+		LoginEntity login = loginDao.getRecord(principal, managedSysId,
+				securityDomain);
 		if (login == null) {
 			return null;
 		}
-		return getUserWithDependent(login.getUserId(), dependants);
-		
+		return getUser(login.getUserId());
+
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#addUser(org.openiam.idm.srvc.user.dto.User)
-	 */
-	public User addUser(User user) {
+	@Override
+	public void addUser(UserEntity user) throws Exception {
 		if (user == null)
 			throw new NullPointerException("user object is null");
 
@@ -122,20 +151,14 @@ public class UserMgr implements UserDataService {
 			user.setLastUpdate(new Date(System.currentTimeMillis()));
 		}
 
-		validateEmailAddress(user.getUserId(), user.getEmailAddress());
-		
-		userDao.add(user);
+		validateEmailAddress(user, user.getEmailAddresses());
+		userDao.save(user);
 
-		return user;
+		keyManagementService.generateUserKeys(user);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#addUser(org.openiam.idm.srvc.user.dto.User,
-	 *      boolean)
-	 */
-	public User addUserWithDependent(User user, boolean dependency) {
+	@Override
+	public void addUserWithDependent(UserEntity user, boolean dependency) {
 		if (user == null)
 			throw new NullPointerException("user object is null");
 
@@ -145,72 +168,29 @@ public class UserMgr implements UserDataService {
 		if (user.getLastUpdate() == null) {
 			user.setLastUpdate(new Date(System.currentTimeMillis()));
 		}
-		
-		// if there are dependants, then make user that the parentId has been set
-		
-		validateEmailAddress(user.getUserId(), user.getEmailAddress());
-
-        log.debug("User Object before addUser: " + user);
-
-		userDao.add(user);
-
-		if (!dependency)
-			return user;
-			
-	  // address
-	/*  Map<String, Address> adrMap = user.getAddresses();
-	  if (adrMap != null && adrMap.size() > 0 ) {
-		  this.addressDao.saveAddressMap(user.getUserId(), 
-				  	ContactConstants.PARENT_TYPE_USER , adrMap);
-	  
-	 }
-	 */
-	  //email
-	//  Map<String, EmailAddress> emailMap = user.getEmailAddresses();
-	//  if (emailMap != null && emailMap.size() > 0 ) {
-	//  this.emailAddressDao.saveEmailAddressMap(user.getUserId(), 
-	//			  	ContactConstants.PARENT_TYPE_USER , emailMap);
-	//  }
-	  
-	  // phone
-	/*  Map<String, Phone> phoneMap = user.getPhones();
-	  if (phoneMap != null && phoneMap.size() > 0 ) {
-		  this.phoneDao.savePhoneMap(user.getUserId(), 
-				  	ContactConstants.PARENT_TYPE_USER , phoneMap);
-	  }
-	  */
-	  
-	//  this.userMsgProducer.sendMessage(user,"ADD");
-			
-
-		return user;
-
+		validateEmailAddress(user, user.getEmailAddresses());
+		userDao.save(user);
 	}
-	
-	private void validateEmailAddress(String userId, Set<EmailAddress> emailSet) {
-		
+
+	private void validateEmailAddress(UserEntity user,
+			Set<EmailAddressEntity> emailSet) {
+
 		if (emailSet == null || emailSet.isEmpty())
 			return;
-		
-		Iterator<EmailAddress> it = emailSet.iterator();
-		
+
+		Iterator<EmailAddressEntity> it = emailSet.iterator();
+
 		while (it.hasNext()) {
-			EmailAddress emailAdr = it.next();
-			if (emailAdr.getParentId() == null) {
-				emailAdr.setParentId(userId);
-				emailAdr.setParentType(ContactConstants.PARENT_TYPE_USER);
+			EmailAddressEntity emailAdr = it.next();
+			if (emailAdr.getParent() == null) {
+				emailAdr.setParent(userDao.findById(user.getUserId()));
 			}
 		}
-		
-		
+
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#updateUser(org.openiam.idm.srvc.user.dto.User)
-	 */
-	public void updateUser(User user) {
+	@Override
+	public void updateUser(UserEntity user) {
 		if (user == null)
 			throw new NullPointerException("user object is null");
 		if (user.getUserId() == null)
@@ -222,63 +202,24 @@ public class UserMgr implements UserDataService {
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#updateUser(org.openiam.idm.srvc.user.dto.User,
-	 *      boolean)
-	 */
-	public void updateUserWithDependent(User user, boolean dependency) {
+	@Override
+	public void updateUserWithDependent(UserEntity user, boolean dependency) {
 		if (user == null)
 			throw new NullPointerException("user object is null");
 		if (user.getUserId() == null)
 			throw new NullPointerException("user id is null");
 
 		user.setLastUpdate(new Date(System.currentTimeMillis()));
-		
-		validateEmailAddress(user.getUserId(), user.getEmailAddress());
+
+		validateEmailAddress(user, user.getEmailAddresses());
 
 		userDao.update(user);
-
-		if (!dependency)
-			return;
-			
-	// address
-	 /* Map<Address> adrMap = user.getAddresses();
-	  if (adrMap != null && adrMap.size() > 0 ) {
-		  this.addressDao.saveAddressMap(user.getUserId(), 
-				  	ContactConstants.PARENT_TYPE_USER , adrMap);
-	  }
-	  */
-	  //email
-/*	  Map<String, EmailAddress> emailMap = user.getEmailAddresses();
-	  if (emailMap != null && emailMap.size() > 0 ) {
-		  this.emailAddressDao.saveEmailAddressMap(user.getUserId(), 
-				  	ContactConstants.PARENT_TYPE_USER , emailMap);
-	  }
-*/	  
-	  // phone
-/*
-		Map<String, Phone> phoneMap = user.getPhones();
-	  if (phoneMap != null && phoneMap.size() > 0 ) {
-		  this.phoneDao.savePhoneMap(user.getUserId(), 
-				  	ContactConstants.PARENT_TYPE_USER , phoneMap);
-	  }
-*/
-	  //this.userMsgProducer.sendMessage(user,"UPDATE");
-	  
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#removeUser(java.lang.String)
-	 */
-	public void removeUser(String id) {
+	@Override
+	public void removeUser(String id) throws Exception {
 		if (id == null)
 			throw new NullPointerException("user id is null");
-
-		User user = new User(id);
 
 		// removes all the dependant objects.
 		removeAllAttributes(id);
@@ -287,122 +228,214 @@ public class UserMgr implements UserDataService {
 		removeAllNotes(id);
 		removeAllEmailAddresses(id);
 
-		userDao.remove(user);
+		userGroupDAO.deleteByUserId(id);
+		userRoleDAO.deleteByUserId(id);
+		resourceUserDAO.deleteAllByUserId(id);
+		userKeyDao.deleteByUserId(id);
 
-		// / this.userMsgProducer.sendMessage(user.getUserId(),"DELETE");
-
+		userDao.delete(userDao.findById(id));
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#findUsersByLastUpdateRange(java.util.Date,
-	 *      java.util.Date)
+	 * @see
+	 * org.openiam.idm.srvc.user.service.UserDataService#findUsersByLastUpdateRange
+	 * (java.util.Date, java.util.Date)
 	 */
 	public List findUsersByLastUpdateRange(Date startDate, Date endDate) {
-
 		return userDao.findByLastUpdateRange(startDate, endDate);
-
-	}
-	
-	public User getUserByName(String firstName, String lastName) {
-		return userDao.findByName(firstName, lastName);
 	}
 
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#findUserByOrganization(java.lang.String)
-	 */
-	public List<User> findUserByOrganization(String orgId) {
-		return userDao.findByOrganization(orgId);
+	@Override
+	public UserEntity getUserByName(String firstName, String lastName) {
+		UserSearchBean searchBean = new UserSearchBean();
+		searchBean.setFirstName(firstName);
+		searchBean.setLastName(lastName);
+		List<UserEntity> userList = findBeans(searchBean, 0, 1);
+		return (userList != null && !userList.isEmpty()) ? userList.get(0)
+				: null;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#findUsersByStatus(java.lang.String)
-	 */
-	public List findUsersByStatus(String status) {
-		return userDao.findByStatus(status);
+	@Override
+	public List<UserEntity> findUserByOrganization(String orgId) {
+		UserSearchBean searchBean = new UserSearchBean();
+		searchBean.setOrganizationId(orgId);
+		return findBeans(searchBean);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#search(org.openiam.util.db.Search)
-	 */
-	
-	public List<User> search(UserSearch search) {
-		return userDao.search(search);
+	@Override
+	public List findUsersByStatus(UserStatusEnum status) {
+		UserSearchBean searchBean = new UserSearchBean();
+		searchBean.setAccountStatus(status.name());
+		return findBeans(searchBean);
 	}
 
-    public List<User> searchByDelegationProperties(DelegationFilterSearch search) {
-        return userDao.findByDelegationProperties(search);
+	@Override
+	public List<UserEntity> searchByDelegationProperties(
+			DelegationFilterSearch search) {
+		return userDao.findByDelegationProperties(search);
+	}
 
-    }
+	@Override
+	public List<UserEntity> findBeans(UserSearchBean searchBean) {
+		return findBeans(searchBean, -1, -1);
+	}
 
-    /* -------- Methods for Attributes ---------- */
+	private List<String> getUserIds(final UserSearchBean searchBean) {
+		final List<List<String>> nonEmptyListOfLists = new LinkedList<List<String>>();
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#addAttribute(org.openiam.idm.srvc.user.dto.UserAttribute)
-	 */
-	public UserAttribute addAttribute(UserAttribute attribute) {
+		nonEmptyListOfLists.add(userSearchDAO.findIds(0,
+				MAX_USER_SEARCH_RESULTS, null, searchBean));
+
+		if (StringUtils.isNotBlank(searchBean.getPrincipal())) {
+			final LoginSearchBean loginSearchBean = new LoginSearchBean();
+			loginSearchBean.setLogin(StringUtils.trimToNull(searchBean
+					.getPrincipal()));
+			nonEmptyListOfLists.add(loginSearchDAO.findUserIds(0,
+					MAX_USER_SEARCH_RESULTS, loginSearchBean));
+		}
+
+		if (CollectionUtils.isNotEmpty(searchBean.getRoleIdSet())) {
+			nonEmptyListOfLists.add(userRoleDAO.getUserIdsInRole(
+					searchBean.getRoleIdSet(), 0, MAX_USER_SEARCH_RESULTS));
+		}
+
+		if (CollectionUtils.isNotEmpty(searchBean.getGroupIdSet())) {
+			nonEmptyListOfLists.add(userGroupDAO.getUserIdsInGroup(
+					searchBean.getGroupIdSet(), 0, MAX_USER_SEARCH_RESULTS));
+		}
+
+		if (StringUtils.isNotBlank(searchBean.getEmailAddress())) {
+			final EmailSearchBean emailSearchBean = new EmailSearchBean();
+			emailSearchBean.setEmail(searchBean.getEmailAddress());
+			nonEmptyListOfLists.add(emailSearchDAO.findUserIds(0,
+					MAX_USER_SEARCH_RESULTS, emailSearchBean));
+		}
+
+		if (StringUtils.isNotBlank(searchBean.getPhoneAreaCd())
+				|| StringUtils.isNotBlank(searchBean.getPhoneNbr())) {
+			final PhoneSearchBean phoneSearchBean = new PhoneSearchBean();
+			phoneSearchBean.setPhoneAreaCd(StringUtils.trimToNull(searchBean
+					.getPhoneAreaCd()));
+			phoneSearchBean.setPhoneNbr(StringUtils.trimToNull(searchBean
+					.getPhoneNbr()));
+			nonEmptyListOfLists.add(phoneSearchDAO.findUserIds(0,
+					MAX_USER_SEARCH_RESULTS, phoneSearchBean));
+		}
+
+		// remove null or empty lists
+		for (final Iterator<List<String>> it = nonEmptyListOfLists.iterator(); it
+				.hasNext();) {
+			final List<String> list = it.next();
+			if (CollectionUtils.isEmpty(list)) {
+				it.remove();
+			}
+		}
+
+		List<String> finalizedIdList = null;
+		for (final Iterator<List<String>> it = nonEmptyListOfLists.iterator(); it
+				.hasNext();) {
+			if (finalizedIdList == null) {
+				finalizedIdList = it.next();
+			} else {
+				finalizedIdList = ListUtils.intersection(finalizedIdList,
+						it.next());
+			}
+		}
+
+		return (finalizedIdList != null) ? finalizedIdList
+				: Collections.EMPTY_LIST;
+	}
+
+	@Override
+	public List<UserEntity> findBeans(UserSearchBean searchBean, int from,
+			int size) {
+		List<UserEntity> entityList = null;
+		if (StringUtils.isNotBlank(searchBean.getKey())) {
+			final UserEntity entity = userDao.findById(searchBean.getKey());
+			;
+			if (entity != null) {
+				entityList = new ArrayList<UserEntity>(1);
+				entityList.add(entity);
+			}
+		} else {
+			List<String> finalizedIdList = getUserIds(searchBean);
+			if (finalizedIdList != null && finalizedIdList.size() >= from) {
+				int to = from + size;
+				if (to > finalizedIdList.size()) {
+					to = finalizedIdList.size();
+				}
+				finalizedIdList = new ArrayList<String>(
+						finalizedIdList.subList(from, to));
+				entityList = userDao.findByIds(finalizedIdList);
+			}
+		}
+		return entityList;
+	}
+
+	@Override
+	public int count(UserSearchBean searchBean) {
+		return getUserIds(searchBean).size();
+	}
+
+	@Override
+	public void addAttribute(UserAttributeEntity attribute) {
 		if (attribute == null)
 			throw new NullPointerException("Attribute can not be null");
 
-		if (attribute.getUserId() == null) {
+		if (StringUtils.isEmpty(attribute.getUserId())) {
 			throw new NullPointerException(
 					"User has not been associated with this attribute.");
 		}
 
-		userAttributeDao.add(attribute);
+		UserEntity userEntity = userDao.findById(attribute.getUserId());
+		attribute.setUser(userEntity);
 
-		// this.userMsgProducer.sendMessage(attribute.getUserId(),"ADD");
+		MetadataElementEntity element = null;
+		if (attribute.getElement() != null
+				&& StringUtils.isNotEmpty(attribute.getElement().getId())) {
+			element = metadataElementDAO.findById(attribute.getElement()
+					.getId());
+		}
+		attribute.setElement(element);
 
-		return attribute;
+		userAttributeDao.save(attribute);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#updateAttribute(org.openiam.idm.srvc.user.dto.UserAttribute)
-	 */
-	public void updateAttribute(UserAttribute attribute) {
+	@Override
+	public void updateAttribute(UserAttributeEntity attribute) {
 		if (attribute == null)
 			throw new NullPointerException("Attribute can not be null");
 
-		if (attribute.getUserId() == null) {
+		if (StringUtils.isEmpty(attribute.getUserId())) {
 			throw new NullPointerException(
 					"User has not been associated with this attribute.");
 		}
-
-		userAttributeDao.update(attribute);
-		// this.userMsgProducer.sendMessage(attribute.getUserId(),"UPDATE");
-
+		final UserAttributeEntity userAttribute = userAttributeDao
+				.findById(attribute.getId());
+		if (userAttribute != null) {
+			UserEntity userEntity = userDao.findById(attribute.getUserId());
+			attribute.setUser(userEntity);
+			attribute.setElement(userAttribute.getElement());
+			userAttributeDao.merge(attribute);
+		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#getAllAttributes(java.lang.String)
-	 */
-	public Map<String, UserAttribute> getAllAttributes(String userId) {
-		Map<String, UserAttribute> attrMap = new HashMap<String, UserAttribute>();
+	@Override
+	public Map<String, UserAttributeEntity> getAllAttributes(String userId) {
+		Map<String, UserAttributeEntity> attrMap = new HashMap<String, UserAttributeEntity>();
 
 		if (userId == null) {
 			throw new NullPointerException("userId is null");
 		}
 
-		User usr = userDao.findById(userId);
+		UserEntity usrEntity = userDao.findById(userId);
 
-		if (usr == null)
+		if (usrEntity == null)
 			return null;
 
-		List<UserAttribute> attrList = userAttributeDao
+		List<UserAttributeEntity> attrList = userAttributeDao
 				.findUserAttributes(userId);
 
 		if (attrList == null || attrList.size() == 0)
@@ -412,7 +445,7 @@ public class UserMgr implements UserDataService {
 		if (attrList != null && !attrList.isEmpty()) {
 			int size = attrList.size();
 			for (int i = 0; i < size; i++) {
-				UserAttribute attr = attrList.get(i);
+				UserAttributeEntity attr = attrList.get(i);
 				attrMap.put(attr.getName(), attr);
 			}
 		}
@@ -421,176 +454,31 @@ public class UserMgr implements UserDataService {
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#getAttribute(java.lang.String)
-	 */
-	public UserAttribute getAttribute(String attrId) {
+	@Override
+	public UserAttributeEntity getAttribute(String attrId) {
 		if (attrId == null) {
 			throw new NullPointerException("attrId is null");
 		}
 		return userAttributeDao.findById(attrId);
-
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#removeAttribute(org.openiam.idm.srvc.user.dto.UserAttribute)
-	 */
-	public void removeAttribute(UserAttribute attr) {
-		if (attr == null) {
-			throw new NullPointerException("attr is null");
-		}
-		if (attr.getId() == null) {
-			throw new NullPointerException("attrId is null");
-		}
-
-		userAttributeDao.remove(attr);
-
-		// this.userMsgProducer.sendMessage(attr.getUserId(),"DELETE");
-
+	@Override
+	public void removeAttribute(final String userAttributeId) {
+		final UserAttributeEntity entity = userAttributeDao
+				.findById(userAttributeId);
+		userAttributeDao.delete(entity);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#removeAllAttributes(java.lang.String)
-	 */
+	@Override
 	public void removeAllAttributes(String userId) {
 		if (userId == null) {
 			throw new NullPointerException("userId is null");
 		}
 		userAttributeDao.deleteUserAttributes(userId);
-
-		// this.userMsgProducer.sendMessage(userId,"DELETE");
-
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#getUserAsMap(java.lang.String)
-	 */
-	public Map<String, UserAttribute> getUserAsMap(String userId) {
-		User usr = getUser(userId);
-		if (usr == null) {
-			return null;
-		}
-
-		Map<String, UserAttribute> attrMap = getAllAttributes(userId);
-		if (attrMap == null) {
-			attrMap = new HashMap<String, UserAttribute>();
-		}
-		// assign the predefined properties
-
-		attrMap.put("USER_ID", new UserAttribute(null, usr.getUserId(), null,
-				"USER_ID", userId));
-		attrMap.put("FIRST_NAME", new UserAttribute(null, usr.getUserId(),
-				null, "FIRST_NAME", usr.getFirstName()));
-		attrMap.put("LAST_NAME", new UserAttribute(null, usr.getUserId(), null,
-				"LAST_NAME", usr.getLastName()));
-		attrMap.put("MIDDLE_INIT", new UserAttribute(null, usr.getUserId(),
-				null, "MIDDLE_INIT", String.valueOf(usr.getMiddleInit())));
-		attrMap.put("TITLE", new UserAttribute(null, usr.getUserId(), null,
-				"TITLE", usr.getTitle()));
-		attrMap.put("DEPT", new UserAttribute(null, usr.getUserId(), null,
-				"DEPT", usr.getDeptCd()));
-		attrMap.put("STATUS", new UserAttribute(null, usr.getUserId(), null,
-				"STATUS", usr.getStatus().toString()));
-		if (usr.getBirthdate() != null) {
-			attrMap.put("BIRTHDATE", new UserAttribute(null, usr.getUserId(),
-					null, "BIRTHDATE", usr.getBirthdate().toString()));
-		} else {
-			attrMap.put("BIRTHDATE", new UserAttribute(null, usr.getUserId(),
-					null, "BIRTHDATE", null));
-		}
-		attrMap.put("SEX", new UserAttribute(null, usr.getUserId(), null,
-				"SEX", String.valueOf(usr.getSex())));
-		if (usr.getCreateDate() != null) {
-			attrMap.put("CREATE_DATE", new UserAttribute(null, usr.getUserId(),
-					null, "CREATE_DATE", usr.getCreateDate().toString()));
-		} else {
-			attrMap.put("CREATE_DATE", new UserAttribute(null, usr.getUserId(),
-					null, "CREATE_DATE", null));
-
-		}
-		attrMap.put("CREATED_BY", new UserAttribute(null, usr.getUserId(),
-				null, "CREATED_BY", usr.getCreatedBy()));
-		if (usr.getLastUpdate() != null) {
-			attrMap.put("LAST_UPDATE", new UserAttribute(null, usr.getUserId(),
-					null, "LAST_UPDATE", usr.getLastUpdate().toString()));
-		} else {
-			attrMap.put("LAST_UPDATE", new UserAttribute(null, usr.getUserId(),
-					null, "LAST_UPDATE", null));
-
-		}
-		attrMap.put("LAST_UPDATEDBY", new UserAttribute(null, usr.getUserId(),
-				null, "LAST_UPDATEDBY", usr.getLastUpdatedBy()));
-		attrMap.put("PREFIX", new UserAttribute(null, usr.getUserId(), null,
-				"PREFIX", usr.getPrefix()));
-		attrMap.put("SUFFIX", new UserAttribute(null, usr.getUserId(), null,
-				"SUFFIX", usr.getSuffix()));
-		attrMap.put("USER_TYPE_IND", new UserAttribute(null, usr.getUserId(),
-				null, "USER_TYPE_IND", usr.getUserTypeInd()));
-		attrMap.put("EMPLOYEE_ID", new UserAttribute(null, usr.getUserId(),
-				null, "EMPLOYEE_ID", usr.getEmployeeId()));
-		attrMap.put("EMPLOYEE_TYPE", new UserAttribute(null, usr.getUserId(),
-				null, "EMPLOYEE_TYPE", usr.getEmployeeType()));
-		attrMap.put("LOCATION_ID", new UserAttribute(null, usr.getUserId(),
-				null, "LOCATION_ID", usr.getLocationCd()));
-		attrMap.put("ORGANIZATION_ID", new UserAttribute(null, usr.getUserId(),
-				null, "ORGANIZATION_ID", usr.getCompanyId()));
-		attrMap.put("COMPANY_OWNER_ID", new UserAttribute(null,
-				usr.getUserId(), null, "COMPANY_OWNER_ID", usr
-						.getCompanyOwnerId()));
-
-		attrMap.put("MANAGER_ID", new UserAttribute(null, usr.getUserId(),
-				null, "MANAGER_ID", usr.getManagerId()));
-		attrMap.put("JOB_CODE", new UserAttribute(null, usr.getUserId(), null,
-				"JOB_CODE", usr.getJobCode()));
-
-		return attrMap;
-	}
-
-    public List<UserAttribute> getUserAsAttributeList (
-            String principalName,
-            List<String> attributeList)  {
-        
-        List<UserAttribute> attrList = new ArrayList<UserAttribute>();
-
-
-        User u = getUserByPrincipal(sysConfiguration.getDefaultSecurityDomain(),principalName,sysConfiguration.getDefaultManagedSysId(),false);
-        if (u == null) {
-            return null;
-        }
-        UserAttribute atr = new UserAttribute("EMAIL", u.getEmail());
-        attrList.add(atr);
-
-        return attrList;
-
-        
-                
-        
-    }
-
-	/* -------- Methods for UserNotes ---------- */
-	/*
-	 * Use these methods when you dont want to go through the user object
-	 */
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#addNote(org.openiam.idm.srvc.user.dto.UserNote)
-	 */
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#addNote(org.openiam.idm.srvc.user.dto.UserNote)
-	 */
-	public UserNote addNote(UserNote note) {
+	@Override
+	public void addNote(UserNoteEntity note) {
 		if (note == null)
 			throw new NullPointerException("Note cannot be null");
 
@@ -598,53 +486,43 @@ public class UserMgr implements UserDataService {
 			throw new NullPointerException(
 					"User is not associated with this note.");
 		}
-		userNoteDao.persist(note);
-		return note;
+		UserEntity userEntity = StringUtils.isNotEmpty(note.getUserId()) ? userDao
+				.findById(note.getUserId()) : null;
+
+		note.setUser(userEntity);
+
+		userNoteDao.save(note);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#updateNote(org.openiam.idm.srvc.user.dto.UserNote)
-	 */
-	public void updateNote(UserNote note) {
+	@Override
+	public void updateNote(UserNoteEntity note) {
 		if (note == null)
 			throw new NullPointerException("Note cannot be null");
-		if (note.getUserNoteId() == null) {
+		if (StringUtils.isEmpty(note.getUserNoteId())) {
 			throw new NullPointerException("noteId is null");
 		}
-		if (note.getUserId() == null) {
+		if (StringUtils.isEmpty(note.getUserId())) {
 			throw new NullPointerException(
 					"User is not associated with this note.");
 		}
-
+		UserEntity userEntity = StringUtils.isNotEmpty(note.getUserId()) ? userDao
+				.findById(note.getUserId()) : null;
+		note.setUser(userEntity);
 		userNoteDao.merge(note);
-
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#getAllNotes(java.lang.String)
-	 */
-	public List<UserNote> getAllNotes(String userId) {
-		List<UserNote> noteList = new ArrayList<UserNote>();
+	@Override
+	public List<UserNoteEntity> getAllNotes(String userId) {
+		List<UserNoteEntity> noteList = new ArrayList<UserNoteEntity>();
 
 		if (userId == null) {
 			throw new NullPointerException("userId is null");
 		}
-		noteList = userNoteDao.findUserNotes(userId);
-		if (noteList == null || noteList.isEmpty())
-			return null;
-		return noteList;
+		return userNoteDao.findUserNotes(userId);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#getNote(java.lang.String)
-	 */
-	public UserNote getNote(java.lang.String noteId) {
+	@Override
+	public UserNoteEntity getNote(String noteId) {
 		if (noteId == null) {
 			throw new NullPointerException("attrId is null");
 		}
@@ -652,28 +530,17 @@ public class UserMgr implements UserDataService {
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#removeNote(org.openiam.idm.srvc.user.dto.UserNote)
-	 */
-	public void removeNote(UserNote note) {
-		if (note == null) {
+	@Override
+	public void removeNote(final String userNoteId) {
+		if (userNoteId == null) {
 			throw new NullPointerException("note is null");
 		}
-		if (note.getUserNoteId() == null) {
-			throw new NullPointerException("noteId is null");
-		}
-
-		userNoteDao.delete(note);
+		final UserNoteEntity entity = userNoteDao.findById(userNoteId);
+		userNoteDao.delete(entity);
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#removeAllNotes(java.lang.String)
-	 */
+	@Override
 	public void removeAllNotes(String userId) {
 		if (userId == null) {
 			throw new NullPointerException("userId is null");
@@ -682,692 +549,948 @@ public class UserMgr implements UserDataService {
 
 	}
 
-	/* ----------- Address Methods ------- */
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#addAddress(org.openiam.idm.srvc.continfo.dto.Address)
-	 */
-	public Address addAddress(Address val) {
+	@Override
+	@Transactional
+	public void addAddress(AddressEntity val) {
 		if (val == null)
 			throw new NullPointerException("val is null");
 
-		if (val.getParentId() == null)
+		if (val.getParent() == null)
 			throw new NullPointerException(
 					"userId for the address is not defined.");
 
-		val.setParentType(ContactConstants.PARENT_TYPE_USER);
+		UserEntity parent = userDao.findById(val.getParent().getUserId());
+		val.setParent(parent);
 
-		return addressDao.add(val);
+		updateDefaultFlagForAddress(val, val.getIsDefault(), parent);
 
+		addressDao.save(val);
 	}
 
-	public void addAddressSet(Set<Address> adrSet) {
+	@Override
+	@Transactional
+	public void addAddressSet(Collection<AddressEntity> adrSet) {
 		if (adrSet == null || adrSet.size() == 0)
 			return;
-		Iterator<Address> it = adrSet.iterator();
+		Iterator<AddressEntity> it = adrSet.iterator();
 		while (it.hasNext()) {
-			Address adr = it.next();
+			AddressEntity adr = it.next();
 			addAddress(adr);
 		}
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#updateAddress(org.openiam.idm.srvc.continfo.dto.Address)
-	 */
-	public void updateAddress(Address val) {
+	@Override
+	@Transactional
+	public void updateAddress(AddressEntity val) {
 		if (val == null)
 			throw new NullPointerException("val is null");
 		if (val.getAddressId() == null)
 			throw new NullPointerException("AddressId is null");
-		if (val.getParentId() == null)
+		if (val.getParent() == null)
 			throw new NullPointerException(
 					"userId for the address is not defined.");
-		if (val.getParentType() == null) {
-			throw new NullPointerException(
-					"parentType for the address is not defined.");
+
+		AddressEntity entity = addressDao.findById(val.getAddressId());
+		UserEntity parent = userDao.findById(val.getParent().getUserId());
+
+		if (entity != null) {
+			entity.setIsActive(val.getIsActive());
+			entity.setBldgNumber(val.getBldgNumber());
+			entity.setAddress1(val.getAddress1());
+			entity.setAddress2(val.getAddress2());
+			entity.setCity(val.getCity());
+			entity.setPostalCd(val.getPostalCd());
+			entity.setState(val.getState());
+			entity.setName(val.getName());
+			entity.setParent(parent);
+
+			if (entity.getIsDefault() != val.getIsDefault()) {
+				updateDefaultFlagForAddress(entity, val.getIsDefault(), parent);
+			}
 		}
-
-		addressDao.update(val);
+		addressDao.update(entity);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#removeAddress(org.openiam.idm.srvc.continfo.dto.Address)
-	 */
-	public void removeAddress(Address val) {
-		if (val == null)
-			throw new NullPointerException("val is null");
-		if (val.getAddressId() == null)
-			throw new NullPointerException("AddressId is null");
+	@Override
+	@Transactional
+	public void removeAddress(final String addressId) {
+		final AddressEntity entity = addressDao.findById(addressId, "parent");
 
-		addressDao.remove(val);
+		if (entity.getIsDefault()) {
+			AddressEntity example = new AddressEntity();
+			example.setParent(entity.getParent());
+			List<AddressEntity> addresses = addressDao.getByExample(example);
+
+			AddressEntity defaultAddress = getAddressByDefaultFlag(addresses,
+					false);
+			if (defaultAddress != null) {
+				defaultAddress.setIsDefault(true);
+				defaultAddress.setParent(entity.getParent());
+				addressDao.update(defaultAddress);
+			}
+		}
+		addressDao.delete(entity);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#removeAllAddresses(java.lang.String)
-	 */
+	@Override
+	@Transactional
 	public void removeAllAddresses(String userId) {
 		if (userId == null)
 			throw new NullPointerException("userId is null");
-		addressDao.removeByParent(userId, ContactConstants.PARENT_TYPE_USER);
+
+		addressDao.removeByUserId(userId);
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#getAddressById(java.lang.String)
-	 */
-	public Address getAddressById(String addressId) {
+	@Override
+	public AddressEntity getAddressById(String addressId) {
 		if (addressId == null)
 			throw new NullPointerException("addressId is null");
 		return addressDao.findById(addressId);
-
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#getAddressByName(java.lang.String,
-	 *      java.lang.String)
-	 */
-	public Address getAddressByName(String userId, String addressName) {
-		if (userId == null)
-			throw new NullPointerException("userId is null");
-		if (addressName == null)
-			throw new NullPointerException("userId is null");
-
-		return addressDao.findByName(addressName, userId,
-				ContactConstants.PARENT_TYPE_USER);
+	@Override
+	public List<AddressEntity> getAddressList(String userId) {
+		return this.getAddressList(userId, Integer.MAX_VALUE, 0);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#getDefaultAddress(java.lang.String)
-	 */
-	public Address getDefaultAddress(String userId) {
+	@Override
+	public List<AddressEntity> getAddressList(String userId, Integer size,
+			Integer from) {
 		if (userId == null)
 			throw new NullPointerException("userId is null");
 
-		return addressDao
-				.findDefault(userId, ContactConstants.PARENT_TYPE_USER);
+		AddressSearchBean searchBean = new AddressSearchBean();
+		searchBean.setParentId(userId);
+		/* searchBean.setParentType(ContactConstants.PARENT_TYPE_USER); */
+		return addressDao.getByExample(
+				addressSearchBeanConverter.convert(searchBean), from, size);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#getAddressList(java.lang.String)
-	 */
-	public List<Address> getAddressList(String userId) {
-		if (userId == null)
-			throw new NullPointerException("userId is null");
-
-		return addressDao.findByParentAsList(userId,
-				ContactConstants.PARENT_TYPE_USER);
-
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#getAddressMap(java.lang.String)
-	 */
-	
-	public Map<String, Address> getAddressMap(String userId) {
-		if (userId == null)
-			throw new NullPointerException("userId is null");
-
-		return addressDao.findByParent(userId,
-				ContactConstants.PARENT_TYPE_USER);
-
-	}
-
-	/* ----------- Phone Methods ------- */
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#addPhone(org.openiam.idm.srvc.continfo.dto.Phone)
-	 */
-	public Phone addPhone(Phone val) {
+	@Override
+	@Transactional
+	public void addPhone(PhoneEntity val) {
 		if (val == null)
 			throw new NullPointerException("val is null");
 
-		if (val.getParentId() == null)
+		if (val.getParent() == null)
 			throw new NullPointerException(
-					"parentId for the address is not defined.");
+					"parentId for the phone is not defined.");
 
-		val.setParentType(ContactConstants.PARENT_TYPE_USER);
+		UserEntity parent = userDao.findById(val.getParent().getUserId());
+		val.setParent(parent);
 
-		return phoneDao.add(val);
+		updateDefaultFlagForPhone(val, val.getIsDefault(), parent);
 
+		phoneDao.save(val);
 	}
-	
-	public void addPhoneSet(Set<Phone> phoneSet) {
+
+	@Override
+	@Transactional
+	public void addPhoneSet(Collection<PhoneEntity> phoneSet) {
 		if (phoneSet == null || phoneSet.size() == 0)
 			return;
-		
-		Iterator<Phone> it = phoneSet.iterator();
+
+		Iterator<PhoneEntity> it = phoneSet.iterator();
 		while (it.hasNext()) {
-			Phone ph = it.next();
+			PhoneEntity ph = it.next();
 			addPhone(ph);
 		}
-
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#updatePhone(org.openiam.idm.srvc.continfo.dto.Phone)
-	 */
-	public void updatePhone(Phone val) {
+	@Override
+	@Transactional
+	public void updatePhone(PhoneEntity val) {
 		if (val == null)
 			throw new NullPointerException("val is null");
 		if (val.getPhoneId() == null)
 			throw new NullPointerException("PhoneId is null");
-		if (val.getParentId() == null)
+		if (val.getParent() == null)
 			throw new NullPointerException(
 					"parentId for the address is not defined.");
-		if (val.getParentType() == null) {
-			throw new NullPointerException(
-					"parentType for the address is not defined.");
+
+		PhoneEntity entity = phoneDao.findById(val.getPhoneId());
+		UserEntity parent = userDao.findById(val.getParent().getUserId());
+
+		if (entity != null) {
+			entity.setAreaCd(val.getAreaCd());
+			entity.setName(val.getName());
+			entity.setIsActive(val.getIsActive());
+			entity.setParent(parent);
+			entity.setPhoneExt(val.getPhoneExt());
+			entity.setPhoneNbr(val.getPhoneNbr());
+
+			if (entity.getIsDefault() != val.getIsDefault()) {
+				updateDefaultFlagForPhone(entity, val.getIsDefault(), parent);
+			}
+		}
+		phoneDao.update(entity);
+	}
+
+	@Override
+	@Transactional
+	public void removePhone(final String phoneId) {
+		final PhoneEntity entity = phoneDao.findById(phoneId, "parent");
+
+		if (entity.getIsDefault()) {
+			PhoneEntity example = new PhoneEntity();
+			example.setParent(entity.getParent());
+			List<PhoneEntity> phones = phoneDao.getByExample(example);
+
+			PhoneEntity defaultPhone = getPhoneByDefaultFlag(phones, false);
+			if (defaultPhone != null) {
+				defaultPhone.setIsDefault(true);
+				defaultPhone.setParent(entity.getParent());
+				phoneDao.update(defaultPhone);
+			}
 		}
 
-		phoneDao.update(val);
+		phoneDao.delete(entity);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#removePhone(org.openiam.idm.srvc.continfo.dto.Phone)
-	 */
-	public void removePhone(Phone val) {
-		if (val == null)
-			throw new NullPointerException("val is null");
-		if (val.getPhoneId() == null)
-			throw new NullPointerException("PhoneId is null");
-
-		phoneDao.remove(val);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#removeAllPhones(java.lang.String)
-	 */
+	@Override
+	@Transactional
 	public void removeAllPhones(String userId) {
 		if (userId == null)
 			throw new NullPointerException("userId is null");
-		phoneDao.removeByParent(userId, ContactConstants.PARENT_TYPE_USER);
+		phoneDao.removeByUserId(userId);
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#getPhoneById(java.lang.String)
-	 */
-	public Phone getPhoneById(String addressId) {
+	@Override
+	public PhoneEntity getPhoneById(String addressId) {
 		if (addressId == null)
 			throw new NullPointerException("addressId is null");
 		return phoneDao.findById(addressId);
-
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#getPhoneByName(java.lang.String,
-	 *      java.lang.String)
-	 */
-	public Phone getPhoneByName(String userId, String addressName) {
-		if (userId == null)
-			throw new NullPointerException("userId is null");
-		if (addressName == null)
-			throw new NullPointerException("userId is null");
-
-		return phoneDao.findByName(addressName, userId,
-				ContactConstants.PARENT_TYPE_USER);
+	@Override
+	public List<PhoneEntity> getPhoneList(String userId) {
+		return this.getPhoneList(userId, Integer.MAX_VALUE, 0);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#getDefaultPhone(java.lang.String)
-	 */
-	public Phone getDefaultPhone(String userId) {
+	@Override
+	public List<PhoneEntity> getPhoneList(String userId, Integer size,
+			Integer from) {
 		if (userId == null)
 			throw new NullPointerException("userId is null");
 
-		return phoneDao.findDefault(userId, ContactConstants.PARENT_TYPE_USER);
+		PhoneSearchBean searchBean = new PhoneSearchBean();
+		searchBean.setParentId(userId);
+		// searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
+		return phoneDao.getByExample(
+				phoneSearchBeanConverter.convert(searchBean), from, size);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#getPhoneList(java.lang.String)
-	 */
-	public List<Phone> getPhoneList(String userId) {
-		if (userId == null)
-			throw new NullPointerException("userId is null");
-
-		return phoneDao.findByParentAsList(userId,
-				ContactConstants.PARENT_TYPE_USER);
-
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#getPhoneMap(java.lang.String)
-	 */
-	public Map<String, Phone> getPhoneMap(String userId) {
-		if (userId == null)
-			throw new NullPointerException("userId is null");
-
-		return phoneDao.findByParent(userId, ContactConstants.PARENT_TYPE_USER);
-
-	}
-
-	/* ----------- E-mail Methods ------- */
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#addEmailAddress(org.openiam.idm.srvc.continfo.dto.EmailAddress)
-	 */
-	public EmailAddress addEmailAddress(EmailAddress val) {
+	@Override
+	@Transactional
+	public void addEmailAddress(EmailAddressEntity val) {
 		if (val == null)
 			throw new NullPointerException("val is null");
-		if (val.getParentId() == null)
+		if (val.getParent() == null)
 			throw new NullPointerException(
 					"parentId for the address is not defined.");
 
-		val.setParentType(ContactConstants.PARENT_TYPE_USER);
+		UserEntity userEntity = userDao.findById(val.getParent().getUserId());
+		val.setParent(userEntity);
 
-		return emailAddressDao.add(val);
+		updateDefaultFlagForEmail(val, val.getIsDefault(), userEntity);
 
+		emailAddressDao.save(val);
 	}
 
-	public void addEmailAddressSet(Set<EmailAddress> adrSet) {
+	@Override
+	@Transactional
+	public void addEmailAddressSet(Collection<EmailAddressEntity> adrSet) {
 		if (adrSet == null || adrSet.size() == 0)
 			return;
-		
-		Iterator<EmailAddress> it = adrSet.iterator();
+
+		Iterator<EmailAddressEntity> it = adrSet.iterator();
 		while (it.hasNext()) {
-			EmailAddress adr = it.next();
+			EmailAddressEntity adr = it.next();
 			addEmailAddress(adr);
 		}
 	}
 
-
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#updateEmailAddress(org.openiam.idm.srvc.continfo.dto.EmailAddress)
-	 */
-	public void updateEmailAddress(EmailAddress val) {
+	@Override
+	@Transactional
+	public void updateEmailAddress(EmailAddressEntity val) {
 		if (val == null)
 			throw new NullPointerException("val is null");
 		if (val.getEmailId() == null)
 			throw new NullPointerException("EmailAddressId is null");
-		if (val.getParentId() == null)
+		if (val.getParent() == null)
 			throw new NullPointerException(
 					"parentId for the address is not defined.");
-		if (val.getParentType() == null) {
-			throw new NullPointerException(
-					"parentType for the address is not defined.");
+
+		EmailAddressEntity entity = emailAddressDao.findById(val.getEmailId());
+		UserEntity parent = userDao.findById(val.getParent().getUserId());
+
+		if (entity != null) {
+			entity.setEmailAddress(val.getEmailAddress());
+			entity.setName(val.getName());
+			entity.setDescription(val.getDescription());
+			entity.setParent(parent);
+			entity.setIsActive(val.getIsActive());
+
+			if (entity.getIsDefault() != val.getIsDefault()) {
+				updateDefaultFlagForEmail(entity, val.getIsDefault(), parent);
+			}
+		}
+		emailAddressDao.update(entity);
+	}
+
+	@Override
+	@Transactional
+	public void removeEmailAddress(final String emailAddressId) {
+		if (emailAddressId == null)
+			throw new NullPointerException("val is null");
+
+		final EmailAddressEntity entity = emailAddressDao.findById(
+				emailAddressId, "parent");
+
+		if (entity.getIsDefault()) {
+			EmailAddressEntity example = new EmailAddressEntity();
+			example.setParent(entity.getParent());
+			List<EmailAddressEntity> emailList = emailAddressDao
+					.getByExample(example);
+
+			EmailAddressEntity defaultEmail = getEmailAddressByDefaultFlag(
+					emailList, false);
+			if (defaultEmail != null) {
+				defaultEmail.setIsDefault(true);
+				defaultEmail.setParent(entity.getParent());
+				emailAddressDao.update(defaultEmail);
+			}
 		}
 
-		emailAddressDao.update(val);
+		emailAddressDao.delete(entity);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#removeEmailAddress(org.openiam.idm.srvc.continfo.dto.EmailAddress)
-	 */
-	public void removeEmailAddress(EmailAddress val) {
-		if (val == null)
-			throw new NullPointerException("val is null");
-		if (val.getEmailId() == null)
-			throw new NullPointerException("EmailAddressId is null");
-
-		emailAddressDao.remove(val);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#removeAllEmailAddresses(java.lang.String)
-	 */
+	@Override
+	@Transactional
 	public void removeAllEmailAddresses(String userId) {
 		if (userId == null)
 			throw new NullPointerException("userId is null");
-		emailAddressDao.removeByParent(userId,
-				ContactConstants.PARENT_TYPE_USER);
+		emailAddressDao.removeByUserId(userId);
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#getEmailAddressById(java.lang.String)
-	 */
-	public EmailAddress getEmailAddressById(String addressId) {
+	@Override
+	public EmailAddressEntity getEmailAddressById(String addressId) {
 		if (addressId == null)
 			throw new NullPointerException("addressId is null");
 		return emailAddressDao.findById(addressId);
-
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#getEmailAddressByName(java.lang.String,
-	 *      java.lang.String)
-	 */
-	public EmailAddress getEmailAddressByName(String userId, String addressName) {
-		if (userId == null)
-			throw new NullPointerException("userId is null");
-		if (addressName == null)
-			throw new NullPointerException("userId is null");
-
-		return emailAddressDao.findByName(addressName, userId,
-				ContactConstants.PARENT_TYPE_USER);
+	@Override
+	public List<EmailAddressEntity> getEmailAddressList(String userId) {
+		return this.getEmailAddressList(userId, Integer.MAX_VALUE, 0);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#getDefaultEmailAddress(java.lang.String)
-	 */
-	public EmailAddress getDefaultEmailAddress(String userId) {
+	@Override
+	public List<EmailAddressEntity> getEmailAddressList(String userId,
+			Integer size, Integer from) {
 		if (userId == null)
 			throw new NullPointerException("userId is null");
 
-		return emailAddressDao.findDefault(userId,
-				ContactConstants.PARENT_TYPE_USER);
+		EmailSearchBean searchBean = new EmailSearchBean();
+		searchBean.setParentId(userId);
+		// searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
+		return emailAddressDao
+				.getByExample(
+						emailAddressSearchBeanConverter.convert(searchBean),
+						from, size);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#getEmailAddressList(java.lang.String)
-	 */
-	public List<EmailAddress> getEmailAddressList(String userId) {
-		if (userId == null)
-			throw new NullPointerException("userId is null");
-
-		return emailAddressDao.findByParentAsList(userId,
-				ContactConstants.PARENT_TYPE_USER);
-
+	@Override
+	public void addSupervisor(SupervisorEntity supervisor) {
+		supervisorDao.save(supervisor);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#getEmailAddressMap(java.lang.String)
-	 */
-	public Map<String, EmailAddress> getEmailAddressMap(String userId) {
-		if (userId == null)
-			throw new NullPointerException("userId is null");
-
-		return emailAddressDao.findByParent(userId,
-				ContactConstants.PARENT_TYPE_USER);
-
-	}
-
-	/* ----------- Supervisor Methods ------- */
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#addSupervisor(org.openiam.idm.srvc.user.dto.Supervisor)
-	 */
-	public Supervisor addSupervisor(Supervisor supervisor) {
+	@Override
+	public void updateSupervisor(SupervisorEntity supervisor) {
 		if (supervisor == null)
 			throw new NullPointerException("supervisor is null");
-		this.supervisorDao.add(supervisor);
-		return supervisor;
+		supervisorDao.update(supervisor);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#updateSupervisor(org.openiam.idm.srvc.user.dto.Supervisor)
-	 */
-	public void updateSupervisor(Supervisor supervisor) {
-		if (supervisor == null)
+	@Override
+	public void removeSupervisor(final String supervisorId) {
+		if (supervisorId == null)
 			throw new NullPointerException("supervisor is null");
-		this.supervisorDao.update(supervisor);
+
+		final SupervisorEntity entity = supervisorDao.findById(supervisorId);
+		supervisorDao.delete(entity);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#removeSupervisor(org.openiam.idm.srvc.user.dto.Supervisor)
-	 */
-	public void removeSupervisor(Supervisor supervisor) {
-		if (supervisor == null)
-			throw new NullPointerException("supervisor is null");
-		this.supervisorDao.remove(supervisor);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#getSupervisor(java.lang.String)
-	 */
-	public Supervisor getSupervisor(String supervisorObjId) {
+	@Override
+	public SupervisorEntity getSupervisor(String supervisorObjId) {
 		if (supervisorObjId == null)
 			throw new NullPointerException("supervisorObjId is null");
 		return supervisorDao.findById(supervisorObjId);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#getSupervisors(java.lang.String)
-	 */
-	public List<Supervisor> getSupervisors(String employeeId) {
+	@Override
+	public List<SupervisorEntity> getSupervisors(String employeeId) {
 		if (employeeId == null)
 			throw new NullPointerException("employeeId is null");
-		List<Supervisor> superVisList = supervisorDao.findSupervisors(employeeId);
-		
-		for (Supervisor sup: superVisList) {
-			org.hibernate.Hibernate.initialize(sup.getSupervisor().getPhone());
-			org.hibernate.Hibernate.initialize(sup.getSupervisor().getEmailAddress());
-			org.hibernate.Hibernate.initialize(sup.getSupervisor().getAddresses());
-			org.hibernate.Hibernate.initialize(sup.getSupervisor().getUserAttributes());	
-		}
-		return superVisList;
-
+		return supervisorDao.findSupervisors(employeeId);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#getEmployees(java.lang.String)
-	 */
-	public List<Supervisor> getEmployees(String supervisorId) {
+	@Override
+	public List<SupervisorEntity> getEmployees(String supervisorId) {
 		if (supervisorId == null)
 			throw new NullPointerException("employeeId is null");
-		List<Supervisor> superVisList = supervisorDao.findEmployees(supervisorId);
-		
-		// initialize the collections dependant objects
-		for (Supervisor sup: superVisList) {
-			org.hibernate.Hibernate.initialize(sup.getEmployee().getPhone());
-			org.hibernate.Hibernate.initialize(sup.getEmployee().getEmailAddress());
-			org.hibernate.Hibernate.initialize(sup.getEmployee().getAddresses());
-			org.hibernate.Hibernate.initialize(sup.getEmployee().getUserAttributes());	
-		}
-		
-		return superVisList;
+		return supervisorDao.findEmployees(supervisorId);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#getPrimarySupervisor(java.lang.String)
-	 */
-	public Supervisor getPrimarySupervisor(String employeeId) {
+	@Override
+	public SupervisorEntity getPrimarySupervisor(String employeeId) {
 		if (employeeId == null)
 			throw new NullPointerException("employeeId is null");
 		return supervisorDao.findPrimarySupervisor(employeeId);
 	}
 
-	/* ----------- DAO Setting methods needed by the Springframework ------- */
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#getUserDao()
-	 */
-	public UserDAO getUserDao() {
-		return userDao;
+	@Override
+	public List<UserEntity> getUsersForResource(String resourceId, int from,
+			int size) {
+		return userDao.getUsersForResource(resourceId, from, size);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#setUserDao(org.openiam.idm.srvc.user.service.UserDAO)
-	 */
-	public void setUserDao(UserDAO userDao) {
-		this.userDao = userDao;
+	@Override
+	public int getNumOfUsersForResource(String resourceId) {
+		return userDao.getNumOfUsersForResource(resourceId);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#getUserAttributeDao()
-	 */
-	public UserAttributeDAO getUserAttributeDao() {
-		return userAttributeDao;
+	@Override
+	public List<UserEntity> getUsersForGroup(String groupId, int from, int size) {
+		return userDao.getUsersForGroup(groupId, from, size);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#setUserAttributeDao(org.openiam.idm.srvc.user.service.UserAttributeDAO)
-	 */
-	public void setUserAttributeDao(UserAttributeDAO userAttributeDao) {
-		this.userAttributeDao = userAttributeDao;
+	@Override
+	public int getNumOfUsersForGroup(String groupId) {
+		return userDao.getNumOfUsersForGroup(groupId);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#getUserNoteDao()
-	 */
-	public UserNoteDAO getUserNoteDao() {
-		return userNoteDao;
+	@Override
+	public List<UserEntity> getUsersForRole(String roleId, int from, int size) {
+		return userDao.getUsersForRole(roleId, from, size);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#setUserNoteDao(org.openiam.idm.srvc.user.service.UserNoteDAO)
-	 */
-	public void setUserNoteDao(UserNoteDAO userNoteDao) {
-		this.userNoteDao = userNoteDao;
+	@Override
+	public int getNumOfUsersForRole(String roleId) {
+		return userDao.getNumOfUsersForRole(roleId);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#getAddressDao()
-	 */
-	public AddressDAO getAddressDao() {
-		return addressDao;
+	@Override
+	@Transactional
+	public String saveUserInfo(UserEntity newUserEntity,
+			SupervisorEntity supervisorEntity) throws Exception {
+		String userId = newUserEntity.getUserId();
+		if (newUserEntity.getUserId() != null) {
+			// update, need to merge user objects
+			UserEntity origUser = this.getUser(newUserEntity.getUserId());
+			this.mergeUserFields(origUser, newUserEntity);
+			userDao.update(origUser);
+		} else {
+			userId = createNewUser(newUserEntity);
+		}
+		if (supervisorEntity != null) {
+			// update supervisor
+			List<SupervisorEntity> supervisorList = this
+					.getSupervisors(newUserEntity.getUserId());
+			for (SupervisorEntity s : supervisorList) {
+				log.debug("looking to match supervisor ids = "
+						+ s.getSupervisor().getUserId() + " "
+						+ supervisorEntity.getSupervisor().getUserId());
+				if (s.getSupervisor()
+						.getUserId()
+						.equalsIgnoreCase(
+								supervisorEntity.getSupervisor().getUserId())) {
+					break;
+				}
+				this.removeSupervisor(s.getOrgStructureId());
+			}
+			log.debug("adding supervisor: "
+					+ supervisorEntity.getSupervisor().getUserId());
+			supervisorEntity.setEmployee(newUserEntity);
+
+			this.addSupervisor(supervisorEntity);
+		}
+		return userId;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#setAddressDao(org.openiam.idm.srvc.continfo.service.AddressDAO)
-	 */
-	public void setAddressDao(AddressDAO addressDao) {
-		this.addressDao = addressDao;
+	@Transactional
+	private String createNewUser(UserEntity newUserEntity) throws Exception {
+		List<LoginEntity> principalList = newUserEntity.getPrincipalList();
+		Set<EmailAddressEntity> emailAddressList = newUserEntity
+				.getEmailAddresses();
+
+		newUserEntity.setPrincipalList(null);
+		// newUserEntity.setEmailAddresses(null);
+
+		this.addUser(newUserEntity);
+
+		if (principalList != null && !principalList.isEmpty()) {
+			for (LoginEntity lg : principalList) {
+				lg.setDomainId(sysConfiguration.getDefaultSecurityDomain());
+				lg.setManagedSysId(sysConfiguration.getDefaultManagedSysId());
+				lg.setFirstTimeLogin(1);
+				lg.setIsLocked(0);
+				lg.setCreateDate(new Date(System.currentTimeMillis()));
+				lg.setUserId(newUserEntity.getUserId());
+				lg.setStatus("ACTIVE");
+				// encrypt the password
+				if (lg.getPassword() != null) {
+					String pswd = lg.getPassword();
+					lg.setPassword(loginManager.encryptPassword(
+							newUserEntity.getUserId(), pswd));
+				}
+				loginDao.save(lg);
+			}
+		}
+		if (emailAddressList != null && !emailAddressList.isEmpty()) {
+			for (final EmailAddressEntity email : emailAddressList) {
+				email.setParent(newUserEntity);
+			}
+			this.addEmailAddressSet(emailAddressList);
+		}
+		return newUserEntity.getUserId();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#getEmailAddressDao()
-	 */
-	public EmailAddressDAO getEmailAddressDao() {
-		return emailAddressDao;
+	@Transactional
+	public void deleteUser(String userId) {
+		List<LoginEntity> loginList = loginDao.findUser(userId);
+		if (loginList == null || loginList.isEmpty()) {
+			throw new NullPointerException("Principal Not Found");
+		}
+		for (LoginEntity login : loginList) {
+			// change the status on the identity
+			login.setStatus("INACTIVE");
+			loginDao.update(login);
+		}
+		// Turning off the primary identity - change the status on the user
+		if (userId != null) {
+			UserEntity usr = this.getUser(userId);
+			usr.setStatus(UserStatusEnum.DELETED);
+			userDao.update(usr);
+		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#setEmailAddressDao(org.openiam.idm.srvc.continfo.service.EmailAddressDAO)
-	 */
-	public void setEmailAddressDao(EmailAddressDAO emailAddressDao) {
-		this.emailAddressDao = emailAddressDao;
+	public void enableDisableUser(String userId, UserStatusEnum secondaryStatus) {
+		UserEntity user = this.getUser(userId);
+		if (user == null) {
+			log.error("UserId " + userId + " not found");
+			throw new NullPointerException("UserId " + userId + " not found");
+		}
+		user.setSecondaryStatus(secondaryStatus);
+		userDao.update(user);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#getPhoneDao()
-	 */
-	public PhoneDAO getPhoneDao() {
-		return phoneDao;
+	@Transactional
+	public void activateUser(String userId) {
+		UserEntity user = this.getUser(userId);
+		if (user == null) {
+			log.error("UserId " + userId + " not found");
+			throw new NullPointerException("UserId " + userId + " not found");
+		}
+		List<LoginEntity> loginList = loginDao.findUser(userId);
+		if (loginList == null || loginList.isEmpty()) {
+			throw new NullPointerException("Principal Not Found");
+		}
+
+		for (LoginEntity login : loginList) {
+			// change the status on the identity
+			login.setStatus(null);
+			loginDao.update(login);
+		}
+		if (userId != null) {
+			user.setStatus(UserStatusEnum.ACTIVE);
+			userDao.update(user);
+		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#setPhoneDao(org.openiam.idm.srvc.continfo.service.PhoneDAO)
-	 */
-	public void setPhoneDao(PhoneDAO phoneDao) {
-		this.phoneDao = phoneDao;
+	public Integer getNumOfEmailsForUser(String userId) {
+		EmailSearchBean searchBean = new EmailSearchBean();
+		searchBean.setParentId(userId);
+		// searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
+		return emailAddressDao.count(emailAddressSearchBeanConverter
+				.convert(searchBean));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#getSupervisorDao()
-	 */
-	public SupervisorDAO getSupervisorDao() {
-		return supervisorDao;
+	public Integer getNumOfAddressesForUser(String userId) {
+		AddressSearchBean searchBean = new AddressSearchBean();
+		searchBean.setParentId(userId);
+		// searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
+		return addressDao.count(addressSearchBeanConverter.convert(searchBean));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.openiam.idm.srvc.user.service.UserDataService#setSupervisorDao(org.openiam.idm.srvc.user.service.SupervisorDAO)
-	 */
-	public void setSupervisorDao(SupervisorDAO supervisorDao) {
-		this.supervisorDao = supervisorDao;
+	public Integer getNumOfPhonesForUser(String userId) {
+		PhoneSearchBean searchBean = new PhoneSearchBean();
+		searchBean.setParentId(userId);
+		// searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
+		return phoneDao.count(phoneSearchBeanConverter.convert(searchBean));
 	}
 
-	public LoginDAO getLoginDao() {
-		return loginDao;
+	public void mergeUserFields(UserEntity origUserEntity,
+			UserEntity newUserEntity) {
+		if (newUserEntity.getBirthdate() != null) {
+			if (newUserEntity.getBirthdate().equals(BaseConstants.NULL_DATE)) {
+				origUserEntity.setBirthdate(null);
+			} else {
+				origUserEntity.setBirthdate(newUserEntity.getBirthdate());
+			}
+		}
+		if (newUserEntity.getClassification() != null) {
+			if (newUserEntity.getClassification().equalsIgnoreCase(
+					BaseConstants.NULL_STRING)) {
+				origUserEntity.setClassification(null);
+			} else {
+				origUserEntity.setClassification(newUserEntity
+						.getClassification());
+			}
+		}
+		if (newUserEntity.getCompanyId() != null) {
+			if (newUserEntity.getCompanyId().equalsIgnoreCase(
+					BaseConstants.NULL_STRING)) {
+				origUserEntity.setCompanyId(null);
+			} else {
+				origUserEntity.setCompanyId(newUserEntity.getCompanyId());
+			}
+		}
+		if (newUserEntity.getCostCenter() != null) {
+			if (newUserEntity.getCostCenter().equalsIgnoreCase(
+					BaseConstants.NULL_STRING)) {
+				origUserEntity.setCostCenter(null);
+			} else {
+				origUserEntity.setCostCenter(newUserEntity.getCostCenter());
+			}
+		}
+		if (newUserEntity.getDeptCd() != null) {
+			if (newUserEntity.getDeptCd().equalsIgnoreCase(
+					BaseConstants.NULL_STRING)) {
+				origUserEntity.setDeptCd(null);
+			} else {
+				origUserEntity.setDeptCd(newUserEntity.getDeptCd());
+			}
+		}
+		if (newUserEntity.getDivision() != null) {
+			if (newUserEntity.getDivision().equalsIgnoreCase(
+					BaseConstants.NULL_STRING)) {
+				origUserEntity.setDivision(null);
+			} else {
+				origUserEntity.setDivision(newUserEntity.getDivision());
+			}
+		}
+
+		if (newUserEntity.getEmployeeId() != null) {
+			if (newUserEntity.getEmployeeId().equalsIgnoreCase(
+					BaseConstants.NULL_STRING)) {
+				origUserEntity.setEmployeeId(null);
+			} else {
+				origUserEntity.setEmployeeId(newUserEntity.getEmployeeId());
+			}
+		}
+		if (newUserEntity.getEmployeeType() != null) {
+			if (newUserEntity.getEmployeeType().equalsIgnoreCase(
+					BaseConstants.NULL_STRING)) {
+				origUserEntity.setEmployeeType(null);
+			} else {
+				origUserEntity.setEmployeeType(newUserEntity.getEmployeeType());
+			}
+		}
+		if (newUserEntity.getFirstName() != null) {
+			if (newUserEntity.getFirstName().equalsIgnoreCase(
+					BaseConstants.NULL_STRING)) {
+				origUserEntity.setFirstName(null);
+			} else {
+				origUserEntity.setFirstName(newUserEntity.getFirstName());
+			}
+		}
+		if (newUserEntity.getJobCode() != null) {
+			if (newUserEntity.getJobCode().equalsIgnoreCase(
+					BaseConstants.NULL_STRING)) {
+				origUserEntity.setJobCode(null);
+			} else {
+				origUserEntity.setJobCode(newUserEntity.getJobCode());
+			}
+		}
+		if (newUserEntity.getLastName() != null) {
+			if (newUserEntity.getLastName().equalsIgnoreCase(
+					BaseConstants.NULL_STRING)) {
+				origUserEntity.setLastName(null);
+			} else {
+				origUserEntity.setLastName(newUserEntity.getLastName());
+			}
+		}
+		if (newUserEntity.getLastDate() != null) {
+			if (newUserEntity.getLastDate().equals(BaseConstants.NULL_DATE)) {
+				origUserEntity.setLastDate(null);
+			} else {
+				origUserEntity.setLastDate(newUserEntity.getLastDate());
+			}
+		}
+		if (newUserEntity.getMaidenName() != null) {
+			if (newUserEntity.getMaidenName().equalsIgnoreCase(
+					BaseConstants.NULL_STRING)) {
+				origUserEntity.setMaidenName(null);
+			} else {
+				origUserEntity.setMaidenName(newUserEntity.getMaidenName());
+			}
+		}
+		if (newUserEntity.getMetadataTypeId() != null) {
+			if (newUserEntity.getMetadataTypeId().equalsIgnoreCase(
+					BaseConstants.NULL_STRING)) {
+				origUserEntity.setMetadataTypeId(null);
+			} else {
+				origUserEntity.setMetadataTypeId(newUserEntity
+						.getMetadataTypeId());
+			}
+		}
+		if (newUserEntity.getMiddleInit() != null) {
+			if (newUserEntity.getMiddleInit().equalsIgnoreCase(
+					BaseConstants.NULL_STRING)) {
+				origUserEntity.setMiddleInit(null);
+			} else {
+				origUserEntity.setMiddleInit(newUserEntity.getMiddleInit());
+			}
+		}
+		if (newUserEntity.getNickname() != null) {
+			if (newUserEntity.getNickname().equalsIgnoreCase(
+					BaseConstants.NULL_STRING)) {
+				origUserEntity.setNickname(null);
+			} else {
+				origUserEntity.setNickname(newUserEntity.getNickname());
+			}
+		}
+		if (newUserEntity.getSecondaryStatus() != null) {
+			origUserEntity.setSecondaryStatus(newUserEntity
+					.getSecondaryStatus());
+		}
+		if (newUserEntity.getSex() != null) {
+			if (newUserEntity.getSex().equalsIgnoreCase(
+					BaseConstants.NULL_STRING)) {
+				origUserEntity.setSex(null);
+			} else {
+				origUserEntity.setSex(newUserEntity.getSex());
+			}
+		}
+		if (newUserEntity.getStartDate() != null) {
+			if (newUserEntity.getStartDate().equals(BaseConstants.NULL_DATE)) {
+				origUserEntity.setStartDate(null);
+			} else {
+				origUserEntity.setStartDate(newUserEntity.getStartDate());
+			}
+		}
+
+		if (newUserEntity.getStatus() != null) {
+			origUserEntity.setStatus(newUserEntity.getStatus());
+		}
+		if (newUserEntity.getSuffix() != null) {
+			if (newUserEntity.getSuffix().equalsIgnoreCase(
+					BaseConstants.NULL_STRING)) {
+				origUserEntity.setSuffix(null);
+			} else {
+				origUserEntity.setSuffix(newUserEntity.getSuffix());
+			}
+		}
+		if (newUserEntity.getShowInSearch() != null) {
+			if (newUserEntity.getShowInSearch().equals(
+					BaseConstants.NULL_INTEGER)) {
+				origUserEntity.setShowInSearch(0);
+			} else {
+				origUserEntity.setShowInSearch(newUserEntity.getShowInSearch());
+			}
+		}
+		if (newUserEntity.getTitle() != null) {
+			if (newUserEntity.getTitle().equalsIgnoreCase(
+					BaseConstants.NULL_STRING)) {
+				origUserEntity.setTitle(null);
+			} else {
+				origUserEntity.setTitle(newUserEntity.getTitle());
+			}
+		}
+		if (newUserEntity.getUserTypeInd() != null) {
+			if (newUserEntity.getUserTypeInd().equalsIgnoreCase(
+					BaseConstants.NULL_STRING)) {
+				origUserEntity.setUserTypeInd(null);
+			} else {
+				origUserEntity.setUserTypeInd(newUserEntity.getUserTypeInd());
+			}
+		}
+		if (newUserEntity.getAlternateContactId() != null) {
+			if (newUserEntity.getAlternateContactId().equalsIgnoreCase(
+					BaseConstants.NULL_STRING)) {
+				origUserEntity.setAlternateContactId(null);
+			} else {
+				origUserEntity.setAlternateContactId(newUserEntity
+						.getAlternateContactId());
+			}
+		}
+		if (newUserEntity.getDelAdmin() != null) {
+			if (newUserEntity.getDelAdmin().equals(BaseConstants.NULL_INTEGER)) {
+				origUserEntity.setDelAdmin(0);
+			} else {
+				origUserEntity.setDelAdmin(newUserEntity.getDelAdmin());
+			}
+		}
 	}
 
-	public void setLoginDao(LoginDAO loginDao) {
-		this.loginDao = loginDao;
+	@Transactional
+	private void updateDefaultFlagForPhone(PhoneEntity targetEntity,
+			boolean newDefaultValue, UserEntity parent) {
+		// update default flag
+		// 1. get all default phone for user and iterate them
+		PhoneEntity example = new PhoneEntity();
+		example.setParent(parent);
+		List<PhoneEntity> phones = phoneDao.getByExample(example);
+
+		PhoneEntity defaultPhone = getPhoneByDefaultFlag(phones, true);
+
+		if (defaultPhone == null) {
+			targetEntity.setIsDefault(true);
+		} else {
+			if (defaultPhone.getPhoneId().equals(targetEntity.getPhoneId())) {
+				// the same entity
+				// check if default flag is unset
+				if (!newDefaultValue) {
+					// need to set new default phone
+					defaultPhone = getPhoneByDefaultFlag(phones, false);
+					if (defaultPhone != null) {
+						defaultPhone.setIsDefault(true);
+						defaultPhone.setParent(parent);
+						phoneDao.update(defaultPhone);
+					}
+				}
+			} else {
+				if (newDefaultValue) {
+					// unset default entity
+					defaultPhone.setIsDefault(false);
+					defaultPhone.setParent(parent);
+					phoneDao.update(defaultPhone);
+				}
+			}
+			targetEntity.setIsDefault(newDefaultValue);
+		}
 	}
 
-    public SysConfiguration getSysConfiguration() {
-        return sysConfiguration;
-    }
+	@Transactional
+	private void updateDefaultFlagForAddress(AddressEntity targetEntity,
+			boolean newDefaultValue, UserEntity parent) {
+		// update default flag
+		// 1. get all default phone for user and iterate them
+		AddressEntity example = new AddressEntity();
+		example.setParent(parent);
+		List<AddressEntity> addresses = addressDao.getByExample(example);
 
-    public void setSysConfiguration(SysConfiguration sysConfiguration) {
-        this.sysConfiguration = sysConfiguration;
-    }
+		AddressEntity defaultAddress = getAddressByDefaultFlag(addresses, true);
+
+		if (defaultAddress == null) {
+			targetEntity.setIsDefault(true);
+		} else {
+			if (defaultAddress.getAddressId().equals(
+					targetEntity.getAddressId())) {
+				// the same entity
+				// check if default flag is unset
+				if (!newDefaultValue) {
+					// need to set new default phone
+					defaultAddress = getAddressByDefaultFlag(addresses, false);
+					if (defaultAddress != null) {
+						defaultAddress.setIsDefault(true);
+						defaultAddress.setParent(parent);
+						addressDao.update(defaultAddress);
+					}
+				}
+			} else {
+				if (newDefaultValue) {
+					// unset default entity
+					defaultAddress.setIsDefault(false);
+					defaultAddress.setParent(parent);
+					addressDao.update(defaultAddress);
+				}
+			}
+			targetEntity.setIsDefault(newDefaultValue);
+		}
+	}
+
+	@Transactional
+	private void updateDefaultFlagForEmail(EmailAddressEntity targetEntity,
+			boolean newDefaultValue, UserEntity parent) {
+		// update default flag
+		// 1. get all default phone for user and iterate them
+		EmailAddressEntity example = new EmailAddressEntity();
+		example.setParent(parent);
+		List<EmailAddressEntity> emailList = emailAddressDao
+				.getByExample(example);
+
+		EmailAddressEntity defaultEmail = getEmailAddressByDefaultFlag(
+				emailList, true);
+
+		if (defaultEmail == null) {
+			targetEntity.setIsDefault(true);
+		} else {
+			if (defaultEmail.getEmailId().equals(targetEntity.getEmailId())) {
+				// the same entity
+				// check if default flag is unset
+				if (!newDefaultValue) {
+					// need to set new default phone
+					defaultEmail = getEmailAddressByDefaultFlag(emailList,
+							false);
+					if (defaultEmail != null) {
+						defaultEmail.setIsDefault(true);
+						defaultEmail.setParent(parent);
+						emailAddressDao.update(defaultEmail);
+					}
+				}
+			} else {
+				if (newDefaultValue) {
+					// unset default entity
+					defaultEmail.setIsDefault(false);
+					defaultEmail.setParent(parent);
+					emailAddressDao.update(defaultEmail);
+				}
+			}
+			targetEntity.setIsDefault(newDefaultValue);
+		}
+	}
+
+	private PhoneEntity getPhoneByDefaultFlag(List<PhoneEntity> phones,
+			boolean isDefault) {
+		if (phones != null && !phones.isEmpty()) {
+			for (PhoneEntity p : phones) {
+				if (p.getIsDefault() == isDefault)
+					return p;
+			}
+		}
+		return null;
+	}
+
+	private AddressEntity getAddressByDefaultFlag(
+			List<AddressEntity> addressEntityList, boolean isDefault) {
+		if (addressEntityList != null && !addressEntityList.isEmpty()) {
+			for (AddressEntity a : addressEntityList) {
+				if (a.getIsDefault() == isDefault)
+					return a;
+			}
+		}
+		return null;
+	}
+
+	private EmailAddressEntity getEmailAddressByDefaultFlag(
+			List<EmailAddressEntity> emailList, boolean isDefault) {
+		if (emailList != null && !emailList.isEmpty()) {
+			for (EmailAddressEntity e : emailList) {
+				if (e.getIsDefault() == isDefault)
+					return e;
+			}
+		}
+		return null;
+	}
+
+	@Override
+	public List<UserEntity> getUsersForMSys(String mSysId) {
+		return userDao.getUsersForMSys(mSysId);
+	}
 }

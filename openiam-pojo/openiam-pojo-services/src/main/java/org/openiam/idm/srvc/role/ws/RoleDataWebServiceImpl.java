@@ -21,24 +21,57 @@
  */
 package org.openiam.idm.srvc.role.ws;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.dozer.DozerBeanMapper;
 import org.openiam.base.ws.Response;
+import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.base.ws.exception.BasicDataServiceException;
+import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.dozer.converter.GroupDozerConverter;
+import org.openiam.dozer.converter.RoleAttributeDozerConverter;
+import org.openiam.dozer.converter.RoleDozerConverter;
+import org.openiam.dozer.converter.RolePolicyDozerConverter;
+import org.openiam.dozer.converter.UserDozerConverter;
+import org.openiam.idm.searchbeans.RoleSearchBean;
+import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
+import org.openiam.idm.srvc.grp.service.GroupDAO;
+import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.grp.ws.GroupArrayResponse;
 import org.openiam.idm.srvc.grp.ws.GroupListResponse;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
+import org.openiam.idm.srvc.role.domain.RoleEntity;
+import org.openiam.idm.srvc.role.domain.RolePolicyEntity;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.dto.RoleAttribute;
 import org.openiam.idm.srvc.role.dto.RolePolicy;
-import org.openiam.idm.srvc.role.dto.RoleSearch;
 import org.openiam.idm.srvc.role.dto.UserRole;
+import org.openiam.idm.srvc.role.service.RoleDAO;
 import org.openiam.idm.srvc.role.service.RoleDataService;
+import org.openiam.idm.srvc.role.service.UserRoleDAO;
+import org.openiam.idm.srvc.searchbean.converter.RoleSearchBeanConverter;
+import org.openiam.idm.srvc.secdomain.service.SecurityDomainDAO;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.user.ws.UserArrayResponse;
+import org.openiam.util.DozerMappingType;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Required;
+import org.springframework.stereotype.Service;
 
 /**
  * @author suneet
@@ -48,461 +81,527 @@ import org.openiam.idm.srvc.user.ws.UserArrayResponse;
 		targetNamespace = "urn:idm.openiam.org/srvc/role/service", 
 		portName = "RoleDataWebServicePort",
 		serviceName = "RoleDataWebService")
+@Service("roleWS")
 public class RoleDataWebServiceImpl implements RoleDataWebService {
+	
+	private static Logger LOG = Logger.getLogger(RoleDataWebServiceImpl.class);
+	
+	@Autowired
+	private RoleDataService roleDataService;
+    
+    @Autowired
+    private RoleDozerConverter roleDozerConverter;
+    
+    @Autowired
+    private RoleAttributeDozerConverter roleAttributeDozerConverter;
+    
+    @Autowired
+    private RolePolicyDozerConverter rolePolicyDozerConverter;
+    
+    @Autowired
+    private RoleSearchBeanConverter roleSearchBeanConverter;
+    
+    @Autowired
+    private GroupDataService groupService;
+    
+    @Autowired
+    private SecurityDomainDAO securityDomainDAO;
 
-	RoleDataService roleDataService;
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#addAttribute(org.openiam.idm.srvc.role.dto.RoleAttribute)
-	 */
+	@Override
 	public RoleAttributeResponse addAttribute(RoleAttribute attribute) {
-		RoleAttributeResponse resp = new RoleAttributeResponse(ResponseStatus.SUCCESS);
-		roleDataService.addAttribute(attribute);
-		if (attribute.getRoleAttrId() == null || attribute.getRoleAttrId().isEmpty() ) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setRoleAttr(attribute);
+		final RoleAttributeResponse response = new RoleAttributeResponse(ResponseStatus.SUCCESS);
+		try {
+			if(attribute == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			if(StringUtils.isBlank(attribute.getName())) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			if(StringUtils.isBlank(attribute.getValue())) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			final RoleAttributeEntity entity = roleAttributeDozerConverter.convertToEntity(attribute, false);
+			roleDataService.saveAttribute(entity);
+			final RoleAttribute dto = roleAttributeDozerConverter.convertToDTO(entity, false);
+			response.setRoleAttr(dto);
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
 		}
-		return resp;
-
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#addGroupToRole(java.lang.String, java.lang.String, java.lang.String)
-	 */
-	public Response addGroupToRole(String serviceId, String roleId,
-			String groupId) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
-		roleDataService.addGroupToRole(serviceId, roleId, groupId);
-		//if (retval == 0) {
-		//	resp.setStatus(ResponseStatus.FAILURE);
-		//}
-		return resp;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#addRole(org.openiam.idm.srvc.role.dto.Role)
-	 */
-	public RoleResponse addRole(Role role) {
-		RoleResponse resp = new RoleResponse(ResponseStatus.SUCCESS);
-		roleDataService.addRole(role);
-		if (role.getId().getRoleId() != null) {
-			resp.setRole(role);
-		}else {
-			resp.setStatus(ResponseStatus.FAILURE);
+	@Override
+	public Response addGroupToRole(String roleId, String groupId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(roleId == null || groupId == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			final RoleEntity role =  roleDataService.getRole(roleId);
+			final GroupEntity group = groupService.getGroup(groupId);
+			if(role == null || group == null) {
+				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+			}
+			
+			if(role.hasGroup(group.getGrpId())) {
+				throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
+			}
+			
+			roleDataService.addGroupToRole(roleId, groupId);
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
 		}
-
-		return resp;
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#addUserToRole(java.lang.String, java.lang.String, java.lang.String)
-	 */
-	public Response addUserToRole(String serviceId, String roleId, String userId) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
-		roleDataService.addUserToRole(serviceId, roleId, userId);
-		//if (retval == 0) {
-		//	resp.setStatus(ResponseStatus.FAILURE);
-		//}
-		return resp;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#getAllAttributes(java.lang.String, java.lang.String)
-	 */
-	public RoleAttributeArrayResponse getAllAttributes(String serviceId,
-			String roleId) {
-		RoleAttributeArrayResponse resp = new RoleAttributeArrayResponse(ResponseStatus.SUCCESS);
-		RoleAttribute[] roleAttrAry = roleDataService.getAllAttributes(serviceId, roleId); 
-		if (roleAttrAry == null) {
-			resp.setStatus(ResponseStatus.FAILURE);
-			return resp;
+	@Override
+	public Response addUserToRole(String roleId, String userId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(roleId == null || userId == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			if(roleDataService.getUserRole(userId, roleId) != null) {
+				throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
+			}
+			
+			roleDataService.addUserToRole(roleId, userId);
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
 		}
-		resp.setRoleAttrAry(roleAttrAry);
-		return resp;
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#getAllRoles()
-	 */
-	public RoleListResponse getAllRoles() {
-		RoleListResponse resp = new RoleListResponse(ResponseStatus.SUCCESS);
-		List<Role> roleList = roleDataService.getAllRoles(); 
-		if (roleList == null) {
-			resp.setStatus(ResponseStatus.FAILURE);
-			return resp;
+	@Override
+	public Role getRole(String roleId) {
+		Role retVal = null;
+		if(roleId != null) {
+			final RoleEntity entity = roleDataService.getRole(roleId);
+			if(entity != null) {
+				retVal = roleDozerConverter.convertToDTO(entity, false);
+			}
 		}
-		resp.setRoleList(roleList);
-		return resp;
+		return retVal;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#getAttribute(java.lang.String)
-	 */
-	public RoleAttributeResponse getAttribute(String attrId) {
-		RoleAttributeResponse resp = new RoleAttributeResponse(ResponseStatus.SUCCESS);
-		RoleAttribute roleAttr = roleDataService.getAttribute(attrId); 
-		if (roleAttr == null) {
-			resp.setStatus(ResponseStatus.FAILURE);
-			return resp;
-		}
-		resp.setRoleAttr(roleAttr);
-		return resp;
+	@Override
+	public List<Role> getRolesInGroup(final String groupId, final int from, final int size) {
+		final List<RoleEntity> entityList = roleDataService.getRolesInGroup(groupId, from, size);
+		final List<Role> roleList = roleDozerConverter.convertToDTOList(entityList, false);
+		return roleList;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#getGroupsInRole(java.lang.String, java.lang.String)
-	 */
-	public GroupArrayResponse getGroupsInRole(String serviceId, String roleId) {
-		GroupArrayResponse resp = new GroupArrayResponse(ResponseStatus.SUCCESS);
-		Group[] groupAry = roleDataService.getGroupsInRole(serviceId, roleId);
-		if (groupAry == null) {
-			resp.setStatus(ResponseStatus.FAILURE);
-			return resp;
-		}
-		resp.setGroupAry(groupAry);
-		return resp;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#getRole(java.lang.String, java.lang.String)
-	 */
-	public RoleResponse getRole(String serviceId, String roleId) {
-		RoleResponse resp = new RoleResponse(ResponseStatus.SUCCESS);
-		Role role = roleDataService.getRole(serviceId, roleId);
-		if (role == null) {
-			resp.setStatus(ResponseStatus.FAILURE);
-			return resp;
-		}
-		resp.setRole(role);
-		return resp;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#getRolesInDomain(java.lang.String)
-	 */
-	public RoleListResponse getRolesInDomain(String domainId) {
-		RoleListResponse resp = new RoleListResponse(ResponseStatus.SUCCESS);
-		List<Role> roleAry = roleDataService.getRolesInDomain(domainId); 
-		if (roleAry == null) {
-			resp.setStatus(ResponseStatus.FAILURE);
-			return resp;
-		}
-		resp.setRoleList(roleAry);
-		return resp;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#getRolesInGroup(java.lang.String)
-	 */
-	public RoleListResponse getRolesInGroup(String groupId) {
-		RoleListResponse resp = new RoleListResponse(ResponseStatus.SUCCESS);
-		List<Role> roleAry = roleDataService.getRolesInGroup(groupId); 
-		if (roleAry == null) {
-			resp.setStatus(ResponseStatus.FAILURE);
-			return resp;
-		}
-		resp.setRoleList(roleAry);
-		return resp;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#getUserRoles(java.lang.String)
-	 */
-	public RoleListResponse getUserRoles(String userId) {
-		RoleListResponse resp = new RoleListResponse(ResponseStatus.SUCCESS);
-		List<Role> roleAry = roleDataService.getUserRoles(userId); 
-		if (roleAry == null) {
-			resp.setStatus(ResponseStatus.FAILURE);
-			return resp;
-		}
-		resp.setRoleList(roleAry);
-		return resp;
+	@Override
+	public List<Role> getRolesForUser(final String userId, final int from, final int size) {
+		final List<RoleEntity> entityList = roleDataService.getRolesForUser(userId, from, size);
+		final List<Role> roleList = roleDozerConverter.convertToDTOList(entityList, false);
+		return roleList;
 	}
 	
-	public RoleListResponse getUserRolesAsFlatList(	String userId) {
-		RoleListResponse resp = new RoleListResponse(ResponseStatus.SUCCESS);
-		List<Role> roleAry = roleDataService.getUserRolesAsFlatList(userId); 
-		if (roleAry == null) {
-			resp.setStatus(ResponseStatus.FAILURE);
-			return resp;
+	@Override
+	public int getNumOfRolesForUser(final String userId) {
+		return roleDataService.getNumOfRolesForUser(userId);
+	}
+
+
+	@Override
+	public Response removeAttribute(final String attributeId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			roleDataService.removeAttribute(attributeId);
+		} catch(Throwable e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
 		}
-		resp.setRoleList(roleAry);
-		return resp;		
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#getUserRolesByDomain(java.lang.String, java.lang.String)
-	 */
-	public RoleListResponse getUserRolesByDomain(String domainId, String userId) {
-		RoleListResponse resp = new RoleListResponse(ResponseStatus.SUCCESS);
-		List<Role> roleAry = roleDataService.getUserRolesByDomain(domainId, userId); 
-		if (roleAry == null) {
-			resp.setStatus(ResponseStatus.FAILURE);
-			return resp;
+	@Override
+	public Response removeGroupFromRole(String roleId, String groupId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(groupId == null || roleId == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			roleDataService.removeGroupFromRole(roleId, groupId);
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
 		}
-		resp.setRoleList(roleAry);
-		return resp;
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#getUserRolesDirect(java.lang.String)
-	 */
-	public RoleListResponse getUserRolesDirect(String userId) {
-		RoleListResponse resp = new RoleListResponse(ResponseStatus.SUCCESS);
-		List<Role> roleAry = roleDataService.getUserRolesDirect(userId); 
-		if (roleAry == null) {
-			resp.setStatus(ResponseStatus.FAILURE);
-			return resp;
+	@Override
+	public Response removeRole(String roleId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(roleId == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			final RoleEntity entity = roleDataService.getRole(roleId);
+			if(entity == null) {
+				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+			}
+			
+			/*
+			if(CollectionUtils.isNotEmpty(entity.getChildRoles())) {
+				throw new BasicDataServiceException(ResponseCode.ROLE_HANGING_CHILD_ROLES);
+			}
+			
+			if(CollectionUtils.isNotEmpty(entity.getGroups())) {
+				throw new BasicDataServiceException(ResponseCode.ROLE_HANGING_GROUPS);
+			}
+			
+			if(CollectionUtils.isNotEmpty(entity.getResourceRoles())) {
+				throw new BasicDataServiceException(ResponseCode.ROLE_HANGING_RESOURCES);
+			}
+			
+			if(CollectionUtils.isNotEmpty(entity.getUserRoles())) {
+				throw new BasicDataServiceException(ResponseCode.ROLE_HANGING_USERS);
+			}
+			*/
+			
+			 roleDataService.removeRole(roleId);
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
 		}
-		resp.setRoleList(roleAry);
-		return resp;
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#getUsersInRole(java.lang.String, java.lang.String)
-	 */
-	public UserArrayResponse getUsersInRole(String serviceId, String roleId) {
-		UserArrayResponse resp = new UserArrayResponse(ResponseStatus.SUCCESS);
-		User[] userAry = roleDataService.getUsersInRole(serviceId, roleId); 
-		if (userAry == null) {
-			resp.setStatus(ResponseStatus.FAILURE);
-			return resp;
+	@Override
+	public Response removeUserFromRole(String roleId, String userId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(roleId == null || userId == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			roleDataService.removeUserFromRole(roleId, userId);
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
 		}
-		resp.setUserAry(userAry);
-		return resp;
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#isGroupInRole(java.lang.String, java.lang.String, java.lang.String)
-	 */
-	public Response isGroupInRole(String serviceId, String roleId,
-			String groupId) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
-		roleDataService.isGroupInRole(serviceId, roleId, groupId);
-		//if (retval == 0) {
-		//	resp.setStatus(ResponseStatus.FAILURE);
-		//}
-		return resp;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#isUserInRole(java.lang.String, java.lang.String, java.lang.String)
-	 */
-	public Response isUserInRole(String serviceId, String roleId, String userId) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
-		boolean retval = roleDataService.isUserInRole(serviceId, roleId, userId);
-		resp.setResponseValue(new Boolean(retval));
-
-		return resp;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#removeAllAttributes(java.lang.String, java.lang.String)
-	 */
-	public Response removeAllAttributes(String serviceId, String roleId) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
-		roleDataService.removeAllAttributes(serviceId, roleId);
-		//if (retval == 0) {
-		//	resp.setStatus(ResponseStatus.FAILURE);
-		//}
-		return resp;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#removeAllGroupsFromRole(java.lang.String, java.lang.String)
-	 */
-	public Response removeAllGroupsFromRole(String serviceId, String roleId) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
-		roleDataService.removeAllGroupsFromRole(serviceId, roleId);
-		//if (retval == 0) {
-		//	resp.setStatus(ResponseStatus.FAILURE);
-		//}
-		return resp;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#removeAttribute(org.openiam.idm.srvc.role.dto.RoleAttribute)
-	 */
-	public Response removeAttribute(RoleAttribute attr) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
-		roleDataService.removeAttribute(attr);
-		//if (retval == 0) {
-		//	resp.setStatus(ResponseStatus.FAILURE);
-		//}
-		return resp;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#removeGroupFromRole(java.lang.String, java.lang.String, java.lang.String)
-	 */
-	public Response removeGroupFromRole(String serviceId, String roleId,
-			String groupId) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
-		roleDataService.removeGroupFromRole(serviceId, roleId, groupId);
-		//if (retval == 0) {
-		//	resp.setStatus(ResponseStatus.FAILURE);
-		//}
-		return resp;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#removeRole(java.lang.String, java.lang.String)
-	 */
-	public Response removeRole(String serviceId, String roleId) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
-
-		    int retval = roleDataService.removeRole(serviceId, roleId);
-            if (retval == 0) {
-                 resp.setStatus( ResponseStatus.FAILURE);
-                return resp;
-            }
-
-		return resp;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#removeUserFromRole(java.lang.String, java.lang.String, java.lang.String)
-	 */
-	public Response removeUserFromRole(String serviceId, String roleId,
-			String userId) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
-		roleDataService.removeUserFromRole(serviceId, roleId, userId);
-		//if (retval == 0) {
-		//	resp.setStatus(ResponseStatus.FAILURE);
-		//}
-		return resp;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#search(org.openiam.idm.srvc.role.dto.RoleSearch)
-	 */
-	public RoleListResponse search(RoleSearch search) {
-		RoleListResponse resp = new RoleListResponse(ResponseStatus.SUCCESS);
-		List<Role> roleAry = roleDataService.search(search); 
-		if (roleAry == null) {
-			resp.setStatus(ResponseStatus.FAILURE);
-			return resp;
-		}
-		resp.setRoleList(roleAry);
-		return resp;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#updateAttribute(org.openiam.idm.srvc.role.dto.RoleAttribute)
-	 */
+	@Override
 	public Response updateAttribute(RoleAttribute attribute) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
-		roleDataService.updateAttribute(attribute);
-		//if (retval == 0) {
-		//	resp.setStatus(ResponseStatus.FAILURE);
-		//}
-		return resp;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.role.ws.RoleDataWebService#updateRole(org.openiam.idm.srvc.role.dto.Role)
-	 */
-	public Response updateRole(Role role) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
-		roleDataService.updateRole(role);
-		return resp;
-	}
-
-
-	public RolePolicyResponse addRolePolicy(RolePolicy rPolicy) {
-		RolePolicyResponse resp = new RolePolicyResponse(ResponseStatus.SUCCESS);
-		RolePolicy rp = roleDataService.addRolePolicy(rPolicy);
-		if (rp == null || rp.getRolePolicyId() == null) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setRolePolicy(rp);
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(attribute == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			final RoleAttributeEntity entity = roleAttributeDozerConverter.convertToEntity(attribute, false);
+			roleDataService.saveAttribute(entity);
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
 		}
-		return resp;
+		return response;
 	}
 
-	public RolePolicyResponse updateRolePolicy(RolePolicy rolePolicy) {
-		RolePolicyResponse resp = new RolePolicyResponse(ResponseStatus.SUCCESS);
-		RolePolicy rp = roleDataService.updateRolePolicy(rolePolicy);
-		if (rp == null || rp.getRolePolicyId() == null) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setRolePolicy(rp);
+	@Override
+	public Response saveRole(Role role) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(role == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			RoleEntity entity = roleDozerConverter.convertToEntity(role, false);
+			if(StringUtils.isBlank(entity.getRoleName())) {
+				throw new BasicDataServiceException(ResponseCode.NO_NAME);
+			}
+			
+			/* check if the name is taken by another entity */
+			final RoleEntity nameEntity = roleDataService.getRoleByName(role.getRoleName());
+			if(nameEntity != null) {
+				if(StringUtils.isBlank(entity.getRoleId()) || !entity.getRoleId().equals(nameEntity.getRoleId())) {
+					throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
+				}
+			}
+			
+			if(StringUtils.isBlank(entity.getServiceId())) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ROLE_DOMAIN);
+			}
+			
+			if(securityDomainDAO.findById(entity.getServiceId()) == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ROLE_DOMAIN);
+			}
+			
+			if(StringUtils.isNotBlank(entity.getRoleId())) {
+				final RoleEntity dbObject = roleDataService.getRole(entity.getRoleId());
+				if(dbObject == null) {
+					throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+				}
+				
+				/* merge */
+				dbObject.setRoleName(entity.getRoleName());
+				dbObject.setDescription(entity.getDescription());
+				dbObject.setServiceId(entity.getServiceId());
+				dbObject.setStatus(entity.getStatus());
+				dbObject.setMetadataTypeId(entity.getMetadataTypeId());
+				dbObject.setInternalRoleId(entity.getInternalRoleId());
+				entity = dbObject;
+			}
+			
+			roleDataService.saveRole(entity);
+			response.setResponseValue(entity.getRoleId());
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
 		}
-		return resp;
+		return response;
 	}
 
-	public RolePolicyListResponse getAllRolePolicies(String domainId,String roleId) {
-		RolePolicyListResponse resp = new RolePolicyListResponse(ResponseStatus.SUCCESS);
-		List<RolePolicy> rp = roleDataService.getAllRolePolicies(domainId, roleId);
-		if (rp == null || rp.size() == 0) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setRolePolicy(rp);
+	@Override
+	public RolePolicyResponse addRolePolicy(final RolePolicy policy) {
+		final RolePolicyResponse response = new RolePolicyResponse(ResponseStatus.SUCCESS);
+		try {
+			if(policy == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			final RolePolicyEntity entity = rolePolicyDozerConverter.convertToEntity(policy, false);
+			roleDataService.savePolicy(entity);
+			final RolePolicy dto = rolePolicyDozerConverter.convertToDTO(entity, false);
+			response.setRolePolicy(dto);
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
 		}
-		return resp;
+		return response;
 	}
 
+	@Override
+	public RolePolicyResponse updateRolePolicy(final RolePolicy policy) {
+		final RolePolicyResponse response = new RolePolicyResponse(ResponseStatus.SUCCESS);
+		try {
+			if(policy == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			final RolePolicyEntity entity = rolePolicyDozerConverter.convertToEntity(policy, false);
+			roleDataService.savePolicy(entity);
+			final RolePolicy dto = rolePolicyDozerConverter.convertToDTO(entity, false);
+			response.setRolePolicy(dto);
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+		return response;
+	}
+
+	@Override
 	public RolePolicyResponse getRolePolicy(String rolePolicyId) {
-		RolePolicyResponse resp = new RolePolicyResponse(ResponseStatus.SUCCESS);
-		RolePolicy rp = roleDataService.getRolePolicy(rolePolicyId);
-		if (rp == null || rp.getRolePolicyId() == null) {
-			resp.setStatus(ResponseStatus.FAILURE);
-		}else {
-			resp.setRolePolicy(rp);
+		final RolePolicyResponse response = new RolePolicyResponse(ResponseStatus.SUCCESS);
+		try {
+			final RolePolicyEntity entity = roleDataService.getRolePolicy(rolePolicyId);
+			if(entity == null) {
+				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+			}
+			
+			final RolePolicy policy = rolePolicyDozerConverter.convertToDTO(entity, false);
+			response.setRolePolicy(policy);
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
 		}
-		return resp;
-	}
-
-	public Response assocUserToRole(UserRole userRole) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
-		roleDataService.assocUserToRole(userRole);
-		return resp;
-	}
-
-	public Response updateUserRoleAssoc(UserRole userRole) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
-		roleDataService.updateUserRoleAssoc(userRole);
-		return resp;
-	}
-
-	public UserRoleResponse getUserRoleById(String userRoleId) {
-		UserRoleResponse resp = new UserRoleResponse(ResponseStatus.SUCCESS);
-	 	UserRole ur =  roleDataService.getUserRoleById(userRoleId);
-		if ( ur != null) {
-			resp.setUserRole(ur);
-			return resp;
-		}
-		resp.setStatus(ResponseStatus.FAILURE);
-	 	return resp;
-	}
-
-	public UserRoleListResponse getUserRolesForUser(String userId) {
-		UserRoleListResponse resp = new UserRoleListResponse(ResponseStatus.SUCCESS);
-	 	List<UserRole> ur =  roleDataService.getUserRolesForUser(userId);
-		if ( ur != null) {
-			resp.setUserRoleList(ur);
-			return resp;
-		}
-		resp.setStatus(ResponseStatus.FAILURE);
-	 	return resp;
+		return response;
 	}
 	
+	@Override
+	public Response removeRolePolicy(final String rolePolicyId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			roleDataService.removeRolePolicy(rolePolicyId);
+		} catch(Throwable e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+		return response;
+	}
+
+	@Override
+	public List<Role> findBeans(final RoleSearchBean searchBean, final int from, final int size) {
+		final RoleEntity example = roleSearchBeanConverter.convert(searchBean);
+		final List<RoleEntity> found = roleDataService.findBeans(example, from, size);
+		return roleDozerConverter.convertToDTOList(found, (searchBean.isDeepCopy()));
+	}
+
+	@Override
+	@WebMethod
+	public int countBeans(final RoleSearchBean searchBean) {
+		final RoleEntity example = roleSearchBeanConverter.convert(searchBean);
+		return roleDataService.countBeans(example);
+	}
+
+	@Override
+	public List<Role> getRolesForResource(final String resourceId, final int from, final int size) {
+		final List<RoleEntity> entityList = roleDataService.getRolesForResource(resourceId, from, size);
+		return roleDozerConverter.convertToDTOList(entityList, false);
+	}
+
+	@Override
+	public int getNumOfRolesForResource(final String resourceId) {
+		return roleDataService.getNumOfRolesForResource(resourceId);
+	}
+
+	@Override
+	public List<Role> getChildRoles(final String roleId, final  int from, final int size) {
+		final List<RoleEntity> entityList = roleDataService.getChildRoles(roleId, from, size);
+		final List<Role> roleList = roleDozerConverter.convertToDTOList(entityList, false);
+		return roleList;
+	}
+
+	@Override
+	@WebMethod
+	public int getNumOfChildRoles(final String roleId) {
+		return roleDataService.getNumOfChildRoles(roleId);
+	}
+
+	@Override
+	@WebMethod
+	public List<Role> getParentRoles(final String roleId, final int from, final int size) {
+		final List<RoleEntity> entityList = roleDataService.getParentRoles(roleId, from, size);
+		final List<Role> roleList = roleDozerConverter.convertToDTOList(entityList, false);
+		return roleList;
+	}
+
+	@Override
+	@WebMethod
+	public int getNumOfParentRoles(final String roleId) {
+		return roleDataService.getNumOfParentRoles(roleId);
+	}
+
+	@Override
+	public Response addChildRole(final String roleId, final String childRoleId) {
+		final RolePolicyResponse response = new RolePolicyResponse(ResponseStatus.SUCCESS);
+		try {
+			if(roleId == null || childRoleId == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			final RoleEntity parent = roleDataService.getRole(roleId);
+			final RoleEntity child = roleDataService.getRole(childRoleId);
+			if(parent == null || child == null) {
+				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+			}
+			
+			if(parent.hasChildRole(child.getRoleId())) {
+				throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
+			}
+			
+			if(roleId.equals(childRoleId)) {
+				throw new BasicDataServiceException(ResponseCode.CANT_ADD_YOURSELF_AS_CHILD);
+			}
+			
+			if(causesCircularDependency(parent, child, new HashSet<RoleEntity>())) {
+				throw new BasicDataServiceException(ResponseCode.CIRCULAR_DEPENDENCY);
+			}
+			
+			roleDataService.addChildRole(roleId, childRoleId);
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			LOG.error("Can't add child role", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+		return response;
+	}
 	
-	public Response removeRolePolicy(RolePolicy rolePolicy) {
-		Response resp = new Response(ResponseStatus.SUCCESS);
-		roleDataService.removeRolePolicy(rolePolicy);
-		return resp;
+	private boolean causesCircularDependency(final RoleEntity parent, final RoleEntity child, final Set<RoleEntity> visitedSet) {
+		boolean retval = false;
+		if(parent != null && child != null) {
+			if(!visitedSet.contains(child)) {
+				visitedSet.add(child);
+				if(CollectionUtils.isNotEmpty(parent.getParentRoles())) {
+					for(final RoleEntity entity : parent.getParentRoles()) {
+						retval = entity.getRoleId().equals(child.getRoleId());
+						if(retval) {
+							break;
+						}
+						causesCircularDependency(parent, entity, visitedSet);
+					}
+				}
+			}
+		}
+		return retval;
 	}
 
-
-	public RoleDataService getRoleDataService() {
-		return roleDataService;
+	@Override
+	public Response removeChildRole(final String roleId, final String childRoleId) {
+		final RolePolicyResponse response = new RolePolicyResponse(ResponseStatus.SUCCESS);
+		try {
+			if(roleId == null || childRoleId == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			final RoleEntity parent = roleDataService.getRole(roleId);
+			final RoleEntity child = roleDataService.getRole(childRoleId);
+			if(parent == null || child == null) {
+				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+			}
+			
+			roleDataService.removeChildRole(roleId, childRoleId);
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			LOG.error("Can't remove child role", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+		return response;
 	}
 
-	public void setRoleDataService(RoleDataService roleDataService) {
-		this.roleDataService = roleDataService;
+	@Override
+	public int getNumOfRolesForGroup(final String groupId) {
+		return roleDataService.getNumOfRolesForGroup(groupId);
 	}
-
-
 }

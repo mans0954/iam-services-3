@@ -28,6 +28,7 @@ import java.util.Map;
 
 import org.openiam.base.id.UUIDGen;
 import org.openiam.idm.srvc.auth.dto.SSOToken;
+import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.util.encrypt.Cryptor;
 
 import javax.xml.namespace.QName;
@@ -123,7 +124,8 @@ public class SAML1TokenModule implements SSOTokenModule {
        DateTime notAfterTime = new DateTime(System.currentTimeMillis());
        notAfterTime = notAfterTime.plusMinutes(idleTime);
        
-       String userId = (String)tokenParam.get("USER_ID");
+       final String userId = (String)tokenParam.get("USER_ID");
+       final String principal = (String)tokenParam.get("PRINCIPAL");
        
        int expectedMinorVersion = 1;      
        qname = Request.DEFAULT_ELEMENT_NAME;
@@ -168,6 +170,8 @@ public class SAML1TokenModule implements SSOTokenModule {
 	           SSOToken ssoTkn = new SSOToken();
 	           ssoTkn.setToken( XMLHelper.nodeToString(generatedDOM));
 	           ssoTkn.setExpirationTime(notAfterTime.toDate());
+	           ssoTkn.setUserId(userId);
+	           ssoTkn.setPrincipal(principal);
 	           return ssoTkn;
 	   	   
 	       }catch(Exception e) {
@@ -260,7 +264,7 @@ public class SAML1TokenModule implements SSOTokenModule {
 		return null;
 	}
 
-    public String getDecryptedToken(String token) {
+    public String getDecryptedToken(String userId,String token)throws Exception {
         return null;
     }
 
@@ -291,5 +295,11 @@ public class SAML1TokenModule implements SSOTokenModule {
 	public void setTokenLife(int tokenLife) {
 		
 	}
+
+    @Override
+    public void setKeyManagementService(KeyManagementService keyManagementService) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
 
 }

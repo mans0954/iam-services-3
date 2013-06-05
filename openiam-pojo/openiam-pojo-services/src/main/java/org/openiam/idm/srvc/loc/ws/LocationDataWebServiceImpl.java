@@ -21,23 +21,20 @@
  */
 package org.openiam.idm.srvc.loc.ws;
 
-import java.util.List;
-
 import javax.jws.WebService;
 
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.auth.ws.LoginResponse;
-import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.loc.dto.Location;
 import org.openiam.idm.srvc.loc.dto.LocationSearch;
 import org.openiam.idm.srvc.loc.service.LocationDataService;
+import org.springframework.stereotype.Service;
 
 /**
  * @author suneet
  *
  */
+@Service("locationWS")
 @WebService(endpointInterface = "org.openiam.idm.srvc.loc.ws.LocationDataWebService", 
 		targetNamespace = "urn:idm.openiam.org/srvc/loc/service", 
 		serviceName = "LocationDataWebService")

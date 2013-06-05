@@ -27,7 +27,9 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.exception.EncryptionException;
+import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
+import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
 import org.openiam.idm.srvc.pswd.dto.Password;
 import org.openiam.idm.srvc.pswd.dto.PasswordHistory;
 import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
@@ -65,27 +67,28 @@ public class PasswordHistoryRule extends AbstractPasswordRule {
 		if (enabled) {			
 			log.info("password history rule is enabled.");
 			Password pswd = new Password();
-			pswd.setDomainId(lg.getId().getDomainId());
-			pswd.setManagedSysId(lg.getId().getManagedSysId());
-			pswd.setPrincipal(lg.getId().getLogin());
+			pswd.setDomainId(lg.getDomainId());
+			pswd.setManagedSysId(lg.getManagedSysId());
+			pswd.setPrincipal(lg.getLogin());
 			pswd.setPassword(password);
 			
 			int version =  Integer.parseInt( attribute.getValue1() );
-			List<PasswordHistory> historyList = passwordHistoryDao.findPasswordHistoryByPrincipal(
-					 pswd.getDomainId(), pswd.getPrincipal(), pswd.getManagedSysId(), version);
+			List<PasswordHistoryEntity> historyList = passwordHistoryDao.getPasswordHistoryByLoginId(lg.getLoginId(), 0, version);
 			if (historyList == null || historyList.isEmpty()) {
 				// no history
 				return retval;
 			}
 			// check the list.
-			log.info("Found " + historyList.size() + " passwords in the history");
-			for ( PasswordHistory hist  : historyList) {
+            String userId = (user==null)?lg.getUserId():user.getUserId();
+
+            log.info("Found " + historyList.size() + " passwords in the history");
+			for ( PasswordHistoryEntity hist  : historyList) {
 				String pwd = hist.getPassword();
 				String decrypt = null;
 				try {
-					decrypt =  cryptor.decrypt(pwd);
-				}catch(EncryptionException e) {
-					log.error("PasswordHistoryRule failed due to decrption error. ");
+					decrypt =  cryptor.decrypt(keyManagementService.getUserKey(userId, KeyName.password.name()), pwd);
+				}catch(Exception e) {
+					log.error("PasswordHistoryRule failed due to decrption error. ", e);
 					return PasswordValidationCode.FAIL_HISTORY_RULE;
 				}
 				if (pswd.getPassword().equals(decrypt)) {

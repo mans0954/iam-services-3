@@ -4,14 +4,14 @@
     <parent>
         <artifactId>idm-core</artifactId>
         <groupId>org.openiam</groupId>
-        <version>2.1.0</version>
+        <version>3.0.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.openiam</groupId>
     <artifactId>openiam-idm-services</artifactId>
     <packaging>jar</packaging>
     <name>openiam-idm-services</name>
-    <version>2.1.0</version>
+    <version>3.0.0</version>
     <description>OpenIAM idm sepcific service</description>
     <ciManagement>
         <system>idm</system>
@@ -78,10 +78,12 @@
         </dependency>
 
 
+        <!-- Testing -->
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-        </dependency>
+		    <groupId>org.testng</groupId>
+			<artifactId>testng</artifactId>
+		</dependency>
+
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-all</artifactId>
@@ -129,16 +131,17 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-orm</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>jstl</artifactId>
         </dependency>
 
+		<dependency>
+			<groupId>net.sf.dozer</groupId>
+			<artifactId>dozer</artifactId>
+			<version>5.3.2</version>
+		</dependency>
 
         <dependency>
             <groupId>org.mule</groupId>
@@ -149,10 +152,10 @@
             <artifactId>mule-module-client</artifactId>
         </dependency>
 
-        <dependency>
+        <!--dependency>
             <groupId>com.github.groovy-wslite</groupId>
             <artifactId>groovy-wslite</artifactId>
-        </dependency>
+        </dependency -->
 
 
     </dependencies>

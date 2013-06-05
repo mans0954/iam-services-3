@@ -1,0 +1,3 @@
+use openiam;
+
+DROP TABLE USER_PRIVILEGE;

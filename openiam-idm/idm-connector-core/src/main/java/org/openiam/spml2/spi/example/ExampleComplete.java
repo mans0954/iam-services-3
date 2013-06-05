@@ -26,7 +26,7 @@ import java.util.List;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.spml2.base.AbstractSpml2Complete;
 import org.openiam.spml2.interf.ConnectorService;
@@ -101,7 +101,7 @@ public class ExampleComplete  extends AbstractSpml2Complete implements Connector
 			List<ExtensibleRole> extRoleList =  extUser.getRole();
 			System.out.println("Roles=" + extRoleList);
 			for (ExtensibleRole r : extRoleList) {
-				System.out.println("Role:" + r.getRole().getId());
+				System.out.println("Role:" + r.getRole().getRoleId());
 			}
 			// show the Addresses
 			List<ExtensibleAddress> extAddressList =  (List<ExtensibleAddress>)extUser.getAddress();
@@ -202,7 +202,7 @@ public class ExampleComplete  extends AbstractSpml2Complete implements Connector
 				List<ExtensibleRole> extRoleList =  extUser.getRole();
 				System.out.println("Roles=" + extRoleList);
 				for (ExtensibleRole r : extRoleList) {
-					System.out.println("Role:" + r.getRole().getId() + " OPERATION=" + r.getOperation());
+					System.out.println("Role:" + r.getRole().getRoleId() + " OPERATION=" + r.getOperation());
 				}
 
 				List<ExtensibleAddress> extAddressList =  (List<ExtensibleAddress>)extUser.getAddress();
@@ -289,7 +289,7 @@ public class ExampleComplete  extends AbstractSpml2Complete implements Connector
         return response;
     }
 
-    public ResponseType testConnection(@WebParam(name = "managedSys", targetNamespace = "") ManagedSys managedSys) {
+    public ResponseType testConnection(@WebParam(name = "managedSys", targetNamespace = "") ManagedSysDto managedSys) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 }

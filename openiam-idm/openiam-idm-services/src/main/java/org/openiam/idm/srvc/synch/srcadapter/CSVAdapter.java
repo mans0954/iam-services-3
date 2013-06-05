@@ -29,6 +29,7 @@ import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditHelper;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
@@ -47,6 +48,7 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.service.ProvisionService;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
 import java.io.*;
@@ -71,6 +73,9 @@ public class CSVAdapter extends  AbstractSrcAdapter  {
 
     ProvisionService provService = null;
     String systemAccount;
+    
+    @Autowired
+    private UserDozerConverter userDozerConverter;
 
     MatchRuleFactory matchRuleFactory;
 
@@ -94,22 +99,11 @@ public class CSVAdapter extends  AbstractSrcAdapter  {
         synchStartLog.setSynchAttributes("SYNCH_USER", config.getSynchConfigId(), "START", "SYSTEM", requestId);
         synchStartLog = auditHelper.logEvent(synchStartLog);
 
-        synchronized (runningTask) {
-            if(runningTask.contains(config.getSynchConfigId())) {
-                log.debug("**** Synchronization Configuration " + config.getName() + " is already running");
 
-                SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
-                resp.setErrorCode(ResponseCode.FAIL_PROCESS_ALREADY_RUNNING);
-                return resp;
-            }
-            runningTask.add(config.getSynchConfigId());
-        }
 
         try {
             matchRule = matchRuleFactory.create(config);
         } catch (ClassNotFoundException cnfe) {
-
-            runningTask.remove(config.getSynchConfigId());
 
             log.error(cnfe);
 
@@ -198,7 +192,7 @@ public class CSVAdapter extends  AbstractSrcAdapter  {
                             // initialize the transform script
                             if (usr != null) {
                                 transformScript.setNewUser(false);
-                                transformScript.setUser(userMgr.getUserWithDependent(usr.getUserId(), true));
+                                transformScript.setUser(userDozerConverter.convertToDTO(userMgr.getUser(usr.getUserId()), true));
                                 transformScript.setPrincipalList(loginManager.getLoginByUser(usr.getUserId()));
                                 transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getUserId()));
 
@@ -239,7 +233,6 @@ public class CSVAdapter extends  AbstractSrcAdapter  {
 
                     } catch (ClassNotFoundException cnfe) {
 
-                        runningTask.remove(config.getSynchConfigId());
 
                         log.error(cnfe);
 
@@ -249,6 +242,17 @@ public class CSVAdapter extends  AbstractSrcAdapter  {
                         SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
                         resp.setErrorCode(ResponseCode.CLASS_NOT_FOUND);
                         return resp;
+                    }  catch (Exception e) {
+
+
+                        log.error(e);
+
+                        synchStartLog.updateSynchAttributes("FAIL", ResponseCode.FAIL_OTHER.toString(), e.toString());
+                        auditHelper.logEvent(synchStartLog);
+
+                        SyncResponse resp = new SyncResponse(ResponseStatus.FAILURE);
+                        resp.setErrorCode(ResponseCode.FAIL_OTHER);
+                        return resp;
                     }
 
                 }
@@ -257,7 +261,7 @@ public class CSVAdapter extends  AbstractSrcAdapter  {
 
         } catch (IOException io) {
 
-            runningTask.remove(config.getSynchConfigId());
+
 
             io.printStackTrace();
 
@@ -271,7 +275,6 @@ public class CSVAdapter extends  AbstractSrcAdapter  {
 
         }
 
-        runningTask.remove(config.getSynchConfigId());
 
         log.debug("CSV SYNCHRONIZATION COMPLETE^^^^^^^^");
 

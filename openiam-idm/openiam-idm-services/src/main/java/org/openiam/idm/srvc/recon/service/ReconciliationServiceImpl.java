@@ -17,7 +17,7 @@
  */
 
 /**
- * 
+ *
  */
 package org.openiam.idm.srvc.recon.service;
 
@@ -26,21 +26,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mule.api.MuleContext;
 import org.mule.api.context.MuleContextAware;
-import org.openiam.base.AttributeOperationEnum;
-import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.connector.type.LookupRequest;
-import org.openiam.connector.type.LookupResponse;
+import org.openiam.connector.type.RemoteReconciliationConfig;
+import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSys;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
-import org.openiam.idm.srvc.mngsys.dto.ProvisionConnector;
-import org.openiam.idm.srvc.mngsys.service.ConnectorDataService;
-import org.openiam.idm.srvc.mngsys.service.ManagedSystemDataService;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
+import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
+import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
+import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
 import org.openiam.idm.srvc.recon.command.ReconciliationCommandFactory;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.idm.srvc.recon.dto.ReconciliationResponse;
@@ -49,23 +47,17 @@ import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceRole;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.role.service.RoleDataService;
-import org.openiam.idm.srvc.synch.dto.SynchConfig;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
-import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.LookupUserResponse;
 import org.openiam.provision.service.ConnectorAdapter;
 import  org.openiam.provision.service.ProvisionService;
+import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
-import org.openiam.idm.srvc.auth.dto.LoginId;
 import org.openiam.provision.service.RemoteConnectorAdapter;
-import org.openiam.provision.type.ExtensibleAttribute;
-import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.spml2.msg.LookupRequestType;
-import org.openiam.spml2.msg.LookupResponseType;
-import org.openiam.spml2.msg.PSOIdentifierType;
-import org.openiam.spml2.msg.StatusCodeType;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author suneet
@@ -82,11 +74,16 @@ public class ReconciliationServiceImpl implements ReconciliationService, MuleCon
     protected  ProvisionService provisionService;
     protected ResourceDataService resourceDataService;
     protected UserDataService userMgr;
-    protected ManagedSystemDataService managedSysService;
-    protected ConnectorDataService connectorService;
+    protected ManagedSystemWebService managedSysService;
+    @Autowired
+    private ProvisionConnectorWebService connectorService;
+
     protected ConnectorAdapter connectorAdapter;
     protected RemoteConnectorAdapter remoteConnectorAdapter;
     protected RoleDataService roleDataService;
+
+    @Autowired
+    private UserDozerConverter userDozerConverter;
 
 
     private static final Log log = LogFactory.getLog(ReconciliationServiceImpl.class);
@@ -192,7 +189,7 @@ public class ReconciliationServiceImpl implements ReconciliationService, MuleCon
 
             Resource res = resourceDataService.getResource(config.getResourceId());
             String managedSysId =  res.getManagedSysId();
-            ManagedSys mSys = managedSysService.getManagedSys(managedSysId);
+            ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
 
             log.debug("ManagedSysId = " + managedSysId);
             log.debug("Getting identities for managedSys");
@@ -203,29 +200,27 @@ public class ReconciliationServiceImpl implements ReconciliationService, MuleCon
                 log.debug("Created Command for: " + situation.getSituation());
             }
 
-            List<User> users = new ArrayList<User>();
+            List<UserEntity> users = new ArrayList<UserEntity>();
             for(ResourceRole rRole: res.getResourceRoles()) {
-                User[] usrAry = roleDataService.getUsersInRole(mSys.getDomainId(), rRole.getId().getRoleId());
-                if(usrAry != null) {
-                    for(User user: usrAry){
-                        users.add(user);
-                    }
+                final List<UserEntity> usersInrole = roleDataService.getUsersInRole(rRole.getId().getRoleId(), 0, Integer.MAX_VALUE);
+                if(CollectionUtils.isNotEmpty(usersInrole)) {
+                	users.addAll(usersInrole);
                 }
             }
 
-            List<Login> principalList =  loginManager.getAllLoginByManagedSys(managedSysId);
+            final List<LoginEntity> principalList =  loginManager.getAllLoginByManagedSys(managedSysId);
             if (principalList == null || principalList.isEmpty()) {
                 log.debug("No identities found for managedSysId in IDM repository");
                 ReconciliationResponse resp = new ReconciliationResponse(ResponseStatus.SUCCESS);
                 return resp;
             }
-            for ( User u  : users ) {
+            for (final UserEntity u  : users ) {
                 Login l = null;
-                User user = userMgr.getUserWithDependent(u.getUserId(), true);
+                User user = userDozerConverter.convertToDTO(userMgr.getUser(u.getUserId()), true);
                 List<Login> logins = user.getPrincipalList();
                 if(logins != null) {
                     for(Login login: logins){
-                        if(login.getId().getDomainId().equalsIgnoreCase(mSys.getDomainId()) && login.getId().getManagedSysId().equalsIgnoreCase(managedSysId)){
+                        if(login.getDomainId().equalsIgnoreCase(mSys.getDomainId()) && login.getManagedSysId().equalsIgnoreCase(managedSysId)){
                             l = login;
                             break;
                         }
@@ -248,7 +243,7 @@ public class ReconciliationServiceImpl implements ReconciliationService, MuleCon
                     return resp;
                 }
 
-                String principal = l.getId().getLogin();
+                String principal = l.getLogin();
                 log.debug("looking up identity in resource: " + principal);
 
                 LookupUserResponse lookupResp =  provisionService.getTargetSystemUser(principal, managedSysId);
@@ -286,14 +281,18 @@ public class ReconciliationServiceImpl implements ReconciliationService, MuleCon
             }
 
 
-            ProvisionConnector connector = connectorService.getConnector(mSys.getConnectorId());
+            ProvisionConnectorDto connector = connectorService.getProvisionConnector(mSys.getConnectorId());
 
             if (connector.getConnectorInterface() != null &&
                     connector.getConnectorInterface().equalsIgnoreCase("REMOTE")) {
 
                 log.debug("Calling reconcileResource with Remote connector");
-
-                remoteConnectorAdapter.reconcileResource(config, connector, muleContext);
+                RemoteReconciliationConfig remoteReconciliationConfig = null;
+                if(config != null) {
+                    remoteReconciliationConfig = new RemoteReconciliationConfig(config);
+                    remoteReconciliationConfig.setScriptHandler(mSys.getReconcileResourceHandler());
+                }
+                remoteConnectorAdapter.reconcileResource(remoteReconciliationConfig, connector, muleContext);
             } else {
 
                 log.debug("Calling reconcileResource local connector");
@@ -343,11 +342,15 @@ public class ReconciliationServiceImpl implements ReconciliationService, MuleCon
         this.userMgr = userMgr;
     }
 
-    public void setManagedSysService(ManagedSystemDataService managedSysService) {
+    public void setManagedSysService(ManagedSystemWebService managedSysService) {
         this.managedSysService = managedSysService;
     }
 
-    public void setConnectorService(ConnectorDataService connectorService) {
+    public ProvisionConnectorWebService getConnectorService() {
+        return connectorService;
+    }
+
+    public void setConnectorService(ProvisionConnectorWebService connectorService) {
         this.connectorService = connectorService;
     }
 

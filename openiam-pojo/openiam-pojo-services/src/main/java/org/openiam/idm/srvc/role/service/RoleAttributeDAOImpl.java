@@ -3,6 +3,8 @@ package org.openiam.idm.srvc.role.service;
 
 
 import java.util.List;
+
+import javax.annotation.PostConstruct;
 import javax.naming.InitialContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -12,131 +14,33 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import static org.hibernate.criterion.Example.create;
 
+import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
 import org.openiam.idm.srvc.role.dto.*;
+import org.springframework.stereotype.Repository;
 
-/**
- * Data access interface for domain model class RoleAttribute.
- * @see org.openiam.idm.srvc.role.dto.RoleAttribute
- */
-public class RoleAttributeDAOImpl implements RoleAttributeDAO {
+@Repository("roleAttributeDAO")
+public class RoleAttributeDAOImpl extends BaseDaoImpl<RoleAttributeEntity, String> implements RoleAttributeDAO {
 
     private static final Log log = LogFactory.getLog(RoleAttributeDAOImpl.class);
-
-	private SessionFactory sessionFactory;
+    
+    private static String DELETE_BY_ROLE_ID = "DELETE FROM %s ra WHERE ra.roleId = :roleId";
 	
-	public void setSessionFactory(SessionFactory session) {
-		   this.sessionFactory = session;
+	@PostConstruct
+	public void initSQL() {
+		DELETE_BY_ROLE_ID = String.format(DELETE_BY_ROLE_ID, domainClass.getSimpleName());
 	}
 
-	   
-	protected SessionFactory getSessionFactory() {
-		try {
-			return (SessionFactory) new InitialContext()
-					.lookup("SessionFactory");
-		} catch (Exception e) {
-			log.error("Could not locate SessionFactory in JNDI", e);
-			throw new IllegalStateException(
-					"Could not locate SessionFactory in JNDI");
-		}
-	}
-    
-    /* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.role.service.RoleAttributeDAO#add(org.openiam.idm.srvc.role.dto.RoleAttribute)
-	 */
-    public void add(RoleAttribute transientInstance) {
-        log.debug("persisting RoleAttribute instance");
-        try {
-            sessionFactory.getCurrentSession().persist(transientInstance);
-            log.debug("persist successful");
-        }
-        catch (RuntimeException re) {
-            log.error("persist failed", re);
-            throw re;
-        }
-    }
-    
-
-    /* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.role.service.RoleAttributeDAO#remove(org.openiam.idm.srvc.role.dto.RoleAttribute)
-	 */
-    public void remove(RoleAttribute persistentInstance) {
-        log.debug("deleting RoleAttribute instance");
-        try {
-            sessionFactory.getCurrentSession().delete(persistentInstance);
-            log.debug("delete successful");
-        }
-        catch (RuntimeException re) {
-            log.error("delete failed", re);
-            throw re;
-        }
-    }
-    
-    /* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.role.service.RoleAttributeDAO#update(org.openiam.idm.srvc.role.dto.RoleAttribute)
-	 */
-    public RoleAttribute update(RoleAttribute detachedInstance) {
-        log.debug("merging RoleAttribute instance");
-        try {
-            RoleAttribute result = (RoleAttribute) sessionFactory.getCurrentSession()
-                    .merge(detachedInstance);
-            log.debug("merge successful");
-            return result;
-        }
-        catch (RuntimeException re) {
-            log.error("merge failed", re);
-            throw re;
-        }
-    }
-    
-    public RoleAttribute findById( java.lang.String id) {
-        log.debug("getting RoleAttribute instance with id: " + id);
-        try {
-            RoleAttribute instance = (RoleAttribute) sessionFactory.getCurrentSession()
-                    .get("org.openiam.idm.srvc.role.dto.RoleAttribute", id);
-            if (instance==null) {
-                log.debug("get successful, no instance found");
-            }
-            else {
-                log.debug("get successful, instance found");
-            }
-            return instance;
-        }
-        catch (RuntimeException re) {
-            log.error("get failed", re);
-            throw re;
-        }
-    }
-    
-    /* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.role.service.RoleAttributeDAO#findByExample(org.openiam.idm.srvc.role.dto.RoleAttribute)
-	 */
-    public List<RoleAttribute> findByExample(RoleAttribute instance) {
-        log.debug("finding RoleAttribute instance by example");
-        try {
-            List<RoleAttribute> results = (List<RoleAttribute>) sessionFactory.getCurrentSession()
-                    .createCriteria("org.openiam.idm.srvc.role.dto.RoleAttribute")
-                    .add( create(instance) )
-            .list();
-            log.debug("find by example successful, result size: " + results.size());
-            return results;
-        }
-        catch (RuntimeException re) {
-            log.error("find by example failed", re);
-            throw re;
-        }
-    } 
-    
-	public void deleteRoleAttributes(String serviceId, String roleId) {
-		Session session = sessionFactory.getCurrentSession();
-		Query qry = session.createQuery("delete org.openiam.idm.srvc.role.dto.RoleAttribute ra " + 
-					" where ra.id.serviceId = :serviceId and ra.id.roleId = :roleId ");
-		qry.setString("serviceId", serviceId);
-		qry.setString("roleId",roleId);
-		qry.executeUpdate();
-
-		
+	@Override
+	protected String getPKfieldName() {
+		return "roleAttrId";
 	}
 
-
+	@Override
+	public void deleteByRoleId(String roleId) {
+		final Query query = getSession().createQuery(DELETE_BY_ROLE_ID);
+		query.setParameter("roleId", roleId);
+		query.executeUpdate();
+	}
 }
 
