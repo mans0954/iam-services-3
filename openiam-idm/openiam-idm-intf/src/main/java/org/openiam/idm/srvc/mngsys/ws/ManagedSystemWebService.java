@@ -256,4 +256,9 @@ public interface ManagedSystemWebService {
     @WebMethod
     public Response saveApproverAssociation(
             final @WebParam(name = "approverAssociation", targetNamespace = "") ApproverAssociation approverAssociation);
+    
+	@WebMethod
+	public List<ApproverAssociation> getApproverAssociations(final @WebParam(name = "approverAssociation", targetNamespace = "") ApproverAssocationSearchBean searchBean,
+															 final @WebParam(name="from", targetNamespace = "") int from,
+															 final @WebParam(name="size", targetNamespace = "") int size);
 }

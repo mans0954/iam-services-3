@@ -20,6 +20,7 @@ import org.openiam.idm.srvc.mngsys.domain.DefaultReconciliationAttributeMapEntit
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.dto.*;
+import org.openiam.idm.srvc.mngsys.searchbeans.converter.ApproverAssocationSearchBeanConverter;
 import org.openiam.idm.srvc.mngsys.searchbeans.converter.ManagedSystemSearchBeanConverter;
 import org.openiam.idm.srvc.mngsys.service.*;
 import org.openiam.idm.srvc.policy.service.PolicyDAO;
@@ -78,6 +79,9 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     @Qualifier("cryptor")
     private Cryptor cryptor;
 
+    @Autowired
+    private ApproverAssocationSearchBeanConverter approverSearchBeanConverter;
+    
     boolean encrypt = true; // default encryption setting
 
     @Override
@@ -312,6 +316,15 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     // Approver Association
     // ================================================================
 
+    
+	@Override
+	public List<ApproverAssociation> getApproverAssociations(
+			ApproverAssocationSearchBean searchBean, int from, int size) {
+		final ApproverAssociationEntity entity = approverSearchBeanConverter.convert(searchBean);
+		final List<ApproverAssociationEntity> entityList = approverAssociationDao.getByExample(entity, from, size);
+		return (entityList != null) ? approverAssociationDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy()) : null;
+	}
+    
     public Response saveApproverAssociation(
             final ApproverAssociation approverAssociation) {
         final Response response = new Response(ResponseStatus.SUCCESS);

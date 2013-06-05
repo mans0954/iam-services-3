@@ -9,28 +9,49 @@ import javax.xml.bind.annotation.XmlType;
 public enum AssociationType {
 	
 	@XmlEnumValue("user")
-    USER("USER"),
+    USER("USER", true, true),
     @XmlEnumValue("supervisor")
-    SUPERVISOR("SUPERVISOR"),
+    SUPERVISOR("SUPERVISOR", true, true),
     @XmlEnumValue("role")
-    ROLE("ROLE"),
+    ROLE("ROLE", true, true),
     @XmlEnumValue("group")
-    GROUP("GROUP"),
+    GROUP("GROUP", true, true),
     @XmlEnumValue("target_user")
-    TARGET_USER("TARGET_USER");
+    TARGET_USER("TARGET_USER", false, true),
+    @XmlEnumValue("resource")
+    RESOURCE("RESOURCE", false, false);
     
 
+	private boolean isApprover;
 	private String value;
+	private boolean isNotifiable;
 	
-	AssociationType(final String value) {
+	AssociationType(final String value, final boolean isApprover, final boolean isNotifiable) {
 		this.value = value;
+		this.isApprover = isApprover;
+		this.isNotifiable = isNotifiable;
 	}
 	
 	public String getValue() {
         return value;
     }
-
-    public void setValue(String val) {
-        value = val;
+    
+    public boolean getIsApprover() {
+    	return isApprover;
+    }
+    
+    public boolean getIsNotifiable() {
+    	return isNotifiable;
+    }
+    
+    public static AssociationType getByValue(final String v) {
+    	AssociationType retVal = null;
+    	for(final AssociationType type : AssociationType.values()) {
+    		if(type.value.equals(v)) {
+    			retVal = type;
+    			break;
+    		}
+    	}
+    	return retVal;
     }
 }
