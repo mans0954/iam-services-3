@@ -63,6 +63,9 @@ public interface ConnectorService {
             @WebParam(name = "reqType", targetNamespace = "")
             LookupRequestType reqType);
 
+    @WebMethod(action = "http://www.openiam.org/service/connector/ConnectorService/lookupAttributeNames")
+    LookupAttributeResponseType lookupAttributeNames(@WebParam(name = "reqType", targetNamespace = "") LookupAttributeRequestType reqType);
+
     /**
      * The setPassword operation enables a requestor to specify a new password for an object
      *

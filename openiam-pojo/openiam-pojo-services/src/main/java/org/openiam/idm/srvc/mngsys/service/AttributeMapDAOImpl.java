@@ -43,7 +43,7 @@ public class AttributeMapDAOImpl extends
 				.addOrder(Order.asc("resourceId")).list();
 	}
 
-	public int removeResourceAttributeMaps(String resourceId) {
+    public int removeResourceAttributeMaps(String resourceId) {
 
 		SQLQuery qry = getSession().createSQLQuery(
 				"delete " + "from ATTRIBUTE_MAP  "

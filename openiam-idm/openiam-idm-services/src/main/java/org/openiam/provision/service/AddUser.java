@@ -62,11 +62,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Helper class that will be called by the DefaultProvisioningService to add users in to the 
- * OpenIAM repository.
+ * Helper class that will be called by the DefaultProvisioningService to add
+ * users in to the OpenIAM repository.
  * 
  * @author suneet
- *
+ * 
  */
 public class AddUser {
 
@@ -82,13 +82,13 @@ public class AddUser {
     @Autowired
     protected AuditHelper auditHelper;
     protected OrganizationDataService orgManager;
-    
+
     @Autowired
     private UserDozerConverter userDozerConverter;
-    
+
     @Autowired
     private LoginDozerConverter loginDozerConverter;
-    
+
     @Autowired
     private SupervisorDozerConverter supervisorDozerConverter;
 
@@ -101,8 +101,9 @@ public class AddUser {
 
         User newUser = null;
         try {
-        	newUser = user.getUser();
-        	final UserEntity entity = userDozerConverter.convertToEntity(newUser, true);
+            newUser = user.getUser();
+            final UserEntity entity = userDozerConverter.convertToEntity(
+                    newUser, true);
             userMgr.addUser(entity);
             newUser = userDozerConverter.convertToDTO(entity, true);
         } catch (Exception e) {
@@ -150,7 +151,8 @@ public class AddUser {
         Supervisor supervisor = u.getSupervisor();
         if (supervisor != null && supervisor.getSupervisor() != null) {
             supervisor.setEmployee(u.getUser());
-            final SupervisorEntity entity = supervisorDozerConverter.convertToEntity(supervisor, true);
+            final SupervisorEntity entity = supervisorDozerConverter
+                    .convertToEntity(supervisor, true);
             userMgr.addSupervisor(entity);
         }
     }
@@ -170,7 +172,8 @@ public class AddUser {
                     lg.setPassword(loginManager.encryptPassword(u.getUserId(),
                             pswd));
                 }
-                loginManager.addLogin(loginDozerConverter.convertToEntity(lg, true));
+                loginManager.addLogin(loginDozerConverter.convertToEntity(lg,
+                        true));
             }
         }
 
@@ -260,7 +263,9 @@ public class AddUser {
     }
 
     /**
-     * Builds the list of principals from the policies that we have defined in the groovy scripts.
+     * Builds the list of principals from the policies that we have defined in
+     * the groovy scripts.
+     * 
      * @param user
      * @param bindingMap
      * @param se
@@ -285,41 +290,39 @@ public class AddUser {
             EmailAddress primaryEmail = new EmailAddress();
 
             // init values
-            primaryIdentity.setDomainId(sysConfiguration.getDefaultSecurityDomain());
-            primaryIdentity.setManagedSysId(sysConfiguration.getDefaultManagedSysId());
+            primaryIdentity.setDomainId(sysConfiguration
+                    .getDefaultSecurityDomain());
+            primaryIdentity.setManagedSysId(sysConfiguration
+                    .getDefaultManagedSysId());
 
             try {
                 for (AttributeMap attr : policyAttrMap) {
-                    Policy policy = attr.getAttributePolicy();
-                    String url = policy.getRuleSrcUrl();
-                    if (url != null) {
-                        try {
-                            String output = (String) se
-                                    .execute(bindingMap, url);
-                            String objectType = attr.getMapForObjectType();
-                            if (objectType != null) {
-                                if (objectType.equalsIgnoreCase("PRINCIPAL")) {
-                                    if (attr.getAttributeName()
-                                            .equalsIgnoreCase("PRINCIPAL")) {
-                                    	primaryIdentity.setLogin(output);
-                                    }
-                                    if (attr.getAttributeName()
-                                            .equalsIgnoreCase("PASSWORD")) {
-                                        primaryIdentity.setPassword(output);
-                                    }
-                                    if (attr.getAttributeName()
-                                            .equalsIgnoreCase("DOMAIN")) {
-                                    	primaryIdentity.setDomainId(output);
-                                    }
+                    try {
+                        String output = ProvisionServiceUtil
+                                .getOutputFromAttrMap(attr, bindingMap, se);
+                        String objectType = attr.getMapForObjectType();
+                        if (objectType != null) {
+                            if (objectType.equalsIgnoreCase("PRINCIPAL")) {
+                                if (attr.getAttributeName().equalsIgnoreCase(
+                                        "PRINCIPAL")) {
+                                    primaryIdentity.setLogin(output);
                                 }
-                                if (objectType.equals("EMAIL")) {
-                                    primaryEmail.setEmailAddress(output);
-                                    primaryEmail.setIsDefault(true);
+                                if (attr.getAttributeName().equalsIgnoreCase(
+                                        "PASSWORD")) {
+                                    primaryIdentity.setPassword(output);
+                                }
+                                if (attr.getAttributeName().equalsIgnoreCase(
+                                        "DOMAIN")) {
+                                    primaryIdentity.setDomainId(output);
                                 }
                             }
-                        } catch (ScriptEngineException e) {
-                            log.error(e);
+                            if (objectType.equals("EMAIL")) {
+                                primaryEmail.setEmailAddress(output);
+                                primaryEmail.setIsDefault(true);
+                            }
                         }
+                    } catch (ScriptEngineException e) {
+                        log.error(e);
                     }
                 }
             } catch (Exception e) {
@@ -336,8 +339,9 @@ public class AddUser {
     }
 
     /**
-     * when a request already contains an identity and password has not been setup, this method generates a password 
-     * based on our rules.
+     * when a request already contains an identity and password has not been
+     * setup, this method generates a password based on our rules.
+     * 
      * @param user
      * @param bindingMap
      * @param se
@@ -374,27 +378,23 @@ public class AddUser {
 
             try {
                 for (AttributeMap attr : policyAttrMap) {
-                    Policy policy = attr.getAttributePolicy();
-                    String url = policy.getRuleSrcUrl();
-                    if (url != null) {
-                        try {
-                            String output = (String) se
-                                    .execute(bindingMap, url);
-                            String objectType = attr.getMapForObjectType();
-                            if (objectType != null) {
-                                if (objectType.equalsIgnoreCase("PRINCIPAL")) {
+                    try {
+                        String output = ProvisionServiceUtil
+                                .getOutputFromAttrMap(attr, bindingMap, se);
+                        String objectType = attr.getMapForObjectType();
+                        if (objectType != null) {
+                            if (objectType.equalsIgnoreCase("PRINCIPAL")) {
 
-                                    if (attr.getAttributeName()
-                                            .equalsIgnoreCase("PASSWORD")) {
-                                        primaryIdentity.setPassword(output);
-                                    }
-
+                                if (attr.getAttributeName().equalsIgnoreCase(
+                                        "PASSWORD")) {
+                                    primaryIdentity.setPassword(output);
                                 }
 
                             }
-                        } catch (ScriptEngineException e) {
-                            log.error(e);
+
                         }
+                    } catch (ScriptEngineException e) {
+                        log.error(e);
                     }
                 }
             } catch (Exception e) {
@@ -412,8 +412,9 @@ public class AddUser {
     }
 
     /**
-     * If the user has selected roles that are in multiple domains, we need to make sure that they identities for
-     * each of these domains
+     * If the user has selected roles that are in multiple domains, we need to
+     * make sure that they identities for each of these domains
+     * 
      * @param primaryIdentity
      * @param roleList
      */
@@ -423,8 +424,8 @@ public class AddUser {
             return;
         }
 
-        List<LoginEntity> identityList = loginManager.getLoginByUser(primaryIdentity
-                .getUserId());
+        List<LoginEntity> identityList = loginManager
+                .getLoginByUser(primaryIdentity.getUserId());
 
         for (Role r : roleList) {
 
@@ -437,7 +438,8 @@ public class AddUser {
 
     }
 
-    private boolean identityInDomain(String secDomain, List<LoginEntity> identityList) {
+    private boolean identityInDomain(String secDomain,
+            List<LoginEntity> identityList) {
         for (LoginEntity l : identityList) {
             if (l.getDomainId().equalsIgnoreCase(secDomain)) {
                 return true;
@@ -449,7 +451,8 @@ public class AddUser {
     }
 
     private void addIdentity(String secDomain, Login primaryIdentity) {
-        if (loginManager.getLoginByManagedSys(secDomain, primaryIdentity.getLogin(), primaryIdentity.getManagedSysId()) == null) {
+        if (loginManager.getLoginByManagedSys(secDomain,
+                primaryIdentity.getLogin(), primaryIdentity.getManagedSysId()) == null) {
 
             LoginEntity newLg = new LoginEntity();
             newLg.setDomainId(secDomain);
@@ -461,7 +464,8 @@ public class AddUser {
             newLg.setLastAuthAttempt(primaryIdentity.getLastAuthAttempt());
             newLg.setGracePeriod(primaryIdentity.getGracePeriod());
             newLg.setPassword(primaryIdentity.getPassword());
-            newLg.setPasswordChangeCount(primaryIdentity.getPasswordChangeCount());
+            newLg.setPasswordChangeCount(primaryIdentity
+                    .getPasswordChangeCount());
             newLg.setStatus(primaryIdentity.getStatus());
             newLg.setIsLocked(primaryIdentity.getIsLocked());
             newLg.setUserId(primaryIdentity.getUserId());

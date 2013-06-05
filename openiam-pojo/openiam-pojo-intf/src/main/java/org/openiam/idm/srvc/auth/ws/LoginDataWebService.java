@@ -272,6 +272,16 @@ public interface LoginDataWebService {
             int expDays);
 
     /**
+     *Returns a list of Login objects which are nearing expiry depending on PWD_EXP_WARN password attribute
+     *If attribute unset, default is assumed to be 5. 
+     *
+     * @param 
+     * @return
+     */
+    @WebMethod
+    public LoginListResponse getUsersNearPswdExpiration();
+
+    /**
      * Returns a list of Login objects for the managed system specified by the sysId
      *
      * @param managedSysId

@@ -177,4 +177,11 @@
 			org.openiam.idm.srvc.recon.dto.ReconciliationSituation
 		</class-b>
 	</mapping>
+	<mapping>
+		<class-a>org.openiam.idm.srvc.mngsys.domain.DefaultReconciliationAttributeMapEntity
+		</class-a>
+		<class-b>
+			org.openiam.idm.srvc.mngsys.dto.DefaultReconciliationAttributeMap
+		</class-b>
+	</mapping>
 </mappings>

@@ -395,7 +395,17 @@ public class PasswordServiceImpl implements PasswordService {
         }
         log.info("Using global association password policy.");
         // did not find anything - get the global policy
-        policyAssocEntity = policyObjectAssocDao.findAssociationByLevel(
+        return getGlobalPasswordPolicy();
+    }
+    
+    /**
+     * Returns the global password policy
+     *
+     * @return
+     */
+    public Policy getGlobalPasswordPolicy(){
+    	log.info("Fetching global association password policy.");
+    	PolicyObjectAssocEntity policyAssocEntity = policyObjectAssocDao.findAssociationByLevel(
                 "GLOBAL", "GLOBAL");
         if (policyAssocEntity == null) {
             return null;

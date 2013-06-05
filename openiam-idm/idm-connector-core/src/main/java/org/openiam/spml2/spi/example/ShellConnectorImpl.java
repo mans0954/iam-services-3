@@ -59,22 +59,7 @@ import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.spml2.base.AbstractSpml2Complete;
 import org.openiam.spml2.interf.ConnectorService;
-import org.openiam.spml2.msg.AddRequestType;
-import org.openiam.spml2.msg.AddResponseType;
-import org.openiam.spml2.msg.DeleteRequestType;
-import org.openiam.spml2.msg.ErrorCode;
-import org.openiam.spml2.msg.ExtensibleType;
-import org.openiam.spml2.msg.ListTargetsRequestType;
-import org.openiam.spml2.msg.ListTargetsResponseType;
-import org.openiam.spml2.msg.LookupRequestType;
-import org.openiam.spml2.msg.LookupResponseType;
-import org.openiam.spml2.msg.ModificationType;
-import org.openiam.spml2.msg.ModifyRequestType;
-import org.openiam.spml2.msg.ModifyResponseType;
-import org.openiam.spml2.msg.PSOIdentifierType;
-import org.openiam.spml2.msg.ResponseType;
-import org.openiam.spml2.msg.ReturnDataType;
-import org.openiam.spml2.msg.StatusCodeType;
+import org.openiam.spml2.msg.*;
 import org.openiam.spml2.msg.password.ExpirePasswordRequestType;
 import org.openiam.spml2.msg.password.ResetPasswordRequestType;
 import org.openiam.spml2.msg.password.ResetPasswordResponseType;
@@ -424,6 +409,20 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
         respType.setStatus(StatusCodeType.SUCCESS);
         return respType;
 
+    }
+
+    /*
+    * (non-Javadoc)
+    *
+    * @see org.openiam.spml2.interf.SpmlCore#lookupAttributeNames(org.openiam.spml2.msg.
+    * LookupAttributeRequestType)
+    */
+    public LookupAttributeResponseType lookupAttributeNames(LookupAttributeRequestType reqType){
+        LookupAttributeResponseType respType = new LookupAttributeResponseType();
+        respType.setStatus(StatusCodeType.FAILURE);
+        respType.setError(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION);
+
+        return respType;
     }
 
     private List<String> getAttributeNameList(List<AttributeMap> attrMap) {

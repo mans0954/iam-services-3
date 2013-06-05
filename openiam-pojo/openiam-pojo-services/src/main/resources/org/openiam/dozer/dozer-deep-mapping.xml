@@ -186,10 +186,7 @@
 	<mapping>
 		<class-a>org.openiam.idm.srvc.policy.dto.PolicyDefParam</class-a>
 		<class-b>org.openiam.idm.srvc.policy.dto.PolicyDefParam</class-b>
-		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
-			<a>policyAttributes</a>
-			<b>policyAttributes</b> 
-		</field>
+		
 	</mapping>		
 	<mapping>
 		<class-a>org.openiam.idm.srvc.policy.dto.Policy</class-a>

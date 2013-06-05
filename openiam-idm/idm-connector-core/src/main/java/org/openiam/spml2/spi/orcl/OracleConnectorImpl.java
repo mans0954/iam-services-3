@@ -26,8 +26,15 @@ import javax.jws.WebService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.openiam.spml2.msg.ErrorCode;
+import org.openiam.spml2.msg.LookupAttributeRequestType;
+import org.openiam.spml2.msg.LookupAttributeResponseType;
+import org.openiam.spml2.msg.StatusCodeType;
+import org.openiam.spml2.spi.common.LookupAttributeNamesCommand;
 import org.openiam.spml2.spi.common.jdbc.*;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * Connector shell that can be used to jumpstart the creation of a connector service.
@@ -39,7 +46,21 @@ import org.springframework.beans.factory.InitializingBean;
 		portName = "OracleConnectorServicePort", 
 		serviceName="OracleConnectorService")
 public class OracleConnectorImpl extends AbstractJDBCConnectorImpl {
+    @Autowired
+    @Qualifier("oracleLookupAttributeNamesCommand")
+    protected LookupAttributeNamesCommand lookupAttributeNamesCommand;
 
     private static final Log log = LogFactory.getLog(OracleConnectorImpl.class);
+
+
+    /*
+    * (non-Javadoc)
+    *
+    * @see org.openiam.spml2.interf.SpmlCore#lookupAttributeNames(org.openiam.spml2.msg.
+    * LookupAttributeRequestType)
+    */
+    public LookupAttributeResponseType lookupAttributeNames(LookupAttributeRequestType reqType){
+        return lookupAttributeNamesCommand.lookupAttributeNames(reqType);
+    }
 
 }

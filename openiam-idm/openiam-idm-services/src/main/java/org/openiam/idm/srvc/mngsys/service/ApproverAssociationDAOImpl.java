@@ -27,11 +27,39 @@ public class ApproverAssociationDAOImpl extends BaseDaoImpl<ApproverAssociationE
 	@Override
 	protected Criteria getExampleCriteria(ApproverAssociationEntity entity) {
 		final Criteria criteria = getCriteria();
-		if(StringUtils.isNotBlank(entity.getRequestType())) {
-			criteria.add(Restrictions.eq("requestType", entity.getRequestType()));
-		}
-		if(entity.getApproverLevel() != null) {
-			criteria.add(Restrictions.eq("approverLevel", entity.getApproverLevel()));
+		if(StringUtils.isNotBlank(entity.getId())) {
+			criteria.add(Restrictions.eq("id", entity.getId()));
+		} else {
+			if(entity.getAssociationType() != null) {
+				criteria.add(Restrictions.eq("associationType", entity.getAssociationType()));
+			}
+			if(StringUtils.isNotBlank(entity.getAssociationEntityId())) {
+				criteria.add(Restrictions.eq("associationEntityId", entity.getAssociationEntityId()));
+			}
+			if(StringUtils.isNotBlank(entity.getRequestType())) {
+				criteria.add(Restrictions.eq("requestType", entity.getRequestType()));
+			}
+			if(StringUtils.isNotBlank(entity.getOnApproveEntityId())) {
+				criteria.add(Restrictions.eq("onApproveEntityId", entity.getOnApproveEntityId()));
+			}
+			if(entity.getOnApproveEntityType() != null) {
+				criteria.add(Restrictions.eq("onApproveEntityType", entity.getOnApproveEntityType()));
+			}
+			if(StringUtils.isNotBlank(entity.getOnRejectEntityId())) {
+				criteria.add(Restrictions.eq("onRejectEntityId", entity.getOnRejectEntityId()));
+			}
+			if(entity.getOnRejectEntityType() != null) {
+				criteria.add(Restrictions.eq("onRejectEntityType", entity.getOnRejectEntityType()));
+			}
+			if(StringUtils.isNotBlank(entity.getApproverEntityId())) {
+				criteria.add(Restrictions.eq("approverEntityId", entity.getApproverEntityId()));
+			}
+			if(entity.getApproverEntityType() != null) {
+				criteria.add(Restrictions.eq("approverEntityType", entity.getApproverEntityType()));
+			}
+			if(entity.getApproverLevel() != null) {
+				criteria.add(Restrictions.eq("approverLevel", entity.getApproverLevel()));
+			}
 		}
 		return criteria;
 	}

@@ -20,14 +20,7 @@ import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.spml2.base.AbstractSpml2Complete;
 import org.openiam.spml2.interf.ConnectorService;
-import org.openiam.spml2.msg.AddRequestType;
-import org.openiam.spml2.msg.AddResponseType;
-import org.openiam.spml2.msg.DeleteRequestType;
-import org.openiam.spml2.msg.LookupRequestType;
-import org.openiam.spml2.msg.LookupResponseType;
-import org.openiam.spml2.msg.ModifyRequestType;
-import org.openiam.spml2.msg.ModifyResponseType;
-import org.openiam.spml2.msg.ResponseType;
+import org.openiam.spml2.msg.*;
 import org.openiam.spml2.msg.password.ExpirePasswordRequestType;
 import org.openiam.spml2.msg.password.ResetPasswordRequestType;
 import org.openiam.spml2.msg.password.ResetPasswordResponseType;
@@ -36,6 +29,7 @@ import org.openiam.spml2.msg.password.ValidatePasswordRequestType;
 import org.openiam.spml2.msg.password.ValidatePasswordResponseType;
 import org.openiam.spml2.msg.suspend.ResumeRequestType;
 import org.openiam.spml2.msg.suspend.SuspendRequestType;
+import org.openiam.spml2.spi.common.LookupAttributeNamesCommand;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -49,14 +43,18 @@ public class CSVConnectorImpl extends AbstractSpml2Complete implements
 	private static final Log log = LogFactory.getLog(CSVConnectorImpl.class);
 	@Autowired
 	private AddCSVCommand addCommand;
-	 @Autowired
+	@Autowired
 	private TestCSVCommand testCommand;
-	 @Autowired
+	@Autowired
 	private LookupCSVCommand lookupCommand;
-	 @Autowired
+	@Autowired
 	private ModifyCSVCommand modifyCommand;
-	 @Autowired
+	@Autowired
 	private ReconcileCSVCommand reconCommand;
+    @Autowired
+    @Qualifier("lookupCSVAttributeNamesCommand")
+    private LookupAttributeNamesCommand lookupAttributeNamesCommand;
+
 	@Autowired
 	private ResourceDataService resourceDataService;
 	@Autowired
@@ -143,6 +141,16 @@ public class CSVConnectorImpl extends AbstractSpml2Complete implements
 			@WebParam(name = "reqType", targetNamespace = "") LookupRequestType reqType) {
 		return lookupCommand.lookup(reqType);
 	}
+
+    /*
+    * (non-Javadoc)
+    *
+    * @see org.openiam.spml2.interf.SpmlCore#lookupAttributeNames(org.openiam.spml2.msg.
+    * LookupAttributeRequestType)
+    */
+    public LookupAttributeResponseType lookupAttributeNames(LookupAttributeRequestType reqType){
+        return lookupAttributeNamesCommand.lookupAttributeNames(reqType);
+    }
 
 	@Override
 	@WebMethod(action = "http://www.openiam.org/service/connector/ConnectorService/setPassword")

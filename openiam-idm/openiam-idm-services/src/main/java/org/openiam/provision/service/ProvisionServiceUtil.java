@@ -1,0 +1,49 @@
+package org.openiam.provision.service;
+
+import java.util.List;
+import java.util.Map;
+
+import org.openiam.exception.ScriptEngineException;
+import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
+import org.openiam.idm.srvc.policy.dto.Policy;
+import org.openiam.script.ScriptIntegration;
+
+public class ProvisionServiceUtil {
+    public static String getOutputFromAttrMap(AttributeMap attr,
+            Map<String, Object> bindingMap, ScriptIntegration se)
+            throws ScriptEngineException {
+        String output = "";
+        if (attr.getReconResAttribute().getAttributePolicy() != null) {
+            Policy policy = attr.getReconResAttribute().getAttributePolicy();
+            String url = policy.getRuleSrcUrl();
+            if (url != null) {
+                output = (String) se.execute(bindingMap, url);
+            }
+        } else if (attr.getReconResAttribute().getDefaultAttributePolicy() != null) {
+            output = attr.getReconResAttribute().getDefaultAttributePolicy()
+                    .getDefaultAttributeMapId();
+        }
+        return output;
+    }
+
+    /**
+     * Generate the principalName for a targetSystem
+     * 
+     * @return
+     * @throws ScriptEngineException
+     */
+    public static String buildPrincipalName(List<AttributeMap> attrMap,
+            ScriptIntegration se, Map<String, Object> bindingMap) throws ScriptEngineException {
+        for (AttributeMap attr : attrMap) {
+            String objectType = attr.getMapForObjectType();
+            if (objectType != null) {
+                if (objectType.equalsIgnoreCase("PRINCIPAL")) {
+                    return ProvisionServiceUtil.getOutputFromAttrMap(attr,
+                            bindingMap, se);
+                }
+            }
+
+        }
+        return null;
+    }
+}
