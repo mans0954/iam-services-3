@@ -84,7 +84,7 @@ public abstract class AbstractCSVParser<T, E extends Enum<E>> {
         if (!file.exists()) {
             file.createNewFile();
             FileWriter writer = new FileWriter(file);
-            writer.write(generateHeader(attrMapList, clazz));
+            writer.write(generateHeader(attrMapList));
             writer.flush();
             writer.close();
         }
@@ -92,7 +92,7 @@ public abstract class AbstractCSVParser<T, E extends Enum<E>> {
         BufferedReader br = new BufferedReader(fr);
         if (!StringUtils.hasText(br.readLine())) {
             FileWriter writer = new FileWriter(file);
-            writer.write(generateHeader(attrMapList, clazz));
+            writer.write(generateHeader(attrMapList));
             writer.flush();
             writer.close();
         }
@@ -105,8 +105,7 @@ public abstract class AbstractCSVParser<T, E extends Enum<E>> {
      * @param attrMap
      * @return
      */
-    private String generateHeader(List<AttributeMapEntity> attrMap,
-            Class<E> clazz) {
+    private String generateHeader(List<AttributeMapEntity> attrMap) {
         if (attrMap == null)
             return "";
         StringBuilder sb = new StringBuilder();
@@ -204,7 +203,7 @@ public abstract class AbstractCSVParser<T, E extends Enum<E>> {
             ReconciliationObject<T> obj, Class<E> clazz) {
         List<String> values = new ArrayList<String>(0);
 
-        for (String field : this.generateHeader(attrMap, clazz)
+        for (String field : this.generateHeader(attrMap)
                 .replace(String.valueOf(END_OF_LINE), "")
                 .split(String.valueOf(SEPARATOR))) {
             AttributeMapEntity am = this.findAttributeMapByAttributeName(
@@ -298,7 +297,7 @@ public abstract class AbstractCSVParser<T, E extends Enum<E>> {
     public Map<String, String> convertToMap(List<AttributeMapEntity> attrMap,
             ReconciliationObject<T> obj, Class<E> clazz) {
         String[] values = this.objectToCSV(attrMap, obj, clazz);
-        String[] header_ = this.generateHeader(attrMap, clazz)
+        String[] header_ = this.generateHeader(attrMap)
                 .replace(String.valueOf(END_OF_LINE), "")
                 .split(String.valueOf(SEPARATOR));
         Map<String, String> result = new HashMap<String, String>(0);
@@ -373,7 +372,7 @@ public abstract class AbstractCSVParser<T, E extends Enum<E>> {
         if (this.getCSVFile(managedSys, attrMapList, enumClass, source) != null) {
             String fName = this.getFileName(managedSys, source);
             FileWriter fw = new FileWriter(fName, append);
-            fw.append(this.generateHeader(attrMapList, enumClass));
+            fw.append(this.generateHeader(attrMapList));
             for (ReconciliationObject<T> t : newObjectList) {
                 fw.append(this.mergeValues(this.objectToCSV(attrMapList, t,
                         enumClass)));

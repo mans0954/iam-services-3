@@ -253,8 +253,9 @@ public class ReconciliationServiceImpl implements ReconciliationService,
 
             List<UserEntity> users = new ArrayList<UserEntity>();
             for (ResourceRole rRole : res.getResourceRoles()) {
-                final List<UserEntity> usersInrole = userMgr.getUsersForRole(rRole.getId().getRoleId(), null, 0, Integer.MAX_VALUE);
-               if (CollectionUtils.isNotEmpty(usersInrole)) {
+                final List<UserEntity> usersInrole = userMgr.getUsersForRole(
+                        rRole.getId().getRoleId(), null, 0, Integer.MAX_VALUE);
+                if (CollectionUtils.isNotEmpty(usersInrole)) {
                     users.addAll(usersInrole);
                 }
             }
