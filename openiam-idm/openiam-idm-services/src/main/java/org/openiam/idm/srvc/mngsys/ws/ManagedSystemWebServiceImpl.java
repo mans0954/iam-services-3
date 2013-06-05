@@ -18,6 +18,7 @@ import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.dto.*;
+import org.openiam.idm.srvc.mngsys.searchbeans.converter.ApproverAssocationSearchBeanConverter;
 import org.openiam.idm.srvc.mngsys.searchbeans.converter.ManagedSystemSearchBeanConverter;
 import org.openiam.idm.srvc.mngsys.service.*;
 import org.openiam.idm.srvc.policy.service.PolicyDAO;
@@ -66,6 +67,9 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
 	
 	@Autowired
 	private ApproverAssociationDozerConverter approverAssociationDozerConverter;
+	
+	@Autowired
+	private ApproverAssocationSearchBeanConverter approverSearchBeanConverter;
 
 	private static final Log log = LogFactory
 			.getLog(ManagedSystemWebServiceImpl.class);
@@ -316,6 +320,22 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
 				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
 			}
 			
+			if(approverAssociation.getApproverEntityType() == null) {
+				approverAssociation.setApproverEntityId(null);
+			}
+			
+			if(approverAssociation.getApproverEntityType() == null) {
+				approverAssociation.setApproverEntityId(null);
+			}
+			
+			if(approverAssociation.getOnApproveEntityType() == null) {
+				approverAssociation.setOnApproveEntityId(null);
+			}
+			
+			if(approverAssociation.getOnRejectEntityType() == null) {
+				approverAssociation.setOnRejectEntityId(null);
+			}
+			
 			final ApproverAssociationEntity entity = approverAssociationDozerConverter.convertToEntity(approverAssociation, true);
 			if(StringUtils.isNotBlank(entity.getId())) {
 				approverAssociationDao.merge(entity);
@@ -452,4 +472,14 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
 		return amEList == null ? null : attributeMapDozerConverter
 				.convertToDTOList(amEList, true);
 	}
+
+	@Override
+	public List<ApproverAssociation> getApproverAssociations(
+			ApproverAssocationSearchBean searchBean, int from, int size) {
+		final ApproverAssociationEntity entity = approverSearchBeanConverter.convert(searchBean);
+		final List<ApproverAssociationEntity> entityList = approverAssociationDao.getByExample(entity, from, size);
+		return (entityList != null) ? approverAssociationDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy()) : null;
+	}
+
+	
 }
