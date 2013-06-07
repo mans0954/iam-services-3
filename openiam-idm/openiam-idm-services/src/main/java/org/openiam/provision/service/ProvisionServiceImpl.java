@@ -87,6 +87,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
+import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 import javax.xml.namespace.QName;
@@ -2654,5 +2655,14 @@ public class ProvisionServiceImpl implements ProvisionService,
             @WebParam(name = "passwordSync", targetNamespace = "") PasswordSync passwordSync) {
         return null; // To change body of implemented methods use File |
                      // Settings | File Templates.
+    }
+
+    @Override
+    @WebMethod
+    public List<String> getAttributesList(
+            @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId,
+            @WebParam(name = "config", targetNamespace = "") LookupAttributeRequestType config) {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

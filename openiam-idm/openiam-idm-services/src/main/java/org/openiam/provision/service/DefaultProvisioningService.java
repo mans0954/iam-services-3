@@ -21,6 +21,19 @@
  */
 package org.openiam.provision.service;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.jws.WebMethod;
+import javax.jws.WebService;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -79,15 +92,23 @@ import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptIntegration;
-import org.openiam.spml2.msg.*;
+import org.openiam.spml2.msg.AddRequestType;
+import org.openiam.spml2.msg.AddResponseType;
+import org.openiam.spml2.msg.DeleteRequestType;
+import org.openiam.spml2.msg.LookupAttributeRequestType;
+import org.openiam.spml2.msg.LookupAttributeResponseType;
+import org.openiam.spml2.msg.LookupRequestType;
+import org.openiam.spml2.msg.LookupResponseType;
+import org.openiam.spml2.msg.ModificationType;
+import org.openiam.spml2.msg.ModifyRequestType;
+import org.openiam.spml2.msg.ModifyResponseType;
+import org.openiam.spml2.msg.PSOIdentifierType;
+import org.openiam.spml2.msg.ResponseType;
+import org.openiam.spml2.msg.StatusCodeType;
 import org.openiam.spml2.msg.suspend.ResumeRequestType;
 import org.openiam.spml2.msg.suspend.SuspendRequestType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-
-import javax.jws.WebMethod;
-import javax.jws.WebService;
-import java.util.*;
 
 /**
  * DefaultProvisioningService is responsible for receiving and processing
@@ -3382,4 +3403,18 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         this.deprovisionSelectedResource = deprovisionSelectedResource;
     }
 
+    public List<String> getAttributesList(String mSysId,
+            LookupAttributeRequestType config) {
+        if (mSysId == null)
+            return null;
+        ManagedSysDto msys = managedSysService.getManagedSys(mSysId);
+        if (msys == null)
+            return null;
+        LookupAttributeResponseType response = connectorAdapter
+                .lookupAttributes(msys.getConnectorId(), config, muleContext);
+        if (StatusCodeType.SUCCESS.equals(response.getStatus()))
+            return response.getAttributeList();
+        else
+            return null;
+    }
 }
