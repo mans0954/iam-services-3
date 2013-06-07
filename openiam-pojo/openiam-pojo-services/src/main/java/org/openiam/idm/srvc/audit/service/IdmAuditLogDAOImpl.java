@@ -222,7 +222,6 @@ public class IdmAuditLogDAOImpl extends BaseDaoImpl<IdmAuditLogEntity, String>
             criteria.add(Restrictions.in("actionId", search.getActionList()));
         }
 
-
         List<String> values = new ArrayList<String>();
         List<String> names = new ArrayList<String>();
 
@@ -239,13 +238,18 @@ public class IdmAuditLogDAOImpl extends BaseDaoImpl<IdmAuditLogEntity, String>
             names.add(search.getCustomAttrname2());
         }
 
-        criteria.createAlias("customRecords","cr");
-        if(!values.isEmpty()){
-            criteria.add(Restrictions.in("cr.customName", values));
+        if (!values.isEmpty() || !names.isEmpty()) {
+            criteria.createAlias("customRecords", "cr")
+            .setFetchMode("customRecords", FetchMode.JOIN)
+            .createAlias("customRecords", "cr");
+            if(!values.isEmpty()){
+                criteria.add(Restrictions.in("cr.customName", names));
+            }
+            if(!names.isEmpty()){
+                criteria.add(Restrictions.in("cr.customValue", values));
+            }
         }
-        if(!names.isEmpty()){
-            criteria.add(Restrictions.in("cr.customValue", names));
-        }
+
         criteria.addOrder(Order.asc("actionDatetime"));
         return criteria;
     }
