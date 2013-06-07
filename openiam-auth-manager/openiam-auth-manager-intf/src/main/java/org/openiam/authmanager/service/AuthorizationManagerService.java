@@ -2,12 +2,14 @@ package org.openiam.authmanager.service;
 
 
 import java.net.URL;
+import java.util.List;
 import java.util.Set;
 
 import org.openiam.authmanager.common.model.AuthorizationGroup;
 import org.openiam.authmanager.common.model.AuthorizationResource;
 import org.openiam.authmanager.common.model.AuthorizationRole;
 import org.openiam.authmanager.common.model.AuthorizationManagerLoginId;
+import org.openiam.authmanager.common.model.AuthorizationUser;
 import org.openiam.authmanager.model.ResourceEntitlementToken;
 
 public interface AuthorizationManagerService {
@@ -24,4 +26,9 @@ public interface AuthorizationManagerService {
 	public Set<AuthorizationGroup> getGroupsFor(final AuthorizationManagerLoginId loginId);
 	public Set<AuthorizationRole> getRolesFor(final String userId);
 	public Set<AuthorizationRole> getRolesFor(final AuthorizationManagerLoginId loginId);
+	
+	/*
+	public List<AuthorizationUser> getUsersForRole(final String roleId);
+	public List<AuthorizationUser> getUsersForGroup(final String groupId);
+	*/
 }

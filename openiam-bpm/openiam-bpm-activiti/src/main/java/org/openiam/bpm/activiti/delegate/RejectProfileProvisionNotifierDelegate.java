@@ -16,6 +16,7 @@ import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.bpm.request.RequestorInformation;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
+import org.openiam.idm.srvc.grp.service.UserGroupDAO;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
@@ -28,6 +29,7 @@ import org.openiam.idm.srvc.prov.request.domain.RequestApproverEntity;
 import org.openiam.idm.srvc.prov.request.dto.ProvisionRequest;
 import org.openiam.idm.srvc.prov.request.dto.RequestUser;
 import org.openiam.idm.srvc.prov.request.service.RequestDataService;
+import org.openiam.idm.srvc.role.service.UserRoleDAO;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.Supervisor;
@@ -69,6 +71,12 @@ public class RejectProfileProvisionNotifierDelegate implements JavaDelegate {
 	@Qualifier("userDAO")
 	private UserDAO userDAO;
 	
+	@Autowired
+	private UserRoleDAO userRoleDAO;
+	
+	@Autowired
+	private UserGroupDAO userGroupDAO;
+	
 	public RejectProfileProvisionNotifierDelegate() {
 		SpringContextProvider.autowire(this);
 	}
@@ -77,53 +85,65 @@ public class RejectProfileProvisionNotifierDelegate implements JavaDelegate {
 	public void execute(DelegateExecution execution) throws Exception {
 		final String lastCaller = (String)execution.getVariable(ActivitiConstants.EXECUTOR_ID);
 		final String provisionRequestId = (String)execution.getVariable(ActivitiConstants.PROVISION_REQUEST_ID);
+		final List<String> approverAssociationIds = (List<String>)execution.getVariable(ActivitiConstants.APPROVER_ASSOCIATION_IDS);
+		
+		final Set<String> userIds = new HashSet<String>();
+        final Set<String> emails = new HashSet<String>();
 		
 		final ProvisionRequestEntity provisionRequest = provRequestService.getRequest(provisionRequestId);
 		final NewUserProfileRequestModel profileModel = (NewUserProfileRequestModel)new XStream().fromXML(provisionRequest.getRequestXML());
-		
-		final String requestType = provisionRequest.getRequestType();
-        final List<ApproverAssociationEntity> approverAssociationList = approverAssociationDao.findApproversByRequestType(requestType, 1);
+		if(CollectionUtils.isNotEmpty(profileModel.getEmails())) {
+			for(final EmailAddress address : profileModel.getEmails()) {
+				if(StringUtils.isNotBlank(address.getEmailAddress())) {
+					emails.add(address.getEmailAddress());
+				}
+			}
+		}
+		final List<ApproverAssociationEntity> approverAssociationList = approverAssociationDao.findByIds(approverAssociationIds);
         
-        
-        final Set<String> userIdsToNotify = new HashSet<String>();
-        final Set<String> emailsToNotify = new HashSet<String>();
         for (final ApproverAssociationEntity approverAssociation : approverAssociationList) {
         	AssociationType typeOfUserToNotify = approverAssociation.getOnRejectEntityType();
+        	final String notifyId = approverAssociation.getOnRejectEntityId();
             if (typeOfUserToNotify == null) {
-                typeOfUserToNotify = AssociationType.USER;
+                typeOfUserToNotify = AssociationType.TARGET_USER;
             }
-            if (AssociationType.USER.equals(typeOfUserToNotify)) {
-            	final String notifyUserId = approverAssociation.getOnRejectEntityId();
-                if(StringUtils.isNotBlank(notifyUserId)) {
-                	final UserEntity notifyUser = userDAO.findById(notifyUserId);
-                	if(notifyUser != null) {
-                		userIdsToNotify.add(notifyUser.getUserId());
+            switch(typeOfUserToNotify) {
+            	case GROUP:
+            		final List<String> usersInGroup = userGroupDAO.getUserIdsInGroup(notifyId);
+            		if(CollectionUtils.isNotEmpty(usersInGroup)) {
+            			userIds.addAll(usersInGroup);
+            		}	
+            		break;
+            	case ROLE:
+            		final List<String> usersInRole = userRoleDAO.getUserIdsInRole(notifyId);
+					if(CollectionUtils.isNotEmpty(usersInRole)) {
+						userIds.addAll(usersInRole);
+					}
+            		break;
+            	case SUPERVISOR:
+            		final Supervisor supVisor = profileModel.getUser().getSupervisor();
+                    if (supVisor != null) {
+                    	final String notifyUserId = supVisor.getSupervisor().getUserId();
+                    	if(StringUtils.isNotBlank(notifyUserId)) {
+                    		userIds.add(notifyUserId);
+                    	}
+                    }
+                    break;
+            	case USER:
+            		userIds.add(notifyId);
+            		break;
+            	case TARGET_USER:
+            		break;
+            	default: /* send back to original requestor if none of the above */ 
+            		final String notifyUserId = provisionRequest.getRequestorId();
+                	if(StringUtils.isNotBlank(notifyUserId)) {
+                		userIds.add(notifyUserId);
                 	}
-                }
-            } else if (AssociationType.SUPERVISOR.equals(typeOfUserToNotify)) {
-                final Supervisor supVisor = profileModel.getUser().getSupervisor();
-                if (supVisor != null) {
-                	final String notifyUserId = supVisor.getSupervisor().getUserId();
-                    userIdsToNotify.add(notifyUserId);
-                }
-            } else if(AssociationType.TARGET_USER.equals(typeOfUserToNotify)) {
-            	//notifyUserId = ? /* can't set this - user isn't created on reject, so no ID */
-            	final String notifyEmail = getPrimaryEmail(profileModel.getEmails());
-            	if(StringUtils.isNotBlank(notifyEmail)) {
-            		emailsToNotify.add(notifyEmail);
-            	}
-            } else { /* send back to original requestor if none of the above */ 
-            	final String notifyUserId = provisionRequest.getRequestorId();
-            	if(notifyUserId != null) {
-            		final UserEntity requestor = userDAO.findById(notifyUserId);
-            		if(requestor != null) {
-            			userIdsToNotify.add(requestor.getUserId());
-            		}
-            	}
+            		break;
             }
         }
         final UserEntity requestor = userManager.getUser(lastCaller);
-        sendEmails(requestor, provisionRequest, profileModel.getUser(), userIdsToNotify, emailsToNotify);
+        sendEmails(requestor, provisionRequest, profileModel.getUser(), userIds, emails);
 	}
 	
 	private void sendEmails(final UserEntity requestor, final ProvisionRequestEntity provisionRequest, final User user, final Set<String> userIds, final Set<String> emailAddresses) {

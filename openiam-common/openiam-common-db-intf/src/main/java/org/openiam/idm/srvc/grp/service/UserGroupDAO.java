@@ -44,4 +44,5 @@ public interface UserGroupDAO  extends BaseDao<UserGroupEntity, String>{
     public UserGroupEntity getRecord(final String groupId, final String userId);
     
     public List<String> getUserIdsInGroup(final Collection<String> groupIdList, final int from, final int size);
+    public List<String> getUserIdsInGroup(final String groupId);
 }

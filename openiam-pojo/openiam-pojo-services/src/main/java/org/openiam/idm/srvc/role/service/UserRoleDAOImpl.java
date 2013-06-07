@@ -102,4 +102,10 @@ public class UserRoleDAOImpl extends BaseDaoImpl<UserRoleEntity, String> impleme
 		
 		return criteria.list();
 	}
+
+	@Override
+	public List<String> getUserIdsInRole(String roleId) {
+		final Criteria criteria = getCriteria().add(Restrictions.eq("roleId", roleId)).setProjection(Projections.property("userId"));
+		return criteria.list();
+	}
 }

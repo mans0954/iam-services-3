@@ -15,6 +15,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
+import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
 import org.springframework.stereotype.Repository;
 
@@ -65,15 +66,15 @@ public class ApproverAssociationDAOImpl extends BaseDaoImpl<ApproverAssociationE
 	}
 
 	@Override
-	public List<ApproverAssociationEntity> findApproversByRequestType(String requestType, int level) {
-		final ApproverAssociationEntity example = new ApproverAssociationEntity();
-		example.setRequestType(requestType);
-		example.setApproverLevel(level);
-		return getByExample(example);
+	protected String getPKfieldName() {
+		return "id";
 	}
 
 	@Override
-	protected String getPKfieldName() {
-		return "id";
+	public List<ApproverAssociationEntity> getByAssociation(final String associationId, final AssociationType associationType) {
+		final ApproverAssociationEntity example = new ApproverAssociationEntity();
+		example.setAssociationEntityId(associationId);
+		example.setAssociationType(associationType);
+		return getByExample(example);
 	}
 }

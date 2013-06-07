@@ -333,6 +333,26 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
                 throw new BasicDataServiceException(
                         ResponseCode.OBJECT_NOT_FOUND);
             }
+            
+            if(StringUtils.isBlank(approverAssociation.getApproverEntityId()) || approverAssociation.getApproverEntityType() == null) {
+            	approverAssociation.setApproverEntityId(null);
+            	approverAssociation.setApproverEntityType(null);
+            }
+            
+            if(StringUtils.isBlank(approverAssociation.getOnApproveEntityId()) || approverAssociation.getOnApproveEntityType() == null) {
+            	approverAssociation.setOnApproveEntityId(null);
+            	approverAssociation.setOnApproveEntityType(null);
+            }
+            
+            if(StringUtils.isBlank(approverAssociation.getOnRejectEntityId()) || approverAssociation.getOnRejectEntityType() == null) {
+            	approverAssociation.setOnRejectEntityId(null);
+            	approverAssociation.setOnRejectEntityType(null);
+            }
+            
+            if(StringUtils.isBlank(approverAssociation.getAssociationEntityId()) || approverAssociation.getAssociationType() == null) {
+            	approverAssociation.setAssociationEntityId(null);
+            	approverAssociation.setAssociationType(null);
+            }
 
             final ApproverAssociationEntity entity = approverAssociationDozerConverter
                     .convertToEntity(approverAssociation, true);

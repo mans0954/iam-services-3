@@ -38,9 +38,11 @@ public class AddCandidateUsersTaskListener implements TaskListener {
 			}
 		}
 		
+		/*
 		if(CollectionUtils.isEmpty(candidateUsersIds)) {
 			throw new ActivitiException(String.format("'%s' variable is empty", ActivitiConstants.CANDIDATE_USERS_IDS));
 		}
+		*/
 		
 		for(final String candidateId : candidateUsersIds) {
 			delegateTask.addCandidateUser(candidateId);

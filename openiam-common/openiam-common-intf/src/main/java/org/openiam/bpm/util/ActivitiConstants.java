@@ -11,4 +11,5 @@ public class ActivitiConstants {
 	public static final String TASK_DESCRIPTION = "TaskDescription";
 	public static final String TASK_OWNER = "TaskOwner";
 	public static final String EXECUTOR_ID = "ExecutorId";
+	public static final String APPROVER_ASSOCIATION_IDS = "ApproverAssociationIds";
 }
