@@ -4,300 +4,293 @@ package org.openiam.idm.srvc.mngsys.dto;
 
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysRuleEntity;
 
+import javax.persistence.CascadeType;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
+
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
-
 /**
- * Domain object representing a managed resource. Managed systems include items such as AD, LDAP, etc which are
- * managed by the IDM system. Managed Resource can also be forms
+ * Domain object representing a managed resource. Managed systems include items
+ * such as AD, LDAP, etc which are managed by the IDM system. Managed Resource
+ * can also be forms
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "ManagedSysDto", propOrder = {
-    "managedSysId",
-    "name",
-    "description",
-    "status",
-    "connectorId",
-    "domainId",
-    "hostUrl",
-    "port",
-    "commProtocol",
-    "userId",
-    "pswd",
-    "decryptPassword",
-    "endDate",
-    "startDate",
-    "resourceId",
-    "primaryRepository",
-    "secondaryRepositoryId",
-    "updateSecondary",
-    "mngSysObjectMatchs",
-    "driverUrl",
-    "connectionString",
-    "addHandler",
-    "modifyHandler",
-    "deleteHandler",
-    "passwordHandler",
-    "suspendHandler",
-    "searchHandler",
-    "lookupHandler",
-    "testConnectionHandler",
-    "reconcileResourceHandler",
-    "handler5"
-})
+@XmlType(name = "ManagedSysDto", propOrder = { "managedSysId", "name",
+        "description", "status", "connectorId", "domainId", "hostUrl", "port",
+        "commProtocol", "userId", "pswd", "decryptPassword", "endDate",
+        "startDate", "resourceId", "primaryRepository",
+        "secondaryRepositoryId", "updateSecondary", "mngSysObjectMatchs",
+        "driverUrl", "connectionString", "addHandler", "modifyHandler",
+        "deleteHandler", "passwordHandler", "suspendHandler", "searchHandler",
+        "lookupHandler", "testConnectionHandler", "reconcileResourceHandler",
+        "handler5", "rules" })
 @DozerDTOCorrespondence(ManagedSysEntity.class)
 public class ManagedSysDto implements java.io.Serializable {
 
-	/**
+    /**
 	 * 
 	 */
-	private static final long serialVersionUID = -648884785253890053L;
-	private String managedSysId;
-	private String name;
-	private String description;
-	private String status;
-	private String connectorId;
-	private String domainId;
-	private String hostUrl;
-	private Integer port;
-	private String commProtocol;
-	private String userId;
-	private String pswd;
-	private String decryptPassword;
-	private Date startDate;
+    private static final long serialVersionUID = -648884785253890053L;
+    private String managedSysId;
+    private String name;
+    private String description;
+    private String status;
+    private String connectorId;
+    private String domainId;
+    private String hostUrl;
+    private Integer port;
+    private String commProtocol;
+    private String userId;
+    private String pswd;
+    private String decryptPassword;
+    private Date startDate;
     @XmlSchemaType(name = "dateTime")
-	private Date endDate;
-	private String resourceId;
-	private Integer primaryRepository;
-	private String secondaryRepositoryId;
-	private Integer updateSecondary;
-    private  String driverUrl;
-    private  String connectionString;
-    private  String addHandler;
-    private  String modifyHandler;
-    private  String deleteHandler;
-    private  String passwordHandler;
-    private  String suspendHandler;
-    private  String searchHandler;
-    private  String lookupHandler;
-    private  String testConnectionHandler;
-    private  String reconcileResourceHandler;
-    private  String handler5;
+    private Date endDate;
+    private String resourceId;
+    private Integer primaryRepository;
+    private String secondaryRepositoryId;
+    private Integer updateSecondary;
+    private String driverUrl;
+    private String connectionString;
+    private String addHandler;
+    private String modifyHandler;
+    private String deleteHandler;
+    private String passwordHandler;
+    private String suspendHandler;
+    private String searchHandler;
+    private String lookupHandler;
+    private String testConnectionHandler;
+    private String reconcileResourceHandler;
+    private String handler5;
 
-	//private Set<ApproverAssociation> resourceApprovers = new HashSet<ApproverAssociation>(0);
-	/*
-	private Set<AttributeMap> systemAttributeMap = new HashSet<AttributeMap>(0);
-	*/
-	private Set<ManagedSystemObjectMatch> mngSysObjectMatchs = new HashSet<ManagedSystemObjectMatch>(0);
+    private List<ManagedSysRuleDto> rules = new ArrayList<ManagedSysRuleDto>(0);
 
-	public ManagedSysDto() {
-	}
+    // private Set<ApproverAssociation> resourceApprovers = new
+    // HashSet<ApproverAssociation>(0);
+    /*
+     * private Set<AttributeMap> systemAttributeMap = new
+     * HashSet<AttributeMap>(0);
+     */
+    private Set<ManagedSystemObjectMatch> mngSysObjectMatchs = new HashSet<ManagedSystemObjectMatch>(
+            0);
 
-	public ManagedSysDto(String managedSysId, String connectorId, String domainId) {
-		this.managedSysId = managedSysId;
-		this.connectorId = connectorId;
-		this.domainId = domainId;
-	}
+    public ManagedSysDto() {
+    }
 
-	public ManagedSysDto(String managedSysId, String name, String description, String status, String connectorId, String domainId, String hostUrl, Integer port, String commProtocol, String userId, String pswd, Date startDate, Date endDate) {
-		this.managedSysId = managedSysId;
-		this.name = name;
-		this.description = description;
-		this.status = status;
-		this.connectorId = connectorId;
-		this.domainId = domainId;
-		this.hostUrl = hostUrl;
-		this.port = port;
-		this.commProtocol = commProtocol;
-		this.userId = userId;
-		this.pswd = pswd;
-		this.startDate = startDate;
-		this.endDate = endDate;
-		
-	}
+    public ManagedSysDto(String managedSysId, String connectorId,
+            String domainId) {
+        this.managedSysId = managedSysId;
+        this.connectorId = connectorId;
+        this.domainId = domainId;
+    }
 
-	public String getManagedSysId() {
-		return this.managedSysId;
-	}
+    public ManagedSysDto(String managedSysId, String name, String description,
+            String status, String connectorId, String domainId, String hostUrl,
+            Integer port, String commProtocol, String userId, String pswd,
+            Date startDate, Date endDate) {
+        this.managedSysId = managedSysId;
+        this.name = name;
+        this.description = description;
+        this.status = status;
+        this.connectorId = connectorId;
+        this.domainId = domainId;
+        this.hostUrl = hostUrl;
+        this.port = port;
+        this.commProtocol = commProtocol;
+        this.userId = userId;
+        this.pswd = pswd;
+        this.startDate = startDate;
+        this.endDate = endDate;
 
-	public void setManagedSysId(String managedSysId) {
-		this.managedSysId = managedSysId;
-	}
+    }
 
-	public String getName() {
-		return this.name;
-	}
+    public String getManagedSysId() {
+        return this.managedSysId;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setManagedSysId(String managedSysId) {
+        this.managedSysId = managedSysId;
+    }
 
-	public String getDescription() {
-		return this.description;
-	}
+    public String getName() {
+        return this.name;
+    }
 
-	public void setDescription(String description) {
-		this.description = description;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public String getStatus() {
-		return this.status;
-	}
+    public String getDescription() {
+        return this.description;
+    }
 
-	public void setStatus(String status) {
-		this.status = status;
-	}
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-	public String getConnectorId() {
-		return this.connectorId;
-	}
+    public String getStatus() {
+        return this.status;
+    }
 
-	public void setConnectorId(String connectorId) {
-		this.connectorId = connectorId;
-	}
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
-	public String getDomainId() {
-		return this.domainId;
-	}
+    public String getConnectorId() {
+        return this.connectorId;
+    }
 
-	public void setDomainId(String domainId) {
-		this.domainId = domainId;
-	}
+    public void setConnectorId(String connectorId) {
+        this.connectorId = connectorId;
+    }
 
-	public String getHostUrl() {
-		return this.hostUrl;
-	}
+    public String getDomainId() {
+        return this.domainId;
+    }
 
-	public void setHostUrl(String hostUrl) {
-		this.hostUrl = hostUrl;
-	}
+    public void setDomainId(String domainId) {
+        this.domainId = domainId;
+    }
 
-	public Integer getPort() {
-		return this.port;
-	}
+    public String getHostUrl() {
+        return this.hostUrl;
+    }
 
-	public void setPort(Integer port) {
-		this.port = port;
-	}
+    public void setHostUrl(String hostUrl) {
+        this.hostUrl = hostUrl;
+    }
 
-	public String getCommProtocol() {
-		return this.commProtocol;
-	}
+    public Integer getPort() {
+        return this.port;
+    }
 
-	public void setCommProtocol(String commProtocol) {
-		this.commProtocol = commProtocol;
-	}
+    public void setPort(Integer port) {
+        this.port = port;
+    }
 
-	public String getUserId() {
-		return this.userId;
-	}
+    public String getCommProtocol() {
+        return this.commProtocol;
+    }
 
-	public void setUserId(String userId) {
-		this.userId = userId;
-	}
+    public void setCommProtocol(String commProtocol) {
+        this.commProtocol = commProtocol;
+    }
 
-	public String getPswd() {
-		return this.pswd;
-	}
+    public String getUserId() {
+        return this.userId;
+    }
 
-	public void setPswd(String pswd) {
-		this.pswd = pswd;
-	}
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
 
+    public String getPswd() {
+        return this.pswd;
+    }
 
-	public Date getStartDate() {
-		return this.startDate;
-	}
+    public void setPswd(String pswd) {
+        this.pswd = pswd;
+    }
 
-	public void setStartDate(Date startDate) {
-		this.startDate = startDate;
-	}
+    public Date getStartDate() {
+        return this.startDate;
+    }
 
-	public Date getEndDate() {
-		return this.endDate;
-	}
+    public void setStartDate(Date startDate) {
+        this.startDate = startDate;
+    }
 
-	public void setEndDate(Date endDate) {
-		this.endDate = endDate;
-	}
-	/**
-	 * Return a ManagedSystemObjectMatch for an object type.
-	 * Return null is an object for the specified objectType is not found.
-	 * @param objectType
-	 * @return
-	 */
-	public ManagedSystemObjectMatch getObjectMatchDetailsByType(String objectType) {
-		Set<ManagedSystemObjectMatch> matchSet = getMngSysObjectMatchs();
-		if (matchSet == null || matchSet.isEmpty())
-			return null;
-		Iterator<ManagedSystemObjectMatch> it = matchSet.iterator();
-		while (it.hasNext()) {
-			ManagedSystemObjectMatch match = it.next();
-			if (match.getObjectType().equalsIgnoreCase(objectType)) {
-				return match;
-			}
-		}
-		return null;
-	}
+    public Date getEndDate() {
+        return this.endDate;
+    }
 
+    public void setEndDate(Date endDate) {
+        this.endDate = endDate;
+    }
 
+    /**
+     * Return a ManagedSystemObjectMatch for an object type. Return null is an
+     * object for the specified objectType is not found.
+     * 
+     * @param objectType
+     * @return
+     */
+    public ManagedSystemObjectMatch getObjectMatchDetailsByType(
+            String objectType) {
+        Set<ManagedSystemObjectMatch> matchSet = getMngSysObjectMatchs();
+        if (matchSet == null || matchSet.isEmpty())
+            return null;
+        Iterator<ManagedSystemObjectMatch> it = matchSet.iterator();
+        while (it.hasNext()) {
+            ManagedSystemObjectMatch match = it.next();
+            if (match.getObjectType().equalsIgnoreCase(objectType)) {
+                return match;
+            }
+        }
+        return null;
+    }
 
-	public Set<ManagedSystemObjectMatch> getMngSysObjectMatchs() {
-		return mngSysObjectMatchs;
-	}
+    public Set<ManagedSystemObjectMatch> getMngSysObjectMatchs() {
+        return mngSysObjectMatchs;
+    }
 
-	public void setMngSysObjectMatchs(
-			Set<ManagedSystemObjectMatch> mngSysObjectMatchs) {
-		this.mngSysObjectMatchs = mngSysObjectMatchs;
-	}
+    public void setMngSysObjectMatchs(
+            Set<ManagedSystemObjectMatch> mngSysObjectMatchs) {
+        this.mngSysObjectMatchs = mngSysObjectMatchs;
+    }
 
-	public String getDecryptPassword() {
-		return decryptPassword;
-	}
+    public String getDecryptPassword() {
+        return decryptPassword;
+    }
 
-	public void setDecryptPassword(String decryptPassword) {
-		this.decryptPassword = decryptPassword;
-	}
+    public void setDecryptPassword(String decryptPassword) {
+        this.decryptPassword = decryptPassword;
+    }
 
-	public String getResourceId() {
-		return resourceId;
-	}
+    public String getResourceId() {
+        return resourceId;
+    }
 
-	public void setResourceId(String resourceId) {
-		this.resourceId = resourceId;
-	}
+    public void setResourceId(String resourceId) {
+        this.resourceId = resourceId;
+    }
 
-	public Integer getPrimaryRepository() {
-		return primaryRepository;
-	}
+    public Integer getPrimaryRepository() {
+        return primaryRepository;
+    }
 
-	public void setPrimaryRepository(Integer primaryRepository) {
-		this.primaryRepository = primaryRepository;
-	}
+    public void setPrimaryRepository(Integer primaryRepository) {
+        this.primaryRepository = primaryRepository;
+    }
 
-	public String getSecondaryRepositoryId() {
-		return secondaryRepositoryId;
-	}
+    public String getSecondaryRepositoryId() {
+        return secondaryRepositoryId;
+    }
 
-	public void setSecondaryRepositoryId(String secondaryRepositoryId) {
-		this.secondaryRepositoryId = secondaryRepositoryId;
-	}
+    public void setSecondaryRepositoryId(String secondaryRepositoryId) {
+        this.secondaryRepositoryId = secondaryRepositoryId;
+    }
 
-	public Integer getUpdateSecondary() {
-		return updateSecondary;
-	}
+    public Integer getUpdateSecondary() {
+        return updateSecondary;
+    }
 
-	public void setUpdateSecondary(Integer updateSecondary) {
-		this.updateSecondary = updateSecondary;
-	}
+    public void setUpdateSecondary(Integer updateSecondary) {
+        this.updateSecondary = updateSecondary;
+    }
 
     public String getDriverUrl() {
         return driverUrl;
@@ -397,38 +390,37 @@ public class ManagedSysDto implements java.io.Serializable {
 
     @Override
     public String toString() {
-        return "ManagedSysDto{" +
-                "managedSysId='" + managedSysId + '\'' +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", status='" + status + '\'' +
-                ", connectorId='" + connectorId + '\'' +
-                ", domainId='" + domainId + '\'' +
-                ", hostUrl='" + hostUrl + '\'' +
-                ", port=" + port +
-                ", commProtocol='" + commProtocol + '\'' +
-                ", userId='" + userId + '\'' +
-                ", pswd='" + pswd + '\'' +
-                ", decryptPassword='" + decryptPassword + '\'' +
-                ", startDate=" + startDate +
-                ", endDate=" + endDate +
-                ", resourceId='" + resourceId + '\'' +
-                ", primaryRepository=" + primaryRepository +
-                ", secondaryRepositoryId='" + secondaryRepositoryId + '\'' +
-                ", updateSecondary=" + updateSecondary +
-                ", driverUrl='" + driverUrl + '\'' +
-                ", connectionString='" + connectionString + '\'' +
-                ", addHandler='" + addHandler + '\'' +
-                ", modifyHandler='" + modifyHandler + '\'' +
-                ", deleteHandler='" + deleteHandler + '\'' +
-                ", passwordHandler='" + passwordHandler + '\'' +
-                ", suspendHandler='" + suspendHandler + '\'' +
-                ", searchHandler='" + searchHandler + '\'' +
-                ", lookupHandler='" + lookupHandler + '\'' +
-                ", testConnectionHandler='" + testConnectionHandler + '\'' +
-                ", reconcileResourceHandler='" + reconcileResourceHandler + '\'' +
-                ", handler5='" + handler5 + '\'' +
-                ", mngSysObjectMatchs=" + mngSysObjectMatchs +
-                '}';
+        return "ManagedSysDto{" + "managedSysId='" + managedSysId + '\''
+                + ", name='" + name + '\'' + ", description='" + description
+                + '\'' + ", status='" + status + '\'' + ", connectorId='"
+                + connectorId + '\'' + ", domainId='" + domainId + '\''
+                + ", hostUrl='" + hostUrl + '\'' + ", port=" + port
+                + ", commProtocol='" + commProtocol + '\'' + ", userId='"
+                + userId + '\'' + ", pswd='" + pswd + '\''
+                + ", decryptPassword='" + decryptPassword + '\''
+                + ", startDate=" + startDate + ", endDate=" + endDate
+                + ", resourceId='" + resourceId + '\'' + ", primaryRepository="
+                + primaryRepository + ", secondaryRepositoryId='"
+                + secondaryRepositoryId + '\'' + ", updateSecondary="
+                + updateSecondary + ", driverUrl='" + driverUrl + '\''
+                + ", connectionString='" + connectionString + '\''
+                + ", addHandler='" + addHandler + '\'' + ", modifyHandler='"
+                + modifyHandler + '\'' + ", deleteHandler='" + deleteHandler
+                + '\'' + ", passwordHandler='" + passwordHandler + '\''
+                + ", suspendHandler='" + suspendHandler + '\''
+                + ", searchHandler='" + searchHandler + '\''
+                + ", lookupHandler='" + lookupHandler + '\''
+                + ", testConnectionHandler='" + testConnectionHandler + '\''
+                + ", reconcileResourceHandler='" + reconcileResourceHandler
+                + '\'' + ", handler5='" + handler5 + '\''
+                + ", mngSysObjectMatchs=" + mngSysObjectMatchs + '}';
+    }
+
+    public List<ManagedSysRuleDto> getRules() {
+        return rules;
+    }
+
+    public void setRules(List<ManagedSysRuleDto> rules) {
+        this.rules = rules;
     }
 }

@@ -8,8 +8,10 @@ import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -87,6 +89,18 @@ public class ManagedSysEntity implements Serializable {
     @JoinColumn(name = "MANAGED_SYS_ID", referencedColumnName = "MANAGED_SYS_ID")
     private Set<ManagedSystemObjectMatchEntity> mngSysObjectMatchs = new HashSet<ManagedSystemObjectMatchEntity>(
             0);
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "MANAGED_SYS_ID", referencedColumnName = "MANAGED_SYS_ID")
+    private List<ManagedSysRuleEntity> rules = new ArrayList<ManagedSysRuleEntity>(
+            0);
+
+    public List<ManagedSysRuleEntity> getRules() {
+        return rules;
+    }
+
+    public void setRules(List<ManagedSysRuleEntity> rules) {
+        this.rules = rules;
+    }
 
     public String getManagedSysId() {
         return managedSysId;
