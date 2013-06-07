@@ -150,6 +150,15 @@ public interface LoginDataService {
     public List<LoginEntity> getUserNearPswdExpiration(int expDays);
 
     /**
+     *Returns a list of Login objects which are nearing expiry depending on PWD_EXP_WARN password attribute
+     *If attribute unset, default is assumed to be 5. 
+     *
+     * @param 
+     * @return
+     */
+    public List<LoginEntity> getUsersNearPswdExpiration();
+
+    /**
      * List of users whose passworss are expiring today
      *
      * @return

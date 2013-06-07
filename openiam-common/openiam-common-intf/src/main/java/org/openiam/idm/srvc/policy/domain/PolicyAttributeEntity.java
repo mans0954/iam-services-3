@@ -41,6 +41,17 @@ public class PolicyAttributeEntity implements java.io.Serializable, Comparable<P
 	private String value1;
 	@Column(name = "VALUE2", length = 255)
 	private String value2;
+	@Column(name = "REQUIRED", length = 1)
+	private String required;
+
+	public String getRequired() {
+		return required;
+	}
+
+	public void setRequired(String required) {
+		this.required = required;
+	}
+
 	@Column(name = "RULE_TEXT")
 	private String rule;
 
@@ -50,6 +61,8 @@ public class PolicyAttributeEntity implements java.io.Serializable, Comparable<P
     public PolicyAttributeEntity(String policyAttrId) {
         this.policyAttrId = policyAttrId;
     }
+    
+    
 
     public String getPolicyAttrId() {
         return this.policyAttrId;
@@ -116,18 +129,13 @@ public class PolicyAttributeEntity implements java.io.Serializable, Comparable<P
     }
 
     @Override
-    public String toString() {
-        return "PolicyAttribute{" +
-                "policyAttrId='" + policyAttrId + '\'' +
-                ", policyId='" + policyId + '\'' +
-                ", defParamId='" + defParamId + '\'' +
-                ", name='" + name + '\'' +
-                ", operation='" + operation + '\'' +
-                ", value1='" + value1 + '\'' +
-                ", value2='" + value2 + '\'' +
-                ", rule='" + rule + '\'' +
-                '}';
-    }
+	public String toString() {
+		return "PolicyAttributeEntity [policyAttrId=" + policyAttrId
+				+ ", policyId=" + policyId + ", defParamId=" + defParamId
+				+ ", name=" + name + ", operation=" + operation + ", value1="
+				+ value1 + ", value2=" + value2 + ", required="
+				+ required + ", rule=" + rule + "]";
+	}
 
     public int compareTo(PolicyAttributeEntity o) {
         if (getName() == null || o == null) {
@@ -158,6 +166,7 @@ public class PolicyAttributeEntity implements java.io.Serializable, Comparable<P
 		result = prime * result + ((rule == null) ? 0 : rule.hashCode());
 		result = prime * result + ((value1 == null) ? 0 : value1.hashCode());
 		result = prime * result + ((value2 == null) ? 0 : value2.hashCode());
+		result = prime * result + ((required == null) ? 0 : required.hashCode());
 		return result;
 	}
 
@@ -214,6 +223,11 @@ public class PolicyAttributeEntity implements java.io.Serializable, Comparable<P
 			if (other.value2 != null)
 				return false;
 		} else if (!value2.equals(other.value2))
+			return false;
+		if (required == null){
+			if(other.required != null)
+				return false;
+		}else if (!required.equals(other.required))
 			return false;
 		return true;
 	}

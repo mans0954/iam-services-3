@@ -110,6 +110,20 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete implements Connec
         }
     }
 
+    /*
+* (non-Javadoc)
+*
+* @see org.openiam.spml2.interf.SpmlCore#lookupAttributeNames(org.openiam.spml2.msg.
+* LookupAttributeRequestType)
+*/
+    public LookupAttributeResponseType lookupAttributeNames(LookupAttributeRequestType reqType){
+        LookupAttributeResponseType respType = new LookupAttributeResponseType();
+        respType.setStatus(StatusCodeType.FAILURE);
+        respType.setError(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION);
+
+        return respType;
+    }
+
     public ModifyResponseType modify(ModifyRequestType reqType) {
         String targetID = reqType.getPsoID().getTargetID();
         ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);

@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Logger;
+import org.openiam.authmanager.common.model.AuthorizationUser;
+import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
@@ -40,6 +43,7 @@ import org.openiam.bpm.response.TaskListWrapper;
 import org.openiam.bpm.response.TaskWrapper;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.bpm.util.ActivitiRequestType;
+import org.openiam.idm.srvc.grp.service.UserGroupDAO;
 import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
 import org.openiam.idm.srvc.meta.exception.PageTemplateException;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
@@ -55,6 +59,8 @@ import org.openiam.idm.srvc.prov.request.service.RequestDataService;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
+import org.openiam.idm.srvc.role.domain.UserRoleEntity;
+import org.openiam.idm.srvc.role.service.UserRoleDAO;
 import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.Supervisor;
@@ -69,6 +75,7 @@ import org.openiam.provision.service.ProvisionService;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -117,6 +124,15 @@ public class ActivitiServiceImpl implements ActivitiService {
 	@Autowired
 	private UserProfileService userProfileService;
 	
+	@Autowired
+	private AuthorizationManagerService authManagerService;
+	
+	@Autowired
+	private UserRoleDAO userRoleDAO;
+	
+	@Autowired
+	private UserGroupDAO userGroupDAO;
+	
 	private static final Comparator<Task> taskCreatedTimeComparator = new TaskCreateDateSorter();
 
 	@Override
@@ -125,9 +141,9 @@ public class ActivitiServiceImpl implements ActivitiService {
 		return "Hello";
 	}
 	
-	//TODO:  This was moved from the SelfService NewHireController to replicate the logic.  Why is it "254"?
-	private static final String NEW_HIRE_REQUEST_TYPE = "254";
-
+	@Value("${org.openiam.idm.activiti.new.user.resource.name}")
+	private String newUserResourceProtectingName;
+	
 	@Override
 	@WebMethod
 	public SaveTemplateProfileResponse initiateNewHireRequest(final NewUserProfileRequestModel request) {
@@ -149,42 +165,72 @@ public class ActivitiServiceImpl implements ActivitiService {
 	        boolean applyDelegationFilter = false;
 	        
 	        /* get a list of approvers for this request type */
-			final List<ApproverAssociationEntity> approverAssocationList = approverAssociationDao.findApproversByRequestType(NEW_HIRE_REQUEST_TYPE, 1);
-	        if (CollectionUtils.isNotEmpty(approverAssocationList)) {
-	            for (final ApproverAssociationEntity approverAssociation : approverAssocationList) {
-	            	AssociationType approverType = null;
-	                String approverId = null;
-	                if (approverAssociation != null) {
-	                    approverType = approverAssociation.getApproverEntityType();
-	                    if(approverType != null) {
-	                    	switch(approverType) {
-	                    		case SUPERVISOR:
-	                    			final Supervisor supVisor = provisionUser.getSupervisor();
-	    	                        approverId = supVisor.getSupervisor().getUserId();
-	                    			break;
-	                    		case ROLE:
-	                    			approverId = approverAssociation.getApproverEntityId();
-	                    			approverRole = approverAssociation.getApproverEntityId();
-	                    			applyDelegationFilter = approverAssociation.isApplyDelegationFilter();
-	    	                        if (StringUtils.isNotBlank(provisionUser.getCompanyId())) {
-	    	                            userOrg = provisionUser.getCompanyId();
-	    	                        }
-	                    			break;
-	                    		default:
-	                    			approverId = approverAssociation.getApproverEntityId();
-	                    			break;
-	                    	}
-	                    }
-	
-	                    /* add the approver to the list */
-	                    final RequestApproverEntity reqApprover = new RequestApproverEntity(approverId, approverAssociation.getApproverLevel(), approverType.getValue(), "PENDING");
-	                    reqApprover.setApproverType(approverType.getValue());
-	                    provisionRequest.addRequestApprover(reqApprover);
-	                }
-	
-	            }
+	        final ResourceEntity protectingResource = resourceDao.findByName(newUserResourceProtectingName);
+	        if(protectingResource == null) {
+	        	throw new ActivitiException(String.format("Resoruce with name '%s' not found - can't continue", newUserResourceProtectingName));
 	        }
 	        
+	        final List<String> approverAssociationIds = new LinkedList<String>();
+        	final List<ApproverAssociationEntity> approverAssocationList = approverAssociationDao.getByAssociation(protectingResource.getResourceId(), AssociationType.RESOURCE);
+        	if (CollectionUtils.isNotEmpty(approverAssocationList)) {
+        		for (final ApproverAssociationEntity approverAssociation : approverAssocationList) {
+        			approverAssociationIds.add(approverAssociation.getId());
+        			if (approverAssociation != null) {
+        				final Set<String> approverUserIds = new HashSet<String>();
+        				final AssociationType approverType = approverAssociation.getApproverEntityType();
+        				final String approverId = approverAssociation.getApproverEntityId();;
+        				if(approverType != null) {
+        					switch(approverType) {
+        						case SUPERVISOR:
+                    				final Supervisor supVisor = provisionUser.getSupervisor();
+                    				if(supVisor != null) {
+                    					final String userId = supVisor.getSupervisor().getUserId();
+                    					if(StringUtils.isNotBlank(userId)) {
+                    						approverUserIds.add(userId);
+                    					}
+                    				}
+                    				break;
+        						case ROLE:
+        							if(StringUtils.isNotBlank(approverId)) {
+        								approverRole = approverId;
+        								applyDelegationFilter = approverAssociation.isApplyDelegationFilter();
+        								if (StringUtils.isNotBlank(provisionUser.getCompanyId())) {
+        									userOrg = provisionUser.getCompanyId();
+        								}
+        								
+        								final List<String> authUsers = userRoleDAO.getUserIdsInRole(approverId);
+        								if(CollectionUtils.isNotEmpty(authUsers)) {
+        									approverUserIds.addAll(authUsers);
+        								}
+        							}
+        							break;
+        						case GROUP:
+        							if(StringUtils.isNotBlank(approverId)) {
+        								final List<String> authUsers = userGroupDAO.getUserIdsInGroup(approverId);
+        								if(CollectionUtils.isNotEmpty(authUsers)) {
+                							approverUserIds.addAll(authUsers);
+                						}
+        							}
+        							break;
+        						case USER:
+        							if(StringUtils.isNotBlank(approverId)) {
+        								approverUserIds.add(approverId);
+        							}
+        							break;
+        						default:
+        							break;
+        					}
+        				}
+
+        				for(final String userId : approverUserIds) {
+        					/* add the approver to the list */
+        					final RequestApproverEntity reqApprover = new RequestApproverEntity(userId, approverAssociation.getApproverLevel(), approverType.getValue(), "PENDING");
+        					reqApprover.setApproverType(approverType.getValue());
+        					provisionRequest.addRequestApprover(reqApprover);
+        				}
+        			}
+        		}
+        	}
 	        /* based on the roleapprovers, add teh users as candidate approvers */
 	        final List<String> requestApproverIds = new LinkedList<String>();
 	        if(CollectionUtils.isNotEmpty(provisionRequest.getRequestApprovers())) {
@@ -202,14 +248,11 @@ public class ActivitiServiceImpl implements ActivitiService {
 			/* populate the provision request with required values */
 			final Date currentDate = new Date();
 			final String xml = new XStream().toXML(request);
-			final ResourceEntity newUserResource = resourceDao.findById(NEW_HIRE_REQUEST_TYPE);
 			provisionRequest.setRequestXML(xml);
 			provisionRequest.setStatus("PENDING");
 			provisionRequest.setStatusDate(currentDate);
 			provisionRequest.setRequestDate(currentDate);
-			provisionRequest.setRequestType(newUserResource.getResourceId());
-			provisionRequest.setRequestType(NEW_HIRE_REQUEST_TYPE);
-			provisionRequest.setRequestReason(String.format("%s FOR %s %s", newUserResource.getDescription(), provisionUser.getFirstName(), provisionUser.getLastName()));
+			provisionRequest.setRequestReason(String.format("%s FOR %s %s", protectingResource.getDescription(), provisionUser.getFirstName(), provisionUser.getLastName()));
 			provisionRequest.setRequestorId(request.getRequestorUserId());
 			if(StringUtils.isNotBlank(provisionUser.getCompanyId())) {
 				provisionRequest.setRequestForOrgId(provisionUser.getCompanyId());
@@ -230,6 +273,7 @@ public class ActivitiServiceImpl implements ActivitiService {
 			
 			/* pass required variables to Activiti, and start the process */
 			final Map<String, Object> variables = new HashMap<String, Object>();
+			variables.put(ActivitiConstants.APPROVER_ASSOCIATION_IDS, approverAssociationIds);
 			variables.put(ActivitiConstants.PROVISION_REQUEST_ID, provisionRequest.getId());
 			variables.put(ActivitiConstants.DELEGATION_FILTER_SEARCH, delegationFilterSearch);
 			variables.put(ActivitiConstants.CANDIDATE_USERS_IDS, requestApproverIds);

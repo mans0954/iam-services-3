@@ -397,4 +397,27 @@
 			<b>situationSet</b>
 		</field-exclude>
 	</mapping>
+	<mapping>
+		<class-a>org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity
+		</class-a>
+		<class-b>org.openiam.idm.srvc.mngsys.dto.AttributeMap</class-b>
+		<field-exclude>
+			<a>reconResAttribute</a>
+			<b>reconResAttribute</b>
+		</field-exclude>
+	</mapping>
+	<mapping>
+		<class-a>org.openiam.idm.srvc.mngsys.domain.ReconciliationResourceAttributeMapEntity
+		</class-a>
+		<class-b>org.openiam.idm.srvc.mngsys.dto.ReconciliationResourceAttributeMap
+		</class-b>
+		<field-exclude>
+			<a>attributePolicy</a>
+			<b>attributePolicy</b>
+		</field-exclude>
+		<field-exclude>
+			<a>defaultAttributePolicy</a>
+			<b>defaultAttributePolicy</b>
+		</field-exclude>
+	</mapping>
 </mappings>

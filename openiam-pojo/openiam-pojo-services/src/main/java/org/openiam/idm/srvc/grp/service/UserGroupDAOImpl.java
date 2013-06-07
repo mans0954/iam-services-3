@@ -66,4 +66,10 @@ public class UserGroupDAOImpl extends BaseDaoImpl<UserGroupEntity, String> imple
 		
 		return criteria.list();
 	}
+
+	@Override
+	public List<String> getUserIdsInGroup(String groupId) {
+		final Criteria criteria = getCriteria().add(Restrictions.eq("grpId", groupId)).setProjection(Projections.property("userId"));
+		return criteria.list();
+	}
 }

@@ -13,6 +13,8 @@ import org.apache.log4j.Logger;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
+import org.openiam.idm.srvc.continfo.dto.EmailAddress;
+import org.openiam.idm.srvc.grp.service.UserGroupDAO;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
@@ -22,6 +24,7 @@ import org.openiam.idm.srvc.msg.service.MailService;
 import org.openiam.idm.srvc.prov.request.domain.ProvisionRequestEntity;
 import org.openiam.idm.srvc.prov.request.domain.RequestApproverEntity;
 import org.openiam.idm.srvc.prov.request.service.RequestDataService;
+import org.openiam.idm.srvc.role.service.UserRoleDAO;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
@@ -55,6 +58,12 @@ public class AcceptProfileProvisionNotifierDelegate implements JavaDelegate {
 	private LoginDataService loginDS;
 	
 	@Autowired
+	private UserRoleDAO userRoleDAO;
+	
+	@Autowired
+	private UserGroupDAO userGroupDAO;
+	
+	@Autowired
 	@Qualifier("provRequestService")
 	private RequestDataService provRequestService;
 	
@@ -67,42 +76,65 @@ public class AcceptProfileProvisionNotifierDelegate implements JavaDelegate {
 		final String lastCaller = (String)execution.getVariable(ActivitiConstants.EXECUTOR_ID);
 		final String provisionRequestId = (String)execution.getVariable(ActivitiConstants.PROVISION_REQUEST_ID);
 		final String newUserId = (String)execution.getVariable(ActivitiConstants.NEW_USER_ID);
+		final List<String> approverAssociationIds = (List<String>)execution.getVariable(ActivitiConstants.APPROVER_ASSOCIATION_IDS);
 		
 		final UserEntity newUser = userManager.getUser(newUserId);
 		
-		final ProvisionRequestEntity provisionRequest = provRequestService.getRequest(provisionRequestId);
-        
-        final String requestType = provisionRequest.getRequestType();
-        final List<ApproverAssociationEntity> approverAssociationList = approverAssociationDao.findApproversByRequestType(requestType, 1);
-
         /* notify the approvers */
         final Set<String> userIds = new HashSet<String>();
         final Set<String> emails = new HashSet<String>();
         
+        userIds.add(newUserId);
+		
+		final ProvisionRequestEntity provisionRequest = provRequestService.getRequest(provisionRequestId);
+		final String requestorId = provisionRequest.getRequestorId();
+        
+        final List<ApproverAssociationEntity> approverAssociationList = approverAssociationDao.findByIds(approverAssociationIds);
+        
         for (final ApproverAssociationEntity approverAssociation : approverAssociationList) {
         	AssociationType typeOfUserToNotify = approverAssociation.getOnApproveEntityType();
-            if (typeOfUserToNotify == null) {
-            	typeOfUserToNotify = AssociationType.USER;
-            }
-            //String notifyEmail = null;
-            if (AssociationType.USER.equals(typeOfUserToNotify)) {
-                final String notifyUserId = approverAssociation.getOnApproveEntityId();
-                if(notifyUserId != null) {
-                	userIds.add(notifyUserId);
-                }
-            } else if(AssociationType.SUPERVISOR.equals(typeOfUserToNotify)) {
-            	final List<SupervisorEntity> supervisors = userManager.getSupervisors(newUserId);
-                if (CollectionUtils.isNotEmpty(supervisors)) {
-                	for(final SupervisorEntity supervisorEntity : supervisors) {
-                		if(supervisorEntity != null && supervisorEntity.getSupervisor() != null) {
-                			final String notifyUserId = supervisorEntity.getSupervisor().getUserId();
-                			if(notifyUserId != null) {
-                				userIds.add(notifyUserId);
-                			}
-                		}
-                	}
-                }
-            }
+        	final String notifyId = approverAssociation.getOnApproveEntityId();
+        	if(StringUtils.isNotBlank(notifyId)) {
+	            if (typeOfUserToNotify == null) {
+	            	typeOfUserToNotify = AssociationType.TARGET_USER;
+	            }
+	            
+	            switch(typeOfUserToNotify) {
+	            	case GROUP:
+	            		final List<String> usersInGroup = userGroupDAO.getUserIdsInGroup(notifyId);
+						if(CollectionUtils.isNotEmpty(usersInGroup)) {
+							userIds.addAll(usersInGroup);
+						}
+	            		break;
+	            	case ROLE:
+	            		final List<String> usersInRole = userRoleDAO.getUserIdsInRole(notifyId);
+						if(CollectionUtils.isNotEmpty(usersInRole)) {
+							userIds.addAll(usersInRole);
+						}
+	            		break;
+	            	case SUPERVISOR:
+	            		final List<SupervisorEntity> supervisors = userManager.getSupervisors(newUserId);
+	                    if (CollectionUtils.isNotEmpty(supervisors)) {
+	                    	for(final SupervisorEntity supervisorEntity : supervisors) {
+	                    		if(supervisorEntity != null && supervisorEntity.getSupervisor() != null) {
+	                    			final String notifyUserId = supervisorEntity.getSupervisor().getUserId();
+	                    			if(notifyUserId != null) {
+	                    				userIds.add(notifyUserId);
+	                    			}
+	                    		}
+	                    	}
+	                    }
+	            		break;
+	            	case TARGET_USER:
+	            		userIds.add(newUserId);
+	            		break;
+	            	case USER:
+	            		userIds.add(notifyId);
+	            		break;
+	            	default:
+	            		break;
+	            }
+        	}
         }
         
         /* if there's no approver to notify, send it to the original user */

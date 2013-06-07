@@ -816,4 +816,50 @@ public class AuthorizationManagerServiceImpl implements AuthorizationManagerServ
 		sweep();
 		//service.submit(this);
 	}
+
+	/*
+	@Override
+	public List<AuthorizationUser> getUsersForRole(String roleId) {
+		final AuthorizationRole role = new AuthorizationRole();
+		role.setId(roleId);
+		final List<AuthorizationUser> users = new LinkedList<AuthorizationUser>();
+		final List<Object> keys = userCache.getKeys();
+		if(keys != null && StringUtils.isNotBlank(roleId)) {
+			for(final Object key : keys) {
+				final Element element = userCache.get(key);
+				if(element != null) {
+					final AuthorizationUser user = (AuthorizationUser)element.getValue();
+					if(user != null) {
+						if(user.isMemberOf(role)) {
+							users.add(user);
+						}
+					}
+				}
+			}
+		}
+		return users;
+	}
+
+	@Override
+	public List<AuthorizationUser> getUsersForGroup(String groupId) {
+		final AuthorizationGroup group = new AuthorizationGroup();
+		group.setId(groupId);
+		final List<AuthorizationUser> users = new LinkedList<AuthorizationUser>();
+		final List<Object> keys = userCache.getKeys();
+		if(keys != null && StringUtils.isNotBlank(groupId)) {
+			for(final Object key : keys) {
+				final Element element = userCache.get(key);
+				if(element != null) {
+					final AuthorizationUser user = (AuthorizationUser)element.getValue();
+					if(user != null) {
+						if(user.isMemberOf(group)) {
+							users.add(user);
+						}
+					}
+				}
+			}
+		}
+		return users;
+	}
+	*/
 }

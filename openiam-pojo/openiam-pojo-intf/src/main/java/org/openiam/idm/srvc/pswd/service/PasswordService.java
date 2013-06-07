@@ -116,6 +116,13 @@ public interface PasswordService {
     Policy getPasswordPolicy(String domainId, String principal, String managedSysId);
 
     /**
+     * Returns the global password policy
+     *
+     * @return
+     */
+    Policy getGlobalPasswordPolicy();
+
+    /**
      * Gets the password policy based on the User object
      * @param domainId
      * @param user

@@ -40,4 +40,5 @@ public interface UserRoleDAO extends BaseDao<UserRoleEntity, String> {
     public void deleteByUserId(final String userId);
     
     public List<String> getUserIdsInRole(final Collection<String> roleIdList, final int from, final int size);
+    public List<String> getUserIdsInRole(final String roleId);
 }

@@ -33,6 +33,13 @@ import org.openiam.idm.srvc.policy.domain.PolicyDefParamEntity;
 public interface PolicyDefParamDAO extends
         BaseDao<PolicyDefParamEntity, String> {
 
+    /**
+     * Find policy def param by group.
+     *
+     * @param defId the def id
+     * @param group the group
+     * @return the list
+     */
     List<PolicyDefParamEntity> findPolicyDefParamByGroup(String defId,
             String group);
 }
