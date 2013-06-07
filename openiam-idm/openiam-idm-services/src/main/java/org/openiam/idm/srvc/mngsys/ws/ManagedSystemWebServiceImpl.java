@@ -353,6 +353,10 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
             	approverAssociation.setAssociationEntityId(null);
             	approverAssociation.setAssociationType(null);
             }
+            
+            if(approverAssociation.getApproverEntityType() == null || StringUtils.isBlank(approverAssociation.getApproverEntityId())) {
+            	throw new BasicDataServiceException(ResponseCode.REQUEST_APPROVERS_NOT_SET);
+            }
 
             final ApproverAssociationEntity entity = approverAssociationDozerConverter
                     .convertToEntity(approverAssociation, true);

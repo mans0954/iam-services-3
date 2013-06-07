@@ -239,6 +239,10 @@ public class ActivitiServiceImpl implements ActivitiService {
 	        	}
 	        }
 	        
+	        if(CollectionUtils.isEmpty(requestApproverIds)) {
+	        	throw new BasicDataServiceException(ResponseCode.NO_REQUEST_APPROVERS);
+	        }
+	        
 			/* set provision user fields before saving request */
 			provisionUser.setUserId(null);
 			provisionUser.setCreateDate(new Date());
