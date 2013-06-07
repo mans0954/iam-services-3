@@ -30,6 +30,7 @@ import javax.jws.WebService;
 
 import org.openiam.base.ws.Response;
 import org.openiam.idm.srvc.policy.domain.PolicyEntity;
+import org.openiam.idm.srvc.policy.domain.PolicyObjectAssocEntity;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyDef;
 import org.openiam.idm.srvc.policy.dto.PolicyDefParam;
@@ -93,5 +94,20 @@ public interface PolicyDataService {
 	List<PolicyDefParam> getAllPolicyAttributes(String policyDefId, String pswdGroup);
 	
 	
+	/**
+	 * Gets the associations for policy.
+	 *
+	 * @param policyId the policy id
+	 * @return the associations for policy
+	 */
+	List<PolicyObjectAssoc> getAssociationsForPolicy(String policyId);
+	
+	/**
+	 * Save policy assoc.
+	 *
+	 * @param poa the PolicyObjectAssoc
+	 * @return the response
+	 */
+	Response savePolicyAssoc(PolicyObjectAssoc poa);
 
 }
