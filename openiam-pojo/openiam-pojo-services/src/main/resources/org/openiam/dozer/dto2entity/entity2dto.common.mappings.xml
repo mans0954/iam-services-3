@@ -123,12 +123,17 @@
 		<class-b>org.openiam.idm.srvc.audit.dto.IdmAuditLogCustom</class-b>
 	</mapping>
 	<mapping>
+		<class-a>org.openiam.idm.srvc.mngsys.domain.ManagedSysRuleEntity
+		</class-a>
+		<class-b>org.openiam.idm.srvc.mngsys.dto.ManagedSysRuleDto
+		</class-b>
+	</mapping>
+	<mapping>
 		<class-a>org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity
 		</class-a>
 		<class-b>org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch
 		</class-b>
 	</mapping>
-
 	<mapping>
 		<class-a>org.openiam.idm.srvc.secdomain.domain.SecurityDomainEntity
 		</class-a>

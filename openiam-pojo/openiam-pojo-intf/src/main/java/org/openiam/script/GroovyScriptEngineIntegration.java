@@ -18,30 +18,31 @@
 
 package org.openiam.script;
 
-import groovy.lang.Binding;
-import groovy.lang.GroovyClassLoader;
+import groovy.lang.*;
 import groovy.util.GroovyScriptEngine;
 import groovy.util.ResourceException;
 import groovy.util.ScriptException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.Map;
-
-import javax.annotation.PostConstruct;
-
+import org.codehaus.groovy.runtime.InvokerHelper;
 import org.openiam.exception.ScriptEngineException;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
 /* 
  * Spring bean created through XML. Not using annotations, as the actual implementation of the 
  * interface is configurable via the properties file
  */
-public class GroovyScriptEngineIntegration implements ScriptIntegration {
+public class GroovyScriptEngineIntegration implements ScriptIntegration, ApplicationContextAware {
+
+    public static final String APP_CONTEXT = "appContext";
+
+    private ApplicationContext ac;
 
 	@Value("${org.openiam.groovy.script.root}")
 	private String scriptRoot;
@@ -57,15 +58,15 @@ public class GroovyScriptEngineIntegration implements ScriptIntegration {
 
     @Override
     public Object execute(Map<String, Object> bindingMap, String scriptName) throws ScriptEngineException {
-    	final Binding binding = new Binding();
         try {
-            if (bindingMap != null) {
-                for (String key : bindingMap.keySet()) {
-                    binding.setVariable(key, bindingMap.get(key));
-                }
-            }
+            Binding binding = new Binding(bindingMap);
+
+            // make application context accessible from all groovy scripts
+            binding.setVariable(APP_CONTEXT, ac);
+
             gse.run(scriptName, binding);
             return binding.getVariable("output");
+
         } catch (ScriptException se) {
             String msg = "Could not run script " + scriptName;
             log.error(msg, se);
@@ -81,24 +82,33 @@ public class GroovyScriptEngineIntegration implements ScriptIntegration {
     public Object instantiateClass(Map<String, Object> bindingMap, String scriptName) throws IOException {
         log.info("instantiateClass called.");
 
-        GroovyClassLoader gcl = new GroovyClassLoader();
         try {
             String fullPath = scriptRoot + scriptName;
-            Class cl = gcl.parseClass(new File(fullPath));
+            Class cl = gse.loadScriptByName(fullPath);
             Object instance = cl.newInstance();
+
+            try {
+                InvokerHelper.setAttribute(instance, APP_CONTEXT, ac);
+            } catch (Exception e) {
+                log.info("Ignoring field " + APP_CONTEXT + " in script " + scriptName + ", error: " + e.toString());
+            }
 
             if (bindingMap != null) {
                 for (String key : bindingMap.keySet()) {
                     try {
-                        Field field = cl.getField(key);
-                        field.set(instance, bindingMap.get(key));
+                        InvokerHelper.setAttribute(instance, key, bindingMap.get(key));
                     } catch (Exception e) {
                         log.info("Ignoring field " + key + " in script " + scriptName + ", error: " + e.toString());
                     }
                 }
             }
+
             return instance;
 
+        } catch (ResourceException e) {
+            log.error("Resource problems when instantiating class " + scriptName, e);
+        } catch (ScriptException e) {
+            log.error("Script problems when instantiating class " + scriptName, e);
         } catch (IllegalAccessException ia) {
             log.error("Access problems when instantiating class " + scriptName, ia);
         } catch (InstantiationException ia) {
@@ -106,4 +116,10 @@ public class GroovyScriptEngineIntegration implements ScriptIntegration {
         }
         return null;
     }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.ac = applicationContext;
+    }
+
 }
