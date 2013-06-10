@@ -1,5 +1,11 @@
 package org.openiam.idm.srvc.mngsys.ws;
 
+import java.util.LinkedList;
+import java.util.List;
+
+import javax.jws.WebParam;
+import javax.jws.WebService;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -11,6 +17,7 @@ import org.openiam.dozer.converter.ApproverAssociationDozerConverter;
 import org.openiam.dozer.converter.AttributeMapDozerConverter;
 import org.openiam.dozer.converter.DefaultReconciliationAttributeMapDozerConverter;
 import org.openiam.dozer.converter.ManagedSysDozerConverter;
+import org.openiam.dozer.converter.ManagedSysRuleDozerConverter;
 import org.openiam.dozer.converter.ManagedSystemObjectMatchDozerConverter;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
@@ -18,24 +25,26 @@ import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.DefaultReconciliationAttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysRuleEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
-import org.openiam.idm.srvc.mngsys.dto.*;
+import org.openiam.idm.srvc.mngsys.dto.ApproverAssocationSearchBean;
+import org.openiam.idm.srvc.mngsys.dto.ApproverAssociation;
+import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
+import org.openiam.idm.srvc.mngsys.dto.DefaultReconciliationAttributeMap;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysRuleDto;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysSearchBean;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.mngsys.searchbeans.converter.ApproverAssocationSearchBeanConverter;
 import org.openiam.idm.srvc.mngsys.searchbeans.converter.ManagedSystemSearchBeanConverter;
-import org.openiam.idm.srvc.mngsys.service.*;
-import org.openiam.idm.srvc.policy.service.PolicyDAO;
-import org.openiam.idm.srvc.policy.service.PolicyDataService;
+import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
+import org.openiam.idm.srvc.mngsys.service.ManagedSystemObjectMatchDAO;
+import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-
-import javax.jws.WebMethod;
-import javax.jws.WebParam;
-import javax.jws.WebService;
-import java.util.LinkedList;
-import java.util.List;
 
 @Service("managedSysService")
 @WebService(endpointInterface = "org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService", targetNamespace = "urn:idm.openiam.org/srvc/mngsys/service", portName = "ManagedSystemWebServicePort", serviceName = "ManagedSystemWebService")
@@ -57,8 +66,9 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     private KeyManagementService keyManagementService;
 
     @Autowired
+    private ManagedSysRuleDozerConverter managedSysRuleDozerConverter;
+    @Autowired
     private ManagedSysDozerConverter managedSysDozerConverter;
-
     @Autowired
     private AttributeMapDozerConverter attributeMapDozerConverter;
 
@@ -81,7 +91,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
 
     @Autowired
     private ApproverAssocationSearchBeanConverter approverSearchBeanConverter;
-    
+
     boolean encrypt = true; // default encryption setting
 
     @Override
@@ -316,15 +326,17 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     // Approver Association
     // ================================================================
 
-    
-	@Override
-	public List<ApproverAssociation> getApproverAssociations(
-			ApproverAssocationSearchBean searchBean, int from, int size) {
-		final ApproverAssociationEntity entity = approverSearchBeanConverter.convert(searchBean);
-		final List<ApproverAssociationEntity> entityList = approverAssociationDao.getByExample(entity, from, size);
-		return (entityList != null) ? approverAssociationDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy()) : null;
-	}
-    
+    @Override
+    public List<ApproverAssociation> getApproverAssociations(
+            ApproverAssocationSearchBean searchBean, int from, int size) {
+        final ApproverAssociationEntity entity = approverSearchBeanConverter
+                .convert(searchBean);
+        final List<ApproverAssociationEntity> entityList = approverAssociationDao
+                .getByExample(entity, from, size);
+        return (entityList != null) ? approverAssociationDozerConverter
+                .convertToDTOList(entityList, searchBean.isDeepCopy()) : null;
+    }
+
     public Response saveApproverAssociation(
             final ApproverAssociation approverAssociation) {
         final Response response = new Response(ResponseStatus.SUCCESS);
@@ -333,25 +345,30 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
                 throw new BasicDataServiceException(
                         ResponseCode.OBJECT_NOT_FOUND);
             }
-            
-            if(StringUtils.isBlank(approverAssociation.getApproverEntityId()) || approverAssociation.getApproverEntityType() == null) {
-            	approverAssociation.setApproverEntityId(null);
-            	approverAssociation.setApproverEntityType(null);
+
+            if (StringUtils.isBlank(approverAssociation.getApproverEntityId())
+                    || approverAssociation.getApproverEntityType() == null) {
+                approverAssociation.setApproverEntityId(null);
+                approverAssociation.setApproverEntityType(null);
             }
-            
-            if(StringUtils.isBlank(approverAssociation.getOnApproveEntityId()) || approverAssociation.getOnApproveEntityType() == null) {
-            	approverAssociation.setOnApproveEntityId(null);
-            	approverAssociation.setOnApproveEntityType(null);
+
+            if (StringUtils.isBlank(approverAssociation.getOnApproveEntityId())
+                    || approverAssociation.getOnApproveEntityType() == null) {
+                approverAssociation.setOnApproveEntityId(null);
+                approverAssociation.setOnApproveEntityType(null);
             }
-            
-            if(StringUtils.isBlank(approverAssociation.getOnRejectEntityId()) || approverAssociation.getOnRejectEntityType() == null) {
-            	approverAssociation.setOnRejectEntityId(null);
-            	approverAssociation.setOnRejectEntityType(null);
+
+            if (StringUtils.isBlank(approverAssociation.getOnRejectEntityId())
+                    || approverAssociation.getOnRejectEntityType() == null) {
+                approverAssociation.setOnRejectEntityId(null);
+                approverAssociation.setOnRejectEntityType(null);
             }
-            
-            if(StringUtils.isBlank(approverAssociation.getAssociationEntityId()) || approverAssociation.getAssociationType() == null) {
-            	approverAssociation.setAssociationEntityId(null);
-            	approverAssociation.setAssociationType(null);
+
+            if (StringUtils.isBlank(approverAssociation
+                    .getAssociationEntityId())
+                    || approverAssociation.getAssociationType() == null) {
+                approverAssociation.setAssociationEntityId(null);
+                approverAssociation.setAssociationType(null);
             }
             
             if(approverAssociation.getApproverEntityType() == null || StringUtils.isBlank(approverAssociation.getApproverEntityId())) {
@@ -507,4 +524,29 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
                 : defaultReconciliationAttributeMapDozerConverter
                         .convertToDTOList(list, false);
     }
+
+    @Override
+    public List<ManagedSysRuleDto> getRulesByManagedSysId(String managedSysId) {
+        List<ManagedSysRuleEntity> resList = managedSystemService
+                .getRulesByManagedSysId(managedSysId);
+        return resList == null ? null : managedSysRuleDozerConverter
+                .convertToDTOList(resList, false);
+    }
+
+    @Override
+    public ManagedSysRuleDto addRules(ManagedSysRuleDto entity) {
+        if (entity == null)
+            return null;
+        ManagedSysRuleEntity res = managedSystemService
+                .addRules(managedSysRuleDozerConverter.convertToEntity(entity,
+                        false));
+        return res == null ? null : managedSysRuleDozerConverter.convertToDTO(
+                res, false);
+    }
+
+    @Override
+    public void deleteRules(String ruleId) {
+        managedSystemService.deleteRules(ruleId);
+    }
+
 }

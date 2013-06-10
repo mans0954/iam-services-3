@@ -408,6 +408,12 @@
 			<a>mngSysObjectMatchs</a>
 			<b>mngSysObjectMatchs</b>
 		</field>
+		<field
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentListConverter"
+			custom-converter-param="dto2entityShallowDozerMapper">
+			<a>rules</a>
+			<b>rules</b>
+		</field>
 	</mapping>
 
 

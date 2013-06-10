@@ -3,12 +3,14 @@ package org.openiam.idm.srvc.mngsys.service;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.DefaultReconciliationAttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysRuleEntity;
 import org.openiam.idm.srvc.mngsys.domain.ReconciliationResourceAttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.policy.service.PolicyDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -24,7 +26,8 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     protected ReconciliationResourceAttributeMapDAO reconciliationResourceAttributeMapDAO;
     @Autowired
     protected DefaultReconciliationAttributeMapDAO defaultReconciliationAttributeMapDAO;
-
+    @Autowired
+    protected ManagedSysRuleDAO managedSysRuleDAO;
     @Autowired
     protected PolicyDAO policyDAO;
 
@@ -173,4 +176,28 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
         return entity;
     }
 
+    @Override
+    public List<ManagedSysRuleEntity> getRulesByManagedSysId(String managedSysId) {
+        return managedSysRuleDAO.findbyManagedSystemId(managedSysId);
+    }
+
+    @Override
+    public ManagedSysRuleEntity addRules(ManagedSysRuleEntity entity) {
+        if (entity.getManagedSysRuleId() != null) {
+            return entity;
+        }
+        entity.setManagedSysRuleId(managedSysRuleDAO.add(entity)
+                .getManagedSysRuleId());
+        return entity;
+    }
+
+    @Override
+    public void deleteRules(String ruleId) {
+        if (!StringUtils.hasText(ruleId))
+            return;
+        ManagedSysRuleEntity entity = managedSysRuleDAO.findById(ruleId);
+        if (entity == null)
+            return;
+        managedSysRuleDAO.delete(entity);
+    }
 }

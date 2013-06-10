@@ -5,6 +5,7 @@ import java.util.List;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.DefaultReconciliationAttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysRuleEntity;
 
 public interface ManagedSystemService {
 
@@ -45,5 +46,11 @@ public interface ManagedSystemService {
 
     List<AttributeMapEntity> getAllAttributeMaps();
 
+    List<ManagedSysRuleEntity> getRulesByManagedSysId(String managedSysId);
+
     List<DefaultReconciliationAttributeMapEntity> getAllDefaultReconAttributeMap();
+
+    ManagedSysRuleEntity addRules(ManagedSysRuleEntity entity);
+
+    void deleteRules(String ruleId);
 }

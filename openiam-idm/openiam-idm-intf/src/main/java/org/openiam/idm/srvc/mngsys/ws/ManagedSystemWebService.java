@@ -256,9 +256,22 @@ public interface ManagedSystemWebService {
     @WebMethod
     public Response saveApproverAssociation(
             final @WebParam(name = "approverAssociation", targetNamespace = "") ApproverAssociation approverAssociation);
-    
-	@WebMethod
-	public List<ApproverAssociation> getApproverAssociations(final @WebParam(name = "approverAssociation", targetNamespace = "") ApproverAssocationSearchBean searchBean,
-															 final @WebParam(name="from", targetNamespace = "") int from,
-															 final @WebParam(name="size", targetNamespace = "") int size);
+
+    @WebMethod
+    public List<ApproverAssociation> getApproverAssociations(
+            final @WebParam(name = "approverAssociation", targetNamespace = "") ApproverAssocationSearchBean searchBean,
+            final @WebParam(name = "from", targetNamespace = "") int from,
+            final @WebParam(name = "size", targetNamespace = "") int size);
+
+    @WebMethod
+    List<ManagedSysRuleDto> getRulesByManagedSysId(
+            final @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId);
+
+    @WebMethod
+    ManagedSysRuleDto addRules(
+            final @WebParam(name = "entity", targetNamespace = "") ManagedSysRuleDto entity);
+
+    @WebMethod
+    void deleteRules(
+            final @WebParam(name = "ruleId", targetNamespace = "") String ruleId);
 }
