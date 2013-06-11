@@ -1,4 +1,4 @@
-package org.openiam.bpm.activiti.delegate;
+package org.openiam.bpm.activiti.delegate.user;
 
 import java.util.Date;
 import java.util.HashSet;

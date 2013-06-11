@@ -228,5 +228,13 @@ public interface ResourceDataService {
 			@WebParam(name = "managedSystemId", targetNamespace = "") String mngSysId,
 			@WebParam(name = "from", targetNamespace = "") int from,
 			@WebParam(name = "size", targetNamespace = "") int size);
+	
+	@WebMethod
+	public Response canAddUserToResource(final @WebParam(name = "userId", targetNamespace = "")  String userId, 
+										 final @WebParam(name = "resourceId", targetNamespace = "") String resourceId);
+	
+	@WebMethod
+	public Response canRemoveUserFromResource(final @WebParam(name = "userId", targetNamespace = "")  String userId, 
+										 	  final @WebParam(name = "resourceId", targetNamespace = "") String resourceId); 
 
 }

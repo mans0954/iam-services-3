@@ -37,6 +37,7 @@ import org.openiam.base.ws.ResponseStatus;
 import org.openiam.base.ws.exception.BasicDataServiceException;
 import org.openiam.bpm.request.ActivitiClaimRequest;
 import org.openiam.bpm.request.ActivitiRequestDecision;
+import org.openiam.bpm.request.GenericWorkflowRequest;
 import org.openiam.bpm.request.HistorySearchBean;
 import org.openiam.bpm.response.NewHireResponse;
 import org.openiam.bpm.response.TaskListWrapper;
@@ -61,12 +62,14 @@ import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.role.domain.UserRoleEntity;
 import org.openiam.idm.srvc.role.service.UserRoleDAO;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.Supervisor;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
+import org.openiam.idm.srvc.user.service.SupervisorDAO;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserProfileService;
 import org.openiam.provision.dto.ProvisionUser;
@@ -122,6 +125,12 @@ public class ActivitiServiceImpl implements ActivitiService {
 	private ResourceDAO resourceDao;
 	
 	@Autowired
+	private UserDAO userDAO;
+	
+	@Autowired
+	private SupervisorDAO supervisorDAO;
+	
+	@Autowired
 	private UserProfileService userProfileService;
 	
 	@Autowired
@@ -160,9 +169,6 @@ public class ActivitiServiceImpl implements ActivitiService {
 			final User provisionUser = request.getUser();
 			
 			/* get a list of approvers for the new hire request, including information about their organization */
-	        String approverRole = null;
-	        String userOrg = null;
-	        boolean applyDelegationFilter = false;
 	        
 	        /* get a list of approvers for this request type */
 	        final ResourceEntity protectingResource = resourceDao.findByName(newUserResourceProtectingName);
@@ -192,12 +198,6 @@ public class ActivitiServiceImpl implements ActivitiService {
                     				break;
         						case ROLE:
         							if(StringUtils.isNotBlank(approverId)) {
-        								approverRole = approverId;
-        								applyDelegationFilter = approverAssociation.isApplyDelegationFilter();
-        								if (StringUtils.isNotBlank(provisionUser.getCompanyId())) {
-        									userOrg = provisionUser.getCompanyId();
-        								}
-        								
         								final List<String> authUsers = userRoleDAO.getUserIdsInRole(approverId);
         								if(CollectionUtils.isNotEmpty(authUsers)) {
         									approverUserIds.addAll(authUsers);
@@ -266,10 +266,6 @@ public class ActivitiServiceImpl implements ActivitiService {
 			provRequestService.addRequest(provisionRequest);
 			
 			/* set a dsearch filter, in case it is needed by the underlying delegate */
-			final DelegationFilterSearch delegationFilterSearch = new DelegationFilterSearch();
-			delegationFilterSearch.setRole(approverRole);
-			delegationFilterSearch.setDelAdmin(applyDelegationFilter);
-			delegationFilterSearch.setOrgFilter("%" + userOrg + "%");
 			
 			final ActivitiRequestType requestType = request.getActivitiRequestType();
 			final String taskName = String.format("%s Request for %s %s", requestType.getDescription(), provisionUser.getFirstName(), provisionUser.getLastName());
@@ -279,7 +275,6 @@ public class ActivitiServiceImpl implements ActivitiService {
 			final Map<String, Object> variables = new HashMap<String, Object>();
 			variables.put(ActivitiConstants.APPROVER_ASSOCIATION_IDS, approverAssociationIds);
 			variables.put(ActivitiConstants.PROVISION_REQUEST_ID, provisionRequest.getId());
-			variables.put(ActivitiConstants.DELEGATION_FILTER_SEARCH, delegationFilterSearch);
 			variables.put(ActivitiConstants.CANDIDATE_USERS_IDS, requestApproverIds);
 			variables.put(ActivitiConstants.TASK_NAME, taskName);
 			variables.put(ActivitiConstants.TASK_DESCRIPTION, taskDescription);
@@ -379,6 +374,75 @@ public class ActivitiServiceImpl implements ActivitiService {
 			response.setErrorText(e.getMessage());
 		}
 
+		return response;
+	}
+	
+	@Override
+	public Response initiateWorkflow(final GenericWorkflowRequest request) {
+		final Response response = new Response();
+		try {
+			if(request == null || request.isEmpty()) {
+				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+			}
+			
+			final Set<String> approverAssociationIds = new HashSet<String>();
+			final Set<String> approverUserIds = new HashSet<String>();
+			
+			final List<ApproverAssociationEntity> approverAssocationList = approverAssociationDao.getByAssociation(request.getAssociationId(), request.getAssociationType());
+			if(CollectionUtils.isNotEmpty(approverAssocationList)) {
+				for(final ApproverAssociationEntity entity : approverAssocationList) {
+					if(entity.getApproverEntityType() != null && StringUtils.isNotBlank(entity.getApproverEntityId())) {
+						final String approverId = entity.getApproverEntityId();
+						switch(entity.getApproverEntityType()) {
+							case GROUP:
+								final List<String> groupUsers = userGroupDAO.getUserIdsInGroup(approverId);
+								if(CollectionUtils.isNotEmpty(groupUsers)) {
+	    							approverUserIds.addAll(groupUsers);
+	    						}
+								break;
+							case ROLE:
+								final List<String> roleUsers = userRoleDAO.getUserIdsInRole(approverId);
+								if(CollectionUtils.isNotEmpty(roleUsers)) {
+									approverUserIds.addAll(roleUsers);
+								}
+								break;
+							case USER:
+								approverUserIds.add(approverId);
+								break;
+							default:
+								break;
+						}
+					}
+				}
+			}
+			
+			final Map<String, Object> variables = new HashMap<String, Object>();
+			variables.put(ActivitiConstants.APPROVER_ASSOCIATION_IDS, approverAssociationIds);
+			variables.put(ActivitiConstants.CANDIDATE_USERS_IDS, approverUserIds);
+			variables.put(ActivitiConstants.TASK_NAME, request.getName());
+			variables.put(ActivitiConstants.TASK_DESCRIPTION, request.getDescription());
+			variables.put(ActivitiConstants.TASK_OWNER, request.getRequestorUserId());
+			variables.put(ActivitiConstants.ASSOCIATION_ID, request.getAssociationId());
+			if(request.getParameters() != null) {
+				variables.putAll(request.getParameters());
+			}
+			runtimeService.startProcessInstanceByKey(request.getActivitiRequestType(), variables);
+
+			response.setStatus(ResponseStatus.SUCCESS);
+		} catch(BasicDataServiceException e) {
+			response.setErrorCode(e.getCode());
+			response.setStatus(ResponseStatus.FAILURE);
+		} catch(ActivitiException e) {
+			log.info("Activiti Exception", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(ResponseCode.USER_STATUS);
+			response.setErrorText(e.getMessage());
+		} catch(Throwable e) {
+			log.error("Error while creating newhire request", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(ResponseCode.USER_STATUS);
+			response.setErrorText(e.getMessage());
+		}
 		return response;
 	}
 

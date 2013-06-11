@@ -18,6 +18,8 @@ import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupAttribute;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.searchbean.converter.GroupSearchBeanConverter;
+import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.service.UserMgr;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -377,5 +379,49 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 			}
 		}
 		return retval;
+	}
+
+	@Override
+	public Response canAddUserToGroup(String userId, String groupId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(groupId == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			final UserGroupEntity entity = groupManager.getRecord(userId, groupId,null);
+			
+			if(entity != null) {
+				throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
+			}
+			
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			log.error("Error while adding user to group", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+		return response;
+	}
+
+	@Override
+	public Response canRemoveUserFromGroup(String userId, String groupId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(groupId == null || userId == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			log.error("Error while remove user from group", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+		return response;
 	}
 }

@@ -215,4 +215,13 @@ public interface GroupDataWebService {
     @WebMethod
     public Response removeChildGroup(final @WebParam(name = "groupId") String groupId, 
     							 	 final @WebParam(name = "childGroupId") String childGroupId);
+    
+    
+    @WebMethod
+	public Response canAddUserToGroup(final @WebParam(name = "userId", targetNamespace = "")  String userId, 
+									  final @WebParam(name = "groupId", targetNamespace = "") String groupId);
+	
+	@WebMethod
+	public Response canRemoveUserFromGroup(final @WebParam(name = "userId", targetNamespace = "")  String userId, 
+										   final @WebParam(name = "groupId", targetNamespace = "") String groupId);
 }
