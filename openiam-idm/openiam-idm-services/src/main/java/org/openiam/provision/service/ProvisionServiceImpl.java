@@ -196,7 +196,7 @@ public class ProvisionServiceImpl implements ProvisionService,
         UserAttribute uAttr = new UserAttribute();
         uAttr.setName("GM_SYSKEY");
         uAttr.setValue(gmSysKey);
-        provUser.getUserAttributes().put("GM_SYSKEY", uAttr);
+        provUser.getUser().getUserAttributes().put("GM_SYSKEY", uAttr);
 
         log.info("addUser called.");
 
@@ -210,7 +210,7 @@ public class ProvisionServiceImpl implements ProvisionService,
         if (user.getCompanyId() != null) {
             org = orgManager.getOrganization(user.getCompanyId(), null);
         }
-        List<Login> principalList = provUser.getPrincipalList();
+        List<Login> principalList = provUser.getUser().getPrincipalList();
 
         if (principalList == null) {
             principalList = new ArrayList<Login>();
@@ -264,7 +264,7 @@ public class ProvisionServiceImpl implements ProvisionService,
 
         log.info("User created in openiam repository");
 
-        Supervisor supervisor = provUser.getSupervisor();
+        Supervisor supervisor = provUser.getUser().getSupervisor();
         if (supervisor != null && supervisor.getSupervisor() != null) {
             supervisor.setEmployee(user);
             final SupervisorEntity supervisorEntity = supervisorDozerConverter.convertToEntity(supervisor, true);
@@ -407,7 +407,7 @@ public class ProvisionServiceImpl implements ProvisionService,
         // TODO - get the list of apps from the user.
         String requestId = null;
 
-        List<Login> appList = provUser.getPrincipalList();
+        List<Login> appList = provUser.getUser().getPrincipalList();
         boolean syncCalled = false;
         if (principalList != null) {
             log.info("principal list size=" + principalList.size());
@@ -497,7 +497,7 @@ public class ProvisionServiceImpl implements ProvisionService,
 
         auditHelper.addLog("NEW USER", provUser.getSecurityDomain(),
                 primaryLogin.getLogin(), "IDM SERVICE",
-                provUser.getCreatedBy(), "0", "USER", newUser.getUserId(),
+                provUser.getUser().getCreatedBy(), "0", "USER", newUser.getUserId(),
                 null, "SUCCESS", null, "USER_STATUS", provUser.getUser()
                         .getStatus().toString(), requestId, null, null, null);
 
@@ -510,7 +510,7 @@ public class ProvisionServiceImpl implements ProvisionService,
 
         ProvisionUserResponse resp = new ProvisionUserResponse();
         resp.setStatus(ResponseStatus.SUCCESS);
-        provUser.setUserId(newUser.getUserId());
+        provUser.getUser().setUserId(newUser.getUserId());
         resp.setUser(provUser);
         return resp;
 
@@ -746,7 +746,7 @@ public class ProvisionServiceImpl implements ProvisionService,
 
         // get the current user object - update it with the new values and then
         // save it
-        UserEntity entity = userMgr.getUser(provUser.getUserId());
+        UserEntity entity = userMgr.getUser(provUser.getUser().getUserId());
         User origUser = userDozerConverter.convertToDTO(entity, true);
 
         if (origUser == null || origUser.getUserId() == null) {
@@ -761,9 +761,9 @@ public class ProvisionServiceImpl implements ProvisionService,
         User currentUser2 = UserAttributeHelper.cloneUser(origUser);
 
         List<Role> curRoleList = roleDataService
-                .getUserRolesAsFlatList(provUser.getUserId());
+                .getUserRolesAsFlatList(provUser.getUser().getUserId());
         List<Group> curGroupList = this.groupManager
-                .getCompiledGroupsForUser(provUser.getUserId());
+                .getCompiledGroupsForUser(provUser.getUser().getUserId());
 
         log.info("** 1) Deptcd in Orig=" + currentUser2.getDeptCd());
 
@@ -793,7 +793,7 @@ public class ProvisionServiceImpl implements ProvisionService,
         String logId = auditHelper.addLog("MODIFY USER",
                 provUser.getSecurityDomain(), primaryId, "IDM SERVICE",
                 provUser.getUser().getLastUpdatedBy(), "0", "USER",
-                provUser.getUserId(), null, "SUCCESS", null, "USER_STATUS",
+                provUser.getUser().getUserId(), null, "SUCCESS", null, "USER_STATUS",
                 provUser.getUser().getStatus().toString(), requestId, null,
                 null, null).getLogId();
 
@@ -805,13 +805,13 @@ public class ProvisionServiceImpl implements ProvisionService,
                 provUser.getMemberOfRoles(), logId, requestId, provUser
                         .getUser().getLastUpdatedBy(), primaryId);
 
-        updateSupervisor(newUser, provUser.getSupervisor());
+        updateSupervisor(newUser, provUser.getUser().getSupervisor());
 
         // update the identities
-        List<Login> tempPrincipalList = provUser.getPrincipalList();
+        List<Login> tempPrincipalList = provUser.getUser().getPrincipalList();
         log.info("pricipallist = " + tempPrincipalList);
         if (tempPrincipalList != null && tempPrincipalList.size() > 0) {
-            updatePrincipals(newUser, loginDozerConverter.convertToEntityList(provUser.getPrincipalList(), true));
+            updatePrincipals(newUser, loginDozerConverter.convertToEntityList(provUser.getUser().getPrincipalList(), true));
         }
 
         // temp hack
@@ -833,7 +833,7 @@ public class ProvisionServiceImpl implements ProvisionService,
             }
         }
 
-        List<Login> principalList = provUser.getPrincipalList();
+        List<Login> principalList = provUser.getUser().getPrincipalList();
         String password = passwordGenerator.generatePassword(10);
 
         Organization org = null;
@@ -951,7 +951,7 @@ public class ProvisionServiceImpl implements ProvisionService,
                                     .getSecurityDomain(), primaryId,
                                     "IDM SERVICE", provUser.getUser()
                                             .getLastUpdatedBy(), "0", "USER",
-                                    provUser.getUserId(), null, "SUCCESS",
+                                    provUser.getUser().getUserId(), null, "SUCCESS",
                                     logId, "NEW IDENTITY", res.getName(),
                                     requestId, null, null, null);
 
@@ -970,7 +970,7 @@ public class ProvisionServiceImpl implements ProvisionService,
                                     .getSecurityDomain(), primaryId,
                                     "IDM SERVICE", provUser.getUser()
                                             .getLastUpdatedBy(), "0", "USER",
-                                    provUser.getUserId(), null, "SUCCESS",
+                                    provUser.getUser().getUserId(), null, "SUCCESS",
                                     logId, "NEW IDENTITY", res.getName(),
                                     requestId, null, null, null);
                         }
@@ -1007,7 +1007,7 @@ public class ProvisionServiceImpl implements ProvisionService,
                     auditHelper.addLog("MODIFY USER", provUser
                             .getSecurityDomain(), primaryId, "IDM SERVICE",
                             provUser.getUser().getLastUpdatedBy(), "0", "USER",
-                            provUser.getUserId(), null, "SUCCESS", logId,
+                            provUser.getUser().getUserId(), null, "SUCCESS", logId,
                             "DISABLE IDENTITY", curLg.getLogin(),
                             requestId, null, null, null);
                 }
@@ -1051,7 +1051,7 @@ public class ProvisionServiceImpl implements ProvisionService,
 
         // pass 2 - check the current list with the role list
 
-        provUser.setPrincipalList(loginDozerConverter.convertToDTOList(rolePrincipalList, true));
+        provUser.getUser().setPrincipalList(loginDozerConverter.convertToDTOList(rolePrincipalList, true));
 
         log.info("ROLE principal list (Before SPML block) = "
                 + rolePrincipalList);

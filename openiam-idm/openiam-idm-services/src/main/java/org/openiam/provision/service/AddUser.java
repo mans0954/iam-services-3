@@ -113,7 +113,7 @@ public class AddUser {
             resp.setStatus(ResponseStatus.FAILURE);
             return resp;
         }
-        user.setUserId(newUser.getUserId());
+        user.getUser().setUserId(newUser.getUserId());
         log.debug("User id=" + newUser.getUserId()
                 + " created in openiam repository");
 
@@ -148,7 +148,7 @@ public class AddUser {
     }
 
     private void addSupervisor(ProvisionUser u) {
-        Supervisor supervisor = u.getSupervisor();
+        Supervisor supervisor = u.getUser().getSupervisor();
         if (supervisor != null && supervisor.getSupervisor() != null) {
             supervisor.setEmployee(u.getUser());
             final SupervisorEntity entity = supervisorDozerConverter
@@ -158,18 +158,18 @@ public class AddUser {
     }
 
     private void addPrincipals(ProvisionUser u) throws EncryptionException {
-        List<Login> principalList = u.getPrincipalList();
+        List<Login> principalList = u.getUser().getPrincipalList();
         if (principalList != null && !principalList.isEmpty()) {
             for (Login lg : principalList) {
                 lg.setFirstTimeLogin(1);
                 lg.setIsLocked(0);
                 lg.setCreateDate(new Date(System.currentTimeMillis()));
-                lg.setUserId(u.getUserId());
+                lg.setUserId(u.getUser().getUserId());
                 lg.setStatus("ACTIVE");
                 // encrypt the password
                 if (lg.getPassword() != null) {
                     String pswd = lg.getPassword();
-                    lg.setPassword(loginManager.encryptPassword(u.getUserId(),
+                    lg.setPassword(loginManager.encryptPassword(u.getUser().getUserId(),
                             pswd));
                 }
                 loginManager.addLogin(loginDozerConverter.convertToEntity(lg,
@@ -197,12 +197,12 @@ public class AddUser {
                 groupManager.addUserToGroup(g.getGrpId(), newUserId);
                 // add to audit log
                 logList.add(auditHelper.createLogObject("ADD GROUP",
-                        user.getRequestorDomain(), user.getRequestorLogin(),
-                        "IDM SERVICE", user.getCreatedBy(), "0", "USER",
-                        user.getUserId(), null, "SUCCESS", null, "USER_STATUS",
+                        user.getUser().getRequestorDomain(), user.getUser().getRequestorLogin(),
+                        "IDM SERVICE", user.getUser().getCreatedBy(), "0", "USER",
+                        user.getUser().getUserId(), null, "SUCCESS", null, "USER_STATUS",
                         user.getUser().getStatus().toString(), null, null,
                         user.getSessionId(), null, g.getGrpName(),
-                        user.getRequestClientIP(), null, null));
+                        user.getUser().getRequestClientIP(), null, null));
 
             }
         }
@@ -225,12 +225,12 @@ public class AddUser {
                 roleDataService.addUserToRole(r.getRoleId(), newUserId);
 
                 logList.add(auditHelper.createLogObject("ADD ROLE",
-                        user.getRequestorDomain(), user.getRequestorLogin(),
-                        "IDM SERVICE", user.getCreatedBy(), "0", "USER",
-                        user.getUserId(), null, "SUCCESS", null, "USER_STATUS",
+                        user.getUser().getRequestorDomain(), user.getUser().getRequestorLogin(),
+                        "IDM SERVICE", user.getUser().getCreatedBy(), "0", "USER",
+                        user.getUser().getUserId(), null, "SUCCESS", null, "USER_STATUS",
                         user.getUser().getStatus().toString(), "NA", null,
                         user.getSessionId(), null, r.getRoleId(),
-                        user.getRequestClientIP(), null, null));
+                        user.getUser().getRequestClientIP(), null, null));
 
             }
         }
@@ -247,15 +247,15 @@ public class AddUser {
                 if (org.getOrgId() == null) {
                     return ResponseCode.OBJECT_ID_INVALID;
                 }
-                orgManager.addUserToOrg(org.getOrgId(), user.getUserId());
+                orgManager.addUserToOrg(org.getOrgId(), user.getUser().getUserId());
 
                 logList.add(auditHelper.createLogObject("ADD AFFILIATION",
-                        user.getRequestorDomain(), user.getRequestorLogin(),
-                        "IDM SERVICE", user.getCreatedBy(), "0", "USER",
-                        user.getUserId(), null, "SUCCESS", null, "USER_STATUS",
+                        user.getUser().getRequestorDomain(), user.getUser().getRequestorLogin(),
+                        "IDM SERVICE", user.getUser().getCreatedBy(), "0", "USER",
+                        user.getUser().getUserId(), null, "SUCCESS", null, "USER_STATUS",
                         user.getUser().getStatus().toString(), "NA", null,
                         user.getSessionId(), null, org.getOrganizationName(),
-                        user.getRequestClientIP(), null, null));
+                        user.getUser().getRequestClientIP(), null, null));
 
             }
         }
@@ -329,8 +329,8 @@ public class AddUser {
                 log.error(e);
             }
             principalList.add(primaryIdentity);
-            user.setPrincipalList(principalList);
-            user.getEmailAddresses().add(primaryEmail);
+            user.getUser().setPrincipalList(principalList);
+            user.getUser().getEmailAddresses().add(primaryEmail);
 
         } else {
             log.debug("- policyAttrMap IS null");
@@ -352,7 +352,7 @@ public class AddUser {
         // this method should only be the called if the request already contains
         // 1 or more identities
 
-        List<Login> principalList = user.getPrincipalList();
+        List<Login> principalList = user.getUser().getPrincipalList();
         List<AttributeMap> policyAttrMap = this.managedSysService
                 .getResourceAttributeMaps(sysConfiguration
                         .getDefaultManagedSysId());
@@ -402,7 +402,7 @@ public class AddUser {
             }
             // primaryIdentity.setId(primaryID);
             // principalList.add(primaryIdentity);
-            user.setPrincipalList(principalList);
+            user.getUser().setPrincipalList(principalList);
             // user.getEmailAddress().add(primaryEmail);
 
         } else {

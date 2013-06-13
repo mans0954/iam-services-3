@@ -21,19 +21,38 @@
  */
 package org.openiam.provision.dto;
 
+import org.openiam.idm.srvc.grp.dto.Group;
+import org.openiam.idm.srvc.user.dto.User;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlType;
+
 /**
  * @author suneet
  *
  */
-public class ProvisionGroup extends org.openiam.idm.srvc.grp.dto.Group {
-
-	/**
-	 * 
-	 */
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "ProvisionUser", propOrder = {
+        "requestId",
+        "srcSystemId"
+})
+public class ProvisionGroup extends GenericProvisionObject<Group> {
 	private static final long serialVersionUID = -33009889049229700L;
 	
 	String requestId;
 	/* ID of the system where this request came from */
 	String srcSystemId;
 
+    public ProvisionGroup() {
+        super(new Group());
+    }
+
+    public ProvisionGroup(Group object) {
+        super(object);
+    }
+
+    public Group getGroup(){
+        return this.getObject();
+    }
 }

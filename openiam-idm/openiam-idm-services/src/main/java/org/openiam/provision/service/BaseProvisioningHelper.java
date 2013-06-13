@@ -199,13 +199,13 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
             logid = auditLog.getLogId();
         }
 
-        auditHelper.addLog("DELETE IDENTITY", user.getRequestorDomain(), user.getRequestorLogin(),
-                "IDM SERVICE", user.getCreatedBy(), l.getManagedSysId(),
-                "IDENTITY", user.getUserId(),
+        auditHelper.addLog("DELETE IDENTITY", user.getUser().getRequestorDomain(), user.getUser().getRequestorLogin(),
+                "IDM SERVICE", user.getUser().getCreatedBy(), l.getManagedSysId(),
+                "IDENTITY", user.getUser().getUserId(),
                 logid, status, logid,
                 "IDENTITY_STATUS", "DELETED",
                 requestId, resp.getErrorCodeAsStr(), user.getSessionId(), resp.getErrorMessage(),
-                user.getRequestClientIP(), l.getLogin(), l.getDomainId());
+                user.getUser().getRequestClientIP(), l.getLogin(), l.getDomainId());
 
         return resp;
 
@@ -235,12 +235,12 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
         UserResponse resp = remoteConnectorAdapter.deleteRequest(mSys, request, connector, muleContext);
 
         auditHelper.addLog("DELETE IDENTITY", auditLog.getDomainId(), auditLog.getPrincipal(),
-                "IDM SERVICE", user.getCreatedBy(), mLg.getManagedSysId(),
-                "IDENTITY", user.getUserId(),
+                "IDM SERVICE", user.getUser().getCreatedBy(), mLg.getManagedSysId(),
+                "IDENTITY", user.getUser().getUserId(),
                 auditLog.getLogId(), resp.getStatus().toString(), auditLog.getLogId(), "IDENTITY_STATUS",
                 "DELETED",
                 requestId, resp.getErrorCodeAsStr(), user.getSessionId(), resp.getErrorMsgAsStr(),
-                user.getRequestClientIP(), mLg.getLogin(), mLg.getDomainId());
+                user.getUser().getRequestClientIP(), mLg.getLogin(), mLg.getDomainId());
 
         return resp;
 

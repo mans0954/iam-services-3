@@ -36,9 +36,9 @@ public class CSVTouchTest extends AbstractTestNGSpringContextTests {
 		addRequest.setPsoID(psoType);
 		addRequest.setTargetID(defaultManagedSysId);
 		ProvisionUser pu = new ProvisionUser();
-		pu.setEmail("email");
-		pu.setEmployeeId("1");
-		pu.setFirstName("firstName_test");
+		pu.getUser().setEmail("email");
+		pu.getUser().setEmployeeId("1");
+		pu.getUser().setFirstName("firstName_test");
 		addRequest.setpUser(pu);
 		connectorService.add(addRequest);
 	}
@@ -51,9 +51,9 @@ public class CSVTouchTest extends AbstractTestNGSpringContextTests {
 		psoType.setTargetID(defaultManagedSysId);
 		addRequest.setPsoID(psoType);
 		ProvisionUser pu = new ProvisionUser();
-		pu.setEmail("e@mail.com");
-		pu.setEmployeeId("2");
-		pu.setFirstName("firstName_test_2");
+		pu.getUser().setEmail("e@mail.com");
+		pu.getUser().setEmployeeId("2");
+		pu.getUser().setFirstName("firstName_test_2");
 		addRequest.setpUser(pu);
 		connectorService.modify(addRequest);
 	}
@@ -66,9 +66,9 @@ public class CSVTouchTest extends AbstractTestNGSpringContextTests {
 		psoType.setTargetID(defaultManagedSysId);
 		addRequest.setPsoID(psoType);
 		ProvisionUser pu = new ProvisionUser();
-		pu.setEmail("email@mail.co,");
-		pu.setEmployeeId("1");
-		pu.setFirstName("fn_2");
+		pu.getUser().setEmail("email@mail.co,");
+		pu.getUser().setEmployeeId("1");
+		pu.getUser().setFirstName("fn_2");
 		addRequest.setpUser(pu);
 		connectorService.delete(addRequest);
 	}

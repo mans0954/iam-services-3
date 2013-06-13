@@ -61,7 +61,7 @@ public class CreateIdmAccountCommand implements ReconciliationCommand {
                         List<Login> pList = new ArrayList<Login>();
                         pList.add(login);
                         login.setManagedSysId("0");
-                        pUser.setPrincipalList(pList);
+                        pUser.getUser().setPrincipalList(pList);
                     }
                     provisionService.addUser(pUser);
                     //provisionService.modifyUser(pUser);

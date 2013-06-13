@@ -32,7 +32,7 @@ public class DeleteIdmUserExcludeTargetCommand implements ReconciliationCommand 
         log.debug("Delete  user :" + login.getUserId());
 
         ProvisionUser pUser = new ProvisionUser();
-        pUser.setUserId(login.getUserId());
+        pUser.getUser().setUserId(login.getUserId());
         pUser.setNotifyTargetSystems(false);
         provisionService.deleteByUserId( pUser, UserStatusEnum.DELETED,"3000");
         return false;  //To change body of implemented methods use File | Settings | File Templates.

@@ -13,6 +13,7 @@ import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.recon.dto.ReconciliationObject;
+import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.ProvisionUser;
 import org.springframework.stereotype.Service;
@@ -29,9 +30,10 @@ public class ProvisionUserCSVParser extends
 	}
 
 	@Override
-	protected void putValueInDTO(ProvisionUser user, UserFields field,
+	protected void putValueInDTO(ProvisionUser pUser, UserFields field,
 			String objValue) {
 		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
+        User user = pUser.getUser();
 		switch (field) {
 		case birthdate:
 			try {
@@ -218,9 +220,10 @@ public class ProvisionUserCSVParser extends
 	}
 
 	@Override
-	protected String putValueIntoString(ProvisionUser user, UserFields field) {
+	protected String putValueIntoString(ProvisionUser pUser, UserFields field) {
 		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
 		String objValue = "";
+        User user = pUser.getUser();
 		switch (field) {
 		case birthdate:
 			objValue = user.getBirthdate() == null ? "" : toString(sdf
