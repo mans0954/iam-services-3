@@ -32,10 +32,10 @@ public class UserAffiliationDAOImpl extends BaseDaoImpl<UserAffiliationEntity, S
 
 
 
-		Query qry = session.createQuery("select org from org.openiam.idm.srvc.org.domain.OrganizationEntity as or, org.openiam.idm.srvc.org.domain.UserAffiliationEntity ua " +
-						" where ua.user.userId = :userId and ua.organization.orgId = or.orgId " +
-                        ((filter!=null && !filter.isEmpty())? " and or.orgId in (:orgList)" :"") +
-						" order by or.organizationName ");
+		Query qry = session.createQuery("select org from org.openiam.idm.srvc.org.domain.OrganizationEntity as org, org.openiam.idm.srvc.org.domain.UserAffiliationEntity ua " +
+						" where ua.user.userId = :userId and ua.organization.orgId = org.orgId " +
+                        ((filter!=null && !filter.isEmpty())? " and org.orgId in (:orgList)" :"") +
+						" order by org.organizationName ");
 		
 		qry.setString("userId",userId);
         if(filter!=null && !filter.isEmpty()){

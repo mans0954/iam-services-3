@@ -64,7 +64,8 @@ public class GroovyScriptEngineIntegration implements ScriptIntegration, Applica
             // make application context accessible from all groovy scripts
             binding.setVariable(APP_CONTEXT, ac);
 
-            gse.run(scriptName, binding);
+            String fullPath = scriptRoot + scriptName;
+            gse.run(fullPath, binding);
             return binding.getVariable("output");
 
         } catch (ScriptException se) {
