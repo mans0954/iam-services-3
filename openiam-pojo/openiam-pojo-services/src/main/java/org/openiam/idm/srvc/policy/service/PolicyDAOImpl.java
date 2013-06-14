@@ -21,14 +21,20 @@ public class PolicyDAOImpl extends BaseDaoImpl<PolicyEntity, String> implements
 		PolicyDAO {
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<PolicyEntity> findAllPolicies(String policyDefId) {
+	public List<PolicyEntity> findAllPolicies(String policyDefId, int startAt, int size) {
 		log.debug("finding all PolicyEntities instances");
 		try {
 
 			Criteria cr = this.getCriteria()
 					.add(Restrictions.eq("policyDefId", policyDefId))
 					.addOrder(Order.asc("policyId"));
+			if (startAt > -1) {
+	            cr.setFirstResult(startAt);
+	        }
 
+	        if (size > -1) {
+	            cr.setMaxResults(size);
+	        }
 			return (List<PolicyEntity>) cr.list();
 		} catch (HibernateException re) {
 			log.error("find all Policies failed", re);

@@ -134,12 +134,12 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 	 * org.openiam.idm.srvc.policy.service.PolicyDataService#getAllPolicies(
 	 * java.lang.String)
 	 */
-	public List<Policy> getAllPolicies(String policyDefId) {
+	public List<Policy> getAllPolicies(String policyDefId, final int from, final int size) {
 		if (policyDefId == null) {
 			throw new NullPointerException("policyDefId is null");
 		}
 		final List<Policy> policyList = policyDozerConverter.convertToDTOList(
-				policyDao.findAllPolicies(policyDefId), true);
+				policyDao.findAllPolicies(policyDefId, from , size), true);
 
 		if (CollectionUtils.isEmpty(policyList)) {
 			return null;
