@@ -48,7 +48,7 @@ public interface PolicyDataService {
 	 * @param policyDefId
 	 * @return
 	 */
-	List<Policy> getAllPolicies(String policyDefId);
+	List<Policy> getAllPolicies(String policyDefId, final int from, final int size);
 
 	/**
 	 * @param policyId

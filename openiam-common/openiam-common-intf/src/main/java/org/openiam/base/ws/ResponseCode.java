@@ -47,6 +47,9 @@ public enum ResponseCode {
 	@XmlEnumValue("nameTaken")
 	NAME_TAKEN("nameTaken"),
 	
+	@XmlEnumValue("RULE_NOT_SET")
+	RULE_NOT_SET("RULE_NOT_SET"),
+	
 	@XmlEnumValue("membershipExists")
 	MEMBERSHIP_EXISTS("membershipExists"),
 	
