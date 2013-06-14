@@ -18,6 +18,7 @@ import java.util.Set;
 @XmlType(name = "Login", propOrder = {
 		"domainId",
         "login",
+        "lowerCaseLogin",
         "managedSysId",
         "userId",
         "password",
@@ -64,6 +65,7 @@ public class Login implements java.io.Serializable {
     private String loginId;
     private String domainId;
     private String login;
+    private String lowerCaseLogin;
     private String managedSysId;
 
     protected String userId;
@@ -427,6 +429,16 @@ public class Login implements java.io.Serializable {
 	public void setLastUpdate(Date lastUpdate) {
 		this.lastUpdate = lastUpdate;
 	}
+
+    public String getLowerCaseLogin() {
+        return lowerCaseLogin;
+    }
+
+    public void setLowerCaseLogin(String lowerCaseLogin) {
+        if(lowerCaseLogin != null) {
+            this.lowerCaseLogin = lowerCaseLogin.toLowerCase();
+        }
+    }
 
 	@Override
 	public int hashCode() {
