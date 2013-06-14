@@ -10,6 +10,7 @@ import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.provision.dto.PasswordSync;
 import org.openiam.provision.dto.ProvisionUser;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,6 +28,7 @@ import java.util.Map;
  */
 public abstract class AbstractPostProcessor implements ProvisionServicePostProcessor {
     protected MuleContext muleContext;
+    protected ApplicationContext context;
 
     private static final Log log = LogFactory.getLog(AbstractPostProcessor.class);
 

@@ -476,6 +476,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
             UserEntity userEntity = userDozerConverter.convertToEntity(newUser, true);
             try {
                 userMgr.addUser(userEntity);
+                newUser.setUserId(userEntity.getUserId());
             } catch (Exception e) {
                 log.error(e);
                 resp.setStatus(ResponseStatus.FAILURE);
@@ -485,6 +486,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
             if (newUser == null || newUser.getUserId() == null) {
                 resp.setStatus(ResponseStatus.FAILURE);
+                resp.setErrorCode(ResponseCode.INTERNAL_ERROR);
                 return resp;
             }
             user.getUser().setUserId(newUser.getUserId());

@@ -30,9 +30,8 @@ public class ProvisionServicePreProcessor extends AbstractPreProcessor {
 
 		// context to look up spring beans - commonly used beans. Included to help development
 
-	 ApplicationContext context = (ApplicationContext)bindingMap.get("context");
    OrganizationDataService orgManager = (OrganizationDataService)context.getBean("orgManager");
-   RoleDataService roleDataService = (RoleDataService)context.getBean("roleDataService");	
+   RoleDataService roleDataService = (RoleDataService)context.getBean("roleDataService");
 	 LoginDataService loginService = (LoginDataService)context.getBean("loginManager");
 	 ResourceDataService resourceDataService = (ResourceDataService)context.getBean("resourceDataService");
 	 
@@ -48,8 +47,7 @@ public class ProvisionServicePreProcessor extends AbstractPreProcessor {
 	
     public int modifyUser(ProvisionUser user, Map<String, Object> bindingMap){
     	// context to look up spring beans
-		ApplicationContext context = (ApplicationContext)bindingMap.get("context");
-		
+
     	println("ProvisionServicePreProcessor: ModifyUser called.");
 		println("ProvisionServicePreProcessor: User=" + user.toString());
 		
@@ -68,8 +66,7 @@ public class ProvisionServicePreProcessor extends AbstractPreProcessor {
     public int deleteUser(ProvisionUser user, Map<String, Object> bindingMap){
     
     	// context to look up spring beans
-		ApplicationContext context = (ApplicationContext)bindingMap.get("context");
-		
+
         println("ProvisionServicePreProcessor: DeleteUser called.");
 		println("ProvisionServicePreProcessor: User=" + user.toString());
 		
@@ -82,8 +79,7 @@ public class ProvisionServicePreProcessor extends AbstractPreProcessor {
 	
     public int setPassword( PasswordSync passwordSync, Map<String, Object> bindingMap){
     
-    	ApplicationContext context = (ApplicationContext)bindingMap.get("context");
-    	
+
     
      	println("ProvisionServicePreProcessor: SetPassword called.");
 		

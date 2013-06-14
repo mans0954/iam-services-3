@@ -4,6 +4,8 @@ import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
+import org.apache.commons.lang.StringUtils;
+
 
 /**
  * Status' that a user can be in.
@@ -56,5 +58,14 @@ public enum UserStatusEnum {
         value = val;
     }
 
-
+    public static UserStatusEnum getFromString(final String val) {
+    	UserStatusEnum retVal = null;
+    	for(final UserStatusEnum e : UserStatusEnum.values()) {
+    		if(StringUtils.equals(val, e.getValue())) {
+    			retVal = e;
+    			break;
+    		}
+    	}
+    	return retVal;
+    }
 }

@@ -26,7 +26,7 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
         implements BaseDao<T, PrimaryKey> {
     protected final Logger log = Logger.getLogger(this.getClass());
     protected final Class<T> domainClass;
-    
+
 	@Autowired
 	public void setTemplate(final @Qualifier("hibernateTemplate") HibernateTemplate hibernateTemplate) {
 		super.setHibernateTemplate(hibernateTemplate);
@@ -62,11 +62,11 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
     protected Criteria getExampleCriteria(T t) {
         return getCriteria().add(Example.create(t));
     }
-    
+
     protected Criteria getExampleCriteria(final SearchBean searchBean) {
     	throw new UnsupportedOperationException("Method must be overridden");
     }
-    
+
     @Override
     public int count(final SearchBean searchBean) {
     	 return ((Number) getExampleCriteria(searchBean).setProjection(rowCount())
@@ -86,12 +86,12 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
 
         return (List<T>) criteria.list();
     }
-    
+
     @Override
     public List<T> getByExample(final SearchBean searchBean) {
     	return getByExample(searchBean, -1, -1);
     }
-    
+
     @Override
     public List<T> getByExample(final SearchBean searchBean, int from, int size) {
     	 final Criteria criteria = getExampleCriteria(searchBean);
@@ -213,7 +213,7 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
     @Transactional
     public void update(T t) {
     	if(t != null) {
-    		getSession().update(t);
+    		getSession().saveOrUpdate(t);
     	}
     }
 

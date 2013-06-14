@@ -35,6 +35,7 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.base.ws.exception.BasicDataServiceException;
+import org.openiam.bpm.activiti.groovy.UserCentricApproverAssociationIdentifier;
 import org.openiam.bpm.request.ActivitiClaimRequest;
 import org.openiam.bpm.request.ActivitiRequestDecision;
 import org.openiam.bpm.request.GenericWorkflowRequest;
@@ -62,6 +63,7 @@ import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.role.domain.UserRoleEntity;
 import org.openiam.idm.srvc.role.service.UserRoleDAO;
+import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
@@ -75,10 +77,14 @@ import org.openiam.idm.srvc.user.service.UserProfileService;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.service.ProvisionService;
+import org.openiam.script.ScriptIntegration;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -88,8 +94,10 @@ import com.thoughtworks.xstream.XStream;
 @WebService(endpointInterface = "org.openiam.bpm.activiti.ActivitiService", 
 targetNamespace = "urn:idm.openiam.org/bpm/request/service", 
 serviceName = "ActivitiService")
-public class ActivitiServiceImpl implements ActivitiService {
+public class ActivitiServiceImpl implements ActivitiService, ApplicationContextAware {
 
+	private ApplicationContext ctx;
+	
 	private static final Log log = LogFactory.getLog(ActivitiServiceImpl.class);
 	
 	@Autowired
@@ -142,7 +150,20 @@ public class ActivitiServiceImpl implements ActivitiService {
 	@Autowired
 	private UserGroupDAO userGroupDAO;
 	
+	@Value("${org.openiam.idm.activiti.default.approver.association.resource.name}")
+	private String defaultApproverAssociationResourceId;
+	
+	@Value("${org.openiam.idm.activiti.default.approver.user}")
+	private String defaultApproverUserId;
+	
 	private static final Comparator<Task> taskCreatedTimeComparator = new TaskCreateDateSorter();
+	
+    @Autowired
+    @Qualifier("configurableGroovyScriptEngine")
+    private ScriptIntegration scriptRunner;
+    
+    @Value("${org.openiam.bpm.user.approver.association.script}")
+    private String approverAssociationScript;
 
 	@Override
 	@WebMethod
@@ -177,14 +198,21 @@ public class ActivitiServiceImpl implements ActivitiService {
 	        }
 	        
 	        final List<String> approverAssociationIds = new LinkedList<String>();
-        	final List<ApproverAssociationEntity> approverAssocationList = approverAssociationDao.getByAssociation(protectingResource.getResourceId(), AssociationType.RESOURCE);
+        	List<ApproverAssociationEntity> approverAssocationList = approverAssociationDao.getByAssociation(protectingResource.getResourceId(), AssociationType.RESOURCE);
+        	if(CollectionUtils.isEmpty(approverAssocationList)) {
+        		log.warn(String.format("Can't find approver association for %s %s, using default approver association", AssociationType.RESOURCE, protectingResource.getResourceId()));
+				approverAssocationList = getDefaultApproverAssociations();
+			}
+        	
+        	
+        	final Set<String> requestApproverIds = new HashSet<String>();
         	if (CollectionUtils.isNotEmpty(approverAssocationList)) {
         		for (final ApproverAssociationEntity approverAssociation : approverAssocationList) {
         			approverAssociationIds.add(approverAssociation.getId());
         			if (approverAssociation != null) {
-        				final Set<String> approverUserIds = new HashSet<String>();
         				final AssociationType approverType = approverAssociation.getApproverEntityType();
-        				final String approverId = approverAssociation.getApproverEntityId();;
+        				final String approverId = approverAssociation.getApproverEntityId();
+        				
         				if(approverType != null) {
         					switch(approverType) {
         						case SUPERVISOR:
@@ -192,7 +220,7 @@ public class ActivitiServiceImpl implements ActivitiService {
                     				if(supVisor != null) {
                     					final String userId = supVisor.getSupervisor().getUserId();
                     					if(StringUtils.isNotBlank(userId)) {
-                    						approverUserIds.add(userId);
+                    						requestApproverIds.add(userId);
                     					}
                     				}
                     				break;
@@ -200,7 +228,7 @@ public class ActivitiServiceImpl implements ActivitiService {
         							if(StringUtils.isNotBlank(approverId)) {
         								final List<String> authUsers = userRoleDAO.getUserIdsInRole(approverId);
         								if(CollectionUtils.isNotEmpty(authUsers)) {
-        									approverUserIds.addAll(authUsers);
+        									requestApproverIds.addAll(authUsers);
         								}
         							}
         							break;
@@ -208,36 +236,27 @@ public class ActivitiServiceImpl implements ActivitiService {
         							if(StringUtils.isNotBlank(approverId)) {
         								final List<String> authUsers = userGroupDAO.getUserIdsInGroup(approverId);
         								if(CollectionUtils.isNotEmpty(authUsers)) {
-                							approverUserIds.addAll(authUsers);
+        									requestApproverIds.addAll(authUsers);
                 						}
         							}
         							break;
         						case USER:
         							if(StringUtils.isNotBlank(approverId)) {
-        								approverUserIds.add(approverId);
+        								requestApproverIds.add(approverId);
         							}
         							break;
         						default:
         							break;
         					}
         				}
-
-        				for(final String userId : approverUserIds) {
-        					/* add the approver to the list */
-        					final RequestApproverEntity reqApprover = new RequestApproverEntity(userId, approverAssociation.getApproverLevel(), approverType.getValue(), "PENDING");
-        					reqApprover.setApproverType(approverType.getValue());
-        					provisionRequest.addRequestApprover(reqApprover);
-        				}
         			}
         		}
         	}
-	        /* based on the roleapprovers, add teh users as candidate approvers */
-	        final List<String> requestApproverIds = new LinkedList<String>();
-	        if(CollectionUtils.isNotEmpty(provisionRequest.getRequestApprovers())) {
-	        	for(final RequestApproverEntity requestApprover : provisionRequest.getRequestApprovers()) {
-	        		requestApproverIds.add(requestApprover.getApproverId());
-	        	}
-	        }
+        	
+        	if(CollectionUtils.isEmpty(requestApproverIds)) {
+        		log.warn("Could not found any approvers - using default user");
+        		requestApproverIds.add(defaultApproverUserId);
+        	}
 	        
 	        if(CollectionUtils.isEmpty(requestApproverIds)) {
 	        	throw new BasicDataServiceException(ResponseCode.NO_REQUEST_APPROVERS);
@@ -388,9 +407,33 @@ public class ActivitiServiceImpl implements ActivitiService {
 			final Set<String> approverAssociationIds = new HashSet<String>();
 			final Set<String> approverUserIds = new HashSet<String>();
 			
-			final List<ApproverAssociationEntity> approverAssocationList = approverAssociationDao.getByAssociation(request.getAssociationId(), request.getAssociationType());
+			List<ApproverAssociationEntity> approverAssocationList = null;
+			if(CollectionUtils.isNotEmpty(request.getCustomApproverAssociationIds())) {
+				approverAssocationList = approverAssociationDao.findByIds(request.getCustomApproverAssociationIds());
+			} else {
+				/* for user target objects, use the groovy script */
+				if(AssociationType.USER.equals(request.getAssociationId())) {
+					try {
+						final UserCentricApproverAssociationIdentifier identifier = 
+								(UserCentricApproverAssociationIdentifier)scriptRunner.instantiateClass(null, approverAssociationScript);
+						final Map<String, Object> bindingMap = new HashMap<String, Object>();
+						bindingMap.put("USER", userDAO.findById(request.getAssociationId()));
+						identifier.init(bindingMap);
+						approverAssocationList = identifier.getApproverAssociations();
+					} catch(Throwable e) {
+						log.warn("Can't instantiate groovy class", e);
+					}
+				} else {
+					approverAssocationList = approverAssociationDao.getByAssociation(request.getAssociationId(), request.getAssociationType());
+				}
+			}
+			if(CollectionUtils.isEmpty(approverAssocationList)) {
+				log.warn(String.format("Can't find approver association for %s %s, using default approver association", request.getAssociationType(), request.getAssociationId()));
+				approverAssocationList = getDefaultApproverAssociations();
+			}
 			if(CollectionUtils.isNotEmpty(approverAssocationList)) {
 				for(final ApproverAssociationEntity entity : approverAssocationList) {
+					approverAssociationIds.add(entity.getId());
 					if(entity.getApproverEntityType() != null && StringUtils.isNotBlank(entity.getApproverEntityId())) {
 						final String approverId = entity.getApproverEntityId();
 						switch(entity.getApproverEntityType()) {
@@ -409,6 +452,16 @@ public class ActivitiServiceImpl implements ActivitiService {
 							case USER:
 								approverUserIds.add(approverId);
 								break;
+							case SUPERVISOR: /* assume association ID is a user */
+								final List<SupervisorEntity> supervisors = supervisorDAO.findSupervisors(request.getAssociationId());
+								if(CollectionUtils.isNotEmpty(supervisors)) {
+									for(final SupervisorEntity supervisor : supervisors) {
+										if(supervisor != null && supervisor.getEmployee() != null) {
+											approverUserIds.add(supervisor.getEmployee().getUserId());
+										}
+									}
+								}
+								break;
 							default:
 								break;
 						}
@@ -416,12 +469,17 @@ public class ActivitiServiceImpl implements ActivitiService {
 				}
 			}
 			
+			if(CollectionUtils.isEmpty(approverUserIds)) {
+				log.warn("Could not found any approvers - using default user");
+        		approverUserIds.add(defaultApproverUserId);
+        	}
+			
 			final Map<String, Object> variables = new HashMap<String, Object>();
 			variables.put(ActivitiConstants.APPROVER_ASSOCIATION_IDS, approverAssociationIds);
 			variables.put(ActivitiConstants.CANDIDATE_USERS_IDS, approverUserIds);
 			variables.put(ActivitiConstants.TASK_NAME, request.getName());
 			variables.put(ActivitiConstants.TASK_DESCRIPTION, request.getDescription());
-			variables.put(ActivitiConstants.TASK_OWNER, request.getRequestorUserId());
+			variables.put(ActivitiConstants.TASK_OWNER, request.getCallerUserId());
 			variables.put(ActivitiConstants.ASSOCIATION_ID, request.getAssociationId());
 			if(request.getParameters() != null) {
 				variables.putAll(request.getParameters());
@@ -620,5 +678,15 @@ public class ActivitiServiceImpl implements ActivitiService {
 			response.setErrorText(e.getMessage());
 		}
 		return response;
+	}
+	
+	private List<ApproverAssociationEntity> getDefaultApproverAssociations() {
+		return approverAssociationDao.getByAssociation(defaultApproverAssociationResourceId, AssociationType.RESOURCE);
+	}
+
+	@Override
+	public void setApplicationContext(ApplicationContext ctx)
+			throws BeansException {
+		this.ctx = ctx;
 	}
 }

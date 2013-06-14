@@ -21,6 +21,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import org.apache.commons.lang.StringUtils;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Fetch;
@@ -326,6 +327,36 @@ public class GroupEntity {
 
 	public Set<UserGroupEntity> getUserGroups() {
 		return userGroups;
+	}
+	
+	public boolean isUserInGroup(final String userId) {
+		boolean retVal = false;
+		if(userGroups != null) {
+			for(final Iterator<UserGroupEntity> it = userGroups.iterator(); it.hasNext();) {
+				final UserGroupEntity entity = it.next();
+	    		if(entity != null) {
+	    			if(StringUtils.equals(entity.getUserId(), userId)) {
+	    				retVal = true;
+	    				break;
+	    			}
+	    		}
+	    	}
+	   	}
+		return retVal;
+	}
+	
+	public void removeUserFromGroup(final String userId) {
+		if(userGroups != null) {
+			for(final Iterator<UserGroupEntity> it = userGroups.iterator(); it.hasNext();) {
+				final UserGroupEntity entity = it.next();
+	    		if(entity != null) {
+	    			if(StringUtils.equals(entity.getUserId(), userId)) {
+	    				it.remove();
+	    				break;
+	    			}
+	    		}
+	    	}
+	   	}
 	}
 
 	public void setUserGroups(Set<UserGroupEntity> userGroups) {

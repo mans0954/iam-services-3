@@ -3,11 +3,14 @@ package org.openiam.idm.srvc.user.domain;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.persistence.*;
+
+import org.apache.commons.lang.StringUtils;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.FilterDef;
@@ -829,6 +832,36 @@ public class UserEntity {
 
     public Set<UserGroupEntity> getUserGroups() {
         return userGroups;
+    }
+    
+    public boolean isUserInGroup(final String groupId) {
+    	boolean retVal = false;
+    	if(userGroups != null) {
+    		for(final Iterator<UserGroupEntity> it = userGroups.iterator(); it.hasNext();) {
+    			final UserGroupEntity entity = it.next();
+    			if(entity != null) {
+    				if(StringUtils.equals(entity.getGrpId(), groupId)) {
+    					retVal = true;
+    					break;
+    				}
+    			}
+    		}
+    	}
+    	return retVal;
+    }
+    
+    public void removeUserFromGroup(final String groupId) {
+    	if(userGroups != null) {
+    		for(final Iterator<UserGroupEntity> it = userGroups.iterator(); it.hasNext();) {
+    			final UserGroupEntity entity = it.next();
+    			if(entity != null) {
+    				if(StringUtils.equals(entity.getGrpId(), groupId)) {
+    					it.remove();
+    					break;
+    				}
+    			}
+    		}
+    	}
     }
 
     public void setUserGroups(Set<UserGroupEntity> userGroups) {

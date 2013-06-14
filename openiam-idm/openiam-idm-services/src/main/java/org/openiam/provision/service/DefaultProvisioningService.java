@@ -24,6 +24,8 @@ package org.openiam.provision.service;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.SessionFactory;
+import org.hibernate.classic.Session;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseObject;
 import org.openiam.base.id.UUIDGen;
@@ -73,6 +75,8 @@ import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.spml2.msg.*;
 import org.openiam.spml2.msg.suspend.ResumeRequestType;
 import org.openiam.spml2.msg.suspend.SuspendRequestType;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.jws.WebMethod;
 import javax.jws.WebService;
@@ -1500,6 +1504,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
       * org.openiam.provision.service.ProvisionService#modifyUser(org.openiam
       * .provision.dto.ProvisionUser)
       */
+    @Transactional
     public ProvisionUserResponse modifyUser(ProvisionUser pUser) {
         ProvisionUserResponse resp = new ProvisionUserResponse();
         String requestId = "R" + UUIDGen.getUUID();
