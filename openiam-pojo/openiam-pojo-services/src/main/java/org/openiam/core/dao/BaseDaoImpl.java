@@ -26,7 +26,7 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
         implements BaseDao<T, PrimaryKey> {
     protected final Logger log = Logger.getLogger(this.getClass());
     protected final Class<T> domainClass;
-    
+
 	@Autowired
 	public void setTemplate(final @Qualifier("hibernateTemplate") HibernateTemplate hibernateTemplate) {
 		super.setHibernateTemplate(hibernateTemplate);
@@ -62,11 +62,11 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
     protected Criteria getExampleCriteria(T t) {
         return getCriteria().add(Example.create(t));
     }
-    
+
     protected Criteria getExampleCriteria(final SearchBean searchBean) {
     	throw new UnsupportedOperationException("Method must be overridden");
     }
-    
+
     @Override
     public int count(final SearchBean searchBean) {
     	 return ((Number) getExampleCriteria(searchBean).setProjection(rowCount())
@@ -86,12 +86,12 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
 
         return (List<T>) criteria.list();
     }
-    
+
     @Override
     public List<T> getByExample(final SearchBean searchBean) {
     	return getByExample(searchBean, -1, -1);
     }
-    
+
     @Override
     public List<T> getByExample(final SearchBean searchBean, int from, int size) {
     	 final Criteria criteria = getExampleCriteria(searchBean);
@@ -178,27 +178,27 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
         return ((Number) getCriteria().setProjection(rowCount())
                 .uniqueResult()).longValue();
     }
-
+    @Transactional
     public void save(T entity) {
     	if(entity != null) {
     		getSession().saveOrUpdate(entity);
     	}
     }
 
-
+    @Transactional
     public  T add(T entity){
         if(entity!=null){
         	getSession().persist(entity);
         }
         return entity;
     }
-
+    @Transactional
     public void delete(T entity) {
     	if(entity != null) {
     		getSession().delete(entity);
     	}
     }
-
+    @Transactional
     public void save(Collection<T> entities) {
         if (entities == null || entities.isEmpty()) {
             return;
@@ -210,6 +210,7 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
     }
 
     @Override
+    @Transactional
     public void update(T t) {
     	if(t != null) {
     		getSession().saveOrUpdate(t);
@@ -217,6 +218,7 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
     }
 
     @Override
+    @Transactional
     public T merge(T t) {
         try {
             if(t != null) {
@@ -229,12 +231,13 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
         return t;
     }
 
+    @Transactional
     public void deleteAll() throws Exception {
     	getSession()
                 .createQuery("delete from " + this.domainClass.getName())
                 .executeUpdate();
     }
-
+    @Transactional
     public void attachDirty(T t) {
         log.debug("attaching dirty instance");
         try {
