@@ -1839,18 +1839,18 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
     /* Update Principal List */
 
-    public void updatePrincipalList(String userId, List<Login> origLoginList,
+    public List<Login> updatePrincipalList(String userId, List<Login> origLoginList,
                                     List<Login> newLoginList,
-                                    List<Resource> deleteResourceList,
-                                    List<Login> principalList) {
+                                    List<Resource> deleteResourceList) {
 
+        List<Login> principalList = new ArrayList<Login>();
         log.debug("** updating Principals in modify User.");
         log.debug("- origPrincpalList =" + origLoginList);
         log.debug("- newPrincipalList=" + newLoginList);
 
         if ( (origLoginList == null || origLoginList.size() == 0 )  &&
                 (newLoginList == null || newLoginList.size() == 0 )) {
-            return;
+            return Collections.EMPTY_LIST;
         }
 
         if ( (origLoginList == null || origLoginList.size() == 0 )  &&
@@ -1866,7 +1866,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                 principalList.add(lg);
                 loginManager.addLogin(loginDozerConverter.convertToEntity(lg, true));
             }
-            return;
+            return principalList;
         }
 
         if ( (origLoginList != null && origLoginList.size() > 0 ) &&
@@ -1891,7 +1891,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                 }
                 principalList.add(l);
             }
-            return;
+            return principalList;
         }
 
         // if in new login, but not in old, then add it with operation 1
@@ -2013,6 +2013,8 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                 principalList.add(lg);
             }
         }
+
+        return principalList;
     }
 
     public LoginEntity getPrimaryIdentity(String managedSysId, List<LoginEntity> principalList) {

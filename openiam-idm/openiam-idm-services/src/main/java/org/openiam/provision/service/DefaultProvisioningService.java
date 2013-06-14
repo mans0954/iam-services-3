@@ -24,8 +24,6 @@ package org.openiam.provision.service;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.SessionFactory;
-import org.hibernate.classic.Session;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseObject;
 import org.openiam.base.id.UUIDGen;
@@ -75,8 +73,6 @@ import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.spml2.msg.*;
 import org.openiam.spml2.msg.suspend.ResumeRequestType;
 import org.openiam.spml2.msg.suspend.SuspendRequestType;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.jws.WebMethod;
 import javax.jws.WebService;
@@ -1504,7 +1500,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
       * org.openiam.provision.service.ProvisionService#modifyUser(org.openiam
       * .provision.dto.ProvisionUser)
       */
-    @Transactional
+
     public ProvisionUserResponse modifyUser(ProvisionUser pUser) {
         ProvisionUserResponse resp = new ProvisionUserResponse();
         String requestId = "R" + UUIDGen.getUUID();
@@ -1515,7 +1511,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         List<Role> activeRoleList = new ArrayList<Role>();
 	    List<Role> deleteRoleList = new ArrayList<Role>();
-	    List<LoginEntity> principalList = new ArrayList<LoginEntity>();
 
         // ModifyUser modifyUser = (ModifyUser) ac.getBean("modifyUser");
         // AttributeListBuilder attrListBuilder = (AttributeListBuilder)
@@ -1533,8 +1528,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             org = orgManager.getOrganization(pUser.getUser().getCompanyId(), null);
         }
 
-        UserEntity entity = userMgr.getUser(pUser.getUserId());
-        User origUser = userDozerConverter.convertToDTO(entity, true);
+        User origUser = userMgr.getUserDto(pUser.getUserId());
         if (origUser == null || origUser.getUserId() == null) {
             throw new IllegalArgumentException("UserId is not valid. UserId=" + pUser.getUserId());
         }
@@ -1663,16 +1657,15 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         updateResourceState(resourceList, curPrincipalList);
 
         // update the principal list
-		updatePrincipalList(origUser.getUserId(),
+        List<Login> principalList = updatePrincipalList(origUser.getUserId(),
                 loginDozerConverter.convertToDTOList(curPrincipalList, false),
                 loginDozerConverter.convertToDTOList(newPrincipalList, false),
-                deleteResourceList,
-                loginDozerConverter.convertToDTOList(principalList, false));
+                deleteResourceList);
 
         // get primary identity and bind it for the groovy scripts
         String decPassword = null;
         LoginEntity primaryIdentity = getPrimaryIdentity(
-                this.sysConfiguration.getDefaultManagedSysId(), principalList);
+                this.sysConfiguration.getDefaultManagedSysId(), loginDozerConverter.convertToEntityList(principalList, false));
         if (primaryIdentity != null) {
             String password = primaryIdentity.getPassword();
             if (password != null) {
@@ -1787,8 +1780,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     // determin if this identity exists in IDM or not
                     // if not, do an ADD otherwise, do an update
 
-					Login mLg = getPrincipalForManagedSys(managedSysId,
-                            loginDozerConverter.convertToDTOList(principalList, false));
+					Login mLg = getPrincipalForManagedSys(managedSysId, principalList);
 					// Login mLg = getPrincipalForManagedSys(managedSysId,
 					// curPrincipalList);
 

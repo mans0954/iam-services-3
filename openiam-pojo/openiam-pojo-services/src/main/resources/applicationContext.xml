@@ -228,9 +228,9 @@
 				<value>org/openiam/base/id/SequenceGen.hbm.xml</value>
 				<value>org/openiam/idm/srvc/cd/service/ReferenceData.hbm.xml</value>
 				<!-- Audit log Maps -->
-				<!--<value>org/openiam/idm/srvc/auth/login/Login.hbm.xml</value> -->
-				<!--<value>org/openiam/idm/srvc/auth/login/LoginAttribute.hbm.xml</value> -->
-				<!--<value>org/openiam/idm/srvc/auth/login/AuthState.hbm.xml</value> -->
+				<!--<value>org/openiam/idm/srvc/auth/sourceLogin/Login.hbm.xml</value> -->
+				<!--<value>org/openiam/idm/srvc/auth/sourceLogin/LoginAttribute.hbm.xml</value> -->
+				<!--<value>org/openiam/idm/srvc/auth/sourceLogin/AuthState.hbm.xml</value> -->
 				<!-- Policy Maps -->
 				<!-- <value>org/openiam/idm/srvc/policy/service/Policy.hbm.xml</value> -->
 				<!-- <value>org/openiam/idm/srvc/policy/service/PolicyAttribute.hbm.xml</value> -->
