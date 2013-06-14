@@ -2,6 +2,7 @@ package org.openiam.bpm.request;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -19,7 +20,8 @@ import org.openiam.idm.srvc.mngsys.domain.AssociationType;
     "associationId",
     "associationType",
     "description",
-    "parameters"
+    "parameters",
+    "customApproverAssociationIds"
 })
 public class GenericWorkflowRequest extends RequestorInformation {
 
@@ -29,6 +31,7 @@ public class GenericWorkflowRequest extends RequestorInformation {
 	private String associationId;
 	private String activitiRequestType;
 	private Map<String, Object> parameters;
+	private Set<String> customApproverAssociationIds;
 
 	public String getActivitiRequestType() {
 		return activitiRequestType;
@@ -89,4 +92,15 @@ public class GenericWorkflowRequest extends RequestorInformation {
 		return StringUtils.isBlank(activitiRequestType) ||
 			   StringUtils.isBlank(callerUserId);
 	}
+
+	public Set<String> getCustomApproverAssociationIds() {
+		return customApproverAssociationIds;
+	}
+
+	public void setCustomApproverAssociationIds(
+			Set<String> customApproverAssociationIds) {
+		this.customApproverAssociationIds = customApproverAssociationIds;
+	}
+	
+	
 }

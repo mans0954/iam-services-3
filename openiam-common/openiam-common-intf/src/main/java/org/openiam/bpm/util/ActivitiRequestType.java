@@ -10,7 +10,8 @@ public enum ActivitiRequestType {
 	ADD_USER_TO_GROUP("addUserToGroup", "Add User To Group"),
 	REMOVE_USER_FROM_GROUP("removeUserFromGroup", "Remove User From Group"),
 	ENTITLE_USER_TO_RESOURCE("entitleUserToResource", "Entitle User To Resoruce"),
-	DISENTITLE_USR_FROM_RESOURCE("disentitleUserFromResource", "DisentitleUserFromResource");
+	DISENTITLE_USR_FROM_RESOURCE("disentitleUserFromResource", "Disentitle User from Resource"),
+	EDIT_USER("editUser", "Edit User");
 	
 	private String description;
 	private String key;
