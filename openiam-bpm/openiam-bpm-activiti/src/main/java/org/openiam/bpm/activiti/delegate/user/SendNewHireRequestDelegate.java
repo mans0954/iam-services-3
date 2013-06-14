@@ -1,5 +1,6 @@
-package org.openiam.bpm.activiti.delegate;
+package org.openiam.bpm.activiti.delegate.user;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -66,30 +67,30 @@ public class SendNewHireRequestDelegate implements JavaDelegate {
 	
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
-		final DelegationFilterSearch delegationFilter = (DelegationFilterSearch)execution.getVariable(ActivitiConstants.DELEGATION_FILTER_SEARCH);
 		final String provisionRequestId = (String)execution.getVariable(ActivitiConstants.PROVISION_REQUEST_ID);
 		final String callerId = (String)execution.getVariable(ActivitiConstants.TASK_OWNER);
+		final Object candidateUserIdsObj = execution.getVariable(ActivitiConstants.CANDIDATE_USERS_IDS);
+		final Collection<String> candidateUsersIds = new ArrayList<String>();
+		if(candidateUserIdsObj != null) {
+			if((candidateUserIdsObj instanceof Collection<?>)) {
+				for(final String candidateId : (Collection<String>)candidateUserIdsObj) {
+					if(candidateId != null) {
+						candidateUsersIds.add(candidateId);
+					}
+				}
+			} else if(candidateUserIdsObj instanceof String) {
+				if(StringUtils.isNotBlank(((String)candidateUserIdsObj))) {
+					candidateUsersIds.add(((String)candidateUserIdsObj));
+				}
+			}
+		}
 		
 		provisionRequest = provRequestService.getRequest(provisionRequestId);
 		profileModel = (NewUserProfileRequestModel)new XStream().fromXML(provisionRequest.getRequestXML());
-		
-		if(CollectionUtils.isNotEmpty(provisionRequest.getRequestApprovers())) {			
-			requestor = userDao.findById(callerId);
-			if(requestor == null) {
-				throw new ActivitiException(String.format("User with requestorId '%s' does not exist", callerId));
-			}
-		       
-			for (final RequestApproverEntity requestApprover : provisionRequest.getRequestApprovers()) {
-				if(!StringUtils.equalsIgnoreCase(requestApprover.getApproverType(), "role")) {
-					sendNotification(requestApprover);
-				} else {
-					final List<UserEntity> roleApprovers = userManager.searchByDelegationProperties(delegationFilter);
-					if (CollectionUtils.isNotEmpty(roleApprovers)) {
-						for (final UserEntity approver : roleApprovers) {
-							sendNotificationRequest(approver);
-						}
-					}
-	            }
+		for(final String candidateId : candidateUsersIds) {
+			final UserEntity entity = userDao.findById(candidateId);
+			if(entity != null) {
+				sendNotificationRequest(entity);
 			}
 		}
 	}

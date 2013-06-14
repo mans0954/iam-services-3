@@ -1,4 +1,4 @@
-package org.openiam.bpm.activiti.delegate;
+package org.openiam.bpm.activiti.delegate.user;
 
 import java.util.Date;
 import java.util.Set;
@@ -46,14 +46,6 @@ public class RejectProfileProvisionDelegate implements JavaDelegate {
 		final ProvisionRequestEntity provisionRequest = provRequestService.getRequest(provisionRequestId);
 		provisionRequest.setStatusDate(currentDate);
 		provisionRequest.setStatus(REJECTED_STATUS);
-        final Set<RequestApproverEntity> requestApprovers = provisionRequest.getRequestApprovers();
-        for (final RequestApproverEntity requestApprovder  : requestApprovers ) {
-        	if(StringUtils.equalsIgnoreCase(requestApprovder.getApproverId(), lastCaller)) {
-        		requestApprovder.setAction(REJECTED_STATUS);
-            	requestApprovder.setActionDate(currentDate);
-            	requestApprovder.setComment(comment);
-        	}
-        }
         provRequestService.updateRequest(provisionRequest);
 	}
 }

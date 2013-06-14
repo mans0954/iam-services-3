@@ -42,6 +42,8 @@ import org.openiam.idm.srvc.role.dto.RoleAttribute;
 import org.openiam.idm.srvc.role.dto.RolePolicy;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.secdomain.service.SecurityDomainDAO;
+import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.service.UserMgr;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -106,6 +108,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
 		} catch(Throwable e) {
+			LOG.error("Exception", e);
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorText(e.getMessage());
 		}
@@ -135,6 +138,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
 		} catch(Throwable e) {
+			LOG.error("Exception", e);
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorText(e.getMessage());
 		}
@@ -158,6 +162,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
 		} catch(Throwable e) {
+			LOG.error("Exception", e);
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorText(e.getMessage());
 		}
@@ -200,6 +205,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 		try {
 			roleDataService.removeAttribute(attributeId);
 		} catch(Throwable e) {
+			LOG.error("Exception", e);
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorText(e.getMessage());
 		}
@@ -219,6 +225,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
 		} catch(Throwable e) {
+			LOG.error("Exception", e);
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorText(e.getMessage());
 		}
@@ -261,6 +268,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
 		} catch(Throwable e) {
+			LOG.error("Exception", e);
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorText(e.getMessage());
 		}
@@ -280,6 +288,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
 		} catch(Throwable e) {
+			LOG.error("Exception", e);
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorText(e.getMessage());
 		}
@@ -300,6 +309,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
 		} catch(Throwable e) {
+			LOG.error("Exception", e);
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorText(e.getMessage());
 		}
@@ -357,6 +367,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
 		} catch(Throwable e) {
+			LOG.error("Exception", e);
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorText(e.getMessage());
 		}
@@ -379,6 +390,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
 		} catch(Throwable e) {
+			LOG.error("Exception", e);
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorText(e.getMessage());
 		}
@@ -401,6 +413,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
 		} catch(Throwable e) {
+			LOG.error("Exception", e);
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorText(e.getMessage());
 		}
@@ -422,6 +435,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
 		} catch(Throwable e) {
+			LOG.error("Exception", e);
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorText(e.getMessage());
 		}
@@ -434,6 +448,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 		try {
 			roleDataService.removeRolePolicy(rolePolicyId);
 		} catch(Throwable e) {
+			LOG.error("Exception", e);
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorText(e.getMessage());
 		}
@@ -573,5 +588,46 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 	@Override
 	public int getNumOfRolesForGroup(final String groupId, String requesterId) {
 		return roleDataService.getNumOfRolesForGroup(groupId,requesterId);
+	}
+
+	@Override
+	public Response canAddUserToRole(String userId, String roleId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(roleId == null || userId == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			if(roleDataService.getUserRole(userId, roleId, null) != null) {
+				throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
+			}
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			LOG.error("Exception", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+		return response;
+	}
+
+	@Override
+	public Response canRemoveUserFromRole(String userId, String roleId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(roleId == null || userId == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+		} catch(BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch(Throwable e) {
+			LOG.error("Exception", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+		return response;
 	}
 }

@@ -1,4 +1,4 @@
-package org.openiam.bpm.activiti.delegate;
+package org.openiam.bpm.activiti.delegate.user;
 
 import java.util.Date;
 import java.util.HashSet;
@@ -122,8 +122,8 @@ public class RejectProfileProvisionNotifierDelegate implements JavaDelegate {
             		break;
             	case SUPERVISOR:
             		final Supervisor supVisor = profileModel.getUser().getSupervisor();
-                    if (supVisor != null) {
-                    	final String notifyUserId = supVisor.getSupervisor().getUserId();
+                    if (supVisor != null && supVisor.getEmployee() != null) {
+                    	final String notifyUserId = supVisor.getEmployee().getUserId();
                     	if(StringUtils.isNotBlank(notifyUserId)) {
                     		userIds.add(notifyUserId);
                     	}

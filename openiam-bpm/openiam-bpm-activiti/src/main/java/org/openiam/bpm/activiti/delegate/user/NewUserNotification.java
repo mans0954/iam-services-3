@@ -1,4 +1,4 @@
-package org.openiam.bpm.activiti.delegate;
+package org.openiam.bpm.activiti.delegate.user;
 
 import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.delegate.JavaDelegate;

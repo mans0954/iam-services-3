@@ -246,4 +246,11 @@ public interface RoleDataWebService {
     public int getNumOfRolesForGroup(final @WebParam(name="groupId", targetNamespace="") String groupId,
                                      final @WebParam(name="requesterId", targetNamespace="") String requesterId);
 
+    @WebMethod
+   	public Response canAddUserToRole(final @WebParam(name = "userId", targetNamespace = "")  String userId, 
+   									 final @WebParam(name = "roleId", targetNamespace = "") String roleId);
+   	
+   	@WebMethod
+   	public Response canRemoveUserFromRole(final @WebParam(name = "userId", targetNamespace = "")  String userId, 
+   										  final @WebParam(name = "roleId", targetNamespace = "") String roleId);
 }

@@ -8,6 +8,7 @@ import javax.jws.WebService;
 import org.openiam.base.ws.Response;
 import org.openiam.bpm.request.ActivitiClaimRequest;
 import org.openiam.bpm.request.ActivitiRequestDecision;
+import org.openiam.bpm.request.GenericWorkflowRequest;
 import org.openiam.bpm.request.HistorySearchBean;
 import org.openiam.bpm.response.NewHireResponse;
 import org.openiam.bpm.response.TaskListWrapper;
@@ -23,6 +24,9 @@ public interface ActivitiService {
 
 	@WebMethod
 	public String sayHello();
+	
+	@WebMethod
+	public Response initiateWorkflow(final GenericWorkflowRequest request);
 	
 	@WebMethod
 	public SaveTemplateProfileResponse initiateNewHireRequest(final NewUserProfileRequestModel newHireRequest);

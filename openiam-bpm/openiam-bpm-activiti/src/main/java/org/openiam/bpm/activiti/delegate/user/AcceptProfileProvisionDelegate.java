@@ -1,4 +1,4 @@
-package org.openiam.bpm.activiti.delegate;
+package org.openiam.bpm.activiti.delegate.user;
 
 import java.util.Date;
 import java.util.Iterator;
@@ -69,15 +69,7 @@ public class AcceptProfileProvisionDelegate implements JavaDelegate {
 		final Date currentDate = new Date();
 		provisionRequest.setStatusDate(currentDate);
 		provisionRequest.setStatus(APPROVE_STATUS);
-        final Set<RequestApproverEntity> requestApprovers = provisionRequest.getRequestApprovers();
-        for (final RequestApproverEntity requestApprovder  : requestApprovers ) {
-        	if(StringUtils.equalsIgnoreCase(requestApprovder.getApproverId(), lastCaller)) {
-        		requestApprovder.setAction(APPROVE_STATUS);
-            	requestApprovder.setActionDate(currentDate);
-            	requestApprovder.setComment(comment);
-        	}
-        }
-		
+
 		final NewUserProfileRequestModel profileModel = (NewUserProfileRequestModel)new XStream().fromXML(provisionRequest.getRequestXML());
 		profileModel.getUser().setUserId(null);
 		profileModel.getUser().setStatus(UserStatusEnum.PENDING_INITIAL_LOGIN);

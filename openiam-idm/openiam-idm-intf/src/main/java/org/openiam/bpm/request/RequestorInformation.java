@@ -17,7 +17,7 @@ public abstract class RequestorInformation extends BaseObject {
 	
 	private static final long serialVersionUID = 4447312981650177367L;
 
-	private String callerUserId;
+	protected String callerUserId;
 
 	public String getCallerUserId() {
 		return callerUserId;
