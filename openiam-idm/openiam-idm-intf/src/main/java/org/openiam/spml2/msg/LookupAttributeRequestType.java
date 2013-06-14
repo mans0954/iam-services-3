@@ -1,6 +1,8 @@
 package org.openiam.spml2.msg;
 
 
+import org.openiam.provision.dto.GenericProvisionObject;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -29,7 +31,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "LookupAttributeRequestType", propOrder = {
         "psoID"
 })
-public class LookupAttributeRequestType extends RequestType {
+public class LookupAttributeRequestType<ProvisionObject extends GenericProvisionObject>   extends RequestType<ProvisionObject>{
 
     @XmlElement(required = true)
     protected PSOIdentifierType psoID;

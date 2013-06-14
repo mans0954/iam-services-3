@@ -1,5 +1,6 @@
 package org.openiam.spml2.msg.search;
 
+import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.spml2.msg.RequestType;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -32,7 +33,7 @@ import javax.xml.bind.annotation.XmlType;
     "iterator"
 })
 public class CloseIteratorRequestType
-    extends RequestType
+    extends RequestType<ProvisionUser>
 {
 
     @XmlElement(required = true)

@@ -4,6 +4,8 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
+
+import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.spml2.msg.RequestType;
 
 
@@ -28,7 +30,7 @@ import org.openiam.spml2.msg.RequestType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "BatchRequestType")
 public class BatchRequestType
-    extends RequestType
+    extends RequestType<ProvisionUser>
 {
 
     @XmlAttribute

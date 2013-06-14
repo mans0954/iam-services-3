@@ -2,6 +2,7 @@ package org.openiam.spml2.interf;
 
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
+import org.openiam.provision.dto.GenericProvisionObject;
 import org.openiam.spml2.msg.*;
 import org.openiam.spml2.msg.password.*;
 import org.openiam.spml2.msg.suspend.ResumeRequestType;
@@ -44,27 +45,25 @@ public interface ConnectorService {
      * @return
      */
     @WebMethod(action = "http://www.openiam.org/service/connector/ConnectorService/add")
-    AddResponseType add(
-            @WebParam(name = "reqType", targetNamespace = "")
-            AddRequestType reqType);
+    AddResponseType add(@WebParam(name = "reqType", targetNamespace = "")  AddRequestType<? extends GenericProvisionObject> reqType);
 
     @WebMethod(action = "http://www.openiam.org/service/connector/ConnectorService/modify")
     ModifyResponseType modify(
             @WebParam(name = "reqType", targetNamespace = "")
-            ModifyRequestType reqType);
+            ModifyRequestType<? extends GenericProvisionObject> reqType);
 
     @WebMethod(action = "http://www.openiam.org/service/connector/ConnectorService/delete")
     ResponseType delete(
             @WebParam(name = "reqType", targetNamespace = "")
-            DeleteRequestType reqType);
+            DeleteRequestType<? extends GenericProvisionObject> reqType);
 
     @WebMethod(action = "http://www.openiam.org/service/connector/ConnectorService/lookup")
     LookupResponseType lookup(
             @WebParam(name = "reqType", targetNamespace = "")
-            LookupRequestType reqType);
+            LookupRequestType<? extends GenericProvisionObject> reqType);
 
     @WebMethod(action = "http://www.openiam.org/service/connector/ConnectorService/lookupAttributeNames")
-    LookupAttributeResponseType lookupAttributeNames(@WebParam(name = "reqType", targetNamespace = "") LookupAttributeRequestType reqType);
+    LookupAttributeResponseType lookupAttributeNames(@WebParam(name = "reqType", targetNamespace = "") LookupAttributeRequestType<? extends GenericProvisionObject> reqType);
 
     /**
      * The setPassword operation enables a requestor to specify a new password for an object

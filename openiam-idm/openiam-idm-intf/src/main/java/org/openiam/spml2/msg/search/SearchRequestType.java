@@ -6,6 +6,8 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
+
+import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.spml2.msg.RequestType;
 import org.openiam.spml2.msg.ReturnDataType;
 
@@ -38,7 +40,7 @@ import org.openiam.spml2.msg.ReturnDataType;
     "includeDataForCapability"
 })
 public class SearchRequestType
-    extends RequestType
+    extends RequestType<ProvisionUser>
 {
 
     protected SearchQueryType query;

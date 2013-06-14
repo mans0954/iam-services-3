@@ -23,7 +23,7 @@ import org.springframework.stereotype.Service;
 public class ModifyCSVCommand extends AbstractCSVCommand {
 
 
-	public ModifyResponseType modify(ModifyRequestType reqType) {
+	public ModifyResponseType modify(ModifyRequestType<ProvisionUser> reqType) {
 		ModifyResponseType response = new ModifyResponseType();
 		response.setStatus(StatusCodeType.SUCCESS);
 		log.debug("modify request called..");
@@ -39,7 +39,7 @@ public class ModifyCSVCommand extends AbstractCSVCommand {
 
 		// Initialise
 		try {
-			ProvisionUser user = reqType.getpUser();
+			ProvisionUser user = reqType.getProvisionObject();
 			if (user == null) {
 				response.setStatus(StatusCodeType.FAILURE);
 				response.setError(ErrorCode.CSV_ERROR);
@@ -60,7 +60,7 @@ public class ModifyCSVCommand extends AbstractCSVCommand {
 		return response;
 	}
 
-	public ResponseType delete(DeleteRequestType reqType) {
+	public ResponseType delete(DeleteRequestType<ProvisionUser>  reqType) {
 		ResponseType response = new ResponseType();
 		response.setStatus(StatusCodeType.SUCCESS);
 		log.debug("modify request called..");
@@ -76,7 +76,7 @@ public class ModifyCSVCommand extends AbstractCSVCommand {
 
 		// Initialise
 		try {
-			ProvisionUser user = reqType.getpUser();
+			ProvisionUser user = reqType.getProvisionObject();
 			if (user == null) {
 				response.setStatus(StatusCodeType.FAILURE);
 				response.setError(ErrorCode.CSV_ERROR);

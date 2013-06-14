@@ -4,6 +4,8 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
+
+import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.spml2.msg.RequestType;
 
 
@@ -31,7 +33,7 @@ import org.openiam.spml2.msg.RequestType;
     "iterator"
 })
 public class IterateRequestType
-    extends RequestType
+    extends RequestType<ProvisionUser>
 {
 
     @XmlElement(required = true)

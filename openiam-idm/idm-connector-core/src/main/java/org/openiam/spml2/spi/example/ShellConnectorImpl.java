@@ -55,6 +55,7 @@ import org.openiam.idm.srvc.policy.service.PolicyDataService;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.user.service.UserDataService;
+import org.openiam.provision.dto.GenericProvisionObject;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.spml2.base.AbstractSpml2Complete;
@@ -120,7 +121,7 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
      * org.openiam.spml2.interf.SpmlCore#add(org.openiam.spml2.msg.AddRequestType
      * )
      */
-    public AddResponseType add(AddRequestType reqType) {
+    public AddResponseType add(AddRequestType<? extends GenericProvisionObject> reqType) {
         log.debug("add request called..");
 
         // powershell.exe -command "&
@@ -393,7 +394,7 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
      * @see org.openiam.spml2.interf.SpmlCore#lookup(org.openiam.spml2.msg.
      * LookupRequestType)
      */
-    public LookupResponseType lookup(LookupRequestType reqType) {
+    public LookupResponseType lookup(LookupRequestType<? extends GenericProvisionObject> reqType) {
 
         LookupResponseType respType = new LookupResponseType();
 
@@ -417,7 +418,7 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
     * @see org.openiam.spml2.interf.SpmlCore#lookupAttributeNames(org.openiam.spml2.msg.
     * LookupAttributeRequestType)
     */
-    public LookupAttributeResponseType lookupAttributeNames(LookupAttributeRequestType reqType){
+    public LookupAttributeResponseType lookupAttributeNames(LookupAttributeRequestType<? extends GenericProvisionObject> reqType){
         LookupAttributeResponseType respType = new LookupAttributeResponseType();
         respType.setStatus(StatusCodeType.FAILURE);
         respType.setError(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION);

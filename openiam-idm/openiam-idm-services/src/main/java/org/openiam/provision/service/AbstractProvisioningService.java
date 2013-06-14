@@ -2280,7 +2280,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                              ManagedSystemObjectMatch matchObj, ExtensibleUser extUser,
                              ProvisionUser user, IdmAuditLog idmAuditLog) {
 
-        AddRequestType addReqType = new AddRequestType();
+        AddRequestType<ProvisionUser> addReqType = new AddRequestType<ProvisionUser>();
 
         PSOIdentifierType idType = new PSOIdentifierType(mLg.getLogin(), null, "target");
 
@@ -2288,7 +2288,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
         addReqType.setRequestID(requestId);
         addReqType.setTargetID(mLg.getManagedSysId());
         addReqType.getData().getAny().add(extUser);
-        addReqType.setpUser(user);
+        addReqType.setProvisionObject(user);
         log.debug("Local connector - Creating identity in target system:" + mLg.getLoginId());
         AddResponseType resp = connectorAdapter.addRequest(mSys, addReqType, muleContext);
 
@@ -2379,10 +2379,10 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
         log.debug("Local delete for=" + l);
 
-        DeleteRequestType reqType = new DeleteRequestType();
+        DeleteRequestType<ProvisionUser> reqType = new DeleteRequestType<ProvisionUser>();
         reqType.setRequestID(requestId);
         reqType.setPsoID(idType);
-        reqType.setpUser(user);
+        reqType.setProvisionObject(user);
         ResponseType resp = connectorAdapter.deleteRequest(mSys, reqType, muleContext);
 
         String logid = null;

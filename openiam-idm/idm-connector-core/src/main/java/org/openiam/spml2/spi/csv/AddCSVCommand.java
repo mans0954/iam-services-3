@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class AddCSVCommand extends AbstractCSVCommand {
-	public AddResponseType add(AddRequestType reqType) {
+	public AddResponseType add(AddRequestType<ProvisionUser> reqType) {
 		AddResponseType response = new AddResponseType();
 		response.setStatus(StatusCodeType.SUCCESS);
 		log.debug("add request called..");
@@ -22,7 +22,7 @@ public class AddCSVCommand extends AbstractCSVCommand {
 				.getManagedSysById(targetID);
 
 		try {
-			ProvisionUser user = reqType.getpUser();
+			ProvisionUser user = reqType.getProvisionObject();
 			if (user == null) {
 				response.setStatus(StatusCodeType.FAILURE);
 				response.setError(ErrorCode.CSV_ERROR);

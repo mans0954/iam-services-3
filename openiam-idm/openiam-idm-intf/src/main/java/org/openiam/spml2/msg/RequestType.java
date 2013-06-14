@@ -10,6 +10,7 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
+import org.openiam.provision.dto.GenericProvisionObject;
 import org.openiam.provision.dto.ProvisionUser;
 
 /**
@@ -35,11 +36,11 @@ import org.openiam.provision.dto.ProvisionUser;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "RequestType", propOrder = { "requestID", "executionMode",
-		"pUser" })
+		"provisionObject" })
 @XmlSeeAlso({ LookupRequestType.class, AddRequestType.class,
 		ListTargetsRequestType.class, DeleteRequestType.class,
 		ModifyRequestType.class })
-public class RequestType extends ExtensibleType {
+public class RequestType<ProvisionObject extends GenericProvisionObject> extends ExtensibleType {
 
 	@XmlAttribute
 	@XmlJavaTypeAdapter(CollapsedStringAdapter.class)
@@ -48,14 +49,14 @@ public class RequestType extends ExtensibleType {
 	protected String requestID;
 	@XmlAttribute
 	protected ExecutionModeType executionMode;
-	protected ProvisionUser pUser;
+	protected ProvisionObject provisionObject;
 
-	public ProvisionUser getpUser() {
-		return pUser;
+	public ProvisionObject getProvisionObject() {
+		return provisionObject;
 	}
 
-	public void setpUser(ProvisionUser pUser) {
-		this.pUser = pUser;
+	public void setProvisionObject(ProvisionObject provisionObject) {
+		this.provisionObject = provisionObject;
 	}
 
 	public RequestType() {

@@ -1,6 +1,8 @@
 
 package org.openiam.spml2.msg;
 
+import org.openiam.provision.dto.GenericProvisionObject;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Arrays;
@@ -44,7 +46,7 @@ import javax.xml.bind.annotation.XmlType;
     "targetID",
     "returnData"
 })
-public class AddRequestType   extends RequestType
+public class AddRequestType<ProvisionObject extends GenericProvisionObject>   extends RequestType<ProvisionObject>
 {
 
     protected PSOIdentifierType psoID;

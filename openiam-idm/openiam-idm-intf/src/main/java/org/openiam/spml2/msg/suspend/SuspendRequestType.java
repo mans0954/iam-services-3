@@ -8,6 +8,8 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.datatype.XMLGregorianCalendar;
+
+import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.spml2.msg.PSOIdentifierType;
 import org.openiam.spml2.msg.RequestType;
 
@@ -36,8 +38,7 @@ import org.openiam.spml2.msg.RequestType;
 @XmlType(name = "SuspendRequestType", propOrder = {
     "psoID"
 })
-public class SuspendRequestType
-    extends RequestType
+public class SuspendRequestType extends RequestType<ProvisionUser>
 {
 
     @XmlElement(required = true)

@@ -1,6 +1,8 @@
 
 package org.openiam.spml2.msg;
 
+import org.openiam.provision.dto.GenericProvisionObject;
+
 import java.util.ArrayList;
 import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -36,8 +38,7 @@ import javax.xml.bind.annotation.XmlType;
     "psoID",
     "modification"
 })
-public class ModifyRequestType
-    extends RequestType
+public class ModifyRequestType<ProvisionObject extends GenericProvisionObject>   extends RequestType<ProvisionObject>
 {
 
     @XmlElement(required = true)

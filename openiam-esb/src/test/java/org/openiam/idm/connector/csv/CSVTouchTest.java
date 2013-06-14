@@ -30,7 +30,7 @@ public class CSVTouchTest extends AbstractTestNGSpringContextTests {
 
 	@Test
 	public void addTouchCSVTest() {
-		AddRequestType addRequest = new AddRequestType();
+		AddRequestType<ProvisionUser>  addRequest = new AddRequestType<ProvisionUser>();
 		PSOIdentifierType psoType = new PSOIdentifierType();
 		psoType.setID("sysadmin");
 		addRequest.setPsoID(psoType);
@@ -39,13 +39,13 @@ public class CSVTouchTest extends AbstractTestNGSpringContextTests {
 		pu.getUser().setEmail("email");
 		pu.getUser().setEmployeeId("1");
 		pu.getUser().setFirstName("firstName_test");
-		addRequest.setpUser(pu);
+		addRequest.setProvisionObject(pu);
 		connectorService.add(addRequest);
 	}
 
 	@Test
 	public void modifyTouchCSVTest() {
-		ModifyRequestType addRequest = new ModifyRequestType();
+		ModifyRequestType<ProvisionUser>  addRequest = new ModifyRequestType<ProvisionUser>();
 		PSOIdentifierType psoType = new PSOIdentifierType();
 		psoType.setID("sysadmin");
 		psoType.setTargetID(defaultManagedSysId);
@@ -54,13 +54,13 @@ public class CSVTouchTest extends AbstractTestNGSpringContextTests {
 		pu.getUser().setEmail("e@mail.com");
 		pu.getUser().setEmployeeId("2");
 		pu.getUser().setFirstName("firstName_test_2");
-		addRequest.setpUser(pu);
+		addRequest.setProvisionObject(pu);
 		connectorService.modify(addRequest);
 	}
 
 	@Test
 	public void deleteTouchCSVTest() {
-		DeleteRequestType addRequest = new DeleteRequestType();
+		DeleteRequestType<ProvisionUser>  addRequest = new DeleteRequestType<ProvisionUser> ();
 		PSOIdentifierType psoType = new PSOIdentifierType();
 		psoType.setID("sysadmin2");
 		psoType.setTargetID(defaultManagedSysId);
@@ -69,7 +69,7 @@ public class CSVTouchTest extends AbstractTestNGSpringContextTests {
 		pu.getUser().setEmail("email@mail.co,");
 		pu.getUser().setEmployeeId("1");
 		pu.getUser().setFirstName("fn_2");
-		addRequest.setpUser(pu);
+		addRequest.setProvisionObject(pu);
 		connectorService.delete(addRequest);
 	}
 

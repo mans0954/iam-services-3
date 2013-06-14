@@ -5,6 +5,8 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
+
+import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.spml2.msg.RequestType;
 import org.openiam.spml2.msg.search.SearchQueryType;
 
@@ -34,7 +36,7 @@ import org.openiam.spml2.msg.search.SearchQueryType;
     "query"
 })
 public class BulkDeleteRequestType
-    extends RequestType
+    extends RequestType<ProvisionUser>
 {
 
     @XmlElement(namespace = "urn:oasis:names:tc:SPML:2:0:search", required = true)

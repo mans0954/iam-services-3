@@ -7,6 +7,7 @@ import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemObjectMatchDAO;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
+import org.openiam.provision.dto.GenericProvisionObject;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.spml2.base.AbstractSpml2Complete;
@@ -216,7 +217,7 @@ public class LinuxConnectorImpl extends AbstractSpml2Complete implements Connect
     }
 
 
-    public ModifyResponseType modify(@WebParam(name = "reqType", targetNamespace = "") ModifyRequestType reqType) {
+    public ModifyResponseType modify(@WebParam(name = "reqType", targetNamespace = "") ModifyRequestType<? extends GenericProvisionObject> reqType) {
         log.debug("Modify user called");
 
         ModifyResponseType responseType = new ModifyResponseType();

@@ -6,6 +6,8 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
+
+import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.spml2.msg.PSOIdentifierType;
 import org.openiam.spml2.msg.RequestType;
 
@@ -34,8 +36,7 @@ import org.openiam.spml2.msg.RequestType;
 @XmlType(name = "ExpirePasswordRequestType", propOrder = {
     "psoID"
 })
-public class ExpirePasswordRequestType
-    extends RequestType
+public class ExpirePasswordRequestType extends RequestType<ProvisionUser>
 {
 
     @XmlElement(required = true)

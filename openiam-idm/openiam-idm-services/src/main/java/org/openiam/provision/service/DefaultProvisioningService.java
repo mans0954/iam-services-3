@@ -609,14 +609,14 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 }
 
                             } else {
-                                ModifyRequestType modReqType = new ModifyRequestType();
+                                ModifyRequestType<ProvisionUser> modReqType = new ModifyRequestType<ProvisionUser>();
 
                                 PSOIdentifierType idType = new PSOIdentifierType(
                                         resLogin.getLogin(), null, "target");
                                 idType.setTargetID(resLogin.getManagedSysId());
                                 modReqType.setPsoID(idType);
                                 modReqType.setRequestID(requestId);
-                                modReqType.setpUser(user);
+                                modReqType.setProvisionObject(user);
 
                                 // check if this request calls for the identity
                                 // being renamed
@@ -1781,7 +1781,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         bindingMap.put(MATCH_PARAM, matchObj);
                     }
                     // build the request
-                    ModifyRequestType modReqType = new ModifyRequestType();
+                    ModifyRequestType<ProvisionUser> modReqType = new ModifyRequestType<ProvisionUser>();
 
                     // get the identity linked to this resource / managedsys
                     // determin if this identity exists in IDM or not
@@ -1928,7 +1928,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                             } else {
                                 // build the request
-                                AddRequestType addReqType = new AddRequestType();
+                                AddRequestType<ProvisionUser> addReqType = new AddRequestType<ProvisionUser>();
 
                                 PSOIdentifierType idType = new PSOIdentifierType(
                                         mLg.getLogin(), null, "target");
@@ -1936,7 +1936,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 addReqType.setRequestID(requestId);
                                 addReqType.setTargetID(mLg.getManagedSysId());
                                 addReqType.getData().getAny().add(extUser);
-                                addReqType.setpUser(pUser);
+                                addReqType.setProvisionObject(pUser);
                                 log.debug("Creating identity in target system:"
                                         + mLg.getLoginId());
 
@@ -2071,7 +2071,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 idType.setTargetID(mLg.getManagedSysId());
                                 modReqType.setPsoID(idType);
                                 modReqType.setRequestID(requestId);
-                                modReqType.setpUser(pUser);
+                                modReqType.setProvisionObject(pUser);
 
                                 // check if this request calls for the identity
                                 // being renamed
