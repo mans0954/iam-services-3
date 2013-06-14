@@ -28,8 +28,7 @@ public class ProvisionServicePostProcessor extends AbstractPostProcessor {
 
 	public int addUser(ProvisionUser user, Map<String, Object> bindingMap) {
 		// context to look up spring beans
-		ApplicationContext context = (ApplicationContext)bindingMap.get("context");
-		
+
 		println("ProvisionServicePostProcessor: AddUser called.");
 		println("ProvisionServicePostProcessor: User=" + user.toString());
 		
@@ -41,8 +40,7 @@ public class ProvisionServicePostProcessor extends AbstractPostProcessor {
     public int modifyUser(ProvisionUser user, Map<String, Object> bindingMap){
     
     	// context to look up spring beans
-		ApplicationContext context = (ApplicationContext)bindingMap.get("context");
-    	
+
     	
     	println("ProvisionServicePostProcessor: ModifyUser called.");
 			println("ProvisionServicePostProcessor: User=" + user.toString());
@@ -62,8 +60,7 @@ public class ProvisionServicePostProcessor extends AbstractPostProcessor {
     public int deleteUser(ProvisionUser user, Map<String, Object> bindingMap){
     
     	// context to look up spring beans
-		ApplicationContext context = (ApplicationContext)bindingMap.get("context");
-    
+
       println("ProvisionServicePostProcessor: DeleteUser called.");
 			println("ProvisionServicePostProcessor: User=" + user.toString());
 			
@@ -75,8 +72,7 @@ public class ProvisionServicePostProcessor extends AbstractPostProcessor {
 	
     public int setPassword( PasswordSync passwordSync, Map<String, Object> bindingMap){
     
-    	ApplicationContext context = (ApplicationContext)bindingMap.get("context");
-    
+
      	println("ProvisionServicePostProcessor: SetPassword called.");
      	
      	showBindingMap(bindingMap);

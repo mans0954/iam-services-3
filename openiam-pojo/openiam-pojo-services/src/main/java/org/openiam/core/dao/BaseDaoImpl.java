@@ -178,27 +178,27 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
         return ((Number) getCriteria().setProjection(rowCount())
                 .uniqueResult()).longValue();
     }
-    @Transactional
+
     public void save(T entity) {
     	if(entity != null) {
     		getSession().saveOrUpdate(entity);
     	}
     }
 
-    @Transactional
+
     public  T add(T entity){
         if(entity!=null){
         	getSession().persist(entity);
         }
         return entity;
     }
-    @Transactional
+
     public void delete(T entity) {
     	if(entity != null) {
     		getSession().delete(entity);
     	}
     }
-    @Transactional
+
     public void save(Collection<T> entities) {
         if (entities == null || entities.isEmpty()) {
             return;
@@ -210,15 +210,13 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
     }
 
     @Override
-    @Transactional
     public void update(T t) {
     	if(t != null) {
-    		getSession().update(t);
+    		getSession().saveOrUpdate(t);
     	}
     }
 
     @Override
-    @Transactional
     public T merge(T t) {
         try {
             if(t != null) {
@@ -231,13 +229,12 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
         return t;
     }
 
-    @Transactional
     public void deleteAll() throws Exception {
     	getSession()
                 .createQuery("delete from " + this.domainClass.getName())
                 .executeUpdate();
     }
-    @Transactional
+
     public void attachDirty(T t) {
         log.debug("attaching dirty instance");
         try {

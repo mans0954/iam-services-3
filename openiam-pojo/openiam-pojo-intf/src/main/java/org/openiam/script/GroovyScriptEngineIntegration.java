@@ -40,7 +40,7 @@ import org.springframework.beans.factory.annotation.Value;
  */
 public class GroovyScriptEngineIntegration implements ScriptIntegration, ApplicationContextAware {
 
-    public static final String APP_CONTEXT = "appContext";
+    public static final String APP_CONTEXT = "context";
 
     private ApplicationContext ac;
 
