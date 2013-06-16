@@ -38,6 +38,7 @@ import org.openiam.dozer.converter.PolicyDefDozerConverter;
 import org.openiam.dozer.converter.PolicyDefParamDozerConverter;
 import org.openiam.dozer.converter.PolicyDozerConverter;
 import org.openiam.dozer.converter.PolicyObjectAssocDozerConverter;
+import org.openiam.idm.searchbeans.PolicySearchBean;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.org.service.OrganizationDataServiceImpl;
 import org.openiam.idm.srvc.policy.domain.PolicyAttributeEntity;
@@ -51,6 +52,7 @@ import org.openiam.idm.srvc.policy.dto.PolicyDefParam;
 import org.openiam.idm.srvc.policy.dto.PolicyObjectAssoc;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
+import org.openiam.idm.srvc.searchbean.converter.PolicySearchBeanConverter;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,6 +80,9 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 	/** The policy dao. */
 	@Autowired
 	private PolicyDAO policyDao;
+	
+	@Autowired
+	private PolicySearchBeanConverter policySearchBeanConverter;
 
 	/** The policy def param dao. */
 	@Autowired
@@ -359,6 +364,19 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 			response.setErrorText(e.getMessage());
 		}
 		return response;
+	}
+
+	@Override
+	public List<Policy> findBeans(final PolicySearchBean searchBean, int from, int size) {
+		final PolicyEntity entity = policySearchBeanConverter.convert(searchBean);
+		final List<PolicyEntity> entityList = policyDao.getByExample(entity, from, size);
+		return (entityList != null) ? policyDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy()) : null;
+	}
+
+	@Override
+	public int count(PolicySearchBean searchBean) {
+		final PolicyEntity entity = policySearchBeanConverter.convert(searchBean);
+		return policyDao.count(entity);
 	}
 
 }

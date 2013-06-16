@@ -29,6 +29,7 @@ import javax.jws.WebParam;
 import javax.jws.WebService;
 
 import org.openiam.base.ws.Response;
+import org.openiam.idm.searchbeans.PolicySearchBean;
 import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 import org.openiam.idm.srvc.policy.domain.PolicyObjectAssocEntity;
 import org.openiam.idm.srvc.policy.dto.Policy;
@@ -44,6 +45,10 @@ import org.openiam.idm.srvc.res.dto.Resource;
 @WebService
 public interface PolicyDataService {
 
+	public List<Policy> findBeans(final PolicySearchBean searchBean, final int from, final int size);
+	
+	public int count(final PolicySearchBean searchBean);
+	
 	/**
 	 * @param policyDefId
 	 * @return
