@@ -21,8 +21,6 @@ public interface LoginDataService {
 
     public void addLogin(LoginEntity principal);
     
-    public void mergeLogin(final LoginEntity principal);
-
     public void updateLogin(LoginEntity principal);
 
     public void deleteLogin(final String loginId);

@@ -6,7 +6,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -435,41 +434,7 @@ public class LoginDataServiceImpl implements LoginDataService {
         }
 
         log.debug("Updating Identity" + login);
-        LoginEntity loginEntity = mergeLoginFields(login, loginDao.findById(login.getLoginId()));
-
-        loginDao.update(loginEntity);
-    }
-
-    private LoginEntity mergeLoginFields(LoginEntity sourceLogin, LoginEntity targetLogin) {
-
-        String[] excludes = {};
-        if (sourceLogin.getPwdChanged() == null) {
-            ArrayUtils.add(excludes, "pwdChanged");
-        }
-        if (sourceLogin.getPwdExp() == null) {
-            ArrayUtils.add(excludes, "pwdExp");
-        }
-        if (sourceLogin.getGracePeriod() == null) {
-            ArrayUtils.add(excludes, "gracePeriod");
-        }
-        if (sourceLogin.getCreateDate() == null) {
-            ArrayUtils.add(excludes, "createDate");
-        }
-        if (sourceLogin.getLastAuthAttempt() == null) {
-            ArrayUtils.add(excludes, "lastAuthAttempt");
-        }
-        if (sourceLogin.getLastLogin() == null) {
-            ArrayUtils.add(excludes, "lastLogin");
-        }
-        if (sourceLogin.getPrevLogin() == null) {
-            ArrayUtils.add(excludes, "prevLogin");
-        }
-        if (sourceLogin.getPswdResetTokenExp() == null) {
-            ArrayUtils.add(excludes, "pswdResetTokenExp");
-        }
-        org.springframework.beans.BeanUtils.copyProperties(sourceLogin, targetLogin, excludes);
-
-        return targetLogin;
+        loginDao.merge(login);
     }
 
     private String getPolicyAttribute(Set<PolicyAttribute> attr, String name) {
@@ -617,10 +582,4 @@ public class LoginDataServiceImpl implements LoginDataService {
             loginDao.update(entity);
         }
     }
-
-	@Override
-    @Transactional
-	public void mergeLogin(LoginEntity principal) {
-		loginDao.merge(principal);
-	}
 }

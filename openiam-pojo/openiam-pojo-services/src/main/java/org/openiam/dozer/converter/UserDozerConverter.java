@@ -1,11 +1,16 @@
 package org.openiam.dozer.converter;
 
-import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
+import org.openiam.idm.srvc.continfo.domain.AddressEntity;
+import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
+import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
+import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.domain.UserNoteEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by: Alexander Duckardt
@@ -25,7 +30,25 @@ public class UserDozerConverter  extends AbstractDozerEntityConverter<User, User
 
     @Override
     public UserEntity convertToEntity(User entity, boolean isDeep) {
-        return convertToCrossEntity(entity, isDeep, UserEntity.class);
+        UserEntity userEntity = convertToCrossEntity(entity, isDeep, UserEntity.class);
+        if(isDeep) {
+            for(EmailAddressEntity emailAddressEntity : userEntity.getEmailAddresses()) {
+                emailAddressEntity.setParent(userEntity);
+            }
+            for(AddressEntity addressEntity : userEntity.getAddresses()) {
+                addressEntity.setParent(userEntity);
+            }
+            for(PhoneEntity phoneEntity : userEntity.getPhones()) {
+                phoneEntity.setParent(userEntity);
+            }
+            for(UserNoteEntity userNoteEntity : userEntity.getUserNotes()) {
+                userNoteEntity.setUser(userEntity);
+            }
+            for(Map.Entry<String, UserAttributeEntity> attributeEntityEntry : userEntity.getUserAttributes().entrySet()) {
+                attributeEntityEntry.getValue().setUser(userEntity);
+            }
+        }
+        return userEntity;
     }
 
     @Override

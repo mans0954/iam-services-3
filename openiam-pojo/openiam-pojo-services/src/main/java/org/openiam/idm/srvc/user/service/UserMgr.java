@@ -245,8 +245,7 @@ public class UserMgr implements UserDataService {
 
         validateEmailAddress(user, user.getEmailAddresses());
         UserEntity userOrig = userDao.findById(user.getUserId());
-        mergeUserFields(userOrig,user);
-        userDao.update(userOrig);
+        userDao.merge(userOrig);
     }
 
     @Override
