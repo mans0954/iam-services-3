@@ -261,8 +261,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
         if (objectType == null) {
             throw new NullPointerException("objectType is null");
         }
-        List<ManagedSystemObjectMatchEntity> objList = managedSysObjectMatchDao
-                .findBySystemId(managedSystemId, objectType);
+        List<ManagedSystemObjectMatchEntity> objList = managedSystemService.managedSysObjectParam(managedSystemId, objectType);
         if (objList == null) {
             return null;
         }
