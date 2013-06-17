@@ -1,6 +1,5 @@
 package org.openiam.spml2;
 
-import org.openiam.idm.srvc.synch.service.generic.GenericObjectSynchService;
 import org.openiam.provision.dto.GenericProvisionObject;
 import org.openiam.spml2.msg.*;
 import org.openiam.spml2.msg.password.ExpirePasswordRequestType;
@@ -9,7 +8,7 @@ import org.openiam.spml2.msg.password.SetPasswordRequestType;
 import org.openiam.spml2.msg.password.ValidatePasswordRequestType;
 import org.openiam.spml2.msg.suspend.ResumeRequestType;
 import org.openiam.spml2.msg.suspend.SuspendRequestType;
-import org.openiam.spml2.spi.constants.CommandType;
+import org.openiam.spml2.constants.CommandType;
 
 public class RequestFactory {
     public static <ProvisionObject extends GenericProvisionObject> RequestType<ProvisionObject> getBean(CommandType type, Class<ProvisionObject> clazz) throws Exception {

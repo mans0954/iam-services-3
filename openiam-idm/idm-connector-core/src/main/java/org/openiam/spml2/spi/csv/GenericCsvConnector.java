@@ -1,8 +1,13 @@
-package org.openiam.spml2.spi;
+package org.openiam.spml2.spi.csv;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
-import org.openiam.spml2.base.AbstractSpml2Complete;
+import org.openiam.provision.dto.GenericProvisionObject;
+import org.openiam.spml2.base.AbstractConnectorService;
+import org.openiam.spml2.constants.CommandType;
+import org.openiam.spml2.constants.ConnectorType;
 import org.openiam.spml2.interf.ConnectorService;
 import org.openiam.spml2.msg.*;
 import org.openiam.spml2.msg.password.*;
@@ -16,16 +21,12 @@ import org.springframework.stereotype.Service;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 
-@Service("genericConnector")
-@WebService(endpointInterface = "org.openiam.spml2.interf.ConnectorService", targetNamespace = "http://www.openiam.org/service/connector",
-            portName = "CSVConnectorServicePort", serviceName = "GenericConnectorService")
-public class GenericConnectorImpl extends AbstractSpml2Complete implements  ConnectorService, ApplicationContextAware {
+@Service("genericCsvConnector")
+@WebService(endpointInterface = "org.openiam.spml2.interf.ConnectorService", targetNamespace = "http://www.openiam.org/service/connector", portName = "CSVConnectorServicePort", serviceName = "CSVConnectorService")
+public class GenericCsvConnector extends AbstractConnectorService {
 
-    private static ApplicationContext applicationContext;
-
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-       this.applicationContext = applicationContext;
+    protected void initConnectorType(){
+        this.connectorType= ConnectorType.CSV;
     }
 
     @Override
@@ -38,28 +39,39 @@ public class GenericConnectorImpl extends AbstractSpml2Complete implements  Conn
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    protected  <Response extends ResponseType> Response manageRequest(CommandType commandType, RequestType requestType, Class<Response> responseClass){
+        try {
+            return responseClass.newInstance();
+        } catch (InstantiationException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+        return null;
+    }
+
     @Override
-    public AddResponseType add(@WebParam(name = "reqType", targetNamespace = "") AddRequestType reqType) {
+    public AddResponseType add(@WebParam(name = "reqType", targetNamespace = "") AddRequestType<? extends GenericProvisionObject> reqType) {
+        return manageRequest(CommandType.ADD, reqType, AddResponseType.class);
+    }
+
+    @Override
+    public ModifyResponseType modify(@WebParam(name = "reqType", targetNamespace = "") ModifyRequestType<? extends GenericProvisionObject> reqType) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
-    public ModifyResponseType modify(@WebParam(name = "reqType", targetNamespace = "") ModifyRequestType reqType) {
+    public ResponseType delete(@WebParam(name = "reqType", targetNamespace = "") DeleteRequestType<? extends GenericProvisionObject> reqType) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
-    public ResponseType delete(@WebParam(name = "reqType", targetNamespace = "") DeleteRequestType reqType) {
+    public LookupResponseType lookup(@WebParam(name = "reqType", targetNamespace = "") LookupRequestType<? extends GenericProvisionObject> reqType) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @Override
-    public LookupResponseType lookup(@WebParam(name = "reqType", targetNamespace = "") LookupRequestType reqType) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public LookupAttributeResponseType lookupAttributeNames(@WebParam(name = "reqType", targetNamespace = "") LookupAttributeRequestType reqType) {
+    public LookupAttributeResponseType lookupAttributeNames(@WebParam(name = "reqType", targetNamespace = "") LookupAttributeRequestType<? extends GenericProvisionObject> reqType) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 

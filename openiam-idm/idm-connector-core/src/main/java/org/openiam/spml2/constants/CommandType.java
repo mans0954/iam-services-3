@@ -1,4 +1,4 @@
-package org.openiam.spml2.spi.constants;
+package org.openiam.spml2.constants;
 
 public enum CommandType {
     ADD,
