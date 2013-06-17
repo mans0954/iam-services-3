@@ -2430,6 +2430,18 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
         return resp;
     }
+    
+    protected void localResetPassword(final String requestId, 
+    								  final LoginEntity login,
+    								  final String password, 
+    								  final ManagedSysEntity mSys, 
+    								  PasswordSync passwordSync) {
+    	localResetPassword(requestId, 
+    					   loginDozerConverter.convertToDTO(login, true), 
+    					   password, 
+    					   managedSysDozerConverter.convertToDTO(mSys, true), 
+    					   passwordSync);
+    }
 
     protected void localResetPassword(String requestId, Login login,
             String password, ManagedSysDto mSys, PasswordSync passwordSync) {
@@ -2447,6 +2459,22 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                 null,
                 requestId, respType.getErrorCodeAsStr(), null, respType.getErrorMessage(),
                 null, login.getLogin(), login.getDomainId());
+    }
+    
+    protected void remoteResetPassword(final String requestId, 
+    								   final LoginEntity login,
+    								   final String password, 
+    								   final ManagedSysEntity mSys,
+    								   final ManagedSystemObjectMatchEntity matchObj, 
+    								   ProvisionConnectorEntity connector,
+    								   PasswordSync passwordSync) {
+    	remoteResetPassword(requestId, 
+    						loginDozerConverter.convertToDTO(login, true),
+    						password, 
+    						managedSysDozerConverter.convertToDTO(mSys, true), 
+    						objectMatchDozerConverter.convertToDTO(matchObj, true),
+    						provisionConnectorConverter.convertToDTO(connector, true), 
+    						passwordSync);
     }
 
     protected void remoteResetPassword(String requestId, Login login,
