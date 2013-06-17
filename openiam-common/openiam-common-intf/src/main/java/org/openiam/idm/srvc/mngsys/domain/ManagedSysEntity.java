@@ -85,8 +85,7 @@ public class ManagedSysEntity implements Serializable {
     @Column(name = "HNDLR_5", length = 100)
     private String handler5;
 
-    @OneToMany
-    @JoinColumn(name = "MANAGED_SYS_ID")
+    @OneToMany(mappedBy="managedSys")
     private Set<ManagedSystemObjectMatchEntity> mngSysObjectMatchs = new HashSet<ManagedSystemObjectMatchEntity>();
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)

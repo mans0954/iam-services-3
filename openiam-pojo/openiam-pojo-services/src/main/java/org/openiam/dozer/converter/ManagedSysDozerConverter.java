@@ -1,7 +1,9 @@
 package org.openiam.dozer.converter;
 
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -20,7 +22,11 @@ public class ManagedSysDozerConverter extends AbstractDozerEntityConverter<Manag
 
     @Override
     public ManagedSysEntity convertToEntity(ManagedSysDto entity, boolean isDeep) {
-        return convertToCrossEntity(entity, isDeep, ManagedSysEntity.class);
+        ManagedSysEntity managedSysEntity = convertToCrossEntity(entity, isDeep, ManagedSysEntity.class);
+        for(ManagedSystemObjectMatchEntity objectMatch : managedSysEntity.getMngSysObjectMatchs()) {
+            objectMatch.setManagedSys(managedSysEntity);
+        }
+        return managedSysEntity;
     }
 
     @Override

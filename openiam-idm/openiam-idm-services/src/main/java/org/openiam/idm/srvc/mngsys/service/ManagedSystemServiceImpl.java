@@ -51,7 +51,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     @Override
     @Transactional
     public void addManagedSys(ManagedSysEntity entity) {
-        managedSysDAO.add(entity);
+        managedSysDAO.persist(entity);
     }
 
     @Override
@@ -82,6 +82,9 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     @Transactional
     public void removeManagedSysById(String id) {
         ManagedSysEntity sysEntity = managedSysDAO.findById(id);
+        for(ManagedSystemObjectMatchEntity matchEntity : sysEntity.getMngSysObjectMatchs()) {
+            matchDAO.delete(matchEntity);
+        }
         managedSysDAO.delete(sysEntity);
     }
 
