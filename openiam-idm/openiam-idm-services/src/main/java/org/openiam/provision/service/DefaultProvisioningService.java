@@ -22,6 +22,7 @@
 package org.openiam.provision.service;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.AttributeOperationEnum;
@@ -41,6 +42,9 @@ import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.grp.dto.Group;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
+import org.openiam.idm.srvc.mngsys.domain.ProvisionConnectorEntity;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
@@ -52,6 +56,8 @@ import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
 import org.openiam.idm.srvc.pswd.dto.Password;
 import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
 import org.openiam.idm.srvc.pswd.service.PasswordGenerator;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
@@ -2676,8 +2682,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         for (LoginEntity l : principalList) {
 
             // find the openiam identity and update it in openiam DB
-            if (l.getManagedSysId()
-                    .equalsIgnoreCase(passwordSync.getManagedSystemId())) {
+        	if(StringUtils.equalsIgnoreCase(l.getManagedSysId(), passwordSync.getManagedSystemId())) {
 
                 boolean retval = loginManager.setPassword(l.getDomainId(), l.getLogin(),
                         passwordSync.getManagedSystemId(), encPassword, passwordSync.isPreventChangeCountIncrement());
@@ -2717,8 +2722,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         boolean connectorSuccess = false;
 
-        if (passwordSync.getManagedSystemId().equalsIgnoreCase(
-                this.sysConfiguration.getDefaultManagedSysId())) {
+        if(StringUtils.equalsIgnoreCase(passwordSync.getManagedSystemId(), sysConfiguration.getDefaultManagedSysId())) {
             // typical sync
             // List<Login> principalList =
             // loginManager.getLoginByUser(login.getUserId());
@@ -2731,102 +2735,88 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 log.debug("**** Managed System Id in passwordsync object="
                         + passwordSync.getManagedSystemId());
 
-                if (!lg.getManagedSysId()
-                        .equalsIgnoreCase(
-                                sysConfiguration.getDefaultManagedSysId())) {
-
+                if(!StringUtils.equalsIgnoreCase(lg.getManagedSysId(), sysConfiguration.getDefaultManagedSysId())) {
+                
                     // determine if you should sync the password or not
-                    String managedSysId = lg.getManagedSysId();
-                    Resource resource = resourceDataService
-                            .getResource(managedSysId);
-
-                    log.debug(" - managedsys id = " + managedSysId);
-                    log.debug(" - Resource for sysId =" + resource);
-
-                    // check the sync flag
-
-                    if (syncAllowed(resource)) {
-
-                        log.debug("Sync allowed for sys=" + managedSysId);
-
-                        // pre-process
-
-                        bindingMap.put("IDENTITY", lg);
-                        bindingMap.put("RESOURCE", resource);
-                        bindingMap.put("PASSWORD_SYNC", passwordSync);
-
-                        if (resource != null) {
-                            String preProcessScript = getResProperty(
-                                    resource.getResourceProps(), "PRE_PROCESS");
-                            if (preProcessScript != null
-                                    && !preProcessScript.isEmpty()) {
-                                PreProcessor ppScript = createPreProcessScript(preProcessScript, bindingMap);
-                                if (ppScript != null) {
-                                    if (executePreProcess(ppScript, bindingMap,
-                                            null, "SET_PASSWORD") == ProvisioningConstants.FAIL) {
-                                        continue;
-                                    }
-                                }
-                            }
-                        }
-
-                        // update the password in openiam
-                        loginManager.setPassword(lg.getDomainId(),
-                                lg.getLogin(), lg.getManagedSysId(),
-                                encPassword, passwordSync.isPreventChangeCountIncrement());
-
-                        // update the target system
-                        ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
-
-                        if (mSys.getConnectorId() != null && !mSys.getConnectorId().isEmpty()) {
-
-                            ProvisionConnectorDto connector = provisionConnectorWebService
-                                    .getProvisionConnector(mSys.getConnectorId());
-
-                            ManagedSystemObjectMatch matchObj = null;
-                            ManagedSystemObjectMatch[] matchObjAry = managedSysService
-                                    .managedSysObjectParam(
-                                            mSys.getManagedSysId(), "USER");
-                            if (matchObjAry != null && matchObjAry.length > 0) {
-                                matchObj = matchObjAry[0];
-                            }
-
-                            if (connector.getConnectorInterface() != null
-                                    && connector.getConnectorInterface()
-                                    .equalsIgnoreCase("REMOTE")) {
-
-                                org.openiam.connector.type.ResponseType resp = remoteSetPassword(requestId,
-                                        loginDozerConverter.convertToDTO(lg, true),
-                                        passwordSync, mSys, matchObj, connector);
-                                if (resp.getStatus() == StatusCodeType.SUCCESS) {
-                                    connectorSuccess = true;
-                                }
-
-                            } else {
-                                ResponseType resp = localSetPassword(requestId,
-                                        loginDozerConverter.convertToDTO(lg, true), passwordSync, mSys);
-                                if (resp.getStatus() == StatusCodeType.SUCCESS) {
-                                    connectorSuccess = true;
-                                }
-                            }
-
-                            // post-process
-                            if (resource != null) {
-                                String postProcessScript = getResProperty(
-                                        resource.getResourceProps(), "POST_PROCESS");
-                                if (postProcessScript != null
-                                        && !postProcessScript.isEmpty()) {
-                                    PostProcessor ppScript = createPostProcessScript(postProcessScript, bindingMap);
-                                    if (ppScript != null) {
-                                        executePostProcess(ppScript,
-                                                bindingMap, null,
-                                                "SET_PASSWORD",
-                                                connectorSuccess);
-                                    }
-                                }
-                            }
-                        }
-
+                    final String managedSysId = lg.getManagedSysId();
+                    final ManagedSysEntity mSys = managedSystemService.getManagedSysById(managedSysId);
+                    if(mSys != null) {
+                    	final ResourceEntity resource = resourceService.findResourceById(mSys.getResourceId());
+	
+	                    log.debug(" - managedsys id = " + managedSysId);
+	                    log.debug(" - Resource for sysId =" + resource);
+	
+	                    // check the sync flag
+	
+	                    if (syncAllowed(resource)) {
+	
+	                        log.debug("Sync allowed for sys=" + managedSysId);
+	
+	                        // pre-process
+	
+	                        bindingMap.put("IDENTITY", lg);
+	                        bindingMap.put("RESOURCE", resource);
+	                        bindingMap.put("PASSWORD_SYNC", passwordSync);
+	
+	                        if (resource != null) {
+	                            String preProcessScript =  getResourceProperty(resource, "PRE_PROCESS");
+	                            if (preProcessScript != null
+	                                    && !preProcessScript.isEmpty()) {
+	                                PreProcessor ppScript = createPreProcessScript(preProcessScript, bindingMap);
+	                                if (ppScript != null) {
+	                                    if (executePreProcess(ppScript, bindingMap,
+	                                            null, "SET_PASSWORD") == ProvisioningConstants.FAIL) {
+	                                        continue;
+	                                    }
+	                                }
+	                            }
+	                        }
+	
+	                        // update the password in openiam
+	                        loginManager.setPassword(lg.getDomainId(),
+	                                lg.getLogin(), lg.getManagedSysId(),
+	                                encPassword, passwordSync.isPreventChangeCountIncrement());
+	
+	                        if (StringUtils.isNotEmpty(mSys.getConnectorId())) {
+	                        	final ProvisionConnectorEntity connector = connectorService.getProvisionConnectorsById(mSys.getConnectorId());
+	
+	                            ManagedSystemObjectMatchEntity matchObj = null;
+	                            final List<ManagedSystemObjectMatchEntity> matchObjects = managedSystemService.managedSysObjectParam(mSys.getManagedSysId(), "USER");
+	                            if(CollectionUtils.isNotEmpty(matchObjects)) {
+	                            	matchObj = matchObjects.get(0);
+	                            }	
+	                            if (connector.getConnectorInterface() != null
+	                                    && connector.getConnectorInterface()
+	                                    .equalsIgnoreCase("REMOTE")) {
+	
+	                            	org.openiam.connector.type.ResponseType resp = remoteSetPassword(requestId, lg, passwordSync, mSys, matchObj, connector);
+	                                if (resp.getStatus() == StatusCodeType.SUCCESS) {
+	                                    connectorSuccess = true;
+	                                }
+	
+	                            } else {
+	                                ResponseType resp = localSetPassword(requestId, lg, passwordSync, mSys);
+	                                if (resp.getStatus() == StatusCodeType.SUCCESS) {
+	                                    connectorSuccess = true;
+	                                }
+	                            }
+	
+	                            // post-process
+	                            if (resource != null) {
+	                                String postProcessScript = getResourceProperty(resource, "POST_PROCESS");
+	                                if (postProcessScript != null
+	                                        && !postProcessScript.isEmpty()) {
+	                                    PostProcessor ppScript = createPostProcessScript(postProcessScript, bindingMap);
+	                                    if (ppScript != null) {
+	                                        executePostProcess(ppScript,
+	                                                bindingMap, null,
+	                                                "SET_PASSWORD",
+	                                                connectorSuccess);
+	                                    }
+	                                }
+	                            }
+	                        }
+	                    }
                     } else {
                         log.debug("Sync not allowed for sys=" + managedSysId);
                     }
@@ -2835,18 +2825,17 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             // }
         } else {
             // just the update the managed system that was specified.
-            ManagedSysDto mSys = managedSysService.getManagedSys(passwordSync.getManagedSystemId());
-            ProvisionConnectorDto connector = provisionConnectorWebService.getProvisionConnector(mSys.getConnectorId());
+            final ManagedSysEntity mSys = managedSystemService.getManagedSysById(passwordSync.getManagedSystemId());
+            final ProvisionConnectorEntity connector = connectorService.getProvisionConnectorsById(mSys.getConnectorId());
 
-            ManagedSystemObjectMatch matchObj = null;
-            ManagedSystemObjectMatch[] matchObjAry = managedSysService
-                    .managedSysObjectParam(mSys.getManagedSysId(), "USER");
-            if (matchObjAry != null && matchObjAry.length > 0) {
-                matchObj = matchObjAry[0];
+            ManagedSystemObjectMatchEntity matchObj = null;
+            final List<ManagedSystemObjectMatchEntity> matchObjects = managedSystemService.managedSysObjectParam(mSys.getManagedSysId(), "USER");
+            if(CollectionUtils.isNotEmpty(matchObjects)) {
+                matchObj = matchObjects.get(0);
             }
 
             // pre-process
-            Resource resource = resourceDataService.getResource(mSys.getResourceId());
+            final ResourceEntity resource = resourceService.findResourceById(mSys.getResourceId());
 
             bindingMap.put("IDENTITY", login);
             bindingMap.put("PASSWORD_SYNC", passwordSync);
@@ -2854,7 +2843,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             if (resource != null) {
                 bindingMap.put("RESOURCE", resource);
 
-                String preProcessScript = getResProperty(resource.getResourceProps(), "PRE_PROCESS");
+                String preProcessScript = getResourceProperty(resource, "PRE_PROCESS");
                 if (preProcessScript != null && !preProcessScript.isEmpty()) {
                     PreProcessor ppScript = createPreProcessScript(preProcessScript, bindingMap);
                     if (ppScript != null) {
@@ -2863,24 +2852,17 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 }
             }
 
-            if (connector.getConnectorInterface() != null &&
-                    connector.getConnectorInterface().equalsIgnoreCase("REMOTE")) {
-
-                remoteSetPassword(requestId,
-                        loginDozerConverter.convertToDTO(login, true),
-                        passwordSync, mSys, matchObj, connector);
+            if(StringUtils.equalsIgnoreCase(connector.getConnectorInterface(), "REMOTE")) {
+                remoteSetPassword(requestId, login, passwordSync, mSys, matchObj, connector);
 
             } else {
 
-                localSetPassword(requestId,
-                        loginDozerConverter.convertToDTO(login, true),
-                        passwordSync, mSys);
+                localSetPassword(requestId, login, passwordSync, mSys);
 
             }
             // post-process
             if (resource != null) {
-                String postProcessScript = getResProperty(
-                        resource.getResourceProps(), "POST_PROCESS");
+                String postProcessScript = getResourceProperty(resource, "POST_PROCESS");
                 if (postProcessScript != null && !postProcessScript.isEmpty()) {
                     PostProcessor ppScript = createPostProcessScript(postProcessScript, bindingMap);
                     if (ppScript != null) {
@@ -3088,6 +3070,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
     /* ********* Helper Methods ---------------  */
 
+    @Deprecated
     private boolean syncAllowed(Resource res) {
         Set<ResourceProp> resPropSet = null;
         String syncFlag = null;
@@ -3111,7 +3094,27 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         }
         return false;
     }
+    
+    private boolean syncAllowed(final ResourceEntity resource) {
+    	boolean retVal = false;
+    	if(resource != null) {
+    		retVal = StringUtils.equalsIgnoreCase(getResourceProperty(resource, "INCLUDE_IN_PASSWORD_SYNC"), "N");
+    	}
+    	return retVal;
+    }
+    
+    private String getResourceProperty(final ResourceEntity resource, final String propertyName) {
+    	String retVal = null;
+    	if(resource != null && StringUtils.isNotBlank(propertyName)) {
+    		final ResourcePropEntity property = resource.getResourceProperty(propertyName);
+    		if(property != null) {
+    			retVal = property.getPropValue();
+    		}
+    	}
+    	return retVal;
+    }
 
+    @Deprecated
     private String getResProperty(Set<ResourceProp> resPropSet, String propertyName) {
         String value = null;
 

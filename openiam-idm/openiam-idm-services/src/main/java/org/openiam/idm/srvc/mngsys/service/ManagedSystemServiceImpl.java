@@ -4,6 +4,7 @@ import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.DefaultReconciliationAttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysRuleEntity;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.domain.ReconciliationResourceAttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.policy.service.PolicyDAO;
@@ -30,6 +31,9 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     protected ManagedSysRuleDAO managedSysRuleDAO;
     @Autowired
     protected PolicyDAO policyDAO;
+    
+    @Autowired
+    private ManagedSystemObjectMatchDAO matchDAO;
 
     @Override
     @Transactional(readOnly = true)
@@ -200,4 +204,10 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
             return;
         managedSysRuleDAO.delete(entity);
     }
+
+	@Override
+	public List<ManagedSystemObjectMatchEntity> managedSysObjectParam(
+			String managedSystemId, String objectType) {
+		return matchDAO.findBySystemId(managedSystemId, objectType);
+	}
 }
