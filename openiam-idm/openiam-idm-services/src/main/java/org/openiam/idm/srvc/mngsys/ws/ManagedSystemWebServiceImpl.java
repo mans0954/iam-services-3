@@ -241,7 +241,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
             }
         }
         ManagedSysEntity managedSysEntity = managedSysDozerConverter
-                .convertToEntity(sys, false);
+                .convertToEntity(sys, true);
         managedSystemService.updateManagedSys(managedSysEntity);
     }
 

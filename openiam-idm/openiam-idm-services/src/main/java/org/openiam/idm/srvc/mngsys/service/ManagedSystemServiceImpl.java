@@ -84,7 +84,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     @Override
     @Transactional
     public void updateManagedSys(ManagedSysEntity entity) {
-        managedSysDAO.update(entity);
+        managedSysDAO.merge(entity);
     }
 
     @Override

@@ -1,6 +1,5 @@
 package org.openiam.dozer.converter;
 
-import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.springframework.stereotype.Component;

@@ -85,10 +85,10 @@ public class ManagedSysEntity implements Serializable {
     @Column(name = "HNDLR_5", length = 100)
     private String handler5;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinColumn(name = "MANAGED_SYS_ID", referencedColumnName = "MANAGED_SYS_ID")
-    private Set<ManagedSystemObjectMatchEntity> mngSysObjectMatchs = new HashSet<ManagedSystemObjectMatchEntity>(
-            0);
+    @OneToMany
+    @JoinColumn(name = "REF_MANAGED_SYS_ID")
+    private Set<ManagedSystemObjectMatchEntity> mngSysObjectMatchs = new HashSet<ManagedSystemObjectMatchEntity>();
+
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "MANAGED_SYS_ID", referencedColumnName = "MANAGED_SYS_ID")
     private List<ManagedSysRuleEntity> rules = new ArrayList<ManagedSysRuleEntity>(
