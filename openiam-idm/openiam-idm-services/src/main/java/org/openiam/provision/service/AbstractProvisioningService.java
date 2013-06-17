@@ -30,10 +30,15 @@ import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
+import org.openiam.idm.srvc.mngsys.domain.ProvisionConnectorEntity;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
+import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
+import org.openiam.idm.srvc.mngsys.service.ProvisionConnectorService;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
 import org.openiam.idm.srvc.msg.service.MailTemplateParameters;
@@ -44,6 +49,7 @@ import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
 import org.openiam.idm.srvc.pswd.service.PasswordService;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
+import org.openiam.idm.srvc.res.service.ResourceService;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.dto.UserRole;
@@ -99,7 +105,19 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
     public static final String IDENTITY_NEW = "NEW";
     public static final String IDENTITY_EXIST = "EXIST";
+    
+    @Autowired
+    protected ManagedSystemObjectMatchDozerConverter objectMatchDozerConverter;
 
+	@Autowired
+	protected ProvisionConnectorService connectorService;
+
+    @Autowired
+    protected ResourceService resourceService;
+    
+    @Autowired
+    protected ManagedSystemService managedSystemService;
+    
     @Autowired
     protected UserDataService userMgr;
     @Autowired
@@ -152,6 +170,10 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
     protected AddressDozerConverter addressDozerConverter;
     @Autowired
     protected UserRoleDozerConverter userRoleDozerConverter;
+    @Autowired
+    protected ManagedSysDozerConverter managedSysDozerConverter;
+    @Autowired
+    protected ProvisionConnectorConverter provisionConnectorConverter;
     @Value("${openiam.service_base}")
     protected String serviceHost;
     @Value("${openiam.idm.ws.path}")
@@ -1839,18 +1861,18 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
     /* Update Principal List */
 
-    public void updatePrincipalList(String userId, List<Login> origLoginList,
+    public List<Login> updatePrincipalList(String userId, List<Login> origLoginList,
                                     List<Login> newLoginList,
-                                    List<Resource> deleteResourceList,
-                                    List<Login> principalList) {
+                                    List<Resource> deleteResourceList) {
 
+        List<Login> principalList = new ArrayList<Login>();
         log.debug("** updating Principals in modify User.");
         log.debug("- origPrincpalList =" + origLoginList);
         log.debug("- newPrincipalList=" + newLoginList);
 
         if ( (origLoginList == null || origLoginList.size() == 0 )  &&
                 (newLoginList == null || newLoginList.size() == 0 )) {
-            return;
+            return Collections.EMPTY_LIST;
         }
 
         if ( (origLoginList == null || origLoginList.size() == 0 )  &&
@@ -1866,7 +1888,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                 principalList.add(lg);
                 loginManager.addLogin(loginDozerConverter.convertToEntity(lg, true));
             }
-            return;
+            return principalList;
         }
 
         if ( (origLoginList != null && origLoginList.size() > 0 ) &&
@@ -1891,7 +1913,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                 }
                 principalList.add(l);
             }
-            return;
+            return principalList;
         }
 
         // if in new login, but not in old, then add it with operation 1
@@ -2013,6 +2035,8 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                 principalList.add(lg);
             }
         }
+
+        return principalList;
     }
 
     public LoginEntity getPrimaryIdentity(String managedSysId, List<LoginEntity> principalList) {
@@ -2451,8 +2475,20 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                 requestId, respType.getErrorCodeAsStr(), null, respType.getErrorMsgAsStr(),
                 passwordSync.getRequestClientIP(), login.getLogin(), login.getDomainId());
     }
-
-
+    
+    protected org.openiam.connector.type.ResponseType remoteSetPassword(String requestId, 
+    																	LoginEntity login,
+            															PasswordSync passwordSync,
+            															ManagedSysEntity mSys,
+            															ManagedSystemObjectMatchEntity matchObj,
+            															ProvisionConnectorEntity connector) {
+    	return remoteSetPassword(requestId,
+    			loginDozerConverter.convertToDTO(login, true),
+                passwordSync, 
+                managedSysDozerConverter.convertToDTO(mSys, true),
+                objectMatchDozerConverter.convertToDTO(matchObj, true),
+                provisionConnectorConverter.convertToDTO(connector, true));
+    }
     protected org.openiam.connector.type.ResponseType remoteSetPassword(String requestId, Login login,
                                                                       PasswordSync passwordSync,
                                                                       ManagedSysDto mSys,
@@ -2482,6 +2518,15 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
         return respType;
 
+    }
+    
+    protected ResponseType localSetPassword(String requestId, LoginEntity login,
+            PasswordSync passwordSync,
+            ManagedSysEntity mSys) {
+    	return localSetPassword(requestId,
+                loginDozerConverter.convertToDTO(login, true), 
+                passwordSync, 
+                managedSysDozerConverter.convertToDTO(mSys, true));
     }
 
     protected ResponseType localSetPassword(String requestId, Login login,

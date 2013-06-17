@@ -4,6 +4,7 @@ import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.DefaultReconciliationAttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysRuleEntity;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.domain.ReconciliationResourceAttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.policy.service.PolicyDAO;
@@ -30,6 +31,9 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     protected ManagedSysRuleDAO managedSysRuleDAO;
     @Autowired
     protected PolicyDAO policyDAO;
+    
+    @Autowired
+    private ManagedSystemObjectMatchDAO matchDAO;
 
     @Override
     @Transactional(readOnly = true)
@@ -47,7 +51,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     @Override
     @Transactional
     public void addManagedSys(ManagedSysEntity entity) {
-        managedSysDAO.add(entity);
+        managedSysDAO.persist(entity);
     }
 
     @Override
@@ -78,13 +82,16 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     @Transactional
     public void removeManagedSysById(String id) {
         ManagedSysEntity sysEntity = managedSysDAO.findById(id);
+        for(ManagedSystemObjectMatchEntity matchEntity : sysEntity.getMngSysObjectMatchs()) {
+            matchDAO.delete(matchEntity);
+        }
         managedSysDAO.delete(sysEntity);
     }
 
     @Override
     @Transactional
     public void updateManagedSys(ManagedSysEntity entity) {
-        managedSysDAO.update(entity);
+        managedSysDAO.merge(entity);
     }
 
     @Override
@@ -200,4 +207,10 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
             return;
         managedSysRuleDAO.delete(entity);
     }
+
+	@Override
+	public List<ManagedSystemObjectMatchEntity> managedSysObjectParam(
+			String managedSystemId, String objectType) {
+		return matchDAO.findBySystemId(managedSystemId, objectType);
+	}
 }

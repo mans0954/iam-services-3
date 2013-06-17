@@ -21,12 +21,14 @@ public interface BaseDao<T, PrimaryKey extends Serializable> {
   Long countAll();
   
   void update(T t);
-  
+
   T merge(T t);
 
   void save(T t);
 
   T add(T t);
+
+  void persist(T t);
 
   void delete(T t);
 

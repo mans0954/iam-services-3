@@ -231,6 +231,19 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
         return t;
     }
 
+    @Override
+    @Transactional
+    public void persist(T t) {
+        try {
+            if(t != null) {
+                getSession().persist(t);
+            }
+        } catch (RuntimeException re) {
+            log.error("persist failed", re);
+            throw re;
+        }
+    }
+
     @Transactional
     public void deleteAll() throws Exception {
     	getSession()

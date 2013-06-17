@@ -133,6 +133,10 @@
 		</class-a>
 		<class-b>org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch
 		</class-b>
+        <field>
+            <a>managedSys.managedSysId</a>
+            <b>managedSys</b>
+        </field>
 	</mapping>
 	<mapping>
 		<class-a>org.openiam.idm.srvc.secdomain.domain.SecurityDomainEntity

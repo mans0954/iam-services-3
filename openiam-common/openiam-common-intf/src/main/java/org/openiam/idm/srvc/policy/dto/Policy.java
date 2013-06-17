@@ -42,10 +42,6 @@ public class Policy implements java.io.Serializable {
     public Policy() {
     }
 
-    public Policy(String policyId) {
-        this.policyId = policyId;
-    }
-
     public String getPolicyId() {
         return this.policyId;
     }

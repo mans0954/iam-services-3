@@ -136,10 +136,10 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
         }
 
         ManagedSysEntity entity = managedSysDozerConverter.convertToEntity(sys,
-                false);
+                true);
         managedSystemService.addManagedSys(entity);
 
-        return managedSysDozerConverter.convertToDTO(entity, false);
+        return managedSysDozerConverter.convertToDTO(entity, true);
     }
 
     @Override
@@ -241,7 +241,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
             }
         }
         ManagedSysEntity managedSysEntity = managedSysDozerConverter
-                .convertToEntity(sys, false);
+                .convertToEntity(sys, true);
         managedSystemService.updateManagedSys(managedSysEntity);
     }
 
@@ -261,8 +261,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
         if (objectType == null) {
             throw new NullPointerException("objectType is null");
         }
-        List<ManagedSystemObjectMatchEntity> objList = managedSysObjectMatchDao
-                .findBySystemId(managedSystemId, objectType);
+        List<ManagedSystemObjectMatchEntity> objList = managedSystemService.managedSysObjectParam(managedSystemId, objectType);
         if (objList == null) {
             return null;
         }

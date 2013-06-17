@@ -21,6 +21,7 @@ import org.openiam.base.BaseConstants;
 import org.openiam.base.SysConfiguration;
 import org.openiam.core.dao.UserKeyDao;
 import org.openiam.dozer.converter.UserAttributeDozerConverter;
+import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.idm.searchbeans.AddressSearchBean;
 import org.openiam.idm.searchbeans.DelegationFilterSearchBean;
 import org.openiam.idm.searchbeans.EmailSearchBean;
@@ -54,6 +55,7 @@ import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.domain.UserNoteEntity;
 import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
+import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
@@ -72,7 +74,6 @@ import org.springframework.transaction.annotation.Transactional;
  */
 
 @Service("userManager")
-@Transactional
 public class UserMgr implements UserDataService {
     @Autowired
     @Qualifier("userDAO")
@@ -131,7 +132,8 @@ public class UserMgr implements UserDataService {
 
     @Autowired
     private UserAttributeDozerConverter userAttributeDozerConverter;
-
+    @Autowired
+    private UserDozerConverter userDozerConverter;
     @Autowired
     private MetadataElementDAO metadataElementDAO;
 
@@ -141,16 +143,22 @@ public class UserMgr implements UserDataService {
     private static final Log log = LogFactory.getLog(UserMgr.class);
 
     @Override
+    @Transactional(readOnly = true)
     public UserEntity getUser(String id) {
         return this.getUser(id, null);
     }
-
     @Override
+    public User getUserDto(String id){
+        return userDozerConverter.convertToDTO(this.getUser(id, null), true);
+    }
+    @Override
+    @Transactional(readOnly = true)
     public UserEntity getUser(String id, String requestorId) {
         return userDao.findByIdDelFlt(id, getDelegationFilterForUserSearch(requestorId));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public UserEntity getUserByPrincipal(String securityDomain, String principal, String managedSysId, boolean dependants) {
         LoginEntity login = loginDao.getRecord(principal, managedSysId, securityDomain);
         if (login == null) {
@@ -161,6 +169,7 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
+    @Transactional
     public void addUser(UserEntity user) throws Exception {
         if (user == null)
             throw new NullPointerException("user object is null");
@@ -179,6 +188,7 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
+    @Transactional
     public void addUserWithDependent(UserEntity user, boolean dependency) {
         if (user == null)
             throw new NullPointerException("user object is null");
@@ -192,7 +202,7 @@ public class UserMgr implements UserDataService {
         validateEmailAddress(user, user.getEmailAddresses());
         userDao.save(user);
     }
-
+    @Transactional
     private void validateEmailAddress(UserEntity user, Set<EmailAddressEntity> emailSet) {
 
         if (emailSet == null || emailSet.isEmpty())
@@ -210,6 +220,7 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
+    @Transactional
     public void updateUser(UserEntity user) {
         if (user == null)
             throw new NullPointerException("user object is null");
@@ -223,6 +234,7 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
+    @Transactional
     public void updateUserWithDependent(UserEntity user, boolean dependency) {
         if (user == null)
             throw new NullPointerException("user object is null");
@@ -232,11 +244,12 @@ public class UserMgr implements UserDataService {
         user.setLastUpdate(new Date(System.currentTimeMillis()));
 
         validateEmailAddress(user, user.getEmailAddresses());
-
-        userDao.update(user);
+        UserEntity userOrig = userDao.findById(user.getUserId());
+        userDao.merge(userOrig);
     }
 
     @Override
+    @Transactional
     public void removeUser(String id) throws Exception {
         if (id == null)
             throw new NullPointerException("user id is null");
@@ -263,11 +276,13 @@ public class UserMgr implements UserDataService {
      * org.openiam.idm.srvc.user.service.UserDataService#findUsersByLastUpdateRange
      * (java.util.Date, java.util.Date)
      */
+    @Transactional(readOnly = true)
     public List findUsersByLastUpdateRange(Date startDate, Date endDate) {
         return userDao.findByLastUpdateRange(startDate, endDate);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public UserEntity getUserByName(String firstName, String lastName) {
         UserSearchBean searchBean = new UserSearchBean();
         searchBean.setFirstName(firstName);
@@ -277,6 +292,7 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<UserEntity> findUserByOrganization(String orgId) {
         UserSearchBean searchBean = new UserSearchBean();
         searchBean.addOrganizationId(orgId);
@@ -284,6 +300,7 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List findUsersByStatus(UserStatusEnum status) {
         UserSearchBean searchBean = new UserSearchBean();
         searchBean.setAccountStatus(status.name());
@@ -291,15 +308,17 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<UserEntity> searchByDelegationProperties(DelegationFilterSearch search) {
         return userDao.findByDelegationProperties(search);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<UserEntity> findBeans(UserSearchBean searchBean) {
         return findBeans(searchBean, 0, 1);
     }
-
+    @Transactional(readOnly = true)
     private List<String> getUserIds(final UserSearchBean searchBean) {
         final List<List<String>> nonEmptyListOfLists = new LinkedList<List<String>>();
 
@@ -398,6 +417,7 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<UserEntity> findBeans(UserSearchBean searchBean, int from, int size) {
         List<UserEntity> entityList = null;
         if (StringUtils.isNotBlank(searchBean.getKey())) {
@@ -421,11 +441,13 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public int count(UserSearchBean searchBean) {
         return getUserIds(searchBean).size();
     }
 
     @Override
+    @Transactional
     public void addAttribute(UserAttributeEntity attribute) {
         if (attribute == null)
             throw new NullPointerException("Attribute can not be null");
@@ -447,6 +469,7 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
+    @Transactional
     public void updateAttribute(UserAttributeEntity attribute) {
         if (attribute == null)
             throw new NullPointerException("Attribute can not be null");
@@ -464,6 +487,7 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Map<String, UserAttributeEntity> getAllAttributes(String userId) {
         Map<String, UserAttributeEntity> attrMap = new HashMap<String, UserAttributeEntity>();
 
@@ -495,6 +519,7 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public UserAttributeEntity getAttribute(String attrId) {
         if (attrId == null) {
             throw new NullPointerException("attrId is null");
@@ -503,12 +528,14 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
+    @Transactional
     public void removeAttribute(final String userAttributeId) {
         final UserAttributeEntity entity = userAttributeDao.findById(userAttributeId);
         userAttributeDao.delete(entity);
     }
 
     @Override
+    @Transactional
     public void removeAllAttributes(String userId) {
         if (userId == null) {
             throw new NullPointerException("userId is null");
@@ -517,6 +544,7 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
+    @Transactional
     public void addNote(UserNoteEntity note) {
         if (note == null)
             throw new NullPointerException("Note cannot be null");
@@ -532,6 +560,7 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
+    @Transactional
     public void updateNote(UserNoteEntity note) {
         if (note == null)
             throw new NullPointerException("Note cannot be null");
@@ -547,6 +576,7 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<UserNoteEntity> getAllNotes(String userId) {
         List<UserNoteEntity> noteList = new ArrayList<UserNoteEntity>();
 
@@ -557,6 +587,7 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public UserNoteEntity getNote(String noteId) {
         if (noteId == null) {
             throw new NullPointerException("attrId is null");
@@ -566,6 +597,7 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
+    @Transactional
     public void removeNote(final String userNoteId) {
         if (userNoteId == null) {
             throw new NullPointerException("note is null");
@@ -576,6 +608,7 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
+    @Transactional
     public void removeAllNotes(String userId) {
         if (userId == null) {
             throw new NullPointerException("userId is null");
@@ -676,6 +709,7 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public AddressEntity getAddressById(String addressId) {
         if (addressId == null)
             throw new NullPointerException("addressId is null");
@@ -683,11 +717,13 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<AddressEntity> getAddressList(String userId) {
         return this.getAddressList(userId, Integer.MAX_VALUE, 0);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<AddressEntity> getAddressList(String userId, Integer size, Integer from) {
         if (userId == null)
             throw new NullPointerException("userId is null");
@@ -787,6 +823,7 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public PhoneEntity getPhoneById(String addressId) {
         if (addressId == null)
             throw new NullPointerException("addressId is null");
@@ -794,11 +831,13 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<PhoneEntity> getPhoneList(String userId) {
         return this.getPhoneList(userId, Integer.MAX_VALUE, 0);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<PhoneEntity> getPhoneList(String userId, Integer size, Integer from) {
         if (userId == null)
             throw new NullPointerException("userId is null");
@@ -899,6 +938,7 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public EmailAddressEntity getEmailAddressById(String addressId) {
         if (addressId == null)
             throw new NullPointerException("addressId is null");
@@ -906,11 +946,13 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<EmailAddressEntity> getEmailAddressList(String userId) {
         return this.getEmailAddressList(userId, Integer.MAX_VALUE, 0);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<EmailAddressEntity> getEmailAddressList(String userId, Integer size, Integer from) {
         if (userId == null)
             throw new NullPointerException("userId is null");
@@ -922,11 +964,13 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
+    @Transactional
     public void addSupervisor(SupervisorEntity supervisor) {
         supervisorDao.save(supervisor);
     }
 
     @Override
+    @Transactional
     public void updateSupervisor(SupervisorEntity supervisor) {
         if (supervisor == null)
             throw new NullPointerException("supervisor is null");
@@ -934,6 +978,7 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
+    @Transactional
     public void removeSupervisor(final String supervisorId) {
         if (supervisorId == null)
             throw new NullPointerException("supervisor is null");
@@ -943,6 +988,7 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public SupervisorEntity getSupervisor(String supervisorObjId) {
         if (supervisorObjId == null)
             throw new NullPointerException("supervisorObjId is null");
@@ -950,6 +996,7 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<SupervisorEntity> getSupervisors(String employeeId) {
         if (employeeId == null)
             throw new NullPointerException("employeeId is null");
@@ -957,6 +1004,7 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<SupervisorEntity> getEmployees(String supervisorId) {
         if (supervisorId == null)
             throw new NullPointerException("employeeId is null");
@@ -964,6 +1012,7 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public SupervisorEntity getPrimarySupervisor(String employeeId) {
         if (employeeId == null)
             throw new NullPointerException("employeeId is null");
@@ -971,18 +1020,21 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<UserEntity> getUsersForResource(String resourceId, String requesterId, int from, int size) {
         DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(requesterId);
         return userDao.getUsersForResource(resourceId, delegationFilter, from, size);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public int getNumOfUsersForResource(String resourceId, String requesterId) {
         DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(requesterId);
         return userDao.getNumOfUsersForResource(resourceId, delegationFilter);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<UserEntity> getUsersForGroup(String groupId, String requesterId, int from, int size) {
         DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(requesterId);
         if (DelegationFilterHelper.isAllowed(groupId, delegationFilter.getGroupIdSet())) {
@@ -992,6 +1044,7 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public int getNumOfUsersForGroup(String groupId, String requesterId) {
         DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(requesterId);
         if (DelegationFilterHelper.isAllowed(groupId, delegationFilter.getGroupIdSet())) {
@@ -1001,6 +1054,7 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<UserEntity> getUsersForRole(String roleId, String requesterId, int from, int size) {
         DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(requesterId);
         if (DelegationFilterHelper.isAllowed(roleId, delegationFilter.getRoleIdSet())) {
@@ -1010,6 +1064,7 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public int getNumOfUsersForRole(String roleId, String requesterId) {
         DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(requesterId);
         if (DelegationFilterHelper.isAllowed(roleId, delegationFilter.getRoleIdSet())) {
@@ -1102,7 +1157,7 @@ public class UserMgr implements UserDataService {
             userDao.update(usr);
         }
     }
-
+    @Transactional
     public void enableDisableUser(String userId, UserStatusEnum secondaryStatus) {
         UserEntity user = this.getUser(userId, null);
         if (user == null) {
@@ -1135,21 +1190,21 @@ public class UserMgr implements UserDataService {
             userDao.update(user);
         }
     }
-
+    @Transactional(readOnly = true)
     public Integer getNumOfEmailsForUser(String userId) {
         EmailSearchBean searchBean = new EmailSearchBean();
         searchBean.setParentId(userId);
         // searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
         return emailAddressDao.count(emailAddressSearchBeanConverter.convert(searchBean));
     }
-
+    @Transactional(readOnly = true)
     public Integer getNumOfAddressesForUser(String userId) {
         AddressSearchBean searchBean = new AddressSearchBean();
         searchBean.setParentId(userId);
         // searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
         return addressDao.count(addressSearchBeanConverter.convert(searchBean));
     }
-
+    @Transactional(readOnly = true)
     public Integer getNumOfPhonesForUser(String userId) {
         PhoneSearchBean searchBean = new PhoneSearchBean();
         searchBean.setParentId(userId);
@@ -1157,6 +1212,7 @@ public class UserMgr implements UserDataService {
         return phoneDao.count(phoneSearchBeanConverter.convert(searchBean));
     }
 
+    @Transactional
     public void mergeUserFields(UserEntity origUserEntity, UserEntity newUserEntity) {
         if (newUserEntity.getBirthdate() != null) {
             if (newUserEntity.getBirthdate().equals(BaseConstants.NULL_DATE)) {
@@ -1498,7 +1554,7 @@ public class UserMgr implements UserDataService {
         }
         return filter;
     }
-
+    @Transactional(readOnly = true)
     public List<UserEntity> getUsersForMSys(String mSysId) {
         return userDao.getUsersForMSys(mSysId);
     }

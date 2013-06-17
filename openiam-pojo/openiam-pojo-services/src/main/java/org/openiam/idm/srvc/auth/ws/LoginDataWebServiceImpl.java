@@ -74,7 +74,7 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
 			
 			final LoginEntity entity = loginDozerConverter.convertToEntity(principal, true);
 			if(StringUtils.isNotBlank(entity.getLoginId())) {
-				loginDS.mergeLogin(entity);
+				loginDS.updateLogin(entity);
 			} else {
 				loginDS.addLogin(entity);
 			}

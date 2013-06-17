@@ -6,19 +6,15 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import javax.jws.WebService;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.SysConfiguration;
 import org.openiam.dozer.converter.LoginDozerConverter;
-import org.openiam.exception.AuthenticationException;
 import org.openiam.exception.EncryptionException;
 import org.openiam.idm.searchbeans.LoginSearchBean;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.lucene.LoginSearchDAO;
-import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.policy.dto.Policy;
@@ -27,7 +23,6 @@ import org.openiam.idm.srvc.policy.service.PolicyDataService;
 import org.openiam.idm.srvc.pswd.domain.PasswordHistoryEntity;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
 import org.openiam.idm.srvc.pswd.service.PasswordService;
-import org.openiam.idm.srvc.secdomain.domain.SecurityDomainEntity;
 import org.openiam.idm.srvc.secdomain.dto.SecurityDomain;
 import org.openiam.idm.srvc.secdomain.service.SecurityDomainDAO;
 import org.openiam.idm.srvc.secdomain.service.SecurityDomainDataService;
@@ -142,7 +137,7 @@ public class LoginDataServiceImpl implements LoginDataService {
     }
 
     /**
-     * Checks to see if a login exists for a user - domain - managed system combination
+     * Checks to see if a sourceLogin exists for a user - domain - managed system combination
      * @param domainId
      * @param principal
      * @param sysId
@@ -207,7 +202,7 @@ public class LoginDataServiceImpl implements LoginDataService {
     }
 
     /**
-     * Sets the password for a login. The password needs to be encrypted externally. this allow for flexiblity in 
+     * Sets the password for a sourceLogin. The password needs to be encrypted externally. this allow for flexiblity in
      * supporting alternate approaches to encryption.
      * @param domainId
      * @param login
@@ -247,7 +242,7 @@ public class LoginDataServiceImpl implements LoginDataService {
         	}
         }
         // password has been changed - we dont need to force a change password
-        // on the next login
+        // on the next sourceLogin
         lg.setResetPassword(0);
         lg.setAuthFailCount(0);
         lg.setIsLocked(0);
@@ -439,7 +434,7 @@ public class LoginDataServiceImpl implements LoginDataService {
         }
 
         log.debug("Updating Identity" + login);
-        loginDao.update(login);
+        loginDao.merge(login);
     }
 
     private String getPolicyAttribute(Set<PolicyAttribute> attr, String name) {
@@ -587,10 +582,4 @@ public class LoginDataServiceImpl implements LoginDataService {
             loginDao.update(entity);
         }
     }
-
-	@Override
-    @Transactional
-	public void mergeLogin(LoginEntity principal) {
-		loginDao.merge(principal);
-	}
 }

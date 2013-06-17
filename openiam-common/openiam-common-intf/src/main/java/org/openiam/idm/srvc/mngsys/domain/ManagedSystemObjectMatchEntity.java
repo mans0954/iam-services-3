@@ -20,8 +20,11 @@ public class ManagedSystemObjectMatchEntity implements Serializable {
     @GenericGenerator(name="system-uuid", strategy = "uuid")
     @Column(name="OBJECT_SEARCH_ID", length=32, nullable = false)
     private String objectSearchId;
-    @Column(name="MANAGED_SYS_ID", length=32)
-    private String managedSys;
+
+    @ManyToOne
+    @JoinColumn(name = "MANAGED_SYS_ID")
+    private ManagedSysEntity managedSys;
+
     @Column(name="OBJECT_TYPE", length=20)
     private String objectType;
     @Column(name="MATCH_METHOD", length=20)
@@ -43,11 +46,11 @@ public class ManagedSystemObjectMatchEntity implements Serializable {
         this.objectSearchId = objectSearchId;
     }
 
-    public String getManagedSys() {
+    public ManagedSysEntity getManagedSys() {
         return managedSys;
     }
 
-    public void setManagedSys(String managedSys) {
+    public void setManagedSys(ManagedSysEntity managedSys) {
         this.managedSys = managedSys;
     }
 

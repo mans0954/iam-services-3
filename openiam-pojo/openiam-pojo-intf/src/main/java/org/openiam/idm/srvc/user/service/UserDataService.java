@@ -14,6 +14,7 @@ import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.domain.UserNoteEntity;
 import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
+import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 
@@ -179,6 +180,8 @@ public interface UserDataService {
     public SupervisorEntity getPrimarySupervisor(String employeeId);
 
     public UserEntity getUser(String id);
+
+    public User getUserDto(String id);
 
     public UserEntity getUser(String id, String requestorId);
 

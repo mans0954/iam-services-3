@@ -126,7 +126,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         if (!provInTargetSystemNow) {
             // start date is in the future
             // flag says that we should prov after the startdate
-            user.getUser().setStatus(UserStatusEnum.PENDING_START_DATE);
+            user.setStatus(UserStatusEnum.PENDING_START_DATE);
         }
 
         if (user.getUser().getCompanyId() != null) {
@@ -147,7 +147,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             return resp;
         }
 
-        if (user.getUser().getStatus() == null) {
+        if (user.getStatus() == null) {
             resp.setStatus(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.MISSING_REQUIRED_ATTRIBUTE);
             return resp;
@@ -162,8 +162,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         boolean customPassword = false;
         Login primaryLogin = null;
 
-        if (user.getUser().getPrincipalList() == null
-                || user.getUser().getPrincipalList().isEmpty()) {
+        if (user.getPrincipalList() == null
+                || user.getPrincipalList().isEmpty()) {
             // build the list
             buildPrimaryPrincipal(user, bindingMap, scriptRunner);
 
@@ -214,16 +214,16 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 passwordPolicy);
                 if (valCode == null
                         || valCode != PasswordValidationCode.SUCCESS) {
-                    auditHelper.addLog("CREATE", user.getUser().getRequestorDomain(),
-                            user.getUser().getRequestorLogin(), "IDM SERVICE", user.getUser()
+                    auditHelper.addLog("CREATE", user.getRequestorDomain(),
+                            user.getRequestorLogin(), "IDM SERVICE", user
                             .getCreatedBy(), "0", "USER", user
-                            .getUser().getUserId(), null, "FAIL", null,
+                            .getUserId(), null, "FAIL", null,
                             "USER_STATUS", user.getUser().getStatus()
                             .toString(), requestId,
                             ResponseCode.FAIL_DECRYPTION.toString(), user
                             .getSessionId(),
                             "Password validation failed",
-                            user.getUser().getRequestClientIP(),
+                            user.getRequestClientIP(),
                             primaryLogin.getLogin(),
                             primaryLogin.getDomainId());
 
@@ -233,14 +233,14 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 }
             } catch (ObjectNotFoundException e) {
                 auditHelper
-                        .addLog("CREATE", user.getUser().getRequestorDomain(), user.getUser()
+                        .addLog("CREATE", user.getRequestorDomain(), user
                                 .getRequestorLogin(), "IDM SERVICE", user
-                                .getUser().getCreatedBy(), "0", "USER", user.getUser().getUserId(),
+                                .getCreatedBy(), "0", "USER", user.getUserId(),
                                 null, "FAIL", null, "USER_STATUS", user
                                 .getUser().getStatus().toString(),
                                 requestId, ResponseCode.FAIL_DECRYPTION
                                 .toString(), user.getSessionId(), e
-                                .toString(), user.getUser().getRequestClientIP(),
+                                .toString(), user.getRequestClientIP(),
                                 primaryLogin.getLogin(), primaryLogin.getDomainId());
 
                 resp.setStatus(ResponseStatus.FAILURE);
@@ -256,15 +256,15 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         if (dupPrincipal != null) {
             // identity exists
 
-            auditHelper.addLog("CREATE", user.getUser().getRequestorDomain(),
-                    user.getUser().getRequestorLogin(), "IDM SERVICE",
-                    user.getUser().getCreatedBy(), "0", "USER", user.getUser().getUserId(), null,
+            auditHelper.addLog("CREATE", user.getRequestorDomain(),
+                    user.getRequestorLogin(), "IDM SERVICE",
+                    user.getCreatedBy(), "0", "USER", user.getUserId(), null,
                     "FAIL", null, "USER_STATUS", user.getUser().getStatus()
                     .toString(), requestId, "DUPLICATE PRINCIPAL",
                     user.getSessionId(),
                     "Identity already exists:" + primaryLogin.getManagedSysId()
                             + " - " + primaryLogin.getLogin(),
-                    user.getUser().getRequestClientIP(), primaryLogin.getLogin(),
+                    user.getRequestClientIP(), primaryLogin.getLogin(),
                     primaryLogin.getDomainId());
 
             resp.setStatus(ResponseStatus.FAILURE);
@@ -278,24 +278,24 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         resp = createUser(user, pendingLogItems);
 
         if (resp.getStatus() == ResponseStatus.SUCCESS) {
-            auditLog = auditHelper.addLog("CREATE", user.getUser().getRequestorDomain(),
-                    user.getUser().getRequestorLogin(), "IDM SERVICE", user.getUser()
-                    .getCreatedBy(), "0", "USER", user.getUser().getUserId(),
+            auditLog = auditHelper.addLog("CREATE", user.getRequestorDomain(),
+                    user.getRequestorLogin(), "IDM SERVICE", user
+                    .getCreatedBy(), "0", "USER", user.getUserId(),
                     null, "SUCCESS", null, "USER_STATUS", user.getUser()
                     .getStatus().toString(), requestId, null, user
-                    .getSessionId(), null, user.getUser().getRequestClientIP(),
+                    .getSessionId(), null, user.getRequestClientIP(),
                     primaryLogin.getLogin(), primaryLogin.getDomainId());
             auditHelper.persistLogList(pendingLogItems, requestId,
                     user.getSessionId());
 
         } else {
-            auditLog = auditHelper.addLog("CREATE", user.getUser().getRequestorDomain(),
-                    user.getUser().getRequestorLogin(), "IDM SERVICE", user.getUser()
-                    .getCreatedBy(), "0", "USER", user.getUser().getUserId(),
+            auditLog = auditHelper.addLog("CREATE", user.getRequestorDomain(),
+                    user.getRequestorLogin(), "IDM SERVICE", user
+                    .getCreatedBy(), "0", "USER", user.getUserId(),
                     null, "FAIL", null, "USER_STATUS", user.getUser()
                     .getStatus().toString(), requestId, resp
                     .getErrorCode().toString(), user.getSessionId(),
-                    resp.getErrorText(), user.getUser().getRequestClientIP(),
+                    resp.getErrorText(), user.getRequestClientIP(),
                     primaryLogin.getLogin(), primaryLogin.getDomainId());
         }
 
@@ -305,14 +305,14 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             decPassword = loginManager.decryptPassword(primaryLogin.getUserId(), primaryLogin.getPassword());
         } catch (EncryptionException e) {
 
-            auditHelper.addLog("CREATE", user.getUser().getRequestorDomain(),
-                    user.getUser().getRequestorLogin(), "IDM SERVICE",
-                    user.getUser().getCreatedBy(), "0", "USER", user.getUser().getUserId(), null,
+            auditHelper.addLog("CREATE", user.getRequestorDomain(),
+                    user.getRequestorLogin(), "IDM SERVICE",
+                    user.getCreatedBy(), "0", "USER", user.getUserId(), null,
                     "FAIL", null, "USER_STATUS", user.getUser().getStatus()
                     .toString(), requestId,
                     ResponseCode.FAIL_DECRYPTION.toString(),
                     user.getSessionId(), e.toString(),
-                    user.getUser().getRequestClientIP(), primaryLogin.getLogin(),
+                    user.getRequestClientIP(), primaryLogin.getLogin(),
                     primaryLogin.getDomainId());
 
             resp.setStatus(ResponseStatus.FAILURE);
@@ -411,7 +411,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                         Map<String, String> curValueMap = new HashMap<String, String>();
                         //Get Resource/MngSys identity
-                        Login resLogin = getPrincipalForManagedSys(managedSysId, user.getUser().getPrincipalList());
+                        Login resLogin = getPrincipalForManagedSys(managedSysId, user.getPrincipalList());
 
                         boolean mngSysIdentityExists = resLogin != null;
                         if (!mngSysIdentityExists) {
@@ -484,9 +484,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             ExtensibleUser extUser = buildFromRules(user, attrMap,
                                     scriptRunner, managedSysId,
                                     sysConfiguration.getDefaultSecurityDomain(),
-                                    bindingMap, user.getUser().getCreatedBy());
+                                    bindingMap, user.getCreatedBy());
 
-                            List<Login> priList = user.getUser().getPrincipalList();
+                            List<Login> priList = user.getPrincipalList();
                             if (priList != null) {
                                 for (Login l : priList) {
                                     log.debug("identity after builder=" + l.getLoginId());
@@ -564,7 +564,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             ExtensibleUser extUser = buildModifyFromRules(
                                     user, resLogin, attrMap, scriptRunner, managedSysId, resLogin
                                     .getDomainId(), bindingMap,
-                                    user.getUser().getCreatedBy());
+                                    user.getCreatedBy());
 
                             // updates the attributes with the correct operation
                             // codes
@@ -609,14 +609,14 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 }
 
                             } else {
-                                ModifyRequestType<ProvisionUser> modReqType = new ModifyRequestType<ProvisionUser>();
+                                ModifyRequestType modReqType = new ModifyRequestType();
 
                                 PSOIdentifierType idType = new PSOIdentifierType(
                                         resLogin.getLogin(), null, "target");
                                 idType.setTargetID(resLogin.getManagedSysId());
                                 modReqType.setPsoID(idType);
                                 modReqType.setRequestID(requestId);
-                                modReqType.setProvisionObject(user);
+                                modReqType.setpUser(user);
 
                                 // check if this request calls for the identity
                                 // being renamed
@@ -691,16 +691,16 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         } else {
 
             if (user.isEmailCredentialsToNewUsers()) {
-                sendCredentialsToUser(user.getUser(), primaryLogin.getLogin(),
+                sendCredentialsToUser(user, primaryLogin.getLogin(),
                         decPassword);
             }
             if (user.isEmailCredentialsToSupervisor()) {
-                if (user.getUser().getSupervisor() != null) {
-                    Supervisor sv = user.getUser().getSupervisor();
+                if (user.getSupervisor() != null) {
+                    Supervisor sv = user.getSupervisor();
                     if (sv != null && sv.getSupervisor() != null) {
                         sendCredentialsToSupervisor(sv.getSupervisor(),
                                 primaryLogin.getLogin(), decPassword,
-                                user.getUser().getFirstName() + " " + user.getUser().getLastName());
+                                user.getFirstName() + " " + user.getLastName());
                     }
                 }
             }
@@ -735,7 +735,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         // if a date is provided and its in the future, then provision it later
 
         Date curDate = new Date(System.currentTimeMillis());
-        Date startDate = user.getUser().getStartDate();
+        Date startDate = user.getStartDate();
 
         if (startDate == null) {
             // no startDate specified = assume that we can provision now
@@ -839,7 +839,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         String requestId = "R" + UUIDGen.getUUID();
 
-        UserEntity usrEntity = this.userMgr.getUser(user.getUser().getUserId());
+        UserEntity usrEntity = this.userMgr.getUser(user.getUserId());
         User usr = userDozerConverter.convertToDTO(usrEntity, true);
         if (usr == null) {
             response.setStatus(ResponseStatus.FAILURE);
@@ -887,7 +887,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         }
 
         // update the identities and set them to inactive
-        List<LoginEntity> principalList = loginManager.getLoginByUser(user.getUser().getUserId());
+        List<LoginEntity> principalList = loginManager.getLoginByUser(user.getUserId());
 
         if (principalList != null) {
             for (LoginEntity l : principalList) {
@@ -1527,16 +1527,15 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         log.debug("User passed in with the following Roles: "
                 + pUser.getMemberOfRoles());
 
-        List<LoginEntity> newPrincipalList = loginDozerConverter.convertToEntityList(pUser.getUser().getPrincipalList(), true);
+        List<LoginEntity> newPrincipalList = loginDozerConverter.convertToEntityList(pUser.getPrincipalList(), true);
 
         if (pUser.getUser().getCompanyId() != null) {
             org = orgManager.getOrganization(pUser.getUser().getCompanyId(), null);
         }
 
-        UserEntity entity = userMgr.getUser(pUser.getUser().getUserId());
-        User origUser = userDozerConverter.convertToDTO(entity, true);
+        User origUser = userMgr.getUserDto(pUser.getUser().getUserId());
         if (origUser == null || origUser.getUserId() == null) {
-            throw new IllegalArgumentException("UserId is not valid. UserId=" + pUser.getUser().getUserId());
+            throw new IllegalArgumentException("UserId is not valid. UserId=" + pUser.getUserId());
         }
 
         // bind the objects to the scripting engine
@@ -1561,13 +1560,13 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         checkAuditingAttributes(pUser);
 
         // get the current values
-        List<Role> curRoleList = roleDataService.getUserRolesAsFlatList(pUser.getUser()
+        List<Role> curRoleList = roleDataService.getUserRolesAsFlatList(pUser
                 .getUserId());
         // get all groups for user
-        List<Group> curGroupList = groupDozerConverter.convertToDTOList(groupManager.getGroupsForUser(pUser.getUser().getUserId(),
+        List<Group> curGroupList = groupDozerConverter.convertToDTOList(groupManager.getGroupsForUser(pUser.getUserId(),
                 null, 0, Integer.MAX_VALUE), false);
 
-        List<LoginEntity> curPrincipalList = loginManager.getLoginByUser(pUser.getUser().getUserId());
+        List<LoginEntity> curPrincipalList = loginManager.getLoginByUser(pUser.getUserId());
 
         // get the current user object - update it with the new values and then
         // save it
@@ -1577,14 +1576,14 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         // Login curPrimaryIdentity =
         // loginManager.getPrimaryIdentity(pUser.getUserId());
-        if (curPrimaryIdentity == null && pUser.getUser().getPrincipalList() == null) {
+        if (curPrimaryIdentity == null && pUser.getPrincipalList() == null) {
             log.debug("Identity not found...");
             resp.setStatus(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.PRINCIPAL_NOT_FOUND);
             return resp;
         }
 
-		pUser.getUser().setObjectState(BaseObject.UPDATE);
+		pUser.setObjectState(BaseObject.UPDATE);
 
         // check if the user is missing components
 		addMissingUserComponents(pUser, origUser);
@@ -1598,7 +1597,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 		updateUser(pUser, origUser);
 
         // update the supervisor
-		updateSupervisor(origUser, pUser.getUser().getSupervisor());
+		updateSupervisor(origUser, pUser.getSupervisor());
 
         // update the group
         updateGroupAssociation(origUser.getUserId(), curGroupList,
@@ -1688,7 +1687,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 }
             }
             if (primaryIdentity.getUserId() == null || primaryIdentity.getUserId().isEmpty()) {
-                primaryIdentity.setUserId(pUser.getUser().getUserId());
+                primaryIdentity.setUserId(pUser.getUserId());
             }
             bindingMap.put("lg", primaryIdentity);
 
@@ -1717,11 +1716,11 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         }
 
         IdmAuditLog auditLog = auditHelper.addLog("MODIFY",
-                pUser.getUser().getRequestorDomain(), pUser.getUser().getRequestorLogin(),
+                pUser.getRequestorDomain(), pUser.getRequestorLogin(),
                 "IDM SERVICE", origUser.getCreatedBy(), "0", "USER",
                 origUser.getUserId(), null, "SUCCESS", null, "USER_STATUS",
                 userStatus, requestId, null, pUser.getSessionId(), null,
-                pUser.getUser().getRequestClientIP(), primaryIdentity.getLogin(),
+                pUser.getRequestClientIP(), primaryIdentity.getLogin(),
                 primaryIdentity.getDomainId());
 
         auditHelper.persistLogList(pendingLogItems, requestId,
@@ -1733,7 +1732,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             // assignment
 
             deProvisionResources(deleteResourceList, origUser.getUserId(),
-                    pUser.getUser().getLastUpdatedBy(), requestId, pUser,
+                    pUser.getLastUpdatedBy(), requestId, pUser,
                     auditLog.getLogId(), userStatus, origUser);
         }
 
@@ -1781,7 +1780,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         bindingMap.put(MATCH_PARAM, matchObj);
                     }
                     // build the request
-                    ModifyRequestType<ProvisionUser> modReqType = new ModifyRequestType<ProvisionUser>();
+                    ModifyRequestType modReqType = new ModifyRequestType();
 
                     // get the identity linked to this resource / managedsys
                     // determin if this identity exists in IDM or not
@@ -1812,7 +1811,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 + res.getName());
 
                         deProvisionResources(delRes, origUser.getUserId(),
-                                pUser.getUser().getLastUpdatedBy(), requestId, pUser,
+                                pUser.getLastUpdatedBy(), requestId, pUser,
                                 auditLog.getLogId(), userStatus, origUser);
 
                         // deProvisionResources(List<Resource>
@@ -1867,7 +1866,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 											.getDomainId(), bindingMap,
 									pUser.getUser().getLastUpdatedBy());
 
-                            List<Login> priList = pUser.getUser().getPrincipalList();
+                            List<Login> priList = pUser.getPrincipalList();
                             if (priList != null) {
                                 for (Login l : priList) {
                                     log.debug("identity after builder="
@@ -1928,7 +1927,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                             } else {
                                 // build the request
-                                AddRequestType<ProvisionUser> addReqType = new AddRequestType<ProvisionUser>();
+                                AddRequestType addReqType = new AddRequestType();
 
                                 PSOIdentifierType idType = new PSOIdentifierType(
                                         mLg.getLogin(), null, "target");
@@ -1936,7 +1935,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 addReqType.setRequestID(requestId);
                                 addReqType.setTargetID(mLg.getManagedSysId());
                                 addReqType.getData().getAny().add(extUser);
-                                addReqType.setProvisionObject(pUser);
+                                addReqType.setpUser(pUser);
                                 log.debug("Creating identity in target system:"
                                         + mLg.getLoginId());
 
@@ -1973,14 +1972,14 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 return resp;
                             }
 
-                            auditHelper.addLog("ADD IDENTITY", pUser.getUser()
-                                    .getRequestorDomain(), pUser.getUser()
+                            auditHelper.addLog("ADD IDENTITY", pUser
+                                    .getRequestorDomain(), pUser
                                     .getRequestorLogin(), "IDM SERVICE",
                                     origUser.getCreatedBy(), mLg.getManagedSysId(), "USER",
                                     origUser.getUserId(), null, "SUCCESS",
                                     auditLog.getLogId(), "USER_STATUS",
                                     userStatus, requestId, null, pUser
-                                    .getSessionId(), null, pUser.getUser()
+                                    .getSessionId(), null, pUser
                                     .getRequestClientIP(), mLg.getLogin(), mLg.getDomainId());
 
                             bindingMap.remove(MATCH_PARAM);
@@ -2071,7 +2070,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 idType.setTargetID(mLg.getManagedSysId());
                                 modReqType.setPsoID(idType);
                                 modReqType.setRequestID(requestId);
-                                modReqType.setProvisionObject(pUser);
+                                modReqType.setpUser(pUser);
 
                                 // check if this request calls for the identity
                                 // being renamed
@@ -2217,13 +2216,13 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                     // LOG THIS EVENT
 
-                    auditHelper.addLog("REMOVE IDENTITY", pUser.getUser()
-                            .getRequestorDomain(), pUser.getUser().getRequestorLogin(),
+                    auditHelper.addLog("REMOVE IDENTITY", pUser
+                            .getRequestorDomain(), pUser.getRequestorLogin(),
                             "IDM SERVICE", origUser.getCreatedBy(), mLg
                             .getManagedSysId(), "USER", origUser
                             .getUserId(), null, "SUCCESS", auditLogId,
                             "USER_STATUS", status, requestId, null, pUser
-                            .getSessionId(), null, pUser.getUser()
+                            .getSessionId(), null, pUser
                             .getRequestClientIP(), mLg
                             .getLogin(), mLg.getDomainId());
 
