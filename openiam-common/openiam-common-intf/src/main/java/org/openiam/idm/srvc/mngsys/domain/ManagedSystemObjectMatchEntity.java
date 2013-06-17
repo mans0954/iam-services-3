@@ -22,7 +22,7 @@ public class ManagedSystemObjectMatchEntity implements Serializable {
     private String objectSearchId;
 
     @ManyToOne
-    @JoinColumn(name = "REF_MANAGED_SYS_ID")
+    @JoinColumn(name = "MANAGED_SYS_ID")
     private ManagedSysEntity managedSys;
 
     @Column(name="OBJECT_TYPE", length=20)
