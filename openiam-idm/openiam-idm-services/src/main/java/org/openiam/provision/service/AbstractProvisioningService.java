@@ -254,7 +254,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
             reqType.setTargetID(mLg.getManagedSysId());
             reqType.setHostLoginId(mSys.getUserId());
-            reqType.setHostLoginPassword(mSys.getDecryptPassword());
+            reqType.setHostLoginPassword(mSys.getPswd());
             reqType.setHostUrl(mSys.getHostUrl());
             reqType.setBaseDN(matchObj.getBaseDn());
 
@@ -2343,7 +2343,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
         userReq.setRequestID(requestId);
         userReq.setTargetID(mLg.getManagedSysId());
         userReq.setHostLoginId(mSys.getUserId());
-        userReq.setHostLoginPassword(mSys.getDecryptPassword());
+        userReq.setHostLoginPassword(mSys.getPswd());
         userReq.setHostUrl(mSys.getHostUrl());
         if (matchObj != null) {
             userReq.setBaseDN(matchObj.getBaseDn());
@@ -2378,7 +2378,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
         request.setRequestID(requestId);
         request.setTargetID(mLg.getManagedSysId());
         request.setHostLoginId(mSys.getUserId());
-        request.setHostLoginPassword(mSys.getDecryptPassword());
+        request.setHostLoginPassword(mSys.getPswd());
         request.setHostUrl(mSys.getHostUrl());
         if (matchObj != null) {
             request.setBaseDN(matchObj.getBaseDn());
@@ -2492,7 +2492,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
         req.setRequestID(requestId);
         req.setTargetID(login.getManagedSysId());
         req.setHostLoginId(mSys.getUserId());
-        req.setHostLoginPassword(mSys.getDecryptPassword());
+        req.setHostLoginPassword(mSys.getPswd());
         req.setHostUrl(mSys.getHostUrl());
         req.setBaseDN(matchObj.getBaseDn());
         req.setOperation("RESET_PASSWORD");
@@ -2533,7 +2533,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
         req.setRequestID(requestId);
         req.setTargetID(login.getManagedSysId());
         req.setHostLoginId(mSys.getUserId());
-        req.setHostLoginPassword(mSys.getDecryptPassword());
+        req.setHostLoginPassword(mSys.getPswd());
         req.setHostUrl(mSys.getHostUrl());
         req.setBaseDN(matchObj.getBaseDn());
         req.setOperation("SET_PASSWORD");
