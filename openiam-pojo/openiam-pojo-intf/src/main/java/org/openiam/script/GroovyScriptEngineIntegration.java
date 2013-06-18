@@ -42,11 +42,14 @@ public class GroovyScriptEngineIntegration implements ScriptIntegration, Applica
 
     public static final String APP_CONTEXT = "context";
 
+    public static String IDM_WS_PATH;
+    public static String SERVICE_HOST;
+
     private ApplicationContext ac;
 
 	@Value("${org.openiam.groovy.script.root}")
 	private String scriptRoot;
-	
+
     protected static final Log log = LogFactory.getLog(GroovyScriptEngineIntegration.class);
 
     private GroovyScriptEngine gse = null;
@@ -121,6 +124,16 @@ public class GroovyScriptEngineIntegration implements ScriptIntegration, Applica
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.ac = applicationContext;
+    }
+
+    @Value("${openiam.idm.ws.path}")
+    public void setIdmWsPath(String path) {
+        GroovyScriptEngineIntegration.IDM_WS_PATH = path;
+    }
+
+    @Value("${openiam.service_host}")
+    public void setServiceHost(String host) {
+        GroovyScriptEngineIntegration.SERVICE_HOST = host;
     }
 
 }

@@ -1,6 +1,5 @@
-
-if (user.address1 != null && user.address1.length() > 0) {
-	output=user.address1
+if (user.addresses != null &&  user.addresses.size()  > 0) {
+    output= user.addresses.city
 }else {
-	ouput=null
+    ouput=null;
 }
