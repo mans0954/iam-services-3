@@ -158,9 +158,10 @@ public class LdapModifyCommand extends LdapAbstractCommand {
                                 if (groupMembershipEnabled) {
                                     buildMembershipList(att, targetMembershipList);
                                 }
-                            }
+                            } if (att.getDataType().equalsIgnoreCase("byteArray")) {
 
-                            if (att.getOperation() != 0 && att.getName() != null && !att.getDataType().equalsIgnoreCase("memberOf")) {
+                                modItemList.add(new ModificationItem(att.getOperation(), new BasicAttribute(att.getName(), att.getValueAsByteArray())));
+                            } else if (att.getOperation() != 0 && att.getName() != null) {
 
                                 // set an attribute to null
                                 if ((att.getValue() == null || att.getValue().contains("null")) && (att.getValueList() == null || att.getValueList().size() == 0)) {
