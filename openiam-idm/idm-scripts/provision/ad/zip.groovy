@@ -1,5 +1,5 @@
-if (user.postalCd != null  &&   user.postalCd.length()  > 0) { 
-	output=user.postalCd
+if (user.addresses != null &&  user.addresses.size()  > 0) {
+    output= user.addresses.postalCd
 }else {
-	output=null
+    ouput=null;
 }

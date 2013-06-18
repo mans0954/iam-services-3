@@ -6,7 +6,7 @@ def orgManager = context.getBean("orgManager")
 
 
 			if (user.companyId != null && user.companyId.length() > 0) {
-				Organization orgObject = orgManager.getOrganization(user.companyId );
+				Organization orgObject = orgManager.getOrganization(user.companyId, null);
 				if (orgObject != null) {
 					output = orgObject.organizationName
 				}
