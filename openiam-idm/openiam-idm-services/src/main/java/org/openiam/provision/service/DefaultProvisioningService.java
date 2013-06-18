@@ -611,14 +611,14 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 }
 
                             } else {
-                                ModifyRequestType modReqType = new ModifyRequestType();
+                                ModifyRequestType<ProvisionUser> modReqType = new ModifyRequestType<ProvisionUser>();
 
                                 PSOIdentifierType idType = new PSOIdentifierType(
                                         resLogin.getLogin(), null, "target");
                                 idType.setTargetID(resLogin.getManagedSysId());
                                 modReqType.setPsoID(idType);
                                 modReqType.setRequestID(requestId);
-                                modReqType.setpUser(user);
+                                modReqType.setProvisionObject(user);
 
                                 // check if this request calls for the identity
                                 // being renamed
@@ -737,7 +737,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         // if a date is provided and its in the future, then provision it later
 
         Date curDate = new Date(System.currentTimeMillis());
-        Date startDate = user.getStartDate();
+        Date startDate = user.getUser().getStartDate();
 
         if (startDate == null) {
             // no startDate specified = assume that we can provision now
@@ -1883,7 +1883,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                           boolean isMngSysIdentityExistsInOpeniam = mLg != null;
 
                         if (!isMngSysIdentityExistsInOpeniam) {
-                            if (CollectionUtils.isEmpty(pUser.getPrincipalList())) {
+                            if (CollectionUtils.isEmpty(pUser.getUser().getPrincipalList())) {
                                 // build the list
                                 buildPrimaryPrincipal(pUser, bindingMap, scriptRunner);
                             }
