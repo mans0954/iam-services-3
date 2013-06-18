@@ -595,7 +595,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 userReq.setRequestID(requestId);
                                 userReq.setTargetID(resLogin.getManagedSysId());
                                 userReq.setHostLoginId(mSys.getUserId());
-                                userReq.setHostLoginPassword(mSys.getDecryptPassword());
+                                userReq.setHostLoginPassword(mSys.getPswd());
                                 userReq.setHostUrl(mSys.getHostUrl());
                                 userReq.setBaseDN(matchObj.getBaseDn());
                                 userReq.setOperation("EDIT");
@@ -2048,7 +2048,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 userReq.setRequestID(requestId);
                                 userReq.setTargetID(mLg.getManagedSysId());
                                 userReq.setHostLoginId(mSys.getUserId());
-                                userReq.setHostLoginPassword(mSys.getDecryptPassword());
+                                userReq.setHostLoginPassword(mSys.getPswd());
                                 userReq.setHostUrl(mSys.getHostUrl());
                                 userReq.setBaseDN(matchObj.getBaseDn());
                                 userReq.setOperation("EDIT");
@@ -2238,7 +2238,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         request.setRequestID(requestId);
                         request.setTargetID(mLg.getManagedSysId());
                         request.setHostLoginId(mSys.getUserId());
-                        request.setHostLoginPassword(mSys.getDecryptPassword());
+                        request.setHostLoginPassword(mSys.getPswd());
                         request.setHostUrl(mSys.getHostUrl());
 
                         request.setOperation("DELETE");
@@ -2480,7 +2480,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
             reqType.setTargetID(managedSysId);
             reqType.setHostLoginId(mSys.getUserId());
-            reqType.setHostLoginPassword(mSys.getDecryptPassword());
+            reqType.setHostLoginPassword(mSys.getPswd());
             reqType.setHostUrl(mSys.getHostUrl());
 
             reqType.setScriptHandler(mSys.getLookupHandler());

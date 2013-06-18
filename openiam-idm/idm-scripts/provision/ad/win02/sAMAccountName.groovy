@@ -1,40 +1,11 @@
-import org.springframework.context.support.ClassPathXmlApplicationContext
+import org.openiam.idm.srvc.user.dto.UserAttribute
 
-def loginManager = context.getBean("loginManager")
-
-// DEFAULT SECURITY DOMAIN
-def secDomain = "USR_SEC_DOMAIN";
-
-ctr = 1;
-
-loginID=user.firstName + "." + user.lastName
-
-if (securityDomain != null) {
-	secDomain = securityDomain;	
+//if("EXIST".equals(targetSystemIdentityStatus)) {
+//    return;
+//}
+UserAttribute attr = user.getUserAttributes().get("sAMAccountName");
+if (attr != null && attr.value != null ) {
+    output =  attr.value;
+}else {
+    output=user.employeeId;
 }
-
-
-if (loginID.length() > 17) {
-	loginID = loginID.substring(0,17);
-	
-	// add logic to ensure uniqueness
-	
-	if (managedSysId != null) {
-		
-		origLoginID = loginId;
-		
-		while ( loginManager.loginExists( secDomain, loginID, managedSysId )) {
-		  strCtrSize = String.valueOf(ctr)
-			loginId=   origLoginID + ctr;
-			ctr++
-		}
-
-	}
-
-
-}
-
-
-output=loginID
-
-
