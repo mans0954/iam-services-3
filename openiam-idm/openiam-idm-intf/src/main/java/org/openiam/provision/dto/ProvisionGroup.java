@@ -45,11 +45,12 @@ public class ProvisionGroup extends GenericProvisionObject<Group> {
 	String srcSystemId;
 
     public ProvisionGroup() {
-        super(new Group());
+        this(new Group());
     }
 
     public ProvisionGroup(Group object) {
         super(object);
+        this.provisionObjectType = ProvisionObjectType.GROUP;
     }
 
     public Group getGroup(){

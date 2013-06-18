@@ -11,5 +11,6 @@ public enum CommandType {
     RESET_PASSWORD,
     VALIDATE_PASSWORD,
     SUSPEND,
-    RESUME
+    RESUME,
+    TEST;
 }

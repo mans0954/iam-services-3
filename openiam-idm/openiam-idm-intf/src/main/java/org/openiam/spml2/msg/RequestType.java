@@ -11,6 +11,7 @@ import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.openiam.provision.dto.GenericProvisionObject;
+import org.openiam.provision.dto.ProvisionObjectType;
 import org.openiam.provision.dto.ProvisionUser;
 
 /**
@@ -49,6 +50,7 @@ public class RequestType<ProvisionObject extends GenericProvisionObject> extends
 	protected String requestID;
 	@XmlAttribute
 	protected ExecutionModeType executionMode;
+
 	protected ProvisionObject provisionObject;
 
 	public ProvisionObject getProvisionObject() {
@@ -89,7 +91,7 @@ public class RequestType<ProvisionObject extends GenericProvisionObject> extends
 		this.requestID = value;
 	}
 
-	/**
+    /**
 	 * Gets the value of the executionMode property.
 	 * 
 	 * @return possible object is {@link ExecutionModeType }

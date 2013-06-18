@@ -161,7 +161,7 @@
 				</inbound-endpoint>
 			</inbound>
 			<component>
-				<spring-object bean="csvConnector" />
+				<spring-object bean="genericCsvConnector" />
 			</component>
 		</service>
 	</model>

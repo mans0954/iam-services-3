@@ -103,11 +103,12 @@ public class ProvisionUser extends GenericProvisionObject<User> {
     protected String password = null;
 
     public ProvisionUser() {
-        super(new User());
+        this(new User());
     }
 
     public ProvisionUser(User user) {
         super(user);
+        this.provisionObjectType = ProvisionObjectType.USER;
 //        birthdate = user.getBirthdate();
 //        companyId = user.getCompanyId();
 //        companyOwnerId = user.getCompanyOwnerId();

@@ -6,13 +6,18 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "GenericProvisionObject", propOrder = {
-        "object"
+        "object","provisionObjectType"
 })
 public abstract class GenericProvisionObject<T> {
+    protected ProvisionObjectType provisionObjectType;
     private T object;
 
     public  GenericProvisionObject(T object){
         setObject(object);
+    }
+
+    public ProvisionObjectType getProvisionObjectType() {
+        return provisionObjectType;
     }
 
     protected T getObject(){
