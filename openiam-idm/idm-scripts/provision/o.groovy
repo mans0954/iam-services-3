@@ -1,17 +1,10 @@
-import org.openiam.idm.srvc.org.dto.Organization;
-import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.idm.groovy.helper.ServiceHelper;
 
-def OrganizationDataService orgService = ServiceHelper.orgService();
-def Organization org;
-
-if (user.companyId != null && user.companyId.length() > 0) {
-
-	org = orgService.getOrganization(user.companyId);
-	if (org != null) {
-		output = org.getOrganizationName();
+def orgService = ServiceHelper.orgService();
+output = null
+if (user.companyId) {
+    def org = orgService.getOrganization(user.companyId, null)
+	if (org) {
+		output = org.organizationName
 	}
-}else{
-
-	output=null
 }

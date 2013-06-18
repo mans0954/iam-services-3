@@ -100,9 +100,11 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
     public static final String TARGET_SYSTEM_ATTRIBUTES = "targetSystemAttributes";
 
     public static final String TARGET_SYS_RES_ID = "resourceId";
+    public static final String TARGET_SYS_RES = "RESOURCE";
     public static final String TARGET_SYS_MANAGED_SYS_ID = "managedSysId";
     public static final String TARGET_SYS_SECURITY_DOMAIN = "securityDomain";
 
+    public static final String IDENTITY = "IDENTITY";
     public static final String IDENTITY_NEW = "NEW";
     public static final String IDENTITY_EXIST = "EXIST";
     
@@ -252,7 +254,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
             reqType.setTargetID(mLg.getManagedSysId());
             reqType.setHostLoginId(mSys.getUserId());
-            reqType.setHostLoginPassword(mSys.getDecryptPassword());
+            reqType.setHostLoginPassword(mSys.getPswd());
             reqType.setHostUrl(mSys.getHostUrl());
             reqType.setBaseDN(matchObj.getBaseDn());
 
@@ -441,6 +443,9 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                                     final SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
                                     extUser.getAttributes().add(new ExtensibleAttribute(attr.getAttributeName(),
                                             sdf.format(d), 1, attr.getDataType()));
+
+                                } else if (output instanceof byte[]) {
+                                    extUser.getAttributes().add(new ExtensibleAttribute(attr.getAttributeName(), (byte[])output, 1, attr.getDataType()));
 
                                 } else if (output instanceof BaseAttributeContainer) {
 
@@ -2338,7 +2343,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
         userReq.setRequestID(requestId);
         userReq.setTargetID(mLg.getManagedSysId());
         userReq.setHostLoginId(mSys.getUserId());
-        userReq.setHostLoginPassword(mSys.getDecryptPassword());
+        userReq.setHostLoginPassword(mSys.getPswd());
         userReq.setHostUrl(mSys.getHostUrl());
         if (matchObj != null) {
             userReq.setBaseDN(matchObj.getBaseDn());
@@ -2373,7 +2378,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
         request.setRequestID(requestId);
         request.setTargetID(mLg.getManagedSysId());
         request.setHostLoginId(mSys.getUserId());
-        request.setHostLoginPassword(mSys.getDecryptPassword());
+        request.setHostLoginPassword(mSys.getPswd());
         request.setHostUrl(mSys.getHostUrl());
         if (matchObj != null) {
             request.setBaseDN(matchObj.getBaseDn());
@@ -2430,6 +2435,18 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
         return resp;
     }
+    
+    protected void localResetPassword(final String requestId, 
+    								  final LoginEntity login,
+    								  final String password, 
+    								  final ManagedSysEntity mSys, 
+    								  PasswordSync passwordSync) {
+    	localResetPassword(requestId, 
+    					   loginDozerConverter.convertToDTO(login, true), 
+    					   password, 
+    					   managedSysDozerConverter.convertToDTO(mSys, true), 
+    					   passwordSync);
+    }
 
     protected void localResetPassword(String requestId, Login login,
             String password, ManagedSysDto mSys, PasswordSync passwordSync) {
@@ -2448,6 +2465,22 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                 requestId, respType.getErrorCodeAsStr(), null, respType.getErrorMessage(),
                 null, login.getLogin(), login.getDomainId());
     }
+    
+    protected void remoteResetPassword(final String requestId, 
+    								   final LoginEntity login,
+    								   final String password, 
+    								   final ManagedSysEntity mSys,
+    								   final ManagedSystemObjectMatchEntity matchObj, 
+    								   ProvisionConnectorEntity connector,
+    								   PasswordSync passwordSync) {
+    	remoteResetPassword(requestId, 
+    						loginDozerConverter.convertToDTO(login, true),
+    						password, 
+    						managedSysDozerConverter.convertToDTO(mSys, true), 
+    						objectMatchDozerConverter.convertToDTO(matchObj, true),
+    						provisionConnectorConverter.convertToDTO(connector, true), 
+    						passwordSync);
+    }
 
     protected void remoteResetPassword(String requestId, Login login,
             String password, ManagedSysDto mSys,
@@ -2459,7 +2492,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
         req.setRequestID(requestId);
         req.setTargetID(login.getManagedSysId());
         req.setHostLoginId(mSys.getUserId());
-        req.setHostLoginPassword(mSys.getDecryptPassword());
+        req.setHostLoginPassword(mSys.getPswd());
         req.setHostUrl(mSys.getHostUrl());
         req.setBaseDN(matchObj.getBaseDn());
         req.setOperation("RESET_PASSWORD");
@@ -2500,7 +2533,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
         req.setRequestID(requestId);
         req.setTargetID(login.getManagedSysId());
         req.setHostLoginId(mSys.getUserId());
-        req.setHostLoginPassword(mSys.getDecryptPassword());
+        req.setHostLoginPassword(mSys.getPswd());
         req.setHostUrl(mSys.getHostUrl());
         req.setBaseDN(matchObj.getBaseDn());
         req.setOperation("SET_PASSWORD");

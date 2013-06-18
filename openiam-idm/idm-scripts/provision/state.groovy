@@ -1,5 +1,5 @@
-if (user.state != null && user.state.length()  > 0 ) {
-	output=user.state
+if (user.addresses != null &&  user.addresses.size()  > 0) {
+    output= user.addresses.state
 }else {
-	output=null
+    ouput=null;
 }
