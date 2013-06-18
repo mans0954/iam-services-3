@@ -100,9 +100,11 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
     public static final String TARGET_SYSTEM_ATTRIBUTES = "targetSystemAttributes";
 
     public static final String TARGET_SYS_RES_ID = "resourceId";
+    public static final String TARGET_SYS_RES = "RESOURCE";
     public static final String TARGET_SYS_MANAGED_SYS_ID = "managedSysId";
     public static final String TARGET_SYS_SECURITY_DOMAIN = "securityDomain";
 
+    public static final String IDENTITY = "IDENTITY";
     public static final String IDENTITY_NEW = "NEW";
     public static final String IDENTITY_EXIST = "EXIST";
     
@@ -441,6 +443,9 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                                     final SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
                                     extUser.getAttributes().add(new ExtensibleAttribute(attr.getAttributeName(),
                                             sdf.format(d), 1, attr.getDataType()));
+
+                                } else if (output instanceof byte[]) {
+                                    extUser.getAttributes().add(new ExtensibleAttribute(attr.getAttributeName(), (byte[])output, 1, attr.getDataType()));
 
                                 } else if (output instanceof BaseAttributeContainer) {
 

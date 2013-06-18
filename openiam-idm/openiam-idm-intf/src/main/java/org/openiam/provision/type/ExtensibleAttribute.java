@@ -42,6 +42,7 @@ import java.util.List;
 @XmlType(name = "ExtensibleAttribute", propOrder = {
     "name",
     "value",
+    "valueAsByteArray",
     "metadataElementId",
     "operation",
     "multivalued",
@@ -56,6 +57,7 @@ public class ExtensibleAttribute  implements Serializable {
     private static final long serialVersionUID = 8402148961330001942L;
     protected String name;
     protected String value;
+    protected byte[] valueAsByteArray;
     protected String metadataElementId;
     protected int operation;
     protected boolean multivalued = false;
@@ -111,7 +113,16 @@ public class ExtensibleAttribute  implements Serializable {
         log.debug("Extensible attribute created: multivalue");
 
     }
+    public ExtensibleAttribute(String name, byte[] val, int operation, String dataType) {
+        super();
+        this.name = name;
+        this.operation = operation;
+        this.valueAsByteArray = val;
+        this.dataType = dataType;
 
+        log.debug("Extensible attribute created: multivalue");
+
+    }
     public String getName() {
         return name;
     }
@@ -127,6 +138,15 @@ public class ExtensibleAttribute  implements Serializable {
         // values that are not really strings (e.g. binary values from Active Directory) are set here.
         this.value = StringUtil.toBase64(value);
     }
+
+    public byte[] getValueAsByteArray() {
+        return valueAsByteArray;
+    }
+
+    public void setValueAsByteArray(byte[] valueAsByteArray) {
+        this.valueAsByteArray = valueAsByteArray;
+    }
+
     public int getOperation() {
         return operation;
     }
