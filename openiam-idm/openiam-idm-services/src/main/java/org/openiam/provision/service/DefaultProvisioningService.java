@@ -79,6 +79,7 @@ import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.spml2.msg.*;
 import org.openiam.spml2.msg.suspend.ResumeRequestType;
 import org.openiam.spml2.msg.suspend.SuspendRequestType;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.jws.WebMethod;
 import javax.jws.WebService;
@@ -109,6 +110,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
           * org.openiam.provision.service.ProvisionService#addUser(org.openiam.provision
           * .dto.ProvisionUser)
           */
+    @Transactional
     public ProvisionUserResponse addUser(ProvisionUser user)    {
         ProvisionUserResponse resp = new ProvisionUserResponse();
 
@@ -1566,6 +1568,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
       * org.openiam.provision.service.ProvisionService#modifyUser(org.openiam
       * .provision.dto.ProvisionUser)
       */
+    @Transactional
     public ProvisionUserResponse modifyUser(ProvisionUser pUser) {
         ProvisionUserResponse resp = new ProvisionUserResponse();
         String requestId = "R" + UUIDGen.getUUID();
@@ -2312,6 +2315,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     /* (non-Javadoc)
       * @see org.openiam.provision.service.ProvisionService#resetPassword(org.openiam.provision.dto.PasswordSync)
       */
+    @Transactional
     public PasswordResponse resetPassword(PasswordSync passwordSync) {
         log.debug("----resetPassword called.------");
 
@@ -2604,6 +2608,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
       * org.openiam.provision.service.ProvisionService#setPassword(org.openiam
       * .provision.dto.PasswordSync)
       */
+    @Transactional
     public Response setPassword(PasswordSync passwordSync) {
         log.debug("----setPassword called.------");
 
