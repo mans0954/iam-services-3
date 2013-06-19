@@ -401,19 +401,19 @@ public class MetadataServiceImpl implements MetadataService {
 		return retVal;
 	}
 
-	@Override
-	@Transactional
-	public void save(MetadataValidValueEntity entity) {
+	//@Override
+	//@Transactional
+	private void save(MetadataValidValueEntity entity) {
 		final Map<String, LanguageMappingEntity> languageMap = entity.getLanguageMap();
 		if(StringUtils.isEmpty(entity.getId())) {
 			entity.setLanguageMap(null);
-			entity.setEntity(metadataElementDao.findById(entity.getEntity().getId()));
+			//entity.setEntity(metadataElementDao.findById(entity.getEntity().getId()));
 			validValueDAO.save(entity);
 			entity.setLanguageMap(mergeLanguageMaps(entity.getLanguageMap(), languageMap));
 		} else {
-			final MetadataValidValueEntity dbEntity = validValueDAO.findById(entity.getId());
-			entity.setEntity(dbEntity.getEntity());
-			entity.setLanguageMap(mergeLanguageMaps(dbEntity.getLanguageMap(), languageMap));
+			//final MetadataValidValueEntity dbEntity = validValueDAO.findById(entity.getId());
+			//entity.setEntity(dbEntity.getEntity());
+			//entity.setLanguageMap(mergeLanguageMaps(dbEntity.getLanguageMap(), languageMap));
 		}
 		setLanguageMetadata(entity);
 		validValueDAO.merge(entity);

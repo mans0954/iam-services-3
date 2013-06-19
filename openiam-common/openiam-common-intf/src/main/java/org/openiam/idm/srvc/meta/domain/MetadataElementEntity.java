@@ -97,7 +97,7 @@ public class MetadataElementEntity implements Serializable {
     @Fetch(FetchMode.SUBSELECT)
     private Map<String, LanguageMappingEntity> languageMap;
     
-    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "entity", fetch = FetchType.LAZY)
+    @OneToMany(orphanRemoval = true, cascade = {CascadeType.REMOVE, CascadeType.DETACH}, mappedBy = "entity", fetch = FetchType.LAZY)
     private Set<MetadataValidValueEntity> validValues;
     
     @Column(name="STATIC_DEFAULT_VALUE", length=400)

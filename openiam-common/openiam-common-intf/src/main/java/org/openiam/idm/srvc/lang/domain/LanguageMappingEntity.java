@@ -135,6 +135,13 @@ public class LanguageMappingEntity implements Serializable {
 			return false;
 		return true;
 	}
+
+	@Override
+	public String toString() {
+		return "LanguageMappingEntity [id=" + id + ", languageId=" + languageId
+				+ ", referenceType=" + referenceType + ", referenceId="
+				+ referenceId + ", value=" + value + "]";
+	}
 	
 	
 }
