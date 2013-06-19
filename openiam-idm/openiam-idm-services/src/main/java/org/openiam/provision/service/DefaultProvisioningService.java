@@ -278,6 +278,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         /* Create the new user in the openiam repository */
         resp = createUser(user, pendingLogItems);
+        //update loginId after save
+        primaryLogin = loginDozerConverter.convertToDTO(loginManager.getByUserIdManagedSys(user.getUserId(),sysConfiguration
+                .getDefaultManagedSysId()), true);
 
         if (resp.getStatus() == ResponseStatus.SUCCESS) {
             auditLog = auditHelper.addLog("CREATE", user.getUser().getRequestorDomain(),

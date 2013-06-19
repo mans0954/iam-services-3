@@ -762,7 +762,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
             try {
                 for (AttributeMap attr : policyAttrMap) {
-                    String output = ProvisionServiceUtil.getOutputFromAttrMap(
+                    String output = (String)ProvisionServiceUtil.getOutputFromAttrMap(
                             attr, bindingMap, se);
                     String objectType = attr.getMapForObjectType();
                     if (objectType != null) {
@@ -850,7 +850,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
             try {
                 for (  AttributeMap attr : policyAttrMap ) {
-                    String output = ProvisionServiceUtil.getOutputFromAttrMap(
+                    String output = (String)ProvisionServiceUtil.getOutputFromAttrMap(
                             attr, bindingMap, se);
                     String objectType = attr.getMapForObjectType();
                     if (objectType != null) {

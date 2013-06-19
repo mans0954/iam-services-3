@@ -207,7 +207,7 @@ public class AttributeListBuilder {
             if (objectType != null) {
                 if (objectType.equalsIgnoreCase("PRINCIPAL")) {
                     try {
-                        String output = ProvisionServiceUtil
+                        String output = (String)ProvisionServiceUtil
                                 .getOutputFromAttrMap(attr, bindingMap, se);
                         newIdentity.setLogin(output);
                     } catch (ScriptEngineException ex) {
@@ -216,7 +216,7 @@ public class AttributeListBuilder {
                 }
                 if (objectType.equalsIgnoreCase("PASSWORD")) {
                     try {
-                        String output = ProvisionServiceUtil
+                        String output = (String)ProvisionServiceUtil
                                 .getOutputFromAttrMap(attr, bindingMap, se);
                         newIdentity.setPassword(output);
                     } catch (ScriptEngineException ex) {

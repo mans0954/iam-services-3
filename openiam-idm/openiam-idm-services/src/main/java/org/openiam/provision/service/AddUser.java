@@ -298,7 +298,7 @@ public class AddUser {
             try {
                 for (AttributeMap attr : policyAttrMap) {
                     try {
-                        String output = ProvisionServiceUtil
+                        String output = (String)ProvisionServiceUtil
                                 .getOutputFromAttrMap(attr, bindingMap, se);
                         String objectType = attr.getMapForObjectType();
                         if (objectType != null) {
@@ -379,7 +379,7 @@ public class AddUser {
             try {
                 for (AttributeMap attr : policyAttrMap) {
                     try {
-                        String output = ProvisionServiceUtil
+                        String output = (String)ProvisionServiceUtil
                                 .getOutputFromAttrMap(attr, bindingMap, se);
                         String objectType = attr.getMapForObjectType();
                         if (objectType != null) {
