@@ -12,8 +12,8 @@
 
 	<context:annotation-config />
 	<context:component-scan
-		base-package="org.openiam.idm.parser.csv, org.openiam.spml2.spi.csv,org.openiam.spml2.spi.ldap, org.openiam.spml2.spi.orcl, org.openiam.spml2.spi.common.jdbc" />
-
+		base-package="org.openiam.spml2,  org.openiam.idm.parser.csv" />
+    <!-- , org.openiam.spml2.spi.csv,org.openiam.spml2.spi.ldap, org.openiam.spml2.spi.orcl, org.openiam.spml2.spi.common.jdbc -->
 	<!-- Authentication Beans -->
 	<bean id="exampleConnector" class="org.openiam.spml2.spi.example.ExampleComplete">
 

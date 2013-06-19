@@ -12,6 +12,10 @@ public abstract class GenericProvisionObject<T> {
     protected ProvisionObjectType provisionObjectType;
     private T object;
 
+    public  GenericProvisionObject(){
+        this(null);
+    }
+
     public  GenericProvisionObject(T object){
         setObject(object);
     }
