@@ -9,15 +9,15 @@ import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.script.ScriptIntegration;
 
 public class ProvisionServiceUtil {
-    public static String getOutputFromAttrMap(AttributeMap attr,
+    public static Object getOutputFromAttrMap(AttributeMap attr,
             Map<String, Object> bindingMap, ScriptIntegration se)
             throws ScriptEngineException {
-        String output = "";
+        Object output = "";
         if (attr.getReconResAttribute().getAttributePolicy() != null) {
             Policy policy = attr.getReconResAttribute().getAttributePolicy();
             String url = policy.getRuleSrcUrl();
             if (url != null) {
-                output = (String) se.execute(bindingMap, url);
+                output = se.execute(bindingMap, url);
             }
         } else if (attr.getReconResAttribute().getDefaultAttributePolicy() != null) {
             output = attr.getReconResAttribute().getDefaultAttributePolicy()
@@ -38,7 +38,7 @@ public class ProvisionServiceUtil {
             String objectType = attr.getMapForObjectType();
             if (objectType != null) {
                 if (objectType.equalsIgnoreCase("PRINCIPAL")) {
-                    return ProvisionServiceUtil.getOutputFromAttrMap(attr,
+                    return (String)ProvisionServiceUtil.getOutputFromAttrMap(attr,
                             bindingMap, se);
                 }
             }
