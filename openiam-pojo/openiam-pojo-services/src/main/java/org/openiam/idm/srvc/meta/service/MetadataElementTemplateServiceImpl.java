@@ -33,6 +33,7 @@ import org.openiam.idm.srvc.meta.dto.PageElement;
 import org.openiam.idm.srvc.meta.dto.PageElementValidValue;
 import org.openiam.idm.srvc.meta.dto.PageElementValue;
 import org.openiam.idm.srvc.meta.dto.PageTempate;
+import org.openiam.idm.srvc.meta.dto.PageTemplateAttributeToken;
 import org.openiam.idm.srvc.meta.dto.TemplateRequest;
 import org.openiam.idm.srvc.meta.exception.PageTemplateException;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
@@ -428,16 +429,21 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 			}
 		}
 	}
-
-	@Override
-	@Transactional
-	public void saveTemplate(final UserProfileRequestModel request) throws PageTemplateException {
+	
+	private PageTemplateAttributeToken getAttributesFromTokenInternal(final UserProfileRequestModel request) throws PageTemplateException {
+		final PageTemplateAttributeToken token = new PageTemplateAttributeToken();
+		
+		/* sets to hold persistent and new attributes */
+		final List<UserAttributeEntity> deleteList = new LinkedList<UserAttributeEntity>();
+		final List<UserAttributeEntity> updateList = new LinkedList<UserAttributeEntity>();
+		final List<UserAttributeEntity> saveList = new LinkedList<UserAttributeEntity>();
+		
 		final PageTempate pageTemplate = request.getPageTemplate();
 		final String userId = request.getUser().getUserId();
 		final LanguageEntity targetLanguage = getLanguage(request);
 		
 		if(pageTemplate != null) {
-			if(request.getUser() == null || request.getUser().getUserId() == null || targetLanguage == null) {
+			if(request.getUser() == null || targetLanguage == null) {
 				throw new PageTemplateException(ResponseCode.INVALID_ARGUMENTS);
 			}
 		
@@ -469,12 +475,7 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 				}
 			}
 			
-			/* sets to hold persistent and new attributes */
-			final List<UserAttributeEntity> deleteList = new LinkedList<UserAttributeEntity>();
-			final List<UserAttributeEntity> updateList = new LinkedList<UserAttributeEntity>();
-			final List<UserAttributeEntity> saveList = new LinkedList<UserAttributeEntity>();
-			
-			final UserEntity user = userDAO.findById(userId);
+			final UserEntity user = (userId != null) ? userDAO.findById(userId) : new UserEntity();
 			
 			/* loop through all elements sent in the request */
 			if(CollectionUtils.isNotEmpty(pageTemplate.getPageElements())) {
@@ -553,18 +554,48 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 					}
 				}
 			}
-			
-			/* assuming that the collections have been populated, persist them */
-			for(final UserAttributeEntity entity : deleteList) {
-				attributeDAO.delete(entity);
+		}
+		token.setSaveList(saveList);
+		token.setUpdateList(updateList);
+		token.setDeleteList(deleteList);
+		return token;
+	}
+	
+	@Override
+	@Transactional
+	public PageTemplateAttributeToken getAttributesFromTemplate(final UserProfileRequestModel request) {
+		PageTemplateAttributeToken token = null;
+		try {
+			token = getAttributesFromTokenInternal(request);
+		} catch(PageTemplateException e) {
+			LOG.warn("Can't get attributes from template", e);
+		} catch(Throwable e) {
+			LOG.error("Can't get attributes from template", e);
+		}
+		return token;
+	}
+
+	@Override
+	@Transactional
+	public void saveTemplate(final UserProfileRequestModel request) throws PageTemplateException {
+		final PageTemplateAttributeToken token = getAttributesFromTokenInternal(request);
+		if(token != null) {
+			if(CollectionUtils.isNotEmpty(token.getSaveList())) {
+				for(final UserAttributeEntity entity : token.getSaveList()) {
+					attributeDAO.save(entity);
+				}
 			}
 			
-			for(final UserAttributeEntity entity : updateList) {
-				attributeDAO.update(entity);
+			if(CollectionUtils.isNotEmpty(token.getUpdateList())) {
+				for(final UserAttributeEntity entity : token.getUpdateList()) {
+					attributeDAO.update(entity);
+				}
 			}
 			
-			for(final UserAttributeEntity entity : saveList) {
-				attributeDAO.save(entity);
+			if(CollectionUtils.isNotEmpty(token.getDeleteList())) {
+				for(final UserAttributeEntity entity : token.getDeleteList()) {
+					attributeDAO.delete(entity);
+				}
 			}
 		}
 	}
