@@ -213,7 +213,7 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
     @Transactional
     public void update(T t) {
     	if(t != null) {
-    		getSession().saveOrUpdate(t);
+    		getSession().update(t);
     	}
     }
 
