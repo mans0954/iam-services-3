@@ -700,6 +700,15 @@ public class User extends org.openiam.base.BaseObject {
     public Set<ResourceUser> getResourceUsers() {
 		return resourceUsers;
 	}
+    
+    public void addResourceUser(final ResourceUser record) {
+    	if(record != null) {
+    		if(this.resourceUsers == null) {
+    			this.resourceUsers = new HashSet<ResourceUser>();
+    		}
+    		this.resourceUsers.add(record);
+    	}
+    }
 
 	public void setResourceUsers(Set<ResourceUser> resourceUsers) {
 		this.resourceUsers = resourceUsers;
