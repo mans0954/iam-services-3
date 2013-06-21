@@ -188,9 +188,12 @@ public abstract class LdapAbstractCommand  implements ApplicationContextAware{
                 log.debug("Attr Name=" + att.getName() + " " + att.getDataType() + " " + att.getValue());
 
 
-                if (!att.getName().equals(idField)  &&
-                   ( att.getDataType() == null || !att.getDataType().equalsIgnoreCase("memberOf") ) ) {
+                if (att.getDataType() == null || !att.getDataType().equalsIgnoreCase("memberOf")) {
 
+                    if (att.getName().equalsIgnoreCase(idField)) {
+                        log.debug("Attr Name=" + att.getName() + " Value=" + att.getValue() + " ignored");
+                        continue;
+                    }
 
                     Attribute a = null;
                     if (att.isMultivalued()) {
