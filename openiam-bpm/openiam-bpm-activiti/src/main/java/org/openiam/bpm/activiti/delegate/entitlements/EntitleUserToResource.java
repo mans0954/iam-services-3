@@ -51,6 +51,7 @@ public class EntitleUserToResource extends AbstractEntitlementsDelegate {
 			final UserResourceAssociation association = new UserResourceAssociation(resourceId, AttributeOperationEnum.ADD);
 			association.setManagedSystemId(entity.getManagedSysId());
 			pUser.addResourceUserAssociation(association);
+			provisionService.modifyUser(pUser);
 		}
 		
 		/*

@@ -50,6 +50,7 @@ public class DisentitleUserFromResource extends AbstractEntitlementsDelegate {
 			final UserResourceAssociation association = new UserResourceAssociation(resourceId, AttributeOperationEnum.DELETE);
 			association.setManagedSystemId(entity.getManagedSysId());
 			pUser.addResourceUserAssociation(association);
+			provisionService.modifyUser(pUser);
 		}
 		/*
 		final ResourceUserEntity entity = resourceUserDAO.getRecord(resourceId, userId);
