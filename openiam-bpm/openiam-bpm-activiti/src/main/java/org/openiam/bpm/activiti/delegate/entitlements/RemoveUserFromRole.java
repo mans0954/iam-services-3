@@ -46,7 +46,7 @@ public class RemoveUserFromRole extends AbstractEntitlementsDelegate {
 		final RoleEntity roleEntity = roleDataService.getRole(roleId);
 		final User user = userDataService.getUserDto(userId);
 		
-		if(roleEntity != null && user != null && userRoleDAO.getRecord(userId, roleId) == null) {
+		if(roleEntity != null && user != null && userRoleDAO.getRecord(userId, roleId) != null) {
 			final ProvisionUser pUser = new ProvisionUser(user);
 			final Role role = roleDozerConverter.convertToDTO(roleEntity, false);
 			role.setOperation(AttributeOperationEnum.DELETE);
