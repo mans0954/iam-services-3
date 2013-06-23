@@ -14,5 +14,17 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 public interface ReconciliationCommand {
+    //    IDM_DELETED__SYS_EXISTS   (Record in resource but mark as Deleted in IDM)
+    final String IDM_DELETED__SYS_EXISTS = "IDM[deleted] and Resource[exists]";
+
+    //    IDM_EXISTS__SYS_EXISTS   (Record exists in resource and exists in IDM)
+    final String IDM_EXISTS__SYS_EXISTS = "IDM[exists] and Resource[exists]";
+
+    //    IDM_EXISTS__SYS_NOT_EXISTS   (Record not exists in resource and exists in IDM)
+    final String IDM_EXISTS__SYS_NOT_EXISTS = "IDM[exists] and Resource[not exists]";
+
+    //    SYS_EXISTS__IDM_NOTEXISTS   (Record not exists in IDM and exists in Resource)
+    final String SYS_EXISTS__IDM_NOT_EXISTS = "IDM[not exists] and Resource[exists]";
+
     boolean execute(Login login, User user, List<ExtensibleAttribute> attributes);
 }

@@ -26,6 +26,8 @@ import java.util.List;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 
+import org.openiam.connector.type.SearchRequest;
+import org.openiam.connector.type.SearchResponse;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.spml2.base.AbstractSpml2Complete;
@@ -70,6 +72,12 @@ public class ExampleComplete  extends AbstractSpml2Complete implements Connector
 	public boolean testConnection(String targetID) {
 		return false;
 	}
+
+    @Override
+    public SearchResponse search(@WebParam(name = "searchRequest", targetNamespace = "") SearchRequest searchRequest) {
+        throw new UnsupportedOperationException("Not supportable.");
+    }
+
 	/* (non-Javadoc)
 	 * @see org.openiam.spml2.interf.SpmlCore#add(org.openiam.spml2.msg.AddRequestType)
 	 */

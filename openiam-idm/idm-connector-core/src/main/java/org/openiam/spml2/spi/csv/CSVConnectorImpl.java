@@ -9,6 +9,8 @@ import javax.jws.WebService;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.connector.type.SearchRequest;
+import org.openiam.connector.type.SearchResponse;
 import org.openiam.dozer.converter.ManagedSysDozerConverter;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
@@ -178,6 +180,11 @@ public class CSVConnectorImpl extends AbstractSpml2Complete implements
             @WebParam(name = "request", targetNamespace = "") ResetPasswordRequestType request) {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    @Override
+    public SearchResponse search(@WebParam(name = "searchRequest", targetNamespace = "") SearchRequest searchRequest) {
+        throw new UnsupportedOperationException("Not supportable.");
     }
 
     @Override

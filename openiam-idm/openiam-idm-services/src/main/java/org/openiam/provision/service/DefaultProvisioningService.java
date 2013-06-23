@@ -284,7 +284,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         primaryLogin = loginDozerConverter.convertToDTO(loginManager.getByUserIdManagedSys(user.getUserId(),sysConfiguration
                 .getDefaultManagedSysId()), true);
 
-        /*
+
         if (resp.getStatus() == ResponseStatus.SUCCESS) {
             auditLog = auditHelper.addLog("CREATE", user.getRequestorDomain(),
                     user.getRequestorLogin(), "IDM SERVICE", user
@@ -306,7 +306,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     resp.getErrorText(), user.getRequestClientIP(),
                     primaryLogin.getLogin(), primaryLogin.getDomainId());
         }
-        */
+
 
         // need decrypted password for use in the connectors:
         String decPassword = null;

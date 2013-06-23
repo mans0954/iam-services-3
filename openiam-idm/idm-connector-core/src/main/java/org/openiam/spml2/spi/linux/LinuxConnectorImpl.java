@@ -2,6 +2,8 @@ package org.openiam.spml2.spi.linux;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.connector.type.SearchRequest;
+import org.openiam.connector.type.SearchResponse;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemObjectMatchDAO;
@@ -84,7 +86,10 @@ public class LinuxConnectorImpl extends AbstractSpml2Complete implements Connect
         return r;
     }
 
-
+    @Override
+    public SearchResponse search(@WebParam(name = "searchRequest", targetNamespace = "") SearchRequest searchRequest) {
+        throw new UnsupportedOperationException("Not implemented yet.");
+    }
     /**
      * Extracts a LinuxUser from the given list of Extensible Objects,
      *

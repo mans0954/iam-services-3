@@ -308,12 +308,7 @@
 
 	<bean id="reconService"
 		class="org.openiam.idm.srvc.recon.service.ReconciliationServiceImpl">
-		<property name="reconResultDao" ref="reconResultDAO" />
-		<property name="reconResultDetailDao" ref="reconResultDetailDAO" />
-		<property name="loginManager" ref="loginManager" />
 		<property name="provisionService" ref="defaultProvision" />
-		<property name="roleDataService" ref="roleDataService" />
-		<property name="resourceDataService" ref="resourceDataService" />
 		<property name="connectorAdapter" ref="connectorAdapter" />
 		<property name="remoteConnectorAdapter" ref="remoteConnectorAdapter" />
 	</bean>
@@ -326,23 +321,6 @@
 	<bean id="asyncReconciliationServiceWS"
 		class="org.openiam.idm.srvc.recon.ws.AsynchReconciliationServiceImpl">
 		<property name="reconService" ref="reconService" />
-	</bean>
-
-	<bean id="reconSituationDAO"
-		class="org.openiam.idm.srvc.recon.service.ReconciliationSituationDAOImpl">
-		<property name="sessionFactory" ref="sessionFactory"></property>
-	</bean>
-	<bean id="reconConfigDAO"
-		class="org.openiam.idm.srvc.recon.service.ReconciliationConfigDAOImpl">
-		<property name="sessionFactory" ref="sessionFactory"></property>
-	</bean>
-	<bean id="reconResultDAO"
-		class="org.openiam.idm.srvc.recon.service.ReconciliationResultDAOImpl">
-		<property name="sessionFactory" ref="sessionFactory"></property>
-	</bean>
-	<bean id="reconResultDetailDAO"
-		class="org.openiam.idm.srvc.recon.service.ReconciliationResultDAOImpl">
-		<property name="sessionFactory" ref="sessionFactory"></property>
 	</bean>
 
 	<!-- ========================= Reconciliation Factory ======================= -->

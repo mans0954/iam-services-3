@@ -1,5 +1,7 @@
 package org.openiam.spml2.interf;
 
+import org.openiam.connector.type.SearchRequest;
+import org.openiam.connector.type.SearchResponse;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.spml2.msg.*;
@@ -65,6 +67,11 @@ public interface ConnectorService {
 
     @WebMethod(action = "http://www.openiam.org/service/connector/ConnectorService/lookupAttributeNames")
     LookupAttributeResponseType lookupAttributeNames(@WebParam(name = "reqType", targetNamespace = "") LookupAttributeRequestType reqType);
+    
+    @WebMethod(action="http://www.openiam.org/service/connector/ConnectorService/search")
+    SearchResponse search(
+            @WebParam(name = "searchRequest", targetNamespace = "")
+            SearchRequest searchRequest);
 
     /**
      * The setPassword operation enables a requestor to specify a new password for an object
