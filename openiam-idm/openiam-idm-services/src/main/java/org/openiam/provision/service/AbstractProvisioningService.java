@@ -224,7 +224,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
         if (connector.getConnectorInterface() != null &&
                 connector.getConnectorInterface().equalsIgnoreCase("REMOTE")) {
 
-            return remoteAdd(mLg, requestId, mSys, matchObj, extUser, connector, idmAuditLog);
+            return remoteAdd(mLg, requestId, mSys, matchObj, extUser, connector);
         }
         return localAdd(mLg, requestId, mSys, matchObj, extUser, user, idmAuditLog);
     }
@@ -2334,7 +2334,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
     protected boolean remoteAdd(Login mLg, String requestId, ManagedSysDto mSys,
                                 ManagedSystemObjectMatch matchObj, ExtensibleUser extUser,
-                                ProvisionConnectorDto connector, IdmAuditLog idmAuditLog) {
+                                ProvisionConnectorDto connector) {
 
         log.debug("Calling remote connector " + connector.getName());
 

@@ -1782,6 +1782,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             userStatus = pUser.getUser().getStatus().toString();
         }
 
+        /*
         IdmAuditLog auditLog = auditHelper.addLog("MODIFY",
                 pUser.getRequestorDomain(), pUser.getRequestorLogin(),
                 "IDM SERVICE", origUser.getCreatedBy(), "0", "USER",
@@ -1792,7 +1793,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         auditHelper.persistLogList(pendingLogItems, requestId,
                 pUser.getSessionId());
-
+		*/
         // deprovision the identities which are no longer needed.
         if (deleteResourceList != null && !deleteResourceList.isEmpty()) {
             // delete these resources which are not needed in the new role
@@ -1800,7 +1801,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
             deProvisionResources(deleteResourceList, origUser.getUserId(),
                     pUser.getLastUpdatedBy(), requestId, pUser,
-                    auditLog.getLogId(), userStatus, origUser);
+                    userStatus, origUser);
         }
 
         if (resourceList != null) {
@@ -1878,7 +1879,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                         deProvisionResources(delRes, origUser.getUserId(),
                                 pUser.getLastUpdatedBy(), requestId, pUser,
-                                auditLog.getLogId(), userStatus, origUser);
+                                userStatus, origUser);
 
                         // deProvisionResources(List<Resource>
                         // deleteResourceList, String userId, String
@@ -1977,7 +1978,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                     }
                                 }
                                 connectorSuccess = remoteAdd(mLg, requestId,
-                                    mSys, matchObj, extUser, connector, auditLog);
+                                    mSys, matchObj, extUser, connector);
 
                             } else {
                                 // build the request
@@ -2024,7 +2025,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 resp.setErrorCode(ResponseCode.FAIL_CONNECTOR);
                                 continue;
                             }
-
+                            /*
                             auditHelper.addLog("ADD IDENTITY", pUser
                                     .getRequestorDomain(), pUser
                                     .getRequestorLogin(), "IDM SERVICE",
@@ -2034,7 +2035,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                     userStatus, requestId, null, pUser
                                     .getSessionId(), null, pUser
                                     .getRequestClientIP(), mLg.getLogin(), mLg.getDomainId());
-
+							*/
                             bindingMap.remove(MATCH_PARAM);
 
                         }} else {
@@ -2220,7 +2221,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
     private void deProvisionResources(List<Resource> deleteResourceList,
                                       String userId, String requestorId, String requestId,
-                                      ProvisionUser pUser, String auditLogId, String status, User origUser) {
+                                      ProvisionUser pUser, String status, User origUser) {
         if (deleteResourceList != null) {
 
             List<LoginEntity> identityList = loginManager.getLoginByUser(userId);
@@ -2266,7 +2267,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     loginManager.updateLogin(loginDozerConverter.convertToEntity(mLg,true));
 
                     // LOG THIS EVENT
-
+                    /*
                     auditHelper.addLog("REMOVE IDENTITY", pUser
                             .getRequestorDomain(), pUser.getRequestorLogin(),
                             "IDM SERVICE", origUser.getCreatedBy(), mLg
@@ -2276,6 +2277,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             .getSessionId(), null, pUser
                             .getRequestClientIP(), mLg
                             .getLogin(), mLg.getDomainId());
+					*/
 
                     PSOIdentifierType idType = new PSOIdentifierType(mLg
                             .getLogin(), null, managedSysId);
