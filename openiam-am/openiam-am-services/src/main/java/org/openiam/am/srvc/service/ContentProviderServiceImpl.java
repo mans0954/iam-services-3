@@ -5,6 +5,8 @@ import org.apache.cxf.interceptor.URIMappingInterceptor;
 import org.openiam.am.srvc.dao.*;
 import org.openiam.am.srvc.domain.*;
 import org.openiam.base.AttributeOperationEnum;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.idm.srvc.mngsys.service.ManagedSysDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
@@ -45,6 +47,9 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
     private ResourceTypeDAO resourceTypeDAO;
     @Autowired
     private ResourceDataService resourceDataService;
+    
+    @Autowired
+    private ManagedSysDAO managedSysDAO;
 
     @Override
     public List<AuthLevelEntity> getAuthLevelList(){
@@ -85,12 +90,21 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
         if (provider.getMinAuthLevel()==null || StringUtils.isBlank(provider.getMinAuthLevel().getId())) {
             throw new  IllegalArgumentException("Auth Level not set for provider");
         }
+        if(provider.getManagedSystem() == null || StringUtils.isBlank(provider.getManagedSystem().getManagedSysId())) {
+        	throw new  IllegalArgumentException("Managed System not set for provider");
+        }
 
-        AuthLevelEntity authLevel = authLevelDao.findById(provider.getMinAuthLevel().getId());
+        final AuthLevelEntity authLevel = authLevelDao.findById(provider.getMinAuthLevel().getId());
         if(authLevel==null) {
             throw new NullPointerException("Cannot save content provider. Auth LEVEL is not found");
         }
+        
+        final ManagedSysEntity managedSys = managedSysDAO.findById(provider.getManagedSystem().getManagedSysId());
+        if(managedSys == null) {
+        	throw new NullPointerException("Cannot save content provider. Managed System is not found");
+        }
 
+        provider.setManagedSystem(managedSys);
         provider.setMinAuthLevel(authLevel);
         ContentProviderEntity entity  = null;
         if(provider.getId()==null || provider.getId().trim().isEmpty()){
@@ -403,29 +417,35 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
 
     @Transactional
     private void saveMetaValue(URIPatternMetaValueEntity value) {
-        if (value == null)
+        if (value == null) {
             throw new NullPointerException("Meta Value is null");
-        if (value.getMetaEntity() == null || value.getMetaEntity().getId()==null || value.getMetaEntity().getId().trim().isEmpty())
+        }
+        if (value.getMetaEntity() == null || StringUtils.isBlank(value.getMetaEntity().getId())) {
             throw new NullPointerException("Meta Data is not set");
-        if (value.getName() == null || value.getName().trim().isEmpty())
+        }
+        if (StringUtils.isBlank(value.getName())) {
             throw new NullPointerException("Meta Data Attribute Name is not set");
-        if ((value.getAmAttribute() == null
-             || value.getAmAttribute().getAmAttributeId()==null
-             || value.getAmAttribute().getAmAttributeId().trim().isEmpty())
-            &&(value.getStaticValue() == null || value.getStaticValue().trim().isEmpty()))
+        }
+        if ((value.getAmAttribute() == null || StringUtils.isBlank(value.getAmAttribute().getAmAttributeId())) &&
+        	(StringUtils.isBlank(value.getStaticValue())) && 
+        	(StringUtils.isBlank(value.getGroovyScript()))) {
             throw new NullPointerException("Meta Data Attribute value not set");
+        }
 
-        if(value.getAmAttribute() != null
-            && value.getAmAttribute().getAmAttributeId()!=null
-            && !value.getAmAttribute().getAmAttributeId().trim().isEmpty()){
+        if(value.getAmAttribute() != null && StringUtils.isNotBlank(value.getAmAttribute().getAmAttributeId())) {
             value.setStaticValue(null);
+            value.setGroovyScript(null);
             AuthResourceAMAttributeEntity amAttribute = authResourceAMAttributeDao.findById(value.getAmAttribute().getAmAttributeId());
-            if(amAttribute==null)
+            if(amAttribute==null) {
                 throw new  NullPointerException("Cannot save Meta data value for URI pattern. Attribute Map is not found");
-
+            }
             value.setAmAttribute(amAttribute);
-        } else{
+        } else if(StringUtils.isNotBlank(value.getGroovyScript())) {
+        	value.setStaticValue(null);
             value.setAmAttribute(null);
+        } else { /* static value */
+        	value.setAmAttribute(null);
+        	value.setGroovyScript(null);
         }
 
         URIPatternMetaValueEntity entity = null;

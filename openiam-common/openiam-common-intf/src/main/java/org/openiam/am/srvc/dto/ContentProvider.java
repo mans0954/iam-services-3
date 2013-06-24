@@ -26,7 +26,8 @@ import java.util.concurrent.atomic.AtomicInteger;
         "resourceId",
         "resourceName",
         "patternSet",
-        "serverSet"
+        "serverSet",
+        "managedSysId"
 })
 @DozerDTOCorrespondence(ContentProviderEntity.class)
 public class ContentProvider implements Serializable {
@@ -37,6 +38,7 @@ public class ContentProvider implements Serializable {
 	private AuthLevel authLevel;
 	private String domainPattern;
 	private Boolean isSSL;
+	private String managedSysId;
     //private String contextPath;
 	private String resourceId;
     private String resourceName;
@@ -140,6 +142,12 @@ public class ContentProvider implements Serializable {
 		return retVal;
 	}
 	
+	public String getManagedSysId() {
+		return managedSysId;
+	}
+	public void setManagedSysId(String managedSysId) {
+		this.managedSysId = managedSysId;
+	}
 	@Override
 	public int hashCode() {
 		final int prime = 31;

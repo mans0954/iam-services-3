@@ -95,6 +95,10 @@
             <a>patternSet</a>
             <b>patternSet</b>
         </field>
+        <field>
+        	<a>managedSystem.managedSysId</a>
+        	<b>managedSysId</b>
+        </field>
     </mapping>
 
 
@@ -157,6 +161,10 @@
         <field>
             <a>staticValue</a>
             <b>staticValue</b>
+        </field>
+        <field>
+        	<a>groovyScript</a>
+        	<b>groovyScript</b>
         </field>
         <field>
             <a>operation</a>

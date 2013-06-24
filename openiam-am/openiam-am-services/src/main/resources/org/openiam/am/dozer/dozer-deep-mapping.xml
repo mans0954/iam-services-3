@@ -104,6 +104,10 @@
             <a>patternSet</a>
             <b>patternSet</b>
         </field>
+        <field custom-converter="org.openiam.dozer.PersistentObjectConverter" custom-converter-param="amShallowDozerMapper">
+        	<a>managedSystem</a>
+        	<b>managedSystem</b>
+        </field>
     </mapping>
 
     <mapping>
