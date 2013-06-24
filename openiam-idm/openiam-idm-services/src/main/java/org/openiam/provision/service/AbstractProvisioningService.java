@@ -224,7 +224,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
         if (connector.getConnectorInterface() != null &&
                 connector.getConnectorInterface().equalsIgnoreCase("REMOTE")) {
 
-            return remoteAdd(mLg, requestId, mSys, matchObj, extUser, connector, idmAuditLog);
+            return remoteAdd(mLg, requestId, mSys, matchObj, extUser, connector);
         }
         return localAdd(mLg, requestId, mSys, matchObj, extUser, user, idmAuditLog);
     }
@@ -397,7 +397,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
                 for (final AttributeMap attr : attrMap) {
 
-                    if (StringUtils.equalsIgnoreCase(attr.getStatus(), "IN-ACTIVE")) {
+                    if (StringUtils.equalsIgnoreCase(attr.getStatus(), "INACTIVE")) {
                         continue;
                     }
 
@@ -2217,7 +2217,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
             for (AttributeMap attr : attrMap) {
 
-                if ("IN-ACTIVE".equalsIgnoreCase(attr.getStatus())) {
+                if ("INACTIVE".equalsIgnoreCase(attr.getStatus())) {
                     continue;
                 }
 
@@ -2334,7 +2334,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
     protected boolean remoteAdd(Login mLg, String requestId, ManagedSysDto mSys,
                                 ManagedSystemObjectMatch matchObj, ExtensibleUser extUser,
-                                ProvisionConnectorDto connector, IdmAuditLog idmAuditLog) {
+                                ProvisionConnectorDto connector) {
 
         log.debug("Calling remote connector " + connector.getName());
 

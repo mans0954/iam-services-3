@@ -32,6 +32,7 @@ import org.openiam.am.srvc.dto.URIPattern;
 import org.openiam.am.srvc.dto.URIPatternMeta;
 import org.openiam.am.srvc.dto.URIPatternMetaType;
 import org.openiam.am.srvc.dto.URIPatternMetaValue;
+import org.openiam.am.srvc.groovy.URIFederationGroovyProcessor;
 import org.openiam.am.srvc.uriauth.dto.URIFederationResponse;
 import org.openiam.am.srvc.uriauth.dto.URIPatternRuleToken;
 import org.openiam.am.srvc.uriauth.model.ContentProviderNode;
@@ -44,12 +45,14 @@ import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.base.ws.exception.BasicDataServiceException;
+import org.openiam.script.ScriptIntegration;
 import org.openiam.thread.Sweepable;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanNotOfRequiredTypeException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -84,6 +87,10 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 	
 	@Autowired
 	private URIPatternMetaValueDozerConverter patternValueDozerConverter;
+	
+    @Autowired
+    @Qualifier("configurableGroovyScriptEngine")
+    private ScriptIntegration scriptRunner;
 	
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -139,6 +146,16 @@ public class URIFederationServiceImpl implements URIFederationService, Applicati
 													final Map<String, URIPatternMetaValue> valueMap = new LinkedHashMap<String, URIPatternMetaValue>();
 													for(final URIPatternMetaValueEntity valueEntity : metaEntity.getMetaValueSet()) {
 														final URIPatternMetaValue value = patternValueDozerConverter.convertToDTO(valueEntity, true);
+														if(StringUtils.isNotBlank(value.getGroovyScript())) {
+															try {
+																final URIFederationGroovyProcessor processor = (URIFederationGroovyProcessor)scriptRunner.instantiateClass(null, value.getGroovyScript());
+																if(processor != null) {
+																	value.setGroovyProcessor(processor);
+																}
+															} catch(Throwable e) {
+																LOG.warn(String.format("Can't define groovy script for rule %s.  This groovy script wont' be used", value.getName()), e);
+															}
+														}
 														valueMap.put(value.getId(), value);
 													}
 													meta.setMetaValueSet(new LinkedHashSet<URIPatternMetaValue>(valueMap.values()));

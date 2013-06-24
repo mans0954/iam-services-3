@@ -79,6 +79,7 @@ import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.spml2.msg.*;
 import org.openiam.spml2.msg.suspend.ResumeRequestType;
 import org.openiam.spml2.msg.suspend.SuspendRequestType;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.jws.WebMethod;
 import javax.jws.WebService;
@@ -109,6 +110,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
           * org.openiam.provision.service.ProvisionService#addUser(org.openiam.provision
           * .dto.ProvisionUser)
           */
+    @Transactional
     public ProvisionUserResponse addUser(ProvisionUser user)    {
         ProvisionUserResponse resp = new ProvisionUserResponse();
 
@@ -282,6 +284,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         primaryLogin = loginDozerConverter.convertToDTO(loginManager.getByUserIdManagedSys(user.getUser().getUserId(),sysConfiguration
                 .getDefaultManagedSysId()), true);
 
+
         if (resp.getStatus() == ResponseStatus.SUCCESS) {
             auditLog = auditHelper.addLog("CREATE", user.getUser().getRequestorDomain(),
                     user.getUser().getRequestorLogin(), "IDM SERVICE", user.getUser()
@@ -303,6 +306,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     resp.getErrorText(), user.getUser().getRequestClientIP(),
                     primaryLogin.getLogin(), primaryLogin.getDomainId());
         }
+
 
         // need decrypted password for use in the connectors:
         String decPassword = null;
@@ -598,7 +602,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 userReq.setRequestID(requestId);
                                 userReq.setTargetID(resLogin.getManagedSysId());
                                 userReq.setHostLoginId(mSys.getUserId());
-                                userReq.setHostLoginPassword(mSys.getDecryptPassword());
+                                userReq.setHostLoginPassword(mSys.getPswd());
                                 userReq.setHostUrl(mSys.getHostUrl());
                                 userReq.setBaseDN(matchObj.getBaseDn());
                                 userReq.setOperation("EDIT");
@@ -1566,6 +1570,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
       * org.openiam.provision.service.ProvisionService#modifyUser(org.openiam
       * .provision.dto.ProvisionUser)
       */
+    @Transactional
     public ProvisionUserResponse modifyUser(ProvisionUser pUser) {
         ProvisionUserResponse resp = new ProvisionUserResponse();
         String requestId = "R" + UUIDGen.getUUID();
@@ -1777,6 +1782,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             userStatus = pUser.getUser().getStatus().toString();
         }
 
+        /*
         IdmAuditLog auditLog = auditHelper.addLog("MODIFY",
                 pUser.getUser().getRequestorDomain(), pUser.getUser().getRequestorLogin(),
                 "IDM SERVICE", origUser.getCreatedBy(), "0", "USER",
@@ -1787,7 +1793,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         auditHelper.persistLogList(pendingLogItems, requestId,
                 pUser.getSessionId());
-
+		*/
         // deprovision the identities which are no longer needed.
         if (deleteResourceList != null && !deleteResourceList.isEmpty()) {
             // delete these resources which are not needed in the new role
@@ -1972,7 +1978,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                     }
                                 }
                                 connectorSuccess = remoteAdd(mLg, requestId,
-                                    mSys, matchObj, extUser, connector, auditLog);
+                                    mSys, matchObj, extUser, connector);
 
                             } else {
                                 // build the request
@@ -2019,9 +2025,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 resp.setErrorCode(ResponseCode.FAIL_CONNECTOR);
                                 continue;
                             }
-
-                            auditHelper.addLog("ADD IDENTITY", pUser.getUser()
-                                    .getRequestorDomain(), pUser.getUser()
+                            /*
+                            auditHelper.addLog("ADD IDENTITY", pUser
+                                    .getRequestorDomain(), pUser
                                     .getRequestorLogin(), "IDM SERVICE",
                                     origUser.getCreatedBy(), mLg.getManagedSysId(), "USER",
                                     origUser.getUserId(), null, "SUCCESS",
@@ -2029,7 +2035,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                     userStatus, requestId, null, pUser
                                     .getSessionId(), null, pUser.getUser()
                                     .getRequestClientIP(), mLg.getLogin(), mLg.getDomainId());
-
+							*/
                             bindingMap.remove(MATCH_PARAM);
 
                         }} else {
@@ -2215,7 +2221,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
     private void deProvisionResources(List<Resource> deleteResourceList,
                                       String userId, String requestorId, String requestId,
-                                      ProvisionUser pUser, String auditLogId, String status, User origUser) {
+                                      ProvisionUser pUser, String status, User origUser) {
         if (deleteResourceList != null) {
 
             List<LoginEntity> identityList = loginManager.getLoginByUser(userId);
@@ -2261,9 +2267,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     loginManager.updateLogin(loginDozerConverter.convertToEntity(mLg,true));
 
                     // LOG THIS EVENT
-
-                    auditHelper.addLog("REMOVE IDENTITY", pUser.getUser()
-                            .getRequestorDomain(), pUser.getUser().getRequestorLogin(),
+                    /*
+                    auditHelper.addLog("REMOVE IDENTITY", pUser
+                            .getRequestorDomain(), pUser.getRequestorLogin(),
                             "IDM SERVICE", origUser.getCreatedBy(), mLg
                             .getManagedSysId(), "USER", origUser
                             .getUserId(), null, "SUCCESS", auditLogId,
@@ -2271,6 +2277,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             .getSessionId(), null, pUser.getUser()
                             .getRequestClientIP(), mLg
                             .getLogin(), mLg.getDomainId());
+					*/
 
                     PSOIdentifierType idType = new PSOIdentifierType(mLg
                             .getLogin(), null, managedSysId);
@@ -2312,6 +2319,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     /* (non-Javadoc)
       * @see org.openiam.provision.service.ProvisionService#resetPassword(org.openiam.provision.dto.PasswordSync)
       */
+    @Transactional
     public PasswordResponse resetPassword(PasswordSync passwordSync) {
         log.debug("----resetPassword called.------");
 
@@ -2604,6 +2612,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
       * org.openiam.provision.service.ProvisionService#setPassword(org.openiam
       * .provision.dto.PasswordSync)
       */
+    @Transactional
     public Response setPassword(PasswordSync passwordSync) {
         log.debug("----setPassword called.------");
 

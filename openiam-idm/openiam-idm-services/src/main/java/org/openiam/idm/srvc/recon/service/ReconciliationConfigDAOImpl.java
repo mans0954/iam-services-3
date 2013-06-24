@@ -8,17 +8,15 @@ import org.apache.commons.collections.CollectionUtils;
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
-import org.hibernate.Session;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.srvc.recon.domain.ReconciliationConfigEntity;
-import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.springframework.stereotype.Repository;
 
 /**
  * Home object for domain model class ReconiliationConfig.
  */
-@Repository("reconConfig")
+@Repository
 public class ReconciliationConfigDAOImpl extends
         BaseDaoImpl<ReconciliationConfigEntity, String> implements
         ReconciliationConfigDAO {

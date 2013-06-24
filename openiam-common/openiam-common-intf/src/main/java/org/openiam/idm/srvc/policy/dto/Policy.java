@@ -7,6 +7,8 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
+
+import org.apache.commons.lang.StringUtils;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 
@@ -116,7 +118,7 @@ public class Policy implements java.io.Serializable {
 
     public PolicyAttribute getAttribute(String name) {
         for (PolicyAttribute attr : policyAttributes) {
-            if (attr.getName().equalsIgnoreCase(name)) {
+        	if(StringUtils.equalsIgnoreCase(attr.getName(), name)) {
                 return attr;
             }
         }

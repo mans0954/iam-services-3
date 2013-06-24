@@ -351,6 +351,19 @@
 		</outbound-endpoint>
 	</flow>
 
+        <flow name="remoteConnectorClientSearch">
+            <vm:inbound-endpoint path="remoteConnectorMessageSearch" exchange-pattern="request-response"  >
+            </vm:inbound-endpoint>
+
+            <outbound-endpoint responseTimeout="18000000"
+                               address="http://#[header:INBOUND:serviceName]"
+                               exchange-pattern="request-response" >
+
+                <cxf:jaxws-client serviceClass="org.openiam.spml2.interf.RemoteConnectorService" operation="search" >
+                </cxf:jaxws-client>
+            </outbound-endpoint>
+        </flow>
+
 	<!-- Synchronization Service CALL -->
 
 	<flow name="synchronizationClient">

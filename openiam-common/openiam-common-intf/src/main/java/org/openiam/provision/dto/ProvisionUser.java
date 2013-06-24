@@ -33,6 +33,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -568,5 +569,32 @@ public class ProvisionUser extends GenericProvisionObject<User> {
             getObject().setDatePasswordChanged(user.getDatePasswordChanged());
         }
 
+    }
+    
+    public void addMemberGroup(final Group group) {
+    	if(group != null) {
+    		if(this.memberOfGroups == null) {
+    			this.memberOfGroups = new LinkedList<Group>();
+    		}
+    		this.memberOfGroups.add(group);
+    	}
+    }
+    
+    public void addMemberRole(final Role role) {
+    	if(role != null) {
+    		if(this.memberOfRoles == null) {
+    			this.memberOfRoles = new LinkedList<Role>();
+    		}
+    		this.memberOfRoles.add(role);
+    	}
+    }
+    
+    public void addResourceUserAssociation(final UserResourceAssociation association) {
+    	if(association != null) {
+    		if(this.userResourceList == null) {
+    			this.userResourceList = new LinkedList<UserResourceAssociation>();
+    		}
+    		this.userResourceList.add(association);
+    	}
     }
 }

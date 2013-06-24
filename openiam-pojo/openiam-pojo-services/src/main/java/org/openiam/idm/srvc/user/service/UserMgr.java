@@ -240,12 +240,14 @@ public class UserMgr implements UserDataService {
             throw new NullPointerException("user object is null");
         if (user.getUserId() == null)
             throw new NullPointerException("user id is null");
-
         user.setLastUpdate(new Date(System.currentTimeMillis()));
+        UserEntity userEntity = userDao.findById(user.getUserId());
+        userEntity.updateUser(user);
 
-        validateEmailAddress(user, user.getEmailAddresses());
-        UserEntity userOrig = userDao.findById(user.getUserId());
-        userDao.merge(userOrig);
+        userDao.update(userEntity);
+        validateEmailAddress(userEntity, user.getEmailAddresses());
+
+
     }
 
     @Override

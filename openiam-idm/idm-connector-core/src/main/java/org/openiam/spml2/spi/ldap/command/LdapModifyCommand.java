@@ -144,7 +144,6 @@ public class LdapModifyCommand extends LdapAbstractCommand {
                     extobjectList = extType.getAny();
                     for (ExtensibleObject obj : extobjectList) {
 
-
                         List<ExtensibleAttribute> attrList = obj.getAttributes();
                         List<ModificationItem> modItemList = new ArrayList<ModificationItem>();
                         for (ExtensibleAttribute att : attrList) {
@@ -152,6 +151,11 @@ public class LdapModifyCommand extends LdapAbstractCommand {
                             log.debug("Extensible Attribute: " + att.getName() + " " + att.getDataType());
 
                             if (att.getDataType() == null) {
+                                continue;
+                            }
+
+                            if (att.getName().equalsIgnoreCase(matchObj[0].getKeyField())) {
+                                log.debug("Attr Name=" + att.getName() + " Value=" + att.getValue() + " ignored");
                                 continue;
                             }
 
@@ -176,7 +180,8 @@ public class LdapModifyCommand extends LdapAbstractCommand {
                                     if ("unicodePwd".equalsIgnoreCase(att.getName())) {
                                         Attribute a = generateActiveDirectoryPassword(att.getValue());
                                         modItemList.add(new ModificationItem(DirContext.REPLACE_ATTRIBUTE, a));
-                                    } else if (!"userPassword".equalsIgnoreCase(att.getName())) {
+                                    } else if (!"userPassword".equalsIgnoreCase(att.getName()) &&
+                                            !"ORIG_IDENTITY".equalsIgnoreCase(att.getName())) {
 
 
                                         Attribute a = null;

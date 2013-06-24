@@ -20,6 +20,8 @@ package org.openiam.spml2.spi.script;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.connector.type.SearchRequest;
+import org.openiam.connector.type.SearchResponse;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemObjectMatchDAO;
@@ -247,6 +249,11 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete {
             resp.setStatus(StatusCodeType.FAILURE);
             return resp;
         }
+    }
+
+    @Override
+    public SearchResponse search(@WebParam(name = "searchRequest", targetNamespace = "") SearchRequest searchRequest) {
+        throw new UnsupportedOperationException("Not implemented yet.");
     }
 
     private ConnectorService createConnector(ManagedSysDto managedSys) throws ClassNotFoundException, IOException {

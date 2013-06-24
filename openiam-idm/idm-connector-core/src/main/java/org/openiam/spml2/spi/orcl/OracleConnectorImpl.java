@@ -21,11 +21,14 @@
  */
 package org.openiam.spml2.spi.orcl;
 
+import javax.jws.WebParam;
 import javax.jws.WebService;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.openiam.connector.type.SearchRequest;
+import org.openiam.connector.type.SearchResponse;
 import org.openiam.spml2.msg.ErrorCode;
 import org.openiam.spml2.msg.LookupAttributeRequestType;
 import org.openiam.spml2.msg.LookupAttributeResponseType;
@@ -64,4 +67,8 @@ public class OracleConnectorImpl extends AbstractJDBCConnectorImpl {
         return lookupAttributeNamesCommand.lookupAttributeNames(reqType);
     }
 
+    @Override
+    public SearchResponse search(@WebParam(name = "searchRequest", targetNamespace = "") SearchRequest searchRequest) {
+        throw new UnsupportedOperationException("Not supportable.");
+    }
 }

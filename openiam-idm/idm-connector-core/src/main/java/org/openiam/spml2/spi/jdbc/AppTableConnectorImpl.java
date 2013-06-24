@@ -23,12 +23,15 @@ package org.openiam.spml2.spi.jdbc;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.connector.type.SearchRequest;
+import org.openiam.connector.type.SearchResponse;
 import org.openiam.spml2.msg.ErrorCode;
 import org.openiam.spml2.msg.LookupAttributeRequestType;
 import org.openiam.spml2.msg.LookupAttributeResponseType;
 import org.openiam.spml2.msg.StatusCodeType;
 import org.openiam.spml2.spi.common.jdbc.AbstractJDBCConnectorImpl;
 
+import javax.jws.WebParam;
 import javax.jws.WebService;
 
 /**
@@ -59,6 +62,11 @@ public class AppTableConnectorImpl extends AbstractJDBCConnectorImpl {
         respType.setError(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION);
 
         return respType;
+    }
+
+    @Override
+    public SearchResponse search(@WebParam(name = "searchRequest", targetNamespace = "") SearchRequest searchRequest) {
+        throw new UnsupportedOperationException("Not supportable.");
     }
 
 }

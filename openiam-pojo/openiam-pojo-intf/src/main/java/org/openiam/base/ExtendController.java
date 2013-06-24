@@ -3,6 +3,8 @@ package org.openiam.base;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.context.ApplicationContext;
+
 /**
  * Abstract class that allows you to extend a controller class using "pre" and "post" events
  *
@@ -10,6 +12,7 @@ import java.util.Map;
  */
 public abstract class ExtendController {
 
+	protected ApplicationContext context;
     protected Map<String, String> errorMap = new HashMap<String, String>();
 
     static public int SUCCESS_CONTINUE = 1;
@@ -61,4 +64,14 @@ public abstract class ExtendController {
                                  Map<String, Object> objList,
                                  Object cmd,
                                  Object Errors);
+
+	public ApplicationContext getContext() {
+		return context;
+	}
+
+	public void setContext(ApplicationContext context) {
+		this.context = context;
+	}
+    
+    
 }
