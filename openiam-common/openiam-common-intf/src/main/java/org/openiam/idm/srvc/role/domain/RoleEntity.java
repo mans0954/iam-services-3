@@ -102,7 +102,8 @@ public class RoleEntity implements Serializable {
     @Fetch(FetchMode.SUBSELECT)
     private Set<ResourceRoleEntity> resourceRoles;
     
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.REMOVE, CascadeType.DETACH})
     @JoinColumn(name = "ROLE_ID")
     @Fetch(FetchMode.SUBSELECT)
     private Set<UserRoleEntity> userRoles;
