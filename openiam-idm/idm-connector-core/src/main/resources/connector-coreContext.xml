@@ -15,19 +15,19 @@
 		base-package="org.openiam.spml2,  org.openiam.idm.parser.csv" />
     <!-- , org.openiam.spml2.spi.csv,org.openiam.spml2.spi.ldap, org.openiam.spml2.spi.orcl, org.openiam.spml2.spi.common.jdbc -->
 	<!-- Authentication Beans -->
-	<bean id="exampleConnector" class="org.openiam.spml2.spi.example.ExampleComplete">
+	<!--<bean id="exampleConnector" class="org.openiam.spml2.spi.example.ExampleComplete">-->
 
-	</bean>
+	<!--</bean>-->
 
-	<bean id="shellConnector" class="org.openiam.spml2.spi.example.ShellConnectorImpl">
-		<property name="managedSysService" ref="managedSysService" />
-		<property name="managedSysObjectMatchDao" ref="managedSysObjectMatchDAO" />
-		<property name="resourceDataService" ref="resourceDataService" />
-		<property name="auditDataService" ref="auditDataService" />
-		<property name="loginManager" ref="loginManager" />
-		<property name="policyDataService" ref="policyDataService" />
-		<property name="userManager" ref="userManager" />
-	</bean>
+	<!--<bean id="shellConnector" class="org.openiam.spml2.spi.example.ShellConnectorImpl">-->
+		<!--<property name="managedSysService" ref="managedSysService" />-->
+		<!--<property name="managedSysObjectMatchDao" ref="managedSysObjectMatchDAO" />-->
+		<!--<property name="resourceDataService" ref="resourceDataService" />-->
+		<!--<property name="auditDataService" ref="auditDataService" />-->
+		<!--<property name="loginManager" ref="loginManager" />-->
+		<!--<property name="policyDataService" ref="policyDataService" />-->
+		<!--<property name="userManager" ref="userManager" />-->
+	<!--</bean>-->
 
 	<bean id="attrHelper" class="org.openiam.provision.service.UserAttributeHelper">
 		<property name="loginManager" ref="loginManager" />
@@ -36,23 +36,23 @@
 	<!--<bean id="csvConnector" class="org.openiam.spml2.spi.csv.CSVConnectorImpl">-->
 	<!--</bean>-->
 
-	<bean id="ldapConnector" class="org.openiam.spml2.spi.ldap.LdapConnectorImpl">
-		<property name="managedSysService" ref="managedSysService" />
-		<property name="managedSysObjectMatchDao" ref="managedSysObjectMatchDAO" />
-		<property name="resourceDataService" ref="resourceDataService" />
-		<property name="auditDataService" ref="auditDataService" />
-		<property name="loginManager" ref="loginManager" />
-		<property name="policyDataService" ref="policyDataService" />
-		<property name="userManager" ref="userManager" />
-		<property name="ldapSuspend" ref="ldapSuspend" />
-		<property name="ldapPassword" ref="ldapPassword" />
-		<property name="addCommand" ref="ldapAddCommmand" />
-		<property name="modifyCommand" ref="ldapModifyCommmand" />
-		<property name="lookupCommand" ref="ldapLookupCommmand" />
-		<property name="deleteCommand" ref="ldapDeleteCommmand" />
-	</bean>
+	<!--<bean id="ldapConnector" class="org.openiam.spml2.spi.ldap.LdapConnectorImpl">-->
+		<!--<property name="managedSysService" ref="managedSysService" />-->
+		<!--<property name="managedSysObjectMatchDao" ref="managedSysObjectMatchDAO" />-->
+		<!--<property name="resourceDataService" ref="resourceDataService" />-->
+		<!--<property name="auditDataService" ref="auditDataService" />-->
+		<!--<property name="loginManager" ref="loginManager" />-->
+		<!--<property name="policyDataService" ref="policyDataService" />-->
+		<!--<property name="userManager" ref="userManager" />-->
+		<!--<property name="ldapSuspend" ref="ldapSuspend" />-->
+		<!--<property name="ldapPassword" ref="ldapPassword" />-->
+		<!--<property name="addCommand" ref="ldapAddCommmand" />-->
+		<!--<property name="modifyCommand" ref="ldapModifyCommmand" />-->
+		<!--<property name="lookupCommand" ref="ldapLookupCommmand" />-->
+		<!--<property name="deleteCommand" ref="ldapDeleteCommmand" />-->
+	<!--</bean>-->
 
-	<bean id="ldapSuspend" class="org.openiam.spml2.spi.ldap.LdapSuspend">
+	<bean id="ldapSuspend" class="org.openiam.spml2.spi.ldap.command.LdapSuspend">
 		<property name="managedSysService" ref="managedSysService" />
 		<property name="managedSysObjectMatchDao" ref="managedSysObjectMatchDAO" />
 		<property name="loginManager" ref="loginManager" />
@@ -61,52 +61,52 @@
 
 
 
-	<bean id="ldapPassword" class="org.openiam.spml2.spi.ldap.LdapPassword">
+	<bean id="ldapPassword" class="org.openiam.spml2.spi.ldap.command.LdapPassword">
 
 	</bean>
 
-	<bean id="ldapAddCommmand" class="org.openiam.spml2.spi.ldap.LdapAddCommand">
+	<bean id="ldapAddCommmand" class="org.openiam.spml2.spi.ldap.command.LdapAddCommand">
 		<property name="managedSysService" ref="managedSysService" />
 		<property name="resourceDataService" ref="resourceDataService" />
 		<property name="managedSysObjectMatchDao" ref="managedSysObjectMatchDAO" />
 
 	</bean>
 
-	<bean id="ldapLookupCommmand" class="org.openiam.spml2.spi.ldap.LdapLookupCommand">
+	<bean id="ldapLookupCommmand" class="org.openiam.spml2.spi.ldap.command.LdapLookupCommand">
 		<property name="managedSysService" ref="managedSysService" />
 		<property name="resourceDataService" ref="resourceDataService" />
 		<property name="managedSysObjectMatchDao" ref="managedSysObjectMatchDAO" />
 
 	</bean>
-	<bean id="ldapModifyCommmand" class="org.openiam.spml2.spi.ldap.LdapModifyCommand">
-		<property name="managedSysService" ref="managedSysService" />
-		<property name="resourceDataService" ref="resourceDataService" />
-		<property name="managedSysObjectMatchDao" ref="managedSysObjectMatchDAO" />
-
-	</bean>
-
-	<bean id="ldapDeleteCommmand" class="org.openiam.spml2.spi.ldap.LdapDeleteCommand">
+	<bean id="ldapModifyCommmand" class="org.openiam.spml2.spi.ldap.command.LdapModifyCommand">
 		<property name="managedSysService" ref="managedSysService" />
 		<property name="resourceDataService" ref="resourceDataService" />
 		<property name="managedSysObjectMatchDao" ref="managedSysObjectMatchDAO" />
 
 	</bean>
 
-
-	<bean id="googleAppsConnector" class="org.openiam.spml2.spi.gapps.GoogleAppsConnectorImpl">
+	<bean id="ldapDeleteCommmand" class="org.openiam.spml2.spi.ldap.command.LdapDeleteCommand">
 		<property name="managedSysService" ref="managedSysService" />
-		<property name="managedSysObjectMatchDao" ref="managedSysObjectMatchDAO" />
 		<property name="resourceDataService" ref="resourceDataService" />
-		<property name="auditDataService" ref="auditDataService" />
-		<property name="loginManager" ref="loginManager" />
-		<property name="policyDataService" ref="policyDataService" />
-		<property name="userManager" ref="userManager" />
+		<property name="managedSysObjectMatchDao" ref="managedSysObjectMatchDAO" />
+
 	</bean>
+
+
+	<!--<bean id="googleAppsConnector" class="org.openiam.spml2.spi.gapps.GoogleAppsConnectorImpl">-->
+		<!--<property name="managedSysService" ref="managedSysService" />-->
+		<!--<property name="managedSysObjectMatchDao" ref="managedSysObjectMatchDAO" />-->
+		<!--<property name="resourceDataService" ref="resourceDataService" />-->
+		<!--<property name="auditDataService" ref="auditDataService" />-->
+		<!--<property name="loginManager" ref="loginManager" />-->
+		<!--<property name="policyDataService" ref="policyDataService" />-->
+		<!--<property name="userManager" ref="userManager" />-->
+	<!--</bean>-->
 
 	<!-- MySQL Connector -->
-	<bean id="mysqlConnector" class="org.openiam.spml2.spi.mysql.MySQLConnectorImpl">
-		<property name="addCommand" ref="mysqlAddCommmand" />
-	</bean>
+	<!--<bean id="mysqlConnector" class="org.openiam.spml2.spi.mysql.MySQLConnectorImpl">-->
+		<!--<property name="addCommand" ref="mysqlAddCommmand" />-->
+	<!--</bean>-->
 
 	<bean id="mysqlAddCommmand" class="org.openiam.spml2.spi.mysql.MySQLAddCommand">
 		<property name="managedSysService" ref="managedSysService" />
@@ -117,19 +117,19 @@
 
 	<bean id="jdbcConnection" class="org.openiam.spml2.spi.common.jdbc.JDBCConnectionMgr" />
 
-	<bean id="scriptConnector" class="org.openiam.spml2.spi.script.ScriptConnectorImpl">
+	<!--<bean id="scriptConnector" class="org.openiam.spml2.spi.script.ScriptConnectorImpl">-->
 
-		<property name="managedSysService" ref="managedSysService" />
-		<property name="managedSysObjectMatchDao" ref="managedSysObjectMatchDAO" />
-		<property name="resourceDataService" ref="resourceDataService" />
+		<!--<property name="managedSysService" ref="managedSysService" />-->
+		<!--<property name="managedSysObjectMatchDao" ref="managedSysObjectMatchDAO" />-->
+		<!--<property name="resourceDataService" ref="resourceDataService" />-->
 
-	</bean>
+	<!--</bean>-->
 
-	<bean id="linuxConnector" class="org.openiam.spml2.spi.linux.LinuxConnectorImpl">
-		<property name="managedSysService" ref="managedSysService" />
-		<property name="managedSysObjectMatchDao" ref="managedSysObjectMatchDAO" />
-		<property name="resourceDataService" ref="resourceDataService" />
-	</bean>
+	<!--<bean id="linuxConnector" class="org.openiam.spml2.spi.linux.LinuxConnectorImpl">-->
+		<!--<property name="managedSysService" ref="managedSysService" />-->
+		<!--<property name="managedSysObjectMatchDao" ref="managedSysObjectMatchDAO" />-->
+		<!--<property name="resourceDataService" ref="resourceDataService" />-->
+	<!--</bean>-->
 
 
 	<!-- ========================= RESOURCE DEFINITIONS ========================= -->
@@ -165,7 +165,7 @@
 		<property name="maxStatements" value="50"/> <property name="idleConnectionTestPeriod" 
 		value="3000"/> <property name="loginTimeout" value="300"/> </bean -->
 
-	<bean id="abstractApptableCommand" class="org.openiam.spml2.spi.jdbc.AbstractAppTableCommand"
+	<bean id="abstractApptableCommand" class="org.openiam.spml2.spi.jdbc.command.AbstractAppTableCommand"
 		abstract="true">
 		<property name="connectionMgr" ref="jdbcConnection" />
 		<property name="managedSysService" ref="managedSysService" />
@@ -174,41 +174,41 @@
 
 	<!-- Start AppTable Connector -->
 
-	<bean id="appTableConnector" class="org.openiam.spml2.spi.jdbc.AppTableConnectorImpl">
-		<property name="addCommand">
-			<bean class="org.openiam.spml2.spi.jdbc.AppTableAddCommand"
-				parent="abstractApptableCommand" />
-		</property>
-		<property name="deleteCommand">
-			<bean class="org.openiam.spml2.spi.jdbc.AppTableDeleteCommand"
-				parent="abstractApptableCommand" />
-		</property>
-		<property name="lookupCommand">
-			<bean class="org.openiam.spml2.spi.jdbc.AppTableLookupCommand"
-				parent="abstractApptableCommand" />
-		</property>
-		<property name="modifyCommand">
-			<bean class="org.openiam.spml2.spi.jdbc.AppTableModifyCommand"
-				parent="abstractApptableCommand" />
-		</property>
-		<property name="resumeCommand">
-			<bean class="org.openiam.spml2.spi.jdbc.AppTableResumeCommand"
-				parent="abstractApptableCommand">
-				<property name="loginManager" ref="loginManager" />
-			</bean>
-		</property>
-		<property name="setPasswordCommand">
-			<bean class="org.openiam.spml2.spi.jdbc.AppTablePasswordCommand"
-				parent="abstractApptableCommand" />
-		</property>
-		<property name="suspendCommand">
-			<bean class="org.openiam.spml2.spi.jdbc.AppTableSuspendCommand"
-				parent="abstractApptableCommand" />
-		</property>
-		<property name="connectionMgr">
-			<ref local="jdbcConnection" />
-		</property>
-	</bean>
+	<!--<bean id="appTableConnector" class="org.openiam.spml2.spi.jdbc.AppTableConnectorImpl">-->
+		<!--<property name="addCommand">-->
+			<!--<bean class="org.openiam.spml2.spi.jdbc.command.AppTableAddCommand"-->
+				<!--parent="abstractApptableCommand" />-->
+		<!--</property>-->
+		<!--<property name="deleteCommand">-->
+			<!--<bean class="org.openiam.spml2.spi.jdbc.command.AppTableDeleteCommand"-->
+				<!--parent="abstractApptableCommand" />-->
+		<!--</property>-->
+		<!--<property name="lookupCommand">-->
+			<!--<bean class="org.openiam.spml2.spi.jdbc.command.AppTableLookupCommand"-->
+				<!--parent="abstractApptableCommand" />-->
+		<!--</property>-->
+		<!--<property name="modifyCommand">-->
+			<!--<bean class="org.openiam.spml2.spi.jdbc.command.AppTableModifyCommand"-->
+				<!--parent="abstractApptableCommand" />-->
+		<!--</property>-->
+		<!--<property name="resumeCommand">-->
+			<!--<bean class="org.openiam.spml2.spi.jdbc.command.AppTableResumeCommand"-->
+				<!--parent="abstractApptableCommand">-->
+				<!--<property name="loginManager" ref="loginManager" />-->
+			<!--</bean>-->
+		<!--</property>-->
+		<!--<property name="setPasswordCommand">-->
+			<!--<bean class="org.openiam.spml2.spi.jdbc.command.AppTablePasswordCommand"-->
+				<!--parent="abstractApptableCommand" />-->
+		<!--</property>-->
+		<!--<property name="suspendCommand">-->
+			<!--<bean class="org.openiam.spml2.spi.jdbc.command.AppTableSuspendCommand"-->
+				<!--parent="abstractApptableCommand" />-->
+		<!--</property>-->
+		<!--<property name="connectionMgr">-->
+			<!--<ref local="jdbcConnection" />-->
+		<!--</property>-->
+	<!--</bean>-->
 	
 	<bean id="userServiceClient" class="org.openiam.idm.srvc.user.ws.UserDataWebService"
 		factory-bean="userServiceFactory" factory-method="create" lazy-init="false" />
@@ -225,93 +225,93 @@
 
 	<!-- Start Oracle Connector -->
 
-	<bean id="abstractOracleCommand" class="org.openiam.spml2.spi.orcl.AbstractOracleCommand"
+	<bean id="abstractOracleCommand" class="org.openiam.spml2.spi.orcl.command.AbstractOracleCommand"
 		abstract="true">
 		<property name="connectionMgr" ref="jdbcConnection" />
 		<property name="managedSysService" ref="managedSysService" />
 		<property name="resourceDataService" ref="resourceDataService" />
 	</bean>
 
-    <bean id="oracleLookupAttributeNamesCommand"  class="org.openiam.spml2.spi.orcl.OracleLookupAttributeNamesCommand"
+    <bean id="oracleLookupAttributeNamesCommand"  class="org.openiam.spml2.spi.orcl.command.OracleLookupAttributeNamesCommand"
           parent="abstractOracleCommand" />
 
-	<bean id="oracleConnector" class="org.openiam.spml2.spi.orcl.OracleConnectorImpl">
-		<property name="addCommand">
-			<bean class="org.openiam.spml2.spi.orcl.OracleAddCommand"
-				parent="abstractOracleCommand" />
-		</property>
-		<property name="deleteCommand">
-			<bean class="org.openiam.spml2.spi.orcl.OracleDeleteCommand"
-				parent="abstractOracleCommand" />
-		</property>
-		<property name="lookupCommand">
-			<bean class="org.openiam.spml2.spi.orcl.OracleLookupCommand"
-				parent="abstractOracleCommand" />
-		</property>
-		<property name="modifyCommand">
-			<bean class="org.openiam.spml2.spi.orcl.OracleModifyCommand"
-				parent="abstractOracleCommand" />
-		</property>
-		<property name="resumeCommand">
-			<bean class="org.openiam.spml2.spi.orcl.OracleResumeCommand"
-				parent="abstractOracleCommand">
-				<property name="loginManager" ref="loginManager" />
-			</bean>
-		</property>
-		<property name="setPasswordCommand">
-			<bean class="org.openiam.spml2.spi.orcl.OraclePasswordCommand"
-				parent="abstractOracleCommand" />
-		</property>
-		<property name="suspendCommand">
-			<bean class="org.openiam.spml2.spi.orcl.OracleSuspendCommand"
-				parent="abstractOracleCommand" />
-		</property>
-		<property name="connectionMgr">
-			<ref local="jdbcConnection" />
-		</property>
-	</bean>
+	<!--<bean id="oracleConnector" class="org.openiam.spml2.spi.orcl.OracleConnectorImpl">-->
+		<!--<property name="addCommand">-->
+			<!--<bean class="org.openiam.spml2.spi.orcl.command.OracleAddCommand"-->
+				<!--parent="abstractOracleCommand" />-->
+		<!--</property>-->
+		<!--<property name="deleteCommand">-->
+			<!--<bean class="org.openiam.spml2.spi.orcl.command.OracleDeleteCommand"-->
+				<!--parent="abstractOracleCommand" />-->
+		<!--</property>-->
+		<!--<property name="lookupCommand">-->
+			<!--<bean class="org.openiam.spml2.spi.orcl.command.OracleLookupCommand"-->
+				<!--parent="abstractOracleCommand" />-->
+		<!--</property>-->
+		<!--<property name="modifyCommand">-->
+			<!--<bean class="org.openiam.spml2.spi.orcl.command.OracleModifyCommand"-->
+				<!--parent="abstractOracleCommand" />-->
+		<!--</property>-->
+		<!--<property name="resumeCommand">-->
+			<!--<bean class="org.openiam.spml2.spi.orcl.command.OracleResumeCommand"-->
+				<!--parent="abstractOracleCommand">-->
+				<!--<property name="loginManager" ref="loginManager" />-->
+			<!--</bean>-->
+		<!--</property>-->
+		<!--<property name="setPasswordCommand">-->
+			<!--<bean class="org.openiam.spml2.spi.orcl.command.OraclePasswordCommand"-->
+				<!--parent="abstractOracleCommand" />-->
+		<!--</property>-->
+		<!--<property name="suspendCommand">-->
+			<!--<bean class="org.openiam.spml2.spi.orcl.command.OracleSuspendCommand"-->
+				<!--parent="abstractOracleCommand" />-->
+		<!--</property>-->
+		<!--<property name="connectionMgr">-->
+			<!--<ref local="jdbcConnection" />-->
+		<!--</property>-->
+	<!--</bean>-->
 
 	<!-- END Oracle Connector -->
 
 	<!-- Start SalesForce Connector -->
 	<bean id="abstractSalesForceCommand"
-		class="org.openiam.spml2.spi.salesforce.AbstractSalesforceCommand"
+		class="org.openiam.spml2.spi.salesforce.command.AbstractSalesforceCommand"
 		abstract="true">
 		<property name="managedSysService" ref="managedSysService" />
 		<property name="resourceDataService" ref="resourceDataService" />
 	</bean>
 
-	<bean id="salesForceConnector"
-		class="org.openiam.spml2.spi.salesforce.SalesForceConnectorImpl">
-		<property name="addCommand">
-			<bean class="org.openiam.spml2.spi.salesforce.SalesforceAddCommand"
-				parent="abstractSalesForceCommand" />
-		</property>
-		<property name="deleteCommand">
-			<bean class="org.openiam.spml2.spi.salesforce.SalesForceDeleteCommand"
-				parent="abstractSalesForceCommand" />
-		</property>
-		<property name="lookupCommand">
-			<bean class="org.openiam.spml2.spi.salesforce.SalesForceLookupCommand"
-				parent="abstractSalesForceCommand" />
-		</property>
-		<property name="modifyCommand">
-			<bean class="org.openiam.spml2.spi.salesforce.SalesForceModifyCommand"
-				parent="abstractSalesForceCommand" />
-		</property>
-		<property name="resumeCommand">
-			<bean class="org.openiam.spml2.spi.salesforce.SalesForceResumeCommand"
-				parent="abstractSalesForceCommand" />
-		</property>
-		<property name="setPasswordCommand">
-			<bean class="org.openiam.spml2.spi.salesforce.SalesForceSetPasswordCommand"
-				parent="abstractSalesForceCommand" />
-		</property>
-		<property name="suspendCommand">
-			<bean class="org.openiam.spml2.spi.salesforce.SalesForceSuspendCommand"
-				parent="abstractSalesForceCommand" />
-		</property>
-	</bean>
+	<!--<bean id="salesForceConnector"-->
+		<!--class="org.openiam.spml2.spi.salesforce.SalesForceConnectorImpl">-->
+		<!--<property name="addCommand">-->
+			<!--<bean class="org.openiam.spml2.spi.salesforce.command.SalesforceAddCommand"-->
+				<!--parent="abstractSalesForceCommand" />-->
+		<!--</property>-->
+		<!--<property name="deleteCommand">-->
+			<!--<bean class="org.openiam.spml2.spi.salesforce.command.SalesForceDeleteCommand"-->
+				<!--parent="abstractSalesForceCommand" />-->
+		<!--</property>-->
+		<!--<property name="lookupCommand">-->
+			<!--<bean class="org.openiam.spml2.spi.salesforce.command.SalesForceLookupCommand"-->
+				<!--parent="abstractSalesForceCommand" />-->
+		<!--</property>-->
+		<!--<property name="modifyCommand">-->
+			<!--<bean class="org.openiam.spml2.spi.salesforce.command.SalesForceModifyCommand"-->
+				<!--parent="abstractSalesForceCommand" />-->
+		<!--</property>-->
+		<!--<property name="resumeCommand">-->
+			<!--<bean class="org.openiam.spml2.spi.salesforce.command.SalesForceResumeCommand"-->
+				<!--parent="abstractSalesForceCommand" />-->
+		<!--</property>-->
+		<!--<property name="setPasswordCommand">-->
+			<!--<bean class="org.openiam.spml2.spi.salesforce.command.SalesForceSetPasswordCommand"-->
+				<!--parent="abstractSalesForceCommand" />-->
+		<!--</property>-->
+		<!--<property name="suspendCommand">-->
+			<!--<bean class="org.openiam.spml2.spi.salesforce.command.SalesForceSuspendCommand"-->
+				<!--parent="abstractSalesForceCommand" />-->
+		<!--</property>-->
+	<!--</bean>-->
 
 	<!-- END SalesForce Connector -->
 

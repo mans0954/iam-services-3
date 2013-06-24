@@ -48,8 +48,9 @@ import java.util.Map;
  * @author suneet
  *
  */
-@WebService(endpointInterface = "org.openiam.spml2.interf.ConnectorService", targetNamespace = "http://www.openiam.org/service/connector", portName = "GoogleAppsConnectorServicePort", serviceName = "GoogleAppsConnectorService")
-public class GoogleAppsConnectorImpl implements ConnectorService {
+@Deprecated
+//@WebService(endpointInterface = "org.openiam.spml2.interf.ConnectorService", targetNamespace = "http://www.openiam.org/service/connector", portName = "GoogleAppsConnectorServicePort", serviceName = "GoogleAppsConnectorService")
+public class GoogleAppsConnectorImpl  {
 
     private static final Log log = LogFactory
             .getLog(GoogleAppsConnectorImpl.class);

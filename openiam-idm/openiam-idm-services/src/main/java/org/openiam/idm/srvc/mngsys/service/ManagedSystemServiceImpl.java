@@ -15,7 +15,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.List;
 
-@Service
+@Service("managedSystemService")
 public class ManagedSystemServiceImpl implements ManagedSystemService {
 
     @Autowired

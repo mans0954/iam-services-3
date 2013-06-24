@@ -18,11 +18,12 @@ import javax.jws.WebService;
  * Date: 3/21/12
  * Time: 10:07 PM
  */
-@WebService(endpointInterface = "org.openiam.spml2.interf.ConnectorService",
-        targetNamespace = "http://www.openiam.org/service/connector",
-        portName = "MySQLConnectorPort",
-        serviceName = "MySQLConnector")
-public class MySQLConnectorImpl extends AbstractSpml2Complete implements ConnectorService {
+//@WebService(endpointInterface = "org.openiam.spml2.interf.ConnectorService",
+//        targetNamespace = "http://www.openiam.org/service/connector",
+//        portName = "MySQLConnectorPort",
+//        serviceName = "MySQLConnector")
+@Deprecated
+public class MySQLConnectorImpl extends AbstractSpml2Complete  {
 
     protected MySQLAddCommand addCommand;
 

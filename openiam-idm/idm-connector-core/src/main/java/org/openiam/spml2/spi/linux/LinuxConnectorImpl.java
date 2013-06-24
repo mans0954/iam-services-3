@@ -30,11 +30,12 @@ import java.util.List;
  * Date: 2/26/12
  * Time: 2:12 AM
  */
-@WebService(endpointInterface = "org.openiam.spml2.interf.ConnectorService",
-        targetNamespace = "http://www.openiam.org/service/connector",
-        portName = "LinuxConnectorServicePort",
-        serviceName = "LinuxConnectorService")
-public class LinuxConnectorImpl extends AbstractSpml2Complete implements ConnectorService {
+//@WebService(endpointInterface = "org.openiam.spml2.interf.ConnectorService",
+//        targetNamespace = "http://www.openiam.org/service/connector",
+//        portName = "LinuxConnectorServicePort",
+//        serviceName = "LinuxConnectorService")
+@Deprecated
+public class LinuxConnectorImpl extends AbstractSpml2Complete  {
     private static final Log log = LogFactory.getLog(LinuxConnectorImpl.class);
 
     protected ManagedSystemWebService managedSysService;

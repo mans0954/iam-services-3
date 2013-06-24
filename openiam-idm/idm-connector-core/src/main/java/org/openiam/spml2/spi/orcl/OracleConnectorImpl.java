@@ -41,10 +41,11 @@ import org.springframework.beans.factory.annotation.Qualifier;
  * @author suneet
  *
  */
-@WebService(endpointInterface="org.openiam.spml2.interf.ConnectorService",
-		targetNamespace="http://www.openiam.org/service/connector",
-		portName = "OracleConnectorServicePort", 
-		serviceName="OracleConnectorService")
+//@WebService(endpointInterface="org.openiam.spml2.interf.ConnectorService",
+//		targetNamespace="http://www.openiam.org/service/connector",
+//		portName = "OracleConnectorServicePort",
+//		serviceName="OracleConnectorService")
+@Deprecated
 public class OracleConnectorImpl extends AbstractJDBCConnectorImpl {
     @Autowired
     @Qualifier("oracleLookupAttributeNamesCommand")

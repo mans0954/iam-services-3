@@ -78,8 +78,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author suneet
  *
  */
-
-@WebService(endpointInterface = "org.openiam.spml2.interf.ConnectorService", targetNamespace = "http://www.openiam.org/service/connector", portName = "ShellConnectorServicePort", serviceName = "ShellConnectorService")
+@Deprecated
+//@WebService(endpointInterface = "org.openiam.spml2.interf.ConnectorService", targetNamespace = "http://www.openiam.org/service/connector", portName = "ShellConnectorServicePort", serviceName = "ShellConnectorService")
 public class ShellConnectorImpl extends AbstractSpml2Complete implements
         ConnectorService {
 
@@ -892,8 +892,7 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
         return response;
     }
 
-    public ResponseType testConnection(
-            @WebParam(name = "managedSys", targetNamespace = "") ManagedSysDto managedSys) {
+    public ResponseType testConnection(@WebParam(name = "requestType", targetNamespace = "") TestRequestType<? extends GenericProvisionObject> requestType) {
         return null; // To change body of implemented methods use File |
                      // Settings | File Templates.
     }

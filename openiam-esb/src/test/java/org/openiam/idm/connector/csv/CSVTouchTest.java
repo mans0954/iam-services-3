@@ -1,13 +1,10 @@
 package org.openiam.idm.connector.csv;
 
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
+import org.openiam.provision.dto.GenericProvisionObject;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.spml2.interf.ConnectorService;
-import org.openiam.spml2.msg.AddRequestType;
-import org.openiam.spml2.msg.DeleteRequestType;
-import org.openiam.spml2.msg.LookupRequestType;
-import org.openiam.spml2.msg.ModifyRequestType;
-import org.openiam.spml2.msg.PSOIdentifierType;
+import org.openiam.spml2.msg.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -75,8 +72,12 @@ public class CSVTouchTest extends AbstractTestNGSpringContextTests {
 
 	@Test
 	public void testTouchCSVTest() {
-		connectorService.testConnection(managedSysServiceClient
-				.getManagedSys(defaultManagedSysId));
+        TestRequestType<ProvisionUser> requestType = new TestRequestType<ProvisionUser>();
+        PSOIdentifierType psoType = new PSOIdentifierType();
+        psoType.setTargetID(defaultManagedSysId);
+        requestType.setPsoID(psoType);
+
+		connectorService.testConnection(requestType);
 	}
 
 	@Test

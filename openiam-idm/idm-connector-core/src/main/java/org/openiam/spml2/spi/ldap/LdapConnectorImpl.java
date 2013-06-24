@@ -72,7 +72,6 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.spml2.base.AbstractSpml2Complete;
-import org.openiam.spml2.interf.ConnectorService;
 import org.openiam.spml2.msg.*;
 import org.openiam.spml2.msg.password.ExpirePasswordRequestType;
 import org.openiam.spml2.msg.password.ResetPasswordRequestType;
@@ -83,6 +82,7 @@ import org.openiam.spml2.msg.password.ValidatePasswordResponseType;
 import org.openiam.spml2.msg.suspend.ResumeRequestType;
 import org.openiam.spml2.msg.suspend.SuspendRequestType;
 import org.openiam.spml2.spi.common.LookupAttributeNamesCommand;
+import org.openiam.spml2.spi.ldap.command.*;
 import org.openiam.spml2.spi.ldap.dirtype.Directory;
 import org.openiam.spml2.spi.ldap.dirtype.DirectorySpecificImplFactory;
 import org.openiam.spml2.util.connect.ConnectionFactory;
@@ -99,26 +99,22 @@ import org.springframework.context.ApplicationContextAware;
  * 
  * @author suneet
  */
-
-@WebService(endpointInterface = "org.openiam.spml2.interf.ConnectorService", targetNamespace = "http://www.openiam.org/service/connector", portName = "LDAPConnectorServicePort", serviceName = "LDAPConnectorService")
+@Deprecated
+//@WebService(endpointInterface = "org.openiam.spml2.interf.ConnectorService", targetNamespace = "http://www.openiam.org/service/connector", portName = "LDAPConnectorServicePort", serviceName = "LDAPConnectorService")
 public class LdapConnectorImpl extends AbstractSpml2Complete implements
-        ConnectorService, ApplicationContextAware {
+         ApplicationContextAware {
 
     private static final Log log = LogFactory.getLog(LdapConnectorImpl.class);
     protected ManagedSystemWebService managedSysService;
     protected ManagedSystemObjectMatchDAO managedSysObjectMatchDao;
     protected ResourceDataService resourceDataService;
-    @Autowired
     protected IdmAuditLogDataService auditDataService;
     protected LoginDataService loginManager;
 
-    @Autowired
     private PolicyDataService policyDataService;
     
-    @Autowired
     private LoginDozerConverter loginDozerConverter;
     
-    @Autowired
     private SecurityDomainDAO securityDomainDAO;
 
     protected UserDataService userManager;

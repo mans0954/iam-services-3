@@ -24,7 +24,7 @@ import java.sql.SQLException;
  * Time: 10:56 PM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class AbstractJDBCConnectorImpl extends AbstractSpml2Complete implements ConnectorService {
+public abstract class AbstractJDBCConnectorImpl extends AbstractSpml2Complete  {
 
     private static final Log log = LogFactory.getLog(AbstractJDBCConnectorImpl.class);
 

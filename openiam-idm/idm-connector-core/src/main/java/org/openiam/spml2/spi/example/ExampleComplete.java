@@ -65,7 +65,7 @@ import org.openiam.spml2.msg.suspend.SuspendRequestType;
 		portName = "AICmsConnectorServicePort", 
 		serviceName="AICmsConnectorService")
 */
-public class ExampleComplete  extends AbstractSpml2Complete implements ConnectorService  {
+public class ExampleComplete  extends AbstractSpml2Complete {
 
 	public boolean testConnection(String targetID) {
 		return false;

@@ -1,15 +1,13 @@
 package org.openiam.spml2;
 
-import org.openiam.base.ws.ResponseCode;
-import org.openiam.base.ws.exception.BasicDataServiceException;
 import org.openiam.provision.dto.ProvisionObjectType;
 import org.openiam.spml2.constants.CommandType;
 import org.openiam.spml2.constants.ConnectorType;
 import org.openiam.spml2.msg.ConnectorDataException;
 import org.openiam.spml2.msg.ErrorCode;
 import org.openiam.spml2.spi.common.ConnectorCommand;
-import org.openiam.spml2.spi.csv.TestGroupCSVCommand;
-import org.openiam.spml2.spi.csv.TestUserCSVCommand;
+import org.openiam.spml2.spi.csv.command.TestGroupCSVCommand;
+import org.openiam.spml2.spi.csv.command.TestUserCSVCommand;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;

@@ -22,13 +22,7 @@ import javax.jws.WebService;
 public interface ConnectorService {
 
     @WebMethod
-    public ResponseType reconcileResource(
-            @WebParam(name = "config", targetNamespace = "")
-            ReconciliationConfig config);
-
-    @WebMethod
-    public ResponseType testConnection(
-            @WebParam(name = "managedSys", targetNamespace = "") ManagedSysDto managedSys);
+    public ResponseType testConnection(@WebParam(name = "requestType", targetNamespace = "") TestRequestType<? extends GenericProvisionObject> requestType);
 
 
     /**

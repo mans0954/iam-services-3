@@ -2,7 +2,9 @@ package org.openiam.spml2.util.connect;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
+import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
@@ -33,7 +35,7 @@ public class LdapConnectionMgr implements ConnectionMgr {
     
 
 
-	public LdapContext connect(ManagedSysDto managedSys)  throws NamingException{
+	public LdapContext connect(ManagedSysEntity managedSys)  throws NamingException{
 
 		LdapContext ldapContext = null;
 		Hashtable<String, String> envDC = new Hashtable();
@@ -86,8 +88,8 @@ public class LdapConnectionMgr implements ConnectionMgr {
             if (secondarySysID != null && !secondarySysID.isEmpty()) {
 
                 // recursively search through the chained list of linked managed systems
-                ManagedSystemWebService managedSysService =  (ManagedSystemWebService) ac.getBean("managedSysService");
-                ManagedSysDto secondarySys =  managedSysService.getManagedSys(secondarySysID);
+                ManagedSystemService managedSysService =  (ManagedSystemService) ac.getBean("managedSystemService");
+                ManagedSysEntity secondarySys =  managedSysService.getManagedSysById(secondarySysID);
                 return connect(secondarySys);
 
             }

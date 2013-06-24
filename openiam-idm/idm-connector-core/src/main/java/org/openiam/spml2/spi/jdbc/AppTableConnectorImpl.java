@@ -38,10 +38,11 @@ import javax.jws.WebService;
  * @author suneet
  */
 
-@WebService(endpointInterface = "org.openiam.spml2.interf.ConnectorService",
-        targetNamespace = "http://www.openiam.org/service/connector",
-        portName = "ApplicationTablesConnectorPort",
-        serviceName = "ApplicationTablesConnector")
+//@WebService(endpointInterface = "org.openiam.spml2.interf.ConnectorService",
+//        targetNamespace = "http://www.openiam.org/service/connector",
+//        portName = "ApplicationTablesConnectorPort",
+//        serviceName = "ApplicationTablesConnector")
+@Deprecated
 public class AppTableConnectorImpl extends AbstractJDBCConnectorImpl {
 
     private static final Log log = LogFactory.getLog(AppTableConnectorImpl.class);

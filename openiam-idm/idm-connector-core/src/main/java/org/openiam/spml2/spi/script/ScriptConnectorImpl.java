@@ -48,12 +48,12 @@ import java.util.Map;
  * @author suneet
  */
 
-@WebService(endpointInterface = "org.openiam.spml2.interf.ConnectorService",
-        targetNamespace = "http://www.openiam.org/service/connector",
-        portName = "ScriptConnectorServicePort",
-        serviceName = "ScriptConnectorService")
-
-public class ScriptConnectorImpl extends AbstractSpml2Complete implements ConnectorService {
+//@WebService(endpointInterface = "org.openiam.spml2.interf.ConnectorService",
+//        targetNamespace = "http://www.openiam.org/service/connector",
+//        portName = "ScriptConnectorServicePort",
+//        serviceName = "ScriptConnectorService")
+@Deprecated
+public class ScriptConnectorImpl extends AbstractSpml2Complete {
 
     private static final Log log = LogFactory.getLog(LdapConnectorImpl.class);
     protected ManagedSystemWebService managedSysService;
@@ -193,7 +193,8 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete implements Connec
 
     public ResponseType testConnection(ManagedSysDto managedSys) {
         try {
-            return createConnector(managedSys).testConnection(managedSys);
+            return null;
+          //  return createConnector(managedSys).testConnection(managedSys);
         } catch (Exception e) {
             log.error("Could not test connection: " + e.toString());
 
