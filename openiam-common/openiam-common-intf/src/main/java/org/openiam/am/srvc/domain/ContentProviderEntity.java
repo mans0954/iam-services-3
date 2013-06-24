@@ -4,6 +4,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
 import org.openiam.am.srvc.dto.ContentProvider;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 
 import javax.persistence.*;
@@ -53,6 +54,10 @@ public class ContentProviderEntity implements Serializable {
     @Column(name = "RESOURCE_ID", length = 32, nullable = false)
     private String resourceId;
     */
+	
+	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinColumn(name="MANAGED_SYS_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = true, nullable=false)
+	private ManagedSysEntity managedSystem;
 	
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name="RESOURCE_ID", referencedColumnName = "RESOURCE_ID", insertable = true, updatable = false, nullable=false)
@@ -156,7 +161,15 @@ public class ContentProviderEntity implements Serializable {
     }
     */
 
-    @Override
+    public ManagedSysEntity getManagedSystem() {
+		return managedSystem;
+	}
+
+	public void setManagedSystem(ManagedSysEntity managedSystem) {
+		this.managedSystem = managedSystem;
+	}
+
+	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;

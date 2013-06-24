@@ -25,8 +25,8 @@ public class AuthAttributeProcessorImpl implements AuthAttributeProcessor {
 
 	@Override
 	@Transactional
-	public String process(final String amAttributeId, final String userId) throws Exception {
-		LoginEntity identityObject = loginManager.getPrimaryIdentity(userId);
+	public String process(final String amAttributeId, final String userId, final String managedSysId) throws Exception {
+		LoginEntity identityObject = loginManager.getByUserIdManagedSys(userId, managedSysId);
 		final UserEntity user = userManager.getUser(userId);
 		
 		EnumMap<AmAttributes, Object> objectMap = new EnumMap<AmAttributes, Object>(AmAttributes.class);

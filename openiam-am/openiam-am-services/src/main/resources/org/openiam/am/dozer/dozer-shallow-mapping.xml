@@ -112,6 +112,10 @@
             <a>patternSet</a>
             <b>patternSet</b>
         </field-exclude>
+        <field-exclude>
+        	<a>managedSystem</a>
+        	<b>managedSystem</b>
+        </field-exclude>
     </mapping>
 
     <mapping>

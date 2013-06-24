@@ -83,15 +83,21 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     public Response saveContentProvider(ContentProvider provider) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
-            if (provider == null)
+            if (provider == null) {
                 throw new  BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            if (provider.getName()==null || StringUtils.isBlank(provider.getName()))
+            }
+            if (provider.getName()==null || StringUtils.isBlank(provider.getName())) {
                 throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_NAME_NOT_SET);
-            if (provider.getDomainPattern()==null || StringUtils.isBlank(provider.getDomainPattern()))
+            }
+            if (provider.getDomainPattern()==null || StringUtils.isBlank(provider.getDomainPattern())) {
                 throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_DOMAIN_PATERN_NOT_SET);
-
-            if (provider.getAuthLevel()==null || StringUtils.isBlank(provider.getAuthLevel().getId()))
+            }
+            if (provider.getAuthLevel()==null || StringUtils.isBlank(provider.getAuthLevel().getId())) {
                 throw new  BasicDataServiceException(ResponseCode.CONTENT_PROVIDER_AUTH_LEVEL_NOT_SET);
+            }
+            if(StringUtils.isBlank(provider.getManagedSysId())) {
+            	throw new  BasicDataServiceException(ResponseCode.MANAGED_SYSTEM_NOT_SET);
+            }
 
 //            UNIQUE KEY `UNIQUE_CP_NAME` (`CONTENT_PROVIDER_NAME`),
 //            UNIQUE KEY `UNIQUE_CP_PATTERN` (`DOMAIN_PATTERN`,`IS_SSL`,`CONTEXT_PATH`),
@@ -386,20 +392,21 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     public Response saveMetaDataForPattern(URIPatternMeta uriPatternMeta) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
-            if (uriPatternMeta==null)
+            if (uriPatternMeta==null) {
                 throw new  BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            if(uriPatternMeta.getUriPatternId()==null
-                   || uriPatternMeta.getUriPatternId().trim().isEmpty())
+            }
+            
+            if(StringUtils.isBlank(uriPatternMeta.getUriPatternId())) {
                 throw new  BasicDataServiceException(ResponseCode.URI_PATTERN_NOT_SET);
+            }
 
-            if(uriPatternMeta.getName()==null
-               || uriPatternMeta.getName().trim().isEmpty())
+            if(StringUtils.isBlank(uriPatternMeta.getName())) {
                 throw new  BasicDataServiceException(ResponseCode.URI_PATTERN_META_NAME_NOT_SET);
+            }
 
-            if(uriPatternMeta.getMetaType()==null
-               || uriPatternMeta.getMetaType().getId()==null
-               || uriPatternMeta.getMetaType().getId().trim().isEmpty())
+            if(uriPatternMeta.getMetaType()==null || StringUtils.isBlank(uriPatternMeta.getMetaType().getId())) {
                 throw new  BasicDataServiceException(ResponseCode.URI_PATTERN_META_TYPE_NOT_SET);
+            }
 
 //            // checjk if meta data already exists
 //            URIPatternMetaEntity example = uriPatternMetaDozerConverter.convertToEntity(uriPatternMeta,true);
@@ -429,15 +436,16 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
     }
 
     private void validateMetaDataValues(URIPatternMeta uriPatternMeta) throws BasicDataServiceException{
-        if(uriPatternMeta.getMetaValueSet()!=null && !uriPatternMeta.getMetaValueSet().isEmpty()){
+        if(CollectionUtils.isNotEmpty(uriPatternMeta.getMetaValueSet())) {
             for (URIPatternMetaValue value: uriPatternMeta.getMetaValueSet()){
-                if (value.getName() == null || value.getName().trim().isEmpty())
+                if (StringUtils.isBlank(value.getName())) {
                     throw new BasicDataServiceException(ResponseCode.URL_PATTERN_META_VALUE_NAME_NOT_SET);
-                if ((value.getAmAttribute() == null
-                     || value.getAmAttribute().getAmAttributeId()==null
-                     || value.getAmAttribute().getAmAttributeId().trim().isEmpty())
-                    &&(value.getStaticValue() == null || value.getStaticValue().trim().isEmpty()))
+                }
+                if ((value.getAmAttribute() == null || StringUtils.isBlank(value.getAmAttribute().getAmAttributeId())) &&
+                	(StringUtils.isBlank(value.getStaticValue())) &&
+                	(StringUtils.isBlank(value.getGroovyScript()))) {
                     throw new BasicDataServiceException(ResponseCode.URL_PATTERN_META_VALUE_MAP_NOT_SET);
+                }
             }
         }
     }
