@@ -110,6 +110,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
           * org.openiam.provision.service.ProvisionService#addUser(org.openiam.provision
           * .dto.ProvisionUser)
           */
+    @Override
     @Transactional
     public ProvisionUserResponse addUser(ProvisionUser user)    {
         ProvisionUserResponse resp = new ProvisionUserResponse();
@@ -826,7 +827,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
     }
 
-    @WebMethod
+    @Override
+    @Transactional
     public ProvisionUserResponse deleteByUserId(ProvisionUser user,
                                                 UserStatusEnum status, String requestorId) {
 
@@ -1010,6 +1012,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
       * org.openiam.provision.service.ProvisionService#deleteUser(java.lang.String
       * , java.lang.String, java.lang.String)
       */
+    @Override
+    @Transactional
     public ProvisionUserResponse deleteUser(String securityDomain,
                                             String managedSystemId, String principal, UserStatusEnum status,
                                             String requestorId) {
@@ -1293,6 +1297,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     }
 
     @Override
+    @Transactional
     public ProvisionUserResponse deprovisionSelectedResources(String userId,
                                                               String requestorUserId, List<String> resourceList) {
         deprovisionSelectedResource.setMuleContext(muleContext);
@@ -1307,6 +1312,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
       * org.openiam.provision.service.ProvisionService#disableUser(java.lang.
       * String, boolean)
       */
+    @Override
+    @Transactional
     public Response disableUser(String userId, boolean operation,
                                 String requestorId) {
         // get the user
@@ -1325,6 +1332,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
       * org.openiam.provision.service.ProvisionService#lockUser(java.lang.String,
       * org.openiam.provision.dto.AccountLockEnum)
       */
+    @Override
+    @Transactional
     public Response lockUser(String userId, AccountLockEnum operation,
                              String requestorId) {
         final Response response = new Response();
@@ -1570,6 +1579,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
       * org.openiam.provision.service.ProvisionService#modifyUser(org.openiam
       * .provision.dto.ProvisionUser)
       */
+    @Override
     @Transactional
     public ProvisionUserResponse modifyUser(ProvisionUser pUser) {
         ProvisionUserResponse resp = new ProvisionUserResponse();
@@ -2319,6 +2329,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     /* (non-Javadoc)
       * @see org.openiam.provision.service.ProvisionService#resetPassword(org.openiam.provision.dto.PasswordSync)
       */
+    @Override
     @Transactional
     public PasswordResponse resetPassword(PasswordSync passwordSync) {
         log.debug("----resetPassword called.------");
@@ -2509,6 +2520,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
     }
 
+    @Override
+    @Transactional
     public LookupUserResponse getTargetSystemUser(String principalName,
                                                   String managedSysId) {
 
@@ -2583,6 +2596,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         }
     }
 
+    @Override
+    @Transactional
     public LookupUserResponse getTargetSystemUserWithUserId(String userId,
                                                             String managedSysId) {
 
@@ -2612,6 +2627,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
       * org.openiam.provision.service.ProvisionService#setPassword(org.openiam
       * .provision.dto.PasswordSync)
       */
+    @Override
     @Transactional
     public Response setPassword(PasswordSync passwordSync) {
         log.debug("----setPassword called.------");
@@ -2914,6 +2930,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
     }
 
+    @Override
+    @Transactional
     public Response syncPasswordFromSrc(final PasswordSync passwordSync) {
         // ManagedSystemId where this event originated.
         // Ensure that we dont send the event back to this system
@@ -3328,6 +3346,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         return false;
     }
 
+    @Override
+    @Transactional
     public List<String> getAttributesList(String mSysId,
             LookupAttributeRequestType config) {
         if (mSysId == null)
