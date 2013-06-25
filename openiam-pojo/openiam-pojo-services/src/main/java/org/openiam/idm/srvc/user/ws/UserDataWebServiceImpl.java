@@ -1157,6 +1157,7 @@ public class UserDataWebServiceImpl implements UserDataWebService, MuleContextAw
         return response;
     }
 
+    /*
     @Override
     public SaveTemplateProfileResponse createNewUserProfile(final NewUserProfileRequestModel request) {
         final SaveTemplateProfileResponse response = new SaveTemplateProfileResponse(ResponseStatus.SUCCESS);
@@ -1187,6 +1188,7 @@ public class UserDataWebServiceImpl implements UserDataWebService, MuleContextAw
         }
         return response;
     }
+    */
 
     @Override
     public Response sendNewUserEmail(final String userId, final String password, final String login) {

@@ -542,8 +542,10 @@ public interface UserDataWebService {
     @WebMethod
     public SaveTemplateProfileResponse saveUserProfile(@WebParam(name = "request", targetNamespace = "") final UserProfileRequestModel request);
 
+    /*
     @WebMethod
     public SaveTemplateProfileResponse createNewUserProfile(@WebParam(name = "request", targetNamespace = "") final NewUserProfileRequestModel request);
+	*/
 
     @WebMethod
     public Response sendNewUserEmail(@WebParam(name = "userId", targetNamespace = "") final String userId,

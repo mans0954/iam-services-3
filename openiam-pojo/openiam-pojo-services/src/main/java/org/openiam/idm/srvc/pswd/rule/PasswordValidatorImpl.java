@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.exception.ObjectNotFoundException;
@@ -185,11 +187,11 @@ public class PasswordValidatorImpl implements PasswordValidator {
 
     private boolean policyToCheck(String defParamId, Policy pswdPolicy) {
 
-        Set<PolicyAttribute> attrSet = pswdPolicy.getPolicyAttributes();
-        Iterator<PolicyAttribute> atrIt = attrSet.iterator();
+        final Set<PolicyAttribute> attrSet = pswdPolicy.getPolicyAttributes();
+        final Iterator<PolicyAttribute> atrIt = attrSet.iterator();
         while (atrIt.hasNext()) {
-            PolicyAttribute atr = atrIt.next();
-            if (atr.getDefParamId().equals(defParamId)) {
+        	final PolicyAttribute atr = atrIt.next();
+        	if(StringUtils.equals(atr.getDefParamId(), defParamId)) {
                 return true;
             }
         }
