@@ -29,13 +29,13 @@ public class PolicyAttribute implements java.io.Serializable,
 	protected String value1;
 	protected String value2;
 	protected String rule;
-	protected String required;
+	protected boolean required = true;
 
-	public String getRequired() {
+	public boolean isRequired() {
 		return required;
 	}
 
-	public void setRequired(String required) {
+	public void setRequired(boolean required) {
 		this.required = required;
 	}
 
