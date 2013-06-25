@@ -397,4 +397,17 @@
             </component>
         </service>
     </model>
+
+    <model name="systemInfoServiceModel">
+        <service name="systemInfoWebService">
+            <inbound>
+                <inbound-endpoint address="${webservice.path}SystemInfoWebService" exchange-pattern="request-response">
+                    <cxf:jaxws-service />
+                </inbound-endpoint>
+            </inbound>
+            <component>
+                <spring-object bean="systemInfoWS" />
+            </component>
+        </service>
+    </model>
 </mule>

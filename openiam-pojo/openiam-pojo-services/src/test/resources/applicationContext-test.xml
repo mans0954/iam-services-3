@@ -56,6 +56,7 @@
 	<bean id="sysConfiguration" class="org.openiam.base.SysConfiguration">
 		<property name="defaultManagedSysId" value="${openiam.default_managed_sys}" />
 		<property name="defaultSecurityDomain" value="${openiam.default_sec_domain}" />
+        <property name="developmentMode" value="${openiam.development_mode}" />
 	</bean>
 
     <!-- HEARTBEAT Beans -->
