@@ -806,7 +806,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             return null;
         }
         PolicyAttribute attribute = policy.getAttribute(attributeName);
-        if (attribute.getValue1() == null || attribute.getValue1().length() == 0) {
+        if (attribute ==null || attribute.getValue1() == null || attribute.getValue1().length() == 0) {
             return null;
         }
         return attribute;
