@@ -362,6 +362,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
             loginManager.updateLogin(loginDozerConverter.convertToEntity(primaryLogin, true));
 
+        } else {
+            log.warn("Can't find CHNG_PWD_ON_RESET password policy - using false as default.  Please fix this in the Admin UI");
         }
 
         // provision the user into the systems that they should have access to.
