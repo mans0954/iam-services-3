@@ -15,6 +15,8 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+
+import org.apache.commons.lang.StringUtils;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.policy.dto.Policy;
@@ -155,7 +157,7 @@ public class PolicyEntity implements java.io.Serializable {
 
     public PolicyAttributeEntity getAttribute(String name) {
         for (PolicyAttributeEntity attr : policyAttributes) {
-            if (attr.getName().equalsIgnoreCase(name)) {
+        	if(attr != null && StringUtils.equalsIgnoreCase(attr.getName(), name)) {
                 return attr;
             }
         }
