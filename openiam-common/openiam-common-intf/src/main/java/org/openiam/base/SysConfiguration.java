@@ -9,6 +9,7 @@ package org.openiam.base;
 public class SysConfiguration {
     protected String defaultManagedSysId = null;
     protected String defaultSecurityDomain = null;
+    protected Boolean developmentMode = false;
 
     public String getDefaultManagedSysId() {
         return defaultManagedSysId;
@@ -26,5 +27,11 @@ public class SysConfiguration {
         this.defaultSecurityDomain = defaultSecurityDomain;
     }
 
+    public Boolean isDevelopmentMode() {
+        return developmentMode;
+    }
 
+    public void setDevelopmentMode(Boolean developmentMode) {
+        this.developmentMode = developmentMode;
+    }
 }
