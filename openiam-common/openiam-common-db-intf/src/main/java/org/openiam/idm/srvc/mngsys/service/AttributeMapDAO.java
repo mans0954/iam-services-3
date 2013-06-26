@@ -42,6 +42,7 @@ public interface AttributeMapDAO extends BaseDao<AttributeMapEntity, String> {
 	List<AttributeMapEntity> findAllAttributeMaps();
 
 	int removeResourceAttributeMaps(String resourceId);
+    int delete(List<String> ids);
 
     AttributeMapEntity add(AttributeMapEntity entity);
 

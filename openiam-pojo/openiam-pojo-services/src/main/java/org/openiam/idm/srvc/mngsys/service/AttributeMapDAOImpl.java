@@ -4,14 +4,23 @@ package org.openiam.idm.srvc.mngsys.service;
  * @author zaporozhec
  */
 import java.util.List;
+import javax.naming.InitialContext;
 
-import org.apache.commons.lang.StringUtils;
+import net.sf.ehcache.search.expression.Criteria;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.hibernate.HibernateException;
+import org.hibernate.Query;
 import org.hibernate.SQLQuery;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
-import org.openiam.exception.data.DataException;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -66,9 +75,20 @@ public class AttributeMapDAOImpl extends
         super.update(entity);
     }
 
-	@Override
-	protected String getPKfieldName() {
-		return "attributeMapId";
-	}
+    @Override
+    public int delete(List<String> ids) {
+        if (CollectionUtils.isEmpty(ids))
+            return 0;
+        SQLQuery qry = getSession().createSQLQuery(
+                "delete from ATTRIBUTE_MAP  "
+                        + "where ATTRIBUTE_MAP_ID IN (:ids)");
+        qry.setParameterList("ids", ids);
+        return qry.executeUpdate();
+    }
+
+    @Override
+    protected String getPKfieldName() {
+        return "attributeMapId";
+    }
 
 }

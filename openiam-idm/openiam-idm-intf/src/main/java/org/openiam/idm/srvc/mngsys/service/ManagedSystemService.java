@@ -56,4 +56,10 @@ public interface ManagedSystemService {
     void deleteRules(String ruleId);
     
     List<ManagedSystemObjectMatchEntity> managedSysObjectParam(String managedSystemId, String objectType);
+
+    List<AttributeMapEntity> saveAttributesMap(
+            List<AttributeMapEntity> attrMap, String mSysId, String resId)
+            throws Exception;
+
+    void deleteAttributesMapList(List<String> ids) throws Exception;
 }

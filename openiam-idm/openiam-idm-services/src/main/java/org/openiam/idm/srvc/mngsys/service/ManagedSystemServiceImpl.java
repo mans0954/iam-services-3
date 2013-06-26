@@ -150,19 +150,16 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<AttributeMapEntity> getResourceAttributeMaps(String resourceId) {
         return attributeMapDAO.findByResourceId(resourceId);
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<AttributeMapEntity> getAllAttributeMaps() {
         return attributeMapDAO.findAllAttributeMaps();
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<DefaultReconciliationAttributeMapEntity> getAllDefaultReconAttributeMap() {
         return defaultReconciliationAttributeMapDAO.getAll();
     }
@@ -193,6 +190,35 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<AttributeMapEntity> saveAttributesMap(
+            List<AttributeMapEntity> attrMap, String mSysId, String resId)
+            throws Exception {
+        if (attrMap == null)
+            return null;
+        for (AttributeMapEntity a : attrMap) {
+            a.setManagedSysId(mSysId);
+            a.setResourceId(resId);
+            if (a.getAttributeMapId() == null
+                    || a.getAttributeMapId().equalsIgnoreCase("NEW")) {
+                // new
+                a.setAttributeMapId(null);
+                a.setAttributeMapId(this.addAttributeMap(a).getAttributeMapId());
+            } else {
+                // update
+                this.updateAttributeMap(a);
+            }
+        }
+        return new ArrayList<AttributeMapEntity>(attrMap);
+
+    }
+
+    @Override
+    @Transactional
+    public void deleteAttributesMapList(List<String> ids) throws Exception {
+        attributeMapDAO.delete(ids);
+    }
+
+    @Override
     public List<ManagedSysRuleEntity> getRulesByManagedSysId(String managedSysId) {
         return managedSysRuleDAO.findbyManagedSystemId(managedSysId);
     }
@@ -209,7 +235,6 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     }
 
     @Override
-    @Transactional
     public void deleteRules(String ruleId) {
         if (!StringUtils.hasText(ruleId))
             return;
