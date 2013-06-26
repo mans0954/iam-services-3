@@ -13,6 +13,7 @@
 	<context:annotation-config />
 	<context:component-scan
 		base-package="org.openiam.idm.srvc.org.service,
+		                                  org.openiam.util,
     								      org.openiam.core,
     								      org.openiam.idm.srvc.*,
     								      org.openiam.idm.srvc.synch.ws,
@@ -87,6 +88,7 @@
 	<bean id="sysConfiguration" class="org.openiam.base.SysConfiguration">
 		<property name="defaultManagedSysId" value="${openiam.default_managed_sys}" />
 		<property name="defaultSecurityDomain" value="${openiam.default_sec_domain}" />
+        <property name="developmentMode" value="${openiam.development_mode}" />
 	</bean>
 
 	<!-- HEARTBEAT Beans -->

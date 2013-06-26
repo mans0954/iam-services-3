@@ -2,24 +2,82 @@ package org.openiam.util;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 import java.lang.management.RuntimeMXBean;
 import java.lang.reflect.Method;
+import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
+import javax.servlet.ServletContext;
 
 public class SystemUtils {
 
     private static Runtime runtime = Runtime.getRuntime();
     private static DecimalFormat df = new DecimalFormat("#.#");
     private static SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy h:mm a");
+
+    public static String getWarManifestInfo(ServletContext context, String attrName) {
+        if (context != null) {
+            return getManifestInfo(context, null, attrName);
+        } else {
+            return "unknown";
+        }
+    }
+
+    public static String getJarManifestInfo(String resName, String attrName) {
+        if (StringUtils.isNotEmpty(resName)) {
+            return getManifestInfo(null, attrName, attrName);
+        } else {
+            return "unknown";
+        }
+    }
+
+    private static String getManifestInfo(ServletContext context, String resName, String attrName) {
+        InputStream is = null;
+        if (StringUtils.isEmpty(resName) && context != null) {
+            is = context.getResourceAsStream("/" + JarFile.MANIFEST_NAME);
+
+        } else if (StringUtils.isNotEmpty(resName)) {
+            try {
+                Enumeration resEnum;
+                resEnum = Thread.currentThread().getContextClassLoader().getResources(JarFile.MANIFEST_NAME);
+                while (resEnum.hasMoreElements()) {
+                    URL url = (URL)resEnum.nextElement();
+                    if (url.getPath().contains(resName)) {
+                        is = url.openStream();
+                    }
+                }
+            } catch (IOException e) {
+                return "";
+            }
+        }
+        if (is != null) {
+            try {
+                Attributes attrs = new Manifest(is).getMainAttributes();
+                String attrValue = attrs.getValue(attrName);
+                if(attrValue != null) {
+                    return attrValue;
+                }
+            } catch (IOException e) {
+                return "";
+            }
+        }
+        return "unknown";
+    }
 
     public static String getOsInfo(String param) {
         if (param.equalsIgnoreCase("name")) return org.apache.commons.lang.SystemUtils.OS_NAME;

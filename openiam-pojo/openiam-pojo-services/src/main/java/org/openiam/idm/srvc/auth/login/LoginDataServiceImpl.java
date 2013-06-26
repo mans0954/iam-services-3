@@ -334,9 +334,11 @@ public class LoginDataServiceImpl implements LoginDataService {
     public String encryptPassword(String userId, String password)
             throws EncryptionException {
         if (password != null) {
-            return cryptor.encrypt(
-                    keyManagementService.getUserKey(userId,
-                            KeyName.password.name()), password);
+            byte[] key = keyManagementService.getUserKey(userId,
+                    KeyName.password.name());
+            if(key != null) {
+                return cryptor.encrypt(key, password);
+            }
         }
         return null;
     }

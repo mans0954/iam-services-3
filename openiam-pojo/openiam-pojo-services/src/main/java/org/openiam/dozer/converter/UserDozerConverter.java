@@ -1,6 +1,7 @@
 package org.openiam.dozer.converter;
 
 
+import org.mule.util.StringUtils;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
@@ -9,6 +10,7 @@ import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.domain.UserNoteEntity;
 import org.openiam.idm.srvc.user.dto.User;
+import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -31,8 +33,8 @@ public class UserDozerConverter  extends AbstractDozerEntityConverter<User, User
     }
 
     @Override
-    public UserEntity convertToEntity(User entity, boolean isDeep) {
-        UserEntity userEntity = convertToCrossEntity(entity, isDeep, UserEntity.class);
+    public UserEntity convertToEntity(User dto, boolean isDeep) {
+        UserEntity userEntity = convertToCrossEntity(dto, isDeep, UserEntity.class);
         if(isDeep) {
             for(EmailAddressEntity emailAddressEntity : userEntity.getEmailAddresses()) {
                 emailAddressEntity.setParent(userEntity);
@@ -48,6 +50,10 @@ public class UserDozerConverter  extends AbstractDozerEntityConverter<User, User
             }
             for(Map.Entry<String, UserAttributeEntity> attributeEntityEntry : userEntity.getUserAttributes().entrySet()) {
                 attributeEntityEntry.getValue().setUser(userEntity);
+                UserAttribute userAttributeSrc = dto.getUserAttributes().get(attributeEntityEntry.getKey());
+                if(StringUtils.isEmpty(userAttributeSrc.getMetadataElementId())) {
+                    attributeEntityEntry.getValue().setElement(null);
+                }
             }
         }
         return userEntity;

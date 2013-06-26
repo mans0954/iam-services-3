@@ -135,7 +135,10 @@ public class RoleDataServiceImpl implements RoleDataService {
             throw new IllegalArgumentException("roleId is null");
         if (ur.getUserId() == null)
             throw new IllegalArgumentException("userId object is null");
-        userRoleDao.update(ur);
+        UserRoleEntity userRoleEntityOrig = userRoleDAO.findById(ur.getUserRoleId());
+
+        userRoleEntityOrig.update(ur);
+        userRoleDao.save(userRoleEntityOrig);
     }
 
 	@Override

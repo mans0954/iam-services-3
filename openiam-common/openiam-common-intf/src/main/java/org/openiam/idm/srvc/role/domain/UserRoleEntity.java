@@ -125,6 +125,16 @@ public class UserRoleEntity implements java.io.Serializable {
         this.createdBy = createdBy;
     }
 
+    public void update(UserRoleEntity userRoleEntity) {
+        this.setCreateDate(userRoleEntity.getCreateDate());
+        this.setCreatedBy(userRoleEntity.getCreatedBy());
+        this.setEndDate(userRoleEntity.getEndDate());
+        this.setRoleId(userRoleEntity.getRoleId());
+        this.setStartDate(userRoleEntity.getStartDate());
+        this.setStatus(userRoleEntity.getStatus());
+        this.setUserId(userRoleEntity.getUserId());
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

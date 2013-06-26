@@ -63,6 +63,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -202,6 +203,7 @@ public class UserMgr implements UserDataService {
         validateEmailAddress(user, user.getEmailAddresses());
         userDao.save(user);
     }
+
     @Transactional
     private void validateEmailAddress(UserEntity user, Set<EmailAddressEntity> emailSet) {
 
@@ -234,20 +236,56 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRED)
     public void updateUserWithDependent(UserEntity user, boolean dependency) {
         if (user == null)
             throw new NullPointerException("user object is null");
         if (user.getUserId() == null)
             throw new NullPointerException("user id is null");
         user.setLastUpdate(new Date(System.currentTimeMillis()));
+
         UserEntity userEntity = userDao.findById(user.getUserId());
+
+        updateUserAttributes(user, userEntity);
+
         userEntity.updateUser(user);
+
 
         userDao.update(userEntity);
         validateEmailAddress(userEntity, user.getEmailAddresses());
 
 
+    }
+
+    private void updateUserAttributes(final UserEntity user, final UserEntity userEntity) {
+        Map<String, UserAttributeEntity> newAttributes =user.getUserAttributes();
+        Map<String, UserAttributeEntity> oldAttributes = userEntity.getUserAttributes();
+        Map<String, UserAttributeEntity> mergedAttributes = new HashMap<String, UserAttributeEntity>();
+        for(Map.Entry <String, UserAttributeEntity> attr : oldAttributes.entrySet()) {
+            if(!newAttributes.containsKey(attr.getKey())) {
+                userAttributeDao.delete(attr.getValue());
+            } else {
+                UserAttributeEntity oldattr = attr.getValue();
+                UserAttributeEntity newattr = newAttributes.get(attr.getKey());
+                oldattr.setValue(newattr.getValue());
+                oldattr.setUser(newattr.getUser());
+                oldattr.setElement(newattr.getElement());
+                oldattr.setUserId(newattr.getUserId());
+                mergedAttributes.put(oldattr.getName(),oldattr);
+            }
+        }
+        userEntity.getUserAttributes().clear();
+        for(Map.Entry <String, UserAttributeEntity> attr : newAttributes.entrySet()) {
+            UserAttributeEntity userAttributeEntity = attr.getValue();
+            if(mergedAttributes.containsKey(attr.getKey())) {
+                userAttributeEntity = mergedAttributes.get(attr.getKey());
+
+            } else {
+                mergedAttributes.put(attr.getKey(), userAttributeEntity);
+            }
+            userAttributeDao.save(userAttributeEntity);
+            userEntity.getUserAttributes().put(userAttributeEntity.getName(), userAttributeEntity);
+        }
     }
 
     @Override
