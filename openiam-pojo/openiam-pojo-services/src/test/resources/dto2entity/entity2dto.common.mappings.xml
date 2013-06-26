@@ -26,6 +26,10 @@
 	<mapping>
 		<class-a>org.openiam.idm.srvc.user.domain.UserAttributeEntity</class-a>
 		<class-b>org.openiam.idm.srvc.user.dto.UserAttribute</class-b>
+        <field>
+            <a>element.id</a>
+            <b>metadataElementId</b>
+        </field>
 	</mapping>
 	<mapping>
 		<class-a>org.openiam.idm.srvc.continfo.domain.AddressEntity</class-a>

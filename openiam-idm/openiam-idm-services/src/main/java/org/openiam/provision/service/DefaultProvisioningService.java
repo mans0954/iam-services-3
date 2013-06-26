@@ -305,7 +305,11 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     .getStatus().toString(), requestId, resp
                     .getErrorCode().toString(), user.getSessionId(),
                     resp.getErrorText(), user.getRequestClientIP(),
-                    primaryLogin.getLogin(), primaryLogin.getDomainId());
+                    (primaryLogin != null ? primaryLogin.getLogin() : ""),
+                    (primaryLogin != null ? primaryLogin.getDomainId() : ""));
+            resp.setStatus(ResponseStatus.FAILURE);
+            resp.setErrorCode(ResponseCode.FAIL_DECRYPTION);
+            return resp;
         }
 
 

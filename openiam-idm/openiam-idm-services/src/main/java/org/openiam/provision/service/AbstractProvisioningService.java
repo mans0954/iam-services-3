@@ -502,7 +502,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
             User newUser = user.getUser();
             UserEntity userEntity = userDozerConverter.convertToEntity(newUser, true);
             try {
-                userMgr.addUser(userEntity);
+                userMgr.addUserWithDependent(userEntity, true);
                 newUser.setUserId(userEntity.getUserId());
             } catch (Exception e) {
                 log.error(e);

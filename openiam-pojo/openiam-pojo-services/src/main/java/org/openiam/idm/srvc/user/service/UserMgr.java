@@ -203,6 +203,7 @@ public class UserMgr implements UserDataService {
         validateEmailAddress(user, user.getEmailAddresses());
         userDao.save(user);
     }
+
     @Transactional
     private void validateEmailAddress(UserEntity user, Set<EmailAddressEntity> emailSet) {
 
