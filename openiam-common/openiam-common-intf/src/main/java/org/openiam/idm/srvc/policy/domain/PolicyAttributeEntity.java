@@ -7,6 +7,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
 
@@ -41,14 +42,16 @@ public class PolicyAttributeEntity implements java.io.Serializable, Comparable<P
 	private String value1;
 	@Column(name = "VALUE2", length = 255)
 	private String value2;
-	@Column(name = "REQUIRED", length = 1)
-	private String required;
+	
+	@Column(name = "REQUIRED")
+    @Type(type = "yes_no")
+    private boolean required = true;
 
-	public String getRequired() {
+	public boolean isRequired() {
 		return required;
 	}
 
-	public void setRequired(String required) {
+	public void setRequired(boolean required) {
 		this.required = required;
 	}
 
@@ -145,11 +148,6 @@ public class PolicyAttributeEntity implements java.io.Serializable, Comparable<P
         return getName().compareTo(o.getName());
     }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#hashCode()
-	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -163,18 +161,13 @@ public class PolicyAttributeEntity implements java.io.Serializable, Comparable<P
 				+ ((policyAttrId == null) ? 0 : policyAttrId.hashCode());
 		result = prime * result
 				+ ((policyId == null) ? 0 : policyId.hashCode());
+		result = prime * result + (required ? 1231 : 1237);
 		result = prime * result + ((rule == null) ? 0 : rule.hashCode());
 		result = prime * result + ((value1 == null) ? 0 : value1.hashCode());
 		result = prime * result + ((value2 == null) ? 0 : value2.hashCode());
-		result = prime * result + ((required == null) ? 0 : required.hashCode());
 		return result;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -209,6 +202,8 @@ public class PolicyAttributeEntity implements java.io.Serializable, Comparable<P
 				return false;
 		} else if (!policyId.equals(other.policyId))
 			return false;
+		if (required != other.required)
+			return false;
 		if (rule == null) {
 			if (other.rule != null)
 				return false;
@@ -224,12 +219,8 @@ public class PolicyAttributeEntity implements java.io.Serializable, Comparable<P
 				return false;
 		} else if (!value2.equals(other.value2))
 			return false;
-		if (required == null){
-			if(other.required != null)
-				return false;
-		}else if (!required.equals(other.required))
-			return false;
 		return true;
 	}
 
+	
 }
