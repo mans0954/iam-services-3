@@ -28,7 +28,7 @@ public class IdentityQuestionEntity {
 	private String id;
 	
 	@ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    @JoinColumn(name="IDENTITY_QUEST_GRP_ID", referencedColumnName="IDENTITY_QUEST_GRP_ID", insertable = false, updatable = false)
+    @JoinColumn(name="IDENTITY_QUEST_GRP_ID", referencedColumnName="IDENTITY_QUEST_GRP_ID", insertable = true, updatable = true)
 	private IdentityQuestGroupEntity identityQuestGrp;
 	
 	@Column(name = "QUESTION_TEXT")
@@ -36,7 +36,7 @@ public class IdentityQuestionEntity {
 	
 	@Column(name = "ACTIVE")
     @Type(type = "yes_no")
-	private boolean active = true;
+	private Boolean active;
 	
 	public String getId() {
 		return id;
@@ -56,10 +56,10 @@ public class IdentityQuestionEntity {
 	public void setQuestionText(String questionText) {
 		this.questionText = questionText;
 	}
-	public boolean isActive() {
+	public Boolean isActive() {
 		return active;
 	}
-	public void setActive(boolean active) {
+	public void setActive(Boolean active) {
 		this.active = active;
 	}
 	@Override

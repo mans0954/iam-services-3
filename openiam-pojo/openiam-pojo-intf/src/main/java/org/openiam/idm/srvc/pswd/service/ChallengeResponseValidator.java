@@ -39,10 +39,12 @@ import java.util.List;
 public interface ChallengeResponseValidator {
     
     public boolean isResponseValid(String userId, List<UserIdentityAnswerEntity> newAnswerList, int requiredCorrectAns);
+    public Integer count(final IdentityQuestionSearchBean searchBean);
     public List<IdentityQuestionEntity> findQuestionBeans(final IdentityQuestionSearchBean searchBean, final int from, final int size);
     public List<UserIdentityAnswerEntity> findAnswerBeans(final IdentityAnswerSearchBean searchBean, final int from, final int size);
-    public void saveQuestion(final IdentityQuestionEntity entity) throws Exception;
+    public IdentityQuestionEntity saveQuestion(final IdentityQuestionEntity entity) throws Exception;
     public void deleteQuestion(final String questionId) throws Exception;
+    public IdentityQuestionEntity getQuestion(final String questionId);
     public void saveAnswer(final UserIdentityAnswerEntity answer) throws Exception;
     public void deleteAnswer(final String answerId) throws Exception;
     public void saveAnswers(List<UserIdentityAnswerEntity> answerList) throws Exception;
