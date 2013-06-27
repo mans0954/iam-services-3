@@ -83,7 +83,7 @@ public class NewUserModelToProvisionConverter {
 				final HashMap<String, UserAttribute> userAttributes = new HashMap<String, UserAttribute>();
 				for(final UserAttribute attribute : userAttributeList) {
 					if(attribute != null) {
-						userAttributes.put(attribute.getId(), attribute);
+						userAttributes.put(attribute.getName(), attribute);
 					}
 				}
 				user.getUser().setUserAttributes(userAttributes);

@@ -45,5 +45,8 @@ public class PolicyConstants {
     static final public String LEVEL_DOMAIN = "SECURITY_DOMAIN";
     static final public String LEVEL_GLOBAL = "GLOBAL";
 
+    static final public String PSWD_COMPOSITION = "PSWD_COMPOSITION";
+    static final public String FORGET_PSWD = "FORGET_PSWD";
+    static final public String PSWD_CHANGE_RULE = "PSWD_CHANGE_RULE";
 
 }

@@ -32,14 +32,16 @@ public class UserAttributeEntity {
     @Column(name = "NAME", length = 50)
     private String name;
 
+    /*
     @Column(name = "USER_ID", length = 32)
     private String userId;
+    */
 
     @Column(name = "VALUE", length = 50)
     private String value;
 
-    @ManyToOne
-    @JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID", insertable = false, updatable = false)
+    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID", insertable = true, updatable = false)
     private UserEntity user;
     
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
@@ -75,6 +77,7 @@ public class UserAttributeEntity {
         this.name = name;
     }
 
+    /*
     public String getUserId() {
         return userId;
     }
@@ -82,6 +85,7 @@ public class UserAttributeEntity {
     public void setUserId(String userId) {
         this.userId = userId;
     }
+    */
 
     public UserEntity getUser() {
         return user;
@@ -122,6 +126,8 @@ public class UserAttributeEntity {
 						.hashCode());
 		*/
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		
+		final String userId = (user != null) ? user.getUserId() : null;
 		result = prime * result + ((userId == null) ? 0 : userId.hashCode());
 		result = prime * result + ((value == null) ? 0 : value.hashCode());
 		return result;
@@ -153,15 +159,19 @@ public class UserAttributeEntity {
 		} else if (!metadataElementId.equals(other.metadataElementId))
 			return false;
 		*/
+		/* HACK */
+		final String userId = (user != null) ? user.getUserId() : null;
+		final String otherUserId = (other.user != null) ? other.user.getUserId() : null;
+		
 		if (name == null) {
 			if (other.name != null)
 				return false;
 		} else if (!name.equals(other.name))
 			return false;
 		if (userId == null) {
-			if (other.userId != null)
+			if (otherUserId!= null)
 				return false;
-		} else if (!userId.equals(other.userId))
+		} else if (!userId.equals(otherUserId))
 			return false;
 		if (value == null) {
 			if (other.value != null)

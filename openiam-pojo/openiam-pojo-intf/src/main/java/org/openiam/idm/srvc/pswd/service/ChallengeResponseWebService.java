@@ -24,6 +24,7 @@ package org.openiam.idm.srvc.pswd.service;
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.IdentityAnswerSearchBean;
 import org.openiam.idm.searchbeans.IdentityQuestionSearchBean;
+import org.openiam.idm.searchbeans.PolicySearchBean;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.pswd.dto.IdentityQuestion;
 import org.openiam.idm.srvc.pswd.dto.UserIdentityAnswer;
@@ -45,7 +46,9 @@ public interface ChallengeResponseWebService {
 	@WebMethod
 	public Integer getNumOfRequiredQuestions(@WebParam(name = "userId", targetNamespace = "") final String userId, 
 											 @WebParam(name = "domainId", targetNamespace = "") final String domainId);
-	
+	@WebMethod
+	public Integer count(@WebParam(name = "searchBean", targetNamespace = "") final IdentityQuestionSearchBean searchBean);
+
 	@WebMethod
 	public List<IdentityQuestion> findQuestionBeans(@WebParam(name = "searchBean", targetNamespace = "") final IdentityQuestionSearchBean searchBean, 
 									  				@WebParam(name = "from", targetNamespace = "") int from, 
@@ -56,6 +59,9 @@ public interface ChallengeResponseWebService {
 	
 	@WebMethod
 	public Response deleteQuestion(@WebParam(name = "questionId", targetNamespace = "") final String questionId);
+	
+	@WebMethod
+	public IdentityQuestion getQuestion(@WebParam(name = "questionId", targetNamespace = "") final String questionId);
 	
 	@WebMethod
 	public List<UserIdentityAnswer> findAnswerBeans(@WebParam(name = "searchBean", targetNamespace = "") final IdentityAnswerSearchBean searchBean,

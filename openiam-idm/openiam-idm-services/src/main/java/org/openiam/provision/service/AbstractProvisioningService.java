@@ -501,8 +501,15 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
             User newUser = user.getUser();
             UserEntity userEntity = userDozerConverter.convertToEntity(newUser, true);
+            if(MapUtils.isNotEmpty(userEntity.getUserAttributes())) {
+            	for(final UserAttributeEntity entity : userEntity.getUserAttributes().values()) {
+            		if(entity != null) {
+            			entity.setUser(userEntity);
+            		}
+            	}
+            }
             try {
-                userMgr.addUserWithDependent(userEntity, true);
+                userMgr.addUser(userEntity);
                 newUser.setUserId(userEntity.getUserId());
             } catch (Exception e) {
                 log.error(e);
@@ -521,7 +528,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
             addSupervisor(user);
             try {
-                addPrincipals(user);
+                addPrincipals(user, user.getUserId());
             }catch(EncryptionException e) {
                 resp.setStatus(ResponseStatus.FAILURE);
                 resp.setErrorCode(ResponseCode.FAIL_ENCRYPTION);
@@ -555,16 +562,16 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
          */
     private void associateEmail(ProvisionUser user) {
 
-        if (user.getUser().getEmail() == null || user.getUser().getEmail().isEmpty()) {
+        if (user.getEmail() == null || user.getEmail().isEmpty()) {
             return;
 
         }
-        Set<EmailAddress> emailSet = user.getUser().getEmailAddresses();
+        Set<EmailAddress> emailSet = user.getEmailAddresses();
 
         if (!containsEmail("EMAIL1", emailSet)) {
 
-            EmailAddress e = new EmailAddress(user.getUser().getEmail(), "EMAIL1", "", true);
-            user.getUser().getEmailAddresses().add(e);
+            EmailAddress e = new EmailAddress(user.getEmail(), "EMAIL1", "", true);
+            user.getEmailAddresses().add(e);
 
         }
 
@@ -624,19 +631,19 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
         }
     }
 
-    private void addPrincipals(ProvisionUser u) throws EncryptionException {
+    private void addPrincipals(final ProvisionUser u, final String userId) throws EncryptionException {
         List<Login> principalList = u.getUser().getPrincipalList();
-        if (principalList != null && !principalList.isEmpty()) {
-            for (Login lg: principalList) {
+        if(CollectionUtils.isNotEmpty(principalList)) {
+            for (final Login lg: principalList) {
                 lg.setFirstTimeLogin(1);
                 lg.setIsLocked(0);
                 lg.setCreateDate(new Date(System.currentTimeMillis()));
-                lg.setUserId(u.getUser().getUserId());
+                lg.setUserId(userId);
                 lg.setStatus("ACTIVE");
                 // encrypt the password
                 if (lg.getPassword() != null) {
-                    String pswd = lg.getPassword();
-                    lg.setPassword(loginManager.encryptPassword(lg.getUserId(), pswd));
+                    final String pswd = lg.getPassword();
+                    lg.setPassword(loginManager.encryptPassword(userId, pswd));
                 }
                 loginManager.addLogin(loginDozerConverter.convertToEntity(lg, true));
             }

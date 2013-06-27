@@ -37,6 +37,7 @@ import org.openiam.idm.searchbeans.IdentityQuestionSearchBean;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
+import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 import org.openiam.idm.srvc.pswd.domain.IdentityQuestGroupEntity;
 import org.openiam.idm.srvc.pswd.domain.IdentityQuestionEntity;
 import org.openiam.idm.srvc.pswd.domain.UserIdentityAnswerEntity;
@@ -140,6 +141,12 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 	}
 
 	@Override
+	public Integer count(final IdentityQuestionSearchBean searchBean) {
+		final IdentityQuestionEntity entity = questionSearchBeanConverter.convert(searchBean);
+		return questionDAO.count(entity);
+	}
+
+	@Override
 	public List<UserIdentityAnswerEntity> findAnswerBeans(final IdentityAnswerSearchBean searchBean, final int from, final int size) {
 		List<UserIdentityAnswerEntity> resultList = null;
 		if(searchBean.getKey() != null) {
@@ -156,11 +163,11 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 
 	@Override
 	@Transactional
-	public void saveQuestion(final IdentityQuestionEntity entity) throws Exception {
+	public IdentityQuestionEntity saveQuestion(final IdentityQuestionEntity entity) throws Exception {
 		if(entity.getIdentityQuestGrp() != null && StringUtils.isNotBlank(entity.getIdentityQuestGrp().getId())) {
 			entity.setIdentityQuestGrp(questionGroupDAO.findById(entity.getIdentityQuestGrp().getId()));
 		}
-		questionDAO.merge(entity);
+		return questionDAO.merge(entity);
 	}
 
 	@Override
@@ -170,6 +177,13 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 		if(entity != null) {
 			questionDAO.delete(entity);
 		}
+	}
+
+	@Override
+	@Transactional
+	public IdentityQuestionEntity getQuestion(final String questionId) {
+		final IdentityQuestionEntity entity = questionDAO.findById(questionId);
+		return entity;
 	}
 
 	@Override

@@ -188,22 +188,6 @@ public class UserMgr implements UserDataService {
         keyManagementService.generateUserKeys(user);
     }
 
-    @Override
-    @Transactional
-    public void addUserWithDependent(UserEntity user, boolean dependency) {
-        if (user == null)
-            throw new NullPointerException("user object is null");
-
-        if (user.getCreateDate() == null) {
-            user.setCreateDate(new Date(System.currentTimeMillis()));
-        }
-        if (user.getLastUpdate() == null) {
-            user.setLastUpdate(new Date(System.currentTimeMillis()));
-        }
-        validateEmailAddress(user, user.getEmailAddresses());
-        userDao.save(user);
-    }
-
     @Transactional
     private void validateEmailAddress(UserEntity user, Set<EmailAddressEntity> emailSet) {
 
@@ -270,7 +254,6 @@ public class UserMgr implements UserDataService {
                 oldattr.setValue(newattr.getValue());
                 oldattr.setUser(newattr.getUser());
                 oldattr.setElement(newattr.getElement());
-                oldattr.setUserId(newattr.getUserId());
                 mergedAttributes.put(oldattr.getName(),oldattr);
             }
         }
@@ -492,11 +475,11 @@ public class UserMgr implements UserDataService {
         if (attribute == null)
             throw new NullPointerException("Attribute can not be null");
 
-        if (StringUtils.isEmpty(attribute.getUserId())) {
+        if (attribute.getUser() == null || StringUtils.isBlank(attribute.getUser().getUserId())) {
             throw new NullPointerException("User has not been associated with this attribute.");
         }
 
-        UserEntity userEntity = userDao.findById(attribute.getUserId());
+        UserEntity userEntity = userDao.findById(attribute.getUser().getUserId());
         attribute.setUser(userEntity);
 
         MetadataElementEntity element = null;
@@ -514,12 +497,12 @@ public class UserMgr implements UserDataService {
         if (attribute == null)
             throw new NullPointerException("Attribute can not be null");
 
-        if (StringUtils.isEmpty(attribute.getUserId())) {
+        if (attribute.getUser() == null || StringUtils.isBlank(attribute.getUser().getUserId())) {
             throw new NullPointerException("User has not been associated with this attribute.");
         }
         final UserAttributeEntity userAttribute = userAttributeDao.findById(attribute.getId());
         if (userAttribute != null) {
-            UserEntity userEntity = userDao.findById(attribute.getUserId());
+            UserEntity userEntity = userDao.findById(attribute.getUser().getUserId());
             attribute.setUser(userEntity);
             attribute.setElement(userAttribute.getElement());
             userAttributeDao.merge(attribute);
