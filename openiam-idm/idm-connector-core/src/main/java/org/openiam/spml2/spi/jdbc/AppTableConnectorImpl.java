@@ -64,7 +64,7 @@ public class AppTableConnectorImpl extends AbstractJDBCConnectorImpl {
         return respType;
     }
 
-    @Override
+//    @Override
     public SearchResponse search(@WebParam(name = "searchRequest", targetNamespace = "") SearchRequest searchRequest) {
         throw new UnsupportedOperationException("Not supportable.");
     }

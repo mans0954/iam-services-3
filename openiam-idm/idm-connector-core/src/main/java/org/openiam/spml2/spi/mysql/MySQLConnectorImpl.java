@@ -60,7 +60,7 @@ public class MySQLConnectorImpl extends AbstractSpml2Complete  {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override
+//    @Override
     public SearchResponse search(@WebParam(name = "searchRequest", targetNamespace = "") SearchRequest searchRequest) {
         throw new UnsupportedOperationException("Not implemented yet.");
     }

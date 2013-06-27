@@ -1,5 +1,7 @@
 package org.openiam.provision.service;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mule.api.MuleContext;
@@ -528,7 +530,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
             addSupervisor(user);
             try {
-                addPrincipals(user, user.getUserId());
+                addPrincipals(user, user.getUser().getUserId());
             }catch(EncryptionException e) {
                 resp.setStatus(ResponseStatus.FAILURE);
                 resp.setErrorCode(ResponseCode.FAIL_ENCRYPTION);
@@ -562,16 +564,16 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
          */
     private void associateEmail(ProvisionUser user) {
 
-        if (user.getEmail() == null || user.getEmail().isEmpty()) {
+        if (user.getUser().getEmail() == null || user.getUser().getEmail().isEmpty()) {
             return;
 
         }
-        Set<EmailAddress> emailSet = user.getEmailAddresses();
+        Set<EmailAddress> emailSet = user.getUser().getEmailAddresses();
 
         if (!containsEmail("EMAIL1", emailSet)) {
 
-            EmailAddress e = new EmailAddress(user.getEmail(), "EMAIL1", "", true);
-            user.getEmailAddresses().add(e);
+            EmailAddress e = new EmailAddress(user.getUser().getEmail(), "EMAIL1", "", true);
+            user.getUser().getEmailAddresses().add(e);
 
         }
 

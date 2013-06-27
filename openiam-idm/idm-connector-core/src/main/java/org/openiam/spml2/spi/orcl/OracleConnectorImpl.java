@@ -67,7 +67,7 @@ public class OracleConnectorImpl extends AbstractJDBCConnectorImpl {
         return lookupAttributeNamesCommand.lookupAttributeNames(reqType);
     }
 
-    @Override
+//    @Override
     public SearchResponse search(@WebParam(name = "searchRequest", targetNamespace = "") SearchRequest searchRequest) {
         throw new UnsupportedOperationException("Not supportable.");
     }

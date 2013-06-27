@@ -48,9 +48,11 @@ import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
 import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
+import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemObjectMatchDAO;
 import org.openiam.idm.srvc.policy.dto.Policy;
@@ -81,6 +83,7 @@ import org.openiam.spml2.msg.password.ValidatePasswordResponseType;
 import org.openiam.spml2.msg.suspend.ResumeRequestType;
 import org.openiam.spml2.msg.suspend.SuspendRequestType;
 import org.openiam.spml2.spi.common.LookupAttributeNamesCommand;
+import org.openiam.spml2.spi.ldap.command.*;
 import org.openiam.spml2.spi.ldap.dirtype.Directory;
 import org.openiam.spml2.spi.ldap.dirtype.DirectorySpecificImplFactory;
 import org.openiam.spml2.util.connect.ConnectionFactory;
@@ -104,7 +107,9 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
         ApplicationContextAware {
 
     private static final Log log = LogFactory.getLog(LdapConnectorImpl.class);
-    protected ManagedSystemWebService managedSysService;
+    @Autowired
+    protected ManagedSystemService managedSysService;
+
     protected ManagedSystemObjectMatchDAO managedSysObjectMatchDao;
     protected ResourceDataService resourceDataService;
     @Autowired
@@ -326,7 +331,7 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
 
         Resource res = resourceDataService.getResource(config.getResourceId());
         String managedSysId = res.getManagedSysId();
-        ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
+        ManagedSysEntity mSys = managedSysService.getManagedSysById(managedSysId);
 
         Map<String, ReconciliationCommand> situations = new HashMap<String, ReconciliationCommand>();
         for (ReconciliationSituation situation : config.getSituationSet()) {
@@ -341,15 +346,17 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
         response.setStatus(StatusCodeType.SUCCESS);
 
         LookupRequestType request = new LookupRequestType();
-        ManagedSystemObjectMatch[] matchObjAry = managedSysService
-                .managedSysObjectParam(managedSysId, "USER");
-        if (matchObjAry.length == 0) {
+        List<ManagedSystemObjectMatchEntity> matchObjAry = managedSysService.managedSysObjectParam(managedSysId, "USER");
+        if (matchObjAry==null || matchObjAry.size() == 0) {
             log.error("No match object found for this managed sys");
             response.setStatus(StatusCodeType.FAILURE);
             return response;
         }
-        String keyField = matchObjAry[0].getKeyField();
-        String searchString = keyField + "=*," + matchObjAry[0].getBaseDn();
+
+        ManagedSystemObjectMatch matchObj = managedSystemObjectMatchDozerConverter.convertToDTO(matchObjAry.get(0),false);
+
+        String keyField = matchObj.getKeyField();
+        String searchString = keyField + "=*," + matchObj.getBaseDn();
         PSOIdentifierType idType = new PSOIdentifierType(searchString, null,
                 managedSysId);
         request.setPsoID(idType);
@@ -370,7 +377,7 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
                     if (attr.getName().equalsIgnoreCase(keyField)) {
                         principal = attr.getValue();
                         searchPrincipal = keyField + "=" + principal + ","
-                                + matchObjAry[0].getBaseDn();
+                                + matchObj.getBaseDn();
                         break;
                     }
                 }
@@ -422,7 +429,7 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
 
         try {
 
-            LdapContext ldapctx = conMgr.connect(managedSys);
+            LdapContext ldapctx = conMgr.connect(null);
         } catch (NamingException ne) {
             log.error(ne);
 
@@ -574,7 +581,7 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
          * A) Use the targetID to look up the connection information under
          * managed systems
          */
-        ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
+        ManagedSysEntity managedSys = managedSysService.getManagedSysById(targetID);
 
         try {
             log.debug("managedSys found for targetID=" + targetID + " "
@@ -704,14 +711,14 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
             ManagedSystemObjectMatchDAO managedSysObjectMatchDao) {
         this.managedSysObjectMatchDao = managedSysObjectMatchDao;
     }
-
-    public ManagedSystemWebService getManagedSysService() {
-        return managedSysService;
-    }
-
-    public void setManagedSysService(ManagedSystemWebService managedSysService) {
-        this.managedSysService = managedSysService;
-    }
+//
+//    public ManagedSystemWebService getManagedSysService() {
+//        return managedSysService;
+//    }
+//
+//    public void setManagedSysService(ManagedSystemWebService managedSysService) {
+//        this.managedSysService = managedSysService;
+//    }
 
     public ResourceDataService getResourceDataService() {
         return resourceDataService;
@@ -910,7 +917,7 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
         return ctx.search(objectBaseDN, searchFilter, searchCtls);
     }
 
-    @Override
+//    @Override
     @Transactional
     public SearchResponse search(@WebParam(name = "searchRequest", targetNamespace = "") SearchRequest searchRequest) {
         System.out.println("LDAP SEARCH EXECUTION ==============================================================");
@@ -923,7 +930,7 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
             return searchResponse;
         }
 
-        ManagedSysDto mSys = managedSysService.getManagedSys(searchRequest.getTargetID());
+        ManagedSysEntity mSys = managedSysService.getManagedSysById(searchRequest.getTargetID());
 
         ManagedSystemObjectMatchEntity matchObj = null;
         List<ManagedSystemObjectMatchEntity> matchObjList = managedSysObjectMatchDao.findBySystemId(mSys.getManagedSysId(), "USER");

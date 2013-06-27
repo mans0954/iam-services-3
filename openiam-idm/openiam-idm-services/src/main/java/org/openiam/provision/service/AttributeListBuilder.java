@@ -176,12 +176,12 @@ public class AttributeListBuilder {
             identity.setIsLocked(0);
             identity.setFirstTimeLogin(1);
             identity.setStatus("ACTIVE");
-            if (pUser.getPrincipalList() == null) {
+            if (pUser.getUser().getPrincipalList() == null) {
                 List<Login> idList = new ArrayList<Login>();
                 idList.add(identity);
-                pUser.setPrincipalList(idList);
+                pUser.getUser().setPrincipalList(idList);
             } else {
-                pUser.getPrincipalList().add(identity);
+                pUser.getUser().getPrincipalList().add(identity);
             }
 
         } else {
@@ -341,12 +341,12 @@ public class AttributeListBuilder {
                 }
             }
 
-            if (pUser.getPrincipalList() == null) {
+            if (pUser.getUser().getPrincipalList() == null) {
                 List<Login> principalList = new ArrayList<Login>();
                 principalList.add(currentIdentity);
-                pUser.setPrincipalList(principalList);
+                pUser.getUser().setPrincipalList(principalList);
             } else {
-                pUser.getPrincipalList().add(currentIdentity);
+                pUser.getUser().getPrincipalList().add(currentIdentity);
             }
 
         }

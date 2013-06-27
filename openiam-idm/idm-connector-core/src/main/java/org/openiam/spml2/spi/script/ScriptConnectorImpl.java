@@ -251,7 +251,7 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete {
         }
     }
 
-    @Override
+//    @Override
     public SearchResponse search(@WebParam(name = "searchRequest", targetNamespace = "") SearchRequest searchRequest) {
         throw new UnsupportedOperationException("Not implemented yet.");
     }

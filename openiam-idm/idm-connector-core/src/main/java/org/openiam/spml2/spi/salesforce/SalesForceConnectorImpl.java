@@ -34,11 +34,11 @@ import com.sforce.soap.partner.PartnerConnection;
 import com.sforce.ws.ConnectionException;
 import com.sforce.ws.ConnectorConfig;
 
-@WebService(endpointInterface="org.openiam.spml2.interf.ConnectorService",
-	targetNamespace="http://www.openiam.org/service/connector",
-	portName = "SalesForceServicePort", 
-	serviceName="SalesForceConnectorService")
-public class SalesForceConnectorImpl implements ConnectorService {
+//@WebService(endpointInterface="org.openiam.spml2.interf.ConnectorService",
+//	targetNamespace="http://www.openiam.org/service/connector",
+//	portName = "SalesForceServicePort",
+//	serviceName="SalesForceConnectorService")
+public class SalesForceConnectorImpl  {
 	
 	private static final Log log = LogFactory.getLog(SalesForceConnectorImpl.class);
 	
@@ -50,7 +50,7 @@ public class SalesForceConnectorImpl implements ConnectorService {
     private PasswordCommand setPasswordCommand;
     private SuspendCommand suspendCommand;
 
-	@Override
+//	@Override
 	@WebMethod
 	public ResponseType reconcileResource(@WebParam(name = "config", targetNamespace = "") ReconciliationConfig config) {
         final ResponseType response = new ResponseType();
@@ -60,7 +60,7 @@ public class SalesForceConnectorImpl implements ConnectorService {
         return response;
 	}
 
-	@Override
+//	@Override
 	@WebMethod
 	public ResponseType testConnection(@WebParam(name = "managedSys", targetNamespace = "") ManagedSysDto managedSys) {
 		final ResponseType response = new ResponseType();
@@ -125,7 +125,7 @@ public class SalesForceConnectorImpl implements ConnectorService {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    @Override
+//    @Override
     public SearchResponse search(@WebParam(name = "searchRequest", targetNamespace = "") SearchRequest searchRequest) {
         throw new UnsupportedOperationException("Not supportable.");
     }

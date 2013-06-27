@@ -1818,7 +1818,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
             deProvisionResources(deleteResourceList, origUser.getUserId(),
                     pUser.getUser().getLastUpdatedBy(), requestId, pUser,
-                    auditLog.getLogId(), userStatus, origUser);
+                    userStatus, origUser);
         }
 
         if (resourceList != null) {
