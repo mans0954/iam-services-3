@@ -9,6 +9,7 @@ import org.openiam.idm.searchbeans.IdentityQuestionSearchBean;
 import org.openiam.idm.srvc.audit.service.AuditHelper;
 import org.openiam.idm.srvc.policy.domain.PolicyAttributeEntity;
 import org.openiam.idm.srvc.policy.domain.PolicyEntity;
+import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.service.PolicyDAO;
 import org.openiam.idm.srvc.pswd.domain.IdentityQuestionEntity;
 import org.openiam.idm.srvc.pswd.domain.UserIdentityAnswerEntity;
@@ -84,10 +85,21 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
 	}
 
 	@Override
+	public Integer count(final IdentityQuestionSearchBean searchBean){
+		return getResponseValidator().count(searchBean);
+	}
+	
+	@Override
 	public List<IdentityQuestionEntity> findQuestionBeans(
 			IdentityQuestionSearchBean searchBean, int from, int size) {
 		return getResponseValidator().findQuestionBeans(searchBean, from, size);
 	}
+
+	public IdentityQuestionEntity getQuestion(final String questionId)
+	{
+		return getResponseValidator().getQuestion(questionId);
+	}
+	
 
 	@Override
 	public List<UserIdentityAnswerEntity> findAnswerBeans(
@@ -96,8 +108,8 @@ public class ChallengeResponseServiceImpl implements ChallengeResponseService {
 	}
 
 	@Override
-	public void saveQuestion(IdentityQuestionEntity entity) throws Exception {
-		getResponseValidator().saveQuestion(entity);
+	public IdentityQuestionEntity saveQuestion(IdentityQuestionEntity entity) throws Exception {
+		return getResponseValidator().saveQuestion(entity);
 	}
 
 	@Override

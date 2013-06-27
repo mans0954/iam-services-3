@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.pswd.service;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
@@ -19,8 +20,12 @@ public class IdentityQuestionDAOImpl extends BaseDaoImpl<IdentityQuestionEntity,
 	@Override
 	protected Criteria getExampleCriteria(final IdentityQuestionEntity example) {
 		final Criteria criteria = getCriteria();
-		criteria.add(Restrictions.eq("active", example.isActive()));
-		
+		if (example.isActive() !=null){
+			criteria.add(Restrictions.eq("active", example.isActive()));
+		}
+		if (StringUtils.isNotEmpty(example.getQuestionText())) {
+			criteria.add(Restrictions.eq("questionText", example.getQuestionText()));
+		}
 		if(example.getIdentityQuestGrp() != null) {
 			criteria.add(Restrictions.eq("identityQuestGrp.id", example.getIdentityQuestGrp().getId()));
 		}
