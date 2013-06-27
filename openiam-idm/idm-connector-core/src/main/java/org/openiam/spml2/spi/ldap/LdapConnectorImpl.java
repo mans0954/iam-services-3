@@ -101,7 +101,7 @@ import org.springframework.transaction.annotation.Transactional;
  * 
  * @author suneet
  */
-
+@Deprecated
 //@WebService(endpointInterface = "org.openiam.spml2.interf.ConnectorService", targetNamespace = "http://www.openiam.org/service/connector", portName = "LDAPConnectorServicePort", serviceName = "LDAPConnectorService")
 public class LdapConnectorImpl extends AbstractSpml2Complete implements
         ApplicationContextAware {
