@@ -9,26 +9,37 @@ import org.openiam.idm.srvc.pswd.dto.IdentityQuestion;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "IdentityQuestionSearchBean", propOrder = {
 	"groupId",
-	"active"
+	"active",
+	"questionText"
 })
 public class IdentityQuestionSearchBean extends AbstractSearchBean<IdentityQuestion, String> implements SearchBean<IdentityQuestion, String> {
 
 	private String groupId;
-	private boolean active = true;
+	private Boolean active;
+	private String questionText;
 	
+	public String getQuestionText() {
+		return questionText;
+	}
+
+	public void setQuestionText(String questionText) {
+		this.questionText = questionText;
+	}
+
 	public String getGroupId() {
 		return groupId;
 	}
 	
+	public Boolean getActive() {
+		return active;
+	}
+
 	public void setGroupId(String groupId) {
 		this.groupId = groupId;
 	}
 
-	public boolean isActive() {
-		return active;
-	}
 
-	public void setActive(boolean active) {
+	public void setActive(Boolean active) {
 		this.active = active;
 	}
 	
