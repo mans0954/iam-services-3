@@ -30,13 +30,14 @@ public class IdentityQuestionSearchBean extends AbstractSearchBean<IdentityQuest
 		return groupId;
 	}
 	
+	public Boolean getActive() {
+		return active;
+	}
+
 	public void setGroupId(String groupId) {
 		this.groupId = groupId;
 	}
 
-	public Boolean isActive() {
-		return active;
-	}
 
 	public void setActive(Boolean active) {
 		this.active = active;

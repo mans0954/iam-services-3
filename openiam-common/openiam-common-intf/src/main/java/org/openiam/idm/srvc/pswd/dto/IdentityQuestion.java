@@ -49,7 +49,7 @@ public class IdentityQuestion extends BaseObject implements Serializable {
     protected String id;
     protected String identityQuestGrpId;
     protected String questionText;
-    protected boolean active = true;
+    protected Boolean active;
 
     public IdentityQuestion() {
     }
@@ -70,11 +70,11 @@ public class IdentityQuestion extends BaseObject implements Serializable {
         this.questionText = questionText;
     }
 
-	public boolean isActive() {
+	public Boolean getActive() {
 		return active;
 	}
 
-	public void setActive(boolean active) {
+	public void setActive(Boolean active) {
 		this.active = active;
 	}
 
