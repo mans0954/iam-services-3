@@ -74,6 +74,10 @@ public class IdentityQuestion extends BaseObject implements Serializable {
 		return active;
 	}
 
+	public Boolean isActive() {
+		return active;
+	}
+
 	public void setActive(Boolean active) {
 		this.active = active;
 	}
@@ -84,6 +88,13 @@ public class IdentityQuestion extends BaseObject implements Serializable {
 
 	public void setIdentityQuestGrpId(String identityQuestGrpId) {
 		this.identityQuestGrpId = identityQuestGrpId;
+	}
+
+	@Override
+	public String toString() {
+		return "IdentityQuestion [id=" + id + ", identityQuestGrpId="
+				+ identityQuestGrpId + ", questionText=" + questionText
+				+ ", active=" + active + "]";
 	}
 
     

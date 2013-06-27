@@ -337,6 +337,10 @@
 			<a>identityQuestGrp.id</a>
 			<b>identityQuestGrpId</b>
 		</field>
+		<field>
+			<a>active</a>
+			<b>active</b>
+		</field>
 	</mapping>
 
 	<mapping>

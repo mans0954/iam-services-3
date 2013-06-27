@@ -132,20 +132,21 @@ public class ChallengeResponseWebServiceImpl implements
 			}
 			final IdentityQuestionSearchBean searchBean = new IdentityQuestionSearchBean();
 			searchBean.setQuestionText(question.getQuestionText());
-			final int count = challengeResponseService.count(searchBean);
-			if (count > 0) {
+			final List<IdentityQuestionEntity> found = challengeResponseService.findQuestionBeans(searchBean, 0, 2);
+			if (found.size() > 0) {
 				if (StringUtils.isBlank(question.getId())) {
 					throw new BasicDataServiceException(ResponseCode.IDENTICAL_QUESTIONS);
 				}
 
 				if (StringUtils.isNotBlank(question.getId())
-						&& (count > 1)) {
+						&& !question.getId().equals(
+								found.get(0).getId())) {
 					throw new BasicDataServiceException(ResponseCode.IDENTICAL_QUESTIONS);
 				}
 			}
 
 			IdentityQuestionEntity entity = questionDozerConverter
-					.convertToEntity(question, true);
+					.convertToEntity(question, false);
 			entity = challengeResponseService.saveQuestion(entity);
 			response.setResponseValue(entity.getId());
 		} catch (BasicDataServiceException e) {
@@ -185,9 +186,8 @@ public class ChallengeResponseWebServiceImpl implements
 	public IdentityQuestion getQuestion(final String questionId) {
 		final IdentityQuestionEntity question;
 		question = challengeResponseService.getQuestion(questionId);
-
 		return (question != null) ? questionDozerConverter.convertToDTO(
-				question, true) : null;
+				question, false) : null;
 
 	}
 
