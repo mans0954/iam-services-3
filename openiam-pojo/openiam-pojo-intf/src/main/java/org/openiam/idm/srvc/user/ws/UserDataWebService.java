@@ -66,17 +66,6 @@ public interface UserDataWebService {
     @WebMethod
     public Response addUser(@WebParam(name = "user", targetNamespace = "") User user) throws Exception;
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.user.service.UserDataService#addUser(org.openiam
-     * .idm.srvc.user.dto.User, boolean)
-     */
-
-    @WebMethod
-    public Response addUserWithDependent(@WebParam(name = "user", targetNamespace = "") User user, @WebParam(name = "dependency",
-                                                                                                             targetNamespace = "") boolean dependency) throws Exception;
 
     @WebMethod
     public Response updateUser(User user);

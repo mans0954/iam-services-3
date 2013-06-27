@@ -47,9 +47,12 @@ public class DisentitleUserFromResource extends AbstractEntitlementsDelegate {
 		final ResourceEntity entity = resourceService.findResourceById(resourceId);
 		if(user != null && entity != null/* && resourceService.getResourceUser(userId, resourceId) != null*/) {
 			final ProvisionUser pUser = new ProvisionUser(user);
-			final UserResourceAssociation association = new UserResourceAssociation(resourceId, AttributeOperationEnum.DELETE);
-			association.setManagedSystemId(entity.getManagedSysId());
-			pUser.addResourceUserAssociation(association);
+			final UserResourceAssociation association = new UserResourceAssociation();
+            association.setOperation(AttributeOperationEnum.DELETE);
+            association.setResourceId(resourceId);
+            association.setManagedSystemId(entity.getManagedSysId());
+            pUser.addResourceUserAssociation(association);
+			
 			provisionService.modifyUser(pUser);
 		}
 		/*

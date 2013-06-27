@@ -48,9 +48,11 @@ public class EntitleUserToResource extends AbstractEntitlementsDelegate {
 		final ResourceEntity entity = resourceService.findResourceById(resourceId);
 		if(user != null && entity != null) {
 			final ProvisionUser pUser = new ProvisionUser(user);
-			final UserResourceAssociation association = new UserResourceAssociation(resourceId, AttributeOperationEnum.ADD);
-			association.setManagedSystemId(entity.getManagedSysId());
-			pUser.addResourceUserAssociation(association);
+			final UserResourceAssociation association = new UserResourceAssociation();
+            association.setOperation(AttributeOperationEnum.ADD);
+            association.setResourceId(resourceId);
+            association.setManagedSystemId(entity.getManagedSysId());
+            pUser.addResourceUserAssociation(association);
 			provisionService.modifyUser(pUser);
 		}
 		

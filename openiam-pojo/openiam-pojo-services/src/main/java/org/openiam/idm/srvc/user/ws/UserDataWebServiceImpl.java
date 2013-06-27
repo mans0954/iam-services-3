@@ -373,27 +373,6 @@ public class UserDataWebServiceImpl implements UserDataWebService, MuleContextAw
     }
 
     @Override
-    public Response addUserWithDependent(User user, boolean dependency) throws Exception {
-        final Response response = new Response(ResponseStatus.SUCCESS);
-        try {
-            if (user == null) {
-                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            }
-
-            final UserEntity entity = userDozerConverter.convertToEntity(user, true);
-            userManager.addUserWithDependent(entity, dependency);
-        } catch (BasicDataServiceException e) {
-            response.setErrorCode(e.getCode());
-            response.setStatus(ResponseStatus.FAILURE);
-        } catch (Throwable e) {
-            log.error("Can't perform operation", e);
-            response.setErrorText(e.getMessage());
-            response.setStatus(ResponseStatus.FAILURE);
-        }
-        return response;
-    }
-
-    @Override
     public List<User> findUserByOrganization(final String orgId) {
         final List<UserEntity> entityList = userManager.findUserByOrganization(orgId);
         return userDozerConverter.convertToDTOList(entityList, false);

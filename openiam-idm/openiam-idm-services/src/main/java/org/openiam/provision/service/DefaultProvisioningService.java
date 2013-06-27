@@ -167,8 +167,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         boolean customPassword = false;
         Login primaryLogin = null;
 
-        if (user.getPrincipalList() == null
-                || user.getPrincipalList().isEmpty()) {
+        if (CollectionUtils.isEmpty(user.getPrincipalList())) {
             // build the list
             buildPrimaryPrincipal(user, bindingMap, scriptRunner);
 
@@ -176,8 +175,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             primaryLogin = user.getPrimaryPrincipal(sysConfiguration
                     .getDefaultManagedSysId());
             // Check if a custom password is set
-            if (primaryLogin.getPassword() != null
-                    && !primaryLogin.getPassword().trim().isEmpty()) {
+            if (StringUtils.isNotBlank(primaryLogin.getPassword())) {
                 customPassword = true;
             } else {
                 setPrimaryIDPassword(user, bindingMap, scriptRunner);
@@ -190,7 +188,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         }
 
         // check if there is a custom password provided in the request
-        if (user.getPassword() != null && !user.getPassword().trim().isEmpty()) {
+        if (StringUtils.isNotBlank(user.getPassword())) {
             customPassword = true;
             primaryLogin.setPassword(user.getPassword());
         }
@@ -287,6 +285,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
 
         if (resp.getStatus() == ResponseStatus.SUCCESS) {
+        	/*
             auditLog = auditHelper.addLog("CREATE", user.getRequestorDomain(),
                     user.getRequestorLogin(), "IDM SERVICE", user
                     .getCreatedBy(), "0", "USER", user.getUserId(),
@@ -296,8 +295,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     primaryLogin.getLogin(), primaryLogin.getDomainId());
             auditHelper.persistLogList(pendingLogItems, requestId,
                     user.getSessionId());
-
+			*/
         } else {
+        	/*
             auditLog = auditHelper.addLog("CREATE", user.getRequestorDomain(),
                     user.getRequestorLogin(), "IDM SERVICE", user
                     .getCreatedBy(), "0", "USER", user.getUserId(),
@@ -307,6 +307,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     resp.getErrorText(), user.getRequestClientIP(),
                     (primaryLogin != null ? primaryLogin.getLogin() : ""),
                     (primaryLogin != null ? primaryLogin.getDomainId() : ""));
+			*/
             resp.setStatus(ResponseStatus.FAILURE);
             resp.setErrorCode(ResponseCode.FAIL_DECRYPTION);
             return resp;

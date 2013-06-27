@@ -529,7 +529,6 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 											userAttribute.setElement(element);
 											userAttribute.setName(String.format("%s_%s", element.getAttributeName(), System.nanoTime()));
 											userAttribute.setUser(user);
-											userAttribute.setUserId(userId);
 											userAttribute.setValue(elementValue.getValue());
 											saveList.add(userAttribute);
 										}
