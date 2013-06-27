@@ -31,6 +31,7 @@ import java.util.Set;
  * Time: 4:40 PM
  * To change this template use File | Settings | File Templates.
  */
+@Deprecated
 public class LdapModifyCommand extends LdapAbstractCommand {
 
     public ModifyResponseType modify(ModifyRequestType reqType) {
@@ -77,7 +78,7 @@ public class LdapModifyCommand extends LdapAbstractCommand {
 
             conMgr = ConnectionFactory.create(ConnectionManagerConstant.LDAP_CONNECTION);
             conMgr.setApplicationContext(ac);
-            ldapctx = conMgr.connect(managedSys);
+            ldapctx = conMgr.connect(null);
         } catch (NamingException ne) {
             respType.setStatus(StatusCodeType.FAILURE);
             respType.setError(ErrorCode.DIRECTORY_ERROR);

@@ -374,12 +374,12 @@ public class ReconciliationServiceImpl implements ReconciliationService,
 
                     ProvisionUser newUser = new ProvisionUser();
                     //ADD Target user principal
-                    newUser.getPrincipalList().add(l);
+                    newUser.getUser().getPrincipalList().add(l);
                     if(idmLogin != null) {
-                        newUser.getPrincipalList().add(loginDozerConverter.convertToDTO(idmLogin, true));
+                        newUser.getUser().getPrincipalList().add(loginDozerConverter.convertToDTO(idmLogin, true));
                     }
                     log.debug("Call command for Match Found");
-                    command.execute(l, newUser, extensibleAttributes);
+                    command.execute(l, newUser.getUser(), extensibleAttributes);
                 }
             }
         }
@@ -408,14 +408,14 @@ public class ReconciliationServiceImpl implements ReconciliationService,
                 ReconciliationCommand command = situations.get(ReconciliationCommand.IDM_DELETED__SYS_EXISTS);
                 if (command != null) {
                     log.debug("Call command for: Record in resource but deleted in IDM");
-                    command.execute(idDto, new ProvisionUser(user), extensibleAttributes);
+                    command.execute(idDto, user, extensibleAttributes);
                 }
             } else {
                 //    IDM_EXISTS__SYS_EXISTS
                 ReconciliationCommand command = situations.get(ReconciliationCommand.IDM_EXISTS__SYS_EXISTS);
                 if (command != null) {
                     log.debug("Call command for: Record in resource and in IDM");
-                    command.execute(idDto, new ProvisionUser(user), extensibleAttributes);
+                    command.execute(idDto, user, extensibleAttributes);
                 }
             }
 
@@ -426,7 +426,7 @@ public class ReconciliationServiceImpl implements ReconciliationService,
                 ReconciliationCommand command = situations.get(ReconciliationCommand.IDM_EXISTS__SYS_NOT_EXISTS);
                 if (command != null) {
                     log.debug("Call command for: Record in resource and in IDM");
-                    command.execute(idDto, new ProvisionUser(user), extensibleAttributes);
+                    command.execute(idDto, user, extensibleAttributes);
                 }
             }
         }

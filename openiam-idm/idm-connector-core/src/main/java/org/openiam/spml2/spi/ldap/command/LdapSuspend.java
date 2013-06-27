@@ -34,6 +34,7 @@ import org.springframework.context.ApplicationContextAware;
  * @author suneet
  *
  */
+@Deprecated
 public class LdapSuspend extends LdapAbstractCommand implements ApplicationContextAware {
 	
 	private static final Log log = LogFactory.getLog(LdapSuspend.class);
@@ -73,7 +74,7 @@ public class LdapSuspend extends LdapAbstractCommand implements ApplicationConte
             conMgr = ConnectionFactory.create(ConnectionManagerConstant.LDAP_CONNECTION);
             conMgr.setApplicationContext(ac);
 
-            LdapContext ldapctx = conMgr.connect(managedSys);
+            LdapContext ldapctx = conMgr.connect(null);
 
             if (ldapctx == null) {
                 resp.setStatus(StatusCodeType.FAILURE);
@@ -146,7 +147,7 @@ public class LdapSuspend extends LdapAbstractCommand implements ApplicationConte
             log.debug("managedSys found for targetID=" + targetID + " " + " Name=" + managedSys.getName());
 
             conMgr = ConnectionFactory.create(ConnectionManagerConstant.LDAP_CONNECTION);
-            LdapContext ldapctx = conMgr.connect(managedSys);
+            LdapContext ldapctx = conMgr.connect(null);
 
             log.debug("Ldapcontext = " + ldapctx);
             String ldapName = psoID.getID();

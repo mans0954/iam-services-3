@@ -17,7 +17,7 @@ import org.openiam.idm.srvc.res.dto.ResourceProp;
 
 import java.util.Set;
 
-
+@Deprecated
 public class LdapDeleteCommand extends LdapAbstractCommand {
 
     public ResponseType delete(DeleteRequestType reqType) {
@@ -85,7 +85,7 @@ public class LdapDeleteCommand extends LdapAbstractCommand {
 
             conMgr = ConnectionFactory.create(ConnectionManagerConstant.LDAP_CONNECTION);
             conMgr.setApplicationContext(ac);
-            LdapContext ldapctx = conMgr.connect(managedSys);
+            LdapContext ldapctx = conMgr.connect(null);
 
             if (ldapctx == null) {
                 respType.setStatus(StatusCodeType.FAILURE);

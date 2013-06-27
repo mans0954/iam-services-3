@@ -49,16 +49,16 @@ public class NewUserModelToProvisionConverter {
 		if(request.getUser() != null) {
 			user = new ProvisionUser(request.getUser());
 			if(CollectionUtils.isNotEmpty(request.getAddresses())) {
-				user.setAddresses(new HashSet<Address>(request.getAddresses()));
+				user.getUser().setAddresses(new HashSet<Address>(request.getAddresses()));
 			}
 			if(CollectionUtils.isNotEmpty(request.getEmails())) {
-				user.setEmailAddresses(new HashSet<EmailAddress>(request.getEmails()));
+				user.getUser().setEmailAddresses(new HashSet<EmailAddress>(request.getEmails()));
 			}
 			if(CollectionUtils.isNotEmpty(request.getLoginList())) {
-				user.setPrincipalList(request.getLoginList());
+				user.getUser().setPrincipalList(request.getLoginList());
 			}
 			if(CollectionUtils.isNotEmpty(request.getPhones())) {
-				user.setPhones(new HashSet<Phone>(request.getPhones()));
+				user.getUser().setPhones(new HashSet<Phone>(request.getPhones()));
 			}
 			
 			final List<Role> userRoles = new LinkedList<Role>();
@@ -86,7 +86,7 @@ public class NewUserModelToProvisionConverter {
 						userAttributes.put(attribute.getId(), attribute);
 					}
 				}
-				user.setUserAttributes(userAttributes);
+				user.getUser().setUserAttributes(userAttributes);
 			}
 		}
 		return user;

@@ -8,6 +8,7 @@ import org.apache.commons.logging.LogFactory;
  * @author suneet
  *
  */
+@Deprecated
 public class LdapPassword {
 	private static final Log log = LogFactory.getLog(LdapPassword.class);
 }

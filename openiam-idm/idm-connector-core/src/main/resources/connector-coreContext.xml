@@ -52,45 +52,45 @@
 		<!--<property name="deleteCommand" ref="ldapDeleteCommmand" />-->
 	<!--</bean>-->
 
-	<bean id="ldapSuspend" class="org.openiam.spml2.spi.ldap.command.LdapSuspend">
-		<property name="managedSysService" ref="managedSysService" />
-		<property name="managedSysObjectMatchDao" ref="managedSysObjectMatchDAO" />
-		<property name="loginManager" ref="loginManager" />
-		<property name="sysConfiguration" ref="sysConfiguration" />
-	</bean>
+	<!--<bean id="ldapSuspend" class="org.openiam.spml2.spi.ldap.command.LdapSuspend">-->
+		<!--<property name="managedSysService" ref="managedSysService" />-->
+		<!--<property name="managedSysObjectMatchDao" ref="managedSysObjectMatchDAO" />-->
+		<!--<property name="loginManager" ref="loginManager" />-->
+		<!--<property name="sysConfiguration" ref="sysConfiguration" />-->
+	<!--</bean>-->
 
 
 
-	<bean id="ldapPassword" class="org.openiam.spml2.spi.ldap.command.LdapPassword">
+	<!--<bean id="ldapPassword" class="org.openiam.spml2.spi.ldap.command.LdapPassword">-->
 
-	</bean>
+	<!--</bean>-->
 
-	<bean id="ldapAddCommmand" class="org.openiam.spml2.spi.ldap.command.LdapAddCommand">
-		<property name="managedSysService" ref="managedSysService" />
-		<property name="resourceDataService" ref="resourceDataService" />
-		<property name="managedSysObjectMatchDao" ref="managedSysObjectMatchDAO" />
+	<!--<bean id="ldapAddCommmand" class="org.openiam.spml2.spi.ldap.command.LdapAddCommand">-->
+		<!--<property name="managedSysService" ref="managedSysService" />-->
+		<!--<property name="resourceDataService" ref="resourceDataService" />-->
+		<!--<property name="managedSysObjectMatchDao" ref="managedSysObjectMatchDAO" />-->
 
-	</bean>
+	<!--</bean>-->
 
-	<bean id="ldapLookupCommmand" class="org.openiam.spml2.spi.ldap.command.LdapLookupCommand">
-		<property name="managedSysService" ref="managedSysService" />
-		<property name="resourceDataService" ref="resourceDataService" />
-		<property name="managedSysObjectMatchDao" ref="managedSysObjectMatchDAO" />
+	<!--<bean id="ldapLookupCommmand" class="org.openiam.spml2.spi.ldap.command.LdapLookupCommand">-->
+		<!--<property name="managedSysService" ref="managedSysService" />-->
+		<!--<property name="resourceDataService" ref="resourceDataService" />-->
+		<!--<property name="managedSysObjectMatchDao" ref="managedSysObjectMatchDAO" />-->
 
-	</bean>
-	<bean id="ldapModifyCommmand" class="org.openiam.spml2.spi.ldap.command.LdapModifyCommand">
-		<property name="managedSysService" ref="managedSysService" />
-		<property name="resourceDataService" ref="resourceDataService" />
-		<property name="managedSysObjectMatchDao" ref="managedSysObjectMatchDAO" />
+	<!--</bean>-->
+	<!--<bean id="ldapModifyCommmand" class="org.openiam.spml2.spi.ldap.command.LdapModifyCommand">-->
+		<!--<property name="managedSysService" ref="managedSysService" />-->
+		<!--<property name="resourceDataService" ref="resourceDataService" />-->
+		<!--<property name="managedSysObjectMatchDao" ref="managedSysObjectMatchDAO" />-->
 
-	</bean>
+	<!--</bean>-->
 
-	<bean id="ldapDeleteCommmand" class="org.openiam.spml2.spi.ldap.command.LdapDeleteCommand">
-		<property name="managedSysService" ref="managedSysService" />
-		<property name="resourceDataService" ref="resourceDataService" />
-		<property name="managedSysObjectMatchDao" ref="managedSysObjectMatchDAO" />
+	<!--<bean id="ldapDeleteCommmand" class="org.openiam.spml2.spi.ldap.command.LdapDeleteCommand">-->
+		<!--<property name="managedSysService" ref="managedSysService" />-->
+		<!--<property name="resourceDataService" ref="resourceDataService" />-->
+		<!--<property name="managedSysObjectMatchDao" ref="managedSysObjectMatchDAO" />-->
 
-	</bean>
+	<!--</bean>-->
 
 
 	<!--<bean id="googleAppsConnector" class="org.openiam.spml2.spi.gapps.GoogleAppsConnectorImpl">-->

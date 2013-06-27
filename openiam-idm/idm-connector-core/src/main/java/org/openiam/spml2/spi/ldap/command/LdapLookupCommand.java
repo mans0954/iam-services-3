@@ -23,6 +23,7 @@ import java.util.List;
  * Implements lookup furnctionality for the ldapconnector.
  * User: suneetshah
  */
+@Deprecated
 public class LdapLookupCommand extends LdapAbstractCommand {
 
     public LookupResponseType lookup(LookupRequestType reqType) {
@@ -57,7 +58,7 @@ public class LdapLookupCommand extends LdapAbstractCommand {
 
             conMgr = ConnectionFactory.create(ConnectionManagerConstant.LDAP_CONNECTION);
             conMgr.setApplicationContext(ac);
-            LdapContext ldapctx = conMgr.connect(managedSys);
+            LdapContext ldapctx = conMgr.connect(null);
 
 
 

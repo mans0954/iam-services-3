@@ -30,6 +30,7 @@ import java.util.Set;
  * LdapAddCommand implements the add operation for the LdapConnector
  * User: suneetshah
  */
+@Deprecated
 public class LdapAddCommand extends LdapAbstractCommand {
 
     public AddResponseType add(AddRequestType reqType) {
@@ -72,7 +73,7 @@ public class LdapAddCommand extends LdapAbstractCommand {
         try {
             log.debug("Connecting to directory:  " + managedSys.getName());
 
-            LdapContext ldapctx = conMgr.connect(managedSys);
+            LdapContext ldapctx = conMgr.connect(null);
 
             log.debug("Ldapcontext = " + ldapctx);
 
