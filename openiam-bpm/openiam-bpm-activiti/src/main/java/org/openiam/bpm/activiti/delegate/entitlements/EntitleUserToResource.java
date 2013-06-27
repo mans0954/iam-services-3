@@ -3,16 +3,11 @@ package org.openiam.bpm.activiti.delegate.entitlements;
 import org.activiti.engine.delegate.DelegateExecution;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.bpm.util.ActivitiConstants;
-import org.openiam.dozer.converter.ResourceDozerConverter;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.domain.ResourceUserEntity;
-import org.openiam.idm.srvc.res.dto.ResourceUser;
-import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceService;
 import org.openiam.idm.srvc.res.service.ResourceUserDAO;
-import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.dto.UserResourceAssociation;
@@ -31,10 +26,10 @@ public class EntitleUserToResource extends AbstractEntitlementsDelegate {
 	
 	@Autowired
 	private ResourceService resourceService;
-	
-	@Autowired
-	private ResourceDozerConverter resourceDozerConverter;
-	
+
+    @Autowired
+    private ResourceUserDAO resourceUserDAO;
+
 	public EntitleUserToResource() {
 		super();
 	}
@@ -47,6 +42,11 @@ public class EntitleUserToResource extends AbstractEntitlementsDelegate {
 		final User user = userDataService.getUserDto(userId);
 		final ResourceEntity entity = resourceService.findResourceById(resourceId);
 		if(user != null && entity != null) {
+            final ResourceUserEntity toSave = new ResourceUserEntity();
+            toSave.setUserId(userId);
+            toSave.setResourceId(resourceId);
+            resourceUserDAO.save(toSave);
+
 			final ProvisionUser pUser = new ProvisionUser(user);
 			final UserResourceAssociation association = new UserResourceAssociation();
             association.setOperation(AttributeOperationEnum.ADD);
@@ -55,17 +55,6 @@ public class EntitleUserToResource extends AbstractEntitlementsDelegate {
             pUser.addResourceUserAssociation(association);
 			provisionService.modifyUser(pUser);
 		}
-		
-		/*
-		final ResourceEntity resource = resourceDAO.findById(resourceId);
-		final UserEntity user = userDAO.findById(userId);
-		if(resource != null && user != null) {
-			final ResourceUserEntity toSave = new ResourceUserEntity();
-			toSave.setUserId(userId);
-			toSave.setResourceId(resourceId);
-			resourceUserDAO.save(toSave);
-		}
-		*/
 	}
 
 	@Override
