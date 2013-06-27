@@ -10,6 +10,7 @@ import org.openiam.spml2.msg.password.SetPasswordRequestType;
  * Time: 10:33 AM
  * To change this template use File | Settings | File Templates.
  */
+@Deprecated
 public interface PasswordCommand {
     public ResponseType setPassword(SetPasswordRequestType reqType);
 }

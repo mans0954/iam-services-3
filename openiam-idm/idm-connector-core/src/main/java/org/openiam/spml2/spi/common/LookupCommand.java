@@ -10,6 +10,7 @@ import org.openiam.spml2.msg.LookupResponseType;
  * Time: 10:32 AM
  * To change this template use File | Settings | File Templates.
  */
+@Deprecated
 public interface LookupCommand {
     public LookupResponseType lookup(LookupRequestType reqType);
 }

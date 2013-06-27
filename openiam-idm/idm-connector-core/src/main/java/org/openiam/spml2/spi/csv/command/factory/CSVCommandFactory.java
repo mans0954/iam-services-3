@@ -6,6 +6,7 @@ import org.openiam.spml2.constants.ConnectorType;
 import org.openiam.spml2.msg.ConnectorDataException;
 import org.openiam.spml2.msg.ErrorCode;
 import org.openiam.spml2.spi.common.ConnectorCommand;
+import org.openiam.spml2.spi.common.factory.AbstractCommandFactory;
 import org.openiam.spml2.spi.csv.command.TestGroupCSVCommand;
 import org.openiam.spml2.spi.csv.command.TestUserCSVCommand;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,8 +14,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 @Service("csvCommandFactory")
-public class CSVCommandFactory {
-    private static final String ERROR_PATTERN = "Unsupported Operation: '%s' for object type: '%s' in CSV connector";
+public class CSVCommandFactory extends AbstractCommandFactory {
 
     @Autowired
     @Qualifier("addGroupCSVCommand")
@@ -51,7 +51,7 @@ public class CSVCommandFactory {
     private TestGroupCSVCommand testGroupCSVCommand;
 
     public ConnectorCommand getConnectorCommand(CommandType commandType, ProvisionObjectType provisionObjectType) throws ConnectorDataException {
-        String error = String.format(ERROR_PATTERN, commandType, provisionObjectType);
+        String error = String.format(ERROR_PATTERN, commandType, provisionObjectType, "CSV");
         if(ProvisionObjectType.USER==provisionObjectType){
             switch (commandType){
                 case ADD:

@@ -10,6 +10,7 @@ import org.openiam.spml2.msg.suspend.SuspendRequestType;
  * Time: 10:36 AM
  * To change this template use File | Settings | File Templates.
  */
+@Deprecated
 public interface SuspendCommand  {
     public ResponseType suspend(final SuspendRequestType request);
 }

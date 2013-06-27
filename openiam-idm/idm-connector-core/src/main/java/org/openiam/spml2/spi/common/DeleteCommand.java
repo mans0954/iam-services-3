@@ -10,6 +10,7 @@ import org.openiam.spml2.msg.ResponseType;
  * Time: 10:31 AM
  * To change this template use File | Settings | File Templates.
  */
+@Deprecated
 public interface DeleteCommand {
     public ResponseType delete(final DeleteRequestType reqType);
 }

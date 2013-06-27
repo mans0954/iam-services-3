@@ -5,14 +5,13 @@ import org.openiam.spml2.constants.CommandType;
 import org.openiam.spml2.msg.ConnectorDataException;
 import org.openiam.spml2.msg.ErrorCode;
 import org.openiam.spml2.spi.common.ConnectorCommand;
+import org.openiam.spml2.spi.common.factory.AbstractCommandFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 @Service("ldapCommandFactory")
-public class LdapCommandFactory {
-    private static final String ERROR_PATTERN = "Unsupported Operation: '%s' for object type: '%s' in LDAP connector";
-
+public class LdapCommandFactory extends AbstractCommandFactory {
     @Autowired
     @Qualifier("addUserLdapCommand")
     private ConnectorCommand addUserLdapCommand;
@@ -39,8 +38,7 @@ public class LdapCommandFactory {
 
 
     public ConnectorCommand getConnectorCommand(CommandType commandType, ProvisionObjectType provisionObjectType) throws ConnectorDataException {
-
-        String error = String.format(ERROR_PATTERN, commandType, provisionObjectType);
+        String error = String.format(ERROR_PATTERN, commandType, provisionObjectType, "LDAP");
         if(ProvisionObjectType.USER==provisionObjectType){
             switch (commandType){
                 case ADD:

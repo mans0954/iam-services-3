@@ -10,6 +10,7 @@ import org.openiam.spml2.msg.AddResponseType;
  * Time: 10:30 AM
  * To change this template use File | Settings | File Templates.
  */
+@Deprecated
 public interface AddCommand {
     public AddResponseType add(AddRequestType reqType);
 }
