@@ -43,8 +43,9 @@ import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.mngsys.service.ProvisionConnectorService;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
+import org.openiam.idm.srvc.msg.dto.NotificationParam;
+import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.msg.service.MailTemplateParameters;
-import org.openiam.idm.srvc.msg.ws.NotificationRequest;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
@@ -325,19 +326,24 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
             try {
                 MuleClient client = new MuleClient(muleContext);
 
-                HashMap<String, String> msgParamsMap = new HashMap<String, String>();
-                msgParamsMap.put(MailTemplateParameters.SERVICE_HOST.value(), serviceHost);
-                msgParamsMap.put(MailTemplateParameters.SERVICE_CONTEXT.value(), serviceContext);
-                msgParamsMap.put(MailTemplateParameters.USER_ID.value(), user.getUserId());
-                msgParamsMap.put(MailTemplateParameters.IDENTITY.value(), identity);
-                msgParamsMap.put(MailTemplateParameters.PASSWORD.value(), password);
-                msgParamsMap.put(MailTemplateParameters.FIRST_NAME.value(), user.getFirstName());
-                msgParamsMap.put(MailTemplateParameters.LAST_NAME.value(), user.getLastName());
+                List<NotificationParam> msgParams = new LinkedList<NotificationParam>();
+                msgParams.add(new NotificationParam(MailTemplateParameters.SERVICE_HOST.value(), serviceHost));
+                msgParams.add(new NotificationParam(MailTemplateParameters.SERVICE_CONTEXT.value(), serviceContext));
+                msgParams.add(new NotificationParam(MailTemplateParameters.USER_ID.value(), user.getUserId()));
+                msgParams.add(new NotificationParam(MailTemplateParameters.IDENTITY.value(), identity));
+                msgParams.add(new NotificationParam(MailTemplateParameters.PASSWORD.value(), password));
+                msgParams.add(new NotificationParam(MailTemplateParameters.FIRST_NAME.value(), user.getFirstName()));
+                msgParams.add(new NotificationParam(MailTemplateParameters.LAST_NAME.value(), user.getLastName()));
 
                 Map<String, String> msgProp = new HashMap<String, String>();
                 msgProp.put("SERVICE_HOST", serviceHost);
                 msgProp.put("SERVICE_CONTEXT", serviceContext);
-                client.sendAsync("vm://notifyUserByEmailMessage", new NotificationRequest(NEW_USER_EMAIL_NOTIFICATION, msgParamsMap), msgProp);
+                NotificationRequest  notificationRequest = new NotificationRequest();
+                notificationRequest.setUserId(user.getUserId());
+                notificationRequest.setParamList(msgParams);
+                notificationRequest.setNotificationType(NEW_USER_EMAIL_NOTIFICATION);
+
+                client.sendAsync("vm://notifyUserByEmailMessage", notificationRequest, msgProp);
 
             } catch (MuleException me) {
                 log.error(me.toString());
@@ -350,21 +356,24 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
             try {
                 MuleClient client = new MuleClient(muleContext);
 
-                HashMap<String, String> msgParamsMap = new HashMap<String, String>();
-                msgParamsMap.put(MailTemplateParameters.SERVICE_HOST.value(), serviceHost);
-                msgParamsMap.put(MailTemplateParameters.SERVICE_CONTEXT.value(), serviceContext);
-                msgParamsMap.put(MailTemplateParameters.USER_ID.value(), user.getUserId());
-                msgParamsMap.put(MailTemplateParameters.IDENTITY.value(), identity);
-                msgParamsMap.put(MailTemplateParameters.PASSWORD.value(), password);
-                msgParamsMap.put(MailTemplateParameters.USER_NAME.value(), name);
-                msgParamsMap.put(MailTemplateParameters.FIRST_NAME.value(), user.getFirstName());
-                msgParamsMap.put(MailTemplateParameters.LAST_NAME.value(), user.getLastName());
+                List<NotificationParam> msgParams = new LinkedList<NotificationParam>();
+                msgParams.add(new NotificationParam(MailTemplateParameters.SERVICE_HOST.value(), serviceHost));
+                msgParams.add(new NotificationParam(MailTemplateParameters.SERVICE_CONTEXT.value(), serviceContext));
+                msgParams.add(new NotificationParam(MailTemplateParameters.USER_ID.value(), user.getUserId()));
+                msgParams.add(new NotificationParam(MailTemplateParameters.IDENTITY.value(), identity));
+                msgParams.add(new NotificationParam(MailTemplateParameters.PASSWORD.value(), password));
+                msgParams.add(new NotificationParam(MailTemplateParameters.USER_NAME.value(), name));
+                msgParams.add(new NotificationParam(MailTemplateParameters.FIRST_NAME.value(), user.getFirstName()));
+                msgParams.add(new NotificationParam(MailTemplateParameters.LAST_NAME.value(), user.getLastName()));
 
                 Map<String, String> msgProp = new HashMap<String, String>();
                 msgProp.put("SERVICE_HOST", serviceHost);
                 msgProp.put("SERVICE_CONTEXT", serviceContext);
-                client.sendAsync("vm://notifyUserByEmailMessage",
-                        new NotificationRequest(NEW_USER_EMAIL_SUPERVISOR_NOTIFICATION, msgParamsMap), msgProp);
+                NotificationRequest notificationRequest = new NotificationRequest();
+                notificationRequest.setUserId(user.getUserId());
+                notificationRequest.setNotificationType(NEW_USER_EMAIL_SUPERVISOR_NOTIFICATION);
+                notificationRequest.setParamList(msgParams);
+                client.sendAsync("vm://notifyUserByEmailMessage",notificationRequest, msgProp);
 
             } catch (MuleException me) {
                 log.error(me.toString());

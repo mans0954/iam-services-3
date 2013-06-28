@@ -1879,7 +1879,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         bindingMap.put(TARGET_SYS_SECURITY_DOMAIN, mLg.getDomainId());
                     } else {
 						bindingMap.put(TARGET_SYS_SECURITY_DOMAIN,
-								sysConfiguration.getDefaultSecurityDomain());
+                                mSys.getDomainId());
                     }
 
                     log.debug("PROCESSING IDENTITY =" + mLg);
