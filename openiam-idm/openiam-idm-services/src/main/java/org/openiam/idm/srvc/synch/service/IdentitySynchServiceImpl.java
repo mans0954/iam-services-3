@@ -470,6 +470,12 @@ public class IdentitySynchServiceImpl implements IdentitySynchService, MuleConte
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<AttributeMapEntity> getSynchConfigAttributeMaps(String synchConfigId) {
+        return attributeMapDAO.findBySynchConfigId(synchConfigId);
+    }
+
+    @Override
     public void setMuleContext(MuleContext muleContext) {
         this.muleContext = muleContext;
     }
