@@ -28,5 +28,5 @@ import org.openiam.idm.srvc.pswd.dto.UserIdentityAnswer;
 import java.util.List;
 
 public interface UserIdentityAnswerDAO extends BaseDao<UserIdentityAnswerEntity, String> {
-   
+   public void deleteAnswersByQuestionId(final String questionId);
 }
