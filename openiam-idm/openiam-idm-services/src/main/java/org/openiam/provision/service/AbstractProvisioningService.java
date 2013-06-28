@@ -95,7 +95,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
     public static final String NEW_USER_EMAIL_SUPERVISOR_NOTIFICATION = "NEW_USER_EMAIL_SUPERVISOR";
     public static final String NEW_USER_EMAIL_NOTIFICATION = "NEW_USER_EMAIL";
-//    public static final String PASSWORD_EMAIL_NOTIFICATION = "USER_PASSWORD_EMAIL";
+    public static final String PASSWORD_EMAIL_NOTIFICATION = "USER_PASSWORD_EMAIL";
 
     public static final String MATCH_PARAM = "matchParam";
     public static final String TARGET_SYSTEM_IDENTITY_STATUS = "targetSystemIdentityStatus";
@@ -320,6 +320,35 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
         }
 */
+        protected void sendResetPasswordToUser(UserEntity user, String principal, String password) {
+            try {
+                MuleClient client = new MuleClient(muleContext);
+
+                List<NotificationParam> msgParams = new LinkedList<NotificationParam>();
+                msgParams.add(new NotificationParam(MailTemplateParameters.SERVICE_HOST.value(), serviceHost));
+                msgParams.add(new NotificationParam(MailTemplateParameters.SERVICE_CONTEXT.value(), serviceContext));
+                msgParams.add(new NotificationParam(MailTemplateParameters.USER_ID.value(), user.getUserId()));
+                msgParams.add(new NotificationParam(MailTemplateParameters.PASSWORD.value(), password));
+                msgParams.add(new NotificationParam(MailTemplateParameters.IDENTITY.value(), principal));
+                msgParams.add(new NotificationParam(MailTemplateParameters.FIRST_NAME.value(), user.getFirstName()));
+                msgParams.add(new NotificationParam(MailTemplateParameters.LAST_NAME.value(), user.getLastName()));
+
+                Map<String, String> msgProp = new HashMap<String, String>();
+                msgProp.put("SERVICE_HOST", serviceHost);
+                msgProp.put("SERVICE_CONTEXT", serviceContext);
+                NotificationRequest  notificationRequest = new NotificationRequest();
+                notificationRequest.setUserId(user.getUserId());
+                notificationRequest.setParamList(msgParams);
+                notificationRequest.setNotificationType(PASSWORD_EMAIL_NOTIFICATION);
+
+
+                client.sendAsync("vm://notifyUserByEmailMessage", notificationRequest, msgProp);
+
+            } catch (MuleException me) {
+                log.error(me.toString());
+            }
+
+        }
 
         protected void sendCredentialsToUser(User user, String identity, String password) {
 
