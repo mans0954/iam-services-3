@@ -175,6 +175,7 @@ public class DefaultChallengeResponseValidator implements ChallengeResponseValid
 	public void deleteQuestion(final String questionId) throws Exception {
 		final IdentityQuestionEntity entity = questionDAO.findById(questionId);
 		if(entity != null) {
+			answerDAO.deleteAnswersByQuestionId(entity.getId());
 			questionDAO.delete(entity);
 		}
 	}

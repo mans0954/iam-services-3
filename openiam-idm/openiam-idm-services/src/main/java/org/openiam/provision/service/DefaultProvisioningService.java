@@ -1879,7 +1879,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         bindingMap.put(TARGET_SYS_SECURITY_DOMAIN, mLg.getDomainId());
                     } else {
 						bindingMap.put(TARGET_SYS_SECURITY_DOMAIN,
-								sysConfiguration.getDefaultSecurityDomain());
+                                mSys.getDomainId());
                     }
 
                     log.debug("PROCESSING IDENTITY =" + mLg);
@@ -2434,7 +2434,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 sendPasswordToUser(usr, password);
             }
 */
-
+            if (passwordSync.getSendPasswordToUser()) {
+                sendResetPasswordToUser(usr, passwordSync.getPrincipal(), password);
+            }
+            
         } else {
             auditHelper.addLog("RESET PASSWORD",
                     passwordSync.getRequestorDomain(),
