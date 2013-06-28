@@ -2434,7 +2434,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 sendPasswordToUser(usr, password);
             }
 */
-
+            if (passwordSync.getSendPasswordToUser()) {
+                sendResetPasswordToUser(usr, passwordSync.getPrincipal(), password);
+            }
+            
         } else {
             auditHelper.addLog("RESET PASSWORD",
                     passwordSync.getRequestorDomain(),
