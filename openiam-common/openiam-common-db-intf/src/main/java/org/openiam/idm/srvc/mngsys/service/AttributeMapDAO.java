@@ -37,8 +37,14 @@ public interface AttributeMapDAO extends BaseDao<AttributeMapEntity, String> {
 
 	List<AttributeMapEntity> findByResourceId(String resourceId);
 
+    List<AttributeMapEntity> findBySynchConfigId(String synchConfigId);
+
 	List<AttributeMapEntity> findAllAttributeMaps();
 
 	int removeResourceAttributeMaps(String resourceId);
+
+    AttributeMapEntity add(AttributeMapEntity entity);
+
+    void update(AttributeMapEntity entity);
 
 }

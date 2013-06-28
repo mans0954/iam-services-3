@@ -107,12 +107,14 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public AttributeMapEntity getAttributeMap(String attributeMapId) {
         return attributeMapDAO.findById(attributeMapId);
 
     }
 
     @Override
+    @Transactional
     public AttributeMapEntity addAttributeMap(AttributeMapEntity attributeMap) {
 
         attributeMap.setReconResAttribute(this
@@ -121,6 +123,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     }
 
     @Override
+    @Transactional
     public void updateAttributeMap(AttributeMapEntity attributeMap) {
         attributeMap.setReconResAttribute(this
                 .saveReconResAttributeMap(attributeMap.getReconResAttribute()));
@@ -128,6 +131,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     }
 
     @Override
+    @Transactional
     public void removeAttributeMap(String attributeMapId) {
         AttributeMapEntity amE = attributeMapDAO.findById(attributeMapId);
         if (amE.getReconResAttribute() != null) {
@@ -140,21 +144,25 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     }
 
     @Override
+    @Transactional
     public int removeResourceAttributeMaps(String resourceId) {
         return attributeMapDAO.removeResourceAttributeMaps(resourceId);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<AttributeMapEntity> getResourceAttributeMaps(String resourceId) {
         return attributeMapDAO.findByResourceId(resourceId);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<AttributeMapEntity> getAllAttributeMaps() {
         return attributeMapDAO.findAllAttributeMaps();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<DefaultReconciliationAttributeMapEntity> getAllDefaultReconAttributeMap() {
         return defaultReconciliationAttributeMapDAO.getAll();
     }
@@ -184,11 +192,13 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ManagedSysRuleEntity> getRulesByManagedSysId(String managedSysId) {
         return managedSysRuleDAO.findbyManagedSystemId(managedSysId);
     }
 
     @Override
+    @Transactional
     public ManagedSysRuleEntity addRules(ManagedSysRuleEntity entity) {
         if (entity.getManagedSysRuleId() != null) {
             return entity;
@@ -199,6 +209,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     }
 
     @Override
+    @Transactional
     public void deleteRules(String ruleId) {
         if (!StringUtils.hasText(ruleId))
             return;
@@ -209,6 +220,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     }
 
 	@Override
+    @Transactional(readOnly = true)
 	public List<ManagedSystemObjectMatchEntity> managedSysObjectParam(
 			String managedSystemId, String objectType) {
 		return matchDAO.findBySystemId(managedSystemId, objectType);

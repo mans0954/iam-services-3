@@ -38,6 +38,8 @@ import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.SynchConfigDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.idm.searchbeans.UserSearchBean;
+import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
+import org.openiam.idm.srvc.mngsys.service.AttributeMapDAO;
 import org.openiam.idm.srvc.synch.domain.SynchConfigEntity;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.BulkMigrationConfig;
@@ -63,7 +65,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService, MuleConte
     @Autowired
     private SynchConfigDAO synchConfigDao;
     @Autowired
-    private SynchConfigDataMappingDAO synchConfigDataMappingDAO;
+    protected AttributeMapDAO attributeMapDAO;
     @Autowired
     private AdapterFactory adapterFactory;
 
@@ -447,6 +449,12 @@ public class IdentitySynchServiceImpl implements IdentitySynchService, MuleConte
     @Transactional(readOnly = true)
     public List<SynchConfigEntity> getSynchConfigsByExample(SynchConfigEntity example, Integer from, Integer size) {
         return synchConfigDao.getByExample(example, from, size);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AttributeMapEntity> getSynchConfigAttributeMaps(String synchConfigId) {
+        return attributeMapDAO.findBySynchConfigId(synchConfigId);
     }
 
     @Override
