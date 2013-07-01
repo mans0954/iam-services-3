@@ -38,9 +38,7 @@ import java.util.List;
 import java.util.Set;
 
 public abstract class AbstractLdapCommand<Request extends RequestType, Response extends ResponseType>  extends AbstractCommand<Request, Response> {
-    protected final Log log = LogFactory.getLog(this.getClass());
-    @Autowired
-    protected ManagedSystemObjectMatchDozerConverter managedSystemObjectMatchDozerConverter;
+
     @Autowired
     private ResourceDataService resourceDataService;
 

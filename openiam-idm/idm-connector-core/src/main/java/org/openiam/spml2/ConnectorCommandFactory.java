@@ -6,6 +6,7 @@ import org.openiam.spml2.constants.ConnectorType;
 import org.openiam.spml2.msg.ConnectorDataException;
 import org.openiam.spml2.msg.ErrorCode;
 import org.openiam.spml2.spi.common.ConnectorCommand;
+import org.openiam.spml2.spi.common.factory.AbstractCommandFactory;
 import org.openiam.spml2.spi.csv.command.TestGroupCSVCommand;
 import org.openiam.spml2.spi.csv.command.TestUserCSVCommand;
 import org.openiam.spml2.spi.csv.command.factory.CSVCommandFactory;
@@ -20,11 +21,15 @@ public class ConnectorCommandFactory {
 
     @Autowired
     @Qualifier("csvCommandFactory")
-    private CSVCommandFactory csvCommandFactory;
+    private AbstractCommandFactory csvCommandFactory;
 
     @Autowired
     @Qualifier("ldapCommandFactory")
-    private LdapCommandFactory ldapCommandFactory;
+    private AbstractCommandFactory ldapCommandFactory;
+
+    @Autowired
+    @Qualifier("googleAppsCommandFactory")
+    private AbstractCommandFactory googleAppsCommandFactory;
 
     public ConnectorCommand getConnectorCommand(CommandType commandType, ProvisionObjectType provisionObjectType, ConnectorType connectorType) throws ConnectorDataException {
         String error = String.format(ERROR_PATTERN, commandType, provisionObjectType, connectorType);
@@ -33,6 +38,8 @@ public class ConnectorCommandFactory {
                 return csvCommandFactory.getConnectorCommand(commandType, provisionObjectType);
             case LDAP:
                 return ldapCommandFactory.getConnectorCommand(commandType, provisionObjectType);
+            case GOOGLE:
+                return googleAppsCommandFactory.getConnectorCommand(commandType, provisionObjectType);
             default:
                 throw new ConnectorDataException(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
         }
