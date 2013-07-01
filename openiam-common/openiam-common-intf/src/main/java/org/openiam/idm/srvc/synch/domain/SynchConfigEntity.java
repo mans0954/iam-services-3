@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.synch.domain;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
 
@@ -44,6 +45,9 @@ public class SynchConfigEntity implements Serializable {
     private String processRule;
     @Column(name="VALIDATION_RULE",length=80)
     private String validationRule;
+    @Column(name="USE_POLICY_MAP")
+    @Type(type = "yes_no")
+    private boolean usePolicyMap = false;
     @Column(name="TRANSFORMATION_RULE",length=80)
     private String transformationRule;
     @Column(name="MATCH_FIELD_NAME",length=40)
@@ -169,6 +173,14 @@ public class SynchConfigEntity implements Serializable {
 
     public void setTransformationRule(String transformationRule) {
         this.transformationRule = transformationRule;
+    }
+
+    public boolean getUsePolicyMap() {
+        return usePolicyMap;
+    }
+
+    public void setUsePolicyMap(boolean usePolicyMap) {
+        this.usePolicyMap = usePolicyMap;
     }
 
     public String getMatchFieldName() {

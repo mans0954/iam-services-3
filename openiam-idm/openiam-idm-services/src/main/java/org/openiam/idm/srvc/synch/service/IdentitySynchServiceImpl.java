@@ -448,7 +448,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService, MuleConte
     @Override
     @Transactional(readOnly = true)
     public List<SynchConfigEntity> getSynchConfigsByExample(SynchConfigEntity example, Integer from, Integer size) {
-        return synchConfigDao.getByExample(example, from, size);
+        return synchConfigDao.getByExample(example, from, size, new String[]{"usePolicyMap"});
     }
 
     @Override
