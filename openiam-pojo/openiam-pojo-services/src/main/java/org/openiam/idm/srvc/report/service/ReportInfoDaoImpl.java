@@ -31,15 +31,4 @@ public class ReportInfoDaoImpl extends BaseDaoImpl<ReportInfoEntity, String> imp
         return "id";
     }
 
-    @Override
-    public void createOrUpdateReportInfo(String reportName, String reportDataSource, String reportUrl) {
-        ReportInfoEntity reportInfo = findByName(reportName);
-        if(reportInfo == null) {
-           reportInfo = new ReportInfoEntity();
-           reportInfo.setReportName(reportName);
-        }
-        reportInfo.setDatasourceFilePath(reportDataSource);
-        reportInfo.setReportFilePath(reportUrl);
-        getSession().saveOrUpdate(reportInfo);
-    }
 }

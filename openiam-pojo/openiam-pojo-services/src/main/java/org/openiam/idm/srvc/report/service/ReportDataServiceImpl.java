@@ -66,13 +66,27 @@ public class ReportDataServiceImpl implements ReportDataService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public ReportInfoEntity getReport(String reportId) {
+        return reportDao.findById(reportId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public void deleteReport(String reportId) {
+    	ReportInfoEntity entity = reportDao.findById(reportId);
+    	reportDao.delete(entity);
+    }
+
+    @Override
     @Transactional
-    public void createOrUpdateReportInfo(final String reportName, final String reportDataSource, final String reportUrl) {
-        reportDao.createOrUpdateReportInfo(reportName, reportDataSource, reportUrl);
-        List<ReportCriteriaParamEntity> paramEntitiesSrc = criteriaParamDao.findByReportInfoName(reportName);
-        for(ReportCriteriaParamEntity paramEntity : paramEntitiesSrc) {
-            criteriaParamDao.delete(paramEntity);
-        }
+    public void createOrUpdateReportInfo(final ReportInfoEntity report) {
+        reportDao.save(report);
+        //TODO check if needed
+//        List<ReportCriteriaParamEntity> paramEntitiesSrc = criteriaParamDao.findByReportInfoName(reportName);
+//        for(ReportCriteriaParamEntity paramEntity : paramEntitiesSrc) {
+//            criteriaParamDao.delete(paramEntity);
+//        }
     }
 
     @Override

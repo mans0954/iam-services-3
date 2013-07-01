@@ -8,7 +8,9 @@ import javax.jws.WebService;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.openiam.base.ws.PropertyMapAdapter;
 import org.openiam.base.ws.Response;
+import org.openiam.idm.srvc.pswd.dto.UserIdentityAnswer;
 import org.openiam.idm.srvc.report.dto.ReportCriteriaParamDto;
+import org.openiam.idm.srvc.report.dto.ReportInfoDto;
 import org.openiam.idm.srvc.report.dto.ReportSubCriteriaParamDto;
 import org.openiam.idm.srvc.report.dto.ReportSubscriptionDto;
 
@@ -22,7 +24,7 @@ public interface WebReportService {
     GetAllReportsResponse getReports();
 
     @WebMethod
-    Response createOrUpdateReportInfo(@WebParam(name = "reportName", targetNamespace = "") String reportName, @WebParam(name = "reportDataSource", targetNamespace = "") String reportDataSource, @WebParam(name = "reportUrl", targetNamespace = "") String reportUrl, @WebParam(name = "parameters", targetNamespace = "") List<ReportCriteriaParamDto> parameters);
+    Response createOrUpdateReportInfo(@WebParam(name = "report", targetNamespace = "") final ReportInfoDto report);
 
     @WebMethod
     GetReportParametersResponse getReportParametersByReportId(@WebParam(name = "reportId", targetNamespace = "") String reportId);
@@ -42,5 +44,10 @@ public interface WebReportService {
     @WebMethod
     GetReportInfoResponse getReportByName(@WebParam(name = "reportName", targetNamespace = "") String reportName) ;
 
+    @WebMethod
+    GetReportInfoResponse getReport(@WebParam(name = "reportId", targetNamespace = "") String reportId) ;
+
+    @WebMethod
+    Response deleteReport(@WebParam(name = "reportId", targetNamespace = "") String reportId) ;
 
 }
