@@ -5,21 +5,21 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 import org.openiam.base.ws.Response;
-import org.openiam.idm.srvc.report.dto.ReportInfoDto;
+import org.openiam.idm.srvc.report.dto.ReportSubscriptionDto;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
         "reports"
 })
-public class GetAllReportsResponse extends Response {
+public class GetAllSubscribedReportsResponse extends Response {
 
-    protected List<ReportInfoDto> reports;
+    protected List<ReportSubscriptionDto> reports;
 
-    public List<ReportInfoDto> getReports() {
+    public List<ReportSubscriptionDto> getReports() {
         return reports;
     }
 
-    public void setReports(List<ReportInfoDto> reports) {
+    public void setReports(List<ReportSubscriptionDto> reports) {
         this.reports = reports;
     }
 }

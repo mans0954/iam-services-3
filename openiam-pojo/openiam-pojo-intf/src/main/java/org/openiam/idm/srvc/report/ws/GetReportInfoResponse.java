@@ -9,17 +9,17 @@ import org.openiam.idm.srvc.report.dto.ReportInfoDto;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
-        "reports"
+        "report"
 })
-public class GetAllReportsResponse extends Response {
+public class GetReportInfoResponse extends Response {
 
-    protected List<ReportInfoDto> reports;
+    protected ReportInfoDto report;
 
-    public List<ReportInfoDto> getReports() {
-        return reports;
+    public ReportInfoDto getReport() {
+        return report;
     }
 
-    public void setReports(List<ReportInfoDto> reports) {
-        this.reports = reports;
+    public void setReport(ReportInfoDto report) {
+        this.report = report;
     }
 }
