@@ -1,19 +1,19 @@
 package org.openiam.idm.srvc.mngsys.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.DefaultReconciliationAttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysRuleEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.domain.ReconciliationResourceAttributeMapEntity;
-import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.policy.service.PolicyDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-
-import java.util.List;
 
 @Service
 public class ManagedSystemServiceImpl implements ManagedSystemService {
@@ -31,7 +31,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     protected ManagedSysRuleDAO managedSysRuleDAO;
     @Autowired
     protected PolicyDAO policyDAO;
-    
+
     @Autowired
     private ManagedSystemObjectMatchDAO matchDAO;
 
@@ -82,7 +82,8 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     @Transactional
     public void removeManagedSysById(String id) {
         ManagedSysEntity sysEntity = managedSysDAO.findById(id);
-        for(ManagedSystemObjectMatchEntity matchEntity : sysEntity.getMngSysObjectMatchs()) {
+        for (ManagedSystemObjectMatchEntity matchEntity : sysEntity
+                .getMngSysObjectMatchs()) {
             matchDAO.delete(matchEntity);
         }
         managedSysDAO.delete(sysEntity);
@@ -114,7 +115,6 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     }
 
     @Override
-    @Transactional
     public AttributeMapEntity addAttributeMap(AttributeMapEntity attributeMap) {
 
         attributeMap.setReconResAttribute(this
@@ -123,7 +123,6 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     }
 
     @Override
-    @Transactional
     public void updateAttributeMap(AttributeMapEntity attributeMap) {
         attributeMap.setReconResAttribute(this
                 .saveReconResAttributeMap(attributeMap.getReconResAttribute()));
@@ -189,7 +188,7 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public List<AttributeMapEntity> saveAttributesMap(
             List<AttributeMapEntity> attrMap, String mSysId, String resId)
             throws Exception {
@@ -244,10 +243,10 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
         managedSysRuleDAO.delete(entity);
     }
 
-	@Override
+    @Override
     @Transactional(readOnly = true)
-	public List<ManagedSystemObjectMatchEntity> managedSysObjectParam(
-			String managedSystemId, String objectType) {
-		return matchDAO.findBySystemId(managedSystemId, objectType);
-	}
+    public List<ManagedSystemObjectMatchEntity> managedSysObjectParam(
+            String managedSystemId, String objectType) {
+        return matchDAO.findBySystemId(managedSystemId, objectType);
+    }
 }
