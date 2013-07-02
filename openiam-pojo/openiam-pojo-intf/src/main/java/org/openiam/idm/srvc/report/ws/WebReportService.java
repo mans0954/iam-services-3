@@ -1,14 +1,18 @@
 package org.openiam.idm.srvc.report.ws;
 
 import java.util.HashMap;
+import java.util.List;
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.openiam.base.ws.PropertyMapAdapter;
 import org.openiam.base.ws.Response;
+import org.openiam.idm.srvc.report.dto.ReportInfoDto;
+import org.openiam.idm.srvc.report.dto.ReportSubCriteriaParamDto;
+import org.openiam.idm.srvc.report.dto.ReportSubscriptionDto;
 
-@WebService(targetNamespace = "urn:idm.openiam.org/idm/srvc/report/ws/service", name = "ReportService")
+@WebService(targetNamespace = "urn:idm.openiam.org/idm/srvc/report/ws/service", name = "WebReportService")
 public interface WebReportService {
 
     @WebMethod
@@ -18,6 +22,30 @@ public interface WebReportService {
     GetAllReportsResponse getReports();
 
     @WebMethod
-    Response createOrUpdateReportInfo(@WebParam(name = "reportName", targetNamespace = "") String reportName, @WebParam(name = "reportDataSource", targetNamespace = "") String reportDataSource, @WebParam(name = "reportUrl", targetNamespace = "") String reportUrl);
+    Response createOrUpdateReportInfo(@WebParam(name = "report", targetNamespace = "") final ReportInfoDto report);
+
+    @WebMethod
+    GetReportParametersResponse getReportParametersByReportId(@WebParam(name = "reportId", targetNamespace = "") String reportId);
+    
+    @WebMethod
+    GetReportParametersResponse getReportParametersByReportName(@WebParam(name = "reportName", targetNamespace = "") String reportName);
+
+    @WebMethod
+    GetReportParameterTypesResponse getReportParameterTypes();
+
+    @WebMethod
+    GetAllSubscribedReportsResponse getSubscribedReports();
+
+    @WebMethod
+    Response createOrUpdateSubscribedReportInfo(@WebParam(name = "reportSubscriptionDto", targetNamespace = "") ReportSubscriptionDto reportSubscriptionDto, @WebParam(name = "parameters", targetNamespace = "") List<ReportSubCriteriaParamDto> parameters);
+    
+    @WebMethod
+    GetReportInfoResponse getReportByName(@WebParam(name = "reportName", targetNamespace = "") String reportName) ;
+
+    @WebMethod
+    GetReportInfoResponse getReport(@WebParam(name = "reportId", targetNamespace = "") String reportId) ;
+
+    @WebMethod
+    Response deleteReport(@WebParam(name = "reportId", targetNamespace = "") String reportId) ;
 
 }
