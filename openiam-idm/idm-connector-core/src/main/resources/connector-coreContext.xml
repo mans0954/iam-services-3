@@ -108,11 +108,11 @@
 		<!--<property name="addCommand" ref="mysqlAddCommmand" />-->
 	<!--</bean>-->
 
-	<bean id="mysqlAddCommmand" class="org.openiam.spml2.spi.mysql.MySQLAddCommand">
-		<property name="managedSysService" ref="managedSysService" />
-		<property name="resourceDataService" ref="resourceDataService" />
-		<property name="connectionMgr" ref="jdbcConnection" />
-	</bean>
+	<!--<bean id="mysqlAddCommmand" class="org.openiam.spml2.spi.mysql.MySQLAddCommand">-->
+		<!--<property name="managedSysService" ref="managedSysService" />-->
+		<!--<property name="resourceDataService" ref="resourceDataService" />-->
+		<!--<property name="connectionMgr" ref="jdbcConnection" />-->
+	<!--</bean>-->
 
 
 	<bean id="jdbcConnection" class="org.openiam.spml2.spi.common.jdbc.JDBCConnectionMgr" />

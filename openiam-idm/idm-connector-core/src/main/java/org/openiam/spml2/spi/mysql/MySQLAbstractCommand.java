@@ -9,6 +9,7 @@ import org.openiam.spml2.spi.common.jdbc.JDBCConnectionMgr;
 /**
  * Base class for commands that are used by the MySQL Connector
  */
+@Deprecated
 public abstract class MySQLAbstractCommand {
 
     protected static final Log log = LogFactory.getLog(MySQLAbstractCommand.class);

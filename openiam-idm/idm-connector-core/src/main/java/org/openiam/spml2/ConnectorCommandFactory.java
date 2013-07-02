@@ -35,6 +35,9 @@ public class ConnectorCommandFactory {
     @Qualifier("linuxCommandFactory")
     private AbstractCommandFactory linuxCommandFactory;
 
+    @Autowired
+    @Qualifier("mySQLCommandFactory")
+    private AbstractCommandFactory mySQLCommandFactory;
 
 
 
@@ -49,6 +52,8 @@ public class ConnectorCommandFactory {
                 return googleAppsCommandFactory.getConnectorCommand(commandType, provisionObjectType);
             case LINUX:
                 return linuxCommandFactory.getConnectorCommand(commandType, provisionObjectType);
+            case MYSQL:
+                return mySQLCommandFactory.getConnectorCommand(commandType, provisionObjectType);
             default:
                 throw new ConnectorDataException(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
         }
