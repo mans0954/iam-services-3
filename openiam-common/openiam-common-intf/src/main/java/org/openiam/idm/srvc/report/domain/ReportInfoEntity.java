@@ -23,26 +23,18 @@ public class ReportInfoEntity {
     @GeneratedValue(generator = "system-uuid")
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
     @Column(name = "REPORT_INFO_ID")
-    private String id;
+    private String reportId;
 
     @Column(name = "REPORT_NAME")
     private String reportName;
 
     @Column(name = "DATASOURCE_FILE_PATH")
-    private String datasourceFilePath;
+    private String reportDataSource;
 
     @Column(name = "REPORT_FILE_PATH")
-    private String reportFilePath;
+    private String reportUrl;
 
     public ReportInfoEntity() {
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     public String getReportName() {
@@ -53,29 +45,37 @@ public class ReportInfoEntity {
         this.reportName = reportName;
     }
 
-    public String getDatasourceFilePath() {
-        return datasourceFilePath;
-    }
-
-    public void setDatasourceFilePath(String datasourceFilePath) {
-        this.datasourceFilePath = datasourceFilePath;
-    }
-
-    public String getReportFilePath() {
-        return reportFilePath;
-    }
-
-    public void setReportFilePath(String reportFilePath) {
-        this.reportFilePath = reportFilePath;
-    }
-
     @Override
     public String toString() {
         return "ReportInfo{" +
-                "id='" + id + '\'' +
+                "id='" + reportId + '\'' +
                 ", reportName='" + reportName + '\'' +
-                ", datasourceFilePath='" + datasourceFilePath + '\'' +
-                ", reportFilePath='" + reportFilePath + '\'' +
+                ", datasourceFilePath='" + reportDataSource + '\'' +
+                ", reportFilePath='" + reportUrl + '\'' +
                 '}';
     }
+
+	public String getReportId() {
+		return reportId;
+	}
+
+	public void setReportId(String reportId) {
+		this.reportId = reportId;
+	}
+
+	public String getReportDataSource() {
+		return reportDataSource;
+	}
+
+	public void setReportDataSource(String reportDataSource) {
+		this.reportDataSource = reportDataSource;
+	}
+
+	public String getReportUrl() {
+		return reportUrl;
+	}
+
+	public void setReportUrl(String reportUrl) {
+		this.reportUrl = reportUrl;
+	}
 }

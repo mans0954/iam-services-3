@@ -142,7 +142,7 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
             log.debug("Result set contains following number of columns : " + rowHeader.getColumnMap().size());
 
             final ValidationScript validationScript = StringUtils.isNotEmpty(config.getValidationRule()) ? SynchScriptFactory.createValidationScript(config.getValidationRule()) : null;
-            final TransformScript transformScript = StringUtils.isNotEmpty(config.getTransformationRule()) ? SynchScriptFactory.createTransformationScript(config.getTransformationRule()) : null;
+            final TransformScript transformScript = SynchScriptFactory.createTransformationScript(config);
 
             // Multithreading
             int allRowsCount = results.size();
@@ -323,7 +323,7 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
                     if (usr != null) {
                         transformScript.setNewUser(false);
                         transformScript.setUser(userDozerConverter.convertToDTO(userManager.getUser(usr.getUserId()), true));
-                        transformScript.setPrincipalList(loginManager.getLoginByUser(usr.getUserId()));
+                        transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getUserId()), true));
                         transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getUserId()));
 
                     } else {

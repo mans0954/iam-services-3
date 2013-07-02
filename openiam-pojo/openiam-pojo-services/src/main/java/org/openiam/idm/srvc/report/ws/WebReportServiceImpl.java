@@ -8,6 +8,8 @@ import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
@@ -16,6 +18,7 @@ import org.openiam.dozer.converter.ReportSubCriteriaParamDozerConverter;
 import org.openiam.dozer.converter.ReportInfoDozerConverter;
 import org.openiam.dozer.converter.ReportSubscriptionDozerConverter;
 import org.openiam.dozer.converter.ReportParamTypeDozerConverter;
+import org.openiam.idm.srvc.policy.service.PolicyDataServiceImpl;
 import org.openiam.idm.srvc.pswd.domain.UserIdentityAnswerEntity;
 import org.openiam.idm.srvc.report.domain.ReportCriteriaParamEntity;
 import org.openiam.idm.srvc.report.domain.ReportInfoEntity;
@@ -42,7 +45,11 @@ import org.springframework.stereotype.Service;
         portName = "ReportServicePort",
         serviceName = "ReportService")
 public class WebReportServiceImpl implements WebReportService {
-    @Autowired
+
+	private static final Log log = LogFactory
+	.getLog(WebReportServiceImpl.class);
+	
+	@Autowired
     private ReportInfoDozerConverter reportInfoDozerConverter;
     @Autowired
     private ReportSubscriptionDozerConverter reportSubscriptionDozerConverter;
@@ -92,20 +99,23 @@ public class WebReportServiceImpl implements WebReportService {
     @Override
     public Response createOrUpdateReportInfo(@WebParam(name = "report", targetNamespace = "") ReportInfoDto report) {
         Response response = new Response();
+        ReportInfoEntity entity = null;
         if (report != null) {
             try {
-    			final ReportInfoEntity entity = reportInfoDozerConverter
+    			 entity = reportInfoDozerConverter
 				.convertToEntity(report, true);
 
-                reportDataService.createOrUpdateReportInfo(entity);
+    			entity =reportDataService.createOrUpdateReportInfo(entity);
                 //TODO persist parameters
                 //reportDataService.updateReportParametersByReportName(reportName, criteriaParamDozerConverter.convertToEntityList(parameters, false));
             } catch (Throwable t) {
+            	log.error("error while saving:" + t);
                 response.setStatus(ResponseStatus.FAILURE);
                 response.setErrorCode(ResponseCode.SQL_EXCEPTION);
                 response.setErrorText(t.getMessage());
                 return response;
         }
+            response.setResponseValue(entity.getReportId());
             response.setStatus(ResponseStatus.SUCCESS);
         } else {
             response.setErrorCode(ResponseCode.INVALID_ARGUMENTS);

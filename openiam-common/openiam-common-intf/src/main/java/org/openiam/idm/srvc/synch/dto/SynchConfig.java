@@ -19,6 +19,7 @@ import javax.xml.bind.annotation.XmlType;
 		"synchType",
 		"processRule",
 		"validationRule",
+        "usePolicyMap",
 		"transformationRule",
 		"matchFieldName",
 		"matchManagedSysId",
@@ -57,6 +58,7 @@ public class SynchConfig implements java.io.Serializable {
 	//private String deleteRule;
 	private String processRule;
 	private String validationRule;
+    private Boolean usePolicyMap;
 	private String transformationRule;
 	private String matchFieldName;
 	private String matchManagedSysId;
@@ -280,7 +282,15 @@ public class SynchConfig implements java.io.Serializable {
 		this.validationRule = validationRule;
 	}
 
-	public String getSynchType() {
+    public Boolean getUsePolicyMap() {
+        return usePolicyMap;
+    }
+
+    public void setUsePolicyMap(Boolean usePolicyMap) {
+        this.usePolicyMap = usePolicyMap;
+    }
+
+    public String getSynchType() {
 		return synchType;
 	}
 
@@ -327,6 +337,7 @@ public class SynchConfig implements java.io.Serializable {
                 ", synchType='" + synchType + '\'' +
                 ", processRule='" + processRule + '\'' +
                 ", validationRule='" + validationRule + '\'' +
+                ", usePolicyMap='" + usePolicyMap + '\'' +
                 ", transformationRule='" + transformationRule + '\'' +
                 ", matchFieldName='" + matchFieldName + '\'' +
                 ", matchManagedSysId='" + matchManagedSysId + '\'' +

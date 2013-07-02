@@ -11,12 +11,14 @@ import org.mule.api.MuleContext;
 import org.mule.api.MuleException;
 import org.mule.api.context.MuleContextAware;
 import org.mule.module.client.MuleClient;
+import org.openiam.dozer.converter.LoginDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.idm.srvc.audit.service.AuditHelper;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
+import org.openiam.idm.srvc.synch.service.IdentitySynchService;
 import org.openiam.idm.srvc.synch.service.SourceAdapter;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionUser;
@@ -54,6 +56,8 @@ public abstract class AbstractSrcAdapter implements SourceAdapter, MuleContextAw
     @Autowired
     protected LoginDataService loginManager;
     @Autowired
+    protected LoginDozerConverter loginDozerConverter;
+    @Autowired
     protected RoleDataService roleDataService;
     @Autowired
     @Qualifier("defaultProvision")
@@ -62,6 +66,8 @@ public abstract class AbstractSrcAdapter implements SourceAdapter, MuleContextAw
     protected UserDozerConverter userDozerConverter;
     @Autowired
     protected MatchRuleFactory matchRuleFactory;
+    @Autowired
+    protected IdentitySynchService synchService;
 
     @Value("${openiam.service_base}")
     private String serviceHost;

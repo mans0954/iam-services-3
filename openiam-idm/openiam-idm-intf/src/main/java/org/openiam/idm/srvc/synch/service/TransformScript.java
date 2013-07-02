@@ -23,19 +23,19 @@ package org.openiam.idm.srvc.synch.service;
 
 import java.util.List;
 
-import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.synch.dto.LineObject;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.provision.dto.ProvisionUser;
+import org.springframework.context.ApplicationContextAware;
 
 /**
  * Interface that all transformation scripts in the synchronization process must implement
  * @author suneet
  *
  */
-public interface TransformScript {
+public interface TransformScript extends ApplicationContextAware {
     static int DELETE = 1;
     static int DISABLE = 2;
     static int ENABLE = 3;
@@ -47,8 +47,8 @@ public interface TransformScript {
 
     User getUser();
     void setUser(User user) ;
-    List<LoginEntity> getPrincipalList() ;
-    void setPrincipalList(List<LoginEntity> principalList);
+    List<Login> getPrincipalList() ;
+    void setPrincipalList(List<Login> principalList);
     List<Role> getUserRoleList() ;
     void setUserRoleList(List<Role> userRoleList) ;
     boolean isNewUser();

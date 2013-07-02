@@ -48,7 +48,7 @@ public class ReportDataServiceImpl implements ReportDataService {
         }
 
         ScriptIntegration se = ScriptFactory.createModule(scriptEngine);
-        ReportDataSetBuilder dataSourceBuilder = (ReportDataSetBuilder) se.instantiateClass(Collections.EMPTY_MAP, "/reports/" + reportInfo.getDatasourceFilePath());
+        ReportDataSetBuilder dataSourceBuilder = (ReportDataSetBuilder) se.instantiateClass(Collections.EMPTY_MAP, "/reports/" + reportInfo.getReportDataSource());
 
         return dataSourceBuilder.getReportData(reportParams);
     }
@@ -80,13 +80,14 @@ public class ReportDataServiceImpl implements ReportDataService {
 
     @Override
     @Transactional
-    public void createOrUpdateReportInfo(final ReportInfoEntity report) {
-        reportDao.save(report);
+    public ReportInfoEntity createOrUpdateReportInfo(ReportInfoEntity report) {
+    	report = reportDao.merge(report);
         //TODO check if needed
 //        List<ReportCriteriaParamEntity> paramEntitiesSrc = criteriaParamDao.findByReportInfoName(reportName);
 //        for(ReportCriteriaParamEntity paramEntity : paramEntitiesSrc) {
 //            criteriaParamDao.delete(paramEntity);
 //        }
+    	return report;
     }
 
     @Override

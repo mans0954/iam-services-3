@@ -2,18 +2,19 @@ package org.openiam.idm.srvc.synch.service;
 
 import java.util.List;
 
-import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.dto.User;
-
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
 
 public abstract class AbstractTransformScript implements TransformScript {
 
 	protected User user;
-	protected List<LoginEntity> principalList;
+	protected List<Login> principalList;
 	protected List<Role> userRoleList;
 	protected boolean isNewUser = false;
+    protected ApplicationContext context;
 
 	public User getUser() {
 		return user;
@@ -21,10 +22,10 @@ public abstract class AbstractTransformScript implements TransformScript {
 	public void setUser(User user) {
 		this.user = user;
 	}
-	public List<LoginEntity> getPrincipalList() {
+	public List<Login> getPrincipalList() {
 		return principalList;
 	}
-	public void setPrincipalList(List<LoginEntity> principalList) {
+	public void setPrincipalList(List<Login> principalList) {
 		this.principalList = principalList;
 	}
 	public List<Role> getUserRoleList() {
@@ -39,5 +40,8 @@ public abstract class AbstractTransformScript implements TransformScript {
 	public void setNewUser(boolean isNewUser) {
 		this.isNewUser = isNewUser;
 	}
-	
+    @Override
+    public void setApplicationContext(ApplicationContext context) throws BeansException {
+        this.context = context;
+    }
 }
