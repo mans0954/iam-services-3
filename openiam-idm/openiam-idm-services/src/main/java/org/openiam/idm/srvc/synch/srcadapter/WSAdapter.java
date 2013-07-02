@@ -166,14 +166,13 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
 					User usr = matchRule.lookup(config, rowAttr);
 
 					// transform
-					if (config.getTransformationRule() != null && config.getTransformationRule().length() > 0) {
-						TransformScript transformScript =  SynchScriptFactory.createTransformationScript(config.getTransformationRule());
-						
+                    TransformScript transformScript =  SynchScriptFactory.createTransformationScript(config);
+					if (transformScript != null) {
 						// initialize the transform script
 						if (usr != null) {
 							transformScript.setNewUser(false);
 							transformScript.setUser(userDozerConverter.convertToDTO(userManager.getUser(usr.getUserId()), true));
-							transformScript.setPrincipalList(loginManager.getLoginByUser(usr.getUserId()));
+                            transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getUserId()), true));
 							transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getUserId()));
 							
 						} else {
@@ -232,6 +231,7 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
                     resp.setErrorText(cnfe.toString());
 
 					return resp;
+
 				} catch (IOException fe ) {
 
                     log.error(fe);

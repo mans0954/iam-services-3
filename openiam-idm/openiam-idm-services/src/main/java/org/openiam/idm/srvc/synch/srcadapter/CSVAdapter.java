@@ -31,7 +31,6 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
-import org.openiam.idm.srvc.audit.service.AuditHelper;
 import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.idm.srvc.synch.dto.LineObject;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
@@ -41,11 +40,9 @@ import org.openiam.idm.srvc.synch.service.TransformScript;
 import org.openiam.idm.srvc.synch.service.ValidationScript;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
-import org.openiam.idm.srvc.user.ws.UserResponse;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.service.ProvisionService;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
 
 import java.io.*;
 import java.text.DateFormat;
@@ -101,7 +98,7 @@ public class CSVAdapter extends AbstractSrcAdapter {
             //initialization if validation script config exists
             final ValidationScript validationScript = StringUtils.isNotEmpty(config.getValidationRule()) ? SynchScriptFactory.createValidationScript(config.getValidationRule()) : null;
             //initialization if transformation script config exists
-            final TransformScript transformScript = StringUtils.isNotEmpty(config.getTransformationRule()) ? SynchScriptFactory.createTransformationScript(config.getTransformationRule()) : null;
+            final TransformScript transformScript = SynchScriptFactory.createTransformationScript(config);
             //init match rules
             final MatchObjectRule matchRule = matchRuleFactory.create(config);
             //Get Header
@@ -263,7 +260,7 @@ public class CSVAdapter extends AbstractSrcAdapter {
                     if (usr != null) {
                         transformScript.setNewUser(false);
                         transformScript.setUser(userDozerConverter.convertToDTO(userManager.getUser(usr.getUserId()), true));
-                        transformScript.setPrincipalList(loginManager.getLoginByUser(usr.getUserId()));
+                        transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getUserId()), true));
                         transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getUserId()));
 
                     } else {
