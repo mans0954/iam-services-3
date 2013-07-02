@@ -25,12 +25,6 @@ public abstract class AbstractGoogleAppsCommand<Request extends RequestType, Res
 
     protected static final String GOOGLE_APPS_USER_SERVICE ="gdata-sample-AppsForYourDomain-UserService";
 
-    @Autowired
-    @Qualifier("cryptor")
-    private Cryptor cryptor;
-    @Autowired
-    private KeyManagementService keyManagementService;
-
     public void init() {
         String filename = System.getProperty("java.home")
                 + "/lib/security/cacerts".replace('/', File.separatorChar);
@@ -40,16 +34,5 @@ public abstract class AbstractGoogleAppsCommand<Request extends RequestType, Res
         System.setProperty("javax.net.ssl.trustStorePassword", trustStorePassword);
     }
 
-    protected String getDecryptedPassword(String userId, String encPwd) throws ConnectorDataException{
-        String result = null;
-        if(encPwd!=null){
-            try {
-                result = cryptor.decrypt(keyManagementService.getUserKey(userId, KeyName.password.name()), encPwd);
-            } catch (Exception e) {
-                log.error(e);
-                throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, e.getMessage());
-            }
-        }
-        return null;
-    }
+
 }

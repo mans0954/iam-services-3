@@ -37,7 +37,7 @@ public class GoogleAppsCommandFactory extends AbstractCommandFactory {
     private ConnectorCommand testUserGoogleAppsCommand;
 
     public ConnectorCommand getConnectorCommand(CommandType commandType, ProvisionObjectType provisionObjectType) throws ConnectorDataException {
-        String error = String.format(ERROR_PATTERN, commandType, provisionObjectType, "CSV");
+        String error = String.format(ERROR_PATTERN, commandType, provisionObjectType, "GOOGLE APPS");
         if(ProvisionObjectType.USER==provisionObjectType){
             switch (commandType){
                 case ADD:

@@ -31,6 +31,13 @@ public class ConnectorCommandFactory {
     @Qualifier("googleAppsCommandFactory")
     private AbstractCommandFactory googleAppsCommandFactory;
 
+    @Autowired
+    @Qualifier("linuxCommandFactory")
+    private AbstractCommandFactory linuxCommandFactory;
+
+
+
+
     public ConnectorCommand getConnectorCommand(CommandType commandType, ProvisionObjectType provisionObjectType, ConnectorType connectorType) throws ConnectorDataException {
         String error = String.format(ERROR_PATTERN, commandType, provisionObjectType, connectorType);
         switch (connectorType){
@@ -40,6 +47,8 @@ public class ConnectorCommandFactory {
                 return ldapCommandFactory.getConnectorCommand(commandType, provisionObjectType);
             case GOOGLE:
                 return googleAppsCommandFactory.getConnectorCommand(commandType, provisionObjectType);
+            case LINUX:
+                return linuxCommandFactory.getConnectorCommand(commandType, provisionObjectType);
             default:
                 throw new ConnectorDataException(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
         }
