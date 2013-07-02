@@ -488,13 +488,14 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
 
     @Override
     public List<AttributeMap> saveAttributesMap(List<AttributeMap> attrMap,
-            String mSysId, String resId) throws Exception {
-        if (CollectionUtils.isEmpty(attrMap) || StringUtils.isEmpty(resId)
-                || StringUtils.isEmpty(mSysId))
+            String mSysId, String resId, String synchConfigId) throws Exception {
+        if (CollectionUtils.isEmpty(attrMap)
+                && (StringUtils.isEmpty(resId) || StringUtils.isEmpty(mSysId))
+                && StringUtils.isEmpty(synchConfigId))
             return null;
         List<AttributeMapEntity> res = managedSystemService.saveAttributesMap(
                 attributeMapDozerConverter.convertToEntityList(attrMap, true),
-                mSysId, resId);
+                mSysId, resId, synchConfigId);
         if (res == null)
             return null;
         else

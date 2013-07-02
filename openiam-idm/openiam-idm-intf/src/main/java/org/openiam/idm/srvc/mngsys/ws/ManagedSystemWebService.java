@@ -279,8 +279,10 @@ public interface ManagedSystemWebService {
     List<AttributeMap> saveAttributesMap(
             final @WebParam(name = "attrMap", targetNamespace = "") List<AttributeMap> attrMap,
             final @WebParam(name = "mSysId", targetNamespace = "") String mSysId,
-            final @WebParam(name = "resId", targetNamespace = "") String resId)
+            final @WebParam(name = "resId", targetNamespace = "") String resId,
+            final @WebParam(name = "synchConfigId", targetNamespace = "") String synchConfigId)
             throws Exception;
 
     void deleteAttributesMapList(List<String> ids) throws Exception;
+
 }

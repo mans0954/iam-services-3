@@ -190,13 +190,14 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     @Override
     @Transactional
     public List<AttributeMapEntity> saveAttributesMap(
-            List<AttributeMapEntity> attrMap, String mSysId, String resId)
-            throws Exception {
+            List<AttributeMapEntity> attrMap, String mSysId, String resId,
+            String synchConfigId) throws Exception {
         if (attrMap == null)
             return null;
         for (AttributeMapEntity a : attrMap) {
             a.setManagedSysId(mSysId);
             a.setResourceId(resId);
+            a.setSynchConfigId(synchConfigId);
             if (a.getAttributeMapId() == null
                     || a.getAttributeMapId().equalsIgnoreCase("NEW")) {
                 // new
