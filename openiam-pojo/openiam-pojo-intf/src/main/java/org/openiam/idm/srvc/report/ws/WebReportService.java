@@ -12,7 +12,7 @@ import org.openiam.idm.srvc.report.dto.ReportInfoDto;
 import org.openiam.idm.srvc.report.dto.ReportSubCriteriaParamDto;
 import org.openiam.idm.srvc.report.dto.ReportSubscriptionDto;
 
-@WebService(targetNamespace = "urn:idm.openiam.org/idm/srvc/report/ws/service", name = "WebReportService")
+@WebService(targetNamespace = "urn:idm.openiam.org/idm/srvc/report/ws/service", name = "ReportService")
 public interface WebReportService {
 
     @WebMethod

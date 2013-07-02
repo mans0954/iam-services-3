@@ -26,7 +26,7 @@ public interface ReportDataService {
     ReportInfoEntity getReportByName(String name);
     void deleteReport(String reportId);
     ReportInfoEntity getReport(String reportId);
-    void createOrUpdateReportInfo(ReportInfoEntity report);
+    ReportInfoEntity createOrUpdateReportInfo(ReportInfoEntity report);
     void createOrUpdateSubscribedReportInfo(ReportSubscriptionEntity reportSubscriptionEntity);
     List<ReportCriteriaParamEntity> getReportParametersByReportId(String reportId);
     List<ReportCriteriaParamEntity> getReportParametersByReportName(String reportName);    
