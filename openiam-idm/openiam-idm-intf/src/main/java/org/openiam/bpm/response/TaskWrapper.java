@@ -236,7 +236,7 @@ public class TaskWrapper {
 		return requestMetadataMap;
 	}
 
-	public void setRequestMetadataMap(Map<String, String> requestMetadataMap) {
+	public void setRequestMetadataMap(LinkedHashMap<String, String> requestMetadataMap) {
 		this.requestMetadataMap = requestMetadataMap;
 	}
 
