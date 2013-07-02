@@ -118,6 +118,10 @@
 			<a>managedSystem.managedSysId</a>
 			<b>managedSysId</b>
 		</field>
+		<field>
+			<a>resource.url</a>
+			<b>url</b>
+		</field>
 	</mapping>
 
 	<mapping>

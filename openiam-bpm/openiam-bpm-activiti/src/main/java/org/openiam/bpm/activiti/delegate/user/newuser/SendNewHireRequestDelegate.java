@@ -101,20 +101,8 @@ public class SendNewHireRequestDelegate implements JavaDelegate {
         request.setNotificationType("NEW_PENDING_REQUEST");
         request.getParamList().add(new NotificationParam("REQUEST_ID", provisionRequest.getId()));
         request.getParamList().add(new NotificationParam("REQUEST_REASON", provisionRequest.getRequestReason()));
-        request.getParamList().add(new NotificationParam("REQUESTOR",  String.format("%s %s",user.getFirstName(), user.getLastName())));
-        request.getParamList().add(new NotificationParam("TARGET_USER", String.format("%s %s", profileModel.getUser().getFirstName(), profileModel.getUser().getLastName())));
+        request.getParamList().add(new NotificationParam("REQUESTOR",  user.getDisplayName()));
+        request.getParamList().add(new NotificationParam("TARGET_USER", profileModel.getUser().getDisplayName()));
         mailService.sendNotification(request);
-	}
-	
-	private void sendNotification(final RequestApproverEntity requestApprover) {
-		final  NotificationRequest request = new NotificationRequest();
-        request.setUserId(requestApprover.getApproverId());
-        request.setNotificationType("NEW_PENDING_REQUEST");
-        request.getParamList().add(new NotificationParam("REQUEST_ID", provisionRequest.getId()));
-        request.getParamList().add(new NotificationParam("REQUEST_REASON", provisionRequest.getRequestReason()));
-        request.getParamList().add(new NotificationParam("REQUESTOR", String.format("%s %s",requestor.getFirstName(), requestor.getLastName())));
-        request.getParamList().add(new NotificationParam("TARGET_USER", String.format("%s %s", profileModel.getUser().getFirstName(), profileModel.getUser().getLastName())));
-        mailService.sendNotification(request);
-
 	}
 }

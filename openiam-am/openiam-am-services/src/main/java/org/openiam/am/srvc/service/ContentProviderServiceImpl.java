@@ -103,6 +103,8 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
         if(managedSys == null) {
         	throw new NullPointerException("Cannot save content provider. Managed System is not found");
         }
+        
+        final String cpURL = provider.getResource().getURL();
 
         provider.setManagedSystem(managedSys);
         provider.setMinAuthLevel(authLevel);
@@ -120,6 +122,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
             resource.setResourceType(resourceType);
             resource.setResourceId(null);
             resource.setIsPublic(false);
+            resource.setURL(cpURL);
             resourceDao.save(resource);
 
             provider.setId(null);
@@ -136,6 +139,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
             entity.setMinAuthLevel(authLevel);
             entity.setIsPublic(provider.getIsPublic());
             entity.setIsSSL(provider.getIsSSL());
+            entity.getResource().setURL(cpURL);
             /*entity.setContextPath(provider.getContextPath());*/
             entity.setPatternSet(null);
             entity.setServerSet(null);

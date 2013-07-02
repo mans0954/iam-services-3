@@ -27,7 +27,8 @@ import java.util.concurrent.atomic.AtomicInteger;
         "resourceName",
         "patternSet",
         "serverSet",
-        "managedSysId"
+        "managedSysId",
+        "url"
 })
 @DozerDTOCorrespondence(ContentProviderEntity.class)
 public class ContentProvider implements Serializable {
@@ -43,6 +44,7 @@ public class ContentProvider implements Serializable {
 	private String resourceId;
     private String resourceName;
 	private Set<URIPattern> patternSet;
+	private String url;
 	private Set<ContentProviderServer> serverSet;
 	
 	/*
@@ -148,6 +150,14 @@ public class ContentProvider implements Serializable {
 	public void setManagedSysId(String managedSysId) {
 		this.managedSysId = managedSysId;
 	}
+	
+	public String getUrl() {
+		return url;
+	}
+	public void setUrl(String url) {
+		this.url = url;
+	}
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -166,6 +176,8 @@ public class ContentProvider implements Serializable {
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result
 				+ ((resourceId == null) ? 0 : resourceId.hashCode());
+		result = prime * result
+				+ ((url == null) ? 0 : url.hashCode());
 		return result;
 	}
 	@Override
@@ -186,6 +198,12 @@ public class ContentProvider implements Serializable {
 			if (other.domainPattern != null)
 				return false;
 		} else if (!domainPattern.equals(other.domainPattern))
+			return false;
+		
+		if (url == null) {
+			if (other.url != null)
+				return false;
+		} else if (!url.equals(other.url))
 			return false;
 		/*
         if (contextPath == null) {

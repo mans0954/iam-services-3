@@ -133,8 +133,8 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
                     }
                 }
             }
-
-            ContentProviderEntity entity = contentProviderService.saveContentProvider(contentProviderDozerConverter.convertToEntity(provider,true));
+            final ContentProviderEntity contentProvider = contentProviderDozerConverter.convertToEntity(provider,true);
+            final ContentProviderEntity entity = contentProviderService.saveContentProvider(contentProvider);
             response.setResponseValue(contentProviderDozerConverter.convertToDTO(entity, true));
 
         } catch(BasicDataServiceException e) {
