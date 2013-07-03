@@ -253,6 +253,19 @@
 			</service>
 		</model>
 		
+		<model name="authorizationManagerAdminServiceModel">
+			<service name="authorizationManagerAdminService">
+				<inbound>
+						<inbound-endpoint address="${webservice.path}AuthorizationManagerAdminWebService" 		exchange-pattern="request-response">
+						<cxf:jaxws-service />
+					</inbound-endpoint>
+				</inbound>
+				<component>
+					<spring-object bean="authorizationManagerAdminWebService" />
+				</component>
+			</service>
+		</model>
+		
 		<model name="metadataElementTemplateServiceModel">
 			<service name="elementTemplateService">
 				<inbound>
