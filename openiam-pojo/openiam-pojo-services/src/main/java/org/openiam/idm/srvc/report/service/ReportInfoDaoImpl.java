@@ -1,9 +1,14 @@
 package org.openiam.idm.srvc.report.service;
 
-import org.hibernate.Criteria;
+import java.util.List;
 
+import org.hibernate.Criteria;
+import org.hibernate.HibernateException;
+
+import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 import org.openiam.idm.srvc.report.domain.ReportInfoEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,5 +35,27 @@ public class ReportInfoDaoImpl extends BaseDaoImpl<ReportInfoEntity, String> imp
     protected String getPKfieldName() {
         return "id";
     }
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<ReportInfoEntity> findAllReports( int startAt, int size) {
+		log.debug("finding all Report instances");
+		try {
+
+			Criteria cr = this.getCriteria()
+					.addOrder(Order.asc("reportId"));
+			if (startAt > -1) {
+	            cr.setFirstResult(startAt);
+	        }
+
+	        if (size > -1) {
+	            cr.setMaxResults(size);
+	        }
+			return (List<ReportInfoEntity>) cr.list();
+		} catch (HibernateException re) {
+			log.error("find all Reports failed", re);
+			throw re;
+		}
+	}
 
 }

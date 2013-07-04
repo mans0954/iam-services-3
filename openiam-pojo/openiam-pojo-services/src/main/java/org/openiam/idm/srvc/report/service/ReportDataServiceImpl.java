@@ -6,6 +6,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openiam.idm.srvc.report.domain.ReportCriteriaParamEntity;
 import org.openiam.idm.srvc.report.domain.ReportSubCriteriaParamEntity;
 import org.openiam.idm.srvc.report.domain.ReportInfoEntity;
@@ -13,6 +15,7 @@ import org.openiam.idm.srvc.report.domain.ReportSubscriptionEntity;
 import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.srvc.report.domain.ReportParamTypeEntity;
 import org.openiam.idm.srvc.report.dto.ReportDataDto;
+import org.openiam.idm.srvc.report.ws.WebReportServiceImpl;
 import org.openiam.script.ScriptFactory;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +31,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class ReportDataServiceImpl implements ReportDataService {
  
     private static final String scriptEngine = "org.openiam.script.GroovyScriptEngineIntegration";
-
+    private static final Log log = LogFactory
+	.getLog(ReportDataServiceImpl.class);
     @Autowired
     private ReportInfoDao reportDao;
     @Autowired
@@ -55,8 +59,8 @@ public class ReportDataServiceImpl implements ReportDataService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ReportInfoEntity> getAllReports() {
-        return reportDao.findAll();
+    public List<ReportInfoEntity> getAllReports( final int from, final int size) {
+        return reportDao.findAllReports(from, size);
     }
 
     @Override
@@ -72,10 +76,12 @@ public class ReportDataServiceImpl implements ReportDataService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public void deleteReport(String reportId) {
     	ReportInfoEntity entity = reportDao.findById(reportId);
+    	log.info("In deleteReport, entity=" + entity);
     	reportDao.delete(entity);
+    	log.info("Deleted");
     }
 
     @Override
@@ -121,6 +127,13 @@ public class ReportDataServiceImpl implements ReportDataService {
         return subCriteriaParamDao.findByReportInfoName(reportName);
     }
 
+    @Override
+    @Transactional
+    public Integer getReportCount() {
+        return reportDao.countAll().intValue();
+    }
+    
+    
     @Override
     @Transactional
     public List<ReportParamTypeEntity> getReportParameterTypes() {
