@@ -15,7 +15,6 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AuthorizationResource", propOrder = {
-        "name",
         "inheritFromParent",
         "isPublic"
 })
@@ -24,9 +23,7 @@ public class AuthorizationResource extends AbstractAuthorizationEntity implement
 	private static final long serialVersionUID = 1L;
 	
 	@XmlTransient
-	private Set<AuthorizationResource> directParentResources;
-	
-	private String name;
+	private Set<AuthorizationResource> parentResources;
 	
 	private boolean inheritFromParent = true;
 	
@@ -38,14 +35,6 @@ public class AuthorizationResource extends AbstractAuthorizationEntity implement
 	
 	public AuthorizationResource() {
 		
-	}
-	
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
 	}
 	
 	public boolean isInheritFromParent() {
@@ -61,12 +50,18 @@ public class AuthorizationResource extends AbstractAuthorizationEntity implement
 	}
 
 	public void addParentResoruce(final AuthorizationResource resource) {
-		if(directParentResources == null) {
-			directParentResources = new HashSet<AuthorizationResource>();
+		if(parentResources == null) {
+			parentResources = new HashSet<AuthorizationResource>();
 		}
-		directParentResources.add(resource);
+		parentResources.add(resource);
 	}
 	
+	
+	
+	public Set<AuthorizationResource> getParentResources() {
+		return parentResources;
+	}
+
 	/**
 	 * Compiles this Resource against it's Resource Membership
 	 */
@@ -85,8 +80,8 @@ public class AuthorizationResource extends AbstractAuthorizationEntity implement
 		if(!visitedSet.contains(this)) {
 			visitedSet.add(this);
 			if(inheritFromParent) {
-				if(directParentResources != null) {
-					for(final AuthorizationResource parent : directParentResources) {
+				if(parentResources != null) {
+					for(final AuthorizationResource parent : parentResources) {
 						compiledResourceBitSet.add(parent);
 						compiledResourceBitSet.addAll(parent.visitResources(visitedSet));
 					}
@@ -94,5 +89,11 @@ public class AuthorizationResource extends AbstractAuthorizationEntity implement
 			}
 		}
 		return compiledResourceBitSet;
+	}
+	
+	public AuthorizationResource shallowCopy() {
+		final AuthorizationResource copy = new AuthorizationResource();
+		super.makeCopy(copy);
+		return copy;
 	}
 }

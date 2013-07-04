@@ -15,21 +15,19 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AuthorizationGroup", propOrder = {
-        "name"
 })
 public class AuthorizationGroup extends AbstractAuthorizationEntity implements Serializable  {
 
 	private static final long serialVersionUID = 1L;
 	
 	@XmlTransient
-	private Set<AuthorizationGroup> groups = null;
+	private Set<AuthorizationGroup> parentGroups = null;
 	
 	@XmlTransient
 	private Set<AuthorizationRole> roles = null;
 	
 	@XmlTransient
 	private Set<AuthorizationResource> resources = null;
-	private String name;
 	
 	/*
 	private BitSet linearGroupBitSet = new BitSet();
@@ -41,19 +39,11 @@ public class AuthorizationGroup extends AbstractAuthorizationEntity implements S
 		
 	}
 	
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-	
 	public void addParentGroup(final AuthorizationGroup group) {
-		if(groups == null) {
-			groups = new HashSet<AuthorizationGroup>();
+		if(parentGroups == null) {
+			parentGroups = new HashSet<AuthorizationGroup>();
 		}
-		groups.add(group);
+		parentGroups.add(group);
 	}
 	
 	public void addRole(final AuthorizationRole role) {
@@ -86,10 +76,10 @@ public class AuthorizationGroup extends AbstractAuthorizationEntity implements S
 		return retVal;
 	}
 	
-	public Set<AuthorizationGroup> getGroups() {
+	public Set<AuthorizationGroup> getParentGroups() {
 		Set<AuthorizationGroup> retVal = null;
-		if(groups != null) {
-			retVal = new HashSet<AuthorizationGroup>(groups);
+		if(parentGroups != null) {
+			retVal = new HashSet<AuthorizationGroup>(parentGroups);
 		}
 		return retVal;
 	}
@@ -119,9 +109,9 @@ public class AuthorizationGroup extends AbstractAuthorizationEntity implements S
 	public Set<AuthorizationGroup> visitGroups(final Set<AuthorizationGroup> visitedSet) {
 		final Set<AuthorizationGroup> compiledGroupSet = new HashSet<AuthorizationGroup>();
 		if(!visitedSet.contains(this)) {
-			if(groups != null) {
+			if(parentGroups != null) {
 				visitedSet.add(this);
-				for(final AuthorizationGroup group : groups) {
+				for(final AuthorizationGroup group : parentGroups) {
 					compiledGroupSet.add(group);
 					compiledGroupSet.addAll(group.visitGroups(visitedSet));
 				}
@@ -134,8 +124,8 @@ public class AuthorizationGroup extends AbstractAuthorizationEntity implements S
 		final Set<AuthorizationRole> compiledRoleSet = new HashSet<AuthorizationRole>();
 		if(!visitedSet.contains(this)) {
 			visitedSet.add(this);
-			if(groups != null) {
-				for(final AuthorizationGroup group : groups) {
+			if(parentGroups != null) {
+				for(final AuthorizationGroup group : parentGroups) {
 					compiledRoleSet.addAll(group.visitRoles(visitedSet));
 				}
 			}
@@ -154,8 +144,8 @@ public class AuthorizationGroup extends AbstractAuthorizationEntity implements S
 		final Set<AuthorizationResource> compiledResourceSet = new HashSet<AuthorizationResource>();
 		if(!visitedSet.contains(this)) {
 			visitedSet.add(this);
-			if(groups != null) {
-				for(final AuthorizationGroup group : groups) {
+			if(parentGroups != null) {
+				for(final AuthorizationGroup group : parentGroups) {
 					compiledResourceSet.addAll(group.visitResources(visitedSet));
 				}
 			}
@@ -174,5 +164,11 @@ public class AuthorizationGroup extends AbstractAuthorizationEntity implements S
 			}
 		}
 		return compiledResourceSet;
+	}
+	
+	public AuthorizationGroup shallowCopy() {
+		final AuthorizationGroup copy = new AuthorizationGroup();
+		super.makeCopy(copy);
+		return copy;
 	}
 }

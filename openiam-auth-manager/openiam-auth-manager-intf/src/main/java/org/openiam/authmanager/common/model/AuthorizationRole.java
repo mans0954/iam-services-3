@@ -16,20 +16,16 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AuthorizationRole", propOrder = {
-        "name"
 })
 public class AuthorizationRole extends AbstractAuthorizationEntity implements Serializable  {
 	
 	private static final long serialVersionUID = 1L;
 	
 	@XmlTransient
-	private Set<AuthorizationRole> roles;
+	private Set<AuthorizationRole> parentRoles;
 	
 	@XmlTransient
 	private Set<AuthorizationResource> resources;
-	
-	
-	private String name;
 
 	/*
 	private BitSet linearRoleBitSet = new BitSet();
@@ -40,25 +36,17 @@ public class AuthorizationRole extends AbstractAuthorizationEntity implements Se
 		
 	}
 	
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-	
 	public void addParentRole(final AuthorizationRole role) {
-		if(roles == null) {
-			roles = new HashSet<AuthorizationRole>();
+		if(parentRoles == null) {
+			parentRoles = new HashSet<AuthorizationRole>();
 		}
-		roles.add(role);
+		parentRoles.add(role);
 	}
 	
-	public Set<AuthorizationRole> getRoles() {
+	public Set<AuthorizationRole> getParentRoles() {
 		Set<AuthorizationRole> retVal = null;
-		if(roles != null) {
-			retVal = new HashSet<AuthorizationRole>(roles);
+		if(parentRoles != null) {
+			retVal = new HashSet<AuthorizationRole>(parentRoles);
 		}
 		return retVal;
 	}
@@ -100,8 +88,8 @@ public class AuthorizationRole extends AbstractAuthorizationEntity implements Se
 		final Set<AuthorizationRole> compiledRoles = new HashSet<AuthorizationRole>();
 		if(!visitedSet.contains(this)) {
 			visitedSet.add(this);
-			if(roles != null) {
-				for(final AuthorizationRole parent : roles) {
+			if(parentRoles != null) {
+				for(final AuthorizationRole parent : parentRoles) {
 					compiledRoles.add(parent);
 					compiledRoles.addAll(parent.visitRoles(visitedSet));
 				}
@@ -115,8 +103,8 @@ public class AuthorizationRole extends AbstractAuthorizationEntity implements Se
 		if(!visitedRoles.contains(this)) {
 			visitedRoles.add(this);
 			
-			if(roles != null) {
-				for(final AuthorizationRole role : roles) {
+			if(parentRoles != null) {
+				for(final AuthorizationRole role : parentRoles) {
 					compiledResources.addAll(role.visitResources(visitedRoles));
 				}
 			}
@@ -129,5 +117,11 @@ public class AuthorizationRole extends AbstractAuthorizationEntity implements Se
 			}
 		}
 		return compiledResources;
+	}
+	
+	public AuthorizationRole shallowCopy() {
+		final AuthorizationRole copy = new AuthorizationRole();
+		super.makeCopy(copy);
+		return copy;
 	}
 }

@@ -2,7 +2,7 @@ package org.openiam.authmanager.service.impl;
 
 import javax.jws.WebService;
 
-import org.openiam.authmanager.model.EntitlementsMatrix;
+import org.openiam.authmanager.model.UserEntitlementsMatrix;
 import org.openiam.authmanager.service.AuthorizationManagerAdminService;
 import org.openiam.authmanager.service.AuthorizationManagerAdminWebService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,8 +19,8 @@ public class AuthorizationManagerAdminWebServiceImpl implements AuthorizationMan
 	private AuthorizationManagerAdminService authManagerAdminService;
 	
 	@Override
-	public EntitlementsMatrix getEntitlementsMatrix(final String entityId, final String entityType) {
-		return authManagerAdminService.getEntitlementsMatrix(entityId, entityType);
+	public UserEntitlementsMatrix getUserEntitlementsMatrix(final String entityId) {
+		return authManagerAdminService.getUserEntitlementsMatrix(entityId);
 	}
 
 }
