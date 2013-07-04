@@ -1,6 +1,7 @@
 package org.openiam.bpm.response;
 
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -32,8 +33,8 @@ import org.openiam.provision.dto.ProvisionUser;
 	"description",
 	"dueDate",
 	"executionId",
-	"provisionRequestId",
-	"endDate"
+	"endDate",
+	"requestMetadataMap"
 })
 public class TaskWrapper {
 
@@ -55,10 +56,10 @@ public class TaskWrapper {
 	private Date dueDate;
 	private String executionId;
 	
-	private String provisionRequestId;
-	
 	@XmlSchemaType(name = "dateTime")
 	private Date endDate;
+	
+	private LinkedHashMap<String, String> requestMetadataMap;
 	
 	public TaskWrapper() {
 		
@@ -108,9 +109,8 @@ public class TaskWrapper {
 			try {
 				final Map<String, Object> customVariables = runtimeService.getVariables(executionId);
 				if(customVariables != null) {
-					final Object provionRequestIdObj = customVariables.get(ActivitiConstants.PROVISION_REQUEST_ID);
-					if(provionRequestIdObj != null && provionRequestIdObj instanceof String) {
-						provisionRequestId = (String)provionRequestIdObj;
+					if(customVariables.containsKey(ActivitiConstants.REQUEST_METADATA_MAP)) {
+						requestMetadataMap = (LinkedHashMap<String, String>)customVariables.get(ActivitiConstants.REQUEST_METADATA_MAP);
 					}
 				}
 			} catch(Throwable e) {
@@ -222,20 +222,22 @@ public class TaskWrapper {
 		this.executionId = executionId;
 	}
 
-	public String getProvisionRequestId() {
-		return provisionRequestId;
-	}
-
-	public void setProvisionRequestId(String provisionRequestId) {
-		this.provisionRequestId = provisionRequestId;
-	}
-
 	public Date getEndDate() {
 		return endDate;
 	}
 
 	public void setEndDate(Date endDate) {
 		this.endDate = endDate;
+	}
+	
+	
+
+	public Map<String, String> getRequestMetadataMap() {
+		return requestMetadataMap;
+	}
+
+	public void setRequestMetadataMap(LinkedHashMap<String, String> requestMetadataMap) {
+		this.requestMetadataMap = requestMetadataMap;
 	}
 
 	@Override
@@ -266,11 +268,11 @@ public class TaskWrapper {
 	@Override
 	public String toString() {
 		return String
-				.format("TaskWrapper [id=%s, name=%s, owner=%s, priority=%s, processDefinitionId=%s, processInstanceId=%s, taskDefinitionKey=%s, parentTaskId=%s, assignee=%s, createdTime=%s, description=%s, dueDate=%s, executionId=%s, provisionRequestId=%s]",
+				.format("TaskWrapper [id=%s, name=%s, owner=%s, priority=%s, processDefinitionId=%s, processInstanceId=%s, taskDefinitionKey=%s, parentTaskId=%s, assignee=%s, createdTime=%s, description=%s, dueDate=%s, executionId=%s]",
 						id, name, owner, priority, processDefinitionId,
 						processInstanceId, taskDefinitionKey, parentTaskId,
 						assignee, createdTime, description, dueDate,
-						executionId, provisionRequestId);
+						executionId);
 	}
 	
 	

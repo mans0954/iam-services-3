@@ -28,6 +28,7 @@ import org.openiam.authmanager.dao.RoleDAO;
 import org.openiam.authmanager.dao.RoleGroupXrefDAO;
 import org.openiam.authmanager.dao.RoleRoleXrefDAO;
 import org.openiam.authmanager.dao.UserDAO;
+import org.openiam.authmanager.model.EntitlementsMatrix;
 import org.openiam.authmanager.model.ResourceEntitlementToken;
 import org.openiam.authmanager.service.AuthorizationManagerAdminService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -484,5 +485,10 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
 			resourceMap.put(resource.getId(), resource);
 		}
 		return resourceMap;
+	}
+
+	@Override
+	public EntitlementsMatrix getEntitlementsMatrix(final String entityId, final String entityType) {
+		return null;
 	}
 }

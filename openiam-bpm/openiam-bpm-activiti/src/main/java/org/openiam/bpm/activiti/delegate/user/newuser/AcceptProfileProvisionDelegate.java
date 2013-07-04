@@ -1,4 +1,4 @@
-package org.openiam.bpm.activiti.delegate.user;
+package org.openiam.bpm.activiti.delegate.user.newuser;
 
 import java.util.Date;
 import java.util.Iterator;

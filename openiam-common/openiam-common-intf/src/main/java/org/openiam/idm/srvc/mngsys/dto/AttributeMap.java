@@ -18,7 +18,7 @@ import org.openiam.idm.srvc.policy.dto.Policy;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AttributeMap", propOrder = { "attributeMapId", "managedSysId",
-        "resourceId", "mapForObjectType", "attributeName",
+        "resourceId", "synchConfigId", "mapForObjectType", "attributeName",
         "targetAttributeName", "authoritativeSrc", "reconResAttribute", "rule",
         "status", "startDate", "endDate", "storeInIamdb", "selected",
         "dataType", "defaultValue" })
@@ -32,6 +32,7 @@ public class AttributeMap implements java.io.Serializable {
     private String attributeMapId;
     private String managedSysId;
     private String resourceId;
+    private String synchConfigId;
     private String mapForObjectType;
     private String attributeName;
     private String targetAttributeName;
@@ -58,12 +59,13 @@ public class AttributeMap implements java.io.Serializable {
     }
 
     public AttributeMap(String attributeMapId, String managedSysId,
-            String resourceId, String mapForObjectType, String attributeName,
+            String resourceId, String synchConfigId, String mapForObjectType, String attributeName,
             String targetAttributeName, Integer authoritativeSrc, String rule,
             String status, Date startDate, Date endDate, Integer storeInIamdb) {
         this.attributeMapId = attributeMapId;
         this.managedSysId = managedSysId;
         this.resourceId = resourceId;
+        this.synchConfigId = synchConfigId;
         this.mapForObjectType = mapForObjectType;
         this.attributeName = attributeName;
         this.targetAttributeName = targetAttributeName;
@@ -97,6 +99,14 @@ public class AttributeMap implements java.io.Serializable {
 
     public void setResourceId(String resourceId) {
         this.resourceId = resourceId;
+    }
+
+    public String getSynchConfigId() {
+        return synchConfigId;
+    }
+
+    public void setSynchConfigId(String synchConfigId) {
+        this.synchConfigId = synchConfigId;
     }
 
     public String getMapForObjectType() {
@@ -208,7 +218,8 @@ public class AttributeMap implements java.io.Serializable {
     public String toString() {
         return "AttributeMap{" + "attributeMapId='" + attributeMapId + '\''
                 + ", managedSysId='" + managedSysId + '\'' + ", resourceId='"
-                + resourceId + '\'' + ", mapForObjectType='" + mapForObjectType
+                + resourceId + ", synchConfigId='" + synchConfigId + '\'' +
+                ", mapForObjectType='" + mapForObjectType
                 + '\'' + ", attributeName='" + attributeName + '\''
                 + ", targetAttributeName='" + targetAttributeName + '\''
                 + ", authoritativeSrc=" + authoritativeSrc

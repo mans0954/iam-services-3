@@ -41,10 +41,15 @@ public interface BaseDao<T, PrimaryKey extends Serializable> {
   void attachClean(T t);
   
   List<T> getByExample(T t, int startAt, int size);
+  List<T> getByExample(T t, int startAt, int size, String[] excludeProperties);
   List<T> getByExample(T t);
-  
+  List<T> getByExample(T t, String[] excludeProperties);
   List<T> getByExample(SearchBean searchBean);
+  List<T> getByExample(SearchBean searchBean, String[] excludeProperties);
   List<T> getByExample(SearchBean searchBean, int from, int size);
+  List<T> getByExample(SearchBean searchBean, int from, int size, String[] excludeProperties);
   int count(SearchBean searchBean);
+  int count(SearchBean searchBean, String[] excludeProperties);
   int count(T t);
+  int count(T t, String[] excludeProperties);
 }

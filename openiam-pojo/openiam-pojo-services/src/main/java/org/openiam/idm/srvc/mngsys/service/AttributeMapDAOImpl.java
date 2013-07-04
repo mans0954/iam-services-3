@@ -4,58 +4,91 @@ package org.openiam.idm.srvc.mngsys.service;
  * @author zaporozhec
  */
 import java.util.List;
-import javax.naming.InitialContext;
 
-import net.sf.ehcache.search.expression.Criteria;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.hibernate.HibernateException;
-import org.hibernate.Query;
-import org.hibernate.SQLQuery;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Restrictions;
+import org.hibernate.criterion.*;
+import org.mule.util.StringUtils;
 import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.exception.data.DataException;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.CollectionUtils;
 
 /**
  * DAO implementation for domain model class AttributeMap.
  */
 @Repository("attributeMapDAO")
 public class AttributeMapDAOImpl extends
-		BaseDaoImpl<AttributeMapEntity, String> implements AttributeMapDAO {
+        BaseDaoImpl<AttributeMapEntity, String> implements AttributeMapDAO {
 
-	public List<AttributeMapEntity> findByResourceId(String resourceId) {
+    public List<AttributeMapEntity> findByResourceId(String resourceId) {
 
-		return (List<AttributeMapEntity>) this.getCriteria()
-				.add(Restrictions.eq("resourceId", resourceId))
-				.addOrder(Order.asc("mapForObjectType")).addOrder(Order.asc("managedSysId")).list();
-	}
+        return (List<AttributeMapEntity>) this.getCriteria()
+                .add(Restrictions.eq("resourceId", resourceId))
+                .addOrder(Order.asc("mapForObjectType"))
+                .addOrder(Order.asc("managedSysId")).list();
+    }
 
-	public List<AttributeMapEntity> findAllAttributeMaps() {
+    public List<AttributeMapEntity> findBySynchConfigId(String synchConfigId) {
+        return (List<AttributeMapEntity>) this.getCriteria()
+                .add(Restrictions.eq("synchConfigId", synchConfigId))
+                .addOrder(Order.asc("mapForObjectType"))
+                .addOrder(Order.asc("synchConfigId")).list();
+    }
 
-		return (List<AttributeMapEntity>) this.getCriteria()
-				.addOrder(Order.asc("resourceId")).list();
-	}
+    public List<AttributeMapEntity> findAllAttributeMaps() {
 
-    public int removeResourceAttributeMaps(String resourceId) {
+        return (List<AttributeMapEntity>) this.getCriteria()
+                .addOrder(Order.asc("resourceId")).list();
+    }
 
-		SQLQuery qry = getSession().createSQLQuery(
-				"delete " + "from ATTRIBUTE_MAP  "
-						+ "where RESOURCE_ID = :resourceId");
+    public void removeResourceAttributeMaps(String resourceId) {
+        AttributeMapEntity ame = (AttributeMapEntity)getSession()
+                .createCriteria(AttributeMapEntity.class)
+                .add(Restrictions.eq("attributeMapId", resourceId)).uniqueResult();
+        getSession().delete(ame);
+    }
 
-		qry.setString("resourceId", resourceId);
-		return qry.executeUpdate();
-	}
+    public AttributeMapEntity add(AttributeMapEntity entity) {
+        if (StringUtils.isEmpty(entity.getManagedSysId())
+                && StringUtils.isEmpty(entity.getSynchConfigId())) {
+            String reason = "managedSysId or synchConfigId must be specified";
+            throw new DataException(reason, new Exception(
+                    "managedSysId and synchConfigId are null"));
+        }
+        return super.add(entity);
+    }
 
-	@Override
-	protected String getPKfieldName() {
-		return "attributeMapId";
-	}
+    public void update(AttributeMapEntity entity) {
+        if (StringUtils.isEmpty(entity.getManagedSysId())
+                && StringUtils.isEmpty(entity.getSynchConfigId())) {
+            String reason = "managedSysId or synchConfigId must be specified";
+            throw new DataException(reason, new Exception(
+                    "managedSysId and synchConfigId are null"));
+        }
+        super.update(entity);
+    }
+
+    @Override
+    public void delete(List<String> ids) {
+        if (!CollectionUtils.isEmpty(ids)) {
+            List attrMap = getSession().createCriteria(AttributeMapEntity.class)
+                    .add(Restrictions.in("attributeMapId", ids)).list();
+            deleteAttributesMapList(attrMap);
+        }
+    }
+
+    @Override
+    public void deleteAttributesMapList(List<AttributeMapEntity> attrMap) {
+        if (!CollectionUtils.isEmpty(attrMap)) {
+            for (AttributeMapEntity ame : attrMap) {
+                getSession().delete(ame);
+            }
+        }
+    }
+
+    @Override
+    protected String getPKfieldName() {
+        return "attributeMapId";
+    }
 
 }

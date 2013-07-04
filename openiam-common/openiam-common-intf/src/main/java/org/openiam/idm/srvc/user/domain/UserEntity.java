@@ -558,6 +558,18 @@ public class UserEntity {
     public void setPasswordTheme(String passwordTheme) {
         this.passwordTheme = passwordTheme;
     }
+    
+    public String getDisplayName() {
+    	String displayName = null;
+    	if(StringUtils.isNotBlank(firstName) && StringUtils.isNotBlank(lastName)) {
+    		displayName = String.format("%s %s", firstName, lastName);
+    	} else if(StringUtils.isNotBlank(firstName)) {
+    		displayName = firstName;
+    	} else if(StringUtils.isNotBlank(lastName)) {
+    		displayName = lastName;
+    	}
+    	return displayName;
+    }
 
 //    public String getCountry() {
 //        return country;

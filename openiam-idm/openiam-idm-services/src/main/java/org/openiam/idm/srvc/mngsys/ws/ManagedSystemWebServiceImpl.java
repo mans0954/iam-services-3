@@ -45,6 +45,7 @@ import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 @Service("managedSysService")
 @WebService(endpointInterface = "org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService", targetNamespace = "urn:idm.openiam.org/srvc/mngsys/service", portName = "ManagedSystemWebServicePort", serviceName = "ManagedSystemWebService")
@@ -261,7 +262,8 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
         if (objectType == null) {
             throw new NullPointerException("objectType is null");
         }
-        List<ManagedSystemObjectMatchEntity> objList = managedSystemService.managedSysObjectParam(managedSystemId, objectType);
+        List<ManagedSystemObjectMatchEntity> objList = managedSystemService
+                .managedSysObjectParam(managedSystemId, objectType);
         if (objList == null) {
             return null;
         }
@@ -369,9 +371,12 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
                 approverAssociation.setAssociationEntityId(null);
                 approverAssociation.setAssociationType(null);
             }
-            
-            if(approverAssociation.getApproverEntityType() == null || StringUtils.isBlank(approverAssociation.getApproverEntityId())) {
-            	throw new BasicDataServiceException(ResponseCode.REQUEST_APPROVERS_NOT_SET);
+
+            if (approverAssociation.getApproverEntityType() == null
+                    || StringUtils.isBlank(approverAssociation
+                            .getApproverEntityId())) {
+                throw new BasicDataServiceException(
+                        ResponseCode.REQUEST_APPROVERS_NOT_SET);
             }
 
             final ApproverAssociationEntity entity = approverAssociationDozerConverter
@@ -475,6 +480,27 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
                 managedSystemService.addAttributeMap(entity), true);
     }
 
+    @Override
+    public void deleteAttributesMapList(List<String> ids) throws Exception {
+        managedSystemService.deleteAttributesMapList(ids);
+    }
+
+    @Override
+    public List<AttributeMap> saveAttributesMap(List<AttributeMap> attrMap,
+            String mSysId, String resId, String synchConfigId) throws Exception {
+        if (CollectionUtils.isEmpty(attrMap)
+                && (StringUtils.isEmpty(resId) || StringUtils.isEmpty(mSysId))
+                && StringUtils.isEmpty(synchConfigId))
+            return null;
+        List<AttributeMapEntity> res = managedSystemService.saveAttributesMap(
+                attributeMapDozerConverter.convertToEntityList(attrMap, true),
+                mSysId, resId, synchConfigId);
+        if (res == null)
+            return null;
+        else
+            return attributeMapDozerConverter.convertToDTOList(res, true);
+    }
+
     public AttributeMap updateAttributeMap(AttributeMap attributeMap) {
         if (attributeMap == null) {
             throw new IllegalArgumentException("attributeMap object is null");
@@ -491,12 +517,12 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
         managedSystemService.removeAttributeMap(attributeMapId);
     }
 
-    public int removeResourceAttributeMaps(String resourceId) {
+    public void removeResourceAttributeMaps(String resourceId) {
         if (resourceId == null) {
             throw new IllegalArgumentException("resourceId is null");
         }
 
-        return managedSystemService.removeResourceAttributeMaps(resourceId);
+        managedSystemService.removeResourceAttributeMaps(resourceId);
     }
 
     public List<AttributeMap> getResourceAttributeMaps(String resourceId) {

@@ -15,4 +15,5 @@ public class ActivitiConstants {
 	public static final String MEMBER_ASSOCIATION_ID = "MemberAssociationId";
 	public static final String USER_STATUS = "UserStatus";
 	public static final String USER_SECONDARY_STATUS = "UserSecondaryStatus";
+	public static final String REQUEST_METADATA_MAP = "RequestMetadataMap";
 }

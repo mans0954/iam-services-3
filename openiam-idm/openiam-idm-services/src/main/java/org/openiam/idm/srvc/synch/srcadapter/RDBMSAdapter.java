@@ -142,7 +142,7 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
             log.debug("Result set contains following number of columns : " + rowHeader.getColumnMap().size());
 
             final ValidationScript validationScript = StringUtils.isNotEmpty(config.getValidationRule()) ? SynchScriptFactory.createValidationScript(config.getValidationRule()) : null;
-            final TransformScript transformScript = StringUtils.isNotEmpty(config.getTransformationRule()) ? SynchScriptFactory.createTransformationScript(config.getTransformationRule()) : null;
+            final TransformScript transformScript = SynchScriptFactory.createTransformationScript(config);
 
             // Multithreading
             int allRowsCount = results.size();
@@ -323,7 +323,7 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
                     if (usr != null) {
                         transformScript.setNewUser(false);
                         transformScript.setUser(userDozerConverter.convertToDTO(userManager.getUser(usr.getUserId()), true));
-                        transformScript.setPrincipalList(loginManager.getLoginByUser(usr.getUserId()));
+                        transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getUserId()), true));
                         transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getUserId()));
 
                     } else {
@@ -339,8 +339,8 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
 
                     // show the user object
                     log.debug("- User After Transformation =" + pUser);
-                    log.debug("- User = " + pUser.getUser().getUserId() + "-" + pUser.getUser().getFirstName() + " " + pUser.getUser().getLastName());
-                    log.debug("- User Attributes = " + pUser.getUser().getUserAttributes());
+                    log.debug("- User = " + pUser.getUserId() + "-" + pUser.getFirstName() + " " + pUser.getLastName());
+                    log.debug("- User Attributes = " + pUser.getUserAttributes());
                 }
                 pUser.setSessionId(synchStartLog.getSessionId());
 
@@ -353,18 +353,18 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
                         // call synch
                         if (retval != TransformScript.DELETE) {
 
-                            log.debug("-Provisioning user=" + pUser.getUser().getLastName());
+                            log.debug("-Provisioning user=" + pUser.getLastName());
 
                             if (usr != null) {
-                                log.debug("-updating existing user...systemId=" + pUser.getUser().getUserId());
-                                pUser.getUser().setUserId(usr.getUserId());
+                                log.debug("-updating existing user...systemId=" + pUser.getUserId());
+                                pUser.setUserId(usr.getUserId());
 
                                 modifyUser(pUser);
 
                             } else {
                                 log.debug("-adding new user...");
 
-                                pUser.getUser().setUserId(null);
+                                pUser.setUserId(null);
                                 addUser(pUser);
                             }
                         }

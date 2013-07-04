@@ -20,7 +20,9 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import static org.hibernate.criterion.Example.create;
 import org.hibernate.HibernateException;
+import org.hibernate.criterion.DetachedCriteria;
 import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Property;
 import org.hibernate.criterion.Restrictions;
 
 import org.openiam.core.dao.BaseDaoImpl;

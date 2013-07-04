@@ -41,7 +41,7 @@ public interface ManagedSystemService {
 
     void removeAttributeMap(String attributeMapId);
 
-    int removeResourceAttributeMaps(String resourceId);
+    void removeResourceAttributeMaps(String resourceId);
 
     List<AttributeMapEntity> getResourceAttributeMaps(String resourceId);
 
@@ -54,6 +54,13 @@ public interface ManagedSystemService {
     ManagedSysRuleEntity addRules(ManagedSysRuleEntity entity);
 
     void deleteRules(String ruleId);
-    
-    List<ManagedSystemObjectMatchEntity> managedSysObjectParam(String managedSystemId, String objectType);
+
+    List<ManagedSystemObjectMatchEntity> managedSysObjectParam(
+            String managedSystemId, String objectType);
+
+    List<AttributeMapEntity> saveAttributesMap(
+            List<AttributeMapEntity> attrMap, String mSysId, String resId,
+            String synchConfigId) throws Exception;
+
+    void deleteAttributesMapList(List<String> ids) throws Exception;
 }
