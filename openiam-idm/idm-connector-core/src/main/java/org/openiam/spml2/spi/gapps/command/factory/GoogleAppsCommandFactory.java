@@ -6,8 +6,6 @@ import org.openiam.spml2.msg.ConnectorDataException;
 import org.openiam.spml2.msg.ErrorCode;
 import org.openiam.spml2.spi.common.ConnectorCommand;
 import org.openiam.spml2.spi.common.factory.AbstractCommandFactory;
-import org.openiam.spml2.spi.csv.command.TestGroupCSVCommand;
-import org.openiam.spml2.spi.csv.command.TestUserCSVCommand;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;

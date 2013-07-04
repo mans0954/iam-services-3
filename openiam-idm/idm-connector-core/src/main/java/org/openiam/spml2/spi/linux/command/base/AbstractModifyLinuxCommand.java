@@ -2,7 +2,6 @@ package org.openiam.spml2.spi.linux.command.base;
 
 import org.openiam.provision.dto.GenericProvisionObject;
 import org.openiam.spml2.msg.*;
-import org.openiam.spml2.spi.linux.LinuxUser;
 import org.openiam.spml2.spi.linux.ssh.SSHAgent;
 
 import java.util.List;

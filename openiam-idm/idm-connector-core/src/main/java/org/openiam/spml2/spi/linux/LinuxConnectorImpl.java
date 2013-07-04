@@ -13,17 +13,17 @@ import org.openiam.provision.dto.GenericProvisionObject;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.spml2.base.AbstractSpml2Complete;
-import org.openiam.spml2.interf.ConnectorService;
 import org.openiam.spml2.msg.*;
 import org.openiam.spml2.msg.password.*;
 import org.openiam.spml2.msg.suspend.ResumeRequestType;
 import org.openiam.spml2.msg.suspend.SuspendRequestType;
+import org.openiam.spml2.spi.linux.command.LinuxGroups;
+import org.openiam.spml2.spi.linux.command.LinuxUser;
 import org.openiam.spml2.spi.linux.ssh.SSHAgent;
 import org.openiam.spml2.spi.linux.ssh.SSHConnectionFactory;
 import org.openiam.spml2.spi.linux.ssh.SSHException;
 
 import javax.jws.WebParam;
-import javax.jws.WebService;
 import java.util.HashMap;
 import java.util.List;
 

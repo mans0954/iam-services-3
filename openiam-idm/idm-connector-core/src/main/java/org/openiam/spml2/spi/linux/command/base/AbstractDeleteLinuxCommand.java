@@ -5,7 +5,6 @@ import org.openiam.spml2.msg.ConnectorDataException;
 import org.openiam.spml2.msg.DeleteRequestType;
 import org.openiam.spml2.msg.ResponseType;
 import org.openiam.spml2.msg.StatusCodeType;
-import org.openiam.spml2.spi.linux.LinuxUser;
 import org.openiam.spml2.spi.linux.ssh.SSHAgent;
 
 public abstract class AbstractDeleteLinuxCommand<ProvisionObject extends GenericProvisionObject> extends AbstractLinuxCommand<DeleteRequestType<ProvisionObject>, ResponseType> {

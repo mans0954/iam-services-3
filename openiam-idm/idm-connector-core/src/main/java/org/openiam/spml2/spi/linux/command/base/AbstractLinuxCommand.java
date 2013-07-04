@@ -1,9 +1,6 @@
 package org.openiam.spml2.spi.linux.command.base;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.spml2.msg.ConnectorDataException;
@@ -11,7 +8,7 @@ import org.openiam.spml2.msg.ErrorCode;
 import org.openiam.spml2.msg.RequestType;
 import org.openiam.spml2.msg.ResponseType;
 import org.openiam.spml2.spi.common.AbstractCommand;
-import org.openiam.spml2.spi.linux.LinuxUser;
+import org.openiam.spml2.spi.linux.command.LinuxUser;
 import org.openiam.spml2.spi.linux.ssh.SSHAgent;
 import org.openiam.spml2.spi.linux.ssh.SSHConnectionFactory;
 import org.openiam.spml2.spi.linux.ssh.SSHException;
