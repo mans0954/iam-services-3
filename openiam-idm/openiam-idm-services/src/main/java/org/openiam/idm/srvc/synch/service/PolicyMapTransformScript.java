@@ -37,7 +37,7 @@ public class PolicyMapTransformScript extends AbstractTransformScript {
         System.out.println("---------------------------------");
         System.out.println("Synching object for: " + rowObj );
 
-        pUser.setStatus(UserStatusEnum.ACTIVE);
+        pUser.getUser().setStatus(UserStatusEnum.ACTIVE);
         pUser.securityDomain = "0";
 
         // this configure the loading Pre/Post groovy scrips, should be switch off for performance
@@ -62,7 +62,7 @@ public class PolicyMapTransformScript extends AbstractTransformScript {
 
     private void populateUser(LineObject rowObj, ProvisionUser pUser) {
         if (isNewUser) {
-            pUser.setUserId(null);
+            pUser.getUser().setUserId(null);
         }
         if (principalList == null) {
             principalList = new ArrayList<Login>();
