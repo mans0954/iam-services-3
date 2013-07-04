@@ -26,6 +26,8 @@ import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Transformer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mule.api.MuleContext;
@@ -40,6 +42,7 @@ import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.service.AttributeMapDAO;
+import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.synch.domain.SynchConfigEntity;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.BulkMigrationConfig;
@@ -78,6 +81,8 @@ public class IdentitySynchServiceImpl implements IdentitySynchService, MuleConte
     private UserDozerConverter userDozerConverter;
     @Autowired
     private SynchConfigDozerConverter synchConfigDozerConverter;
+    @Autowired
+    private ManagedSystemService managedSystemService;
 
     @Value("${openiam.service_base}")
     private String serviceHost;
@@ -140,6 +145,7 @@ public class IdentitySynchServiceImpl implements IdentitySynchService, MuleConte
 		if (configId == null) {
 			throw new IllegalArgumentException("id parameter is null");
 		}
+        deleteAttributesMapList(getSynchConfigAttributeMaps(configId));
         SynchConfigEntity config = synchConfigDao.findById(configId);
 		synchConfigDao.remove(config);
 		
@@ -455,6 +461,12 @@ public class IdentitySynchServiceImpl implements IdentitySynchService, MuleConte
     @Transactional(readOnly = true)
     public List<AttributeMapEntity> getSynchConfigAttributeMaps(String synchConfigId) {
         return attributeMapDAO.findBySynchConfigId(synchConfigId);
+    }
+
+    @Override
+    @Transactional
+    public void deleteAttributesMapList(List<AttributeMapEntity> attrMap) {
+        attributeMapDAO.deleteAttributesMapList(attrMap);
     }
 
     @Override

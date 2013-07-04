@@ -45,7 +45,6 @@ import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 @Service("managedSysService")
@@ -518,12 +517,12 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
         managedSystemService.removeAttributeMap(attributeMapId);
     }
 
-    public int removeResourceAttributeMaps(String resourceId) {
+    public void removeResourceAttributeMaps(String resourceId) {
         if (resourceId == null) {
             throw new IllegalArgumentException("resourceId is null");
         }
 
-        return managedSystemService.removeResourceAttributeMaps(resourceId);
+        managedSystemService.removeResourceAttributeMaps(resourceId);
     }
 
     public List<AttributeMap> getResourceAttributeMaps(String resourceId) {

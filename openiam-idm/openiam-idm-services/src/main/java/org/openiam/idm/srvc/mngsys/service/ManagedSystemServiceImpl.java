@@ -144,8 +144,8 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
 
     @Override
     @Transactional
-    public int removeResourceAttributeMaps(String resourceId) {
-        return attributeMapDAO.removeResourceAttributeMaps(resourceId);
+    public void removeResourceAttributeMaps(String resourceId) {
+        attributeMapDAO.removeResourceAttributeMaps(resourceId);
     }
 
     @Override

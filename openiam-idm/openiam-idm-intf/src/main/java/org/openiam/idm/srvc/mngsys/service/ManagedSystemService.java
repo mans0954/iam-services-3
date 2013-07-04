@@ -41,7 +41,7 @@ public interface ManagedSystemService {
 
     void removeAttributeMap(String attributeMapId);
 
-    int removeResourceAttributeMaps(String resourceId);
+    void removeResourceAttributeMaps(String resourceId);
 
     List<AttributeMapEntity> getResourceAttributeMaps(String resourceId);
 
