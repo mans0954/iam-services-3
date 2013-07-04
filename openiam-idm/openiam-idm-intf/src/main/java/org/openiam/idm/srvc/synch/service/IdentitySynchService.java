@@ -59,4 +59,6 @@ public interface IdentitySynchService {
 
     List<AttributeMapEntity> getSynchConfigAttributeMaps(String synchConfigId);
 
+    public void deleteAttributesMapList(List<AttributeMapEntity> attrMap);
+
 }

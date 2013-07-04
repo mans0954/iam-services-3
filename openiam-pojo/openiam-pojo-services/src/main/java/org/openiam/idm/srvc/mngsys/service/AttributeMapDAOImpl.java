@@ -5,9 +5,7 @@ package org.openiam.idm.srvc.mngsys.service;
  */
 import java.util.List;
 
-import org.hibernate.SQLQuery;
-import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Restrictions;
+import org.hibernate.criterion.*;
 import org.mule.util.StringUtils;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.exception.data.DataException;
@@ -43,14 +41,11 @@ public class AttributeMapDAOImpl extends
                 .addOrder(Order.asc("resourceId")).list();
     }
 
-    public int removeResourceAttributeMaps(String resourceId) {
-
-        SQLQuery qry = getSession().createSQLQuery(
-                "delete " + "from ATTRIBUTE_MAP  "
-                        + "where RESOURCE_ID = :resourceId");
-
-        qry.setString("resourceId", resourceId);
-        return qry.executeUpdate();
+    public void removeResourceAttributeMaps(String resourceId) {
+        AttributeMapEntity ame = (AttributeMapEntity)getSession()
+                .createCriteria(AttributeMapEntity.class)
+                .add(Restrictions.eq("attributeMapId", resourceId)).uniqueResult();
+        getSession().delete(ame);
     }
 
     public AttributeMapEntity add(AttributeMapEntity entity) {
@@ -74,14 +69,21 @@ public class AttributeMapDAOImpl extends
     }
 
     @Override
-    public int delete(List<String> ids) {
-        if (CollectionUtils.isEmpty(ids))
-            return 0;
-        SQLQuery qry = getSession().createSQLQuery(
-                "delete from ATTRIBUTE_MAP  "
-                        + "where ATTRIBUTE_MAP_ID IN (:ids)");
-        qry.setParameterList("ids", ids);
-        return qry.executeUpdate();
+    public void delete(List<String> ids) {
+        if (!CollectionUtils.isEmpty(ids)) {
+            List attrMap = getSession().createCriteria(AttributeMapEntity.class)
+                    .add(Restrictions.in("attributeMapId", ids)).list();
+            deleteAttributesMapList(attrMap);
+        }
+    }
+
+    @Override
+    public void deleteAttributesMapList(List<AttributeMapEntity> attrMap) {
+        if (!CollectionUtils.isEmpty(attrMap)) {
+            for (AttributeMapEntity ame : attrMap) {
+                getSession().delete(ame);
+            }
+        }
     }
 
     @Override

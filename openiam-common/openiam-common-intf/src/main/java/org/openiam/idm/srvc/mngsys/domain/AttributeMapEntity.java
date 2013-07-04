@@ -2,18 +2,7 @@ package org.openiam.idm.srvc.mngsys.domain;
 
 import java.util.Date;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
-import javax.persistence.Transient;
+import javax.persistence.*;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
@@ -58,8 +47,8 @@ public class AttributeMapEntity implements java.io.Serializable {
     @Column(name = "AUTHORITATIVE_SRC", length = 11)
     private Integer authoritativeSrc;
 
-    @OneToOne(optional = false)
-    @JoinColumn(name = "ATTRIBUTE_POLICY_ID", nullable = false, updatable = false)
+    @OneToOne(optional = false, cascade = CascadeType.ALL, orphanRemoval=true)
+    @JoinColumn(name = "ATTRIBUTE_POLICY_ID", nullable = false)
     private ReconciliationResourceAttributeMapEntity reconResAttribute;
 
     @Column(name = "RULE_TEXT")

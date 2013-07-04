@@ -228,7 +228,7 @@ public interface ManagedSystemWebService {
      * @return the int
      */
     @WebMethod
-    int removeResourceAttributeMaps(
+    void removeResourceAttributeMaps(
             @WebParam(name = "resourceId", targetNamespace = "") String resourceId);
 
     /**
