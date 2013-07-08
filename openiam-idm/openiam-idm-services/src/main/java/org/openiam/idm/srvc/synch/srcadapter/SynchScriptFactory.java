@@ -36,6 +36,8 @@ import org.openiam.idm.srvc.synch.ws.IdentitySynchWebService;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.util.SpringContextProvider;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -56,7 +58,10 @@ public class SynchScriptFactory {
 		
 	}
 
-	public static TransformScript createTransformationScript(SynchConfig config) throws ClassNotFoundException, IOException {
+	public static List<TransformScript> createTransformationScript(SynchConfig config) throws ClassNotFoundException, IOException {
+
+        LinkedList<TransformScript> scripts = new LinkedList<TransformScript>();
+
 		if (config.getUsePolicyMap()) {
             AttributeMapDozerConverter attributeMapDozerConverter =
                     (AttributeMapDozerConverter)SpringContextProvider.getBean("attributeMapDozerConverter");
@@ -67,11 +72,17 @@ public class SynchScriptFactory {
 
             TransformScript transformScript = new PolicyMapTransformScript(attrMap);
             transformScript.setApplicationContext(SpringContextProvider.getApplicationContext());
-            return transformScript;
+            scripts.add(transformScript);
 
-        } else if (StringUtils.isNotBlank(config.getTransformationRule())) {
-		    return (TransformScript)createScript(config.getTransformationRule());
         }
-        return null;
+        if (config.getUseTransformationScript() && StringUtils.isNotBlank(config.getTransformationRule())) {
+            if (config.getPolicyMapBeforeTransformation()) {
+                scripts.addLast((TransformScript)createScript(config.getTransformationRule()));
+            } else {
+                scripts.addFirst((TransformScript)createScript(config.getTransformationRule()));
+            }
+        }
+
+        return scripts;
 	}
 }
