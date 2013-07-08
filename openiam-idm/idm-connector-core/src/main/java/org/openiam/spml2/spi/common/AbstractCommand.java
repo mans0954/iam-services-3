@@ -2,6 +2,7 @@ package org.openiam.spml2.spi.common;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.dozer.converter.ManagedSysDozerConverter;
 import org.openiam.dozer.converter.ManagedSystemObjectMatchDozerConverter;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
@@ -31,7 +32,13 @@ public abstract class AbstractCommand<Request extends RequestType, Response exte
     @Autowired
     protected ManagedSystemObjectMatchDAO managedSysObjectMatchDao;
     @Autowired
+    protected ResourceDataService resourceDataService;
+    @Autowired
     protected ManagedSystemObjectMatchDozerConverter managedSystemObjectMatchDozerConverter;
+
+    @Autowired
+    protected ManagedSysDozerConverter managedSysDozerConverter;
+
     @Autowired
     @Qualifier("cryptor")
     private Cryptor cryptor;

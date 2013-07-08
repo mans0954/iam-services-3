@@ -1,35 +1,30 @@
-package org.openiam.spml2.spi.jdbc.command;
+package org.openiam.spml2.spi.jdbc.command.base;
 
 import org.apache.commons.lang.StringUtils;
+import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
+import org.openiam.provision.dto.GenericProvisionObject;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.spml2.msg.*;
-import org.openiam.spml2.spi.common.ModifyCommand;
+import org.openiam.spml2.spi.jdbc.command.data.AppTableConfiguration;
 import org.openiam.spml2.util.msg.ResponseBuilder;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.List;
 
-/**
- * Created with IntelliJ IDEA.
- * User: Lev
- * Date: 8/17/12
- * Time: 8:16 PM
- * To change this template use File | Settings | File Templates.
- */
-public class AppTableModifyCommand extends AbstractAppTableCommand implements ModifyCommand {
-
+public abstract class AbstractModifyAppTableCommand<ProvisionObject extends GenericProvisionObject> extends AbstractAppTableCommand<ModifyRequestType<ProvisionObject>, ModifyResponseType>  {
     private static final String UPDATE_SQL = "UPDATE %s SET %s WHERE %s=?";
     private static final String INSERT_SQL = "INSERT INTO %s (%s) VALUES (%s)";
 
-    public ModifyResponseType modify(final ModifyRequestType reqType) {
-        Connection con = null;
+    @Override
+    public ModifyResponseType execute(ModifyRequestType<ProvisionObject> modifyRequestType) throws ConnectorDataException {
 
 
         final ModifyResponseType response = new ModifyResponseType();
@@ -39,55 +34,26 @@ public class AppTableModifyCommand extends AbstractAppTableCommand implements Mo
         /* PSO - Provisioning Service Object -
 *     -  ID must uniquely specify an object on the target or in the target's namespace
 *     -  Try to make the PSO ID immutable so that there is consistency across changes. */
-        final PSOIdentifierType psoID = reqType.getPsoID();
+        final PSOIdentifierType psoID = modifyRequestType.getPsoID();
         final String principalName = psoID.getID();
 
         /* targetID -  */
         final String targetID = psoID.getTargetID();
 
-
         /* A) Use the targetID to look up the connection information under managed systems */
-        final ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
-        if(managedSys == null) {
-        	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, String.format("No Managed System with target id: %s", targetID));
-            return response;
-        }
-
-        if (StringUtils.isBlank(managedSys.getResourceId())) {
-        	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, "ResourceID is not defined in the ManagedSys Object");
-            return response;
-        }
-
-        final Resource res = resourceDataService.getResource(managedSys.getResourceId());
-        if(res == null) {
-        	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, "No resource for managed resource found");
-            return response;
-        }
-
-        final ResourceProp prop = res.getResourceProperty("TABLE_NAME");
-        if(prop == null) {
-        	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, "No TABLE_NAME property found");
-            return response;
-        }
-
-        final String tableName = prop.getPropValue();
-        if (tableName == null || tableName.length() == 0) {
-        	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, "TABLE NAME is not defined.");
-            return response;
-        }
+        final ManagedSysEntity managedSys = managedSysService.getManagedSysById(targetID);
+        AppTableConfiguration configuration = this.getConfiguration(targetID, managedSys);
 
         // modificationType contains a collection of objects for each type of operation
-        final List<ModificationType> modificationList = reqType.getModification();
-
+        final List<ModificationType> modificationList = modifyRequestType.getModification();
         if(log.isDebugEnabled()) {
             log.debug(String.format("ModificationList = %s", modificationList));
         }
 
 
-        final List<ModificationType> modTypeList = reqType.getModification();
-
+        final List<ModificationType> modTypeList = modifyRequestType.getModification();
+        Connection con = this.getConnection(managedSys);
         try {
-            con = connectionMgr.connect(managedSys);
 
             for (ModificationType mod : modTypeList) {
                 final ExtensibleType extType = mod.getData();
@@ -95,7 +61,7 @@ public class AppTableModifyCommand extends AbstractAppTableCommand implements Mo
 
                 int ctr = 0;
                 for (final ExtensibleObject obj : extobjectList) {
-                    if (identityExists(con, tableName, principalName, obj)) {
+                    if (identityExists(con, configuration.getTableName(), principalName, obj)) {
                         if(log.isDebugEnabled()) {
                             log.debug(String.format("Identity found. Modifying identity: %s", principalName));
                         }
@@ -108,7 +74,7 @@ public class AppTableModifyCommand extends AbstractAppTableCommand implements Mo
 
                         for (ExtensibleAttribute att : attrList) {
                             if (att.getOperation() != 0 && att.getName() != null) {
-                                if (att.getObjectType().equalsIgnoreCase("USER")) {
+                                if (compareObjectTypeWithObject(att.getObjectType())) {
                                     if (ctr != 0) {
                                         setBuffer.append(",");
                                     }
@@ -120,7 +86,7 @@ public class AppTableModifyCommand extends AbstractAppTableCommand implements Mo
                         }
 
                         if (ctr > 0) {
-                            final String sql = String.format(UPDATE_SQL, tableName, setBuffer, principalFieldName)    ;
+                            final String sql = String.format(UPDATE_SQL, configuration.getTableName(), setBuffer, principalFieldName)    ;
 
                             if(log.isDebugEnabled()) {
                                 log.debug(String.format("SQL=%s", sql));
@@ -131,59 +97,42 @@ public class AppTableModifyCommand extends AbstractAppTableCommand implements Mo
                             ctr = 1;
                             for (final ExtensibleAttribute att : attrList) {
                                 if (att.getOperation() != 0 && att.getName() != null) {
-                                    if(StringUtils.equalsIgnoreCase(att.getObjectType(), "user")) {
+                                    if(compareObjectTypeWithObject(att.getObjectType())) {
                                         setStatement(statement, ctr, att);
                                         ctr++;
                                     }
 
                                 }
-
                             }
                             if (principalFieldName != null) {
                                 setStatement(statement, ctr, principalFieldDataType, principalName);
                             }
-
                             statement.executeUpdate();
                         }
-
                     } else {
-
                         // identity does not exist in the target system
                         // identity needs to be re-provisioned
-                        addIdentity(con, tableName, principalName, obj);
+                        addIdentity(con, configuration.getTableName(), principalName, obj);
                     }
 
                 }
             }
+            return response;
         } catch (SQLException se) {
-            log.error(se);
-            ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.SQL_ERROR, se.toString());
-
-        } catch (ClassNotFoundException cnfe) {
-            log.error(cnfe);
-            ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, cnfe.toString());
-        } catch (ParseException pe) {
-            log.error(pe);
-            ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, pe.toString());
+            log.error(se.getMessage(),se);
+            throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR,se.getMessage());
         } catch(Throwable e) {
-            log.error(e);
-            ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.OTHER_ERROR, e.toString());
+            log.error(e.getMessage(),e);
+            throw new ConnectorDataException(ErrorCode.OTHER_ERROR,e.getMessage());
         } finally {
-            if (con != null) {
-                try {
-                    con.close();
-                } catch (SQLException s) {
-                    log.error(s);
-                    ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.SQL_ERROR, s.toString());
-                }
-            }
+            this.closeConnection(con);
         }
 
-        return response;
     }
 
+
     private void addIdentity(final Connection con, final String tableName, final String principalName, final ExtensibleObject obj)
-            throws SQLException, ParseException {
+            throws ConnectorDataException {
         // build sql
 
         final StringBuilder columnBuf = new StringBuilder("");
@@ -226,25 +175,30 @@ public class AppTableModifyCommand extends AbstractAppTableCommand implements Mo
             log.debug(String.format("ADD SQL=%s", sql));
         }
 
-        final PreparedStatement statement = con.prepareStatement(sql);
-
-        ctr = 1;
-        for (final ExtensibleAttribute att : attrList) {
-            setStatement(statement, ctr, att);
-            ctr++;
-            if(log.isDebugEnabled()) {
-                log.debug(String.format("Binding parameter: %s -> %s", att.getName(), att.getValue()));
+        PreparedStatement statement = null;
+        try{
+            con.prepareStatement(sql);
+            ctr = 1;
+            for (final ExtensibleAttribute att : attrList) {
+                setStatement(statement, ctr, att);
+                ctr++;
+                if(log.isDebugEnabled()) {
+                    log.debug(String.format("Binding parameter: %s -> %s", att.getName(), att.getValue()));
+                }
             }
 
+            if (obj.getPrincipalFieldName() != null) {
+                setStatement(statement, ctr, obj.getPrincipalFieldDataType(), principalName);
+            }
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            log.error(e.getMessage(),e);
+            throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR,e.getMessage());
+        }finally {
+            this.closeStatement(statement);
         }
-
-
-        if (obj.getPrincipalFieldName() != null) {
-            setStatement(statement, ctr, obj.getPrincipalFieldDataType(), principalName);
-        }
-
-        statement.executeUpdate();
-
-
     }
+
+    protected abstract boolean compareObjectTypeWithObject(String objectType);
+
 }

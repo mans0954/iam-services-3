@@ -1,4 +1,4 @@
-package org.openiam.spml2.spi.orcl.command;
+package org.openiam.spml2.spi.orcl;
 
 import org.openiam.spml2.msg.ErrorCode;
 import org.openiam.spml2.msg.LookupAttributeRequestType;

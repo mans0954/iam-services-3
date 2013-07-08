@@ -1,10 +1,13 @@
-package org.openiam.spml2.spi.jdbc.command;
+package org.openiam.spml2.spi.jdbc;
 
 import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
+import org.openiam.spml2.msg.ConnectorDataException;
+import org.openiam.spml2.msg.RequestType;
+import org.openiam.spml2.msg.ResponseType;
 import org.openiam.spml2.spi.common.jdbc.AbstractJDBCCommand;
 
 import java.sql.*;
@@ -19,6 +22,7 @@ import java.util.List;
  * Time: 5:22 PM
  * To change this template use File | Settings | File Templates.
  */
+@Deprecated
 public abstract class AbstractAppTableCommand extends AbstractJDBCCommand {
 
     private static final String DATE_FORMAT = "MM/dd/yyyy";
@@ -32,6 +36,11 @@ public abstract class AbstractAppTableCommand extends AbstractJDBCCommand {
         final String dataType = att.getDataType();
         final String dataValue = att.getValue();
         setStatement(statement, column, dataType, dataValue);
+    }
+
+    @Override
+    public ResponseType execute(RequestType requestType) throws ConnectorDataException {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     protected void setStatement(PreparedStatement statement, int column, String dataType, String value)
@@ -104,73 +113,73 @@ public abstract class AbstractAppTableCommand extends AbstractJDBCCommand {
 
     public PreparedStatement createSelectStatement(final Connection con, final Resource res, final String tableName, final String principalName) throws SQLException, ParseException {
 
-        final List<AttributeMap> attrMap = attributeMaps(res);
-        if (attrMap == null) {
-            log.debug("Attribute Map is null");
-            return null;
-        }
-
-
-
-        int colCount = 0;
-        String principalFieldName = null;
-        String principalFieldDataType = null;
-        final StringBuilder columnList = new StringBuilder();
-        for (AttributeMap atr : attrMap) {
-            final String objectType = atr.getMapForObjectType();
-            if(StringUtils.equalsIgnoreCase(objectType, "principal")) {
-                principalFieldName = atr.getAttributeName();
-                principalFieldDataType = atr.getDataType();
-
-            } else if (StringUtils.equalsIgnoreCase(objectType, "USER")) {
-                if (colCount > 0) {
-                    columnList.append(",");
-                }
-                columnList.append(atr.getAttributeName());
-                colCount++;
-            }
-        }
-
-        final String sql = String.format(SELECT_SQL, columnList, tableName, principalFieldName);
-        if(log.isDebugEnabled()) {
-            log.debug(String.format("SQL: %s", sql));
-        }
-
-        final PreparedStatement statement = con.prepareStatement(sql);
-        setStatement(statement, 1, principalFieldDataType, principalName);
-
-        return statement;
+//        final List<AttributeMap> attrMap = attributeMaps(res);
+//        if (attrMap == null) {
+//            log.debug("Attribute Map is null");
+//            return null;
+//        }
+//
+//
+//
+//        int colCount = 0;
+//        String principalFieldName = null;
+//        String principalFieldDataType = null;
+//        final StringBuilder columnList = new StringBuilder();
+//        for (AttributeMap atr : attrMap) {
+//            final String objectType = atr.getMapForObjectType();
+//            if(StringUtils.equalsIgnoreCase(objectType, "principal")) {
+//                principalFieldName = atr.getAttributeName();
+//                principalFieldDataType = atr.getDataType();
+//
+//            } else if (StringUtils.equalsIgnoreCase(objectType, "USER")) {
+//                if (colCount > 0) {
+//                    columnList.append(",");
+//                }
+//                columnList.append(atr.getAttributeName());
+//                colCount++;
+//            }
+//        }
+//
+//        final String sql = String.format(SELECT_SQL, columnList, tableName, principalFieldName);
+//        if(log.isDebugEnabled()) {
+//            log.debug(String.format("SQL: %s", sql));
+//        }
+//
+//        final PreparedStatement statement = con.prepareStatement(sql);
+//        setStatement(statement, 1, principalFieldDataType, principalName);
+//
+        return null;
     }
 
     public PreparedStatement createDeleteStatement(final Connection con, final Resource res, final String tableName, final String principalName) throws SQLException, ParseException {
-        final List<AttributeMap> attrMap = attributeMaps(res);
-        if (attrMap == null) {
-            if(log.isDebugEnabled()) {
-                log.debug("Attribute Map is null");
-            }
-            return null;
-        }
+//        final List<AttributeMap> attrMap = attributeMaps(res);
+//        if (attrMap == null) {
+//            if(log.isDebugEnabled()) {
+//                log.debug("Attribute Map is null");
+//            }
+//            return null;
+//        }
+//
+//        String principalFieldName = null;
+//        String principalFieldDataType = null;
+//        for (final AttributeMap atr : attrMap) {
+//            if (StringUtils.equalsIgnoreCase(atr.getMapForObjectType(), "principal")) {
+//                principalFieldName = atr.getAttributeName();
+//                principalFieldDataType = atr.getDataType();
+//
+//            }
+//        }
+//
+//        final String sql = String.format(DELETE_SQL, tableName, principalFieldName);
+//
+//        if(log.isDebugEnabled()) {
+//            log.debug(String.format("SQL: %s", sql));
+//        }
+//
+//        final PreparedStatement statement = con.prepareStatement(sql);
+//        setStatement(statement, 1, principalFieldDataType, principalName);
 
-        String principalFieldName = null;
-        String principalFieldDataType = null;
-        for (final AttributeMap atr : attrMap) {
-            if (StringUtils.equalsIgnoreCase(atr.getMapForObjectType(), "principal")) {
-                principalFieldName = atr.getAttributeName();
-                principalFieldDataType = atr.getDataType();
-
-            }
-        }
-
-        final String sql = String.format(DELETE_SQL, tableName, principalFieldName);
-
-        if(log.isDebugEnabled()) {
-            log.debug(String.format("SQL: %s", sql));
-        }
-
-        final PreparedStatement statement = con.prepareStatement(sql);
-        setStatement(statement, 1, principalFieldDataType, principalName);
-
-        return statement;
+        return null;
     }
 
     public PreparedStatement createSetPasswordStatement(final Connection con, final Resource res,
@@ -179,44 +188,44 @@ public abstract class AbstractAppTableCommand extends AbstractJDBCCommand {
         String colName = null;
         String colDataType = null;
 
-        final List<AttributeMap> attrMap = attributeMaps(res);
-        if (attrMap == null) {
-            if(log.isDebugEnabled()) {
-                log.debug("Attribute Map is null");
-            }
-            return null;
-        }
+//        final List<AttributeMap> attrMap = attributeMaps(res);
+//        if (attrMap == null) {
+//            if(log.isDebugEnabled()) {
+//                log.debug("Attribute Map is null");
+//            }
+//            return null;
+//        }
+//
+//        String principalFieldName = null;
+//        String principalFieldDataType = null;
+//        for (final AttributeMap atr : attrMap) {
+//            if (atr.getDataType() == null) {
+//                atr.setDataType("String");
+//            }
+//
+//            final String objectType = atr.getMapForObjectType();
+//            if(StringUtils.equalsIgnoreCase(objectType, "password")) {
+//                colName = atr.getAttributeName();
+//                colDataType = atr.getDataType();
+//            }
+//
+//            if(StringUtils.equalsIgnoreCase(objectType, "principal")) {
+//                principalFieldName = atr.getAttributeName();
+//                principalFieldDataType = atr.getDataType();
+//
+//            }
+//        }
+//
+//        final String sql = String.format(UPDATE_SQL, tableName, colName, principalFieldName);
+//
+//        if(log.isDebugEnabled()) {
+//            log.debug(String.format("SQL: %s", sql));
+//        }
+//
+//        final PreparedStatement statement = con.prepareStatement(sql);
+//        setStatement(statement, 1, colDataType, password);
+//        setStatement(statement, 2, principalFieldDataType, principalName);
 
-        String principalFieldName = null;
-        String principalFieldDataType = null;
-        for (final AttributeMap atr : attrMap) {
-            if (atr.getDataType() == null) {
-                atr.setDataType("String");
-            }
-
-            final String objectType = atr.getMapForObjectType();
-            if(StringUtils.equalsIgnoreCase(objectType, "password")) {
-                colName = atr.getAttributeName();
-                colDataType = atr.getDataType();
-            }
-
-            if(StringUtils.equalsIgnoreCase(objectType, "principal")) {
-                principalFieldName = atr.getAttributeName();
-                principalFieldDataType = atr.getDataType();
-
-            }
-        }
-
-        final String sql = String.format(UPDATE_SQL, tableName, colName, principalFieldName);
-
-        if(log.isDebugEnabled()) {
-            log.debug(String.format("SQL: %s", sql));
-        }
-
-        final PreparedStatement statement = con.prepareStatement(sql);
-        setStatement(statement, 1, colDataType, password);
-        setStatement(statement, 2, principalFieldDataType, principalName);
-
-        return statement;
+        return null;
     }
 }

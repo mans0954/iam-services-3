@@ -1,4 +1,4 @@
-package org.openiam.spml2.spi.orcl.command;
+package org.openiam.spml2.spi.orcl;
 
 import org.mule.util.StringUtils;
 import org.openiam.spml2.spi.common.jdbc.AbstractJDBCCommand;

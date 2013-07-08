@@ -1,9 +1,8 @@
-package org.openiam.spml2.spi.jdbc.command;
+package org.openiam.spml2.spi.orcl;
 
 import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.spml2.msg.ErrorCode;
 import org.openiam.spml2.msg.PSOIdentifierType;
 import org.openiam.spml2.msg.ResponseType;
@@ -13,20 +12,18 @@ import org.openiam.spml2.spi.common.PasswordCommand;
 import org.openiam.spml2.util.msg.ResponseBuilder;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.text.ParseException;
 
 /**
  * Created with IntelliJ IDEA.
  * User: Lev
- * Date: 8/17/12
- * Time: 10:22 PM
+ * Date: 8/21/12
+ * Time: 10:49 AM
  * To change this template use File | Settings | File Templates.
  */
-public class AppTablePasswordCommand extends AbstractAppTableCommand implements PasswordCommand {
+public class OraclePasswordCommand extends AbstractOraclePasswordCommand implements PasswordCommand {
+    @Override
     public ResponseType setPassword(SetPasswordRequestType reqType) {
-
         final ResponseType response = new ResponseType();
         response.setStatus(StatusCodeType.SUCCESS);
 
@@ -55,33 +52,15 @@ public class AppTablePasswordCommand extends AbstractAppTableCommand implements 
             return response;
         }
 
-        final ResourceProp prop = res.getResourceProperty("TABLE_NAME");
-        if(prop == null) {
-        	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, "No TABLE_NAME property found");
-            return response;
-        }
-
-        final String tableName = prop.getPropValue();
-        if (StringUtils.isBlank(tableName)) {
-        	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, "TABLE NAME is not defined.");
-            return response;
-        }
-
-
         Connection con = null;
         try {
-            con = connectionMgr.connect(managedSys);
-            final PreparedStatement statement = createSetPasswordStatement(con, res, tableName, principalName, password);
-            statement.executeUpdate();
+            changePassword(managedSys, principalName, password);
         } catch (SQLException se) {
             log.error(se);
             ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.SQL_ERROR, se.toString());
         } catch (ClassNotFoundException cnfe) {
             log.error(cnfe);
             ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, cnfe.toString());
-        } catch (ParseException pe) {
-            log.error(pe);
-            ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, pe.toString());
         } catch(Throwable e) {
             log.error(e);
             ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.OTHER_ERROR, e.toString());
@@ -98,7 +77,5 @@ public class AppTablePasswordCommand extends AbstractAppTableCommand implements 
 
 
         return response;
-
-
     }
 }
