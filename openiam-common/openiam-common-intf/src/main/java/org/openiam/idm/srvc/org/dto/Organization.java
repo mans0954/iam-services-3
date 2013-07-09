@@ -39,7 +39,7 @@ import org.openiam.idm.srvc.org.domain.OrganizationEntity;
         "lstUpdate",
         "lstUpdatedBy",
         "metadataTypeId",
-        "orgId",
+        "id",
         "organizationName",
         "classification",
         "internalOrgId",
@@ -57,7 +57,7 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
 
     private static final long serialVersionUID = -6297113958697455428L;
 
-    protected String orgId;
+    protected String id;
 
     protected String alias;
 
@@ -108,13 +108,6 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
      * default constructor
      */
     public Organization() {
-    }
-
-    /**
-     * minimal constructor
-     */
-    public Organization(String companyId) {
-        this.orgId = companyId;
     }
 
     /**
@@ -296,26 +289,16 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
     public void setMetadataTypeId(String value) {
         this.metadataTypeId = value;
     }
+   
+    public String getId() {
+		return id;
+	}
 
-    /**
-     * Gets the value of the orgId property.
-     *
-     * @return possible object is {@link String }
-     */
-    public String getOrgId() {
-        return orgId;
-    }
+	public void setId(String id) {
+		this.id = id;
+	}
 
-    /**
-     * Sets the value of the orgId property.
-     *
-     * @param value allowed object is {@link String }
-     */
-    public void setOrgId(String value) {
-        this.orgId = value;
-    }
-
-    /**
+	/**
      * Gets the value of the organizationName property.
      *
      * @return possible object is {@link String }
@@ -430,41 +413,150 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
         return getOrganizationName().compareTo(o.getOrganizationName());
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Organization)) return false;
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((abbreviation == null) ? 0 : abbreviation.hashCode());
+		result = prime * result + ((alias == null) ? 0 : alias.hashCode());
+		result = prime
+				* result
+				+ ((classificaitonAsString == null) ? 0
+						: classificaitonAsString.hashCode());
+		result = prime * result
+				+ ((classification == null) ? 0 : classification.hashCode());
+		result = prime * result
+				+ ((createDate == null) ? 0 : createDate.hashCode());
+		result = prime * result
+				+ ((createdBy == null) ? 0 : createdBy.hashCode());
+		result = prime * result
+				+ ((description == null) ? 0 : description.hashCode());
+		result = prime * result
+				+ ((domainName == null) ? 0 : domainName.hashCode());
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result
+				+ ((internalOrgId == null) ? 0 : internalOrgId.hashCode());
+		result = prime * result + ((ldapStr == null) ? 0 : ldapStr.hashCode());
+		result = prime * result
+				+ ((lstUpdate == null) ? 0 : lstUpdate.hashCode());
+		result = prime * result
+				+ ((lstUpdatedBy == null) ? 0 : lstUpdatedBy.hashCode());
+		result = prime * result
+				+ ((metadataTypeId == null) ? 0 : metadataTypeId.hashCode());
+		result = prime * result
+				+ ((operation == null) ? 0 : operation.hashCode());
+		result = prime
+				* result
+				+ ((organizationName == null) ? 0 : organizationName.hashCode());
+		result = prime * result
+				+ ((selected == null) ? 0 : selected.hashCode());
+		result = prime * result + ((status == null) ? 0 : status.hashCode());
+		result = prime * result + ((symbol == null) ? 0 : symbol.hashCode());
+		return result;
+	}
 
-        Organization that = (Organization) o;
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Organization other = (Organization) obj;
+		if (abbreviation == null) {
+			if (other.abbreviation != null)
+				return false;
+		} else if (!abbreviation.equals(other.abbreviation))
+			return false;
+		if (alias == null) {
+			if (other.alias != null)
+				return false;
+		} else if (!alias.equals(other.alias))
+			return false;
+		if (classificaitonAsString == null) {
+			if (other.classificaitonAsString != null)
+				return false;
+		} else if (!classificaitonAsString.equals(other.classificaitonAsString))
+			return false;
+		if (classification != other.classification)
+			return false;
+		if (createDate == null) {
+			if (other.createDate != null)
+				return false;
+		} else if (!createDate.equals(other.createDate))
+			return false;
+		if (createdBy == null) {
+			if (other.createdBy != null)
+				return false;
+		} else if (!createdBy.equals(other.createdBy))
+			return false;
+		if (description == null) {
+			if (other.description != null)
+				return false;
+		} else if (!description.equals(other.description))
+			return false;
+		if (domainName == null) {
+			if (other.domainName != null)
+				return false;
+		} else if (!domainName.equals(other.domainName))
+			return false;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		if (internalOrgId == null) {
+			if (other.internalOrgId != null)
+				return false;
+		} else if (!internalOrgId.equals(other.internalOrgId))
+			return false;
+		if (ldapStr == null) {
+			if (other.ldapStr != null)
+				return false;
+		} else if (!ldapStr.equals(other.ldapStr))
+			return false;
+		if (lstUpdate == null) {
+			if (other.lstUpdate != null)
+				return false;
+		} else if (!lstUpdate.equals(other.lstUpdate))
+			return false;
+		if (lstUpdatedBy == null) {
+			if (other.lstUpdatedBy != null)
+				return false;
+		} else if (!lstUpdatedBy.equals(other.lstUpdatedBy))
+			return false;
+		if (metadataTypeId == null) {
+			if (other.metadataTypeId != null)
+				return false;
+		} else if (!metadataTypeId.equals(other.metadataTypeId))
+			return false;
+		if (operation != other.operation)
+			return false;
+		if (organizationName == null) {
+			if (other.organizationName != null)
+				return false;
+		} else if (!organizationName.equals(other.organizationName))
+			return false;
+		if (selected == null) {
+			if (other.selected != null)
+				return false;
+		} else if (!selected.equals(other.selected))
+			return false;
+		if (status == null) {
+			if (other.status != null)
+				return false;
+		} else if (!status.equals(other.status))
+			return false;
+		if (symbol == null) {
+			if (other.symbol != null)
+				return false;
+		} else if (!symbol.equals(other.symbol))
+			return false;
+		return true;
+	}
 
-        if (abbreviation != null ? !abbreviation.equals(that.abbreviation) : that.abbreviation != null) return false;
-        if (alias != null ? !alias.equals(that.alias) : that.alias != null) return false;
-        if (attributes != null ? !attributes.equals(that.attributes) : that.attributes != null) return false;
-        if (classification != that.classification) return false;
-        if (createDate != null ? !createDate.equals(that.createDate) : that.createDate != null) return false;
-        if (createdBy != null ? !createdBy.equals(that.createdBy) : that.createdBy != null) return false;
-        if (description != null ? !description.equals(that.description) : that.description != null) return false;
-        if (domainName != null ? !domainName.equals(that.domainName) : that.domainName != null) return false;
-        if (internalOrgId != null ? !internalOrgId.equals(that.internalOrgId) : that.internalOrgId != null)
-            return false;
-        if (ldapStr != null ? !ldapStr.equals(that.ldapStr) : that.ldapStr != null) return false;
-        if (lstUpdate != null ? !lstUpdate.equals(that.lstUpdate) : that.lstUpdate != null) return false;
-        if (lstUpdatedBy != null ? !lstUpdatedBy.equals(that.lstUpdatedBy) : that.lstUpdatedBy != null) return false;
-        if (metadataTypeId != null ? !metadataTypeId.equals(that.metadataTypeId) : that.metadataTypeId != null)
-            return false;
-        if (operation != that.operation) return false;
-        if (orgId != null ? !orgId.equals(that.orgId) : that.orgId != null) return false;
-        if (organizationName != null ? !organizationName.equals(that.organizationName) : that.organizationName != null)
-            return false;
-        if (selected != null ? !selected.equals(that.selected) : that.selected != null) return false;
-        if (status != null ? !status.equals(that.status) : that.status != null) return false;
-        if (symbol != null ? !symbol.equals(that.symbol) : that.symbol != null) return false;
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        return orgId != null ? orgId.hashCode() : 0;
-    }
+   
+  
 }

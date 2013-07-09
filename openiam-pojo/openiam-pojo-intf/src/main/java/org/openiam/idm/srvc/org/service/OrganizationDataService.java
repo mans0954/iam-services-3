@@ -15,9 +15,6 @@ import java.util.List;
 public interface OrganizationDataService {
 
     @WebMethod
-    public List<Organization> getTopLevelOrganizations(@WebParam(name = "requesterId", targetNamespace = "") String requesterId);
-
-    @WebMethod
     public Organization getOrganization(@WebParam(name = "orgId", targetNamespace = "") String orgId,
                                         @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 

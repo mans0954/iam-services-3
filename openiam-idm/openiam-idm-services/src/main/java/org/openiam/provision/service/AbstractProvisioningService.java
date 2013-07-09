@@ -762,10 +762,10 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
         if (affiliationList != null && affiliationList.size() > 0) {
             for (Organization org: affiliationList) {
                 // check if the roleId is valid
-                if (org.getOrgId() == null) {
+                if (org.getId() == null) {
                     return ResponseCode.OBJECT_ID_INVALID;
                 }
-                orgManager.addUserToOrg(org.getOrgId(), user.getUserId());
+                orgManager.addUserToOrg(org.getId(), user.getUserId());
 
                 logList.add( auditHelper.createLogObject("ADD AFFILIATION",
                         user.getRequestorDomain(), user.getRequestorLogin(),
@@ -1795,12 +1795,12 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                     o.getOperation() == AttributeOperationEnum.NO_CHANGE) {
 
                 if (!inCurList) {
-                    orgManager.addUserToOrg(o.getOrgId(),userId);
+                    orgManager.addUserToOrg(o.getId(),userId);
                 }
 
             } else if ( o.getOperation() == AttributeOperationEnum.DELETE ) {
                 if (inCurList) {
-                    orgManager.removeUserFromOrg(o.getOrgId(),userId);
+                    orgManager.removeUserFromOrg(o.getId(),userId);
                 }
             }
         }
@@ -1809,7 +1809,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
     private boolean isCurrentOrgInNewList(Organization newOrg, List<Organization> curOrgList) {
         if (curOrgList != null) {
             for ( Organization o : curOrgList) {
-                if (o.getOrgId().equals(newOrg.getOrgId())) {
+                if (o.getId().equals(newOrg.getId())) {
 
                     return true;
                 }

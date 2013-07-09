@@ -9,7 +9,6 @@ import java.util.List;
 
 public interface OrganizationService {
 
-	public List<OrganizationEntity> getTopLevelOrganizations(String requesterId);
     public OrganizationEntity getOrganization(String orgId);
 	public OrganizationEntity getOrganization(final String orgId, String requesterId);
     public OrganizationEntity getOrganizationByName(final String name, String requesterId);

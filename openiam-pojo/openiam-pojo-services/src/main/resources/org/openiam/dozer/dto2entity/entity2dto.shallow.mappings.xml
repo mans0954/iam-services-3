@@ -194,6 +194,10 @@
 			<a>userAttributes</a>
 			<b>userAttributes</b>
 		</field-exclude>
+		<field-exclude>
+			<a>organizationAttributes</a>
+			<b>organizationAttributes</b>
+		</field-exclude>
 	</mapping>
 
 	<mapping>

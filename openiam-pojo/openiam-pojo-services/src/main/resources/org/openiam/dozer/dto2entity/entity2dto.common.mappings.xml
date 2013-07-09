@@ -89,9 +89,16 @@
 	</mapping>
 
 	<mapping>
-		<class-a>org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity
-		</class-a>
+		<class-a>org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity</class-a>
 		<class-b>org.openiam.idm.srvc.org.dto.OrganizationAttribute</class-b>
+		<field>
+			<a>element.id</a>
+			<b>metadataElementId</b>
+		</field>
+		<field>
+			<a>organization.id</a>
+			<b>organizationId</b>
+		</field>
 	</mapping>
 
 	<mapping>
@@ -99,7 +106,7 @@
 		</class-a>
 		<class-b>org.openiam.idm.srvc.org.dto.UserAffiliation</class-b>
 		<field>
-			<a>organization.orgId</a>
+			<a>organization.id</a>
 			<b>organizationId</b>
 		</field>
 		<field>

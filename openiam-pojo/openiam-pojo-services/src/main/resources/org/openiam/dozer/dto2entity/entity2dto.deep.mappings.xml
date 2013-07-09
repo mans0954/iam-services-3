@@ -262,6 +262,12 @@
 			<a>userAttributes</a>
 			<b>userAttributes</b>
 		</field>
+		<field
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
+			custom-converter-param="dto2entityDeepDozerMapper">
+			<a>organizationAttributes</a>
+			<b>organizationAttributes</b>
+		</field>
 	</mapping>
 
 	<mapping>

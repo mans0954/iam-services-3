@@ -244,10 +244,10 @@ public class AddUser {
         if (affiliationList != null && affiliationList.size() > 0) {
             for (Organization org : affiliationList) {
                 // check if the roleId is valid
-                if (org.getOrgId() == null) {
+                if (org.getId() == null) {
                     return ResponseCode.OBJECT_ID_INVALID;
                 }
-                orgManager.addUserToOrg(org.getOrgId(), user.getUserId());
+                orgManager.addUserToOrg(org.getId(), user.getUserId());
 
                 logList.add(auditHelper.createLogObject("ADD AFFILIATION",
                         user.getRequestorDomain(), user.getRequestorLogin(),

@@ -438,7 +438,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 
     @Override
     public void disassociateUsersFromOrganization(String organizationId) {
-        final String queryString = String.format("UPDATE %s u SET u.organization = NULL WHERE u.organization.orgId = :organizationId",
+        final String queryString = String.format("UPDATE %s u SET u.organization = NULL WHERE u.organization.id = :organizationId",
                                                  domainClass.getSimpleName());
         final Query query = getSession().createQuery(queryString);
         query.setParameter("organizationId", organizationId);

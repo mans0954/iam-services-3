@@ -32,6 +32,7 @@ import org.hibernate.annotations.Where;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
+import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 
@@ -112,6 +113,9 @@ public class MetadataElementEntity implements Serializable {
     
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "element", fetch = FetchType.LAZY)
     private Set<UserAttributeEntity> userAttributes;
+    
+    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "element", fetch = FetchType.LAZY)
+    private Set<OrganizationAttributeEntity> organizationAttributes;
 
 	public String getId() {
 		return id;
@@ -253,8 +257,15 @@ public class MetadataElementEntity implements Serializable {
 	public void setUserAttributes(Set<UserAttributeEntity> userAttributes) {
 		this.userAttributes = userAttributes;
 	}
-	
-	
+
+	public Set<OrganizationAttributeEntity> getOrganizationAttributes() {
+		return organizationAttributes;
+	}
+
+	public void setOrganizationAttributes(
+			Set<OrganizationAttributeEntity> organizationAttributes) {
+		this.organizationAttributes = organizationAttributes;
+	}
 
 	public boolean isPublic() {
 		return isPublic;

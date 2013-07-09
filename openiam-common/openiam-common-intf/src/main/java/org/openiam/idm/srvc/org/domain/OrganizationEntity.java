@@ -45,13 +45,12 @@ public class OrganizationEntity {
     @GenericGenerator(name="system-uuid", strategy = "uuid")
     @Column(name="COMPANY_ID", length=32, nullable = false)
     @DocumentId
-    private String orgId;
+    private String id;
 
     @Column(name="ALIAS", length=100)
     private String alias;
 
-    @OneToMany(fetch=FetchType.LAZY,orphanRemoval=true,cascade={CascadeType.ALL})
-    @JoinColumn(name="COMPANY_ID", referencedColumnName="COMPANY_ID")
+    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "organization", fetch = FetchType.LAZY)
     @MapKeyColumn(name="name")
     @Fetch(FetchMode.SUBSELECT)
     private Map<String, OrganizationAttributeEntity> attributes = new HashMap<String, OrganizationAttributeEntity>(0);
@@ -116,15 +115,15 @@ public class OrganizationEntity {
     public OrganizationEntity() {
     }
 
-    public String getOrgId() {
-        return orgId;
-    }
+    public String getId() {
+		return id;
+	}
 
-    public void setOrgId(String orgId) {
-        this.orgId = orgId;
-    }
+	public void setId(String id) {
+		this.id = id;
+	}
 
-    public String getAlias() {
+	public String getAlias() {
         return alias;
     }
 
@@ -282,7 +281,7 @@ public class OrganizationEntity {
 			if(childOrganizations != null) {
 				for(final Iterator<OrganizationEntity> it = childOrganizations.iterator(); it.hasNext();) {
 					final OrganizationEntity entity = it.next();
-					if(entity.getOrgId().equals(organizationId)) {
+					if(entity.getId().equals(organizationId)) {
 						it.remove();
 						break;
 					}
@@ -296,7 +295,7 @@ public class OrganizationEntity {
 		if(organizationId != null) {
 			if(childOrganizations != null) {
 				for(final OrganizationEntity entity : childOrganizations) {
-					if(entity.getOrgId().equals(organizationId)) {
+					if(entity.getId().equals(organizationId)) {
 						retval = true;
 						break;
 					}
@@ -332,7 +331,7 @@ public class OrganizationEntity {
 				+ ((lstUpdatedBy == null) ? 0 : lstUpdatedBy.hashCode());
 		result = prime * result
 				+ ((metadataTypeId == null) ? 0 : metadataTypeId.hashCode());
-		result = prime * result + ((orgId == null) ? 0 : orgId.hashCode());
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime
 				* result
 				+ ((organizationName == null) ? 0 : organizationName.hashCode());
@@ -407,10 +406,10 @@ public class OrganizationEntity {
 				return false;
 		} else if (!metadataTypeId.equals(other.metadataTypeId))
 			return false;
-		if (orgId == null) {
-			if (other.orgId != null)
+		if (id == null) {
+			if (other.id != null)
 				return false;
-		} else if (!orgId.equals(other.orgId))
+		} else if (!id.equals(other.id))
 			return false;
 		if (organizationName == null) {
 			if (other.organizationName != null)

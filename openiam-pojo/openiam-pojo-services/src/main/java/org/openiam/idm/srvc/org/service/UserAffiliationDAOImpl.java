@@ -18,7 +18,7 @@ import java.util.Set;
 @Repository("orgAffiliationDAO")
 public class UserAffiliationDAOImpl extends BaseDaoImpl<UserAffiliationEntity, String> implements UserAffiliationDAO {
 
-	private static String DELETE_BY_ORGANIZATION_ID = "DELETE FROM %s ua WHERE ua.organization.orgId = :organizationId";
+	private static String DELETE_BY_ORGANIZATION_ID = "DELETE FROM %s ua WHERE ua.organization.id = :organizationId";
 	
 	@PostConstruct
 	public void initSQL() {
@@ -33,8 +33,8 @@ public class UserAffiliationDAOImpl extends BaseDaoImpl<UserAffiliationEntity, S
 
 
 		Query qry = session.createQuery("select org from org.openiam.idm.srvc.org.domain.OrganizationEntity as org, org.openiam.idm.srvc.org.domain.UserAffiliationEntity ua " +
-						" where ua.user.userId = :userId and ua.organization.orgId = org.orgId " +
-                        ((filter!=null && !filter.isEmpty())? " and org.orgId in (:orgList)" :"") +
+						" where ua.user.userId = :userId and ua.organization.id = org.id " +
+                        ((filter!=null && !filter.isEmpty())? " and org.id in (:orgList)" :"") +
 						" order by org.organizationName ");
 		
 		qry.setString("userId",userId);
@@ -53,7 +53,7 @@ public class UserAffiliationDAOImpl extends BaseDaoImpl<UserAffiliationEntity, S
 	public UserAffiliationEntity getRecord(String userId, String organizationId) {
 		final Criteria criteria = getCriteria()
 								.add(Restrictions.eq("user.userId", userId))
-								.add(Restrictions.eq("organization.orgId", organizationId));
+								.add(Restrictions.eq("organization.id", organizationId));
 		return (UserAffiliationEntity)criteria.uniqueResult();
 	}
 	

@@ -18,7 +18,7 @@ public class OrganizationSearchBeanConverter implements SearchBeanConverter<Orga
     @Override
     public OrganizationEntity convert(OrganizationSearchBean searchBean) {
         final OrganizationEntity organization = new OrganizationEntity();
-        organization.setOrgId(StringUtils.trimToNull(searchBean.getKey()));
+        organization.setId(StringUtils.trimToNull(searchBean.getKey()));
         organization.setOrganizationName(StringUtils.trimToNull(searchBean.getOrganizationName()));
         organization.setMetadataTypeId(StringUtils.trimToNull(searchBean.getTypeId()));
         organization.setClassification(OrgClassificationEnum.fromStringValue(searchBean.getClassification()));

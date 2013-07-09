@@ -143,7 +143,7 @@ public interface UserDataWebService {
      * .String)
      */
     @WebMethod
-    public UserAttribute getAttribute(@WebParam(name = "attrId", targetNamespace = "") String attrId);
+    public UserAttribute getAttribute(@WebParam(name = "id", targetNamespace = "") String attrId);
 
     /*
      * (non-Javadoc)

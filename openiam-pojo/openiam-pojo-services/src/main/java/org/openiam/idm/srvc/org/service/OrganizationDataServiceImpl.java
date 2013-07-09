@@ -65,12 +65,6 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     private OrganizationAttributeDozerConverter organizationAttributeDozerConverter;
 
     @Override
-    public List<Organization> getTopLevelOrganizations(String requesterId) {
-        final List<OrganizationEntity> entityList = organizationService.getTopLevelOrganizations(requesterId);
-        return organizationDozerConverter.convertToDTOList(entityList, false);
-    }
-
-    @Override
     public Organization getOrganization(final String orgId, String requesterId) {
         final OrganizationEntity entity = organizationService.getOrganization(orgId, requesterId);
         return organizationDozerConverter.convertToDTO(entity, false);
@@ -201,11 +195,11 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 
             final OrganizationEntity found = organizationService.getOrganizationByName(organization.getOrganizationName(), null);
             if (found != null) {
-                if (StringUtils.isBlank(organization.getOrgId()) && found != null) {
+                if (StringUtils.isBlank(organization.getId()) && found != null) {
                     throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
                 }
 
-                if (StringUtils.isNotBlank(organization.getOrgId()) && !organization.getOrgId().equals(found.getOrgId())) {
+                if (StringUtils.isNotBlank(organization.getId()) && !organization.getId().equals(found.getId())) {
                     throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
                 }
             }
@@ -223,7 +217,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 
             OrganizationEntity entity = organizationDozerConverter.convertToEntity(organization, false);
             organizationService.save(entity);
-            response.setResponseValue(entity.getOrgId());
+            response.setResponseValue(entity.getId());
         } catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
@@ -330,7 +324,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
                 visitedSet.add(child);
                 if (CollectionUtils.isNotEmpty(parent.getParentOrganizations())) {
                     for (final OrganizationEntity entity : parent.getParentOrganizations()) {
-                        retval = entity.getOrgId().equals(child.getOrgId());
+                        retval = entity.getId().equals(child.getId());
                         if (retval) {
                             break;
                         }

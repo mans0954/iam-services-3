@@ -1,7 +1,9 @@
 package org.openiam.idm.srvc.org.domain;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -9,6 +11,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
 
 @Entity
@@ -19,54 +22,40 @@ public class OrganizationAttributeEntity {
     @GeneratedValue(generator = "system-uuid")
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
     @Column(name = "COMPANY_ATTR_ID", length = 32, nullable = false)
-    private String attrId;
+    private String id;
+    
+    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
+    @JoinColumn(name = "METADATA_ID", insertable = true, updatable = true, nullable=true)
+    private MetadataElementEntity element;
+    
+    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinColumn(name = "COMPANY_ID", referencedColumnName = "COMPANY_ID", insertable = true, updatable = false)
+    private OrganizationEntity organization;
 
-    @Column(name = "METADATA_ID", length = 20)
-    private String metadataElementId;
-
-    @Column(name = "NAME", length = 20)
-    private String name;
-
-    @Column(name = "COMPANY_ID", length = 32)
-    private String organizationId;
-
-    @Column(name = "VALUE")
+    @Column(name = "VALUE", length=255)
     private String value;
+    
+    @Column(name = "NAME", length = 100)
+    private String name;
 
     public OrganizationAttributeEntity() {
     }
 
-    public String getAttrId() {
-        return attrId;
-    }
+    public String getId() {
+		return id;
+	}
 
-    public void setAttrId(String attrId) {
-        this.attrId = attrId;
-    }
+	public void setId(String id) {
+		this.id = id;
+	}
 
-    public String getMetadataElementId() {
-        return metadataElementId;
-    }
-
-    public void setMetadataElementId(String metadataElementId) {
-        this.metadataElementId = metadataElementId;
-    }
-
-    public String getName() {
+	public String getName() {
         return name;
     }
 
     public void setName(String name) {
         this.name = name;
     }
-
-    public String getOrganizationId() {
-		return organizationId;
-	}
-
-	public void setOrganizationId(String organizationId) {
-		this.organizationId = organizationId;
-	}
 
 	public String getValue() {
         return value;
@@ -76,30 +65,71 @@ public class OrganizationAttributeEntity {
         this.value = value;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+    public MetadataElementEntity getElement() {
+		return element;
+	}
 
-        OrganizationAttributeEntity that = (OrganizationAttributeEntity) o;
+	public void setElement(MetadataElementEntity element) {
+		this.element = element;
+	}
 
-        if (attrId != null ? !attrId.equals(that.attrId) : that.attrId != null) return false;
-        if (metadataElementId != null ? !metadataElementId.equals(that.metadataElementId) : that.metadataElementId != null)
-            return false;
-        if (name != null ? !name.equals(that.name) : that.name != null) return false;
-        if (organizationId != null ? !organizationId.equals(that.organizationId) : that.organizationId != null) return false;
-        if (value != null ? !value.equals(that.value) : that.value != null) return false;
+	public OrganizationEntity getOrganization() {
+		return organization;
+	}
 
-        return true;
-    }
+	public void setOrganization(OrganizationEntity organization) {
+		this.organization = organization;
+	}
 
-    @Override
-    public int hashCode() {
-        int result = attrId != null ? attrId.hashCode() : 0;
-        result = 31 * result + (metadataElementId != null ? metadataElementId.hashCode() : 0);
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (organizationId != null ? organizationId.hashCode() : 0);
-        result = 31 * result + (value != null ? value.hashCode() : 0);
-        return result;
-    }
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((element == null) ? 0 : element.hashCode());
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result
+				+ ((organization == null) ? 0 : organization.hashCode());
+		result = prime * result + ((value == null) ? 0 : value.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		OrganizationAttributeEntity other = (OrganizationAttributeEntity) obj;
+		if (element == null) {
+			if (other.element != null)
+				return false;
+		} else if (!element.equals(other.element))
+			return false;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		if (organization == null) {
+			if (other.organization != null)
+				return false;
+		} else if (!organization.equals(other.organization))
+			return false;
+		if (value == null) {
+			if (other.value != null)
+				return false;
+		} else if (!value.equals(other.value))
+			return false;
+		return true;
+	}
+	
+	
 }

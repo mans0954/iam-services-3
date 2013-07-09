@@ -9,6 +9,7 @@ import java.util.Set;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
+import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.domain.UserAffiliationEntity;
@@ -21,11 +22,15 @@ import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.sun.xml.internal.ws.util.xml.MetadataDocument;
 
 @Service
 @Transactional
 public class OrganizationServiceImpl implements OrganizationService {
 
+	@Autowired
+	private MetadataElementDAO metadataDAO;
+	
     @Autowired
     private OrganizationDAO orgDao;
 
@@ -40,11 +45,6 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Autowired
     private UserDataService userDataService;
-
-    @Override
-    public List<OrganizationEntity> getTopLevelOrganizations(String requesterId) {
-        return orgDao.findRootOrganizations();
-    }
 
     @Override
     public OrganizationEntity getOrganization(String orgId) {
@@ -155,8 +155,8 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Override
     public void save(final OrganizationEntity entity) {
-        if (StringUtils.isNotBlank(entity.getOrgId())) {
-            final OrganizationEntity dbOrg = orgDao.findById(entity.getOrgId());
+        if (StringUtils.isNotBlank(entity.getId())) {
+            final OrganizationEntity dbOrg = orgDao.findById(entity.getId());
             if (dbOrg != null) {
                 entity.setAttributes(dbOrg.getAttributes());
                 entity.setChildOrganizations(dbOrg.getChildOrganizations());
@@ -170,8 +170,11 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Override
     public void save(OrganizationAttributeEntity attribute) {
-        if (StringUtils.isNotBlank(attribute.getAttrId())) {
-            orgAttrDao.update(attribute);
+    	attribute.setElement(metadataDAO.findById(attribute.getElement().getId()));
+    	attribute.setOrganization(orgDao.findById(attribute.getOrganization().getId()));
+    	
+        if (StringUtils.isNotBlank(attribute.getId())) {
+            orgAttrDao.merge(attribute);
         } else {
             orgAttrDao.save(attribute);
         }
@@ -203,7 +206,7 @@ public class OrganizationServiceImpl implements OrganizationService {
         if (entity != null) {
             userDAO.disassociateUsersFromOrganization(orgId);
             userAffiliationDAO.deleteByOrganizationId(orgId);
-            orgAttrDao.deleteByOrganizationId(orgId);
+            //orgAttrDao.deleteByOrganizationId(orgId);
             orgDao.delete(entity);
         }
     }

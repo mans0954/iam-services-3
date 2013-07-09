@@ -877,12 +877,12 @@ public class ModifyUser {
                     || o.getOperation() == AttributeOperationEnum.NO_CHANGE) {
 
                 if (!inCurList) {
-                    orgManager.addUserToOrg(o.getOrgId(), userId);
+                    orgManager.addUserToOrg(o.getId(), userId);
                 }
 
             } else if (o.getOperation() == AttributeOperationEnum.DELETE) {
                 if (inCurList) {
-                    orgManager.removeUserFromOrg(o.getOrgId(), userId);
+                    orgManager.removeUserFromOrg(o.getId(), userId);
                 }
             }
 
@@ -894,7 +894,7 @@ public class ModifyUser {
             List<Organization> curOrgList) {
         if (curOrgList != null) {
             for (Organization o : curOrgList) {
-                if (o.getOrgId().equals(newOrg.getOrgId())) {
+                if (o.getId().equals(newOrg.getId())) {
 
                     return true;
                 }
