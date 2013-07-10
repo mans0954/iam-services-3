@@ -11,16 +11,18 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "AuthResourceAttributeMap", propOrder = {
         "attributeMapId",
         "providerId",
-        "amAttributeId",
-        "amAttributeName",
+        "amResAttributeId",
+        "amReflectionKey",
+        "amResAttributeName",
         "amPolicyUrl"
 })
 @DozerDTOCorrespondence(AuthResourceAttributeMapEntity.class)
 public class AuthResourceAttributeMap extends SSOAttribute {
     private String attributeMapId;
     private String providerId;
-    private String amAttributeId;
-    private String amAttributeName;
+    private String amResAttributeId;
+    private String amReflectionKey;
+    private String amResAttributeName;
     private String amPolicyUrl;
 
 
@@ -41,20 +43,28 @@ public class AuthResourceAttributeMap extends SSOAttribute {
         this.providerId = providerId;
     }
 
-    public String getAmAttributeId() {
-        return amAttributeId;
+    public String getAmResAttributeId() {
+        return amResAttributeId;
     }
 
-    public void setAmAttributeId(String amAttributeId) {
-        this.amAttributeId = amAttributeId;
+    public void setAmResAttributeId(String amResAttributeId) {
+        this.amResAttributeId = amResAttributeId;
     }
 
-    public String getAmAttributeName() {
-        return amAttributeName;
+    public String getAmReflectionKey() {
+        return amReflectionKey;
     }
 
-    public void setAmAttributeName(String amAttributeName) {
-        this.amAttributeName = amAttributeName;
+    public void setAmReflectionKey(String amReflectionKey) {
+        this.amReflectionKey = amReflectionKey;
+    }
+
+    public String getAmResAttributeName() {
+        return amResAttributeName;
+    }
+
+    public void setAmResAttributeName(String amResAttributeName) {
+        this.amResAttributeName = amResAttributeName;
     }
 
     public String getAmPolicyUrl() {

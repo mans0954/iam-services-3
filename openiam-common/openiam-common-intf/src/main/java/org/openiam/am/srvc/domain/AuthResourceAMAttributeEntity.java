@@ -1,5 +1,6 @@
 package org.openiam.am.srvc.domain;
 
+import org.hibernate.annotations.GenericGenerator;
 import org.openiam.am.srvc.dto.AuthResourceAMAttribute;
 import org.openiam.dozer.DozerDTOCorrespondence;
 
@@ -11,17 +12,30 @@ import java.io.Serializable;
 @DozerDTOCorrespondence(AuthResourceAMAttribute.class)
 public class AuthResourceAMAttributeEntity implements Serializable {
     @Id
-    @Column(name="AM_ATTRIBUTE_ID", length=100, nullable = false)
-    private String amAttributeId;
+    @GeneratedValue(generator="system-uuid")
+    @GenericGenerator(name="system-uuid", strategy = "uuid")
+    @Column(name="AM_RES_ATTRIBUTE_ID", length=32, nullable = false)
+    private String id;
+
+    @Column(name="REFLECTION_KEY", length=255, nullable = false)
+    private String reflectionKey;
     @Column(name="ATTRIBUTE_NAME", length=100, nullable = false)
     private String attributeName;
 
-    public String getAmAttributeId() {
-        return amAttributeId;
+    public String getId() {
+        return id;
     }
 
-    public void setAmAttributeId(String amAttributeId) {
-        this.amAttributeId = amAttributeId;
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getReflectionKey() {
+        return reflectionKey;
+    }
+
+    public void setReflectionKey(String reflectionKey) {
+        this.reflectionKey = reflectionKey;
     }
 
     public String getAttributeName() {
@@ -37,7 +51,9 @@ public class AuthResourceAMAttributeEntity implements Serializable {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result
-				+ ((amAttributeId == null) ? 0 : amAttributeId.hashCode());
+				+ ((id == null) ? 0 : id.hashCode());
+        result = prime * result
+                + ((reflectionKey == null) ? 0 : reflectionKey.hashCode());
 		result = prime * result
 				+ ((attributeName == null) ? 0 : attributeName.hashCode());
 		return result;
@@ -52,11 +68,16 @@ public class AuthResourceAMAttributeEntity implements Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		AuthResourceAMAttributeEntity other = (AuthResourceAMAttributeEntity) obj;
-		if (amAttributeId == null) {
-			if (other.amAttributeId != null)
+		if (id == null) {
+			if (other.id != null)
 				return false;
-		} else if (!amAttributeId.equals(other.amAttributeId))
+		} else if (!id.equals(other.id))
 			return false;
+        if (reflectionKey == null) {
+            if (other.reflectionKey != null)
+                return false;
+        } else if (!reflectionKey.equals(other.reflectionKey))
+            return false;
 		if (attributeName == null) {
 			if (other.attributeName != null)
 				return false;
@@ -68,8 +89,7 @@ public class AuthResourceAMAttributeEntity implements Serializable {
 	@Override
 	public String toString() {
 		return String
-				.format("AuthResourceAMAttributeEntity [amAttributeId=%s, attributeName=%s]",
-						amAttributeId, attributeName);
+				.format("AuthResourceAMAttributeEntity [amAttributeId=%s, reflectionKey=%s, attributeName=%s]", id,reflectionKey, attributeName);
 	}
     
     

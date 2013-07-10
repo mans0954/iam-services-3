@@ -54,8 +54,10 @@ public class AuthResourceAttributeWebServiceImpl implements AuthResourceAttribut
         try {
             if(attribute==null)
                 throw new BasicDataServiceException(ResponseCode.AUTH_RESOURCE_AM_ATTRIBUTE_NOT_SET);
-            if(attribute.getAmAttributeId()==null || attribute.getAmAttributeId().trim().isEmpty())
+            if(attribute.getId()==null || attribute.getId().trim().isEmpty())
                 throw new BasicDataServiceException(ResponseCode.AUTH_RESOURCE_AM_ATTRIBUTE_ID_NOT_SET);
+            if(attribute.getReflectionKey()==null || attribute.getReflectionKey().trim().isEmpty())
+                throw new BasicDataServiceException(ResponseCode.AUTH_RESOURCE_AM_ATTRIBUTE_REFLECTION_KEY_NOT_SET);
             if(attribute.getAttributeName()==null || attribute.getAttributeName().trim().isEmpty())
                 throw new BasicDataServiceException(ResponseCode.AUTH_RESOURCE_AM_ATTRIBUTE_NAME_NOT_SET);
 
@@ -118,7 +120,7 @@ public class AuthResourceAttributeWebServiceImpl implements AuthResourceAttribut
                 throw new BasicDataServiceException(ResponseCode.AUTH_RESOURCE_TARGET_ATTRIBUTE_NOT_SET);
             if (attributeMap.getAttributeType() == null)
                 throw new BasicDataServiceException(ResponseCode.AUTH_RESOURCE_ATTRIBUTE_TYPE_NOT_SET);
-            if ((attributeMap.getAmAttributeId() == null || attributeMap.getAmAttributeId().trim().isEmpty())
+            if ((attributeMap.getAmResAttributeId() == null || attributeMap.getAmResAttributeId().trim().isEmpty())
                  &&(attributeMap.getAttributeValue() == null || attributeMap.getAttributeValue().trim().isEmpty())
                  &&(attributeMap.getAmPolicyUrl() == null || attributeMap.getAmPolicyUrl().trim().isEmpty()))
                 throw new BasicDataServiceException(ResponseCode.AUTH_RESOURCE_AM_ATTRIBUTE_NOT_SET);
