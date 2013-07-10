@@ -12,6 +12,7 @@ import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.grp.dto.UserGroup;
+import org.openiam.idm.srvc.org.dto.UserAffiliation;
 import org.openiam.idm.srvc.res.dto.ResourceUser;
 import org.openiam.idm.srvc.role.dto.UserRole;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -82,7 +83,8 @@ import java.util.*;
         "dateChallengeRespChanged",
         "login",
         "password",
-        "notifyUserViaEmail"
+        "notifyUserViaEmail",
+        "affiliations"
 })
 @XmlSeeAlso({
         Login.class,
@@ -223,6 +225,8 @@ public class User extends org.openiam.base.BaseObject {
     private String login;
     private String password;
     private Boolean notifyUserViaEmail=true;
+    
+    private Set<UserAffiliation> affiliations;
 
     // Constructors
 
@@ -831,7 +835,15 @@ public class User extends org.openiam.base.BaseObject {
         this.securityDomain = securityDomain;
     }
 
-    public void updateUser(User newUser) {
+	public Set<UserAffiliation> getAffiliations() {
+		return affiliations;
+	}
+
+	public void setAffiliations(Set<UserAffiliation> affiliations) {
+		this.affiliations = affiliations;
+	}
+
+	public void updateUser(User newUser) {
         if (newUser.getBirthdate() != null) {
             if (newUser.getBirthdate().equals(BaseConstants.NULL_DATE)) {
                 this.birthdate = null;

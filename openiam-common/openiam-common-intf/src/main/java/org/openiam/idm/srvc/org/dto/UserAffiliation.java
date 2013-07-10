@@ -15,103 +15,89 @@ import org.openiam.idm.srvc.org.domain.UserAffiliationEntity;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "UserAffiliation", propOrder = {
-        "userAffiliationId",
+        "id",
         "organizationId",
-        "userId",
-        "createDate",
-        "startDate",
-        "endDate",
-        "status",
-        "createdBy"
+        "userId"
 })
 @DozerDTOCorrespondence(UserAffiliationEntity.class)
 public class UserAffiliation implements java.io.Serializable {
 
-    /**
-     *
-     */
     private static final long serialVersionUID = -3785768336629177182L;
 
-    private String userAffiliationId;
-
+    private String id;
     private String userId;
-
     private String organizationId;
-
-    private String status;
-
-    private Date createDate;
-
-    private Date startDate;
-
-    private Date endDate;
-
-    private String createdBy;
 
     public UserAffiliation() {
     }
 
-    public String getStatus() {
-        return this.status;
-    }
+	public String getId() {
+		return id;
+	}
 
-    public void setStatus(String status) {
-        this.status = status;
-    }
+	public void setId(String id) {
+		this.id = id;
+	}
 
-    public Date getCreateDate() {
-        return this.createDate;
-    }
+	public String getUserId() {
+		return userId;
+	}
 
-    public void setCreateDate(Date createDate) {
-        this.createDate = createDate;
-    }
+	public void setUserId(String userId) {
+		this.userId = userId;
+	}
 
-    public String getCreatedBy() {
-        return this.createdBy;
-    }
+	public String getOrganizationId() {
+		return organizationId;
+	}
 
-    public void setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
-    }
+	public void setOrganizationId(String organizationId) {
+		this.organizationId = organizationId;
+	}
 
-    public String getUserId() {
-        return userId;
-    }
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result
+				+ ((organizationId == null) ? 0 : organizationId.hashCode());
+		result = prime * result + ((userId == null) ? 0 : userId.hashCode());
+		return result;
+	}
 
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		UserAffiliation other = (UserAffiliation) obj;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		if (organizationId == null) {
+			if (other.organizationId != null)
+				return false;
+		} else if (!organizationId.equals(other.organizationId))
+			return false;
+		if (userId == null) {
+			if (other.userId != null)
+				return false;
+		} else if (!userId.equals(other.userId))
+			return false;
+		return true;
+	}
 
-    public Date getStartDate() {
-        return startDate;
-    }
+	@Override
+	public String toString() {
+		return "UserAffiliation [id=" + id + ", userId=" + userId
+				+ ", organizationId=" + organizationId + "]";
+	}
 
-    public void setStartDate(Date startDate) {
-        this.startDate = startDate;
-    }
-
-    public Date getEndDate() {
-        return endDate;
-    }
-
-    public void setEndDate(Date endDate) {
-        this.endDate = endDate;
-    }
-
-    public String getUserAffiliationId() {
-        return userAffiliationId;
-    }
-
-    public void setUserAffiliationId(String userAffiliationId) {
-        this.userAffiliationId = userAffiliationId;
-    }
-
-    public String getOrganizationId() {
-        return organizationId;
-    }
-
-    public void setOrganizationId(String organizationId) {
-        this.organizationId = organizationId;
-    }
+    
 }

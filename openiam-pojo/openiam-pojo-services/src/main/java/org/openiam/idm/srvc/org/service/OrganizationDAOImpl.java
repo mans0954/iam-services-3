@@ -24,8 +24,39 @@ import static org.hibernate.criterion.Projections.rowCount;
  */
 @Repository("organizationDAO")
 public class OrganizationDAOImpl extends BaseDaoImpl<OrganizationEntity, String> implements OrganizationDAO {
-    @Autowired
+    
+	@Autowired
     private OrganizationSearchBeanConverter organizationSearchBeanConverter;
+    
+    public int getNumOfOrganizationsForUser(final String userId, final Set<String> filter) {
+    	final Criteria criteria = getOrganizationsForUserCriteria(userId, filter).setProjection(rowCount());
+    	 return ((Number)criteria.uniqueResult()).intValue();
+    }
+    
+    public List<OrganizationEntity> getOrganizationsForUser(final String userId, final Set<String> filter, final int from, final int size) {
+    	final Criteria criteria = getOrganizationsForUserCriteria(userId, filter);
+         
+    	if(from > -1) {
+    		criteria.setFirstResult(from);
+    	}
+
+    	if(size > -1) {
+    		criteria.setMaxResults(size);
+    	}
+    	return criteria.list();
+    }
+    
+    private Criteria getOrganizationsForUserCriteria(final String userId, final Set<String> filter) {
+    	final Criteria criteria = getCriteria();
+    	if(StringUtils.isNotBlank(userId)) {
+    		criteria.createAlias("affiliations", "ua").add(Restrictions.eq("ua.user.id", userId));
+    	}
+
+    	if(filter!=null && !filter.isEmpty()) {
+    		criteria.add( Restrictions.in(getPKfieldName(), filter));
+    	}
+    	return criteria;
+    }
 
     public List<OrganizationEntity> findRootOrganizations() {
         final Criteria criteria = getCriteria()
@@ -93,8 +124,8 @@ public class OrganizationDAOImpl extends BaseDaoImpl<OrganizationEntity, String>
                 criteria.add(Restrictions.eq("metadataTypeId", organization.getMetadataTypeId()));
             }
             
-            if (organization.getClassification() != null) {
-                criteria.add(Restrictions.eq("classification", organization.getClassification()));
+            if(organization.getOrganizationType() != null && StringUtils.isNotBlank(organization.getOrganizationType().getId())) {
+            	criteria.add(Restrictions.eq("organizationType.id", organization.getOrganizationType().getId()));
             }
             
             if (StringUtils.isNotBlank(organization.getInternalOrgId())) {

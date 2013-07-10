@@ -92,6 +92,10 @@
 			<a>resourceUsers</a>
 			<b>resourceUsers</b>
 		</field-exclude>
+		<field-exclude>
+			<a>affiliations</a>
+			<b>affiliations</b>
+		</field-exclude>
 	</mapping>
 
 	<mapping>
@@ -363,6 +367,14 @@
 			<a>childOrganizations</a>
 			<b>childOrganizations</b>
 		</field>
+		<field>
+			<a>organizationType.id</a>
+			<b>organizationTypeId</b>
+		</field>
+		<field-exclude>
+			<a>affiliations</a>
+			<b>affiliations</b>
+		</field-exclude>
 	</mapping>
 	<mapping>
 		<class-a>org.openiam.idm.srvc.policy.domain.PolicyDefEntity</class-a>
@@ -547,6 +559,29 @@
 			custom-converter-param="dto2entityDeepDozerMapper">
 			<a>defaultAttributePolicy</a>
 			<b>defaultAttributePolicy</b>
+		</field>
+	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.org.domain.OrganizationTypeEntity</class-a>
+		<class-b>org.openiam.idm.srvc.org.dto.OrganizationType</class-b>
+		<field
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
+			custom-converter-param="dto2entityShallowDozerMapper">
+			<a>parentTypes</a>
+			<b>parentTypes</b>
+		</field>
+		<field
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
+			custom-converter-param="dto2entityShallowDozerMapper">
+			<a>childTypes</a>
+			<b>childTypes</b>
+		</field>
+		<field
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
+			custom-converter-param="dto2entityShallowDozerMapper">
+			<a>organizations</a>
+			<b>organizations</b>
 		</field>
 	</mapping>
 </mappings>

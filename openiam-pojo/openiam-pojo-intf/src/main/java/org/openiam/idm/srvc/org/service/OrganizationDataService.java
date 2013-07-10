@@ -19,8 +19,14 @@ public interface OrganizationDataService {
                                         @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     @WebMethod
+    public int getNumOfOrganizationsForUser(@WebParam(name = "userId", targetNamespace = "") String userId,
+                                                      	   @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+    
+    @WebMethod
     public List<Organization> getOrganizationsForUser(@WebParam(name = "userId", targetNamespace = "") String userId,
-                                                      @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+                                                      @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                                                      @WebParam(name = "from", targetNamespace = "") int from,
+                                                      @WebParam(name = "size", targetNamespace = "") int size);
 
     @WebMethod
     public List<Organization> getAllOrganizations(@WebParam(name = "requesterId", targetNamespace = "") String requesterId);

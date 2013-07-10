@@ -41,16 +41,16 @@ import org.openiam.idm.srvc.org.domain.OrganizationEntity;
         "metadataTypeId",
         "id",
         "organizationName",
-        "classification",
+        "organizationTypeId",
         "internalOrgId",
         "status",
         "abbreviation",
         "symbol",
         "selected",
         "operation",
-        "classificaitonAsString",
         "parentOrganizations",
-        "childOrganizations"
+        "childOrganizations",
+        "affiliations"
 })
 @DozerDTOCorrespondence(OrganizationEntity.class)
 public class Organization implements java.io.Serializable, Comparable<Organization> {
@@ -87,11 +87,8 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
     protected String internalOrgId;
 
     protected String status;
-
-    /* used by front-end to avoid conversion into enum from JSON */
-    private String classificaitonAsString;
     
-    protected OrgClassificationEnum classification;
+    protected String organizationTypeId;
 
     protected String abbreviation;
 
@@ -103,6 +100,7 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
 
     private Set<Organization> parentOrganizations;
     private Set<Organization> childOrganizations;
+    private Set<UserAffiliation> affiliations;
 
     /**
      * default constructor
@@ -334,14 +332,6 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
         this.status = value;
     }
 
-    public OrgClassificationEnum getClassification() {
-        return classification;
-    }
-
-    public void setClassification(OrgClassificationEnum classification) {
-        this.classification = classification;
-    }
-
     public String getInternalOrgId() {
         return internalOrgId;
     }
@@ -382,14 +372,6 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
         this.operation = operation;
     }
 
-    public String getClassificaitonAsString() {
-		return classificaitonAsString;
-	}
-
-	public void setClassificaitonAsString(String classificaitonAsString) {
-		this.classificaitonAsString = classificaitonAsString;
-	}
-
 	public Set<Organization> getParentOrganizations() {
 		return parentOrganizations;
 	}
@@ -413,6 +395,22 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
         return getOrganizationName().compareTo(o.getOrganizationName());
     }
 
+	public String getOrganizationTypeId() {
+		return organizationTypeId;
+	}
+
+	public void setOrganizationTypeId(String organizationTypeId) {
+		this.organizationTypeId = organizationTypeId;
+	}
+
+	public Set<UserAffiliation> getAffiliations() {
+		return affiliations;
+	}
+
+	public void setAffiliations(Set<UserAffiliation> affiliations) {
+		this.affiliations = affiliations;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -420,12 +418,8 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
 		result = prime * result
 				+ ((abbreviation == null) ? 0 : abbreviation.hashCode());
 		result = prime * result + ((alias == null) ? 0 : alias.hashCode());
-		result = prime
-				* result
-				+ ((classificaitonAsString == null) ? 0
-						: classificaitonAsString.hashCode());
 		result = prime * result
-				+ ((classification == null) ? 0 : classification.hashCode());
+				+ ((organizationTypeId == null) ? 0 : organizationTypeId.hashCode());
 		result = prime * result
 				+ ((createDate == null) ? 0 : createDate.hashCode());
 		result = prime * result
@@ -475,12 +469,10 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
 				return false;
 		} else if (!alias.equals(other.alias))
 			return false;
-		if (classificaitonAsString == null) {
-			if (other.classificaitonAsString != null)
+		if (organizationTypeId == null) {
+			if (other.organizationTypeId != null)
 				return false;
-		} else if (!classificaitonAsString.equals(other.classificaitonAsString))
-			return false;
-		if (classification != other.classification)
+		} else if (!organizationTypeId.equals(other.organizationTypeId))
 			return false;
 		if (createDate == null) {
 			if (other.createDate != null)

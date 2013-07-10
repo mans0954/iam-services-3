@@ -102,8 +102,7 @@
 	</mapping>
 
 	<mapping>
-		<class-a>org.openiam.idm.srvc.org.domain.UserAffiliationEntity
-		</class-a>
+		<class-a>org.openiam.idm.srvc.org.domain.UserAffiliationEntity</class-a>
 		<class-b>org.openiam.idm.srvc.org.dto.UserAffiliation</class-b>
 		<field>
 			<a>organization.id</a>
@@ -112,6 +111,10 @@
 		<field>
 			<a>user.userId</a>
 			<b>userId</b>
+		</field>
+		<field>
+			<a>id</a>
+			<b>id</b>
 		</field>
 	</mapping>
 	<mapping>

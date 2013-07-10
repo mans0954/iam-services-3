@@ -48,8 +48,8 @@ import java.util.*;
         "delAdmin",
 //        "organizationId",
         "organizationIdList",
-        "deptIdList",
-        "divisionIdList",
+        //"deptIdList",
+        //"divisionIdList",
         "attributeList",
         "requesterId"
 })
@@ -95,8 +95,8 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
 
 //    private String organizationId;
     protected List<String> organizationIdList = new ArrayList<String>();
-    protected List<String> deptIdList = new ArrayList<String>();
-    protected List<String> divisionIdList = new ArrayList<String>();
+    //protected List<String> deptIdList = new ArrayList<String>();
+    //protected List<String> divisionIdList = new ArrayList<String>();
     protected List<SearchAttribute> attributeList = new ArrayList<SearchAttribute>();
 
     private String requesterId;
@@ -115,6 +115,20 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
 
     public void setOrganizationIdList(List<String> organizationIdList) {
         this.organizationIdList = organizationIdList;
+    }
+    
+    public void addOrganizationIdList(final List<String> organizationIdList) {
+    	if(organizationIdList != null) {
+    		if(this.organizationIdList==null) {
+    			this.organizationIdList = new ArrayList<String>();
+    		}
+    		
+    		for(final String organizationId : organizationIdList) {
+    			if(!this.organizationIdList.contains(organizationId)) {
+    				this.organizationIdList.add(organizationId);
+    			}
+    		}
+    	}
     }
 
     public void addOrganizationId(String organizationId){
@@ -375,6 +389,7 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
         this.loggedIn = loggedIn;
     }
 
+    /*
     public List<String> getDeptIdList() {
         return deptIdList;
     }
@@ -401,6 +416,7 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
             deptIdList = new ArrayList<String>();
         deptIdList.add(deptId);
     }
+    */
 
     public List<SearchAttribute> getAttributeList() {
         return attributeList;

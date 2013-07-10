@@ -3,7 +3,7 @@ package org.openiam.idm.srvc.searchbean.converter;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
-import org.openiam.idm.srvc.org.dto.OrgClassificationEnum;
+import org.openiam.idm.srvc.org.domain.OrganizationTypeEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceType;
@@ -20,8 +20,11 @@ public class OrganizationSearchBeanConverter implements SearchBeanConverter<Orga
         final OrganizationEntity organization = new OrganizationEntity();
         organization.setId(StringUtils.trimToNull(searchBean.getKey()));
         organization.setOrganizationName(StringUtils.trimToNull(searchBean.getOrganizationName()));
-        organization.setMetadataTypeId(StringUtils.trimToNull(searchBean.getTypeId()));
-        organization.setClassification(OrgClassificationEnum.fromStringValue(searchBean.getClassification()));
+        if(StringUtils.isNotBlank(searchBean.getOrganizationTypeId())) {
+        	final OrganizationTypeEntity typeEntity = new OrganizationTypeEntity();
+        	typeEntity.setId(StringUtils.trimToNull(searchBean.getOrganizationTypeId()));
+        	organization.setOrganizationType(typeEntity);
+        }
         return organization;
     }
 }

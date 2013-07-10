@@ -25,14 +25,15 @@ import org.openiam.core.dao.BaseDao;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.domain.UserAffiliationEntity;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
 public interface UserAffiliationDAO extends BaseDao<UserAffiliationEntity, String> {
 
-    public List<OrganizationEntity> findOrgAffiliationsByUser(String userId, Set<String> filter);
-
     public UserAffiliationEntity getRecord(final String userId, final String organizationId);
     
     public void deleteByOrganizationId(String organizationId);
+    
+    public List<String> getUserIdsInOrganization(final Collection<String> organizationIds, final int from, final int size);
 }

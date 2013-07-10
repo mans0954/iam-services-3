@@ -57,12 +57,14 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 	        if (CollectionUtils.isNotEmpty(delegationFilter.getOrganizationIdSet())) {
 	            criteria.add(Restrictions.in("companyId", delegationFilter.getOrganizationIdSet()));
 	        }
+	        /*
 	        if (CollectionUtils.isNotEmpty(delegationFilter.getDeptIdSet())) {
 	            criteria.add(Restrictions.in("deptCd", delegationFilter.getDeptIdSet()));
 	        }
 	        if (CollectionUtils.isNotEmpty(delegationFilter.getDivisionIdSet())) {
 	            criteria.add(Restrictions.in("division", delegationFilter.getDivisionIdSet()));
 	        }
+	        */
 	
 	        if (CollectionUtils.isNotEmpty(delegationFilter.getGroupIdSet())) {
 	            criteria.createAlias("userGroups", "ug");
@@ -225,9 +227,11 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             if (CollectionUtils.isNotEmpty(searchBean.getOrganizationIdList())) {
                 criteria.add(Restrictions.in("companyId", searchBean.getOrganizationIdList()));
             }
+            /*
             if (searchBean.getDeptIdList() != null && !searchBean.getDeptIdList().isEmpty()) {
                 criteria.add(Restrictions.in("deptCd", searchBean.getDeptIdList()));
             }
+            */
             if (StringUtils.isNotEmpty(searchBean.getPhoneAreaCd()) || StringUtils.isNotEmpty(searchBean.getPhoneNbr())) {
                 if (StringUtils.isNotEmpty(searchBean.getPhoneAreaCd())) {
                     criteria.add(Restrictions.eq("p.areaCd", searchBean.getPhoneAreaCd()));
@@ -248,9 +252,11 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
                 criteria.createAlias("userGroups", "g");
                 criteria.add(Restrictions.in("g.grpId", searchBean.getGroupIdSet()));
             }
+            /*
             if (searchBean.getDivisionIdList() != null && !searchBean.getDivisionIdList().isEmpty()) {
                 criteria.add(Restrictions.in("division", searchBean.getDivisionIdList()));
             }
+            */
             if (StringUtils.isNotEmpty(searchBean.getEmployeeId())) {
                 criteria.add(Restrictions.eq("employeeId", searchBean.getEmployeeId()));
             }
@@ -424,12 +430,14 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             if (CollectionUtils.isNotEmpty(delegationFilter.getOrganizationIdSet())) {
                 criteria.add(Restrictions.in("companyId", delegationFilter.getOrganizationIdSet()));
             }
+            /*
             if (CollectionUtils.isNotEmpty(delegationFilter.getDeptIdSet())) {
                 criteria.add(Restrictions.in("deptCd", delegationFilter.getDeptIdSet()));
             }
             if (CollectionUtils.isNotEmpty(delegationFilter.getDivisionIdSet())) {
                 criteria.add(Restrictions.in("division", delegationFilter.getDivisionIdSet()));
             }
+            */
         }
         criteria.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
 

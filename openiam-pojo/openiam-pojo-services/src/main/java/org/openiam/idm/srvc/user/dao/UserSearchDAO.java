@@ -49,8 +49,7 @@ public class UserSearchDAO extends AbstractHibernateSearchDao<UserEntity, UserSe
 		if(clause != null) {
 			luceneQuery.add(clause, BooleanClause.Occur.MUST);
 		}
-		*/
-		
+
 		clause = buildInClause("organization", query.getOrganizationIdList());
 		if(clause != null) {
 			luceneQuery.add(clause, BooleanClause.Occur.MUST);
@@ -65,6 +64,7 @@ public class UserSearchDAO extends AbstractHibernateSearchDao<UserEntity, UserSe
         if(clause != null) {
             luceneQuery.add(clause, BooleanClause.Occur.MUST);
         }
+        */
 		
 		return luceneQuery;
 	}

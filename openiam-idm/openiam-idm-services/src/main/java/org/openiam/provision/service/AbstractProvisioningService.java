@@ -1462,7 +1462,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
             log.debug("- Adding original affiliationList to the user object");
 
-            List<Organization> userAffiliations = orgManager.getOrganizationsForUser(user.getUserId(), null);
+            List<Organization> userAffiliations = orgManager.getOrganizationsForUser(user.getUserId(), null, 0, Integer.MAX_VALUE);
             if (userAffiliations != null && !userAffiliations.isEmpty())  {
 
                 user.setUserAffiliations(userAffiliations);
@@ -1780,7 +1780,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
     /* User Org Affiliation */
 
     public void updateUserOrgAffiliation(String userId, List<Organization> newOrgList) {
-        List<Organization>  currentOrgList = orgManager.getOrganizationsForUser(userId, null);
+        List<Organization>  currentOrgList = orgManager.getOrganizationsForUser(userId, null, 0, Integer.MAX_VALUE);
 
         if (newOrgList == null) {
             return;

@@ -18,16 +18,14 @@ import java.util.Set;
 @XmlType(name = "OrganizationSearchBean", propOrder = {
         "keySet",
         "organizationName",
-		"typeId",
-		"classification"
+		"organizationTypeId"
 })
 public class OrganizationSearchBean extends AbstractSearchBean<Organization, String> implements SearchBean<Organization, String>,
         Serializable {
     private static final long serialVersionUID = 1L;
     private Set<String> keySet;
     private String organizationName;
-    private String typeId;
-    private String classification;
+    private String organizationTypeId;
 
     public String getOrganizationName() {
         return organizationName;
@@ -37,23 +35,17 @@ public class OrganizationSearchBean extends AbstractSearchBean<Organization, Str
         this.organizationName = organizationName;
     }
 
-	public String getTypeId() {
-		return typeId;
+	
+
+    public String getOrganizationTypeId() {
+		return organizationTypeId;
 	}
 
-	public void setTypeId(String typeId) {
-		this.typeId = typeId;
+	public void setOrganizationTypeId(String organizationTypeId) {
+		this.organizationTypeId = organizationTypeId;
 	}
 
-	public String getClassification() {
-		return classification;
-	}
-
-	public void setClassification(String classification) {
-		this.classification = classification;
-	}
-
-    @Override
+	@Override
     public String getKey() {
         return (CollectionUtils.isNotEmpty(keySet)) ? keySet.iterator().next() : null;
     }

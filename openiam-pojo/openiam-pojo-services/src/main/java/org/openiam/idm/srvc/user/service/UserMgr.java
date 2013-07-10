@@ -44,6 +44,7 @@ import org.openiam.idm.srvc.grp.service.UserGroupDAO;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
+import org.openiam.idm.srvc.org.service.UserAffiliationDAO;
 import org.openiam.idm.srvc.res.service.ResourceUserDAO;
 import org.openiam.idm.srvc.role.service.UserRoleDAO;
 import org.openiam.idm.srvc.searchbean.converter.AddressSearchBeanConverter;
@@ -117,6 +118,10 @@ public class UserMgr implements UserDataService {
 
     @Autowired
     private PhoneSearchDAO phoneSearchDAO;
+    
+    @Autowired
+    private UserAffiliationDAO userAffiliationDAO;
+    
     @Autowired
     private UserKeyDao userKeyDao;
 
@@ -346,8 +351,6 @@ public class UserMgr implements UserDataService {
         final List<List<String>> nonEmptyListOfLists = new LinkedList<List<String>>();
 
         boolean isOrgFilterSet = false;
-        boolean isDeptFilterSet = false;
-        boolean isDivisionFilterSet = false;
         boolean isGroupFilterSet = false;
         boolean isRoleFilterSet = false;
 
@@ -356,13 +359,13 @@ public class UserMgr implements UserDataService {
             Map<String, UserAttribute> requesterAttributes = this.getUserAttributesDto(searchBean.getRequesterId());
 
             isOrgFilterSet = DelegationFilterHelper.isOrgFilterSet(requesterAttributes);
-            isDeptFilterSet = DelegationFilterHelper.isDeptFilterSet(requesterAttributes);
-            isDivisionFilterSet = DelegationFilterHelper.isDivisionFilterSet(requesterAttributes);
             isGroupFilterSet = DelegationFilterHelper.isGroupFilterSet(requesterAttributes);
             isRoleFilterSet = DelegationFilterHelper.isRoleFilterSet(requesterAttributes);
 
-            if (CollectionUtils.isEmpty(searchBean.getOrganizationIdList()) && isOrgFilterSet) {
-                searchBean.setOrganizationIdList(DelegationFilterHelper.getOrgIdFilterFromString(requesterAttributes));
+            if(isOrgFilterSet) {
+            	if (CollectionUtils.isEmpty(searchBean.getOrganizationIdList())) {
+            		searchBean.addOrganizationIdList(DelegationFilterHelper.getOrgIdFilterFromString(requesterAttributes));
+            	}
             }
 
             if (CollectionUtils.isEmpty(searchBean.getGroupIdSet()) && isGroupFilterSet) {
@@ -372,18 +375,19 @@ public class UserMgr implements UserDataService {
             if (CollectionUtils.isEmpty(searchBean.getRoleIdSet()) && isRoleFilterSet) {
                 searchBean.setRoleIdSet(new HashSet<String>(DelegationFilterHelper.getRoleFilterFromString(requesterAttributes)));
             }
-
+            /*
             if (CollectionUtils.isEmpty(searchBean.getDeptIdList()) && isDeptFilterSet) {
                 searchBean.setDeptIdList(DelegationFilterHelper.getDeptFilterFromString(requesterAttributes));
             }
             if (CollectionUtils.isEmpty(searchBean.getDivisionIdList()) && isDivisionFilterSet) {
                 searchBean.setDivisionIdList(DelegationFilterHelper.getDivisionFilterFromString(requesterAttributes));
             }
+            */
         }
 
         List<String> idList = userSearchDAO.findIds(0, MAX_USER_SEARCH_RESULTS, null, searchBean);
 
-        if (CollectionUtils.isNotEmpty(idList) || (CollectionUtils.isEmpty(idList) && (isOrgFilterSet || isDeptFilterSet || isDivisionFilterSet))) {
+        if (CollectionUtils.isNotEmpty(idList) || (CollectionUtils.isEmpty(idList) && (isOrgFilterSet))) {
             nonEmptyListOfLists.add(idList);
         }
 
@@ -395,6 +399,10 @@ public class UserMgr implements UserDataService {
 
         if (CollectionUtils.isNotEmpty(searchBean.getRoleIdSet())) {
             nonEmptyListOfLists.add(userRoleDAO.getUserIdsInRole(searchBean.getRoleIdSet(), 0, MAX_USER_SEARCH_RESULTS));
+        }
+        
+        if(CollectionUtils.isNotEmpty(searchBean.getOrganizationIdList())) {
+        	nonEmptyListOfLists.add(userAffiliationDAO.getUserIdsInOrganization(searchBean.getOrganizationIdList(), 0, MAX_USER_SEARCH_RESULTS));
         }
 
         if (CollectionUtils.isNotEmpty(searchBean.getGroupIdSet())) {
@@ -1567,13 +1575,15 @@ public class UserMgr implements UserDataService {
             if (DelegationFilterHelper.isRoleFilterSet(requestorAttributes)) {
                 filter.setRoleIdSet(new HashSet<String>(DelegationFilterHelper.getRoleFilterFromString(requestorAttributes)));
             }
-
+            
+            /*
             if (DelegationFilterHelper.isDeptFilterSet(requestorAttributes)) {
                 filter.setDeptIdSet(new HashSet<String>(DelegationFilterHelper.getDeptFilterFromString(requestorAttributes)));
             }
             if (DelegationFilterHelper.isDivisionFilterSet(requestorAttributes)) {
                 filter.setDivisionIdSet(new HashSet<String>(DelegationFilterHelper.getDivisionFilterFromString(requestorAttributes)));
             }
+            */
         }
         return filter;
     }
