@@ -10,6 +10,7 @@ import org.openiam.spml2.spi.common.ModifyCommand;
  * Time: 10:49 AM
  * To change this template use File | Settings | File Templates.
  */
+@Deprecated
 public class OracleModifyCommand extends AbstractOracleCommand implements ModifyCommand {
     @Override
     public ModifyResponseType modify(ModifyRequestType reqType) {

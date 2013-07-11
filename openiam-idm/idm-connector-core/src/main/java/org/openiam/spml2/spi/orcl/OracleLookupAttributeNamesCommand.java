@@ -6,6 +6,7 @@ import org.openiam.spml2.msg.LookupAttributeResponseType;
 import org.openiam.spml2.msg.StatusCodeType;
 import org.openiam.spml2.spi.common.LookupAttributeNamesCommand;
 
+@Deprecated
 public class OracleLookupAttributeNamesCommand extends AbstractOracleCommand implements LookupAttributeNamesCommand {
 
     @Override

@@ -11,12 +11,8 @@ import org.openiam.spml2.msg.ConnectorDataException;
 import org.openiam.spml2.msg.ErrorCode;
 import org.openiam.spml2.msg.RequestType;
 import org.openiam.spml2.msg.ResponseType;
-import org.openiam.spml2.spi.common.AbstractCommand;
 import org.openiam.spml2.spi.common.jdbc.AbstractJDBCCommand;
-import org.openiam.spml2.spi.common.jdbc.JDBCConnectionMgr;
 import org.openiam.spml2.spi.jdbc.command.data.AppTableConfiguration;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.sql.*;
 import java.text.ParseException;
@@ -30,7 +26,6 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
     protected static final String SELECT_SQL = "SELECT %s FROM %S WHERE %s=?";
     protected static final String DELETE_SQL = "DELETE FROM %s WHERE %s=?";
     protected static final String UPDATE_SQL = "UPDATE %s SET %s=? WHERE %s=?";
-
 
     protected AppTableConfiguration getConfiguration(String targetID, ManagedSysEntity managedSys) throws ConnectorDataException{
         AppTableConfiguration configuration = new AppTableConfiguration();
@@ -177,17 +172,6 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
             throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, e.getMessage());
         } finally {
             this.closeStatement(statement);
-        }
-    }
-
-    public void closeStatement(PreparedStatement statement) {
-        try {
-            if (statement != null) {
-                statement.close();
-            }
-        } catch (Exception e) {
-            log.error(e);
-
         }
     }
 }

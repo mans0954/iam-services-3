@@ -1,26 +1,20 @@
 package org.openiam.spml2.spi.jdbc.command;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
 import org.openiam.exception.EncryptionException;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
-import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.spml2.msg.*;
 import org.openiam.spml2.msg.suspend.ResumeRequestType;
 import org.openiam.spml2.spi.jdbc.command.base.AbstractAppTableCommand;
 import org.openiam.spml2.spi.jdbc.command.data.AppTableConfiguration;
-import org.openiam.spml2.util.msg.ResponseBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.text.ParseException;
 import java.util.List;
 
 @Service("resumeAppTableCommand")

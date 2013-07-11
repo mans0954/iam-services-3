@@ -12,6 +12,7 @@ import java.sql.SQLException;
  * Time: 8:13 PM
  * To change this template use File | Settings | File Templates.
  */
+@Deprecated
 public abstract class AbstractOraclePasswordCommand extends AbstractOracleCommand {
 
     private static final String CHANGE_PASSWORD_SQL = "ALTER USER \"%s\" IDENTIFIED BY \"%s\"";

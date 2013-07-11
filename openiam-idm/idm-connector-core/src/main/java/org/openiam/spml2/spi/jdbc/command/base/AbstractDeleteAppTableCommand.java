@@ -1,21 +1,14 @@
 package org.openiam.spml2.spi.jdbc.command.base;
 
-import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
-import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.provision.dto.GenericProvisionObject;
 import org.openiam.spml2.msg.*;
 import org.openiam.spml2.spi.jdbc.command.data.AppTableConfiguration;
-import org.openiam.spml2.util.msg.ResponseBuilder;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.text.ParseException;
 import java.util.List;
 
 public abstract class AbstractDeleteAppTableCommand<ProvisionObject extends GenericProvisionObject> extends AbstractAppTableCommand<DeleteRequestType<ProvisionObject>, ResponseType>  {

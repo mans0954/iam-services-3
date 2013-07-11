@@ -1,22 +1,19 @@
 package org.openiam.spml2.spi.common.jdbc;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
-import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.idm.srvc.res.service.ResourceDataService;
+import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.spml2.msg.*;
 import org.openiam.spml2.spi.common.AbstractCommand;
-import org.openiam.spml2.util.msg.ResponseBuilder;
+import org.openiam.spml2.spi.jdbc.command.data.AppTableConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Required;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -28,6 +25,8 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 public abstract class AbstractJDBCCommand<Request extends RequestType, Response extends ResponseType> extends AbstractCommand<Request, Response> {
+
+
     @Autowired
     @Qualifier("jdbcConnection")
     protected JDBCConnectionMgr connectionMgr;
@@ -61,4 +60,15 @@ public abstract class AbstractJDBCCommand<Request extends RequestType, Response 
             }
         }
     }
+
+    protected void closeStatement(PreparedStatement statement) {
+        try {
+            if (statement != null) {
+                statement.close();
+            }
+        } catch (Exception e) {
+            log.error(e);
+        }
+    }
+
 }

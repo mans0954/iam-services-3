@@ -38,7 +38,9 @@ public class ConnectorCommandFactory {
     @Qualifier("appTableCommandFactory")
     private AbstractCommandFactory appTableCommandFactory;
 
-
+    @Autowired
+    @Qualifier("oracleCommandFactory")
+    private AbstractCommandFactory oracleCommandFactory;
 
 
 
@@ -57,10 +59,10 @@ public class ConnectorCommandFactory {
                 return mySQLCommandFactory.getConnectorCommand(commandType, provisionObjectType);
             case AT:
                 return appTableCommandFactory.getConnectorCommand(commandType, provisionObjectType);
+            case ORACLE:
+                return oracleCommandFactory.getConnectorCommand(commandType, provisionObjectType);
             default:
                 throw new ConnectorDataException(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
         }
-
-
     }
 }

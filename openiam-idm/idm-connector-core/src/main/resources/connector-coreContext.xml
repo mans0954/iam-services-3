@@ -225,15 +225,15 @@
 
 	<!-- Start Oracle Connector -->
 
-	<bean id="abstractOracleCommand" class="org.openiam.spml2.spi.orcl.AbstractOracleCommand"
-		abstract="true">
-		<property name="connectionMgr" ref="jdbcConnection" />
-		<property name="managedSysService" ref="managedSysService" />
-		<property name="resourceDataService" ref="resourceDataService" />
-	</bean>
+	<!--<bean id="abstractOracleCommand" class="org.openiam.spml2.spi.orcl.AbstractOracleCommand"-->
+		<!--abstract="true">-->
+		<!--<property name="connectionMgr" ref="jdbcConnection" />-->
+		<!--<property name="managedSysService" ref="managedSysService" />-->
+		<!--<property name="resourceDataService" ref="resourceDataService" />-->
+	<!--</bean>-->
 
-    <bean id="oracleLookupAttributeNamesCommand"  class="org.openiam.spml2.spi.orcl.OracleLookupAttributeNamesCommand"
-          parent="abstractOracleCommand" />
+    <!--<bean id="oracleLookupAttributeNamesCommand"  class="org.openiam.spml2.spi.orcl.OracleLookupAttributeNamesCommand"-->
+          <!--parent="abstractOracleCommand" />-->
 
 	<!--<bean id="oracleConnector" class="org.openiam.spml2.spi.orcl.OracleConnectorImpl">-->
 		<!--<property name="addCommand">-->

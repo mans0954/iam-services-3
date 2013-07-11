@@ -12,6 +12,7 @@ import java.sql.SQLException;
  * Time: 11:13 AM
  * To change this template use File | Settings | File Templates.
  */
+@Deprecated
 public abstract class AbstractOracleAccountStatusCommand extends AbstractOraclePasswordCommand {
 
     protected enum AccountStatus {

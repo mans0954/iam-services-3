@@ -1,6 +1,9 @@
 package org.openiam.spml2.spi.orcl;
 
 import org.mule.util.StringUtils;
+import org.openiam.spml2.msg.ConnectorDataException;
+import org.openiam.spml2.msg.RequestType;
+import org.openiam.spml2.msg.ResponseType;
 import org.openiam.spml2.spi.common.jdbc.AbstractJDBCCommand;
 
 import java.sql.*;
@@ -12,6 +15,7 @@ import java.sql.*;
  * Time: 10:44 AM
  * To change this template use File | Settings | File Templates.
  */
+@Deprecated
 public abstract class AbstractOracleCommand extends AbstractJDBCCommand {
 
     private static final String SELECT_SQL = "SELECT USER_ID FROM DBA_USERS WHERE USERNAME=?";
@@ -29,5 +33,9 @@ public abstract class AbstractOracleCommand extends AbstractJDBCCommand {
             }
         }
         return exists;
+    }
+    @Override
+    public ResponseType execute(RequestType requestType) throws ConnectorDataException {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 }
