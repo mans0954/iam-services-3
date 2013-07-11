@@ -21,6 +21,8 @@
  */
 package org.openiam.provision.dto;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.grp.dto.Group;
@@ -362,6 +364,15 @@ public class ProvisionUser extends GenericProvisionObject<User> {
     public List<Organization> getUserAffiliations() {
         return userAffiliations;
     }
+    
+    public void addUserAffiliation(final Organization organization) {
+    	if(organization != null) {
+	    	if(this.userAffiliations == null) {
+	    		this.userAffiliations = new LinkedList<Organization>();
+	    	}
+	    	this.userAffiliations.add(organization);
+    	}
+    }
 
     public void setUserAffiliations(List<Organization> userAffiliations) {
         this.userAffiliations = userAffiliations;
@@ -435,9 +446,6 @@ public class ProvisionUser extends GenericProvisionObject<User> {
         if (getObject().getBirthdate() == null) {
             getObject().setBirthdate(user.getBirthdate());
         }
-        if (getObject().getCompanyId() == null) {
-            getObject().setCompanyId(user.getCompanyId());
-        }
         if (getObject().getCompanyOwnerId() == null) {
             getObject().setCompanyOwnerId(user.getCompanyOwnerId());
         }
@@ -447,14 +455,8 @@ public class ProvisionUser extends GenericProvisionObject<User> {
         if (getObject().getCreatedBy() == null) {
             getObject().setCreatedBy(user.getCreatedBy());
         }
-        if (getObject().getDeptCd() == null) {
-            getObject().setDeptCd(user.getDeptCd());
-        }
-        if (getObject().getDeptName() == null) {
-            getObject().setDeptName(user.getDeptName());
-        }
-        if (getObject().getEmployeeId() == null) {
-            getObject().setEmployeeId(user.getEmployeeId());
+        if (employeeId == null) {
+            employeeId = user.getEmployeeId();
         }
         if (getObject().getEmployeeType() == null) {
             getObject().setEmployeeType(user.getEmployeeType());
@@ -513,9 +515,6 @@ public class ProvisionUser extends GenericProvisionObject<User> {
         }
         if (getObject().getUserTypeInd() == null) {
             getObject().setUserTypeInd(user.getUserTypeInd());
-        }
-        if (getObject().getDivision() == null) {
-            getObject().setDivision(user.getDivision());
         }
         if (getObject().getMailCode() == null) {
             getObject().setMailCode(user.getMailCode());
@@ -596,5 +595,36 @@ public class ProvisionUser extends GenericProvisionObject<User> {
     		}
     		this.userResourceList.add(association);
     	}
+    }
+    
+    //HACK
+    public Organization getPrimaryOrganization() {
+    	Organization retVal = null;
+    	if(CollectionUtils.isNotEmpty(userAffiliations)) {
+    		for(final Organization organization : userAffiliations) {
+    			if(!AttributeOperationEnum.DELETE.equals(organization.getOperation())) {
+    				if(organization.isOrganization()) {
+    					retVal = organization;
+    					break;
+    				}
+    			}
+    		}
+    	}
+    	return retVal;
+    }
+    
+    public boolean isOrganizationMarkedAsDeleted(final String organizationId) {
+    	boolean retVal = false;
+    	if(CollectionUtils.isNotEmpty(userAffiliations)) {
+    		for(final Organization organization : userAffiliations) {
+    			if(AttributeOperationEnum.DELETE.equals(organization.getOperation())) {
+    				if(StringUtils.equalsIgnoreCase(organizationId, organization.getId())) {
+    					retVal = true;
+    					break;
+    				}
+    			}
+    		}
+    	}
+    	return retVal;
     }
 }

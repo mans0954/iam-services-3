@@ -63,20 +63,6 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
         return getCriteria().add(Example.create(t));
     }
 
-    protected Criteria getExampleCriteria(T t, String[] excludeProperties) {
-        Example example = Example.create(t);
-        if (excludeProperties != null && excludeProperties.length > 0) {
-            for (String property : excludeProperties) {
-                example.excludeProperty(property);
-            }
-        }
-        return getCriteria().add(example);
-    }
-
-    protected Criteria getExampleCriteria(final SearchBean searchBean, String[] excludeProperties) {
-    	throw new UnsupportedOperationException("Method must be overridden");
-    }
-
     protected Criteria getExampleCriteria(final SearchBean searchBean) {
         throw new UnsupportedOperationException("Method must be overridden");
     }
@@ -85,12 +71,6 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
     public int count(final SearchBean searchBean) {
     	 return ((Number) getExampleCriteria(searchBean).setProjection(rowCount())
                  .uniqueResult()).intValue();
-    }
-
-    @Override
-    public int count(final SearchBean searchBean, String[] excludeProperties) {
-        return ((Number) getExampleCriteria(searchBean, excludeProperties).setProjection(rowCount())
-                .uniqueResult()).intValue();
     }
 
     @Override
@@ -108,27 +88,8 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
     }
 
     @Override
-    public List<T> getByExample(T t, int startAt, int size, String[] excludeProperties) {
-        final Criteria criteria = getExampleCriteria(t, excludeProperties);
-        if (startAt > -1) {
-            criteria.setFirstResult(startAt);
-        }
-
-        if (size > -1) {
-            criteria.setMaxResults(size);
-        }
-
-        return (List<T>) criteria.list();
-    }
-
-    @Override
     public List<T> getByExample(final SearchBean searchBean) {
     	return getByExample(searchBean, -1, -1);
-    }
-
-    @Override
-    public List<T> getByExample(final SearchBean searchBean, String[] excludeProperties) {
-        return getByExample(searchBean, -1, -1, excludeProperties);
     }
 
     @Override
@@ -146,38 +107,13 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
     }
 
     @Override
-    public List<T> getByExample(final SearchBean searchBean, int from, int size, String[] excludeProperties) {
-        final Criteria criteria = getExampleCriteria(searchBean, excludeProperties);
-        if (from > -1) {
-            criteria.setFirstResult(from);
-        }
-
-        if (size > -1) {
-            criteria.setMaxResults(size);
-        }
-
-        return (List<T>) criteria.list();
-    }
-
-    @Override
     public List<T> getByExample(T t) {
         return getByExample(t, -1, -1);
     }
 
     @Override
-    public List<T> getByExample(T t, String[] excludeProperties) {
-        return getByExample(t, -1, -1, excludeProperties);
-    }
-
-    @Override
     public int count(T t) {
         return ((Number) getExampleCriteria(t).setProjection(rowCount())
-                .uniqueResult()).intValue();
-    }
-
-    @Override
-    public int count(T t, String[] excludeProperties) {
-        return ((Number) getExampleCriteria(t, excludeProperties).setProjection(rowCount())
                 .uniqueResult()).intValue();
     }
 

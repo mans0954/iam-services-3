@@ -9,7 +9,7 @@ import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "organizationAttribute", propOrder = {
-        "attrId",
+        "id",
         "metadataElementId",
         "name",
         "organizationId",
@@ -20,31 +20,30 @@ public class OrganizationAttribute implements java.io.Serializable {
 
     private static final long serialVersionUID = -231974705360001659L;
 
-    private String attrId;
+    private String id;
     private String metadataElementId;
     private String name;
     private String organizationId;
     private String value;
-
+    
     public OrganizationAttribute() {
     }
 
-    public String getAttrId() {
-        return attrId;
-    }
+    public String getId() {
+		return id;
+	}
 
-    public void setAttrId(String value) {
-        this.attrId = value;
-    }
+	public void setId(String id) {
+		this.id = id;
+	}
 
-    public String getName() {
+	public String getName() {
         return name;
     }
 
     public void setName(String value) {
         this.name = value;
     }
-
 
     public String getOrganizationId() {
         return this.organizationId;
@@ -70,31 +69,58 @@ public class OrganizationAttribute implements java.io.Serializable {
         this.organizationId = organizationId;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime
+				* result
+				+ ((metadataElementId == null) ? 0 : metadataElementId
+						.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result
+				+ ((organizationId == null) ? 0 : organizationId.hashCode());
+		result = prime * result + ((value == null) ? 0 : value.hashCode());
+		return result;
+	}
 
-        OrganizationAttribute that = (OrganizationAttribute) o;
-
-        if (attrId != null ? !attrId.equals(that.attrId) : that.attrId != null) return false;
-        if (metadataElementId != null ? !metadataElementId.equals(that.metadataElementId) : that.metadataElementId != null)
-            return false;
-        if (name != null ? !name.equals(that.name) : that.name != null) return false;
-        if (organizationId != null ? !organizationId.equals(that.organizationId) : that.organizationId != null)
-            return false;
-        if (value != null ? !value.equals(that.value) : that.value != null) return false;
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = attrId != null ? attrId.hashCode() : 0;
-        result = 31 * result + (metadataElementId != null ? metadataElementId.hashCode() : 0);
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (organizationId != null ? organizationId.hashCode() : 0);
-        result = 31 * result + (value != null ? value.hashCode() : 0);
-        return result;
-    }
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		OrganizationAttribute other = (OrganizationAttribute) obj;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		if (metadataElementId == null) {
+			if (other.metadataElementId != null)
+				return false;
+		} else if (!metadataElementId.equals(other.metadataElementId))
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		if (organizationId == null) {
+			if (other.organizationId != null)
+				return false;
+		} else if (!organizationId.equals(other.organizationId))
+			return false;
+		if (value == null) {
+			if (other.value != null)
+				return false;
+		} else if (!value.equals(other.value))
+			return false;
+		return true;
+	}
+    
+    
 }

@@ -367,11 +367,11 @@ public class IdentitySynchServiceImpl implements IdentitySynchService, MuleConte
         }
 
         if (config.getDeptId() != null && !config.getDeptId().isEmpty()) {
-            search.addDeptId(config.getDeptId());
+        	search.addOrganizationId(config.getDeptId());
         }
 
         if (config.getDivision() != null && !config.getDivision().isEmpty()) {
-            search.addDivisionId(config.getDivision());
+        	search.addOrganizationId(config.getDivision());
         }
 
         if (config.getAttributeName() != null && !config.getAttributeName().isEmpty()) {
@@ -448,13 +448,13 @@ public class IdentitySynchServiceImpl implements IdentitySynchService, MuleConte
     @Override
     @Transactional(readOnly = true)
     public Integer getSynchConfigCountByExample(SynchConfigEntity example) {
-        return synchConfigDao.count(example, new String[]{"usePolicyMap"});
+        return synchConfigDao.count(example);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<SynchConfigEntity> getSynchConfigsByExample(SynchConfigEntity example, Integer from, Integer size) {
-        return synchConfigDao.getByExample(example, from, size, new String[]{"usePolicyMap"});
+        return synchConfigDao.getByExample(example, from, size);
     }
 
     @Override

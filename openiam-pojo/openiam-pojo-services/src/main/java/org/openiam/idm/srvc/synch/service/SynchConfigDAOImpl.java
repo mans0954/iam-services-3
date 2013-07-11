@@ -6,6 +6,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
+import org.hibernate.criterion.Example;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
@@ -113,4 +114,14 @@ public class SynchConfigDAOImpl extends BaseDaoImpl<SynchConfigEntity, String> i
     protected String getPKfieldName() {
         return "synchConfigId";
     }
+
+    @Override
+    protected Criteria getExampleCriteria(SynchConfigEntity config) {
+        Example example = Example.create(config);
+        example.excludeProperty("usePolicyMap"); // exclude boolean properties
+        example.excludeProperty("useTransformationScript");
+        example.excludeProperty("policyMapBeforeTransformation");
+        return getCriteria().add(example);
+    }
+
 }

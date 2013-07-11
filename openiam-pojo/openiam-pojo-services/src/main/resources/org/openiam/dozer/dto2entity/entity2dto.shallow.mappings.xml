@@ -71,6 +71,10 @@
 			<a>resourceUsers</a>
 			<b>resourceUsers</b>
 		</field-exclude>
+		<field-exclude>
+			<a>affiliations</a>
+			<b>affiliations</b>
+		</field-exclude>
 	</mapping>
 
 	<mapping>
@@ -194,6 +198,10 @@
 			<a>userAttributes</a>
 			<b>userAttributes</b>
 		</field-exclude>
+		<field-exclude>
+			<a>organizationAttributes</a>
+			<b>organizationAttributes</b>
+		</field-exclude>
 	</mapping>
 
 	<mapping>
@@ -256,6 +264,14 @@
 		<field-exclude>
 			<a>childOrganizations</a>
 			<b>childOrganizations</b>
+		</field-exclude>
+		<field>
+			<a>organizationType.id</a>
+			<b>organizationTypeId</b>
+		</field>
+		<field-exclude>
+			<a>affiliations</a>
+			<b>affiliations</b>
 		</field-exclude>
 	</mapping>
 	<mapping>
@@ -426,6 +442,23 @@
 		<field-exclude>
 			<a>defaultAttributePolicy</a>
 			<b>defaultAttributePolicy</b>
+		</field-exclude>
+	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.org.domain.OrganizationTypeEntity</class-a>
+		<class-b>org.openiam.idm.srvc.org.dto.OrganizationType</class-b>
+		<field-exclude>
+			<a>parentTypes</a>
+			<b>parentTypes</b>
+		</field-exclude>
+		<field-exclude>
+			<a>childTypes</a>
+			<b>childTypes</b>
+		</field-exclude>
+		<field-exclude>
+			<a>organizations</a>
+			<b>organizations</b>
 		</field-exclude>
 	</mapping>
 </mappings>

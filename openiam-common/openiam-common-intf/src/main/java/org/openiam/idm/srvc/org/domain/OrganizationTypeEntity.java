@@ -1,0 +1,150 @@
+package org.openiam.idm.srvc.org.domain;
+
+import java.util.Set;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+import org.hibernate.annotations.GenericGenerator;
+import org.openiam.dozer.DozerDTOCorrespondence;
+import org.openiam.idm.srvc.org.dto.OrganizationType;
+
+@Entity
+@Table(name="ORGANIZATION_TYPE")
+@DozerDTOCorrespondence(OrganizationType.class)
+public class OrganizationTypeEntity {
+
+	@Id
+    @GeneratedValue(generator="system-uuid")
+    @GenericGenerator(name="system-uuid", strategy = "uuid")
+    @Column(name="ORG_TYPE_ID", length=32, nullable = false)
+	private String id;
+	
+	@Column(name="NAME", length=100, nullable = false)
+	private String name;
+	
+	@Column(name="DESCRIPTION", length=100, nullable = true)
+	private String description;
+	
+	@ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
+    @JoinTable(name="ORG_TYPE_VALID_MEMBERSHIP",
+        joinColumns={@JoinColumn(name="MEMBER_ORG_TYPE_ID")},
+        inverseJoinColumns={@JoinColumn(name="ORG_TYPE_ID")})
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<OrganizationTypeEntity> parentTypes;
+    
+	@ManyToMany(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
+    @JoinTable(name="ORG_TYPE_VALID_MEMBERSHIP",
+        joinColumns={@JoinColumn(name="ORG_TYPE_ID")},
+        inverseJoinColumns={@JoinColumn(name="MEMBER_ORG_TYPE_ID")})
+    @Fetch(FetchMode.SUBSELECT)
+    private Set<OrganizationTypeEntity> childTypes;
+	
+	@OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "organizationType", fetch = FetchType.LAZY)
+	private Set<OrganizationEntity> organizations;
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public Set<OrganizationTypeEntity> getParentTypes() {
+		return parentTypes;
+	}
+
+	public void setParentTypes(Set<OrganizationTypeEntity> parentTypes) {
+		this.parentTypes = parentTypes;
+	}
+
+	public Set<OrganizationTypeEntity> getChildTypes() {
+		return childTypes;
+	}
+
+	public void setChildTypes(Set<OrganizationTypeEntity> childTypes) {
+		this.childTypes = childTypes;
+	}
+
+	public Set<OrganizationEntity> getOrganizations() {
+		return organizations;
+	}
+
+	public void setOrganizations(Set<OrganizationEntity> organizations) {
+		this.organizations = organizations;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((description == null) ? 0 : description.hashCode());
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		OrganizationTypeEntity other = (OrganizationTypeEntity) obj;
+		if (description == null) {
+			if (other.description != null)
+				return false;
+		} else if (!description.equals(other.description))
+			return false;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		return "OrganizationTypeEntity [id=" + id + ", name=" + name
+				+ ", description=" + description + "]";
+	}
+	
+	
+}

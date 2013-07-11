@@ -42,9 +42,6 @@ public class ProvisionUserCSVParser extends
 				user.setBirthdate(null);
 			}
 			break;
-		case companyId:
-			user.setCompanyId(objValue);
-			break;
 		case companyOwnerId:
 			user.setCompanyOwnerId(objValue);
 			break;
@@ -57,13 +54,6 @@ public class ProvisionUserCSVParser extends
 			break;
 		case createdBy:
 			user.setCreatedBy(objValue);
-			break;
-		case departmentCD:
-		case deptCd:
-			user.setDeptCd(objValue);
-			break;
-		case deptName:
-			user.setDeptName(objValue);
 			break;
 		case employeeId:
 			user.setEmployeeId(objValue);
@@ -138,9 +128,6 @@ public class ProvisionUserCSVParser extends
 		case userNotes:
 		case emailAddresses:
 		case userAttributes:
-			break;
-		case division:
-			user.setDivision(objValue);
 			break;
 		case costCenter:
 			user.setCostCenter(objValue);
@@ -229,9 +216,6 @@ public class ProvisionUserCSVParser extends
 			objValue = user.getBirthdate() == null ? "" : toString(sdf
 					.format(user.getBirthdate()));
 			break;
-		case companyId:
-			objValue = toString(user.getCompanyId());
-			break;
 		case companyOwnerId:
 			objValue = toString(user.getCompanyOwnerId());
 			break;
@@ -241,13 +225,6 @@ public class ProvisionUserCSVParser extends
 			break;
 		case createdBy:
 			objValue = toString(user.getCreatedBy());
-			break;
-		case deptCd:
-		case departmentCD:
-			objValue = toString(user.getDeptCd());
-			break;
-		case deptName:
-			objValue = toString(user.getDeptName());
 			break;
 		case employeeId:
 			objValue = toString(user.getEmployeeId());
@@ -313,9 +290,6 @@ public class ProvisionUserCSVParser extends
 			break;
 		case userTypeInd:
 			objValue = toString(user.getUserTypeInd());
-			break;
-		case division:
-			objValue = toString(user.getDivision());
 			break;
 		case costCenter:
 			objValue = toString(user.getCostCenter());

@@ -47,7 +47,13 @@ public class SynchConfigEntity implements Serializable {
     private String validationRule;
     @Column(name="USE_POLICY_MAP")
     @Type(type = "yes_no")
-    private boolean usePolicyMap = false;
+    private boolean usePolicyMap = true;
+    @Column(name="USE_TRANSFORM_SCRIPT")
+    @Type(type = "yes_no")
+    private boolean useTransformationScript = true;
+    @Column(name="POLICY_MAP_BEFORE_TRANSFORM")
+    @Type(type = "yes_no")
+    private boolean policyMapBeforeTransformation = true;
     @Column(name="TRANSFORMATION_RULE",length=80)
     private String transformationRule;
     @Column(name="MATCH_FIELD_NAME",length=40)
@@ -181,6 +187,22 @@ public class SynchConfigEntity implements Serializable {
 
     public void setUsePolicyMap(boolean usePolicyMap) {
         this.usePolicyMap = usePolicyMap;
+    }
+
+    public boolean getUseTransformationScript() {
+        return useTransformationScript;
+    }
+
+    public void setUseTransformationScript(boolean useTransformationScript) {
+        this.useTransformationScript = useTransformationScript;
+    }
+
+    public boolean getPolicyMapBeforeTransformation() {
+        return policyMapBeforeTransformation;
+    }
+
+    public void setPolicyMapBeforeTransformation(boolean policyMapBeforeTransformation) {
+        this.policyMapBeforeTransformation = policyMapBeforeTransformation;
     }
 
     public String getMatchFieldName() {
@@ -367,6 +389,9 @@ public class SynchConfigEntity implements Serializable {
                 ", processRule='" + processRule + '\'' +
                 ", validationRule='" + validationRule + '\'' +
                 ", transformationRule='" + transformationRule + '\'' +
+                ", usePolicyMap='" + usePolicyMap + '\'' +
+                ", useTransformationScript='" + useTransformationScript + '\'' +
+                ", policyMapBeforeTransformation='" + policyMapBeforeTransformation + '\'' +
                 ", matchFieldName='" + matchFieldName + '\'' +
                 ", matchManagedSysId='" + matchManagedSysId + '\'' +
                 ", matchSrcFieldName='" + matchSrcFieldName + '\'' +
@@ -429,6 +454,9 @@ public class SynchConfigEntity implements Serializable {
             return false;
         if (synchType != null ? !synchType.equals(that.synchType) : that.synchType != null) return false;
         if (!transformationRule.equals(that.transformationRule)) return false;
+        if (usePolicyMap != that.usePolicyMap) return false;
+        if (useTransformationScript != that.useTransformationScript) return false;
+        if (policyMapBeforeTransformation != that.policyMapBeforeTransformation) return false;
         if (updateAttribute != null ? !updateAttribute.equals(that.updateAttribute) : that.updateAttribute != null)
             return false;
         if (!validationRule.equals(that.validationRule)) return false;
@@ -451,6 +479,9 @@ public class SynchConfigEntity implements Serializable {
         result = 31 * result + (synchType != null ? synchType.hashCode() : 0);
         result = 31 * result + (processRule != null ? processRule.hashCode() : 0);
         result = 31 * result + validationRule.hashCode();
+        result = 31 * result + (usePolicyMap ? 1231 : 1237);
+        result = 31 * result + (useTransformationScript ? 1231 : 1237);
+        result = 31 * result + (policyMapBeforeTransformation ? 1231 : 1237);
         result = 31 * result + transformationRule.hashCode();
         result = 31 * result + (matchFieldName != null ? matchFieldName.hashCode() : 0);
         result = 31 * result + (matchManagedSysId != null ? matchManagedSysId.hashCode() : 0);

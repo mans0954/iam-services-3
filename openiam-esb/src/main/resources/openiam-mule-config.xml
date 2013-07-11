@@ -279,6 +279,20 @@
 			</service>
 		</model>
 		
+		
+		<model name="orgTypeDataServiceModel">
+			<service name="orgTypeDataService">
+				<inbound>
+						<inbound-endpoint address="${webservice.path}OrganizationTypeDataService" 		exchange-pattern="request-response">
+						<cxf:jaxws-service />
+					</inbound-endpoint>
+				</inbound>
+				<component>
+					<spring-object bean="organizationTypeDataService" />
+				</component>
+			</service>
+		</model>		
+		
 
 		<model name="orgDataServiceModel">
 			<service name="orgDataService">

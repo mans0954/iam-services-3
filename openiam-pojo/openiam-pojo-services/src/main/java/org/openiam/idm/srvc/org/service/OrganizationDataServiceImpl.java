@@ -19,7 +19,6 @@ import org.openiam.dozer.converter.OrganizationDozerConverter;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
-import org.openiam.idm.srvc.org.dto.OrgClassificationEnum;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
 import org.openiam.idm.srvc.searchbean.converter.OrganizationSearchBeanConverter;
@@ -35,8 +34,6 @@ import org.springframework.transaction.annotation.Transactional;
  * Organization components and its dependant objects as well as search
  * capability.<br>
  * <p/>
- * Note: The spring configuration file defines MetadataTypes are used to
- * identify Departments and Divisions in the org list.
  * 
  * @author OpenIAm
  * @version 2
@@ -65,22 +62,21 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     private OrganizationAttributeDozerConverter organizationAttributeDozerConverter;
 
     @Override
-    public List<Organization> getTopLevelOrganizations(String requesterId) {
-        final List<OrganizationEntity> entityList = organizationService.getTopLevelOrganizations(requesterId);
-        return organizationDozerConverter.convertToDTOList(entityList, false);
-    }
-
-    @Override
     public Organization getOrganization(final String orgId, String requesterId) {
         final OrganizationEntity entity = organizationService.getOrganization(orgId, requesterId);
         return organizationDozerConverter.convertToDTO(entity, false);
     }
-
+    
     @Override
-    public List<Organization> getOrganizationsForUser(String userId, String requesterId) {
-        final List<OrganizationEntity> ogranizationEntity = organizationService.getOrganizationsForUser(userId, requesterId);
+	public int getNumOfOrganizationsForUser(final String userId, final String requesterId) {
+    	return organizationService.getNumOfOrganizationsForUser(userId, requesterId);
+	}
+    
+    @Override
+	public List<Organization> getOrganizationsForUser(final String userId, final String requesterId, final int from, final int size) {
+    	final List<OrganizationEntity> ogranizationEntity = organizationService.getOrganizationsForUser(userId, requesterId, from, size);
         return organizationDozerConverter.convertToDTOList(ogranizationEntity, false);
-    }
+	}
 
     @Override
     public List<Organization> getAllOrganizations(String requesterId) {
@@ -128,7 +124,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     public Response addUserToOrg(final String orgId, final String userId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
-            if (orgId != null && userId != null) {
+            if (orgId == null || userId == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
 
@@ -152,7 +148,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     public Response removeUserFromOrg(String orgId, String userId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
-            if (orgId != null && userId != null) {
+            if (orgId == null || userId == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
 
@@ -201,11 +197,11 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 
             final OrganizationEntity found = organizationService.getOrganizationByName(organization.getOrganizationName(), null);
             if (found != null) {
-                if (StringUtils.isBlank(organization.getOrgId()) && found != null) {
+                if (StringUtils.isBlank(organization.getId()) && found != null) {
                     throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
                 }
 
-                if (StringUtils.isNotBlank(organization.getOrgId()) && !organization.getOrgId().equals(found.getOrgId())) {
+                if (StringUtils.isNotBlank(organization.getId()) && !organization.getId().equals(found.getId())) {
                     throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
                 }
             }
@@ -214,16 +210,13 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
             // throw new
             // BasicDataServiceException(ResponseCode.ORGANIZATION_TYPE_NOT_SET);
             // }
-            if (organization.getClassification() == null) {
-                organization.setClassification(OrgClassificationEnum.fromStringValue(organization.getClassificaitonAsString()));
-            }
-            if (organization.getClassification() == null) {
+            if(StringUtils.isBlank(organization.getOrganizationTypeId())) {
                 throw new BasicDataServiceException(ResponseCode.CLASSIFICATION_NOT_SET);
             }
 
-            OrganizationEntity entity = organizationDozerConverter.convertToEntity(organization, false);
+            final OrganizationEntity entity = organizationDozerConverter.convertToEntity(organization, false);
             organizationService.save(entity);
-            response.setResponseValue(entity.getOrgId());
+            response.setResponseValue(entity.getId());
         } catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
@@ -330,7 +323,7 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
                 visitedSet.add(child);
                 if (CollectionUtils.isNotEmpty(parent.getParentOrganizations())) {
                     for (final OrganizationEntity entity : parent.getParentOrganizations()) {
-                        retval = entity.getOrgId().equals(child.getOrgId());
+                        retval = entity.getId().equals(child.getId());
                         if (retval) {
                             break;
                         }
@@ -361,4 +354,13 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
         }
         return response;
     }
+
+	@Override
+	public List<Organization> getOrganizationsForUserByType(final String userId, final String requesterId, final String organizationTypeId) {
+		final OrganizationSearchBean searchBean = new OrganizationSearchBean();
+		searchBean.setUserId(userId);
+		searchBean.setOrganizationTypeId(organizationTypeId);
+		searchBean.setDeepCopy(false);
+		return findBeans(searchBean, requesterId, 0, Integer.MAX_VALUE);
+	}
 }

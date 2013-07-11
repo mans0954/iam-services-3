@@ -52,8 +52,8 @@
             <b>attributeType</b>
         </field>
         <field>
-            <a>amAttributeId</a>
-            <b>amAttributeId</b>
+            <a>amResAttributeId</a>
+            <b>amResAttributeId</b>
         </field>
         <field>
             <a>amPolicyUrl</a>
@@ -61,7 +61,11 @@
         </field>
         <field>
             <a>amAttribute.attributeName</a>
-            <b>amAttributeName</b>
+            <b>amResAttributeName</b>
+        </field>
+        <field>
+            <a>amAttribute.reflectionKey</a>
+            <b>amReflectionKey</b>
         </field>
     </mapping>
 

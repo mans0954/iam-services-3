@@ -55,13 +55,8 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 
         if(delegationFilter != null) {
 	        if (CollectionUtils.isNotEmpty(delegationFilter.getOrganizationIdSet())) {
-	            criteria.add(Restrictions.in("companyId", delegationFilter.getOrganizationIdSet()));
-	        }
-	        if (CollectionUtils.isNotEmpty(delegationFilter.getDeptIdSet())) {
-	            criteria.add(Restrictions.in("deptCd", delegationFilter.getDeptIdSet()));
-	        }
-	        if (CollectionUtils.isNotEmpty(delegationFilter.getDivisionIdSet())) {
-	            criteria.add(Restrictions.in("division", delegationFilter.getDivisionIdSet()));
+	        	criteria.createAlias("affiliations", "aff").add(
+				Restrictions.in("aff.organization.id", delegationFilter.getOrganizationIdSet()));
 	        }
 	
 	        if (CollectionUtils.isNotEmpty(delegationFilter.getGroupIdSet())) {
@@ -223,10 +218,8 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
                 criteria.add(Restrictions.eq("postalCd", searchBean.getZipCode()));
             }
             if (CollectionUtils.isNotEmpty(searchBean.getOrganizationIdList())) {
-                criteria.add(Restrictions.in("companyId", searchBean.getOrganizationIdList()));
-            }
-            if (searchBean.getDeptIdList() != null && !searchBean.getDeptIdList().isEmpty()) {
-                criteria.add(Restrictions.in("deptCd", searchBean.getDeptIdList()));
+                criteria.createAlias("affiliations", "aff").add(
+        				Restrictions.in("aff.organization.id", searchBean.getOrganizationIdList()));
             }
             if (StringUtils.isNotEmpty(searchBean.getPhoneAreaCd()) || StringUtils.isNotEmpty(searchBean.getPhoneNbr())) {
                 if (StringUtils.isNotEmpty(searchBean.getPhoneAreaCd())) {
@@ -247,9 +240,6 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             if (CollectionUtils.isNotEmpty(searchBean.getGroupIdSet())) {
                 criteria.createAlias("userGroups", "g");
                 criteria.add(Restrictions.in("g.grpId", searchBean.getGroupIdSet()));
-            }
-            if (searchBean.getDivisionIdList() != null && !searchBean.getDivisionIdList().isEmpty()) {
-                criteria.add(Restrictions.in("division", searchBean.getDivisionIdList()));
             }
             if (StringUtils.isNotEmpty(searchBean.getEmployeeId())) {
                 criteria.add(Restrictions.eq("employeeId", searchBean.getEmployeeId()));
@@ -422,13 +412,8 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 
         if (delegationFilter != null) {
             if (CollectionUtils.isNotEmpty(delegationFilter.getOrganizationIdSet())) {
-                criteria.add(Restrictions.in("companyId", delegationFilter.getOrganizationIdSet()));
-            }
-            if (CollectionUtils.isNotEmpty(delegationFilter.getDeptIdSet())) {
-                criteria.add(Restrictions.in("deptCd", delegationFilter.getDeptIdSet()));
-            }
-            if (CollectionUtils.isNotEmpty(delegationFilter.getDivisionIdSet())) {
-                criteria.add(Restrictions.in("division", delegationFilter.getDivisionIdSet()));
+                criteria.createAlias("affiliations", "aff").add(
+        				Restrictions.in("aff.organization.id", delegationFilter.getOrganizationIdSet()));
             }
         }
         criteria.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
@@ -438,7 +423,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
 
     @Override
     public void disassociateUsersFromOrganization(String organizationId) {
-        final String queryString = String.format("UPDATE %s u SET u.organization = NULL WHERE u.organization.orgId = :organizationId",
+        final String queryString = String.format("UPDATE %s u SET u.organization = NULL WHERE u.organization.id = :organizationId",
                                                  domainClass.getSimpleName());
         final Query query = getSession().createQuery(queryString);
         query.setParameter("organizationId", organizationId);

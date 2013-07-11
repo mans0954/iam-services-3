@@ -15,15 +15,23 @@ import java.util.List;
 public interface OrganizationDataService {
 
     @WebMethod
-    public List<Organization> getTopLevelOrganizations(@WebParam(name = "requesterId", targetNamespace = "") String requesterId);
-
-    @WebMethod
     public Organization getOrganization(@WebParam(name = "orgId", targetNamespace = "") String orgId,
                                         @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     @WebMethod
+    public int getNumOfOrganizationsForUser(@WebParam(name = "userId", targetNamespace = "") String userId,
+                                                      	   @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+    
+    @WebMethod
     public List<Organization> getOrganizationsForUser(@WebParam(name = "userId", targetNamespace = "") String userId,
-                                                      @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+                                                      @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                                                      @WebParam(name = "from", targetNamespace = "") int from,
+                                                      @WebParam(name = "size", targetNamespace = "") int size);
+    
+    @WebMethod
+    public List<Organization> getOrganizationsForUserByType(@WebParam(name = "userId", targetNamespace = "") String userId,
+                                                      		@WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                                                      		@WebParam(name="organizationTypeId", targetNamespace = "") String organizationTypeId);
 
     @WebMethod
     public List<Organization> getAllOrganizations(@WebParam(name = "requesterId", targetNamespace = "") String requesterId);

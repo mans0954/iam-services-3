@@ -35,7 +35,7 @@ public class PolicyMapTransformScript extends AbstractTransformScript {
             System.out.println("User Roles: " + userRoleList);
         }
         System.out.println("---------------------------------");
-        System.out.println("Synching object for: " + rowObj );
+        System.out.println("Synching object with Policy Maps for: " + rowObj );
 
         pUser.getUser().setStatus(UserStatusEnum.ACTIVE);
         pUser.securityDomain = "0";

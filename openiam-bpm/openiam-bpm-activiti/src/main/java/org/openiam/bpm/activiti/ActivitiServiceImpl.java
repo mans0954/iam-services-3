@@ -277,9 +277,6 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 			provisionRequest.setRequestDate(currentDate);
 			provisionRequest.setRequestReason(String.format("%s FOR %s %s", protectingResource.getDescription(), provisionUser.getFirstName(), provisionUser.getLastName()));
 			provisionRequest.setRequestorId(request.getRequestorUserId());
-			if(StringUtils.isNotBlank(provisionUser.getCompanyId())) {
-				provisionRequest.setRequestForOrgId(provisionUser.getCompanyId());
-			}
 			
 			/* save the request */
 			provRequestService.addRequest(provisionRequest);

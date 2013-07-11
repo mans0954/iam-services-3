@@ -18,16 +18,20 @@ import java.util.Set;
 @XmlType(name = "OrganizationSearchBean", propOrder = {
         "keySet",
         "organizationName",
-		"typeId",
-		"classification"
+		"organizationTypeId",
+		"userId",
+		"parentId",
+		"childId"
 })
 public class OrganizationSearchBean extends AbstractSearchBean<Organization, String> implements SearchBean<Organization, String>,
         Serializable {
     private static final long serialVersionUID = 1L;
     private Set<String> keySet;
     private String organizationName;
-    private String typeId;
-    private String classification;
+    private String organizationTypeId;
+    private String userId;
+    private String parentId;
+    private String childId;
 
     public String getOrganizationName() {
         return organizationName;
@@ -37,23 +41,17 @@ public class OrganizationSearchBean extends AbstractSearchBean<Organization, Str
         this.organizationName = organizationName;
     }
 
-	public String getTypeId() {
-		return typeId;
+	
+
+    public String getOrganizationTypeId() {
+		return organizationTypeId;
 	}
 
-	public void setTypeId(String typeId) {
-		this.typeId = typeId;
+	public void setOrganizationTypeId(String organizationTypeId) {
+		this.organizationTypeId = organizationTypeId;
 	}
 
-	public String getClassification() {
-		return classification;
-	}
-
-	public void setClassification(String classification) {
-		this.classification = classification;
-	}
-
-    @Override
+	@Override
     public String getKey() {
         return (CollectionUtils.isNotEmpty(keySet)) ? keySet.iterator().next() : null;
     }
@@ -84,4 +82,30 @@ public class OrganizationSearchBean extends AbstractSearchBean<Organization, Str
     public void setKeys(final Set<String> keySet) {
         this.keySet = keySet;
     }
+
+	public String getUserId() {
+		return userId;
+	}
+
+	public void setUserId(String userId) {
+		this.userId = userId;
+	}
+
+	public String getParentId() {
+		return parentId;
+	}
+
+	public void setParentId(String parentId) {
+		this.parentId = parentId;
+	}
+
+	public String getChildId() {
+		return childId;
+	}
+
+	public void setChildId(String childId) {
+		this.childId = childId;
+	}
+	
+	
 }

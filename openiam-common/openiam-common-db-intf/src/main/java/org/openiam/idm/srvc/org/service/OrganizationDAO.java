@@ -30,4 +30,7 @@ public interface OrganizationDAO extends BaseDao<OrganizationEntity, String> {
     
     int getNumOfParentOrganizations(String orgId, Set<String> filter);
     List<OrganizationEntity> getParentOrganizations(String orgId, Set<String> filter, final int from, final int size);
+    
+    public List<OrganizationEntity> getOrganizationsForUser(final String userId, final Set<String> filter, final int from, final int size);
+    public int getNumOfOrganizationsForUser(final String userId, final Set<String> filter);
 }

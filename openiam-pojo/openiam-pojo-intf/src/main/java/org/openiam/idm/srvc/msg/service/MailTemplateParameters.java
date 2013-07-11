@@ -13,7 +13,6 @@ public enum MailTemplateParameters {
     FIRST_NAME("firstName"),
     LAST_NAME("lastName"),
     COMPANY_NAME("companyName"),
-    DEPT_NAME("deptName"),
     LOGIN_NAME("loginName"),
     PASSWORD("password"),
     EMAIL("email"),

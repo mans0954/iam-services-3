@@ -862,7 +862,7 @@ public class ModifyUser {
     public void updateUserOrgAffiliation(String userId,
             List<Organization> newOrgList) {
         List<Organization> currentOrgList = orgManager
-                .getOrganizationsForUser(userId, null);
+                .getOrganizationsForUser(userId, null, 0, Integer.MAX_VALUE);
 
         if (newOrgList == null) {
             return;
@@ -877,12 +877,12 @@ public class ModifyUser {
                     || o.getOperation() == AttributeOperationEnum.NO_CHANGE) {
 
                 if (!inCurList) {
-                    orgManager.addUserToOrg(o.getOrgId(), userId);
+                    orgManager.addUserToOrg(o.getId(), userId);
                 }
 
             } else if (o.getOperation() == AttributeOperationEnum.DELETE) {
                 if (inCurList) {
-                    orgManager.removeUserFromOrg(o.getOrgId(), userId);
+                    orgManager.removeUserFromOrg(o.getId(), userId);
                 }
             }
 
@@ -894,7 +894,7 @@ public class ModifyUser {
             List<Organization> curOrgList) {
         if (curOrgList != null) {
             for (Organization o : curOrgList) {
-                if (o.getOrgId().equals(newOrg.getOrgId())) {
+                if (o.getId().equals(newOrg.getId())) {
 
                     return true;
                 }
@@ -943,12 +943,12 @@ public class ModifyUser {
 
                 roleDataService.addUserToRole(rl.getRoleId(), userId);
 
-                logList.add(auditHelper.createLogObject("ADD ROLE", pUser.getUser()
-                        .getRequestorDomain(), pUser.getUser().getRequestorLogin(),
+                logList.add(auditHelper.createLogObject("ADD ROLE", pUser
+                        .getRequestorDomain(), pUser.getRequestorLogin(),
                         "IDM SERVICE", user.getCreatedBy(), "0", "USER", user
                                 .getUserId(), null, "SUCCESS", null,
                         "USER_STATUS", user.getStatus().toString(), "NA", null,
-                        null, null, rl.getRoleId(), pUser.getUser().getRequestClientIP(),
+                        null, null, rl.getRoleId(), pUser.getRequestClientIP(),
                         primaryIdentity.getLogin(), primaryIdentity
                                 .getDomainId()));
 

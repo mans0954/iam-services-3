@@ -29,8 +29,7 @@ import javax.xml.bind.annotation.XmlType;
     "newRoleId",
     "newServiceId",
     "requestApprovers",
-    "requestUsers",
-    "requestForOrgId"
+    "requestUsers"
 })
 @DozerDTOCorrespondence(ProvisionRequestEntity.class)
 public class ProvisionRequest implements Serializable {
@@ -52,8 +51,6 @@ public class ProvisionRequest implements Serializable {
 	private String changeAccessBy;
 	private String newRoleId;
 	private String newServiceId;
-
-	private String requestForOrgId;
 	
 	private Set<RequestUser> requestUsers = new HashSet<RequestUser>(0);
 	private Set<RequestApprover> requestApprovers = new HashSet<RequestApprover>(0);
@@ -166,14 +163,6 @@ public class ProvisionRequest implements Serializable {
 	public void setManagedResourceId(String managedResourceId) {
 		this.managedResourceId = managedResourceId;
 	}
-
-    public String getRequestForOrgId() {
-        return requestForOrgId;
-    }
-
-    public void setRequestForOrgId(String requestForOrgId) {
-        this.requestForOrgId = requestForOrgId;
-    }
 
 	public Set<RequestUser> getRequestUsers() {
 		return requestUsers;

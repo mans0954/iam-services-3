@@ -18,20 +18,19 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.MapKey;
 import javax.persistence.MapKeyColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
-import org.openiam.idm.srvc.org.dto.OrgClassificationEnum;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.search.annotations.DocumentId;
-import org.openiam.idm.srvc.org.dto.OrgClassificationEnum;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
@@ -45,13 +44,12 @@ public class OrganizationEntity {
     @GenericGenerator(name="system-uuid", strategy = "uuid")
     @Column(name="COMPANY_ID", length=32, nullable = false)
     @DocumentId
-    private String orgId;
+    private String id;
 
     @Column(name="ALIAS", length=100)
     private String alias;
 
-    @OneToMany(fetch=FetchType.LAZY,orphanRemoval=true,cascade={CascadeType.ALL})
-    @JoinColumn(name="COMPANY_ID", referencedColumnName="COMPANY_ID")
+    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "organization", fetch = FetchType.LAZY)
     @MapKeyColumn(name="name")
     @Fetch(FetchMode.SUBSELECT)
     private Map<String, OrganizationAttributeEntity> attributes = new HashMap<String, OrganizationAttributeEntity>(0);
@@ -88,10 +86,10 @@ public class OrganizationEntity {
 
     @Column(name="STATUS", length=20)
     private String status;
-
-    @Column(name="CLASSIFICATION", length=40)
-    @Enumerated(EnumType.STRING)
-    private OrgClassificationEnum classification;
+    
+    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinColumn(name = "ORG_TYPE_ID", referencedColumnName = "ORG_TYPE_ID", insertable = true, updatable = true)
+    private OrganizationTypeEntity organizationType;
 
     @Column(name="ABBREVIATION", length=20)
     private String abbreviation;
@@ -112,19 +110,22 @@ public class OrganizationEntity {
         inverseJoinColumns={@JoinColumn(name="MEMBER_COMPANY_ID")})
     @Fetch(FetchMode.SUBSELECT)
     private Set<OrganizationEntity> childOrganizations;
+	
+	@OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "organization")
+	private Set<UserAffiliationEntity> affiliations;
 
     public OrganizationEntity() {
     }
 
-    public String getOrgId() {
-        return orgId;
-    }
+    public String getId() {
+		return id;
+	}
 
-    public void setOrgId(String orgId) {
-        this.orgId = orgId;
-    }
+	public void setId(String id) {
+		this.id = id;
+	}
 
-    public String getAlias() {
+	public String getAlias() {
         return alias;
     }
 
@@ -227,16 +228,16 @@ public class OrganizationEntity {
     public void setStatus(String status) {
         this.status = status;
     }
+    
+    public OrganizationTypeEntity getOrganizationType() {
+		return organizationType;
+	}
 
-    public OrgClassificationEnum getClassification() {
-        return classification;
-    }
+	public void setOrganizationType(OrganizationTypeEntity organizationType) {
+		this.organizationType = organizationType;
+	}
 
-    public void setClassification(OrgClassificationEnum classification) {
-        this.classification = classification;
-    }
-
-    public String getAbbreviation() {
+	public String getAbbreviation() {
         return abbreviation;
     }
 
@@ -282,7 +283,7 @@ public class OrganizationEntity {
 			if(childOrganizations != null) {
 				for(final Iterator<OrganizationEntity> it = childOrganizations.iterator(); it.hasNext();) {
 					final OrganizationEntity entity = it.next();
-					if(entity.getOrgId().equals(organizationId)) {
+					if(entity.getId().equals(organizationId)) {
 						it.remove();
 						break;
 					}
@@ -296,7 +297,7 @@ public class OrganizationEntity {
 		if(organizationId != null) {
 			if(childOrganizations != null) {
 				for(final OrganizationEntity entity : childOrganizations) {
-					if(entity.getOrgId().equals(organizationId)) {
+					if(entity.getId().equals(organizationId)) {
 						retval = true;
 						break;
 					}
@@ -304,6 +305,14 @@ public class OrganizationEntity {
 			}
 		}
 		return retval;
+	}
+
+	public Set<UserAffiliationEntity> getAffiliations() {
+		return affiliations;
+	}
+
+	public void setAffiliations(Set<UserAffiliationEntity> affiliations) {
+		this.affiliations = affiliations;
 	}
 
 	@Override
@@ -314,8 +323,6 @@ public class OrganizationEntity {
 				+ ((abbreviation == null) ? 0 : abbreviation.hashCode());
 		result = prime * result + ((alias == null) ? 0 : alias.hashCode());
 		result = prime * result
-				+ ((classification == null) ? 0 : classification.hashCode());
-		result = prime * result
 				+ ((createDate == null) ? 0 : createDate.hashCode());
 		result = prime * result
 				+ ((createdBy == null) ? 0 : createdBy.hashCode());
@@ -323,6 +330,7 @@ public class OrganizationEntity {
 				+ ((description == null) ? 0 : description.hashCode());
 		result = prime * result
 				+ ((domainName == null) ? 0 : domainName.hashCode());
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result
 				+ ((internalOrgId == null) ? 0 : internalOrgId.hashCode());
 		result = prime * result + ((ldapStr == null) ? 0 : ldapStr.hashCode());
@@ -332,10 +340,12 @@ public class OrganizationEntity {
 				+ ((lstUpdatedBy == null) ? 0 : lstUpdatedBy.hashCode());
 		result = prime * result
 				+ ((metadataTypeId == null) ? 0 : metadataTypeId.hashCode());
-		result = prime * result + ((orgId == null) ? 0 : orgId.hashCode());
 		result = prime
 				* result
 				+ ((organizationName == null) ? 0 : organizationName.hashCode());
+		result = prime
+				* result
+				+ ((organizationType == null) ? 0 : organizationType.hashCode());
 		result = prime * result + ((status == null) ? 0 : status.hashCode());
 		result = prime * result + ((symbol == null) ? 0 : symbol.hashCode());
 		return result;
@@ -360,8 +370,6 @@ public class OrganizationEntity {
 				return false;
 		} else if (!alias.equals(other.alias))
 			return false;
-		if (classification != other.classification)
-			return false;
 		if (createDate == null) {
 			if (other.createDate != null)
 				return false;
@@ -381,6 +389,11 @@ public class OrganizationEntity {
 			if (other.domainName != null)
 				return false;
 		} else if (!domainName.equals(other.domainName))
+			return false;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
 			return false;
 		if (internalOrgId == null) {
 			if (other.internalOrgId != null)
@@ -407,15 +420,15 @@ public class OrganizationEntity {
 				return false;
 		} else if (!metadataTypeId.equals(other.metadataTypeId))
 			return false;
-		if (orgId == null) {
-			if (other.orgId != null)
-				return false;
-		} else if (!orgId.equals(other.orgId))
-			return false;
 		if (organizationName == null) {
 			if (other.organizationName != null)
 				return false;
 		} else if (!organizationName.equals(other.organizationName))
+			return false;
+		if (organizationType == null) {
+			if (other.organizationType != null)
+				return false;
+		} else if (!organizationType.equals(other.organizationType))
 			return false;
 		if (status == null) {
 			if (other.status != null)
@@ -429,6 +442,6 @@ public class OrganizationEntity {
 			return false;
 		return true;
 	}
-    
-    
+
+	
 }

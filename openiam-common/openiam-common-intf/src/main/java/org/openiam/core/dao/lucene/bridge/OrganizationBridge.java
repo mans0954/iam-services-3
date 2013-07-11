@@ -9,7 +9,7 @@ public class OrganizationBridge implements StringBridge {
 	public String objectToString(Object object) {
 		String retval = "";
     	if (object instanceof OrganizationEntity) {
-    		retval = ((OrganizationEntity)object).getOrgId();
+    		retval = ((OrganizationEntity)object).getId();
     	}
         return retval;
 	}

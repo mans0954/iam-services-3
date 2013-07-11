@@ -98,7 +98,7 @@ public class CSVAdapter extends AbstractSrcAdapter {
             //initialization if validation script config exists
             final ValidationScript validationScript = StringUtils.isNotEmpty(config.getValidationRule()) ? SynchScriptFactory.createValidationScript(config.getValidationRule()) : null;
             //initialization if transformation script config exists
-            final TransformScript transformScript = SynchScriptFactory.createTransformationScript(config);
+            final List<TransformScript> transformScripts = SynchScriptFactory.createTransformationScript(config);
             //init match rules
             final MatchObjectRule matchRule = matchRuleFactory.create(config);
             //Get Header
@@ -125,7 +125,7 @@ public class CSVAdapter extends AbstractSrcAdapter {
                     results.add(service.submit(new Runnable() {
                         @Override
                         public void run() {
-                            proccess(config, provService, synchStartLog, part, validationScript, transformScript, matchRule, rowHeader, startIndex);
+                            proccess(config, provService, synchStartLog, part, validationScript, transformScripts, matchRule, rowHeader, startIndex);
                         }
                     }));
                     //Give 30sec time for thread to be UP (load all cache and begin the work)
@@ -252,29 +252,32 @@ public class CSVAdapter extends AbstractSrcAdapter {
 
             // transform
             int retval = -1;
-            if (transformScript != null) {
-                synchronized (mutex) {
-                    transformScript.init();
+            if (transformScripts != null && transformScripts.size() > 0) {
 
-                    // initialize the transform script
-                    if (usr != null) {
-                        transformScript.setNewUser(false);
-                        transformScript.setUser(userDozerConverter.convertToDTO(userManager.getUser(usr.getUserId()), true));
-                        transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getUserId()), true));
-                        transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getUserId()));
+                for (TransformScript transformScript : transformScripts) {
+                    synchronized (mutex) {
+                        transformScript.init();
 
-                    } else {
-                        transformScript.setNewUser(true);
-                        transformScript.setUser(null);
-                        transformScript.setPrincipalList(null);
-                        transformScript.setUserRoleList(null);
+                        // initialize the transform script
+                        if (usr != null) {
+                            transformScript.setNewUser(false);
+                            transformScript.setUser(userDozerConverter.convertToDTO(userManager.getUser(usr.getUserId()), true));
+                            transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getUserId()), true));
+                            transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getUserId()));
+
+                        } else {
+                            transformScript.setNewUser(true);
+                            transformScript.setUser(null);
+                            transformScript.setPrincipalList(null);
+                            transformScript.setUserRoleList(null);
+                        }
+
+                        log.info(" - Execute transform script");
+
+                        retval = transformScript.execute(rowObj, pUser);
                     }
-
-                    log.info(" - Execute transform script");
-
-                    retval = transformScript.execute(rowObj, pUser);
+                    log.info(" - Execute complete transform script");
                 }
-                log.info(" - Execute complete transform script");
 
                 pUser.setSessionId(synchStartLog.getSessionId());
                 if (retval != -1) {

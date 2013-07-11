@@ -24,8 +24,39 @@ import static org.hibernate.criterion.Projections.rowCount;
  */
 @Repository("organizationDAO")
 public class OrganizationDAOImpl extends BaseDaoImpl<OrganizationEntity, String> implements OrganizationDAO {
-    @Autowired
+    
+	@Autowired
     private OrganizationSearchBeanConverter organizationSearchBeanConverter;
+    
+    public int getNumOfOrganizationsForUser(final String userId, final Set<String> filter) {
+    	final Criteria criteria = getOrganizationsForUserCriteria(userId, filter).setProjection(rowCount());
+    	 return ((Number)criteria.uniqueResult()).intValue();
+    }
+    
+    public List<OrganizationEntity> getOrganizationsForUser(final String userId, final Set<String> filter, final int from, final int size) {
+    	final Criteria criteria = getOrganizationsForUserCriteria(userId, filter);
+         
+    	if(from > -1) {
+    		criteria.setFirstResult(from);
+    	}
+
+    	if(size > -1) {
+    		criteria.setMaxResults(size);
+    	}
+    	return criteria.list();
+    }
+    
+    private Criteria getOrganizationsForUserCriteria(final String userId, final Set<String> filter) {
+    	final Criteria criteria = getCriteria();
+    	if(StringUtils.isNotBlank(userId)) {
+    		criteria.createAlias("affiliations", "ua").add(Restrictions.eq("ua.user.id", userId));
+    	}
+
+    	if(filter!=null && !filter.isEmpty()) {
+    		criteria.add( Restrictions.in(getPKfieldName(), filter));
+    	}
+    	return criteria;
+    }
 
     public List<OrganizationEntity> findRootOrganizations() {
         final Criteria criteria = getCriteria()
@@ -50,13 +81,25 @@ public class OrganizationDAOImpl extends BaseDaoImpl<OrganizationEntity, String>
             final OrganizationSearchBean organizationSearchBean = (OrganizationSearchBean)searchBean;
 
             final OrganizationEntity exampleEnity = organizationSearchBeanConverter.convert(organizationSearchBean);
-            exampleEnity.setOrgId(null);
+            exampleEnity.setId(null);
             criteria = this.getExampleCriteria(exampleEnity);
 
             if(organizationSearchBean.hasMultipleKeys()) {
                 criteria.add(Restrictions.in(getPKfieldName(), organizationSearchBean.getKeys()));
             } else if(StringUtils.isNotBlank(organizationSearchBean.getKey())) {
                 criteria.add(Restrictions.eq(getPKfieldName(), organizationSearchBean.getKey()));
+            }
+            
+            if(StringUtils.isNotBlank(organizationSearchBean.getUserId())) {
+            	criteria.createAlias("affiliations", "aff").add(Restrictions.eq("aff.user.userId", organizationSearchBean.getUserId()));
+            }
+            
+            if(StringUtils.isNotBlank(organizationSearchBean.getChildId())) {
+            	criteria.createAlias("childOrganizations", "child").add(Restrictions.eq("child.id", organizationSearchBean.getChildId()));
+            }
+            
+            if(StringUtils.isNotBlank(organizationSearchBean.getParentId())) {
+            	criteria.createAlias("parentOrganizations", "parent").add(Restrictions.eq("parent.id", organizationSearchBean.getChildId()));
             }
         }
         return criteria;
@@ -65,8 +108,8 @@ public class OrganizationDAOImpl extends BaseDaoImpl<OrganizationEntity, String>
     @Override
     protected Criteria getExampleCriteria(final OrganizationEntity organization) {
         final Criteria criteria = getCriteria();
-        if(StringUtils.isNotBlank(organization.getOrgId())) {
-            criteria.add(Restrictions.eq(getPKfieldName(), organization.getOrgId()));
+        if(StringUtils.isNotBlank(organization.getId())) {
+            criteria.add(Restrictions.eq(getPKfieldName(), organization.getId()));
         } else {
             if(StringUtils.isNotEmpty(organization.getOrganizationName())) {
                 String organizationName = organization.getOrganizationName();
@@ -93,8 +136,8 @@ public class OrganizationDAOImpl extends BaseDaoImpl<OrganizationEntity, String>
                 criteria.add(Restrictions.eq("metadataTypeId", organization.getMetadataTypeId()));
             }
             
-            if (organization.getClassification() != null) {
-                criteria.add(Restrictions.eq("classification", organization.getClassification()));
+            if(organization.getOrganizationType() != null && StringUtils.isNotBlank(organization.getOrganizationType().getId())) {
+            	criteria.add(Restrictions.eq("organizationType.id", organization.getOrganizationType().getId()));
             }
             
             if (StringUtils.isNotBlank(organization.getInternalOrgId())) {
@@ -107,7 +150,7 @@ public class OrganizationDAOImpl extends BaseDaoImpl<OrganizationEntity, String>
 
     @Override
     protected String getPKfieldName() {
-        return "orgId";
+        return "id";
     }
     
 
@@ -147,7 +190,7 @@ public class OrganizationDAOImpl extends BaseDaoImpl<OrganizationEntity, String>
     }
 
     private Criteria getParentOrganizationsCriteria(String orgId, Set<String> filter) {
-        Criteria criteria =  getCriteria().createAlias("childOrganizations", "organization").add( Restrictions.eq("organization.orgId", orgId));
+        Criteria criteria =  getCriteria().createAlias("childOrganizations", "organization").add( Restrictions.eq("organization.id", orgId));
         if(filter!=null && !filter.isEmpty()){
             criteria.add(Restrictions.in(getPKfieldName(), filter));
         }
@@ -155,7 +198,7 @@ public class OrganizationDAOImpl extends BaseDaoImpl<OrganizationEntity, String>
     }
 
     private Criteria getChildOrganizationsCriteria(String orgId, Set<String> filter) {
-        Criteria criteria =  getCriteria().createAlias("parentOrganizations", "organization").add( Restrictions.eq("organization.orgId", orgId));
+        Criteria criteria =  getCriteria().createAlias("parentOrganizations", "organization").add( Restrictions.eq("organization.id", orgId));
         if(filter!=null && !filter.isEmpty()){
             criteria.add(Restrictions.in(getPKfieldName(), filter));
         }

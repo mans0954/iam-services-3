@@ -12,6 +12,7 @@ import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.grp.dto.UserGroup;
+import org.openiam.idm.srvc.org.dto.UserAffiliation;
 import org.openiam.idm.srvc.res.dto.ResourceUser;
 import org.openiam.idm.srvc.role.dto.UserRole;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -31,12 +32,9 @@ import java.util.*;
 @XmlType(name = "user", propOrder = {
         "addresses",
         "birthdate",
-        "companyId",
         "companyOwnerId",
         "createDate",
         "createdBy",
-        "deptCd",
-        "deptName",
         "emailAddresses",
         "employeeId",
         "employeeType",
@@ -63,7 +61,6 @@ import java.util.*;
         "userId",
         "userTypeInd",
         "userNotes",
-        "division",
         "costCenter",
         "startDate",
         "lastDate",
@@ -82,7 +79,8 @@ import java.util.*;
         "dateChallengeRespChanged",
         "login",
         "password",
-        "notifyUserViaEmail"
+        "notifyUserViaEmail",
+        "affiliations"
 })
 @XmlSeeAlso({
         Login.class,
@@ -105,18 +103,12 @@ public class User extends org.openiam.base.BaseObject {
     @XmlSchemaType(name = "dateTime")
     protected Date birthdate;
 
-    protected String companyId;
-
     protected String companyOwnerId;
 
     @XmlSchemaType(name = "dateTime")
     protected Date createDate;
 
     protected String createdBy;
-
-    protected String deptCd;
-
-    protected String deptName;
 
     protected String employeeId;
 
@@ -160,8 +152,6 @@ public class User extends org.openiam.base.BaseObject {
     protected String title;
 
     protected String userTypeInd;
-
-    protected String division;
 
     protected String mailCode;
 
@@ -223,6 +213,8 @@ public class User extends org.openiam.base.BaseObject {
     private String login;
     private String password;
     private Boolean notifyUserViaEmail=true;
+    
+    private Set<UserAffiliation> affiliations;
 
     // Constructors
 
@@ -293,15 +285,6 @@ public class User extends org.openiam.base.BaseObject {
     public void setTitle(String title) {
         this.title = title;
     }
-
-    public String getDeptCd() {
-        return this.deptCd;
-    }
-
-    public void setDeptCd(String dept) {
-        this.deptCd = dept;
-    }
-
 
     public Date getBirthdate() {
         return this.birthdate;
@@ -405,14 +388,6 @@ public class User extends org.openiam.base.BaseObject {
 
     public void setLocationName(String locationName) {
         this.locationName = locationName;
-    }
-
-    public String getCompanyId() {
-        return this.companyId;
-    }
-
-    public void setCompanyId(String companyId) {
-        this.companyId = companyId;
     }
 
     public String getCompanyOwnerId() {
@@ -653,29 +628,12 @@ public class User extends org.openiam.base.BaseObject {
         return null;
     }
 
-
-    public String getDivision() {
-        return division;
-    }
-
-    public void setDivision(String division) {
-        this.division = division;
-    }
-
     public String getMailCode() {
         return mailCode;
     }
 
     public void setMailCode(String mailCode) {
         this.mailCode = mailCode;
-    }
-
-    public String getDeptName() {
-        return deptName;
-    }
-
-    public void setDeptName(String deptName) {
-        this.deptName = deptName;
     }
 
     /*
@@ -831,7 +789,15 @@ public class User extends org.openiam.base.BaseObject {
         this.securityDomain = securityDomain;
     }
 
-    public void updateUser(User newUser) {
+	public Set<UserAffiliation> getAffiliations() {
+		return affiliations;
+	}
+
+	public void setAffiliations(Set<UserAffiliation> affiliations) {
+		this.affiliations = affiliations;
+	}
+
+	public void updateUser(User newUser) {
         if (newUser.getBirthdate() != null) {
             if (newUser.getBirthdate().equals(BaseConstants.NULL_DATE)) {
                 this.birthdate = null;
@@ -846,39 +812,11 @@ public class User extends org.openiam.base.BaseObject {
                 this.classification = newUser.getClassification();
             }
         }
-        if (newUser.getCompanyId() != null) {
-            if (newUser.getCompanyId().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-                this.companyId = null;
-            } else {
-                this.companyId = newUser.getCompanyId();
-            }
-        }
         if (newUser.getCostCenter() != null) {
             if (newUser.getCostCenter().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
                 this.costCenter = null;
             } else {
                 this.costCenter = newUser.getCostCenter();
-            }
-        }
-        if (newUser.getDeptCd() != null) {
-            if (newUser.getDeptCd().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-                this.deptCd = null;
-            } else {
-                this.deptCd = newUser.getDeptCd();
-            }
-        }
-        if (newUser.getDeptName() != null) {
-            if (newUser.getDeptName().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-                this.deptName = null;
-            } else {
-                this.deptName = newUser.getDeptName();
-            }
-        }
-        if (newUser.getDivision() != null) {
-            if (newUser.getDivision().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-                this.division = null;
-            } else {
-                this.division = newUser.getDivision();
             }
         }
         if (newUser.getEmail() != null) {
@@ -1212,7 +1150,6 @@ public class User extends org.openiam.base.BaseObject {
         if (birthdate != null ? !birthdate.equals(user.birthdate) : user.birthdate != null) return false;
         if (classification != null ? !classification.equals(user.classification) : user.classification != null)
             return false;
-        if (companyId != null ? !companyId.equals(user.companyId) : user.companyId != null) return false;
         if (companyOwnerId != null ? !companyOwnerId.equals(user.companyOwnerId) : user.companyOwnerId != null)
             return false;
         if (costCenter != null ? !costCenter.equals(user.costCenter) : user.costCenter != null) return false;
@@ -1222,9 +1159,6 @@ public class User extends org.openiam.base.BaseObject {
             return false;
         if (datePasswordChanged != null ? !datePasswordChanged.equals(user.datePasswordChanged) : user.datePasswordChanged != null)
             return false;
-        if (deptCd != null ? !deptCd.equals(user.deptCd) : user.deptCd != null) return false;
-        if (deptName != null ? !deptName.equals(user.deptName) : user.deptName != null) return false;
-        if (division != null ? !division.equals(user.division) : user.division != null) return false;
         if (email != null ? !email.equals(user.email) : user.email != null) return false;
         if (emailAddresses != null ? !emailAddresses.equals(user.emailAddresses) : user.emailAddresses != null)
             return false;
@@ -1281,12 +1215,9 @@ public class User extends org.openiam.base.BaseObject {
     public String toString() {
         return "User{" +
                 "birthdate=" + birthdate +
-                ", companyId='" + companyId + '\'' +
                 ", companyOwnerId='" + companyOwnerId + '\'' +
                 ", createDate=" + createDate +
                 ", createdBy='" + createdBy + '\'' +
-                ", deptCd='" + deptCd + '\'' +
-                ", deptName='" + deptName + '\'' +
                 ", employeeId='" + employeeId + '\'' +
                 ", employeeType='" + employeeType + '\'' +
                 ", firstName='" + firstName + '\'' +
@@ -1308,7 +1239,6 @@ public class User extends org.openiam.base.BaseObject {
                 ", title='" + title + '\'' +
                 ", userId='" + userId + '\'' +
                 ", userTypeInd='" + userTypeInd + '\'' +
-                ", division='" + division + '\'' +
                 ", mailCode='" + mailCode + '\'' +
                 ", costCenter='" + costCenter + '\'' +
                 ", startDate=" + startDate +

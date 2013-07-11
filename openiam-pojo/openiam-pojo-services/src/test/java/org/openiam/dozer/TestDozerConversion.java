@@ -37,14 +37,9 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		user.setAlternateContactId(rs(2));
 		user.setBirthdate(new Date());
 		user.setClassification(rs(2));
-		user.setCompanyId(rs(2));
-		user.setCompanyOwnerId(rs(2));
 		user.setCostCenter(rs(2));
 		user.setDateChallengeRespChanged(new Date());
 		user.setDatePasswordChanged(new Date());
-		user.setDeptCd(rs(2));
-		user.setDeptName(rs(2));
-		user.setDivision(rs(2));
 		user.setEmail(rs(2));
 		
 		final Set<EmailAddress> emailAddresses = new HashSet<EmailAddress>();

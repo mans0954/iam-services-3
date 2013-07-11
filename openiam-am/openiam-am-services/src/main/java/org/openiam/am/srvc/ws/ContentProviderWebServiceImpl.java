@@ -441,7 +441,7 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
                 if (StringUtils.isBlank(value.getName())) {
                     throw new BasicDataServiceException(ResponseCode.URL_PATTERN_META_VALUE_NAME_NOT_SET);
                 }
-                if ((value.getAmAttribute() == null || StringUtils.isBlank(value.getAmAttribute().getAmAttributeId())) &&
+                if ((value.getAmAttribute() == null || StringUtils.isBlank(value.getAmAttribute().getReflectionKey())) &&
                 	(StringUtils.isBlank(value.getStaticValue())) &&
                 	(StringUtils.isBlank(value.getGroovyScript()))) {
                     throw new BasicDataServiceException(ResponseCode.URL_PATTERN_META_VALUE_MAP_NOT_SET);

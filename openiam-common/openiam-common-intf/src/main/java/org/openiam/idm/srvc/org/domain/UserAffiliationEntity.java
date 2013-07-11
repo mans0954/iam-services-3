@@ -1,6 +1,8 @@
 package org.openiam.idm.srvc.org.domain;
 
 import java.util.Date;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -23,98 +25,80 @@ public class UserAffiliationEntity {
     @GeneratedValue(generator = "system-uuid")
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
     @Column(name = "USER_AFFILIATION_ID", length = 32, nullable = false)
-    private String userAffiliationId;
+    private String id;
 
-    @ManyToOne
-    @JoinColumn(name="USER_ID", referencedColumnName="USER_ID")
+    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID", insertable = true, updatable = true)
     private UserEntity user;
 
-    @ManyToOne
-    @JoinColumn(name="COMPANY_ID", referencedColumnName="COMPANY_ID")
+    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinColumn(name = "COMPANY_ID", referencedColumnName = "COMPANY_ID", insertable = true, updatable = true)
     private OrganizationEntity organization;
-
-    @Column(name = "STATUS", length = 20)
-    private String status;
-
-    @Column(name = "CREATE_DATE", length = 19)
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date createDate;
-
-    @Column(name = "START_DATE", length = 19)
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date startDate;
-
-    @Column(name = "END_DATE", length = 19)
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date endDate;
-
-    @Column(name = "CREATED_BY", length = 20)
-    private String createdBy;
 
     public UserAffiliationEntity() {
     }
 
-    public String getUserAffiliationId() {
-        return userAffiliationId;
-    }
+	public String getId() {
+		return id;
+	}
 
-    public void setUserAffiliationId(String userAffiliationId) {
-        this.userAffiliationId = userAffiliationId;
-    }
+	public void setId(String id) {
+		this.id = id;
+	}
 
-    public UserEntity getUser() {
-        return user;
-    }
+	public UserEntity getUser() {
+		return user;
+	}
 
-    public void setUser(UserEntity user) {
-        this.user = user;
-    }
+	public void setUser(UserEntity user) {
+		this.user = user;
+	}
 
-    public OrganizationEntity getOrganization() {
-        return organization;
-    }
+	public OrganizationEntity getOrganization() {
+		return organization;
+	}
 
-    public void setOrganization(OrganizationEntity organization) {
-        this.organization = organization;
-    }
+	public void setOrganization(OrganizationEntity organization) {
+		this.organization = organization;
+	}
 
-    public String getStatus() {
-        return status;
-    }
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result
+				+ ((organization == null) ? 0 : organization.hashCode());
+		result = prime * result + ((user == null) ? 0 : user.hashCode());
+		return result;
+	}
 
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public Date getCreateDate() {
-        return createDate;
-    }
-
-    public void setCreateDate(Date createDate) {
-        this.createDate = createDate;
-    }
-
-    public Date getStartDate() {
-        return startDate;
-    }
-
-    public void setStartDate(Date startDate) {
-        this.startDate = startDate;
-    }
-
-    public Date getEndDate() {
-        return endDate;
-    }
-
-    public void setEndDate(Date endDate) {
-        this.endDate = endDate;
-    }
-
-    public String getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(String createdBy) {
-        this.createdBy = createdBy;
-    }
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		UserAffiliationEntity other = (UserAffiliationEntity) obj;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		if (organization == null) {
+			if (other.organization != null)
+				return false;
+		} else if (!organization.equals(other.organization))
+			return false;
+		if (user == null) {
+			if (other.user != null)
+				return false;
+		} else if (!user.equals(other.user))
+			return false;
+		return true;
+	}
+    
+    
 }

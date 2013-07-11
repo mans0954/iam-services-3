@@ -1,5 +1,6 @@
 package org.openiam.am.srvc.uriauth.rule;
 
+import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.util.Set;
 
@@ -48,7 +49,7 @@ public abstract class AbstractURIPatternRule implements URIPatternRule {
 				}
 				if(value == null) {
 					if(metaValue.getAmAttribute() != null) {
-						value = authAttributeProcessor.process(metaValue.getAmAttribute().getAmAttributeId(), userId, contentProvider.getManagedSysId());
+						value = authAttributeProcessor.process(metaValue.getAmAttribute().getReflectionKey(), userId, contentProvider.getManagedSysId());
 					}
 				}
 				

@@ -25,34 +25,34 @@ public class AuthAttributeProcessorImpl implements AuthAttributeProcessor {
 
 	@Override
 	@Transactional
-	public String process(final String amAttributeId, final String userId, final String managedSysId) throws Exception {
+	public String process(final String reflectionKey, final String userId, final String managedSysId) throws Exception {
 		LoginEntity identityObject = loginManager.getByUserIdManagedSys(userId, managedSysId);
 		final UserEntity user = userManager.getUser(userId);
 		
 		EnumMap<AmAttributes, Object> objectMap = new EnumMap<AmAttributes, Object>(AmAttributes.class);
         objectMap.put(AmAttributes.Login, identityObject);
         objectMap.put(AmAttributes.User, user);
-        return process(amAttributeId, objectMap);
+        return process(reflectionKey, objectMap);
 	}
 
 	
 	@Override
-	public String process(String amAttributeId, EnumMap<AmAttributes, Object> objectMap) throws Exception {
-		if (amAttributeId == null) {
+	public String process(String reflectionKey, EnumMap<AmAttributes, Object> objectMap) throws Exception {
+		if (reflectionKey == null) {
             throw new NullPointerException("AccessManagerAttributeName is null");
         }
 		
 		String attrValue = "";
-        final String[] map = amAttributeId.split("\\.");
+        final String[] map = reflectionKey.split("\\.");
 
         if (map != null && map.length > 1) {
         	try{
         		attrValue = getAttributeValue(objectMap.get(AmAttributes.valueOf(map[0])), map,1);
         	} catch (IllegalArgumentException ex){
-        		throw new IllegalStateException("Cannot parse object type from AccessManagerAttributeName: " + amAttributeId);
+        		throw new IllegalStateException("Cannot parse object type from AccessManagerAttributeName: " + reflectionKey);
         	}
         } else {
-        	throw new IllegalStateException("Cannot parse object type from AccessManagerAttributeName: " + amAttributeId);
+        	throw new IllegalStateException("Cannot parse object type from AccessManagerAttributeName: " + reflectionKey);
         }
         return attrValue;
 	}
