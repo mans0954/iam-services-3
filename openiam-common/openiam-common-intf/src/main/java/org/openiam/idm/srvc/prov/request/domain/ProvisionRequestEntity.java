@@ -69,9 +69,6 @@ public class ProvisionRequestEntity {
 	
 	@Column(name = "NEW_SERVICE_ID", length = 20)
 	private String newServiceId;
-
-	@Column(name = "REQUEST_FOR_ORG_ID", length = 32)
-	private String requestForOrgId;
 	
 	@OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
     @JoinColumn(name="REQUEST_ID", referencedColumnName="REQUEST_ID")
@@ -179,14 +176,6 @@ public class ProvisionRequestEntity {
 		this.newServiceId = newServiceId;
 	}
 
-	public String getRequestForOrgId() {
-		return requestForOrgId;
-	}
-
-	public void setRequestForOrgId(String requestForOrgId) {
-		this.requestForOrgId = requestForOrgId;
-	}
-
 	public Set<RequestUserEntity> getRequestUsers() {
 		return requestUsers;
 	}
@@ -227,8 +216,6 @@ public class ProvisionRequestEntity {
 				+ ((newServiceId == null) ? 0 : newServiceId.hashCode());
 		result = prime * result
 				+ ((requestDate == null) ? 0 : requestDate.hashCode());
-		result = prime * result
-				+ ((requestForOrgId == null) ? 0 : requestForOrgId.hashCode());
 		result = prime * result
 				+ ((requestReason == null) ? 0 : requestReason.hashCode());
 		result = prime * result
@@ -282,11 +269,6 @@ public class ProvisionRequestEntity {
 				return false;
 		} else if (!requestDate.equals(other.requestDate))
 			return false;
-		if (requestForOrgId == null) {
-			if (other.requestForOrgId != null)
-				return false;
-		} else if (!requestForOrgId.equals(other.requestForOrgId))
-			return false;
 		if (requestReason == null) {
 			if (other.requestReason != null)
 				return false;
@@ -328,8 +310,7 @@ public class ProvisionRequestEntity {
 				+ requestReason + ", requestType=" + requestType
 				+ ", requestXML=" + requestXML + ", managedResourceId="
 				+ managedResourceId + ", changeAccessBy=" + changeAccessBy
-				+ ", newRoleId=" + newRoleId + ", newServiceId=" + newServiceId
-				+ ", requestForOrgId=" + requestForOrgId + "]";
+				+ ", newRoleId=" + newRoleId + ", newServiceId=" + newServiceId + "]";
 	}
 	
 	

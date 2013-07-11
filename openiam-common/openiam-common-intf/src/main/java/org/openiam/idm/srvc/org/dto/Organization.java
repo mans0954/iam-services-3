@@ -1,6 +1,8 @@
 package org.openiam.idm.srvc.org.dto;
 
 import java.util.HashMap;
+
+import org.apache.commons.lang.StringUtils;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.dozer.DozerDTOCorrespondence;
 
@@ -409,6 +411,10 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
 
 	public void setAffiliations(Set<UserAffiliation> affiliations) {
 		this.affiliations = affiliations;
+	}
+	
+	public boolean isOrganization() {
+		return StringUtils.equalsIgnoreCase("organization", organizationTypeId);
 	}
 
 	@Override

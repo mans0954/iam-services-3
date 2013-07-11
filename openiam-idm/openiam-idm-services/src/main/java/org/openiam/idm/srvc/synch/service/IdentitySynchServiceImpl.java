@@ -368,12 +368,10 @@ public class IdentitySynchServiceImpl implements IdentitySynchService, MuleConte
 
         if (config.getDeptId() != null && !config.getDeptId().isEmpty()) {
         	search.addOrganizationId(config.getDeptId());
-            //search.addDeptId(config.getDeptId());
         }
 
         if (config.getDivision() != null && !config.getDivision().isEmpty()) {
         	search.addOrganizationId(config.getDivision());
-            //search.addDivisionId(config.getDivision());
         }
 
         if (config.getAttributeName() != null && !config.getAttributeName().isEmpty()) {

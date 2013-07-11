@@ -633,12 +633,9 @@ public class UserAttributeHelper {
 		User newUser = new User();
 	
 		newUser.setBirthdate(user.getBirthdate());
-		newUser.setCompanyId( user.getCompanyId() );
 		newUser.setCompanyOwnerId(user.getCompanyOwnerId());
 		newUser.setCreateDate(user.getCreateDate());
 		newUser.setCreatedBy(user.getCreatedBy());
-		newUser.setDeptCd( user.getDeptCd() );
-		newUser.setDeptName( user.getDeptName() );
 		newUser.setEmployeeId(user.getEmployeeId());
 		newUser.setEmployeeType(user.getEmployeeType());
 
@@ -661,7 +658,6 @@ public class UserAttributeHelper {
 	    newUser.setTitle(user.getTitle());
 	    newUser.setUserId( user.getUserId() );
 	    newUser.setUserTypeInd(user.getUserTypeInd());
-	    newUser.setDivision( user.getDivision() );
 	    newUser.setMailCode(user.getMailCode()); 
 		newUser.setCostCenter(user.getCostCenter());
 		newUser.setStartDate(user.getStartDate());
@@ -700,8 +696,6 @@ public class UserAttributeHelper {
 		// set up the origUser object for reflection
 		Class origUserClass = origUser.getClass();
 		origUserClass.getDeclaredMethods();
-		
-		log.info("** c) Deptcd in Orig=" + origUser.getDeptCd());
 		
 		
 		Class newUserClass =  newUser.getClass();

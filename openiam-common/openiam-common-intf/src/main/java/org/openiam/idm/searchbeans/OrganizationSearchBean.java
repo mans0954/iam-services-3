@@ -18,7 +18,10 @@ import java.util.Set;
 @XmlType(name = "OrganizationSearchBean", propOrder = {
         "keySet",
         "organizationName",
-		"organizationTypeId"
+		"organizationTypeId",
+		"userId",
+		"parentId",
+		"childId"
 })
 public class OrganizationSearchBean extends AbstractSearchBean<Organization, String> implements SearchBean<Organization, String>,
         Serializable {
@@ -26,6 +29,9 @@ public class OrganizationSearchBean extends AbstractSearchBean<Organization, Str
     private Set<String> keySet;
     private String organizationName;
     private String organizationTypeId;
+    private String userId;
+    private String parentId;
+    private String childId;
 
     public String getOrganizationName() {
         return organizationName;
@@ -76,4 +82,30 @@ public class OrganizationSearchBean extends AbstractSearchBean<Organization, Str
     public void setKeys(final Set<String> keySet) {
         this.keySet = keySet;
     }
+
+	public String getUserId() {
+		return userId;
+	}
+
+	public void setUserId(String userId) {
+		this.userId = userId;
+	}
+
+	public String getParentId() {
+		return parentId;
+	}
+
+	public void setParentId(String parentId) {
+		this.parentId = parentId;
+	}
+
+	public String getChildId() {
+		return childId;
+	}
+
+	public void setChildId(String childId) {
+		this.childId = childId;
+	}
+	
+	
 }

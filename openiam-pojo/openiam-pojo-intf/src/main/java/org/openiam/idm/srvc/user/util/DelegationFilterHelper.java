@@ -27,22 +27,6 @@ public class DelegationFilterHelper {
         return isFilerSet(attrMap, DLG_FLT_ORG);
     }
 
-    /*
-    public static List<String> getDeptFilterFromString(Map<String, UserAttribute> attrMap) {
-        return getFilterListFromString(attrMap, DLG_FLT_DEPT);
-    }
-    public static boolean isDeptFilterSet(Map<String, UserAttribute> attrMap) {
-        return isFilerSet(attrMap, DLG_FLT_DEPT);
-    }
-
-    public static List<String> getDivisionFilterFromString(Map<String, UserAttribute> attrMap) {
-        return getFilterListFromString(attrMap, DLG_FLT_DIV);
-    }
-    public static boolean isDivisionFilterSet(Map<String, UserAttribute> attrMap) {
-        return isFilerSet(attrMap, DLG_FLT_DIV);
-    }
-    */
-
     public static List<String> getRoleFilterFromString(Map<String, UserAttribute> attrMap) {
         return getFilterListFromString(attrMap, DLG_FLT_ROLE);
     }

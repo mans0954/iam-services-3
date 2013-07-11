@@ -134,9 +134,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             user.setStatus(UserStatusEnum.PENDING_START_DATE);
         }
 
-        if (user.getUser().getCompanyId() != null) {
-            org = orgManager.getOrganization(user.getUser().getCompanyId(), null);
-        }
+        if(user.getPrimaryOrganization() != null) {
+        	org = orgManager.getOrganization(user.getPrimaryOrganization().getId(), null);
+        }    
+        
         // bind the objects to the scripting engine
 
         bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
@@ -1611,8 +1612,20 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         List<LoginEntity> newPrincipalList = loginDozerConverter.convertToEntityList(pUser.getPrincipalList(), true);
 
-        if (pUser.getUser().getCompanyId() != null) {
-            org = orgManager.getOrganization(pUser.getUser().getCompanyId(), null);
+        if(pUser.getPrimaryOrganization() != null) {
+        	org = orgManager.getOrganization(pUser.getPrimaryOrganization().getId(), null);
+        }
+        
+        if(org == null) {
+        	final List<Organization> organizationForCurrentUser = orgManager.getOrganizationsForUserByType(pUser.getUserId(), null, "ORGANIZATION");
+        	if(CollectionUtils.isNotEmpty(organizationForCurrentUser)) {
+        		for(final Organization organization : organizationForCurrentUser) {
+        			if(!pUser.isOrganizationMarkedAsDeleted(organization.getId())) {
+        				org = organization;
+        				break;
+        			}
+        		}
+        	}
         }
 
         User origUser = userMgr.getUserDto(pUser.getUserId());

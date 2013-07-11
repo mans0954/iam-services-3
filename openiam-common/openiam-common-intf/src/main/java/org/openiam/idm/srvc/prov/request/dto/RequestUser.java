@@ -17,8 +17,6 @@ import org.openiam.idm.srvc.prov.request.domain.RequestUserEntity;
     "firstName",
     "lastName",
     "middleInit",
-    "deptCd",
-    "division",
     "locationCd",
     "affiliation"
 })
@@ -32,8 +30,6 @@ public class RequestUser implements Serializable {
 	private String firstName;
 	private String lastName;
 	private String middleInit;
-	private String deptCd;
-	private String division;
 	private String locationCd;
 	private String affiliation;
 
@@ -82,22 +78,6 @@ public class RequestUser implements Serializable {
 		this.middleInit = middleInit;
 	}
 
-	public String getDeptCd() {
-		return this.deptCd;
-	}
-
-	public void setDeptCd(String deptCd) {
-		this.deptCd = deptCd;
-	}
-
-	public String getDivision() {
-		return this.division;
-	}
-
-	public void setDivision(String division) {
-		this.division = division;
-	}
-
 	public String getLocationCd() {
 		return this.locationCd;
 	}
@@ -128,9 +108,6 @@ public class RequestUser implements Serializable {
 		int result = 1;
 		result = prime * result
 				+ ((affiliation == null) ? 0 : affiliation.hashCode());
-		result = prime * result + ((deptCd == null) ? 0 : deptCd.hashCode());
-		result = prime * result
-				+ ((division == null) ? 0 : division.hashCode());
 		result = prime * result
 				+ ((firstName == null) ? 0 : firstName.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
@@ -159,16 +136,6 @@ public class RequestUser implements Serializable {
 			if (other.affiliation != null)
 				return false;
 		} else if (!affiliation.equals(other.affiliation))
-			return false;
-		if (deptCd == null) {
-			if (other.deptCd != null)
-				return false;
-		} else if (!deptCd.equals(other.deptCd))
-			return false;
-		if (division == null) {
-			if (other.division != null)
-				return false;
-		} else if (!division.equals(other.division))
 			return false;
 		if (firstName == null) {
 			if (other.firstName != null)
@@ -213,7 +180,6 @@ public class RequestUser implements Serializable {
 		return "RequestUser [id=" + id + ", requestId=" + requestId
 				+ ", userId=" + userId + ", firstName=" + firstName
 				+ ", lastName=" + lastName + ", middleInit=" + middleInit
-				+ ", deptCd=" + deptCd + ", division=" + division
 				+ ", locationCd=" + locationCd + ", affiliation=" + affiliation
 				+ "]";
 	}

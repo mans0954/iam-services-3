@@ -37,14 +37,9 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		user.setAlternateContactId(rs(2));
 		user.setBirthdate(new Date());
 		user.setClassification(rs(2));
-		user.setCompanyId(rs(2));
-		user.setCompanyOwnerId(rs(2));
 		user.setCostCenter(rs(2));
 		user.setDateChallengeRespChanged(new Date());
 		user.setDatePasswordChanged(new Date());
-		user.setDeptCd(rs(2));
-		user.setDeptName(rs(2));
-		user.setDivision(rs(2));
 		user.setEmail(rs(2));
 		
 		final Set<EmailAddress> emailAddresses = new HashSet<EmailAddress>();
@@ -285,14 +280,9 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		Assert.assertEquals(original.getAlternateContactId(), copy.getAlternateContactId());
 		Assert.assertEquals(original.getBirthdate(), copy.getBirthdate());
 		Assert.assertEquals(original.getClassification(), copy.getClassification());
-		Assert.assertEquals(original.getCompanyId(), copy.getCompanyId());
-		Assert.assertEquals(original.getCompanyOwnerId(), copy.getCompanyOwnerId());
 		Assert.assertEquals(original.getCostCenter(), copy.getCostCenter());
 		Assert.assertEquals(original.getDateChallengeRespChanged(), copy.getDateChallengeRespChanged());
 		Assert.assertEquals(original.getDatePasswordChanged(), copy.getDatePasswordChanged());
-		Assert.assertEquals(original.getDeptCd(), copy.getDeptCd());
-		Assert.assertEquals(original.getDeptName(), copy.getDeptName());
-		Assert.assertEquals(original.getDivision(), copy.getDivision());
 		Assert.assertEquals(original.getEmail(), copy.getEmail());
 		
 		if(isDeep) {

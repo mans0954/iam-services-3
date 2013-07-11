@@ -8,6 +8,7 @@ import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openiam.dozer.converter.OrganizationDozerConverter;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
@@ -47,6 +48,9 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Autowired
     private UserDataService userDataService;
+    
+    @Autowired
+    private OrganizationDozerConverter organizationDozerConverter;
 
     @Override
     public OrganizationEntity getOrganization(String orgId) {
@@ -252,8 +256,11 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     private Set<String> getFullOrgFilterList(Map<String, UserAttribute> attrMap) {
         List<String> filterData = DelegationFilterHelper.getOrgIdFilterFromString(attrMap);
-        //filterData.addAll(DelegationFilterHelper.getDeptFilterFromString(attrMap));
-        //filterData.addAll(DelegationFilterHelper.getDivisionFilterFromString(attrMap));
         return new HashSet<String>(filterData);
     }
+
+	@Override
+	public Organization getOrganizationDTO(String orgId) {
+		return organizationDozerConverter.convertToDTO(getOrganization(orgId), true);
+	}
 }

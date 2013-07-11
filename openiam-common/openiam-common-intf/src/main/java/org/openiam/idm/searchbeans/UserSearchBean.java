@@ -46,10 +46,7 @@ import java.util.*;
         "dateOfBirth",
         "zipCode",
         "delAdmin",
-//        "organizationId",
         "organizationIdList",
-        //"deptIdList",
-        //"divisionIdList",
         "attributeList",
         "requesterId"
 })
@@ -93,10 +90,7 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
     protected String loggedIn = null;
     protected boolean delAdmin = false;
 
-//    private String organizationId;
     protected List<String> organizationIdList = new ArrayList<String>();
-    //protected List<String> deptIdList = new ArrayList<String>();
-    //protected List<String> divisionIdList = new ArrayList<String>();
     protected List<SearchAttribute> attributeList = new ArrayList<SearchAttribute>();
 
     private String requesterId;
@@ -388,35 +382,6 @@ public class UserSearchBean extends AbstractSearchBean<User, String> implements 
     public void setLoggedIn(String loggedIn) {
         this.loggedIn = loggedIn;
     }
-
-    /*
-    public List<String> getDeptIdList() {
-        return deptIdList;
-    }
-
-    public void setDeptIdList(List<String> deptIdList) {
-        this.deptIdList = deptIdList;
-    }
-
-    public List<String> getDivisionIdList() {
-        return divisionIdList;
-    }
-
-    public void setDivisionIdList(List<String> divisionIdList) {
-        this.divisionIdList = divisionIdList;
-    }
-
-    public void addDivisionId(String divisionId){
-        if(divisionIdList==null)
-            divisionIdList = new ArrayList<String>();
-        divisionIdList.add(divisionId);
-    }
-    public void addDeptId(String deptId){
-        if(deptIdList==null)
-            deptIdList = new ArrayList<String>();
-        deptIdList.add(deptId);
-    }
-    */
 
     public List<SearchAttribute> getAttributeList() {
         return attributeList;

@@ -36,12 +36,6 @@ public class RequestUserEntity {
 	@Column(name = "MIDDLE_INIT", length = 20)
 	private String middleInit;
 	
-	@Column(name = "DEPT_CD", length = 20)
-	private String deptCd;
-	
-	@Column(name = "DIVISION", length = 20)
-	private String division;
-	
 	@Column(name = "LOCATION_CD", length = 20)
 	private String locationCd;
 	
@@ -84,18 +78,6 @@ public class RequestUserEntity {
 	public void setMiddleInit(String middleInit) {
 		this.middleInit = middleInit;
 	}
-	public String getDeptCd() {
-		return deptCd;
-	}
-	public void setDeptCd(String deptCd) {
-		this.deptCd = deptCd;
-	}
-	public String getDivision() {
-		return division;
-	}
-	public void setDivision(String division) {
-		this.division = division;
-	}
 	public String getLocationCd() {
 		return locationCd;
 	}
@@ -114,9 +96,6 @@ public class RequestUserEntity {
 		int result = 1;
 		result = prime * result
 				+ ((affiliation == null) ? 0 : affiliation.hashCode());
-		result = prime * result + ((deptCd == null) ? 0 : deptCd.hashCode());
-		result = prime * result
-				+ ((division == null) ? 0 : division.hashCode());
 		result = prime * result
 				+ ((firstName == null) ? 0 : firstName.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
@@ -144,16 +123,6 @@ public class RequestUserEntity {
 			if (other.affiliation != null)
 				return false;
 		} else if (!affiliation.equals(other.affiliation))
-			return false;
-		if (deptCd == null) {
-			if (other.deptCd != null)
-				return false;
-		} else if (!deptCd.equals(other.deptCd))
-			return false;
-		if (division == null) {
-			if (other.division != null)
-				return false;
-		} else if (!division.equals(other.division))
 			return false;
 		if (firstName == null) {
 			if (other.firstName != null)
@@ -197,7 +166,6 @@ public class RequestUserEntity {
 		return "RequestUserEntity [id=" + id + ", requestId=" + requestId
 				+ ", userId=" + userId + ", firstName=" + firstName
 				+ ", lastName=" + lastName + ", middleInit=" + middleInit
-				+ ", deptCd=" + deptCd + ", division=" + division
 				+ ", locationCd=" + locationCd + ", affiliation=" + affiliation
 				+ "]";
 	}

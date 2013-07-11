@@ -21,6 +21,8 @@
  */
 package org.openiam.provision.dto;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.grp.dto.Group;
@@ -110,12 +112,9 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
 
     public ProvisionUser(User user) {
         birthdate = user.getBirthdate();
-        companyId = user.getCompanyId();
         companyOwnerId = user.getCompanyOwnerId();
         createDate = user.getCreateDate();
         createdBy = user.getCreatedBy();
-        deptCd = user.getDeptCd();
-        deptName = user.getDeptName();
         employeeId = user.getEmployeeId();
         employeeType = user.getEmployeeType();
 
@@ -138,7 +137,6 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         this.title = user.getTitle();
         this.userId = user.getUserId();
         this.userTypeInd = user.getUserTypeInd();
-        this.division = user.getDivision();
         this.mailCode = user.getMailCode();
         this.costCenter = user.getCostCenter();
         this.startDate = user.getStartDate();
@@ -171,12 +169,9 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         User user = new User();
 
         user.setBirthdate(birthdate);
-        user.setCompanyId(companyId);
         user.setCompanyOwnerId(companyOwnerId);
         user.setCreateDate(createDate);
         user.setCreatedBy(createdBy);
-        user.setDeptCd(deptCd);
-        user.setDeptName(deptName);
         user.setEmployeeId(employeeId);
         user.setEmployeeType(employeeType);
 
@@ -199,7 +194,6 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         user.setTitle(title);
         user.setUserId(userId);
         user.setUserTypeInd(userTypeInd);
-        user.setDivision(division);
         user.setMailCode(mailCode);
         user.setCostCenter(costCenter);
         user.setStartDate(startDate);
@@ -360,6 +354,15 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
     public List<Organization> getUserAffiliations() {
         return userAffiliations;
     }
+    
+    public void addUserAffiliation(final Organization organization) {
+    	if(organization != null) {
+	    	if(this.userAffiliations == null) {
+	    		this.userAffiliations = new LinkedList<Organization>();
+	    	}
+	    	this.userAffiliations.add(organization);
+    	}
+    }
 
     public void setUserAffiliations(List<Organization> userAffiliations) {
         this.userAffiliations = userAffiliations;
@@ -433,9 +436,6 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         if (birthdate == null) {
             birthdate = user.getBirthdate();
         }
-        if (companyId == null) {
-            companyId = user.getCompanyId();
-        }
         if (companyOwnerId == null) {
             companyOwnerId = user.getCompanyOwnerId();
         }
@@ -444,12 +444,6 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         }
         if (createdBy == null) {
             createdBy = user.getCreatedBy();
-        }
-        if (deptCd == null) {
-            deptCd = user.getDeptCd();
-        }
-        if (deptName == null) {
-            deptName = user.getDeptName();
         }
         if (employeeId == null) {
             employeeId = user.getEmployeeId();
@@ -511,9 +505,6 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         }
         if (userTypeInd == null) {
             userTypeInd = user.getUserTypeInd();
-        }
-        if (division == null) {
-            division = user.getDivision();
         }
         if (mailCode == null) {
             mailCode = user.getMailCode();
@@ -594,5 +585,36 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
     		}
     		this.userResourceList.add(association);
     	}
+    }
+    
+    //HACK
+    public Organization getPrimaryOrganization() {
+    	Organization retVal = null;
+    	if(CollectionUtils.isNotEmpty(userAffiliations)) {
+    		for(final Organization organization : userAffiliations) {
+    			if(!AttributeOperationEnum.DELETE.equals(organization.getOperation())) {
+    				if(organization.isOrganization()) {
+    					retVal = organization;
+    					break;
+    				}
+    			}
+    		}
+    	}
+    	return retVal;
+    }
+    
+    public boolean isOrganizationMarkedAsDeleted(final String organizationId) {
+    	boolean retVal = false;
+    	if(CollectionUtils.isNotEmpty(userAffiliations)) {
+    		for(final Organization organization : userAffiliations) {
+    			if(AttributeOperationEnum.DELETE.equals(organization.getOperation())) {
+    				if(StringUtils.equalsIgnoreCase(organizationId, organization.getId())) {
+    					retVal = true;
+    					break;
+    				}
+    			}
+    		}
+    	}
+    	return retVal;
     }
 }

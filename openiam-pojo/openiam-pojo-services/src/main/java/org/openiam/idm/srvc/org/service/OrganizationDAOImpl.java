@@ -89,6 +89,18 @@ public class OrganizationDAOImpl extends BaseDaoImpl<OrganizationEntity, String>
             } else if(StringUtils.isNotBlank(organizationSearchBean.getKey())) {
                 criteria.add(Restrictions.eq(getPKfieldName(), organizationSearchBean.getKey()));
             }
+            
+            if(StringUtils.isNotBlank(organizationSearchBean.getUserId())) {
+            	criteria.createAlias("affiliations", "aff").add(Restrictions.eq("aff.user.userId", organizationSearchBean.getUserId()));
+            }
+            
+            if(StringUtils.isNotBlank(organizationSearchBean.getChildId())) {
+            	criteria.createAlias("childOrganizations", "child").add(Restrictions.eq("child.id", organizationSearchBean.getChildId()));
+            }
+            
+            if(StringUtils.isNotBlank(organizationSearchBean.getParentId())) {
+            	criteria.createAlias("parentOrganizations", "parent").add(Restrictions.eq("parent.id", organizationSearchBean.getChildId()));
+            }
         }
         return criteria;
     }

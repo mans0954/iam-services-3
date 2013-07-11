@@ -60,9 +60,6 @@ public class UserEntity {
     @Column(name = "BIRTHDATE", length = 19)
     private Date birthdate;
 
-    @Column(name = "COMPANY_ID", length = 32)
-    private String companyId;
-
     @Column(name = "COMPANY_OWNER_ID", length = 32)
     private String companyOwnerId;
 
@@ -71,12 +68,6 @@ public class UserEntity {
 
     @Column(name = "CREATED_BY", length = 32)
     private String createdBy;
-
-    @Column(name = "DEPT_CD", length = 50)
-    private String deptCd;
-
-    @Column(name = "DEPT_NAME", length = 100)
-    private String deptName;
 
     @Column(name = "EMPLOYEE_ID", length = 32)
     private String employeeId;
@@ -150,9 +141,6 @@ public class UserEntity {
 
     @Column(name = "USER_TYPE_IND", length = 20)
     private String userTypeInd;
-
-    @Column(name = "DIVISION", length = 50)
-    private String division;
 
     @Column(name = "MAIL_CODE", length = 10)
     private String mailCode;
@@ -253,21 +241,6 @@ public class UserEntity {
     @JoinColumn(name="USER_ID", referencedColumnName="USER_ID")
     @Fetch(FetchMode.SUBSELECT)
     private Set<UserRoleEntity> userRoles = new HashSet<UserRoleEntity>(0);
-
-    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
-    @JoinColumn(name="COMPANY_ID", referencedColumnName="COMPANY_ID", insertable = false, updatable = false)
-    @Field(name="organization", bridge=@FieldBridge(impl=OrganizationBridge.class), store=Store.YES)
-    private OrganizationEntity organization;
-
-    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
-    @JoinColumn(name="DIVISION", referencedColumnName="COMPANY_ID", insertable = false, updatable = false)
-    @Field(name="divisionEntity", bridge=@FieldBridge(impl=OrganizationBridge.class), store=Store.YES)
-    private OrganizationEntity divisionEntity;
-
-    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
-    @JoinColumn(name="DEPT_CD", referencedColumnName="COMPANY_ID", insertable = false, updatable = false)
-    @Field(name="department", bridge=@FieldBridge(impl=OrganizationBridge.class), store=Store.YES)
-    private OrganizationEntity department;
     
 	@OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "user")
 	private Set<UserAffiliationEntity> affiliations;
@@ -289,14 +262,6 @@ public class UserEntity {
 
     public void setBirthdate(Date birthdate) {
         this.birthdate = birthdate;
-    }
-
-    public String getCompanyId() {
-        return companyId;
-    }
-
-    public void setCompanyId(String companyId) {
-        this.companyId = companyId;
     }
 
     public String getCompanyOwnerId() {
@@ -321,22 +286,6 @@ public class UserEntity {
 
     public void setCreatedBy(String createdBy) {
         this.createdBy = createdBy;
-    }
-
-    public String getDeptCd() {
-        return deptCd;
-    }
-
-    public void setDeptCd(String deptCd) {
-        this.deptCd = deptCd;
-    }
-
-    public String getDeptName() {
-        return deptName;
-    }
-
-    public void setDeptName(String deptName) {
-        this.deptName = deptName;
     }
 
     public String getEmployeeId() {
@@ -497,14 +446,6 @@ public class UserEntity {
 
     public void setUserTypeInd(String userTypeInd) {
         this.userTypeInd = userTypeInd;
-    }
-
-    public String getDivision() {
-        return division;
-    }
-
-    public void setDivision(String division) {
-        this.division = division;
     }
 
     public String getMailCode() {
@@ -926,13 +867,6 @@ public class UserEntity {
 	            this.classification = newUser.getClassification();
 	        }
 	    }
-	    if (newUser.getCompanyId() != null) {
-	        if (newUser.getCompanyId().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-	            this.companyId = null;
-	        } else {
-	            this.companyId = newUser.getCompanyId();
-	        }
-	    }
 	    if (newUser.getCostCenter() != null) {
 	        if (newUser.getCostCenter().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
 	            this.costCenter = null;
@@ -940,28 +874,7 @@ public class UserEntity {
 	            this.costCenter = newUser.getCostCenter();
 	        }
 	    }
-	    if (newUser.getDeptCd() != null) {
-	        if (newUser.getDeptCd().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-	            this.deptCd = null;
-	        } else {
-	            this.deptCd = newUser.getDeptCd();
-	        }
-	    }
-	    if (newUser.getDeptName() != null) {
-	        if (newUser.getDeptName().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-	            this.deptName = null;
-	        } else {
-	            this.deptName = newUser.getDeptName();
-	        }
-	    }
-	    if (newUser.getDivision() != null) {
-	        if (newUser.getDivision().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-	            this.division = null;
-	        } else {
-	            this.division = newUser.getDivision();
-	        }
-	    }
-	
+	   
 	    if (newUser.getEmployeeId() != null) {
 	        if (newUser.getEmployeeId().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
 	            this.employeeId = null;
@@ -1168,8 +1081,6 @@ public class UserEntity {
 		result = prime * result
 				+ ((classification == null) ? 0 : classification.hashCode());
 		result = prime * result
-				+ ((companyId == null) ? 0 : companyId.hashCode());
-		result = prime * result
 				+ ((companyOwnerId == null) ? 0 : companyOwnerId.hashCode());
 		result = prime * result
 				+ ((costCenter == null) ? 0 : costCenter.hashCode());
@@ -1185,11 +1096,6 @@ public class UserEntity {
 				* result
 				+ ((datePasswordChanged == null) ? 0 : datePasswordChanged
 						.hashCode());
-		result = prime * result + ((deptCd == null) ? 0 : deptCd.hashCode());
-		result = prime * result
-				+ ((deptName == null) ? 0 : deptName.hashCode());
-		result = prime * result
-				+ ((division == null) ? 0 : division.hashCode());
 		result = prime * result
 				+ ((employeeId == null) ? 0 : employeeId.hashCode());
 		result = prime * result
@@ -1221,8 +1127,6 @@ public class UserEntity {
 				+ ((middleInit == null) ? 0 : middleInit.hashCode());
 		result = prime * result
 				+ ((nickname == null) ? 0 : nickname.hashCode());
-		result = prime * result
-				+ ((organization == null) ? 0 : organization.hashCode());
 		result = prime * result
 				+ ((passwordTheme == null) ? 0 : passwordTheme.hashCode());
 		result = prime * result + ((prefix == null) ? 0 : prefix.hashCode());
@@ -1270,11 +1174,6 @@ public class UserEntity {
 				return false;
 		} else if (!classification.equals(other.classification))
 			return false;
-		if (companyId == null) {
-			if (other.companyId != null)
-				return false;
-		} else if (!companyId.equals(other.companyId))
-			return false;
 		if (companyOwnerId == null) {
 			if (other.companyOwnerId != null)
 				return false;
@@ -1305,21 +1204,6 @@ public class UserEntity {
 			if (other.datePasswordChanged != null)
 				return false;
 		} else if (!datePasswordChanged.equals(other.datePasswordChanged))
-			return false;
-		if (deptCd == null) {
-			if (other.deptCd != null)
-				return false;
-		} else if (!deptCd.equals(other.deptCd))
-			return false;
-		if (deptName == null) {
-			if (other.deptName != null)
-				return false;
-		} else if (!deptName.equals(other.deptName))
-			return false;
-		if (division == null) {
-			if (other.division != null)
-				return false;
-		} else if (!division.equals(other.division))
 			return false;
 		if (employeeId == null) {
 			if (other.employeeId != null)
@@ -1400,11 +1284,6 @@ public class UserEntity {
 			if (other.nickname != null)
 				return false;
 		} else if (!nickname.equals(other.nickname))
-			return false;
-		if (organization == null) {
-			if (other.organization != null)
-				return false;
-		} else if (!organization.equals(other.organization))
 			return false;
 		if (passwordTheme == null) {
 			if (other.passwordTheme != null)

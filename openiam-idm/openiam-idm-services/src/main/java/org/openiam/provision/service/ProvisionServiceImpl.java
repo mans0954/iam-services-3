@@ -166,7 +166,7 @@ public class ProvisionServiceImpl implements ProvisionService,
      */
     public ProvisionUserResponse addUser(ProvisionUser provUser)
             throws Exception {
-        Organization org = null;
+        //Organization org = null;
         Map<String, ManagedSysAttributes> managedSysMap = new HashMap<String, ManagedSysAttributes>();
 
         String secDomain = null;
@@ -207,9 +207,11 @@ public class ProvisionServiceImpl implements ProvisionService,
         log.info("User alternate in addUser=" + user.getAlternateContactId());
 
         // temp hack
+        /*
         if (user.getCompanyId() != null) {
             org = orgManager.getOrganization(user.getCompanyId(), null);
         }
+        */
         List<Login> principalList = provUser.getPrincipalList();
 
         if (principalList == null) {
@@ -218,7 +220,7 @@ public class ProvisionServiceImpl implements ProvisionService,
 
         bindingMap.put("sysId", "1");
         bindingMap.put("user", user);
-        bindingMap.put("org", org);
+        //bindingMap.put("org", org);
         bindingMap.put("password", password);
         if (principalList.get(0) != null) {
             primaryLogin = principalList.get(0);
@@ -765,12 +767,7 @@ public class ProvisionServiceImpl implements ProvisionService,
         List<Group> curGroupList = this.groupManager
                 .getCompiledGroupsForUser(provUser.getUserId());
 
-        log.info("** 1) Deptcd in Orig=" + currentUser2.getDeptCd());
-
         User newUser = provUser.getUser();
-
-        log.info("** 1a) Deptcd in Orig=" + currentUser2.getDeptCd());
-        log.info("** Deptcd in new=" + newUser.getDeptCd());
 
         updateUserObject(origUser, newUser);
 
@@ -836,16 +833,18 @@ public class ProvisionServiceImpl implements ProvisionService,
         List<Login> principalList = provUser.getPrincipalList();
         String password = passwordGenerator.generatePassword(10);
 
+        /*
         Organization org = null;
         if (origUser.getCompanyId() != null) {
             org = orgManager.getOrganization(origUser.getCompanyId(), null);
         }
+        */
 
         Map<String, Object> bindingMap = new HashMap<String, Object>();
         bindingMap.put("context", ac);
         bindingMap.put("sysId", "1");
         bindingMap.put("user", newUser);
-        bindingMap.put("org", org);
+        //bindingMap.put("org", org);
         bindingMap.put("password", password);
         bindingMap.put("lg", primaryLogin);
 
@@ -1015,8 +1014,6 @@ public class ProvisionServiceImpl implements ProvisionService,
 
         }
 
-        log.info("** A) Deptcd in Orig=" + currentUser2.getDeptCd());
-
         // IF A VALUE IS IN THE CURRENT LIST, BUT NOT in the rolelist, then
         // delete it
 
@@ -1135,9 +1132,6 @@ public class ProvisionServiceImpl implements ProvisionService,
                             UserAttribute gmAtt = currentUser2
                                     .getAttribute("GM_SYSKEY");
                             log.info("gmAtt=" + gmAtt.getValue());
-
-                            log.info("** b) Deptcd in Orig="
-                                    + currentUser2.getDeptCd());
 
                             try {
                                 extUser = UserAttributeHelper.modifyUser(
@@ -1323,11 +1317,7 @@ public class ProvisionServiceImpl implements ProvisionService,
     private void updatePrimaryUserInfo(User origUser, User newUser) {
         origUser.setBirthdate(newUser.getBirthdate());
         origUser.setClassification(newUser.getClassification());
-        origUser.setCompanyId(newUser.getCompanyId());
         origUser.setCostCenter(newUser.getCostCenter());
-        origUser.setDeptCd(newUser.getDeptCd());
-        origUser.setDeptName(newUser.getDeptName());
-        origUser.setDivision(newUser.getDivision());
         origUser.setEmail(newUser.getEmail());
 
         origUser.setEmployeeId(newUser.getEmployeeId());

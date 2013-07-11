@@ -375,14 +375,6 @@ public class UserMgr implements UserDataService {
             if (CollectionUtils.isEmpty(searchBean.getRoleIdSet()) && isRoleFilterSet) {
                 searchBean.setRoleIdSet(new HashSet<String>(DelegationFilterHelper.getRoleFilterFromString(requesterAttributes)));
             }
-            /*
-            if (CollectionUtils.isEmpty(searchBean.getDeptIdList()) && isDeptFilterSet) {
-                searchBean.setDeptIdList(DelegationFilterHelper.getDeptFilterFromString(requesterAttributes));
-            }
-            if (CollectionUtils.isEmpty(searchBean.getDivisionIdList()) && isDivisionFilterSet) {
-                searchBean.setDivisionIdList(DelegationFilterHelper.getDivisionFilterFromString(requesterAttributes));
-            }
-            */
         }
 
         List<String> idList = userSearchDAO.findIds(0, MAX_USER_SEARCH_RESULTS, null, searchBean);
@@ -1259,32 +1251,11 @@ public class UserMgr implements UserDataService {
                 origUserEntity.setClassification(newUserEntity.getClassification());
             }
         }
-        if (newUserEntity.getCompanyId() != null) {
-            if (newUserEntity.getCompanyId().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-                origUserEntity.setCompanyId(null);
-            } else {
-                origUserEntity.setCompanyId(newUserEntity.getCompanyId());
-            }
-        }
         if (newUserEntity.getCostCenter() != null) {
             if (newUserEntity.getCostCenter().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
                 origUserEntity.setCostCenter(null);
             } else {
                 origUserEntity.setCostCenter(newUserEntity.getCostCenter());
-            }
-        }
-        if (newUserEntity.getDeptCd() != null) {
-            if (newUserEntity.getDeptCd().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-                origUserEntity.setDeptCd(null);
-            } else {
-                origUserEntity.setDeptCd(newUserEntity.getDeptCd());
-            }
-        }
-        if (newUserEntity.getDivision() != null) {
-            if (newUserEntity.getDivision().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-                origUserEntity.setDivision(null);
-            } else {
-                origUserEntity.setDivision(newUserEntity.getDivision());
             }
         }
 
@@ -1575,15 +1546,6 @@ public class UserMgr implements UserDataService {
             if (DelegationFilterHelper.isRoleFilterSet(requestorAttributes)) {
                 filter.setRoleIdSet(new HashSet<String>(DelegationFilterHelper.getRoleFilterFromString(requestorAttributes)));
             }
-            
-            /*
-            if (DelegationFilterHelper.isDeptFilterSet(requestorAttributes)) {
-                filter.setDeptIdSet(new HashSet<String>(DelegationFilterHelper.getDeptFilterFromString(requestorAttributes)));
-            }
-            if (DelegationFilterHelper.isDivisionFilterSet(requestorAttributes)) {
-                filter.setDivisionIdSet(new HashSet<String>(DelegationFilterHelper.getDivisionFilterFromString(requestorAttributes)));
-            }
-            */
         }
         return filter;
     }

@@ -34,8 +34,6 @@ import org.springframework.transaction.annotation.Transactional;
  * Organization components and its dependant objects as well as search
  * capability.<br>
  * <p/>
- * Note: The spring configuration file defines MetadataTypes are used to
- * identify Departments and Divisions in the org list.
  * 
  * @author OpenIAm
  * @version 2
@@ -356,4 +354,13 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
         }
         return response;
     }
+
+	@Override
+	public List<Organization> getOrganizationsForUserByType(final String userId, final String requesterId, final String organizationTypeId) {
+		final OrganizationSearchBean searchBean = new OrganizationSearchBean();
+		searchBean.setUserId(userId);
+		searchBean.setOrganizationTypeId(organizationTypeId);
+		searchBean.setDeepCopy(false);
+		return findBeans(searchBean, requesterId, 0, Integer.MAX_VALUE);
+	}
 }

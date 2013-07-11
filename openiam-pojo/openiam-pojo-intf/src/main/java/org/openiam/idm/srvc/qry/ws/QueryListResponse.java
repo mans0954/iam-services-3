@@ -26,7 +26,6 @@ import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.rpt.qryobject.dto.UserLoginStatusReport;
 import org.openiam.idm.srvc.user.dto.Supervisor;
 import org.openiam.idm.srvc.user.dto.User;
 
@@ -48,8 +47,7 @@ import java.util.List;
         User.class,
         Group.class,
         Role.class,
-        Supervisor.class,
-        UserLoginStatusReport.class
+        Supervisor.class
 })
 public class QueryListResponse extends Response {
 
