@@ -205,17 +205,17 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
     }
 
     protected void checkAuditingAttributes(ProvisionUser pUser) {
-        if ( pUser.getRequestClientIP() == null || pUser.getRequestClientIP().isEmpty() ) {
-            pUser.setRequestClientIP("NA");
+        if ( pUser.getUser().getRequestClientIP() == null || pUser.getUser().getRequestClientIP().isEmpty() ) {
+            pUser.getUser().setRequestClientIP("NA");
         }
-        if ( pUser.getRequestorLogin() == null || pUser.getRequestorLogin().isEmpty() ) {
-            pUser.setRequestorLogin("NA");
+        if ( pUser.getUser().getRequestorLogin() == null || pUser.getUser().getRequestorLogin().isEmpty() ) {
+            pUser.getUser().setRequestorLogin("NA");
         }
-        if ( pUser.getRequestorDomain() == null || pUser.getRequestorDomain().isEmpty() ) {
-            pUser.setRequestorDomain("NA");
+        if ( pUser.getUser().getRequestorDomain() == null || pUser.getUser().getRequestorDomain().isEmpty() ) {
+            pUser.getUser().setRequestorDomain("NA");
         }
-        if ( pUser.getCreatedBy() == null || pUser.getCreatedBy().isEmpty() ) {
-            pUser.setCreatedBy("NA");
+        if ( pUser.getUser().getCreatedBy() == null || pUser.getUser().getCreatedBy().isEmpty() ) {
+            pUser.getUser().setCreatedBy("NA");
         }
     }
 
@@ -511,12 +511,12 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                 identity.setIsLocked(0);
                 identity.setFirstTimeLogin(1);
                 identity.setStatus("ACTIVE");
-                if (pUser.getPrincipalList() == null) {
+                if (pUser.getUser().getPrincipalList() == null) {
                     List<Login> idList = new ArrayList<Login>();
                     idList.add(identity);
-                    pUser.setPrincipalList(idList);
+                    pUser.getUser().setPrincipalList(idList);
                 } else {
-                    pUser.getPrincipalList().add(identity);
+                    pUser.getUser().getPrincipalList().add(identity);
                 }
 
             } else {
@@ -563,12 +563,12 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                 resp.setErrorCode(ResponseCode.INTERNAL_ERROR);
                 return resp;
             }
-            user.setUserId(newUser.getUserId());
+            user.getUser().setUserId(newUser.getUserId());
             log.debug("User id=" + newUser.getUserId() + " created in openiam repository");
 
             addSupervisor(user);
             try {
-                addPrincipals(user, user.getUserId());
+                addPrincipals(user, user.getUser().getUserId());
             }catch(EncryptionException e) {
                 resp.setStatus(ResponseStatus.FAILURE);
                 resp.setErrorCode(ResponseCode.FAIL_ENCRYPTION);
@@ -602,16 +602,16 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
          */
     private void associateEmail(ProvisionUser user) {
 
-        if (user.getEmail() == null || user.getEmail().isEmpty()) {
+        if (user.getUser().getEmail() == null || user.getUser().getEmail().isEmpty()) {
             return;
 
         }
-        Set<EmailAddress> emailSet = user.getEmailAddresses();
+        Set<EmailAddress> emailSet = user.getUser().getEmailAddresses();
 
         if (!containsEmail("EMAIL1", emailSet)) {
 
-            EmailAddress e = new EmailAddress(user.getEmail(), "EMAIL1", "", true);
-            user.getEmailAddresses().add(e);
+            EmailAddress e = new EmailAddress(user.getUser().getEmail(), "EMAIL1", "", true);
+            user.getUser().getEmailAddresses().add(e);
 
         }
 
@@ -664,7 +664,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
     }
 
     private void addSupervisor(ProvisionUser u) {
-        Supervisor supervisor = u.getSupervisor();
+        Supervisor supervisor = u.getUser().getSupervisor();
         if (supervisor != null && supervisor.getSupervisor() != null) {
             supervisor.setEmployee(u.getUser());
             userMgr.addSupervisor(supervisorDozerConverter.convertToEntity(supervisor, true));
@@ -672,7 +672,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
     }
 
     private void addPrincipals(final ProvisionUser u, final String userId) throws EncryptionException {
-        List<Login> principalList = u.getPrincipalList();
+        List<Login> principalList = u.getUser().getPrincipalList();
         if(CollectionUtils.isNotEmpty(principalList)) {
             for (final Login lg: principalList) {
                 lg.setFirstTimeLogin(1);
@@ -708,12 +708,12 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                 groupManager.addUserToGroup(g.getGrpId(), newUserId);
                 // add to audit log
                 logList.add( auditHelper.createLogObject("ADD GROUP",
-                        user.getRequestorDomain(), user.getRequestorLogin(),
-                        "IDM SERVICE", user.getCreatedBy(), "0", "USER", user.getUserId(),
+                        user.getUser().getRequestorDomain(), user.getUser().getRequestorLogin(),
+                        "IDM SERVICE", user.getUser().getCreatedBy(), "0", "USER", user.getUser().getUserId(),
                         null, "SUCCESS", null, "USER_STATUS",
                         user.getUser().getStatus().toString(),
                         null, null, user.getSessionId(), null, g.getGrpName(),
-                        user.getRequestClientIP(), null, null) );
+                        user.getUser().getRequestClientIP(), null, null) );
 
             }
         }
@@ -744,12 +744,12 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                 roleDataService.assocUserToRole(userRoleDozerConverter.convertToEntity(ur, true));
 
                 logList.add( auditHelper.createLogObject("ADD ROLE",
-                        user.getRequestorDomain(), user.getRequestorLogin(),
-                        "IDM SERVICE", user.getCreatedBy(), "0", "USER", user.getUserId(),
+                        user.getUser().getRequestorDomain(), user.getUser().getRequestorLogin(),
+                        "IDM SERVICE", user.getUser().getCreatedBy(), "0", "USER", user.getUser().getUserId(),
                         null, "SUCCESS", null, "USER_STATUS",
                         user.getUser().getStatus().toString(),
                         "NA", null, user.getSessionId(), null, ur.getRoleId(),
-                        user.getRequestClientIP(), null, null) );
+                        user.getUser().getRequestClientIP(), null, null) );
 
             }
         }
@@ -765,15 +765,15 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                 if (org.getId() == null) {
                     return ResponseCode.OBJECT_ID_INVALID;
                 }
-                orgManager.addUserToOrg(org.getId(), user.getUserId());
+                orgManager.addUserToOrg(org.getId(), user.getUser().getUserId());
 
                 logList.add( auditHelper.createLogObject("ADD AFFILIATION",
-                        user.getRequestorDomain(), user.getRequestorLogin(),
-                        "IDM SERVICE", user.getCreatedBy(), "0", "USER", user.getUserId(),
+                        user.getUser().getRequestorDomain(), user.getUser().getRequestorLogin(),
+                        "IDM SERVICE", user.getUser().getCreatedBy(), "0", "USER", user.getUser().getUserId(),
                         null, "SUCCESS", null, "USER_STATUS",
                         user.getUser().getStatus().toString(),
                         "NA", null, user.getSessionId(), null, org.getOrganizationName(),
-                        user.getRequestClientIP(), null, null) );
+                        user.getUser().getRequestClientIP(), null, null) );
 
             }
         }
@@ -1462,7 +1462,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
             log.debug("- Adding original affiliationList to the user object");
 
-            List<Organization> userAffiliations = orgManager.getOrganizationsForUser(user.getUserId(), null, 0, Integer.MAX_VALUE);
+            List<Organization> userAffiliations = orgManager.getOrganizationsForUser(user.getUser().getUserId(), null, 0, Integer.MAX_VALUE);
             if (userAffiliations != null && !userAffiliations.isEmpty())  {
 
                 user.setUserAffiliations(userAffiliations);

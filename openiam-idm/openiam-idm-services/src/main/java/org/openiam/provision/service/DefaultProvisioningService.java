@@ -1617,7 +1617,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         }
         
         if(org == null) {
-        	final List<Organization> organizationForCurrentUser = orgManager.getOrganizationsForUserByType(pUser.getUserId(), null, "ORGANIZATION");
+        	final List<Organization> organizationForCurrentUser = orgManager.getOrganizationsForUserByType(pUser.getUser().getUserId(), null, "ORGANIZATION");
         	if(CollectionUtils.isNotEmpty(organizationForCurrentUser)) {
         		for(final Organization organization : organizationForCurrentUser) {
         			if(!pUser.isOrganizationMarkedAsDeleted(organization.getId())) {

@@ -455,8 +455,8 @@ public class ProvisionUser extends GenericProvisionObject<User> {
         if (getObject().getCreatedBy() == null) {
             getObject().setCreatedBy(user.getCreatedBy());
         }
-        if (employeeId == null) {
-            employeeId = user.getEmployeeId();
+        if (getObject().getEmployeeId() == null) {
+            getObject().setEmployeeId(user.getEmployeeId());
         }
         if (getObject().getEmployeeType() == null) {
             getObject().setEmployeeType(user.getEmployeeType());

@@ -184,7 +184,7 @@ public class ModifyUser {
             log.debug("- Adding original affiliationList to the user object");
 
             List<Organization> userAffiliations = orgManager
-                    .getOrganizationsForUser(user.getUser().getUserId(), null);
+                    .getOrganizationsForUser(user.getUser().getUserId(), null, 0,Integer.MAX_VALUE);
             if (userAffiliations != null && !userAffiliations.isEmpty()) {
 
                 user.setUserAffiliations(userAffiliations);
@@ -943,12 +943,12 @@ public class ModifyUser {
 
                 roleDataService.addUserToRole(rl.getRoleId(), userId);
 
-                logList.add(auditHelper.createLogObject("ADD ROLE", pUser
-                        .getRequestorDomain(), pUser.getRequestorLogin(),
+                logList.add(auditHelper.createLogObject("ADD ROLE", pUser.getUser()
+                        .getRequestorDomain(), pUser.getUser().getRequestorLogin(),
                         "IDM SERVICE", user.getCreatedBy(), "0", "USER", user
                                 .getUserId(), null, "SUCCESS", null,
                         "USER_STATUS", user.getStatus().toString(), "NA", null,
-                        null, null, rl.getRoleId(), pUser.getRequestClientIP(),
+                        null, null, rl.getRoleId(), pUser.getUser().getRequestClientIP(),
                         primaryIdentity.getLogin(), primaryIdentity
                                 .getDomainId()));
 

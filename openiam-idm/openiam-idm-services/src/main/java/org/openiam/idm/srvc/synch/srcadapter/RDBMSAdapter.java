@@ -341,8 +341,8 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
 
                         // show the user object
                         log.debug("- User After Transformation =" + pUser);
-                        log.debug("- User = " + pUser.getUserId() + "-" + pUser.getFirstName() + " " + pUser.getLastName());
-                        log.debug("- User Attributes = " + pUser.getUserAttributes());
+                        log.debug("- User = " + pUser.getUser().getUserId() + "-" + pUser.getUser().getFirstName() + " " + pUser.getUser().getLastName());
+                        log.debug("- User Attributes = " + pUser.getUser().getUserAttributes());
                     }
                 }
                 pUser.setSessionId(synchStartLog.getSessionId());
@@ -367,7 +367,7 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
                             } else {
                                 log.debug("-adding new user...");
 
-                                pUser.setUserId(null);
+                                pUser.getUser().setUserId(null);
                                 addUser(pUser);
                             }
                         }

@@ -196,7 +196,7 @@ public class ProvisionServiceImpl implements ProvisionService,
         UserAttribute uAttr = new UserAttribute();
         uAttr.setName("GM_SYSKEY");
         uAttr.setValue(gmSysKey);
-        provUser.getUserAttributes().put("GM_SYSKEY", uAttr);
+        provUser.getUser().getUserAttributes().put("GM_SYSKEY", uAttr);
 
         log.info("addUser called.");
 
@@ -1013,8 +1013,6 @@ public class ProvisionServiceImpl implements ProvisionService,
             }
 
         }
-
-        log.info("** A) Deptcd in Orig=" + currentUser2.getDeptCd());
 
         // IF A VALUE IS IN THE CURRENT LIST, BUT NOT in the rolelist, then
         // delete it

@@ -247,7 +247,7 @@ public class AddUser {
                 if (org.getId() == null) {
                     return ResponseCode.OBJECT_ID_INVALID;
                 }
-                orgManager.addUserToOrg(org.getId(), user.getUserId());
+                orgManager.addUserToOrg(org.getId(), user.getUser().getUserId());
 
                 logList.add(auditHelper.createLogObject("ADD AFFILIATION",
                         user.getUser().getRequestorDomain(), user.getUser().getRequestorLogin(),
@@ -402,7 +402,7 @@ public class AddUser {
             }
             // primaryIdentity.setId(primaryID);
             // principalList.add(primaryIdentity);
-            user.setPrincipalList(principalList);
+            user.getUser().setPrincipalList(principalList);
             // user.getEmailAddress().add(primaryEmail);
 
         } else {
