@@ -1,4 +1,4 @@
-package org.openiam.spml2.spi.orcl.command;
+package org.openiam.spml2.spi.orcl.command.user;
 
 import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;

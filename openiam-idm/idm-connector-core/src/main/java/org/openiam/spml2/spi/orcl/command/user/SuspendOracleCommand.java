@@ -1,4 +1,4 @@
-package org.openiam.spml2.spi.orcl.command;
+package org.openiam.spml2.spi.orcl.command.user;
 
 import org.openiam.spml2.msg.suspend.SuspendRequestType;
 import org.openiam.spml2.spi.orcl.command.base.AbstractOracleAccountStatusCommand;

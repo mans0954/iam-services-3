@@ -1,4 +1,4 @@
-package org.openiam.spml2.spi.jdbc.command;
+package org.openiam.spml2.spi.jdbc.command.user;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.openiam.exception.EncryptionException;

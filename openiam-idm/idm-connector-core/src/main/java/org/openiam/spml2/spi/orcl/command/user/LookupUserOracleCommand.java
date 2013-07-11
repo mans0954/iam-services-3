@@ -1,4 +1,4 @@
-package org.openiam.spml2.spi.orcl.command;
+package org.openiam.spml2.spi.orcl.command.user;
 
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.spml2.msg.ConnectorDataException;

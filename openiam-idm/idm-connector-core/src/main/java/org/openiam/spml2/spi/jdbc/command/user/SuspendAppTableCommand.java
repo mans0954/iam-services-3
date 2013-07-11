@@ -1,4 +1,4 @@
-package org.openiam.spml2.spi.jdbc.command;
+package org.openiam.spml2.spi.jdbc.command.user;
 
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.pswd.service.PasswordGenerator;
