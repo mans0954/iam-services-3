@@ -543,4 +543,7 @@ public interface UserDataWebService {
 
     @WebMethod
     public List<User> getByManagedSystem(@WebParam(name = "mSysId", targetNamespace = "") final String mSysId);
+
+    @WebMethod
+    public Response approveITPolicy(@WebParam(name = "userId", targetNamespace = "") final String userId);
 }

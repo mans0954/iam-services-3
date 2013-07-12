@@ -155,6 +155,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         this.userOwnerId = user.getUserOwnerId();
         this.dateChallengeRespChanged = user.getDateChallengeRespChanged();
         this.datePasswordChanged = user.getDatePasswordChanged();
+        this.dateITPolicyApproved = user.getDateITPolicyApproved();
 
         userNotes = user.getUserNotes();
         userAttributes = user.getUserAttributes();
@@ -214,6 +215,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         user.setUserOwnerId(userOwnerId);
         user.setDateChallengeRespChanged(dateChallengeRespChanged);
         user.setDatePasswordChanged(datePasswordChanged);
+        user.setDateITPolicyApproved(dateITPolicyApproved);
 
         return user;
     }
@@ -557,7 +559,9 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         if (datePasswordChanged == null) {
             datePasswordChanged = user.getDatePasswordChanged();
         }
-
+        if (dateITPolicyApproved == null) {
+            dateITPolicyApproved = user.getDateITPolicyApproved();
+        }
     }
     
     public void addMemberGroup(final Group group) {

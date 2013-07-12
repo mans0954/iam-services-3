@@ -188,6 +188,13 @@ public class ProvisionUserCSVParser extends
 				user.setDatePasswordChanged(null);
 			}
 			break;
+        case dateITPolicyApproved:
+            try {
+                user.setDateITPolicyApproved(sdf.parse(objValue));
+            } catch (Exception e) {
+                user.setDateITPolicyApproved(null);
+            }
+            break;
 		case dateChallengeRespChanged:
 			try {
 				user.setDateChallengeRespChanged(sdf.parse(objValue));
@@ -332,6 +339,10 @@ public class ProvisionUserCSVParser extends
 			objValue = user.getDatePasswordChanged() == null ? ""
 					: toString(sdf.format(user.getDatePasswordChanged()));
 			break;
+        case dateITPolicyApproved:
+            objValue = user.getDateITPolicyApproved() == null ? ""
+                    : toString(sdf.format(user.getDateITPolicyApproved()));
+            break;
 		case dateChallengeRespChanged:
 			objValue = user.getDateChallengeRespChanged() == null ? ""
 					: toString(sdf.format(user.getDateChallengeRespChanged()));
