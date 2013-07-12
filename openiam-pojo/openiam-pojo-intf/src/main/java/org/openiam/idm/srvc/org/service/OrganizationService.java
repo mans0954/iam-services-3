@@ -17,12 +17,12 @@ public interface OrganizationService {
     public int getNumOfOrganizationsForUser(final String userId, final String requesterId);
 	public List<OrganizationEntity> getOrganizationsForUser(String userId, String requesterId, final int from, final int size);
     public List<OrganizationEntity> getAllOrganizations(String requesterId);
-    public List<OrganizationEntity> getParentOrganizations(final String orgId, String parentClassification, String requesterId, final int from, final int size);
-    public List<OrganizationEntity> getChildOrganizations(final String orgId, String childClassification, String requesterId, final int from, final int size);
+    public List<OrganizationEntity> getParentOrganizations(final String orgId, String requesterId, final int from, final int size);
+    public List<OrganizationEntity> getChildOrganizations(final String orgId, String requesterId, final int from, final int size);
     public List<OrganizationEntity> findBeans(final OrganizationSearchBean searchBean, String requesterId, final int from, final int size);
     public int count(final OrganizationSearchBean searchBean, String requesterId);
-    public int getNumOfParentOrganizations(final String orgId, String parentClassification, String requesterId);
-    public int getNumOfChildOrganizations(final String orgId, String childClassification, String requesterId);
+    public int getNumOfParentOrganizations(final String orgId, String requesterId);
+    public int getNumOfChildOrganizations(final String orgId, String requesterId);
 
 	public void addUserToOrg(final String orgId, final String userId);
 	public void removeUserFromOrg(String orgId, String userId);

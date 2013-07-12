@@ -21,7 +21,8 @@ import java.util.Set;
 		"organizationTypeId",
 		"userId",
 		"parentId",
-		"childId"
+		"childId",
+		"validParentTypeId"
 })
 public class OrganizationSearchBean extends AbstractSearchBean<Organization, String> implements SearchBean<Organization, String>,
         Serializable {
@@ -32,6 +33,7 @@ public class OrganizationSearchBean extends AbstractSearchBean<Organization, Str
     private String userId;
     private String parentId;
     private String childId;
+    private String validParentTypeId;
 
     public String getOrganizationName() {
         return organizationName;
@@ -105,6 +107,14 @@ public class OrganizationSearchBean extends AbstractSearchBean<Organization, Str
 
 	public void setChildId(String childId) {
 		this.childId = childId;
+	}
+
+	public String getValidParentTypeId() {
+		return validParentTypeId;
+	}
+
+	public void setValidParentTypeId(String validParentTypeId) {
+		this.validParentTypeId = validParentTypeId;
 	}
 	
 	

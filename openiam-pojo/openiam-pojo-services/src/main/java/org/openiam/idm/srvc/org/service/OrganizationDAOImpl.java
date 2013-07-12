@@ -5,6 +5,7 @@ import org.apache.commons.lang.StringUtils;
 import org.hibernate.Criteria;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
@@ -99,7 +100,11 @@ public class OrganizationDAOImpl extends BaseDaoImpl<OrganizationEntity, String>
             }
             
             if(StringUtils.isNotBlank(organizationSearchBean.getParentId())) {
-            	criteria.createAlias("parentOrganizations", "parent").add(Restrictions.eq("parent.id", organizationSearchBean.getChildId()));
+            	criteria.createAlias("parentOrganizations", "parent").add(Restrictions.eq("parent.id", organizationSearchBean.getParentId()));
+            }
+            
+            if(StringUtils.isNotBlank(organizationSearchBean.getValidParentTypeId())) {
+            	criteria.createAlias("organizationType.parentTypes", "parentTypes").add(Restrictions.eq("parentTypes.id", organizationSearchBean.getValidParentTypeId()));
             }
         }
         return criteria;
@@ -163,7 +168,6 @@ public class OrganizationDAOImpl extends BaseDaoImpl<OrganizationEntity, String>
         return getList(getParentOrganizationsCriteria(orgId, filter), from, size);
     }
 
-	
 	@Override
 	public int getNumOfParentOrganizations(String orgId, Set<String> filter) {
 		final Criteria criteria = getParentOrganizationsCriteria(orgId, filter).setProjection(rowCount());
@@ -175,6 +179,15 @@ public class OrganizationDAOImpl extends BaseDaoImpl<OrganizationEntity, String>
         return ((Number)criteria.uniqueResult()).intValue();
     }
 
+	//BUG in Hibernate!!  count() fails for some queries, while the normal select succeeds.  the count query is indeed incorrect:
+    //select count(*) as y0_ from COMPANY this_ where parenttype1_.ORG_TYPE_ID=? order by this_.COMPANY_NAME asc
+    //using criteria.list.size();
+    @Override
+    public int count(final SearchBean searchBean) {
+    	final Criteria criteria = getExampleCriteria(searchBean);
+    	//criteria.setProjection(Projections.property("id"));
+    	return criteria.list().size();
+    }
 
 
     private List<OrganizationEntity> getList(Criteria criteria, final int from, final int size){

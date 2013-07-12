@@ -44,6 +44,7 @@ import org.openiam.idm.srvc.org.domain.OrganizationEntity;
         "id",
         "organizationName",
         "organizationTypeId",
+        "organizationTypeName",
         "internalOrgId",
         "status",
         "abbreviation",
@@ -91,6 +92,8 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
     protected String status;
     
     protected String organizationTypeId;
+    
+    private String organizationTypeName;
 
     protected String abbreviation;
 
@@ -415,6 +418,14 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
 	
 	public boolean isOrganization() {
 		return StringUtils.equalsIgnoreCase("organization", organizationTypeId);
+	}
+
+	public String getOrganizationTypeName() {
+		return organizationTypeName;
+	}
+
+	public void setOrganizationTypeName(String organizationTypeName) {
+		this.organizationTypeName = organizationTypeName;
 	}
 
 	@Override

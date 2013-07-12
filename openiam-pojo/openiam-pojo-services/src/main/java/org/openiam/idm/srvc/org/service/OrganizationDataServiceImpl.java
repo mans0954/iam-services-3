@@ -92,27 +92,27 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     }
 
     @Override
-    public List<Organization> getParentOrganizations(String orgId, String parentClassification, String requesterId, final int from, final int size) {
-        final List<OrganizationEntity> entityList = organizationService.getParentOrganizations(orgId, parentClassification, requesterId, from, size);
+    public List<Organization> getParentOrganizations(String orgId, String requesterId, final int from, final int size) {
+        final List<OrganizationEntity> entityList = organizationService.getParentOrganizations(orgId, requesterId, from, size);
         final List<Organization> organizationList = organizationDozerConverter.convertToDTOList(entityList, false);
         return organizationList;
     }
 
     @Override
-    public List<Organization> getChildOrganizations(String orgId, String childClassification, String requesterId, final int from, final int size) {
-        final List<OrganizationEntity> entityList = organizationService.getChildOrganizations(orgId, childClassification, requesterId, from, size);
+    public List<Organization> getChildOrganizations(String orgId, String requesterId, final int from, final int size) {
+        final List<OrganizationEntity> entityList = organizationService.getChildOrganizations(orgId, requesterId, from, size);
         final List<Organization> organizationList = organizationDozerConverter.convertToDTOList(entityList, false);
         return organizationList;
     }
 
     @Override
-    public int getNumOfParentOrganizations(String orgId, String parentClassification, String requesterId) {
-        return organizationService.getNumOfParentOrganizations(orgId, parentClassification, requesterId);
+    public int getNumOfParentOrganizations(String orgId, String requesterId) {
+        return organizationService.getNumOfParentOrganizations(orgId, requesterId);
     }
 
     @Override
-    public int getNumOfChildOrganizations(String orgId, String childClassification, String requesterId) {
-        return organizationService.getNumOfChildOrganizations(orgId, childClassification, requesterId);
+    public int getNumOfChildOrganizations(String orgId, String requesterId) {
+        return organizationService.getNumOfChildOrganizations(orgId, requesterId);
     }
 
     @Override
