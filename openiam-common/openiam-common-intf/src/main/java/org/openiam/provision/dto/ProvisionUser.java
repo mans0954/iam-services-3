@@ -567,8 +567,8 @@ public class ProvisionUser extends GenericProvisionObject<User> {
         if (getObject().getDatePasswordChanged() == null) {
             getObject().setDatePasswordChanged(user.getDatePasswordChanged());
         }
-        if (dateITPolicyApproved == null) {
-            dateITPolicyApproved = user.getDateITPolicyApproved();
+        if (getObject().getDateITPolicyApproved() == null) {
+            getObject().setDateITPolicyApproved(user.getDateITPolicyApproved());
         }
     }
     
