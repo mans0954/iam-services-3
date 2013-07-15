@@ -269,6 +269,10 @@
 			<a>organizationType.id</a>
 			<b>organizationTypeId</b>
 		</field>
+		<field>
+			<a>organizationType.name</a>
+			<b>organizationTypeName</b>
+		</field>
 		<field-exclude>
 			<a>affiliations</a>
 			<b>affiliations</b>

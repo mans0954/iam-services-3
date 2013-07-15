@@ -77,6 +77,7 @@ import java.util.*;
         "userOwnerId",
         "datePasswordChanged",
         "dateChallengeRespChanged",
+        "dateITPolicyApproved",
         "login",
         "password",
         "notifyUserViaEmail",
@@ -188,6 +189,8 @@ public class User extends org.openiam.base.BaseObject {
     @XmlSchemaType(name = "dateTime")
     protected Date dateChallengeRespChanged;
 
+    @XmlSchemaType(name = "dateTime")
+    protected Date dateITPolicyApproved;
 
     @XmlJavaTypeAdapter(UserNoteSetAdapter.class)
     protected Set<UserNote> userNotes = new HashSet<UserNote>(0);
@@ -1010,6 +1013,14 @@ public class User extends org.openiam.base.BaseObject {
                 this.dateChallengeRespChanged = newUser.getDateChallengeRespChanged();
             }
         }
+        if (newUser.dateITPolicyApproved != null) {
+            if (newUser.dateITPolicyApproved.equals(BaseConstants.NULL_DATE)) {
+                this.dateITPolicyApproved = null;
+            } else {
+                this.dateITPolicyApproved = newUser.getDateITPolicyApproved();
+            }
+        }
+
         if (newUser.getDatePasswordChanged() != null) {
             if (newUser.getDatePasswordChanged().equals(BaseConstants.NULL_DATE)) {
                 this.datePasswordChanged = null;
@@ -1097,6 +1108,14 @@ public class User extends org.openiam.base.BaseObject {
         this.dateChallengeRespChanged = dateChallengeRespChanged;
     }
 
+    public Date getDateITPolicyApproved() {
+        return dateITPolicyApproved;
+    }
+
+    public void setDateITPolicyApproved(Date dateITPolicyApproved) {
+        this.dateITPolicyApproved = dateITPolicyApproved;
+    }
+
     public Set<UserGroup> getUserGroups() {
         return userGroups;
     }
@@ -1156,6 +1175,8 @@ public class User extends org.openiam.base.BaseObject {
         if (createDate != null ? !createDate.equals(user.createDate) : user.createDate != null) return false;
         if (createdBy != null ? !createdBy.equals(user.createdBy) : user.createdBy != null) return false;
         if (dateChallengeRespChanged != null ? !dateChallengeRespChanged.equals(user.dateChallengeRespChanged) : user.dateChallengeRespChanged != null)
+            return false;
+        if (dateITPolicyApproved != null ? !dateITPolicyApproved.equals(user.dateITPolicyApproved) : user.dateITPolicyApproved != null)
             return false;
         if (datePasswordChanged != null ? !datePasswordChanged.equals(user.datePasswordChanged) : user.datePasswordChanged != null)
             return false;
@@ -1255,6 +1276,7 @@ public class User extends org.openiam.base.BaseObject {
                 ", userOwnerId='" + userOwnerId + '\'' +
                 ", datePasswordChanged=" + datePasswordChanged +
                 ", dateChallengeRespChanged=" + dateChallengeRespChanged +
+                ", dateITPolicyApproved=" + dateITPolicyApproved +
                 ", userNotes=" + userNotes +
                 ", userAttributes=" + userAttributes +
                 ", addresses=" + addresses +

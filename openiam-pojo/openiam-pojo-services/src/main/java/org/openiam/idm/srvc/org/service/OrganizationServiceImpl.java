@@ -100,13 +100,13 @@ public class OrganizationServiceImpl implements OrganizationService {
     }
 
     @Override
-    public List<OrganizationEntity> getParentOrganizations(String orgId, String parentClassification, String requesterId, int from, int size) {
-        return orgDao.getParentOrganizations(orgId, getDelegationFilter(requesterId, parentClassification), from, size);
+    public List<OrganizationEntity> getParentOrganizations(String orgId, String requesterId, int from, int size) {
+        return orgDao.getParentOrganizations(orgId, getDelegationFilter(requesterId, null), from, size);
     }
 
     @Override
-    public List<OrganizationEntity> getChildOrganizations(String orgId, String childClassification, String requesterId, int from, int size) {
-        return orgDao.getChildOrganizations(orgId, getDelegationFilter(requesterId, childClassification), from, size);
+    public List<OrganizationEntity> getChildOrganizations(String orgId, String requesterId, int from, int size) {
+        return orgDao.getChildOrganizations(orgId, getDelegationFilter(requesterId, null), from, size);
     }
 
     @Override
@@ -122,13 +122,13 @@ public class OrganizationServiceImpl implements OrganizationService {
     }
 
     @Override
-    public int getNumOfParentOrganizations(String orgId, String parentClassification, String requesterId) {
-        return orgDao.getNumOfParentOrganizations(orgId, getDelegationFilter(requesterId, parentClassification));
+    public int getNumOfParentOrganizations(String orgId, String requesterId) {
+        return orgDao.getNumOfParentOrganizations(orgId, getDelegationFilter(requesterId, null));
     }
 
     @Override
-    public int getNumOfChildOrganizations(String orgId, String childClassification, String requesterId) {
-        return orgDao.getNumOfChildOrganizations(orgId, getDelegationFilter(requesterId, childClassification));
+    public int getNumOfChildOrganizations(String orgId, String requesterId) {
+        return orgDao.getNumOfChildOrganizations(orgId, getDelegationFilter(requesterId, null));
     }
 
     @Override

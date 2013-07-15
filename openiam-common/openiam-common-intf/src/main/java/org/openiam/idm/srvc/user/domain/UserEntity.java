@@ -178,6 +178,10 @@ public class UserEntity {
     @Column(name = "DATE_CHALLENGE_RESP_CHANGED", length = 10)
     private Date dateChallengeRespChanged;
 
+    @Column(name = "DATE_IT_POLICY_APPROVED")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date dateITPolicyApproved;
+
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.LAZY)
     private Set<UserNoteEntity> userNotes = new HashSet<UserNoteEntity>(0);
 
@@ -717,6 +721,14 @@ public class UserEntity {
         this.dateChallengeRespChanged = dateChallengeRespChanged;
     }
 
+    public Date getDateITPolicyApproved() {
+        return dateITPolicyApproved;
+    }
+
+    public void setDateITPolicyApproved(Date dateITPolicyApproved) {
+        this.dateITPolicyApproved = dateITPolicyApproved;
+    }
+
     public Set<UserNoteEntity> getUserNotes() {
         return userNotes;
     }
@@ -1092,6 +1104,10 @@ public class UserEntity {
 				* result
 				+ ((dateChallengeRespChanged == null) ? 0
 						: dateChallengeRespChanged.hashCode());
+        result = prime
+                * result
+                + ((dateITPolicyApproved == null) ? 0
+                        : dateITPolicyApproved.hashCode());
 		result = prime
 				* result
 				+ ((datePasswordChanged == null) ? 0 : datePasswordChanged
@@ -1200,6 +1216,12 @@ public class UserEntity {
 		} else if (!dateChallengeRespChanged
 				.equals(other.dateChallengeRespChanged))
 			return false;
+        if (dateITPolicyApproved == null) {
+            if (other.dateITPolicyApproved != null)
+                return false;
+        } else if (!dateITPolicyApproved
+                .equals(other.dateITPolicyApproved))
+            return false;
 		if (datePasswordChanged == null) {
 			if (other.datePasswordChanged != null)
 				return false;

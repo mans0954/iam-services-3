@@ -21,14 +21,7 @@
  */
 package org.openiam.idm.srvc.user.ws;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.jws.WebParam;
-import javax.jws.WebService;
+import java.util.*;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
@@ -63,7 +56,6 @@ import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.domain.UserNoteEntity;
 import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
-import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.Supervisor;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
@@ -72,11 +64,13 @@ import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.service.UserProfileService;
-import org.openiam.idm.srvc.user.token.CreateUserToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import javax.jws.WebParam;
+import javax.jws.WebService;
 
 /**
  * @author suneet
@@ -1198,5 +1192,28 @@ public class UserDataWebServiceImpl implements UserDataWebService, MuleContextAw
     public List<User> getByManagedSystem(String mSysId) {
         List<UserEntity> result = userManager.getUsersForMSys(mSysId);
         return result == null ? new ArrayList<User>() : userDozerConverter.convertToDTOList(result, true);
+    }
+
+    @Override
+    public Response approveITPolicy(@WebParam(name = "userId", targetNamespace = "") final String userId) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            final UserEntity user = userManager.getUser(userId, null);
+            if (user == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            }
+            TimeZone zone;
+            user.setDateITPolicyApproved(new Date());
+            userManager.updateUser(user);
+
+        } catch (BasicDataServiceException e) {
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+        } catch (Throwable e) {
+            log.error("Can't perform operation", e);
+            response.setErrorText(e.getMessage());
+            response.setStatus(ResponseStatus.FAILURE);
+        }
+        return response;
     }
 }

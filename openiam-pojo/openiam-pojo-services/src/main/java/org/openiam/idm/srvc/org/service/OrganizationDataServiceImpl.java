@@ -19,9 +19,14 @@ import org.openiam.dozer.converter.OrganizationDozerConverter;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
+import org.openiam.idm.srvc.org.domain.UserAffiliationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.domain.ResourceUserEntity;
 import org.openiam.idm.srvc.searchbean.converter.OrganizationSearchBeanConverter;
+import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.service.UserDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,6 +56,12 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 
     @Autowired
     private OrganizationService organizationService;
+    
+    @Autowired
+    private UserAffiliationDAO userAffiliationDAO;
+    
+    @Autowired
+    private UserDAO userDAO;
 
     @Autowired
     private OrganizationSearchBeanConverter organizationSearchBeanConverter;
@@ -92,27 +103,27 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
     }
 
     @Override
-    public List<Organization> getParentOrganizations(String orgId, String parentClassification, String requesterId, final int from, final int size) {
-        final List<OrganizationEntity> entityList = organizationService.getParentOrganizations(orgId, parentClassification, requesterId, from, size);
+    public List<Organization> getParentOrganizations(String orgId, String requesterId, final int from, final int size) {
+        final List<OrganizationEntity> entityList = organizationService.getParentOrganizations(orgId, requesterId, from, size);
         final List<Organization> organizationList = organizationDozerConverter.convertToDTOList(entityList, false);
         return organizationList;
     }
 
     @Override
-    public List<Organization> getChildOrganizations(String orgId, String childClassification, String requesterId, final int from, final int size) {
-        final List<OrganizationEntity> entityList = organizationService.getChildOrganizations(orgId, childClassification, requesterId, from, size);
+    public List<Organization> getChildOrganizations(String orgId, String requesterId, final int from, final int size) {
+        final List<OrganizationEntity> entityList = organizationService.getChildOrganizations(orgId, requesterId, from, size);
         final List<Organization> organizationList = organizationDozerConverter.convertToDTOList(entityList, false);
         return organizationList;
     }
 
     @Override
-    public int getNumOfParentOrganizations(String orgId, String parentClassification, String requesterId) {
-        return organizationService.getNumOfParentOrganizations(orgId, parentClassification, requesterId);
+    public int getNumOfParentOrganizations(String orgId, String requesterId) {
+        return organizationService.getNumOfParentOrganizations(orgId, requesterId);
     }
 
     @Override
-    public int getNumOfChildOrganizations(String orgId, String childClassification, String requesterId) {
-        return organizationService.getNumOfChildOrganizations(orgId, childClassification, requesterId);
+    public int getNumOfChildOrganizations(String orgId, String requesterId) {
+        return organizationService.getNumOfChildOrganizations(orgId, requesterId);
     }
 
     @Override
@@ -362,5 +373,65 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 		searchBean.setOrganizationTypeId(organizationTypeId);
 		searchBean.setDeepCopy(false);
 		return findBeans(searchBean, requesterId, 0, Integer.MAX_VALUE);
+	}
+
+	@Override
+	public Response canAddUserToOrganization(final String organizationId, final String userId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if (organizationId == null || userId == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+
+			final UserAffiliationEntity entity = userAffiliationDAO.getRecord(userId, organizationId);
+
+			if (entity != null) {
+				throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
+			}
+
+			final OrganizationEntity organization = organizationService.getOrganization(organizationId);
+			final UserEntity user = userDAO.findById(userId);
+			if (organization == null || user == null) {
+				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+			}
+		} catch (BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch (Throwable e) {
+			log.error("Can't delete resource", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+		return response;
+	}
+	
+	@Override
+	public Response canRemoveUserToOrganization(final String organizationId, final String userId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if (organizationId == null || userId == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+
+			final UserAffiliationEntity entity = userAffiliationDAO.getRecord(userId, organizationId);
+
+			if (entity == null) {
+				throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
+			}
+
+			final OrganizationEntity organization = organizationService.getOrganization(organizationId);
+			final UserEntity user = userDAO.findById(userId);
+			if (organization == null || user == null) {
+				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+			}
+		} catch (BasicDataServiceException e) {
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(e.getCode());
+		} catch (Throwable e) {
+			log.error("Can't delete resource", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorText(e.getMessage());
+		}
+		return response;
 	}
 }

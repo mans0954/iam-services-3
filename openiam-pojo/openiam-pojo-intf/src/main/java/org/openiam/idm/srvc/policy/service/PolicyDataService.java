@@ -32,10 +32,7 @@ import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.PolicySearchBean;
 import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 import org.openiam.idm.srvc.policy.domain.PolicyObjectAssocEntity;
-import org.openiam.idm.srvc.policy.dto.Policy;
-import org.openiam.idm.srvc.policy.dto.PolicyDef;
-import org.openiam.idm.srvc.policy.dto.PolicyDefParam;
-import org.openiam.idm.srvc.policy.dto.PolicyObjectAssoc;
+import org.openiam.idm.srvc.policy.dto.*;
 import org.openiam.idm.srvc.res.dto.Resource;
 
 
@@ -114,5 +111,11 @@ public interface PolicyDataService {
 	 * @return the response
 	 */
 	Response savePolicyAssoc(PolicyObjectAssoc poa);
+
+    ITPolicy findITPolicy();
+
+    Response resetITPolicy();
+
+    Response saveOrUpdateITPolicy(ITPolicy itPolicy);
 
 }
