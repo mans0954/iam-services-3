@@ -19,7 +19,9 @@ public enum AssociationType {
     @XmlEnumValue("target_user")
     TARGET_USER("TARGET_USER", false, true),
     @XmlEnumValue("resource")
-    RESOURCE("RESOURCE", false, false);
+    RESOURCE("RESOURCE", false, false),
+    @XmlEnumValue("organization")
+    ORGANIZATION("ORGANIZATION", false, false);
     
 
 	private boolean isApprover;

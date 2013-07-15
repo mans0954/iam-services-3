@@ -96,5 +96,11 @@ public interface OrganizationDataService {
     public Response removeChildOrganization(@WebParam(name = "organizationId", targetNamespace = "") String organizationId,
                                             @WebParam(name = "childOrganizationId", targetNamespace = "") String childOrganizationId);
 
-
+    @WebMethod
+    public Response canAddUserToOrganization(@WebParam(name = "organizationId", targetNamespace = "") String organizationId,
+                                            @WebParam(name = "userId", targetNamespace = "") String userId);
+    
+    @WebMethod
+    public Response canRemoveUserToOrganization(@WebParam(name = "organizationId", targetNamespace = "") String organizationId,
+            									@WebParam(name = "userId", targetNamespace = "") String userId);
 }
