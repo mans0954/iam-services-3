@@ -83,6 +83,21 @@ public class SupervisorDAOImpl extends BaseDaoImpl<SupervisorEntity, String> imp
     	//return results;        	
     }
 
+    public SupervisorEntity findSupervisor(String superiorId, String subordinateId) {
+        Criteria criteria = getCriteria()
+                .add(Restrictions.eq("supervisor.userId", superiorId))
+                .add(Restrictions.eq("employee.userId", subordinateId));
+
+        SupervisorEntity supr = (SupervisorEntity)criteria.uniqueResult();
+        if (supr == null)
+            return null;
+
+        org.hibernate.Hibernate.initialize(supr.getSupervisor());
+        org.hibernate.Hibernate.initialize(supr.getEmployee());
+
+        return supr;
+    }
+
 }
 
 

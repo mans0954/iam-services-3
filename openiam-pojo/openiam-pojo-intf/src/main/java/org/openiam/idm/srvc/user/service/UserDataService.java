@@ -159,6 +159,24 @@ public interface UserDataService {
      */
     public List<SupervisorEntity> getSupervisors(String employeeId);
 
+    public SupervisorEntity findSupervisor(String superiorId, String subordinateId);
+
+    public List<UserEntity> getSuperiors(String userId, Integer from, Integer size);
+
+    public int getSuperiorsCount(String userId);
+
+    public List<UserEntity> getSubordinates(String userId, Integer from, Integer size);
+
+    public int getSubordinatesCount(String userId);
+
+    public List<UserEntity> findPotentialSuperiors(UserSearchBean searchBean, Integer from, Integer size);
+
+    public int findPotentialSuperiorsCount(UserSearchBean searchBean);
+
+    public List<UserEntity> findPotentialSubordinates(UserSearchBean searchBean, Integer from, Integer size);
+
+    public int findPotentialSubordinatesCount(UserSearchBean searchBean);
+
     /**
      * Returns a list of Supervisor objects that represents the employees or
      * users for this supervisor

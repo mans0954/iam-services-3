@@ -476,6 +476,54 @@ public interface UserDataWebService {
     public Supervisor getPrimarySupervisor(@WebParam(name = "employeeId", targetNamespace = "") String employeeId);
 
     @WebMethod
+    public List<User> getSuperiors(@WebParam(name = "userId", targetNamespace = "") String userId,
+                                   @WebParam(name = "from", targetNamespace = "") Integer from,
+                                   @WebParam(name = "size", targetNamespace = "") Integer size);
+
+    @WebMethod
+    public int getSuperiorsCount(@WebParam(name = "userId", targetNamespace = "") String userId);
+
+    @WebMethod
+    public List<User> getSubordinates(@WebParam(name = "userId", targetNamespace = "") String userId,
+                                      @WebParam(name = "from", targetNamespace = "") Integer from,
+                                      @WebParam(name = "size", targetNamespace = "") Integer size);
+
+    @WebMethod
+    public int getSubordinatesCount(@WebParam(name = "userId", targetNamespace = "") String userId);
+
+    @WebMethod
+    public List<User> findPotentialSuperiors(@WebParam(name = "searchBean", targetNamespace = "") UserSearchBean userSearchBean,
+                                             @WebParam(name = "from", targetNamespace = "") Integer from,
+                                             @WebParam(name = "size", targetNamespace = "") Integer size);
+
+    @WebMethod
+    public int findPotentialSuperiorsCount(@WebParam(name = "searchBean", targetNamespace = "") UserSearchBean userSearchBean);
+
+    @WebMethod
+    public List<User> findPotentialSubordinates(@WebParam(name = "searchBean", targetNamespace = "") UserSearchBean userSearchBean,
+                                                @WebParam(name = "from", targetNamespace = "") Integer from,
+                                                @WebParam(name = "size", targetNamespace = "") Integer size);
+
+    @WebMethod
+    public int findPotentialSubordinatesCount(@WebParam(name = "searchBean", targetNamespace = "") UserSearchBean userSearchBean);
+
+    @WebMethod
+    public Response addSuperior(@WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                           @WebParam(name = "userId", targetNamespace = "") String userId);
+
+    @WebMethod
+    public Response addSubordinate(@WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                              @WebParam(name = "userId", targetNamespace = "") String userId);
+
+    @WebMethod
+    public Response removeSuperior(@WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                              @WebParam(name = "userId", targetNamespace = "") String userId);
+
+    @WebMethod
+    public Response removeSubordinate(@WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                                 @WebParam(name = "userId", targetNamespace = "") String userId);
+
+    @WebMethod
     public List<User> getUsersForResource(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,
                                           @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                           @WebParam(name = "from", targetNamespace = "") final int from,
@@ -545,5 +593,5 @@ public interface UserDataWebService {
     public List<User> getByManagedSystem(@WebParam(name = "mSysId", targetNamespace = "") final String mSysId);
 
     @WebMethod
-    public Response approveITPolicy(@WebParam(name = "userId", targetNamespace = "") final String userId);
+    public Response acceptITPolicy(@WebParam(name = "userId", targetNamespace = "") final String userId);
 }

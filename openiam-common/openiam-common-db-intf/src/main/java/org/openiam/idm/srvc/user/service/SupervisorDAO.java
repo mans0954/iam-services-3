@@ -31,4 +31,6 @@ public interface SupervisorDAO extends BaseDao<SupervisorEntity, String>{
      * @return
      */
     public SupervisorEntity findPrimarySupervisor(String employeeId);
+
+    public SupervisorEntity findSupervisor(String superiorId, String subordinateId);
 }

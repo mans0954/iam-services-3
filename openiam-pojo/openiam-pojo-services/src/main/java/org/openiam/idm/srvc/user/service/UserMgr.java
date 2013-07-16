@@ -1044,6 +1044,112 @@ public class UserMgr implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
+    public SupervisorEntity findSupervisor(String superiorId, String subordinateId) {
+        if (superiorId == null)
+            throw new NullPointerException("superiorId is null");
+        if (superiorId == null)
+            throw new NullPointerException("subordinateId is null");
+        return supervisorDao.findSupervisor(superiorId, subordinateId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserEntity> getSuperiors(String userId, Integer from, Integer size) {
+        if (userId == null)
+            throw new NullPointerException("userId is null");
+        return userDao.getSuperiors(userId, from, size);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public int getSuperiorsCount(String userId) {
+        if (userId == null)
+            throw new NullPointerException("userId is null");
+        return userDao.getSuperiorsCount(userId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserEntity> getSubordinates(String userId, Integer from, Integer size) {
+        if (userId == null)
+            throw new NullPointerException("userId is null");
+        return userDao.getSubordinates(userId, from, size);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public int getSubordinatesCount(String userId) {
+        if (userId == null)
+            throw new NullPointerException("userId is null");
+        return userDao.getSubordinatesCount(userId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserEntity> findPotentialSuperiors(UserSearchBean searchBean, Integer from, Integer size) {
+        List<UserEntity> entityList = findAllPotentialSupSubs(searchBean);
+
+        if (entityList != null && entityList.size() >= from) {
+            int to = from + size;
+            if (to > entityList.size()) {
+                to = entityList.size();
+            }
+            entityList = entityList.subList(from, to);
+        }
+
+        return entityList;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public int findPotentialSuperiorsCount(UserSearchBean searchBean) {
+        return findAllPotentialSupSubs(searchBean).size();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserEntity> findPotentialSubordinates(UserSearchBean searchBean, Integer from, Integer size) {
+        List<UserEntity> entityList = findAllPotentialSupSubs(searchBean);
+
+        if (entityList != null && entityList.size() >= from) {
+            int to = from + size;
+            if (to > entityList.size()) {
+                to = entityList.size();
+            }
+            entityList = entityList.subList(from, to);
+        }
+
+        return entityList;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public int findPotentialSubordinatesCount(UserSearchBean searchBean) {
+        return findAllPotentialSupSubs(searchBean).size();
+    }
+
+    @Transactional(readOnly = true)
+    private List<UserEntity> findAllPotentialSupSubs(UserSearchBean searchBean) {
+        List<UserEntity> entityList = null;
+        if (StringUtils.isNotBlank(searchBean.getKey())) {
+            final UserEntity entity = userDao.findById(searchBean.getKey());
+            if (entity != null) {
+                entityList = new ArrayList<UserEntity>(1);
+                entityList.add(entity);
+            }
+        } else {
+            entityList = userDao.findByIds(getUserIds(searchBean));
+        }
+
+        entityList.remove(userDao.findById(searchBean.getRequesterId())); // exclude itself
+        entityList.removeAll(getSuperiors(searchBean.getRequesterId(),-1,-1)); // exclude existing superiors
+        entityList.removeAll(getSubordinates(searchBean.getRequesterId(),-1,-1)); // exclude existing subordinates
+
+        return entityList;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<UserEntity> getUsersForResource(String resourceId, String requesterId, int from, int size) {
         DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(requesterId);
         return userDao.getUsersForResource(resourceId, delegationFilter, from, size);
