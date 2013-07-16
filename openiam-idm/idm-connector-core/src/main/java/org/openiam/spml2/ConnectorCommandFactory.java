@@ -42,6 +42,10 @@ public class ConnectorCommandFactory {
     @Qualifier("oracleCommandFactory")
     private AbstractCommandFactory oracleCommandFactory;
 
+    @Autowired
+    @Qualifier("salesForceCommandFactory")
+    private AbstractCommandFactory salesForceCommandFactory;
+
 
 
     public ConnectorCommand getConnectorCommand(CommandType commandType, ProvisionObjectType provisionObjectType, ConnectorType connectorType) throws ConnectorDataException {
@@ -61,6 +65,8 @@ public class ConnectorCommandFactory {
                 return appTableCommandFactory.getConnectorCommand(commandType, provisionObjectType);
             case ORACLE:
                 return oracleCommandFactory.getConnectorCommand(commandType, provisionObjectType);
+            case SALES_FORCE:
+                return salesForceCommandFactory.getConnectorCommand(commandType, provisionObjectType);
             default:
                 throw new ConnectorDataException(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
         }

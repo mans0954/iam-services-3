@@ -38,6 +38,7 @@ import com.sforce.ws.ConnectorConfig;
 //	targetNamespace="http://www.openiam.org/service/connector",
 //	portName = "SalesForceServicePort",
 //	serviceName="SalesForceConnectorService")
+@Deprecated
 public class SalesForceConnectorImpl  {
 	
 	private static final Log log = LogFactory.getLog(SalesForceConnectorImpl.class);

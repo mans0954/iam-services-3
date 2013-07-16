@@ -31,9 +31,9 @@ public class SuspendAppTableCommand extends AbstractAppTableCommand<SuspendReque
 
         final String password = passwordGenerator.generatePassword(10);
 
-        final ManagedSysEntity managedSys = managedSysService.getManagedSysById(targetID);
-        AppTableConfiguration configuration = this.getConfiguration(targetID, managedSys);
-        Connection con = this.getConnection(managedSys);
+        AppTableConfiguration configuration = this.getConfiguration(targetID);
+        Connection con = this.getConnection(configuration.getManagedSys());
+
         PreparedStatement statement = null;
         try {
             statement = createSetPasswordStatement(con, configuration.getResourceId(), configuration.getTableName(), principalName, password);

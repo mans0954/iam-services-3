@@ -14,7 +14,7 @@ import org.openiam.spml2.spi.salesforce.exception.SalesForceDataIntegrityExcepti
 import org.openiam.spml2.util.msg.ResponseBuilder;
 
 import com.sforce.ws.ConnectionException;
-
+@Deprecated
 public class SalesForceSuspendCommand extends AbstractSalesforceCommand implements SuspendCommand {
 
 	@Override

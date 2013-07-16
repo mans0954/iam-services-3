@@ -34,9 +34,9 @@ public abstract class AbstractModifyAppTableCommand<ProvisionObject extends Gene
         final String targetID = psoID.getTargetID();
 
         /* A) Use the targetID to look up the connection information under managed systems */
-        final ManagedSysEntity managedSys = managedSysService.getManagedSysById(targetID);
-        AppTableConfiguration configuration = this.getConfiguration(targetID, managedSys);
+        AppTableConfiguration configuration = this.getConfiguration(targetID);
 
+        Connection con = this.getConnection(configuration.getManagedSys());
         // modificationType contains a collection of objects for each type of operation
         final List<ModificationType> modificationList = modifyRequestType.getModification();
         if(log.isDebugEnabled()) {
@@ -45,7 +45,6 @@ public abstract class AbstractModifyAppTableCommand<ProvisionObject extends Gene
 
 
         final List<ModificationType> modTypeList = modifyRequestType.getModification();
-        Connection con = this.getConnection(managedSys);
         try {
 
             for (ModificationType mod : modTypeList) {

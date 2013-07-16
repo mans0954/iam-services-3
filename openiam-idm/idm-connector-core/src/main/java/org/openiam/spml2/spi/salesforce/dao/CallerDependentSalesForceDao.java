@@ -24,82 +24,19 @@ import com.sforce.ws.ConnectorConfig;
  * This is the DAO logic for talking to the SalesForce API
  * This is NOT designed a a Spring Bean.  The Connection is unique to the caller, and is NOT shared
  */
-public class CallerDependentSalesForceDao implements SalesForceDao {
+public class CallerDependentSalesForceDao extends BaseSalesForceDaoImpl<User> implements SalesForceDao {
 
-	protected static final Log log = LogFactory.getLog(CallerDependentSalesForceDao.class);
-	
-	private static final String DEFAULT_SELECT_LIST = "id, IsActive, EmailEncodingKey, Alias, Email, TimeZoneSidKey, DefaultGroupNotificationFrequency, Username, LanguageLocaleKey, ProfileId, LocaleSidKey, DigestFrequency, LastName";
-	
-	private StringBuilder queryFields = null;
 	private static final String FIND_BY_ID_SQL = "SELECT %s FROM User WHERE Id='%s'";
 	private static final String FIND_BY_USERNAME = "SELECT %s FROM User WHERE Username='%s'";
-	private static final String GET_PROFILE_ID_BY_NAME = "SELECT Id FROM Profile WHERE Name='%s'";
-	
-	private PartnerConnection partnerConnection;
-	
+
 	public CallerDependentSalesForceDao(final String userName, final String password, final String endPoint, final Set<String> fields) throws ConnectionException {
-		final ConnectorConfig connectorConfig = new ConnectorConfig();
-		connectorConfig.setUsername(userName);
-		connectorConfig.setPassword(password);
-		connectorConfig.setAuthEndpoint(endPoint);
-		partnerConnection = new PartnerConnection(connectorConfig);
-		queryFields = new StringBuilder();
-		if(CollectionUtils.isNotEmpty(fields)) {
-			fields.add("id");
-			fields.add("IsActive");
-			int i = 0;
-			for(final String field : fields) {
-				queryFields.append(field);
-				if(i++ < fields.size() - 1) {
-					queryFields.append(", ");
-				}
-			}
-		} else {
-			queryFields.append(DEFAULT_SELECT_LIST);
-		}
+		super(userName, password, endPoint, fields);
 	}
 
-	@Override
-	public void save(User user) throws ConnectionException, SalesForcePersistException {
-		final SaveResult[] saveResult = partnerConnection.create(new SObject[] {user});
-		for(final SaveResult result : saveResult) {
-			if(result.getSuccess()) {
-				user.setId(result.getId());
-			} else {
-				throw new SalesForcePersistException(result);
-			}
-		}
-	}
 
 	@Override
-	public void update(User user) throws ConnectionException, SalesForcePersistException {
-		final SaveResult[] saveResult = partnerConnection.update(new SObject[] {user});
-		processSaveResult(saveResult);
-	}
-
-	@Override
-	public void saveOrUpdate(User user) throws ConnectionException, SalesForcePersistException {
-		boolean update = false;
-		if(user.getId() != null) {
-			update = true;
-		} else {
-			final User found = findByUserName(user.getUserName());
-			if(found != null) {
-				user.setId(found.getId());
-				update = true;
-			}
-		}
-		
-		if(update) {
-			update(user);
-		} else {
-			save(user);
-		}
-	}
-
-	@Override
-	public User findByUserName(String userName) throws ConnectionException {
-		final String sql = String.format(FIND_BY_USERNAME, queryFields, StringEscapeUtils.escapeSql(userName));
+	public User findByName(String name) throws ConnectionException {
+		final String sql = String.format(FIND_BY_USERNAME, queryFields, StringEscapeUtils.escapeSql(name));
 		if(log.isDebugEnabled()) {
 			log.debug(String.format("FindByUserName:%s", sql));
 		}
@@ -119,7 +56,7 @@ public class CallerDependentSalesForceDao implements SalesForceDao {
 
 	@Override
 	public void deleteByUserName(String userName) throws ConnectionException, SalesForcePersistException {
-		final User user = findByUserName(userName);
+		final User user = findByName(userName);
 		if(user != null) {
 			user.setActive(false);
 			final SaveResult[] saveResult = partnerConnection.update(new SObject[] {user});
@@ -139,7 +76,7 @@ public class CallerDependentSalesForceDao implements SalesForceDao {
 
 	@Override
 	public void undeleteByUserName(String userName) throws ConnectionException, SalesForcePersistException {
-		final User user = findByUserName(userName);
+		final User user = findByName(userName);
 		if(user != null) {
 			user.setActive(true);
 			final SaveResult[] saveResult = partnerConnection.update(new SObject[] {user});
@@ -164,7 +101,7 @@ public class CallerDependentSalesForceDao implements SalesForceDao {
 	
 	@Override
 	public void resetPasswordByUserName(final String userName) throws ConnectionException {
-		final User user = findByUserName(userName);
+		final User user = findByName(userName);
 		if(user != null) {
 			resetPasswordById(user.getId());
 		}
@@ -177,28 +114,11 @@ public class CallerDependentSalesForceDao implements SalesForceDao {
 	
 	@Override
 	public void setPasswordByUserName(final String userName, final String password) throws ConnectionException {
-		final User user = findByUserName(userName);
+		final User user = findByName(userName);
 		if(user != null) {
 			setPasswordById(user.getId(), password);
 		}
 	}
 	
-	@Override
-	public String getProfileIdByName(final String profileName) throws ConnectionException {
-		String id = null;
-		final String sql = String.format(GET_PROFILE_ID_BY_NAME, StringEscapeUtils.escapeSql(profileName));
-		final QueryResult queryResult = partnerConnection.query(sql);
-		for(final SObject profile : queryResult.getRecords()) {
-			id = profile.getId();
-		}
-		return id;
-	}
-	
-	private void processSaveResult(final SaveResult[] saveResult) throws SalesForcePersistException {
-		for(final SaveResult result : saveResult) {
-			if(!result.getSuccess()) {
-				throw new SalesForcePersistException(result);
-			}
-		}
-	}
+
 }

@@ -23,11 +23,9 @@ public abstract class AbstractLookupAppTableCommand<ProvisionObject extends Gene
         /* targetID -  */
         final String targetID = psoID.getTargetID();
 
-        final ManagedSysEntity managedSys = managedSysService.getManagedSysById(targetID);
-        AppTableConfiguration configuration = this.getConfiguration(targetID, managedSys);
+        AppTableConfiguration configuration = this.getConfiguration(targetID);
 
-
-        Connection con = this.getConnection(managedSys);
+        Connection con = this.getConnection(configuration.getManagedSys());
 
         final ExtensibleObject resultObject = new ExtensibleObject();
         resultObject.setObjectId(principalName);

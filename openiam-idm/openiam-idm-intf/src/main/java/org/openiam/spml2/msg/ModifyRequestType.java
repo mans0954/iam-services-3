@@ -35,42 +35,15 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ModifyRequestType", propOrder = {
-    "psoID",
     "modification"
 })
-public class ModifyRequestType<ProvisionObject extends GenericProvisionObject>   extends RequestType<ProvisionObject>
+public class ModifyRequestType<ProvisionObject extends GenericProvisionObject>   extends CrudRequestType<ProvisionObject>
 {
 
-    @XmlElement(required = true)
-    protected PSOIdentifierType psoID;
     @XmlElement(required = true)
     protected List<ModificationType> modification;
     @XmlAttribute
     protected ReturnDataType returnData;
-
-    /**
-     * Gets the value of the psoID property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link PSOIdentifierType }
-     *     
-     */
-    public PSOIdentifierType getPsoID() {
-        return psoID;
-    }
-
-    /**
-     * Sets the value of the psoID property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link PSOIdentifierType }
-     *     
-     */
-    public void setPsoID(PSOIdentifierType value) {
-        this.psoID = value;
-    }
 
     /**
      * Gets the value of the modification property.

@@ -23,10 +23,9 @@ public abstract class AbstractDeleteAppTableCommand<ProvisionObject extends Gene
         final PSOIdentifierType psoID = deleteRequestType.getPsoID();
         final String targetID = psoID.getTargetID();
 
-        ManagedSysEntity managedSys = managedSysService.getManagedSysById(targetID);
-        AppTableConfiguration configuration = this.getConfiguration(targetID, managedSys);
+        AppTableConfiguration configuration = this.getConfiguration(targetID);
 
-        Connection con = this.getConnection(managedSys);
+        Connection con = this.getConnection(configuration.getManagedSys());
 
         try {
 

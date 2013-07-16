@@ -16,7 +16,7 @@ import org.openiam.spml2.spi.salesforce.exception.SalesForcePersistException;
 import org.openiam.spml2.spi.salesforce.model.User;
 
 import com.sforce.ws.ConnectionException;
-
+@Deprecated
 public class AbstractSalesForceInsertCommand extends AbstractSalesforceCommand {
 
 	protected void insertOrUpdate(final String principalName, final List<ExtensibleObject> objectList, final ManagedSysDto managedSys) throws ParseException, ConnectionException, SalesForcePersistException {

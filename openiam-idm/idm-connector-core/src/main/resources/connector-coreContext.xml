@@ -274,12 +274,12 @@
 	<!-- END Oracle Connector -->
 
 	<!-- Start SalesForce Connector -->
-	<bean id="abstractSalesForceCommand"
-		class="org.openiam.spml2.spi.salesforce.command.AbstractSalesforceCommand"
-		abstract="true">
-		<property name="managedSysService" ref="managedSysService" />
-		<property name="resourceDataService" ref="resourceDataService" />
-	</bean>
+	<!--<bean id="abstractSalesForceCommand"-->
+		<!--class="org.openiam.spml2.spi.salesforce.command.AbstractSalesforceCommand"-->
+		<!--abstract="true">-->
+		<!--<property name="managedSysService" ref="managedSysService" />-->
+		<!--<property name="resourceDataService" ref="resourceDataService" />-->
+	<!--</bean>-->
 
 	<!--<bean id="salesForceConnector"-->
 		<!--class="org.openiam.spml2.spi.salesforce.SalesForceConnectorImpl">-->

@@ -26,11 +26,9 @@ public class SetPasswordAppTableCommand extends AbstractAppTableCommand<SetPassw
 
         final String password = setPasswordRequestType.getPassword();
 
-        final ManagedSysEntity managedSys = managedSysService.getManagedSysById(targetID);
-        AppTableConfiguration configuration = this.getConfiguration(targetID, managedSys);
+        AppTableConfiguration configuration = this.getConfiguration(targetID);
+        Connection con = this.getConnection(configuration.getManagedSys());
 
-
-        Connection con = this.getConnection(managedSys);
         PreparedStatement statement = null;
         try {
             statement = createSetPasswordStatement(con, configuration.getResourceId(), configuration.getTableName(), principalName, password);

@@ -18,6 +18,7 @@ import org.openiam.spml2.util.msg.ResponseBuilder;
 
 import com.sforce.ws.ConnectionException;
 
+@Deprecated
 public class SalesforceAddCommand extends AbstractSalesForceInsertCommand implements AddCommand {
 
 	@Override

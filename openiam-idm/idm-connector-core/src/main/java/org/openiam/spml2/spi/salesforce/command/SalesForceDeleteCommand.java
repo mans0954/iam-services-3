@@ -16,6 +16,7 @@ import org.openiam.spml2.util.msg.ResponseBuilder;
 
 import com.sforce.ws.ConnectionException;
 
+@Deprecated
 public class SalesForceDeleteCommand extends AbstractSalesforceCommand implements DeleteCommand {
 
 	@Override

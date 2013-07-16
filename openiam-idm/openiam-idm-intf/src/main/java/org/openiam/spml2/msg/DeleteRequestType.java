@@ -32,39 +32,13 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "DeleteRequestType", propOrder = {
-    "psoID"
 })
-public class DeleteRequestType<ProvisionObject extends GenericProvisionObject>   extends RequestType<ProvisionObject>
+public class DeleteRequestType<ProvisionObject extends GenericProvisionObject>   extends CrudRequestType<ProvisionObject>
 {
 
-    @XmlElement(required = true)
-    protected PSOIdentifierType psoID;
     @XmlAttribute
     protected Boolean recursive;
 
-    /**
-     * Gets the value of the psoID property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link PSOIdentifierType }
-     *     
-     */
-    public PSOIdentifierType getPsoID() {
-        return psoID;
-    }
-
-    /**
-     * Sets the value of the psoID property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link PSOIdentifierType }
-     *     
-     */
-    public void setPsoID(PSOIdentifierType value) {
-        this.psoID = value;
-    }
 
     /**
      * Gets the value of the recursive property.

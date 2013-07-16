@@ -12,13 +12,13 @@ import com.sforce.ws.bind.XmlObject;
  * The User object is described here: http://www.salesforce.com/us/developer/docs/api/Content/sforce_api_objects_user.htm#topic-title
  *  It is up to the customer to conform to the fields in this spec
  */
-public class User extends SObject {
+public class User extends BaseModel {
 	
 	private static final String DEFAULT_EMAIL_ENCODING_KEY = "UTF-8";
 	private static final String DEFAULT_TIMEZONE = "America/New_York";
 	private static final String DEFAULT_GROUP_NOTIFICATION_FREQUENCY = "W";
 	private static final String DEFAULT_DIGEST_FREQUENCY = "W";
-	private static final String DEFAULT_LOCALE = "en_US";
+
 
 	public User(final SObject sObject) {
 		setDefaults();
@@ -52,11 +52,12 @@ public class User extends SObject {
 		setField("Email", StringUtils.trimToNull(email));
 		setField("Username", StringUtils.trimToNull(email));
 	}
-	
-	public String getUserName() {
-		return (String)getField("Username");
-	}
-	
+
+    public String getNameField(){
+        return (String)getField("Username");
+    }
+
+
 	public void setEmailEncodingKey(final String emailEncodingKey) {
 		String value = DEFAULT_EMAIL_ENCODING_KEY;
 		if(StringUtils.isNotBlank(emailEncodingKey)) {
@@ -83,10 +84,6 @@ public class User extends SObject {
 			value = defaultGroupNotificationFrequency;
 		}
 		setField("DefaultGroupNotificationFrequency", value);
-	}
-	
-	public void setProfileId(final String profileId) {
-		setField("ProfileId", StringUtils.trimToNull(profileId));
 	}
 	
 	public void setDefaultDigestFrequency(final String defaultDigestFrequency) {
@@ -123,14 +120,5 @@ public class User extends SObject {
 	
 	public void setActive(final boolean isActive) {
 		setField("IsActive", isActive);
-	}
-	
-	public String getProfileId() {
-		final Object value = getField("ProfileId");
-		if(value != null) {
-			return value.toString();
-		} else {
-			return null;
-		}
 	}
 }

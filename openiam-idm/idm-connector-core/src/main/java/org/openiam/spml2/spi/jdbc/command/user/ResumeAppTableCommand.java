@@ -37,9 +37,8 @@ public class ResumeAppTableCommand  extends AbstractAppTableCommand<ResumeReques
         if (CollectionUtils.isEmpty(loginList))
             throw new ConnectorDataException(ErrorCode.INVALID_IDENTIFIER, "Principal not found");
 
-        final ManagedSysEntity managedSys = managedSysService.getManagedSysById(targetID);
-        AppTableConfiguration configuration = this.getConfiguration(targetID, managedSys);
-        Connection con = this.getConnection(managedSys);
+        AppTableConfiguration configuration = this.getConfiguration(targetID);
+        Connection con = this.getConnection(configuration.getManagedSys());
         PreparedStatement statement = null;
         try {
             final LoginEntity login = loginList.get(0);

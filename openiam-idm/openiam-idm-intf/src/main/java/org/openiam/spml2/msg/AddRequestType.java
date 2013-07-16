@@ -39,17 +39,14 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AddRequestType", propOrder = {
-    "psoID",
     "containerID",
     "data",
     "capabilityData",
     "targetID",
     "returnData"
 })
-public class AddRequestType<ProvisionObject extends GenericProvisionObject>   extends RequestType<ProvisionObject>
+public class AddRequestType<ProvisionObject extends GenericProvisionObject>   extends CrudRequestType<ProvisionObject>
 {
-
-    protected PSOIdentifierType psoID;
     protected PSOIdentifierType containerID;
     @XmlElement(required = true)
     protected ExtensibleType data = new ExtensibleType();
@@ -69,8 +66,7 @@ public class AddRequestType<ProvisionObject extends GenericProvisionObject>   ex
                       CapabilityDataType[] capabilityData,
                       String targetId,
                       ReturnDataType returnData) {
-        super(requestId, executionMode);
-        this.psoID = type;
+        super(requestId, executionMode, type);
         this.containerID = containerID;
 
         assert (this.data != null);
@@ -82,31 +78,6 @@ public class AddRequestType<ProvisionObject extends GenericProvisionObject>   ex
 
     }
     
-    
-    /**
-     * Gets the value of the psoID property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link PSOIdentifierType }
-     *     
-     */
-    public PSOIdentifierType getPsoID() {
-        return psoID;
-    }
-
-    /**
-     * Sets the value of the psoID property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link PSOIdentifierType }
-     *     
-     */
-    public void setPsoID(PSOIdentifierType value) {
-        this.psoID = value;
-    }
-
     /**
      * Gets the value of the containerID property.
      * 

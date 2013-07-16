@@ -10,7 +10,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.springframework.beans.factory.annotation.Required;
-
+@Deprecated
 public abstract class AbstractSalesforceCommand {
 	
 	private static final String DATE_FORMAT = "MM/dd/yyyy";

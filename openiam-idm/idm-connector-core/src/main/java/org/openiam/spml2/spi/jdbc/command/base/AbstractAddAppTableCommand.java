@@ -18,9 +18,8 @@ public abstract class AbstractAddAppTableCommand<ProvisionObject extends Generic
         response.setStatus(StatusCodeType.SUCCESS);
 
         final String targetID = addRequestType.getTargetID();
-        final ManagedSysEntity managedSys = managedSysService.getManagedSysById(targetID);
+        AppTableConfiguration configuration = this.getConfiguration(targetID);
 
-        AppTableConfiguration configuration = this.getConfiguration(targetID, managedSys);
         final String principalName = addRequestType.getPsoID().getID();
         final List<ExtensibleObject> objectList = addRequestType.getData().getAny();
 
@@ -28,7 +27,7 @@ public abstract class AbstractAddAppTableCommand<ProvisionObject extends Generic
             log.debug(String.format("ExtensibleObject in Add Request=%s", objectList));
         }
 
-        Connection con = getConnection(managedSys);
+        Connection con = getConnection(configuration.getManagedSys());
         try {
             addObject(con, principalName, objectList, configuration.getTableName());
             return response;

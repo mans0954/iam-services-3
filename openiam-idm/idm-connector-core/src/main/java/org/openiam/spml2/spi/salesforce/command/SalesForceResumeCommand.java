@@ -15,7 +15,7 @@ import org.openiam.spml2.spi.salesforce.exception.SalesForcePersistException;
 import org.openiam.spml2.util.msg.ResponseBuilder;
 
 import com.sforce.ws.ConnectionException;
-
+@Deprecated
 public class SalesForceResumeCommand extends AbstractSalesforceCommand implements ResumeCommand {
 
 	@Override

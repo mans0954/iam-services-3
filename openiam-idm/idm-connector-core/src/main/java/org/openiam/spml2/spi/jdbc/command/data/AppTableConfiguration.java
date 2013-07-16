@@ -1,16 +1,9 @@
 package org.openiam.spml2.spi.jdbc.command.data;
 
-public class AppTableConfiguration {
-    private String resourceId;
+import org.openiam.spml2.spi.common.data.ConnectorConfiguration;
+
+public class AppTableConfiguration extends ConnectorConfiguration {
     private String tableName;
-
-    public String getResourceId() {
-        return resourceId;
-    }
-
-    public void setResourceId(String resourceId) {
-        this.resourceId = resourceId;
-    }
 
     public String getTableName() {
         return tableName;

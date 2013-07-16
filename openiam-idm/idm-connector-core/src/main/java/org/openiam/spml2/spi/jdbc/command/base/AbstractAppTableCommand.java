@@ -11,6 +11,7 @@ import org.openiam.spml2.msg.ConnectorDataException;
 import org.openiam.spml2.msg.ErrorCode;
 import org.openiam.spml2.msg.RequestType;
 import org.openiam.spml2.msg.ResponseType;
+import org.openiam.spml2.spi.common.data.ConnectorConfiguration;
 import org.openiam.spml2.spi.common.jdbc.AbstractJDBCCommand;
 import org.openiam.spml2.spi.jdbc.command.data.AppTableConfiguration;
 
@@ -27,35 +28,22 @@ public abstract class AbstractAppTableCommand<Request extends RequestType, Respo
     protected static final String DELETE_SQL = "DELETE FROM %s WHERE %s=?";
     protected static final String UPDATE_SQL = "UPDATE %s SET %s=? WHERE %s=?";
 
-    protected AppTableConfiguration getConfiguration(String targetID, ManagedSysEntity managedSys) throws ConnectorDataException{
-        AppTableConfiguration configuration = new AppTableConfiguration();
-        if(managedSys == null)
-            throw new ConnectorDataException(ErrorCode.INVALID_CONFIGURATION, String.format("No Managed System with target id: %s", targetID));
+    protected AppTableConfiguration getConfiguration(String targetID) throws ConnectorDataException{
+        AppTableConfiguration configuration = super.getConfiguration(targetID, AppTableConfiguration.class);
 
-        if (StringUtils.isBlank(managedSys.getResourceId()))
-            throw new ConnectorDataException(ErrorCode.INVALID_CONFIGURATION, "ResourceID is not defined in the ManagedSys Object");
-
-        final Resource res = resourceDataService.getResource(managedSys.getResourceId());
-        if(res == null)
-            throw new ConnectorDataException(ErrorCode.INVALID_CONFIGURATION, "No resource for managed resource found");
-
-        configuration.setResourceId(res.getResourceId());
-        final ResourceProp prop = res.getResourceProperty(TABLE_NAME_PROP);
+        final ResourceProp prop = configuration.getResource().getResourceProperty(TABLE_NAME_PROP);
         if(prop == null)
             throw new ConnectorDataException(ErrorCode.INVALID_CONFIGURATION, "No TABLE_NAME property found");
-
 
         final String tableName = prop.getPropValue();
         if (StringUtils.isBlank(tableName))
             throw new ConnectorDataException(ErrorCode.INVALID_CONFIGURATION, "TABLE NAME is not defined.");
 
         configuration.setTableName(tableName);
-
         return  configuration;
     }
 
     protected void setStatement(PreparedStatement statement, int column, ExtensibleAttribute att) throws ConnectorDataException {
-
         final String dataType = att.getDataType();
         final String dataValue = att.getValue();
         setStatement(statement, column, dataType, dataValue);
