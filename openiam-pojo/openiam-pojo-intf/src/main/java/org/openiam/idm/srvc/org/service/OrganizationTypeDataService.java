@@ -32,20 +32,6 @@ public interface OrganizationTypeDataService {
 	public Response delete(final @WebParam(name = "id", targetNamespace = "") String id);
 	
 	@WebMethod
-	public List<OrganizationType> getChildren(final @WebParam(name = "id", targetNamespace = "") String id,
-											  final @WebParam(name = "from", targetNamespace = "") int from,
-											  final @WebParam(name = "size", targetNamespace = "") int size);
-	
-	@WebMethod
-	public List<OrganizationType> getParents(final @WebParam(name = "id", targetNamespace = "") String id,
-			  								 final @WebParam(name = "from", targetNamespace = "") int from,
-			  								 final @WebParam(name = "size", targetNamespace = "") int size);
-	
-	public List<Organization> getOrganizations(final @WebParam(name = "id", targetNamespace = "") String id,
-			  								   final @WebParam(name = "from", targetNamespace = "") int from,
-			  								   final @WebParam(name = "size", targetNamespace = "") int size);
-	
-	@WebMethod
 	public Response addChild(final @WebParam(name = "id", targetNamespace = "") String id,
 							 final @WebParam(name = "childId", targetNamespace = "") String childId);
 	

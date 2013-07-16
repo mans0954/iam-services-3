@@ -216,7 +216,7 @@ public class OrganizationServiceImpl implements OrganizationService {
     public void deleteOrganization(String orgId) {
         final OrganizationEntity entity = orgDao.findById(orgId);
         if (entity != null) {
-            userDAO.disassociateUsersFromOrganization(orgId);
+            //userDAO.disassociateUsersFromOrganization(orgId);
             userAffiliationDAO.deleteByOrganizationId(orgId);
             //orgAttrDao.deleteByOrganizationId(orgId);
             orgDao.delete(entity);

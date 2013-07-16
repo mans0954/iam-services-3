@@ -422,15 +422,6 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
     }
 
     @Override
-    public void disassociateUsersFromOrganization(String organizationId) {
-        final String queryString = String.format("UPDATE %s u SET u.organization = NULL WHERE u.organization.id = :organizationId",
-                                                 domainClass.getSimpleName());
-        final Query query = getSession().createQuery(queryString);
-        query.setParameter("organizationId", organizationId);
-        query.executeUpdate();
-    }
-
-    @Override
     public List<UserEntity> getUsersForMSys(final String mSysId) {
         Criteria criteria = getSession().createCriteria(UserEntity.class).createAlias("principalList", "l")
                         .add(Restrictions.eq("l.managedSysId", mSysId)).setFetchMode("principalList", FetchMode.JOIN);

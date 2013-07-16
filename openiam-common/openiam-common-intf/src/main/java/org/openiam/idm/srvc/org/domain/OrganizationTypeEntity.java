@@ -1,5 +1,7 @@
 package org.openiam.idm.srvc.org.domain;
 
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -14,6 +16,7 @@ import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import org.apache.commons.lang.StringUtils;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
@@ -100,6 +103,58 @@ public class OrganizationTypeEntity {
 
 	public void setOrganizations(Set<OrganizationEntity> organizations) {
 		this.organizations = organizations;
+	}
+	
+	public boolean containsChild(final String childId) {
+		boolean retVal = false;
+		if(StringUtils.isBlank(childId)) {
+			if(childTypes != null) {
+				for(final Iterator<OrganizationTypeEntity> it = childTypes.iterator(); it.hasNext();) {
+					final OrganizationTypeEntity entity = it.next();
+					if(entity != null) {
+						if(StringUtils.equals(entity.getId(), childId)) {
+							retVal = true;
+							break;
+						}
+					}
+				}
+			}
+		}
+		return retVal;
+	}
+	
+	public void removeChildType(final String childId) {
+		if(StringUtils.isNotBlank(childId)) {
+			if(childTypes != null) {
+				for(final Iterator<OrganizationTypeEntity> it = childTypes.iterator(); it.hasNext();) {
+					final OrganizationTypeEntity entity = it.next();
+					if(entity != null) {
+						if(StringUtils.equals(entity.getId(), childId)) {
+							it.remove();
+							break;
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	public void addChildType(final OrganizationTypeEntity child) {
+		if(child != null) {
+			if(this.childTypes == null) {
+				this.childTypes = new HashSet<OrganizationTypeEntity>();
+			}
+			boolean contains = false;
+			for(final OrganizationTypeEntity entity : this.childTypes) {
+				if(StringUtils.equals(entity.getId(), child.getId())) {
+					contains = true;
+				}
+			}
+			
+			if(!contains) {
+				this.childTypes.add(child);
+			}
+		}
 	}
 
 	@Override
