@@ -23,7 +23,8 @@ public class LookupCSVAttributeNamesCommand extends AbstractCSVCommand
             LookupAttributeRequestType reqType) {
         LookupAttributeResponseType respType = new LookupAttributeResponseType();
         try {
-            String file = fileWebService.getFile(reqType.getRequestID());
+            String file = fileWebService.getFile(reqType.getRequestID()
+                    + ".csv");
             if (!StringUtils.isEmpty(file)) {
                 respType.setStatus(StatusCodeType.SUCCESS);
                 respType.setAttributeList(Arrays.asList(file.split("\n")[0]

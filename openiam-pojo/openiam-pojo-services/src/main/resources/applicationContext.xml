@@ -259,12 +259,12 @@
 
 <!-- 				<value>org/openiam/idm/srvc/recon/service/ReconciliationConfig.hbm.xml -->
 <!-- 				</value> -->
-				<value>org/openiam/idm/srvc/recon/service/ReconciliationResult.hbm.xml
-				</value>
+<!-- 				<value>org/openiam/idm/srvc/recon/service/ReconciliationResult.hbm.xml -->
+<!-- 				</value> -->
 <!-- 				<value>org/openiam/idm/srvc/recon/service/ReconciliationSituation.hbm.xml -->
 <!-- 				</value> -->
-				<value>org/openiam/idm/srvc/recon/service/ReconResultDetail.hbm.xml
-				</value>
+<!-- 				<value>org/openiam/idm/srvc/recon/service/ReconResultDetail.hbm.xml -->
+<!-- 				</value> -->
 				<!--<value>org/openiam/idm/srvc/synch/service/SynchConfig.hbm.xml</value>-->
 				<!--<value>org/openiam/idm/srvc/synch/service/SynchConfigDataMapping.hbm.xml</value>-->
 				<!--<value>org/openiam/idm/srvc/synch/service/SynchActivityLog.hbm.xml</value>-->
