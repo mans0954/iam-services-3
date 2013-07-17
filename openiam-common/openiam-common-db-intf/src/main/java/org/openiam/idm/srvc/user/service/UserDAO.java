@@ -43,14 +43,22 @@ public interface UserDAO extends BaseDao<UserEntity, String> {
 
     public int getNumOfUsersForRole(final String roleId, DelegationFilterSearchBean delegationFilter);
 
-    /**
-     * Should only be called when an Organization gets deleted, to disassocate
-     * the user from that Organization
-     * 
-     * @param organizationId
-     *            - organizationId
-     */
-    public void disassociateUsersFromOrganization(final String organizationId);
-
     public List<UserEntity> getUsersForMSys(String mSysId);
+
+    public List<UserEntity> getSuperiors(String userId, final int from, final int size);
+
+    public int getSuperiorsCount(String userId);
+
+    public List<UserEntity> getSubordinates(String userId, final int from, final int size);
+
+    public int getSubordinatesCount(String userId);
+
+    public List<UserEntity> getPotentialSuperiors(String userId, Integer from, Integer size);
+
+    public int getPotentialSuperiorsCount(String userId);
+
+    public List<UserEntity> getPotentialSubordinates(String userId, Integer from, Integer size);
+
+    public int getPotentialSubordinatesCount(String userId);
+
 }

@@ -64,14 +64,14 @@ public class Supervisor implements java.io.Serializable {
 //        this.supervisorType = supervisorEntity.getSupervisorType();
 //    }
 
-    public Supervisor(String orgStructureId, User usersBySupervisorId, User employee) {
+    public Supervisor(String orgStructureId, User supervisor, User employee) {
         this.orgStructureId = orgStructureId;
-        this.supervisor = usersBySupervisorId;
+        this.supervisor = supervisor;
         this.employee = employee;
     }
 
     public Supervisor(String orgStructureId,
-                      User usersBySupervisorId,
+                      User supervisor,
                       User employee,
                       String supervisorType,
                       Integer isPrimarySuper,
@@ -80,7 +80,7 @@ public class Supervisor implements java.io.Serializable {
                       String status,
                       String comments) {
         this.orgStructureId = orgStructureId;
-        this.supervisor = usersBySupervisorId;
+        this.supervisor = supervisor;
         this.employee = employee;
         this.supervisorType = supervisorType;
         this.isPrimarySuper = isPrimarySuper;

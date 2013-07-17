@@ -1,6 +1,8 @@
 package org.openiam.idm.srvc.org.service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.jws.WebService;
 
@@ -18,6 +20,7 @@ import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationTypeEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.dto.OrganizationType;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.searchbean.converter.OrganizationTypeSearchBeanConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,9 +34,6 @@ public class OrganizationTypeDataServiceImpl implements OrganizationTypeDataServ
 
 	@Autowired
 	private OrganizationTypeService organizationTypeService;
-
-	@Autowired
-	private OrganizationTypeSearchBeanConverter searchBeanConverter;
 	
 	@Autowired
 	private OrganizationTypeDozerBeanConverter dozerConverter;
@@ -49,15 +49,13 @@ public class OrganizationTypeDataServiceImpl implements OrganizationTypeDataServ
 
 	@Override
 	public List<OrganizationType> findBeans(final OrganizationTypeSearchBean searchBean, final int from, final int size) {
-		final OrganizationTypeEntity entity = searchBeanConverter.convert(searchBean);
-		final List<OrganizationTypeEntity> entityList = organizationTypeService.findBeans(entity, from, size);
+		final List<OrganizationTypeEntity> entityList = organizationTypeService.findBeans(searchBean, from, size);
 		return dozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy());
 	}
 
 	@Override
 	public int count(final OrganizationTypeSearchBean searchBean) {
-		final OrganizationTypeEntity entity = searchBeanConverter.convert(searchBean);
-		return organizationTypeService.count(entity);
+		return organizationTypeService.count(searchBean);
 	}
 
 	@Override
@@ -72,8 +70,16 @@ public class OrganizationTypeDataServiceImpl implements OrganizationTypeDataServ
 				throw new BasicDataServiceException(ResponseCode.NO_NAME);
 			}
 			
+			final OrganizationTypeEntity dbEntity = organizationTypeService.findByName(type.getName());
+			if(dbEntity != null) {
+				if(!StringUtils.equals(dbEntity.getId(), type.getId())) {
+					throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
+				}
+			}
+			
 			final OrganizationTypeEntity entity = dozerConverter.convertToEntity(type, true);
 			organizationTypeService.save(entity);
+			response.setResponseValue(entity.getId());
 		} catch (BasicDataServiceException e) {
             response.setStatus(ResponseStatus.FAILURE);
             response.setErrorCode(e.getCode());
@@ -96,7 +102,15 @@ public class OrganizationTypeDataServiceImpl implements OrganizationTypeDataServ
 			
 			final OrganizationTypeEntity entity = organizationTypeService.findById(id);
 			if(CollectionUtils.isNotEmpty(entity.getChildTypes())) {
-				
+				throw new BasicDataServiceException(ResponseCode.ORGANIZATION_TYPE_CHILDREN_EXIST);
+			}
+			
+			if(CollectionUtils.isNotEmpty(entity.getParentTypes())) {
+				throw new BasicDataServiceException(ResponseCode.ORGANIZATION_TYPE_PARENTS_EXIST);
+			}
+			
+			if(CollectionUtils.isNotEmpty(entity.getOrganizations())) {
+				throw new BasicDataServiceException(ResponseCode.ORGANIZATION_TYPE_TIED_TO_ORGANIZATION);
 			}
 			
 			organizationTypeService.delete(id);
@@ -112,24 +126,7 @@ public class OrganizationTypeDataServiceImpl implements OrganizationTypeDataServ
 	}
 
 	@Override
-	public List<OrganizationType> getChildren(final String id, final int from, final int size) {
-		final List<OrganizationTypeEntity> entityList = organizationTypeService.getChildren(id, from, size);
-		return dozerConverter.convertToDTOList(entityList, false);
-	}
-
-	@Override
-	public List<OrganizationType> getParents(final String id, final int from, final int size) {
-		final List<OrganizationTypeEntity> entityList = organizationTypeService.getParents(id, from, size);
-		return dozerConverter.convertToDTOList(entityList, false);
-	}
-
-	@Override
-	public List<Organization> getOrganizations(final String id, final int from, final int size) {
-		final List<OrganizationEntity> entityList = organizationTypeService.getOrganizations(id, from, size);
-		return organizationDozerConverter.convertToDTOList(entityList, false);
-	}
-
-	@Override
+	@Transactional
 	public Response addChild(final String id, final String childId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {
@@ -137,7 +134,19 @@ public class OrganizationTypeDataServiceImpl implements OrganizationTypeDataServ
 				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
 			}
 			
-			//TODO: validate
+			final OrganizationTypeEntity parent = organizationTypeService.findById(id);
+			final OrganizationTypeEntity child = organizationTypeService.findById(childId);
+			if(parent == null || child == null) {
+				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+			}
+			
+			if(parent.containsChild(child.getId())) {
+				throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
+			}
+			
+			if(causesCircularDependency(parent, child, new HashSet<OrganizationTypeEntity>())) {
+				throw new BasicDataServiceException(ResponseCode.CIRCULAR_DEPENDENCY);
+			}
 			
 			organizationTypeService.addChild(id, childId);
 		} catch (BasicDataServiceException e) {
@@ -150,6 +159,27 @@ public class OrganizationTypeDataServiceImpl implements OrganizationTypeDataServ
         }
         return response;
 	}
+	
+	private boolean causesCircularDependency(final OrganizationTypeEntity parent,
+											 final OrganizationTypeEntity child, 
+											 final Set<OrganizationTypeEntity> visitedSet) {
+		boolean retval = false;
+		if (parent != null && child != null) {
+			if (!visitedSet.contains(child)) {
+				visitedSet.add(child);
+				if (CollectionUtils.isNotEmpty(parent.getParentTypes())) {
+					for (final OrganizationTypeEntity entity : parent.getParentTypes()) {
+						retval = StringUtils.equals(entity.getId(), child.getId());//entity.getResourceId().equals(child.getResourceId());
+						if (retval) {
+							break;
+						}
+						causesCircularDependency(parent, entity, visitedSet);
+					}
+				}
+			}
+		}
+		return retval;
+	}
 
 	@Override
 	public Response removeChild(String id, String childId) {
@@ -158,8 +188,6 @@ public class OrganizationTypeDataServiceImpl implements OrganizationTypeDataServ
 			if(StringUtils.isBlank(id) || StringUtils.isBlank(childId)) {
 				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
 			}
-			
-			//TODO: validate
 			
 			organizationTypeService.removeChild(id, childId);
 		} catch (BasicDataServiceException e) {

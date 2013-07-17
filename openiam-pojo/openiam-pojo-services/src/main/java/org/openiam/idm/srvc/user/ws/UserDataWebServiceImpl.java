@@ -24,6 +24,7 @@ package org.openiam.idm.srvc.user.ws;
 import java.util.*;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.mule.api.MuleContext;
 import org.mule.api.context.MuleContextAware;
@@ -69,7 +70,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import javax.jws.WebParam;
 import javax.jws.WebService;
 
 /**
@@ -478,6 +478,116 @@ public class UserDataWebServiceImpl implements UserDataWebService, MuleContextAw
     }
 
     @Override
+    public List<User> getSuperiors(String userId, Integer from, Integer size) {
+        final List<UserEntity> superiors = userManager.getSuperiors(userId, from, size);
+        return userDozerConverter.convertToDTOList(superiors, true);
+    }
+
+    @Override
+    public int getSuperiorsCount(String userId) {
+        return userManager.getSuperiorsCount(userId);
+    }
+
+    @Override
+    public List<User> getSubordinates(String userId, Integer from, Integer size) {
+        final List<UserEntity> subordinates = userManager.getSubordinates(userId, from, size);
+        return userDozerConverter.convertToDTOList(subordinates, true);
+    }
+
+    @Override
+    public int getSubordinatesCount(String userId) {
+        return userManager.getSubordinatesCount(userId);
+    }
+
+    @Override
+    public List<User> findPotentialSuperiors(UserSearchBean userSearchBean, Integer from, Integer size) {
+        return userDozerConverter.convertToDTOList(userManager.findPotentialSuperiors(userSearchBean, from, size), true);
+    }
+
+    @Override
+    public int findPotentialSuperiorsCount(UserSearchBean userSearchBean) {
+        return userManager.findPotentialSuperiorsCount(userSearchBean);
+    }
+
+    @Override
+    public List<User> findPotentialSubordinates(UserSearchBean userSearchBean,Integer from,Integer size) {
+        return userDozerConverter.convertToDTOList(userManager.findPotentialSubordinates(userSearchBean, from, size), true);
+    }
+
+    @Override
+    public int findPotentialSubordinatesCount(UserSearchBean userSearchBean) {
+        return userManager.findPotentialSubordinatesCount(userSearchBean);
+    }
+
+    @Override
+    public Response addSuperior(String requesterId, String userId) {
+
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if (StringUtils.equals(requesterId, userId)) {
+                throw new BasicDataServiceException(ResponseCode.CANT_ADD_YOURSELF_AS_CHILD);
+            }
+            User superior = getUserWithDependent(userId, null, true);
+            User subordinate = getUserWithDependent(requesterId, userId, true);
+            if (superior == null || subordinate == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            }
+            SupervisorEntity found = userManager.findSupervisor(superior.getUserId(), subordinate.getUserId());
+            if (found != null) {
+                throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
+            }
+            SupervisorEntity contrary = userManager.findSupervisor(subordinate.getUserId(), superior.getUserId());
+            if (contrary != null) {
+                throw new BasicDataServiceException(ResponseCode.CIRCULAR_DEPENDENCY);
+            }
+
+            Supervisor supervisor = new Supervisor(null, superior, subordinate);
+            return addSupervisor(supervisor);
+
+        } catch (BasicDataServiceException e) {
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+        } catch (Throwable e) {
+            log.error("Can't perform operation", e);
+            response.setErrorText(e.getMessage());
+            response.setStatus(ResponseStatus.FAILURE);
+        }
+        return response;
+    }
+
+    @Override
+    public Response addSubordinate(String requesterId, String userId) {
+        return addSuperior(userId, requesterId);
+    }
+
+    @Override
+    public Response removeSuperior(String requesterId, String userId) {
+
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            SupervisorEntity supervisor = userManager.findSupervisor(userId, requesterId);
+            if (supervisor == null) {
+                throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+            }
+            userManager.removeSupervisor(supervisor.getOrgStructureId());
+
+        } catch (BasicDataServiceException e) {
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+        } catch (Throwable e) {
+            log.error("Can't perform operation", e);
+            response.setErrorText(e.getMessage());
+            response.setStatus(ResponseStatus.FAILURE);
+        }
+        return response;
+    }
+
+    @Override
+    public Response removeSubordinate(String requesterId, String userId) {
+        return removeSuperior(userId, requesterId);
+    }
+
+    @Override
     public User getUserByName(String firstName, String lastName) {
         final UserEntity user = userManager.getUserByName(firstName, lastName);
         return userDozerConverter.convertToDTO(user, false);
@@ -735,8 +845,7 @@ public class UserDataWebServiceImpl implements UserDataWebService, MuleContextAw
     }
 
     @Override
-    public List<User> findBeans(@WebParam(name = "searchBean", targetNamespace = "") UserSearchBean userSearchBean,
-                                @WebParam(name = "from", targetNamespace = "") int from, @WebParam(name = "size", targetNamespace = "") int size) {
+    public List<User> findBeans(UserSearchBean userSearchBean, int from, int size) {
         final List<UserEntity> userList = userManager.findBeans(userSearchBean, from, size);
         return userDozerConverter.convertToDTOList(userList, userSearchBean.isDeepCopy());
     }
@@ -1195,14 +1304,13 @@ public class UserDataWebServiceImpl implements UserDataWebService, MuleContextAw
     }
 
     @Override
-    public Response approveITPolicy(@WebParam(name = "userId", targetNamespace = "") final String userId) {
+    public Response acceptITPolicy(final String userId) {
         final Response response = new Response(ResponseStatus.SUCCESS);
         try {
             final UserEntity user = userManager.getUser(userId, null);
             if (user == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
-            TimeZone zone;
             user.setDateITPolicyApproved(new Date());
             userManager.updateUser(user);
 

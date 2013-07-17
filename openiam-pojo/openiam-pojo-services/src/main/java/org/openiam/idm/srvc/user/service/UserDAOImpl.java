@@ -12,15 +12,11 @@ import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
-import org.hibernate.criterion.Criterion;
-import org.hibernate.criterion.Disjunction;
-import org.hibernate.criterion.MatchMode;
-import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Projections;
-import org.hibernate.criterion.Restrictions;
+import org.hibernate.criterion.*;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.searchbeans.DelegationFilterSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
+import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
 import org.openiam.idm.srvc.user.dto.SearchAttribute;
@@ -422,18 +418,105 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
     }
 
     @Override
-    public void disassociateUsersFromOrganization(String organizationId) {
-        final String queryString = String.format("UPDATE %s u SET u.organization = NULL WHERE u.organization.id = :organizationId",
-                                                 domainClass.getSimpleName());
-        final Query query = getSession().createQuery(queryString);
-        query.setParameter("organizationId", organizationId);
-        query.executeUpdate();
-    }
-
-    @Override
     public List<UserEntity> getUsersForMSys(final String mSysId) {
         Criteria criteria = getSession().createCriteria(UserEntity.class).createAlias("principalList", "l")
                         .add(Restrictions.eq("l.managedSysId", mSysId)).setFetchMode("principalList", FetchMode.JOIN);
         return criteria.list();
     }
+
+    public List<UserEntity> getSuperiors(String userId, final int from, final int size) {
+        Criteria criteria = getSuperiorsCriteria(userId);
+        if (from > -1) {
+            criteria.setFirstResult(from);
+        }
+        if (size > -1) {
+            criteria.setMaxResults(size);
+        }
+        return criteria.list();
+    }
+
+    public List<UserEntity> getSubordinates(String userId, final int from, final int size) {
+        Criteria criteria = getSubordinatesCriteria(userId);
+        if (from > -1) {
+            criteria.setFirstResult(from);
+        }
+        if (size > -1) {
+            criteria.setMaxResults(size);
+        }
+        return criteria.list();
+    }
+
+
+    public int getSuperiorsCount(String userId) {
+        return ((Number)getSuperiorsCriteria(userId)
+                .setProjection(rowCount()).uniqueResult()).intValue();
+    }
+
+    public int getSubordinatesCount(String userId) {
+        return ((Number)getSubordinatesCriteria(userId)
+                .setProjection(rowCount()).uniqueResult()).intValue();
+    }
+
+    private Criteria getSuperiorsCriteria(String userId) {
+        return getSession().createCriteria(SupervisorEntity.class)
+                .setProjection(Projections.property("supervisor"))
+                .add(Restrictions.eq("employee.userId", userId));
+    }
+
+    private Criteria getSubordinatesCriteria(String userId) {
+        return getSession().createCriteria(SupervisorEntity.class)
+                .setProjection(Projections.property("employee"))
+                .add(Restrictions.eq("supervisor.userId", userId));
+    }
+
+    public List<UserEntity> getPotentialSuperiors(String userId, Integer from, Integer size) {
+        Criteria criteria = getUntiedUsersCriteria(userId);
+        if (from > -1) {
+            criteria.setFirstResult(from);
+        }
+        if (size > -1) {
+            criteria.setMaxResults(size);
+        }
+        return criteria.list();
+    }
+
+    public int getPotentialSuperiorsCount(String userId) {
+        return ((Number)getUntiedUsersCriteria(userId)
+                .setProjection(rowCount()).uniqueResult()).intValue();
+    }
+
+    public List<UserEntity> getPotentialSubordinates(String userId, Integer from, Integer size) {
+        Criteria criteria = getUntiedUsersCriteria(userId);
+        if (from > -1) {
+            criteria.setFirstResult(from);
+        }
+        if (size > -1) {
+            criteria.setMaxResults(size);
+        }
+        return criteria.list();    }
+
+    public int getPotentialSubordinatesCount(String userId) {
+        return ((Number)getUntiedUsersCriteria(userId)
+                .setProjection(rowCount()).uniqueResult()).intValue();
+    }
+
+    private Criteria getUntiedUsersCriteria(String userId) {
+        DetachedCriteria tiedSuperiors = DetachedCriteria.forClass(SupervisorEntity.class)
+                .setProjection(Projections.property("supervisor.userId"))
+                .add(Restrictions.eq("employee.userId", userId));
+
+        DetachedCriteria tiedSubordinates = DetachedCriteria.forClass(SupervisorEntity.class)
+                .setProjection(Projections.property("employee.userId"))
+                .add(Restrictions.eq("supervisor.userId", userId));
+
+        return getSession().createCriteria(UserEntity.class)
+                .add(Restrictions.ne("userId", userId))
+                .add(Restrictions.not(
+                        Restrictions.in("userId", tiedSuperiors.getExecutableCriteria(getSession()).list()))
+                )
+                .add(Restrictions.not(
+                        Restrictions.in("userId", tiedSubordinates.getExecutableCriteria(getSession()).list()))
+                );
+    }
+
 }
