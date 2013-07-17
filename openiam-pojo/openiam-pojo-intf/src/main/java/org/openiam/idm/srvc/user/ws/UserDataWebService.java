@@ -455,6 +455,10 @@ public interface UserDataWebService {
     @WebMethod
     public List<Supervisor> getSupervisors(@WebParam(name = "employeeId", targetNamespace = "") String employeeId);
 
+    @WebMethod
+    public Supervisor findSupervisor(@WebParam(name = "superiorId", targetNamespace = "") String superiorId,
+                                     @WebParam(name = "subordinateId", targetNamespace = "") String subordinateId);
+
     /**
      * Returns a list of Supervisor objects that represents the employees or
      * users for this supervisor
