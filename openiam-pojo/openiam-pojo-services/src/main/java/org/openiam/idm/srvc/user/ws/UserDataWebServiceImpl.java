@@ -478,6 +478,12 @@ public class UserDataWebServiceImpl implements UserDataWebService, MuleContextAw
     }
 
     @Override
+    public Supervisor findSupervisor(String superiorId, String subordinateId) {
+        return supervisorDozerConverter.convertToDTO(
+                userManager.findSupervisor(superiorId, subordinateId), true);
+    }
+
+    @Override
     public List<User> getSuperiors(String userId, Integer from, Integer size) {
         final List<UserEntity> superiors = userManager.getSuperiors(userId, from, size);
         return userDozerConverter.convertToDTOList(superiors, true);

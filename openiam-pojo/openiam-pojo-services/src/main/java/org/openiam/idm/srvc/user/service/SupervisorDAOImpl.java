@@ -57,11 +57,21 @@ public class SupervisorDAOImpl extends BaseDaoImpl<SupervisorEntity, String> imp
 
     public List<SupervisorEntity> findSupervisors(String employeeId) {
         Criteria criteria = getCriteria()
-                .createAlias("supervisor","s")
-                .add(Restrictions.eq("s.userId",employeeId));
+                .createAlias("employee","e")
+                .add(Restrictions.eq("e.userId",employeeId));
 
     	List<SupervisorEntity> results = (List<SupervisorEntity>)criteria.list();
-    	return results;    	
+
+        // initalize the objects in the collection
+
+        int listSize = results.size();
+        for (int i=0; i<listSize; i++) {
+            SupervisorEntity supr = results.get(i);
+            org.hibernate.Hibernate.initialize(supr.getSupervisor());
+            org.hibernate.Hibernate.initialize(supr.getEmployee());
+        }
+
+        return results;
     }
     
     public SupervisorEntity findPrimarySupervisor(String employeeId) {
