@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.batch.service;
 
+import org.openiam.base.ws.Response;
 import org.openiam.idm.srvc.batch.dto.BatchTask;
 
 import javax.jws.WebMethod;
@@ -23,17 +24,8 @@ public interface BatchDataService {
     @WebMethod
     public List<BatchTask> getAllTasks();
 
-    /**
-     * Returns a list of all batch tasks in the system by their frequency - DAILY, MINUTE, HOUR
-     *
-     * @param cat
-     */
-    public List<BatchTask> getAllTasksByFrequency(
-            @WebParam(name = "frequency", targetNamespace = "")
-            String frequency);
-
     @WebMethod
-    public void updateTask(
+    public Response save(
             @WebParam(name = "task", targetNamespace = "")
             BatchTask task);
 
@@ -42,21 +34,7 @@ public interface BatchDataService {
             @WebParam(name = "taskId", targetNamespace = "")
             String taskId);
 
-    @WebMethod
-    BatchTask getTaskByName(
-            @WebParam(name = "taskName", targetNamespace = "")
-            String taskName);
-
-    public void removeBatchTask(
+    public Response removeBatchTask(
             @WebParam(name = "taskID", targetNamespace = "")
             String taskId);
-
-    public BatchTask addBatchTask(
-            @WebParam(name = "task", targetNamespace = "")
-            BatchTask task);
-
-    public BatchTask upateBatchTask(
-            @WebParam(name = "task", targetNamespace = "")
-            BatchTask task);
-
 }

@@ -207,4 +207,10 @@
 			org.openiam.idm.srvc.mngsys.dto.DefaultReconciliationAttributeMap
 		</class-b>
 	</mapping>
+	
+	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.batch.domain.BatchTaskEntity</class-a>
+		<class-b>org.openiam.idm.srvc.batch.dto.BatchTask</class-b>
+	</mapping>
 </mappings>
