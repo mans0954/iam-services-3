@@ -50,6 +50,11 @@ public class ConnectorCommandFactory {
     @Qualifier("scriptCommandFactory")
     private AbstractCommandFactory scriptCommandFactory;
 
+    @Autowired
+    @Qualifier("shellCommandFactory")
+    private AbstractCommandFactory shellCommandFactory;
+
+
     public ConnectorCommand getConnectorCommand(CommandType commandType, ProvisionObjectType provisionObjectType, ConnectorType connectorType) throws ConnectorDataException {
         String error = String.format(ERROR_PATTERN, commandType, provisionObjectType, connectorType);
         switch (connectorType){
@@ -71,6 +76,8 @@ public class ConnectorCommandFactory {
                 return salesForceCommandFactory.getConnectorCommand(commandType, provisionObjectType);
             case SCRIPT:
                 return scriptCommandFactory.getConnectorCommand(commandType, provisionObjectType);
+            case SHELL:
+                return shellCommandFactory.getConnectorCommand(commandType, provisionObjectType);
             default:
                 throw new ConnectorDataException(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
         }
