@@ -37,7 +37,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component("batchTaskScheduler")
-public class BatchTaskScheduler implements ApplicationContextAware, MuleContextAware, InitializingBean, Sweepable {
+public class BatchTaskScheduler implements ApplicationContextAware, InitializingBean, Sweepable {
 	
 	private Map<String, ScheduledFuture<Void>> synchronizedBatchScheduleMap = new ConcurrentHashMap<String, ScheduledFuture<Void>>();
 	
@@ -61,20 +61,9 @@ public class BatchTaskScheduler implements ApplicationContextAware, MuleContextA
     
     @Value("${openiam.idm.ws.path}")
     private String serviceContext;
-    
-    @Autowired
-    @Qualifier("configurableGroovyScriptEngine")
-    private ScriptIntegration scriptRunner;
-    
-    private MuleContext muleContext;
     private ApplicationContext ctx;
     
     private Date lastRun = null;
-
-	@Override
-	public void setMuleContext(MuleContext context) {
-		this.muleContext = context;
-	}
 
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext)

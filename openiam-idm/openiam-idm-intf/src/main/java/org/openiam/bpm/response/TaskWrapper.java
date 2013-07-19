@@ -34,7 +34,9 @@ import org.openiam.provision.dto.ProvisionUser;
 	"dueDate",
 	"executionId",
 	"endDate",
-	"requestMetadataMap"
+	"requestMetadataMap",
+	"customObjectURI",
+	"employeeId"
 })
 public class TaskWrapper {
 
@@ -47,6 +49,8 @@ public class TaskWrapper {
 	private String taskDefinitionKey;
 	private String parentTaskId;
 	private String assignee;
+	private String customObjectURI;
+	private String employeeId;
 	
 	@XmlSchemaType(name = "dateTime")
 	private Date createdTime;
@@ -111,6 +115,14 @@ public class TaskWrapper {
 				if(customVariables != null) {
 					if(customVariables.containsKey(ActivitiConstants.REQUEST_METADATA_MAP)) {
 						requestMetadataMap = (LinkedHashMap<String, String>)customVariables.get(ActivitiConstants.REQUEST_METADATA_MAP);
+					}
+					
+					if(customVariables.containsKey(ActivitiConstants.CUSTOM_TASK_UI_URL)) {
+						customObjectURI = (String)customVariables.get(ActivitiConstants.CUSTOM_TASK_UI_URL);
+					}
+					
+					if(customVariables.containsKey(ActivitiConstants.EMPLOYEE_ID)) {
+						employeeId = (String)customVariables.get(ActivitiConstants.EMPLOYEE_ID);
 					}
 				}
 			} catch(Throwable e) {
@@ -238,6 +250,20 @@ public class TaskWrapper {
 
 	public void setRequestMetadataMap(LinkedHashMap<String, String> requestMetadataMap) {
 		this.requestMetadataMap = requestMetadataMap;
+	}
+	
+	
+
+	public String getCustomObjectURI() {
+		return customObjectURI;
+	}
+
+	public void setCustomObjectURI(String customObjectURI) {
+		this.customObjectURI = customObjectURI;
+	}
+	
+	public String getEmployeeId() {
+		return employeeId;
 	}
 
 	@Override

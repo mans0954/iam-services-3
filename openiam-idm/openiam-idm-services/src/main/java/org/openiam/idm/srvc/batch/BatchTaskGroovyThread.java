@@ -37,7 +37,7 @@ public class BatchTaskGroovyThread extends AbstractBatchTaskThread {
 		bindingMap.put("taskObj", entity);
         bindingMap.put("lastExecTime", entity.getLastExecTime());
         bindingMap.put("parentRequestId", requestId);
-        LOG.info("Running thread: " + entity.getId());
+        LOG.info(String.format("Running thread: %s", entity.getId()));
         try {
             Integer output = (Integer) scriptRunner.execute(bindingMap,
                     entity.getTaskUrl());
