@@ -184,7 +184,7 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 
 		message.setBodyType(isHtmlFormat ? Message.BodyType.HTML_TEXT
 				: Message.BodyType.PLAIN_TEXT);
-		if (attachmentPath != null && from.length() > 0) {
+		if (attachmentPath != null) {
 			for (String attachmentPathString : attachmentPath) {
 				message.addAttachments(attachmentPathString);
 			}
