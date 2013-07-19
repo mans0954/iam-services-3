@@ -1,4 +1,4 @@
-package org.openiam.spml2.spi.csv.command;
+package org.openiam.spml2.spi.csv;
 
 import java.util.Arrays;
 
@@ -19,7 +19,8 @@ public class LookupCSVAttributeNamesCommand extends AbstractCSVCommand<LookupAtt
     public LookupAttributeResponseType execute(LookupAttributeRequestType<? extends GenericProvisionObject> lookupAttributeRequestType) throws ConnectorDataException {
         LookupAttributeResponseType respType = new LookupAttributeResponseType();
         try {
-            String file = fileWebService.getFile(lookupAttributeRequestType.getRequestID());
+            String file = fileWebService.getFile(lookupAttributeRequestType.getRequestID()
+                    + ".csv");
             if (!StringUtils.isEmpty(file)) {
                 respType.setStatus(StatusCodeType.SUCCESS);
                 respType.setAttributeList(Arrays.asList(file.split("\n")[0]

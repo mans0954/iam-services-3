@@ -192,9 +192,11 @@
 
 
 	<!-- Batch related beans -->
+	<!--
 	<bean id="batchConfigDAO" class="org.openiam.idm.srvc.batch.service.BatchConfigDAOImpl">
 		<property name="sessionFactory" ref="sessionFactory"></property>
 	</bean>
+	-->
 
 	<!-- Hibernate SessionFactory -->
 	<bean id="sessionFactory"
@@ -257,12 +259,12 @@
 
 <!-- 				<value>org/openiam/idm/srvc/recon/service/ReconciliationConfig.hbm.xml -->
 <!-- 				</value> -->
-				<value>org/openiam/idm/srvc/recon/service/ReconciliationResult.hbm.xml
-				</value>
+<!-- 				<value>org/openiam/idm/srvc/recon/service/ReconciliationResult.hbm.xml -->
+<!-- 				</value> -->
 <!-- 				<value>org/openiam/idm/srvc/recon/service/ReconciliationSituation.hbm.xml -->
 <!-- 				</value> -->
-				<value>org/openiam/idm/srvc/recon/service/ReconResultDetail.hbm.xml
-				</value>
+<!-- 				<value>org/openiam/idm/srvc/recon/service/ReconResultDetail.hbm.xml -->
+<!-- 				</value> -->
 				<!--<value>org/openiam/idm/srvc/synch/service/SynchConfig.hbm.xml</value>-->
 				<!--<value>org/openiam/idm/srvc/synch/service/SynchConfigDataMapping.hbm.xml</value>-->
 				<!--<value>org/openiam/idm/srvc/synch/service/SynchActivityLog.hbm.xml</value>-->
@@ -291,9 +293,9 @@
 				</value>
 				<value>org/openiam/idm/srvc/orgpolicy/service/OrgPolicyUserLog.hbm.xml
 				</value>
+				<!--
 				<value>org/openiam/idm/srvc/batch/service/BatchConfig.hbm.xml
 				</value>
-				<!--
 				<value>org/openiam/idm/srvc/rpt/qryobject/dto/UserLoginStatusReport.hbm.xml
 				</value>
 				-->
@@ -323,7 +325,8 @@
                                                org.openiam.idm.srvc.secdomain.domain*,
                                                org.openiam.idm.srvc.lang.domain*,
                                                org.openiam.idm.srvc.report.domain*,
-                                               org.openiam.idm.srvc.prov*
+                                               org.openiam.idm.srvc.prov*,
+                                               org.openiam.idm.srvc.batch.domain*
                                                " />
 
 	</bean>

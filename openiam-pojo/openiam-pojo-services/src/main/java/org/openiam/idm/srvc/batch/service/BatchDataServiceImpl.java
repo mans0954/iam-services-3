@@ -25,6 +25,13 @@ import java.util.List;
 
 import javax.jws.WebService;
 
+import org.apache.log4j.Logger;
+import org.openiam.base.ws.Response;
+import org.openiam.base.ws.ResponseCode;
+import org.openiam.base.ws.ResponseStatus;
+import org.openiam.base.ws.exception.BasicDataServiceException;
+import org.openiam.dozer.converter.BatchTaskDozerConverter;
+import org.openiam.idm.srvc.batch.domain.BatchTaskEntity;
 import org.openiam.idm.srvc.batch.dto.BatchTask;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -42,70 +49,65 @@ import org.springframework.transaction.annotation.Transactional;
 		serviceName = "BatchDataWebService")
 @Transactional
 public class BatchDataServiceImpl implements BatchDataService {
-
+	
+	private static Logger LOG = Logger.getLogger(BatchDataServiceImpl.class);
+	
 	@Autowired
-	private BatchConfigDAO  batchDao;
+	private BatchTaskDozerConverter converter;
 	
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.batch.service.BatchDataService#getAllTasks()
-	 */
+	@Autowired
+	private BatchService batchService;
+	
+	@Override
 	public List<BatchTask> getAllTasks() {
-		return batchDao.findAllBatchTasks();
+		final List<BatchTaskEntity> entityList = batchService.findBeans(new BatchTaskEntity(), 0, Integer.MAX_VALUE);
+		return converter.convertToDTOList(entityList, true);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.batch.service.BatchDataService#getAllTasksByFrequency(java.lang.String)
-	 */
-	public List<BatchTask> getAllTasksByFrequency(String frequency) {
-		if (frequency == null) {
-			throw new IllegalArgumentException("Frequency is null");
+	@Override
+	public Response save(BatchTask task) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(task == null) {
+				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+			}
+			
+			final BatchTaskEntity entity = converter.convertToEntity(task, true);
+			batchService.save(entity);
+		} catch (BasicDataServiceException e) {
+			response.setErrorCode(e.getCode());
+			response.setStatus(ResponseStatus.FAILURE);
+		} catch (Throwable e) {
+			LOG.error("Can't save", e);
+			response.setErrorText(e.getMessage());
+			response.setStatus(ResponseStatus.FAILURE);
 		}
-		return batchDao.findBatchTasksByFrequency(frequency);
-	}
-	
-	public void updateTask(BatchTask task) {
-		if (task == null) {
-			throw new IllegalArgumentException("task is null");
-		}
-		batchDao.update(task);
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.batch.service.BatchDataService#addBatchTask(org.openiam.idm.srvc.batch.dto.BatchTask)
-	 */
-	public BatchTask addBatchTask(BatchTask task) {
-		batchDao.add(task);
-		
-		return task;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.batch.service.BatchDataService#getBatchTask(java.lang.String)
-	 */
+	@Override
 	public BatchTask getBatchTask(String taskId) {
-		
-		return batchDao.findById(taskId);
+		final BatchTaskEntity entity = batchService.findById(taskId);
+		return converter.convertToDTO(entity, true);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.batch.service.BatchDataService#removeBatchTask(java.lang.String)
-	 */
-	public void removeBatchTask(String taskId) {
-		BatchTask task = batchDao.findById(taskId);
-		batchDao.remove(task);
-		
+	@Override
+	public Response removeBatchTask(String taskId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(taskId == null) {
+				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+			}
+			
+			batchService.delete(taskId);
+		} catch (BasicDataServiceException e) {
+			response.setErrorCode(e.getCode());
+			response.setStatus(ResponseStatus.FAILURE);
+		} catch (Throwable e) {
+			LOG.error("Can't save", e);
+			response.setErrorText(e.getMessage());
+			response.setStatus(ResponseStatus.FAILURE);
+		}
+		return response;
 	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.batch.service.BatchDataService#upateBatchTask(org.openiam.idm.srvc.batch.dto.BatchTask)
-	 */
-	public BatchTask upateBatchTask(BatchTask task) {
-		batchDao.update(task);
-		return task;
-	}
-
-	public BatchTask getTaskByName(String taskName) {
-		return batchDao.findByName(taskName);
-	}
-
 }

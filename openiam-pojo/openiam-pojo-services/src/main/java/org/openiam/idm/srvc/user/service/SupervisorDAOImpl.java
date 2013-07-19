@@ -2,7 +2,11 @@ package org.openiam.idm.srvc.user.service;
 // Generated Feb 18, 2008 3:56:08 PM by Hibernate Tools 3.2.0.b11
 
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
 import javax.naming.InitialContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -10,6 +14,8 @@ import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Projection;
+import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDao;
 import org.openiam.core.dao.BaseDaoImpl;
@@ -107,6 +113,12 @@ public class SupervisorDAOImpl extends BaseDaoImpl<SupervisorEntity, String> imp
 
         return supr;
     }
+
+	@Override
+	public Set<String> getUniqueEmployeeIds() {
+		final List<String> list = getCriteria().setProjection(Projections.property("employee.userId")).list();
+		return (list != null) ? new HashSet<String>(list) : Collections.EMPTY_SET;
+	}
 
 }
 

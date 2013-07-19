@@ -176,6 +176,7 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 	
 	@Override
 	@WebMethod
+	@Transactional
 	public SaveTemplateProfileResponse initiateNewHireRequest(final NewUserProfileRequestModel request) {
 		final SaveTemplateProfileResponse response = new SaveTemplateProfileResponse();
 		try {
@@ -322,6 +323,7 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 
 	@Override
 	@WebMethod
+	@Transactional
 	public Response claimRequest(final ActivitiClaimRequest request) {
 		final Response response = new Response();
 
@@ -394,6 +396,7 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 	}
 	
 	@Override
+	@Transactional
 	public Response initiateWorkflow(final GenericWorkflowRequest request) {
 		final Response response = new Response();
 		try {
@@ -404,72 +407,77 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 			final Set<String> approverAssociationIds = new HashSet<String>();
 			final Set<String> approverUserIds = new HashSet<String>();
 			
-			List<ApproverAssociationEntity> approverAssocationList = null;
-			if(CollectionUtils.isNotEmpty(request.getCustomApproverAssociationIds())) {
-				approverAssocationList = approverAssociationDao.findByIds(request.getCustomApproverAssociationIds());
+			if(CollectionUtils.isNotEmpty(request.getCustomApproverIds())) {
+				approverUserIds.addAll(request.getCustomApproverIds());
 			} else {
-				/* for user target objects, use the groovy script */
-				if(AssociationType.USER.equals(request.getAssociationId())) {
-					try {
-						final UserCentricApproverAssociationIdentifier identifier = 
-								(UserCentricApproverAssociationIdentifier)scriptRunner.instantiateClass(null, approverAssociationScript);
-						final Map<String, Object> bindingMap = new HashMap<String, Object>();
-						bindingMap.put("USER", userDAO.findById(request.getAssociationId()));
-						identifier.init(bindingMap);
-						approverAssocationList = identifier.getApproverAssociations();
-					} catch(Throwable e) {
-						log.warn("Can't instantiate groovy class", e);
-					}
+				List<ApproverAssociationEntity> approverAssocationList = null;
+				if(CollectionUtils.isNotEmpty(request.getCustomApproverAssociationIds())) {
+					approverAssocationList = approverAssociationDao.findByIds(request.getCustomApproverAssociationIds());
 				} else {
-					approverAssocationList = approverAssociationDao.getByAssociation(request.getAssociationId(), request.getAssociationType());
+					/* for user target objects, use the groovy script */
+					if(AssociationType.USER.equals(request.getAssociationId())) {
+						try {
+							final UserCentricApproverAssociationIdentifier identifier = 
+									(UserCentricApproverAssociationIdentifier)scriptRunner.instantiateClass(null, approverAssociationScript);
+							final Map<String, Object> bindingMap = new HashMap<String, Object>();
+							bindingMap.put("USER", userDAO.findById(request.getAssociationId()));
+							identifier.init(bindingMap);
+							approverAssocationList = identifier.getApproverAssociations();
+						} catch(Throwable e) {
+							log.warn("Can't instantiate groovy class", e);
+						}
+					} else {
+						approverAssocationList = approverAssociationDao.getByAssociation(request.getAssociationId(), request.getAssociationType());
+					}
 				}
-			}
-			if(CollectionUtils.isEmpty(approverAssocationList)) {
-				log.warn(String.format("Can't find approver association for %s %s, using default approver association", request.getAssociationType(), request.getAssociationId()));
-				approverAssocationList = getDefaultApproverAssociations();
-			}
-			if(CollectionUtils.isNotEmpty(approverAssocationList)) {
-				for(final ApproverAssociationEntity entity : approverAssocationList) {
-					approverAssociationIds.add(entity.getId());
-					if(entity.getApproverEntityType() != null && StringUtils.isNotBlank(entity.getApproverEntityId())) {
-						final String approverId = entity.getApproverEntityId();
-						switch(entity.getApproverEntityType()) {
-							case GROUP:
-								final List<String> groupUsers = userGroupDAO.getUserIdsInGroup(approverId);
-								if(CollectionUtils.isNotEmpty(groupUsers)) {
-	    							approverUserIds.addAll(groupUsers);
-	    						}
-								break;
-							case ROLE:
-								final List<String> roleUsers = userRoleDAO.getUserIdsInRole(approverId);
-								if(CollectionUtils.isNotEmpty(roleUsers)) {
-									approverUserIds.addAll(roleUsers);
-								}
-								break;
-							case USER:
-								approverUserIds.add(approverId);
-								break;
-							case SUPERVISOR: /* assume association ID is a user */
-								final List<SupervisorEntity> supervisors = supervisorDAO.findSupervisors(request.getAssociationId());
-								if(CollectionUtils.isNotEmpty(supervisors)) {
-									for(final SupervisorEntity supervisor : supervisors) {
-										if(supervisor != null && supervisor.getEmployee() != null) {
-											approverUserIds.add(supervisor.getEmployee().getUserId());
+				
+				if(CollectionUtils.isEmpty(approverAssocationList)) {
+					log.warn(String.format("Can't find approver association for %s %s, using default approver association", request.getAssociationType(), request.getAssociationId()));
+					approverAssocationList = getDefaultApproverAssociations();
+				}
+				if(CollectionUtils.isNotEmpty(approverAssocationList)) {
+					for(final ApproverAssociationEntity entity : approverAssocationList) {
+						approverAssociationIds.add(entity.getId());
+						if(entity.getApproverEntityType() != null && StringUtils.isNotBlank(entity.getApproverEntityId())) {
+							final String approverId = entity.getApproverEntityId();
+							switch(entity.getApproverEntityType()) {
+								case GROUP:
+									final List<String> groupUsers = userGroupDAO.getUserIdsInGroup(approverId);
+									if(CollectionUtils.isNotEmpty(groupUsers)) {
+		    							approverUserIds.addAll(groupUsers);
+		    						}
+									break;
+								case ROLE:
+									final List<String> roleUsers = userRoleDAO.getUserIdsInRole(approverId);
+									if(CollectionUtils.isNotEmpty(roleUsers)) {
+										approverUserIds.addAll(roleUsers);
+									}
+									break;
+								case USER:
+									approverUserIds.add(approverId);
+									break;
+								case SUPERVISOR: /* assume association ID is a user */
+									final List<SupervisorEntity> supervisors = supervisorDAO.findSupervisors(request.getAssociationId());
+									if(CollectionUtils.isNotEmpty(supervisors)) {
+										for(final SupervisorEntity supervisor : supervisors) {
+											if(supervisor != null && supervisor.getEmployee() != null) {
+												approverUserIds.add(supervisor.getEmployee().getUserId());
+											}
 										}
 									}
-								}
-								break;
-							default:
-								break;
+									break;
+								default:
+									break;
+							}
 						}
 					}
 				}
+				
+				if(CollectionUtils.isEmpty(approverUserIds)) {
+					log.warn("Could not found any approvers - using default user");
+	        		approverUserIds.add(defaultApproverUserId);
+	        	}
 			}
-			
-			if(CollectionUtils.isEmpty(approverUserIds)) {
-				log.warn("Could not found any approvers - using default user");
-        		approverUserIds.add(defaultApproverUserId);
-        	}
 			
 			final Map<String, Object> variables = new HashMap<String, Object>();
 			variables.put(ActivitiConstants.APPROVER_ASSOCIATION_IDS, approverAssociationIds);
@@ -485,6 +493,7 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 
 			response.setStatus(ResponseStatus.SUCCESS);
 		} catch(BasicDataServiceException e) {
+			log.info("Could not initialize task", e);
 			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);
 		} catch(ActivitiException e) {
@@ -503,6 +512,7 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 
 	@Override
 	@WebMethod
+	@Transactional
 	public Response makeDecision(final ActivitiRequestDecision request) {
 		final Response response = new Response();
 		try {
@@ -514,6 +524,9 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
         	variables.put(ActivitiConstants.COMMENT, request.getComment());
         	variables.put(ActivitiConstants.IS_TASK_APPROVED, request.isAccepted());
         	variables.put(ActivitiConstants.EXECUTOR_ID, request.getCallerUserId());
+        	if(request.getCustomVariables() != null) {
+        		variables.putAll(request.getCustomVariables());
+        	}
         	taskService.complete(assignedTask.getId(), variables);	
         	response.setStatus(ResponseStatus.SUCCESS);
 		} catch(ActivitiException e) {
@@ -545,6 +558,7 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 
 	@Override
 	@WebMethod
+	@Transactional
 	public TaskListWrapper getTasksForUser(String userId) {
 		final TaskListWrapper taskListWrapper = new TaskListWrapper();
 		final List<Task> assignedTasks = taskService.createTaskQuery().taskAssignee(userId).list();
@@ -558,6 +572,7 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 
 	@Override
 	@WebMethod
+	@Transactional
 	public TaskWrapper getTask(String taskId) {
 		TaskWrapper retVal = null;
 		final List<Task> taskList = taskService.createTaskQuery().taskId(taskId).list();
@@ -582,6 +597,7 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 	}
 
 	@Override
+	@Transactional
 	public List<TaskWrapper> getHistory(final HistorySearchBean searchBean, final int from, final int size) {
 		final HistoricTaskInstanceQuery query = getHistoryQuery(searchBean);
 		
@@ -596,6 +612,7 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 	}
 	
 	@Override
+	@Transactional
 	public int count(final HistorySearchBean searchBean) {
 		final HistoricTaskInstanceQuery query = getHistoryQuery(searchBean);
 		return Long.valueOf(query.count()).intValue();
@@ -639,6 +656,7 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 	}
 
 	@Override
+	@Transactional
 	public Response deleteTask(String taskId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {
@@ -658,6 +676,7 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 	}
 
 	@Override
+	@Transactional
 	public Response deleteTaskForUser(String taskId, String userId) {
 		final Response response = new Response(ResponseStatus.SUCCESS);
 		try {

@@ -451,14 +451,16 @@ public class UserMgr implements UserDataService {
             }
         } else {
             List<String> finalizedIdList = getUserIds(searchBean);
-            if (finalizedIdList != null && finalizedIdList.size() >= from) {
-                int to = from + size;
-                if (to > finalizedIdList.size()) {
-                    to = finalizedIdList.size();
+            if (from > -1 && size > -1) {
+                if (finalizedIdList != null && finalizedIdList.size() >= from) {
+                    int to = from + size;
+                    if (to > finalizedIdList.size()) {
+                        to = finalizedIdList.size();
+                    }
+                    finalizedIdList = new ArrayList<String>(finalizedIdList.subList(from, to));
                 }
-                finalizedIdList = new ArrayList<String>(finalizedIdList.subList(from, to));
-                entityList = userDao.findByIds(finalizedIdList);
             }
+            entityList = userDao.findByIds(finalizedIdList);
         }
         return entityList;
     }

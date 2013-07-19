@@ -184,7 +184,7 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 
 		message.setBodyType(isHtmlFormat ? Message.BodyType.HTML_TEXT
 				: Message.BodyType.PLAIN_TEXT);
-		if (attachmentPath != null && from.length() > 0) {
+		if (attachmentPath != null) {
 			for (String attachmentPathString : attachmentPath) {
 				message.addAttachments(attachmentPathString);
 			}
@@ -201,9 +201,7 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 	 * @return
 	 */
 	private boolean isEmailValid(String email) {
-		String expression = "^[\\w\\.-]+@([\\w\\-]+\\.)+[A-Z]{2,4}$";
-
-		Pattern pattern = Pattern.compile(expression, Pattern.CASE_INSENSITIVE);
+		Pattern pattern = Pattern.compile(MAIL_REGEXP, Pattern.CASE_INSENSITIVE);
 		Matcher matcher = pattern.matcher(email);
 		return matcher.matches();
 	}

@@ -21,7 +21,8 @@ import org.openiam.idm.srvc.mngsys.domain.AssociationType;
     "associationType",
     "description",
     "parameters",
-    "customApproverAssociationIds"
+    "customApproverAssociationIds",
+    "customApproverIds"
 })
 public class GenericWorkflowRequest extends RequestorInformation {
 
@@ -32,6 +33,7 @@ public class GenericWorkflowRequest extends RequestorInformation {
 	private String activitiRequestType;
 	private Map<String, Object> parameters;
 	private Set<String> customApproverAssociationIds;
+	private Set<String> customApproverIds;
 
 	public String getActivitiRequestType() {
 		return activitiRequestType;
@@ -81,7 +83,7 @@ public class GenericWorkflowRequest extends RequestorInformation {
 		this.parameters = parameters;
 	}	
 	
-	public void addParameter(final String key, final String value) {
+	public void addParameter(final String key, final Object value) {
 		if(this.parameters == null) {
 			this.parameters = new HashMap<String, Object>();
 		}
@@ -100,6 +102,14 @@ public class GenericWorkflowRequest extends RequestorInformation {
 	public void setCustomApproverAssociationIds(
 			Set<String> customApproverAssociationIds) {
 		this.customApproverAssociationIds = customApproverAssociationIds;
+	}
+
+	public Set<String> getCustomApproverIds() {
+		return customApproverIds;
+	}
+
+	public void setCustomApproverIds(Set<String> customApproverIds) {
+		this.customApproverIds = customApproverIds;
 	}
 	
 	
