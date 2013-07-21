@@ -146,6 +146,7 @@ public class BatchDataServiceImpl implements BatchDataService, ApplicationContex
 			
 			final BatchTaskEntity entity = converter.convertToEntity(task, true);
 			batchService.save(entity);
+			response.setResponseValue(entity.getId());
 		} catch (BasicDataServiceException e) {
 			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);
