@@ -20,6 +20,11 @@ public class BatchServiceImpl implements BatchService {
 	public List<BatchTaskEntity> findBeans(BatchTaskEntity entity, int from, int size) {
 		return batchDao.getByExample(entity, from, size);
 	}
+	
+	@Override
+	public int count(BatchTaskEntity entity) {
+		return batchDao.count(entity);
+	}
 
 	@Override
 	public void save(BatchTaskEntity entity) {

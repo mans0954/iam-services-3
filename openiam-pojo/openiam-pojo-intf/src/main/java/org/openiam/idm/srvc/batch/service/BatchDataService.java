@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.batch.service;
 
 import org.openiam.base.ws.Response;
+import org.openiam.idm.searchbeans.BatchTaskSearchBean;
 import org.openiam.idm.srvc.batch.dto.BatchTask;
 
 import javax.jws.WebMethod;
@@ -16,14 +17,17 @@ import java.util.List;
 @WebService(targetNamespace = "urn:idm.openiam.org/srvc/batch/service", name = "BatchDataWebService")
 public interface BatchDataService {
 
-    /**
-     * Returns a list of all batch tasks in the system
-     *
-     * @param cat
-     */
-    @WebMethod
-    public List<BatchTask> getAllTasks();
+	@WebMethod
+	public List<BatchTask> findBeans(@WebParam(name = "searchBean", targetNamespace = "") BatchTaskSearchBean searchBean,
+									 @WebParam(name = "from", targetNamespace = "") int from,
+									 @WebParam(name = "size", targetNamespace = "") int size);
+	
+	
 
+	@WebMethod
+	public int count(@WebParam(name = "searchBean", targetNamespace = "") BatchTaskSearchBean searchBean);
+
+	
     @WebMethod
     public Response save(
             @WebParam(name = "task", targetNamespace = "")
