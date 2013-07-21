@@ -81,10 +81,16 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     @Override
     @Transactional
     public void removeManagedSysById(String id) {
+        if (!StringUtils.hasText(id)) {
+            return;
+        }
         ManagedSysEntity sysEntity = managedSysDAO.findById(id);
         for (ManagedSystemObjectMatchEntity matchEntity : sysEntity
                 .getMngSysObjectMatchs()) {
             matchDAO.delete(matchEntity);
+        }
+        for (ManagedSysRuleEntity ruleEntity : sysEntity.getRules()) {
+            managedSysRuleDAO.delete(ruleEntity);
         }
         managedSysDAO.delete(sysEntity);
     }
