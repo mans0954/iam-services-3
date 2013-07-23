@@ -1,4 +1,4 @@
-package org.openiam.spml2.spi.csv;
+package org.openiam.spml2.spi.csv.command;
 
 import java.util.Arrays;
 
