@@ -1,5 +1,6 @@
 package org.openiam.bpm.response;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -9,10 +10,12 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
+import org.activiti.engine.ActivitiException;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.task.Task;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.mule.util.concurrent.DaemonThreadFactory;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.prov.request.dto.ProvisionRequest;
@@ -38,7 +41,9 @@ import org.openiam.provision.dto.ProvisionUser;
 	"customObjectURI",
 	"employeeId"
 })
-public class TaskWrapper {
+public class TaskWrapper implements Serializable {
+	
+	private static Logger LOG = Logger.getLogger(TaskWrapper.class);
 
 	private String id;
 	private String name;
@@ -125,6 +130,8 @@ public class TaskWrapper {
 						employeeId = (String)customVariables.get(ActivitiConstants.EMPLOYEE_ID);
 					}
 				}
+			} catch(ActivitiException e) {
+				LOG.warn(String.format("Could not fetch variables for Execution ID: %s.  Changes are that the task is completed.", executionId));
 			} catch(Throwable e) {
 			}
 		}
