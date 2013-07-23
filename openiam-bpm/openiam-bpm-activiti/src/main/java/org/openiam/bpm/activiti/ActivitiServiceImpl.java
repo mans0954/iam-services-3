@@ -601,7 +601,7 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 	public List<TaskWrapper> getHistory(final HistorySearchBean searchBean, final int from, final int size) {
 		final HistoricTaskInstanceQuery query = getHistoryQuery(searchBean);
 		
-		final List<HistoricTaskInstance> historicTaskInstances = query.listPage(from * size, size);
+		final List<HistoricTaskInstance> historicTaskInstances = query.listPage(from, size);
 		final List<TaskWrapper> retVal = new LinkedList<TaskWrapper>();
 		if(CollectionUtils.isNotEmpty(historicTaskInstances)) {
 			for(final HistoricTaskInstance historyInstance : historicTaskInstances) {
