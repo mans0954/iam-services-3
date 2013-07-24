@@ -16,11 +16,19 @@ import javax.xml.bind.annotation.XmlType;
     "dueAfter",
     "taskOwnerId",
     "taskName",
-    "taskDescription"
+    "taskDescription",
+    "processDefinitionId",
+    "processInstanceId",
+    "executionId",
+    "parentTaskId"
 })
 public class HistorySearchBean implements Serializable {
+	private String executionId;
+	private String processInstanceId;
+	private String processDefinitionId;
 	private String assigneeId;
 	private Boolean completed;
+	private String parentTaskId;
 	
 	@XmlSchemaType(name = "dateTime")
 	private Date dueBefore;
@@ -75,6 +83,30 @@ public class HistorySearchBean implements Serializable {
 	}
 	public void setTaskDescription(String taskDescription) {
 		this.taskDescription = taskDescription;
+	}
+	public String getProcessDefinitionId() {
+		return processDefinitionId;
+	}
+	public void setProcessDefinitionId(String processDefinitionId) {
+		this.processDefinitionId = processDefinitionId;
+	}
+	public String getProcessInstanceId() {
+		return processInstanceId;
+	}
+	public void setProcessInstanceId(String processInstanceId) {
+		this.processInstanceId = processInstanceId;
+	}
+	public String getExecutionId() {
+		return executionId;
+	}
+	public void setExecutionId(String executionId) {
+		this.executionId = executionId;
+	}
+	public String getParentTaskId() {
+		return parentTaskId;
+	}
+	public void setParentTaskId(String parentTaskId) {
+		this.parentTaskId = parentTaskId;
 	}
 	
 	

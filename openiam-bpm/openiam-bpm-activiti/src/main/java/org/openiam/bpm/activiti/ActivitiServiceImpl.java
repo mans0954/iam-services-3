@@ -19,6 +19,9 @@ import org.activiti.engine.ManagementService;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
+import org.activiti.engine.history.HistoricActivityInstance;
+import org.activiti.engine.history.HistoricDetail;
+import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricTaskInstanceQuery;
 import org.activiti.engine.runtime.ProcessInstance;
@@ -41,6 +44,7 @@ import org.openiam.bpm.request.ActivitiRequestDecision;
 import org.openiam.bpm.request.GenericWorkflowRequest;
 import org.openiam.bpm.request.HistorySearchBean;
 import org.openiam.bpm.response.NewHireResponse;
+import org.openiam.bpm.response.TaskHistoryWrapper;
 import org.openiam.bpm.response.TaskListWrapper;
 import org.openiam.bpm.response.TaskWrapper;
 import org.openiam.bpm.util.ActivitiConstants;
@@ -595,6 +599,42 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 		}
 		
 	}
+	
+	@Override
+	@Transactional
+	public List<TaskHistoryWrapper> getHistoryForInstance(final String executionId) {
+		final List<TaskHistoryWrapper> retVal = new LinkedList<TaskHistoryWrapper>();
+		if(StringUtils.isNotBlank(executionId)) {
+			final List<HistoricTaskInstance> instances = historyService.createHistoricTaskInstanceQuery().executionId(executionId).list();
+			final Map<String, HistoricTaskInstance> taskDefinitionMap = new HashMap<String, HistoricTaskInstance>();
+			if(CollectionUtils.isNotEmpty(instances)) {
+				for(HistoricTaskInstance instance : instances) {
+					taskDefinitionMap.put(instance.getTaskDefinitionKey(), instance);
+				}
+			}
+			
+			final List<HistoricActivityInstance> activityList = historyService.createHistoricActivityInstanceQuery().executionId(executionId).list();
+			if(CollectionUtils.isNotEmpty(activityList)) {
+				for(int i = 0; i < activityList.size(); i++) {
+					final HistoricActivityInstance instance = activityList.get(0);
+					final TaskHistoryWrapper wrapper = new TaskHistoryWrapper(instance);
+					if(taskDefinitionMap.containsKey(wrapper.getActivityId())) {
+						wrapper.setTask(new TaskWrapper(taskDefinitionMap.get(wrapper.getActivityId())));
+					}
+					if(StringUtils.isNotBlank(wrapper.getAssigneeId())) {
+						final UserEntity user =  userDAO.findById(wrapper.getAssigneeId());
+						wrapper.setUserInfo(user);
+					}
+					retVal.add(wrapper);
+					
+					if(i < activityList.size() - 1) {
+						wrapper.addNextTask(activityList.get(i + 1).getId());
+					}
+				}
+			}
+		}
+		return retVal;
+	}
 
 	@Override
 	@Transactional
@@ -605,7 +645,7 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 		final List<TaskWrapper> retVal = new LinkedList<TaskWrapper>();
 		if(CollectionUtils.isNotEmpty(historicTaskInstances)) {
 			for(final HistoricTaskInstance historyInstance : historicTaskInstances) {
-				retVal.add(new TaskWrapper(historyInstance, runtimeService));
+				retVal.add(new TaskWrapper(historyInstance));
 			}
 		}
 		return retVal;
@@ -629,6 +669,22 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 			} else {
 				query.unfinished();
 			}
+		}
+		
+		if(StringUtils.isNotBlank(searchBean.getProcessInstanceId())) {
+			query.processInstanceId(searchBean.getProcessInstanceId());
+		}
+		
+		if(StringUtils.isNotBlank(searchBean.getExecutionId())) {
+			query.executionId(searchBean.getExecutionId());
+		}
+		
+		if(StringUtils.isNotBlank(searchBean.getParentTaskId())) {
+			query.taskParentTaskId(searchBean.getParentTaskId());
+		}
+		
+		if(StringUtils.isNotBlank(searchBean.getProcessDefinitionId())) {
+			query.processDefinitionId(searchBean.getProcessDefinitionId());
 		}
 		
 		if(searchBean.getDueAfter() != null) {

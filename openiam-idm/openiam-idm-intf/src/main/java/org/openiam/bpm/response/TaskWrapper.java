@@ -12,6 +12,7 @@ import javax.xml.bind.annotation.XmlType;
 
 import org.activiti.engine.ActivitiException;
 import org.activiti.engine.RuntimeService;
+import org.activiti.engine.history.HistoricActivityInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.task.Task;
 import org.apache.commons.lang.StringUtils;
@@ -91,7 +92,7 @@ public class TaskWrapper implements Serializable {
 		setCustomVariables(runtimeService);
 	}
 	
-	public TaskWrapper(final HistoricTaskInstance historyInstance, final RuntimeService runtimeService) {
+	public TaskWrapper(final HistoricTaskInstance historyInstance) {
 		id = historyInstance.getId();
 		name = historyInstance.getName();
 		owner = historyInstance.getOwner();
@@ -106,7 +107,7 @@ public class TaskWrapper implements Serializable {
 		dueDate = historyInstance.getDueDate();
 		endDate = historyInstance.getEndTime();
 		executionId = historyInstance.getExecutionId();
-		setCustomVariables(runtimeService);
+		//setCustomVariables(runtimeService);
 	}
 	
 	/**
