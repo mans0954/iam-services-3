@@ -4,14 +4,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseAttribute;
+import org.openiam.connector.type.PasswordRequest;
+import org.openiam.connector.type.ResumeRequest;
+import org.openiam.connector.type.SuspendRequest;
+import org.openiam.connector.type.UserRequest;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.pswd.service.PasswordGenerator;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.spml2.msg.DeleteRequestType;
-import org.openiam.spml2.msg.password.SetPasswordRequestType;
-import org.openiam.spml2.msg.suspend.ResumeRequestType;
-import org.openiam.spml2.msg.suspend.SuspendRequestType;
 
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
@@ -37,7 +37,7 @@ public class ActiveDirectoryImpl implements Directory {
     protected static final Log log = LogFactory.getLog(ActiveDirectoryImpl.class);
 
 
-    public ModificationItem[] setPassword(SetPasswordRequestType reqType) throws UnsupportedEncodingException {
+    public ModificationItem[] setPassword(PasswordRequest reqType) throws UnsupportedEncodingException {
 
 
         byte[] password = ("\"" + reqType.getPassword() + "\"").getBytes("UTF-16LE");
@@ -49,7 +49,7 @@ public class ActiveDirectoryImpl implements Directory {
 
     }
 
-    public ModificationItem[] suspend(SuspendRequestType request) {
+    public ModificationItem[] suspend(SuspendRequest request) {
 
         log.debug("suspending AD user.");
 
@@ -61,7 +61,7 @@ public class ActiveDirectoryImpl implements Directory {
 
     }
 
-    public ModificationItem[] resume(ResumeRequestType request) {
+    public ModificationItem[] resume(ResumeRequest request) {
 
         log.debug("Enabling AD user.");
 
@@ -73,7 +73,7 @@ public class ActiveDirectoryImpl implements Directory {
 
     }
 
-    public void delete(DeleteRequestType reqType, LdapContext ldapctx, String ldapName, String onDelete) throws NamingException {
+    public void delete(UserRequest reqType, LdapContext ldapctx, String ldapName, String onDelete) throws NamingException {
 
         if ("DELETE".equalsIgnoreCase(onDelete)) {
 
@@ -115,10 +115,10 @@ public class ActiveDirectoryImpl implements Directory {
 
     public void updateAccountMembership(List<BaseAttribute> targetMembershipList, String ldapName,
                                         ManagedSystemObjectMatch matchObj,  LdapContext ldapctx,
-                                        List<ExtensibleObject> requestAttribute) {
+                                        ExtensibleObject obj) {
 
 
-        String samAccountName = getSamAccountName(requestAttribute);
+        String samAccountName = getSamAccountName(obj);
 
         List<String> currentMembershipList = userMembershipList(samAccountName, matchObj,   ldapctx);
 
@@ -185,19 +185,15 @@ public class ActiveDirectoryImpl implements Directory {
 
     }
 
-    private String getSamAccountName(List<ExtensibleObject> requestAttribute) {
-
-        for (ExtensibleObject obj : requestAttribute) {
-            List<ExtensibleAttribute> attrList = obj.getAttributes();
-            for (ExtensibleAttribute att : attrList) {
-                if ("sAMAccountName".equalsIgnoreCase(att.getName())) {
-                    return att.getValue();
-                }
-
+    private String getSamAccountName(ExtensibleObject obj) {
+        List<ExtensibleAttribute> attrList = obj.getAttributes();
+        for (ExtensibleAttribute att : attrList) {
+            if ("sAMAccountName".equalsIgnoreCase(att.getName())) {
+                return att.getValue();
             }
+
         }
         return null;
-
     }
 
 

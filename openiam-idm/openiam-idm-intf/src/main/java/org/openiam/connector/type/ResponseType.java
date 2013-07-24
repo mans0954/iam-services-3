@@ -13,9 +13,6 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
-import org.openiam.spml2.msg.ErrorCode;
-import org.openiam.spml2.msg.StatusCodeType;
-
 
 /**
  * <p>Java class for ResponseType complex type.

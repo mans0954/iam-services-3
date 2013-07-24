@@ -2,17 +2,17 @@ package org.openiam.spml2.spi.orcl;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openiam.connector.type.ErrorCode;
+import org.openiam.connector.type.StatusCodeType;
+import org.openiam.connector.type.UserRequest;
+import org.openiam.connector.type.UserResponse;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.spml2.msg.AddRequestType;
-import org.openiam.spml2.msg.AddResponseType;
-import org.openiam.spml2.msg.ErrorCode;
-import org.openiam.spml2.msg.StatusCodeType;
 import org.openiam.spml2.spi.common.AddCommand;
-import org.openiam.spml2.util.msg.ResponseBuilder;
+import org.openiam.connector.util.ResponseBuilder;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -30,8 +30,8 @@ public class OracleAddCommand extends  AbstractOracleCommand implements AddComma
     private static final String INSERT_SQL = "CREATE USER \"%s\" IDENTIFIED BY \"%s\"";
 
     @Override
-    public AddResponseType add(AddRequestType reqType) {
-        final AddResponseType response = new AddResponseType();
+    public UserResponse add(UserRequest reqType) {
+        final UserResponse response = new UserResponse();
         response.setStatus(StatusCodeType.SUCCESS);
 
         final String targetID = reqType.getTargetID();
@@ -52,16 +52,16 @@ public class OracleAddCommand extends  AbstractOracleCommand implements AddComma
             return response;
         }
 
-        final String principalName = reqType.getPsoID().getID();
+        final String principalName = reqType.getUserIdentity();
         if(principalName == null) {
         	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, "No principal sent");
             return response;
         }
 
-        final List<ExtensibleObject> objectList = reqType.getData().getAny();
+        final ExtensibleObject obj = reqType.getUser();
 
         if(log.isDebugEnabled()) {
-            log.debug(String.format("ExtensibleObject in Add Request=%s", objectList));
+            log.debug(String.format("ExtensibleObject in Add Request=%s", obj));
         }
 
         final List<AttributeMap> attributeMap = attributeMaps(res);
@@ -78,25 +78,25 @@ public class OracleAddCommand extends  AbstractOracleCommand implements AddComma
             }
 
             String identifiedBy = null;
-            for (final ExtensibleObject obj : objectList) {
-                final List<ExtensibleAttribute> attrList = obj.getAttributes();
 
-                if(log.isDebugEnabled()) {
-                    log.debug(String.format("Number of attributes to persist in ADD = %s", attrList.size()));
-                }
+            final List<ExtensibleAttribute> attrList = obj.getAttributes();
 
-                if(CollectionUtils.isNotEmpty(attributeMap)) {
-                    for (final ExtensibleAttribute att : attrList) {
-                        for(final AttributeMap attribute : attributeMap) {
-                            if(StringUtils.equalsIgnoreCase("password", attribute.getMapForObjectType())) {
-                                if(StringUtils.equalsIgnoreCase(att.getName(),  attribute.getAttributeName())) {
-                                    identifiedBy = att.getValue();
-                                }
+            if (log.isDebugEnabled()) {
+                log.debug(String.format("Number of attributes to persist in ADD = %s", attrList.size()));
+            }
+
+            if (CollectionUtils.isNotEmpty(attributeMap)) {
+                for (final ExtensibleAttribute att : attrList) {
+                    for (final AttributeMap attribute : attributeMap) {
+                        if (StringUtils.equalsIgnoreCase("password", attribute.getMapForObjectType())) {
+                            if (StringUtils.equalsIgnoreCase(att.getName(), attribute.getAttributeName())) {
+                                identifiedBy = att.getValue();
                             }
                         }
                     }
                 }
             }
+
 
             if(StringUtils.isBlank(identifiedBy)) {
             	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_ATTRIBUTE, "No password specified");

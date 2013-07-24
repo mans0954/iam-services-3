@@ -71,9 +71,6 @@ import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptIntegration;
-import org.openiam.spml2.msg.*;
-import org.openiam.spml2.msg.ResponseType;
-import org.openiam.spml2.msg.password.SetPasswordRequestType;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -250,7 +247,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
         if (connector.getConnectorInterface() != null &&
                 connector.getConnectorInterface().equalsIgnoreCase("REMOTE")) {
 
-            RemoteLookupRequest reqType = new RemoteLookupRequest();
+            LookupRequest reqType = new LookupRequest();
             String requestId = "R" + UUIDGen.getUUID();
             reqType.setRequestID(requestId);
             reqType.setSearchValue(identity);
@@ -2403,24 +2400,21 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                              ManagedSystemObjectMatch matchObj, ExtensibleUser extUser,
                              ProvisionUser user, IdmAuditLog idmAuditLog) {
 
-        AddRequestType addReqType = new AddRequestType();
+        UserRequest addReqType = new UserRequest();
 
-        PSOIdentifierType idType = new PSOIdentifierType(mLg.getLogin(), null, "target");
-
-        addReqType.setPsoID(idType);
+        addReqType.setUserIdentity(mLg.getLogin());
         addReqType.setRequestID(requestId);
         addReqType.setTargetID(mLg.getManagedSysId());
-        addReqType.getData().getAny().add(extUser);
-        addReqType.setpUser(user);
+        addReqType.setUser(extUser);
         log.debug("Local connector - Creating identity in target system:" + mLg.getLoginId());
-        AddResponseType resp = connectorAdapter.addRequest(mSys, addReqType, muleContext);
+        UserResponse resp = connectorAdapter.addRequest(mSys, addReqType, muleContext);
 
         auditHelper.addLog("ADD IDENTITY", user.getRequestorDomain(), user.getRequestorLogin(),
                 "IDM SERVICE", user.getCreatedBy(), mLg.getManagedSysId(),
                 "USER", user.getUserId(),
                 idmAuditLog.getLogId(), resp.getStatus().toString(), idmAuditLog.getLogId(), "IDENTITY_STATUS",
                 "SUCCESS",
-                requestId, resp.getErrorCodeAsStr(), user.getSessionId(), resp.getErrorMessage(),
+                requestId, resp.getErrorCodeAsStr(), user.getSessionId(), resp.getErrorMsgAsStr(),
                 user.getRequestorLogin(), mLg.getLogin(), mLg.getDomainId());
 
         return resp.getStatus() != StatusCodeType.FAILURE;
@@ -2432,7 +2426,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
         log.debug("Calling remote connector " + connector.getName());
 
-        RemoteUserRequest userReq = new RemoteUserRequest();
+        UserRequest userReq = new UserRequest();
         userReq.setUserIdentity(mLg.getLogin());
         userReq.setRequestID(requestId);
         userReq.setTargetID(mLg.getManagedSysId());
@@ -2466,7 +2460,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
             IdmAuditLog auditLog
     ) {
 
-        RemoteUserRequest request = new RemoteUserRequest();
+        UserRequest request = new UserRequest();
 
         request.setUserIdentity(mLg.getLogin());
         request.setRequestID(requestId);
@@ -2495,17 +2489,15 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
     }
 
     protected ResponseType localDelete(Login l, String requestId,
-                                     PSOIdentifierType idType,
                                      ManagedSysDto mSys,
-                                     ProvisionUser user,
                                      IdmAuditLog auditLog) {
 
         log.debug("Local delete for=" + l);
 
-        DeleteRequestType reqType = new DeleteRequestType();
+        UserRequest reqType = new UserRequest();
         reqType.setRequestID(requestId);
-        reqType.setPsoID(idType);
-        reqType.setpUser(user);
+        reqType.setUserIdentity(l.getLogin());
+
         ResponseType resp = connectorAdapter.deleteRequest(mSys, reqType, muleContext);
 
         String logid = null;
@@ -2519,13 +2511,13 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
             logid = auditLog.getLogId();
         }
 
-        auditHelper.addLog("DELETE IDENTITY", user.getRequestorDomain(), user.getRequestorLogin(),
-                "IDM SERVICE", user.getCreatedBy(), l.getManagedSysId(),
-                "IDENTITY", user.getUserId(),
+        auditHelper.addLog("DELETE IDENTITY", l.getDomainId(), l.getLogin(),
+                "IDM SERVICE", l.getCreatedBy(), l.getManagedSysId(),
+                "IDENTITY", l.getUserId(),
                 logid, status, logid,
                 "IDENTITY_STATUS", "DELETED",
-                requestId, resp.getErrorCodeAsStr(), user.getSessionId(), resp.getErrorMessage(),
-                user.getRequestClientIP(), l.getLogin(), l.getDomainId());
+                requestId, resp.getErrorCodeAsStr(), "", resp.getErrorMsgAsStr(),
+                l.getLastLoginIP(), l.getLogin(), l.getDomainId());
 
         return resp;
     }
@@ -2545,10 +2537,9 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
     protected void localResetPassword(String requestId, Login login,
             String password, ManagedSysDto mSys, PasswordSync passwordSync) {
 
-        SetPasswordRequestType pswdReqType = new SetPasswordRequestType();
-        PSOIdentifierType idType = new PSOIdentifierType(login.getLogin(),
-                null, mSys.getManagedSysId());
-        pswdReqType.setPsoID(idType);
+        PasswordRequest pswdReqType = new PasswordRequest();
+        pswdReqType.setUserIdentity(login.getLogin());
+        pswdReqType.setTargetID(mSys.getManagedSysId());
         pswdReqType.setRequestID(requestId);
         pswdReqType.setPassword(password);
         ResponseType respType = connectorAdapter.setPasswordRequest(mSys, pswdReqType, muleContext);
@@ -2556,7 +2547,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
         auditHelper.addLog("RESET PASSWORD IDENTITY", passwordSync.getRequestorDomain(), passwordSync.getRequestorLogin(),
                 "IDM SERVICE", null, mSys.getManagedSysId(), "PASSWORD", null, null, respType.getStatus().toString(), "NA", null,
                 null,
-                requestId, respType.getErrorCodeAsStr(), null, respType.getErrorMessage(),
+                requestId, respType.getErrorCodeAsStr(), null, respType.getErrorMsgAsStr(),
                 null, login.getLogin(), login.getDomainId());
     }
     
@@ -2581,7 +2572,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
             ManagedSystemObjectMatch matchObj, ProvisionConnectorDto connector,
             PasswordSync passwordSync) {
 
-        RemotePasswordRequest req = new RemotePasswordRequest();
+        PasswordRequest req = new PasswordRequest();
         req.setUserIdentity(login.getLogin());
         req.setRequestID(requestId);
         req.setTargetID(login.getManagedSysId());
@@ -2622,7 +2613,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                                                                       ManagedSystemObjectMatch matchObj,
                                                                       ProvisionConnectorDto connector) {
 
-        RemotePasswordRequest req = new RemotePasswordRequest();
+        PasswordRequest req = new PasswordRequest();
         req.setUserIdentity(login.getLogin());
         req.setRequestID(requestId);
         req.setTargetID(login.getManagedSysId());
@@ -2660,31 +2651,20 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                                           PasswordSync passwordSync,
                                           ManagedSysDto mSys) {
 
-        SetPasswordRequestType pswdReqType = new SetPasswordRequestType();
-        PSOIdentifierType idType = new PSOIdentifierType(login.getLogin(), null,
-                mSys.getManagedSysId());
-        pswdReqType.setPsoID(idType);
+        PasswordRequest pswdReqType = new PasswordRequest();
+        pswdReqType.setUserIdentity(login.getLogin());
+        pswdReqType.setTargetID(mSys.getManagedSysId());
         pswdReqType.setRequestID(requestId);
         pswdReqType.setPassword(passwordSync.getPassword());
 
         // add the extensible attributes is they exist
-
-        if (passwordSync.isPassThruAttributes()) {
-            List<ExtensibleAttribute> attrList = passwordSync.getAttributeList();
-            if (attrList != null) {
-                ExtensibleObject extObj = new ExtensibleObject();
-                extObj.setName("ATTRIBUTES");
-                extObj.setAttributes(attrList);
-                pswdReqType.getAny().add(extObj);
-            }
-        }
 
         ResponseType respType = connectorAdapter.setPasswordRequest(mSys, pswdReqType, muleContext);
 
         auditHelper.addLog("SET PASSWORD IDENTITY", passwordSync.getRequestorDomain(), passwordSync.getRequestorLogin(),
                 "IDM SERVICE", null, "PASSWORD", "PASSWORD", null, null, respType.getStatus().toString(), "NA", null,
                 null,
-                requestId, respType.getErrorCodeAsStr(), null, respType.getErrorMessage(),
+                requestId, respType.getErrorCodeAsStr(), null, respType.getErrorMsgAsStr(),
                 passwordSync.getRequestClientIP(), login.getLogin(), login.getDomainId());
         return respType;
     }

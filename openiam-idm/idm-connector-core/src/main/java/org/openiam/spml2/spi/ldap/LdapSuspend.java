@@ -8,23 +8,16 @@ import javax.naming.ldap.LdapContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.SysConfiguration;
+import org.openiam.connector.type.*;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemObjectMatchDAO;
-import org.openiam.spml2.msg.ErrorCode;
-import org.openiam.spml2.msg.PSOIdentifierType;
-import org.openiam.spml2.msg.ResponseType;
-import org.openiam.spml2.msg.StatusCodeType;
-import org.openiam.spml2.msg.suspend.ActiveRequestType;
-import org.openiam.spml2.msg.suspend.ActiveResponseType;
-import org.openiam.spml2.msg.suspend.ResumeRequestType;
-import org.openiam.spml2.msg.suspend.SuspendRequestType;
 import org.openiam.spml2.spi.ldap.dirtype.Directory;
 import org.openiam.spml2.spi.ldap.dirtype.DirectorySpecificImplFactory;
 import org.openiam.spml2.util.connect.ConnectionFactory;
-import org.openiam.spml2.util.connect.ConnectionManagerConstant;
-import org.openiam.spml2.util.connect.ConnectionMgr;
+import org.openiam.connector.util.ConnectionManagerConstant;
+import org.openiam.connector.util.ConnectionMgr;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -43,9 +36,9 @@ public class LdapSuspend extends  LdapAbstractCommand implements ApplicationCont
 	protected SysConfiguration sysConfiguration;
 
     public static ApplicationContext ac;
-	
-	
-	public ResponseType suspend(SuspendRequestType request) {
+
+
+	public ResponseType suspend(SuspendRequest request) {
 		log.debug("suspend request called..");
 		// ldap does not have suspend/disable capability.
 		// work around is to scramble the password
@@ -53,16 +46,10 @@ public class LdapSuspend extends  LdapAbstractCommand implements ApplicationCont
         ResponseType resp = new ResponseType();
 		
 		String requestID = request.getRequestID();
-		/* PSO - Provisioning Service Object -
-		 *     -  ID must uniquely specify an object on the target or in the target's namespace  
-		 *     -  Try to make the PSO ID immutable so that there is consistency across changes. */
-		PSOIdentifierType psoID = request.getPsoID();
+
 		/* targetID -  */
-		String targetID = psoID.getTargetID();
-		/* ContainerID - May specify the container in which this object should be created
-		 *      ie. ou=Development, org=Example */
-		PSOIdentifierType containerID = psoID.getContainerID();
-			
+		String targetID = request.getTargetID();
+
 	
 		/* A) Use the targetID to look up the connection information under managed systems */
 		ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
@@ -82,7 +69,7 @@ public class LdapSuspend extends  LdapAbstractCommand implements ApplicationCont
             }
 
 
-            String ldapName = psoID.getID();
+            String ldapName = request.getUserIdentity();
 
             // check if this object exists in the target system
             // dont try to disable and object that does not exist
@@ -120,22 +107,19 @@ public class LdapSuspend extends  LdapAbstractCommand implements ApplicationCont
 
 	}
 
-	public ResponseType resume(ResumeRequestType request) {
+	public ResponseType resume(ResumeRequest request) {
 		log.debug("resume request called..");
         ConnectionMgr conMgr = null;
 		// ldap does not have suspend/disable capability.
 		// To resume, replace the scrambled password with the one that is stored in the IDM system
 		
 		String requestID = request.getRequestID();
-		/* PSO - Provisioning Service Object -
-		 *     -  ID must uniquely specify an object on the target or in the target's namespace  
-		 *     -  Try to make the PSO ID immutable so that there is consistency across changes. */
-		PSOIdentifierType psoID = request.getPsoID();
+
 		/* targetID -  */
-		String targetID = psoID.getTargetID();
+		String targetID = request.getTargetID();
 		/* ContainerID - May specify the container in which this object should be created
 		 *      ie. ou=Development, org=Example */
-		PSOIdentifierType containerID = psoID.getContainerID();
+		//PSOIdentifierType containerID = psoID.getContainerID();
 			
 	
 		/* A) Use the targetID to look up the connection information under managed systems */
@@ -148,7 +132,7 @@ public class LdapSuspend extends  LdapAbstractCommand implements ApplicationCont
             LdapContext ldapctx = conMgr.connect(managedSys);
 
             log.debug("Ldapcontext = " + ldapctx);
-            String ldapName = psoID.getID();
+            String ldapName = request.getUserIdentity();
 
             // check if this object exists in the target system
             // dont try to enable and object that does not exist
@@ -189,11 +173,6 @@ public class LdapSuspend extends  LdapAbstractCommand implements ApplicationCont
     public void setApplicationContext(ApplicationContext applicationContext){
         ac = applicationContext;
     }
-
-	public ActiveResponseType active(ActiveRequestType request) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 	public ManagedSystemWebService getManagedSysService() {
 		return managedSysService;

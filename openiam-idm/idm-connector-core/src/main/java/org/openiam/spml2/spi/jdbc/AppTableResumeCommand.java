@@ -1,19 +1,18 @@
 package org.openiam.spml2.spi.jdbc;
 
 import org.apache.commons.lang.StringUtils;
+import org.openiam.connector.type.ErrorCode;
+import org.openiam.connector.type.ResponseType;
+import org.openiam.connector.type.ResumeRequest;
+import org.openiam.connector.type.StatusCodeType;
 import org.openiam.exception.EncryptionException;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
-import org.openiam.spml2.msg.ErrorCode;
-import org.openiam.spml2.msg.PSOIdentifierType;
-import org.openiam.spml2.msg.ResponseType;
-import org.openiam.spml2.msg.StatusCodeType;
-import org.openiam.spml2.msg.suspend.ResumeRequestType;
 import org.openiam.spml2.spi.common.ResumeCommand;
-import org.openiam.spml2.util.msg.ResponseBuilder;
+import org.openiam.connector.util.ResponseBuilder;
 import org.springframework.beans.factory.annotation.Required;
 
 import java.sql.Connection;
@@ -33,17 +32,16 @@ public class AppTableResumeCommand extends AbstractAppTableCommand implements Re
 
     private LoginDataService loginManager;
 
-    public ResponseType resume(ResumeRequestType request) {
+    public ResponseType resume(ResumeRequest request) {
         Connection con = null;
 
         final ResponseType response = new ResponseType();
         response.setStatus(StatusCodeType.SUCCESS);
 
-        final String principalName = request.getPsoID().getID();
+        final String principalName = request.getUserIdentity();
 
-        final PSOIdentifierType psoID = request.getPsoID();
         /* targetID -  */
-        final String targetID = psoID.getTargetID();
+        final String targetID = request.getTargetID();
 
         List<LoginEntity> loginList = loginManager.getLoginDetailsByManagedSys(principalName, targetID);
         if (loginList == null || loginList.isEmpty()) {

@@ -2,6 +2,7 @@ package org.openiam.spml2.util.connect;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.connector.util.ConnectionMgr;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.springframework.beans.factory.annotation.Value;

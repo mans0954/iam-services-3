@@ -3,6 +3,7 @@ package org.openiam.connector.type;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
 import org.openiam.provision.type.ExtensibleUser;
@@ -35,20 +36,32 @@ import org.openiam.provision.type.ExtensibleUser;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "UserRequest", propOrder = {
         "userIdentity",
+        "userIdentityAttributeName",
         "containerID",
         "operation",
-        "user"
+        "user",
+        "scriptHandler"
 })
 public class UserRequest   extends RequestType
 {
-
+    /**
+     * Value of identity attribute
+     */
     protected String userIdentity;
+    /**
+     * Attribute name for identity value
+     */
+    protected String userIdentityAttributeName;
+
     protected String containerID;
 
     /* Change to an enum */
     protected String operation;
 
     protected ExtensibleUser user;
+
+    @XmlElement
+    private String scriptHandler;
 
     public UserRequest() {}
 
@@ -71,8 +84,13 @@ public class UserRequest   extends RequestType
         this.user = user;
     }
 
+    public String getScriptHandler() {
+        return scriptHandler;
+    }
 
-
+    public void setScriptHandler(String scriptHandler) {
+        this.scriptHandler = scriptHandler;
+    }
 
     public String getUserIdentity() {
         return userIdentity;
@@ -108,7 +126,11 @@ public class UserRequest   extends RequestType
         this.user = user;
     }
 
+    public String getUserIdentityAttributeName() {
+        return userIdentityAttributeName;
+    }
 
-
-
+    public void setUserIdentityAttributeName(String userIdentityAttributeName) {
+        this.userIdentityAttributeName = userIdentityAttributeName;
+    }
 }

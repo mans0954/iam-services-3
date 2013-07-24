@@ -1,5 +1,8 @@
 package org.openiam.spml2.util.connect;
 
+import org.openiam.connector.util.ConnectionManagerConstant;
+import org.openiam.connector.util.ConnectionMgr;
+
 /**
  * Created by IntelliJ IDEA.
  * User: suneetshah

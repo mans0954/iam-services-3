@@ -1,28 +1,27 @@
 package org.openiam.spml2.spi.salesforce;
 
 import java.text.ParseException;
-import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.openiam.connector.type.ErrorCode;
+import org.openiam.connector.type.StatusCodeType;
+import org.openiam.connector.type.UserRequest;
+import org.openiam.connector.type.UserResponse;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.spml2.msg.AddRequestType;
-import org.openiam.spml2.msg.AddResponseType;
-import org.openiam.spml2.msg.ErrorCode;
-import org.openiam.spml2.msg.StatusCodeType;
 import org.openiam.spml2.spi.common.AddCommand;
 import org.openiam.spml2.spi.salesforce.exception.SalesForceDataIntegrityException;
 import org.openiam.spml2.spi.salesforce.exception.SalesForcePersistException;
-import org.openiam.spml2.util.msg.ResponseBuilder;
+import org.openiam.connector.util.ResponseBuilder;
 
 import com.sforce.ws.ConnectionException;
 
 public class SalesforceAddCommand extends AbstractSalesForceInsertCommand implements AddCommand {
 
 	@Override
-	public AddResponseType add(AddRequestType reqType) {
-        final AddResponseType response = new AddResponseType();
+	public UserResponse add(UserRequest reqType) {
+        final UserResponse response = new UserResponse();
         response.setStatus(StatusCodeType.SUCCESS);
 
         final String targetID = reqType.getTargetID();
@@ -43,12 +42,12 @@ public class SalesforceAddCommand extends AbstractSalesForceInsertCommand implem
             return response;
         }
         
-        final String principalName = reqType.getPsoID().getID();
+        final String principalName = reqType.getUserIdentity();
 		
         try {
 			
-        	final List<ExtensibleObject> objectList = reqType.getData().getAny();
-        	insertOrUpdate(principalName, objectList, managedSys);
+        	final ExtensibleObject user = reqType.getUser();
+        	insertOrUpdate(principalName, user, managedSys);
 			//com.sforce.soap.partner.sobject.SObject
 			//partnerConnection.create(sObjects);
         } catch(SalesForcePersistException e) {

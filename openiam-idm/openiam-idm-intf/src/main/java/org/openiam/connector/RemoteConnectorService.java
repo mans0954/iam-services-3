@@ -1,15 +1,13 @@
-package org.openiam.spml2.interf;
+package org.openiam.connector;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
-import javax.naming.ldap.LdapContext;
 
 import org.openiam.connector.type.*;
 import org.openiam.connector.type.ResponseType;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
-import org.openiam.spml2.msg.*;
 
 
 /**
@@ -37,7 +35,7 @@ public interface RemoteConnectorService {
     @WebMethod(action="http://www.openiam.org/service/connector/RemoteConnectorService/add")
     UserResponse add(
             @WebParam(name = "reqType", targetNamespace = "")
-            RemoteUserRequest reqType);
+            UserRequest reqType);
 
     /**
      * The modify operation enables a requestor to update an existing user in the target system
@@ -47,7 +45,7 @@ public interface RemoteConnectorService {
     @WebMethod(action="http://www.openiam.org/service/connector/RemoteConnectorService/modify")
     UserResponse modify(
             @WebParam(name = "reqType", targetNamespace = "")
-            RemoteUserRequest reqType);
+            UserRequest reqType);
 
     /**
      * The delete operation enables the requestor to remove a new user from the target system
@@ -57,13 +55,13 @@ public interface RemoteConnectorService {
     @WebMethod(action="http://www.openiam.org/service/connector/RemoteConnectorService/delete")
     UserResponse delete(
             @WebParam(name = "reqType", targetNamespace = "")
-            RemoteUserRequest reqType);
+            UserRequest reqType);
 
 
     @WebMethod(action="http://www.openiam.org/service/connector/RemoteConnectorService/lookup")
-    LookupResponse lookup(
+    UserResponse lookup(
             @WebParam(name = "lookupRequest", targetNamespace = "")
-            RemoteLookupRequest lookupRequest);
+            LookupRequest lookupRequest);
 
     @WebMethod(action="http://www.openiam.org/service/connector/RemoteConnectorService/search")
     SearchResponse search(
@@ -78,7 +76,7 @@ public interface RemoteConnectorService {
     @WebMethod(action="http://www.openiam.org/service/connector/RemoteConnectorService/setPassword")
     ResponseType setPassword(
             @WebParam(name = "request", targetNamespace = "")
-            RemotePasswordRequest request);
+            PasswordRequest request);
 
 
     /**
@@ -90,7 +88,7 @@ public interface RemoteConnectorService {
     @WebMethod(action="http://www.openiam.org/service/connector/RemoteConnectorService/resetPassword")
     ResponseType resetPassword(
             @WebParam(name = "request", targetNamespace = "")
-            RemotePasswordRequest request);
+            PasswordRequest request);
 
 
 
@@ -125,6 +123,6 @@ public interface RemoteConnectorService {
     @WebMethod(action="http://www.openiam.org/service/connector/RemoteConnectorService/reconcileResource")
     public ResponseType reconcileResource(
             @WebParam(name = "config", targetNamespace = "")
-            RemoteReconciliationConfig config);
+            ReconciliationConfig config);
 }
 

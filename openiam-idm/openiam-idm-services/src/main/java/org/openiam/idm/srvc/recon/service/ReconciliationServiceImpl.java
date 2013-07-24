@@ -39,6 +39,7 @@ import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.connector.type.SearchRequest;
 import org.openiam.connector.type.SearchResponse;
+import org.openiam.connector.type.StatusCodeType;
 import org.openiam.connector.type.UserValue;
 import org.openiam.dozer.converter.LoginDozerConverter;
 import org.openiam.dozer.converter.ManagedSysDozerConverter;
@@ -60,6 +61,8 @@ import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
+
+
 import org.openiam.idm.srvc.msg.service.MailService;
 import org.openiam.idm.srvc.recon.command.ReconciliationCommandFactory;
 import org.openiam.idm.srvc.recon.domain.ReconciliationConfigEntity;
@@ -89,7 +92,6 @@ import org.openiam.provision.service.ProvisionService;
 import org.openiam.provision.service.RemoteConnectorAdapter;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.script.ScriptIntegration;
-import org.openiam.spml2.msg.StatusCodeType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;

@@ -1,4 +1,4 @@
-package org.openiam.spml2.util.connect;
+package org.openiam.connector.util;
 
 import javax.naming.*;
 import javax.naming.ldap.LdapContext;

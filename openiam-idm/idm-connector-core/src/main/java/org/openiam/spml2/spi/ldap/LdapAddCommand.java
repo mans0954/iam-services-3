@@ -1,6 +1,10 @@
 package org.openiam.spml2.spi.ldap;
 
 import org.openiam.base.BaseAttribute;
+import org.openiam.connector.type.ErrorCode;
+import org.openiam.connector.type.StatusCodeType;
+import org.openiam.connector.type.UserRequest;
+import org.openiam.connector.type.UserResponse;
 import org.openiam.exception.ConfigurationException;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
@@ -8,21 +12,18 @@ import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.spml2.msg.*;
 import org.openiam.spml2.spi.ldap.dirtype.Directory;
 import org.openiam.spml2.spi.ldap.dirtype.DirectorySpecificImplFactory;
 import org.openiam.spml2.util.connect.ConnectionFactory;
-import org.openiam.spml2.util.connect.ConnectionManagerConstant;
-import org.openiam.spml2.util.connect.ConnectionMgr;
+import org.openiam.connector.util.ConnectionManagerConstant;
+import org.openiam.connector.util.ConnectionMgr;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.directory.*;
 import javax.naming.ldap.LdapContext;
-import javax.xml.namespace.QName;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -31,9 +32,9 @@ import java.util.Set;
  */
 public class LdapAddCommand extends LdapAbstractCommand {
 
-    public AddResponseType add(AddRequestType reqType) {
+    public UserResponse add(UserRequest reqType) {
 
-        AddResponseType response = new AddResponseType();
+        UserResponse response = new UserResponse();
         response.setStatus(StatusCodeType.SUCCESS);
         List<BaseAttribute> targetMembershipList = new ArrayList<BaseAttribute>();
 
@@ -44,22 +45,9 @@ public class LdapAddCommand extends LdapAbstractCommand {
         log.debug("add request called..");
 
         String requestID = reqType.getRequestID();
-        /* ContainerID - May specify the container in which this object should be created
-           *      ie. ou=Development, org=Example */
-        PSOIdentifierType containerID = reqType.getContainerID();
-        /* PSO - Provisioning Service Object -
-           *     -  ID must uniquely specify an object on the target or in the target's namespace
-           *     -  Try to make the PSO ID immutable so that there is consistency across changes. */
-        PSOIdentifierType psoID = reqType.getPsoID();
+
         /* targetID -  */
         String targetID = reqType.getTargetID();
-
-        // Data sent with request - Data must be present in the request per the spec
-        ExtensibleType data = reqType.getData();
-        Map<QName, String> otherData = reqType.getOtherAttributes();
-
-        /* Indicates what type of data we should return from this operations */
-        ReturnDataType returnData = reqType.getReturnData();
 
 
         /* A) Use the targetID to look up the connection information under managed systems */
@@ -122,7 +110,7 @@ public class LdapAddCommand extends LdapAbstractCommand {
 
             // get the field that is to be used as the UniqueIdentifier
             //String ldapName = matchObj.getKeyField() +"=" + psoID.getID() + "," + baseDN;
-            String ldapName = psoID.getID();
+            String ldapName = reqType.getUserIdentity();
 
             log.debug("Checking if the identity exists: " + ldapName);
 
@@ -138,7 +126,7 @@ public class LdapAddCommand extends LdapAbstractCommand {
 
 
 
-            BasicAttributes basicAttr = getBasicAttributes(reqType.getData().getAny(), matchObj.getKeyField(),
+            BasicAttributes basicAttr = getBasicAttributes(reqType.getUser(), matchObj.getKeyField(),
                     targetMembershipList, groupMembershipEnabled);
 
 
@@ -149,7 +137,7 @@ public class LdapAddCommand extends LdapAbstractCommand {
             if (groupMembershipEnabled) {
 
 
-                dirSpecificImp.updateAccountMembership(targetMembershipList,ldapName,  matchObj, ldapctx, reqType.getData().getAny());
+                dirSpecificImp.updateAccountMembership(targetMembershipList,ldapName,  matchObj, ldapctx, reqType.getUser());
             }
 
 

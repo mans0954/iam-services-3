@@ -26,13 +26,12 @@ import java.util.List;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 
-import org.openiam.connector.type.SearchRequest;
-import org.openiam.connector.type.SearchResponse;
+import org.openiam.connector.type.*;
+import org.openiam.connector.type.ResponseType;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.spml2.base.AbstractSpml2Complete;
-import org.openiam.spml2.interf.ConnectorService;
-import org.openiam.spml2.msg.*;
+import org.openiam.connector.ConnectorService;
 import org.openiam.provision.type.ExtensibleAddress;
 import org.openiam.provision.type.ExtensibleEmailAddress;
 import org.openiam.provision.type.ExtensibleGroup;
@@ -41,15 +40,6 @@ import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensiblePhone;
 import org.openiam.provision.type.ExtensibleRole;
 import org.openiam.provision.type.ExtensibleUser;
-
-import org.openiam.spml2.msg.password.ExpirePasswordRequestType;
-import org.openiam.spml2.msg.password.ResetPasswordRequestType;
-import org.openiam.spml2.msg.password.ResetPasswordResponseType;
-import org.openiam.spml2.msg.password.SetPasswordRequestType;
-import org.openiam.spml2.msg.password.ValidatePasswordRequestType;
-import org.openiam.spml2.msg.password.ValidatePasswordResponseType;
-import org.openiam.spml2.msg.suspend.ResumeRequestType;
-import org.openiam.spml2.msg.suspend.SuspendRequestType;
 
 /**
  * Connector shell that can be used to jumpstart the creation of a connector service.
@@ -81,58 +71,57 @@ public class ExampleComplete  extends AbstractSpml2Complete implements Connector
 	/* (non-Javadoc)
 	 * @see org.openiam.spml2.interf.SpmlCore#add(org.openiam.spml2.msg.AddRequestType)
 	 */
-	public AddResponseType add(AddRequestType reqType) {
+	public UserResponse add(UserRequest reqType) {
 		System.out.println("add request called..");
 		
-		System.out.println("POS Identitfier: " + reqType.getPsoID().getID());
+		System.out.println("POS Identitfier: " + reqType.getUserIdentity());
 		System.out.println("RequestID: " + reqType.getRequestID());
 		System.out.println("TargetId: " + reqType.getTargetID());
 		
 		System.out.println("Data:" );
-		List<ExtensibleObject> objList = reqType.getData().getAny();
-		for (ExtensibleObject obj: objList) {
-			System.out.println("Object:" + obj.getName() + " - operation=" + obj.getOperation());
-			List<ExtensibleAttribute> attrList =  obj.getAttributes();
-			for (ExtensibleAttribute att: attrList) {
-				System.out.println("-->Attribute:" + att.getName() + " - value=" + att.getValue() + " operation=" + att.getOperation());
-			}
-			
-			ExtensibleUser extUser =  (ExtensibleUser)obj;
-		
-			// show the groups for this user
-			List<ExtensibleGroup> extGroupList =  extUser.getGroup();
-			for (ExtensibleGroup g : extGroupList) {
-				System.out.println("Group:" + g.getGroup().getGrpId());
-			}
-			
-			// show the roles for this user
-			List<ExtensibleRole> extRoleList =  extUser.getRole();
-			System.out.println("Roles=" + extRoleList);
-			for (ExtensibleRole r : extRoleList) {
-				System.out.println("Role:" + r.getRole().getRoleId());
-			}
-			// show the Addresses
-			List<ExtensibleAddress> extAddressList =  (List<ExtensibleAddress>)extUser.getAddress();
-			for (ExtensibleAddress adr : extAddressList) {
-				System.out.println("Address: " + adr.getAddress().getAddress1());
-			}
-			
-			
-			// show the email accounts
-			List<ExtensiblePhone> extPhoneList = extUser.getPhone();
-			for (ExtensiblePhone phone: extPhoneList) {
-				System.out.println("Address: " + phone.getPhone().getPhoneNbr());
-			}
-			
-			// show the phone numbers
-			List<ExtensibleEmailAddress> extEmailList = extUser.getEmail();
-			for (ExtensibleEmailAddress email: extEmailList) {
-				System.out.println("Email address:" + email.getEmailAddress().getEmailAddress());
-			}
-			
-		}
+        ExtensibleObject obj = reqType.getUser();
 
-		AddResponseType resp = new AddResponseType();
+        System.out.println("Object:" + obj.getName() + " - operation=" + obj.getOperation());
+        List<ExtensibleAttribute> attrList = obj.getAttributes();
+        for (ExtensibleAttribute att : attrList) {
+            System.out.println("-->Attribute:" + att.getName() + " - value=" + att.getValue() + " operation=" + att.getOperation());
+        }
+
+        ExtensibleUser extUser = (ExtensibleUser) obj;
+
+        // show the groups for this user
+        List<ExtensibleGroup> extGroupList = extUser.getGroup();
+        for (ExtensibleGroup g : extGroupList) {
+            System.out.println("Group:" + g.getGroup().getGrpId());
+        }
+
+        // show the roles for this user
+        List<ExtensibleRole> extRoleList = extUser.getRole();
+        System.out.println("Roles=" + extRoleList);
+        for (ExtensibleRole r : extRoleList) {
+            System.out.println("Role:" + r.getRole().getRoleId());
+        }
+        // show the Addresses
+        List<ExtensibleAddress> extAddressList = (List<ExtensibleAddress>) extUser.getAddress();
+        for (ExtensibleAddress adr : extAddressList) {
+            System.out.println("Address: " + adr.getAddress().getAddress1());
+        }
+
+
+        // show the email accounts
+        List<ExtensiblePhone> extPhoneList = extUser.getPhone();
+        for (ExtensiblePhone phone : extPhoneList) {
+            System.out.println("Address: " + phone.getPhone().getPhoneNbr());
+        }
+
+        // show the phone numbers
+        List<ExtensibleEmailAddress> extEmailList = extUser.getEmail();
+        for (ExtensibleEmailAddress email : extEmailList) {
+            System.out.println("Email address:" + email.getEmailAddress().getEmailAddress());
+        }
+
+
+        UserResponse resp = new UserResponse();
 		resp.setRequestID(reqType.getRequestID());
 		resp.setStatus(StatusCodeType.SUCCESS);
 		return resp;
@@ -146,32 +135,24 @@ public class ExampleComplete  extends AbstractSpml2Complete implements Connector
 	/* (non-Javadoc)
 	 * @see org.openiam.spml2.interf.SpmlCore#delete(org.openiam.spml2.msg.DeleteRequestType)
 	 */
-	public ResponseType delete(DeleteRequestType reqType) {
+	public UserResponse delete(UserRequest reqType) {
 		System.out.println("delete request called..");
 		
-		System.out.println("POS Identitfier: " + reqType.getPsoID().getID());
+		System.out.println("POS Identitfier: " + reqType.getUserIdentity());
 		System.out.println("RequestID: " + reqType.getRequestID());
-		System.out.println("Target: " + reqType.getPsoID().getTargetID());
-		
-	
-		ResponseType resp = new ResponseType();
+		System.out.println("Target: " + reqType.getTargetID());
+
+
+        UserResponse resp = new UserResponse();
 		resp.setRequestID(reqType.getRequestID());
 		resp.setStatus(StatusCodeType.SUCCESS);
 		return resp;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.openiam.spml2.interf.SpmlCore#listTargets(org.openiam.spml2.msg.ListTargetsRequestType)
-	 */
-	public ListTargetsResponseType listTargets(ListTargetsRequestType reqType) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	/* (non-Javadoc)
 	 * @see org.openiam.spml2.interf.SpmlCore#lookup(org.openiam.spml2.msg.LookupRequestType)
 	 */
-	public LookupResponseType lookup(LookupRequestType reqType) {
+	public SearchResponse lookup(LookupRequest reqType) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -182,8 +163,8 @@ public class ExampleComplete  extends AbstractSpml2Complete implements Connector
 * @see org.openiam.spml2.interf.SpmlCore#lookupAttributeNames(org.openiam.spml2.msg.
 * LookupAttributeRequestType)
 */
-    public LookupAttributeResponseType lookupAttributeNames(LookupAttributeRequestType reqType){
-        LookupAttributeResponseType respType = new LookupAttributeResponseType();
+    public LookupAttributeResponse lookupAttributeNames(LookupRequest reqType){
+        LookupAttributeResponse respType = new LookupAttributeResponse();
         respType.setStatus(StatusCodeType.FAILURE);
         respType.setError(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION);
 
@@ -193,61 +174,55 @@ public class ExampleComplete  extends AbstractSpml2Complete implements Connector
 	/* (non-Javadoc)
 	 * @see org.openiam.spml2.interf.SpmlCore#modify(org.openiam.spml2.msg.ModifyRequestType)
 	 */
-	public ModifyResponseType modify(ModifyRequestType reqType) {
+	public UserResponse modify(UserRequest reqType) {
 		System.out.println("add request called..");
 		
-		System.out.println("POS Identitfier: " + reqType.getPsoID().getID());
+		System.out.println("POS Identitfier: " + reqType.getUserIdentity());
 		System.out.println("RequestID: " + reqType.getRequestID());
-		System.out.println("TargetId: " + reqType.getPsoID().getTargetID());
+		System.out.println("TargetId: " + reqType.getTargetID());
 		
 		System.out.println("Data:" );
-		List<ModificationType> modTypeList = reqType.getModification(); 
-		for (ModificationType mod: modTypeList) {
-			ExtensibleType extType =  mod.getData();
-			List<ExtensibleObject> extobjectList = extType.getAny();
-			for (ExtensibleObject obj: extobjectList) {
-				System.out.println("Object:" + obj.getName() + " - operation=" + obj.getOperation());
-				List<ExtensibleAttribute> attrList =  obj.getAttributes();
-				for (ExtensibleAttribute att: attrList) {
-					System.out.println("-->Attribute:" + att.getName() + " - value=" + att.getValue() + " operation=" + att.getOperation());
-				}
-				
-				ExtensibleUser extUser =  (ExtensibleUser)obj;
-				
-				// show the groups for this user
-				List<ExtensibleGroup> extGroupList =  extUser.getGroup();
-				for (ExtensibleGroup g : extGroupList) {
-					System.out.println("Group:" + g.getGroup().getGrpId() + " OPERATION=" + g.getOperation());
-				}
-				
-				// show the roles for this user
-				List<ExtensibleRole> extRoleList =  extUser.getRole();
-				System.out.println("Roles=" + extRoleList);
-				for (ExtensibleRole r : extRoleList) {
-					System.out.println("Role:" + r.getRole().getRoleId() + " OPERATION=" + r.getOperation());
-				}
+        ExtensibleObject obj = reqType.getUser();
+        System.out.println("Object:" + obj.getName() + " - operation=" + obj.getOperation());
+        List<ExtensibleAttribute> attrList = obj.getAttributes();
+        for (ExtensibleAttribute att : attrList) {
+            System.out.println("-->Attribute:" + att.getName() + " - value=" + att.getValue() + " operation=" + att.getOperation());
+        }
 
-				List<ExtensibleAddress> extAddressList =  (List<ExtensibleAddress>)extUser.getAddress();
-				for (ExtensibleAddress adr : extAddressList) {
-					System.out.println("Address: " + adr.getAddress().getAddress1() + " - " + adr.getName());
-				}
-				
-				
-				// show the email accounts
-				List<ExtensiblePhone> extPhoneList = extUser.getPhone();
-				for (ExtensiblePhone phone: extPhoneList) {
-					System.out.println("Phone: " + phone.getPhone().getPhoneNbr() + " - " + phone.getName());
-				}
-				
-				// show the phone numbers
-				List<ExtensibleEmailAddress> extEmailList = extUser.getEmail();
-				for (ExtensibleEmailAddress email: extEmailList) {
-					System.out.println("Email address:" + email.getEmailAddress().getEmailAddress());
-				}
-				
-			}
-		}
-		ModifyResponseType resp = new ModifyResponseType();
+        ExtensibleUser extUser = (ExtensibleUser) obj;
+
+        // show the groups for this user
+        List<ExtensibleGroup> extGroupList = extUser.getGroup();
+        for (ExtensibleGroup g : extGroupList) {
+            System.out.println("Group:" + g.getGroup().getGrpId() + " OPERATION=" + g.getOperation());
+        }
+
+        // show the roles for this user
+        List<ExtensibleRole> extRoleList = extUser.getRole();
+        System.out.println("Roles=" + extRoleList);
+        for (ExtensibleRole r : extRoleList) {
+            System.out.println("Role:" + r.getRole().getRoleId() + " OPERATION=" + r.getOperation());
+        }
+
+        List<ExtensibleAddress> extAddressList = (List<ExtensibleAddress>) extUser.getAddress();
+        for (ExtensibleAddress adr : extAddressList) {
+            System.out.println("Address: " + adr.getAddress().getAddress1() + " - " + adr.getName());
+        }
+
+
+        // show the email accounts
+        List<ExtensiblePhone> extPhoneList = extUser.getPhone();
+        for (ExtensiblePhone phone : extPhoneList) {
+            System.out.println("Phone: " + phone.getPhone().getPhoneNbr() + " - " + phone.getName());
+        }
+
+        // show the phone numbers
+        List<ExtensibleEmailAddress> extEmailList = extUser.getEmail();
+        for (ExtensibleEmailAddress email : extEmailList) {
+            System.out.println("Email address:" + email.getEmailAddress().getEmailAddress());
+        }
+
+        UserResponse resp = new UserResponse();
 		resp.setRequestID(reqType.getRequestID());
 		resp.setStatus(StatusCodeType.SUCCESS);
 		return resp;
@@ -256,7 +231,7 @@ public class ExampleComplete  extends AbstractSpml2Complete implements Connector
 	/* (non-Javadoc)
 	 * @see org.openiam.spml2.interf.SpmlPassword#expirePassword(org.openiam.spml2.msg.password.ExpirePasswordRequestType)
 	 */
-	public ResponseType expirePassword(ExpirePasswordRequestType request) {
+	public ResponseType expirePassword(PasswordRequest request) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -264,8 +239,8 @@ public class ExampleComplete  extends AbstractSpml2Complete implements Connector
 	/* (non-Javadoc)
 	 * @see org.openiam.spml2.interf.SpmlPassword#resetPassword(org.openiam.spml2.msg.password.ResetPasswordRequestType)
 	 */
-	public ResetPasswordResponseType resetPassword(
-			ResetPasswordRequestType request) {
+	public ResponseType resetPassword(
+            PasswordRequest request) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -273,10 +248,10 @@ public class ExampleComplete  extends AbstractSpml2Complete implements Connector
 	/* (non-Javadoc)
 	 * @see org.openiam.spml2.interf.SpmlPassword#setPassword(org.openiam.spml2.msg.password.SetPasswordRequestType)
 	 */
-	public ResponseType setPassword(SetPasswordRequestType request) {
+	public ResponseType setPassword(PasswordRequest request) {
 		System.out.println("setPassword request called..");
 		
-		System.out.println("POS Identitfier: " + request.getPsoID().getID());
+		System.out.println("POS Identitfier: " + request.getUserIdentity());
 		System.out.println("RequestID: " + request.getRequestID());
 		System.out.println("Password: " + request.getPassword());
 		
@@ -287,19 +262,17 @@ public class ExampleComplete  extends AbstractSpml2Complete implements Connector
 		return resp;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.spml2.interf.SpmlPassword#validatePassword(org.openiam.spml2.msg.password.ValidatePasswordRequestType)
-	 */
-	public ValidatePasswordResponseType validatePassword(
-			ValidatePasswordRequestType request) {
+	public ResponseType validatePassword(
+            PasswordRequest request) {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	public ResponseType suspend(SuspendRequestType request) {
+
+	public ResponseType suspend(SuspendRequest request) {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	public ResponseType resume(ResumeRequestType request) {
+	public ResponseType resume(ResumeRequest request) {
 		// TODO Auto-generated method stub
 		return null;
 	}

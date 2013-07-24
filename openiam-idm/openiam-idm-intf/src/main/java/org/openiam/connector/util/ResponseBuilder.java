@@ -1,8 +1,8 @@
-package org.openiam.spml2.util.msg;
+package org.openiam.connector.util;
 
-import org.openiam.spml2.msg.ErrorCode;
-import org.openiam.spml2.msg.ResponseType;
-import org.openiam.spml2.msg.StatusCodeType;
+import org.openiam.connector.type.ErrorCode;
+import org.openiam.connector.type.ResponseType;
+import org.openiam.connector.type.StatusCodeType;
 
 public final class ResponseBuilder {
 

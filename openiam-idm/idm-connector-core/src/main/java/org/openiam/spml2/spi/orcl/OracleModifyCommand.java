@@ -1,6 +1,9 @@
 package org.openiam.spml2.spi.orcl;
 
-import org.openiam.spml2.msg.*;
+import org.openiam.connector.type.ErrorCode;
+import org.openiam.connector.type.StatusCodeType;
+import org.openiam.connector.type.UserRequest;
+import org.openiam.connector.type.UserResponse;
 import org.openiam.spml2.spi.common.ModifyCommand;
 
 /**
@@ -12,8 +15,8 @@ import org.openiam.spml2.spi.common.ModifyCommand;
  */
 public class OracleModifyCommand extends AbstractOracleCommand implements ModifyCommand {
     @Override
-    public ModifyResponseType modify(ModifyRequestType reqType) {
-        ModifyResponseType response = new ModifyResponseType();
+    public UserResponse modify(UserRequest reqType) {
+        UserResponse response = new UserResponse();
         response.setStatus(StatusCodeType.FAILURE);
         response.setError(ErrorCode.UNSUPPORTED_OPERATION);
         return response;

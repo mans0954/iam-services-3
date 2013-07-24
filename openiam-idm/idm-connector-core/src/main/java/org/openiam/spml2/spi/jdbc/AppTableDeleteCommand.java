@@ -1,12 +1,15 @@
 package org.openiam.spml2.spi.jdbc;
 
 import org.apache.commons.lang.StringUtils;
+import org.openiam.connector.type.ErrorCode;
+import org.openiam.connector.type.StatusCodeType;
+import org.openiam.connector.type.UserRequest;
+import org.openiam.connector.type.UserResponse;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
-import org.openiam.spml2.msg.*;
 import org.openiam.spml2.spi.common.DeleteCommand;
-import org.openiam.spml2.util.msg.ResponseBuilder;
+import org.openiam.connector.util.ResponseBuilder;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -22,15 +25,13 @@ import java.text.ParseException;
  */
 public class AppTableDeleteCommand extends AbstractAppTableCommand implements DeleteCommand {
 
-    public ResponseType delete(final DeleteRequestType reqType) {
-        final ResponseType response = new ResponseType();
+    public UserResponse delete(final UserRequest reqType) {
+        final UserResponse response = new UserResponse();
         response.setStatus(StatusCodeType.SUCCESS);
 
+        final String principalName = reqType.getUserIdentity();
 
-        final String principalName = reqType.getPsoID().getID();
-
-        final PSOIdentifierType psoID = reqType.getPsoID();
-        final String targetID = psoID.getTargetID();
+        final String targetID = reqType.getTargetID();
 
         ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
 

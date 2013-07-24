@@ -1,14 +1,13 @@
 package org.openiam.spml2.spi.jdbc;
 
 import org.apache.commons.lang.StringUtils;
+import org.openiam.connector.type.*;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.provision.type.ExtensibleAttribute;
-import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.spml2.msg.*;
 import org.openiam.spml2.spi.common.LookupCommand;
-import org.openiam.spml2.util.msg.ResponseBuilder;
+import org.openiam.connector.util.ResponseBuilder;
 
 import java.sql.*;
 import java.text.ParseException;
@@ -22,21 +21,20 @@ import java.text.ParseException;
  */
 public class AppTableLookupCommand extends AbstractAppTableCommand implements LookupCommand {
 
-    public LookupResponseType lookup(LookupRequestType reqType) {
+    public SearchResponse lookup(LookupRequest reqType) {
         boolean found = false;
 
         if(log.isDebugEnabled()) {
             log.debug("AppTable lookup operation called.");
         }
 
-        final LookupResponseType response = new LookupResponseType();
+        final SearchResponse response = new SearchResponse();
         response.setStatus(StatusCodeType.SUCCESS);
 
-        final String principalName = reqType.getPsoID().getID();
+        final String principalName = reqType.getSearchValue();
 
-        final PSOIdentifierType psoID = reqType.getPsoID();
         /* targetID -  */
-        final String targetID = psoID.getTargetID();
+        final String targetID = reqType.getTargetID();
 
         final ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
         if(managedSys == null) {
@@ -70,8 +68,8 @@ public class AppTableLookupCommand extends AbstractAppTableCommand implements Lo
 
         Connection con = null;
 
-        final ExtensibleObject resultObject = new ExtensibleObject();
-        resultObject.setObjectId(principalName);
+        final UserValue userValue = new UserValue();
+        userValue.setUserIdentity(principalName);
 
 
         try {
@@ -103,10 +101,11 @@ public class AppTableLookupCommand extends AbstractAppTableCommand implements Lo
                     extAttr.setName(rsMetadata.getColumnName(colIndx));
 
                     setColumnValue(extAttr, colIndx, rsMetadata, rs);
-                    resultObject.getAttributes().add(extAttr);
+
+                    userValue.getAttributeList().add(extAttr);
                 }
 
-                response.getAny().add(resultObject);
+                response.getUserList().add(userValue);
             } else {
                 if(log.isDebugEnabled()) {
                     log.debug("Principal not found");

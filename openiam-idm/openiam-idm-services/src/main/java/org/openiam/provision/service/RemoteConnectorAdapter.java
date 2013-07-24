@@ -32,10 +32,7 @@ import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
 import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
-import org.openiam.spml2.interf.ConnectorService;
-import org.openiam.spml2.msg.*;
-import org.openiam.spml2.msg.suspend.ResumeRequestType;
-import org.openiam.spml2.msg.suspend.SuspendRequestType;
+import org.openiam.connector.ConnectorService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.xml.namespace.QName;
@@ -60,7 +57,7 @@ public class RemoteConnectorAdapter {
     private ProvisionConnectorWebService connectorService;
     private final static int RESEND_COUNT = 3;
 
-    public UserResponse addRequest(ManagedSysDto managedSys, RemoteUserRequest addReqType, ProvisionConnectorDto connector, MuleContext muleContext) {
+    public UserResponse addRequest(ManagedSysDto managedSys, UserRequest addReqType, ProvisionConnectorDto connector, MuleContext muleContext) {
         UserResponse resp = new UserResponse();
         try {
 
@@ -129,7 +126,7 @@ public class RemoteConnectorAdapter {
         return resp;
     }
 
-    public UserResponse modifyRequest(ManagedSysDto managedSys, RemoteUserRequest request, ProvisionConnectorDto connector, MuleContext muleContext) {
+    public UserResponse modifyRequest(ManagedSysDto managedSys, UserRequest request, ProvisionConnectorDto connector, MuleContext muleContext) {
         UserResponse resp = new UserResponse();
         try {
             if (managedSys == null) {
@@ -162,7 +159,7 @@ public class RemoteConnectorAdapter {
 
     }
 
-    public LookupResponse lookupRequest(ManagedSysDto managedSys, RemoteLookupRequest req, ProvisionConnectorDto connector, MuleContext muleContext) {
+    public LookupResponse lookupRequest(ManagedSysDto managedSys, LookupRequest req, ProvisionConnectorDto connector, MuleContext muleContext) {
 
         LookupResponse resp = new LookupResponse();
 
@@ -196,7 +193,7 @@ public class RemoteConnectorAdapter {
 
     }
 
-    public UserResponse deleteRequest(ManagedSysDto managedSys, RemoteUserRequest request, ProvisionConnectorDto connector, MuleContext muleContext) {
+    public UserResponse deleteRequest(ManagedSysDto managedSys, UserRequest request, ProvisionConnectorDto connector, MuleContext muleContext) {
         UserResponse resp = new UserResponse();
 
         if (managedSys == null) {
@@ -230,7 +227,7 @@ public class RemoteConnectorAdapter {
 
     }
 
-    public ResponseType setPasswordRequest(ManagedSysDto managedSys, RemotePasswordRequest request, ProvisionConnectorDto connector, MuleContext muleContext) {
+    public ResponseType setPasswordRequest(ManagedSysDto managedSys, PasswordRequest request, ProvisionConnectorDto connector, MuleContext muleContext) {
         ResponseType resp = new ResponseType();
 
         if (managedSys == null) {
@@ -267,7 +264,7 @@ public class RemoteConnectorAdapter {
 
     }
 
-    public ResponseType resetPasswordRequest(ManagedSysDto managedSys, RemotePasswordRequest request, ProvisionConnectorDto connector, MuleContext muleContext) {
+    public ResponseType resetPasswordRequest(ManagedSysDto managedSys, PasswordRequest request, ProvisionConnectorDto connector, MuleContext muleContext) {
         ResponseType resp = new ResponseType();
 
         if (managedSys == null) {
@@ -306,7 +303,7 @@ public class RemoteConnectorAdapter {
 
     }
 
-    public ResponseType suspend(ManagedSysDto managedSys, SuspendRequestType request, ProvisionConnectorDto connector, MuleContext muleContext) {
+    public ResponseType suspend(ManagedSysDto managedSys, SuspendRequest request, ProvisionConnectorDto connector, MuleContext muleContext) {
         ResponseType resp = new ResponseType();
 
         if (managedSys == null) {
@@ -346,7 +343,7 @@ public class RemoteConnectorAdapter {
 
     }
 
-    public ResponseType resumeRequest(ManagedSysDto managedSys, ResumeRequestType request, ProvisionConnectorDto connector, MuleContext muleContext) {
+    public ResponseType resumeRequest(ManagedSysDto managedSys, ResumeRequest request, ProvisionConnectorDto connector, MuleContext muleContext) {
         ResponseType resp = new ResponseType();
 
         if (managedSys == null) {
@@ -462,7 +459,7 @@ public class RemoteConnectorAdapter {
         return resp;
     }
 
-    public ResponseType reconcileResource(RemoteReconciliationConfig config, ProvisionConnectorDto connector, MuleContext muleContext){
+    public ResponseType reconcileResource(ReconciliationConfig config, ProvisionConnectorDto connector, MuleContext muleContext){
         ResponseType resp = new ResponseType();
         if (config == null) {
             resp.setStatus(StatusCodeType.FAILURE);
@@ -538,11 +535,11 @@ public class RemoteConnectorAdapter {
             }
             if (operation.equalsIgnoreCase("suspend")) {
 
-                msg = client.send("vm://remoteConnectorMessageSuspend", (SuspendRequestType) reqType, msgPropMap);
+                msg = client.send("vm://remoteConnectorMessageSuspend", (SuspendRequest) reqType, msgPropMap);
             }
             if (operation.equalsIgnoreCase("resume")) {
 
-                msg = client.send("vm://remoteConnectorMessageResume", (ResumeRequestType) reqType, msgPropMap);
+                msg = client.send("vm://remoteConnectorMessageResume", (ResumeRequest) reqType, msgPropMap);
             }
             if (operation.equalsIgnoreCase("testConnection")) {
 

@@ -1,32 +1,30 @@
 package org.openiam.spml2.spi.csv;
 
+import org.openiam.connector.type.*;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.spml2.msg.ErrorCode;
-import org.openiam.spml2.msg.LookupRequestType;
-import org.openiam.spml2.msg.LookupResponseType;
-import org.openiam.spml2.msg.StatusCodeType;
 import org.springframework.stereotype.Service;
 
 @Service
 public class LookupCSVCommand extends AbstractCSVCommand {
-	public LookupResponseType lookup(LookupRequestType reqType) {
-		LookupResponseType response = new LookupResponseType();
+	public SearchResponse lookup(LookupRequest reqType) {
+        SearchResponse response = new SearchResponse();
 		response.setStatus(StatusCodeType.SUCCESS);
 		log.debug("add request called..");
 
-		String principal = reqType.getPsoID().getID();
+		String principal = reqType.getSearchValue();
 		/*
 		 * A) Use the targetID to look up the connection information under
 		 * managed systems
 		 */
 		ManagedSysEntity managedSys = managedSysService
-				.getManagedSysById(reqType.getPsoID().getTargetID());
+				.getManagedSysById(reqType.getTargetID());
 
 		// Initialise
 		try {
-			if (this.lookupObjectInCSV(principal, managedSys, response.getAny())) {
+            UserValue user = this.lookupObjectInCSV(principal, managedSys);
+			if (user != null) {
 				response.setStatus(StatusCodeType.SUCCESS);
-
+                response.getUserList().add(user);
 			} else
 				response.setStatus(StatusCodeType.FAILURE);
 		} catch (Exception e) {

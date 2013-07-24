@@ -1,7 +1,7 @@
 package org.openiam.spml2.spi.common;
 
-import org.openiam.spml2.msg.DeleteRequestType;
-import org.openiam.spml2.msg.ResponseType;
+import org.openiam.connector.type.UserRequest;
+import org.openiam.connector.type.UserResponse;
 
 /**
  * Created with IntelliJ IDEA.
@@ -11,5 +11,5 @@ import org.openiam.spml2.msg.ResponseType;
  * To change this template use File | Settings | File Templates.
  */
 public interface DeleteCommand {
-    public ResponseType delete(final DeleteRequestType reqType);
+    public UserResponse delete(final UserRequest reqType);
 }

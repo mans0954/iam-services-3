@@ -14,14 +14,19 @@ import org.apache.commons.collections.MapUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.constants.CSVSource;
+import org.openiam.connector.type.StatusCodeType;
+import org.openiam.connector.type.UserValue;
 import org.openiam.dozer.converter.UserDozerConverter;
-import org.openiam.idm.parser.csv.ProvisionUserCSVParser;
-import org.openiam.idm.parser.csv.UserCSVParser;
+
+import org.openiam.idm.parser.csv.CSVParser;
 import org.openiam.idm.srvc.auth.dto.Login;
+import org.openiam.idm.srvc.auth.login.LoginDataService;
+
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.msg.service.MailService;
+import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.idm.srvc.recon.command.ReconciliationCommandFactory;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.idm.srvc.recon.dto.ReconciliationObject;
@@ -37,18 +42,20 @@ import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceService;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
+
 import org.openiam.idm.srvc.user.util.UserUtils;
 import org.openiam.idm.srvc.user.ws.UserDataWebService;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.type.ExtensibleAttribute;
-import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.spml2.msg.ResponseType;
-import org.openiam.spml2.msg.StatusCodeType;
+import org.openiam.provision.type.ExtensibleUser;
+import org.openiam.connector.type.ResponseType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.StringUtils;
 
 public class AbstractCSVCommand {
+
+
     protected static final Log log = LogFactory
             .getLog(AbstractCSVCommand.class);
     @Autowired
@@ -56,21 +63,28 @@ public class AbstractCSVCommand {
     @Autowired
     protected ResourceService resourceDataService;
     @Autowired
-    protected UserCSVParser userCSVParser;
+    protected CSVParser<User> userCSVParser;
     @Autowired
-    protected ProvisionUserCSVParser provisionUserCSVParser;
+    protected CSVParser<ExtensibleUser> provisionUserCSVParser;
     @Autowired
     private MailService mailService;
     @Resource(name = "userServiceClient")
     protected UserDataWebService userDataWebService;
     @Autowired
     private UserDozerConverter userDozerConverter;
+    @Autowired
+    private OrganizationDataService orgManager;
+    @Autowired
+    private LoginDataService loginManager;
+
     @Value("${iam.files.location}")
-    private String absolutePath;
+    protected String pathToCSV;
 
     @Value("${openiam.default_managed_sys}")
     protected String defaultManagedSysId;
 
+    @Value("${iam.files.location}")
+    private String absolutePath;
     // public static ApplicationContext ac;
 
     @Deprecated
@@ -130,7 +144,7 @@ public class AbstractCSVCommand {
         if (users == null) {
             log.error("user list from DB is empty");
             response.setStatus(StatusCodeType.FAILURE);
-            response.setErrorMessage("user list from DB is empty");
+            response.addErrorMessage("user list from DB is empty");
             return response;
         }
         List<AttributeMapEntity> attrMapList = managedSysService
@@ -140,7 +154,7 @@ public class AbstractCSVCommand {
         if (CollectionUtils.isEmpty(attrMapList)) {
             log.error("user list from DB is empty");
             response.setStatus(StatusCodeType.FAILURE);
-            response.setErrorMessage("attrMapList is empty");
+            response.addErrorMessage("attrMapList is empty");
             return response;
         }
         List<ReconciliationObject<User>> idmUsers = null;
@@ -169,7 +183,7 @@ public class AbstractCSVCommand {
             } catch (Exception e) {
                 log.error(e.getMessage());
                 response.setStatus(StatusCodeType.FAILURE);
-                response.setErrorMessage(e.getMessage());
+                response.addErrorMessage(e.getMessage());
                 message.append("ERROR:" + response.getErrorMessage());
             }
             try {
@@ -180,7 +194,7 @@ public class AbstractCSVCommand {
             } catch (Exception e) {
                 log.error(e.getMessage());
                 response.setStatus(StatusCodeType.FAILURE);
-                response.setErrorMessage(e.getMessage());
+                response.addErrorMessage(e.getMessage());
                 message.append("ERROR:" + response.getErrorMessage());
             }
             for (ReconciliationObject<User> obj : dbUsers) {
@@ -219,7 +233,7 @@ public class AbstractCSVCommand {
         } catch (Exception e) {
             log.error(e);
             response.setStatus(StatusCodeType.FAILURE);
-            response.setErrorMessage(e.getMessage() + e.getStackTrace());
+            response.addErrorMessage(e.getMessage() + e.getStackTrace());
             message.append(response.getErrorMessage());
         }
         this.saveReconciliationResults(mSys.getResourceId(), resultBean);
@@ -227,8 +241,15 @@ public class AbstractCSVCommand {
         return response;
     }
 
+    private List<ExtensibleAttribute> getExtensibleAttributesList(
+            ReconciliationResultRow headerRow,
+            List<AttributeMapEntity> attrMapList, ReconciliationObject<User> u) {
+        return UserUtils.reconciliationResultFieldMapToExtensibleAttributeList(
+                headerRow, userCSVParser.convertToMap(attrMapList, u));
+    }
+
     private void sendMail(StringBuilder message, ReconciliationConfig config,
-            ResourceEntity res) {
+                          ResourceEntity res) {
         if (StringUtils.hasText(config.getNotificationEmailAddress())) {
             message.append("Resource: " + res.getName() + ".\n");
             message.append("Uploaded CSV file: " + res.getResourceId()
@@ -241,7 +262,7 @@ public class AbstractCSVCommand {
     }
 
     private void saveReconciliationResults(String fileName,
-            ReconciliationResultBean resultBean) {
+                                           ReconciliationResultBean resultBean) {
         int i = 0;
         resultBean.getHeader().setRowId(i++);
         for (ReconciliationResultRow row : resultBean.getRows()) {
@@ -250,56 +271,22 @@ public class AbstractCSVCommand {
         Serializer.serialize(resultBean, absolutePath + fileName + ".rcndat");
     }
 
-    private ReconciliationResultRow setRowInReconciliationResult(
-            ReconciliationResultRow headerRow,
-            List<AttributeMapEntity> attrMapList,
-            ReconciliationObject<User> currentObject,
-            ReconciliationObject<User> findedObject,
-            ReconciliationResultCase caseReconciliation) {
-        ReconciliationResultRow row = new ReconciliationResultRow();
-
-        Map<String, ReconciliationResultField> resultMap = null;
-        if (currentObject != null && findedObject != null) {
-            resultMap = this.matchFields(attrMapList, currentObject,
-                    findedObject);
-            if (!MapUtils.isEmpty(resultMap)) {
-                for (ReconciliationResultField field : resultMap.values())
-                    if (field.getValues().size() > 1) {
-                        caseReconciliation = ReconciliationResultCase.MATCH_FOUND_DIFFERENT;
-                        break;
-                    }
-            }
-        } else if (currentObject != null) {
-            resultMap = userCSVParser.convertToMap(attrMapList, currentObject);
-        }
-        row.setCaseReconciliation(caseReconciliation);
-        List<ReconciliationResultField> fieldList = new ArrayList<ReconciliationResultField>();
-        if (!MapUtils.isEmpty(resultMap)) {
-            for (ReconciliationResultField field : headerRow.getFields()) {
-                ReconciliationResultField value = resultMap.get(field
-                        .getValues().get(0));
-                if (value == null)
-                    continue;
-                ReconciliationResultField newField = new ReconciliationResultField();
-                newField.setValues(value.getValues());
-                fieldList.add(newField);
-            }
-        }
-        row.setFields(fieldList);
-        return row;
+    private String objectToString(List<String> head, Map<String, ReconciliationResultField> obj) {
+        return userCSVParser.objectToString(head, obj);
     }
 
-    private Map<String, ReconciliationResultField> matchFields(
-            List<AttributeMapEntity> attrMap, ReconciliationObject<User> u,
-            ReconciliationObject<User> o) {
+    private String objectToString(List<String> head,
+                                  List<AttributeMapEntity> attrMapList, ReconciliationObject<User> u) {
+        return userCSVParser.objectToString(head, attrMapList, u);
+    }
+
+    private Map<String, ReconciliationResultField> matchFields(List<AttributeMapEntity> attrMap,
+                                            ReconciliationObject<User> u, ReconciliationObject<User> o) {
         return userCSVParser.matchFields(attrMap, u, o);
     }
 
     /**
-     * 
-     * @param hList
-     * @param report
-     * @param preffix
+     *
      * @param reconUserList
      * @param dbUsers
      * @param attrMapList
@@ -431,8 +418,8 @@ public class AbstractCSVCommand {
                             log.debug("Call command for: Record in resource and in IDM");
                             command.execute(l,
                                     new ProvisionUser(u.getObject()), this
-                                            .getExtensibleAttributesList(
-                                                    headerRow, attrMapList, u));
+                                    .getExtensibleAttributesList(
+                                            headerRow, attrMapList, u));
                         }
                     }
                     rows.add(this.setRowInReconciliationResult(headerRow,
@@ -483,7 +470,44 @@ public class AbstractCSVCommand {
         }
         return used;
     }
+    private ReconciliationResultRow setRowInReconciliationResult(
+            ReconciliationResultRow headerRow,
+            List<AttributeMapEntity> attrMapList,
+            ReconciliationObject<User> currentObject,
+            ReconciliationObject<User> findedObject,
+            ReconciliationResultCase caseReconciliation) {
+        ReconciliationResultRow row = new ReconciliationResultRow();
 
+        Map<String, ReconciliationResultField> resultMap = null;
+        if (currentObject != null && findedObject != null) {
+            resultMap = this.matchFields(attrMapList, currentObject,
+                    findedObject);
+            if (!MapUtils.isEmpty(resultMap)) {
+                for (ReconciliationResultField field : resultMap.values())
+                    if (field.getValues().size() > 1) {
+                        caseReconciliation = ReconciliationResultCase.MATCH_FOUND_DIFFERENT;
+                        break;
+                    }
+            }
+        } else if (currentObject != null) {
+            resultMap = userCSVParser.convertToMap(attrMapList, currentObject);
+        }
+        row.setCaseReconciliation(caseReconciliation);
+        List<ReconciliationResultField> fieldList = new ArrayList<ReconciliationResultField>();
+        if (!MapUtils.isEmpty(resultMap)) {
+            for (ReconciliationResultField field : headerRow.getFields()) {
+                ReconciliationResultField value = resultMap.get(field
+                        .getValues().get(0));
+                if (value == null)
+                    continue;
+                ReconciliationResultField newField = new ReconciliationResultField();
+                newField.setValues(value.getValues());
+                fieldList.add(newField);
+            }
+        }
+        row.setFields(fieldList);
+        return row;
+    }
     protected List<ReconciliationObject<User>> getUsersFromCSV(
             ManagedSysEntity managedSys) throws Exception {
         List<AttributeMapEntity> attrMapList = managedSysService
@@ -499,69 +523,72 @@ public class AbstractCSVCommand {
         return userCSVParser.convertToMap(attrMapList, obj);
     }
 
-    private List<ExtensibleAttribute> getExtensibleAttributesList(
-            ReconciliationResultRow headerRow,
-            List<AttributeMapEntity> attrMapList, ReconciliationObject<User> u) {
-        return UserUtils.reconciliationResultFieldMapToExtensibleAttributeList(
-                headerRow, userCSVParser.convertToMap(attrMapList, u));
-    }
-
-    protected void addUsersToCSV(String principal, User newUser,
-            ManagedSysEntity managedSys) throws Exception {
+    protected void addUsersToCSV(String principal, ExtensibleUser newUser,
+                                 ManagedSysEntity managedSys) throws Exception {
         List<AttributeMapEntity> attrMapList = managedSysService
                 .getResourceAttributeMaps(managedSys.getResourceId());
-        userCSVParser.add(new ReconciliationObject<User>(principal, newUser),
+        //TODO check
+        User user = userDataWebService.getUserByPrincipal(managedSys.getDomainId(),principal,managedSys.getManagedSysId(),true);
+        userCSVParser.add(new ReconciliationObject<User>(principal, user),
                 managedSys, attrMapList, CSVSource.IDM);
     }
 
-    protected void deleteUser(String principal, User newUser,
-            ManagedSysEntity managedSys) throws Exception {
+    protected void deleteUser(String principal, ExtensibleUser newUser,
+                              ManagedSysEntity managedSys) throws Exception {
         List<AttributeMapEntity> attrMapList = managedSysService
                 .getResourceAttributeMaps(managedSys.getResourceId());
         userCSVParser.delete(principal, managedSys, attrMapList, CSVSource.IDM);
     }
 
     protected void updateUser(ReconciliationObject<User> newUser,
-            ManagedSysEntity managedSys) throws Exception {
+                              ManagedSysEntity managedSys) throws Exception {
         List<AttributeMapEntity> attrMapList = managedSysService
                 .getResourceAttributeMaps(managedSys.getResourceId());
         userCSVParser.update(newUser, managedSys, attrMapList, CSVSource.IDM);
     }
 
-    protected boolean lookupObjectInCSV(String findValue,
-            ManagedSysEntity managedSys, List<ExtensibleObject> extOnjectList)
+    protected UserValue lookupObjectInCSV(String findValue,
+                                          ManagedSysEntity managedSys)
             throws Exception {
         List<ReconciliationObject<User>> users = this
                 .getUsersFromCSV(managedSys);
         List<ExtensibleAttribute> eAttr = new ArrayList<ExtensibleAttribute>(0);
 
         for (ReconciliationObject<User> user : users) {
-            ExtensibleObject extOnject = new ExtensibleObject();
-            if (match(findValue, user, extOnject)) {
-                Map<String, ReconciliationResultField> res = this
-                        .getUserProvisionMap(user, managedSys);
-                for (String key : res.keySet())
+            if (match(findValue, user)) {
+                UserValue userValue = new UserValue();
+                Map<String, ReconciliationResultField> res = this.getUserProvisionMap(user,
+                        managedSys);
+                for (String key : res.keySet()) {
                     if (res.get(key) != null)
                         eAttr.add(new ExtensibleAttribute(key, user
                                 .getPrincipal()));
-                extOnject.setAttributes(eAttr);
-                extOnjectList.add(extOnject);
-                return true;
+                }
+                userValue.setUserIdentity(user.getPrincipal());
+                userValue.setAttributeList(eAttr);
+                return userValue;
             }
         }
-        return false;
+        return null;
     }
 
-    protected boolean match(String findValue, ReconciliationObject<User> user2,
-            ExtensibleObject extOnject) {
-        if (!StringUtils.hasText(findValue) || user2 == null) {
-            return false;
-        }
-        if (findValue.equals(user2.getPrincipal())) {
-            extOnject.setObjectId(user2.getPrincipal());
-            return true;
-        }
-        return false;
+    protected boolean match(String findValue, ReconciliationObject<User> user2) {
+        return StringUtils.hasText(findValue) && user2 != null && findValue.equals(user2.getPrincipal());
+    }
+
+    /**
+     * @return the orgManager
+     */
+    public OrganizationDataService getOrgManager() {
+        return orgManager;
+    }
+
+    /**
+     * @param orgManager
+     *            the orgManager to set
+     */
+    public void setOrgManager(OrganizationDataService orgManager) {
+        this.orgManager = orgManager;
     }
 
 }

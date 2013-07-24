@@ -1,7 +1,7 @@
 package org.openiam.spml2.spi.csv;
 
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
-import org.openiam.spml2.msg.ResponseType;
+import org.openiam.connector.type.ResponseType;
 import org.springframework.stereotype.Service;
 
 @Service

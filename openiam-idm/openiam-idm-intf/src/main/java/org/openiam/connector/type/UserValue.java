@@ -5,6 +5,7 @@ import org.openiam.provision.type.ExtensibleAttribute;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+import java.util.LinkedList;
 import java.util.List;
 
 
@@ -18,7 +19,7 @@ public class UserValue extends ResponseType
 {
 
     protected String userIdentity;
-    List<ExtensibleAttribute> attributeList;
+    List<ExtensibleAttribute> attributeList = new LinkedList<ExtensibleAttribute>();
 
 	public String getUserIdentity() {
 		return userIdentity;

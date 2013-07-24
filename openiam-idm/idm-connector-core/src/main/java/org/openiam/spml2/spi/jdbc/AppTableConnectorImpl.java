@@ -23,12 +23,7 @@ package org.openiam.spml2.spi.jdbc;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.connector.type.SearchRequest;
-import org.openiam.connector.type.SearchResponse;
-import org.openiam.spml2.msg.ErrorCode;
-import org.openiam.spml2.msg.LookupAttributeRequestType;
-import org.openiam.spml2.msg.LookupAttributeResponseType;
-import org.openiam.spml2.msg.StatusCodeType;
+import org.openiam.connector.type.*;
 import org.openiam.spml2.spi.common.jdbc.AbstractJDBCConnectorImpl;
 
 import javax.jws.WebParam;
@@ -55,8 +50,8 @@ public class AppTableConnectorImpl extends AbstractJDBCConnectorImpl {
     * @see org.openiam.spml2.interf.SpmlCore#lookupAttributeNames(org.openiam.spml2.msg.
     * LookupAttributeRequestType)
     */
-    public LookupAttributeResponseType lookupAttributeNames(LookupAttributeRequestType reqType){
-        LookupAttributeResponseType respType = new LookupAttributeResponseType();
+    public LookupAttributeResponse lookupAttributeNames(LookupRequest reqType){
+        LookupAttributeResponse respType = new LookupAttributeResponse();
         respType.setStatus(StatusCodeType.FAILURE);
         respType.setError(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION);
 

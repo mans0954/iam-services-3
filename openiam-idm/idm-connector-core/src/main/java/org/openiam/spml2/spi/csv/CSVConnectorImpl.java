@@ -9,10 +9,9 @@ import javax.jws.WebService;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.connector.type.SearchRequest;
-import org.openiam.connector.type.SearchResponse;
+import org.openiam.connector.type.*;
+import org.openiam.connector.type.ResponseType;
 import org.openiam.dozer.converter.ManagedSysDozerConverter;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.recon.command.ReconciliationCommandFactory;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
@@ -21,23 +20,13 @@ import org.openiam.idm.srvc.recon.service.ReconciliationCommand;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.spml2.base.AbstractSpml2Complete;
-import org.openiam.spml2.interf.ConnectorService;
-import org.openiam.spml2.msg.*;
-import org.openiam.spml2.msg.password.ExpirePasswordRequestType;
-import org.openiam.spml2.msg.password.ResetPasswordRequestType;
-import org.openiam.spml2.msg.password.ResetPasswordResponseType;
-import org.openiam.spml2.msg.password.SetPasswordRequestType;
-import org.openiam.spml2.msg.password.ValidatePasswordRequestType;
-import org.openiam.spml2.msg.password.ValidatePasswordResponseType;
-import org.openiam.spml2.msg.suspend.ResumeRequestType;
-import org.openiam.spml2.msg.suspend.SuspendRequestType;
+import org.openiam.connector.ConnectorService;
 import org.openiam.spml2.spi.common.LookupAttributeNamesCommand;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.stereotype.Service;
 
 @WebService(endpointInterface = "org.openiam.spml2.interf.ConnectorService", targetNamespace = "http://www.openiam.org/service/connector", portName = "CSVConnectorServicePort", serviceName = "CSVConnectorService")
 public class CSVConnectorImpl extends AbstractSpml2Complete implements
@@ -106,8 +95,8 @@ public class CSVConnectorImpl extends AbstractSpml2Complete implements
 
     @Override
     @WebMethod(action = "http://www.openiam.org/service/connector/ConnectorService/add")
-    public AddResponseType add(
-            @WebParam(name = "reqType", targetNamespace = "") AddRequestType reqType) {
+    public UserResponse add(
+            @WebParam(name = "reqType", targetNamespace = "") UserRequest reqType) {
         return addCommand.add(reqType);
     }
 
@@ -121,15 +110,15 @@ public class CSVConnectorImpl extends AbstractSpml2Complete implements
 
     @Override
     @WebMethod(action = "http://www.openiam.org/service/connector/ConnectorService/modify")
-    public ModifyResponseType modify(
-            @WebParam(name = "reqType", targetNamespace = "") ModifyRequestType reqType) {
+    public UserResponse modify(
+            @WebParam(name = "reqType", targetNamespace = "") UserRequest reqType) {
         return modifyCommand.modify(reqType);
     }
 
     @Override
     @WebMethod(action = "http://www.openiam.org/service/connector/ConnectorService/delete")
-    public ResponseType delete(
-            @WebParam(name = "reqType", targetNamespace = "") DeleteRequestType reqType) {
+    public UserResponse delete(
+            @WebParam(name = "reqType", targetNamespace = "") UserRequest reqType) {
         return modifyCommand.delete(reqType);
     }
 
@@ -139,8 +128,8 @@ public class CSVConnectorImpl extends AbstractSpml2Complete implements
 
     @Override
     @WebMethod(action = "http://www.openiam.org/service/connector/ConnectorService/lookup")
-    public LookupResponseType lookup(
-            @WebParam(name = "reqType", targetNamespace = "") LookupRequestType reqType) {
+    public SearchResponse lookup(
+            @WebParam(name = "reqType", targetNamespace = "") LookupRequest reqType) {
         return lookupCommand.lookup(reqType);
     }
 
@@ -153,15 +142,15 @@ public class CSVConnectorImpl extends AbstractSpml2Complete implements
      */
     @Override
     @WebMethod(action = "http://www.openiam.org/service/connector/ConnectorService/lookupAttributeNames")
-    public LookupAttributeResponseType lookupAttributeNames(
-            LookupAttributeRequestType reqType) {
+    public LookupAttributeResponse lookupAttributeNames(
+            LookupRequest reqType) {
         return lookupAttributeNamesCommand.lookupAttributeNames(reqType);
     }
 
     @Override
     @WebMethod(action = "http://www.openiam.org/service/connector/ConnectorService/setPassword")
     public ResponseType setPassword(
-            @WebParam(name = "request", targetNamespace = "") SetPasswordRequestType request) {
+            @WebParam(name = "request", targetNamespace = "") PasswordRequest request) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -169,15 +158,15 @@ public class CSVConnectorImpl extends AbstractSpml2Complete implements
     @Override
     @WebMethod(action = "http://www.openiam.org/service/connector/ConnectorService/expirePassword")
     public ResponseType expirePassword(
-            @WebParam(name = "request", targetNamespace = "") ExpirePasswordRequestType request) {
+            @WebParam(name = "request", targetNamespace = "") PasswordRequest request) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     @WebMethod(action = "http://www.openiam.org/service/connector/ConnectorService/resetPassword")
-    public ResetPasswordResponseType resetPassword(
-            @WebParam(name = "request", targetNamespace = "") ResetPasswordRequestType request) {
+    public ResponseType resetPassword(
+            @WebParam(name = "request", targetNamespace = "") PasswordRequest request) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -189,8 +178,8 @@ public class CSVConnectorImpl extends AbstractSpml2Complete implements
 
     @Override
     @WebMethod(action = "http://www.openiam.org/service/connector/ConnectorService/validatePassword")
-    public ValidatePasswordResponseType validatePassword(
-            @WebParam(name = "request", targetNamespace = "") ValidatePasswordRequestType request) {
+    public ResponseType validatePassword(
+            @WebParam(name = "request", targetNamespace = "") PasswordRequest request) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -198,7 +187,7 @@ public class CSVConnectorImpl extends AbstractSpml2Complete implements
     @Override
     @WebMethod(action = "http://www.openiam.org/service/connector/ConnectorService/suspend")
     public ResponseType suspend(
-            @WebParam(name = "request", targetNamespace = "") SuspendRequestType request) {
+            @WebParam(name = "request", targetNamespace = "") SuspendRequest request) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -206,7 +195,7 @@ public class CSVConnectorImpl extends AbstractSpml2Complete implements
     @Override
     @WebMethod(action = "http://www.openiam.org/service/connector/ConnectorService/resume")
     public ResponseType resume(
-            @WebParam(name = "request", targetNamespace = "") ResumeRequestType request) {
+            @WebParam(name = "request", targetNamespace = "") ResumeRequest request) {
         // TODO Auto-generated method stub
         return null;
     }

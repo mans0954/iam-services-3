@@ -31,6 +31,7 @@ import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.connector.type.*;
 import org.openiam.dozer.converter.LoginDozerConverter;
 import org.openiam.dozer.converter.SupervisorDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
@@ -48,6 +49,7 @@ import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
@@ -76,9 +78,7 @@ import org.openiam.provision.resp.PasswordResponse;
 import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptIntegration;
-import org.openiam.spml2.interf.ConnectorService;
-import org.openiam.spml2.msg.*;
-import org.openiam.spml2.msg.password.SetPasswordRequestType;
+import org.openiam.connector.ConnectorService;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -461,14 +461,18 @@ public class ProvisionServiceImpl implements ProvisionService,
 
                             log.info("connector service client " + port);
 
+                            /* TODO was removed when Refactoring
+
                             AddRequestType addReqType = new AddRequestType();
                             PSOIdentifierType idType = new PSOIdentifierType(lg
                                     .getLogin(), null, "target");
                             addReqType.setPsoID(idType);
-                            requestId = "R" + System.currentTimeMillis();
+
                             addReqType.setRequestID(requestId);
                             addReqType
                                     .setTargetID(lg.getManagedSysId());
+                            addReqType.getData().getAny().add(extUser);
+                                    */
 
                             ExtensibleUser extUser = null;
 
@@ -486,8 +490,28 @@ public class ProvisionServiceImpl implements ProvisionService,
                             // extUser);
 
                             // addReqType.getData().getAny().add(sysAttribute.getExtUser());
-                            addReqType.getData().getAny().add(extUser);
-                            port.add(addReqType);
+
+
+
+                            requestId = "R" + System.currentTimeMillis();
+                            UserRequest userReq = new UserRequest();
+                            userReq.setUserIdentity(lg.getLogin());
+                            userReq.setRequestID(requestId);
+                            userReq.setTargetID(lg.getManagedSysId());
+                            userReq.setHostLoginId(managedSys.getUserId());
+                            userReq.setHostLoginPassword(managedSys.getPswd());
+                            userReq.setHostUrl(managedSys.getHostUrl());
+                            ManagedSystemObjectMatch matchObj = null;
+                            ManagedSystemObjectMatch[] matchObjAry = managedSysService
+                                    .managedSysObjectParam(lg.getManagedSysId(), "USER");
+                            if (matchObjAry != null && matchObjAry.length > 0) {
+                                matchObj = matchObjAry[0];
+                            }
+                            userReq.setBaseDN(matchObj!= null ? matchObj.getBaseDn() : null);
+                            userReq.setOperation("EDIT");
+                            userReq.setUser(extUser);
+
+                            port.add(userReq);
                             syncCalled = true;
 
                         }
@@ -647,13 +671,12 @@ public class ProvisionServiceImpl implements ProvisionService,
 
                             log.info("connector service client " + client);
 
-                            DeleteRequestType deleteRequest = new DeleteRequestType();
-                            PSOIdentifierType idType = new PSOIdentifierType(lg
-                                    .getLogin(), null, lg.getManagedSysId());
+                            UserRequest deleteRequest = new UserRequest();
+
                             deleteRequest.setRequestID("R"
                                     + System.currentTimeMillis());
-                            deleteRequest.setRecursive(new Boolean(true));
-                            deleteRequest.setPsoID(idType);
+
+                            deleteRequest.setUserIdentity(lg.getLogin());
 
                             ResponseType respType = client
                                     .delete(deleteRequest);
@@ -1122,13 +1145,6 @@ public class ProvisionServiceImpl implements ProvisionService,
 
                             log.info("connector service client " + port);
 
-                            ModifyRequestType modReqType = new ModifyRequestType();
-                            PSOIdentifierType idType = new PSOIdentifierType(lg
-                                    .getLogin(), null, "target");
-                            idType.setTargetID(lg.getManagedSysId());
-                            modReqType.setPsoID(idType);
-                            modReqType.setRequestID(requestId);
-
                             ExtensibleUser extUser = null;
 
                             // TODO - Move to use groovy script based on
@@ -1156,12 +1172,11 @@ public class ProvisionServiceImpl implements ProvisionService,
                             log.info("Ext user attributes="
                                     + extUser.getAttributes().size());
 
-                            ModificationType mod = new ModificationType();
-                            mod.getData().getAny().add(extUser);
-
-                            List<ModificationType> modTypeList = modReqType
-                                    .getModification();
-                            modTypeList.add(mod);
+                            UserRequest modReqType = new UserRequest();
+                            modReqType.setUserIdentity(lg.getLogin());
+                            modReqType.setRequestID(requestId);
+                            modReqType.setTargetID(lg.getManagedSysId());
+                            modReqType.setUser(extUser);
 
                             port.modify(modReqType);
 
@@ -1782,12 +1797,9 @@ public class ProvisionServiceImpl implements ProvisionService,
 
                     log.info("connector service client " + client);
 
-                    SetPasswordRequestType pswdReqType = new SetPasswordRequestType();
-                    PSOIdentifierType idType = new PSOIdentifierType(
-                            passwordSync.getPrincipal(), null,
-                            passwordSync.getManagedSystemId());
-                    pswdReqType.setPsoID(idType);
-                    // pswdReqType.setRequestID(UUIDGen.getUUID());
+                    PasswordRequest pswdReqType = new PasswordRequest();
+                    pswdReqType.setUserIdentity(passwordSync.getPrincipal());
+                    pswdReqType.setTargetID(passwordSync.getManagedSystemId());
                     pswdReqType.setRequestID(requestId);
                     pswdReqType.setPassword(password);
 
@@ -1965,11 +1977,10 @@ public class ProvisionServiceImpl implements ProvisionService,
                                     log.info("connector service client "
                                             + client);
 
-                                    SetPasswordRequestType pswdReqType = new SetPasswordRequestType();
-                                    PSOIdentifierType idType = new PSOIdentifierType(
-                                            lg.getLogin(), null, lg
-                                                    .getManagedSysId());
-                                    pswdReqType.setPsoID(idType);
+                                    PasswordRequest pswdReqType = new PasswordRequest();
+
+                                    pswdReqType.setUserIdentity(lg.getLogin());
+                                    pswdReqType.setTargetID(lg.getManagedSysId());
                                     pswdReqType.setRequestID(primaryLogId);
                                     pswdReqType.setPassword(password);
 
@@ -2134,11 +2145,11 @@ public class ProvisionServiceImpl implements ProvisionService,
 
                     log.info("connector service client " + client);
 
-                    SetPasswordRequestType pswdReqType = new SetPasswordRequestType();
-                    PSOIdentifierType idType = new PSOIdentifierType(
-                            passwordSync.getPrincipal(), null,
-                            passwordSync.getManagedSystemId());
-                    pswdReqType.setPsoID(idType);
+                    PasswordRequest pswdReqType = new PasswordRequest();
+
+                    pswdReqType.setUserIdentity(passwordSync.getPrincipal());
+                    pswdReqType.setTargetID(passwordSync.getManagedSystemId());
+
                     // pswdReqType.setRequestID(UUIDGen.getUUID());
                     pswdReqType.setRequestID(requestId);
                     pswdReqType.setPassword(passwordSync.getPassword());
@@ -2306,11 +2317,10 @@ public class ProvisionServiceImpl implements ProvisionService,
                                     log.info("connector service client "
                                             + client);
 
-                                    SetPasswordRequestType pswdReqType = new SetPasswordRequestType();
-                                    PSOIdentifierType idType = new PSOIdentifierType(
-                                            lg.getLogin(), null, lg
-                                                    .getManagedSysId());
-                                    pswdReqType.setPsoID(idType);
+                                    PasswordRequest pswdReqType = new PasswordRequest();
+
+                                    pswdReqType.setUserIdentity(lg.getLogin());
+                                    pswdReqType.setTargetID(lg.getManagedSysId());
                                     // pswdReqType.setRequestID(UUIDGen.getUUID());
                                     pswdReqType.setRequestID("R"
                                             + System.currentTimeMillis());
@@ -2684,7 +2694,7 @@ public class ProvisionServiceImpl implements ProvisionService,
     @WebMethod
     public List<String> getAttributesList(
             @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId,
-            @WebParam(name = "config", targetNamespace = "") LookupAttributeRequestType config) {
+            @WebParam(name = "config", targetNamespace = "") LookupRequest config) {
         // TODO Auto-generated method stub
         return null;
     }

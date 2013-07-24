@@ -1,7 +1,7 @@
 package org.openiam.spml2.spi.common;
 
-import org.openiam.spml2.msg.ResponseType;
-import org.openiam.spml2.msg.suspend.SuspendRequestType;
+import org.openiam.connector.type.ResponseType;
+import org.openiam.connector.type.SuspendRequest;
 
 /**
  * Created with IntelliJ IDEA.
@@ -11,5 +11,5 @@ import org.openiam.spml2.msg.suspend.SuspendRequestType;
  * To change this template use File | Settings | File Templates.
  */
 public interface SuspendCommand  {
-    public ResponseType suspend(final SuspendRequestType request);
+    public ResponseType suspend(final SuspendRequest request);
 }

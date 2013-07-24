@@ -1,5 +1,4 @@
-
-package org.openiam.spml2.msg;
+package org.openiam.connector.type;
 
 import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlEnumValue;
@@ -8,7 +7,7 @@ import javax.xml.bind.annotation.XmlType;
 
 /**
  * <p>Java class for StatusCodeType.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
  * <p>
  * <pre>
@@ -20,7 +19,7 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;/restriction>
  * &lt;/simpleType>
  * </pre>
- * 
+ *
  */
 @XmlType(name = "StatusCodeType")
 @XmlEnum
@@ -57,3 +56,4 @@ public enum StatusCodeType {
     }
 
 }
+

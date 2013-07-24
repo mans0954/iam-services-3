@@ -1,14 +1,13 @@
 package org.openiam.spml2.spi.ldap;
 
+import org.openiam.connector.type.*;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.provision.type.ExtensibleAttribute;
-import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.spml2.msg.*;
 import org.openiam.spml2.util.connect.ConnectionFactory;
-import org.openiam.spml2.util.connect.ConnectionManagerConstant;
-import org.openiam.spml2.util.connect.ConnectionMgr;
+import org.openiam.connector.util.ConnectionManagerConstant;
+import org.openiam.connector.util.ConnectionMgr;
 
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
@@ -24,20 +23,20 @@ import java.util.List;
  */
 public class LdapLookupCommand extends LdapAbstractCommand {
 
-    public LookupResponseType lookup(LookupRequestType reqType) {
+    public SearchResponse lookup(LookupRequest reqType) {
         log.debug("LOOKUP operation called.");
         boolean found = false;
         ConnectionMgr conMgr = null;
 
-        LookupResponseType respType = new LookupResponseType();
+        SearchResponse respType = new SearchResponse();
 
         if (reqType == null) {
             respType.setStatus(StatusCodeType.FAILURE);
             respType.setError(ErrorCode.MALFORMED_REQUEST);
             return respType;
         }
-        PSOIdentifierType psoId = reqType.getPsoID();
-        String identity = psoId.getID();
+
+        String identity = reqType.getSearchValue();
         String rdn = null;
         String objectBaseDN = null;
 
@@ -51,7 +50,7 @@ public class LdapLookupCommand extends LdapAbstractCommand {
 
         log.debug("looking up identity: " + identity);
 
-        ManagedSysDto managedSys = managedSysService.getManagedSys(psoId.getTargetID());
+        ManagedSysDto managedSys = managedSysService.getManagedSys(reqType.getTargetID());
         try {
 
             conMgr = ConnectionFactory.create(ConnectionManagerConstant.LDAP_CONNECTION);
@@ -67,7 +66,7 @@ public class LdapLookupCommand extends LdapAbstractCommand {
                 return respType;
             }
 
-            ManagedSystemObjectMatch[] matchObj = managedSysService.managedSysObjectParam(psoId.getTargetID(), "USER");
+            ManagedSystemObjectMatch[] matchObj = managedSysService.managedSysObjectParam(reqType.getTargetID(), "USER");
             String resourceId = managedSys.getResourceId();
 
             log.debug("Resource id = " + resourceId);
@@ -84,12 +83,8 @@ public class LdapLookupCommand extends LdapAbstractCommand {
                 log.debug("results=" + results);
                 log.debug(" results has more elements=" + results.hasMoreElements());
 
-                PSOType psoType = new PSOType();
-                psoType.setPsoID(psoId);
-                respType.setPso(psoType);
-
-                ExtensibleObject extObj = new ExtensibleObject();
-                extObj.setObjectId(identity);
+                UserValue userValue = new UserValue();
+                userValue.setUserIdentity(identity);
 
                 while (results != null && results.hasMoreElements()) {
                     SearchResult sr = (SearchResult) results.next();
@@ -114,11 +109,13 @@ public class LdapLookupCommand extends LdapAbstractCommand {
                                 }
                             }
                             if (addToList) {
-                                extObj.getAttributes().add(extAttr);
+                                userValue.getAttributeList().add(extAttr);
                             }
                         }
-                        respType.addObject(extObj);
-                        extObj = new ExtensibleObject();
+                        //return only one Result - first row
+                        respType.getUserList().add(userValue);
+                        UserValue extObj = new UserValue();
+                        extObj.setUserIdentity(identity);
                     }
                 }
             }

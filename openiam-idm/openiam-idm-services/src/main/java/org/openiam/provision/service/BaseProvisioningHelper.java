@@ -7,7 +7,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mule.api.MuleContext;
 import org.openiam.base.SysConfiguration;
-import org.openiam.connector.type.RemoteUserRequest;
+import org.openiam.connector.type.ResponseType;
 import org.openiam.connector.type.UserRequest;
 import org.openiam.connector.type.UserResponse;
 import org.openiam.dozer.converter.LoginDozerConverter;
@@ -32,9 +32,6 @@ import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.script.ScriptIntegration;
-import org.openiam.spml2.msg.DeleteRequestType;
-import org.openiam.spml2.msg.PSOIdentifierType;
-import org.openiam.spml2.msg.ResponseType;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -175,15 +172,13 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
 
     }
 
-    protected ResponseType localDelete(Login l, String requestId,
-            PSOIdentifierType idType, ManagedSysDto mSys, ProvisionUser user,
+    protected ResponseType localDelete(Login l, String requestId, ManagedSysDto mSys, ProvisionUser user,
             IdmAuditLog auditLog) {
 
         log.debug("Local delete for=" + l);
 
-        DeleteRequestType reqType = new DeleteRequestType();
+        UserRequest reqType = new UserRequest();
         reqType.setRequestID(requestId);
-        reqType.setPsoID(idType);
 
         ResponseType resp = connectorAdapter.deleteRequest(mSys, reqType,
                 muleContext);
@@ -204,7 +199,7 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
                 "IDENTITY", user.getUserId(),
                 logid, status, logid,
                 "IDENTITY_STATUS", "DELETED",
-                requestId, resp.getErrorCodeAsStr(), user.getSessionId(), resp.getErrorMessage(),
+                requestId, resp.getErrorCodeAsStr(), user.getSessionId(), resp.getErrorMsgAsStr(),
                 user.getRequestClientIP(), l.getLogin(), l.getDomainId());
 
         return resp;
@@ -217,7 +212,7 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
             ManagedSystemObjectMatch matchObj, ProvisionUser user,
             IdmAuditLog auditLog) {
 
-        RemoteUserRequest request = new RemoteUserRequest();
+        UserRequest request = new UserRequest();
 
         request.setUserIdentity(mLg.getLogin());
         request.setRequestID(requestId);

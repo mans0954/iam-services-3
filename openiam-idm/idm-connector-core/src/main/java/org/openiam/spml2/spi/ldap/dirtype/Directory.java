@@ -1,12 +1,12 @@
 package org.openiam.spml2.spi.ldap.dirtype;
 
 import org.openiam.base.BaseAttribute;
+import org.openiam.connector.type.PasswordRequest;
+import org.openiam.connector.type.ResumeRequest;
+import org.openiam.connector.type.SuspendRequest;
+import org.openiam.connector.type.UserRequest;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.spml2.msg.DeleteRequestType;
-import org.openiam.spml2.msg.password.SetPasswordRequestType;
-import org.openiam.spml2.msg.suspend.ResumeRequestType;
-import org.openiam.spml2.msg.suspend.SuspendRequestType;
 
 import javax.naming.NamingException;
 import javax.naming.directory.ModificationItem;
@@ -28,11 +28,11 @@ public interface Directory {
     final static String LDAP_V3 = "LDAP_V3";
 
     
-    ModificationItem[] setPassword(SetPasswordRequestType reqType) throws UnsupportedEncodingException;
+    ModificationItem[] setPassword(PasswordRequest reqType) throws UnsupportedEncodingException;
 
-    ModificationItem[] suspend(SuspendRequestType request);
+    ModificationItem[] suspend(SuspendRequest request);
 
-    ModificationItem[] resume(ResumeRequestType request);
+    ModificationItem[] resume(ResumeRequest request);
 
     /**
      * setAttributes allows you to set attributes on the implementation object which may be need for the specific
@@ -43,12 +43,12 @@ public interface Directory {
     
     void setAttributes(String name, Object obj);
 
-    void delete(DeleteRequestType reqType, LdapContext ldapctx, String ldapName, String onDelete ) throws NamingException;
+    void delete(UserRequest reqType, LdapContext ldapctx, String ldapName, String onDelete ) throws NamingException;
 
     void removeAccountMemberships( String ldapName, ManagedSystemObjectMatch matchObj,  LdapContext ldapctx );
 
     void updateAccountMembership(List<BaseAttribute> targetMembershipList, String ldapName,
-                                 ManagedSystemObjectMatch matchObj,  LdapContext ldapctx, List<ExtensibleObject> requestAttribute );
+                                 ManagedSystemObjectMatch matchObj,  LdapContext ldapctx, ExtensibleObject obj );
 
     
 }

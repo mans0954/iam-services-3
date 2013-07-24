@@ -1,17 +1,16 @@
 package org.openiam.spml2.spi.jdbc;
 
 import org.apache.commons.lang.StringUtils;
+import org.openiam.connector.type.ErrorCode;
+import org.openiam.connector.type.ResponseType;
+import org.openiam.connector.type.StatusCodeType;
+import org.openiam.connector.type.SuspendRequest;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.pswd.service.PasswordGenerator;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
-import org.openiam.spml2.msg.ErrorCode;
-import org.openiam.spml2.msg.PSOIdentifierType;
-import org.openiam.spml2.msg.ResponseType;
-import org.openiam.spml2.msg.StatusCodeType;
-import org.openiam.spml2.msg.suspend.SuspendRequestType;
 import org.openiam.spml2.spi.common.SuspendCommand;
-import org.openiam.spml2.util.msg.ResponseBuilder;
+import org.openiam.connector.util.ResponseBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.sql.Connection;
@@ -31,15 +30,14 @@ public class AppTableSuspendCommand extends AbstractAppTableCommand implements S
 	@Autowired
 	private PasswordGenerator passwordGenerator;
 
-    public ResponseType suspend(final SuspendRequestType request) {
+    public ResponseType suspend(final SuspendRequest request) {
         final ResponseType response = new ResponseType();
         response.setStatus(StatusCodeType.SUCCESS);
 
-        final String principalName = request.getPsoID().getID();
+        final String principalName = request.getUserIdentity();
 
-        final PSOIdentifierType psoID = request.getPsoID();
         /* targetID -  */
-        final String targetID = psoID.getTargetID();
+        final String targetID = request.getTargetID();
 
         final String password = passwordGenerator.generatePassword(10);
 

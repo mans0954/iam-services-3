@@ -1,14 +1,17 @@
 package org.openiam.spml2.spi.jdbc;
 
 import org.apache.commons.lang.StringUtils;
+import org.openiam.connector.type.ErrorCode;
+import org.openiam.connector.type.StatusCodeType;
+import org.openiam.connector.type.UserRequest;
+import org.openiam.connector.type.UserResponse;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.spml2.msg.*;
 import org.openiam.spml2.spi.common.ModifyCommand;
-import org.openiam.spml2.util.msg.ResponseBuilder;
+import org.openiam.connector.util.ResponseBuilder;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -28,22 +31,21 @@ public class AppTableModifyCommand extends AbstractAppTableCommand implements Mo
     private static final String UPDATE_SQL = "UPDATE %s SET %s WHERE %s=?";
     private static final String INSERT_SQL = "INSERT INTO %s (%s) VALUES (%s)";
 
-    public ModifyResponseType modify(final ModifyRequestType reqType) {
+    public UserResponse modify(final UserRequest reqType) {
         Connection con = null;
 
 
-        final ModifyResponseType response = new ModifyResponseType();
+        final UserResponse response = new UserResponse();
         response.setStatus(StatusCodeType.SUCCESS);
 
         //String requestID = reqType.getRequestID();
         /* PSO - Provisioning Service Object -
 *     -  ID must uniquely specify an object on the target or in the target's namespace
 *     -  Try to make the PSO ID immutable so that there is consistency across changes. */
-        final PSOIdentifierType psoID = reqType.getPsoID();
-        final String principalName = psoID.getID();
+        final String principalName = reqType.getUserIdentity();
 
         /* targetID -  */
-        final String targetID = psoID.getTargetID();
+        final String targetID = reqType.getTargetID();
 
 
         /* A) Use the targetID to look up the connection information under managed systems */
@@ -76,85 +78,72 @@ public class AppTableModifyCommand extends AbstractAppTableCommand implements Mo
             return response;
         }
 
-        // modificationType contains a collection of objects for each type of operation
-        final List<ModificationType> modificationList = reqType.getModification();
-
-        if(log.isDebugEnabled()) {
-            log.debug(String.format("ModificationList = %s", modificationList));
-        }
-
-
-        final List<ModificationType> modTypeList = reqType.getModification();
-
         try {
             con = connectionMgr.connect(managedSys);
 
-            for (ModificationType mod : modTypeList) {
-                final ExtensibleType extType = mod.getData();
-                final List<ExtensibleObject> extobjectList = extType.getAny();
 
-                int ctr = 0;
-                for (final ExtensibleObject obj : extobjectList) {
-                    if (identityExists(con, tableName, principalName, obj)) {
-                        if(log.isDebugEnabled()) {
-                            log.debug(String.format("Identity found. Modifying identity: %s", principalName));
+            final ExtensibleObject obj = reqType.getUser();
+
+            int ctr = 0;
+            if (identityExists(con, tableName, principalName, obj)) {
+                if (log.isDebugEnabled()) {
+                    log.debug(String.format("Identity found. Modifying identity: %s", principalName));
+                }
+
+                final StringBuilder setBuffer = new StringBuilder();
+
+                final List<ExtensibleAttribute> attrList = obj.getAttributes();
+                final String principalFieldName = obj.getPrincipalFieldName();
+                final String principalFieldDataType = obj.getPrincipalFieldDataType();
+
+                for (ExtensibleAttribute att : attrList) {
+                    if (att.getOperation() != 0 && att.getName() != null) {
+                        if (att.getObjectType().equalsIgnoreCase("USER")) {
+                            if (ctr != 0) {
+                                setBuffer.append(",");
+                            }
+                            ctr++;
+
+                            setBuffer.append(String.format("%s = ?", att.getName()));
                         }
+                    }
+                }
 
-                        final StringBuilder setBuffer = new StringBuilder();
+                if (ctr > 0) {
+                    final String sql = String.format(UPDATE_SQL, tableName, setBuffer, principalFieldName);
 
-                        final List<ExtensibleAttribute> attrList = obj.getAttributes();
-                        final String principalFieldName = obj.getPrincipalFieldName();
-                        final String principalFieldDataType = obj.getPrincipalFieldDataType();
-
-                        for (ExtensibleAttribute att : attrList) {
-                            if (att.getOperation() != 0 && att.getName() != null) {
-                                if (att.getObjectType().equalsIgnoreCase("USER")) {
-                                    if (ctr != 0) {
-                                        setBuffer.append(",");
-                                    }
-                                    ctr++;
-
-                                    setBuffer.append(String.format("%s = ?", att.getName()));
-                                }
-                            }
-                        }
-
-                        if (ctr > 0) {
-                            final String sql = String.format(UPDATE_SQL, tableName, setBuffer, principalFieldName)    ;
-
-                            if(log.isDebugEnabled()) {
-                                log.debug(String.format("SQL=%s", sql));
-                            }
-
-                            final PreparedStatement statement = con.prepareStatement(sql);
-
-                            ctr = 1;
-                            for (final ExtensibleAttribute att : attrList) {
-                                if (att.getOperation() != 0 && att.getName() != null) {
-                                    if(StringUtils.equalsIgnoreCase(att.getObjectType(), "user")) {
-                                        setStatement(statement, ctr, att);
-                                        ctr++;
-                                    }
-
-                                }
-
-                            }
-                            if (principalFieldName != null) {
-                                setStatement(statement, ctr, principalFieldDataType, principalName);
-                            }
-
-                            statement.executeUpdate();
-                        }
-
-                    } else {
-
-                        // identity does not exist in the target system
-                        // identity needs to be re-provisioned
-                        addIdentity(con, tableName, principalName, obj);
+                    if (log.isDebugEnabled()) {
+                        log.debug(String.format("SQL=%s", sql));
                     }
 
+                    final PreparedStatement statement = con.prepareStatement(sql);
+
+                    ctr = 1;
+                    for (final ExtensibleAttribute att : attrList) {
+                        if (att.getOperation() != 0 && att.getName() != null) {
+                            if (StringUtils.equalsIgnoreCase(att.getObjectType(), "user")) {
+                                setStatement(statement, ctr, att);
+                                ctr++;
+                            }
+
+                        }
+
+                    }
+                    if (principalFieldName != null) {
+                        setStatement(statement, ctr, principalFieldDataType, principalName);
+                    }
+
+                    statement.executeUpdate();
                 }
+
+            } else {
+
+                // identity does not exist in the target system
+                // identity needs to be re-provisioned
+                addIdentity(con, tableName, principalName, obj);
             }
+
+
         } catch (SQLException se) {
             log.error(se);
             ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.SQL_ERROR, se.toString());

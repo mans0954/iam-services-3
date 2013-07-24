@@ -3,6 +3,8 @@ package org.openiam.provision.service;
 import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.connector.type.ResponseType;
+import org.openiam.connector.type.StatusCodeType;
 import org.openiam.connector.type.UserResponse;
 import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
@@ -14,9 +16,6 @@ import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.ProvisionUserResponse;
-import org.openiam.spml2.msg.PSOIdentifierType;
-import org.openiam.spml2.msg.ResponseType;
-import org.openiam.spml2.msg.StatusCodeType;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.HashMap;
@@ -125,10 +124,6 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
                         log.debug("Deleting id=" + l.getLogin());
                         log.debug("- delete using managed sys id=" + mSys.getManagedSysId());
 
-
-                        PSOIdentifierType idType = new PSOIdentifierType(l.getLogin(), null,
-                                l.getManagedSysId());
-
                         boolean connectorSuccess = false;
 
                         if (connector.getConnectorInterface() != null &&
@@ -139,7 +134,7 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
                             }
 
                         } else {
-                            ResponseType resp = localDelete(loginDozerConverter.convertToDTO(l, true), requestId, idType, mSys, pUser, auditLog);
+                            ResponseType resp = localDelete(loginDozerConverter.convertToDTO(l, true), requestId, mSys, pUser, auditLog);
 
                             if (resp.getStatus() == StatusCodeType.SUCCESS) {
                                 connectorSuccess = true;

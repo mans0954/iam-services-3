@@ -1,9 +1,9 @@
 package org.openiam.spml2.spi.common;
 
-import org.openiam.spml2.msg.LookupAttributeRequestType;
-import org.openiam.spml2.msg.LookupAttributeResponseType;
+import org.openiam.connector.type.LookupAttributeResponse;
+import org.openiam.connector.type.LookupRequest;
 
 
 public interface LookupAttributeNamesCommand {
-    public LookupAttributeResponseType lookupAttributeNames(LookupAttributeRequestType reqType);
+    public LookupAttributeResponse lookupAttributeNames(LookupRequest reqType);
 }

@@ -2,14 +2,12 @@ package org.openiam.spml2.spi.common.jdbc;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.connector.type.*;
+import org.openiam.connector.type.ResponseType;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.spml2.base.AbstractSpml2Complete;
-import org.openiam.spml2.interf.ConnectorService;
-import org.openiam.spml2.msg.*;
-import org.openiam.spml2.msg.password.*;
-import org.openiam.spml2.msg.suspend.ResumeRequestType;
-import org.openiam.spml2.msg.suspend.SuspendRequestType;
+import org.openiam.connector.ConnectorService;
 import org.openiam.spml2.spi.common.*;
 import org.springframework.beans.factory.annotation.Required;
 
@@ -84,44 +82,44 @@ public abstract class AbstractJDBCConnectorImpl extends AbstractSpml2Complete im
         return response;
     }
 
-    public AddResponseType add(AddRequestType reqType) {
+    public UserResponse add(UserRequest reqType) {
         return addCommand.add(reqType);
     }
 
-    public ModifyResponseType modify(ModifyRequestType reqType) {
+    public UserResponse modify(UserRequest reqType) {
         return modifyCommand.modify(reqType);
     }
 
-    public ResponseType delete(DeleteRequestType reqType) {
+    public UserResponse delete(UserRequest reqType) {
 
         return deleteCommand.delete(reqType);
     }
 
-    public LookupResponseType lookup( LookupRequestType reqType) {
+    public SearchResponse lookup(LookupRequest reqType) {
         return lookupCommand.lookup(reqType);
     }
 
-    public ResponseType setPassword( SetPasswordRequestType request) {
+    public ResponseType setPassword( PasswordRequest request) {
         return setPasswordCommand.setPassword(request);
     }
 
-    public ResponseType expirePassword(@WebParam(name = "request", targetNamespace = "") ExpirePasswordRequestType request) {
+    public ResponseType expirePassword(@WebParam(name = "request", targetNamespace = "") PasswordRequest request) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public ResetPasswordResponseType resetPassword(@WebParam(name = "request", targetNamespace = "") ResetPasswordRequestType request) {
+    public ResponseType resetPassword(@WebParam(name = "request", targetNamespace = "") PasswordRequest request) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public ValidatePasswordResponseType validatePassword(@WebParam(name = "request", targetNamespace = "") ValidatePasswordRequestType request) {
+    public ResponseType validatePassword(@WebParam(name = "request", targetNamespace = "") PasswordRequest request) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public ResponseType suspend(final SuspendRequestType request) {
+    public ResponseType suspend(final SuspendRequest request) {
         return suspendCommand.suspend(request);
     }
 
-    public ResponseType resume(final ResumeRequestType request) {
+    public ResponseType resume(final ResumeRequest request) {
         return resumeCommand.resume(request);
     }
 

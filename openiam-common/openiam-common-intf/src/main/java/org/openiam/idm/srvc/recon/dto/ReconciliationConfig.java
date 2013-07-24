@@ -6,6 +6,7 @@ import java.util.Set;
 import javax.persistence.Transient;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
 import org.openiam.dozer.DozerDTOCorrespondence;
@@ -17,7 +18,8 @@ import org.openiam.idm.srvc.recon.domain.ReconciliationConfigEntity;
 @XmlType(name = "ReconciliationConfig", propOrder = { "reconConfigId",
         "resourceId", "frequency", "status", "situationSet", "reportPath",
         "separator", "endOfLine", "notificationEmailAddress",
-        "targetSystemMatchScript", "manualReconciliationFlag" })
+        "manualReconciliationFlag","targetSystemMatchScript","scriptHandler" })
+
 @DozerDTOCorrespondence(ReconciliationConfigEntity.class)
 public class ReconciliationConfig implements java.io.Serializable {
 
@@ -32,6 +34,10 @@ public class ReconciliationConfig implements java.io.Serializable {
     private String targetSystemMatchScript;
     private List<ReconciliationSituation> situationSet;
     private boolean manualReconciliationFlag;
+
+    @XmlElement
+    private String scriptHandler;
+
     @Transient
     private String reportPath;
 
@@ -145,5 +151,12 @@ public class ReconciliationConfig implements java.io.Serializable {
 
     public void setManualReconciliationFlag(boolean manualReconciliationFlag) {
         this.manualReconciliationFlag = manualReconciliationFlag;
+    }
+    public String getScriptHandler() {
+        return scriptHandler;
+    }
+
+    public void setScriptHandler(String scriptHandler) {
+        this.scriptHandler = scriptHandler;
     }
 }

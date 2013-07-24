@@ -1,7 +1,7 @@
 package org.openiam.spml2.spi.common;
 
-import org.openiam.spml2.msg.ResponseType;
-import org.openiam.spml2.msg.password.SetPasswordRequestType;
+import org.openiam.connector.type.PasswordRequest;
+import org.openiam.connector.type.ResponseType;
 
 /**
  * Created with IntelliJ IDEA.
@@ -11,5 +11,5 @@ import org.openiam.spml2.msg.password.SetPasswordRequestType;
  * To change this template use File | Settings | File Templates.
  */
 public interface PasswordCommand {
-    public ResponseType setPassword(SetPasswordRequestType reqType);
+    public ResponseType setPassword(PasswordRequest reqType);
 }

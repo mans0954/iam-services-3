@@ -1,13 +1,12 @@
 package org.openiam.spml2.spi.orcl;
 
 import org.apache.commons.lang.StringUtils;
+import org.openiam.connector.type.*;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.provision.type.ExtensibleAttribute;
-import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.spml2.msg.*;
 import org.openiam.spml2.spi.common.LookupCommand;
-import org.openiam.spml2.util.msg.ResponseBuilder;
+import org.openiam.connector.util.ResponseBuilder;
 
 import java.sql.*;
 
@@ -23,21 +22,20 @@ public class OracleLookupCommand extends AbstractOracleCommand implements Lookup
     private static final String SELECT_USER = "SELECT * FROM DBA_USERS WHERE USERNAME=?";
 
     @Override
-    public LookupResponseType lookup(LookupRequestType reqType) {
+    public SearchResponse lookup(LookupRequest reqType) {
         boolean found = false;
 
         if(log.isDebugEnabled()) {
             log.debug("AppTable lookup operation called.");
         }
 
-        final LookupResponseType response = new LookupResponseType();
+        final SearchResponse response = new SearchResponse();
         response.setStatus(StatusCodeType.SUCCESS);
 
-        final String principalName = reqType.getPsoID().getID();
+        final String principalName = reqType.getSearchValue();
 
-        final PSOIdentifierType psoID = reqType.getPsoID();
         /* targetID -  */
-        final String targetID = psoID.getTargetID();
+        final String targetID = reqType.getTargetID();
 
         final ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
         if(managedSys == null) {
@@ -59,8 +57,8 @@ public class OracleLookupCommand extends AbstractOracleCommand implements Lookup
         Connection con = null;
 
         try {
-            final ExtensibleObject resultObject = new ExtensibleObject();
-            resultObject.setObjectId(principalName);
+            final UserValue userValue = new UserValue();
+            userValue.setUserIdentity(principalName);
 
             con = connectionMgr.connect(managedSys);
 
@@ -81,9 +79,9 @@ public class OracleLookupCommand extends AbstractOracleCommand implements Lookup
                     final ExtensibleAttribute extAttr = new ExtensibleAttribute();
                     extAttr.setName(rsMetadata.getColumnName(colIndx));
                     setColumnValue(extAttr, colIndx, rsMetadata, rs);
-                    resultObject.getAttributes().add(extAttr);
+                    userValue.getAttributeList().add(extAttr);
                 }
-                response.getAny().add(resultObject);
+                response.getUserList().add(userValue);
                 response.setStatus(StatusCodeType.SUCCESS);
             } else {
                 if(log.isDebugEnabled()) {

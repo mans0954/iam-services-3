@@ -31,10 +31,7 @@ import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.connector.type.LookupResponse;
-import org.openiam.connector.type.RemoteLookupRequest;
-import org.openiam.connector.type.RemoteUserRequest;
-import org.openiam.connector.type.UserResponse;
+import org.openiam.connector.type.*;
 import org.openiam.exception.EncryptionException;
 import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.exception.ScriptEngineException;
@@ -63,7 +60,6 @@ import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.dto.Supervisor;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.AccountLockEnum;
@@ -74,14 +70,9 @@ import org.openiam.provision.resp.LookupUserResponse;
 import org.openiam.provision.resp.PasswordResponse;
 import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
-import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.provision.type.ExtensibleUser;
-import org.openiam.spml2.msg.*;
-import org.openiam.spml2.msg.suspend.ResumeRequestType;
-import org.openiam.spml2.msg.suspend.SuspendRequestType;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.jws.WebMethod;
 import javax.jws.WebService;
 import java.util.*;
 
@@ -627,7 +618,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                             "String"));
                                 }
 
-                                RemoteUserRequest userReq = new RemoteUserRequest();
+                                UserRequest userReq = new UserRequest();
                                 userReq.setUserIdentity(resLogin.getLogin());
                                 userReq.setRequestID(requestId);
                                 userReq.setTargetID(resLogin.getManagedSysId());
@@ -649,14 +640,12 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 }
 
                             } else {
-                                ModifyRequestType modReqType = new ModifyRequestType();
+                                UserRequest modReqType = new UserRequest();
 
-                                PSOIdentifierType idType = new PSOIdentifierType(
-                                        resLogin.getLogin(), null, "target");
-                                idType.setTargetID(resLogin.getManagedSysId());
-                                modReqType.setPsoID(idType);
+                                modReqType.setTargetID(resLogin.getManagedSysId());
+                                modReqType.setUserIdentity(resLogin.getLogin());
                                 modReqType.setRequestID(requestId);
-                                modReqType.setpUser(user);
+                                modReqType.setUser(extUser);
 
                                 // check if this request calls for the identity
                                 // being renamed
@@ -680,17 +669,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                                 }
 
-                                ModificationType mod = new ModificationType();
-
-                                mod.getData().getAny().add(extUser);
-
-                                List<ModificationType> modTypeList = modReqType
-                                        .getModification();
-                                modTypeList.add(mod);
 
                                 log.debug("Creating identity in target system:"
                                         + resLogin.getLoginId());
-                                ModifyResponseType respType = connectorAdapter
+                                UserResponse respType = connectorAdapter
                                         .modifyRequest(mSys, modReqType,
                                                 muleContext);
 
@@ -995,15 +977,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             log.debug("- delete using managed sys id="
                                     + mSys.getManagedSysId());
 
-                            PSOIdentifierType idType = new PSOIdentifierType(
-                                    l.getLogin(), null, l.getManagedSysId());
-                            // SET ATTRIBUTES PRE
-                            bindingMap
-                                    .put(TARGET_SYSTEM_IDENTITY, l.getLogin());
-                            bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS,
-                                    IDENTITY_EXIST);
-                            bindingMap.put(TARGET_SYS_MANAGED_SYS_ID,
-                                    mSys.getManagedSysId());
+            // SET ATTRIBUTES PRE
+                            bindingMap.put(TARGET_SYSTEM_IDENTITY, l.getLogin());
+                            bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, IDENTITY_EXIST);
+                            bindingMap.put(TARGET_SYS_MANAGED_SYS_ID, mSys.getManagedSysId());
                             bindingMap.put(TARGET_SYS_RES_ID, null);
                             bindingMap.put(TARGET_SYS_SECURITY_DOMAIN,
                                     l.getDomainId());
@@ -1023,10 +1000,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                         matchObj, user, auditLog);
 
                             } else {
-                                localDelete(loginDozerConverter.convertToDTO(l,
-                                        true), requestId, idType, mSys, user,
-                                        auditLog);
-
+                                localDelete(loginDozerConverter.convertToDTO(l, true),
+                                        requestId, mSys, auditLog);
                             }
 
                             // SET ATTRIBUTES POST
@@ -1178,9 +1153,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 }
             }
 
-            PSOIdentifierType idType = new PSOIdentifierType(principal, null,
-                    managedSystemId);
-
             boolean connectorSuccess = false;
 
             if (connector.getConnectorInterface() != null
@@ -1194,10 +1166,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     connectorSuccess = true;
                 }
             } else {
-                ResponseType resp = localDelete(
-                        loginDozerConverter.convertToDTO(login, true),
-                        requestId, idType, mSys, new ProvisionUser(usr),
-                        auditLog);
+
+                ResponseType resp = localDelete(loginDozerConverter.convertToDTO(login, true),
+                        requestId, mSys, auditLog);
+
                 if (resp.getStatus() == StatusCodeType.SUCCESS) {
                     connectorSuccess = true;
                 }
@@ -1316,8 +1288,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 }
                             }
 
-                            PSOIdentifierType idType = new PSOIdentifierType(
-                                    l.getLogin(), null, l.getManagedSysId());
 
                             boolean connectorSuccess = false;
 
@@ -1333,10 +1303,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 }
 
                             } else {
-                                ResponseType resp = localDelete(
-                                        loginDozerConverter.convertToDTO(login,
-                                                true), requestId, idType, mSys,
-                                        pUser, auditLog);
+                                ResponseType resp = localDelete(loginDozerConverter.convertToDTO(login, true),
+                                        requestId, mSys, auditLog);
 
                                 if (resp.getStatus() == StatusCodeType.SUCCESS) {
                                     connectorSuccess = true;
@@ -1509,19 +1477,18 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     final String managedSysId = userLogin.getManagedSysId();
                     final ManagedSysDto managedSys = managedSysService
                             .getManagedSys(managedSysId);
-                    final PSOIdentifierType psoIdentifierType = new PSOIdentifierType(
-                            userLogin.getLogin(), null, managedSysId);
                     if (AccountLockEnum.LOCKED.equals(operation)
                             || AccountLockEnum.LOCKED_ADMIN.equals(operation)) {
-                        final SuspendRequestType suspendCommand = new SuspendRequestType();
-                        suspendCommand.setPsoID(psoIdentifierType);
-                        suspendCommand.setRequestID("R"
-                                + System.currentTimeMillis());
+                        final SuspendRequest suspendCommand = new SuspendRequest();
+                        suspendCommand.setUserIdentity(userLogin.getLogin());
+                        suspendCommand.setTargetID(managedSysId);
+                        suspendCommand.setRequestID("R" + System.currentTimeMillis());
                         connectorAdapter.suspendRequest(managedSys,
                                 suspendCommand, muleContext);
                     } else {
-                        final ResumeRequestType resumeRequest = new ResumeRequestType();
-                        resumeRequest.setPsoID(psoIdentifierType);
+                        final ResumeRequest resumeRequest = new ResumeRequest();
+                        resumeRequest.setUserIdentity(userLogin.getLogin());
+                        resumeRequest.setTargetID(managedSysId);
                         resumeRequest.setRequestID("R"
                                 + System.currentTimeMillis());
                         // responsetype = client.resume(resumeRequest);
@@ -1561,32 +1528,23 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 .getManagedSys(resource.getManagedSysId());
                         if (managedSys != null) {
                             ResponseType responsetype = null;
-                            final PSOIdentifierType psoIdentifierType = new PSOIdentifierType(
-                                    lg.getLogin(), null,
-                                    managedSys.getManagedSysId());
-                            if (AccountLockEnum.LOCKED.equals(operation)
-                                    || AccountLockEnum.LOCKED_ADMIN
-                                            .equals(operation)) {
-                                final SuspendRequestType suspendCommand = new SuspendRequestType();
-                                suspendCommand.setPsoID(psoIdentifierType);
+                            if(AccountLockEnum.LOCKED.equals(operation) || AccountLockEnum.LOCKED_ADMIN.equals(operation)) {
+                                final SuspendRequest suspendCommand = new SuspendRequest();
+                                suspendCommand.setUserIdentity(lg.getLogin());
+                                suspendCommand.setTargetID(managedSys.getManagedSysId());
                                 suspendCommand.setRequestID("R"
                                         + System.currentTimeMillis());
                                 connectorAdapter.suspendRequest(managedSys,
                                         suspendCommand, muleContext);
                             } else {
-                                final ResumeRequestType resumeRequest = new ResumeRequestType();
-                                resumeRequest.setPsoID(psoIdentifierType);
+                                final ResumeRequest resumeRequest = new ResumeRequest();
+                                resumeRequest.setUserIdentity(lg.getLogin());
+                                resumeRequest.setTargetID(managedSys.getManagedSysId());
                                 resumeRequest.setRequestID("R"
                                         + System.currentTimeMillis());
                                 // responsetype = client.resume(resumeRequest);
                                 connectorAdapter.resumeRequest(managedSys,
                                         resumeRequest, muleContext);
-                            }
-
-                            if (responsetype == null) {
-                                log.info("Response object from set password is null");
-                                response.setStatus(ResponseStatus.FAILURE);
-                                return response;
                             }
 
                             if (responsetype.getStatus() == null) {
@@ -1977,7 +1935,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         bindingMap.put(MATCH_PARAM, matchObj);
                     }
                     // build the request
-                    ModifyRequestType modReqType = new ModifyRequestType();
+                    UserRequest modReqType = new UserRequest();
 
                     // get the identity linked to this resource / managedsys
                     // determin if this identity exists in IDM or not
@@ -2126,19 +2084,15 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                             } else {
                                 // build the request
-                                AddRequestType addReqType = new AddRequestType();
-
-                                PSOIdentifierType idType = new PSOIdentifierType(
-                                        mLg.getLogin(), null, "target");
-                                addReqType.setPsoID(idType);
+                                UserRequest addReqType = new UserRequest();
+                                addReqType.setUserIdentity(mLg.getLogin());
                                 addReqType.setRequestID(requestId);
                                 addReqType.setTargetID(mLg.getManagedSysId());
-                                addReqType.getData().getAny().add(extUser);
-                                addReqType.setpUser(pUser);
+                                addReqType.setUser(extUser);
                                 log.debug("Creating identity in target system:"
                                         + mLg.getLoginId());
 
-                                AddResponseType responseType = connectorAdapter
+                                UserResponse responseType = connectorAdapter
                                         .addRequest(mSys, addReqType,
                                                 muleContext);
                                 if (responseType.getStatus() == StatusCodeType.SUCCESS) {
@@ -2252,7 +2206,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                             "String"));
                                 }
 
-                                RemoteUserRequest userReq = new RemoteUserRequest();
+                                UserRequest userReq = new UserRequest();
                                 userReq.setUserIdentity(mLg.getLogin());
                                 userReq.setRequestID(requestId);
                                 userReq.setTargetID(mLg.getManagedSysId());
@@ -2274,12 +2228,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 }
 
                             } else {
-                                PSOIdentifierType idType = new PSOIdentifierType(
-                                        mLg.getLogin(), null, "target");
-                                idType.setTargetID(mLg.getManagedSysId());
-                                modReqType.setPsoID(idType);
+                                modReqType.setTargetID(mLg.getManagedSysId());
+                                modReqType.setUserIdentity(mLg.getLogin());
                                 modReqType.setRequestID(requestId);
-                                modReqType.setpUser(pUser);
 
                                 // check if this request calls for the identity
                                 // being renamed
@@ -2302,18 +2253,11 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                     // }
 
                                 }
-
-                                ModificationType mod = new ModificationType();
-
-                                mod.getData().getAny().add(extUser);
-
-                                List<ModificationType> modTypeList = modReqType
-                                        .getModification();
-                                modTypeList.add(mod);
+                                modReqType.setUser(extUser);
 
                                 log.debug("Creating identity in target system:"
                                         + mLg.getLoginId());
-                                ModifyResponseType respType = connectorAdapter
+                                UserResponse respType = connectorAdapter
                                         .modifyRequest(mSys, modReqType,
                                                 muleContext);
 
@@ -2433,7 +2377,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     // LOG THIS EVENT
                     /*
                      * auditHelper.addLog("REMOVE IDENTITY", pUser
-                     * .getRequestorDomain(), pUser.getRequestorLogin(),
+                      * .getRequestorDomain(), pUser.getRequestorLogin(),
                      * "IDM SERVICE", origUser.getCreatedBy(), mLg
                      * .getManagedSysId(), "USER", origUser .getUserId(), null,
                      * "SUCCESS", auditLogId, "USER_STATUS", status, requestId,
@@ -2442,14 +2386,12 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                      * mLg.getDomainId());
                      */
 
-                    PSOIdentifierType idType = new PSOIdentifierType(
-                            mLg.getLogin(), null, managedSysId);
 
                     if (connector.getConnectorInterface() != null
                             && connector.getConnectorInterface()
                                     .equalsIgnoreCase("REMOTE")) {
 
-                        RemoteUserRequest request = new RemoteUserRequest();
+                        UserRequest request = new UserRequest();
 
                         request.setUserIdentity(mLg.getLogin());
                         request.setRequestID(requestId);
@@ -2466,11 +2408,11 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 connector, muleContext);
 
                     } else {
-                        DeleteRequestType reqType = new DeleteRequestType();
+                        UserRequest reqType = new UserRequest();
                         reqType.setRequestID(requestId);
-                        reqType.setPsoID(idType);
-
-                        ResponseType delRes = connectorAdapter.deleteRequest(
+                        reqType.setUserIdentity(mLg.getLogin());
+                        reqType.setTargetID(managedSysId);
+                        connectorAdapter.deleteRequest(
                                 mSys, reqType, muleContext);
 
                     }
@@ -2729,7 +2671,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
             log.debug("Calling lookupRequest with Remote connector");
 
-            RemoteLookupRequest reqType = new RemoteLookupRequest();
+            LookupRequest reqType = new LookupRequest();
             String requestId = "R" + UUIDGen.getUUID();
             reqType.setRequestID(requestId);
             reqType.setSearchValue(principalName);
@@ -2761,11 +2703,11 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
             log.debug("Calling lookupRequest local connector");
 
-            LookupRequestType request = new LookupRequestType();
-            PSOIdentifierType idType = new PSOIdentifierType(principalName,
-                    null, managedSysId);
-            request.setPsoID(idType);
-            LookupResponseType responseType = connectorAdapter.lookupRequest(
+            LookupRequest request = new LookupRequest();
+
+            request.setSearchValue(principalName);
+            request.setTargetID(managedSysId);
+            SearchResponse responseType = connectorAdapter.lookupRequest(
                     mSys, request, muleContext);
 
             if (responseType.getStatus() == StatusCodeType.FAILURE) {
@@ -2773,14 +2715,13 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 return response;
             }
 
-            if (responseType.getAny() != null
-                    && responseType.getAny().size() > 0) {
-                ExtensibleObject extObj = responseType.getAny().get(0);
-                response.setPrincipalName(parseUserPrincipal(extObj
-                        .getAttributes()));
-                response.setAttrList(extObj.getAttributes());
-
+            List<ExtensibleAttribute> attributes = new LinkedList<ExtensibleAttribute>();
+            if(!CollectionUtils.isEmpty(responseType.getUserList())) {
+                attributes = responseType.getUserList().get(0).getAttributeList();
             }
+            response.setPrincipalName(parseUserPrincipal(attributes));
+            response.setAttrList(attributes);
+
             return response;
         }
     }
@@ -3596,17 +3537,22 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     @Override
     @Transactional
     public List<String> getAttributesList(String mSysId,
-            LookupAttributeRequestType config) {
+                                          LookupRequest config) {
         if (mSysId == null)
             return null;
         ManagedSysDto msys = managedSysService.getManagedSys(mSysId);
         if (msys == null)
             return null;
-        LookupAttributeResponseType response = connectorAdapter
+        LookupAttributeResponse response = connectorAdapter
                 .lookupAttributes(msys.getConnectorId(), config, muleContext);
-        if (StatusCodeType.SUCCESS.equals(response.getStatus()))
-            return response.getAttributeList();
-        else
+        if (StatusCodeType.SUCCESS.equals(response.getStatus())) {
+            List<String> attributeNames = new LinkedList<String>();
+            for(ExtensibleAttribute attr : response.getAttributes()) {
+                attributeNames.add(attr.getName());
+            }
+            return attributeNames;
+        } else  {
             return null;
+        }
     }
 }

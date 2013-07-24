@@ -1,11 +1,14 @@
 package org.openiam.spml2.spi.orcl;
 
 import org.apache.commons.lang.StringUtils;
+import org.openiam.connector.type.ErrorCode;
+import org.openiam.connector.type.StatusCodeType;
+import org.openiam.connector.type.UserRequest;
+import org.openiam.connector.type.UserResponse;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.spml2.msg.*;
 import org.openiam.spml2.spi.common.DeleteCommand;
-import org.openiam.spml2.util.msg.ResponseBuilder;
+import org.openiam.connector.util.ResponseBuilder;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -22,15 +25,14 @@ public class OracleDeleteCommand extends AbstractOracleCommand implements Delete
     private static final String DROP_USER = "DROP USER \"%s\"";
 
     @Override
-    public ResponseType delete(DeleteRequestType reqType) {
-        final ResponseType response = new ResponseType();
+    public UserResponse delete(UserRequest reqType) {
+        final UserResponse response = new UserResponse();
         response.setStatus(StatusCodeType.SUCCESS);
 
 
-        final String principalName = reqType.getPsoID().getID();
+        final String principalName = reqType.getUserIdentity();
 
-        final PSOIdentifierType psoID = reqType.getPsoID();
-        final String targetID = psoID.getTargetID();
+        final String targetID = reqType.getTargetID();
 
         ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
 
