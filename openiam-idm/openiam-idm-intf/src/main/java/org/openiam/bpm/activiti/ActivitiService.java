@@ -11,6 +11,7 @@ import org.openiam.bpm.request.ActivitiRequestDecision;
 import org.openiam.bpm.request.GenericWorkflowRequest;
 import org.openiam.bpm.request.HistorySearchBean;
 import org.openiam.bpm.response.NewHireResponse;
+import org.openiam.bpm.response.ProcessWrapper;
 import org.openiam.bpm.response.TaskHistoryWrapper;
 import org.openiam.bpm.response.TaskListWrapper;
 import org.openiam.bpm.response.TaskWrapper;
@@ -43,6 +44,9 @@ public interface ActivitiService {
 	
 	@WebMethod
 	public TaskWrapper getTask(final String taskId);
+	
+	@WebMethod
+	public TaskWrapper getTaskFromHistory(final String taskId);
 	
 	@WebMethod
 	public List<TaskWrapper> getHistory(final HistorySearchBean searchBean, final int from, final int size);

@@ -44,6 +44,7 @@ import org.openiam.bpm.request.ActivitiRequestDecision;
 import org.openiam.bpm.request.GenericWorkflowRequest;
 import org.openiam.bpm.request.HistorySearchBean;
 import org.openiam.bpm.response.NewHireResponse;
+import org.openiam.bpm.response.ProcessWrapper;
 import org.openiam.bpm.response.TaskHistoryWrapper;
 import org.openiam.bpm.response.TaskListWrapper;
 import org.openiam.bpm.response.TaskWrapper;
@@ -601,6 +602,16 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 	}
 	
 	@Override
+	public TaskWrapper getTaskFromHistory(String taskId) {
+		TaskWrapper retVal = null;
+		final List<HistoricTaskInstance> instances = historyService.createHistoricTaskInstanceQuery().taskId(taskId).list();
+		if(CollectionUtils.isNotEmpty(instances)) {
+			retVal = new TaskWrapper(instances.get(0));
+		}
+		return retVal;
+	}
+	
+	@Override
 	@Transactional
 	public List<TaskHistoryWrapper> getHistoryForInstance(final String executionId) {
 		final List<TaskHistoryWrapper> retVal = new LinkedList<TaskHistoryWrapper>();
@@ -616,7 +627,7 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 			final List<HistoricActivityInstance> activityList = historyService.createHistoricActivityInstanceQuery().executionId(executionId).list();
 			if(CollectionUtils.isNotEmpty(activityList)) {
 				for(int i = 0; i < activityList.size(); i++) {
-					final HistoricActivityInstance instance = activityList.get(0);
+					final HistoricActivityInstance instance = activityList.get(i);
 					final TaskHistoryWrapper wrapper = new TaskHistoryWrapper(instance);
 					if(taskDefinitionMap.containsKey(wrapper.getActivityId())) {
 						wrapper.setTask(new TaskWrapper(taskDefinitionMap.get(wrapper.getActivityId())));
