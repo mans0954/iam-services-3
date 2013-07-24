@@ -1132,22 +1132,15 @@ public class UserMgr implements UserDataService {
 
     @Transactional(readOnly = true)
     private List<UserEntity> findAllPotentialSupSubs(UserSearchBean searchBean) {
-        List<UserEntity> entityList = null;
+        List<String> userIds = null;
         if (StringUtils.isNotBlank(searchBean.getKey())) {
-            final UserEntity entity = userDao.findById(searchBean.getKey());
-            if (entity != null) {
-                entityList = new ArrayList<UserEntity>(1);
-                entityList.add(entity);
-            }
+            userIds = new ArrayList<String>(1);
+            userIds.add(searchBean.getKey());
         } else {
-            entityList = userDao.findByIds(getUserIds(searchBean));
+            userIds = getUserIds(searchBean);
         }
-
-        entityList.remove(userDao.findById(searchBean.getRequesterId())); // exclude itself
-        entityList.removeAll(getSuperiors(searchBean.getRequesterId(),-1,-1)); // exclude existing superiors
-        entityList.removeAll(getSubordinates(searchBean.getRequesterId(),-1,-1)); // exclude existing subordinates
-
-        return entityList;
+        userIds.removeAll(userDao.getAllAttachedSupSubIds(searchBean.getRequesterId()));
+        return userDao.findByIds(userIds);
     }
 
     @Override
