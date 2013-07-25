@@ -157,6 +157,7 @@ public class MetadataServiceImpl implements MetadataService {
 				entity.setMetadataType(dbEntity.getMetadataType());
 				entity.setTemplateSet(dbEntity.getTemplateSet());
 				entity.setResource(dbEntity.getResource());
+				entity.setOrganizationAttributes(dbEntity.getOrganizationAttributes());
 			}
 			
 			if(CollectionUtils.isNotEmpty(entity.getValidValues())) {
