@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +19,7 @@ import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.recon.dto.ReconciliationObject;
+import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultField;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.StringUtils;
 
@@ -303,19 +305,23 @@ public abstract class AbstractCSVParser<T, E extends Enum<E>> {
         return objects;
     }
 
-    public Map<String, String> convertToMap(List<AttributeMapEntity> attrMap,
-            ReconciliationObject<T> obj, Class<E> clazz) {
+    public Map<String, ReconciliationResultField> convertToMap(
+            List<AttributeMapEntity> attrMap, ReconciliationObject<T> obj,
+            Class<E> clazz) {
         String[] values = this.objectToCSV(attrMap, obj, clazz);
         String[] header_ = this.generateHeader(attrMap)
                 .replace(String.valueOf(END_OF_LINE), "")
                 .split(String.valueOf(SEPARATOR));
-        Map<String, String> result = new HashMap<String, String>(0);
+        Map<String, ReconciliationResultField> result = new HashMap<String, ReconciliationResultField>(
+                0);
         if (values.length != header_.length) {
             log.error("CSV internal error");
             return null;
         }
         for (int i = 0; i < header_.length; i++) {
-            result.put(header_[i], values[i]);
+            ReconciliationResultField field = new ReconciliationResultField();
+            field.setValues(Arrays.asList(values[i]));
+            result.put(header_[i], field);
         }
         return result;
     }
@@ -335,8 +341,10 @@ public abstract class AbstractCSVParser<T, E extends Enum<E>> {
                         log.info(e.getMessage());
                         fieldValue = Enum.valueOf(enumClass, "DEFAULT");
                     }
+                    object.setPrincipal(this.putValueIntoString(pu, fieldValue));
                 }
             }
+
         }
         return object;
     }

@@ -81,6 +81,9 @@ public class UserCSVParser extends AbstractCSVParser<User, UserFields>
 		case locationName:
 			user.setLocationName(objValue);
 			break;
+		case managerId:
+			user.setManagerId(objValue);
+			break;
 		case metadataTypeId:
 			user.setMetadataTypeId(objValue);
 			break;
@@ -164,7 +167,7 @@ public class UserCSVParser extends AbstractCSVParser<User, UserFields>
 			break;
 		case principalList:
 		case phones:
-        case superiors:
+		case supervisor:
 			break;
 		case alternateContactId:
 			user.setAlternateContactId(objValue);
@@ -251,6 +254,9 @@ public class UserCSVParser extends AbstractCSVParser<User, UserFields>
 			break;
 		case locationName:
 			objValue = toString(user.getLocationName());
+			break;
+		case managerId:
+			objValue = toString(user.getManagerId());
 			break;
 		case metadataTypeId:
 			objValue = toString(user.getMetadataTypeId());
@@ -340,7 +346,7 @@ public class UserCSVParser extends AbstractCSVParser<User, UserFields>
 			break;
 		case userAttributes:
 		case principalList:
-        case superiors:
+		case supervisor:
 		case userNotes:
 		case phones:
 		case emailAddresses:
@@ -400,11 +406,11 @@ public class UserCSVParser extends AbstractCSVParser<User, UserFields>
 				false, source);
 	}
 
-	@Override
-	public Map<String, String> convertToMap(List<AttributeMapEntity> attrMap,
-			ReconciliationObject<User> obj) {
-		return super.convertToMap(attrMap, obj, UserFields.class);
-	}
+    @Override
+    public Map<String, ReconciliationResultField> convertToMap(
+            List<AttributeMapEntity> attrMap, ReconciliationObject<User> obj) {
+        return super.convertToMap(attrMap, obj, UserFields.class);
+    }
 
 	@Override
 	public List<ReconciliationObject<User>> getObjects(
@@ -444,29 +450,48 @@ public class UserCSVParser extends AbstractCSVParser<User, UserFields>
 		Map<String, String> two = this.convertToMap(attrMap, o);
 		for (String field : one.keySet()) {
 
-			if (one.get(field) == null && two.get(field) == null) {
-				res.put(field, null);
-				continue;
-			}
-			if (one.get(field) == null && two.get(field) != null) {
-				res.put(field, two.get(field));
-				continue;
-			}
-			if (one.get(field) != null && two.get(field) == null) {
-				res.put(field, one.get(field));
-				continue;
-			}
-			if (one.get(field) != null && two.get(field) != null) {
-				String firstVal = one.get(field).replaceFirst("^0*", "").trim();
-				String secondVal = two.get(field).replaceFirst("^0*", "")
-						.trim();
-				res.put(field, firstVal.equalsIgnoreCase(secondVal) ? secondVal
-						: ("[" + firstVal + "][" + secondVal + "]"));
-				continue;
-			}
-		}
+    @Override
+    public Map<String, ReconciliationResultField> matchFields(
+            List<AttributeMapEntity> attrMap, ReconciliationObject<User> u,
+            ReconciliationObject<User> o) {
 
-		return res;
-	}
+        Map<String, ReconciliationResultField> res = new HashMap<String, ReconciliationResultField>(
+                0);
+        Map<String, ReconciliationResultField> one = this.convertToMap(attrMap,
+                u);
+        Map<String, ReconciliationResultField> two = this.convertToMap(attrMap,
+                o);
+        for (String field : one.keySet()) {
+            ReconciliationResultField resultField = new ReconciliationResultField();
+            if (one.get(field) == null && two.get(field) == null) {
+                res.put(field, null);
+                continue;
+            }
+            if (one.get(field) == null && two.get(field) != null) {
+                resultField.setValues(two.get(field).getValues());
+                res.put(field, resultField);
+                continue;
+            }
+            if (one.get(field) != null && two.get(field) == null) {
+                resultField.setValues(one.get(field).getValues());
+                res.put(field, resultField);
+                continue;
+            }
+            if (one.get(field) != null && two.get(field) != null) {
+                ReconciliationResultField firstVal = one.get(field);
+                ReconciliationResultField secondVal = two.get(field);
+                if (firstVal.equals(secondVal)) {
+                    resultField.setValues(secondVal.getValues());
+                } else {
+                    resultField.setValues(new ArrayList<String>(firstVal
+                            .getValues()));
+                    resultField.getValues().addAll(secondVal.getValues());
+                }
+                res.put(field, resultField);
+                continue;
+            }
+        }
 
+        return res;
+    }
 }

@@ -21,9 +21,15 @@
  */
 package org.openiam.idm.srvc.recon.service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -34,24 +40,37 @@ import org.openiam.base.ws.ResponseStatus;
 import org.openiam.connector.type.SearchRequest;
 import org.openiam.connector.type.SearchResponse;
 import org.openiam.connector.type.UserValue;
-import org.openiam.dozer.converter.*;
+import org.openiam.dozer.converter.LoginDozerConverter;
+import org.openiam.dozer.converter.ManagedSysDozerConverter;
+import org.openiam.dozer.converter.ReconciliationConfigDozerConverter;
+import org.openiam.dozer.converter.ReconciliationSituationDozerConverter;
+import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.exception.ScriptEngineException;
+import org.openiam.idm.parser.csv.CSVParser;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
+import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
-import org.openiam.idm.srvc.prov.admin.dto.ProvisionConnector;
+import org.openiam.idm.srvc.msg.service.MailService;
 import org.openiam.idm.srvc.recon.command.ReconciliationCommandFactory;
 import org.openiam.idm.srvc.recon.domain.ReconciliationConfigEntity;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
+import org.openiam.idm.srvc.recon.dto.ReconciliationObject;
 import org.openiam.idm.srvc.recon.dto.ReconciliationResponse;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
+import org.openiam.idm.srvc.recon.result.dto.ReconciliationReportCase;
+import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultBean;
+import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultField;
+import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultRow;
+import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultUtil;
+import org.openiam.idm.srvc.recon.util.Serializer;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.role.service.RoleDataService;
@@ -68,6 +87,7 @@ import org.openiam.script.ScriptIntegration;
 import org.openiam.spml2.msg.StatusCodeType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -96,7 +116,8 @@ public class ReconciliationServiceImpl implements ReconciliationService,
 
     @Autowired
     protected UserDataService userMgr;
-
+    @Autowired
+    private MailService mailService;
     @Autowired
     protected ManagedSystemService managedSysService;
     @Autowired
@@ -118,11 +139,13 @@ public class ReconciliationServiceImpl implements ReconciliationService,
     private ReconciliationConfigDozerConverter reconConfigDozerMapper;
     @Autowired
     private ReconciliationSituationDozerConverter reconSituationDozerMapper;
-
+    @Autowired
+    protected CSVParser<User> userCSVParser;
     @Autowired
     @Qualifier("configurableGroovyScriptEngine")
     protected ScriptIntegration scriptRunner;
-
+    @Value("${iam.files.location}")
+    private String absolutePath;
     private static final Log log = LogFactory
             .getLog(ReconciliationServiceImpl.class);
 
@@ -276,6 +299,15 @@ public class ReconciliationServiceImpl implements ReconciliationService,
                 log.debug("end recon");
                 return new ReconciliationResponse(ResponseStatus.SUCCESS);
             }
+            ReconciliationResultBean resultBean = new ReconciliationResultBean();
+            List<AttributeMapEntity> attrMap = managedSysService
+                    .getResourceAttributeMaps(mSys.getResourceId());
+            resultBean.setObjectType("USER");
+            resultBean.setRows(new ArrayList<ReconciliationResultRow>());
+            resultBean.getRows().add(
+                    ReconciliationResultUtil
+                            .setHeaderInReconciliationResult(attrMap));
+
             // initialization match parameters of connector
             List<ManagedSystemObjectMatchEntity> matchObjAry = managedSysService
                     .managedSysObjectParam(managedSysId, "USER");
@@ -293,15 +325,17 @@ public class ReconciliationServiceImpl implements ReconciliationService,
             List<LoginEntity> idmIdentities = loginManager
                     .getAllLoginByManagedSys(managedSysId);
             for (LoginEntity identity : idmIdentities) {
-                reconciliationIDMUserToTargetSys(identity, mSys, situations);
+                reconciliationIDMUserToTargetSys(resultBean, attrMap, identity,
+                        mSys, situations);
             }
 
             // 2. Do reconciliation users from Target Managed System to IDM
             // search for all Roles and Groups related with resource
             // GET Users from ConnectorAdapter by BaseDN and query rules
-            processingTargetToIDM(config, managedSysId, mSys, situations,
-                    connector, keyField, baseDnField);
-
+            processingTargetToIDM(resultBean, attrMap, config, managedSysId,
+                    mSys, situations, connector, keyField, baseDnField);
+            this.saveReconciliationResults(config.getResourceId(), resultBean);
+            this.sendMail(config, res);
         } catch (Exception e) {
             log.error(e);
             e.printStackTrace();
@@ -315,8 +349,9 @@ public class ReconciliationServiceImpl implements ReconciliationService,
     }
 
     private ReconciliationResponse processingTargetToIDM(
-            ReconciliationConfig config, String managedSysId,
-            ManagedSysEntity mSys,
+            ReconciliationResultBean resultBean,
+            List<AttributeMapEntity> attrMap, ReconciliationConfig config,
+            String managedSysId, ManagedSysEntity mSys,
             Map<String, ReconciliationCommand> situations,
             ProvisionConnectorDto connector, String keyField, String baseDnField)
             throws ScriptEngineException {
@@ -369,8 +404,9 @@ public class ReconciliationServiceImpl implements ReconciliationService,
                             .getAttributeList() != null ? userValue
                             .getAttributeList()
                             : new LinkedList<ExtensibleAttribute>();
-                    reconcilationTargetUserObjectToIDM(managedSysId, mSys,
-                            situations, keyField, extensibleAttributes);
+                    reconcilationTargetUserObjectToIDM(resultBean, attrMap,
+                            managedSysId, mSys, situations, keyField,
+                            extensibleAttributes);
                 }
             }
         } else {
@@ -380,7 +416,9 @@ public class ReconciliationServiceImpl implements ReconciliationService,
     }
 
     // Reconciliation processingTargetToIDM
-    private void reconcilationTargetUserObjectToIDM(String managedSysId,
+    private void reconcilationTargetUserObjectToIDM(
+            ReconciliationResultBean resultBean,
+            List<AttributeMapEntity> attrMap, String managedSysId,
             ManagedSysEntity mSys,
             Map<String, ReconciliationCommand> situations, String keyField,
             List<ExtensibleAttribute> extensibleAttributes) {
@@ -410,6 +448,10 @@ public class ReconciliationServiceImpl implements ReconciliationService,
             if (!identityExistsInIDM) {
                 // user doesn't exists in IDM
 
+                resultBean.getRows().add(
+                        this.setRowInReconciliationResult(resultBean.getRows()
+                                .get(0), attrMap, null, extensibleAttributes,
+                                ReconciliationReportCase.NOT_EXIST_IN_IDM_DB));
                 // SYS_EXISTS__IDM_NOT_EXISTS
                 ReconciliationCommand command = situations
                         .get(ReconciliationCommand.SYS_EXISTS__IDM_NOT_EXISTS);
@@ -435,8 +477,11 @@ public class ReconciliationServiceImpl implements ReconciliationService,
     }
 
     private boolean reconciliationIDMUserToTargetSys(
-            final LoginEntity identity, final ManagedSysEntity mSys,
+            ReconciliationResultBean resultBean,
+            List<AttributeMapEntity> attrMap, final LoginEntity identity,
+            final ManagedSysEntity mSys,
             final Map<String, ReconciliationCommand> situations) {
+
         User user = userMgr.getUserDto(identity.getUserId());
         Login idDto = loginDozerConverter.convertToDTO(identity, true);
         log.debug("1 Reconciliation for user " + user);
@@ -462,6 +507,11 @@ public class ReconciliationServiceImpl implements ReconciliationService,
                 // IDM_DELETED__SYS_EXISTS
                 ReconciliationCommand command = situations
                         .get(ReconciliationCommand.IDM_DELETED__SYS_EXISTS);
+                resultBean.getRows().add(
+                        this.setRowInReconciliationResult(resultBean.getRows()
+                                .get(0), attrMap, userCSVParser
+                                .toReconciliationObject(user, attrMap), null,
+                                ReconciliationReportCase.IDM_DELETED));
                 if (command != null) {
                     log.debug("Call command for: Record in resource but deleted in IDM");
                     command.execute(idDto, new ProvisionUser(user),
@@ -471,6 +521,12 @@ public class ReconciliationServiceImpl implements ReconciliationService,
                 // IDM_EXISTS__SYS_EXISTS
                 ReconciliationCommand command = situations
                         .get(ReconciliationCommand.IDM_EXISTS__SYS_EXISTS);
+                resultBean.getRows().add(
+                        this.setRowInReconciliationResult(resultBean.getRows()
+                                .get(0), attrMap, userCSVParser
+                                .toReconciliationObject(user, attrMap),
+                                extensibleAttributes,
+                                ReconciliationReportCase.MATCH_FOUND));
                 if (command != null) {
                     log.debug("Call command for: Record in resource and in IDM");
                     command.execute(idDto, new ProvisionUser(user),
@@ -484,6 +540,13 @@ public class ReconciliationServiceImpl implements ReconciliationService,
                 // IDM_EXISTS__SYS_NOT_EXISTS
                 ReconciliationCommand command = situations
                         .get(ReconciliationCommand.IDM_EXISTS__SYS_NOT_EXISTS);
+                resultBean
+                        .getRows()
+                        .add(this.setRowInReconciliationResult(resultBean
+                                .getRows().get(0), attrMap, userCSVParser
+                                .toReconciliationObject(user, attrMap),
+                                extensibleAttributes,
+                                ReconciliationReportCase.NOT_EXIST_IN_RESOURCE));
                 if (command != null) {
                     log.debug("Call command for: Record in resource and in IDM");
                     command.execute(idDto, new ProvisionUser(user),
@@ -521,4 +584,165 @@ public class ReconciliationServiceImpl implements ReconciliationService,
         this.remoteConnectorAdapter = remoteConnectorAdapter;
     }
 
+    // private ReconciliationResultRow setRowInReconciliationResult(
+    // ReconciliationResultRow headerRow,
+    // List<AttributeMapEntity> attrMapList,
+    // ReconciliationObject<User> currentObject,
+    // ReconciliationObject<User> findedObject,
+    // ReconciliationReportCase caseReconciliation) {
+    // ReconciliationResultRow row = new ReconciliationResultRow();
+    //
+    // Map<String, ReconciliationResultField> resultMap = null;
+    // if (currentObject != null && findedObject != null) {
+    // resultMap = userCSVParser.matchFields(attrMapList, currentObject,
+    // findedObject);
+    // if (!MapUtils.isEmpty(resultMap)) {
+    // for (ReconciliationResultField field : resultMap.values())
+    // if (field.getValues().size() > 1) {
+    // caseReconciliation = ReconciliationReportCase.MATCH_FOUND_DIFFERENT;
+    // break;
+    // }
+    // }
+    // } else if (currentObject != null) {
+    // resultMap = userCSVParser.convertToMap(attrMapList, currentObject);
+    // }
+    // row.setCaseReconciliation(caseReconciliation);
+    // List<ReconciliationResultField> fieldList = new
+    // ArrayList<ReconciliationResultField>();
+    // if (!MapUtils.isEmpty(resultMap)) {
+    // for (ReconciliationResultField field : headerRow.getFields()) {
+    // ReconciliationResultField value = resultMap.get(field
+    // .getValues().get(0));
+    // if (value == null)
+    // continue;
+    // ReconciliationResultField newField = new ReconciliationResultField();
+    // newField.setDisplayOrder(field.getDisplayOrder());
+    // newField.setValues(value.getValues());
+    // fieldList.add(newField);
+    // }
+    // }
+    // row.setFields(fieldList);
+    // return row;
+    // }
+
+    private ReconciliationResultRow setRowInReconciliationResult(
+            ReconciliationResultRow headerRow,
+            List<AttributeMapEntity> attrMapList,
+            ReconciliationObject<User> currentObject,
+            List<ExtensibleAttribute> findedObject,
+            ReconciliationReportCase caseReconciliation) {
+        ReconciliationResultRow row = new ReconciliationResultRow();
+
+        Map<String, ReconciliationResultField> user1Map = null;
+        Map<String, ReconciliationResultField> user2Map = null;
+        if (currentObject != null) {
+            user1Map = userCSVParser.convertToMap(attrMapList, currentObject);
+        }
+        if (findedObject != null) {
+            user2Map = new HashMap<String, ReconciliationResultField>();
+            for (ExtensibleAttribute a : findedObject) {
+                ReconciliationResultField field = new ReconciliationResultField();
+                if (a.isMultivalued()) {
+                    field.setValues(a.getValueList());
+                } else {
+                    field.setValues(Arrays.asList(a.getValue()));
+                }
+                user2Map.put(a.getName(), field);
+            }
+        }
+        row.setCaseReconciliation(caseReconciliation);
+        if (!MapUtils.isEmpty(user1Map) && MapUtils.isEmpty(user2Map)) {
+            row.setFields(this.setFromReconcilationUser(user1Map, headerRow));
+        }
+        if (MapUtils.isEmpty(user1Map) && !MapUtils.isEmpty(user2Map)) {
+            row.setFields(this.setFromReconcilationUser(user2Map, headerRow));
+        }
+        // Merge both
+        if (!MapUtils.isEmpty(user1Map) && !MapUtils.isEmpty(user2Map)) {
+            for (String key : user1Map.keySet()) {
+                ReconciliationResultField value1 = user1Map.get(key);
+                ReconciliationResultField value2 = user2Map.get(key);
+
+                if (value1 == null && value2 != null) {
+                    user1Map.put(key, value2);
+                }
+                if (value1 != null && value2 != null && !value1.equals(value2)) {
+                    row.setCaseReconciliation(ReconciliationReportCase.MATCH_FOUND_DIFFERENT);
+                    value1.getValues().addAll(value2.getValues());
+                    user1Map.put(key, value1);
+                }
+            }
+            row.setFields(this.setFromReconcilationUser(user1Map, headerRow));
+        }
+
+        return row;
+    }
+
+    private List<ReconciliationResultField> setFromReconcilationUser(
+            Map<String, ReconciliationResultField> user,
+            ReconciliationResultRow headerRow) {
+        List<ReconciliationResultField> fieldList = new ArrayList<ReconciliationResultField>();
+        for (ReconciliationResultField field : headerRow.getFields()) {
+            ReconciliationResultField value = user
+                    .get(field.getValues().get(0));
+            if (value == null)
+                continue;
+            ReconciliationResultField newField = new ReconciliationResultField();
+            newField.setDisplayOrder(field.getDisplayOrder());
+            newField.setValues(value.getValues());
+            fieldList.add(newField);
+        }
+        return fieldList;
+    }
+
+    @Override
+    public String getReconciliationReport(ReconciliationConfig config,
+            String reportType) {
+        String fileName = StringUtils.isEmpty(config.getResourceId()) ? ""
+                : config.getResourceId() + ".rcndat";
+        if (StringUtils.isEmpty(fileName))
+            return null;
+        ReconciliationResultBean r = null;
+        try {
+            r = (ReconciliationResultBean) Serializer.deserializer(absolutePath
+                    + fileName);
+        } catch (Exception e) {
+            return "";
+        }
+        if (r == null)
+            return "";
+        if ("HTML".equalsIgnoreCase(reportType)
+                || StringUtils.isEmpty(reportType)) {
+            return r.toHTML();
+        } else {
+            return r.toCSV();
+        }
+    }
+
+    private void saveReconciliationResults(String fileName,
+            ReconciliationResultBean resultBean) {
+        Serializer.serialize(resultBean, absolutePath + fileName + ".rcndat");
+    }
+
+    private void sendMail(ReconciliationConfig config, Resource res) {
+        StringBuilder message = new StringBuilder();
+        if (!StringUtils.isEmpty(config.getNotificationEmailAddress())) {
+            message.append("Resource: " + res.getName() + ".\n");
+            message.append("Uploaded CSV file: " + res.getResourceId()
+                    + ".csv was successfully reconciled.\n");
+            mailService.sendEmails(null,
+                    new String[] { config.getNotificationEmailAddress() },
+                    null, null, "CSVConnector", message.toString(), false,
+                    new String[] {});
+        }
+    }
+
+    @Override
+    public ReconciliationResultBean getReconciliationResult(
+            ReconciliationConfig config) {
+        if (config == null || config.getResourceId() == null)
+            return null;
+        return (ReconciliationResultBean) Serializer.deserializer(absolutePath
+                + config.getResourceId() + ".rcndat");
+    }
 }

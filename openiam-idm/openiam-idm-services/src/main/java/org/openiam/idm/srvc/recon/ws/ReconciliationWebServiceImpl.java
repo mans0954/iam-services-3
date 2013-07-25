@@ -24,6 +24,7 @@ package org.openiam.idm.srvc.recon.ws;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.jws.WebParam;
 import javax.jws.WebService;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -35,6 +36,7 @@ import org.openiam.dozer.converter.ReconciliationSituationDozerConverter;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.idm.srvc.recon.dto.ReconciliationResponse;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
+import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultBean;
 import org.openiam.idm.srvc.recon.service.ReconciliationService;
 import org.openiam.idm.srvc.recon.service.ReconciliationSituationDAO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -135,5 +137,18 @@ public class ReconciliationWebServiceImpl implements ReconciliationWebService,
         }
         return response;
 
+    }
+
+    @Override
+    public String getReconciliationReport(
+            @WebParam(name = "config", targetNamespace = "") ReconciliationConfig config,
+            @WebParam(name = "reportType", targetNamespace = "") String reportType) {
+        return reconService.getReconciliationReport(config, reportType);
+    }
+
+    @Override
+    public ReconciliationResultBean getReconciliationResult(
+            @WebParam(name = "config", targetNamespace = "") ReconciliationConfig config) {
+        return reconService.getReconciliationResult(config);
     }
 }
