@@ -57,6 +57,7 @@ public class AttestationInitializer {
 		final Set<String> employeeIds = supervisorDAO.getUniqueEmployeeIds();
 		if(CollectionUtils.isNotEmpty(employeeIds)) {
 			for(final String employeeId : employeeIds) {
+				final UserEntity user = userService.getUser(employeeId);
 				final List<SupervisorEntity> supervisords = userService.getSupervisors(employeeId);
 				final Set<String> supervisorIds = new HashSet<String>();
 				if(CollectionUtils.isEmpty(supervisords)) {
@@ -71,10 +72,12 @@ public class AttestationInitializer {
 				}
 				
 				if(CollectionUtils.isNotEmpty(supervisorIds)) {
+					final String taskName = String.format("Attestation Request for %s", user.getDisplayName());
+					
 					final GenericWorkflowRequest request = new GenericWorkflowRequest();
 					request.setActivitiRequestType(ActivitiRequestType.ATTESTATION.getKey());
-					request.setDescription("Attestation Request");
-					request.setName("Attestation Request");
+					request.setDescription(taskName);
+					request.setName(taskName);
 					request.setCustomApproverIds(supervisorIds);
 					request.addParameter(ActivitiConstants.EMPLOYEE_ID, employeeId);
 					request.addParameter(ActivitiConstants.CUSTOM_TASK_UI_URL, attestationURL);
