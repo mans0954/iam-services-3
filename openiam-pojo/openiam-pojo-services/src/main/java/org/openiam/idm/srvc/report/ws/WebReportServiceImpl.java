@@ -24,6 +24,7 @@ import org.openiam.idm.srvc.policy.service.PolicyDataServiceImpl;
 import org.openiam.idm.srvc.pswd.domain.UserIdentityAnswerEntity;
 import org.openiam.idm.srvc.report.domain.ReportCriteriaParamEntity;
 import org.openiam.idm.srvc.report.domain.ReportInfoEntity;
+import org.openiam.idm.srvc.report.domain.ReportSubCriteriaParamEntity;
 import org.openiam.idm.srvc.report.domain.ReportSubscriptionEntity;
 import org.openiam.idm.srvc.report.domain.ReportParamTypeEntity;
 import org.openiam.idm.srvc.report.dto.ReportCriteriaParamDto;
@@ -87,8 +88,9 @@ public class WebReportServiceImpl implements WebReportService {
 	}
 
 	@Override
-	public GetAllReportsResponse getReports( final int from, final int size) {
-		List<ReportInfoEntity> reports = reportDataService.getAllReports(from, size);
+	public GetAllReportsResponse getReports(final int from, final int size) {
+		List<ReportInfoEntity> reports = reportDataService.getAllReports(from,
+				size);
 		GetAllReportsResponse reportsResponse = new GetAllReportsResponse();
 		List<ReportInfoDto> reportDtos = new LinkedList<ReportInfoDto>();
 		if (reports != null) {
@@ -102,7 +104,7 @@ public class WebReportServiceImpl implements WebReportService {
 	@Override
 	public Integer getReportCount() {
 		return reportDataService.getReportCount();
-		
+
 	}
 
 	@Override
@@ -110,10 +112,10 @@ public class WebReportServiceImpl implements WebReportService {
 			@WebParam(name = "report", targetNamespace = "") ReportInfoDto report) {
 		Response response = new Response();
 		ReportInfoEntity entity = null;
-		
+
 		if (report != null) {
 			try {
-				
+
 				if (StringUtils.isBlank(report.getReportName())) {
 					throw new BasicDataServiceException(
 							ResponseCode.REPORT_NAME_NOT_SET);
@@ -126,16 +128,19 @@ public class WebReportServiceImpl implements WebReportService {
 					throw new BasicDataServiceException(
 							ResponseCode.REPORT_URL_NOT_SET);
 				}
-				final ReportInfoEntity found = reportDataService.getReportByName(report.getReportName());
+				final ReportInfoEntity found = reportDataService
+						.getReportByName(report.getReportName());
 				if (found != null) {
 					if (StringUtils.isBlank(report.getReportId())) {
-						throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
+						throw new BasicDataServiceException(
+								ResponseCode.NAME_TAKEN);
 					}
 
 					if (StringUtils.isNotBlank(report.getReportId())
-							&& !report.getReportId().equals(
-									found.getReportId())) {
-						throw new BasicDataServiceException(ResponseCode.NAME_TAKEN);
+							&& !report.getReportId()
+									.equals(found.getReportId())) {
+						throw new BasicDataServiceException(
+								ResponseCode.NAME_TAKEN);
 					}
 				}
 
@@ -158,6 +163,69 @@ public class WebReportServiceImpl implements WebReportService {
 		} else {
 			response.setErrorCode(ResponseCode.INVALID_ARGUMENTS);
 			response.setErrorText("Invalid parameter list: report=" + report);
+			response.setStatus(ResponseStatus.FAILURE);
+		}
+		return response;
+	}
+
+	@Override
+	public Response createOrUpdateReportInfoParam(
+			@WebParam(name = "reportParam", targetNamespace = "") final ReportCriteriaParamDto reportParam) {
+		log.debug("In createOrUpdateReportInfoParam:" + reportParam);
+		Response response = new Response();
+		ReportCriteriaParamEntity entity = null;
+
+		if (reportParam != null) {
+			try {
+
+				if (StringUtils.isBlank(reportParam.getName())) {
+					throw new BasicDataServiceException(
+							ResponseCode.REPORT_PARAM_NAME_NOT_SET);
+				}
+				if (StringUtils.isBlank(reportParam.getTypeId())) {
+					throw new BasicDataServiceException(
+							ResponseCode.REPORT_PARAM_TYPE_NOT_SET);
+				}
+				final ReportCriteriaParamEntity found = reportDataService
+						.getReportParameterByName(reportParam.getReportId(),
+								reportParam.getName());
+				if (found != null) {
+					if (StringUtils.isBlank(reportParam.getId())) {
+						throw new BasicDataServiceException(
+								ResponseCode.NAME_TAKEN);
+					}
+
+					if (StringUtils.isNotBlank(reportParam.getId())
+							&& !reportParam.getId().equals(found.getId())) {
+						throw new BasicDataServiceException(
+								ResponseCode.NAME_TAKEN);
+					}
+				}
+
+				entity = criteriaParamDozerConverter.convertToEntity(
+						reportParam, true);
+				log.debug("In createOrUpdateReportParamInfo, converted entity:"
+						+ entity);
+
+				entity = reportDataService
+						.createOrUpdateReportParamInfo(entity);
+				// TODO persist parameters
+				// reportDataService.updateReportParametersByReportName(reportName,
+				// criteriaParamDozerConverter.convertToEntityList(parameters,
+				// false));
+			} catch (Throwable t) {
+				log.error("error while saving:" + t);
+				response.setStatus(ResponseStatus.FAILURE);
+				response.setErrorCode(ResponseCode.SQL_EXCEPTION);
+				response.setErrorText(t.getMessage());
+				return response;
+			}
+			response.setResponseValue(entity.getId());
+			response.setStatus(ResponseStatus.SUCCESS);
+		} else {
+			response.setErrorCode(ResponseCode.INVALID_ARGUMENTS);
+			response.setErrorText("Invalid parameter list: report="
+					+ reportParam);
 			response.setStatus(ResponseStatus.FAILURE);
 		}
 		return response;
@@ -217,7 +285,7 @@ public class WebReportServiceImpl implements WebReportService {
 			ReportInfoEntity reportInfoEntity = reportDataService
 					.getReportByName(reportName);
 			ReportInfoDto reportInfoDto = reportInfoDozerConverter
-					.convertToDTO(reportInfoEntity, false);
+					.convertToDTO(reportInfoEntity, true);
 			response.setReport(reportInfoDto);
 			response.setStatus(ResponseStatus.SUCCESS);
 		} else {
@@ -236,8 +304,10 @@ public class WebReportServiceImpl implements WebReportService {
 		if (!StringUtils.isEmpty(reportId)) {
 			ReportInfoEntity reportInfoEntity = reportDataService
 					.getReport(reportId);
+			log.debug("In getReport:" + reportInfoEntity);
 			ReportInfoDto reportInfoDto = reportInfoDozerConverter
-					.convertToDTO(reportInfoEntity, false);
+					.convertToDTO(reportInfoEntity, true);
+			log.debug("Converted dto:" + reportInfoDto);
 			response.setReport(reportInfoDto);
 			response.setStatus(ResponseStatus.SUCCESS);
 		} else {
@@ -247,6 +317,32 @@ public class WebReportServiceImpl implements WebReportService {
 			response.setStatus(ResponseStatus.FAILURE);
 		}
 		return response;
+	}
+
+	@Override
+	public Response deleteReportParam(
+			@WebParam(name = "reportParamId", targetNamespace = "") String reportParamId) {
+		Response response = new Response();
+		if (!StringUtils.isEmpty(reportParamId)) {
+			try {
+				reportDataService.deleteReportParam(reportParamId);
+				response.setStatus(ResponseStatus.SUCCESS);
+			} catch (Throwable t) {
+				log.error("error while deleting report param" + t);
+				response.setStatus(ResponseStatus.FAILURE);
+				response.setErrorCode(ResponseCode.SQL_EXCEPTION);
+				response.setErrorText(t.getMessage());
+				return response;
+			}
+
+		} else {
+			response.setErrorCode(ResponseCode.INVALID_ARGUMENTS);
+			response.setErrorText("Invalid parameter list: reportParamId="
+					+ reportParamId);
+			response.setStatus(ResponseStatus.FAILURE);
+		}
+		return response;
+
 	}
 
 	@Override
@@ -308,26 +404,236 @@ public class WebReportServiceImpl implements WebReportService {
 			@WebParam(name = "reportSubscriptionDto", targetNamespace = "") ReportSubscriptionDto reportSubscriptionDto,
 			@WebParam(name = "parameters", targetNamespace = "") List<ReportSubCriteriaParamDto> parameters) {
 		Response response = new Response();
+		ReportSubscriptionEntity entity = null;
 		if (reportSubscriptionDto != null) {
 			try {
-				reportDataService
+
+				entity = reportDataService
 						.createOrUpdateSubscribedReportInfo(reportSubscriptionDozerConverter
 								.convertToEntity(reportSubscriptionDto, true));
-				reportDataService.updateSubReportParametersByReportName(
-						reportSubscriptionDto.getReportName(),
-						criteriaSubParamDozerConverter.convertToEntityList(
-								parameters, false));
+
+				/*
+				 * reportDataService.updateSubReportParametersByReportName(
+				 * reportSubscriptionDto.getReportName(),
+				 * criteriaSubParamDozerConverter.convertToEntityList(
+				 * parameters, false));
+				 */
+
 			} catch (Throwable t) {
 				response.setStatus(ResponseStatus.FAILURE);
 				response.setErrorCode(ResponseCode.SQL_EXCEPTION);
 				response.setErrorText(t.getMessage());
 				return response;
 			}
+			response.setResponseValue(entity.getReportId());
+			response.setStatus(ResponseStatus.SUCCESS);
+
+		} else {
+			response.setErrorCode(ResponseCode.INVALID_ARGUMENTS);
+			// TODO check
+			// response.setErrorText("Invalid parameter list: reportName="
+			// + reportSubscriptionDto.getReportName());
+			response.setStatus(ResponseStatus.FAILURE);
+		}
+		return response;
+	}
+
+	@Override
+	public Response deleteSubscribedReport(
+			@WebParam(name = "reportId", targetNamespace = "") String reportId) {
+		Response response = new Response();
+		if (!StringUtils.isEmpty(reportId)) {
+			try {
+				reportDataService.deleteSubscribedReport(reportId);
+				response.setStatus(ResponseStatus.SUCCESS);
+			} catch (Throwable t) {
+				log.error("error while deleting report" + t);
+				response.setStatus(ResponseStatus.FAILURE);
+				response.setErrorCode(ResponseCode.SQL_EXCEPTION);
+				response.setErrorText(t.getMessage());
+				return response;
+			}
+
+		} else {
+			response.setErrorCode(ResponseCode.INVALID_ARGUMENTS);
+			response.setErrorText("Invalid parameter list: reportId="
+					+ reportId);
+			response.setStatus(ResponseStatus.FAILURE);
+		}
+		return response;
+	}
+
+	@Override
+	public Integer getSubscribedReportCount() {
+		// TODO Auto-generated method stub
+		return reportDataService.getSubscribedReportCount();
+	}
+
+	@Override
+	public GetSubscribedReportResponse getSubscribedReportById(
+			@WebParam(name = "reportId", targetNamespace = "") String reportId) {
+
+		GetSubscribedReportResponse response = new GetSubscribedReportResponse();
+		if (!StringUtils.isEmpty(reportId)) {
+			ReportSubscriptionEntity reportSubscriptionEntity = reportDataService
+					.getSubscriptionReportById(reportId);
+			log.debug("In getSubscriptionReport:" + reportSubscriptionEntity);
+
+			ReportSubscriptionDto reportSubscriptionDto = reportSubscriptionDozerConverter
+					.convertToDTO(reportSubscriptionEntity, true);
+
+			log.debug("Converted Subscription dto:" + reportSubscriptionDto);
+
+			response.setReport(reportSubscriptionDto);
 			response.setStatus(ResponseStatus.SUCCESS);
 		} else {
 			response.setErrorCode(ResponseCode.INVALID_ARGUMENTS);
-			response.setErrorText("Invalid parameter list: reportName="
-					+ reportSubscriptionDto.getReportName());
+			response.setErrorText("Invalid parameter list: reportId="
+					+ reportId);
+			response.setStatus(ResponseStatus.FAILURE);
+		}
+		return response;
+
+	}
+
+	@Override
+	public GetAllSubCriteriaParamReportsResponse getSubCriteriaParamReports() {
+		List<ReportSubCriteriaParamEntity> reports = reportDataService
+				.getAllSubCriteriaParamReports();
+		GetAllSubCriteriaParamReportsResponse reportsResponse = new GetAllSubCriteriaParamReportsResponse();
+		List<ReportSubCriteriaParamDto> reportDtos = new LinkedList<ReportSubCriteriaParamDto>();
+		if (reports != null) {
+			reportDtos = criteriaSubParamDozerConverter.convertToDTOList(
+					reports, false);
+		}
+		reportsResponse.setReports(reportDtos);
+		return reportsResponse;
+	}
+
+	@Override
+	public GetAllSubCriteriaParamReportsResponse getAllSubCriteriaParamReport(
+			@WebParam(name = "reportId", targetNamespace = "") String reportId) {
+		List<ReportSubCriteriaParamEntity> reports = reportDataService
+				.getAllSubCriteriaParamReport(reportId);
+		GetAllSubCriteriaParamReportsResponse reportsResponse = new GetAllSubCriteriaParamReportsResponse();
+		List<ReportSubCriteriaParamDto> reportDtos = new LinkedList<ReportSubCriteriaParamDto>();
+		if (reports != null) {
+			reportDtos = criteriaSubParamDozerConverter.convertToDTOList(
+					reports, false);
+		}
+		reportsResponse.setReports(reportDtos);
+		return reportsResponse;
+	}
+
+	@Override
+	public Integer getSubCriteriaParamReportCount() {
+		// TODO Auto-generated method stub
+		return reportDataService.getSubCriteriaParamReportCount();
+	}
+
+	@Override
+	public GetSubCriteriaParamReportResponse getSubCriteriaParamReportById(
+			@WebParam(name = "Id", targetNamespace = "") String reportId) {
+		GetSubCriteriaParamReportResponse response = new GetSubCriteriaParamReportResponse();
+		if (!StringUtils.isEmpty(reportId)) {
+			ReportSubCriteriaParamEntity reportSubCriteriaParamEntity = reportDataService
+					.getSubCriteriaParamReportById(reportId);
+			log.debug("In getSubCriteriaParamReport:"
+					+ reportSubCriteriaParamEntity);
+
+			ReportSubCriteriaParamDto reportSubCriteriaParamDto = criteriaSubParamDozerConverter
+					.convertToDTO(reportSubCriteriaParamEntity, true);
+
+			log.debug("Converted Subscription dto:" + reportSubCriteriaParamDto);
+
+			response.setReport(reportSubCriteriaParamDto);
+			response.setStatus(ResponseStatus.SUCCESS);
+		} else {
+			response.setErrorCode(ResponseCode.INVALID_ARGUMENTS);
+			response.setErrorText("Invalid parameter list: reportId="
+					+ reportId);
+			response.setStatus(ResponseStatus.FAILURE);
+		}
+		return response;
+	}
+
+	@Override
+	public Response deleteSubCriteriaParamReport(
+			@WebParam(name = "Id", targetNamespace = "") String reportId) {
+		Response response = new Response();
+		if (!StringUtils.isEmpty(reportId)) {
+			try {
+				reportDataService.deleteSubCriteriaParamReport(reportId);
+				response.setStatus(ResponseStatus.SUCCESS);
+			} catch (Throwable t) {
+				log.error("error while deleting report" + t);
+				response.setStatus(ResponseStatus.FAILURE);
+				response.setErrorCode(ResponseCode.SQL_EXCEPTION);
+				response.setErrorText(t.getMessage());
+				return response;
+			}
+
+		} else {
+			response.setErrorCode(ResponseCode.INVALID_ARGUMENTS);
+			response.setErrorText("Invalid parameter list: reportId="
+					+ reportId);
+			response.setStatus(ResponseStatus.FAILURE);
+		}
+		return response;
+	}
+
+	@Override
+	public Response createOrUpdateSubCriteriaParam(
+			@WebParam(name = "subCriteriaParamReport", targetNamespace = "") final ReportSubCriteriaParamDto subCriteriaParamReport) {
+		log.debug("In createOrUpdateReportInfoParam:" + subCriteriaParamReport);
+		Response response = new Response();
+		ReportSubCriteriaParamEntity entity = null;
+
+		if (subCriteriaParamReport != null) {
+			try {
+
+				/*
+				 * if (StringUtils.isBlank(subCriteriaParamReport.getName())) {
+				 * throw new BasicDataServiceException(
+				 * ResponseCode.REPORT_PARAM_NAME_NOT_SET); } if
+				 * (StringUtils.isBlank(reportParam.getTypeId())) { throw new
+				 * BasicDataServiceException(
+				 * ResponseCode.REPORT_PARAM_TYPE_NOT_SET); } final
+				 * ReportCriteriaParamEntity found = reportDataService
+				 * .getReportParameterByName(reportParam.getReportId(),
+				 * reportParam.getName()); if (found != null) { if
+				 * (StringUtils.isBlank(reportParam.getId())) { throw new
+				 * BasicDataServiceException( ResponseCode.NAME_TAKEN); }
+				 * 
+				 * if (StringUtils.isNotBlank(reportParam.getId()) &&
+				 * !reportParam.getId().equals(found.getId())) { throw new
+				 * BasicDataServiceException( ResponseCode.NAME_TAKEN); } }
+				 */
+
+				entity = criteriaSubParamDozerConverter.convertToEntity(
+						subCriteriaParamReport, true);
+				log.debug("In createOrUpdateReportParamInfo, converted entity:"
+						+ entity);
+
+				entity = reportDataService
+						.createOrUpdateSubCriteriaParamReport(entity);
+				// TODO persist parameters
+				// reportDataService.updateReportParametersByReportName(reportName,
+				// criteriaParamDozerConverter.convertToEntityList(parameters,
+				// false));
+			} catch (Throwable t) {
+				log.error("error while saving:" + t);
+				response.setStatus(ResponseStatus.FAILURE);
+				response.setErrorCode(ResponseCode.SQL_EXCEPTION);
+				response.setErrorText(t.getMessage());
+				return response;
+			}
+			response.setResponseValue(entity.getId());
+			response.setStatus(ResponseStatus.SUCCESS);
+		} else {
+			response.setErrorCode(ResponseCode.INVALID_ARGUMENTS);
+			response.setErrorText("Invalid parameter list: report="
+					+ subCriteriaParamReport);
 			response.setStatus(ResponseStatus.FAILURE);
 		}
 		return response;

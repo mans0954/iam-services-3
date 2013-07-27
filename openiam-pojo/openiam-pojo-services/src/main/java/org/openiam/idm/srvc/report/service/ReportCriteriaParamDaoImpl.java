@@ -41,4 +41,18 @@ public class ReportCriteriaParamDaoImpl extends BaseDaoImpl<ReportCriteriaParamE
 
         return criteria.list();
     }
+    
+    @Override
+    public ReportCriteriaParamEntity getReportParameterByName(String reportId, String paramName){
+    	Criteria criteria = getSession().createCriteria(ReportCriteriaParamEntity.class)
+        .createAlias("report","r")
+        .add(Restrictions.eq("report.id", reportId))
+        .add(Restrictions.eq("name", paramName))
+        .addOrder(Order.asc("name"));
+    	List<ReportCriteriaParamEntity> list =  criteria.list();
+    	if (list != null && list.size() > 0){
+    		return list.get(0);
+    	}else
+    		return null;
+    }
 }

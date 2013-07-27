@@ -5,6 +5,7 @@ import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
 
+
 /**
  * ResponseStatus provides valid values that an operation in a service can return.
  *
@@ -450,7 +451,14 @@ public enum ResponseCode {
 
     @XmlEnumValue("REPORT_NAME_NOT_SET")
     REPORT_NAME_NOT_SET("REPORT_NAME_NOT_SET"),
-    
+    @XmlEnumValue("REPORT_PARAM_NAME_NOT_SET")
+    REPORT_PARAM_NAME_NOT_SET("REPORT_PARAM_NAME_NOT_SET"),
+    @XmlEnumValue("REPORT_PARAM_TYPE_NOT_SET")
+    REPORT_PARAM_TYPE_NOT_SET("REPORT_PARAM_TYPE_NOT_SET"),
+    @XmlEnumValue("REPORT_NOT_SET")
+    REPORT_NOT_SET("REPORT_NOT_SET"),
+    @XmlEnumValue("REPORT_PARAMETER_EXISTS")
+    REPORT_PARAMETER_EXISTS("REPORT_PARAMETER_EXISTS"),
     @XmlEnumValue("REPORT_DATASOURCE_NOT_SET")
     REPORT_DATASOURCE_NOT_SET("REPORT_DATASOURCE_NOT_SET"),
     

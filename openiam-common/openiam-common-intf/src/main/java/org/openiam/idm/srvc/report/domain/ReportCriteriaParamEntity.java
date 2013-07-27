@@ -21,8 +21,8 @@ public class ReportCriteriaParamEntity {
     @Column(name = "RCP_ID")
     private String id;
 
-    @ManyToOne
-    @JoinColumn(name = "REPORT_INFO_ID")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "REPORT_INFO_ID", referencedColumnName = "REPORT_INFO_ID", insertable = true, updatable = false)
     private ReportInfoEntity report;
 
     @Column(name = "PARAM_NAME")
@@ -31,8 +31,8 @@ public class ReportCriteriaParamEntity {
     @Column(name = "PARAM_VALUE")
     private String value;
 
-    @OneToOne
-    @JoinColumn(name = "RCPT_ID")
+    @OneToOne(optional = false)
+    @JoinColumn(name = "RCPT_ID", nullable = false, insertable = true, updatable = true)
     private ReportParamTypeEntity type;
 
     public ReportCriteriaParamEntity() {

@@ -16,9 +16,9 @@ public class ReportSubCriteriaParamEntity {
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
     @Column(name = "RCP_ID")
     private String id;
-
-    @ManyToOne
-    @JoinColumn(name = "REPORT_SUB_ID")
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "REPORT_SUB_ID", referencedColumnName = "REPORT_SUB_ID", insertable = true, updatable = false) 
     private ReportSubscriptionEntity report;
 
     @Column(name = "PARAM_NAME")

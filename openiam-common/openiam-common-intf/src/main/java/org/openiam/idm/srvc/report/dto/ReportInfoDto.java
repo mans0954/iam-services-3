@@ -1,10 +1,15 @@
 package org.openiam.idm.srvc.report.dto;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.report.domain.ReportInfoEntity;
+import org.openiam.idm.srvc.res.dto.ResourceUser;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 /**
@@ -25,6 +30,8 @@ public class ReportInfoDto {
     private String reportName;
     private String reportDataSource;
     private String reportUrl;
+    @XmlTransient
+    private Set<ReportCriteriaParamDto> reportParams = new HashSet<ReportCriteriaParamDto>();
 
     public ReportInfoDto() {
     }
@@ -87,13 +94,18 @@ public class ReportInfoDto {
     }
 
     @Override
-    public String toString() {
-        return "ReportDto{" +
-                "reportId='" + reportId + '\'' +
-                ", reportName='" + reportName + '\'' +
-                ", reportDataSource='" + reportDataSource + '\'' +
-                ", reportUrl='" + reportUrl + '\'' +
-                '}';
-    }
+	public String toString() {
+		return "ReportInfoDto [reportId=" + reportId + ", reportName="
+				+ reportName + ", reportDataSource=" + reportDataSource
+				+ ", reportUrl=" + reportUrl + "]";
+	}
+
+	public Set<ReportCriteriaParamDto> getReportParams() {
+		return reportParams;
+	}
+
+	public void setReportParams(Set<ReportCriteriaParamDto> reportParams) {
+		this.reportParams = reportParams;
+	}
 }
 

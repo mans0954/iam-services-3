@@ -14,7 +14,8 @@ import javax.xml.bind.annotation.XmlType;
         "reportId",
         "name",
         "value",
-        "typeId"
+        "type"
+        
 })
 @DozerDTOCorrespondence(ReportSubCriteriaParamEntity.class)
 public class ReportSubCriteriaParamDto {
@@ -23,17 +24,21 @@ public class ReportSubCriteriaParamDto {
     private String reportId;
     private String name;
     private String value;
-    private String typeId;
+    private String type;
+    
 
     public ReportSubCriteriaParamDto() {
     }
 
-    public ReportSubCriteriaParamDto(String reportId, String name, String value, String typeId) {
+    public ReportSubCriteriaParamDto( String type,String reportId, String name, String value) {
+    	this.type=type;
         this.reportId = reportId;
         this.name = name;
         this.value = value;
-        this.typeId = typeId;
+        
     }
+    
+    
 
     public String getId() {
         return id;
@@ -66,14 +71,16 @@ public class ReportSubCriteriaParamDto {
     public void setValue(String value) {
         this.value = value;
     }
+    
+    public String getType() {
+		return type;
+	}
 
-    public String getTypeId() {
-        return typeId;
-    }
+	public void setType(String type) {
+		this.type = type;
+	}
 
-    public void setTypeId(String typeId) {
-        this.typeId = typeId;
-    }
+   
 
     @Override
     public boolean equals(Object o) {
@@ -85,7 +92,7 @@ public class ReportSubCriteriaParamDto {
         if (id != null ? !id.equals(that.id) : that.id != null) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (reportId != null ? !reportId.equals(that.reportId) : that.reportId != null) return false;
-        if (typeId != null ? !typeId.equals(that.typeId) : that.typeId != null) return false;
+        if (type != null ? !type.equals(that.type) : that.type != null) return false;
         if (value != null ? !value.equals(that.value) : that.value != null) return false;
 
         return true;
@@ -97,7 +104,8 @@ public class ReportSubCriteriaParamDto {
         result = 31 * result + (reportId != null ? reportId.hashCode() : 0);
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (value != null ? value.hashCode() : 0);
-        result = 31 * result + (typeId != null ? typeId.hashCode() : 0);
+        result = 31 * result + (type != null ? type.hashCode() : 0);
+        
         return result;
     }
 
@@ -107,8 +115,9 @@ public class ReportSubCriteriaParamDto {
                 "id='" + id + '\'' +
                 ", reportId='" + reportId + '\'' +
                 ", name='" + name + '\'' +
-                ", value='" + value + '\'' +
-                ", typeId='" + typeId + '\'' +
+                ", value='" + value + '\''  +  ", type='" + type + '\''  +
                 '}';
     }
+
+	
 }

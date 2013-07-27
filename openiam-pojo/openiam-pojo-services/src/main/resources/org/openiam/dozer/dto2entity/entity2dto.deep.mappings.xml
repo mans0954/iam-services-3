@@ -2,6 +2,16 @@
 <mappings xmlns="http://dozer.sourceforge.net" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://dozer.sourceforge.net
           http://dozer.sourceforge.net/schema/beanmapping.xsd">
+	<mapping>
+		<class-a>org.openiam.idm.srvc.report.domain.ReportInfoEntity</class-a>
+		<class-b>org.openiam.idm.srvc.report.dto.ReportInfoDto</class-b>
+		<field
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
+			custom-converter-param="dto2entityShallowDozerMapper">
+			<a>reportParams</a>
+			<b>reportParams</b>
+		</field>
+	</mapping>
 
 	<mapping>
 		<class-a>org.openiam.idm.srvc.res.domain.ResourceEntity</class-a>
@@ -222,6 +232,34 @@
 			<a>userRoles</a>
 			<b>userRoles</b>
 		</field>
+	</mapping>
+	<mapping>
+		<class-a>org.openiam.idm.srvc.report.domain.ReportCriteriaParamEntity
+		</class-a>
+		<class-b>org.openiam.idm.srvc.report.dto.ReportCriteriaParamDto
+		</class-b>
+		<field>
+			<a>report.reportId</a>
+			<b>reportId</b>
+		</field>
+
+		<field>
+			<a>type.id</a>
+			<b>typeId</b>
+		</field>
+	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.report.domain.ReportSubCriteriaParamEntity
+		</class-a>
+		<class-b>org.openiam.idm.srvc.report.dto.ReportSubCriteriaParamDto
+		</class-b>
+		<field>
+			<a>report.reportId</a>
+			<b>reportId</b>
+		</field>
+
+	
 	</mapping>
 
 	<mapping>
@@ -565,9 +603,10 @@
 			<b>defaultAttributePolicy</b>
 		</field>
 	</mapping>
-	
+
 	<mapping>
-		<class-a>org.openiam.idm.srvc.org.domain.OrganizationTypeEntity</class-a>
+		<class-a>org.openiam.idm.srvc.org.domain.OrganizationTypeEntity
+		</class-a>
 		<class-b>org.openiam.idm.srvc.org.dto.OrganizationType</class-b>
 		<field
 			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"

@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.idm.srvc.report.domain.ReportCriteriaParamEntity;
@@ -63,6 +64,7 @@ public class ReportDataServiceImpl implements ReportDataService {
         return reportDao.findAllReports(from, size);
     }
 
+
     @Override
     @Transactional(readOnly = true)
     public ReportInfoEntity getReportByName(String name) {
@@ -77,7 +79,23 @@ public class ReportDataServiceImpl implements ReportDataService {
 
     @Override
     @Transactional
+    public void deleteReportParam(String reportParamId) {
+    	log.info("In deleteReportParam, reportId=" + reportParamId);
+    	ReportCriteriaParamEntity entity = criteriaParamDao.findById(reportParamId);
+    	log.info("In deleteReportParam, entity=" + entity);
+    	criteriaParamDao.delete(entity);
+    	log.info("Deleted");
+    }
+
+    @Override
+    @Transactional
     public void deleteReport(String reportId) {
+    	log.info("In deleteReport, reportId=" + reportId);
+    	/*List<ReportCriteriaParamEntity> paramEntitiesSrc = criteriaParamDao.findByReportInfoId(reportId);
+    	log.info("In deleteReport, parameters size=" + paramEntitiesSrc.size());
+        for(ReportCriteriaParamEntity paramEntity : paramEntitiesSrc) {
+        	criteriaParamDao.delete(paramEntity);
+        }*/
     	ReportInfoEntity entity = reportDao.findById(reportId);
     	log.info("In deleteReport, entity=" + entity);
     	reportDao.delete(entity);
@@ -86,13 +104,19 @@ public class ReportDataServiceImpl implements ReportDataService {
 
     @Override
     @Transactional
+    public ReportCriteriaParamEntity createOrUpdateReportParamInfo(ReportCriteriaParamEntity reportParam){
+    	if (StringUtils.isBlank(reportParam.getId()))
+    		reportParam = criteriaParamDao.add(reportParam);
+    	else
+    		criteriaParamDao.update(reportParam);
+    	return reportParam;
+    	
+    }
+
+    @Override
+    @Transactional
     public ReportInfoEntity createOrUpdateReportInfo(ReportInfoEntity report) {
     	report = reportDao.merge(report);
-        //TODO check if needed
-//        List<ReportCriteriaParamEntity> paramEntitiesSrc = criteriaParamDao.findByReportInfoName(reportName);
-//        for(ReportCriteriaParamEntity paramEntity : paramEntitiesSrc) {
-//            criteriaParamDao.delete(paramEntity);
-//        }
     	return report;
     }
 
@@ -115,6 +139,12 @@ public class ReportDataServiceImpl implements ReportDataService {
         return criteriaParamDao.findByReportInfoId(reportId);
     }
     
+    @Override
+    @Transactional
+    public ReportCriteriaParamEntity getReportParameterByName(String reportId, String paramName){
+    	return criteriaParamDao.getReportParameterByName(reportId, paramName);
+    }
+
     @Override
     @Transactional
     public List<ReportCriteriaParamEntity> getReportParametersByReportName(String reportName) {
@@ -142,12 +172,18 @@ public class ReportDataServiceImpl implements ReportDataService {
     
     @Override
     @Transactional
-    public void createOrUpdateSubscribedReportInfo(ReportSubscriptionEntity reportSubscriptionEntity){
-    	reportSubscriptionDao.createOrUpdateSubscribedReportInfo(reportSubscriptionEntity);
-        List<ReportSubCriteriaParamEntity> paramEntitiesSrc = subCriteriaParamDao.findByReportInfoName(reportSubscriptionEntity.getReportName());
+    public ReportSubscriptionEntity createOrUpdateSubscribedReportInfo(ReportSubscriptionEntity reportSubscriptionEntity){
+
+    	if (StringUtils.isBlank(reportSubscriptionEntity.getReportId()))
+    		reportSubscriptionEntity = reportSubscriptionDao.add(reportSubscriptionEntity);
+    	else
+    		reportSubscriptionDao.update(reportSubscriptionEntity);
+    	
+        /*List<ReportSubCriteriaParamEntity> paramEntitiesSrc = subCriteriaParamDao.findByReportInfoName(reportSubscriptionEntity.getReportName());
         for(ReportSubCriteriaParamEntity paramEntity : paramEntitiesSrc) {
         	subCriteriaParamDao.delete(paramEntity);
-        }
+        }*/
+    	return reportSubscriptionEntity;
     }
     
     @Override
@@ -159,5 +195,83 @@ public class ReportDataServiceImpl implements ReportDataService {
     @Transactional(readOnly = true)
     public List<ReportSubscriptionEntity> getAllSubscribedReports() {
         return reportSubscriptionDao.findAll();
-    }    
+    }
+
+	@Override
+	public Integer getSubscribedReportCount() {
+		// TODO Auto-generated method stub
+		return reportSubscriptionDao.countAll().intValue();
+	}
+
+	@Override
+	public void deleteSubscribedReport(String reportId) {
+		log.info("In deleteSubscribedReport, reportId=" + reportId);
+    	/*List<ReportCriteriaParamEntity> paramEntitiesSrc = criteriaParamDao.findByReportInfoId(reportId);
+    	log.info("In deleteReport, parameters size=" + paramEntitiesSrc.size());
+        for(ReportCriteriaParamEntity paramEntity : paramEntitiesSrc) {
+        	criteriaParamDao.delete(paramEntity);
+        }*/
+    	ReportSubscriptionEntity entity = reportSubscriptionDao.findById(reportId);
+    	log.info("In deleteSubscribedReport, entity=" + entity);
+    	reportSubscriptionDao.delete(entity);
+    	log.info("Deleted");
+		
+	}
+
+	@Override
+	public ReportSubscriptionEntity getSubscriptionReportById(
+			String reportId) {
+		// TODO Auto-generated method stub
+		return reportSubscriptionDao.findById(reportId);
+	}
+
+	@Override
+	public List<ReportSubCriteriaParamEntity> getAllSubCriteriaParamReports() {
+		// TODO Auto-generated method stub
+		return subCriteriaParamDao.findAll();
+	}
+	
+	@Override
+	public List<ReportSubCriteriaParamEntity> getAllSubCriteriaParamReport(String reportId) {
+		// TODO Auto-generated method stub
+		return subCriteriaParamDao.findByReportInfoId(reportId);
+	}
+
+	@Override
+	public Integer getSubCriteriaParamReportCount() {
+		// TODO Auto-generated method stub
+		return subCriteriaParamDao.countAll().intValue();
+	}
+
+	@Override
+	public ReportSubCriteriaParamEntity getSubCriteriaParamReportById(
+			String reportId) {
+		// TODO Auto-generated method stub
+		return subCriteriaParamDao.findById(reportId);
+	}
+
+	@Override
+	public void deleteSubCriteriaParamReport(String reportId) {
+		log.info("In deleteSubscribedReport, reportId=" + reportId);
+    	/*List<ReportCriteriaParamEntity> paramEntitiesSrc = criteriaParamDao.findByReportInfoId(reportId);
+    	log.info("In deleteReport, parameters size=" + paramEntitiesSrc.size());
+        for(ReportCriteriaParamEntity paramEntity : paramEntitiesSrc) {
+        	criteriaParamDao.delete(paramEntity);
+        }*/
+    	ReportSubCriteriaParamEntity entity = subCriteriaParamDao.findById(reportId);
+    	log.info("In deleteSubscribedReport, entity=" + entity);
+    	subCriteriaParamDao.delete(entity);
+    	log.info("Deleted");
+		
+	}
+
+	@Override
+	public ReportSubCriteriaParamEntity createOrUpdateSubCriteriaParamReport(
+			ReportSubCriteriaParamEntity entity) {
+		if (StringUtils.isBlank(entity.getId()))
+			entity = subCriteriaParamDao.add(entity);
+    	else
+    		subCriteriaParamDao.update(entity);
+		return entity;
+	}    
 }

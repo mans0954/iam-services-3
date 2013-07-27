@@ -1,10 +1,15 @@
 package org.openiam.idm.srvc.report.dto;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.report.domain.ReportCriteriaParamEntity;
+import org.openiam.idm.srvc.res.dto.ResourceUser;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 /**
@@ -28,6 +33,7 @@ public class ReportCriteriaParamDto {
     private String name;
     private String value;
     private String typeId;
+
 
     public ReportCriteriaParamDto() {
     }
@@ -106,13 +112,9 @@ public class ReportCriteriaParamDto {
     }
 
     @Override
-    public String toString() {
-        return "ReportCriteriaParamDto{" +
-                "id='" + id + '\'' +
-                ", reportId='" + reportId + '\'' +
-                ", name='" + name + '\'' +
-                ", value='" + value + '\'' +
-                ", typeId='" + typeId + '\'' +
-                '}';
-    }
+	public String toString() {
+		return "ReportCriteriaParamDto [id=" + id + ", reportId=" + reportId
+				+ ", name=" + name + ", value=" + value + ", typeId=" + typeId
+				+ "]";
+	}
 }
