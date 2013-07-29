@@ -27,6 +27,7 @@ import org.openiam.idm.srvc.lang.service.LanguageDAO;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateXrefEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataTemplateTypeEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataValidValueEntity;
 import org.openiam.idm.srvc.meta.domain.pk.MetadataElementPageTemplateXrefIdEntity;
 import org.openiam.idm.srvc.meta.dto.PageElement;
@@ -81,6 +82,9 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 	private UserAttributeDAO attributeDAO;
 	
 	@Autowired
+	private MetadataTemplateTypeEntityDAO templateTypeDAO;
+	
+	@Autowired
 	private MetadataElementTemplateSearchBeanConverter templateSearchBeanConverter;
 	
 	@Value("${org.openiam.resource.type.ui.template}")
@@ -132,6 +136,8 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 	            resourceDAO.save(resource);
 	            entity.setResource(resource);
 			}
+			
+			entity.setTemplateType(templateTypeDAO.findById(entity.getTemplateType().getId()));
 			
 			final Set<URIPatternEntity> transietSet = entity.getUriPatterns();
 			if(CollectionUtils.isNotEmpty(transietSet)) {
@@ -659,5 +665,16 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 			}
 		}
 		return elementMap;
+	}
+
+	@Override
+	public MetadataTemplateTypeEntity getTemplateType(String id) {
+		return templateTypeDAO.findById(id);
+	}
+
+	@Override
+	public List<MetadataTemplateTypeEntity> findTemplateTypes(
+			MetadataTemplateTypeEntity entity, int from, int size) {
+		return templateTypeDAO.getByExample(entity, from, size);
 	}
 }
