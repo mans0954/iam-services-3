@@ -33,4 +33,7 @@ public interface ReconciliationService {
     public ReconciliationResultBean getReconciliationResult(
             ReconciliationConfig config);
 
+    String manualReconciliation(ReconciliationResultBean reconciledBean,
+            String resourceId) throws Exception;
+
 }

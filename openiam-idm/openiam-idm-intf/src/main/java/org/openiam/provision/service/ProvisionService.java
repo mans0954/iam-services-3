@@ -28,6 +28,8 @@ import javax.jws.WebService;
 import java.util.List;
 
 import org.openiam.base.ws.Response;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
+import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.AccountLockEnum;
 import org.openiam.provision.dto.PasswordSync;
@@ -87,6 +89,11 @@ public interface ProvisionService {
             @WebParam(name = "principal", targetNamespace = "") String principal,
             @WebParam(name = "status", targetNamespace = "") UserStatusEnum status,
             @WebParam(name = "requestorId", targetNamespace = "") String requestorId);
+
+    @WebMethod
+    public ProvisionUserResponse deleteUser2(
+            @WebParam(name = "managedSystemId", targetNamespace = "") ManagedSysDto managedSysDto,
+            @WebParam(name = "securityDomain", targetNamespace = "") User user);
 
     @WebMethod
     public ProvisionUserResponse deleteByUserId(

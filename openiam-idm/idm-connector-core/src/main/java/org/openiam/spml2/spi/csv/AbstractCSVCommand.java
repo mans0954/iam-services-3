@@ -16,6 +16,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.constants.CSVSource;
 import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.idm.parser.csv.CSVParser;
+import org.openiam.idm.parser.csv.UserCSVParser;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
@@ -24,7 +25,7 @@ import org.openiam.idm.srvc.recon.command.ReconciliationCommandFactory;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.idm.srvc.recon.dto.ReconciliationObject;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
-import org.openiam.idm.srvc.recon.result.dto.ReconciliationReportCase;
+import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultCase;
 import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultBean;
 import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultField;
 import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultRow;
@@ -53,9 +54,7 @@ public class AbstractCSVCommand {
     @Autowired
     protected ResourceService resourceDataService;
     @Autowired
-    protected CSVParser<User> userCSVParser;
-    @Autowired
-    protected CSVParser<ProvisionUser> provisionUserCSVParser;
+    protected UserCSVParser userCSVParser;
     @Autowired
     private MailService mailService;
     @Resource(name = "userServiceClient")
@@ -132,6 +131,8 @@ public class AbstractCSVCommand {
         }
         List<AttributeMapEntity> attrMapList = managedSysService
                 .getResourceAttributeMaps(mSys.getResourceId());
+        resultBean.setHeader(ReconciliationResultUtil
+                .setHeaderInReconciliationResult(attrMapList));
         if (CollectionUtils.isEmpty(attrMapList)) {
             log.error("user list from DB is empty");
             response.setStatus(StatusCodeType.FAILURE);
@@ -155,7 +156,6 @@ public class AbstractCSVCommand {
                     CSVSource.UPLOADED);
             ReconciliationResultRow headerRow = ReconciliationResultUtil
                     .setHeaderInReconciliationResult(attrMapList);
-            rows.add(headerRow);
             // First run from IDM search in Sourse
             try {
                 log.debug("First cycle");
@@ -186,7 +186,7 @@ public class AbstractCSVCommand {
                 }
                 rows.add(this.setRowInReconciliationResult(headerRow,
                         attrMapList, obj, null,
-                        ReconciliationReportCase.NOT_EXIST_IN_RESOURCE));
+                        ReconciliationResultCase.NOT_EXIST_IN_RESOURCE));
             }
 
             // -----------------------------------------------
@@ -224,7 +224,7 @@ public class AbstractCSVCommand {
             List<AttributeMapEntity> attrMapList,
             ReconciliationObject<User> currentObject,
             ReconciliationObject<User> findedObject,
-            ReconciliationReportCase caseReconciliation) {
+            ReconciliationResultCase caseReconciliation) {
         ReconciliationResultRow row = new ReconciliationResultRow();
 
         Map<String, ReconciliationResultField> resultMap = null;
@@ -234,7 +234,7 @@ public class AbstractCSVCommand {
             if (!MapUtils.isEmpty(resultMap)) {
                 for (ReconciliationResultField field : resultMap.values())
                     if (field.getValues().size() > 1) {
-                        caseReconciliation = ReconciliationReportCase.MATCH_FOUND_DIFFERENT;
+                        caseReconciliation = ReconciliationResultCase.MATCH_FOUND_DIFFERENT;
                         break;
                     }
             }
@@ -250,7 +250,6 @@ public class AbstractCSVCommand {
                 if (value == null)
                     continue;
                 ReconciliationResultField newField = new ReconciliationResultField();
-                newField.setDisplayOrder(field.getDisplayOrder());
                 newField.setValues(value.getValues());
                 fieldList.add(newField);
             }
@@ -293,7 +292,7 @@ public class AbstractCSVCommand {
                 if (u.getObject() != null) {
                     rows.add(this.setRowInReconciliationResult(headerRow,
                             attrMapList, u, null,
-                            ReconciliationReportCase.BROKEN_CSV));
+                            ReconciliationResultCase.BROKEN_CSV));
                 }
                 continue;
             }
@@ -327,7 +326,7 @@ public class AbstractCSVCommand {
                         isMultiple = true;
                         rows.add(this.setRowInReconciliationResult(headerRow,
                                 attrMapList, u, null,
-                                ReconciliationReportCase.NOT_UNIQUE_KEY));
+                                ReconciliationResultCase.NOT_UNIQUE_KEY));
                         break;
                     }
                 }
@@ -336,24 +335,24 @@ public class AbstractCSVCommand {
             if (!isFind) {
                 rows.add(this.setRowInReconciliationResult(headerRow,
                         attrMapList, u, null,
-                        ReconciliationReportCase.NOT_EXIST_IN_IDM_DB));
+                        ReconciliationResultCase.NOT_EXIST_IN_IDM_DB));
             } else if (!isMultiple && finded != null) {
                 if (finded.getObject().getPrincipalList().get(0) == null) {
                     if (UserStatusEnum.DELETED.equals(finded.getObject()
                             .getStatus())) {
                         rows.add(this.setRowInReconciliationResult(headerRow,
                                 attrMapList, u, null,
-                                ReconciliationReportCase.IDM_DELETED));
+                                ReconciliationResultCase.IDM_DELETED));
                         continue;
                     }
                     rows.add(this.setRowInReconciliationResult(headerRow,
                             attrMapList, u, null,
-                            ReconciliationReportCase.LOGIN_NOT_FOUND));
+                            ReconciliationResultCase.LOGIN_NOT_FOUND));
                     continue;
                 } else {
                     rows.add(this.setRowInReconciliationResult(headerRow,
                             attrMapList, u, finded,
-                            ReconciliationReportCase.MATCH_FOUND));
+                            ReconciliationResultCase.MATCH_FOUND));
                     continue;
                 }
                 // FIXME fix login cheking

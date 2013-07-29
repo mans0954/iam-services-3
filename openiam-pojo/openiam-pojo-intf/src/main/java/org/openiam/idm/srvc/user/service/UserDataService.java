@@ -234,4 +234,6 @@ public interface UserDataService {
     public Map<String, UserAttribute> getUserAttributesDto(String userId);
 
     public Map<String, UserAttributeEntity> getUserAttributes(String userId);
+
+    List<UserEntity> getByExample(UserSearchBean searchBean);
 }

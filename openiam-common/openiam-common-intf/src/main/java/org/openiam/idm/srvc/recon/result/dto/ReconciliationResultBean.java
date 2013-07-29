@@ -20,6 +20,8 @@ public class ReconciliationResultBean implements java.io.Serializable {
     private static final long serialVersionUID = 1L;
     private String objectType;
     private List<ReconciliationResultRow> rows;
+    private ReconciliationResultRow header;
+    private int counter = 0;
 
     public ReconciliationResultBean() {
         super();
@@ -39,10 +41,16 @@ public class ReconciliationResultBean implements java.io.Serializable {
     }
 
     public void setRows(List<ReconciliationResultRow> rows) {
+        counter = 0;
+        if (rows != null)
+            for (ReconciliationResultRow row : rows) {
+                row.setRowId(counter++);
+            }
         this.rows = rows;
     }
 
     public void addRow(ReconciliationResultRow row) {
+        row.setRowId(counter++);
         rows.add(row);
     }
 
@@ -85,8 +93,8 @@ public class ReconciliationResultBean implements java.io.Serializable {
         html.append(Calendar.getInstance().getTime().toString());
         html.append("</h2>");
         html.append("<div class='legend'>");
-        for (int i = 1; i < ReconciliationReportCase.values().length; i++)
-            html.append(this.legendItem(ReconciliationReportCase.values()[i]));
+        for (int i = 1; i < ReconciliationResultCase.values().length; i++)
+            html.append(this.legendItem(ReconciliationResultCase.values()[i]));
         html.append("<div class='clear' />");
         html.append("</div>");
         html.append("</div>");
@@ -110,7 +118,7 @@ public class ReconciliationResultBean implements java.io.Serializable {
         return csv.toString();
     }
 
-    private String legendItem(ReconciliationReportCase a) {
+    private String legendItem(ReconciliationResultCase a) {
         StringBuilder html = new StringBuilder();
         html.append("<div class='legend-item' style='background-color:"
                 + a.getColor() + ";'>");
@@ -119,5 +127,13 @@ public class ReconciliationResultBean implements java.io.Serializable {
         html.append("</p>");
         html.append("</div>");
         return html.toString();
+    }
+
+    public ReconciliationResultRow getHeader() {
+        return header;
+    }
+
+    public void setHeader(ReconciliationResultRow header) {
+        this.header = header;
     }
 }

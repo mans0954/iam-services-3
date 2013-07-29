@@ -18,15 +18,15 @@ public class ReconciliationResultField implements java.io.Serializable {
      * 
      */
     private static final long serialVersionUID = 1L;
-    private int displayOrder;
     List<String> values = new ArrayList<String>();
+    private boolean keyField;
 
-    public int getDisplayOrder() {
-        return displayOrder;
+    public boolean isKeyField() {
+        return keyField;
     }
 
-    public void setDisplayOrder(int displayOrder) {
-        this.displayOrder = displayOrder;
+    public void setKeyField(boolean keyField) {
+        this.keyField = keyField;
     }
 
     public List<String> getValues() {
@@ -82,8 +82,6 @@ public class ReconciliationResultField implements java.io.Serializable {
         if (getClass() != obj.getClass())
             return false;
         ReconciliationResultField other = (ReconciliationResultField) obj;
-        if (displayOrder != other.displayOrder)
-            return false;
         if (values == null) {
             if (other.values != null)
                 return false;

@@ -8,6 +8,7 @@ import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.recon.dto.ReconciliationObject;
 import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultField;
+import org.openiam.idm.srvc.user.dto.User;
 
 public interface CSVParser<T> {
     ReconciliationObject<T> toReconciliationObject(T pu,
@@ -40,7 +41,18 @@ public interface CSVParser<T> {
     String objectToString(List<String> head,
             List<AttributeMapEntity> attrMapList, ReconciliationObject<T> u);
 
+    public T getObjectByReconResltFields(
+            List<ReconciliationResultField> header,
+            List<ReconciliationResultField> objFieds, boolean onlyKeyField)
+            throws InstantiationException, IllegalAccessException;
+
     Map<String, ReconciliationResultField> matchFields(
             List<AttributeMapEntity> attrMap, ReconciliationObject<T> u,
             ReconciliationObject<T> o);
+
+    public String getObjectSimlpeClass();
+
+    T addObjectByReconResltFields(List<ReconciliationResultField> header,
+            List<ReconciliationResultField> objFieds, T user)
+            throws InstantiationException, IllegalAccessException;
 }

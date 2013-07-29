@@ -15,12 +15,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.constants.CSVSource;
 import org.openiam.am.srvc.constants.UserFields;
+import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
+import org.openiam.idm.srvc.mngsys.domain.AttributeMapUtil;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.recon.dto.ReconciliationObject;
 import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultField;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 public abstract class AbstractCSVParser<T, E extends Enum<E>> {
@@ -49,7 +51,7 @@ public abstract class AbstractCSVParser<T, E extends Enum<E>> {
         for (AttributeMapEntity a : attrMap) {
             String objValue = object.get(a.getAttributeName());
             if (StringUtils.hasText(objValue)) {
-                String name = this.getAttributeName(a);
+                String name = AttributeMapUtil.getAttributeIDMFieldName(a);
                 if (name != null) {
                     E fieldValue;
                     try {
@@ -69,17 +71,48 @@ public abstract class AbstractCSVParser<T, E extends Enum<E>> {
         return csvObject;
     }
 
-    private String getAttributeName(AttributeMapEntity a) {
-        if (a == null)
+    protected T reconRowToObject(Class<T> clazz, Class<E> clazz2,
+            List<ReconciliationResultField> header,
+            List<ReconciliationResultField> fields, T baseEntity,
+            boolean onlyKeyField) throws InstantiationException,
+            IllegalAccessException {
+        if (header == null || fields == null)
             return null;
-        if (a.getReconResAttribute() == null)
-            return null;
-        if (a.getReconResAttribute().getAttributePolicy() != null)
-            return a.getReconResAttribute().getAttributePolicy().getName();
-        if (a.getReconResAttribute().getDefaultAttributePolicy() != null)
-            return a.getReconResAttribute().getDefaultAttributePolicy()
-                    .getDefaultAttributeMapName();
-        return null;
+        T obj = null;
+        if (baseEntity == null) {
+            obj = clazz.newInstance();
+        } else {
+            obj = baseEntity;
+        }
+
+        for (int i = 0; i < header.size(); i++) {
+            if (CollectionUtils.isEmpty(header.get(i).getValues())
+                    || CollectionUtils.isEmpty(fields.get(i).getValues())) {
+                continue;
+            }
+            E fieldValue = null;
+            try {
+                if (onlyKeyField) {
+                    if (header.get(i).isKeyField()) {
+                        fieldValue = Enum.valueOf(clazz2, header.get(i)
+                                .getValues().get(1));
+                        this.putValueInDTO(obj, fieldValue, fields.get(i)
+                                .getValues().get(0));
+                        break;
+                    }
+                } else {
+                    fieldValue = Enum.valueOf(clazz2, header.get(i).getValues()
+                            .get(1));
+                    this.putValueInDTO(obj, fieldValue, fields.get(i)
+                            .getValues().get(0));
+                }
+            } catch (IllegalArgumentException e) {
+                log.info(e.getMessage());
+                fieldValue = Enum.valueOf(clazz2, "DEFAULT");
+            }
+        }
+
+        return obj;
     }
 
     protected abstract void putValueInDTO(T obj, E field, String value);
@@ -226,7 +259,8 @@ public abstract class AbstractCSVParser<T, E extends Enum<E>> {
                             am.getMapForObjectType())) {
                         E fields;
                         try {
-                            String name = this.getAttributeName(am);
+                            String name = AttributeMapUtil
+                                    .getAttributeIDMFieldName(am);
                             fields = Enum.valueOf(clazz, name);
                         } catch (IllegalArgumentException illegalArgumentException) {
                             log.info(illegalArgumentException.getMessage());
@@ -331,7 +365,7 @@ public abstract class AbstractCSVParser<T, E extends Enum<E>> {
         ReconciliationObject<T> object = new ReconciliationObject<T>();
         object.setObject(pu);
         for (AttributeMapEntity a : attrMap) {
-            String name = this.getAttributeName(a);
+            String name = AttributeMapUtil.getAttributeIDMFieldName(a);
             if (name != null) {
                 if (PRINCIPAL_OBJECT.equals(a.getMapForObjectType())) {
                     E fieldValue;
@@ -395,5 +429,9 @@ public abstract class AbstractCSVParser<T, E extends Enum<E>> {
         } else {
             throw new Exception("Can't work with CSV");
         }
+    }
+
+    public String getObjectSimlpeClass(Class<T> clazz) {
+        return clazz.getSimpleName();
     }
 }

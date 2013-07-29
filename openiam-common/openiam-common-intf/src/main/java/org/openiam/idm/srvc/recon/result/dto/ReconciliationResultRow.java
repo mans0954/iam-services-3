@@ -18,15 +18,26 @@ public class ReconciliationResultRow implements java.io.Serializable {
      * 
      */
     private static final long serialVersionUID = 1L;
-    private ReconciliationReportCase caseReconciliation;
-    private List<ReconciliationResultField> fields = new ArrayList<ReconciliationResultField>();
+    private int rowId;
 
-    public ReconciliationReportCase getCaseReconciliation() {
+    private ReconciliationResultCase caseReconciliation;
+    private List<ReconciliationResultField> fields = new ArrayList<ReconciliationResultField>();
+    private ReconciliationResultAction action;
+
+    public ReconciliationResultAction getAction() {
+        return action;
+    }
+
+    public void setAction(ReconciliationResultAction action) {
+        this.action = action;
+    }
+
+    public ReconciliationResultCase getCaseReconciliation() {
         return caseReconciliation;
     }
 
     public void setCaseReconciliation(
-            ReconciliationReportCase caseReconciliation) {
+            ReconciliationResultCase caseReconciliation) {
         this.caseReconciliation = caseReconciliation;
     }
 
@@ -36,6 +47,28 @@ public class ReconciliationResultRow implements java.io.Serializable {
 
     public void setFields(List<ReconciliationResultField> fields) {
         this.fields = fields;
+    }
+
+    public int getRowId() {
+        return rowId;
+    }
+
+    public void setRowId(int rowId) {
+        this.rowId = rowId;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        ReconciliationResultRow other = (ReconciliationResultRow) obj;
+        if (rowId != other.rowId)
+            return false;
+        return true;
     }
 
     public String toCSV() {

@@ -494,4 +494,27 @@ public class UserCSVParser extends AbstractCSVParser<User, UserFields>
 
         return res;
     }
+
+    @Override
+    public User getObjectByReconResltFields(
+            List<ReconciliationResultField> header,
+            List<ReconciliationResultField> objFieds, boolean onlyKeyField)
+            throws InstantiationException, IllegalAccessException {
+        return this.reconRowToObject(User.class, UserFields.class, header,
+                objFieds, null, onlyKeyField);
+    }
+
+    @Override
+    public User addObjectByReconResltFields(
+            List<ReconciliationResultField> header,
+            List<ReconciliationResultField> objFieds, User user)
+            throws InstantiationException, IllegalAccessException {
+        return this.reconRowToObject(User.class, UserFields.class, header,
+                objFieds, user, false);
+    }
+
+    @Override
+    public String getObjectSimlpeClass() {
+        return this.getObjectSimlpeClass(User.class);
+    }
 }

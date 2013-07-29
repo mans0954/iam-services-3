@@ -1,5 +1,7 @@
 package org.openiam.idm.srvc.recon.ws;
 
+import java.util.List;
+
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebService;
@@ -9,6 +11,8 @@ import org.openiam.base.ws.Response;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.idm.srvc.recon.dto.ReconciliationResponse;
 import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultBean;
+import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultField;
+import org.openiam.idm.srvc.user.dto.User;
 
 /**
  * Interface for <code>ReconciliationWebService</code>. Service is responsible
@@ -50,5 +54,11 @@ public interface ReconciliationWebService {
 
     ReconciliationResultBean getReconciliationResult(
             @WebParam(name = "config", targetNamespace = "") ReconciliationConfig config);
+
+    @WebMethod
+    String manualReconciliation(
+            @WebParam(name = "reconciledBean", targetNamespace = "") ReconciliationResultBean reconciledBean,
+            @WebParam(name = "resourceId", targetNamespace = "") String resourceId)
+            throws Exception;
 
 }
