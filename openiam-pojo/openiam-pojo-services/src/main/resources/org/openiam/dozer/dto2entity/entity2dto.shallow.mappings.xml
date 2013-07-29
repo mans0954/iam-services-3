@@ -210,6 +210,60 @@
 			<b>organizationAttributes</b>
 		</field-exclude>
 	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.meta.domain.MetadataTemplateTypeEntity</class-a>
+		<class-b>org.openiam.idm.srvc.meta.dto.MetadataTemplateType</class-b>
+		<field>
+			<a>id</a>
+			<b>id</b>
+		</field>
+		<field>
+			<a>name</a>
+			<b>name</b>
+		</field>
+		<field>
+			<a>description</a>
+			<b>description</b>
+		</field>
+		<field-exclude>
+			<a>templates</a>
+			<b>templates</b>
+		</field-exclude>
+		<field-exclude>
+			<a>fields</a>
+			<b>fields</b>
+		</field-exclude>
+	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.meta.domain.MetadataTemplateTypeFieldEntity</class-a>
+		<class-b>org.openiam.idm.srvc.meta.dto.MetadataTemplateTypeField</class-b>
+		<field>
+			<a>id</a>
+			<b>id</b>
+		</field>
+		<field>
+			<a>name</a>
+			<b>name</b>
+		</field>
+		<field>
+			<a>description</a>
+			<b>description</b>
+		</field>
+		<field>
+			<a>required</a>
+			<b>required</b>
+		</field>
+		<field>
+			<a>templateType.id</a>
+			<b>templateTypeId</b>
+		</field>
+		<field-exclude>
+			<a>fieldXrefs</a>
+			<b>fieldXrefs</b>
+		</field-exclude>
+	</mapping>
 
 	<mapping>
 		<class-a>org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity
@@ -227,6 +281,18 @@
 		<field-exclude>
 			<a>metadataElements</a>
 			<b>metadataElements</b>
+		</field-exclude>
+		<field>
+			<a>templateType.id</a>
+			<b>metadataTemplateTypeId</b>
+		</field>
+		<field>
+			<a>templateType.name</a>
+			<b>metadataTemplateTypeName</b>
+		</field>
+		<field-exclude>
+			<a>fieldXrefs</a>
+			<b>fieldXrefs</b>
 		</field-exclude>
 	</mapping>
 
