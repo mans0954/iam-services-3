@@ -7,6 +7,7 @@ import javax.xml.bind.annotation.XmlType;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataFieldTemplateXrefEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataFieldTemplateXrefIDEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTemplateTypeFieldEntity;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -19,7 +20,7 @@ import org.openiam.idm.srvc.meta.domain.MetadataTemplateTypeFieldEntity;
 @DozerDTOCorrespondence(MetadataFieldTemplateXrefEntity.class)
 public class MetadataFieldTemplateXref {
 
-	private MetadataFieldTemplateXref id;
+	private MetadataFieldTemplateXrefID id;
 	private MetadataTemplateTypeField field;
 	private MetadataElementPageTemplate template;
 	private boolean required;
@@ -41,10 +42,10 @@ public class MetadataFieldTemplateXref {
 	public void setRequired(boolean required) {
 		this.required = required;
 	}
-	public MetadataFieldTemplateXref getId() {
+	public MetadataFieldTemplateXrefID getId() {
 		return id;
 	}
-	public void setId(MetadataFieldTemplateXref id) {
+	public void setId(MetadataFieldTemplateXrefID id) {
 		this.id = id;
 	}
 	@Override

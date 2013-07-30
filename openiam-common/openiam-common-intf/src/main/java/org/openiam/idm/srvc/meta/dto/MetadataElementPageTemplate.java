@@ -10,6 +10,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -115,14 +116,22 @@ public class MetadataElementPageTemplate implements Serializable {
 		this.metadataTemplateTypeName = metadataTemplateTypeName;
 	}
 	
-	
-	
 	public Set<MetadataFieldTemplateXref> getFieldXrefs() {
 		return fieldXrefs;
 	}
 	public void setFieldXrefs(Set<MetadataFieldTemplateXref> fieldXrefs) {
 		this.fieldXrefs = fieldXrefs;
 	}
+	
+	public void addFieldXref(final MetadataFieldTemplateXref xref) {
+		if(xref !=  null) {
+			if(this.fieldXrefs == null) {
+				this.fieldXrefs = new LinkedHashSet<MetadataFieldTemplateXref>();
+			}
+			this.fieldXrefs.add(xref);
+		}
+	}
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;

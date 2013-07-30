@@ -8,6 +8,14 @@ public class MetadataFieldTemplateXrefID {
 
 	private String fieldId;
 	private String templateId;
+	
+	public MetadataFieldTemplateXrefID() {}
+	
+	public MetadataFieldTemplateXrefID(final String fieldId, final String templateId) {
+		this.fieldId = fieldId;
+		this.templateId = templateId;
+	}
+	
 	public String getFieldId() {
 		return fieldId;
 	}

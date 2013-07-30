@@ -218,13 +218,13 @@
 		<class-a>org.openiam.idm.srvc.meta.domain.MetadataFieldTemplateXrefEntity</class-a>
 		<class-b>org.openiam.idm.srvc.meta.dto.MetadataFieldTemplateXref</class-b>
 		<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter"
 			custom-converter-param="dto2entityShallowDozerMapper">
 			<a>field</a>
 			<b>field</b>
 		</field>
 		<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter"
 			custom-converter-param="dto2entityShallowDozerMapper">
 			<a>template</a>
 			<b>template</b>
