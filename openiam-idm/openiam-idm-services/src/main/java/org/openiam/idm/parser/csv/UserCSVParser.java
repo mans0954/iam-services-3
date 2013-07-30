@@ -81,9 +81,6 @@ public class UserCSVParser extends AbstractCSVParser<User, UserFields>
 		case locationName:
 			user.setLocationName(objValue);
 			break;
-		case managerId:
-			user.setManagerId(objValue);
-			break;
 		case metadataTypeId:
 			user.setMetadataTypeId(objValue);
 			break;
@@ -167,7 +164,7 @@ public class UserCSVParser extends AbstractCSVParser<User, UserFields>
 			break;
 		case principalList:
 		case phones:
-		case supervisor:
+        case superiors:
 			break;
 		case alternateContactId:
 			user.setAlternateContactId(objValue);
@@ -254,9 +251,6 @@ public class UserCSVParser extends AbstractCSVParser<User, UserFields>
 			break;
 		case locationName:
 			objValue = toString(user.getLocationName());
-			break;
-		case managerId:
-			objValue = toString(user.getManagerId());
 			break;
 		case metadataTypeId:
 			objValue = toString(user.getMetadataTypeId());
@@ -346,7 +340,7 @@ public class UserCSVParser extends AbstractCSVParser<User, UserFields>
 			break;
 		case userAttributes:
 		case principalList:
-		case supervisor:
+        case superiors:
 		case userNotes:
 		case phones:
 		case emailAddresses:

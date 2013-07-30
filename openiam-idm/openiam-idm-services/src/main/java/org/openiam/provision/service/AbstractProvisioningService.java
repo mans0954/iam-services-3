@@ -566,10 +566,16 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
             user.setUserId(newUser.getUserId());
             log.debug("User id=" + newUser.getUserId() + " created in openiam repository");
 
-            addSupervisor(user);
+            code = addSupervisors(user);
+            if (code != ResponseCode.SUCCESS) {
+                resp.setStatus(ResponseStatus.FAILURE);
+                resp.setErrorCode(code);
+                return resp;
+            }
+
             try {
                 addPrincipals(user, user.getUserId());
-            }catch(EncryptionException e) {
+            } catch(EncryptionException e) {
                 resp.setStatus(ResponseStatus.FAILURE);
                 resp.setErrorCode(ResponseCode.FAIL_ENCRYPTION);
                 return resp;
@@ -663,12 +669,20 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
     }
 
-    private void addSupervisor(ProvisionUser u) {
-        Supervisor supervisor = u.getSupervisor();
-        if (supervisor != null && supervisor.getSupervisor() != null) {
-            supervisor.setEmployee(u.getUser());
-            userMgr.addSupervisor(supervisorDozerConverter.convertToEntity(supervisor, true));
+    private ResponseCode addSupervisors(ProvisionUser u) {
+        Set<User> superiors = u.getSuperiors();
+        if (CollectionUtils.isNotEmpty(superiors)) {
+            for (User s : superiors) {
+                try {
+                    userMgr.addSuperior(s.getUserId(), u.getUserId());
+                    log.info("created user supervisor");
+
+                } catch (Exception e) {
+                    return ResponseCode.SUPERVISOR_ERROR;
+                }
+            }
         }
+        return ResponseCode.SUCCESS;
     }
 
     private void addPrincipals(final ProvisionUser u, final String userId) throws EncryptionException {
@@ -1479,25 +1493,52 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
     }
 
-    public void updateSupervisor(User user, Supervisor supervisor) {
+    public void updateSupervisors(User user, Set<User> superiors) {
 
-        if (supervisor == null) {
+        if (superiors == null) {
             return;
         }
-        // check the current supervisor - if different - remove it and add the new one.
-        List<SupervisorEntity> supervisorList = userMgr.getSupervisors(user.getUserId());
-        for (SupervisorEntity s : supervisorList) {
-            log.debug("looking to match supervisor ids = " + s.getSupervisor().getUserId() + " " +
-                    supervisor.getSupervisor().getUserId());
-            if (s.getSupervisor().getUserId().equalsIgnoreCase(supervisor.getSupervisor().getUserId())) {
-                return;
-            }
-            userMgr.removeSupervisor(s.getOrgStructureId());
-        }
-        log.debug("adding supervisor: " + supervisor.getSupervisor().getUserId());
-        supervisor.setEmployee(user);
-        userMgr.addSupervisor(supervisorDozerConverter.convertToEntity(supervisor, true));
 
+        // check the current supervisor - if different - remove it and add the
+        // new one.
+        List<SupervisorEntity> supervisorList = userMgr.getSupervisors(user.getUserId());
+
+        for (User u : superiors) {
+            if (user.getUserId().equals(u.getUserId())) {
+                log.info("User can't be a superior for himself");
+                continue;
+            }
+            for (SupervisorEntity s : supervisorList) {
+                if (s.getSupervisor().getUserId().equals(u.getUserId())) {
+                    // already exists
+                } else if (s.getEmployee().getUserId().equals(u.getUserId())) {
+                    log.info(String.format("User with id='%s' is a subordinate of User with id='%s'",
+                            u.getUserId(), s.getSupervisor().getUserId()));
+                } else {
+                    try {
+                        userMgr.addSuperior(u.getUserId(), user.getUserId());
+                        log.info(String.format("Adding a supervisor user %s for user %s",
+                                u.getUserId(), user.getUserId()));
+                    } catch (Exception e) {
+                        log.info(String.format("Can't add a supervisor user %s for user %s",
+                                u.getUserId(), user.getUserId()));
+                    }
+                }
+            }
+        }
+        for (SupervisorEntity s : supervisorList) {
+            boolean isContained = false;
+            for (User u : superiors) {
+                if (s.getSupervisor().getUserId().equals(u.getUserId())) {
+                    isContained = true;
+                }
+            }
+            if (!isContained) {
+                userMgr.removeSupervisor(s.getOrgStructureId());
+                log.info(String.format("Removed a supervisor user %s from user %s",
+                        s.getSupervisor().getUserId(), user.getUserId()));
+            }
+        }
     }
 
     public void updateGroupAssociation(String userId, List<Group> origGroupList,  List<Group> newGroupList) {

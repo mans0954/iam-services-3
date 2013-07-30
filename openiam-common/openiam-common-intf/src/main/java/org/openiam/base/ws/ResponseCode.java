@@ -96,6 +96,9 @@ public enum ResponseCode {
     @XmlEnumValue("supervisorlNotFound")
     SUPERVISOR_NOT_FOUND("supervisorNotFound"),
 
+    @XmlEnumValue("supervisorlError")
+    SUPERVISOR_ERROR("supervisorlError"),
+
     @XmlEnumValue("DUPLICATE_PRINCIPAL")
     DUPLICATE_PRINCIPAL("DUPLICATE_PRINCIPAL"),
 

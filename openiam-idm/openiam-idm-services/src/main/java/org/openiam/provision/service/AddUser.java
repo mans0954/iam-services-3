@@ -20,6 +20,7 @@
  */
 package org.openiam.provision.service;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.SysConfiguration;
@@ -56,10 +57,7 @@ import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Helper class that will be called by the DefaultProvisioningService to add
@@ -117,7 +115,13 @@ public class AddUser {
         log.debug("User id=" + newUser.getUserId()
                 + " created in openiam repository");
 
-        addSupervisor(user);
+        code = addSupervisors(user);
+        if (code != ResponseCode.SUCCESS) {
+            resp.setStatus(ResponseStatus.FAILURE);
+            resp.setErrorCode(code);
+            return resp;
+        }
+
         try {
             addPrincipals(user);
         } catch (EncryptionException e) {
@@ -147,14 +151,20 @@ public class AddUser {
         return resp;
     }
 
-    private void addSupervisor(ProvisionUser u) {
-        Supervisor supervisor = u.getSupervisor();
-        if (supervisor != null && supervisor.getSupervisor() != null) {
-            supervisor.setEmployee(u.getUser());
-            final SupervisorEntity entity = supervisorDozerConverter
-                    .convertToEntity(supervisor, true);
-            userMgr.addSupervisor(entity);
+    private ResponseCode addSupervisors(ProvisionUser u) {
+        Set<User> superiors = u.getSuperiors();
+        if (CollectionUtils.isNotEmpty(superiors)) {
+            for (User s : superiors) {
+                try {
+                    userMgr.addSuperior(s.getUserId(), u.getUserId());
+                    log.info("created user supervisor");
+
+                } catch (Exception e) {
+                    return ResponseCode.SUPERVISOR_ERROR;
+                }
+            }
         }
+        return ResponseCode.SUCCESS;
     }
 
     private void addPrincipals(ProvisionUser u) throws EncryptionException {

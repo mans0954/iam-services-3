@@ -51,7 +51,6 @@ import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
-import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.idm.srvc.pswd.dto.Password;
 import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
@@ -64,7 +63,6 @@ import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.dto.Supervisor;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
@@ -266,12 +264,20 @@ public class ProvisionServiceImpl implements ProvisionService,
 
         log.info("User created in openiam repository");
 
-        Supervisor supervisor = provUser.getSupervisor();
-        if (supervisor != null && supervisor.getSupervisor() != null) {
-            supervisor.setEmployee(user);
-            final SupervisorEntity supervisorEntity = supervisorDozerConverter.convertToEntity(supervisor, true);
-            userMgr.addSupervisor(supervisorEntity);
-            log.info("created user supervisor");
+        Set<User> superiors = provUser.getSuperiors();
+        if (CollectionUtils.isNotEmpty(superiors)) {
+            for (User s : superiors) {
+                try {
+                    userMgr.addSuperior(s.getUserId(), newUser.getUserId());
+                    log.info("created user supervisor");
+
+                } catch (Exception e) {
+                    ProvisionUserResponse resp = new ProvisionUserResponse();
+                    resp.setStatus(ResponseStatus.FAILURE);
+                    resp.setErrorCode(ResponseCode.SUPERVISOR_ERROR);
+                    return resp;
+                }
+            }
         }
 
         log.info("Associated a user to a group");
@@ -802,7 +808,7 @@ public class ProvisionServiceImpl implements ProvisionService,
                 provUser.getMemberOfRoles(), logId, requestId, provUser
                         .getUser().getLastUpdatedBy(), primaryId);
 
-        updateSupervisor(newUser, provUser.getSupervisor());
+        updateSuperiors(newUser, provUser.getSuperiors());
 
         // update the identities
         List<Login> tempPrincipalList = provUser.getPrincipalList();
@@ -1342,7 +1348,6 @@ public class ProvisionServiceImpl implements ProvisionService,
         origUser.setSuffix(newUser.getSuffix());
         origUser.setTitle(newUser.getTitle());
         origUser.setUserTypeInd(newUser.getUserTypeInd());
-        origUser.setManagerId(newUser.getManagerId());
         origUser.setAlternateContactId(newUser.getAlternateContactId());
 
     }
@@ -1628,30 +1633,52 @@ public class ProvisionServiceImpl implements ProvisionService,
         }
     }
 
-    private void updateSupervisor(User user, Supervisor supervisor) {
+    private void updateSuperiors(User user, Set<User> superiors) {
 
-        if (supervisor == null) {
+        if (superiors == null) {
             return;
         }
+
         // check the current supervisor - if different - remove it and add the
         // new one.
-        List<SupervisorEntity> supervisorList = userMgr.getSupervisors(user
-                .getUserId());
-        for (SupervisorEntity s : supervisorList) {
-            log.info("looking to match supervisor ids = "
-                    + s.getSupervisor().getUserId() + " "
-                    + supervisor.getSupervisor().getUserId());
-            if (s.getSupervisor().getUserId()
-                    .equalsIgnoreCase(supervisor.getSupervisor().getUserId())) {
-                return;
+        List<SupervisorEntity> supervisorList = userMgr.getSupervisors(user.getUserId());
+
+        for (User u : superiors) {
+            if (user.getUserId().equals(u.getUserId())) {
+                log.info("User can't be a superior for himself");
+                continue;
             }
-            userMgr.removeSupervisor(s.getOrgStructureId());
+            for (SupervisorEntity s : supervisorList) {
+                if (s.getSupervisor().getUserId().equals(u.getUserId())) {
+                    // already exists
+                } else if (s.getEmployee().getUserId().equals(u.getUserId())) {
+                    log.info(String.format("User with id='%s' is a subordinate of User with id='%s'",
+                            u.getUserId(), s.getSupervisor().getUserId()));
+                } else {
+                    try {
+                        userMgr.addSuperior(u.getUserId(), user.getUserId());
+                        log.info(String.format("Adding a supervisor user %s for user %s",
+                                u.getUserId(), user.getUserId()));
+                    } catch (Exception e) {
+                        log.info(String.format("Can't add a supervisor user %s for user %s",
+                                u.getUserId(), user.getUserId()));
+                    }
+                }
+            }
         }
-        log.info("adding supervisor: " + supervisor.getSupervisor().getUserId());
-        supervisor.setEmployee(user);
-        
-        final SupervisorEntity entity = supervisorDozerConverter.convertToEntity(supervisor, true);
-        userMgr.addSupervisor(entity);
+        for (SupervisorEntity s : supervisorList) {
+            boolean isContained = false;
+            for (User u : superiors) {
+                if (s.getSupervisor().getUserId().equals(u.getUserId())) {
+                    isContained = true;
+                }
+            }
+            if (!isContained) {
+                userMgr.removeSupervisor(s.getOrgStructureId());
+                log.info(String.format("Removed a supervisor user %s from user %s",
+                        s.getSupervisor().getUserId(), user.getUserId()));
+            }
+        }
 
     }
 

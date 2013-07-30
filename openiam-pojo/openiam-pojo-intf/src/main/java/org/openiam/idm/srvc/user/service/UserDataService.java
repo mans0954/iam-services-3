@@ -144,6 +144,8 @@ public interface UserDataService {
 
     public void addSupervisor(SupervisorEntity supervisor);
 
+    public void addSuperior(String supervisorId, String subordinateId);
+
     public void updateSupervisor(SupervisorEntity supervisor);
 
     public void removeSupervisor(String supervisorId);

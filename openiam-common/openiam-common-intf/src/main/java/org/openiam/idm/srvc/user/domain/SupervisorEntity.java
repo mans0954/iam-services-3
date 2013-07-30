@@ -51,6 +51,11 @@ public class SupervisorEntity {
     public SupervisorEntity() {
     }
 
+    public SupervisorEntity(UserEntity supervisor, UserEntity employee) {
+        this.supervisor = supervisor;
+        this.employee = employee;
+    }
+
 //    public SupervisorEntity(Supervisor supervisor) {
 //        this.orgStructureId = supervisor.getOrgStructureId();
 //        this.comments = supervisor.getComments();

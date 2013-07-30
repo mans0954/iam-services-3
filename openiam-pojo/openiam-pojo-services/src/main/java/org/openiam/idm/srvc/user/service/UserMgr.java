@@ -19,6 +19,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.BaseConstants;
 import org.openiam.base.SysConfiguration;
+import org.openiam.base.ws.ResponseCode;
+import org.openiam.base.ws.exception.BasicDataServiceException;
 import org.openiam.core.dao.UserKeyDao;
 import org.openiam.dozer.converter.UserAttributeDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
@@ -55,14 +57,12 @@ import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.domain.UserNoteEntity;
-import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
-import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.user.dto.UserAttribute;
-import org.openiam.idm.srvc.user.dto.UserStatusEnum;
+import org.openiam.idm.srvc.user.dto.*;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -992,6 +992,14 @@ public class UserMgr implements UserDataService {
     @Transactional
     public void addSupervisor(SupervisorEntity supervisor) {
         supervisorDao.save(supervisor);
+    }
+
+    @Override
+    @Transactional
+    public void addSuperior(String supervisorId, String subordinateId) {
+        UserEntity supervisor = getUser(supervisorId, subordinateId);
+        UserEntity subordinate = getUser(subordinateId, supervisorId);
+        addSupervisor(new SupervisorEntity(supervisor, subordinate));
     }
 
     @Override
