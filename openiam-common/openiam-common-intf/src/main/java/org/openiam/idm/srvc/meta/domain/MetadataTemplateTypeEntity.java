@@ -12,6 +12,7 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import org.apache.commons.lang.StringUtils;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.meta.dto.MetadataTemplateType;
@@ -69,6 +70,19 @@ public class MetadataTemplateTypeEntity implements Serializable {
 
 	public void setTemplates(Set<MetadataElementPageTemplateEntity> templates) {
 		this.templates = templates;
+	}
+	
+	public MetadataTemplateTypeFieldEntity getField(final String id) {
+		MetadataTemplateTypeFieldEntity retVal = null;
+		if(this.fields != null) {
+			for(final MetadataTemplateTypeFieldEntity entity : fields) {
+				if(StringUtils.equals(id, entity.getId())) {
+					retVal = entity;
+					break;
+				}
+			}
+		}
+		return retVal;
 	}
 
 	public Set<MetadataTemplateTypeFieldEntity> getFields() {

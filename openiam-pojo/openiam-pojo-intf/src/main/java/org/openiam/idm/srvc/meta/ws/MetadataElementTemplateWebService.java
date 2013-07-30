@@ -8,9 +8,12 @@ import javax.jws.WebService;
 
 import org.openiam.base.ws.Response;
 import org.openiam.idm.searchbeans.MetadataElementPageTemplateSearchBean;
+import org.openiam.idm.searchbeans.MetadataTemplateTypeFieldSearchBean;
 import org.openiam.idm.searchbeans.MetadataTemplateTypeSearchBean;
+import org.openiam.idm.srvc.meta.domain.MetadataTemplateTypeFieldEntity;
 import org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplate;
 import org.openiam.idm.srvc.meta.dto.MetadataTemplateType;
+import org.openiam.idm.srvc.meta.dto.MetadataTemplateTypeField;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.meta.dto.PageTempate;
 import org.openiam.idm.srvc.meta.dto.TemplateRequest;
@@ -48,4 +51,9 @@ public interface MetadataElementTemplateWebService {
 	 public List<MetadataTemplateType> findTemplateTypes(final @WebParam(name = "searchBean", targetNamespace = "") MetadataTemplateTypeSearchBean searchBean,
 			 											 final @WebParam(name = "from", targetNamespace = "") int from,
 			 											 final @WebParam(name = "size", targetNamespace = "") int size);
+	 
+	 @WebMethod
+	 public List<MetadataTemplateTypeField> findUIFIelds(final @WebParam(name = "searchBean", targetNamespace = "") MetadataTemplateTypeFieldSearchBean searchBean,
+				 										 final @WebParam(name = "from", targetNamespace = "") int from,
+				 										 final @WebParam(name = "size", targetNamespace = "") int size);
 }

@@ -15,16 +15,21 @@ import org.openiam.base.ws.ResponseStatus;
 import org.openiam.base.ws.exception.BasicDataServiceException;
 import org.openiam.dozer.converter.MetadataElementTemplateDozerConverter;
 import org.openiam.dozer.converter.MetadataTemplateTypeDozerConverter;
+import org.openiam.dozer.converter.MetadataTemplateTypeFieldDozerConverter;
 import org.openiam.idm.searchbeans.MetadataElementPageTemplateSearchBean;
+import org.openiam.idm.searchbeans.MetadataTemplateTypeFieldSearchBean;
 import org.openiam.idm.searchbeans.MetadataTemplateTypeSearchBean;
 import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTemplateTypeEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataTemplateTypeFieldEntity;
 import org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplate;
 import org.openiam.idm.srvc.meta.dto.MetadataTemplateType;
+import org.openiam.idm.srvc.meta.dto.MetadataTemplateTypeField;
 import org.openiam.idm.srvc.meta.dto.PageTempate;
 import org.openiam.idm.srvc.meta.dto.TemplateRequest;
 import org.openiam.idm.srvc.meta.service.MetadataElementTemplateService;
 import org.openiam.idm.srvc.searchbean.converter.MetadataElementTemplateSearchBeanConverter;
+import org.openiam.idm.srvc.searchbean.converter.MetadataTemplateTypeFieldSearchBeanConverter;
 import org.openiam.idm.srvc.searchbean.converter.MetadataTemplateTypeSearchBeanConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -50,6 +55,12 @@ public class MetadataElementTemplateWebServiceImpl implements MetadataElementTem
 	
 	@Autowired
 	private MetadataTemplateTypeSearchBeanConverter templateTypeSearchBeanConverter;
+	
+	@Autowired
+	private MetadataTemplateTypeFieldSearchBeanConverter uiFieldSearchBeanConverter;
+	
+	@Autowired
+	private MetadataTemplateTypeFieldDozerConverter uiFieldDozerConverter;
 	
 	private static Logger LOG = Logger.getLogger(MetadataElementTemplateWebServiceImpl.class);
 
@@ -135,5 +146,12 @@ public class MetadataElementTemplateWebServiceImpl implements MetadataElementTem
 		final MetadataTemplateTypeEntity entity = templateTypeSearchBeanConverter.convert(searchBean);
 		final List<MetadataTemplateTypeEntity> entityList = templateService.findTemplateTypes(entity, from, size);
 		return (entityList != null) ? templateTypeDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy()) : null;
+	}
+
+	@Override
+	public List<MetadataTemplateTypeField> findUIFIelds(final MetadataTemplateTypeFieldSearchBean searchBean, final int from, final int size) {
+		final MetadataTemplateTypeFieldEntity entity = uiFieldSearchBeanConverter.convert(searchBean);
+		final List<MetadataTemplateTypeFieldEntity> entityList = templateService.findUIFields(entity, from, size);
+		return (entityList != null) ? uiFieldDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy()) : null;
 	}
 }
