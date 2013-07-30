@@ -713,10 +713,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         decPassword);
             }
             if (user.isEmailCredentialsToSupervisor()) {
-                if (user.getSupervisor() != null) {
-                    Supervisor sv = user.getSupervisor();
-                    if (sv != null && sv.getSupervisor() != null) {
-                        sendCredentialsToSupervisor(sv.getSupervisor(),
+                Set<User> superiors = user.getSuperiors();
+                if (CollectionUtils.isNotEmpty(superiors)) {
+                    for (User s : superiors) {
+                        sendCredentialsToSupervisor(s,
                                 primaryLogin.getLogin(), decPassword,
                                 user.getFirstName() + " " + user.getLastName());
                     }
@@ -1694,8 +1694,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         // update the openiam repository with the new user information
 		updateUser(pUser, origUser);
 
-        // update the supervisor
-		updateSupervisor(origUser, pUser.getSupervisor());
+        // update supervisors
+		updateSupervisors(origUser, pUser.getSuperiors());
 
         // update the group
         updateGroupAssociation(origUser.getUserId(), curGroupList,

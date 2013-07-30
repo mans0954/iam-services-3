@@ -222,13 +222,14 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
         				if(approverType != null) {
         					switch(approverType) {
         						case SUPERVISOR:
-                    				final Supervisor supVisor = provisionUser.getSupervisor();
-                    				if(supVisor != null) {
-                    					final String userId = supVisor.getSupervisor().getUserId();
-                    					if(StringUtils.isNotBlank(userId)) {
-                    						requestApproverIds.add(userId);
-                    					}
-                    				}
+                                    final List<SupervisorEntity> supervisors = supervisorDAO.findSupervisors(provisionUser.getUserId());
+                                    if(CollectionUtils.isNotEmpty(supervisors)) {
+                                        for (final SupervisorEntity supervisor : supervisors) {
+                                            if(supervisor != null && supervisor.getEmployee() != null) {
+                                                requestApproverIds.add(supervisor.getEmployee().getUserId());
+                                            }
+                                        }
+                                    }
                     				break;
         						case ROLE:
         							if(StringUtils.isNotBlank(approverId)) {

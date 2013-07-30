@@ -46,7 +46,6 @@ import java.util.*;
         "lastUpdatedBy",
         "locationCd",
         "locationName",
-        "managerId",
         "metadataTypeId",
         "classification",
         "middleInit",
@@ -71,7 +70,6 @@ import java.util.*;
         "email",
         "showInSearch",
         "principalList",
-        "supervisor",
         "alternateContactId",
         "securityDomain",
         "userOwnerId",
@@ -85,7 +83,6 @@ import java.util.*;
 })
 @XmlSeeAlso({
         Login.class,
-        Supervisor.class,
         UserNote.class,
         Phone.class,
         Address.class,
@@ -129,8 +126,6 @@ public class User extends org.openiam.base.BaseObject {
     protected String locationCd;
 
     protected String locationName;
-
-    protected String managerId;
 
     protected String metadataTypeId;
 
@@ -176,9 +171,8 @@ public class User extends org.openiam.base.BaseObject {
 
     protected List<Login> principalList = new LinkedList<Login>();
 
-    protected Supervisor supervisor;
-
     protected String alternateContactId;
+
     protected String securityDomain;
 
     protected String userOwnerId;
@@ -399,15 +393,6 @@ public class User extends org.openiam.base.BaseObject {
 
     public void setCompanyOwnerId(String companyOwnerId) {
         this.companyOwnerId = companyOwnerId;
-    }
-
-
-    public String getManagerId() {
-        return this.managerId;
-    }
-
-    public void setManagerId(String managerId) {
-        this.managerId = managerId;
     }
 
     public String getJobCode() {
@@ -768,14 +753,6 @@ public class User extends org.openiam.base.BaseObject {
         this.principalList = principalList;
     }
 
-    public Supervisor getSupervisor() {
-        return supervisor;
-    }
-
-    public void setSupervisor(Supervisor supervisor) {
-        this.supervisor = supervisor;
-    }
-
     public String getAlternateContactId() {
         return alternateContactId;
     }
@@ -984,13 +961,6 @@ public class User extends org.openiam.base.BaseObject {
                 this.userTypeInd = newUser.getUserTypeInd();
             }
         }
-        if (newUser.getManagerId() != null) {
-            if (newUser.getManagerId().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-                this.managerId = null;
-            } else {
-                this.managerId = newUser.getManagerId();
-            }
-        }
         if (newUser.getAlternateContactId() != null) {
             if (newUser.getAlternateContactId().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
                 this.alternateContactId = null;
@@ -1196,7 +1166,6 @@ public class User extends org.openiam.base.BaseObject {
         if (locationName != null ? !locationName.equals(user.locationName) : user.locationName != null) return false;
         if (maidenName != null ? !maidenName.equals(user.maidenName) : user.maidenName != null) return false;
         if (mailCode != null ? !mailCode.equals(user.mailCode) : user.mailCode != null) return false;
-        if (managerId != null ? !managerId.equals(user.managerId) : user.managerId != null) return false;
         if (metadataTypeId != null ? !metadataTypeId.equals(user.metadataTypeId) : user.metadataTypeId != null)
             return false;
         if (middleInit != null ? !middleInit.equals(user.middleInit) : user.middleInit != null) return false;
@@ -1215,7 +1184,6 @@ public class User extends org.openiam.base.BaseObject {
         if (startDate != null ? !startDate.equals(user.startDate) : user.startDate != null) return false;
         if (status != user.status) return false;
         if (suffix != null ? !suffix.equals(user.suffix) : user.suffix != null) return false;
-        if (supervisor != null ? !supervisor.equals(user.supervisor) : user.supervisor != null) return false;
         if (title != null ? !title.equals(user.title) : user.title != null) return false;
         if (userAttributes != null ? !userAttributes.equals(user.userAttributes) : user.userAttributes != null)
             return false;
@@ -1248,7 +1216,6 @@ public class User extends org.openiam.base.BaseObject {
                 ", lastUpdatedBy='" + lastUpdatedBy + '\'' +
                 ", locationCd='" + locationCd + '\'' +
                 ", locationName='" + locationName + '\'' +
-                ", managerId='" + managerId + '\'' +
                 ", metadataTypeId='" + metadataTypeId + '\'' +
                 ", classification='" + classification + '\'' +
                 ", middleInit='" + middleInit + '\'' +
@@ -1270,7 +1237,6 @@ public class User extends org.openiam.base.BaseObject {
                 ", email='" + email + '\'' +
                 ", showInSearch=" + showInSearch +
                 ", principalList=" + principalList +
-                ", supervisor=" + supervisor +
                 ", alternateContactId='" + alternateContactId + '\'' +
                 ", securityDomain='" + securityDomain + '\'' +
                 ", userOwnerId='" + userOwnerId + '\'' +

@@ -105,9 +105,6 @@ public class UserEntity {
     @Column(name = "LOCATION_NAME", length = 100)
     private String locationName;
 
-    @Column(name = "MANAGER_ID", length = 32)
-    private String managerId;
-
     @Column(name = "TYPE_ID", length = 20)
     private String metadataTypeId;
 
@@ -362,14 +359,6 @@ public class UserEntity {
 
     public void setLocationName(String locationName) {
         this.locationName = locationName;
-    }
-
-    public String getManagerId() {
-        return managerId;
-    }
-
-    public void setManagerId(String managerId) {
-        this.managerId = managerId;
     }
 
     public String getMetadataTypeId() {
@@ -1041,13 +1030,6 @@ public class UserEntity {
 	            this.userTypeInd = newUser.getUserTypeInd();
 	        }
 	    }
-	    if (newUser.getManagerId() != null) {
-	        if (newUser.getManagerId().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-	            this.managerId = null;
-	        } else {
-	            this.managerId = newUser.getManagerId();
-	        }
-	    }
 	    if (newUser.getAlternateContactId() != null) {
 	        if (newUser.getAlternateContactId().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
 	            this.alternateContactId = null;
@@ -1135,8 +1117,6 @@ public class UserEntity {
 				+ ((maidenName == null) ? 0 : maidenName.hashCode());
 		result = prime * result
 				+ ((mailCode == null) ? 0 : mailCode.hashCode());
-		result = prime * result
-				+ ((managerId == null) ? 0 : managerId.hashCode());
 		result = prime * result
 				+ ((metadataTypeId == null) ? 0 : metadataTypeId.hashCode());
 		result = prime * result
@@ -1286,11 +1266,6 @@ public class UserEntity {
 			if (other.mailCode != null)
 				return false;
 		} else if (!mailCode.equals(other.mailCode))
-			return false;
-		if (managerId == null) {
-			if (other.managerId != null)
-				return false;
-		} else if (!managerId.equals(other.managerId))
 			return false;
 		if (metadataTypeId == null) {
 			if (other.metadataTypeId != null)

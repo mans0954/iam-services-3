@@ -546,9 +546,7 @@ public class UserDataWebServiceImpl implements UserDataWebService, MuleContextAw
             if (contrary != null) {
                 throw new BasicDataServiceException(ResponseCode.CIRCULAR_DEPENDENCY);
             }
-
-            Supervisor supervisor = new Supervisor(null, superior, subordinate);
-            return addSupervisor(supervisor);
+            userManager.addSuperior(userId, requesterId);
 
         } catch (BasicDataServiceException e) {
             response.setErrorCode(e.getCode());

@@ -34,9 +34,7 @@ import org.openiam.idm.srvc.user.dto.User;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * ProvisionUser is the user object used by the provisioning service.
@@ -51,6 +49,7 @@ import java.util.List;
         "memberOfRoles",
         "userResourceList",
         "userAffiliations",
+        "superiors",
         "srcSystemId",
         "provisionModel",
         "securityDomain",
@@ -74,6 +73,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
     protected List<Group> memberOfGroups;
     protected List<Role> memberOfRoles;
     protected List<Organization> userAffiliations;
+    protected Set<User> superiors;
 
     protected List<UserResourceAssociation> userResourceList;
 
@@ -125,7 +125,6 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         this.lastUpdatedBy = user.getLastUpdatedBy();
         this.locationCd = user.getLocationCd();
         this.locationName = user.getLocationName();
-        this.managerId = user.getManagerId();
         this.metadataTypeId = user.getMetadataTypeId();
         this.classification = user.getClassification();
         this.middleInit = user.getMiddleInit();
@@ -183,7 +182,6 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         user.setLastUpdatedBy(lastUpdatedBy);
         user.setLocationCd(locationCd);
         user.setLocationName(locationName);
-        user.setManagerId(managerId);
         user.setMetadataTypeId(metadataTypeId);
         user.setClassification(classification);
         user.setMiddleInit(middleInit);
@@ -281,6 +279,23 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         this.memberOfRoles = memberOfRoles;
     }
 
+    public Set<User> getSuperiors() {
+        return superiors;
+    }
+
+    public void setSuperiors(Set<User> superiors) {
+        this.superiors = superiors;
+    }
+
+    public void addSuperior(final User superior) {
+        if(superior != null) {
+            if(superiors == null) {
+                superiors = new HashSet<User>();
+            }
+            superiors.add(superior);
+        }
+    }
+
     public ProvisionModelEnum getProvisionModel() {
         return provisionModel;
     }
@@ -320,6 +335,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
                 ", memberOfRoles=" + memberOfRoles +
                 ", userAffiliations=" + userAffiliations +
                 ", userResourceList=" + userResourceList +
+                ", superiors=" + superiors +
                 ", provisionModel=" + provisionModel +
                 ", securityDomain='" + securityDomain + '\'' +
                 ", emailCredentialsToNewUsers=" + emailCredentialsToNewUsers +
@@ -474,9 +490,6 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         }
         if (locationName == null) {
             locationName = user.getLocationName();
-        }
-        if (managerId == null) {
-            managerId = user.getManagerId();
         }
         if (metadataTypeId == null) {
             metadataTypeId = user.getMetadataTypeId();
