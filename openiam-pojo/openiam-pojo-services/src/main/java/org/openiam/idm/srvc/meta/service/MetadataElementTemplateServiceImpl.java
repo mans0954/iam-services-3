@@ -21,6 +21,7 @@ import org.openiam.authmanager.common.model.AuthorizationResource;
 import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.searchbeans.MetadataElementPageTemplateSearchBean;
+import org.openiam.idm.searchbeans.MetadataTemplateTypeFieldSearchBean;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
 import org.openiam.idm.srvc.lang.service.LanguageDAO;
@@ -39,6 +40,7 @@ import org.openiam.idm.srvc.meta.dto.PageElementValue;
 import org.openiam.idm.srvc.meta.dto.PageTempate;
 import org.openiam.idm.srvc.meta.dto.PageTemplateAttributeToken;
 import org.openiam.idm.srvc.meta.dto.TemplateRequest;
+import org.openiam.idm.srvc.meta.dto.TemplateUIField;
 import org.openiam.idm.srvc.meta.exception.PageTemplateException;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
@@ -269,8 +271,9 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 			 * If the user is unknown (self registration), the template is public, it's an admin request, or if the user is entitled to the template, create one
 			 */
 			if(entity.isPublic() || isAdminRequest || isEntitled(userId, entity.getResource().getResourceId())) {
+				final String templateId = entity.getId();
 				template = new PageTempate();
-				template.setTemplateId(entity.getId());
+				template.setTemplateId(templateId);
 				if(CollectionUtils.isNotEmpty(entity.getMetadataElements())) {
 					for(final MetadataElementPageTemplateXrefEntity xref : entity.getMetadataElements()) {
 						final String elementId = xref.getId().getMetadataElementId();
@@ -312,6 +315,19 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 								}
 							}
 						}
+					}
+				}
+				
+				final MetadataTemplateTypeFieldSearchBean searchBean = new MetadataTemplateTypeFieldSearchBean();
+				searchBean.setTemplateId(templateId);
+				final List<MetadataTemplateTypeFieldEntity> fields = uiFieldDAO.getByExample(searchBean, 0, Integer.MAX_VALUE);
+				if(CollectionUtils.isNotEmpty(fields)) {
+					for(final MetadataTemplateTypeFieldEntity field : fields) {
+						final TemplateUIField uiField = new TemplateUIField();
+						uiField.setId(field.getId());
+						uiField.setName(field.getName());
+						uiField.setRequired(field.isRequired());
+						template.addUIField(uiField);
 					}
 				}
 			}
@@ -713,7 +729,7 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 	}
 
 	@Override
-	public List<MetadataTemplateTypeFieldEntity> findUIFields(final MetadataTemplateTypeFieldEntity entity, final int from, final int size) {
-		return uiFieldDAO.getByExample(entity, from, size);
+	public List<MetadataTemplateTypeFieldEntity> findUIFields(final MetadataTemplateTypeFieldSearchBean searchBean, final int from, final int size) {
+		return uiFieldDAO.getByExample(searchBean, from, size);
 	}
 }

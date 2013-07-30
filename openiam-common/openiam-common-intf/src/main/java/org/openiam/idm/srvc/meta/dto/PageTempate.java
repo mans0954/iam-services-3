@@ -3,7 +3,10 @@ package org.openiam.idm.srvc.meta.dto;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -19,11 +22,14 @@ import org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplate;
 @XmlType(name = "PageTempate", 
 	propOrder = { 
 		"templateId",
-        "pageElements"
+        "pageElements",
+        "uiFields"
 })
 public class PageTempate implements Serializable{
 
 	private String templateId;
+	
+	private Map<String, TemplateUIField> uiFields;
 	
 	private TreeSet<PageElement> pageElements = new TreeSet<PageElement>(PageElementComparator.INSTANCE);
 	
@@ -41,6 +47,19 @@ public class PageTempate implements Serializable{
 
 	public void setTemplateId(String templateId) {
 		this.templateId = templateId;
+	}
+	
+	public void addUIField(final TemplateUIField field) {
+		if(field != null) {
+			if(this.uiFields == null) {
+				this.uiFields = new HashMap<String, TemplateUIField>();
+			}
+			this.uiFields.put(field.getName(), field);
+		}
+	}
+
+	public Map<String, TemplateUIField> getUiFields() {
+		return uiFields;
 	}
 
 	/**

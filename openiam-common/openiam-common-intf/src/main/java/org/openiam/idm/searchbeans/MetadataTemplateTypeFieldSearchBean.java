@@ -12,12 +12,15 @@ import org.springframework.stereotype.Component;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "MetadataTemplateTypeFieldSearchBean", propOrder = {
 	"templateId",
+	"templateTypeId",
 	"name"
 })
 public class MetadataTemplateTypeFieldSearchBean extends AbstractSearchBean<MetadataTemplateTypeField, String> implements SearchBean<MetadataTemplateTypeField, String> {
 
 	private String templateId;
+	private String templateTypeId;
 	private String name;
+	
 	public String getTemplateId() {
 		return templateId;
 	}
@@ -29,6 +32,12 @@ public class MetadataTemplateTypeFieldSearchBean extends AbstractSearchBean<Meta
 	}
 	public void setName(String name) {
 		this.name = name;
+	}
+	public String getTemplateTypeId() {
+		return templateTypeId;
+	}
+	public void setTemplateTypeId(String templateTypeId) {
+		this.templateTypeId = templateTypeId;
 	}
 	
 	

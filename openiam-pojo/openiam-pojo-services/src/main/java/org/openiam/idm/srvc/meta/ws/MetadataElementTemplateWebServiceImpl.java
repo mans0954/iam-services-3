@@ -29,7 +29,6 @@ import org.openiam.idm.srvc.meta.dto.PageTempate;
 import org.openiam.idm.srvc.meta.dto.TemplateRequest;
 import org.openiam.idm.srvc.meta.service.MetadataElementTemplateService;
 import org.openiam.idm.srvc.searchbean.converter.MetadataElementTemplateSearchBeanConverter;
-import org.openiam.idm.srvc.searchbean.converter.MetadataTemplateTypeFieldSearchBeanConverter;
 import org.openiam.idm.srvc.searchbean.converter.MetadataTemplateTypeSearchBeanConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -55,9 +54,6 @@ public class MetadataElementTemplateWebServiceImpl implements MetadataElementTem
 	
 	@Autowired
 	private MetadataTemplateTypeSearchBeanConverter templateTypeSearchBeanConverter;
-	
-	@Autowired
-	private MetadataTemplateTypeFieldSearchBeanConverter uiFieldSearchBeanConverter;
 	
 	@Autowired
 	private MetadataTemplateTypeFieldDozerConverter uiFieldDozerConverter;
@@ -150,8 +146,7 @@ public class MetadataElementTemplateWebServiceImpl implements MetadataElementTem
 
 	@Override
 	public List<MetadataTemplateTypeField> findUIFIelds(final MetadataTemplateTypeFieldSearchBean searchBean, final int from, final int size) {
-		final MetadataTemplateTypeFieldEntity entity = uiFieldSearchBeanConverter.convert(searchBean);
-		final List<MetadataTemplateTypeFieldEntity> entityList = templateService.findUIFields(entity, from, size);
+		final List<MetadataTemplateTypeFieldEntity> entityList = templateService.findUIFields(searchBean, from, size);
 		return (entityList != null) ? uiFieldDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy()) : null;
 	}
 }
