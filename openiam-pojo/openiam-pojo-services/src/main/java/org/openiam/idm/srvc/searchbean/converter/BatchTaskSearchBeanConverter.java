@@ -15,6 +15,7 @@ public class BatchTaskSearchBeanConverter implements SearchBeanConverter<BatchTa
 		final BatchTaskEntity entity = new BatchTaskEntity();
 		if(searchBean != null) {
 			entity.setId(StringUtils.trimToNull(searchBean.getKey()));
+			entity.setName(searchBean.getName());
 		}
 		return entity;
 	}

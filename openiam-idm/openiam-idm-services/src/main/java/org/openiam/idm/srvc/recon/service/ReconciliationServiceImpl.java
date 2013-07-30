@@ -79,6 +79,7 @@ import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
+import org.openiam.idm.srvc.user.util.UserUtils;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.LookupUserResponse;
 import org.openiam.provision.service.ConnectorAdapter;
@@ -329,7 +330,7 @@ public class ReconciliationServiceImpl implements ReconciliationService,
                     .getAllLoginByManagedSys(managedSysId);
             for (LoginEntity identity : idmIdentities) {
                 reconciliationIDMUserToTargetSys(resultBean, attrMap, identity,
-                        mSys, situations);
+                        mSys, situations, config.getManualReconciliationFlag());
             }
 
             // 2. Do reconciliation users from Target Managed System to IDM
@@ -409,7 +410,8 @@ public class ReconciliationServiceImpl implements ReconciliationService,
                             : new LinkedList<ExtensibleAttribute>();
                     reconcilationTargetUserObjectToIDM(resultBean, attrMap,
                             managedSysId, mSys, situations, keyField,
-                            extensibleAttributes);
+                            extensibleAttributes,
+                            config.getManualReconciliationFlag());
                 }
             }
         } else {
@@ -424,7 +426,8 @@ public class ReconciliationServiceImpl implements ReconciliationService,
             List<AttributeMapEntity> attrMap, String managedSysId,
             ManagedSysEntity mSys,
             Map<String, ReconciliationCommand> situations, String keyField,
-            List<ExtensibleAttribute> extensibleAttributes) {
+            List<ExtensibleAttribute> extensibleAttributes,
+            boolean isManualRecon) {
         String targetUserPrincipal = null;
         for (ExtensibleAttribute attr : extensibleAttributes) {
             // search principal attribute by KeyField
@@ -457,24 +460,26 @@ public class ReconciliationServiceImpl implements ReconciliationService,
                                 extensibleAttributes,
                                 ReconciliationResultCase.NOT_EXIST_IN_IDM_DB));
                 // SYS_EXISTS__IDM_NOT_EXISTS
-                ReconciliationCommand command = situations
-                        .get(ReconciliationCommand.SYS_EXISTS__IDM_NOT_EXISTS);
-                if (command != null) {
-                    Login l = new Login();
-                    l.setDomainId(mSys.getDomainId());
-                    l.setLogin(targetUserPrincipal);
-                    l.setManagedSysId(managedSysId);
+                if (!isManualRecon) {
+                    ReconciliationCommand command = situations
+                            .get(ReconciliationCommand.SYS_EXISTS__IDM_NOT_EXISTS);
+                    if (command != null) {
+                        Login l = new Login();
+                        l.setDomainId(mSys.getDomainId());
+                        l.setLogin(targetUserPrincipal);
+                        l.setManagedSysId(managedSysId);
 
-                    ProvisionUser newUser = new ProvisionUser();
-                    // ADD Target user principal
-                    newUser.getPrincipalList().add(l);
-                    if (idmLogin != null) {
-                        newUser.getPrincipalList().add(
-                                loginDozerConverter
-                                        .convertToDTO(idmLogin, true));
+                        ProvisionUser newUser = new ProvisionUser();
+                        // ADD Target user principal
+                        newUser.getPrincipalList().add(l);
+                        if (idmLogin != null) {
+                            newUser.getPrincipalList().add(
+                                    loginDozerConverter.convertToDTO(idmLogin,
+                                            true));
+                        }
+                        log.debug("Call command for Match Found");
+                        command.execute(l, newUser, extensibleAttributes);
                     }
-                    log.debug("Call command for Match Found");
-                    command.execute(l, newUser, extensibleAttributes);
                 }
             }
         }
@@ -555,7 +560,8 @@ public class ReconciliationServiceImpl implements ReconciliationService,
             ReconciliationResultBean resultBean,
             List<AttributeMapEntity> attrMap, final LoginEntity identity,
             final ManagedSysEntity mSys,
-            final Map<String, ReconciliationCommand> situations) {
+            final Map<String, ReconciliationCommand> situations,
+            boolean isManualRecon) {
 
         User user = userManager.getUserDto(identity.getUserId());
         Login idDto = loginDozerConverter.convertToDTO(identity, true);
@@ -580,32 +586,39 @@ public class ReconciliationServiceImpl implements ReconciliationService,
             // Record exists in resource
             if (user.getStatus().equals(UserStatusEnum.DELETED)) {
                 // IDM_DELETED__SYS_EXISTS
-                ReconciliationCommand command = situations
-                        .get(ReconciliationCommand.IDM_DELETED__SYS_EXISTS);
+
                 resultBean.getRows().add(
                         this.setRowInReconciliationResult(resultBean
                                 .getHeader(), attrMap, userCSVParser
                                 .toReconciliationObject(user, attrMap), null,
                                 ReconciliationResultCase.IDM_DELETED));
-                if (command != null) {
-                    log.debug("Call command for: Record in resource but deleted in IDM");
-                    command.execute(idDto, new ProvisionUser(user),
-                            extensibleAttributes);
+
+                if (!isManualRecon) {
+                    ReconciliationCommand command = situations
+                            .get(ReconciliationCommand.IDM_DELETED__SYS_EXISTS);
+                    if (command != null) {
+                        log.debug("Call command for: Record in resource but deleted in IDM");
+                        command.execute(idDto, new ProvisionUser(user),
+                                extensibleAttributes);
+                    }
                 }
             } else {
                 // IDM_EXISTS__SYS_EXISTS
-                ReconciliationCommand command = situations
-                        .get(ReconciliationCommand.IDM_EXISTS__SYS_EXISTS);
+
                 resultBean.getRows().add(
                         this.setRowInReconciliationResult(resultBean
                                 .getHeader(), attrMap, userCSVParser
                                 .toReconciliationObject(user, attrMap),
                                 extensibleAttributes,
                                 ReconciliationResultCase.MATCH_FOUND));
-                if (command != null) {
-                    log.debug("Call command for: Record in resource and in IDM");
-                    command.execute(idDto, new ProvisionUser(user),
-                            extensibleAttributes);
+                if (!isManualRecon) {
+                    ReconciliationCommand command = situations
+                            .get(ReconciliationCommand.IDM_EXISTS__SYS_EXISTS);
+                    if (command != null) {
+                        log.debug("Call command for: Record in resource and in IDM");
+                        command.execute(idDto, new ProvisionUser(user),
+                                extensibleAttributes);
+                    }
                 }
             }
 
@@ -613,8 +626,7 @@ public class ReconciliationServiceImpl implements ReconciliationService,
             // Record not found in resource
             if (!user.getStatus().equals(UserStatusEnum.DELETED)) {
                 // IDM_EXISTS__SYS_NOT_EXISTS
-                ReconciliationCommand command = situations
-                        .get(ReconciliationCommand.IDM_EXISTS__SYS_NOT_EXISTS);
+
                 resultBean
                         .getRows()
                         .add(this.setRowInReconciliationResult(resultBean
@@ -622,10 +634,14 @@ public class ReconciliationServiceImpl implements ReconciliationService,
                                 .toReconciliationObject(user, attrMap),
                                 extensibleAttributes,
                                 ReconciliationResultCase.NOT_EXIST_IN_RESOURCE));
-                if (command != null) {
-                    log.debug("Call command for: Record in resource and in IDM");
-                    command.execute(idDto, new ProvisionUser(user),
-                            extensibleAttributes);
+                if (!isManualRecon) {
+                    ReconciliationCommand command = situations
+                            .get(ReconciliationCommand.IDM_EXISTS__SYS_NOT_EXISTS);
+                    if (command != null) {
+                        log.debug("Call command for: Record in resource and in IDM");
+                        command.execute(idDto, new ProvisionUser(user),
+                                extensibleAttributes);
+                    }
                 }
             }
         }
@@ -689,16 +705,8 @@ public class ReconciliationServiceImpl implements ReconciliationService,
             user1Map = userCSVParser.convertToMap(attrMapList, currentObject);
         }
         if (findedObject != null) {
-            user2Map = new HashMap<String, ReconciliationResultField>();
-            for (ExtensibleAttribute a : findedObject) {
-                ReconciliationResultField field = new ReconciliationResultField();
-                if (a.isMultivalued()) {
-                    field.setValues(a.getValueList());
-                } else {
-                    field.setValues(Arrays.asList(a.getValue()));
-                }
-                user2Map.put(a.getName(), field);
-            }
+            user2Map = UserUtils
+                    .extensibleAttributeListToReconciliationResultFieldMap(findedObject);
         }
         row.setCaseReconciliation(caseReconciliation);
         if (!MapUtils.isEmpty(user1Map) && MapUtils.isEmpty(user2Map)) {

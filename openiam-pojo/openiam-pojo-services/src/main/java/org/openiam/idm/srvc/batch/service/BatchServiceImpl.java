@@ -13,42 +13,43 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class BatchServiceImpl implements BatchService {
 
-	@Autowired
-	private BatchConfigDAO  batchDao;
+    @Autowired
+    private BatchConfigDAO batchDao;
 
-	@Override
-	public List<BatchTaskEntity> findBeans(BatchTaskEntity entity, int from, int size) {
-		return batchDao.getByExample(entity, from, size);
-	}
-	
-	@Override
-	public int count(BatchTaskEntity entity) {
-		return batchDao.count(entity);
-	}
+    @Override
+    public List<BatchTaskEntity> findBeans(BatchTaskEntity entity, int from,
+            int size) {
+        return batchDao.getByExample(entity, from, size);
+    }
 
-	@Override
-	public void save(BatchTaskEntity entity) {
-		if(entity != null) {
-			if(StringUtils.isBlank(entity.getId())) {
-				batchDao.save(entity);	
-			} else {
-				batchDao.merge(entity);
-			}
-		}
-	}
+    @Override
+    public int count(BatchTaskEntity entity) {
+        return batchDao.count(entity);
+    }
 
-	@Override
-	public void delete(String id) {
-		if(StringUtils.isNotBlank(id)) {
-			final BatchTaskEntity entity = batchDao.findById(id);
-			if(entity != null) {
-				batchDao.delete(entity);
-			}
-		}
-	}
+    @Override
+    public void save(BatchTaskEntity entity) {
+        if (entity != null) {
+            if (StringUtils.isBlank(entity.getId())) {
+                batchDao.save(entity);
+            } else {
+                batchDao.merge(entity);
+            }
+        }
+    }
 
-	@Override
-	public BatchTaskEntity findById(String id) {
-		return batchDao.findById(id);
-	}
+    @Override
+    public void delete(String id) {
+        if (StringUtils.isNotBlank(id)) {
+            final BatchTaskEntity entity = batchDao.findById(id);
+            if (entity != null) {
+                batchDao.delete(entity);
+            }
+        }
+    }
+
+    @Override
+    public BatchTaskEntity findById(String id) {
+        return batchDao.findById(id);
+    }
 }

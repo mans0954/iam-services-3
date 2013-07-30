@@ -15,8 +15,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.constants.CSVSource;
 import org.openiam.dozer.converter.UserDozerConverter;
-import org.openiam.idm.parser.csv.CSVParser;
+import org.openiam.idm.parser.csv.ProvisionUserCSVParser;
 import org.openiam.idm.parser.csv.UserCSVParser;
+import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
@@ -25,8 +26,8 @@ import org.openiam.idm.srvc.recon.command.ReconciliationCommandFactory;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.idm.srvc.recon.dto.ReconciliationObject;
 import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
-import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultCase;
 import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultBean;
+import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultCase;
 import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultField;
 import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultRow;
 import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultUtil;
@@ -36,6 +37,7 @@ import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceService;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
+import org.openiam.idm.srvc.user.util.UserUtils;
 import org.openiam.idm.srvc.user.ws.UserDataWebService;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.type.ExtensibleAttribute;
@@ -55,6 +57,8 @@ public class AbstractCSVCommand {
     protected ResourceService resourceDataService;
     @Autowired
     protected UserCSVParser userCSVParser;
+    @Autowired
+    protected ProvisionUserCSVParser provisionUserCSVParser;
     @Autowired
     private MailService mailService;
     @Resource(name = "userServiceClient")
@@ -160,7 +164,8 @@ public class AbstractCSVCommand {
             try {
                 log.debug("First cycle");
                 dbUsers.removeAll(reconCicle(headerRow, rows, idmUsers,
-                        dbUsers, attrMapList, mSys));
+                        dbUsers, attrMapList, mSys, situations,
+                        config.getManualReconciliationFlag()));
             } catch (Exception e) {
                 log.error(e.getMessage());
                 response.setStatus(StatusCodeType.FAILURE);
@@ -170,7 +175,8 @@ public class AbstractCSVCommand {
             try {
                 log.debug("Second cycle");
                 dbUsers.removeAll(reconCicle(headerRow, rows, sourceUsers,
-                        dbUsers, attrMapList, mSys));
+                        dbUsers, attrMapList, mSys, situations,
+                        config.getManualReconciliationFlag()));
             } catch (Exception e) {
                 log.error(e.getMessage());
                 response.setStatus(StatusCodeType.FAILURE);
@@ -187,6 +193,26 @@ public class AbstractCSVCommand {
                 rows.add(this.setRowInReconciliationResult(headerRow,
                         attrMapList, obj, null,
                         ReconciliationResultCase.NOT_EXIST_IN_RESOURCE));
+                if (!config.getManualReconciliationFlag()) {
+                    ReconciliationCommand command = situations
+                            .get(ReconciliationCommand.IDM_EXISTS__SYS_NOT_EXISTS);
+                    if (command != null) {
+                        Login l = null;
+                        if (CollectionUtils.isEmpty(obj.getObject()
+                                .getPrincipalList())) {
+                            l = obj.getObject().getPrincipalList().get(0);
+                        } else {
+                            l = new Login();
+                            l.setLogin(obj.getPrincipal());
+                            l.setDomainId(mSys.getDomainId());
+                            l.setManagedSysId(managedSysId);
+                        }
+                        log.debug("Call command for: Record in resource and in IDM");
+                        command.execute(l, obj.getObject(), this
+                                .getExtensibleAttributesList(headerRow,
+                                        attrMapList, obj));
+                    }
+                }
             }
 
             // -----------------------------------------------
@@ -281,7 +307,8 @@ public class AbstractCSVCommand {
             List<ReconciliationResultRow> rows,
             List<ReconciliationObject<User>> reconUserList,
             List<ReconciliationObject<User>> dbUsers,
-            List<AttributeMapEntity> attrMapList, ManagedSysEntity mSys)
+            List<AttributeMapEntity> attrMapList, ManagedSysEntity mSys,
+            Map<String, ReconciliationCommand> situations, boolean isManualRecon)
             throws Exception {
         Set<ReconciliationObject<User>> used = new HashSet<ReconciliationObject<User>>(
                 0);
@@ -336,6 +363,23 @@ public class AbstractCSVCommand {
                 rows.add(this.setRowInReconciliationResult(headerRow,
                         attrMapList, u, null,
                         ReconciliationResultCase.NOT_EXIST_IN_IDM_DB));
+                // SYS_EXISTS__IDM_NOT_EXISTS
+                if (!isManualRecon) {
+                    ReconciliationCommand command = situations
+                            .get(ReconciliationCommand.SYS_EXISTS__IDM_NOT_EXISTS);
+                    if (command != null) {
+                        Login l = new Login();
+                        l.setDomainId(mSys.getDomainId());
+                        l.setLogin(u.getPrincipal());
+                        l.setManagedSysId(mSys.getManagedSysId());
+
+                        ProvisionUser newUser = new ProvisionUser(u.getObject());
+                        // ADD Target user principal
+                        newUser.getPrincipalList().add(l);
+                        log.debug("Call command for Match Found");
+                        command.execute(l, newUser, null);
+                    }
+                }
             } else if (!isMultiple && finded != null) {
                 if (finded.getObject().getPrincipalList().get(0) == null) {
                     if (UserStatusEnum.DELETED.equals(finded.getObject()
@@ -343,6 +387,27 @@ public class AbstractCSVCommand {
                         rows.add(this.setRowInReconciliationResult(headerRow,
                                 attrMapList, u, null,
                                 ReconciliationResultCase.IDM_DELETED));
+                        if (!isManualRecon) {
+                            ReconciliationCommand command = situations
+                                    .get(ReconciliationCommand.IDM_DELETED__SYS_EXISTS);
+                            if (command != null) {
+                                Login l = null;
+                                if (CollectionUtils.isEmpty(finded.getObject()
+                                        .getPrincipalList())) {
+                                    l = finded.getObject().getPrincipalList()
+                                            .get(0);
+                                } else {
+                                    l = new Login();
+                                    l.setLogin(finded.getPrincipal());
+                                    l.setDomainId(mSys.getDomainId());
+                                    l.setManagedSysId(mSys.getManagedSysId());
+                                }
+                                log.debug("Call command for: Record in resource but deleted in IDM");
+                                command.execute(l, u.getObject(), this
+                                        .getExtensibleAttributesList(headerRow,
+                                                attrMapList, finded));
+                            }
+                        }
                         continue;
                     }
                     rows.add(this.setRowInReconciliationResult(headerRow,
@@ -350,6 +415,21 @@ public class AbstractCSVCommand {
                             ReconciliationResultCase.LOGIN_NOT_FOUND));
                     continue;
                 } else {
+                    if (!isManualRecon) {
+                        ReconciliationCommand command = situations
+                                .get(ReconciliationCommand.IDM_EXISTS__SYS_EXISTS);
+                        if (command != null) {
+                            Login l = new Login();
+                            l.setLogin(u.getPrincipal());
+                            l.setDomainId(mSys.getDomainId());
+                            l.setManagedSysId(mSys.getManagedSysId());
+                            log.debug("Call command for: Record in resource and in IDM");
+                            command.execute(l,
+                                    new ProvisionUser(u.getObject()), this
+                                            .getExtensibleAttributesList(
+                                                    headerRow, attrMapList, u));
+                        }
+                    }
                     rows.add(this.setRowInReconciliationResult(headerRow,
                             attrMapList, u, finded,
                             ReconciliationResultCase.MATCH_FOUND));
@@ -412,6 +492,13 @@ public class AbstractCSVCommand {
         List<AttributeMapEntity> attrMapList = managedSysService
                 .getResourceAttributeMaps(managedSys.getResourceId());
         return userCSVParser.convertToMap(attrMapList, obj);
+    }
+
+    private List<ExtensibleAttribute> getExtensibleAttributesList(
+            ReconciliationResultRow headerRow,
+            List<AttributeMapEntity> attrMapList, ReconciliationObject<User> u) {
+        return UserUtils.reconciliationResultFieldMapToExtensibleAttributeList(
+                headerRow, userCSVParser.convertToMap(attrMapList, u));
     }
 
     protected void addUsersToCSV(String principal, User newUser,
