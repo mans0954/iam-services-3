@@ -54,23 +54,20 @@ public class PageTempate implements Serializable{
 			if(this.uiFields == null) {
 				this.uiFields = new HashMap<String, TemplateUIField>();
 			}
-			this.uiFields.put(field.getName(), field);
+			this.uiFields.put(field.getId(), field);
 		}
-	}
-
-	public Map<String, TemplateUIField> getUiFields() {
-		return uiFields;
 	}
 
 	/**
 	 * Called only by JSTL
-	 * @return
+	 * @return always returns a map, to prevent any chance of a NPE
 	 */
-	/*
-	public List<PageElement> getElements() {
-		return (pageElements != null) ? new ArrayList<PageElement>(pageElements) : null;
+	public Map<String, TemplateUIField> getUiFields() {
+		if(uiFields == null) {
+			uiFields = new HashMap<String, TemplateUIField>();
+		}
+		return uiFields;
 	}
-	*/
 
 	public TreeSet<PageElement> getPageElements() {
 		return pageElements;

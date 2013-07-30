@@ -34,6 +34,13 @@ public class MetadataFieldTemplateXrefEntity implements Serializable {
     @Type(type = "yes_no")
 	private boolean required;
 
+	@Column(name = "IS_EDITABLE")
+    @Type(type = "yes_no")
+	private boolean editable = true;
+	
+	@Column(name = "DISPLAY_ORDER")
+	private Integer displayOrder;
+	
 	public MetadataFieldTemplateXrefIDEntity getId() {
 		return id;
 	}
@@ -66,10 +73,29 @@ public class MetadataFieldTemplateXrefEntity implements Serializable {
 		this.required = required;
 	}
 
+	public boolean isEditable() {
+		return editable;
+	}
+
+	public void setEditable(boolean editable) {
+		this.editable = editable;
+	}
+
+	public Integer getDisplayOrder() {
+		return displayOrder;
+	}
+
+	public void setDisplayOrder(Integer displayOrder) {
+		this.displayOrder = displayOrder;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
+		result = prime * result
+				+ ((displayOrder == null) ? 0 : displayOrder.hashCode());
+		result = prime * result + (editable ? 1231 : 1237);
 		result = prime * result + ((field == null) ? 0 : field.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + (required ? 1231 : 1237);
@@ -87,6 +113,13 @@ public class MetadataFieldTemplateXrefEntity implements Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		MetadataFieldTemplateXrefEntity other = (MetadataFieldTemplateXrefEntity) obj;
+		if (displayOrder == null) {
+			if (other.displayOrder != null)
+				return false;
+		} else if (!displayOrder.equals(other.displayOrder))
+			return false;
+		if (editable != other.editable)
+			return false;
 		if (field == null) {
 			if (other.field != null)
 				return false;
@@ -110,8 +143,11 @@ public class MetadataFieldTemplateXrefEntity implements Serializable {
 	@Override
 	public String toString() {
 		return "MetadataFieldTemplateXrefEntity [id=" + id + ", field=" + field
-				+ ", template=" + template + ", required=" + required + "]";
+				+ ", template=" + template + ", required=" + required
+				+ ", editable=" + editable + ", displayOrder=" + displayOrder
+				+ "]";
 	}
+
 
 	
 }

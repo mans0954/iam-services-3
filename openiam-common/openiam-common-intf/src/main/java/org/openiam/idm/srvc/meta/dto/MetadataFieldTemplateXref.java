@@ -15,7 +15,9 @@ import org.openiam.idm.srvc.meta.domain.MetadataTemplateTypeFieldEntity;
 	"id",
 	"field",
 	"template",
-	"required"
+	"required",
+	"editable",
+	"displayOrder"
 })
 @DozerDTOCorrespondence(MetadataFieldTemplateXrefEntity.class)
 public class MetadataFieldTemplateXref {
@@ -24,6 +26,9 @@ public class MetadataFieldTemplateXref {
 	private MetadataTemplateTypeField field;
 	private MetadataElementPageTemplate template;
 	private boolean required;
+	private boolean editable = true;
+	private Integer displayOrder;
+	
 	public MetadataTemplateTypeField getField() {
 		return field;
 	}
@@ -48,10 +53,29 @@ public class MetadataFieldTemplateXref {
 	public void setId(MetadataFieldTemplateXrefID id) {
 		this.id = id;
 	}
+	
+	public boolean isEditable() {
+		return editable;
+	}
+
+	public void setEditable(boolean editable) {
+		this.editable = editable;
+	}
+
+	public Integer getDisplayOrder() {
+		return displayOrder;
+	}
+
+	public void setDisplayOrder(Integer displayOrder) {
+		this.displayOrder = displayOrder;
+	}
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
+		result = prime * result
+				+ ((displayOrder == null) ? 0 : displayOrder.hashCode());
+		result = prime * result + (editable ? 1231 : 1237);
 		result = prime * result + ((field == null) ? 0 : field.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + (required ? 1231 : 1237);
@@ -68,6 +92,13 @@ public class MetadataFieldTemplateXref {
 		if (getClass() != obj.getClass())
 			return false;
 		MetadataFieldTemplateXref other = (MetadataFieldTemplateXref) obj;
+		if (displayOrder == null) {
+			if (other.displayOrder != null)
+				return false;
+		} else if (!displayOrder.equals(other.displayOrder))
+			return false;
+		if (editable != other.editable)
+			return false;
 		if (field == null) {
 			if (other.field != null)
 				return false;
@@ -90,8 +121,12 @@ public class MetadataFieldTemplateXref {
 	@Override
 	public String toString() {
 		return "MetadataFieldTemplateXref [id=" + id + ", field=" + field
-				+ ", template=" + template + ", required=" + required + "]";
+				+ ", template=" + template + ", required=" + required
+				+ ", editable=" + editable + ", displayOrder=" + displayOrder
+				+ "]";
 	}
+
+
 	
 	
 }
