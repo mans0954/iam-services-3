@@ -56,4 +56,6 @@ public interface MetadataElementTemplateWebService {
 	 public List<MetadataTemplateTypeField> findUIFIelds(final @WebParam(name = "searchBean", targetNamespace = "") MetadataTemplateTypeFieldSearchBean searchBean,
 				 										 final @WebParam(name = "from", targetNamespace = "") int from,
 				 										 final @WebParam(name = "size", targetNamespace = "") int size);
+    @WebMethod
+    public int countUIFields(final @WebParam(name = "searchBean", targetNamespace = "") MetadataTemplateTypeFieldSearchBean searchBean);
 }

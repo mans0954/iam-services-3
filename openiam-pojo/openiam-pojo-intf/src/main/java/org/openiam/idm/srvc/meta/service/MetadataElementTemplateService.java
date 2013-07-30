@@ -26,4 +26,5 @@ public interface MetadataElementTemplateService {
 	public MetadataTemplateTypeEntity getTemplateType(final String id);
 	public List<MetadataTemplateTypeEntity> findTemplateTypes(final MetadataTemplateTypeEntity entity, final int from, final int size);
 	public List<MetadataTemplateTypeFieldEntity> findUIFields(final MetadataTemplateTypeFieldSearchBean searchBean, final int from, final int size);
+    public Integer countUIFields(final MetadataTemplateTypeFieldSearchBean searchBean);
 }

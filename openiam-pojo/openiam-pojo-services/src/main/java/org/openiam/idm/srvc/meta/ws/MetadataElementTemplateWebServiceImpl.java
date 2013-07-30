@@ -149,4 +149,10 @@ public class MetadataElementTemplateWebServiceImpl implements MetadataElementTem
 		final List<MetadataTemplateTypeFieldEntity> entityList = templateService.findUIFields(searchBean, from, size);
 		return (entityList != null) ? uiFieldDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy()) : null;
 	}
+
+    @Override
+    public int countUIFields(final MetadataTemplateTypeFieldSearchBean searchBean) {
+        final Integer count = templateService.countUIFields(searchBean);
+        return (count != null) ? count.intValue() : 0;
+    }
 }

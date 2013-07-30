@@ -732,4 +732,8 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 	public List<MetadataTemplateTypeFieldEntity> findUIFields(final MetadataTemplateTypeFieldSearchBean searchBean, final int from, final int size) {
 		return uiFieldDAO.getByExample(searchBean, from, size);
 	}
+    @Override
+    public Integer countUIFields(final MetadataTemplateTypeFieldSearchBean searchBean){
+        return uiFieldDAO.count(searchBean);
+    }
 }
