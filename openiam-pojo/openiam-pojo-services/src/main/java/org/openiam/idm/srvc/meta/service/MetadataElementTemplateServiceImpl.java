@@ -197,6 +197,8 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 							boolean isRequired = templateType.getField(id.getFieldId()).isRequired() ? true : xref.isRequired();
 							if(dbXref != null) {
 								dbXref.setRequired(isRequired);
+								dbXref.setEditable(xref.isEditable());
+								dbXref.setDisplayOrder(xref.getDisplayOrder());
 								fieldXrefs.add(dbXref);
 							} else {
 								xref.setRequired(isRequired);
