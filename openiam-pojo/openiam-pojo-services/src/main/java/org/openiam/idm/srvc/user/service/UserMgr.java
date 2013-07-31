@@ -354,16 +354,6 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
-    public List<UserEntity> getByExample(UserSearchBean searchBean) {
-        return userDao.getByExample(
-                searchBean,
-                searchBean.getShowInSearch() == null ? -1 : searchBean
-                        .getShowInSearch(),
-                searchBean.getMaxResultSize() == null ? -1 : searchBean
-                        .getMaxResultSize());
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public List<UserEntity> findBeans(UserSearchBean searchBean) {
         return findBeans(searchBean, 0, 1);
@@ -1186,7 +1176,7 @@ public class UserMgr implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserEntity> findPotentialSuperiors(UserSearchBean searchBean,
+    public List<UserEntity> findPotentialSupSubs(UserSearchBean searchBean,
             Integer from, Integer size) {
         List<UserEntity> entityList = findAllPotentialSupSubs(searchBean);
 
@@ -1203,30 +1193,7 @@ public class UserMgr implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
-    public int findPotentialSuperiorsCount(UserSearchBean searchBean) {
-        return findAllPotentialSupSubs(searchBean).size();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<UserEntity> findPotentialSubordinates(
-            UserSearchBean searchBean, Integer from, Integer size) {
-        List<UserEntity> entityList = findAllPotentialSupSubs(searchBean);
-
-        if (entityList != null && entityList.size() >= from) {
-            int to = from + size;
-            if (to > entityList.size()) {
-                to = entityList.size();
-            }
-            entityList = entityList.subList(from, to);
-        }
-
-        return entityList;
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public int findPotentialSubordinatesCount(UserSearchBean searchBean) {
+    public int findPotentialSupSubsCount(UserSearchBean searchBean) {
         return findAllPotentialSupSubs(searchBean).size();
     }
 
@@ -1854,5 +1821,10 @@ public class UserMgr implements UserDataService {
             }
         }
         return result;
+    }
+
+    @Override
+    public List<UserEntity> getByExample(UserSearchBean searchBean) {
+        return userDao.getByExample(searchBean);
     }
 }

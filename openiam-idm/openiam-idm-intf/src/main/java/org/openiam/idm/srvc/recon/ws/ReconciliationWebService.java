@@ -8,6 +8,7 @@ import javax.jws.WebService;
 
 import org.openiam.base.ws.Response;
 
+import org.openiam.idm.searchbeans.ManualReconciliationSearchBean;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.idm.srvc.recon.dto.ReconciliationResponse;
 import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultBean;
@@ -52,13 +53,14 @@ public interface ReconciliationWebService {
             @WebParam(name = "config", targetNamespace = "") ReconciliationConfig config,
             @WebParam(name = "reportType", targetNamespace = "") String reportType);
 
-    ReconciliationResultBean getReconciliationResult(
-            @WebParam(name = "config", targetNamespace = "") ReconciliationConfig config);
-
     @WebMethod
     String manualReconciliation(
             @WebParam(name = "reconciledBean", targetNamespace = "") ReconciliationResultBean reconciledBean,
             @WebParam(name = "resourceId", targetNamespace = "") String resourceId)
             throws Exception;
+
+    ReconciliationResultBean getReconciliationResult(
+            ReconciliationConfig config,
+            ManualReconciliationSearchBean searchBean);
 
 }

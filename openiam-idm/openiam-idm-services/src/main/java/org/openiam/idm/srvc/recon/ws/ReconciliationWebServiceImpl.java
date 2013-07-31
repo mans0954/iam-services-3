@@ -28,6 +28,7 @@ import org.mule.api.MuleContext;
 import org.mule.api.context.MuleContextAware;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.idm.searchbeans.ManualReconciliationSearchBean;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.idm.srvc.recon.dto.ReconciliationResponse;
 import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultBean;
@@ -147,7 +148,8 @@ public class ReconciliationWebServiceImpl implements ReconciliationWebService,
 
     @Override
     public ReconciliationResultBean getReconciliationResult(
-            @WebParam(name = "config", targetNamespace = "") ReconciliationConfig config) {
-        return reconService.getReconciliationResult(config);
+            @WebParam(name = "config", targetNamespace = "") ReconciliationConfig config,
+            @WebParam(name = "searchBean", targetNamespace = "") ManualReconciliationSearchBean searchBean) {
+        return reconService.getReconciliationResult(config, searchBean);
     }
 }

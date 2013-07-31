@@ -22,7 +22,7 @@
 package org.openiam.idm.srvc.recon.service;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -48,6 +48,7 @@ import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.parser.csv.UserCSVParser;
 import org.openiam.idm.parser.csv.UserSearchBeanCSVParser;
+import org.openiam.idm.searchbeans.ManualReconciliationSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
@@ -72,6 +73,7 @@ import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultCase;
 import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultField;
 import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultRow;
 import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultUtil;
+import org.openiam.idm.srvc.recon.result.dto.ReconcliationFieldComparatorByField;
 import org.openiam.idm.srvc.recon.util.Serializer;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
@@ -491,8 +493,8 @@ public class ReconciliationServiceImpl implements ReconciliationService,
         ReconciliationConfig config = this.getConfigByResource(resourceId);
         ManagedSysEntity mSys = managedSysService.getManagedSysByResource(
                 resourceId, "ACTIVE");
-        ReconciliationResultBean oldResult = this
-                .getReconciliationResult(config);
+        ReconciliationResultBean oldResult = this.getReconciliationResult(
+                config, null);
         List<ReconciliationResultField> header = oldResult.getHeader()
                 .getFields();
         if (reconciledBean != null && reconciledBean.getRows() != null) {
@@ -508,14 +510,14 @@ public class ReconciliationServiceImpl implements ReconciliationService,
                             User.class, false);
                     if (ReconciliationResultAction.ADD_TO_IDM.equals(row
                             .getAction())) {
-                        // TODO Supervisor creation
                         provisionService.addUser(new ProvisionUser(u));
                     }
                     if (ReconciliationResultAction.REMOVE_FROM_TARGET
                             .equals(row.getAction())) {
+                        // TODO HOWTO DELETE
                         // REMOVETE From Target system
-                        provisionService.deleteUser2(managedSysDozerConverter
-                                .convertToDTO(mSys, false), u);
+                        // provisionService.de(managedSysDozerConverter
+                        // .convertToDTO(mSys, false), u);
                     }
                     break;
                 case NOT_EXIST_IN_RESOURCE:
@@ -778,6 +780,11 @@ public class ReconciliationServiceImpl implements ReconciliationService,
 
     private void saveReconciliationResults(String fileName,
             ReconciliationResultBean resultBean) {
+        int i = 0;
+        resultBean.getHeader().setRowId(i++);
+        for (ReconciliationResultRow row : resultBean.getRows()) {
+            row.setRowId(i++);
+        }
         Serializer.serialize(resultBean, absolutePath + fileName + ".rcndat");
     }
 
@@ -796,11 +803,90 @@ public class ReconciliationServiceImpl implements ReconciliationService,
 
     @Override
     public ReconciliationResultBean getReconciliationResult(
-            ReconciliationConfig config) {
+            ReconciliationConfig config,
+            ManualReconciliationSearchBean searchBean) {
         if (config == null || config.getResourceId() == null)
             return null;
-        return (ReconciliationResultBean) Serializer.deserializer(absolutePath
-                + config.getResourceId() + ".rcndat");
+        ReconciliationResultBean resultBean = (ReconciliationResultBean) Serializer
+                .deserializer(absolutePath + config.getResourceId() + ".rcndat");
+        if (searchBean == null)
+            return resultBean;
+        else {
+            List<ReconciliationResultRow> rows = resultBean.getRows();
+            if (searchBean.getSearchCase() != null) {
+                List<ReconciliationResultRow> filteredRows = new ArrayList<ReconciliationResultRow>();
+                for (ReconciliationResultRow row : rows) {
+                    if (row.getCaseReconciliation().equals(
+                            searchBean.getSearchCase())) {
+                        filteredRows.add(row);
+                    }
+                }
+                rows = filteredRows;
+            }
+            if (org.springframework.util.StringUtils.hasText(searchBean
+                    .getSearchFieldName())
+                    && org.springframework.util.StringUtils.hasText(searchBean
+                            .getSearchFieldValue())) {
+                List<ReconciliationResultRow> filteredRows = new ArrayList<ReconciliationResultRow>();
+                Integer searchIndex = null;
+                for (int i = 0; i < resultBean.getHeader().getFields().size(); i++) {
+                    ReconciliationResultField field = resultBean.getHeader()
+                            .getFields().get(i);
+                    if (field.getValues().get(0)
+                            .equals(searchBean.getSearchFieldName())) {
+                        searchIndex = i;
+                    }
+                }
+                if (searchIndex != null) {
+                    for (ReconciliationResultRow row : rows) {
+                        ReconciliationResultField field = row.getFields().get(
+                                searchIndex);
+                        for (String value : field.getValues()) {
+                            if (value.equals(searchBean.getSearchFieldValue())) {
+                                filteredRows.add(row);
+                                break;
+                            }
+                        }
+                    }
+                }
+                rows = filteredRows;
+            }
+            if (org.springframework.util.StringUtils.hasText(searchBean
+                    .getOrderBy())
+                    && org.springframework.util.StringUtils.hasText(searchBean
+                            .getOrderByFieldName())) {
+                Integer searchIndex = null;
+                for (int i = 0; i < resultBean.getHeader().getFields().size(); i++) {
+                    ReconciliationResultField field = resultBean.getHeader()
+                            .getFields().get(i);
+                    if (field.getValues().get(0)
+                            .equals(searchBean.getOrderByFieldName())) {
+                        searchIndex = i;
+                    }
+                }
+                if (searchIndex != null) {
+                    Collections.sort(rows,
+                            new ReconcliationFieldComparatorByField(
+                                    searchIndex, searchBean.getOrderBy()));
+                }
+            }
+            int page = searchBean.getPageNumber() < 1 ? 1 : searchBean
+                    .getPageNumber();
+            int size = searchBean.getSize() < 10 ? 10 : searchBean.getSize();
+
+            int startPos = (page - 1) * size;
+            int endPos = page * size;
+            endPos = endPos > rows.size() ? rows.size() : endPos;
+            {
+                List<ReconciliationResultRow> filteredRow = new ArrayList<ReconciliationResultRow>();
+                for (int i = startPos; i < endPos; i++) {
+                    filteredRow.add(rows.get(i));
+                }
+                rows = filteredRow;
+            }
+            resultBean.setRows(rows);
+        }
+        return resultBean;
     }
 
     private <T> T convertObject(List<ReconciliationResultField> header,

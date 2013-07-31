@@ -1,6 +1,7 @@
 package org.openiam.idm.srvc.recon.service;
 
 import org.mule.api.MuleContext;
+import org.openiam.idm.searchbeans.ManualReconciliationSearchBean;
 import org.openiam.idm.srvc.recon.dto.*;
 import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultBean;
 import org.openiam.idm.srvc.report.dto.ReportTable;
@@ -31,7 +32,8 @@ public interface ReconciliationService {
             String reportType);
 
     public ReconciliationResultBean getReconciliationResult(
-            ReconciliationConfig config);
+            ReconciliationConfig config,
+            ManualReconciliationSearchBean searchBean);
 
     String manualReconciliation(ReconciliationResultBean reconciledBean,
             String resourceId) throws Exception;

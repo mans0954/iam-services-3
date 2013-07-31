@@ -242,6 +242,11 @@ public class AbstractCSVCommand {
 
     private void saveReconciliationResults(String fileName,
             ReconciliationResultBean resultBean) {
+        int i = 0;
+        resultBean.getHeader().setRowId(i++);
+        for (ReconciliationResultRow row : resultBean.getRows()) {
+            row.setRowId(i++);
+        }
         Serializer.serialize(resultBean, absolutePath + fileName + ".rcndat");
     }
 

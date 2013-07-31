@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 
+import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 
 /**
@@ -21,7 +22,6 @@ public class ReconciliationResultBean implements java.io.Serializable {
     private String objectType;
     private List<ReconciliationResultRow> rows;
     private ReconciliationResultRow header;
-    private int counter = 0;
 
     public ReconciliationResultBean() {
         super();
@@ -41,17 +41,7 @@ public class ReconciliationResultBean implements java.io.Serializable {
     }
 
     public void setRows(List<ReconciliationResultRow> rows) {
-        counter = 0;
-        if (rows != null)
-            for (ReconciliationResultRow row : rows) {
-                row.setRowId(counter++);
-            }
         this.rows = rows;
-    }
-
-    public void addRow(ReconciliationResultRow row) {
-        row.setRowId(counter++);
-        rows.add(row);
     }
 
     public String toHTML() {
