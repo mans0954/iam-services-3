@@ -318,15 +318,15 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 					}
 				}
 				
-				final MetadataTemplateTypeFieldSearchBean searchBean = new MetadataTemplateTypeFieldSearchBean();
-				searchBean.setTemplateId(templateId);
-				final List<MetadataTemplateTypeFieldEntity> fields = uiFieldDAO.getByExample(searchBean, 0, Integer.MAX_VALUE);
-				if(CollectionUtils.isNotEmpty(fields)) {
-					for(final MetadataTemplateTypeFieldEntity field : fields) {
+				if(CollectionUtils.isNotEmpty(entity.getFieldXrefs())) {
+					for(final MetadataFieldTemplateXrefEntity xref : entity.getFieldXrefs()) {
+						final MetadataTemplateTypeFieldEntity field = xref.getField();
 						final TemplateUIField uiField = new TemplateUIField();
 						uiField.setId(field.getId());
 						uiField.setName(field.getName());
-						uiField.setRequired(field.isRequired());
+						uiField.setRequired(xref.isRequired());
+						uiField.setEditable(xref.isEditable());
+						uiField.setDisplayOrder(xref.getDisplayOrder());
 						template.addUIField(uiField);
 					}
 				}

@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.meta.dto;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -9,13 +10,20 @@ import javax.xml.bind.annotation.XmlType;
 	propOrder = { 
 		"id",
         "name",
-        "required"
+        "required",
+        "editable",
+        "displayOrder"
 })
 public class TemplateUIField {
+	
+	@XmlTransient
+	private static final Integer DEFAULT_DISPLAY_ORDER = Integer.valueOf(0); 
 
 	private String id;
 	private String name;
 	private boolean required;
+	private boolean editable = true;
+	private Integer displayOrder = DEFAULT_DISPLAY_ORDER;
 	
 	public TemplateUIField() {}
 	
@@ -36,6 +44,22 @@ public class TemplateUIField {
 	}
 	public void setRequired(boolean required) {
 		this.required = required;
+	}
+
+	public boolean isEditable() {
+		return editable;
+	}
+
+	public void setEditable(boolean editable) {
+		this.editable = editable;
+	}
+
+	public Integer getDisplayOrder() {
+		return displayOrder;
+	}
+
+	public void setDisplayOrder(Integer displayOrder) {
+		this.displayOrder = displayOrder;
 	}
 	
 	

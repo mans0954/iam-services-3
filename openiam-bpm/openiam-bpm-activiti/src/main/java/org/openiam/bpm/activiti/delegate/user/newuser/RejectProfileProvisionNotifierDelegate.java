@@ -122,15 +122,9 @@ public class RejectProfileProvisionNotifierDelegate implements JavaDelegate {
 					}
             		break;
             	case SUPERVISOR:
-            		final List<SupervisorEntity> supervisors = userManager.getSupervisors(profileModel.getUser().getUserId());
-                    if (CollectionUtils.isNotEmpty(supervisors)) {
-                        for (SupervisorEntity s : supervisors) {
-                            final String notifyUserId = s.getEmployee().getUserId();
-                            if(StringUtils.isNotBlank(notifyUserId)) {
-                                userIds.add(notifyUserId);
-                            }
-                        }
-                    }
+            		if(CollectionUtils.isNotEmpty(profileModel.getSupervisorIdList())) {
+            			userIds.addAll(profileModel.getSupervisorIdList());
+            		}
                     break;
             	case USER:
             		userIds.add(notifyId);
