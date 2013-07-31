@@ -736,29 +736,33 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         decPassword);
             }
             if (user.isEmailCredentialsToSupervisor()) {
-                if (user.getSupervisor() != null) {
-                    Supervisor sv = user.getSupervisor();
-                    if (sv != null && sv.getSupervisor() != null) {
-                        sendCredentialsToSupervisor(sv.getSupervisor(),
-                                primaryLogin.getLogin(), decPassword,
-                                user.getFirstName() + " " + user.getLastName());
+                if (user.getSuperiors() != null) {
+                    Set<User> superiors = user.getSuperiors();
+                    if (CollectionUtils.isNotEmpty(superiors)) {
+                        for (User s : superiors) {
+                            sendCredentialsToSupervisor(
+                                    s,
+                                    primaryLogin.getLogin(),
+                                    decPassword,
+                                    user.getFirstName() + " "
+                                            + user.getLastName());
+                        }
                     }
                 }
+
+                resp.setStatus(ResponseStatus.SUCCESS);
             }
 
-            resp.setStatus(ResponseStatus.SUCCESS);
+            bindingMap.put("userAfterAdd", user);
+
+            // call the post processor
+
+            if (callPostProcessor("ADD", user, bindingMap) != ProvisioningConstants.SUCCESS) {
+                resp.setStatus(ResponseStatus.FAILURE);
+                resp.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
+                return resp;
+            }
         }
-
-        bindingMap.put("userAfterAdd", user);
-
-        // call the post processor
-
-        if (callPostProcessor("ADD", user, bindingMap) != ProvisioningConstants.SUCCESS) {
-            resp.setStatus(ResponseStatus.FAILURE);
-            resp.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
-            return resp;
-        }
-
         resp.setUser(user);
         return resp;
     }
@@ -1051,21 +1055,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         response.setStatus(ResponseStatus.SUCCESS);
         return response;
 
-    }
-
-    @Override
-    @Transactional
-    public ProvisionUserResponse deleteUser2(ManagedSysDto managedSys, User u) {
-        DeleteRequestType delReqType = new DeleteRequestType();
-        delReqType.setpUser(new ProvisionUser(u));
-        ResponseType response = connectorAdapter.deleteRequest(managedSys,
-                delReqType, muleContext);
-        ProvisionUserResponse puResponse = new ProvisionUserResponse();
-        if (StatusCodeType.FAILURE.equals(response.getStatus()))
-            puResponse.setStatus(ResponseStatus.FAILURE);
-        else
-            puResponse.setStatus(ResponseStatus.SUCCESS);
-        return puResponse;
     }
 
     /*
@@ -1803,7 +1792,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         updateUser(pUser, origUser);
 
         // update the supervisor
-        updateSupervisor(origUser, pUser.getSupervisor());
+        updateSupervisors(origUser, pUser.getSuperiors());
 
         // update the group
         updateGroupAssociation(origUser.getUserId(), curGroupList,

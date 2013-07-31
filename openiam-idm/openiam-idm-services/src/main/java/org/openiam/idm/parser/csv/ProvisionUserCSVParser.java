@@ -87,9 +87,6 @@ public class ProvisionUserCSVParser extends
         case locationName:
             user.setLocationName(objValue);
             break;
-        case managerId:
-            user.setManagerId(objValue);
-            break;
         case metadataTypeId:
             user.setMetadataTypeId(objValue);
             break;
@@ -173,7 +170,6 @@ public class ProvisionUserCSVParser extends
             break;
         case principalList:
         case phones:
-        case supervisor:
             break;
         case alternateContactId:
             user.setAlternateContactId(objValue);
@@ -260,9 +256,6 @@ public class ProvisionUserCSVParser extends
             break;
         case locationName:
             objValue = toString(user.getLocationName());
-            break;
-        case managerId:
-            objValue = toString(user.getManagerId());
             break;
         case metadataTypeId:
             objValue = toString(user.getMetadataTypeId());
@@ -352,7 +345,6 @@ public class ProvisionUserCSVParser extends
             break;
         case userAttributes:
         case principalList:
-        case supervisor:
         case userNotes:
         case phones:
         case emailAddresses:

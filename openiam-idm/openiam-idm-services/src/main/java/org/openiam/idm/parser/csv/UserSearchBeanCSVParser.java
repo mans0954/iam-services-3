@@ -138,7 +138,6 @@ public class UserSearchBeanCSVParser extends
             break;
         case userAttributes:
         case principalList:
-        case supervisor:
         case userNotes:
         case phones:
         case emailAddresses:

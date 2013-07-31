@@ -91,11 +91,6 @@ public interface ProvisionService {
             @WebParam(name = "requestorId", targetNamespace = "") String requestorId);
 
     @WebMethod
-    public ProvisionUserResponse deleteUser2(
-            @WebParam(name = "managedSystemId", targetNamespace = "") ManagedSysDto managedSysDto,
-            @WebParam(name = "securityDomain", targetNamespace = "") User user);
-
-    @WebMethod
     public ProvisionUserResponse deleteByUserId(
             @WebParam(name = "user", targetNamespace = "") ProvisionUser user,
             @WebParam(name = "status", targetNamespace = "") UserStatusEnum status,
