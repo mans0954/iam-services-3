@@ -506,23 +506,13 @@ public class UserDataWebServiceImpl implements UserDataWebService, MuleContextAw
     }
 
     @Override
-    public List<User> findPotentialSuperiors(UserSearchBean userSearchBean, Integer from, Integer size) {
-        return userDozerConverter.convertToDTOList(userManager.findPotentialSuperiors(userSearchBean, from, size), true);
+    public List<User> findPotentialSupSubs(UserSearchBean userSearchBean, Integer from, Integer size) {
+        return userDozerConverter.convertToDTOList(userManager.findPotentialSupSubs(userSearchBean, from, size), true);
     }
 
     @Override
-    public int findPotentialSuperiorsCount(UserSearchBean userSearchBean) {
-        return userManager.findPotentialSuperiorsCount(userSearchBean);
-    }
-
-    @Override
-    public List<User> findPotentialSubordinates(UserSearchBean userSearchBean,Integer from,Integer size) {
-        return userDozerConverter.convertToDTOList(userManager.findPotentialSubordinates(userSearchBean, from, size), true);
-    }
-
-    @Override
-    public int findPotentialSubordinatesCount(UserSearchBean userSearchBean) {
-        return userManager.findPotentialSubordinatesCount(userSearchBean);
+    public int findPotentialSupSubsCount(UserSearchBean userSearchBean) {
+        return userManager.findPotentialSupSubsCount(userSearchBean);
     }
 
     @Override
@@ -560,11 +550,6 @@ public class UserDataWebServiceImpl implements UserDataWebService, MuleContextAw
     }
 
     @Override
-    public Response addSubordinate(String requesterId, String userId) {
-        return addSuperior(userId, requesterId);
-    }
-
-    @Override
     public Response removeSuperior(String requesterId, String userId) {
 
         final Response response = new Response(ResponseStatus.SUCCESS);
@@ -584,11 +569,6 @@ public class UserDataWebServiceImpl implements UserDataWebService, MuleContextAw
             response.setStatus(ResponseStatus.FAILURE);
         }
         return response;
-    }
-
-    @Override
-    public Response removeSubordinate(String requesterId, String userId) {
-        return removeSuperior(userId, requesterId);
     }
 
     @Override
@@ -1219,7 +1199,7 @@ public class UserDataWebServiceImpl implements UserDataWebService, MuleContextAw
     }
 
     @Override
-    public SaveTemplateProfileResponse saveUserProfile(UserProfileRequestModel request) {
+    public SaveTemplateProfileResponse saveUserProfile(final UserProfileRequestModel request) {
         final SaveTemplateProfileResponse response = new SaveTemplateProfileResponse(ResponseStatus.SUCCESS);
         try {
             if (request == null || request.getUser() == null) {

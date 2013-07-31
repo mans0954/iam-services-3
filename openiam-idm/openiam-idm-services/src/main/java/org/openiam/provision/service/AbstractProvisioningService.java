@@ -1495,26 +1495,28 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
     public void updateSupervisors(User user, Set<User> superiors) {
 
-        if (superiors == null) {
-            return;
-        }
-
-        // check the current supervisor - if different - remove it and add the
-        // new one.
         List<SupervisorEntity> supervisorList = userMgr.getSupervisors(user.getUserId());
 
-        for (User u : superiors) {
-            if (user.getUserId().equals(u.getUserId())) {
-                log.info("User can't be a superior for himself");
-                continue;
-            }
-            for (SupervisorEntity s : supervisorList) {
-                if (s.getSupervisor().getUserId().equals(u.getUserId())) {
-                    // already exists
-                } else if (s.getEmployee().getUserId().equals(u.getUserId())) {
-                    log.info(String.format("User with id='%s' is a subordinate of User with id='%s'",
-                            u.getUserId(), s.getSupervisor().getUserId()));
-                } else {
+        if (CollectionUtils.isNotEmpty(superiors)) {
+            for (User u : superiors) {
+                if (user.getUserId().equals(u.getUserId())) {
+                    log.info("User can't be a superior for himself");
+                    continue;
+                }
+
+                boolean isToAdd = true;
+                for (SupervisorEntity s : supervisorList) {
+                    if (s.getSupervisor().getUserId().equals(u.getUserId())) {
+                        isToAdd = false; // already exists
+                        break;
+                    } else if (s.getEmployee().getUserId().equals(u.getUserId())) {
+                        isToAdd = false;
+                        log.info(String.format("User with id='%s' is a subordinate of User with id='%s'",
+                                u.getUserId(), s.getSupervisor().getUserId()));
+                        break;
+                    }
+                }
+                if (isToAdd) {
                     try {
                         userMgr.addSuperior(u.getUserId(), user.getUserId());
                         log.info(String.format("Adding a supervisor user %s for user %s",
@@ -1526,14 +1528,18 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                 }
             }
         }
+
         for (SupervisorEntity s : supervisorList) {
-            boolean isContained = false;
-            for (User u : superiors) {
-                if (s.getSupervisor().getUserId().equals(u.getUserId())) {
-                    isContained = true;
+            boolean isToRemove = true;
+            if (CollectionUtils.isNotEmpty(superiors)) {
+                for (User u : superiors) {
+                    if (s.getSupervisor().getUserId().equals(u.getUserId())) {
+                        isToRemove = false;
+                        break;
+                    }
                 }
             }
-            if (!isContained) {
+            if (isToRemove) {
                 userMgr.removeSupervisor(s.getOrgStructureId());
                 log.info(String.format("Removed a supervisor user %s from user %s",
                         s.getSupervisor().getUserId(), user.getUserId()));

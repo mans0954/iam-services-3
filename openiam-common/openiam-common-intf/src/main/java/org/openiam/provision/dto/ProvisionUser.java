@@ -296,6 +296,15 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         }
     }
 
+    public void addSuperiors(final Collection<User> superiors)  {
+        if(superiors != null) {
+            if(this.superiors == null) {
+                this.superiors = new HashSet<User>();
+            }
+            this.superiors.addAll(superiors);
+        }
+    }
+
     public ProvisionModelEnum getProvisionModel() {
         return provisionModel;
     }

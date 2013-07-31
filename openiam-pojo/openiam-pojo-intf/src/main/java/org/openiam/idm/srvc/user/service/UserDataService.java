@@ -171,13 +171,9 @@ public interface UserDataService {
 
     public int getSubordinatesCount(String userId);
 
-    public List<UserEntity> findPotentialSuperiors(UserSearchBean searchBean, Integer from, Integer size);
+    public List<UserEntity> findPotentialSupSubs(UserSearchBean searchBean, Integer from, Integer size);
 
-    public int findPotentialSuperiorsCount(UserSearchBean searchBean);
-
-    public List<UserEntity> findPotentialSubordinates(UserSearchBean searchBean, Integer from, Integer size);
-
-    public int findPotentialSubordinatesCount(UserSearchBean searchBean);
+    public int findPotentialSupSubsCount(UserSearchBean searchBean);
 
     /**
      * Returns a list of Supervisor objects that represents the employees or

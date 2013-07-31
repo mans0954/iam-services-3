@@ -496,36 +496,20 @@ public interface UserDataWebService {
     public int getSubordinatesCount(@WebParam(name = "userId", targetNamespace = "") String userId);
 
     @WebMethod
-    public List<User> findPotentialSuperiors(@WebParam(name = "searchBean", targetNamespace = "") UserSearchBean userSearchBean,
+    public List<User> findPotentialSupSubs(@WebParam(name = "searchBean", targetNamespace = "") UserSearchBean userSearchBean,
                                              @WebParam(name = "from", targetNamespace = "") Integer from,
                                              @WebParam(name = "size", targetNamespace = "") Integer size);
 
     @WebMethod
-    public int findPotentialSuperiorsCount(@WebParam(name = "searchBean", targetNamespace = "") UserSearchBean userSearchBean);
-
-    @WebMethod
-    public List<User> findPotentialSubordinates(@WebParam(name = "searchBean", targetNamespace = "") UserSearchBean userSearchBean,
-                                                @WebParam(name = "from", targetNamespace = "") Integer from,
-                                                @WebParam(name = "size", targetNamespace = "") Integer size);
-
-    @WebMethod
-    public int findPotentialSubordinatesCount(@WebParam(name = "searchBean", targetNamespace = "") UserSearchBean userSearchBean);
+    public int findPotentialSupSubsCount(@WebParam(name = "searchBean", targetNamespace = "") UserSearchBean userSearchBean);
 
     @WebMethod
     public Response addSuperior(@WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                            @WebParam(name = "userId", targetNamespace = "") String userId);
 
     @WebMethod
-    public Response addSubordinate(@WebParam(name = "requesterId", targetNamespace = "") String requesterId,
-                              @WebParam(name = "userId", targetNamespace = "") String userId);
-
-    @WebMethod
     public Response removeSuperior(@WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                               @WebParam(name = "userId", targetNamespace = "") String userId);
-
-    @WebMethod
-    public Response removeSubordinate(@WebParam(name = "requesterId", targetNamespace = "") String requesterId,
-                                 @WebParam(name = "userId", targetNamespace = "") String userId);
 
     @WebMethod
     public List<User> getUsersForResource(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,

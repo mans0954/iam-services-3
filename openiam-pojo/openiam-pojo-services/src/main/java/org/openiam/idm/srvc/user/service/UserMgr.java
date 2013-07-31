@@ -1096,7 +1096,7 @@ public class UserMgr implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserEntity> findPotentialSuperiors(UserSearchBean searchBean, Integer from, Integer size) {
+    public List<UserEntity> findPotentialSupSubs(UserSearchBean searchBean, Integer from, Integer size) {
         List<UserEntity> entityList = findAllPotentialSupSubs(searchBean);
 
         if (entityList != null && entityList.size() >= from) {
@@ -1112,29 +1112,7 @@ public class UserMgr implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
-    public int findPotentialSuperiorsCount(UserSearchBean searchBean) {
-        return findAllPotentialSupSubs(searchBean).size();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<UserEntity> findPotentialSubordinates(UserSearchBean searchBean, Integer from, Integer size) {
-        List<UserEntity> entityList = findAllPotentialSupSubs(searchBean);
-
-        if (entityList != null && entityList.size() >= from) {
-            int to = from + size;
-            if (to > entityList.size()) {
-                to = entityList.size();
-            }
-            entityList = entityList.subList(from, to);
-        }
-
-        return entityList;
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public int findPotentialSubordinatesCount(UserSearchBean searchBean) {
+    public int findPotentialSupSubsCount(UserSearchBean searchBean) {
         return findAllPotentialSupSubs(searchBean).size();
     }
 
