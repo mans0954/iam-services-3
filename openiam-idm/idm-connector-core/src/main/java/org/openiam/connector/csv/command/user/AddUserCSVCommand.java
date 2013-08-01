@@ -1,6 +1,7 @@
 package org.openiam.connector.csv.command.user;
 
 import org.openiam.am.srvc.constants.CSVSource;
+import org.openiam.connector.csv.command.base.AbstractCrudCSVCommand;
 import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.idm.parser.csv.CSVParser;
@@ -19,7 +20,7 @@ import javax.annotation.Resource;
 import java.util.List;
 
 @Service("addUserCSVCommand")
-public class AddUserCSVCommand extends AbstractAddCSVCommand<ExtensibleUser> {
+public class AddUserCSVCommand extends AbstractCrudCSVCommand<ExtensibleUser> {
     @Autowired
     @Qualifier("userCSVParser")
     protected CSVParser<User> userCSVParser;
@@ -27,7 +28,7 @@ public class AddUserCSVCommand extends AbstractAddCSVCommand<ExtensibleUser> {
     protected UserDataWebService userDataWebService;
 
     @Override
-    protected void addObjectToCsv(String principal, ExtensibleUser object, ManagedSysEntity managedSys) throws ConnectorDataException {
+    protected void performObjectOperation(String principal, ExtensibleUser object, ManagedSysEntity managedSys) throws ConnectorDataException {
         try {
             List<AttributeMapEntity> attrMapList = managedSysService.getResourceAttributeMaps(managedSys.getResourceId());
             //TODO check

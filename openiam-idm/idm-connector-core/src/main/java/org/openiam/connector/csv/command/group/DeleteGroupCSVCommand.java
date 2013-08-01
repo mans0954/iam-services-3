@@ -1,6 +1,7 @@
 package org.openiam.connector.csv.command.group;
 
 import org.openiam.am.srvc.constants.CSVSource;
+import org.openiam.connector.csv.command.base.AbstractCrudCSVCommand;
 import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.idm.parser.csv.CSVParser;
 import org.openiam.idm.srvc.grp.dto.Group;
@@ -16,13 +17,13 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service("deleteGroupCSVCommand")
-public class DeleteGroupCSVCommand extends AbstractDeleteCSVCommand<ExtensibleGroup> {
+public class DeleteGroupCSVCommand extends AbstractCrudCSVCommand<ExtensibleGroup> {
     @Autowired
     @Qualifier("groupCsvParser")
     protected CSVParser<Group> groupCsvParser;
 
     @Override
-    protected void deleteObject(String id, ExtensibleGroup object, ManagedSysEntity managedSys) throws ConnectorDataException {
+    protected void performObjectOperation(String id, ExtensibleGroup object, ManagedSysEntity managedSys) throws ConnectorDataException {
         try {
             List<AttributeMapEntity> attrMapList = managedSysService.getResourceAttributeMaps(managedSys.getResourceId());
             groupCsvParser.delete(id, managedSys, attrMapList, CSVSource.IDM);
