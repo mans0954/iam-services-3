@@ -5,10 +5,10 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseAttribute;
 import org.openiam.base.SysConfiguration;
-import org.openiam.connector.type.PasswordRequest;
-import org.openiam.connector.type.ResumeRequest;
-import org.openiam.connector.type.SuspendRequest;
-import org.openiam.connector.type.UserRequest;
+import org.openiam.connector.type.request.CrudRequest;
+import org.openiam.connector.type.request.PasswordRequest;
+import org.openiam.connector.type.request.SuspendResumeRequest;
+import org.openiam.connector.type.request.SuspendRequest;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
@@ -63,7 +63,7 @@ public class LdapV3 implements Directory{
         return mods;
     }
 
-    public ModificationItem[] resume(ResumeRequest request) {
+    public ModificationItem[] resume(SuspendResumeRequest request) {
 
         String ldapName = (String)objectMap.get("LDAP_NAME");
         LoginDataService loginManager = (LoginDataService)objectMap.get("LOGIN_MANAGER");
@@ -91,7 +91,7 @@ public class LdapV3 implements Directory{
 
     }
 
-    public void delete(UserRequest reqType, LdapContext ldapctx, String ldapName, String onDelete) throws NamingException{
+    public void delete(CrudRequest reqType, LdapContext ldapctx, String ldapName, String onDelete) throws NamingException{
 
         if ("DELETE".equalsIgnoreCase(onDelete)) {
 

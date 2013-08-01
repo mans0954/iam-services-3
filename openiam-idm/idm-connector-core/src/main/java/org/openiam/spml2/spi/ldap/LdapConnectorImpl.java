@@ -22,7 +22,6 @@ package org.openiam.spml2.spi.ldap;
 
 import java.util.*;
 import javax.jws.WebParam;
-import javax.jws.WebService;
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
@@ -34,7 +33,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.cxf.common.util.StringUtils;
 import org.openiam.connector.type.*;
-import org.openiam.connector.type.ResponseType;
+import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.constant.StatusCodeType;
+import org.openiam.connector.type.response.ObjectResponse;
+import org.openiam.connector.type.response.LookupAttributeResponse;
+import org.openiam.connector.type.response.ResponseType;
+import org.openiam.connector.type.request.*;
+import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.dozer.converter.LoginDozerConverter;
 import org.openiam.dozer.converter.ManagedSystemObjectMatchDozerConverter;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
@@ -68,7 +73,6 @@ import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.spml2.base.AbstractSpml2Complete;
-import org.openiam.connector.ConnectorService;
 import org.openiam.spml2.spi.common.LookupAttributeNamesCommand;
 import org.openiam.spml2.spi.ldap.command.*;
 import org.openiam.spml2.spi.ldap.dirtype.Directory;
@@ -352,7 +356,7 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
             return response;
         }
 
-        for (UserValue obj : responseType.getUserList()) {
+        for (ObjectValue obj : responseType.getUserList()) {
 
             log.debug("Reconcile Found User");
             String principal = null;
@@ -372,7 +376,7 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
                         mSys.getDomainId(), searchPrincipal, managedSysId);
                 if (login == null) {
                     log.debug("Situation: IDM Not Found");
-                    UserRequest delete = new UserRequest();
+                    CrudRequest delete = new CrudRequest();
                     delete.setUserIdentity(searchPrincipal);
                     delete(delete);
                     Login l = new Login();
@@ -444,7 +448,7 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
      * org.openiam.spml2.interf.SpmlCore#add(org.openiam.spml2.msg.AddRequestType
      * )
      */
-    public UserResponse add(UserRequest reqType) {
+    public ObjectResponse add(CrudRequest reqType) {
         return addCommand.add(reqType);
 
     }
@@ -455,7 +459,7 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
      * @see org.openiam.spml2.interf.SpmlCore#delete(org.openiam.spml2.msg.
      * DeleteRequestType)
      */
-    public UserResponse delete(UserRequest reqType) {
+    public ObjectResponse delete(CrudRequest reqType) {
 
         return deleteCommand.delete(reqType);
 
@@ -489,7 +493,7 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
      * @see org.openiam.spml2.interf.SpmlCore#modify(org.openiam.spml2.msg.
      * ModifyRequestType)
      */
-    public UserResponse modify(UserRequest reqType) {
+    public ObjectResponse modify(CrudRequest reqType) {
 
         return modifyCommand.modify(reqType);
 
@@ -641,7 +645,7 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
         return ldapSuspend.suspend(request);
     }
 
-    public ResponseType resume(ResumeRequest request) {
+    public ResponseType resume(SuspendResumeRequest request) {
         return ldapSuspend.resume(request);
     }
 
@@ -890,9 +894,9 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
 
             String identityAttrName = matchObj != null ? matchObj.getKeyField() : "cn";
 
-            List<UserValue> userValues = new LinkedList<UserValue>();
+            List<ObjectValue> userValues = new LinkedList<ObjectValue>();
 
-            UserValue user = new UserValue();
+            ObjectValue user = new ObjectValue();
             user.setAttributeList(new LinkedList<ExtensibleAttribute>());
             boolean found = false;
             while (results != null && results.hasMoreElements()) {
@@ -925,7 +929,7 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
                         }
                     }
                     userValues.add(user);
-                    user = new UserValue();
+                    user = new ObjectValue();
                     user.setAttributeList(new LinkedList<ExtensibleAttribute>());
                 }
             }

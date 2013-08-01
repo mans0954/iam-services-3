@@ -1,10 +1,10 @@
 package org.openiam.spml2.spi.ldap;
 
 import org.openiam.base.BaseAttribute;
-import org.openiam.connector.type.ErrorCode;
-import org.openiam.connector.type.StatusCodeType;
-import org.openiam.connector.type.UserRequest;
-import org.openiam.connector.type.UserResponse;
+import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.constant.StatusCodeType;
+import org.openiam.connector.type.request.CrudRequest;
+import org.openiam.connector.type.response.ObjectResponse;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
@@ -35,7 +35,7 @@ import java.util.Set;
  */
 public class LdapModifyCommand extends LdapAbstractCommand {
 
-    public UserResponse modify(UserRequest reqType) {
+    public ObjectResponse modify(CrudRequest reqType) {
         /* FOR LDAP, need to be able to move object's OU - incase of re-org, person changes roles, etc */
         /* Need to be able add and remove users from groups */
 
@@ -48,7 +48,7 @@ public class LdapModifyCommand extends LdapAbstractCommand {
 
         List<BaseAttribute> targetMembershipList = new ArrayList<BaseAttribute>();
 
-        UserResponse respType = new UserResponse();
+        ObjectResponse respType = new ObjectResponse();
         respType.setStatus(StatusCodeType.SUCCESS);
 
 

@@ -4,7 +4,7 @@ import org.openiam.provision.dto.GenericProvisionObject;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.spml2.msg.AddRequestType;
 import org.openiam.spml2.msg.AddResponseType;
-import org.openiam.spml2.msg.ConnectorDataException;
+import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.spml2.msg.StatusCodeType;
 import org.openiam.spml2.spi.linux.ssh.SSHAgent;
 

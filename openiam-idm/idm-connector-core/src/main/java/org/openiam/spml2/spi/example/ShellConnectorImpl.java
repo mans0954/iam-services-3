@@ -26,7 +26,6 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import javax.jws.WebParam;
-import javax.jws.WebService;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
@@ -37,8 +36,13 @@ import javax.naming.ldap.LdapContext;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.connector.type.*;
-import org.openiam.connector.type.ResponseType;
+import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.constant.StatusCodeType;
+import org.openiam.connector.type.response.ObjectResponse;
+import org.openiam.connector.type.response.LookupAttributeResponse;
+import org.openiam.connector.type.response.ResponseType;
+import org.openiam.connector.type.request.*;
+import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.dozer.converter.ManagedSystemObjectMatchDozerConverter;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.IdmAuditLogDataService;
@@ -113,7 +117,7 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
      * org.openiam.spml2.interf.SpmlCore#add(org.openiam.spml2.msg.AddRequestType
      * )
      */
-    public UserResponse add(UserRequest reqType) {
+    public ObjectResponse add(CrudRequest reqType) {
         log.debug("add request called..");
 
         // powershell.exe -command "&
@@ -270,7 +274,7 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
             e.printStackTrace();
         }
 
-        UserResponse response = new UserResponse();
+        ObjectResponse response = new ObjectResponse();
         response.setStatus(StatusCodeType.SUCCESS);
 
         return response;
@@ -282,7 +286,7 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
      * @see org.openiam.spml2.interf.SpmlCore#delete(org.openiam.spml2.msg.
      * DeleteRequestType)
      */
-    public UserResponse delete(UserRequest reqType) {
+    public ObjectResponse delete(CrudRequest reqType) {
         System.out.println("Delete called..");
 
         String userName = null;
@@ -329,7 +333,7 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
             e.printStackTrace();
         }
 
-        UserResponse respType = new UserResponse();
+        ObjectResponse respType = new ObjectResponse();
         respType.setStatus(StatusCodeType.SUCCESS);
         return respType;
 
@@ -392,7 +396,7 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
      * @see org.openiam.spml2.interf.SpmlCore#modify(org.openiam.spml2.msg.
      * ModifyRequestType)
      */
-    public UserResponse modify(UserRequest reqType) {
+    public ObjectResponse modify(CrudRequest reqType) {
         String userName = null;
         String firstName = null;
         String lastName = null;
@@ -523,7 +527,7 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
 
         // assign to google
 
-        UserResponse respType = new UserResponse();
+        ObjectResponse respType = new ObjectResponse();
         respType.setStatus(StatusCodeType.SUCCESS);
         return respType;
 
@@ -799,7 +803,7 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
         return null;
     }
 
-    public ResponseType resume(ResumeRequest request) {
+    public ResponseType resume(SuspendResumeRequest request) {
         // TODO Auto-generated method stub
         return null;
     }

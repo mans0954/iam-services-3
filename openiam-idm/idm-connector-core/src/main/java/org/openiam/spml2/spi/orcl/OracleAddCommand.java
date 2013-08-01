@@ -2,10 +2,10 @@ package org.openiam.spml2.spi.orcl;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.openiam.connector.type.ErrorCode;
-import org.openiam.connector.type.StatusCodeType;
-import org.openiam.connector.type.UserRequest;
-import org.openiam.connector.type.UserResponse;
+import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.constant.StatusCodeType;
+import org.openiam.connector.type.request.CrudRequest;
+import org.openiam.connector.type.response.ObjectResponse;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.res.dto.Resource;
@@ -30,8 +30,8 @@ public class OracleAddCommand extends  AbstractOracleCommand implements AddComma
     private static final String INSERT_SQL = "CREATE USER \"%s\" IDENTIFIED BY \"%s\"";
 
     @Override
-    public UserResponse add(UserRequest reqType) {
-        final UserResponse response = new UserResponse();
+    public ObjectResponse add(CrudRequest reqType) {
+        final ObjectResponse response = new ObjectResponse();
         response.setStatus(StatusCodeType.SUCCESS);
 
         final String targetID = reqType.getTargetID();

@@ -1,7 +1,7 @@
 package org.openiam.spml2.spi.linux.command.base;
 
+import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.provision.dto.GenericProvisionObject;
-import org.openiam.spml2.msg.*;
 import org.openiam.spml2.spi.linux.ssh.SSHAgent;
 
 public abstract class AbstractLookupLinuxCommand<ProvisionObject extends GenericProvisionObject> extends AbstractLinuxCommand<LookupRequestType<ProvisionObject>, LookupResponseType>  {

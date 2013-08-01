@@ -28,6 +28,7 @@ import javax.xml.bind.annotation.XmlType;
 
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.idm.srvc.role.dto.Role;
+import org.openiam.provision.dto.ProvisionObjectType;
 
 /**
  * Role object that is passed to the connector service when provisioning a role.
@@ -46,7 +47,7 @@ public class ExtensibleRole extends ExtensibleObject {
 	protected Role role;
 	
 	public ExtensibleRole() {
-		
+        extensibleObjectType= ExtensibleObjectType.ROLE;
 	}
 	
 	public ExtensibleRole(Role rl) {
@@ -56,6 +57,7 @@ public class ExtensibleRole extends ExtensibleObject {
 		}else {
 			operation = 0;
 		}
+        extensibleObjectType= ExtensibleObjectType.ROLE;
 	}
 
 	public Role getRole() {

@@ -1,14 +1,10 @@
 package org.openiam.spml2.spi.common.jdbc;
 
-import org.apache.commons.lang.StringUtils;
+import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
-import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.idm.srvc.res.dto.ResourceProp;
-import org.openiam.spml2.msg.*;
-import org.openiam.spml2.spi.common.AbstractCommand;
-import org.openiam.spml2.spi.jdbc.command.data.AppTableConfiguration;
+import org.openiam.connector.common.command.AbstractCommand;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 

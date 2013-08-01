@@ -1,10 +1,7 @@
 package org.openiam.spml2.spi.orcl.command.user;
 
-import org.apache.commons.lang.StringUtils;
+import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
-import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.spml2.msg.*;
 import org.openiam.spml2.msg.password.SetPasswordRequestType;
 import org.openiam.spml2.spi.orcl.command.base.AbstractOracleCommand;
 import org.openiam.spml2.util.msg.ResponseBuilder;

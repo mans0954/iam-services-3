@@ -1,10 +1,10 @@
 package org.openiam.spml2.spi.ldap.dirtype;
 
 import org.openiam.base.BaseAttribute;
-import org.openiam.connector.type.PasswordRequest;
-import org.openiam.connector.type.ResumeRequest;
-import org.openiam.connector.type.SuspendRequest;
-import org.openiam.connector.type.UserRequest;
+import org.openiam.connector.type.request.CrudRequest;
+import org.openiam.connector.type.request.PasswordRequest;
+import org.openiam.connector.type.request.SuspendResumeRequest;
+import org.openiam.connector.type.request.SuspendRequest;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.provision.type.ExtensibleObject;
 
@@ -32,7 +32,7 @@ public interface Directory {
 
     ModificationItem[] suspend(SuspendRequest request);
 
-    ModificationItem[] resume(ResumeRequest request);
+    ModificationItem[] resume(SuspendResumeRequest request);
 
     /**
      * setAttributes allows you to set attributes on the implementation object which may be need for the specific
@@ -43,7 +43,7 @@ public interface Directory {
     
     void setAttributes(String name, Object obj);
 
-    void delete(UserRequest reqType, LdapContext ldapctx, String ldapName, String onDelete ) throws NamingException;
+    void delete(CrudRequest reqType, LdapContext ldapctx, String ldapName, String onDelete ) throws NamingException;
 
     void removeAccountMemberships( String ldapName, ManagedSystemObjectMatch matchObj,  LdapContext ldapctx );
 

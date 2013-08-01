@@ -21,6 +21,8 @@
  */
 package org.openiam.provision.type;
 
+import org.openiam.provision.dto.ProvisionObjectType;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,7 +53,9 @@ public class ExtensibleUser extends ExtensibleObject {
 	protected List<ExtensibleGroup> group = new ArrayList<ExtensibleGroup>();
 	protected List<ExtensibleRole> role = new ArrayList<ExtensibleRole>();
 
-
+    public ExtensibleUser(){
+        extensibleObjectType= ExtensibleObjectType.USER;
+    }
 	
 
 	public List<ExtensibleGroup> getGroup() {

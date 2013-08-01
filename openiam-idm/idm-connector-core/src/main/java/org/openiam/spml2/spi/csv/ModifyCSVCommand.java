@@ -3,7 +3,10 @@ package org.openiam.spml2.spi.csv;
 import java.util.List;
 
 import org.openiam.am.srvc.constants.CSVSource;
-import org.openiam.connector.type.*;
+import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.constant.StatusCodeType;
+import org.openiam.connector.type.request.CrudRequest;
+import org.openiam.connector.type.response.ObjectResponse;
 import org.openiam.idm.parser.csv.CSVParser;
 
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
@@ -14,11 +17,12 @@ import org.openiam.provision.type.ExtensibleUser;
 
 import org.springframework.stereotype.Service;
 
-@Service
+//@Service
+@Deprecated
 public class ModifyCSVCommand extends AbstractCSVCommand {
 
-	public UserResponse modify(UserRequest reqType) {
-        UserResponse response = new UserResponse();
+	public ObjectResponse modify(CrudRequest reqType) {
+        ObjectResponse response = new ObjectResponse();
 		response.setStatus(StatusCodeType.SUCCESS);
 		log.debug("modify request called..");
 
@@ -32,14 +36,14 @@ public class ModifyCSVCommand extends AbstractCSVCommand {
 
 		// Initialise
 		try {
-			ExtensibleUser user = reqType.getUser();
+			ExtensibleUser user = (ExtensibleUser) reqType.getExtensibleObject();
 			if (user == null) {
 				response.setStatus(StatusCodeType.FAILURE);
 				response.setError(ErrorCode.CSV_ERROR);
 				response.addErrorMessage("Sync object is null");
 			}
 			this.updatePUser(
-					new ReconciliationObject<ExtensibleUser>(reqType.getUserIdentity(), user),
+					new ReconciliationObject<ExtensibleUser>(reqType.getObjectIdentity(), user),
 					managedSys);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -53,8 +57,8 @@ public class ModifyCSVCommand extends AbstractCSVCommand {
 		return response;
 	}
 
-	public UserResponse delete(UserRequest reqType) {
-        UserResponse response = new UserResponse();
+	public ObjectResponse delete(CrudRequest reqType) {
+        ObjectResponse response = new ObjectResponse();
 		response.setStatus(StatusCodeType.SUCCESS);
 		log.debug("modify request called..");
 
@@ -68,13 +72,13 @@ public class ModifyCSVCommand extends AbstractCSVCommand {
 
 		// Initialise
 		try {
-			ExtensibleUser user = reqType.getUser();
+			ExtensibleUser user = (ExtensibleUser) reqType.getExtensibleObject();
 			if (user == null) {
 				response.setStatus(StatusCodeType.FAILURE);
 				response.setError(ErrorCode.CSV_ERROR);
 				response.addErrorMessage("Sync object is null");
 			}
-			this.deleteUser(reqType.getUserIdentity(), user, managedSys);
+			this.deleteUser(reqType.getObjectIdentity(), user, managedSys);
 		} catch (Exception e) {
 			e.printStackTrace();
 

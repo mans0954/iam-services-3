@@ -26,12 +26,16 @@ import java.util.List;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 
-import org.openiam.connector.type.*;
-import org.openiam.connector.type.ResponseType;
+import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.constant.StatusCodeType;
+import org.openiam.connector.type.response.ObjectResponse;
+import org.openiam.connector.type.response.LookupAttributeResponse;
+import org.openiam.connector.type.response.ResponseType;
+import org.openiam.connector.type.request.*;
+import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.spml2.base.AbstractSpml2Complete;
-import org.openiam.connector.ConnectorService;
 import org.openiam.provision.type.ExtensibleAddress;
 import org.openiam.provision.type.ExtensibleEmailAddress;
 import org.openiam.provision.type.ExtensibleGroup;
@@ -71,7 +75,7 @@ public class ExampleComplete  extends AbstractSpml2Complete {
 	/* (non-Javadoc)
 	 * @see org.openiam.spml2.interf.SpmlCore#add(org.openiam.spml2.msg.AddRequestType)
 	 */
-	public UserResponse add(UserRequest reqType) {
+	public ObjectResponse add(CrudRequest reqType) {
 		System.out.println("add request called..");
 		
 		System.out.println("POS Identitfier: " + reqType.getUserIdentity());
@@ -121,7 +125,7 @@ public class ExampleComplete  extends AbstractSpml2Complete {
         }
 
 
-        UserResponse resp = new UserResponse();
+        ObjectResponse resp = new ObjectResponse();
 		resp.setRequestID(reqType.getRequestID());
 		resp.setStatus(StatusCodeType.SUCCESS);
 		return resp;
@@ -135,7 +139,7 @@ public class ExampleComplete  extends AbstractSpml2Complete {
 	/* (non-Javadoc)
 	 * @see org.openiam.spml2.interf.SpmlCore#delete(org.openiam.spml2.msg.DeleteRequestType)
 	 */
-	public UserResponse delete(UserRequest reqType) {
+	public ObjectResponse delete(CrudRequest reqType) {
 		System.out.println("delete request called..");
 		
 		System.out.println("POS Identitfier: " + reqType.getUserIdentity());
@@ -143,7 +147,7 @@ public class ExampleComplete  extends AbstractSpml2Complete {
 		System.out.println("Target: " + reqType.getTargetID());
 
 
-        UserResponse resp = new UserResponse();
+        ObjectResponse resp = new ObjectResponse();
 		resp.setRequestID(reqType.getRequestID());
 		resp.setStatus(StatusCodeType.SUCCESS);
 		return resp;
@@ -174,7 +178,7 @@ public class ExampleComplete  extends AbstractSpml2Complete {
 	/* (non-Javadoc)
 	 * @see org.openiam.spml2.interf.SpmlCore#modify(org.openiam.spml2.msg.ModifyRequestType)
 	 */
-	public UserResponse modify(UserRequest reqType) {
+	public ObjectResponse modify(CrudRequest reqType) {
 		System.out.println("add request called..");
 		
 		System.out.println("POS Identitfier: " + reqType.getUserIdentity());
@@ -222,7 +226,7 @@ public class ExampleComplete  extends AbstractSpml2Complete {
             System.out.println("Email address:" + email.getEmailAddress().getEmailAddress());
         }
 
-        UserResponse resp = new UserResponse();
+        ObjectResponse resp = new ObjectResponse();
 		resp.setRequestID(reqType.getRequestID());
 		resp.setStatus(StatusCodeType.SUCCESS);
 		return resp;
@@ -272,7 +276,7 @@ public class ExampleComplete  extends AbstractSpml2Complete {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	public ResponseType resume(ResumeRequest request) {
+	public ResponseType resume(SuspendResumeRequest request) {
 		// TODO Auto-generated method stub
 		return null;
 	}

@@ -46,12 +46,13 @@ public class ExtensiblePhone extends ExtensibleObject {
 	protected Phone phone;
 	
 	public ExtensiblePhone() {
-		
+        extensibleObjectType= ExtensibleObjectType.PHONE;
 	}
 	
 	public ExtensiblePhone(Phone phone) {
 		this.phone = phone;
 		this.operation = ModificationAttribute.add;
+        extensibleObjectType= ExtensibleObjectType.PHONE;
 	}
 
 	public Phone getPhone() {

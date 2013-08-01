@@ -31,7 +31,12 @@ import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.connector.type.*;
+import org.openiam.connector.type.constant.StatusCodeType;
+import org.openiam.connector.type.request.CrudRequest;
+import org.openiam.connector.type.request.LookupRequest;
+import org.openiam.connector.type.request.SuspendResumeRequest;
+import org.openiam.connector.type.request.SuspendRequest;
+import org.openiam.connector.type.response.*;
 import org.openiam.exception.EncryptionException;
 import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.exception.ScriptEngineException;
@@ -618,7 +623,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                             "String"));
                                 }
 
-                                UserRequest userReq = new UserRequest();
+                                CrudRequest userReq = new CrudRequest();
                                 userReq.setUserIdentity(resLogin.getLogin());
                                 userReq.setRequestID(requestId);
                                 userReq.setTargetID(resLogin.getManagedSysId());
@@ -632,7 +637,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 userReq.setScriptHandler(mSys
                                         .getModifyHandler());
 
-                                UserResponse respType = remoteConnectorAdapter
+                                ObjectResponse respType = remoteConnectorAdapter
                                         .modifyRequest(mSys, userReq,
                                                 connector, muleContext);
                                 if (respType.getStatus() == StatusCodeType.SUCCESS) {
@@ -640,7 +645,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 }
 
                             } else {
-                                UserRequest modReqType = new UserRequest();
+                                CrudRequest modReqType = new CrudRequest();
 
                                 modReqType.setTargetID(resLogin.getManagedSysId());
                                 modReqType.setUserIdentity(resLogin.getLogin());
@@ -672,7 +677,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                                 log.debug("Creating identity in target system:"
                                         + resLogin.getLoginId());
-                                UserResponse respType = connectorAdapter
+                                ObjectResponse respType = connectorAdapter
                                         .modifyRequest(mSys, modReqType,
                                                 muleContext);
 
@@ -1158,7 +1163,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             if (connector.getConnectorInterface() != null
                     && connector.getConnectorInterface().equalsIgnoreCase(
                             "REMOTE")) {
-                UserResponse resp = remoteDelete(
+                ObjectResponse resp = remoteDelete(
                         loginDozerConverter.convertToDTO(login, true),
                         requestId, mSys, connector, matchObj,
                         new ProvisionUser(usr), auditLog);
@@ -1294,7 +1299,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             if (connector.getConnectorInterface() != null
                                     && connector.getConnectorInterface()
                                             .equalsIgnoreCase("REMOTE")) {
-                                UserResponse resp = remoteDelete(
+                                ObjectResponse resp = remoteDelete(
                                         loginDozerConverter.convertToDTO(login,
                                                 true), requestId, mSys,
                                         connector, matchObj, pUser, auditLog);
@@ -1486,7 +1491,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         connectorAdapter.suspendRequest(managedSys,
                                 suspendCommand, muleContext);
                     } else {
-                        final ResumeRequest resumeRequest = new ResumeRequest();
+                        final SuspendResumeRequest resumeRequest = new SuspendResumeRequest();
                         resumeRequest.setUserIdentity(userLogin.getLogin());
                         resumeRequest.setTargetID(managedSysId);
                         resumeRequest.setRequestID("R"
@@ -1537,7 +1542,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 connectorAdapter.suspendRequest(managedSys,
                                         suspendCommand, muleContext);
                             } else {
-                                final ResumeRequest resumeRequest = new ResumeRequest();
+                                final SuspendResumeRequest resumeRequest = new SuspendResumeRequest();
                                 resumeRequest.setUserIdentity(lg.getLogin());
                                 resumeRequest.setTargetID(managedSys.getManagedSysId());
                                 resumeRequest.setRequestID("R"
@@ -1935,7 +1940,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         bindingMap.put(MATCH_PARAM, matchObj);
                     }
                     // build the request
-                    UserRequest modReqType = new UserRequest();
+                    CrudRequest modReqType = new CrudRequest();
 
                     // get the identity linked to this resource / managedsys
                     // determin if this identity exists in IDM or not
@@ -2084,7 +2089,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                             } else {
                                 // build the request
-                                UserRequest addReqType = new UserRequest();
+                                CrudRequest addReqType = new CrudRequest();
                                 addReqType.setUserIdentity(mLg.getLogin());
                                 addReqType.setRequestID(requestId);
                                 addReqType.setTargetID(mLg.getManagedSysId());
@@ -2092,7 +2097,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 log.debug("Creating identity in target system:"
                                         + mLg.getLoginId());
 
-                                UserResponse responseType = connectorAdapter
+                                ObjectResponse responseType = connectorAdapter
                                         .addRequest(mSys, addReqType,
                                                 muleContext);
                                 if (responseType.getStatus() == StatusCodeType.SUCCESS) {
@@ -2206,7 +2211,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                             "String"));
                                 }
 
-                                UserRequest userReq = new UserRequest();
+                                CrudRequest userReq = new CrudRequest();
                                 userReq.setUserIdentity(mLg.getLogin());
                                 userReq.setRequestID(requestId);
                                 userReq.setTargetID(mLg.getManagedSysId());
@@ -2220,7 +2225,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 userReq.setScriptHandler(mSys
                                         .getModifyHandler());
 
-                                UserResponse respType = remoteConnectorAdapter
+                                ObjectResponse respType = remoteConnectorAdapter
                                         .modifyRequest(mSys, userReq,
                                                 connector, muleContext);
                                 if (respType.getStatus() == StatusCodeType.SUCCESS) {
@@ -2257,7 +2262,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                                 log.debug("Creating identity in target system:"
                                         + mLg.getLoginId());
-                                UserResponse respType = connectorAdapter
+                                ObjectResponse respType = connectorAdapter
                                         .modifyRequest(mSys, modReqType,
                                                 muleContext);
 
@@ -2391,7 +2396,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             && connector.getConnectorInterface()
                                     .equalsIgnoreCase("REMOTE")) {
 
-                        UserRequest request = new UserRequest();
+                        CrudRequest request = new CrudRequest();
 
                         request.setUserIdentity(mLg.getLogin());
                         request.setRequestID(requestId);
@@ -2408,7 +2413,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 connector, muleContext);
 
                     } else {
-                        UserRequest reqType = new UserRequest();
+                        CrudRequest reqType = new CrudRequest();
                         reqType.setRequestID(requestId);
                         reqType.setUserIdentity(mLg.getLogin());
                         reqType.setTargetID(managedSysId);
@@ -2986,7 +2991,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 if (StringUtils.equalsIgnoreCase(
                                         connector.getConnectorInterface(),
                                         "REMOTE")) {
-                                    org.openiam.connector.type.ResponseType resp = remoteSetPassword(
+                                    ResponseType resp = remoteSetPassword(
                                             requestId, lg, passwordSync, mSys,
                                             matchObj, connector);
                                     if (resp.getStatus() == StatusCodeType.SUCCESS) {

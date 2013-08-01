@@ -3,7 +3,7 @@ package org.openiam.spml2.spi.jdbc.command.user;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.spml2.msg.ConnectorDataException;
+import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.spml2.msg.ErrorCode;
 import org.openiam.spml2.spi.jdbc.command.base.AbstractDeleteAppTableCommand;
 import org.springframework.stereotype.Service;

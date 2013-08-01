@@ -12,5 +12,6 @@ public enum CommandType {
     VALIDATE_PASSWORD,
     SUSPEND,
     RESUME,
-    TEST;
+    TEST,
+    SEARCH;
 }

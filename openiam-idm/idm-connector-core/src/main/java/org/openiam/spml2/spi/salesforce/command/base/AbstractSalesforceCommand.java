@@ -3,7 +3,7 @@ package org.openiam.spml2.spi.salesforce.command.base;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.spml2.msg.RequestType;
 import org.openiam.spml2.msg.ResponseType;
-import org.openiam.spml2.spi.common.AbstractCommand;
+import org.openiam.connector.common.command.AbstractCommand;
 
 import java.sql.Timestamp;
 import java.text.ParseException;

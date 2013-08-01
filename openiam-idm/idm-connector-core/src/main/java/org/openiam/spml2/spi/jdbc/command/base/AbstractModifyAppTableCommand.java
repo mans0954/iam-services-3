@@ -1,10 +1,9 @@
 package org.openiam.spml2.spi.jdbc.command.base;
 
-import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.provision.dto.GenericProvisionObject;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.spml2.msg.*;
 import org.openiam.spml2.spi.jdbc.command.data.AppTableConfiguration;
 
 import java.sql.Connection;

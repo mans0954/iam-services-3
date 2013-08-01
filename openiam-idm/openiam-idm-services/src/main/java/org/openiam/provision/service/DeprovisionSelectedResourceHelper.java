@@ -3,9 +3,9 @@ package org.openiam.provision.service;
 import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.connector.type.ResponseType;
-import org.openiam.connector.type.StatusCodeType;
-import org.openiam.connector.type.UserResponse;
+import org.openiam.connector.type.response.ObjectResponse;
+import org.openiam.connector.type.response.ResponseType;
+import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
@@ -128,7 +128,7 @@ public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
 
                         if (connector.getConnectorInterface() != null &&
                                 connector.getConnectorInterface().equalsIgnoreCase("REMOTE")) {
-                            UserResponse resp = remoteDelete(loginDozerConverter.convertToDTO(l, true), requestId, mSys, connector, matchObj, pUser, auditLog);
+                            ObjectResponse resp = remoteDelete(loginDozerConverter.convertToDTO(l, true), requestId, mSys, connector, matchObj, pUser, auditLog);
                             if (resp.getStatus() == StatusCodeType.SUCCESS) {
                                 connectorSuccess = true;
                             }

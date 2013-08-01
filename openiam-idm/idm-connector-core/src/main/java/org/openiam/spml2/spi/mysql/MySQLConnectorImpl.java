@@ -1,7 +1,12 @@
 package org.openiam.spml2.spi.mysql;
 
-import org.openiam.connector.type.*;
-import org.openiam.connector.type.ResponseType;
+import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.constant.StatusCodeType;
+import org.openiam.connector.type.response.ObjectResponse;
+import org.openiam.connector.type.response.LookupAttributeResponse;
+import org.openiam.connector.type.response.ResponseType;
+import org.openiam.connector.type.request.*;
+import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.spml2.base.AbstractSpml2Complete;
@@ -24,7 +29,7 @@ public class MySQLConnectorImpl extends AbstractSpml2Complete implements Connect
 
     protected MySQLAddCommand addCommand;
 
-    public UserResponse add(UserRequest reqType) {
+    public ObjectResponse add(CrudRequest reqType) {
 
         return addCommand.add(reqType);
 
@@ -41,11 +46,11 @@ public class MySQLConnectorImpl extends AbstractSpml2Complete implements Connect
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public UserResponse modify(@WebParam(name = "reqType", targetNamespace = "") UserRequest reqType) {
+    public ObjectResponse modify(@WebParam(name = "reqType", targetNamespace = "") CrudRequest reqType) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public UserResponse delete(@WebParam(name = "reqType", targetNamespace = "") UserRequest reqType) {
+    public ObjectResponse delete(@WebParam(name = "reqType", targetNamespace = "") CrudRequest reqType) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
@@ -91,7 +96,7 @@ public class MySQLConnectorImpl extends AbstractSpml2Complete implements Connect
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public ResponseType resume(@WebParam(name = "request", targetNamespace = "") ResumeRequest request) {
+    public ResponseType resume(@WebParam(name = "request", targetNamespace = "") SuspendResumeRequest request) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 

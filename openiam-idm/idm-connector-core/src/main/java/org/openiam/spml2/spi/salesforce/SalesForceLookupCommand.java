@@ -8,6 +8,10 @@ import java.util.Set;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openiam.connector.type.*;
+import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.constant.StatusCodeType;
+import org.openiam.connector.type.request.LookupRequest;
+import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.provision.type.ExtensibleAttribute;
@@ -63,7 +67,7 @@ public class SalesForceLookupCommand extends AbstractSalesforceCommand implement
             final SalesForceDao dao = new CallerDependentSalesForceDao(managedSys.getUserId(), managedSys.getDecryptPassword(),  managedSys.getConnectionString(), fieldNames);
 			final User user = dao.findByUserName(principalName);
 			if(user != null) {
-				final UserValue userValue = new UserValue();
+				final ObjectValue userValue = new ObjectValue();
                 userValue.setUserIdentity(principalName);
                 userValue.getAttributeList().add(new ExtensibleAttribute("id", user.getId()));
 				for(final Iterator<XmlObject> it = user.getChildren(); it.hasNext();) {

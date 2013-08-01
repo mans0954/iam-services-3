@@ -1,10 +1,10 @@
 package org.openiam.spml2.spi.jdbc;
 
 import org.apache.commons.lang.StringUtils;
-import org.openiam.connector.type.ErrorCode;
-import org.openiam.connector.type.ResponseType;
-import org.openiam.connector.type.ResumeRequest;
-import org.openiam.connector.type.StatusCodeType;
+import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.request.SuspendResumeRequest;
+import org.openiam.connector.type.response.ResponseType;
+import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.exception.EncryptionException;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
@@ -32,7 +32,7 @@ public class AppTableResumeCommand extends AbstractAppTableCommand implements Re
 
     private LoginDataService loginManager;
 
-    public ResponseType resume(ResumeRequest request) {
+    public ResponseType resume(SuspendResumeRequest request) {
         Connection con = null;
 
         final ResponseType response = new ResponseType();

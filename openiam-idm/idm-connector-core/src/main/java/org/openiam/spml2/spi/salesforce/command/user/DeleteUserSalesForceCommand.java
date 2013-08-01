@@ -3,7 +3,7 @@ package org.openiam.spml2.spi.salesforce.command.user;
 import com.sforce.ws.ConnectionException;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.spml2.msg.ConnectorDataException;
+import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.spml2.msg.ErrorCode;
 import org.openiam.spml2.msg.StatusCodeType;
 import org.openiam.spml2.spi.salesforce.command.base.AbstractDeleteSalesForceCommand;

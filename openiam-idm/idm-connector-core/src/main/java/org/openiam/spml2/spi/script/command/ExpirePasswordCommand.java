@@ -1,6 +1,6 @@
 package org.openiam.spml2.spi.script.command;
 
-import org.openiam.spml2.msg.ConnectorDataException;
+import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.spml2.msg.ResponseType;
 import org.openiam.spml2.msg.password.ResetPasswordRequestType;
 import org.openiam.spml2.msg.password.ResetPasswordResponseType;

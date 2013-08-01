@@ -4,18 +4,16 @@ import com.google.gdata.client.appsforyourdomain.UserService;
 import com.google.gdata.data.appsforyourdomain.AppsForYourDomainException;
 import com.google.gdata.util.AuthenticationException;
 import com.google.gdata.util.ServiceException;
+import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.spml2.msg.*;
 import org.openiam.spml2.spi.gapps.command.base.AbstarctDeleteGoogleAppsCommand;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.List;
 
 @Service("deleteUserGoogleAppsCommand")
 public class DeleteUserGoogleAppsCommand extends AbstarctDeleteGoogleAppsCommand<ProvisionUser> {

@@ -1,7 +1,6 @@
 package org.openiam.spml2.spi.jdbc.command.user;
 
-import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.spml2.msg.*;
+import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.spml2.msg.password.SetPasswordRequestType;
 import org.openiam.spml2.spi.jdbc.command.base.AbstractAppTableCommand;
 import org.openiam.spml2.spi.jdbc.command.data.AppTableConfiguration;

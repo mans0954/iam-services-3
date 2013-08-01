@@ -1,11 +1,10 @@
 package org.openiam.spml2.spi.jdbc.command.user;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.exception.EncryptionException;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.spml2.msg.*;
 import org.openiam.spml2.msg.suspend.ResumeRequestType;
 import org.openiam.spml2.spi.jdbc.command.base.AbstractAppTableCommand;
 import org.openiam.spml2.spi.jdbc.command.data.AppTableConfiguration;

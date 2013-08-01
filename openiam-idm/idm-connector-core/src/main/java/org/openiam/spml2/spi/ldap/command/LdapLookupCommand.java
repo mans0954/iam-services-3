@@ -1,6 +1,10 @@
 package org.openiam.spml2.spi.ldap;
 
 import org.openiam.connector.type.*;
+import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.constant.StatusCodeType;
+import org.openiam.connector.type.request.LookupRequest;
+import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
@@ -83,7 +87,7 @@ public class LdapLookupCommand extends LdapAbstractCommand {
                 log.debug("results=" + results);
                 log.debug(" results has more elements=" + results.hasMoreElements());
 
-                UserValue userValue = new UserValue();
+                ObjectValue userValue = new ObjectValue();
                 userValue.setUserIdentity(identity);
 
                 while (results != null && results.hasMoreElements()) {
@@ -114,7 +118,7 @@ public class LdapLookupCommand extends LdapAbstractCommand {
                         }
                         //return only one Result - first row
                         respType.getUserList().add(userValue);
-                        UserValue extObj = new UserValue();
+                        ObjectValue extObj = new ObjectValue();
                         extObj.setUserIdentity(identity);
                     }
                 }

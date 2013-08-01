@@ -1,11 +1,10 @@
 package org.openiam.spml2.spi.jdbc;
 
 import org.apache.commons.lang.StringUtils;
-import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.spml2.msg.ConnectorDataException;
+import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.spml2.msg.RequestType;
 import org.openiam.spml2.msg.ResponseType;
 import org.openiam.spml2.spi.common.jdbc.AbstractJDBCCommand;
@@ -13,7 +12,6 @@ import org.openiam.spml2.spi.common.jdbc.AbstractJDBCCommand;
 import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.

@@ -27,7 +27,13 @@ import org.mule.api.MuleContext;
 import org.mule.api.MuleException;
 import org.mule.api.MuleMessage;
 import org.mule.module.client.MuleClient;
-import org.openiam.connector.type.*;
+import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.constant.StatusCodeType;
+import org.openiam.connector.type.request.*;
+import org.openiam.connector.type.response.ObjectResponse;
+import org.openiam.connector.type.response.LookupAttributeResponse;
+import org.openiam.connector.type.response.ResponseType;
+import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
 import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
@@ -54,10 +60,10 @@ public class ConnectorAdapter {
     @Autowired
     private ProvisionConnectorWebService connectorService;
 
-    public UserResponse addRequest(ManagedSysDto managedSys,
-                                      UserRequest addReqType,
+    public ObjectResponse addRequest(ManagedSysDto managedSys,
+                                      CrudRequest addReqType,
                                       MuleContext muleContext) {
-        UserResponse respType = new UserResponse();
+        ObjectResponse respType = new ObjectResponse();
         respType.setStatus(StatusCodeType.FAILURE);
 
         try {
@@ -83,7 +89,7 @@ public class ConnectorAdapter {
                     return respType;
 
                 } else {
-                    return (UserResponse) msg.getPayload();
+                    return (ObjectResponse) msg.getPayload();
 
                 }
 
@@ -99,10 +105,10 @@ public class ConnectorAdapter {
 
     }
 
-    public UserResponse modifyRequest(ManagedSysDto managedSys,
-                                      UserRequest modReqType,
+    public ObjectResponse modifyRequest(ManagedSysDto managedSys,
+                                      CrudRequest modReqType,
                                       MuleContext muleContext) {
-        UserResponse respType = new UserResponse();
+        ObjectResponse respType = new ObjectResponse();
         respType.setStatus(StatusCodeType.FAILURE);
 
         try {
@@ -130,7 +136,7 @@ public class ConnectorAdapter {
                     return respType;
 
                 } else {
-                    return (UserResponse) msg.getPayload();
+                    return (ObjectResponse) msg.getPayload();
 
                 }
 
@@ -212,7 +218,7 @@ public class ConnectorAdapter {
                 MuleMessage msg = getService(connector, searchRequest, connector.getServiceUrl(), "search", muleContext);
                 if (msg != null) {
                     log.debug("Test connection Payload=" + msg.getPayload());
-                    if (msg.getPayload() != null && msg.getPayload() instanceof org.openiam.connector.type.ResponseType) {
+                    if (msg.getPayload() != null && msg.getPayload() instanceof ResponseType) {
                         resp = (SearchResponse) msg.getPayload();
                         if(resp.getStatus() == StatusCodeType.SUCCESS) {
                             resp.setStatus(StatusCodeType.SUCCESS);
@@ -324,10 +330,10 @@ public class ConnectorAdapter {
         }
     }
 
-    public UserResponse deleteRequest(ManagedSysDto managedSys,
-                                      UserRequest delReqType,
+    public ObjectResponse deleteRequest(ManagedSysDto managedSys,
+                                      CrudRequest delReqType,
                                       MuleContext muleContext) {
-        UserResponse type = new UserResponse();
+        ObjectResponse type = new ObjectResponse();
         type.setStatus(StatusCodeType.FAILURE);
 
         if (managedSys == null) {
@@ -348,7 +354,7 @@ public class ConnectorAdapter {
                 MuleMessage msg = getService(connector, delReqType,
                         connector.getServiceUrl(), "delete", muleContext);
                 if (msg != null) {
-                    return (UserResponse) msg.getPayload();
+                    return (ObjectResponse) msg.getPayload();
                 } else {
                     log.debug("MuleMessage is null..");
                     return type;
@@ -516,7 +522,7 @@ public class ConnectorAdapter {
     }
 
     public ResponseType resumeRequest(ManagedSysDto managedSys,
-                                      ResumeRequest request,
+                                      SuspendResumeRequest request,
                                       MuleContext muleContext) {
 
         ResponseType type = new ResponseType();
@@ -628,12 +634,12 @@ public class ConnectorAdapter {
         if (operation.equalsIgnoreCase("add")) {
 
             msg = client.send("vm://dispatchConnectorMessageAdd",
-                    (UserRequest) reqType, msgPropMap);
+                    (CrudRequest) reqType, msgPropMap);
         }
         if (operation.equalsIgnoreCase("modify")) {
 
             msg = client.send("vm://dispatchConnectorMessageModify",
-                    (UserRequest) reqType, msgPropMap);
+                    (CrudRequest) reqType, msgPropMap);
         }
         if (operation.equalsIgnoreCase("lookup")) {
 
@@ -648,7 +654,7 @@ public class ConnectorAdapter {
         if (operation.equalsIgnoreCase("delete")) {
 
             msg = client.send("vm://dispatchConnectorMessageDelete",
-                    (UserRequest) reqType, msgPropMap);
+                    (CrudRequest) reqType, msgPropMap);
         }
         if (operation.equalsIgnoreCase("setPassword")) {
 

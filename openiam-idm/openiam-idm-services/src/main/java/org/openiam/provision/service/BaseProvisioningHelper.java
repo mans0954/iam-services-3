@@ -7,9 +7,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mule.api.MuleContext;
 import org.openiam.base.SysConfiguration;
-import org.openiam.connector.type.ResponseType;
-import org.openiam.connector.type.UserRequest;
-import org.openiam.connector.type.UserResponse;
+import org.openiam.connector.type.request.CrudRequest;
+import org.openiam.connector.type.response.ObjectResponse;
+import org.openiam.connector.type.response.ResponseType;
 import org.openiam.dozer.converter.LoginDozerConverter;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.AuditHelper;
@@ -177,7 +177,7 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
 
         log.debug("Local delete for=" + l);
 
-        UserRequest reqType = new UserRequest();
+        CrudRequest reqType = new CrudRequest();
         reqType.setRequestID(requestId);
 
         ResponseType resp = connectorAdapter.deleteRequest(mSys, reqType,
@@ -207,12 +207,12 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
 
     }
 
-    protected UserResponse remoteDelete(Login mLg, String requestId,
+    protected ObjectResponse remoteDelete(Login mLg, String requestId,
             ManagedSysDto mSys, ProvisionConnectorDto connector,
             ManagedSystemObjectMatch matchObj, ProvisionUser user,
             IdmAuditLog auditLog) {
 
-        UserRequest request = new UserRequest();
+        CrudRequest request = new CrudRequest();
 
         request.setUserIdentity(mLg.getLogin());
         request.setRequestID(requestId);
@@ -227,7 +227,7 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
 
         request.setScriptHandler(mSys.getDeleteHandler());
 
-        UserResponse resp = remoteConnectorAdapter.deleteRequest(mSys, request, connector, muleContext);
+        ObjectResponse resp = remoteConnectorAdapter.deleteRequest(mSys, request, connector, muleContext);
 
         auditHelper.addLog("DELETE IDENTITY", auditLog.getDomainId(), auditLog.getPrincipal(),
                 "IDM SERVICE", user.getCreatedBy(), mLg.getManagedSysId(),

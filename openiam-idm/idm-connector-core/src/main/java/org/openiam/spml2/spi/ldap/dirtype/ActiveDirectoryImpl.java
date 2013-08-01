@@ -4,12 +4,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseAttribute;
-import org.openiam.connector.type.PasswordRequest;
-import org.openiam.connector.type.ResumeRequest;
-import org.openiam.connector.type.SuspendRequest;
-import org.openiam.connector.type.UserRequest;
+import org.openiam.connector.type.request.CrudRequest;
+import org.openiam.connector.type.request.PasswordRequest;
+import org.openiam.connector.type.request.SuspendResumeRequest;
+import org.openiam.connector.type.request.SuspendRequest;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
-import org.openiam.idm.srvc.pswd.service.PasswordGenerator;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 
@@ -61,7 +60,7 @@ public class ActiveDirectoryImpl implements Directory {
 
     }
 
-    public ModificationItem[] resume(ResumeRequest request) {
+    public ModificationItem[] resume(SuspendResumeRequest request) {
 
         log.debug("Enabling AD user.");
 
@@ -73,7 +72,7 @@ public class ActiveDirectoryImpl implements Directory {
 
     }
 
-    public void delete(UserRequest reqType, LdapContext ldapctx, String ldapName, String onDelete) throws NamingException {
+    public void delete(CrudRequest reqType, LdapContext ldapctx, String ldapName, String onDelete) throws NamingException {
 
         if ("DELETE".equalsIgnoreCase(onDelete)) {
 

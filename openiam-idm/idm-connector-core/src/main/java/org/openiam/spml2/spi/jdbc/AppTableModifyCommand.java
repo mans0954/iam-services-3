@@ -1,10 +1,10 @@
 package org.openiam.spml2.spi.jdbc;
 
 import org.apache.commons.lang.StringUtils;
-import org.openiam.connector.type.ErrorCode;
-import org.openiam.connector.type.StatusCodeType;
-import org.openiam.connector.type.UserRequest;
-import org.openiam.connector.type.UserResponse;
+import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.constant.StatusCodeType;
+import org.openiam.connector.type.request.CrudRequest;
+import org.openiam.connector.type.response.ObjectResponse;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
@@ -31,11 +31,11 @@ public class AppTableModifyCommand extends AbstractAppTableCommand implements Mo
     private static final String UPDATE_SQL = "UPDATE %s SET %s WHERE %s=?";
     private static final String INSERT_SQL = "INSERT INTO %s (%s) VALUES (%s)";
 
-    public UserResponse modify(final UserRequest reqType) {
+    public ObjectResponse modify(final CrudRequest reqType) {
         Connection con = null;
 
 
-        final UserResponse response = new UserResponse();
+        final ObjectResponse response = new ObjectResponse();
         response.setStatus(StatusCodeType.SUCCESS);
 
         //String requestID = reqType.getRequestID();

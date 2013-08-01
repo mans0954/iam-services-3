@@ -1,7 +1,7 @@
 package org.openiam.spml2.spi.common;
 
-import org.openiam.connector.type.ResponseType;
-import org.openiam.connector.type.SuspendRequest;
+import org.openiam.connector.type.response.ResponseType;
+import org.openiam.connector.type.request.SuspendRequest;
 
 /**
  * Created with IntelliJ IDEA.

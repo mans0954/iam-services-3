@@ -1,7 +1,7 @@
 package org.openiam.spml2.spi.orcl;
 
 import org.mule.util.StringUtils;
-import org.openiam.spml2.msg.ConnectorDataException;
+import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.spml2.msg.RequestType;
 import org.openiam.spml2.msg.ResponseType;
 import org.openiam.spml2.spi.common.jdbc.AbstractJDBCCommand;

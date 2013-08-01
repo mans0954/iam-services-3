@@ -1,13 +1,12 @@
 package org.openiam.spml2.spi.salesforce.command.user;
 
 import com.sforce.ws.ConnectionException;
-import org.apache.commons.lang.StringUtils;
-import org.openiam.spml2.msg.ConnectorDataException;
+import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.spml2.msg.ErrorCode;
 import org.openiam.spml2.msg.ResponseType;
 import org.openiam.spml2.msg.StatusCodeType;
 import org.openiam.spml2.msg.suspend.ResumeRequestType;
-import org.openiam.spml2.spi.common.data.ConnectorConfiguration;
+import org.openiam.connector.data.ConnectorConfiguration;
 import org.openiam.spml2.spi.salesforce.command.base.AbstractSalesforceCommand;
 import org.openiam.spml2.spi.salesforce.dao.CallerDependentSalesForceDao;
 import org.openiam.spml2.spi.salesforce.dao.SalesForceDao;

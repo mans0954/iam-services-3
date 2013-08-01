@@ -1,8 +1,8 @@
 package org.openiam.connector.util;
 
-import org.openiam.connector.type.ErrorCode;
-import org.openiam.connector.type.ResponseType;
-import org.openiam.connector.type.StatusCodeType;
+import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.response.ResponseType;
+import org.openiam.connector.type.constant.StatusCodeType;
 
 public final class ResponseBuilder {
 

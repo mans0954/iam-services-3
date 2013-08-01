@@ -1,6 +1,7 @@
 package org.openiam.spml2.spi.ldap.command.user;
 
 import org.openiam.base.BaseAttribute;
+import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
@@ -8,14 +9,12 @@ import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.spml2.msg.*;
 import org.openiam.spml2.spi.ldap.command.base.AbstractModifyLdapCommand;
 import org.openiam.spml2.spi.ldap.dirtype.Directory;
 import org.openiam.spml2.spi.ldap.dirtype.DirectorySpecificImplFactory;
 import org.springframework.stereotype.Service;
 
 import javax.naming.Context;
-import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.*;
 import javax.naming.ldap.LdapContext;
@@ -27,7 +26,7 @@ import java.util.Set;
 public class ModifyUserLdapCommand extends AbstractModifyLdapCommand<ProvisionUser>{
 
     @Override
-    protected void modifyObject(ModifyRequestType<ProvisionUser> modifyRequestType, ManagedSysEntity managedSys, List<ModificationType> modificationList, LdapContext ldapctx) throws ConnectorDataException{
+    protected void modifyObject(ModifyRequestType<ProvisionUser> modifyRequestType, ManagedSysEntity managedSys, List<ModificationType> modificationList, LdapContext ldapctx) throws ConnectorDataException {
         ManagedSystemObjectMatch matchObj = null;
         boolean groupMembershipEnabled = false;
         List<ExtensibleObject> extobjectList = null;

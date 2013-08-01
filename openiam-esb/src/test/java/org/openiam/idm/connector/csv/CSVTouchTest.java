@@ -1,7 +1,7 @@
 package org.openiam.idm.connector.csv;
 
-import org.openiam.connector.type.LookupRequest;
-import org.openiam.connector.type.UserRequest;
+import org.openiam.connector.type.request.CrudRequest;
+import org.openiam.connector.type.request.LookupRequest;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.provision.dto.ProvisionUser;
@@ -40,7 +40,7 @@ public class CSVTouchTest extends AbstractTestNGSpringContextTests {
         pu.setEmployeeId("1");
         pu.setFirstName("firstName_test");
 
-        UserRequest userReq = new UserRequest();
+        CrudRequest userReq = new CrudRequest();
         userReq.setUserIdentity("sysadmin");
         userReq.setRequestID("1");
         userReq.setTargetID(defaultManagedSysId);
@@ -64,7 +64,7 @@ public class CSVTouchTest extends AbstractTestNGSpringContextTests {
 
 	@Test
 	public void modifyTouchCSVTest() {
-        UserRequest addRequest = new UserRequest();
+        CrudRequest addRequest = new CrudRequest();
 		addRequest.setUserIdentity("sysadmin");
         addRequest.setTargetID(defaultManagedSysId);
         ExtensibleUser ex = new ExtensibleUser();
@@ -72,7 +72,7 @@ public class CSVTouchTest extends AbstractTestNGSpringContextTests {
         emailAddresses.add(new ExtensibleEmailAddress(new EmailAddress("e@mail.com")));
         ex.setEmail(emailAddresses);
         List<ExtensibleAttribute> attributes = new LinkedList<ExtensibleAttribute>();
-        attributes.add(new ExtensibleAttribute("employeeId","2"));
+        attributes.add(new ExtensibleAttribute("employeeId", "2"));
         attributes.add(new ExtensibleAttribute("firstName","firstName_test_2"));
         ex.setAttributes(attributes);
         addRequest.setUser(ex);
@@ -81,7 +81,7 @@ public class CSVTouchTest extends AbstractTestNGSpringContextTests {
 
 	@Test
 	public void deleteTouchCSVTest() {
-		UserRequest addRequest = new UserRequest();
+		CrudRequest addRequest = new CrudRequest();
 		addRequest.setUserIdentity("sysadmin2");
         addRequest.setTargetID(defaultManagedSysId);
 		ExtensibleUser eu = new ExtensibleUser();

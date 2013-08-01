@@ -1,9 +1,9 @@
 package org.openiam.spml2.spi.orcl;
 
-import org.openiam.connector.type.ErrorCode;
-import org.openiam.connector.type.LookupAttributeResponse;
-import org.openiam.connector.type.LookupRequest;
-import org.openiam.connector.type.StatusCodeType;
+import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.response.LookupAttributeResponse;
+import org.openiam.connector.type.request.LookupRequest;
+import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.spml2.spi.common.LookupAttributeNamesCommand;
 
 @Deprecated

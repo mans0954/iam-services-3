@@ -1,10 +1,14 @@
 package org.openiam.spml2.spi.csv;
 
 import org.openiam.connector.type.*;
+import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.constant.StatusCodeType;
+import org.openiam.connector.type.request.LookupRequest;
+import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.springframework.stereotype.Service;
 
-@Service
+@Deprecated
 public class LookupCSVCommand extends AbstractCSVCommand {
 	public SearchResponse lookup(LookupRequest reqType) {
         SearchResponse response = new SearchResponse();
@@ -21,10 +25,10 @@ public class LookupCSVCommand extends AbstractCSVCommand {
 
 		// Initialise
 		try {
-            UserValue user = this.lookupObjectInCSV(principal, managedSys);
+            ObjectValue user = this.lookupObjectInCSV(principal, managedSys);
 			if (user != null) {
 				response.setStatus(StatusCodeType.SUCCESS);
-                response.getUserList().add(user);
+                response.getObjectList().add(user);
 			} else
 				response.setStatus(StatusCodeType.FAILURE);
 		} catch (Exception e) {

@@ -6,8 +6,13 @@ import javax.jws.WebService;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.connector.type.*;
-import org.openiam.connector.type.ResponseType;
+import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.constant.StatusCodeType;
+import org.openiam.connector.type.response.ObjectResponse;
+import org.openiam.connector.type.response.LookupAttributeResponse;
+import org.openiam.connector.type.response.ResponseType;
+import org.openiam.connector.type.request.*;
+import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.connector.ConnectorService;
@@ -69,15 +74,15 @@ public class SalesForceConnectorImpl implements ConnectorService {
 		return response;
 	}
 
-    public UserResponse add(UserRequest reqType) {
+    public ObjectResponse add(CrudRequest reqType) {
         return addCommand.add(reqType);
     }
 
-    public UserResponse modify(UserRequest reqType) {
+    public ObjectResponse modify(CrudRequest reqType) {
         return modifyCommand.modify(reqType);
     }
 
-    public UserResponse delete(UserRequest reqType) {
+    public ObjectResponse delete(CrudRequest reqType) {
         return deleteCommand.delete(reqType);
     }
 
@@ -124,7 +129,7 @@ public class SalesForceConnectorImpl implements ConnectorService {
         return suspendCommand.suspend(request);
     }
 
-    public ResponseType resume(final ResumeRequest request) {
+    public ResponseType resume(final SuspendResumeRequest request) {
         return resumeCommand.resume(request);
     }
 

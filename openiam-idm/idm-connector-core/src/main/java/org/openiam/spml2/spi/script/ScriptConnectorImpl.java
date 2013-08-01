@@ -20,8 +20,13 @@ package org.openiam.spml2.spi.script;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.connector.type.*;
-import org.openiam.connector.type.ResponseType;
+import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.constant.StatusCodeType;
+import org.openiam.connector.type.response.ObjectResponse;
+import org.openiam.connector.type.response.LookupAttributeResponse;
+import org.openiam.connector.type.response.ResponseType;
+import org.openiam.connector.type.request.*;
+import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemObjectMatchDAO;
@@ -35,7 +40,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import javax.jws.WebParam;
-import javax.jws.WebService;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -62,7 +66,7 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete {
     @Qualifier("configurableGroovyScriptEngine")
     private ScriptIntegration scriptRunner;
 
-    public UserResponse add(UserRequest reqType) {
+    public ObjectResponse add(CrudRequest reqType) {
         String targetID = reqType.getTargetID();
         ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
 
@@ -71,14 +75,14 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete {
         } catch (Exception e) {
             log.error("Could not add: " + e.toString());
 
-            UserResponse resp = new UserResponse();
+            ObjectResponse resp = new ObjectResponse();
             resp.setStatus(StatusCodeType.FAILURE);
             return resp;
 
         }
     }
 
-    public UserResponse delete(UserRequest reqType) {
+    public ObjectResponse delete(CrudRequest reqType) {
         String targetID = reqType.getTargetID();
         ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
 
@@ -87,7 +91,7 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete {
         } catch (Exception e) {
             log.error("Could not delete: " + e.toString());
 
-            UserResponse resp = new UserResponse();
+            ObjectResponse resp = new ObjectResponse();
             resp.setStatus(StatusCodeType.FAILURE);
             return resp;
         }
@@ -122,7 +126,7 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete {
         return respType;
     }
 
-    public UserResponse modify(UserRequest reqType) {
+    public ObjectResponse modify(CrudRequest reqType) {
         String targetID = reqType.getTargetID();
         ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
 
@@ -131,7 +135,7 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete {
         } catch (Exception e) {
             log.error("Could not modify: " + e.toString());
 
-            UserResponse resp = new UserResponse();
+            ObjectResponse resp = new ObjectResponse();
             resp.setStatus(StatusCodeType.FAILURE);
             return resp;
         }
@@ -217,7 +221,7 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete {
         }
     }
 
-    public ResponseType resume(ResumeRequest reqType) {
+    public ResponseType resume(SuspendResumeRequest reqType) {
         String targetID = reqType.getTargetID();
         ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
 

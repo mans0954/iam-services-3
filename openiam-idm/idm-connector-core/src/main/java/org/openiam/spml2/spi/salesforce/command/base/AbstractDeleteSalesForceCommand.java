@@ -1,17 +1,9 @@
 package org.openiam.spml2.spi.salesforce.command.base;
 
-import com.sforce.ws.ConnectionException;
-import org.apache.commons.lang.StringUtils;
+import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
-import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.provision.dto.GenericProvisionObject;
-import org.openiam.spml2.msg.*;
-import org.openiam.spml2.spi.common.data.ConnectorConfiguration;
-import org.openiam.spml2.spi.salesforce.dao.CallerDependentSalesForceDao;
-import org.openiam.spml2.spi.salesforce.dao.SalesForceDao;
-import org.openiam.spml2.spi.salesforce.exception.SalesForceDataIntegrityException;
-import org.openiam.spml2.spi.salesforce.exception.SalesForcePersistException;
+import org.openiam.connector.data.ConnectorConfiguration;
 import org.openiam.spml2.util.msg.ResponseBuilder;
 
 /**

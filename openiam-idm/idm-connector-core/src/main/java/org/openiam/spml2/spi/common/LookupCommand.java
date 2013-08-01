@@ -1,7 +1,7 @@
 package org.openiam.spml2.spi.common;
 
-import org.openiam.connector.type.LookupRequest;
-import org.openiam.connector.type.SearchResponse;
+import org.openiam.connector.type.request.LookupRequest;
+import org.openiam.connector.type.response.SearchResponse;
 
 /**
  * Created with IntelliJ IDEA.

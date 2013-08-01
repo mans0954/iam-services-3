@@ -1,10 +1,10 @@
 package org.openiam.spml2.spi.orcl;
 
 import org.apache.commons.lang.StringUtils;
-import org.openiam.connector.type.ErrorCode;
-import org.openiam.connector.type.ResponseType;
-import org.openiam.connector.type.StatusCodeType;
-import org.openiam.connector.type.SuspendRequest;
+import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.response.ResponseType;
+import org.openiam.connector.type.constant.StatusCodeType;
+import org.openiam.connector.type.request.SuspendRequest;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.spml2.spi.common.SuspendCommand;

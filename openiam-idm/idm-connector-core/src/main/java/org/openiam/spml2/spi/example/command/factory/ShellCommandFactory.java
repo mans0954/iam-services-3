@@ -2,12 +2,10 @@ package org.openiam.spml2.spi.example.command.factory;
 
 import org.openiam.provision.dto.ProvisionObjectType;
 import org.openiam.spml2.constants.CommandType;
-import org.openiam.spml2.msg.ConnectorDataException;
+import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.spml2.msg.ErrorCode;
-import org.openiam.spml2.spi.common.ConnectorCommand;
-import org.openiam.spml2.spi.common.factory.AbstractCommandFactory;
-import org.openiam.spml2.spi.csv.command.group.TestGroupCSVCommand;
-import org.openiam.spml2.spi.csv.command.user.TestUserCSVCommand;
+import org.openiam.connector.common.command.ConnectorCommand;
+import org.openiam.connector.common.factory.AbstractCommandFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;

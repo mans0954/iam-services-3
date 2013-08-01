@@ -1,10 +1,10 @@
 package org.openiam.spml2.spi.ldap.command;
 
 import org.openiam.base.BaseAttribute;
-import org.openiam.connector.type.ErrorCode;
-import org.openiam.connector.type.StatusCodeType;
-import org.openiam.connector.type.UserRequest;
-import org.openiam.connector.type.UserResponse;
+import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.constant.StatusCodeType;
+import org.openiam.connector.type.request.CrudRequest;
+import org.openiam.connector.type.response.ObjectResponse;
 import org.openiam.exception.ConfigurationException;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
@@ -12,7 +12,6 @@ import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.spml2.msg.*;
 import org.openiam.spml2.spi.ldap.command.base.LdapAbstractCommand;
 import org.openiam.spml2.spi.ldap.dirtype.Directory;
 import org.openiam.spml2.spi.ldap.dirtype.DirectorySpecificImplFactory;
@@ -34,9 +33,9 @@ import java.util.Set;
  */
 public class LdapAddCommand extends LdapAbstractCommand {
 
-    public UserResponse add(UserRequest reqType) {
+    public ObjectResponse add(CrudRequest reqType) {
 
-        UserResponse response = new UserResponse();
+        ObjectResponse response = new ObjectResponse();
         response.setStatus(StatusCodeType.SUCCESS);
         List<BaseAttribute> targetMembershipList = new ArrayList<BaseAttribute>();
 

@@ -1,8 +1,8 @@
 package org.openiam.spml2.spi.example;
 
-import org.openiam.connector.type.SearchRequest;
-import org.openiam.connector.type.SearchResponse;
-import org.openiam.spml2.base.AbstractConnectorService;
+import org.openiam.connector.type.request.SearchRequest;
+import org.openiam.connector.type.response.SearchResponse;
+import org.openiam.connector.AbstractConnectorService;
 import org.openiam.spml2.constants.ConnectorType;
 import org.springframework.stereotype.Service;
 

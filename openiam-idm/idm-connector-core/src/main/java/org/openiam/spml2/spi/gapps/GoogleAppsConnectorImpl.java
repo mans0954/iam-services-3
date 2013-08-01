@@ -9,8 +9,13 @@ import com.google.gdata.util.AuthenticationException;
 import com.google.gdata.util.ServiceException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.connector.type.*;
-import org.openiam.connector.type.ResponseType;
+import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.constant.StatusCodeType;
+import org.openiam.connector.type.response.ObjectResponse;
+import org.openiam.connector.type.response.LookupAttributeResponse;
+import org.openiam.connector.type.response.ResponseType;
+import org.openiam.connector.type.request.*;
+import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.dozer.converter.ManagedSystemObjectMatchDozerConverter;
 import org.openiam.idm.srvc.audit.service.IdmAuditLogDataService;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
@@ -25,12 +30,10 @@ import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.connector.ConnectorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import javax.jws.WebParam;
-import javax.jws.WebService;
 import javax.naming.directory.ModificationItem;
 import java.io.File;
 import java.io.IOException;
@@ -85,7 +88,7 @@ public class GoogleAppsConnectorImpl  {
         System.setProperty("javax.net.ssl.trustStorePassword", trustStorePassword);
     }
 
-    public UserResponse add(UserRequest reqType) {
+    public ObjectResponse add(CrudRequest reqType) {
         String userName = null;
         String password = null;
         String givenName = null;
@@ -173,32 +176,32 @@ public class GoogleAppsConnectorImpl  {
             e.printStackTrace();
             log.error(e.getStackTrace());
 
-            UserResponse response = new UserResponse();
+            ObjectResponse response = new ObjectResponse();
             response.setStatus(StatusCodeType.FAILURE);
             response.setError(ErrorCode.ALREADY_EXISTS);
             return response;
 
         } catch (MalformedURLException e) {
-            UserResponse response = new UserResponse();
+            ObjectResponse response = new ObjectResponse();
             response.setError(ErrorCode.MALFORMED_REQUEST);
             log.error(e.getStackTrace());
             return response;
 
         } catch (IOException e) {
-            UserResponse response = new UserResponse();
+            ObjectResponse response = new ObjectResponse();
             response.setError(ErrorCode.UNSUPPORTED_OPERATION);
             log.error(e.getStackTrace());
             return response;
         }
 
-        UserResponse response = new UserResponse();
+        ObjectResponse response = new ObjectResponse();
         response.setStatus(StatusCodeType.SUCCESS);
 
         return response;
 
     }
 
-    public UserResponse modify(UserRequest reqType) {
+    public ObjectResponse modify(CrudRequest reqType) {
         String userName = null;
         String firstName = null;
         String lastName = null;
@@ -235,7 +238,7 @@ public class GoogleAppsConnectorImpl  {
         if (origIdentity != null) {
             log.debug("Renaming identity: " + origIdentity.getValue());
 
-            UserResponse respType = renameIdentity(userName,
+            ObjectResponse respType = renameIdentity(userName,
                     origIdentity.getValue(), managedSys, matchObj);
             if (respType.getStatus() == StatusCodeType.FAILURE) {
                 return respType;
@@ -292,13 +295,13 @@ public class GoogleAppsConnectorImpl  {
 
                 } catch (AuthenticationException e) {
                     log.error(e);
-                    UserResponse respType = new UserResponse();
+                    ObjectResponse respType = new ObjectResponse();
                     respType.setStatus(StatusCodeType.FAILURE);
                     respType.setError(ErrorCode.NO_SUCH_IDENTIFIER);
                     return respType;
                 } catch (MalformedURLException e) {
                     log.error(e);
-                    UserResponse respType = new UserResponse();
+                    ObjectResponse respType = new ObjectResponse();
                     respType.setStatus(StatusCodeType.FAILURE);
                     respType.setError(ErrorCode.MALFORMED_REQUEST);
                     return respType;
@@ -307,7 +310,7 @@ public class GoogleAppsConnectorImpl  {
                             + e.getCodeName());
                     log.error(e);
                     // e.printStackTrace();
-                    UserResponse respType = new UserResponse();
+                    ObjectResponse respType = new ObjectResponse();
                     respType.setStatus(StatusCodeType.FAILURE);
                     respType.setError(ErrorCode.INVALID_CONTAINMENT);
                     return respType;
@@ -318,7 +321,7 @@ public class GoogleAppsConnectorImpl  {
                     log.error(e);
                     System.out.println("Google ServiceException...="
                             + e.getCodeName());
-                    UserResponse respType = new UserResponse();
+                    ObjectResponse respType = new ObjectResponse();
                     respType.setStatus(StatusCodeType.FAILURE);
                     respType.setError(ErrorCode.CUSTOM_ERROR);
                     return respType;
@@ -326,13 +329,13 @@ public class GoogleAppsConnectorImpl  {
 
             }
         }
-        UserResponse respType = new UserResponse();
+        ObjectResponse respType = new ObjectResponse();
         respType.setStatus(StatusCodeType.SUCCESS);
         return respType;
 
     }
 
-    private UserResponse renameIdentity(String newIdentity,
+    private ObjectResponse renameIdentity(String newIdentity,
             String origIdentity, ManagedSysDto managedSys,
             ManagedSystemObjectMatch matchObj) {
         UserService userService = new UserService(
@@ -355,21 +358,21 @@ public class GoogleAppsConnectorImpl  {
         } catch (AuthenticationException e) {
             log.error(e);
             e.printStackTrace();
-            UserResponse respType = new UserResponse();
+            ObjectResponse respType = new ObjectResponse();
             respType.setStatus(StatusCodeType.FAILURE);
             respType.setError(ErrorCode.NO_SUCH_IDENTIFIER);
             return respType;
         } catch (MalformedURLException e) {
             log.error(e);
             e.printStackTrace();
-            UserResponse respType = new UserResponse();
+            ObjectResponse respType = new ObjectResponse();
             respType.setStatus(StatusCodeType.FAILURE);
             respType.setError(ErrorCode.MALFORMED_REQUEST);
             return respType;
         } catch (AppsForYourDomainException e) {
             log.error(e);
             e.printStackTrace();
-            UserResponse respType = new UserResponse();
+            ObjectResponse respType = new ObjectResponse();
             respType.setStatus(StatusCodeType.FAILURE);
             respType.setError(ErrorCode.INVALID_CONTAINMENT);
             return respType;
@@ -379,12 +382,12 @@ public class GoogleAppsConnectorImpl  {
         } catch (ServiceException e) {
             log.error(e);
             e.printStackTrace();
-            UserResponse respType = new UserResponse();
+            ObjectResponse respType = new ObjectResponse();
             respType.setStatus(StatusCodeType.FAILURE);
             respType.setError(ErrorCode.CUSTOM_ERROR);
             return respType;
         }
-        UserResponse respType = new UserResponse();
+        ObjectResponse respType = new ObjectResponse();
         respType.setStatus(StatusCodeType.SUCCESS);
         return respType;
     }
@@ -410,7 +413,7 @@ public class GoogleAppsConnectorImpl  {
         throw new UnsupportedOperationException("Not supportable.");
     }
 
-    public UserResponse delete(UserRequest reqType) {
+    public ObjectResponse delete(CrudRequest reqType) {
         init();
 
         String userName = null;
@@ -445,19 +448,19 @@ public class GoogleAppsConnectorImpl  {
 
         } catch (AuthenticationException e) {
             log.error(e);
-            UserResponse respType = new UserResponse();
+            ObjectResponse respType = new ObjectResponse();
             respType.setStatus(StatusCodeType.FAILURE);
             respType.setError(ErrorCode.NO_SUCH_IDENTIFIER);
             return respType;
         } catch (MalformedURLException e) {
             log.error(e);
-            UserResponse respType = new UserResponse();
+            ObjectResponse respType = new ObjectResponse();
             respType.setStatus(StatusCodeType.FAILURE);
             respType.setError(ErrorCode.MALFORMED_REQUEST);
             return respType;
         } catch (AppsForYourDomainException e) {
             log.error(e);
-            UserResponse respType = new UserResponse();
+            ObjectResponse respType = new ObjectResponse();
             respType.setStatus(StatusCodeType.FAILURE);
             respType.setError(ErrorCode.INVALID_CONTAINMENT);
             return respType;
@@ -465,13 +468,13 @@ public class GoogleAppsConnectorImpl  {
             log.error(e);
         } catch (ServiceException e) {
             log.error(e);
-            UserResponse respType = new UserResponse();
+            ObjectResponse respType = new ObjectResponse();
             respType.setStatus(StatusCodeType.FAILURE);
             respType.setError(ErrorCode.CUSTOM_ERROR);
             return respType;
         }
 
-        UserResponse respType = new UserResponse();
+        ObjectResponse respType = new ObjectResponse();
         respType.setStatus(StatusCodeType.SUCCESS);
         return respType;
 
@@ -730,7 +733,7 @@ public class GoogleAppsConnectorImpl  {
 
     }
 
-    public ResponseType resume(ResumeRequest request) {
+    public ResponseType resume(SuspendResumeRequest request) {
         String userName = null;
         String firstName = null;
         String lastName = null;

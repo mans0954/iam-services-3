@@ -1,8 +1,8 @@
 package org.openiam.spml2.spi.orcl.command.base;
 
+import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.provision.dto.GenericProvisionObject;
-import org.openiam.spml2.msg.*;
 
 import java.sql.Connection;
 

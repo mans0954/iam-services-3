@@ -1,18 +1,11 @@
 package org.openiam.spml2.spi.example.command.base;
 
-import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
+import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.provision.dto.GenericProvisionObject;
-import org.openiam.provision.type.ExtensibleAttribute;
-import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.spml2.msg.*;
-import org.openiam.spml2.spi.common.data.ConnectorConfiguration;
+import org.openiam.connector.data.ConnectorConfiguration;
 
-import javax.naming.directory.ModificationItem;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.List;
 
 /**

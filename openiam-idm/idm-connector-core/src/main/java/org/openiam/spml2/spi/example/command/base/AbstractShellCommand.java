@@ -3,7 +3,7 @@ package org.openiam.spml2.spi.example.command.base;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.spml2.msg.RequestType;
 import org.openiam.spml2.msg.ResponseType;
-import org.openiam.spml2.spi.common.AbstractCommand;
+import org.openiam.connector.common.command.AbstractCommand;
 
 import java.util.List;
 

@@ -2,12 +2,12 @@ package org.openiam.spml2.spi.script.command.base;
 
 import org.openiam.script.ScriptIntegration;
 import org.openiam.spml2.interf.ConnectorService;
-import org.openiam.spml2.msg.ConnectorDataException;
+import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.spml2.msg.ErrorCode;
 import org.openiam.spml2.msg.RequestType;
 import org.openiam.spml2.msg.ResponseType;
-import org.openiam.spml2.spi.common.AbstractCommand;
-import org.openiam.spml2.spi.common.data.ConnectorConfiguration;
+import org.openiam.connector.common.command.AbstractCommand;
+import org.openiam.connector.data.ConnectorConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 

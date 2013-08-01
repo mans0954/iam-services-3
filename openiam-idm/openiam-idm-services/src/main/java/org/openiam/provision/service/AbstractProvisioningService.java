@@ -15,7 +15,13 @@ import org.openiam.base.SysConfiguration;
 import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.connector.type.*;
+import org.openiam.connector.type.constant.StatusCodeType;
+import org.openiam.connector.type.request.CrudRequest;
+import org.openiam.connector.type.request.LookupRequest;
+import org.openiam.connector.type.request.PasswordRequest;
+import org.openiam.connector.type.response.ObjectResponse;
+import org.openiam.connector.type.response.LookupResponse;
+import org.openiam.connector.type.response.ResponseType;
 import org.openiam.dozer.converter.*;
 import org.openiam.exception.EncryptionException;
 import org.openiam.exception.ScriptEngineException;
@@ -60,7 +66,6 @@ import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.dto.Supervisor;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.service.UserDataService;
@@ -68,7 +73,6 @@ import org.openiam.provision.dto.PasswordSync;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
-import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.BeansException;
@@ -2400,14 +2404,14 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                              ManagedSystemObjectMatch matchObj, ExtensibleUser extUser,
                              ProvisionUser user, IdmAuditLog idmAuditLog) {
 
-        UserRequest addReqType = new UserRequest();
+        CrudRequest addReqType = new CrudRequest();
 
         addReqType.setUserIdentity(mLg.getLogin());
         addReqType.setRequestID(requestId);
         addReqType.setTargetID(mLg.getManagedSysId());
         addReqType.setUser(extUser);
         log.debug("Local connector - Creating identity in target system:" + mLg.getLoginId());
-        UserResponse resp = connectorAdapter.addRequest(mSys, addReqType, muleContext);
+        ObjectResponse resp = connectorAdapter.addRequest(mSys, addReqType, muleContext);
 
         auditHelper.addLog("ADD IDENTITY", user.getRequestorDomain(), user.getRequestorLogin(),
                 "IDM SERVICE", user.getCreatedBy(), mLg.getManagedSysId(),
@@ -2426,7 +2430,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
         log.debug("Calling remote connector " + connector.getName());
 
-        UserRequest userReq = new UserRequest();
+        CrudRequest userReq = new CrudRequest();
         userReq.setUserIdentity(mLg.getLogin());
         userReq.setRequestID(requestId);
         userReq.setTargetID(mLg.getManagedSysId());
@@ -2441,7 +2445,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
         userReq.setScriptHandler(mSys.getAddHandler());
 
-        UserResponse resp = remoteConnectorAdapter.addRequest(mSys, userReq, connector, muleContext);
+        ObjectResponse resp = remoteConnectorAdapter.addRequest(mSys, userReq, connector, muleContext);
 
         if (resp.getStatus() == StatusCodeType.FAILURE) {
             return false;
@@ -2450,7 +2454,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
         return true;
     }
 
-    protected UserResponse remoteDelete(
+    protected ObjectResponse remoteDelete(
             Login mLg,
             String requestId,
             ManagedSysDto mSys,
@@ -2460,7 +2464,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
             IdmAuditLog auditLog
     ) {
 
-        UserRequest request = new UserRequest();
+        CrudRequest request = new CrudRequest();
 
         request.setUserIdentity(mLg.getLogin());
         request.setRequestID(requestId);
@@ -2475,7 +2479,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
         request.setScriptHandler(mSys.getDeleteHandler());
 
-        UserResponse resp = remoteConnectorAdapter.deleteRequest(mSys, request, connector, muleContext);
+        ObjectResponse resp = remoteConnectorAdapter.deleteRequest(mSys, request, connector, muleContext);
 
         auditHelper.addLog("DELETE IDENTITY", auditLog.getDomainId(), auditLog.getPrincipal(),
                 "IDM SERVICE", user.getCreatedBy(), mLg.getManagedSysId(),
@@ -2494,7 +2498,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
         log.debug("Local delete for=" + l);
 
-        UserRequest reqType = new UserRequest();
+        CrudRequest reqType = new CrudRequest();
         reqType.setRequestID(requestId);
         reqType.setUserIdentity(l.getLogin());
 
@@ -2585,7 +2589,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
         req.setScriptHandler(mSys.getPasswordHandler());
 
-        org.openiam.connector.type.ResponseType respType = remoteConnectorAdapter.resetPasswordRequest(mSys, req, connector, muleContext);
+        ResponseType respType = remoteConnectorAdapter.resetPasswordRequest(mSys, req, connector, muleContext);
 
         auditHelper.addLog("RESET PASSWORD IDENTITY", passwordSync.getRequestorDomain(), passwordSync.getRequestorLogin(),
                 "IDM SERVICE", null, mSys.getManagedSysId(), "PASSWORD", null, null, respType.getStatus().toString(), "NA", null,
@@ -2594,7 +2598,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                 passwordSync.getRequestClientIP(), login.getLogin(), login.getDomainId());
     }
     
-    protected org.openiam.connector.type.ResponseType remoteSetPassword(String requestId, 
+    protected ResponseType remoteSetPassword(String requestId,
     																	LoginEntity login,
             															PasswordSync passwordSync,
             															ManagedSysEntity mSys,
@@ -2607,7 +2611,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                 objectMatchDozerConverter.convertToDTO(matchObj, true),
                 provisionConnectorConverter.convertToDTO(connector, true));
     }
-    protected org.openiam.connector.type.ResponseType remoteSetPassword(String requestId, Login login,
+    protected ResponseType remoteSetPassword(String requestId, Login login,
                                                                       PasswordSync passwordSync,
                                                                       ManagedSysDto mSys,
                                                                       ManagedSystemObjectMatch matchObj,
@@ -2624,7 +2628,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
         req.setOperation("SET_PASSWORD");
         req.setPassword(passwordSync.getPassword());
 
-        org.openiam.connector.type.ResponseType respType = remoteConnectorAdapter.setPasswordRequest(mSys, req, connector, muleContext);
+        ResponseType respType = remoteConnectorAdapter.setPasswordRequest(mSys, req, connector, muleContext);
 
         req.setScriptHandler(mSys.getPasswordHandler());
 

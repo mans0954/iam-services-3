@@ -1,10 +1,10 @@
 package org.openiam.spml2.spi.salesforce;
 
 import org.apache.commons.lang.StringUtils;
-import org.openiam.connector.type.ErrorCode;
-import org.openiam.connector.type.ResponseType;
-import org.openiam.connector.type.ResumeRequest;
-import org.openiam.connector.type.StatusCodeType;
+import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.request.SuspendResumeRequest;
+import org.openiam.connector.type.response.ResponseType;
+import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.spml2.spi.common.ResumeCommand;
@@ -19,7 +19,7 @@ import com.sforce.ws.ConnectionException;
 public class SalesForceResumeCommand extends AbstractSalesforceCommand implements ResumeCommand {
 
 	@Override
-	public ResponseType resume(ResumeRequest request) {
+	public ResponseType resume(SuspendResumeRequest request) {
         final ResponseType response = new ResponseType();
         response.setStatus(StatusCodeType.SUCCESS);
         

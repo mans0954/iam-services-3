@@ -11,8 +11,8 @@ import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.connector.type.ResumeRequest;
-import org.openiam.connector.type.SuspendRequest;
+import org.openiam.connector.type.request.SuspendResumeRequest;
+import org.openiam.connector.type.request.SuspendRequest;
 import org.openiam.idm.srvc.audit.service.AuditHelper;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
@@ -144,7 +144,7 @@ public class DisableUserDelegate {
                         lg.setPasswordChangeCount(0);
                         loginManager.updateLogin(lg);
 
-                        ResumeRequest resumeReq = new ResumeRequest();
+                        SuspendResumeRequest resumeReq = new SuspendResumeRequest();
                         resumeReq.setUserIdentity(lg.getLogin());
                         resumeReq.setTargetID(managedSysId);
                         resumeReq.setRequestID(requestId);

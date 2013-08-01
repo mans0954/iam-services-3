@@ -8,7 +8,11 @@ import javax.naming.ldap.LdapContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.SysConfiguration;
-import org.openiam.connector.type.*;
+import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.constant.StatusCodeType;
+import org.openiam.connector.type.request.SuspendResumeRequest;
+import org.openiam.connector.type.request.SuspendRequest;
+import org.openiam.connector.type.response.ResponseType;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
@@ -107,7 +111,7 @@ public class LdapSuspend extends  LdapAbstractCommand implements ApplicationCont
 
 	}
 
-	public ResponseType resume(ResumeRequest request) {
+	public ResponseType resume(SuspendResumeRequest request) {
 		log.debug("resume request called..");
         ConnectionMgr conMgr = null;
 		// ldap does not have suspend/disable capability.

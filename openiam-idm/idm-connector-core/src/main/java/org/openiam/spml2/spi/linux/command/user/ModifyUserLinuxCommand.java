@@ -3,7 +3,7 @@ package org.openiam.spml2.spi.linux.command.user;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.spml2.msg.ConnectorDataException;
+import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.spml2.msg.ErrorCode;
 import org.openiam.spml2.msg.ModificationType;
 import org.openiam.spml2.spi.linux.command.LinuxUser;

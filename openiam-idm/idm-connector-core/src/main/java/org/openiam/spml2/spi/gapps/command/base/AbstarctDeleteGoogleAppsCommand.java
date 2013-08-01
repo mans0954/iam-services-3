@@ -1,8 +1,8 @@
 package org.openiam.spml2.spi.gapps.command.base;
 
+import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.provision.dto.GenericProvisionObject;
-import org.openiam.spml2.msg.*;
 
 
 public abstract class AbstarctDeleteGoogleAppsCommand<ProvisionObject extends GenericProvisionObject> extends AbstractGoogleAppsCommand<DeleteRequestType<ProvisionObject>, ResponseType> {

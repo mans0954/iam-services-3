@@ -26,8 +26,13 @@ import org.apache.commons.logging.LogFactory;
 import org.mule.api.MuleContext;
 import org.mule.api.MuleMessage;
 import org.mule.module.client.MuleClient;
-import org.openiam.connector.type.*;
-import org.openiam.connector.type.ResponseType;
+import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.constant.StatusCodeType;
+import org.openiam.connector.type.response.ObjectResponse;
+import org.openiam.connector.type.response.LookupResponse;
+import org.openiam.connector.type.response.ResponseType;
+import org.openiam.connector.type.request.*;
+import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
 import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
@@ -57,8 +62,8 @@ public class RemoteConnectorAdapter {
     private ProvisionConnectorWebService connectorService;
     private final static int RESEND_COUNT = 3;
 
-    public UserResponse addRequest(ManagedSysDto managedSys, UserRequest addReqType, ProvisionConnectorDto connector, MuleContext muleContext) {
-        UserResponse resp = new UserResponse();
+    public ObjectResponse addRequest(ManagedSysDto managedSys, CrudRequest addReqType, ProvisionConnectorDto connector, MuleContext muleContext) {
+        ObjectResponse resp = new ObjectResponse();
         try {
 
 
@@ -92,14 +97,14 @@ public class RemoteConnectorAdapter {
 
     }
 
-    private UserResponse send(String eventName, UserRequest request, ProvisionConnectorDto connector, MuleContext muleContext){
-        UserResponse resp = new UserResponse();
+    private ObjectResponse send(String eventName, CrudRequest request, ProvisionConnectorDto connector, MuleContext muleContext){
+        ObjectResponse resp = new ObjectResponse();
         resp.setStatus(StatusCodeType.FAILURE);
         MuleMessage msg = getService(connector, request, connector.getServiceUrl(), eventName, muleContext);
                 if (msg != null) {
                     log.debug("***Payload=" + msg.getPayload());
-                    if (msg.getPayload() != null && msg.getPayload() instanceof UserResponse) {
-                        return (UserResponse) msg.getPayload();
+                    if (msg.getPayload() != null && msg.getPayload() instanceof ObjectResponse) {
+                        return (ObjectResponse) msg.getPayload();
                     }
                     resp.setStatus(StatusCodeType.SUCCESS);
                     return resp;
@@ -126,8 +131,8 @@ public class RemoteConnectorAdapter {
         return resp;
     }
 
-    public UserResponse modifyRequest(ManagedSysDto managedSys, UserRequest request, ProvisionConnectorDto connector, MuleContext muleContext) {
-        UserResponse resp = new UserResponse();
+    public ObjectResponse modifyRequest(ManagedSysDto managedSys, CrudRequest request, ProvisionConnectorDto connector, MuleContext muleContext) {
+        ObjectResponse resp = new ObjectResponse();
         try {
             if (managedSys == null) {
                 resp.setStatus(StatusCodeType.FAILURE);
@@ -193,8 +198,8 @@ public class RemoteConnectorAdapter {
 
     }
 
-    public UserResponse deleteRequest(ManagedSysDto managedSys, UserRequest request, ProvisionConnectorDto connector, MuleContext muleContext) {
-        UserResponse resp = new UserResponse();
+    public ObjectResponse deleteRequest(ManagedSysDto managedSys, CrudRequest request, ProvisionConnectorDto connector, MuleContext muleContext) {
+        ObjectResponse resp = new ObjectResponse();
 
         if (managedSys == null) {
             resp.setStatus(StatusCodeType.FAILURE);
@@ -343,7 +348,7 @@ public class RemoteConnectorAdapter {
 
     }
 
-    public ResponseType resumeRequest(ManagedSysDto managedSys, ResumeRequest request, ProvisionConnectorDto connector, MuleContext muleContext) {
+    public ResponseType resumeRequest(ManagedSysDto managedSys, SuspendResumeRequest request, ProvisionConnectorDto connector, MuleContext muleContext) {
         ResponseType resp = new ResponseType();
 
         if (managedSys == null) {
@@ -506,11 +511,11 @@ public class RemoteConnectorAdapter {
 
             if (operation.equalsIgnoreCase("add")) {
 
-                msg = client.send("vm://remoteConnectorMessageAdd", (UserRequest) reqType, msgPropMap);
+                msg = client.send("vm://remoteConnectorMessageAdd", (CrudRequest) reqType, msgPropMap);
             }
             if (operation.equalsIgnoreCase("modify")) {
 
-                msg = client.send("vm://remoteConnectorMessageModify", (UserRequest) reqType, msgPropMap);
+                msg = client.send("vm://remoteConnectorMessageModify", (CrudRequest) reqType, msgPropMap);
             }
             if (operation.equalsIgnoreCase("lookup")) {
 
@@ -522,7 +527,7 @@ public class RemoteConnectorAdapter {
             }
             if (operation.equalsIgnoreCase("delete")) {
 
-                msg = client.send("vm://remoteConnectorMessageDelete", (UserRequest) reqType, msgPropMap);
+                msg = client.send("vm://remoteConnectorMessageDelete", (CrudRequest) reqType, msgPropMap);
             }
             if (operation.equalsIgnoreCase("setPassword")) {
 
@@ -539,7 +544,7 @@ public class RemoteConnectorAdapter {
             }
             if (operation.equalsIgnoreCase("resume")) {
 
-                msg = client.send("vm://remoteConnectorMessageResume", (ResumeRequest) reqType, msgPropMap);
+                msg = client.send("vm://remoteConnectorMessageResume", (SuspendResumeRequest) reqType, msgPropMap);
             }
             if (operation.equalsIgnoreCase("testConnection")) {
 

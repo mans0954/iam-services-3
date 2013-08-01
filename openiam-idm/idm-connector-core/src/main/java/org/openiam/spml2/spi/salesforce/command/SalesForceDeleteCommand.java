@@ -1,10 +1,10 @@
 package org.openiam.spml2.spi.salesforce;
 
 import org.apache.commons.lang.StringUtils;
-import org.openiam.connector.type.ErrorCode;
-import org.openiam.connector.type.StatusCodeType;
-import org.openiam.connector.type.UserRequest;
-import org.openiam.connector.type.UserResponse;
+import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.constant.StatusCodeType;
+import org.openiam.connector.type.request.CrudRequest;
+import org.openiam.connector.type.response.ObjectResponse;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.spml2.spi.common.DeleteCommand;
@@ -19,8 +19,8 @@ import com.sforce.ws.ConnectionException;
 public class SalesForceDeleteCommand extends AbstractSalesforceCommand implements DeleteCommand {
 
 	@Override
-	public UserResponse delete(UserRequest request) {
-        final UserResponse response = new UserResponse();
+	public ObjectResponse delete(CrudRequest request) {
+        final ObjectResponse response = new ObjectResponse();
         response.setStatus(StatusCodeType.SUCCESS);
         
         final String principalName = request.getUserIdentity();

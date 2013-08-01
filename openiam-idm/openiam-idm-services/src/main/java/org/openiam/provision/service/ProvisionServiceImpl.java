@@ -31,7 +31,11 @@ import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.connector.type.*;
+import org.openiam.connector.type.constant.StatusCodeType;
+import org.openiam.connector.type.request.CrudRequest;
+import org.openiam.connector.type.request.LookupRequest;
+import org.openiam.connector.type.request.PasswordRequest;
+import org.openiam.connector.type.response.ResponseType;
 import org.openiam.dozer.converter.LoginDozerConverter;
 import org.openiam.dozer.converter.SupervisorDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
@@ -494,7 +498,7 @@ public class ProvisionServiceImpl implements ProvisionService,
 
 
                             requestId = "R" + System.currentTimeMillis();
-                            UserRequest userReq = new UserRequest();
+                            CrudRequest userReq = new CrudRequest();
                             userReq.setUserIdentity(lg.getLogin());
                             userReq.setRequestID(requestId);
                             userReq.setTargetID(lg.getManagedSysId());
@@ -671,7 +675,7 @@ public class ProvisionServiceImpl implements ProvisionService,
 
                             log.info("connector service client " + client);
 
-                            UserRequest deleteRequest = new UserRequest();
+                            CrudRequest deleteRequest = new CrudRequest();
 
                             deleteRequest.setRequestID("R"
                                     + System.currentTimeMillis());
@@ -1172,7 +1176,7 @@ public class ProvisionServiceImpl implements ProvisionService,
                             log.info("Ext user attributes="
                                     + extUser.getAttributes().size());
 
-                            UserRequest modReqType = new UserRequest();
+                            CrudRequest modReqType = new CrudRequest();
                             modReqType.setUserIdentity(lg.getLogin());
                             modReqType.setRequestID(requestId);
                             modReqType.setTargetID(lg.getManagedSysId());

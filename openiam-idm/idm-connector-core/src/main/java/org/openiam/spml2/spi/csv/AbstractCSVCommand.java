@@ -14,8 +14,8 @@ import org.apache.commons.collections.MapUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.constants.CSVSource;
-import org.openiam.connector.type.StatusCodeType;
-import org.openiam.connector.type.UserValue;
+import org.openiam.connector.type.ObjectValue;
+import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.dozer.converter.UserDozerConverter;
 
 import org.openiam.idm.parser.csv.CSVParser;
@@ -48,11 +48,12 @@ import org.openiam.idm.srvc.user.ws.UserDataWebService;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
-import org.openiam.connector.type.ResponseType;
+import org.openiam.connector.type.response.ResponseType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.StringUtils;
 
+@Deprecated
 public class AbstractCSVCommand {
 
 
@@ -367,9 +368,9 @@ public class AbstractCSVCommand {
 
                         ProvisionUser newUser = new ProvisionUser(u.getObject());
                         // ADD Target user principal
-                        newUser.getPrincipalList().add(l);
+                        newUser.getUser().getPrincipalList().add(l);
                         log.debug("Call command for Match Found");
-                        command.execute(l, newUser, null);
+                        command.execute(l, newUser.getUser(), null);
                     }
                 }
             } else if (!isMultiple && finded != null) {
@@ -417,7 +418,7 @@ public class AbstractCSVCommand {
                             l.setManagedSysId(mSys.getManagedSysId());
                             log.debug("Call command for: Record in resource and in IDM");
                             command.execute(l,
-                                    new ProvisionUser(u.getObject()), this
+                                    new ProvisionUser(u.getObject()).getUser(), this
                                     .getExtensibleAttributesList(
                                             headerRow, attrMapList, u));
                         }
@@ -547,7 +548,7 @@ public class AbstractCSVCommand {
         userCSVParser.update(newUser, managedSys, attrMapList, CSVSource.IDM);
     }
 
-    protected UserValue lookupObjectInCSV(String findValue,
+    protected ObjectValue lookupObjectInCSV(String findValue,
                                           ManagedSysEntity managedSys)
             throws Exception {
         List<ReconciliationObject<User>> users = this
@@ -556,7 +557,7 @@ public class AbstractCSVCommand {
 
         for (ReconciliationObject<User> user : users) {
             if (match(findValue, user)) {
-                UserValue userValue = new UserValue();
+                ObjectValue userValue = new ObjectValue();
                 Map<String, ReconciliationResultField> res = this.getUserProvisionMap(user,
                         managedSys);
                 for (String key : res.keySet()) {
@@ -564,7 +565,7 @@ public class AbstractCSVCommand {
                         eAttr.add(new ExtensibleAttribute(key, user
                                 .getPrincipal()));
                 }
-                userValue.setUserIdentity(user.getPrincipal());
+                userValue.setObjectIdentity(user.getPrincipal());
                 userValue.setAttributeList(eAttr);
                 return userValue;
             }

@@ -1,8 +1,7 @@
 package org.openiam.spml2.spi.ldap.command.user;
 
+import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
-import org.openiam.spml2.msg.*;
 import org.openiam.spml2.msg.suspend.SuspendRequestType;
 import org.openiam.spml2.spi.ldap.command.base.AbstractLdapCommand;
 import org.openiam.spml2.spi.ldap.dirtype.Directory;

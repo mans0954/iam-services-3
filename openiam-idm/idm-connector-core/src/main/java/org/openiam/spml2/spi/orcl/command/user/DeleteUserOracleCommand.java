@@ -1,7 +1,7 @@
 package org.openiam.spml2.spi.orcl.command.user;
 
 import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.spml2.msg.ConnectorDataException;
+import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.spml2.msg.ErrorCode;
 import org.openiam.spml2.spi.orcl.command.base.AbstractDeleteOracleCommand;
 import org.springframework.stereotype.Service;

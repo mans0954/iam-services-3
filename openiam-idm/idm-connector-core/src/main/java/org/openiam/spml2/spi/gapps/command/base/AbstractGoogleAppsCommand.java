@@ -1,15 +1,9 @@
 package org.openiam.spml2.spi.gapps.command.base;
 
-import org.openiam.idm.srvc.key.constant.KeyName;
-import org.openiam.idm.srvc.key.service.KeyManagementService;
-import org.openiam.spml2.msg.ConnectorDataException;
 import org.openiam.spml2.msg.ErrorCode;
 import org.openiam.spml2.msg.RequestType;
 import org.openiam.spml2.msg.ResponseType;
-import org.openiam.spml2.spi.common.AbstractCommand;
-import org.openiam.util.encrypt.Cryptor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.openiam.connector.common.command.AbstractCommand;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.io.File;

@@ -1,22 +1,12 @@
 package org.openiam.spml2.spi.ldap.command.base;
 
+import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
-import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.provision.dto.GenericProvisionObject;
-import org.openiam.spml2.msg.*;
-import org.openiam.spml2.spi.ldap.dirtype.Directory;
-import org.openiam.spml2.spi.ldap.dirtype.DirectorySpecificImplFactory;
-import org.openiam.spml2.util.connect.ConnectionFactory;
 import org.openiam.spml2.util.connect.ConnectionManagerConstant;
 import org.openiam.spml2.util.connect.ConnectionMgr;
 
-import javax.naming.NamingException;
 import javax.naming.ldap.LdapContext;
-import java.util.List;
-import java.util.Set;
 
 public abstract class AbstractDeleteLdapCommand<ProvisionObject extends GenericProvisionObject> extends AbstractLdapCommand<DeleteRequestType<ProvisionObject>, ResponseType>{
     @Override

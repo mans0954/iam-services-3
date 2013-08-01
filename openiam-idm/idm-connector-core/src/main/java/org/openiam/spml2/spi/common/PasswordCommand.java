@@ -1,7 +1,7 @@
 package org.openiam.spml2.spi.common;
 
-import org.openiam.connector.type.PasswordRequest;
-import org.openiam.connector.type.ResponseType;
+import org.openiam.connector.type.request.PasswordRequest;
+import org.openiam.connector.type.response.ResponseType;
 
 /**
  * Created with IntelliJ IDEA.

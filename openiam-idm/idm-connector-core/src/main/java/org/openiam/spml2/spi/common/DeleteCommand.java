@@ -1,7 +1,7 @@
 package org.openiam.spml2.spi.common;
 
-import org.openiam.connector.type.UserRequest;
-import org.openiam.connector.type.UserResponse;
+import org.openiam.connector.type.request.CrudRequest;
+import org.openiam.connector.type.response.ObjectResponse;
 
 /**
  * Created with IntelliJ IDEA.
@@ -12,5 +12,5 @@ import org.openiam.connector.type.UserResponse;
  */
 @Deprecated
 public interface DeleteCommand {
-    public UserResponse delete(final UserRequest reqType);
+    public ObjectResponse delete(final CrudRequest reqType);
 }

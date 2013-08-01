@@ -1,17 +1,15 @@
 package org.openiam.spml2.spi.ldap;
 
 import org.apache.cxf.common.util.StringUtils;
-import org.openiam.connector.type.SearchRequest;
-import org.openiam.connector.type.SearchResponse;
-import org.openiam.connector.type.UserValue;
+import org.openiam.connector.type.ObjectValue;
+import org.openiam.connector.type.request.SearchRequest;
+import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemObjectMatchDAO;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
-import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.provision.type.ExtensibleAttribute;
-import org.openiam.spml2.base.AbstractConnectorService;
+import org.openiam.connector.AbstractConnectorService;
 import org.openiam.spml2.constants.ConnectorType;
 import org.openiam.spml2.msg.StatusCodeType;
 import org.openiam.spml2.util.connect.ConnectionFactory;
@@ -76,9 +74,9 @@ public class GenericLdapConnector extends AbstractConnectorService {
 
             String identityAttrName = matchObj != null ? matchObj.getKeyField() : "cn";
 
-            List<UserValue> userValues = new LinkedList<UserValue>();
+            List<ObjectValue> userValues = new LinkedList<ObjectValue>();
 
-            UserValue user = new UserValue();
+            ObjectValue user = new ObjectValue();
             user.setAttributeList(new LinkedList<ExtensibleAttribute>());
             boolean found = false;
             while (results != null && results.hasMoreElements()) {
@@ -111,7 +109,7 @@ public class GenericLdapConnector extends AbstractConnectorService {
                         }
                     }
                     userValues.add(user);
-                    user = new UserValue();
+                    user = new ObjectValue();
                     user.setAttributeList(new LinkedList<ExtensibleAttribute>());
                 }
             }

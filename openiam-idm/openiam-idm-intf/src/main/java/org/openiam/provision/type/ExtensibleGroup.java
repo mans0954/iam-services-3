@@ -28,6 +28,7 @@ import javax.xml.bind.annotation.XmlType;
 
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.idm.srvc.grp.dto.Group;
+import org.openiam.provision.dto.ProvisionObjectType;
 
 /**
  * Group object that is passed to the connector service when provisioning a group.
@@ -44,7 +45,7 @@ public class ExtensibleGroup extends ExtensibleObject {
 	protected Group group;
 	
 	public ExtensibleGroup() {
-		
+        extensibleObjectType= ExtensibleObjectType.GROUP;
 	}
 	
 	public ExtensibleGroup(Group grp) {
@@ -54,6 +55,7 @@ public class ExtensibleGroup extends ExtensibleObject {
 		}else {
 			operation = 0;
 		}
+        extensibleObjectType= ExtensibleObjectType.GROUP;
 	}
 	
 	public Group getGroup() {

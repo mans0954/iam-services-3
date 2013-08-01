@@ -2,16 +2,13 @@ package org.openiam.spml2.spi.jdbc.command.base;
 
 import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.spml2.msg.ConnectorDataException;
+import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.spml2.msg.ErrorCode;
 import org.openiam.spml2.msg.RequestType;
 import org.openiam.spml2.msg.ResponseType;
-import org.openiam.spml2.spi.common.data.ConnectorConfiguration;
 import org.openiam.spml2.spi.common.jdbc.AbstractJDBCCommand;
 import org.openiam.spml2.spi.jdbc.command.data.AppTableConfiguration;
 

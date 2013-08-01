@@ -1,6 +1,6 @@
 package org.openiam.spml2.spi.jdbc.command.data;
 
-import org.openiam.spml2.spi.common.data.ConnectorConfiguration;
+import org.openiam.connector.data.ConnectorConfiguration;
 
 public class AppTableConfiguration extends ConnectorConfiguration {
     private String tableName;
