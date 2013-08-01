@@ -1,31 +1,30 @@
-package org.openiam.spml2.spi.salesforce.command;
+package org.openiam.spml2.spi.salesforce;
 
 import org.apache.commons.lang.StringUtils;
+import org.openiam.connector.type.ErrorCode;
+import org.openiam.connector.type.StatusCodeType;
+import org.openiam.connector.type.UserRequest;
+import org.openiam.connector.type.UserResponse;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.spml2.msg.DeleteRequestType;
-import org.openiam.spml2.msg.ErrorCode;
-import org.openiam.spml2.msg.ResponseType;
-import org.openiam.spml2.msg.StatusCodeType;
 import org.openiam.spml2.spi.common.DeleteCommand;
 import org.openiam.spml2.spi.salesforce.dao.CallerDependentSalesForceDao;
 import org.openiam.spml2.spi.salesforce.dao.SalesForceDao;
 import org.openiam.spml2.spi.salesforce.exception.SalesForceDataIntegrityException;
 import org.openiam.spml2.spi.salesforce.exception.SalesForcePersistException;
-import org.openiam.spml2.util.msg.ResponseBuilder;
+import org.openiam.connector.util.ResponseBuilder;
 
 import com.sforce.ws.ConnectionException;
 
-@Deprecated
 public class SalesForceDeleteCommand extends AbstractSalesforceCommand implements DeleteCommand {
 
 	@Override
-	public ResponseType delete(DeleteRequestType request) {
-        final ResponseType response = new ResponseType();
+	public UserResponse delete(UserRequest request) {
+        final UserResponse response = new UserResponse();
         response.setStatus(StatusCodeType.SUCCESS);
         
-        final String principalName = request.getPsoID().getID();
-        final String targetID = request.getPsoID().getTargetID();
+        final String principalName = request.getUserIdentity();
+        final String targetID = request.getTargetID();
         
         final ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
         if(managedSys == null) {

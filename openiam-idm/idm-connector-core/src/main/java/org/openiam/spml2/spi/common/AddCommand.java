@@ -1,7 +1,7 @@
 package org.openiam.spml2.spi.common;
 
-import org.openiam.spml2.msg.AddRequestType;
-import org.openiam.spml2.msg.AddResponseType;
+import org.openiam.connector.type.UserRequest;
+import org.openiam.connector.type.UserResponse;
 
 /**
  * Created with IntelliJ IDEA.
@@ -12,5 +12,5 @@ import org.openiam.spml2.msg.AddResponseType;
  */
 @Deprecated
 public interface AddCommand {
-    public AddResponseType add(AddRequestType reqType);
+    public UserResponse add(UserRequest reqType);
 }

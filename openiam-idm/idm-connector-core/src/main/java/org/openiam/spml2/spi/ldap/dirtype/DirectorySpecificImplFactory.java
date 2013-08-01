@@ -1,9 +1,5 @@
 package org.openiam.spml2.spi.ldap.dirtype;
 
-import org.openiam.spml2.util.connect.ConnectionManagerConstant;
-import org.openiam.spml2.util.connect.ConnectionMgr;
-import org.openiam.spml2.util.connect.LdapConnectionMgr;
-
 /**
  * Instantiate objects that directory/brand specific implementations.
  */

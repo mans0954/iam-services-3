@@ -1,29 +1,29 @@
-package org.openiam.spml2.spi.salesforce.command;
+package org.openiam.spml2.spi.salesforce;
 
 import org.apache.commons.lang.StringUtils;
+import org.openiam.connector.type.ErrorCode;
+import org.openiam.connector.type.PasswordRequest;
+import org.openiam.connector.type.ResponseType;
+import org.openiam.connector.type.StatusCodeType;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.spml2.msg.ErrorCode;
-import org.openiam.spml2.msg.ResponseType;
-import org.openiam.spml2.msg.StatusCodeType;
-import org.openiam.spml2.msg.password.SetPasswordRequestType;
 import org.openiam.spml2.spi.common.PasswordCommand;
 import org.openiam.spml2.spi.salesforce.dao.CallerDependentSalesForceDao;
 import org.openiam.spml2.spi.salesforce.dao.SalesForceDao;
 import org.openiam.spml2.spi.salesforce.exception.SalesForceDataIntegrityException;
-import org.openiam.spml2.util.msg.ResponseBuilder;
+import org.openiam.connector.util.ResponseBuilder;
 
 import com.sforce.ws.ConnectionException;
-@Deprecated
+
 public class SalesForceSetPasswordCommand extends AbstractSalesforceCommand implements PasswordCommand {
 
 	@Override
-	public ResponseType setPassword(SetPasswordRequestType request) {
+	public ResponseType setPassword(PasswordRequest request) {
         final ResponseType response = new ResponseType();
         response.setStatus(StatusCodeType.SUCCESS);
         
-        final String principalName = request.getPsoID().getID();
-        final String targetID = request.getPsoID().getTargetID();
+        final String principalName = request.getUserIdentity();
+        final String targetID = request.getTargetID();
         final String password = request.getPassword();
         
         final ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);

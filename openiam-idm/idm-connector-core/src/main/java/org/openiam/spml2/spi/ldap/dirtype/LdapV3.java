@@ -5,16 +5,15 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseAttribute;
 import org.openiam.base.SysConfiguration;
+import org.openiam.connector.type.PasswordRequest;
+import org.openiam.connector.type.ResumeRequest;
+import org.openiam.connector.type.SuspendRequest;
+import org.openiam.connector.type.UserRequest;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
-import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.pswd.service.PasswordGenerator;
 import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.spml2.msg.DeleteRequestType;
-import org.openiam.spml2.msg.password.SetPasswordRequestType;
-import org.openiam.spml2.msg.suspend.ResumeRequestType;
-import org.openiam.spml2.msg.suspend.SuspendRequestType;
 import org.openiam.exception.EncryptionException;
 import org.openiam.util.encrypt.HashDigest;
 
@@ -44,7 +43,7 @@ public class LdapV3 implements Directory{
     HashDigest hash = new SHA1Hash();
     
 
-    public ModificationItem[] setPassword(SetPasswordRequestType reqType) throws UnsupportedEncodingException {
+    public ModificationItem[] setPassword(PasswordRequest reqType) throws UnsupportedEncodingException {
 
         ModificationItem[] mods = new ModificationItem[1];
         mods[0] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE, new BasicAttribute("userPassword", reqType.getPassword()));
@@ -52,7 +51,7 @@ public class LdapV3 implements Directory{
         return mods;
     }
 
-    public ModificationItem[] suspend(SuspendRequestType request)  {
+    public ModificationItem[] suspend(SuspendRequest request)  {
 
         String scrambledPswd =	passwordGenerator.generatePassword(10);
         
@@ -64,7 +63,7 @@ public class LdapV3 implements Directory{
         return mods;
     }
 
-    public ModificationItem[] resume(ResumeRequestType request) {
+    public ModificationItem[] resume(ResumeRequest request) {
 
         String ldapName = (String)objectMap.get("LDAP_NAME");
         LoginDataService loginManager = (LoginDataService)objectMap.get("LOGIN_MANAGER");
@@ -92,7 +91,7 @@ public class LdapV3 implements Directory{
 
     }
 
-    public void delete(DeleteRequestType reqType, LdapContext ldapctx, String ldapName, String onDelete) throws NamingException{
+    public void delete(UserRequest reqType, LdapContext ldapctx, String ldapName, String onDelete) throws NamingException{
 
         if ("DELETE".equalsIgnoreCase(onDelete)) {
 
@@ -135,7 +134,7 @@ public class LdapV3 implements Directory{
 
     public void updateAccountMembership(List<BaseAttribute> targetMembershipList, String ldapName,
                                         ManagedSystemObjectMatch matchObj,  LdapContext ldapctx,
-                                        List<ExtensibleObject> requestAttribute) {
+                                        ExtensibleObject obj) {
 
         List<String> currentMembershipList = userMembershipList(ldapName, matchObj,   ldapctx);
 

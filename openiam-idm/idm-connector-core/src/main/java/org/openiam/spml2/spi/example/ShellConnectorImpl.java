@@ -25,7 +25,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import javax.jws.WebParam;
 import javax.jws.WebService;
 import javax.naming.NamingEnumeration;
@@ -33,14 +32,13 @@ import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.BasicAttribute;
 import javax.naming.directory.BasicAttributes;
-import javax.naming.directory.ModificationItem;
 import javax.naming.directory.SearchControls;
 import javax.naming.ldap.LdapContext;
-import javax.xml.namespace.QName;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.connector.type.SearchRequest;
-import org.openiam.connector.type.SearchResponse;
+import org.openiam.connector.type.*;
+import org.openiam.connector.type.ResponseType;
 import org.openiam.dozer.converter.ManagedSystemObjectMatchDozerConverter;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.audit.service.IdmAuditLogDataService;
@@ -57,22 +55,10 @@ import org.openiam.idm.srvc.policy.service.PolicyDataService;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.user.service.UserDataService;
-import org.openiam.provision.dto.GenericProvisionObject;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.spml2.base.AbstractSpml2Complete;
-import org.openiam.spml2.interf.ConnectorService;
-import org.openiam.spml2.msg.*;
-import org.openiam.spml2.msg.password.ExpirePasswordRequestType;
-import org.openiam.spml2.msg.password.ResetPasswordRequestType;
-import org.openiam.spml2.msg.password.ResetPasswordResponseType;
-import org.openiam.spml2.msg.password.SetPasswordRequestType;
-import org.openiam.spml2.msg.password.ValidatePasswordRequestType;
-import org.openiam.spml2.msg.password.ValidatePasswordResponseType;
-import org.openiam.spml2.msg.suspend.ActiveRequestType;
-import org.openiam.spml2.msg.suspend.ActiveResponseType;
-import org.openiam.spml2.msg.suspend.ResumeRequestType;
-import org.openiam.spml2.msg.suspend.SuspendRequestType;
+import org.openiam.connector.ConnectorService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -127,7 +113,7 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
      * org.openiam.spml2.interf.SpmlCore#add(org.openiam.spml2.msg.AddRequestType
      * )
      */
-    public AddResponseType add(AddRequestType<? extends GenericProvisionObject> reqType) {
+    public UserResponse add(UserRequest reqType) {
         log.debug("add request called..");
 
         // powershell.exe -command "&
@@ -137,33 +123,12 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
         String userName = null;
 
         String requestID = reqType.getRequestID();
-        /*
-         * ContainerID - May specify the container in which this object should
-         * be created ie. ou=Development, org=Example
-         */
-        PSOIdentifierType containerID = reqType.getContainerID();
-        System.out.println("ContainerId =" + containerID);
 
-        /*
-         * PSO - Provisioning Service Object - - ID must uniquely specify an
-         * object on the target or in the target's namespace - Try to make the
-         * PSO ID immutable so that there is consistency across changes.
-         */
-        PSOIdentifierType psoID = reqType.getPsoID();
-        userName = psoID.getID();
+        userName = reqType.getUserIdentity();
 
-        System.out.println("PSOId=" + psoID.getID());
 
         /* targetID - */
         String targetID = reqType.getTargetID();
-
-        // Data sent with request - Data must be present in the request per the
-        // spec
-        ExtensibleType data = reqType.getData();
-        Map<QName, String> otherData = reqType.getOtherAttributes();
-
-        /* Indicates what type of data we should return from this operations */
-        ReturnDataType returnData = reqType.getReturnData();
 
         /*
          * A) Use the targetID to look up the connection information under
@@ -177,8 +142,7 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
             matchObj = managedSystemObjectMatchDozerConverter.convertToDTO(matchObjList.get(0),false);
         }
 
-        List<ExtensibleObject> requestAttributeList = reqType.getData()
-                .getAny();
+        ExtensibleObject obj = reqType.getUser();
 
         String password = null;
         String givenName = null;
@@ -203,64 +167,64 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
         hostlogin = managedSys.getUserId();
         hostpassword = managedSys.getDecryptPassword();
 
-        for (ExtensibleObject obj : requestAttributeList) {
-            List<ExtensibleAttribute> attrList = obj.getAttributes();
 
-            for (ExtensibleAttribute att : attrList) {
+        List<ExtensibleAttribute> attrList = obj.getAttributes();
 
-                System.out.println("Attr Name=" + att.getName() + " "
-                        + att.getValue());
+        for (ExtensibleAttribute att : attrList) {
 
-                String name = att.getName();
-                String value = att.getValue();
+            System.out.println("Attr Name=" + att.getName() + " "
+                    + att.getValue());
 
-                if (name.equalsIgnoreCase("password")) {
-                    password = value;
+            String name = att.getName();
+            String value = att.getValue();
 
-                }
-                if (name.equalsIgnoreCase("firstName")) {
-                    givenName = value;
+            if (name.equalsIgnoreCase("password")) {
+                password = value;
 
-                }
-                if (name.equalsIgnoreCase("lastName")) {
-                    lastName = value;
-                }
-                if (name.equalsIgnoreCase("displayName")) {
-                    displayName = value;
+            }
+            if (name.equalsIgnoreCase("firstName")) {
+                givenName = value;
 
-                }
-                if (name.equalsIgnoreCase("initials")) {
-                    init = value;
-                }
-                if (name.equalsIgnoreCase("cn")) {
-                    cn = value;
-                }
-                if (name.equalsIgnoreCase("principalName")) {
-                    principalName = value;
-                }
-                if (name.equalsIgnoreCase("sAMAccountName")) {
-                    sAMAccountName = value;
-                }
-                if (name.equalsIgnoreCase("middleInit")) {
-                    middleInit = value;
-                }
-                if (name.equalsIgnoreCase("email")) {
-                    email = value;
-                }
-                if (name.equalsIgnoreCase("nickname")) {
-                    nickname = value;
-                }
-                if (name.equalsIgnoreCase("getExchange")) {
-                    getExchange = value;
-                }
-                if (name.equalsIgnoreCase("title")) {
-                    title = value;
-                }
-                if (name.equalsIgnoreCase("userState")) {
-                    userState = value;
-                }
+            }
+            if (name.equalsIgnoreCase("lastName")) {
+                lastName = value;
+            }
+            if (name.equalsIgnoreCase("displayName")) {
+                displayName = value;
+
+            }
+            if (name.equalsIgnoreCase("initials")) {
+                init = value;
+            }
+            if (name.equalsIgnoreCase("cn")) {
+                cn = value;
+            }
+            if (name.equalsIgnoreCase("principalName")) {
+                principalName = value;
+            }
+            if (name.equalsIgnoreCase("sAMAccountName")) {
+                sAMAccountName = value;
+            }
+            if (name.equalsIgnoreCase("middleInit")) {
+                middleInit = value;
+            }
+            if (name.equalsIgnoreCase("email")) {
+                email = value;
+            }
+            if (name.equalsIgnoreCase("nickname")) {
+                nickname = value;
+            }
+            if (name.equalsIgnoreCase("getExchange")) {
+                getExchange = value;
+            }
+            if (name.equalsIgnoreCase("title")) {
+                title = value;
+            }
+            if (name.equalsIgnoreCase("userState")) {
+                userState = value;
             }
         }
+
 
         /*
          * $adHost = $args[0] $user= $args[1] $userpswd= $args[2] $cn= $args[3]
@@ -306,7 +270,7 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
             e.printStackTrace();
         }
 
-        AddResponseType response = new AddResponseType();
+        UserResponse response = new UserResponse();
         response.setStatus(StatusCodeType.SUCCESS);
 
         return response;
@@ -318,28 +282,16 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
      * @see org.openiam.spml2.interf.SpmlCore#delete(org.openiam.spml2.msg.
      * DeleteRequestType)
      */
-    public ResponseType delete(DeleteRequestType reqType) {
+    public UserResponse delete(UserRequest reqType) {
         System.out.println("Delete called..");
 
         String userName = null;
 
         String requestID = reqType.getRequestID();
 
-        /*
-         * PSO - Provisioning Service Object - - ID must uniquely specify an
-         * object on the target or in the target's namespace - Try to make the
-         * PSO ID immutable so that there is consistency across changes.
-         */
-        PSOIdentifierType psoID = reqType.getPsoID();
-        userName = psoID.getID();
+        userName = reqType.getUserIdentity();
         /* targetID - */
-        String targetID = psoID.getTargetID();
-
-        /*
-         * ContainerID - May specify the container in which this object should
-         * be created ie. ou=Development, org=Example
-         */
-        PSOIdentifierType containerID = psoID.getContainerID();
+        String targetID = reqType.getTargetID();
 
         /*
          * A) Use the targetID to look up the connection information under
@@ -377,7 +329,7 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
             e.printStackTrace();
         }
 
-        ResponseType respType = new ResponseType();
+        UserResponse respType = new UserResponse();
         respType.setStatus(StatusCodeType.SUCCESS);
         return respType;
 
@@ -386,31 +338,20 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
     /*
      * (non-Javadoc)
      * 
-     * @see org.openiam.spml2.interf.SpmlCore#listTargets(org.openiam.spml2.msg.
-     * ListTargetsRequestType)
-     */
-    public ListTargetsResponseType listTargets(ListTargetsRequestType reqType) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
      * @see org.openiam.spml2.interf.SpmlCore#lookup(org.openiam.spml2.msg.
      * LookupRequestType)
      */
-    public LookupResponseType lookup(LookupRequestType<? extends GenericProvisionObject> reqType) {
+    public SearchResponse lookup(LookupRequest reqType) {
 
-        LookupResponseType respType = new LookupResponseType();
+        SearchResponse respType = new SearchResponse();
 
         if (reqType == null) {
             respType.setStatus(StatusCodeType.FAILURE);
             respType.setError(ErrorCode.MALFORMED_REQUEST);
             return respType;
         }
-        PSOIdentifierType psoId = reqType.getPsoID();
-        String identity = psoId.getID();
+
+        String identity = reqType.getSearchValue();
         String rdn = null;
 
         respType.setStatus(StatusCodeType.SUCCESS);
@@ -424,8 +365,8 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
     * @see org.openiam.spml2.interf.SpmlCore#lookupAttributeNames(org.openiam.spml2.msg.
     * LookupAttributeRequestType)
     */
-    public LookupAttributeResponseType lookupAttributeNames(LookupAttributeRequestType<? extends GenericProvisionObject> reqType){
-        LookupAttributeResponseType respType = new LookupAttributeResponseType();
+    public LookupAttributeResponse lookupAttributeNames(LookupRequest reqType){
+        LookupAttributeResponse respType = new LookupAttributeResponse();
         respType.setStatus(StatusCodeType.FAILURE);
         respType.setError(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION);
 
@@ -451,7 +392,7 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
      * @see org.openiam.spml2.interf.SpmlCore#modify(org.openiam.spml2.msg.
      * ModifyRequestType)
      */
-    public ModifyResponseType modify(ModifyRequestType reqType) {
+    public UserResponse modify(UserRequest reqType) {
         String userName = null;
         String firstName = null;
         String lastName = null;
@@ -470,11 +411,10 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
          * object on the target or in the target's namespace - Try to make the
          * PSO ID immutable so that there is consistency across changes.
          */
-        PSOIdentifierType psoID = reqType.getPsoID();
-        userName = psoID.getID();
+        userName = reqType.getUserIdentity();
 
         /* targetID - */
-        String targetID = psoID.getTargetID();
+        String targetID = reqType.getTargetID();
 
         /*
          * A) Use the targetID to look up the connection information under
@@ -488,67 +428,57 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
             matchObj = managedSystemObjectMatchDozerConverter.convertToDTO(matchObjList.get(0),false);
         }
 
-        String host;
-        String hostlogin;
-        String hostpassword;
-
-        host = managedSys.getHostUrl();
-        hostlogin = managedSys.getUserId();
-        hostpassword = managedSys.getDecryptPassword();
+        String host = managedSys.getHostUrl();
+        String hostlogin = managedSys.getUserId();
+        String hostpassword = managedSys.getDecryptPassword();
 
         // get the firstName and lastName values
 
-        List<ModificationType> modTypeList = reqType.getModification();
-        for (ModificationType mod : modTypeList) {
-            ExtensibleType extType = mod.getData();
-            List<ExtensibleObject> extobjectList = extType.getAny();
-            for (ExtensibleObject obj : extobjectList) {
-                System.out.println("Object:" + obj.getName() + " - operation="
-                        + obj.getOperation());
-                List<ExtensibleAttribute> attrList = obj.getAttributes();
-                List<ModificationItem> modItemList = new ArrayList<ModificationItem>();
-                for (ExtensibleAttribute att : attrList) {
-                    if (att.getOperation() != 0 && att.getName() != null) {
-                        if (att.getName().equalsIgnoreCase("firstName")) {
-                            firstName = att.getValue();
-                            change = true;
-                        }
-                        if (att.getName().equalsIgnoreCase("lastName")) {
-                            lastName = att.getValue();
-                            change = true;
-                        }
-                        if (att.getName().equalsIgnoreCase("sAMAccountName")) {
-                            sAMAccountName = att.getValue();
-                            change = true;
-                        }
-                        if (att.getName().equalsIgnoreCase("displayName")) {
+        ExtensibleObject obj = reqType.getUser();
+        System.out.println("Object:" + obj.getName() + " - operation="
+                + obj.getOperation());
+        List<ExtensibleAttribute> attrList = obj.getAttributes();
 
-                            displayName = att.getValue();
-                            change = true;
-                        }
-                        if (att.getName().equalsIgnoreCase("ou")) {
-                            ou = att.getValue();
-                            change = true;
-                        }
-                        if (att.getName().equalsIgnoreCase("role")) {
-                            role = att.getValue();
-                            change = true;
-                        }
-                        if (att.getName().equalsIgnoreCase("initials")) {
-                            init = att.getValue();
-                            change = true;
-                        }
-                        if (att.getName().equalsIgnoreCase("title")) {
-                            title = att.getValue();
-                            change = true;
-                        }
-                        if (att.getName().equalsIgnoreCase("userState")) {
-                            userState = att.getValue();
-                            change = true;
-                        }
-
-                    }
+        for (ExtensibleAttribute att : attrList) {
+            if (att.getOperation() != 0 && att.getName() != null) {
+                if (att.getName().equalsIgnoreCase("firstName")) {
+                    firstName = att.getValue();
+                    change = true;
                 }
+                if (att.getName().equalsIgnoreCase("lastName")) {
+                    lastName = att.getValue();
+                    change = true;
+                }
+                if (att.getName().equalsIgnoreCase("sAMAccountName")) {
+                    sAMAccountName = att.getValue();
+                    change = true;
+                }
+                if (att.getName().equalsIgnoreCase("displayName")) {
+
+                    displayName = att.getValue();
+                    change = true;
+                }
+                if (att.getName().equalsIgnoreCase("ou")) {
+                    ou = att.getValue();
+                    change = true;
+                }
+                if (att.getName().equalsIgnoreCase("role")) {
+                    role = att.getValue();
+                    change = true;
+                }
+                if (att.getName().equalsIgnoreCase("initials")) {
+                    init = att.getValue();
+                    change = true;
+                }
+                if (att.getName().equalsIgnoreCase("title")) {
+                    title = att.getValue();
+                    change = true;
+                }
+                if (att.getName().equalsIgnoreCase("userState")) {
+                    userState = att.getValue();
+                    change = true;
+                }
+
             }
         }
 
@@ -593,7 +523,7 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
 
         // assign to google
 
-        ModifyResponseType respType = new ModifyResponseType();
+        UserResponse respType = new UserResponse();
         respType.setStatus(StatusCodeType.SUCCESS);
         return respType;
 
@@ -698,7 +628,7 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
      * org.openiam.spml2.interf.SpmlPassword#expirePassword(org.openiam.spml2
      * .msg.password.ExpirePasswordRequestType)
      */
-    public ResponseType expirePassword(ExpirePasswordRequestType request) {
+    public ResponseType expirePassword(PasswordRequest request) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -710,8 +640,8 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
      * org.openiam.spml2.interf.SpmlPassword#resetPassword(org.openiam.spml2
      * .msg.password.ResetPasswordRequestType)
      */
-    public ResetPasswordResponseType resetPassword(
-            ResetPasswordRequestType request) {
+    public ResponseType resetPassword(
+            PasswordRequest request) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -723,26 +653,15 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
      * org.openiam.spml2.interf.SpmlPassword#setPassword(org.openiam.spml2.msg
      * .password.SetPasswordRequestType)
      */
-    public ResponseType setPassword(SetPasswordRequestType reqType) {
+    public ResponseType setPassword(PasswordRequest reqType) {
         log.debug("setPassword request called..");
 
-        String userName;
+        String userName = reqType.getUserIdentity();
 
         String requestID = reqType.getRequestID();
-        /*
-         * PSO - Provisioning Service Object - - ID must uniquely specify an
-         * object on the target or in the target's namespace - Try to make the
-         * PSO ID immutable so that there is consistency across changes.
-         */
-        PSOIdentifierType psoID = reqType.getPsoID();
-        userName = psoID.getID();
+
         /* targetID - */
-        String targetID = psoID.getTargetID();
-        /*
-         * ContainerID - May specify the container in which this object should
-         * be created ie. ou=Development, org=Example
-         */
-        PSOIdentifierType containerID = psoID.getContainerID();
+        String targetID = reqType.getTargetID();
 
         /*
          * A) Use the targetID to look up the connection information under
@@ -793,8 +712,8 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
      * org.openiam.spml2.interf.SpmlPassword#validatePassword(org.openiam.spml2
      * .msg.password.ValidatePasswordRequestType)
      */
-    public ValidatePasswordResponseType validatePassword(
-            ValidatePasswordRequestType request) {
+    public ResponseType validatePassword(
+            PasswordRequest request) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -875,17 +794,12 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
         this.userManager = userManager;
     }
 
-    public ResponseType suspend(SuspendRequestType request) {
+    public ResponseType suspend(SuspendRequest request) {
         // TODO Auto-generated method stub
         return null;
     }
 
-    public ResponseType resume(ResumeRequestType request) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    public ActiveResponseType active(ActiveRequestType request) {
+    public ResponseType resume(ResumeRequest request) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -898,7 +812,8 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
         return response;
     }
 
-    public ResponseType testConnection(@WebParam(name = "requestType", targetNamespace = "") TestRequestType<? extends GenericProvisionObject> requestType) {
+    public ResponseType testConnection(
+            @WebParam(name = "managedSys", targetNamespace = "") ManagedSysDto managedSys) {
         return null; // To change body of implemented methods use File |
                      // Settings | File Templates.
     }

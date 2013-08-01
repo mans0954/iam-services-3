@@ -71,9 +71,6 @@ import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptIntegration;
-import org.openiam.spml2.msg.*;
-import org.openiam.spml2.msg.ResponseType;
-import org.openiam.spml2.msg.password.SetPasswordRequestType;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -205,17 +202,17 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
     }
 
     protected void checkAuditingAttributes(ProvisionUser pUser) {
-        if ( pUser.getUser().getRequestClientIP() == null || pUser.getUser().getRequestClientIP().isEmpty() ) {
-            pUser.getUser().setRequestClientIP("NA");
+        if ( pUser.getRequestClientIP() == null || pUser.getRequestClientIP().isEmpty() ) {
+            pUser.setRequestClientIP("NA");
         }
-        if ( pUser.getUser().getRequestorLogin() == null || pUser.getUser().getRequestorLogin().isEmpty() ) {
-            pUser.getUser().setRequestorLogin("NA");
+        if ( pUser.getRequestorLogin() == null || pUser.getRequestorLogin().isEmpty() ) {
+            pUser.setRequestorLogin("NA");
         }
-        if ( pUser.getUser().getRequestorDomain() == null || pUser.getUser().getRequestorDomain().isEmpty() ) {
-            pUser.getUser().setRequestorDomain("NA");
+        if ( pUser.getRequestorDomain() == null || pUser.getRequestorDomain().isEmpty() ) {
+            pUser.setRequestorDomain("NA");
         }
-        if ( pUser.getUser().getCreatedBy() == null || pUser.getUser().getCreatedBy().isEmpty() ) {
-            pUser.getUser().setCreatedBy("NA");
+        if ( pUser.getCreatedBy() == null || pUser.getCreatedBy().isEmpty() ) {
+            pUser.setCreatedBy("NA");
         }
     }
 
@@ -250,7 +247,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
         if (connector.getConnectorInterface() != null &&
                 connector.getConnectorInterface().equalsIgnoreCase("REMOTE")) {
 
-            RemoteLookupRequest reqType = new RemoteLookupRequest();
+            LookupRequest reqType = new LookupRequest();
             String requestId = "R" + UUIDGen.getUUID();
             reqType.setRequestID(requestId);
             reqType.setSearchValue(identity);
@@ -511,12 +508,12 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                 identity.setIsLocked(0);
                 identity.setFirstTimeLogin(1);
                 identity.setStatus("ACTIVE");
-                if (pUser.getUser().getPrincipalList() == null) {
+                if (pUser.getPrincipalList() == null) {
                     List<Login> idList = new ArrayList<Login>();
                     idList.add(identity);
-                    pUser.getUser().setPrincipalList(idList);
+                    pUser.setPrincipalList(idList);
                 } else {
-                    pUser.getUser().getPrincipalList().add(identity);
+                    pUser.getPrincipalList().add(identity);
                 }
 
             } else {
@@ -563,13 +560,19 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                 resp.setErrorCode(ResponseCode.INTERNAL_ERROR);
                 return resp;
             }
-            user.getUser().setUserId(newUser.getUserId());
+            user.setUserId(newUser.getUserId());
             log.debug("User id=" + newUser.getUserId() + " created in openiam repository");
 
-            addSupervisor(user);
+            code = addSupervisors(user);
+            if (code != ResponseCode.SUCCESS) {
+                resp.setStatus(ResponseStatus.FAILURE);
+                resp.setErrorCode(code);
+                return resp;
+            }
+
             try {
-                addPrincipals(user, user.getUser().getUserId());
-            }catch(EncryptionException e) {
+                addPrincipals(user, user.getUserId());
+            } catch(EncryptionException e) {
                 resp.setStatus(ResponseStatus.FAILURE);
                 resp.setErrorCode(ResponseCode.FAIL_ENCRYPTION);
                 return resp;
@@ -602,16 +605,16 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
          */
     private void associateEmail(ProvisionUser user) {
 
-        if (user.getUser().getEmail() == null || user.getUser().getEmail().isEmpty()) {
+        if (user.getEmail() == null || user.getEmail().isEmpty()) {
             return;
 
         }
-        Set<EmailAddress> emailSet = user.getUser().getEmailAddresses();
+        Set<EmailAddress> emailSet = user.getEmailAddresses();
 
         if (!containsEmail("EMAIL1", emailSet)) {
 
-            EmailAddress e = new EmailAddress(user.getUser().getEmail(), "EMAIL1", "", true);
-            user.getUser().getEmailAddresses().add(e);
+            EmailAddress e = new EmailAddress(user.getEmail(), "EMAIL1", "", true);
+            user.getEmailAddresses().add(e);
 
         }
 
@@ -663,16 +666,24 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
     }
 
-    private void addSupervisor(ProvisionUser u) {
-        Supervisor supervisor = u.getUser().getSupervisor();
-        if (supervisor != null && supervisor.getSupervisor() != null) {
-            supervisor.setEmployee(u.getUser());
-            userMgr.addSupervisor(supervisorDozerConverter.convertToEntity(supervisor, true));
+    private ResponseCode addSupervisors(ProvisionUser u) {
+        Set<User> superiors = u.getSuperiors();
+        if (CollectionUtils.isNotEmpty(superiors)) {
+            for (User s : superiors) {
+                try {
+                    userMgr.addSuperior(s.getUserId(), u.getUserId());
+                    log.info("created user supervisor");
+
+                } catch (Exception e) {
+                    return ResponseCode.SUPERVISOR_ERROR;
+                }
+            }
         }
+        return ResponseCode.SUCCESS;
     }
 
     private void addPrincipals(final ProvisionUser u, final String userId) throws EncryptionException {
-        List<Login> principalList = u.getUser().getPrincipalList();
+        List<Login> principalList = u.getPrincipalList();
         if(CollectionUtils.isNotEmpty(principalList)) {
             for (final Login lg: principalList) {
                 lg.setFirstTimeLogin(1);
@@ -708,12 +719,12 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                 groupManager.addUserToGroup(g.getGrpId(), newUserId);
                 // add to audit log
                 logList.add( auditHelper.createLogObject("ADD GROUP",
-                        user.getUser().getRequestorDomain(), user.getUser().getRequestorLogin(),
-                        "IDM SERVICE", user.getUser().getCreatedBy(), "0", "USER", user.getUser().getUserId(),
+                        user.getRequestorDomain(), user.getRequestorLogin(),
+                        "IDM SERVICE", user.getCreatedBy(), "0", "USER", user.getUserId(),
                         null, "SUCCESS", null, "USER_STATUS",
                         user.getUser().getStatus().toString(),
                         null, null, user.getSessionId(), null, g.getGrpName(),
-                        user.getUser().getRequestClientIP(), null, null) );
+                        user.getRequestClientIP(), null, null) );
 
             }
         }
@@ -744,12 +755,12 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                 roleDataService.assocUserToRole(userRoleDozerConverter.convertToEntity(ur, true));
 
                 logList.add( auditHelper.createLogObject("ADD ROLE",
-                        user.getUser().getRequestorDomain(), user.getUser().getRequestorLogin(),
-                        "IDM SERVICE", user.getUser().getCreatedBy(), "0", "USER", user.getUser().getUserId(),
+                        user.getRequestorDomain(), user.getRequestorLogin(),
+                        "IDM SERVICE", user.getCreatedBy(), "0", "USER", user.getUserId(),
                         null, "SUCCESS", null, "USER_STATUS",
                         user.getUser().getStatus().toString(),
                         "NA", null, user.getSessionId(), null, ur.getRoleId(),
-                        user.getUser().getRequestClientIP(), null, null) );
+                        user.getRequestClientIP(), null, null) );
 
             }
         }
@@ -765,15 +776,15 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                 if (org.getId() == null) {
                     return ResponseCode.OBJECT_ID_INVALID;
                 }
-                orgManager.addUserToOrg(org.getId(), user.getUser().getUserId());
+                orgManager.addUserToOrg(org.getId(), user.getUserId());
 
                 logList.add( auditHelper.createLogObject("ADD AFFILIATION",
-                        user.getUser().getRequestorDomain(), user.getUser().getRequestorLogin(),
-                        "IDM SERVICE", user.getUser().getCreatedBy(), "0", "USER", user.getUser().getUserId(),
+                        user.getRequestorDomain(), user.getRequestorLogin(),
+                        "IDM SERVICE", user.getCreatedBy(), "0", "USER", user.getUserId(),
                         null, "SUCCESS", null, "USER_STATUS",
                         user.getUser().getStatus().toString(),
                         "NA", null, user.getSessionId(), null, org.getOrganizationName(),
-                        user.getUser().getRequestClientIP(), null, null) );
+                        user.getRequestClientIP(), null, null) );
 
             }
         }
@@ -834,7 +845,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                 log.error(e);
             }
             principalList.add(primaryIdentity);
-            user.getUser().setPrincipalList(principalList);
+            user.setPrincipalList(principalList);
 
            // user.getEmailAddress().add(primaryEmail);
 
@@ -882,7 +893,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
         // this method should only be the called if the request already contains 1 or more identities
 
-        List<Login> principalList = user.getUser().getPrincipalList();
+        List<Login> principalList = user.getPrincipalList();
         List<AttributeMap> policyAttrMap = managedSysService.
                 getResourceAttributeMaps(sysConfiguration.getDefaultManagedSysId());
         //List<AttributeMap> policyAttrMap = resourceDataService.getResourceAttributeMaps(sysConfiguration.getDefaultManagedSysId());
@@ -913,7 +924,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
             }
             //primaryIdentity.setId(primaryID);
             //principalList.add(primaryIdentity);
-            user.getUser().setPrincipalList(principalList);
+            user.setPrincipalList(principalList);
             //user.getEmailAddress().add(primaryEmail);
 
         } else {
@@ -1390,31 +1401,31 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
         user.updateMissingUserAttributes(origUser);
 
         // check addresses
-        Set<Address> addressSet = user.getUser().getAddresses();
+        Set<Address> addressSet = user.getAddresses();
 
         if (addressSet == null || addressSet.isEmpty()) {
 
             log.debug("- Adding original addressSet to the user object");
 
-            List<AddressEntity> addressList = userMgr.getAddressList(user.getUser().getUserId());
+            List<AddressEntity> addressList = userMgr.getAddressList(user.getUserId());
             if (addressList != null && !addressList.isEmpty()) {
 
-                user.getUser().setAddresses(new HashSet<Address>(addressDozerConverter.convertToDTOList(addressList, false)));
+                user.setAddresses(new HashSet<Address>(addressDozerConverter.convertToDTOList(addressList, false)));
 
             }
         }
 
         // check email addresses
 
-        Set<EmailAddress> emailAddressSet =  user.getUser().getEmailAddresses();
+        Set<EmailAddress> emailAddressSet =  user.getEmailAddresses();
         if (emailAddressSet == null || emailAddressSet.isEmpty()) {
 
             log.debug("- Adding original emailSet to the user object");
 
-            List<EmailAddressEntity> emailList =  userMgr.getEmailAddressList(user.getUser().getUserId());
+            List<EmailAddressEntity> emailList =  userMgr.getEmailAddressList(user.getUserId());
             if ( emailList != null && !emailList.isEmpty() ) {
 
-                user.getUser().setEmailAddresses( new HashSet<EmailAddress>(emailAddressDozerConverter.
+                user.setEmailAddresses( new HashSet<EmailAddress>(emailAddressDozerConverter.
                         convertToDTOList(emailList, false)) );
 
             }
@@ -1422,15 +1433,15 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
         }
 
         // check the phone objects
-        Set<Phone> phoneSet = user.getUser().getPhones();
+        Set<Phone> phoneSet = user.getPhones();
         if (phoneSet == null || phoneSet.isEmpty()) {
 
             log.debug("- Adding original phoneSet to the user object");
 
-            List<PhoneEntity> phoneList  = userMgr.getPhoneList(user.getUser().getUserId());
+            List<PhoneEntity> phoneList  = userMgr.getPhoneList(user.getUserId());
             if ( phoneList != null && !phoneList.isEmpty()) {
 
-                user.getUser().setPhones(new HashSet<Phone>(phoneDozerConverter.convertToDTOList(phoneList, false)));
+                user.setPhones(new HashSet<Phone>(phoneDozerConverter.convertToDTOList(phoneList, false)));
 
             }
 
@@ -1438,19 +1449,19 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
 
         // check the user attributes
-        Map<String, UserAttribute> userAttrSet = user.getUser().getUserAttributes();
+        Map<String, UserAttribute> userAttrSet = user.getUserAttributes();
         if (userAttrSet == null || userAttrSet.isEmpty() ) {
 
             log.debug("- Adding original user attributes to the user object");
 
-            UserEntity u =  userMgr.getUser(user.getUser().getUserId());
+            UserEntity u =  userMgr.getUser(user.getUserId());
             if (  u.getUserAttributes() != null) {
                 HashMap<String, UserAttribute> userAttributeMap = new HashMap<String, UserAttribute>();
                 for(Map.Entry<String, UserAttributeEntity> entry : u.getUserAttributes().entrySet()) {
                     userAttributeMap.put(entry.getKey(),
                             userAttributeDozerConverter.convertToDTO(entry.getValue(), true));
                 }
-                user.getUser().setUserAttributes(userAttributeMap);
+                user.setUserAttributes(userAttributeMap);
             }
 
         }
@@ -1462,7 +1473,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
             log.debug("- Adding original affiliationList to the user object");
 
-            List<Organization> userAffiliations = orgManager.getOrganizationsForUser(user.getUser().getUserId(), null, 0, Integer.MAX_VALUE);
+            List<Organization> userAffiliations = orgManager.getOrganizationsForUser(user.getUserId(), null, 0, Integer.MAX_VALUE);
             if (userAffiliations != null && !userAffiliations.isEmpty())  {
 
                 user.setUserAffiliations(userAffiliations);
@@ -1473,31 +1484,64 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
         // add roles if not part of the request
         List<Role> userRoleList = user.getMemberOfRoles();
         if ( userRoleList == null || userRoleList.isEmpty()) {
-            List<RoleEntity> curRoles = roleDataService.getUserRoles(user.getUser().getUserId(), null, 0, Integer.MAX_VALUE);
+            List<RoleEntity> curRoles = roleDataService.getUserRoles(user.getUserId(), null, 0, Integer.MAX_VALUE);
             user.setMemberOfRoles(roleDozerConverter.convertToDTOList(curRoles, false));
         }
 
     }
 
-    public void updateSupervisor(User user, Supervisor supervisor) {
+    public void updateSupervisors(User user, Set<User> superiors) {
 
-        if (supervisor == null) {
-            return;
-        }
-        // check the current supervisor - if different - remove it and add the new one.
         List<SupervisorEntity> supervisorList = userMgr.getSupervisors(user.getUserId());
-        for (SupervisorEntity s : supervisorList) {
-            log.debug("looking to match supervisor ids = " + s.getSupervisor().getUserId() + " " +
-                    supervisor.getSupervisor().getUserId());
-            if (s.getSupervisor().getUserId().equalsIgnoreCase(supervisor.getSupervisor().getUserId())) {
-                return;
-            }
-            userMgr.removeSupervisor(s.getOrgStructureId());
-        }
-        log.debug("adding supervisor: " + supervisor.getSupervisor().getUserId());
-        supervisor.setEmployee(user);
-        userMgr.addSupervisor(supervisorDozerConverter.convertToEntity(supervisor, true));
 
+        if (CollectionUtils.isNotEmpty(superiors)) {
+            for (User u : superiors) {
+                if (user.getUserId().equals(u.getUserId())) {
+                    log.info("User can't be a superior for himself");
+                    continue;
+                }
+
+                boolean isToAdd = true;
+                for (SupervisorEntity s : supervisorList) {
+                    if (s.getSupervisor().getUserId().equals(u.getUserId())) {
+                        isToAdd = false; // already exists
+                        break;
+                    } else if (s.getEmployee().getUserId().equals(u.getUserId())) {
+                        isToAdd = false;
+                        log.info(String.format("User with id='%s' is a subordinate of User with id='%s'",
+                                u.getUserId(), s.getSupervisor().getUserId()));
+                        break;
+                    }
+                }
+                if (isToAdd) {
+                    try {
+                        userMgr.addSuperior(u.getUserId(), user.getUserId());
+                        log.info(String.format("Adding a supervisor user %s for user %s",
+                                u.getUserId(), user.getUserId()));
+                    } catch (Exception e) {
+                        log.info(String.format("Can't add a supervisor user %s for user %s",
+                                u.getUserId(), user.getUserId()));
+                    }
+                }
+            }
+        }
+
+        for (SupervisorEntity s : supervisorList) {
+            boolean isToRemove = true;
+            if (CollectionUtils.isNotEmpty(superiors)) {
+                for (User u : superiors) {
+                    if (s.getSupervisor().getUserId().equals(u.getUserId())) {
+                        isToRemove = false;
+                        break;
+                    }
+                }
+            }
+            if (isToRemove) {
+                userMgr.removeSupervisor(s.getOrgStructureId());
+                log.info(String.format("Removed a supervisor user %s from user %s",
+                        s.getSupervisor().getUserId(), user.getUserId()));
+            }
+        }
     }
 
     public void updateGroupAssociation(String userId, List<Group> origGroupList,  List<Group> newGroupList) {
@@ -1611,12 +1655,12 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                 roleDataService.assocUserToRole(userRoleDozerConverter.convertToEntity(ur, true));
 
                 logList.add( auditHelper.createLogObject("ADD ROLE",
-                        pUser.getUser().getRequestorDomain(),  pUser.getUser().getRequestorLogin(),
+                        pUser.getRequestorDomain(),  pUser.getRequestorLogin(),
                         "IDM SERVICE", user.getCreatedBy(), "0", "USER", user.getUserId(),
                         null, "SUCCESS", null, "USER_STATUS",
                         user.getStatus().toString(),
                         "NA", null, null, null, ur.getRoleId(),
-                        pUser.getUser().getRequestClientIP(), primaryIdentity.getLogin(), primaryIdentity.getDomainId()));
+                        pUser.getRequestClientIP(), primaryIdentity.getLogin(), primaryIdentity.getDomainId()));
 
                 //roleDataService.addUserToRole(rl.getId().getServiceId(), rl.getId().getRoleId(), userId);
             }
@@ -1647,12 +1691,12 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                     roleDataService.removeUserFromRole(rl.getRoleId(), userId);
 
                     logList.add( auditHelper.createLogObject("REMOVE ROLE",
-                            pUser.getUser().getRequestorDomain(), pUser.getUser().getRequestorLogin(),
+                            pUser.getRequestorDomain(), pUser.getRequestorLogin(),
                             "IDM SERVICE", user.getCreatedBy(), "0", "USER", user.getUserId(),
                             null, "SUCCESS", null, "USER_STATUS",
                             user.getStatus().toString(),
                             "NA", null, null, null, rl.getRoleId(),
-                            pUser.getUser().getRequestClientIP(), primaryIdentity.getLogin(), primaryIdentity.getDomainId()));
+                            pUser.getRequestClientIP(), primaryIdentity.getLogin(), primaryIdentity.getDomainId()));
 
                 }
                 log.debug("Adding role to deleteRoleList =" + rl);
@@ -1687,12 +1731,12 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                     }
                     roleDataService.assocUserToRole(userRoleDozerConverter.convertToEntity(ur, true));
 
-                    logList.add( auditHelper.createLogObject("ADD ROLE", pUser.getUser().getRequestorDomain(), pUser.getUser().getRequestorLogin(),
+                    logList.add( auditHelper.createLogObject("ADD ROLE", pUser.getRequestorDomain(), pUser.getRequestorLogin(),
                             "IDM SERVICE", user.getCreatedBy(), "0", "USER", user.getUserId(),
                             null, "SUCCESS", null, "USER_STATUS",
                             user.getStatus().toString(),
                             "NA", null, null, null, ur.getRoleId(),
-                            pUser.getUser().getRequestClientIP(), primaryIdentity.getLogin(), primaryIdentity.getDomainId()));
+                            pUser.getRequestClientIP(), primaryIdentity.getLogin(), primaryIdentity.getDomainId()));
 
                     //roleDataService.addUserToRole(r.getId().getServiceId(), r.getId().getRoleId(), userId);
                 } else {
@@ -2337,12 +2381,12 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                 }
             }
 
-            if (pUser.getUser().getPrincipalList() == null) {
+            if (pUser.getPrincipalList() == null) {
                 List<Login> principalList = new ArrayList<Login>();
                 principalList.add(currentIdentity);
-                pUser.getUser().setPrincipalList(principalList);
+                pUser.setPrincipalList(principalList);
             } else {
-                pUser.getUser().getPrincipalList().add(currentIdentity);
+                pUser.getPrincipalList().add(currentIdentity);
             }
 
         }
@@ -2356,25 +2400,22 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                              ManagedSystemObjectMatch matchObj, ExtensibleUser extUser,
                              ProvisionUser user, IdmAuditLog idmAuditLog) {
 
-        AddRequestType<ProvisionUser> addReqType = new AddRequestType<ProvisionUser>();
+        UserRequest addReqType = new UserRequest();
 
-        PSOIdentifierType idType = new PSOIdentifierType(mLg.getLogin(), null, "target");
-
-        addReqType.setPsoID(idType);
+        addReqType.setUserIdentity(mLg.getLogin());
         addReqType.setRequestID(requestId);
         addReqType.setTargetID(mLg.getManagedSysId());
-        addReqType.getData().getAny().add(extUser);
-        addReqType.setProvisionObject(user);
+        addReqType.setUser(extUser);
         log.debug("Local connector - Creating identity in target system:" + mLg.getLoginId());
-        AddResponseType resp = connectorAdapter.addRequest(mSys, addReqType, muleContext);
+        UserResponse resp = connectorAdapter.addRequest(mSys, addReqType, muleContext);
 
-        auditHelper.addLog("ADD IDENTITY", user.getUser().getRequestorDomain(), user.getUser().getRequestorLogin(),
-                "IDM SERVICE", user.getUser().getCreatedBy(), mLg.getManagedSysId(),
-                "USER", user.getUser().getUserId(),
+        auditHelper.addLog("ADD IDENTITY", user.getRequestorDomain(), user.getRequestorLogin(),
+                "IDM SERVICE", user.getCreatedBy(), mLg.getManagedSysId(),
+                "USER", user.getUserId(),
                 idmAuditLog.getLogId(), resp.getStatus().toString(), idmAuditLog.getLogId(), "IDENTITY_STATUS",
                 "SUCCESS",
-                requestId, resp.getErrorCodeAsStr(), user.getSessionId(), resp.getErrorMessage(),
-                user.getUser().getRequestorLogin(), mLg.getLogin(), mLg.getDomainId());
+                requestId, resp.getErrorCodeAsStr(), user.getSessionId(), resp.getErrorMsgAsStr(),
+                user.getRequestorLogin(), mLg.getLogin(), mLg.getDomainId());
 
         return resp.getStatus() != StatusCodeType.FAILURE;
     }
@@ -2385,7 +2426,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
         log.debug("Calling remote connector " + connector.getName());
 
-        RemoteUserRequest userReq = new RemoteUserRequest();
+        UserRequest userReq = new UserRequest();
         userReq.setUserIdentity(mLg.getLogin());
         userReq.setRequestID(requestId);
         userReq.setTargetID(mLg.getManagedSysId());
@@ -2419,7 +2460,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
             IdmAuditLog auditLog
     ) {
 
-        RemoteUserRequest request = new RemoteUserRequest();
+        UserRequest request = new UserRequest();
 
         request.setUserIdentity(mLg.getLogin());
         request.setRequestID(requestId);
@@ -2437,28 +2478,26 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
         UserResponse resp = remoteConnectorAdapter.deleteRequest(mSys, request, connector, muleContext);
 
         auditHelper.addLog("DELETE IDENTITY", auditLog.getDomainId(), auditLog.getPrincipal(),
-                "IDM SERVICE", user.getUser().getCreatedBy(), mLg.getManagedSysId(),
-                "IDENTITY", user.getUser().getUserId(),
+                "IDM SERVICE", user.getCreatedBy(), mLg.getManagedSysId(),
+                "IDENTITY", user.getUserId(),
                 auditLog.getLogId(), resp.getStatus().toString(), auditLog.getLogId(), "IDENTITY_STATUS",
                 "DELETED",
                 requestId, resp.getErrorCodeAsStr(), user.getSessionId(), resp.getErrorMsgAsStr(),
-                user.getUser().getRequestClientIP(), mLg.getLogin(), mLg.getDomainId());
+                user.getRequestClientIP(), mLg.getLogin(), mLg.getDomainId());
 
         return resp;
     }
 
     protected ResponseType localDelete(Login l, String requestId,
-                                     PSOIdentifierType idType,
                                      ManagedSysDto mSys,
-                                     ProvisionUser user,
                                      IdmAuditLog auditLog) {
 
         log.debug("Local delete for=" + l);
 
-        DeleteRequestType<ProvisionUser> reqType = new DeleteRequestType<ProvisionUser>();
+        UserRequest reqType = new UserRequest();
         reqType.setRequestID(requestId);
-        reqType.setPsoID(idType);
-        reqType.setProvisionObject(user);
+        reqType.setUserIdentity(l.getLogin());
+
         ResponseType resp = connectorAdapter.deleteRequest(mSys, reqType, muleContext);
 
         String logid = null;
@@ -2472,13 +2511,13 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
             logid = auditLog.getLogId();
         }
 
-        auditHelper.addLog("DELETE IDENTITY", user.getUser().getRequestorDomain(), user.getUser().getRequestorLogin(),
-                "IDM SERVICE", user.getUser().getCreatedBy(), l.getManagedSysId(),
-                "IDENTITY", user.getUser().getUserId(),
+        auditHelper.addLog("DELETE IDENTITY", l.getDomainId(), l.getLogin(),
+                "IDM SERVICE", l.getCreatedBy(), l.getManagedSysId(),
+                "IDENTITY", l.getUserId(),
                 logid, status, logid,
                 "IDENTITY_STATUS", "DELETED",
-                requestId, resp.getErrorCodeAsStr(), user.getSessionId(), resp.getErrorMessage(),
-                user.getUser().getRequestClientIP(), l.getLogin(), l.getDomainId());
+                requestId, resp.getErrorCodeAsStr(), "", resp.getErrorMsgAsStr(),
+                l.getLastLoginIP(), l.getLogin(), l.getDomainId());
 
         return resp;
     }
@@ -2498,10 +2537,9 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
     protected void localResetPassword(String requestId, Login login,
             String password, ManagedSysDto mSys, PasswordSync passwordSync) {
 
-        SetPasswordRequestType pswdReqType = new SetPasswordRequestType();
-        PSOIdentifierType idType = new PSOIdentifierType(login.getLogin(),
-                null, mSys.getManagedSysId());
-        pswdReqType.setPsoID(idType);
+        PasswordRequest pswdReqType = new PasswordRequest();
+        pswdReqType.setUserIdentity(login.getLogin());
+        pswdReqType.setTargetID(mSys.getManagedSysId());
         pswdReqType.setRequestID(requestId);
         pswdReqType.setPassword(password);
         ResponseType respType = connectorAdapter.setPasswordRequest(mSys, pswdReqType, muleContext);
@@ -2509,7 +2547,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
         auditHelper.addLog("RESET PASSWORD IDENTITY", passwordSync.getRequestorDomain(), passwordSync.getRequestorLogin(),
                 "IDM SERVICE", null, mSys.getManagedSysId(), "PASSWORD", null, null, respType.getStatus().toString(), "NA", null,
                 null,
-                requestId, respType.getErrorCodeAsStr(), null, respType.getErrorMessage(),
+                requestId, respType.getErrorCodeAsStr(), null, respType.getErrorMsgAsStr(),
                 null, login.getLogin(), login.getDomainId());
     }
     
@@ -2534,7 +2572,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
             ManagedSystemObjectMatch matchObj, ProvisionConnectorDto connector,
             PasswordSync passwordSync) {
 
-        RemotePasswordRequest req = new RemotePasswordRequest();
+        PasswordRequest req = new PasswordRequest();
         req.setUserIdentity(login.getLogin());
         req.setRequestID(requestId);
         req.setTargetID(login.getManagedSysId());
@@ -2575,7 +2613,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                                                                       ManagedSystemObjectMatch matchObj,
                                                                       ProvisionConnectorDto connector) {
 
-        RemotePasswordRequest req = new RemotePasswordRequest();
+        PasswordRequest req = new PasswordRequest();
         req.setUserIdentity(login.getLogin());
         req.setRequestID(requestId);
         req.setTargetID(login.getManagedSysId());
@@ -2613,31 +2651,20 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                                           PasswordSync passwordSync,
                                           ManagedSysDto mSys) {
 
-        SetPasswordRequestType pswdReqType = new SetPasswordRequestType();
-        PSOIdentifierType idType = new PSOIdentifierType(login.getLogin(), null,
-                mSys.getManagedSysId());
-        pswdReqType.setPsoID(idType);
+        PasswordRequest pswdReqType = new PasswordRequest();
+        pswdReqType.setUserIdentity(login.getLogin());
+        pswdReqType.setTargetID(mSys.getManagedSysId());
         pswdReqType.setRequestID(requestId);
         pswdReqType.setPassword(passwordSync.getPassword());
 
         // add the extensible attributes is they exist
-
-        if (passwordSync.isPassThruAttributes()) {
-            List<ExtensibleAttribute> attrList = passwordSync.getAttributeList();
-            if (attrList != null) {
-                ExtensibleObject extObj = new ExtensibleObject();
-                extObj.setName("ATTRIBUTES");
-                extObj.setAttributes(attrList);
-                pswdReqType.getAny().add(extObj);
-            }
-        }
 
         ResponseType respType = connectorAdapter.setPasswordRequest(mSys, pswdReqType, muleContext);
 
         auditHelper.addLog("SET PASSWORD IDENTITY", passwordSync.getRequestorDomain(), passwordSync.getRequestorLogin(),
                 "IDM SERVICE", null, "PASSWORD", "PASSWORD", null, null, respType.getStatus().toString(), "NA", null,
                 null,
-                requestId, respType.getErrorCodeAsStr(), null, respType.getErrorMessage(),
+                requestId, respType.getErrorCodeAsStr(), null, respType.getErrorMsgAsStr(),
                 passwordSync.getRequestClientIP(), login.getLogin(), login.getDomainId());
         return respType;
     }

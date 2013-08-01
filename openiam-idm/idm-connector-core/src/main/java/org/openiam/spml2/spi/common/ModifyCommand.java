@@ -1,7 +1,7 @@
 package org.openiam.spml2.spi.common;
 
-import org.openiam.spml2.msg.ModifyRequestType;
-import org.openiam.spml2.msg.ModifyResponseType;
+import org.openiam.connector.type.UserRequest;
+import org.openiam.connector.type.UserResponse;
 
 /**
  * Created with IntelliJ IDEA.
@@ -12,5 +12,5 @@ import org.openiam.spml2.msg.ModifyResponseType;
  */
 @Deprecated
 public interface ModifyCommand {
-    public ModifyResponseType modify(final ModifyRequestType reqType);
+    public UserResponse modify(final UserRequest reqType);
 }

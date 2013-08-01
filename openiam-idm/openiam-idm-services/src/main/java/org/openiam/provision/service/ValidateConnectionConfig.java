@@ -4,12 +4,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mule.api.MuleContext;
 import org.openiam.base.ws.Response;
+import org.openiam.connector.type.ResponseType;
+import org.openiam.connector.type.StatusCodeType;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
-import org.openiam.spml2.msg.ResponseType;
-import org.openiam.spml2.msg.StatusCodeType;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -61,7 +61,7 @@ public class ValidateConnectionConfig {
                 log.debug("Test connection failed.");
 
                 resp.setStatus(org.openiam.base.ws.ResponseStatus.FAILURE);
-                resp.setErrorText(localResp.getErrorMessage());
+                resp.setErrorText(localResp.getErrorMsgAsStr());
             }
 
         }

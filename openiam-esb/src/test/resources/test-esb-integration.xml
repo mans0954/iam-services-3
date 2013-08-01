@@ -213,10 +213,10 @@
 		<property name="address"
 			value="${openiam.service_host}${openiam.idm.ws.path}FileWebService" />
 	</bean>
-	<bean id="csvConnector" class="org.openiam.spml2.interf.ConnectorService"
+	<bean id="csvConnector" class="org.openiam.connector.ConnectorService"
 		factory-bean="csvConnectorFactory" factory-method="create" />
 	<bean id="csvConnectorFactory" class="org.apache.cxf.jaxws.JaxWsProxyFactoryBean">
-		<property name="serviceClass" value="org.openiam.spml2.interf.ConnectorService" />
+		<property name="serviceClass" value="org.openiam.connector.ConnectorService" />
 		<property name="address"
 			value="${openiam.service_host}${openiam.idm.ws.path}CSVConnectorService" />
 	</bean>

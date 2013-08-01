@@ -27,15 +27,12 @@ import javax.jws.WebService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.openiam.connector.type.LookupAttributeResponse;
+import org.openiam.connector.type.LookupRequest;
 import org.openiam.connector.type.SearchRequest;
 import org.openiam.connector.type.SearchResponse;
-import org.openiam.spml2.msg.ErrorCode;
-import org.openiam.spml2.msg.LookupAttributeRequestType;
-import org.openiam.spml2.msg.LookupAttributeResponseType;
-import org.openiam.spml2.msg.StatusCodeType;
 import org.openiam.spml2.spi.common.LookupAttributeNamesCommand;
 import org.openiam.spml2.spi.common.jdbc.*;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -63,7 +60,7 @@ public class OracleConnectorImpl extends AbstractJDBCConnectorImpl {
     * @see org.openiam.spml2.interf.SpmlCore#lookupAttributeNames(org.openiam.spml2.msg.
     * LookupAttributeRequestType)
     */
-    public LookupAttributeResponseType lookupAttributeNames(LookupAttributeRequestType reqType){
+    public LookupAttributeResponse lookupAttributeNames(LookupRequest reqType){
         return lookupAttributeNamesCommand.lookupAttributeNames(reqType);
     }
 

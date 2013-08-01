@@ -1,16 +1,14 @@
 package org.openiam.spml2.spi.mysql;
 
-import org.openiam.connector.type.SearchRequest;
-import org.openiam.connector.type.SearchResponse;
+import org.openiam.connector.type.*;
+import org.openiam.connector.type.ResponseType;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.spml2.base.AbstractSpml2Complete;
-import org.openiam.spml2.msg.*;
-import org.openiam.spml2.msg.password.*;
-import org.openiam.spml2.msg.suspend.ResumeRequestType;
-import org.openiam.spml2.msg.suspend.SuspendRequestType;
+import org.openiam.connector.ConnectorService;
 
 import javax.jws.WebParam;
+import javax.jws.WebService;
 
 /**
  * Implementation object for the MySQL Connector
@@ -18,16 +16,15 @@ import javax.jws.WebParam;
  * Date: 3/21/12
  * Time: 10:07 PM
  */
-//@WebService(endpointInterface = "org.openiam.spml2.interf.ConnectorService",
-//        targetNamespace = "http://www.openiam.org/service/connector",
-//        portName = "MySQLConnectorPort",
-//        serviceName = "MySQLConnector")
-@Deprecated
-public class MySQLConnectorImpl extends AbstractSpml2Complete  {
+@WebService(endpointInterface = "org.openiam.spml2.interf.ConnectorService",
+        targetNamespace = "http://www.openiam.org/service/connector",
+        portName = "MySQLConnectorPort",
+        serviceName = "MySQLConnector")
+public class MySQLConnectorImpl extends AbstractSpml2Complete implements ConnectorService {
 
     protected MySQLAddCommand addCommand;
 
-    public AddResponseType add(AddRequestType reqType) {
+    public UserResponse add(UserRequest reqType) {
 
         return addCommand.add(reqType);
 
@@ -44,21 +41,19 @@ public class MySQLConnectorImpl extends AbstractSpml2Complete  {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-
-
-    public ModifyResponseType modify(@WebParam(name = "reqType", targetNamespace = "") ModifyRequestType reqType) {
+    public UserResponse modify(@WebParam(name = "reqType", targetNamespace = "") UserRequest reqType) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public ResponseType delete(@WebParam(name = "reqType", targetNamespace = "") DeleteRequestType reqType) {
+    public UserResponse delete(@WebParam(name = "reqType", targetNamespace = "") UserRequest reqType) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public LookupResponseType lookup(@WebParam(name = "reqType", targetNamespace = "") LookupRequestType reqType) {
+    public SearchResponse lookup(@WebParam(name = "reqType", targetNamespace = "") LookupRequest reqType) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-//    @Override
+    @Override
     public SearchResponse search(@WebParam(name = "searchRequest", targetNamespace = "") SearchRequest searchRequest) {
         throw new UnsupportedOperationException("Not implemented yet.");
     }
@@ -68,35 +63,35 @@ public class MySQLConnectorImpl extends AbstractSpml2Complete  {
 * @see org.openiam.spml2.interf.SpmlCore#lookupAttributeNames(org.openiam.spml2.msg.
 * LookupAttributeRequestType)
 */
-    public LookupAttributeResponseType lookupAttributeNames(LookupAttributeRequestType reqType){
-        LookupAttributeResponseType respType = new LookupAttributeResponseType();
+    public LookupAttributeResponse lookupAttributeNames(LookupRequest reqType){
+        LookupAttributeResponse respType = new LookupAttributeResponse();
         respType.setStatus(StatusCodeType.FAILURE);
         respType.setError(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION);
 
         return respType;
     }
 
-    public ResponseType setPassword(@WebParam(name = "request", targetNamespace = "") SetPasswordRequestType request) {
+    public ResponseType setPassword(@WebParam(name = "request", targetNamespace = "") PasswordRequest request) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public ResponseType expirePassword(@WebParam(name = "request", targetNamespace = "") ExpirePasswordRequestType request) {
+    public ResponseType expirePassword(@WebParam(name = "request", targetNamespace = "") PasswordRequest request) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public ResetPasswordResponseType resetPassword(@WebParam(name = "request", targetNamespace = "") ResetPasswordRequestType request) {
+    public ResponseType resetPassword(@WebParam(name = "request", targetNamespace = "") PasswordRequest request) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public ValidatePasswordResponseType validatePassword(@WebParam(name = "request", targetNamespace = "") ValidatePasswordRequestType request) {
+    public ResponseType validatePassword(@WebParam(name = "request", targetNamespace = "") PasswordRequest request) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public ResponseType suspend(@WebParam(name = "request", targetNamespace = "") SuspendRequestType request) {
+    public ResponseType suspend(@WebParam(name = "request", targetNamespace = "") SuspendRequest request) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public ResponseType resume(@WebParam(name = "request", targetNamespace = "") ResumeRequestType request) {
+    public ResponseType resume(@WebParam(name = "request", targetNamespace = "") ResumeRequest request) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 

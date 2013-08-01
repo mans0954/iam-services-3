@@ -59,7 +59,6 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		user.setLocationName(rs(2));
 		user.setMaidenName(rs(2));
 		user.setMailCode(rs(2));
-		user.setManagerId(rs(2));
 		user.setMetadataTypeId(rs(2));
 		user.setMiddleInit(rs(2));
 		user.setNickname(rs(2));
@@ -87,17 +86,6 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		user.setStatus(UserStatusEnum.ACTIVE);
 		user.setSuffix(rs(2));
 
-		final Supervisor supervisor = new Supervisor();
-		supervisor.setComments(rs(4));
-		supervisor.setEmployee(null);
-		supervisor.setEndDate(null);
-		supervisor.setIsPrimarySuper(2);
-		supervisor.setOrgStructureId(rs(4));
-		supervisor.setStartDate(null);
-		supervisor.setStatus(rs(4));
-		supervisor.setSupervisor(null);
-		supervisor.setSupervisorType(rs(3));
-		user.setSupervisor(supervisor);
 		user.setTitle(rs(2));
 		user.setUserAttributes(new HashMap<String, UserAttribute>());
 		user.setUserId(rs(2));
@@ -166,26 +154,7 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		compareLogin(login, deepCopy, true);
 		compareLogin(login, shallowCopy, false);
 	}
-	
-	@Test
-	public void testSupervisorConvert() {
-		final Supervisor original = new Supervisor();
-		original.setComments(rs(2));
-		original.setEmployee(new User(rs(2)));
-		original.setEndDate(new Date());
-		original.setIsPrimarySuper(3);
-		original.setOrgStructureId(rs(2));
-		original.setStartDate(new Date());
-		original.setStatus(rs(2));
-		original.setSupervisor(new User(rs(2)));
-		original.setSupervisorType(rs(2));
-		
-		final Supervisor deepCopy = deepDozerMapper.map(original, Supervisor.class);
-		final Supervisor shallowCopy = shallowDozerMapper.map(original, Supervisor.class);
-		comapreSupervisor(original, deepCopy, true);
-		comapreSupervisor(original, shallowCopy, true);
-	}
-	
+
 	@Test
 	public void testConvertUserNote() {
 
@@ -214,24 +183,7 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 	private String rs(final int size) {
 		return RandomStringUtils.randomAlphanumeric(size);
 	}
-	
-	private void comapreSupervisor(final Supervisor original, final Supervisor copy, final boolean isDeep) {
-		Assert.assertEquals(original.getComments(), copy.getComments());
-		Assert.assertEquals(original.getEndDate(), copy.getEndDate());
-		Assert.assertEquals(original.getIsPrimarySuper(), copy.getIsPrimarySuper());
-		Assert.assertEquals(original.getOrgStructureId(), copy.getOrgStructureId());
-		Assert.assertEquals(original.getStartDate(), copy.getStartDate());
-		Assert.assertEquals(original.getStatus(), copy.getStatus());
-		Assert.assertEquals(original.getSupervisorType(), copy.getSupervisorType());
-		if(isDeep) {
-			//Assert.assertEquals(original.getEmployee(), copy.getEmployee());
-			//Assert.assertEquals(original.getSupervisor(), copy.getSupervisor());
-		} else {
-			Assert.assertNull(copy.getEmployee());
-			Assert.assertNull(copy.getSupervisor());
-		}
-	}
-	
+
 	private void compareLogin(final Login original, final Login copy, final boolean isDeep) {
 		Assert.assertEquals(original.getAuthFailCount(), copy.getAuthFailCount());
 		Assert.assertEquals(original.getCanonicalName(), copy.getCanonicalName());
@@ -280,7 +232,6 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		Assert.assertEquals(original.getAlternateContactId(), copy.getAlternateContactId());
 		Assert.assertEquals(original.getBirthdate(), copy.getBirthdate());
 		Assert.assertEquals(original.getClassification(), copy.getClassification());
-		Assert.assertEquals(original.getCompanyOwnerId(), copy.getCompanyOwnerId());
 		Assert.assertEquals(original.getCostCenter(), copy.getCostCenter());
 		Assert.assertEquals(original.getDateChallengeRespChanged(), copy.getDateChallengeRespChanged());
 		Assert.assertEquals(original.getDatePasswordChanged(), copy.getDatePasswordChanged());
@@ -303,7 +254,6 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		Assert.assertEquals(original.getLocationName(), copy.getLocationName());
 		Assert.assertEquals(original.getMaidenName(), copy.getMaidenName());
 		Assert.assertEquals(original.getMailCode(), copy.getMailCode());
-		Assert.assertEquals(original.getManagerId(), copy.getManagerId());
 		Assert.assertEquals(original.getMetadataTypeId(), copy.getMetadataTypeId());
 		Assert.assertEquals(original.getMiddleInit(), copy.getMiddleInit());
 		Assert.assertEquals(original.getNickname(), copy.getNickname());
@@ -334,11 +284,6 @@ public class TestDozerConversion extends AbstractTestNGSpringContextTests {
 		Assert.assertEquals(original.getStatus(), copy.getStatus());
 		Assert.assertEquals(original.getSuffix(), copy.getSuffix());
 
-		if(isDeep) {
-			//Assert.assertEquals(original.getSupervisor(), copy.getSupervisor());
-		} else {
-			Assert.assertNull(copy.getSupervisor());
-		}
 		Assert.assertEquals(original.getTitle(), copy.getTitle());
 		if(isDeep) {
 			//Assert.assertEquals(original.getUserAttributes(), copy.getUserAttributes());

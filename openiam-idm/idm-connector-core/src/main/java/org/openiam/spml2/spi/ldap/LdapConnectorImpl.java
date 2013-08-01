@@ -33,9 +33,8 @@ import javax.naming.ldap.LdapContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.cxf.common.util.StringUtils;
-import org.openiam.connector.type.SearchRequest;
-import org.openiam.connector.type.SearchResponse;
-import org.openiam.connector.type.UserValue;
+import org.openiam.connector.type.*;
+import org.openiam.connector.type.ResponseType;
 import org.openiam.dozer.converter.LoginDozerConverter;
 import org.openiam.dozer.converter.ManagedSystemObjectMatchDozerConverter;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
@@ -48,11 +47,9 @@ import org.openiam.idm.srvc.auth.dto.Subject;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.auth.service.AuthenticationConstants;
 import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
-import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemObjectMatchDAO;
 import org.openiam.idm.srvc.policy.dto.Policy;
@@ -70,25 +67,15 @@ import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.type.ExtensibleAttribute;
-import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.spml2.base.AbstractSpml2Complete;
-import org.openiam.spml2.interf.ConnectorService;
-import org.openiam.spml2.msg.*;
-import org.openiam.spml2.msg.password.ExpirePasswordRequestType;
-import org.openiam.spml2.msg.password.ResetPasswordRequestType;
-import org.openiam.spml2.msg.password.ResetPasswordResponseType;
-import org.openiam.spml2.msg.password.SetPasswordRequestType;
-import org.openiam.spml2.msg.password.ValidatePasswordRequestType;
-import org.openiam.spml2.msg.password.ValidatePasswordResponseType;
-import org.openiam.spml2.msg.suspend.ResumeRequestType;
-import org.openiam.spml2.msg.suspend.SuspendRequestType;
+import org.openiam.connector.ConnectorService;
 import org.openiam.spml2.spi.common.LookupAttributeNamesCommand;
 import org.openiam.spml2.spi.ldap.command.*;
 import org.openiam.spml2.spi.ldap.dirtype.Directory;
 import org.openiam.spml2.spi.ldap.dirtype.DirectorySpecificImplFactory;
 import org.openiam.spml2.util.connect.ConnectionFactory;
-import org.openiam.spml2.util.connect.ConnectionManagerConstant;
-import org.openiam.spml2.util.connect.ConnectionMgr;
+import org.openiam.connector.util.ConnectionManagerConstant;
+import org.openiam.connector.util.ConnectionMgr;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -331,7 +318,7 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
 
         Resource res = resourceDataService.getResource(config.getResourceId());
         String managedSysId = res.getManagedSysId();
-        ManagedSysEntity mSys = managedSysService.getManagedSysById(managedSysId);
+        ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
 
         Map<String, ReconciliationCommand> situations = new HashMap<String, ReconciliationCommand>();
         for (ReconciliationSituation situation : config.getSituationSet()) {
@@ -345,64 +332,58 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
         ResponseType response = new ResponseType();
         response.setStatus(StatusCodeType.SUCCESS);
 
-        LookupRequestType request = new LookupRequestType();
-        List<ManagedSystemObjectMatchEntity> matchObjAry = managedSysService.managedSysObjectParam(managedSysId, "USER");
-        if (matchObjAry==null || matchObjAry.size() == 0) {
+        LookupRequest request = new LookupRequest();
+        ManagedSystemObjectMatch[] matchObjAry = managedSysService
+                .managedSysObjectParam(managedSysId, "USER");
+        if (matchObjAry.length == 0) {
             log.error("No match object found for this managed sys");
             response.setStatus(StatusCodeType.FAILURE);
             return response;
         }
+        String keyField = matchObjAry[0].getKeyField();
+        String searchString = keyField + "=*," + matchObjAry[0].getBaseDn();
+        request.setSearchQuery(searchString);
+        request.setSearchValue(searchString);
 
-        ManagedSystemObjectMatch matchObj = managedSystemObjectMatchDozerConverter.convertToDTO(matchObjAry.get(0),false);
-
-        String keyField = matchObj.getKeyField();
-        String searchString = keyField + "=*," + matchObj.getBaseDn();
-        PSOIdentifierType idType = new PSOIdentifierType(searchString, null,
-                managedSysId);
-        request.setPsoID(idType);
-
-        LookupResponseType responseType = lookup(request);
+        SearchResponse responseType = lookup(request);
 
         if (responseType.getStatus() == StatusCodeType.FAILURE) {
             response.setStatus(StatusCodeType.FAILURE);
             return response;
         }
 
-        if (responseType.getAny() != null && responseType.getAny().size() != 0) {
-            for (ExtensibleObject obj : responseType.getAny()) {
-                log.debug("Reconcile Found User");
-                String principal = null;
-                String searchPrincipal = null;
-                for (ExtensibleAttribute attr : obj.getAttributes()) {
-                    if (attr.getName().equalsIgnoreCase(keyField)) {
-                        principal = attr.getValue();
-                        searchPrincipal = keyField + "=" + principal + ","
-                                + matchObj.getBaseDn();
-                        break;
-                    }
-                }
-                if (principal != null) {
-                    log.debug("reconcile principle found");
+        for (UserValue obj : responseType.getUserList()) {
 
-                    LoginEntity login = loginManager.getLoginByManagedSys(
-                            mSys.getDomainId(), searchPrincipal, managedSysId);
-                    if (login == null) {
-                        log.debug("Situation: IDM Not Found");
-                        DeleteRequestType delete = new DeleteRequestType();
-                        idType = new PSOIdentifierType(searchPrincipal, null,
-                                managedSysId);
-                        delete.setPsoID(idType);
-                        delete(delete);
-                        Login l = new Login();
-                        l.setDomainId(mSys.getDomainId());
-                        l.setLogin(principal);
-                        l.setManagedSysId(managedSysId);
-                        ReconciliationCommand command = situations
-                                .get("IDM Not Found");
-                        if (command != null) {
-                            log.debug("Call command for IDM Not Found");
-                            command.execute(l, null, obj.getAttributes());
-                        }
+            log.debug("Reconcile Found User");
+            String principal = null;
+            String searchPrincipal = null;
+            for (ExtensibleAttribute attr : obj.getAttributeList()) {
+                if (attr.getName().equalsIgnoreCase(keyField)) {
+                    principal = attr.getValue();
+                    searchPrincipal = keyField + "=" + principal + ","
+                            + matchObjAry[0].getBaseDn();
+                    break;
+                }
+            }
+            if (principal != null) {
+                log.debug("reconcile principle found");
+
+                LoginEntity login = loginManager.getLoginByManagedSys(
+                        mSys.getDomainId(), searchPrincipal, managedSysId);
+                if (login == null) {
+                    log.debug("Situation: IDM Not Found");
+                    UserRequest delete = new UserRequest();
+                    delete.setUserIdentity(searchPrincipal);
+                    delete(delete);
+                    Login l = new Login();
+                    l.setDomainId(mSys.getDomainId());
+                    l.setLogin(principal);
+                    l.setManagedSysId(managedSysId);
+                    ReconciliationCommand command = situations
+                            .get("IDM Not Found");
+                    if (command != null) {
+                        log.debug("Call command for IDM Not Found");
+                        command.execute(l, null, obj.getAttributeList());
                     }
                 }
             }
@@ -429,7 +410,7 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
 
         try {
 
-            LdapContext ldapctx = conMgr.connect(null);
+            LdapContext ldapctx = conMgr.connect(managedSys);
         } catch (NamingException ne) {
             log.error(ne);
 
@@ -463,7 +444,7 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
      * org.openiam.spml2.interf.SpmlCore#add(org.openiam.spml2.msg.AddRequestType
      * )
      */
-    public AddResponseType add(AddRequestType reqType) {
+    public UserResponse add(UserRequest reqType) {
         return addCommand.add(reqType);
 
     }
@@ -474,7 +455,7 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
      * @see org.openiam.spml2.interf.SpmlCore#delete(org.openiam.spml2.msg.
      * DeleteRequestType)
      */
-    public ResponseType delete(DeleteRequestType reqType) {
+    public UserResponse delete(UserRequest reqType) {
 
         return deleteCommand.delete(reqType);
 
@@ -483,21 +464,10 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
     /*
      * (non-Javadoc)
      * 
-     * @see org.openiam.spml2.interf.SpmlCore#listTargets(org.openiam.spml2.msg.
-     * ListTargetsRequestType)
-     */
-    public ListTargetsResponseType listTargets(ListTargetsRequestType reqType) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
      * @see org.openiam.spml2.interf.SpmlCore#lookup(org.openiam.spml2.msg.
      * LookupRequestType)
      */
-    public LookupResponseType lookup(LookupRequestType reqType) {
+    public SearchResponse lookup(LookupRequest reqType) {
 
         return lookupCommand.lookup(reqType);
 
@@ -509,7 +479,7 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
 * @see org.openiam.spml2.interf.SpmlCore#lookupAttributeNames(org.openiam.spml2.msg.
 * LookupAttributeRequestType)
 */
-    public LookupAttributeResponseType lookupAttributeNames(LookupAttributeRequestType reqType){
+    public LookupAttributeResponse lookupAttributeNames(LookupRequest reqType){
         return lookupAttributeNamesCommand.lookupAttributeNames(reqType);
     }
 
@@ -519,7 +489,7 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
      * @see org.openiam.spml2.interf.SpmlCore#modify(org.openiam.spml2.msg.
      * ModifyRequestType)
      */
-    public ModifyResponseType modify(ModifyRequestType reqType) {
+    public UserResponse modify(UserRequest reqType) {
 
         return modifyCommand.modify(reqType);
 
@@ -532,7 +502,7 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
      * org.openiam.spml2.interf.SpmlPassword#expirePassword(org.openiam.spml2
      * .msg.password.ExpirePasswordRequestType)
      */
-    public ResponseType expirePassword(ExpirePasswordRequestType request) {
+    public ResponseType expirePassword(PasswordRequest request) {
 
         return null;
     }
@@ -544,8 +514,8 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
      * org.openiam.spml2.interf.SpmlPassword#resetPassword(org.openiam.spml2
      * .msg.password.ResetPasswordRequestType)
      */
-    public ResetPasswordResponseType resetPassword(
-            ResetPasswordRequestType request) {
+    public ResponseType resetPassword(
+            PasswordRequest request) {
 
         return null;
     }
@@ -557,31 +527,20 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
      * org.openiam.spml2.interf.SpmlPassword#setPassword(org.openiam.spml2.msg
      * .password.SetPasswordRequestType)
      */
-    public ResponseType setPassword(SetPasswordRequestType reqType) {
+    public ResponseType setPassword(PasswordRequest reqType) {
         log.debug("setPassword request called..");
 
         ConnectionMgr conMgr = null;
 
         String requestID = reqType.getRequestID();
-        /*
-         * PSO - Provisioning Service Object - - ID must uniquely specify an
-         * object on the target or in the target's namespace - Try to make the
-         * PSO ID immutable so that there is consistency across changes.
-         */
-        PSOIdentifierType psoID = reqType.getPsoID();
         /* targetID - */
-        String targetID = psoID.getTargetID();
-        /*
-         * ContainerID - May specify the container in which this object should
-         * be created ie. ou=Development, org=Example
-         */
-        PSOIdentifierType containerID = psoID.getContainerID();
+        String targetID = reqType.getTargetID();
 
         /*
          * A) Use the targetID to look up the connection information under
          * managed systems
          */
-        ManagedSysEntity managedSys = managedSysService.getManagedSysById(targetID);
+        ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
 
         try {
             log.debug("managedSys found for targetID=" + targetID + " "
@@ -592,7 +551,7 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
 
             LdapContext ldapctx = conMgr.connect(managedSys);
 
-            String ldapName = psoID.getID();
+            String ldapName = reqType.getUserIdentity();
 
             // check if the identity exists before setting the password
 
@@ -623,23 +582,6 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
 
             ldapctx.modifyAttributes(ldapName, mods);
 
-            // check if the request contains additional attributes
-            List<ExtensibleObject> extObjList = reqType.getAny();
-            if (extObjList != null && extObjList.size() > 0) {
-                ExtensibleObject obj = extObjList.get(0);
-                if (obj != null) {
-                    List<ExtensibleAttribute> attrList = obj.getAttributes();
-                    if (attrList != null && attrList.size() > 0) {
-                        mods = new ModificationItem[attrList.size()];
-                        for (ExtensibleAttribute a : attrList) {
-                            mods[0] = new ModificationItem(a.getOperation(),
-                                    new BasicAttribute(a.getName(),
-                                            a.getValue()));
-                        }
-                        ldapctx.modifyAttributes(ldapName, mods);
-                    }
-                }
-            }
 
         } catch (NamingException ne) {
             log.error(ne.toString());
@@ -689,17 +631,17 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
      * org.openiam.spml2.interf.SpmlPassword#validatePassword(org.openiam.spml2
      * .msg.password.ValidatePasswordRequestType)
      */
-    public ValidatePasswordResponseType validatePassword(
-            ValidatePasswordRequestType request) {
+    public ResponseType validatePassword(
+            PasswordRequest request) {
         // TODO Auto-generated method stub
         return null;
     }
 
-    public ResponseType suspend(SuspendRequestType request) {
+    public ResponseType suspend(SuspendRequest request) {
         return ldapSuspend.suspend(request);
     }
 
-    public ResponseType resume(ResumeRequestType request) {
+    public ResponseType resume(ResumeRequest request) {
         return ldapSuspend.resume(request);
     }
 
@@ -711,14 +653,14 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
             ManagedSystemObjectMatchDAO managedSysObjectMatchDao) {
         this.managedSysObjectMatchDao = managedSysObjectMatchDao;
     }
-//
-//    public ManagedSystemWebService getManagedSysService() {
-//        return managedSysService;
-//    }
-//
-//    public void setManagedSysService(ManagedSystemWebService managedSysService) {
-//        this.managedSysService = managedSysService;
-//    }
+
+    public ManagedSystemWebService getManagedSysService() {
+        return managedSysService;
+    }
+
+    public void setManagedSysService(ManagedSystemWebService managedSysService) {
+        this.managedSysService = managedSysService;
+    }
 
     public ResourceDataService getResourceDataService() {
         return resourceDataService;
@@ -917,7 +859,7 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
         return ctx.search(objectBaseDN, searchFilter, searchCtls);
     }
 
-//    @Override
+    @Override
     @Transactional
     public SearchResponse search(@WebParam(name = "searchRequest", targetNamespace = "") SearchRequest searchRequest) {
         System.out.println("LDAP SEARCH EXECUTION ==============================================================");
@@ -930,7 +872,7 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
             return searchResponse;
         }
 
-        ManagedSysEntity mSys = managedSysService.getManagedSysById(searchRequest.getTargetID());
+        ManagedSysDto mSys = managedSysService.getManagedSys(searchRequest.getTargetID());
 
         ManagedSystemObjectMatchEntity matchObj = null;
         List<ManagedSystemObjectMatchEntity> matchObjList = managedSysObjectMatchDao.findBySystemId(mSys.getManagedSysId(), "USER");

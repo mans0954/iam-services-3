@@ -1,6 +1,8 @@
 package org.openiam.idm.searchbeans;
 
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -12,15 +14,27 @@ import org.openiam.idm.srvc.org.dto.OrganizationType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "OrganizationTypeSearchBean", propOrder = {
+	"keySet",
 	"name",
 	"parentIds",
 	"childIds"
 })
 public class OrganizationTypeSearchBean extends AbstractSearchBean<OrganizationType, String> implements SearchBean<OrganizationType, String> {
 
+	private Set<String> keySet;
 	private Set<String> parentIds;
 	private Set<String> childIds;
 	private String name;
+	
+	
+
+	public Set<String> getKeySet() {
+		return keySet;
+	}
+
+	public void setKeySet(Set<String> keySet) {
+		this.keySet = keySet;
+	}
 
 	public String getName() {
 		return name;

@@ -64,6 +64,11 @@ public class Supervisor implements java.io.Serializable {
 //        this.supervisorType = supervisorEntity.getSupervisorType();
 //    }
 
+    public Supervisor(User supervisor, User employee) {
+        this.supervisor = supervisor;
+        this.employee = employee;
+    }
+
     public Supervisor(String orgStructureId, User supervisor, User employee) {
         this.orgStructureId = orgStructureId;
         this.supervisor = supervisor;

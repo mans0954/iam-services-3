@@ -5,6 +5,7 @@ import javax.xml.bind.annotation.XmlEnumValue;
 import javax.xml.bind.annotation.XmlType;
 
 
+
 /**
  * ResponseStatus provides valid values that an operation in a service can return.
  *
@@ -94,6 +95,9 @@ public enum ResponseCode {
 
     @XmlEnumValue("supervisorlNotFound")
     SUPERVISOR_NOT_FOUND("supervisorNotFound"),
+
+    @XmlEnumValue("supervisorlError")
+    SUPERVISOR_ERROR("supervisorlError"),
 
     @XmlEnumValue("DUPLICATE_PRINCIPAL")
     DUPLICATE_PRINCIPAL("DUPLICATE_PRINCIPAL"),
@@ -450,7 +454,14 @@ public enum ResponseCode {
 
     @XmlEnumValue("REPORT_NAME_NOT_SET")
     REPORT_NAME_NOT_SET("REPORT_NAME_NOT_SET"),
-    
+    @XmlEnumValue("REPORT_PARAM_NAME_NOT_SET")
+    REPORT_PARAM_NAME_NOT_SET("REPORT_PARAM_NAME_NOT_SET"),
+    @XmlEnumValue("REPORT_PARAM_TYPE_NOT_SET")
+    REPORT_PARAM_TYPE_NOT_SET("REPORT_PARAM_TYPE_NOT_SET"),
+    @XmlEnumValue("REPORT_NOT_SET")
+    REPORT_NOT_SET("REPORT_NOT_SET"),
+    @XmlEnumValue("REPORT_PARAMETER_EXISTS")
+    REPORT_PARAMETER_EXISTS("REPORT_PARAMETER_EXISTS"),
     @XmlEnumValue("REPORT_DATASOURCE_NOT_SET")
     REPORT_DATASOURCE_NOT_SET("REPORT_DATASOURCE_NOT_SET"),
     
@@ -506,7 +517,10 @@ public enum ResponseCode {
 	SPRING_BEAN_OR_SCRIPT_REQUIRED("SPRING_BEAN_OR_SCRIPT_REQUIRED"),
 	
 	@XmlEnumValue("INVALID_SPRING_BEAN")
-	INVALID_SPRING_BEAN("INVALID_SPRING_BEAN");
+	INVALID_SPRING_BEAN("INVALID_SPRING_BEAN"),
+	
+	@XmlEnumValue("TEMPLATE_TYPE_REQUIRED")
+	TEMPLATE_TYPE_REQUIRED("TEMPLATE_TYPE_REQUIRED");
 	
     private final String value;
 

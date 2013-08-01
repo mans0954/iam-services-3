@@ -17,7 +17,8 @@ import javax.xml.bind.annotation.XmlType;
     "userIdentity",
     "operation",
     "password",
-    "currentPassword"
+    "currentPassword",
+    "scriptHandler"
 })
 public class PasswordRequest extends RequestType  {
 
@@ -31,7 +32,8 @@ public class PasswordRequest extends RequestType  {
     @XmlElement(required = true)
     protected String password;
     protected String currentPassword;
-
+    @XmlElement
+    private String scriptHandler;
 
     public PasswordRequest() {
 		super();
@@ -111,4 +113,11 @@ public class PasswordRequest extends RequestType  {
 		this.operation = operation;
 	}
 
+    public String getScriptHandler() {
+        return scriptHandler;
+    }
+
+    public void setScriptHandler(String scriptHandler) {
+        this.scriptHandler = scriptHandler;
+    }
 }

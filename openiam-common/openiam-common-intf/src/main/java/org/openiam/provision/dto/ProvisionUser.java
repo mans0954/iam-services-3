@@ -34,9 +34,7 @@ import org.openiam.idm.srvc.user.dto.User;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * ProvisionUser is the user object used by the provisioning service.
@@ -51,6 +49,7 @@ import java.util.List;
         "memberOfRoles",
         "userResourceList",
         "userAffiliations",
+        "superiors",
         "srcSystemId",
         "provisionModel",
         "securityDomain",
@@ -73,6 +72,7 @@ public class ProvisionUser extends GenericProvisionObject<User> {
     protected List<Group> memberOfGroups;
     protected List<Role> memberOfRoles;
     protected List<Organization> userAffiliations;
+    protected Set<User> superiors;
 
     protected List<UserResourceAssociation> userResourceList;
 
@@ -289,6 +289,32 @@ public class ProvisionUser extends GenericProvisionObject<User> {
         this.memberOfRoles = memberOfRoles;
     }
 
+    public Set<User> getSuperiors() {
+        return superiors;
+    }
+
+    public void setSuperiors(Set<User> superiors) {
+        this.superiors = superiors;
+    }
+
+    public void addSuperior(final User superior) {
+        if(superior != null) {
+            if(superiors == null) {
+                superiors = new HashSet<User>();
+            }
+            superiors.add(superior);
+        }
+    }
+
+    public void addSuperiors(final Collection<User> superiors)  {
+        if(superiors != null) {
+            if(this.superiors == null) {
+                this.superiors = new HashSet<User>();
+            }
+            this.superiors.addAll(superiors);
+        }
+    }
+
     public ProvisionModelEnum getProvisionModel() {
         return provisionModel;
     }
@@ -328,6 +354,7 @@ public class ProvisionUser extends GenericProvisionObject<User> {
                 ", memberOfRoles=" + memberOfRoles +
                 ", userAffiliations=" + userAffiliations +
                 ", userResourceList=" + userResourceList +
+                ", superiors=" + superiors +
                 ", provisionModel=" + provisionModel +
                 ", securityDomain='" + securityDomain + '\'' +
                 ", emailCredentialsToNewUsers=" + emailCredentialsToNewUsers +
@@ -483,9 +510,7 @@ public class ProvisionUser extends GenericProvisionObject<User> {
         if (getObject().getLocationName() == null) {
             getObject().setLocationName(user.getLocationName());
         }
-        if (getObject().getManagerId() == null) {
-            getObject().setManagerId(user.getManagerId());
-        }
+
         if (getObject().getMetadataTypeId() == null) {
             getObject().setMetadataTypeId(user.getMetadataTypeId());
         }

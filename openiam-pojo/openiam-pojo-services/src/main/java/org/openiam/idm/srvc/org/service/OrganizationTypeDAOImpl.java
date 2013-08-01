@@ -28,15 +28,19 @@ public class OrganizationTypeDAOImpl extends BaseDaoImpl<OrganizationTypeEntity,
 		 Criteria criteria = getCriteria();
 		 if(searchBean instanceof OrganizationTypeSearchBean) {
 			 final OrganizationTypeSearchBean typeSearchBean = (OrganizationTypeSearchBean)searchBean;
-			 final OrganizationTypeEntity entity = converter.convert(typeSearchBean);
-			 criteria = getExampleCriteria(entity);
+			 if(CollectionUtils.isNotEmpty(typeSearchBean.getKeySet())) {
+				 criteria.add(Restrictions.in(getPKfieldName(), typeSearchBean.getKeySet()));
+			 } else {
+				 final OrganizationTypeEntity entity = converter.convert(typeSearchBean);
+				 criteria = getExampleCriteria(entity);
 			 
-			 if(CollectionUtils.isNotEmpty(typeSearchBean.getChildIds())) {
-				 criteria.createAlias("childTypes", "child").add(Restrictions.in("child.id", typeSearchBean.getChildIds()));
-			 }
+				 if(CollectionUtils.isNotEmpty(typeSearchBean.getChildIds())) {
+					 criteria.createAlias("childTypes", "child").add(Restrictions.in("child.id", typeSearchBean.getChildIds()));
+				 }
 			 
-			 if(CollectionUtils.isNotEmpty(typeSearchBean.getParentIds())) {
-				 criteria.createAlias("parentTypes", "parent").add(Restrictions.in("parent.id", typeSearchBean.getParentIds()));
+				 if(CollectionUtils.isNotEmpty(typeSearchBean.getParentIds())) {
+					 criteria.createAlias("parentTypes", "parent").add(Restrictions.in("parent.id", typeSearchBean.getParentIds()));
+				 }
 			 }
 		 }
 		 return criteria;
@@ -48,7 +52,7 @@ public class OrganizationTypeDAOImpl extends BaseDaoImpl<OrganizationTypeEntity,
 		final Criteria criteria = getCriteria();
 		if(entity != null) {
 			if(StringUtils.isNotBlank(entity.getId())) {
-				criteria.add(Restrictions.eq("id", entity.getId()));
+				criteria.add(Restrictions.eq(getPKfieldName(), entity.getId()));
 			} else {
 				if(StringUtils.isNotBlank(entity.getName())) {
 					criteria.add(Restrictions.eq("name", entity.getName()));

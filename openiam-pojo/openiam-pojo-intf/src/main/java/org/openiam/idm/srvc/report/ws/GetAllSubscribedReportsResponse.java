@@ -8,18 +8,17 @@ import org.openiam.base.ws.Response;
 import org.openiam.idm.srvc.report.dto.ReportSubscriptionDto;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "", propOrder = {
-        "reports"
-})
+@XmlType(name = "", propOrder = { "reports" })
 public class GetAllSubscribedReportsResponse extends Response {
 
-    protected List<ReportSubscriptionDto> reports;
+	protected List<ReportSubscriptionDto> reports;
 
-    public List<ReportSubscriptionDto> getReports() {
-        return reports;
-    }
+	public List<ReportSubscriptionDto> getReports() {
+		return reports;
+	}
 
-    public void setReports(List<ReportSubscriptionDto> reports) {
-        this.reports = reports;
-    }
+	public void setReports(List<ReportSubscriptionDto> reports) {
+		this.reports = reports;
+	}
+
 }

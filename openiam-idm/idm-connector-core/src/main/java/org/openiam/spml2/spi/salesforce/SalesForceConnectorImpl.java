@@ -6,20 +6,11 @@ import javax.jws.WebService;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.connector.type.SearchRequest;
-import org.openiam.connector.type.SearchResponse;
+import org.openiam.connector.type.*;
+import org.openiam.connector.type.ResponseType;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
-import org.openiam.spml2.interf.ConnectorService;
-import org.openiam.spml2.msg.*;
-import org.openiam.spml2.msg.password.ExpirePasswordRequestType;
-import org.openiam.spml2.msg.password.ResetPasswordRequestType;
-import org.openiam.spml2.msg.password.ResetPasswordResponseType;
-import org.openiam.spml2.msg.password.SetPasswordRequestType;
-import org.openiam.spml2.msg.password.ValidatePasswordRequestType;
-import org.openiam.spml2.msg.password.ValidatePasswordResponseType;
-import org.openiam.spml2.msg.suspend.ResumeRequestType;
-import org.openiam.spml2.msg.suspend.SuspendRequestType;
+import org.openiam.connector.ConnectorService;
 import org.openiam.spml2.spi.common.AddCommand;
 import org.openiam.spml2.spi.common.DeleteCommand;
 import org.openiam.spml2.spi.common.LookupCommand;
@@ -27,19 +18,18 @@ import org.openiam.spml2.spi.common.ModifyCommand;
 import org.openiam.spml2.spi.common.PasswordCommand;
 import org.openiam.spml2.spi.common.ResumeCommand;
 import org.openiam.spml2.spi.common.SuspendCommand;
-import org.openiam.spml2.util.msg.ResponseBuilder;
+import org.openiam.connector.util.ResponseBuilder;
 import org.springframework.beans.factory.annotation.Required;
 
 import com.sforce.soap.partner.PartnerConnection;
 import com.sforce.ws.ConnectionException;
 import com.sforce.ws.ConnectorConfig;
 
-//@WebService(endpointInterface="org.openiam.spml2.interf.ConnectorService",
-//	targetNamespace="http://www.openiam.org/service/connector",
-//	portName = "SalesForceServicePort",
-//	serviceName="SalesForceConnectorService")
-@Deprecated
-public class SalesForceConnectorImpl  {
+@WebService(endpointInterface="org.openiam.spml2.interf.ConnectorService",
+	targetNamespace="http://www.openiam.org/service/connector",
+	portName = "SalesForceServicePort", 
+	serviceName="SalesForceConnectorService")
+public class SalesForceConnectorImpl implements ConnectorService {
 	
 	private static final Log log = LogFactory.getLog(SalesForceConnectorImpl.class);
 	
@@ -51,7 +41,7 @@ public class SalesForceConnectorImpl  {
     private PasswordCommand setPasswordCommand;
     private SuspendCommand suspendCommand;
 
-//	@Override
+	@Override
 	@WebMethod
 	public ResponseType reconcileResource(@WebParam(name = "config", targetNamespace = "") ReconciliationConfig config) {
         final ResponseType response = new ResponseType();
@@ -61,7 +51,7 @@ public class SalesForceConnectorImpl  {
         return response;
 	}
 
-//	@Override
+	@Override
 	@WebMethod
 	public ResponseType testConnection(@WebParam(name = "managedSys", targetNamespace = "") ManagedSysDto managedSys) {
 		final ResponseType response = new ResponseType();
@@ -79,20 +69,19 @@ public class SalesForceConnectorImpl  {
 		return response;
 	}
 
-    public AddResponseType add(AddRequestType reqType) {
+    public UserResponse add(UserRequest reqType) {
         return addCommand.add(reqType);
     }
 
-    public ModifyResponseType modify(ModifyRequestType reqType) {
+    public UserResponse modify(UserRequest reqType) {
         return modifyCommand.modify(reqType);
     }
 
-    public ResponseType delete(DeleteRequestType reqType) {
-
+    public UserResponse delete(UserRequest reqType) {
         return deleteCommand.delete(reqType);
     }
 
-    public LookupResponseType lookup( LookupRequestType reqType) {
+    public SearchResponse lookup( LookupRequest reqType) {
         return lookupCommand.lookup(reqType);
     }
 
@@ -102,40 +91,40 @@ public class SalesForceConnectorImpl  {
 * @see org.openiam.spml2.interf.SpmlCore#lookupAttributeNames(org.openiam.spml2.msg.
 * LookupAttributeRequestType)
 */
-    public LookupAttributeResponseType lookupAttributeNames(LookupAttributeRequestType reqType){
-        LookupAttributeResponseType respType = new LookupAttributeResponseType();
+    public LookupAttributeResponse lookupAttributeNames(LookupRequest reqType){
+        LookupAttributeResponse respType = new LookupAttributeResponse();
         respType.setStatus(StatusCodeType.FAILURE);
         respType.setError(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION);
 
         return respType;
     }
 
-    public ResponseType setPassword( SetPasswordRequestType request) {
+    public ResponseType setPassword( PasswordRequest request) {
         return setPasswordCommand.setPassword(request);
     }
 
-    public ResponseType expirePassword(@WebParam(name = "request", targetNamespace = "") ExpirePasswordRequestType request) {
+    public ResponseType expirePassword(@WebParam(name = "request", targetNamespace = "") PasswordRequest request) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public ResetPasswordResponseType resetPassword(@WebParam(name = "request", targetNamespace = "") ResetPasswordRequestType request) {
+    public ResponseType resetPassword(@WebParam(name = "request", targetNamespace = "") PasswordRequest request) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public ValidatePasswordResponseType validatePassword(@WebParam(name = "request", targetNamespace = "") ValidatePasswordRequestType request) {
+    public ResponseType validatePassword(@WebParam(name = "request", targetNamespace = "") PasswordRequest request) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-//    @Override
+    @Override
     public SearchResponse search(@WebParam(name = "searchRequest", targetNamespace = "") SearchRequest searchRequest) {
         throw new UnsupportedOperationException("Not supportable.");
     }
 
-    public ResponseType suspend(final SuspendRequestType request) {
+    public ResponseType suspend(final SuspendRequest request) {
         return suspendCommand.suspend(request);
     }
 
-    public ResponseType resume(final ResumeRequestType request) {
+    public ResponseType resume(final ResumeRequest request) {
         return resumeCommand.resume(request);
     }
 

@@ -1,7 +1,7 @@
 package org.openiam.spml2.spi.common;
 
-import org.openiam.spml2.msg.ResponseType;
-import org.openiam.spml2.msg.suspend.ResumeRequestType;
+import org.openiam.connector.type.ResponseType;
+import org.openiam.connector.type.ResumeRequest;
 
 /**
  * Created with IntelliJ IDEA.
@@ -12,5 +12,5 @@ import org.openiam.spml2.msg.suspend.ResumeRequestType;
  */
 @Deprecated
 public interface ResumeCommand {
-    public ResponseType resume(ResumeRequestType request);
+    public ResponseType resume(ResumeRequest request);
 }

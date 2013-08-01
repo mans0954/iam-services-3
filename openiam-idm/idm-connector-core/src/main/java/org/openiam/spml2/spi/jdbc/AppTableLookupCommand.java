@@ -1,14 +1,13 @@
 package org.openiam.spml2.spi.jdbc;
 
 import org.apache.commons.lang.StringUtils;
+import org.openiam.connector.type.*;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.provision.type.ExtensibleAttribute;
-import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.spml2.msg.*;
 import org.openiam.spml2.spi.common.LookupCommand;
-import org.openiam.spml2.util.msg.ResponseBuilder;
+import org.openiam.connector.util.ResponseBuilder;
 
 import java.sql.*;
 import java.text.ParseException;
@@ -20,126 +19,125 @@ import java.text.ParseException;
  * Time: 8:06 PM
  * To change this template use File | Settings | File Templates.
  */
-@Deprecated
 public class AppTableLookupCommand extends AbstractAppTableCommand implements LookupCommand {
 
-    public LookupResponseType lookup(LookupRequestType reqType) {
+    public SearchResponse lookup(LookupRequest reqType) {
         boolean found = false;
 
         if(log.isDebugEnabled()) {
             log.debug("AppTable lookup operation called.");
         }
 
-        final LookupResponseType response = new LookupResponseType();
+        final SearchResponse response = new SearchResponse();
         response.setStatus(StatusCodeType.SUCCESS);
 
-//        final String principalName = reqType.getPsoID().getID();
-//
-//        final PSOIdentifierType psoID = reqType.getPsoID();
-//        /* targetID -  */
-//        final String targetID = psoID.getTargetID();
-//
-//        final ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
-//        if(managedSys == null) {
-//        	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, String.format("No Managed System with target id: %s", targetID));
-//            return response;
-//        }
-//
-//        if (StringUtils.isBlank(managedSys.getResourceId())) {
-//        	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, "ResourceID is not defined in the ManagedSys Object");
-//            return response;
-//        }
-//
-//        final Resource res = resourceDataService.getResource(managedSys.getResourceId());
-//        if(res == null) {
-//        	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, "No resource for managed resource found");
-//            return response;
-//        }
-//
-//        final ResourceProp prop = res.getResourceProperty("TABLE_NAME");
-//        if(prop == null) {
-//        	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, "No TABLE_NAME property found");
-//            return response;
-//        }
-//
-//        final String tableName = prop.getPropValue();
-//        if (StringUtils.isBlank(tableName)) {
-//        	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, "TABLE NAME is not defined.");
-//            return response;
-//        }
-//
-//
-//        Connection con = null;
-//
-//        final ExtensibleObject resultObject = new ExtensibleObject();
-//        resultObject.setObjectId(principalName);
-//
-//
-//        try {
-//            con = connectionMgr.connect(managedSys);
-//
-//            final PreparedStatement statement = createSelectStatement(con, res, tableName, principalName);
-//            if (statement == null) {
-//            	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, "Unable to generate SQL based on configuration");
-//                return response;
-//            }
-//            if(log.isDebugEnabled()) {
-//                log.debug("Executing lookup query");
-//            }
-//
-//            final ResultSet rs = statement.executeQuery();
-//            final ResultSetMetaData rsMetadata = rs.getMetaData();
-//            int columnCount = rsMetadata.getColumnCount();
-//
-//            if(log.isDebugEnabled()) {
-//                log.debug(String.format("Query contains column count = %s",columnCount));
-//            }
-//
-//            if (rs.next()) {
-//                found = true;
-//                for (int colIndx = 1; colIndx <= columnCount; colIndx++) {
-//
-//                    final ExtensibleAttribute extAttr = new ExtensibleAttribute();
-//
-//                    extAttr.setName(rsMetadata.getColumnName(colIndx));
-//
-//                    setColumnValue(extAttr, colIndx, rsMetadata, rs);
-//                    resultObject.getAttributes().add(extAttr);
-//                }
-//
-//                response.getAny().add(resultObject);
-//            } else {
-//                if(log.isDebugEnabled()) {
-//                    log.debug("Principal not found");
-//                }
-//                response.setStatus(StatusCodeType.FAILURE);
-//                return response;
-//            }
-//
-//            response.setStatus(StatusCodeType.SUCCESS);
-//        } catch (SQLException se) {
-//            log.error(se);
-//            ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.SQL_ERROR, se.toString());
-//
-//        } catch (ClassNotFoundException cnfe) {
-//            log.error(cnfe);
-//            ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, cnfe.toString());
-//        } catch (ParseException pe) {
-//            log.error(pe);
-//            ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, pe.toString());
-//        } catch(Throwable e) {
-//            log.error(e);
-//            ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.OTHER_ERROR, e.toString());
-//        } finally {
-//            if (con != null) {
-//                try {
-//                    con.close();
-//                } catch (SQLException s) {
-//                    log.error(s);
-//                    ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.SQL_ERROR, s.toString());
-//                }
-//            }
-//        }
+        final String principalName = reqType.getSearchValue();
+
+        /* targetID -  */
+        final String targetID = reqType.getTargetID();
+
+        final ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
+        if(managedSys == null) {
+        	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, String.format("No Managed System with target id: %s", targetID));
+            return response;
+        }
+
+        if (StringUtils.isBlank(managedSys.getResourceId())) {
+        	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, "ResourceID is not defined in the ManagedSys Object");
+            return response;
+        }
+
+        final Resource res = resourceDataService.getResource(managedSys.getResourceId());
+        if(res == null) {
+        	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, "No resource for managed resource found");
+            return response;
+        }
+
+        final ResourceProp prop = res.getResourceProperty("TABLE_NAME");
+        if(prop == null) {
+        	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, "No TABLE_NAME property found");
+            return response;
+        }
+
+        final String tableName = prop.getPropValue();
+        if (StringUtils.isBlank(tableName)) {
+        	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, "TABLE NAME is not defined.");
+            return response;
+        }
+
+
+        Connection con = null;
+
+        final UserValue userValue = new UserValue();
+        userValue.setUserIdentity(principalName);
+
+
+        try {
+            con = connectionMgr.connect(managedSys);
+
+            final PreparedStatement statement = createSelectStatement(con, res, tableName, principalName);
+            if (statement == null) {
+            	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, "Unable to generate SQL based on configuration");
+                return response;
+            }
+            if(log.isDebugEnabled()) {
+                log.debug("Executing lookup query");
+            }
+
+            final ResultSet rs = statement.executeQuery();
+            final ResultSetMetaData rsMetadata = rs.getMetaData();
+            int columnCount = rsMetadata.getColumnCount();
+
+            if(log.isDebugEnabled()) {
+                log.debug(String.format("Query contains column count = %s",columnCount));
+            }
+
+            if (rs.next()) {
+                found = true;
+                for (int colIndx = 1; colIndx <= columnCount; colIndx++) {
+
+                    final ExtensibleAttribute extAttr = new ExtensibleAttribute();
+
+                    extAttr.setName(rsMetadata.getColumnName(colIndx));
+
+                    setColumnValue(extAttr, colIndx, rsMetadata, rs);
+
+                    userValue.getAttributeList().add(extAttr);
+                }
+
+                response.getUserList().add(userValue);
+            } else {
+                if(log.isDebugEnabled()) {
+                    log.debug("Principal not found");
+                }
+                response.setStatus(StatusCodeType.FAILURE);
+                return response;
+            }
+
+            response.setStatus(StatusCodeType.SUCCESS);
+        } catch (SQLException se) {
+            log.error(se);
+            ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.SQL_ERROR, se.toString());
+
+        } catch (ClassNotFoundException cnfe) {
+            log.error(cnfe);
+            ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, cnfe.toString());
+        } catch (ParseException pe) {
+            log.error(pe);
+            ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, pe.toString());
+        } catch(Throwable e) {
+            log.error(e);
+            ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.OTHER_ERROR, e.toString());
+        } finally {
+            if (con != null) {
+                try {
+                    con.close();
+                } catch (SQLException s) {
+                    log.error(s);
+                    ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.SQL_ERROR, s.toString());
+                }
+            }
+        }
         return response;
 
 

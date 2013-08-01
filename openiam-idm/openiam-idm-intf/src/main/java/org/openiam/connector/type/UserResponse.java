@@ -12,7 +12,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "UserResponse", propOrder = {
     "user"
 })
-public class UserResponse   extends ResponseType
+public class UserResponse extends ResponseType
 {
     protected UserValue user;
 

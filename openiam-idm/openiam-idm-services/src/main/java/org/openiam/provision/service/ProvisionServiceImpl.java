@@ -31,6 +31,7 @@ import org.openiam.base.SysConfiguration;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.connector.type.*;
 import org.openiam.dozer.converter.LoginDozerConverter;
 import org.openiam.dozer.converter.SupervisorDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
@@ -48,10 +49,10 @@ import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
+import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
-import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.idm.srvc.pswd.dto.Password;
 import org.openiam.idm.srvc.pswd.dto.PasswordValidationCode;
@@ -64,7 +65,6 @@ import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.dto.Supervisor;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
@@ -78,9 +78,7 @@ import org.openiam.provision.resp.PasswordResponse;
 import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptIntegration;
-import org.openiam.spml2.interf.ConnectorService;
-import org.openiam.spml2.msg.*;
-import org.openiam.spml2.msg.password.SetPasswordRequestType;
+import org.openiam.connector.ConnectorService;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -196,7 +194,7 @@ public class ProvisionServiceImpl implements ProvisionService,
         UserAttribute uAttr = new UserAttribute();
         uAttr.setName("GM_SYSKEY");
         uAttr.setValue(gmSysKey);
-        provUser.getUser().getUserAttributes().put("GM_SYSKEY", uAttr);
+        provUser.getUserAttributes().put("GM_SYSKEY", uAttr);
 
         log.info("addUser called.");
 
@@ -212,7 +210,7 @@ public class ProvisionServiceImpl implements ProvisionService,
             org = orgManager.getOrganization(user.getCompanyId(), null);
         }
         */
-        List<Login> principalList = provUser.getUser().getPrincipalList();
+        List<Login> principalList = provUser.getPrincipalList();
 
         if (principalList == null) {
             principalList = new ArrayList<Login>();
@@ -266,12 +264,20 @@ public class ProvisionServiceImpl implements ProvisionService,
 
         log.info("User created in openiam repository");
 
-        Supervisor supervisor = provUser.getUser().getSupervisor();
-        if (supervisor != null && supervisor.getSupervisor() != null) {
-            supervisor.setEmployee(user);
-            final SupervisorEntity supervisorEntity = supervisorDozerConverter.convertToEntity(supervisor, true);
-            userMgr.addSupervisor(supervisorEntity);
-            log.info("created user supervisor");
+        Set<User> superiors = provUser.getSuperiors();
+        if (CollectionUtils.isNotEmpty(superiors)) {
+            for (User s : superiors) {
+                try {
+                    userMgr.addSuperior(s.getUserId(), newUser.getUserId());
+                    log.info("created user supervisor");
+
+                } catch (Exception e) {
+                    ProvisionUserResponse resp = new ProvisionUserResponse();
+                    resp.setStatus(ResponseStatus.FAILURE);
+                    resp.setErrorCode(ResponseCode.SUPERVISOR_ERROR);
+                    return resp;
+                }
+            }
         }
 
         log.info("Associated a user to a group");
@@ -409,7 +415,7 @@ public class ProvisionServiceImpl implements ProvisionService,
         // TODO - get the list of apps from the user.
         String requestId = null;
 
-        List<Login> appList = provUser.getUser().getPrincipalList();
+        List<Login> appList = provUser.getPrincipalList();
         boolean syncCalled = false;
         if (principalList != null) {
             log.info("principal list size=" + principalList.size());
@@ -455,14 +461,18 @@ public class ProvisionServiceImpl implements ProvisionService,
 
                             log.info("connector service client " + port);
 
+                            /* TODO was removed when Refactoring
+
                             AddRequestType addReqType = new AddRequestType();
                             PSOIdentifierType idType = new PSOIdentifierType(lg
                                     .getLogin(), null, "target");
                             addReqType.setPsoID(idType);
-                            requestId = "R" + System.currentTimeMillis();
+
                             addReqType.setRequestID(requestId);
                             addReqType
                                     .setTargetID(lg.getManagedSysId());
+                            addReqType.getData().getAny().add(extUser);
+                                    */
 
                             ExtensibleUser extUser = null;
 
@@ -480,8 +490,28 @@ public class ProvisionServiceImpl implements ProvisionService,
                             // extUser);
 
                             // addReqType.getData().getAny().add(sysAttribute.getExtUser());
-                            addReqType.getData().getAny().add(extUser);
-                            port.add(addReqType);
+
+
+
+                            requestId = "R" + System.currentTimeMillis();
+                            UserRequest userReq = new UserRequest();
+                            userReq.setUserIdentity(lg.getLogin());
+                            userReq.setRequestID(requestId);
+                            userReq.setTargetID(lg.getManagedSysId());
+                            userReq.setHostLoginId(managedSys.getUserId());
+                            userReq.setHostLoginPassword(managedSys.getPswd());
+                            userReq.setHostUrl(managedSys.getHostUrl());
+                            ManagedSystemObjectMatch matchObj = null;
+                            ManagedSystemObjectMatch[] matchObjAry = managedSysService
+                                    .managedSysObjectParam(lg.getManagedSysId(), "USER");
+                            if (matchObjAry != null && matchObjAry.length > 0) {
+                                matchObj = matchObjAry[0];
+                            }
+                            userReq.setBaseDN(matchObj!= null ? matchObj.getBaseDn() : null);
+                            userReq.setOperation("EDIT");
+                            userReq.setUser(extUser);
+
+                            port.add(userReq);
                             syncCalled = true;
 
                         }
@@ -499,7 +529,7 @@ public class ProvisionServiceImpl implements ProvisionService,
 
         auditHelper.addLog("NEW USER", provUser.getSecurityDomain(),
                 primaryLogin.getLogin(), "IDM SERVICE",
-                provUser.getUser().getCreatedBy(), "0", "USER", newUser.getUserId(),
+                provUser.getCreatedBy(), "0", "USER", newUser.getUserId(),
                 null, "SUCCESS", null, "USER_STATUS", provUser.getUser()
                         .getStatus().toString(), requestId, null, null, null);
 
@@ -512,7 +542,7 @@ public class ProvisionServiceImpl implements ProvisionService,
 
         ProvisionUserResponse resp = new ProvisionUserResponse();
         resp.setStatus(ResponseStatus.SUCCESS);
-        provUser.getUser().setUserId(newUser.getUserId());
+        provUser.setUserId(newUser.getUserId());
         resp.setUser(provUser);
         return resp;
 
@@ -641,13 +671,12 @@ public class ProvisionServiceImpl implements ProvisionService,
 
                             log.info("connector service client " + client);
 
-                            DeleteRequestType deleteRequest = new DeleteRequestType();
-                            PSOIdentifierType idType = new PSOIdentifierType(lg
-                                    .getLogin(), null, lg.getManagedSysId());
+                            UserRequest deleteRequest = new UserRequest();
+
                             deleteRequest.setRequestID("R"
                                     + System.currentTimeMillis());
-                            deleteRequest.setRecursive(new Boolean(true));
-                            deleteRequest.setPsoID(idType);
+
+                            deleteRequest.setUserIdentity(lg.getLogin());
 
                             ResponseType respType = client
                                     .delete(deleteRequest);
@@ -748,7 +777,7 @@ public class ProvisionServiceImpl implements ProvisionService,
 
         // get the current user object - update it with the new values and then
         // save it
-        UserEntity entity = userMgr.getUser(provUser.getUser().getUserId());
+        UserEntity entity = userMgr.getUser(provUser.getUserId());
         User origUser = userDozerConverter.convertToDTO(entity, true);
 
         if (origUser == null || origUser.getUserId() == null) {
@@ -763,9 +792,9 @@ public class ProvisionServiceImpl implements ProvisionService,
         User currentUser2 = UserAttributeHelper.cloneUser(origUser);
 
         List<Role> curRoleList = roleDataService
-                .getUserRolesAsFlatList(provUser.getUser().getUserId());
+                .getUserRolesAsFlatList(provUser.getUserId());
         List<Group> curGroupList = this.groupManager
-                .getCompiledGroupsForUser(provUser.getUser().getUserId());
+                .getCompiledGroupsForUser(provUser.getUserId());
 
         User newUser = provUser.getUser();
 
@@ -790,7 +819,7 @@ public class ProvisionServiceImpl implements ProvisionService,
         String logId = auditHelper.addLog("MODIFY USER",
                 provUser.getSecurityDomain(), primaryId, "IDM SERVICE",
                 provUser.getUser().getLastUpdatedBy(), "0", "USER",
-                provUser.getUser().getUserId(), null, "SUCCESS", null, "USER_STATUS",
+                provUser.getUserId(), null, "SUCCESS", null, "USER_STATUS",
                 provUser.getUser().getStatus().toString(), requestId, null,
                 null, null).getLogId();
 
@@ -802,13 +831,13 @@ public class ProvisionServiceImpl implements ProvisionService,
                 provUser.getMemberOfRoles(), logId, requestId, provUser
                         .getUser().getLastUpdatedBy(), primaryId);
 
-        updateSupervisor(newUser, provUser.getUser().getSupervisor());
+        updateSuperiors(newUser, provUser.getSuperiors());
 
         // update the identities
-        List<Login> tempPrincipalList = provUser.getUser().getPrincipalList();
+        List<Login> tempPrincipalList = provUser.getPrincipalList();
         log.info("pricipallist = " + tempPrincipalList);
         if (tempPrincipalList != null && tempPrincipalList.size() > 0) {
-            updatePrincipals(newUser, loginDozerConverter.convertToEntityList(provUser.getUser().getPrincipalList(), true));
+            updatePrincipals(newUser, loginDozerConverter.convertToEntityList(provUser.getPrincipalList(), true));
         }
 
         // temp hack
@@ -830,7 +859,7 @@ public class ProvisionServiceImpl implements ProvisionService,
             }
         }
 
-        List<Login> principalList = provUser.getUser().getPrincipalList();
+        List<Login> principalList = provUser.getPrincipalList();
         String password = passwordGenerator.generatePassword(10);
 
         /*
@@ -950,7 +979,7 @@ public class ProvisionServiceImpl implements ProvisionService,
                                     .getSecurityDomain(), primaryId,
                                     "IDM SERVICE", provUser.getUser()
                                             .getLastUpdatedBy(), "0", "USER",
-                                    provUser.getUser().getUserId(), null, "SUCCESS",
+                                    provUser.getUserId(), null, "SUCCESS",
                                     logId, "NEW IDENTITY", res.getName(),
                                     requestId, null, null, null);
 
@@ -969,7 +998,7 @@ public class ProvisionServiceImpl implements ProvisionService,
                                     .getSecurityDomain(), primaryId,
                                     "IDM SERVICE", provUser.getUser()
                                             .getLastUpdatedBy(), "0", "USER",
-                                    provUser.getUser().getUserId(), null, "SUCCESS",
+                                    provUser.getUserId(), null, "SUCCESS",
                                     logId, "NEW IDENTITY", res.getName(),
                                     requestId, null, null, null);
                         }
@@ -1006,7 +1035,7 @@ public class ProvisionServiceImpl implements ProvisionService,
                     auditHelper.addLog("MODIFY USER", provUser
                             .getSecurityDomain(), primaryId, "IDM SERVICE",
                             provUser.getUser().getLastUpdatedBy(), "0", "USER",
-                            provUser.getUser().getUserId(), null, "SUCCESS", logId,
+                            provUser.getUserId(), null, "SUCCESS", logId,
                             "DISABLE IDENTITY", curLg.getLogin(),
                             requestId, null, null, null);
                 }
@@ -1048,7 +1077,7 @@ public class ProvisionServiceImpl implements ProvisionService,
 
         // pass 2 - check the current list with the role list
 
-        provUser.getUser().setPrincipalList(loginDozerConverter.convertToDTOList(rolePrincipalList, true));
+        provUser.setPrincipalList(loginDozerConverter.convertToDTOList(rolePrincipalList, true));
 
         log.info("ROLE principal list (Before SPML block) = "
                 + rolePrincipalList);
@@ -1116,13 +1145,6 @@ public class ProvisionServiceImpl implements ProvisionService,
 
                             log.info("connector service client " + port);
 
-                            ModifyRequestType modReqType = new ModifyRequestType();
-                            PSOIdentifierType idType = new PSOIdentifierType(lg
-                                    .getLogin(), null, "target");
-                            idType.setTargetID(lg.getManagedSysId());
-                            modReqType.setPsoID(idType);
-                            modReqType.setRequestID(requestId);
-
                             ExtensibleUser extUser = null;
 
                             // TODO - Move to use groovy script based on
@@ -1150,12 +1172,11 @@ public class ProvisionServiceImpl implements ProvisionService,
                             log.info("Ext user attributes="
                                     + extUser.getAttributes().size());
 
-                            ModificationType mod = new ModificationType();
-                            mod.getData().getAny().add(extUser);
-
-                            List<ModificationType> modTypeList = modReqType
-                                    .getModification();
-                            modTypeList.add(mod);
+                            UserRequest modReqType = new UserRequest();
+                            modReqType.setUserIdentity(lg.getLogin());
+                            modReqType.setRequestID(requestId);
+                            modReqType.setTargetID(lg.getManagedSysId());
+                            modReqType.setUser(extUser);
 
                             port.modify(modReqType);
 
@@ -1342,7 +1363,6 @@ public class ProvisionServiceImpl implements ProvisionService,
         origUser.setSuffix(newUser.getSuffix());
         origUser.setTitle(newUser.getTitle());
         origUser.setUserTypeInd(newUser.getUserTypeInd());
-        origUser.setManagerId(newUser.getManagerId());
         origUser.setAlternateContactId(newUser.getAlternateContactId());
 
     }
@@ -1628,30 +1648,58 @@ public class ProvisionServiceImpl implements ProvisionService,
         }
     }
 
-    private void updateSupervisor(User user, Supervisor supervisor) {
+    private void updateSuperiors(User user, Set<User> superiors) {
 
-        if (supervisor == null) {
-            return;
-        }
-        // check the current supervisor - if different - remove it and add the
-        // new one.
-        List<SupervisorEntity> supervisorList = userMgr.getSupervisors(user
-                .getUserId());
-        for (SupervisorEntity s : supervisorList) {
-            log.info("looking to match supervisor ids = "
-                    + s.getSupervisor().getUserId() + " "
-                    + supervisor.getSupervisor().getUserId());
-            if (s.getSupervisor().getUserId()
-                    .equalsIgnoreCase(supervisor.getSupervisor().getUserId())) {
-                return;
+        List<SupervisorEntity> supervisorList = userMgr.getSupervisors(user.getUserId());
+
+        if (CollectionUtils.isNotEmpty(superiors)) {
+            for (User u : superiors) {
+                if (user.getUserId().equals(u.getUserId())) {
+                    log.info("User can't be a superior for himself");
+                    continue;
+                }
+
+                boolean isToAdd = true;
+                for (SupervisorEntity s : supervisorList) {
+                    if (s.getSupervisor().getUserId().equals(u.getUserId())) {
+                        isToAdd = false; // already exists
+                        break;
+                    } else if (s.getEmployee().getUserId().equals(u.getUserId())) {
+                        isToAdd = false;
+                        log.info(String.format("User with id='%s' is a subordinate of User with id='%s'",
+                                u.getUserId(), s.getSupervisor().getUserId()));
+                        break;
+                    }
+                }
+                if (isToAdd) {
+                    try {
+                        userMgr.addSuperior(u.getUserId(), user.getUserId());
+                        log.info(String.format("Adding a supervisor user %s for user %s",
+                                u.getUserId(), user.getUserId()));
+                    } catch (Exception e) {
+                        log.info(String.format("Can't add a supervisor user %s for user %s",
+                                u.getUserId(), user.getUserId()));
+                    }
+                }
             }
-            userMgr.removeSupervisor(s.getOrgStructureId());
         }
-        log.info("adding supervisor: " + supervisor.getSupervisor().getUserId());
-        supervisor.setEmployee(user);
-        
-        final SupervisorEntity entity = supervisorDozerConverter.convertToEntity(supervisor, true);
-        userMgr.addSupervisor(entity);
+
+        for (SupervisorEntity s : supervisorList) {
+            boolean isToRemove = true;
+            if (CollectionUtils.isNotEmpty(superiors)) {
+                for (User u : superiors) {
+                    if (s.getSupervisor().getUserId().equals(u.getUserId())) {
+                        isToRemove = false;
+                        break;
+                    }
+                }
+            }
+            if (isToRemove) {
+                userMgr.removeSupervisor(s.getOrgStructureId());
+                log.info(String.format("Removed a supervisor user %s from user %s",
+                        s.getSupervisor().getUserId(), user.getUserId()));
+            }
+        }
 
     }
 
@@ -1749,12 +1797,9 @@ public class ProvisionServiceImpl implements ProvisionService,
 
                     log.info("connector service client " + client);
 
-                    SetPasswordRequestType pswdReqType = new SetPasswordRequestType();
-                    PSOIdentifierType idType = new PSOIdentifierType(
-                            passwordSync.getPrincipal(), null,
-                            passwordSync.getManagedSystemId());
-                    pswdReqType.setPsoID(idType);
-                    // pswdReqType.setRequestID(UUIDGen.getUUID());
+                    PasswordRequest pswdReqType = new PasswordRequest();
+                    pswdReqType.setUserIdentity(passwordSync.getPrincipal());
+                    pswdReqType.setTargetID(passwordSync.getManagedSystemId());
                     pswdReqType.setRequestID(requestId);
                     pswdReqType.setPassword(password);
 
@@ -1932,11 +1977,10 @@ public class ProvisionServiceImpl implements ProvisionService,
                                     log.info("connector service client "
                                             + client);
 
-                                    SetPasswordRequestType pswdReqType = new SetPasswordRequestType();
-                                    PSOIdentifierType idType = new PSOIdentifierType(
-                                            lg.getLogin(), null, lg
-                                                    .getManagedSysId());
-                                    pswdReqType.setPsoID(idType);
+                                    PasswordRequest pswdReqType = new PasswordRequest();
+
+                                    pswdReqType.setUserIdentity(lg.getLogin());
+                                    pswdReqType.setTargetID(lg.getManagedSysId());
                                     pswdReqType.setRequestID(primaryLogId);
                                     pswdReqType.setPassword(password);
 
@@ -2101,11 +2145,11 @@ public class ProvisionServiceImpl implements ProvisionService,
 
                     log.info("connector service client " + client);
 
-                    SetPasswordRequestType pswdReqType = new SetPasswordRequestType();
-                    PSOIdentifierType idType = new PSOIdentifierType(
-                            passwordSync.getPrincipal(), null,
-                            passwordSync.getManagedSystemId());
-                    pswdReqType.setPsoID(idType);
+                    PasswordRequest pswdReqType = new PasswordRequest();
+
+                    pswdReqType.setUserIdentity(passwordSync.getPrincipal());
+                    pswdReqType.setTargetID(passwordSync.getManagedSystemId());
+
                     // pswdReqType.setRequestID(UUIDGen.getUUID());
                     pswdReqType.setRequestID(requestId);
                     pswdReqType.setPassword(passwordSync.getPassword());
@@ -2273,11 +2317,10 @@ public class ProvisionServiceImpl implements ProvisionService,
                                     log.info("connector service client "
                                             + client);
 
-                                    SetPasswordRequestType pswdReqType = new SetPasswordRequestType();
-                                    PSOIdentifierType idType = new PSOIdentifierType(
-                                            lg.getLogin(), null, lg
-                                                    .getManagedSysId());
-                                    pswdReqType.setPsoID(idType);
+                                    PasswordRequest pswdReqType = new PasswordRequest();
+
+                                    pswdReqType.setUserIdentity(lg.getLogin());
+                                    pswdReqType.setTargetID(lg.getManagedSysId());
                                     // pswdReqType.setRequestID(UUIDGen.getUUID());
                                     pswdReqType.setRequestID("R"
                                             + System.currentTimeMillis());
@@ -2651,7 +2694,7 @@ public class ProvisionServiceImpl implements ProvisionService,
     @WebMethod
     public List<String> getAttributesList(
             @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId,
-            @WebParam(name = "config", targetNamespace = "") LookupAttributeRequestType config) {
+            @WebParam(name = "config", targetNamespace = "") LookupRequest config) {
         // TODO Auto-generated method stub
         return null;
     }

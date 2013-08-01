@@ -7,7 +7,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mule.api.MuleContext;
 import org.openiam.base.SysConfiguration;
-import org.openiam.connector.type.RemoteUserRequest;
+import org.openiam.connector.type.ResponseType;
 import org.openiam.connector.type.UserRequest;
 import org.openiam.connector.type.UserResponse;
 import org.openiam.dozer.converter.LoginDozerConverter;
@@ -32,9 +32,6 @@ import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.script.ScriptIntegration;
-import org.openiam.spml2.msg.DeleteRequestType;
-import org.openiam.spml2.msg.PSOIdentifierType;
-import org.openiam.spml2.msg.ResponseType;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -175,15 +172,13 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
 
     }
 
-    protected ResponseType localDelete(Login l, String requestId,
-            PSOIdentifierType idType, ManagedSysDto mSys, ProvisionUser user,
+    protected ResponseType localDelete(Login l, String requestId, ManagedSysDto mSys, ProvisionUser user,
             IdmAuditLog auditLog) {
 
         log.debug("Local delete for=" + l);
 
-        DeleteRequestType reqType = new DeleteRequestType();
+        UserRequest reqType = new UserRequest();
         reqType.setRequestID(requestId);
-        reqType.setPsoID(idType);
 
         ResponseType resp = connectorAdapter.deleteRequest(mSys, reqType,
                 muleContext);
@@ -199,13 +194,13 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
             logid = auditLog.getLogId();
         }
 
-        auditHelper.addLog("DELETE IDENTITY", user.getUser().getRequestorDomain(), user.getUser().getRequestorLogin(),
-                "IDM SERVICE", user.getUser().getCreatedBy(), l.getManagedSysId(),
-                "IDENTITY", user.getUser().getUserId(),
+        auditHelper.addLog("DELETE IDENTITY", user.getRequestorDomain(), user.getRequestorLogin(),
+                "IDM SERVICE", user.getCreatedBy(), l.getManagedSysId(),
+                "IDENTITY", user.getUserId(),
                 logid, status, logid,
                 "IDENTITY_STATUS", "DELETED",
-                requestId, resp.getErrorCodeAsStr(), user.getSessionId(), resp.getErrorMessage(),
-                user.getUser().getRequestClientIP(), l.getLogin(), l.getDomainId());
+                requestId, resp.getErrorCodeAsStr(), user.getSessionId(), resp.getErrorMsgAsStr(),
+                user.getRequestClientIP(), l.getLogin(), l.getDomainId());
 
         return resp;
 
@@ -217,7 +212,7 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
             ManagedSystemObjectMatch matchObj, ProvisionUser user,
             IdmAuditLog auditLog) {
 
-        RemoteUserRequest request = new RemoteUserRequest();
+        UserRequest request = new UserRequest();
 
         request.setUserIdentity(mLg.getLogin());
         request.setRequestID(requestId);
@@ -235,12 +230,12 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
         UserResponse resp = remoteConnectorAdapter.deleteRequest(mSys, request, connector, muleContext);
 
         auditHelper.addLog("DELETE IDENTITY", auditLog.getDomainId(), auditLog.getPrincipal(),
-                "IDM SERVICE", user.getUser().getCreatedBy(), mLg.getManagedSysId(),
-                "IDENTITY", user.getUser().getUserId(),
+                "IDM SERVICE", user.getCreatedBy(), mLg.getManagedSysId(),
+                "IDENTITY", user.getUserId(),
                 auditLog.getLogId(), resp.getStatus().toString(), auditLog.getLogId(), "IDENTITY_STATUS",
                 "DELETED",
                 requestId, resp.getErrorCodeAsStr(), user.getSessionId(), resp.getErrorMsgAsStr(),
-                user.getUser().getRequestClientIP(), mLg.getLogin(), mLg.getDomainId());
+                user.getRequestClientIP(), mLg.getLogin(), mLg.getDomainId());
 
         return resp;
 

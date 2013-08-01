@@ -53,12 +53,6 @@ public interface UserDAO extends BaseDao<UserEntity, String> {
 
     public int getSubordinatesCount(String userId);
 
-    public List<UserEntity> getPotentialSuperiors(String userId, Integer from, Integer size);
-
-    public int getPotentialSuperiorsCount(String userId);
-
-    public List<UserEntity> getPotentialSubordinates(String userId, Integer from, Integer size);
-
-    public int getPotentialSubordinatesCount(String userId);
+    public List<String> getAllAttachedSupSubIds(String userId);
 
 }

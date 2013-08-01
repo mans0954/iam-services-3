@@ -2,7 +2,14 @@
 <mappings xmlns="http://dozer.sourceforge.net" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://dozer.sourceforge.net
           http://dozer.sourceforge.net/schema/beanmapping.xsd">
-
+	<mapping>
+		<class-a>org.openiam.idm.srvc.report.domain.ReportInfoEntity</class-a>
+		<class-b>org.openiam.idm.srvc.report.dto.ReportInfoDto</class-b>
+		<field-exclude>
+			<a>reportParams</a>
+			<b>reportParams</b>
+		</field-exclude>
+	</mapping>
 	<mapping>
 		<class-a>org.openiam.idm.srvc.res.domain.ResourceEntity</class-a>
 		<class-b>org.openiam.idm.srvc.res.dto.Resource</class-b>
@@ -203,6 +210,60 @@
 			<b>organizationAttributes</b>
 		</field-exclude>
 	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.meta.domain.MetadataTemplateTypeEntity</class-a>
+		<class-b>org.openiam.idm.srvc.meta.dto.MetadataTemplateType</class-b>
+		<field>
+			<a>id</a>
+			<b>id</b>
+		</field>
+		<field>
+			<a>name</a>
+			<b>name</b>
+		</field>
+		<field>
+			<a>description</a>
+			<b>description</b>
+		</field>
+		<field-exclude>
+			<a>templates</a>
+			<b>templates</b>
+		</field-exclude>
+		<field-exclude>
+			<a>fields</a>
+			<b>fields</b>
+		</field-exclude>
+	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.meta.domain.MetadataTemplateTypeFieldEntity</class-a>
+		<class-b>org.openiam.idm.srvc.meta.dto.MetadataTemplateTypeField</class-b>
+		<field>
+			<a>id</a>
+			<b>id</b>
+		</field>
+		<field>
+			<a>name</a>
+			<b>name</b>
+		</field>
+		<field>
+			<a>description</a>
+			<b>description</b>
+		</field>
+		<field>
+			<a>required</a>
+			<b>required</b>
+		</field>
+		<field>
+			<a>templateType.id</a>
+			<b>templateTypeId</b>
+		</field>
+		<field-exclude>
+			<a>fieldXrefs</a>
+			<b>fieldXrefs</b>
+		</field-exclude>
+	</mapping>
 
 	<mapping>
 		<class-a>org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity
@@ -221,6 +282,18 @@
 			<a>metadataElements</a>
 			<b>metadataElements</b>
 		</field-exclude>
+		<field>
+			<a>templateType.id</a>
+			<b>metadataTemplateTypeId</b>
+		</field>
+		<field>
+			<a>templateType.name</a>
+			<b>metadataTemplateTypeName</b>
+		</field>
+		<field-exclude>
+			<a>fieldXrefs</a>
+			<b>fieldXrefs</b>
+		</field-exclude>
 	</mapping>
 
 	<mapping>
@@ -235,6 +308,34 @@
 			<a>languageMap</a>
 			<b>languageMap</b>
 		</field-exclude>
+	</mapping>
+	<mapping>
+		<class-a>org.openiam.idm.srvc.report.domain.ReportCriteriaParamEntity
+		</class-a>
+		<class-b>org.openiam.idm.srvc.report.dto.ReportCriteriaParamDto
+		</class-b>
+		<field>
+			<a>report.reportId</a>
+			<b>reportId</b>
+		</field>
+
+		<field>
+			<a>type.id</a>
+			<b>typeId</b>
+		</field>
+	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.report.domain.ReportSubCriteriaParamEntity
+		</class-a>
+		<class-b>org.openiam.idm.srvc.report.dto.ReportSubCriteriaParamDto
+		</class-b>
+		<field>
+			<a>report.reportId</a>
+			<b>reportId</b>
+		</field>
+
+		
 	</mapping>
 
 	<mapping>
@@ -448,9 +549,10 @@
 			<b>defaultAttributePolicy</b>
 		</field-exclude>
 	</mapping>
-	
+
 	<mapping>
-		<class-a>org.openiam.idm.srvc.org.domain.OrganizationTypeEntity</class-a>
+		<class-a>org.openiam.idm.srvc.org.domain.OrganizationTypeEntity
+		</class-a>
 		<class-b>org.openiam.idm.srvc.org.dto.OrganizationType</class-b>
 		<field-exclude>
 			<a>parentTypes</a>

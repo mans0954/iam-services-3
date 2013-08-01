@@ -30,6 +30,7 @@ import org.openiam.idm.srvc.prov.request.dto.ProvisionRequest;
 import org.openiam.idm.srvc.prov.request.dto.RequestUser;
 import org.openiam.idm.srvc.prov.request.service.RequestDataService;
 import org.openiam.idm.srvc.role.service.UserRoleDAO;
+import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.Supervisor;
@@ -121,13 +122,9 @@ public class RejectProfileProvisionNotifierDelegate implements JavaDelegate {
 					}
             		break;
             	case SUPERVISOR:
-            		final Supervisor supVisor = profileModel.getUser().getSupervisor();
-                    if (supVisor != null && supVisor.getEmployee() != null) {
-                    	final String notifyUserId = supVisor.getEmployee().getUserId();
-                    	if(StringUtils.isNotBlank(notifyUserId)) {
-                    		userIds.add(notifyUserId);
-                    	}
-                    }
+            		if(CollectionUtils.isNotEmpty(profileModel.getSupervisorIdList())) {
+            			userIds.addAll(profileModel.getSupervisorIdList());
+            		}
                     break;
             	case USER:
             		userIds.add(notifyId);

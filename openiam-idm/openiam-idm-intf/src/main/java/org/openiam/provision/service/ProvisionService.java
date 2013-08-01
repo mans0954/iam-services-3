@@ -28,6 +28,8 @@ import javax.jws.WebService;
 import java.util.List;
 
 import org.openiam.base.ws.Response;
+import org.openiam.connector.type.LookupRequest;
+
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.AccountLockEnum;
 import org.openiam.provision.dto.PasswordSync;
@@ -36,7 +38,6 @@ import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.LookupUserResponse;
 import org.openiam.provision.resp.PasswordResponse;
 import org.openiam.provision.resp.ProvisionUserResponse;
-import org.openiam.spml2.msg.LookupAttributeRequestType;
 
 /**
  * <code>ProvisionService</code> Interface for the Provisioning service which is
@@ -159,6 +160,6 @@ public interface ProvisionService {
     @WebMethod
     public List<String> getAttributesList(
             @WebParam(name = "managedSysId", targetNamespace = "") String managedSysId,
-            @WebParam(name = "config", targetNamespace = "") LookupAttributeRequestType config);
+            @WebParam(name = "config", targetNamespace = "") LookupRequest config);
 
 }

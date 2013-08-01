@@ -1,14 +1,16 @@
-package org.openiam.spml2.spi.ldap.command;
+package org.openiam.spml2.spi.ldap;
 
+import org.openiam.connector.type.ErrorCode;
+import org.openiam.connector.type.StatusCodeType;
+import org.openiam.connector.type.UserRequest;
+import org.openiam.connector.type.UserResponse;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
-import org.openiam.spml2.msg.*;
-import org.openiam.spml2.spi.ldap.command.base.LdapAbstractCommand;
 import org.openiam.spml2.spi.ldap.dirtype.Directory;
 import org.openiam.spml2.spi.ldap.dirtype.DirectorySpecificImplFactory;
 import org.openiam.spml2.util.connect.ConnectionFactory;
-import org.openiam.spml2.util.connect.ConnectionManagerConstant;
-import org.openiam.spml2.util.connect.ConnectionMgr;
+import org.openiam.connector.util.ConnectionManagerConstant;
+import org.openiam.connector.util.ConnectionMgr;
 
 import javax.naming.NamingException;
 import javax.naming.ldap.LdapContext;
@@ -17,32 +19,24 @@ import org.openiam.idm.srvc.res.dto.ResourceProp;
 
 import java.util.Set;
 
-@Deprecated
+
 public class LdapDeleteCommand extends LdapAbstractCommand {
 
-    public ResponseType delete(DeleteRequestType reqType) {
+    public UserResponse delete(UserRequest reqType) {
 
         log.debug("delete request called..");
         ConnectionMgr conMgr = null;
         boolean groupMembershipEnabled = true;
         String delete = "DELETE";
-        ResponseType respType = new ResponseType();
+        UserResponse respType = new UserResponse();
 
         //String uid = null;
         String ou = null;
 
         String requestID = reqType.getRequestID();
 
-        /* PSO - Provisioning Service Object -
-           *     -  ID must uniquely specify an object on the target or in the target's namespace
-           *     -  Try to make the PSO ID immutable so that there is consistency across changes. */
-        PSOIdentifierType psoID = reqType.getPsoID();
         /* targetID -  */
-        String targetID = psoID.getTargetID();
-        /* ContainerID - May specify the container in which this object should be created
-           *      ie. ou=Development, org=Example */
-        PSOIdentifierType containerID = psoID.getContainerID();
-
+        String targetID = reqType.getTargetID();
 
         /* A) Use the targetID to look up the connection information under managed systems */
         ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
@@ -85,7 +79,7 @@ public class LdapDeleteCommand extends LdapAbstractCommand {
 
             conMgr = ConnectionFactory.create(ConnectionManagerConstant.LDAP_CONNECTION);
             conMgr.setApplicationContext(ac);
-            LdapContext ldapctx = conMgr.connect(null);
+            LdapContext ldapctx = conMgr.connect(managedSys);
 
             if (ldapctx == null) {
                 respType.setStatus(StatusCodeType.FAILURE);
@@ -94,7 +88,7 @@ public class LdapDeleteCommand extends LdapAbstractCommand {
                 return respType;
             }
 
-            String ldapName = psoID.getID();
+            String ldapName = reqType.getUserIdentity();
 
 
             if (groupMembershipEnabled) {

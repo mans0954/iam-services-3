@@ -9,8 +9,8 @@ import com.google.gdata.util.AuthenticationException;
 import com.google.gdata.util.ServiceException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.connector.type.SearchRequest;
-import org.openiam.connector.type.SearchResponse;
+import org.openiam.connector.type.*;
+import org.openiam.connector.type.ResponseType;
 import org.openiam.dozer.converter.ManagedSystemObjectMatchDozerConverter;
 import org.openiam.idm.srvc.audit.service.IdmAuditLogDataService;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
@@ -25,25 +25,19 @@ import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.spml2.interf.ConnectorService;
-import org.openiam.spml2.msg.*;
-import org.openiam.spml2.msg.password.*;
-import org.openiam.spml2.msg.suspend.ResumeRequestType;
-import org.openiam.spml2.msg.suspend.SuspendRequestType;
+import org.openiam.connector.ConnectorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import javax.jws.WebParam;
 import javax.jws.WebService;
 import javax.naming.directory.ModificationItem;
-import javax.xml.namespace.QName;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Provisioning connector for Google Apps
@@ -91,7 +85,7 @@ public class GoogleAppsConnectorImpl  {
         System.setProperty("javax.net.ssl.trustStorePassword", trustStorePassword);
     }
 
-    public AddResponseType add(AddRequestType reqType) {
+    public UserResponse add(UserRequest reqType) {
         String userName = null;
         String password = null;
         String givenName = null;
@@ -102,33 +96,10 @@ public class GoogleAppsConnectorImpl  {
         log.debug("Google Apps: add request called..");
 
         String requestID = reqType.getRequestID();
-        /*
-         * ContainerID - May specify the container in which this object should
-         * be created ie. ou=Development, org=Example
-         */
-        PSOIdentifierType containerID = reqType.getContainerID();
-        System.out.println("ContainerId =" + containerID);
-
-        /*
-         * PSO - Provisioning Service Object - - ID must uniquely specify an
-         * object on the target or in the target's namespace - Try to make the
-         * PSO ID immutable so that there is consistency across changes.
-         */
-        PSOIdentifierType psoID = reqType.getPsoID();
-        userName = psoID.getID();
-
-        log.debug("PSOId=" + psoID.getID());
+         userName = reqType.getUserIdentity();
 
         /* targetID - */
         String targetID = reqType.getTargetID();
-
-        // Data sent with request - Data must be present in the request per the
-        // spec
-        ExtensibleType data = reqType.getData();
-        Map<QName, String> otherData = reqType.getOtherAttributes();
-
-        /* Indicates what type of data we should return from this operations */
-        ReturnDataType returnData = reqType.getReturnData();
 
         /*
          * A) Use the targetID to look up the connection information under
@@ -142,32 +113,31 @@ public class GoogleAppsConnectorImpl  {
             matchObj = managedSystemObjectMatchDozerConverter.convertToDTO(matchObjList.get(0),false);
         }
 
-        List<ExtensibleObject> requestAttributeList = reqType.getData()
-                .getAny();
+        ExtensibleObject obj = reqType.getUser();
 
-        for (ExtensibleObject obj : requestAttributeList) {
-            List<ExtensibleAttribute> attrList = obj.getAttributes();
-            for (ExtensibleAttribute att : attrList) {
 
-                log.debug("Attr Name=" + att.getName() + " " + att.getValue());
+        List<ExtensibleAttribute> attrList = obj.getAttributes();
+        for (ExtensibleAttribute att : attrList) {
 
-                String name = att.getName();
-                String value = att.getValue();
+            log.debug("Attr Name=" + att.getName() + " " + att.getValue());
 
-                if (name.equalsIgnoreCase("password")) {
-                    password = value;
+            String name = att.getName();
+            String value = att.getValue();
 
-                }
-                if (name.equalsIgnoreCase("firstName")) {
-                    givenName = value;
+            if (name.equalsIgnoreCase("password")) {
+                password = value;
 
-                }
-                if (name.equalsIgnoreCase("lastName")) {
-                    lastName = value;
+            }
+            if (name.equalsIgnoreCase("firstName")) {
+                givenName = value;
 
-                }
+            }
+            if (name.equalsIgnoreCase("lastName")) {
+                lastName = value;
+
             }
         }
+
 
         try {
             UserService userService = new UserService(
@@ -203,32 +173,32 @@ public class GoogleAppsConnectorImpl  {
             e.printStackTrace();
             log.error(e.getStackTrace());
 
-            AddResponseType response = new AddResponseType();
+            UserResponse response = new UserResponse();
             response.setStatus(StatusCodeType.FAILURE);
             response.setError(ErrorCode.ALREADY_EXISTS);
             return response;
 
         } catch (MalformedURLException e) {
-            AddResponseType response = new AddResponseType();
+            UserResponse response = new UserResponse();
             response.setError(ErrorCode.MALFORMED_REQUEST);
             log.error(e.getStackTrace());
             return response;
 
         } catch (IOException e) {
-            AddResponseType response = new AddResponseType();
+            UserResponse response = new UserResponse();
             response.setError(ErrorCode.UNSUPPORTED_OPERATION);
             log.error(e.getStackTrace());
             return response;
         }
 
-        AddResponseType response = new AddResponseType();
+        UserResponse response = new UserResponse();
         response.setStatus(StatusCodeType.SUCCESS);
 
         return response;
 
     }
 
-    public ModifyResponseType modify(ModifyRequestType reqType) {
+    public UserResponse modify(UserRequest reqType) {
         String userName = null;
         String firstName = null;
         String lastName = null;
@@ -242,11 +212,11 @@ public class GoogleAppsConnectorImpl  {
          * object on the target or in the target's namespace - Try to make the
          * PSO ID immutable so that there is consistency across changes.
          */
-        PSOIdentifierType psoID = reqType.getPsoID();
-        userName = psoID.getID();
+
+        userName = reqType.getUserIdentity();
 
         /* targetID - */
-        String targetID = psoID.getTargetID();
+        String targetID = reqType.getTargetID();
 
         /*
          * A) Use the targetID to look up the connection information under
@@ -260,14 +230,12 @@ public class GoogleAppsConnectorImpl  {
             matchObj = managedSystemObjectMatchDozerConverter.convertToDTO(matchObjList.get(0),false);
         }
 
-        List<ModificationType> modTypeList = reqType.getModification();
-
         // check if its a rename request
-        ExtensibleAttribute origIdentity = isRename(modTypeList);
+        ExtensibleAttribute origIdentity = isRename(reqType.getUser());
         if (origIdentity != null) {
             log.debug("Renaming identity: " + origIdentity.getValue());
 
-            ModifyResponseType respType = renameIdentity(userName,
+            UserResponse respType = renameIdentity(userName,
                     origIdentity.getValue(), managedSys, matchObj);
             if (respType.getStatus() == StatusCodeType.FAILURE) {
                 return respType;
@@ -275,11 +243,8 @@ public class GoogleAppsConnectorImpl  {
         } else {
 
             // get the firstName and lastName values
+                ExtensibleObject obj = reqType.getUser();
 
-            for (ModificationType mod : modTypeList) {
-                ExtensibleType extType = mod.getData();
-                List<ExtensibleObject> extobjectList = extType.getAny();
-                for (ExtensibleObject obj : extobjectList) {
 
                     log.debug("Object:" + obj.getName() + " - operation="
                             + obj.getOperation());
@@ -298,8 +263,7 @@ public class GoogleAppsConnectorImpl  {
                             }
                         }
                     }
-                }
-            }
+
 
             // assign to google
             if (change) {
@@ -328,13 +292,13 @@ public class GoogleAppsConnectorImpl  {
 
                 } catch (AuthenticationException e) {
                     log.error(e);
-                    ModifyResponseType respType = new ModifyResponseType();
+                    UserResponse respType = new UserResponse();
                     respType.setStatus(StatusCodeType.FAILURE);
                     respType.setError(ErrorCode.NO_SUCH_IDENTIFIER);
                     return respType;
                 } catch (MalformedURLException e) {
                     log.error(e);
-                    ModifyResponseType respType = new ModifyResponseType();
+                    UserResponse respType = new UserResponse();
                     respType.setStatus(StatusCodeType.FAILURE);
                     respType.setError(ErrorCode.MALFORMED_REQUEST);
                     return respType;
@@ -343,7 +307,7 @@ public class GoogleAppsConnectorImpl  {
                             + e.getCodeName());
                     log.error(e);
                     // e.printStackTrace();
-                    ModifyResponseType respType = new ModifyResponseType();
+                    UserResponse respType = new UserResponse();
                     respType.setStatus(StatusCodeType.FAILURE);
                     respType.setError(ErrorCode.INVALID_CONTAINMENT);
                     return respType;
@@ -354,7 +318,7 @@ public class GoogleAppsConnectorImpl  {
                     log.error(e);
                     System.out.println("Google ServiceException...="
                             + e.getCodeName());
-                    ModifyResponseType respType = new ModifyResponseType();
+                    UserResponse respType = new UserResponse();
                     respType.setStatus(StatusCodeType.FAILURE);
                     respType.setError(ErrorCode.CUSTOM_ERROR);
                     return respType;
@@ -362,13 +326,13 @@ public class GoogleAppsConnectorImpl  {
 
             }
         }
-        ModifyResponseType respType = new ModifyResponseType();
+        UserResponse respType = new UserResponse();
         respType.setStatus(StatusCodeType.SUCCESS);
         return respType;
 
     }
 
-    private ModifyResponseType renameIdentity(String newIdentity,
+    private UserResponse renameIdentity(String newIdentity,
             String origIdentity, ManagedSysDto managedSys,
             ManagedSystemObjectMatch matchObj) {
         UserService userService = new UserService(
@@ -391,21 +355,21 @@ public class GoogleAppsConnectorImpl  {
         } catch (AuthenticationException e) {
             log.error(e);
             e.printStackTrace();
-            ModifyResponseType respType = new ModifyResponseType();
+            UserResponse respType = new UserResponse();
             respType.setStatus(StatusCodeType.FAILURE);
             respType.setError(ErrorCode.NO_SUCH_IDENTIFIER);
             return respType;
         } catch (MalformedURLException e) {
             log.error(e);
             e.printStackTrace();
-            ModifyResponseType respType = new ModifyResponseType();
+            UserResponse respType = new UserResponse();
             respType.setStatus(StatusCodeType.FAILURE);
             respType.setError(ErrorCode.MALFORMED_REQUEST);
             return respType;
         } catch (AppsForYourDomainException e) {
             log.error(e);
             e.printStackTrace();
-            ModifyResponseType respType = new ModifyResponseType();
+            UserResponse respType = new UserResponse();
             respType.setStatus(StatusCodeType.FAILURE);
             respType.setError(ErrorCode.INVALID_CONTAINMENT);
             return respType;
@@ -415,33 +379,26 @@ public class GoogleAppsConnectorImpl  {
         } catch (ServiceException e) {
             log.error(e);
             e.printStackTrace();
-            ModifyResponseType respType = new ModifyResponseType();
+            UserResponse respType = new UserResponse();
             respType.setStatus(StatusCodeType.FAILURE);
             respType.setError(ErrorCode.CUSTOM_ERROR);
             return respType;
         }
-        ModifyResponseType respType = new ModifyResponseType();
+        UserResponse respType = new UserResponse();
         respType.setStatus(StatusCodeType.SUCCESS);
         return respType;
     }
 
-    private ExtensibleAttribute isRename(List<ModificationType> modTypeList) {
-        for (ModificationType mod : modTypeList) {
-            ExtensibleType extType = mod.getData();
-            List<ExtensibleObject> extobjectList = extType.getAny();
-            for (ExtensibleObject obj : extobjectList) {
+    private ExtensibleAttribute isRename(ExtensibleObject obj) {
+        log.debug("Object:" + obj.getName() + " - operation="
+                + obj.getOperation());
 
-                log.debug("Object:" + obj.getName() + " - operation="
-                        + obj.getOperation());
-
-                List<ExtensibleAttribute> attrList = obj.getAttributes();
-                List<ModificationItem> modItemList = new ArrayList<ModificationItem>();
-                for (ExtensibleAttribute att : attrList) {
-                    if (att.getOperation() != 0 && att.getName() != null) {
-                        if (att.getName().equalsIgnoreCase("ORIG_IDENTITY")) {
-                            return att;
-                        }
-                    }
+        List<ExtensibleAttribute> attrList = obj.getAttributes();
+        List<ModificationItem> modItemList = new ArrayList<ModificationItem>();
+        for (ExtensibleAttribute att : attrList) {
+            if (att.getOperation() != 0 && att.getName() != null) {
+                if (att.getName().equalsIgnoreCase("ORIG_IDENTITY")) {
+                    return att;
                 }
             }
         }
@@ -453,27 +410,16 @@ public class GoogleAppsConnectorImpl  {
         throw new UnsupportedOperationException("Not supportable.");
     }
 
-    public ResponseType delete(DeleteRequestType reqType) {
+    public UserResponse delete(UserRequest reqType) {
         init();
 
         String userName = null;
 
         String requestID = reqType.getRequestID();
 
-        /*
-         * PSO - Provisioning Service Object - - ID must uniquely specify an
-         * object on the target or in the target's namespace - Try to make the
-         * PSO ID immutable so that there is consistency across changes.
-         */
-        PSOIdentifierType psoID = reqType.getPsoID();
-        userName = psoID.getID();
+        userName = reqType.getUserIdentity();
         /* targetID - */
-        String targetID = psoID.getTargetID();
-        /*
-         * ContainerID - May specify the container in which this object should
-         * be created ie. ou=Development, org=Example
-         */
-        PSOIdentifierType containerID = psoID.getContainerID();
+        String targetID = reqType.getTargetID();
 
         /*
          * A) Use the targetID to look up the connection information under
@@ -499,19 +445,19 @@ public class GoogleAppsConnectorImpl  {
 
         } catch (AuthenticationException e) {
             log.error(e);
-            ResponseType respType = new ResponseType();
+            UserResponse respType = new UserResponse();
             respType.setStatus(StatusCodeType.FAILURE);
             respType.setError(ErrorCode.NO_SUCH_IDENTIFIER);
             return respType;
         } catch (MalformedURLException e) {
             log.error(e);
-            ResponseType respType = new ResponseType();
+            UserResponse respType = new UserResponse();
             respType.setStatus(StatusCodeType.FAILURE);
             respType.setError(ErrorCode.MALFORMED_REQUEST);
             return respType;
         } catch (AppsForYourDomainException e) {
             log.error(e);
-            ResponseType respType = new ResponseType();
+            UserResponse respType = new UserResponse();
             respType.setStatus(StatusCodeType.FAILURE);
             respType.setError(ErrorCode.INVALID_CONTAINMENT);
             return respType;
@@ -519,21 +465,21 @@ public class GoogleAppsConnectorImpl  {
             log.error(e);
         } catch (ServiceException e) {
             log.error(e);
-            ResponseType respType = new ResponseType();
+            UserResponse respType = new UserResponse();
             respType.setStatus(StatusCodeType.FAILURE);
             respType.setError(ErrorCode.CUSTOM_ERROR);
             return respType;
         }
 
-        ResponseType respType = new ResponseType();
+        UserResponse respType = new UserResponse();
         respType.setStatus(StatusCodeType.SUCCESS);
         return respType;
 
     }
 
-    public LookupResponseType lookup(LookupRequestType reqType) {
+    public SearchResponse lookup(LookupRequest reqType) {
         log.debug("Google connector:lookup. Will return a failure");
-        LookupResponseType resp = new LookupResponseType();
+        SearchResponse resp = new SearchResponse();
         resp.setStatus(StatusCodeType.FAILURE);
         return resp;
     }
@@ -544,31 +490,25 @@ public class GoogleAppsConnectorImpl  {
 * @see org.openiam.spml2.interf.SpmlCore#lookupAttributeNames(org.openiam.spml2.msg.
 * LookupAttributeRequestType)
 */
-    public LookupAttributeResponseType lookupAttributeNames(LookupAttributeRequestType reqType){
-        LookupAttributeResponseType respType = new LookupAttributeResponseType();
+    public LookupAttributeResponse lookupAttributeNames(LookupRequest reqType){
+        LookupAttributeResponse respType = new LookupAttributeResponse();
         respType.setStatus(StatusCodeType.FAILURE);
         respType.setError(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION);
 
         return respType;
     }
 
-    public ResponseType setPassword(SetPasswordRequestType request) {
+    public ResponseType setPassword(PasswordRequest request) {
         String userName = null;
 
         init();
 
         String requestID = request.getRequestID();
-        /*
-         * PSO - Provisioning Service Object - - ID must uniquely specify an
-         * object on the target or in the target's namespace - Try to make the
-         * PSO ID immutable so that there is consistency across changes.
-         */
-        PSOIdentifierType psoID = request.getPsoID();
 
-        userName = psoID.getID();
+        userName = request.getUserIdentity();
 
         /* targetID - */
-        String targetID = psoID.getTargetID();
+        String targetID = request.getTargetID();
 
         /*
          * A) Use the targetID to look up the connection information under
@@ -638,21 +578,21 @@ public class GoogleAppsConnectorImpl  {
 
     }
 
-    public ResponseType expirePassword(ExpirePasswordRequestType request) {
+    public ResponseType expirePassword(PasswordRequest request) {
         // TODO Auto-generated method stub
         return null;
     }
 
-    public ResetPasswordResponseType resetPassword(
-            ResetPasswordRequestType request) {
+    public ResponseType resetPassword(
+            PasswordRequest request) {
         // TODO Auto-generated method stub
         init();
 
         return null;
     }
 
-    public ValidatePasswordResponseType validatePassword(
-            ValidatePasswordRequestType request) {
+    public ResponseType validatePassword(
+            PasswordRequest request) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -714,7 +654,7 @@ public class GoogleAppsConnectorImpl  {
         this.userManager = userManager;
     }
 
-    public ResponseType suspend(SuspendRequestType request) {
+    public ResponseType suspend(SuspendRequest request) {
         String userName = null;
         String firstName = null;
         String lastName = null;
@@ -724,16 +664,11 @@ public class GoogleAppsConnectorImpl  {
         init();
 
         String requestID = request.getRequestID();
-        /*
-         * PSO - Provisioning Service Object - - ID must uniquely specify an
-         * object on the target or in the target's namespace - Try to make the
-         * PSO ID immutable so that there is consistency across changes.
-         */
-        PSOIdentifierType psoID = request.getPsoID();
-        userName = psoID.getID();
+
+        userName = request.getUserIdentity();
 
         /* targetID - */
-        String targetID = psoID.getTargetID();
+        String targetID = request.getTargetID();
 
         /*
          * A) Use the targetID to look up the connection information under
@@ -795,7 +730,7 @@ public class GoogleAppsConnectorImpl  {
 
     }
 
-    public ResponseType resume(ResumeRequestType request) {
+    public ResponseType resume(ResumeRequest request) {
         String userName = null;
         String firstName = null;
         String lastName = null;
@@ -805,16 +740,11 @@ public class GoogleAppsConnectorImpl  {
         init();
 
         String requestID = request.getRequestID();
-        /*
-         * PSO - Provisioning Service Object - - ID must uniquely specify an
-         * object on the target or in the target's namespace - Try to make the
-         * PSO ID immutable so that there is consistency across changes.
-         */
-        PSOIdentifierType psoID = request.getPsoID();
-        userName = psoID.getID();
+
+        userName = request.getUserIdentity();
 
         /* targetID - */
-        String targetID = psoID.getTargetID();
+        String targetID = request.getTargetID();
 
         /*
          * A) Use the targetID to look up the connection information under

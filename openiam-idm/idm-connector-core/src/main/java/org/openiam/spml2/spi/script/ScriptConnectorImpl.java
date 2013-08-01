@@ -20,8 +20,8 @@ package org.openiam.spml2.spi.script;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.connector.type.SearchRequest;
-import org.openiam.connector.type.SearchResponse;
+import org.openiam.connector.type.*;
+import org.openiam.connector.type.ResponseType;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemObjectMatchDAO;
@@ -29,11 +29,7 @@ import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.spml2.base.AbstractSpml2Complete;
-import org.openiam.spml2.interf.ConnectorService;
-import org.openiam.spml2.msg.*;
-import org.openiam.spml2.msg.password.*;
-import org.openiam.spml2.msg.suspend.ResumeRequestType;
-import org.openiam.spml2.msg.suspend.SuspendRequestType;
+import org.openiam.connector.ConnectorService;
 import org.openiam.spml2.spi.ldap.LdapConnectorImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -66,7 +62,7 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete {
     @Qualifier("configurableGroovyScriptEngine")
     private ScriptIntegration scriptRunner;
 
-    public AddResponseType add(AddRequestType reqType) {
+    public UserResponse add(UserRequest reqType) {
         String targetID = reqType.getTargetID();
         ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
 
@@ -75,15 +71,15 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete {
         } catch (Exception e) {
             log.error("Could not add: " + e.toString());
 
-            AddResponseType resp = new AddResponseType();
+            UserResponse resp = new UserResponse();
             resp.setStatus(StatusCodeType.FAILURE);
             return resp;
 
         }
     }
 
-    public ResponseType delete(DeleteRequestType reqType) {
-        String targetID = reqType.getPsoID().getTargetID();
+    public UserResponse delete(UserRequest reqType) {
+        String targetID = reqType.getTargetID();
         ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
 
         try {
@@ -91,14 +87,14 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete {
         } catch (Exception e) {
             log.error("Could not delete: " + e.toString());
 
-            ResponseType resp = new ResponseType();
+            UserResponse resp = new UserResponse();
             resp.setStatus(StatusCodeType.FAILURE);
             return resp;
         }
     }
 
-    public LookupResponseType lookup(LookupRequestType reqType) {
-        String targetID = reqType.getPsoID().getTargetID();
+    public SearchResponse lookup(LookupRequest reqType) {
+        String targetID = reqType.getTargetID();
         ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
 
         try {
@@ -106,7 +102,7 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete {
         } catch (Exception e) {
             log.error("Lookup problem: " + e.toString());
 
-            LookupResponseType resp = new LookupResponseType();
+            SearchResponse resp = new SearchResponse();
             resp.setStatus(StatusCodeType.FAILURE);
             return resp;
         }
@@ -118,16 +114,16 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete {
 * @see org.openiam.spml2.interf.SpmlCore#lookupAttributeNames(org.openiam.spml2.msg.
 * LookupAttributeRequestType)
 */
-    public LookupAttributeResponseType lookupAttributeNames(LookupAttributeRequestType reqType){
-        LookupAttributeResponseType respType = new LookupAttributeResponseType();
+    public LookupAttributeResponse lookupAttributeNames(LookupRequest reqType){
+        LookupAttributeResponse respType = new LookupAttributeResponse();
         respType.setStatus(StatusCodeType.FAILURE);
         respType.setError(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION);
 
         return respType;
     }
 
-    public ModifyResponseType modify(ModifyRequestType reqType) {
-        String targetID = reqType.getPsoID().getTargetID();
+    public UserResponse modify(UserRequest reqType) {
+        String targetID = reqType.getTargetID();
         ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
 
         try {
@@ -135,14 +131,14 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete {
         } catch (Exception e) {
             log.error("Could not modify: " + e.toString());
 
-            ModifyResponseType resp = new ModifyResponseType();
+            UserResponse resp = new UserResponse();
             resp.setStatus(StatusCodeType.FAILURE);
             return resp;
         }
     }
 
-    public ResponseType expirePassword(ExpirePasswordRequestType reqType) {
-        String targetID = reqType.getPsoID().getTargetID();
+    public ResponseType expirePassword(PasswordRequest reqType) {
+        String targetID = reqType.getTargetID();
         ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
 
         try {
@@ -156,8 +152,8 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete {
         }
     }
 
-    public ResetPasswordResponseType resetPassword(ResetPasswordRequestType reqType) {
-        String targetID = reqType.getPsoID().getTargetID();
+    public ResponseType resetPassword(PasswordRequest reqType) {
+        String targetID = reqType.getTargetID();
         ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
 
         try {
@@ -165,14 +161,14 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete {
         } catch (Exception e) {
             log.error("Could not reset password: " + e.toString());
 
-            ResetPasswordResponseType resp = new ResetPasswordResponseType();
+            ResponseType resp = new ResponseType();
             resp.setStatus(StatusCodeType.FAILURE);
             return resp;
         }
     }
 
-    public ResponseType setPassword(SetPasswordRequestType reqType) {
-        String targetID = reqType.getPsoID().getTargetID();
+    public ResponseType setPassword(PasswordRequest reqType) {
+        String targetID = reqType.getTargetID();
         ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
 
         try {
@@ -206,8 +202,8 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete {
         }
     }
 
-    public ResponseType suspend(SuspendRequestType reqType) {
-        String targetID = reqType.getPsoID().getTargetID();
+    public ResponseType suspend(SuspendRequest reqType) {
+        String targetID = reqType.getTargetID();
         ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
 
         try {
@@ -221,8 +217,8 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete {
         }
     }
 
-    public ResponseType resume(ResumeRequestType reqType) {
-        String targetID = reqType.getPsoID().getTargetID();
+    public ResponseType resume(ResumeRequest reqType) {
+        String targetID = reqType.getTargetID();
         ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
 
         try {
@@ -236,8 +232,8 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete {
         }
     }
 
-    public ValidatePasswordResponseType validatePassword(ValidatePasswordRequestType reqType) {
-        String targetID = reqType.getPsoID().getTargetID();
+    public ResponseType validatePassword(PasswordRequest reqType) {
+        String targetID = reqType.getTargetID();
         ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
 
         try {
@@ -245,7 +241,7 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete {
         } catch (Exception e) {
             log.error("Error validating password: " + e.toString());
 
-            ValidatePasswordResponseType resp = new ValidatePasswordResponseType();
+            ResponseType resp = new ResponseType();
             resp.setStatus(StatusCodeType.FAILURE);
             return resp;
         }

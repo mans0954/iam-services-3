@@ -1,22 +1,20 @@
 package org.openiam.spml2.spi.mysql;
 
-import org.openiam.spml2.msg.AddRequestType;
-import org.openiam.spml2.msg.AddResponseType;
-import org.openiam.spml2.msg.StatusCodeType;
-import org.openiam.spml2.spi.mysql.MySQLAbstractCommand;
+import org.openiam.connector.type.StatusCodeType;
+import org.openiam.connector.type.UserRequest;
+import org.openiam.connector.type.UserResponse;
 
 /**
  * AppTableAddCommand implements the add operation for the AppTableConnector
  */
-@Deprecated
 public class MySQLAddCommand extends MySQLAbstractCommand {
 
 
 
-    public AddResponseType add(AddRequestType reqType) {
+    public UserResponse add(UserRequest reqType) {
 
 
-        AddResponseType response = new AddResponseType();
+        UserResponse response = new UserResponse();
         response.setStatus(StatusCodeType.SUCCESS);
 
 

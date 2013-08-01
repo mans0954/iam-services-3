@@ -1,11 +1,14 @@
 
 package org.openiam.connector.type;
 
+import org.openiam.provision.type.ExtensibleAttribute;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
+import java.util.LinkedList;
+import java.util.List;
 
 
 /**
@@ -32,7 +35,9 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "LookupRequest", propOrder = {
     "searchValue",
     "searchQuery",
-    "returnData"
+    "returnData",
+    "requestedAttributes",
+    "scriptHandler"
 })
 public class LookupRequest   extends RequestType
 {
@@ -41,10 +46,12 @@ public class LookupRequest   extends RequestType
     protected String searchValue;
     
     protected String searchQuery;
-    
-    protected ReturnData returnData;
 
- 
+    protected ReturnData returnData;
+    @XmlElement
+    private String scriptHandler;
+
+    protected List<ExtensibleAttribute> requestedAttributes = new LinkedList<ExtensibleAttribute>();
     /**
      * Gets the value of the returnData property.
      * 
@@ -89,4 +96,19 @@ public class LookupRequest   extends RequestType
 		this.searchValue = searchValue;
 	}
 
+    public String getScriptHandler() {
+        return scriptHandler;
+    }
+
+    public void setScriptHandler(String scriptHandler) {
+        this.scriptHandler = scriptHandler;
+    }
+
+    public List<ExtensibleAttribute> getRequestedAttributes() {
+        return requestedAttributes;
+    }
+
+    public void setRequestedAttributes(List<ExtensibleAttribute> requestedAttributes) {
+        this.requestedAttributes = requestedAttributes;
+    }
 }

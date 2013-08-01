@@ -2,6 +2,7 @@ package org.openiam.spml2.util.connect;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.connector.util.ConnectionMgr;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
@@ -35,7 +36,7 @@ public class LdapConnectionMgr implements ConnectionMgr {
     
 
 
-	public LdapContext connect(ManagedSysEntity managedSys)  throws NamingException{
+	public LdapContext connect(ManagedSysDto managedSys)  throws NamingException{
 
 		LdapContext ldapContext = null;
 		Hashtable<String, String> envDC = new Hashtable();

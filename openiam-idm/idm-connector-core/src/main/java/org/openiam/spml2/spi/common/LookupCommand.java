@@ -1,7 +1,7 @@
 package org.openiam.spml2.spi.common;
 
-import org.openiam.spml2.msg.LookupRequestType;
-import org.openiam.spml2.msg.LookupResponseType;
+import org.openiam.connector.type.LookupRequest;
+import org.openiam.connector.type.SearchResponse;
 
 /**
  * Created with IntelliJ IDEA.
@@ -12,5 +12,5 @@ import org.openiam.spml2.msg.LookupResponseType;
  */
 @Deprecated
 public interface LookupCommand {
-    public LookupResponseType lookup(LookupRequestType reqType);
+    public SearchResponse lookup(LookupRequest reqType);
 }

@@ -3,33 +3,40 @@ package org.openiam.idm.srvc.meta.dto;
 import org.openiam.am.srvc.dto.URIPattern;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataFieldTemplateXrefEntity;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "MetaElementPageTemplate", propOrder = {
         "id",
         "name",
+        "metadataTemplateTypeId",
+        "metadataTemplateTypeName",
         "resourceId",
         "metadataElements",
         "uriPatterns",
-        "isPublic"
+        "isPublic",
+        "fieldXrefs"
 })
 @DozerDTOCorrespondence(MetadataElementPageTemplateEntity.class)
 public class MetadataElementPageTemplate implements Serializable {
 
 	private String id;
+	private String metadataTemplateTypeId;
+	private String metadataTemplateTypeName;
 	private String name;
 	private String resourceId;
 	private Set<URIPattern> uriPatterns;
 	private Set<MetadataElementPageTemplateXref> metadataElements;
 	private boolean isPublic = true;
-	
+	private Set<MetadataFieldTemplateXref> fieldXrefs;
 	
 	public String getId() {
 		return id;
@@ -96,16 +103,52 @@ public class MetadataElementPageTemplate implements Serializable {
 	public void setIsPublic(boolean isPublic) {
 		this.isPublic = isPublic;
 	}
+	public String getMetadataTemplateTypeId() {
+		return metadataTemplateTypeId;
+	}
+	public void setMetadataTemplateTypeId(String metadataTemplateTypeId) {
+		this.metadataTemplateTypeId = metadataTemplateTypeId;
+	}
+	public String getMetadataTemplateTypeName() {
+		return metadataTemplateTypeName;
+	}
+	public void setMetadataTemplateTypeName(String metadataTemplateTypeName) {
+		this.metadataTemplateTypeName = metadataTemplateTypeName;
+	}
+	
+	public Set<MetadataFieldTemplateXref> getFieldXrefs() {
+		return fieldXrefs;
+	}
+	public void setFieldXrefs(Set<MetadataFieldTemplateXref> fieldXrefs) {
+		this.fieldXrefs = fieldXrefs;
+	}
+	
+	public void addFieldXref(final MetadataFieldTemplateXref xref) {
+		if(xref !=  null) {
+			if(this.fieldXrefs == null) {
+				this.fieldXrefs = new LinkedHashSet<MetadataFieldTemplateXref>();
+			}
+			this.fieldXrefs.add(xref);
+		}
+	}
 	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result + (isPublic ? 1231 : 1237);
+		result = prime
+				* result
+				+ ((metadataTemplateTypeId == null) ? 0
+						: metadataTemplateTypeId.hashCode());
+		result = prime
+				* result
+				+ ((metadataTemplateTypeName == null) ? 0
+						: metadataTemplateTypeName.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result
 				+ ((resourceId == null) ? 0 : resourceId.hashCode());
-		result = prime * result + (isPublic ? 1231 : 1237);
 		return result;
 	}
 	@Override
@@ -122,6 +165,19 @@ public class MetadataElementPageTemplate implements Serializable {
 				return false;
 		} else if (!id.equals(other.id))
 			return false;
+		if (isPublic != other.isPublic)
+			return false;
+		if (metadataTemplateTypeId == null) {
+			if (other.metadataTemplateTypeId != null)
+				return false;
+		} else if (!metadataTemplateTypeId.equals(other.metadataTemplateTypeId))
+			return false;
+		if (metadataTemplateTypeName == null) {
+			if (other.metadataTemplateTypeName != null)
+				return false;
+		} else if (!metadataTemplateTypeName
+				.equals(other.metadataTemplateTypeName))
+			return false;
 		if (name == null) {
 			if (other.name != null)
 				return false;
@@ -132,9 +188,15 @@ public class MetadataElementPageTemplate implements Serializable {
 				return false;
 		} else if (!resourceId.equals(other.resourceId))
 			return false;
-		if (isPublic != other.isPublic)
-			return false;
 		return true;
+	}
+	@Override
+	public String toString() {
+		return "MetadataElementPageTemplate [id=" + id
+				+ ", metadataTemplateTypeId=" + metadataTemplateTypeId
+				+ ", metadataTemplateTypeName=" + metadataTemplateTypeName
+				+ ", name=" + name + ", resourceId=" + resourceId
+				+ ", isPublic=" + isPublic + "]";
 	}
 	
 	

@@ -22,17 +22,31 @@ public interface ReportDataService {
     ReportDataDto getReportData(final String reportName, final Map<String, String> reportParams) throws ClassNotFoundException, ScriptEngineException, IOException;
     List<ReportInfoEntity> getAllReports(final int from, final int size);
     Integer getReportCount();
+    Integer getSubscribedReportCount();
+    Integer getSubCriteriaParamReportCount();
     List<ReportSubscriptionEntity> getAllSubscribedReports();
+    List<ReportSubCriteriaParamEntity> getAllSubCriteriaParamReports();
     List<ReportSubscriptionEntity> getAllActiveSubscribedReports();
     ReportInfoEntity getReportByName(String name);
     void deleteReport(String reportId);
     ReportInfoEntity getReport(String reportId);
     ReportInfoEntity createOrUpdateReportInfo(ReportInfoEntity report);
-    void createOrUpdateSubscribedReportInfo(ReportSubscriptionEntity reportSubscriptionEntity);
+    ReportCriteriaParamEntity getReportParameterByName(String reportId, String paramName);
+    ReportCriteriaParamEntity createOrUpdateReportParamInfo(ReportCriteriaParamEntity reportParam);
+    void deleteReportParam(String reportParamId);
+    ReportSubscriptionEntity createOrUpdateSubscribedReportInfo(ReportSubscriptionEntity reportSubscriptionEntity);
     List<ReportCriteriaParamEntity> getReportParametersByReportId(String reportId);
     List<ReportCriteriaParamEntity> getReportParametersByReportName(String reportName);    
     List<ReportSubCriteriaParamEntity> getSubReportParametersByReportName(String reportName);    
     void updateReportParametersByReportName(String reportName, List<ReportCriteriaParamEntity> prameters);
     void updateSubReportParametersByReportName(String reportName, List<ReportSubCriteriaParamEntity> prameters);
     List<ReportParamTypeEntity> getReportParameterTypes();
+    void deleteSubscribedReport(String reportId);
+    void deleteSubCriteriaParamReport(String reportId);
+    ReportSubscriptionEntity getSubscriptionReportById(String reportId);
+    ReportSubCriteriaParamEntity getSubCriteriaParamReportById(String reportId);
+    List<ReportSubCriteriaParamEntity> getAllSubCriteriaParamReport(String reportId);
+    
+    ReportSubCriteriaParamEntity createOrUpdateSubCriteriaParamReport(ReportSubCriteriaParamEntity entity);
+    
 }

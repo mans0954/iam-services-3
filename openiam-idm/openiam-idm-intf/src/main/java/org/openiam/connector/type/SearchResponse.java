@@ -5,6 +5,7 @@ import org.openiam.provision.type.ExtensibleAttribute;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+import java.util.LinkedList;
 import java.util.List;
 
 
@@ -14,7 +15,7 @@ import java.util.List;
 })
 public class SearchResponse extends ResponseType
 {
-    List<UserValue> userList;
+    List<UserValue> userList = new LinkedList<UserValue>();
 
     public List<UserValue> getUserList() {
         return userList;

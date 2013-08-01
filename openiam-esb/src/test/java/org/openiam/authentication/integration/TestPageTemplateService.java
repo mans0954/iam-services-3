@@ -21,6 +21,7 @@ import org.openiam.authmanager.service.AuthorizationManagerMenuWebService;
 import org.openiam.authmanager.service.AuthorizationManagerWebService;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.idm.searchbeans.MetadataTemplateTypeSearchBean;
 import org.openiam.idm.searchbeans.MetadataTypeSearchBean;
 import org.openiam.idm.srvc.lang.dto.Language;
 import org.openiam.idm.srvc.lang.dto.LanguageMapping;
@@ -28,6 +29,7 @@ import org.openiam.idm.srvc.lang.service.LanguageWebService;
 import org.openiam.idm.srvc.meta.dto.MetadataElement;
 import org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplate;
 import org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplateXref;
+import org.openiam.idm.srvc.meta.dto.MetadataTemplateType;
 import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.meta.dto.MetadataValidValue;
 import org.openiam.idm.srvc.meta.dto.PageElement;
@@ -88,6 +90,12 @@ public class TestPageTemplateService extends AbstractTestNGSpringContextTests {
 	private static final String userId = "3000";
 	private static final String locale = "en_EN";
 	
+	private MetadataTemplateType getFirstPageTemplateType() {
+		final MetadataTemplateTypeSearchBean searchBean = new MetadataTemplateTypeSearchBean();
+		searchBean.setDeepCopy(true);
+		return templateWebService.findTemplateTypes(searchBean, 0, Integer.MAX_VALUE).get(0);
+	}
+	
 	 @BeforeClass
 	 protected void setUp() throws Exception {
 		 final List<Language> languageList = languageWS.getAll();
@@ -100,6 +108,7 @@ public class TestPageTemplateService extends AbstractTestNGSpringContextTests {
 		 contentProvider.setIsPublic(true);
 		 contentProvider.setIsSSL(false);
 		 contentProvider.setName(RandomStringUtils.randomAlphanumeric(4));
+		 contentProvider.setManagedSysId("0");
 		 Response saveResponse = contentProviderWS.saveContentProvider(contentProvider);
 		 assertSuccess(saveResponse);
 		 cp = contentProviderWS.getContentProvider(((ContentProvider)saveResponse.getResponseValue()).getId());
@@ -118,6 +127,7 @@ public class TestPageTemplateService extends AbstractTestNGSpringContextTests {
 		 final MetadataElementPageTemplate pageTemplate = new MetadataElementPageTemplate();
 		 pageTemplate.setName(RandomStringUtils.randomAlphabetic(4));
 		 pageTemplate.addPattern(pattern);
+		 pageTemplate.setMetadataTemplateTypeId(getFirstPageTemplateType().getId());
 		 saveResponse = templateWebService.save(pageTemplate);
 		 assertSuccess(saveResponse);
 		 template = templateWebService.findById((String)saveResponse.getResponseValue());
@@ -145,6 +155,7 @@ public class TestPageTemplateService extends AbstractTestNGSpringContextTests {
 					 final MetadataValidValue value = new MetadataValidValue();
 					 value.setLanguageMap(getLanguageMap(languageList));
 					 value.setUiValue(RandomStringUtils.randomAlphanumeric(4));
+					 value.setDisplayOrder(i);
 					 element.addValidValue(value);
 				 }
 				 saveResponse = metadataWebService.saveMetadataEntity(element);

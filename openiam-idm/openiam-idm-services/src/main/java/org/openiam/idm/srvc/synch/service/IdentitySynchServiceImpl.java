@@ -457,16 +457,17 @@ public class IdentitySynchServiceImpl implements IdentitySynchService, MuleConte
         return synchConfigDao.getByExample(example, from, size);
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<AttributeMapEntity> getSynchConfigAttributeMaps(String synchConfigId) {
-        return attributeMapDAO.findBySynchConfigId(synchConfigId);
-    }
 
     @Override
     @Transactional
     public void deleteAttributesMapList(List<AttributeMapEntity> attrMap) {
         attributeMapDAO.deleteAttributesMapList(attrMap);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AttributeMapEntity> getSynchConfigAttributeMaps(String synchConfigId) {
+        return attributeMapDAO.findBySynchConfigId(synchConfigId);
     }
 
     @Override
