@@ -57,6 +57,10 @@ public class PageTempate implements Serializable{
 			this.uiFields.put(field.getId(), field);
 		}
 	}
+	
+	public boolean hasUIFIeld(final String id) {
+		return (uiFields != null && uiFields.containsKey(id));
+	}
 
 	/**
 	 * Called only by JSTL
