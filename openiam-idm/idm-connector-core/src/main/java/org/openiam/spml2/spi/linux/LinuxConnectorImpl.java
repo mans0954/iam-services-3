@@ -26,7 +26,7 @@ import java.util.HashMap;
  * Date: 2/26/12
  * Time: 2:12 AM
  */
-@WebService(endpointInterface = "org.openiam.spml2.interf.ConnectorService",
+@WebService(endpointInterface = "org.openiam.connector.ConnectorService",
         targetNamespace = "http://www.openiam.org/service/connector",
         portName = "LinuxConnectorServicePort",
         serviceName = "LinuxConnectorService")

@@ -16,7 +16,7 @@ import javax.jws.WebService;
  * Date: 3/21/12
  * Time: 10:07 PM
  */
-@WebService(endpointInterface = "org.openiam.spml2.interf.ConnectorService",
+@WebService(endpointInterface = "org.openiam.connector.ConnectorService",
         targetNamespace = "http://www.openiam.org/service/connector",
         portName = "MySQLConnectorPort",
         serviceName = "MySQLConnector")

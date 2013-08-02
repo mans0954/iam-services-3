@@ -46,7 +46,7 @@ import java.util.Map;
  * @author suneet
  */
 
-@WebService(endpointInterface = "org.openiam.spml2.interf.ConnectorService",
+@WebService(endpointInterface = "org.openiam.connector.ConnectorService",
         targetNamespace = "http://www.openiam.org/service/connector",
         portName = "ScriptConnectorServicePort",
         serviceName = "ScriptConnectorService")

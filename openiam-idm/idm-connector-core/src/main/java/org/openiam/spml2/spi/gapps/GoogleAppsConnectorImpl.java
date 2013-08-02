@@ -44,7 +44,7 @@ import java.util.List;
  * @author suneet
  *
  */
-@WebService(endpointInterface = "org.openiam.spml2.interf.ConnectorService", targetNamespace = "http://www.openiam.org/service/connector", portName = "GoogleAppsConnectorServicePort", serviceName = "GoogleAppsConnectorService")
+@WebService(endpointInterface = "org.openiam.connector.ConnectorService", targetNamespace = "http://www.openiam.org/service/connector", portName = "GoogleAppsConnectorServicePort", serviceName = "GoogleAppsConnectorService")
 public class GoogleAppsConnectorImpl implements ConnectorService {
 
     private static final Log log = LogFactory

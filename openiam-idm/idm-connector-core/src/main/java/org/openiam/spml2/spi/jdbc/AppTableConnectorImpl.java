@@ -36,7 +36,7 @@ import javax.jws.WebService;
  * @author suneet
  */
 
-@WebService(endpointInterface = "org.openiam.spml2.interf.ConnectorService",
+@WebService(endpointInterface = "org.openiam.connector.ConnectorService",
         targetNamespace = "http://www.openiam.org/service/connector",
         portName = "ApplicationTablesConnectorPort",
         serviceName = "ApplicationTablesConnector")

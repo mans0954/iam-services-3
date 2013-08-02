@@ -25,7 +25,7 @@ import com.sforce.soap.partner.PartnerConnection;
 import com.sforce.ws.ConnectionException;
 import com.sforce.ws.ConnectorConfig;
 
-@WebService(endpointInterface="org.openiam.spml2.interf.ConnectorService",
+@WebService(endpointInterface="org.openiam.connector.ConnectorService",
 	targetNamespace="http://www.openiam.org/service/connector",
 	portName = "SalesForceServicePort", 
 	serviceName="SalesForceConnectorService")

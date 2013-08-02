@@ -47,12 +47,12 @@ import org.openiam.provision.type.ExtensibleUser;
  *
  */
 
-@WebService(endpointInterface="org.openiam.spml2.interf.ConnectorService",
+@WebService(endpointInterface="org.openiam.connector.ConnectorService",
 		targetNamespace="http://www.openiam.org/service/connector",
 		portName = "ExampleConnectorServicePort", 
 		serviceName="ExampleConnectorService")
 
-/*@WebService(endpointInterface="org.openiam.spml2.interf.ConnectorService",
+/*@WebService(endpointInterface="org.openiam.connector.ConnectorService",
 		targetNamespace="http://www.openiam.org/service/connector",
 		portName = "AICmsConnectorServicePort", 
 		serviceName="AICmsConnectorService")

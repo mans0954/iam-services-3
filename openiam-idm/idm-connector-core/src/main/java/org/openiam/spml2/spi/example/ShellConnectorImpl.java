@@ -67,7 +67,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 
-@WebService(endpointInterface = "org.openiam.spml2.interf.ConnectorService", targetNamespace = "http://www.openiam.org/service/connector", portName = "ShellConnectorServicePort", serviceName = "ShellConnectorService")
+@WebService(endpointInterface = "org.openiam.connector.ConnectorService", targetNamespace = "http://www.openiam.org/service/connector", portName = "ShellConnectorServicePort", serviceName = "ShellConnectorService")
 public class ShellConnectorImpl extends AbstractSpml2Complete implements
         ConnectorService {
 
