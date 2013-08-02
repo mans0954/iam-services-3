@@ -549,7 +549,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                 userMgr.addUser(userEntity);
                 newUser.setUserId(userEntity.getUserId());
             } catch (Exception e) {
-                log.error(e);
+                log.error("Exception while creating user", e);
                 resp.setStatus(ResponseStatus.FAILURE);
                 resp.setErrorCode(ResponseCode.FAIL_OTHER);
                 return resp;

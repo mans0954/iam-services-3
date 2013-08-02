@@ -49,6 +49,10 @@ public class PageTempate implements Serializable{
 		this.templateId = templateId;
 	}
 	
+	public TemplateUIField getUIField(final String fieldID) {
+		return (uiFields != null) ? uiFields.get(fieldID) : null;
+	}
+	
 	public void addUIField(final TemplateUIField field) {
 		if(field != null) {
 			if(this.uiFields == null) {
