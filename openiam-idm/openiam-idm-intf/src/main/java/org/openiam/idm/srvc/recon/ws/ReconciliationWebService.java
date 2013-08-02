@@ -46,9 +46,11 @@ public interface ReconciliationWebService {
     Response removeConfig(
             @WebParam(name = "configId", targetNamespace = "") String configId);
 
+    @WebMethod
     ReconciliationResponse startReconciliation(
             @WebParam(name = "config", targetNamespace = "") ReconciliationConfig config);
 
+    @WebMethod
     String getReconciliationReport(
             @WebParam(name = "config", targetNamespace = "") ReconciliationConfig config,
             @WebParam(name = "reportType", targetNamespace = "") String reportType);
@@ -59,8 +61,9 @@ public interface ReconciliationWebService {
             @WebParam(name = "resourceId", targetNamespace = "") String resourceId)
             throws Exception;
 
+    @WebMethod
     ReconciliationResultBean getReconciliationResult(
-            ReconciliationConfig config,
-            ManualReconciliationSearchBean searchBean);
+            @WebParam(name = "config", targetNamespace = "") ReconciliationConfig config,
+            @WebParam(name = "searchBean", targetNamespace = "") ManualReconciliationSearchBean searchBean);
 
 }

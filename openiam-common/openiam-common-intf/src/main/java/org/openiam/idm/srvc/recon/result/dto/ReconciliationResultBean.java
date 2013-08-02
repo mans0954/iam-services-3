@@ -22,6 +22,15 @@ public class ReconciliationResultBean implements java.io.Serializable {
     private String objectType;
     private List<ReconciliationResultRow> rows;
     private ReconciliationResultRow header;
+    private int pagesNumber;
+
+    public int getPagesNumber() {
+        return pagesNumber;
+    }
+
+    public void setPagesNumber(int pagesNumber) {
+        this.pagesNumber = pagesNumber;
+    }
 
     public ReconciliationResultBean() {
         super();
