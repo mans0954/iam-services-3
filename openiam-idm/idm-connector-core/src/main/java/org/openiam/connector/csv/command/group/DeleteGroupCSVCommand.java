@@ -9,7 +9,6 @@ import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.provision.type.ExtensibleGroup;
-import org.openiam.connector.csv.command.base.AbstractDeleteCSVCommand;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
