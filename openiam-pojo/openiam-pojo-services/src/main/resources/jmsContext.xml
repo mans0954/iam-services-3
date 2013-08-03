@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:jee="http://www.springframework.org/schema/jee"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+       http://www.springframework.org/schema/util http://www.springframework.org/schema/aop/spring-util-3.0.xsd
+       http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+       http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+       http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-3.0.xsd">
+
+    <context:component-scan base-package="org.openiam.idm.srvc" />
+
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+    <!-- JMS -->
+
+    <jee:jndi-lookup id="connectionFactory" jndi-name="java:/JmsXA" expected-type="javax.jms.ConnectionFactory" />
+
+    <jee:jndi-lookup id="testQueue" jndi-name="queue/test" expected-type="javax.jms.Queue" />
+
+    <bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="connectionFactory" />
+    </bean>
+
+    <bean id="jmsContainer" class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+        <property name="connectionFactory" ref="connectionFactory" />
+        <property name="destination" ref="testQueue" />
+        <property name="messageListener" ref="jmsReceiver" />
+        <!--<property name="transactionManager" ref="jtaTransactionManager" />-->
+        <property name="concurrency" value="5" />
+        <property name="concurrentConsumers" value="5" />
+        <property name="taskExecutor" ref="jmsReceiverThreadPoolTaskExecutor" />
+        <property name="errorHandler" ref="myErrorHandler"/>
+    </bean>
+
+    <bean id="jmsReceiverThreadPoolTaskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+        <property name="daemon" value="true" />
+        <property name="corePoolSize" value="5" />
+        <property name="maxPoolSize" value="5" />
+    </bean>
+
+</beans>

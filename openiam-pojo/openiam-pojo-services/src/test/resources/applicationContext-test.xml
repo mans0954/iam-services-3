@@ -230,7 +230,7 @@
 		
 	</bean>
 
-	<bean id="mailSender" class=" org.openiam.idm.srvc.msg.service.MailSender">
+	<bean id="mailSenderClient" class=" org.openiam.idm.srvc.msg.service.MailSenderClient">
 		<property name="host" value="${mail.host}" />
 		<property name="port" value="${mail.port}" />
 		<property name="username" value="${mail.username}" />

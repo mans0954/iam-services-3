@@ -175,6 +175,10 @@
             <artifactId>cglib-nodep</artifactId>
         </dependency>
         <dependency>
+            <groupId>javax.jms</groupId>
+            <artifactId>jms</artifactId>
+        </dependency>
+        <dependency>
             <groupId>antlr</groupId>
             <artifactId>antlr</artifactId>
         </dependency>
