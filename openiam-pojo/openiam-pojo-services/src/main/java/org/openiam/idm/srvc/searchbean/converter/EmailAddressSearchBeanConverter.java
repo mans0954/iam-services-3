@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.searchbean.converter;
 
 import org.openiam.idm.searchbeans.EmailSearchBean;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.springframework.stereotype.Component;
 
@@ -19,6 +20,13 @@ public class EmailAddressSearchBeanConverter implements SearchBeanConverter<Emai
             parent.setUserId(searchBean.getParentId());
             email.setParent(parent);
         }
+
+        if(searchBean.getMetadataTypeId() != null && searchBean.getMetadataTypeId().trim().length() > 0) {
+            final MetadataTypeEntity type = new MetadataTypeEntity();
+            type.setMetadataTypeId(searchBean.getMetadataTypeId());
+            email.setMetadataType(type);
+        }
+
         return email;
     }
 }

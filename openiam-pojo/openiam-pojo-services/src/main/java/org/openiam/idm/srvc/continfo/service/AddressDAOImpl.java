@@ -41,6 +41,12 @@ public class AddressDAOImpl extends BaseDaoImpl<AddressEntity, String> implement
                     criteria.add(Restrictions.eq("parent.userId", address.getParent().getUserId()));
                 }
             }
+
+            if (address.getMetadataType() != null) {
+                if (StringUtils.isNotBlank(address.getMetadataType().getMetadataTypeId())) {
+                    criteria.add(Restrictions.eq("metadataType.metadataTypeId", address.getMetadataType().getMetadataTypeId()));
+                }
+            }
         }
         return criteria;
     }

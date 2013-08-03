@@ -44,15 +44,39 @@
 	<mapping>
 		<class-a>org.openiam.idm.srvc.continfo.domain.AddressEntity</class-a>
 		<class-b>org.openiam.idm.srvc.continfo.dto.Address</class-b>
+        <field>
+            <a>metadataType.metadataTypeId</a>
+            <b>metadataTypeId</b>
+        </field>
+        <field>
+            <a>metadataType.description</a>
+            <b>typeDescription</b>
+        </field>
 	</mapping>
 	<mapping>
 		<class-a>org.openiam.idm.srvc.continfo.domain.EmailAddressEntity
 		</class-a>
 		<class-b>org.openiam.idm.srvc.continfo.dto.EmailAddress</class-b>
+        <field>
+            <a>metadataType.metadataTypeId</a>
+            <b>metadataTypeId</b>
+        </field>
+        <field>
+            <a>metadataType.description</a>
+            <b>typeDescription</b>
+        </field>
 	</mapping>
 	<mapping>
 		<class-a>org.openiam.idm.srvc.continfo.domain.PhoneEntity</class-a>
 		<class-b>org.openiam.idm.srvc.continfo.dto.Phone</class-b>
+        <field>
+            <a>metadataType.metadataTypeId</a>
+            <b>metadataTypeId</b>
+        </field>
+        <field>
+            <a>metadataType.description</a>
+            <b>typeDescription</b>
+        </field>
 	</mapping>
 
 

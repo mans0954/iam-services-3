@@ -12,7 +12,8 @@ import java.io.Serializable;
         "parentId",
         /*"parentType",*/
         "phoneAreaCd",
-        "phoneNbr"
+        "phoneNbr",
+        "metadataTypeId"
 })
 public class PhoneSearchBean extends AbstractSearchBean<Phone, String> implements SearchBean<Phone, String>,
         Serializable {
@@ -20,6 +21,7 @@ public class PhoneSearchBean extends AbstractSearchBean<Phone, String> implement
     //private String parentType;
     private String phoneNbr;
     private String phoneAreaCd;
+    private String metadataTypeId;
 
     public String getParentId() {
         return parentId;
@@ -53,5 +55,13 @@ public class PhoneSearchBean extends AbstractSearchBean<Phone, String> implement
 
     public void setPhoneNbr(String phoneNbr) {
         this.phoneNbr = phoneNbr;
+    }
+
+    public String getMetadataTypeId() {
+        return metadataTypeId;
+    }
+
+    public void setMetadataTypeId(String metadataTypeId) {
+        this.metadataTypeId = metadataTypeId;
     }
 }

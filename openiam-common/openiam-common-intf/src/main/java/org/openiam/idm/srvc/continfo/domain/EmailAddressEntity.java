@@ -17,6 +17,7 @@ import org.openiam.core.dao.lucene.bridge.OrganizationBridge;
 import org.openiam.core.dao.lucene.bridge.UserBridge;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 
 import javax.persistence.*;
@@ -67,6 +68,10 @@ public class EmailAddressEntity {
     @Column(name="CREATE_DATE",length=19)
     @Temporal(TemporalType.TIMESTAMP)
     protected Date createDate;
+
+    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "TYPE_ID")
+    private MetadataTypeEntity metadataType;
 
     public EmailAddressEntity() {
     }
@@ -142,6 +147,13 @@ public class EmailAddressEntity {
 	public void setCreateDate(Date createDate) {
 		this.createDate = createDate;
 	}
+    public MetadataTypeEntity getMetadataType() {
+        return metadataType;
+    }
+
+    public void setMetadataType(MetadataTypeEntity metadataType) {
+        this.metadataType = metadataType;
+    }
 
 	@Override
 	public int hashCode() {
@@ -160,6 +172,7 @@ public class EmailAddressEntity {
 				+ ((lastUpdate == null) ? 0 : lastUpdate.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + ((parent == null) ? 0 : parent.hashCode());
+        result = prime * result + ((metadataType == null) ? 0 : metadataType.hashCode());
 		return result;
 	}
 
@@ -211,6 +224,11 @@ public class EmailAddressEntity {
 				return false;
 		} else if (!parent.equals(other.parent))
 			return false;
+        if (metadataType == null) {
+            if (other.metadataType != null)
+                return false;
+        } else if (!metadataType.equals(other.metadataType))
+            return false;
 		return true;
 	}
 
