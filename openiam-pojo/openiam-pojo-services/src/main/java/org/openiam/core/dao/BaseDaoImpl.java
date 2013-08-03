@@ -1,10 +1,15 @@
 package org.openiam.core.dao;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.hibernate.*;
 import org.hibernate.criterion.Example;
+import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
+import org.openiam.base.BaseConstants;
+import org.openiam.base.OrderConstants;
+import org.openiam.idm.searchbeans.AbstractSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -102,6 +107,15 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
          if (size > -1) {
              criteria.setMaxResults(size);
          }
+
+        if (searchBean instanceof AbstractSearchBean) {
+            AbstractSearchBean sb = (AbstractSearchBean)searchBean;
+            if (StringUtils.isNotBlank(sb.getSortBy())) {
+                criteria.addOrder(sb.getOrderBy().equals(OrderConstants.DESC) ?
+                        Order.desc(sb.getSortBy()) :
+                        Order.asc(sb.getSortBy()));
+            }
+        }
 
          return (List<T>) criteria.list();
     }

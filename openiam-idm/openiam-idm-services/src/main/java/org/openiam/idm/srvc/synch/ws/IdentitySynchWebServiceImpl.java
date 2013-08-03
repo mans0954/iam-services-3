@@ -35,6 +35,7 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.AttributeMapDozerConverter;
 import org.openiam.dozer.converter.SynchConfigDozerConverter;
+import org.openiam.idm.searchbeans.AttributeMapSearchBean;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.msg.ws.SysMessageResponse;
@@ -171,6 +172,15 @@ public class IdentitySynchWebServiceImpl implements IdentitySynchWebService, Mul
             throw new IllegalArgumentException("synchConfigId is null");
         }
         List<AttributeMapEntity> ameList = synchService.getSynchConfigAttributeMaps(synchConfigId);
+        return (ameList == null) ? null : attributeMapDozerConverter.convertToDTOList(ameList, true);
+    }
+
+    @Override
+    public List<AttributeMap> findSynchConfigAttributeMaps(AttributeMapSearchBean searchBean) {
+        if (searchBean == null) {
+            throw new IllegalArgumentException("searchBean is null");
+        }
+        List<AttributeMapEntity> ameList = synchService.getSynchConfigAttributeMaps(searchBean);
         return (ameList == null) ? null : attributeMapDozerConverter.convertToDTOList(ameList, true);
     }
 

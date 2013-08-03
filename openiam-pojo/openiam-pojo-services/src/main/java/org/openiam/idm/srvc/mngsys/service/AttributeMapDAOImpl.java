@@ -5,10 +5,13 @@ package org.openiam.idm.srvc.mngsys.service;
  */
 import java.util.List;
 
+import org.hibernate.Criteria;
 import org.hibernate.criterion.*;
 import org.mule.util.StringUtils;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.exception.data.DataException;
+import org.openiam.idm.searchbeans.AttributeMapSearchBean;
+import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
@@ -33,6 +36,20 @@ public class AttributeMapDAOImpl extends
                 .add(Restrictions.eq("synchConfigId", synchConfigId))
                 .addOrder(Order.asc("mapForObjectType"))
                 .addOrder(Order.asc("synchConfigId")).list();
+    }
+
+    @Override
+    protected Criteria getExampleCriteria(final SearchBean searchBean) {
+        final Criteria criteria = getCriteria();
+        if (searchBean instanceof AttributeMapSearchBean) {
+            AttributeMapSearchBean amsb = (AttributeMapSearchBean)searchBean;
+            if(StringUtils.isNotBlank(amsb.getResourceId())) {
+                criteria.add(Restrictions.eq("resourceId", amsb.getResourceId()));
+            } else if (StringUtils.isNotBlank(amsb.getSynchConfigId())) {
+                criteria.add(Restrictions.eq("synchConfigId", amsb.getSynchConfigId()));
+            }
+        }
+        return criteria;
     }
 
     public List<AttributeMapEntity> findAllAttributeMaps() {

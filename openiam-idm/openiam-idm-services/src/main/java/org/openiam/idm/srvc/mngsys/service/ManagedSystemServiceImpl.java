@@ -3,6 +3,8 @@ package org.openiam.idm.srvc.mngsys.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.openiam.idm.searchbeans.AttributeMapSearchBean;
+import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.DefaultReconciliationAttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
@@ -155,16 +157,25 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<AttributeMapEntity> getResourceAttributeMaps(String resourceId) {
         return attributeMapDAO.findByResourceId(resourceId);
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<AttributeMapEntity> getResourceAttributeMaps(AttributeMapSearchBean searchBean) {
+        return attributeMapDAO.getByExample(searchBean);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<AttributeMapEntity> getAllAttributeMaps() {
         return attributeMapDAO.findAllAttributeMaps();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<DefaultReconciliationAttributeMapEntity> getAllDefaultReconAttributeMap() {
         return defaultReconciliationAttributeMapDAO.getAll();
     }

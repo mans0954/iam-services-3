@@ -1,5 +1,7 @@
 package org.openiam.idm.searchbeans;
 
+import org.openiam.base.OrderConstants;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
@@ -7,12 +9,16 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AbstractSearchBean", propOrder = {
         "key",
-        "deepCopy"
+        "deepCopy",
+        "orderBy",
+        "sortBy"
 })
 public class AbstractSearchBean<T, KeyType> {
 
 	private boolean deepCopy = true;
 	private KeyType key;
+    private OrderConstants orderBy = OrderConstants.ASC;
+    private String sortBy;
 	
 	public KeyType getKey() {
 		return key;
@@ -30,7 +36,23 @@ public class AbstractSearchBean<T, KeyType> {
 		this.deepCopy = deepCopy;
 	}
 
-	@Override
+    public OrderConstants getOrderBy() {
+        return orderBy;
+    }
+
+    public void setOrderBy(OrderConstants orderBy) {
+        this.orderBy = orderBy;
+    }
+
+    public String getSortBy() {
+        return sortBy;
+    }
+
+    public void setSortBy(String sortBy) {
+        this.sortBy = sortBy;
+    }
+
+    @Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;

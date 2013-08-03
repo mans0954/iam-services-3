@@ -1,11 +1,39 @@
 package org.openiam.base;
 
-/**
- * Created with IntelliJ IDEA.
- * User: root
- * Date: 8/3/13
- * Time: 12:34 PM
- * To change this template use File | Settings | File Templates.
- */
+import org.apache.commons.lang.StringUtils;
+
+import javax.xml.bind.annotation.*;
+
+@XmlType(name = "OrderConstants")
+@XmlEnum
 public enum OrderConstants {
+
+    @XmlEnumValue("asc")
+    ASC("asc"),
+    @XmlEnumValue("desc")
+    DESC("desc");
+
+    private String value;
+
+    OrderConstants(String value) {
+        this.value = value;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String val) {
+        value = val;
+    }
+
+    public static OrderConstants getFromString(final String val) {
+        for(final OrderConstants e : OrderConstants.values()) {
+            if(StringUtils.equalsIgnoreCase(val, e.getValue())) {
+                return e;
+            }
+        }
+        return null;
+    }
+
 }

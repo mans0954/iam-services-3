@@ -39,6 +39,7 @@ import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.SynchConfigDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
+import org.openiam.idm.searchbeans.AttributeMapSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.service.AttributeMapDAO;
@@ -468,6 +469,12 @@ public class IdentitySynchServiceImpl implements IdentitySynchService, MuleConte
     @Transactional(readOnly = true)
     public List<AttributeMapEntity> getSynchConfigAttributeMaps(String synchConfigId) {
         return attributeMapDAO.findBySynchConfigId(synchConfigId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AttributeMapEntity> getSynchConfigAttributeMaps(AttributeMapSearchBean searchBean) {
+        return attributeMapDAO.getByExample(searchBean);
     }
 
     @Override

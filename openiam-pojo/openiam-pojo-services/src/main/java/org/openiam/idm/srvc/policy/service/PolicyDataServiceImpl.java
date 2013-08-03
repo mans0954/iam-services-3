@@ -41,7 +41,6 @@ import org.openiam.idm.srvc.policy.dto.ITPolicy;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.policy.dto.PolicyDefParam;
 import org.openiam.idm.srvc.policy.dto.PolicyObjectAssoc;
-import org.openiam.idm.srvc.searchbean.converter.PolicySearchBeanConverter;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -71,9 +70,6 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 
     @Autowired
     private ITPolicyDAO itPolicyDao;
-	
-	@Autowired
-	private PolicySearchBeanConverter policySearchBeanConverter;
 
 	/** The policy def param dao. */
 	@Autowired
@@ -358,15 +354,12 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 
 	@Override
 	public List<Policy> findBeans(final PolicySearchBean searchBean, int from, int size) {
-		final PolicyEntity entity = policySearchBeanConverter.convert(searchBean);
-		final List<PolicyEntity> entityList = policyDao.getByExample(entity, from, size);
-		return (entityList != null) ? policyDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy()) : null;
+        return policyDozerConverter.convertToDTOList(policyDao.getByExample(searchBean, from, size), true);
 	}
 
 	@Override
 	public int count(PolicySearchBean searchBean) {
-		final PolicyEntity entity = policySearchBeanConverter.convert(searchBean);
-		return policyDao.count(entity);
+		return policyDao.count(searchBean);
 	}
 
     @Override
