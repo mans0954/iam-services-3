@@ -183,6 +183,41 @@
 			<b>pageTemplates</b>
 		</field>
 	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity
+		</class-a>
+		<class-b>org.openiam.idm.srvc.meta.dto.MetadataElementPageTemplate
+		</class-b>
+		<field>
+			<a>resource.resourceId</a>
+			<b>resourceId</b>
+		</field>
+		<field
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
+			custom-converter-param="dto2entityShallowDozerMapper">
+			<a>uriPatterns</a>
+			<b>uriPatterns</b>
+		</field>
+		<field
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
+			custom-converter-param="dto2entityDeepDozerMapper">
+			<a>metadataElements</a>
+			<b>metadataElements</b>
+		</field>
+		<field>
+			<a>templateType.id</a>
+			<b>metadataTemplateTypeId</b>
+		</field>
+		<field>
+			<a>templateType.name</a>
+			<b>metadataTemplateTypeName</b>
+		</field>
+		<field-exclude>
+			<a>fieldXrefs</a>
+			<b>fieldXrefs</b>
+		</field-exclude>
+	</mapping>
 
 	<mapping>
 		<class-a>org.openiam.am.srvc.domain.URIPatternMetaValueEntity

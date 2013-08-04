@@ -29,7 +29,7 @@ import javax.xml.bind.annotation.XmlType;
         "phoneExt",
         "phoneId",
         "phoneNbr",
-        "phoneType",
+        //"phoneType",
         "name",
         "operation",
         "lastUpdate",
@@ -63,7 +63,7 @@ public class Phone implements java.io.Serializable {
 
     private String name;
 
-    private String phoneType;
+    //private String phoneType;
 
     private String parentId;
     
@@ -129,7 +129,7 @@ public class Phone implements java.io.Serializable {
         this.name = ph.getName();
         this.phoneExt = ph.getPhoneExt();
         this.phoneNbr = ph.getPhoneNbr();
-        this.phoneType = ph.getPhoneType();
+        //this.phoneType = ph.getPhoneType();
         this.metadataTypeId=ph.getMetadataTypeId();
     }
 
@@ -250,6 +250,7 @@ public class Phone implements java.io.Serializable {
         this.name = name;
     }
 
+    /*
     public String getPhoneType() {
         return phoneType;
     }
@@ -257,6 +258,7 @@ public class Phone implements java.io.Serializable {
     public void setPhoneType(String phoneType) {
         this.phoneType = phoneType;
     }
+    */
 
     public AttributeOperationEnum getOperation() {
         return operation;
@@ -328,8 +330,10 @@ public class Phone implements java.io.Serializable {
 		result = prime * result + ((phoneId == null) ? 0 : phoneId.hashCode());
 		result = prime * result
 				+ ((phoneNbr == null) ? 0 : phoneNbr.hashCode());
+		/*
 		result = prime * result
-				+ ((phoneType == null) ? 0 : phoneType.hashCode());
+				+ ((phoneType == null) ? 0 : phoneType.hashCode());\
+		*/
         result = prime * result
                 + ((metadataTypeId == null) ? 0 : metadataTypeId.hashCode());
 		return result;
@@ -405,12 +409,13 @@ public class Phone implements java.io.Serializable {
 				return false;
 		} else if (!phoneNbr.equals(other.phoneNbr))
 			return false;
+		/*
 		if (phoneType == null) {
 			if (other.phoneType != null)
 				return false;
 		} else if (!phoneType.equals(other.phoneType))
 			return false;
-
+		*/
         if (metadataTypeId == null) {
             if (other.metadataTypeId != null)
                 return false;

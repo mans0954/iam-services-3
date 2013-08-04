@@ -1469,7 +1469,8 @@ public class ProvisionServiceImpl implements ProvisionService,
                     p.setIsDefault(newPhone.getIsDefault());
                     p.setPhoneExt(newPhone.getPhoneExt());
                     p.setPhoneNbr(newPhone.getPhoneNbr());
-                    p.setPhoneType(newPhone.getPhoneType());
+                    p.setMetadataTypeId(newPhone.getMetadataTypeId());
+                    //p.setPhoneType(newPhone.getPhoneType());
                     p.setName(newPhone.getName());
                     origPhoneSet.add(p);
                     log.info("emailSet size after update: "

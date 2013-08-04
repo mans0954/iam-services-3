@@ -75,8 +75,10 @@ public class PhoneEntity {
     @Column(name="NAME", length=40)
     private String name;
 
+    /*
     @Column(name="PHONE_TYPE", length=20)
     private String phoneType;
+    */
     
     @Column(name = "LAST_UPDATE", length = 19)
     @LuceneLastUpdate
@@ -173,6 +175,7 @@ public class PhoneEntity {
         this.name = name;
     }
 
+    /*
     public String getPhoneType() {
         return phoneType;
     }
@@ -180,6 +183,7 @@ public class PhoneEntity {
     public void setPhoneType(String phoneType) {
         this.phoneType = phoneType;
     }
+    */
 
     public Date getLastUpdate() {
 		return lastUpdate;
@@ -227,8 +231,10 @@ public class PhoneEntity {
 		result = prime * result + ((phoneId == null) ? 0 : phoneId.hashCode());
 		result = prime * result
 				+ ((phoneNbr == null) ? 0 : phoneNbr.hashCode());
+		/*
 		result = prime * result
 				+ ((phoneType == null) ? 0 : phoneType.hashCode());
+		*/
         result = prime * result + ((metadataType == null) ? 0 : metadataType.hashCode());
 		return result;
 	}
@@ -296,11 +302,13 @@ public class PhoneEntity {
 				return false;
 		} else if (!phoneNbr.equals(other.phoneNbr))
 			return false;
+		/*
 		if (phoneType == null) {
 			if (other.phoneType != null)
 				return false;
 		} else if (!phoneType.equals(other.phoneType))
 			return false;
+		*/
         if (metadataType == null) {
             if (other.metadataType != null)
                 return false;
