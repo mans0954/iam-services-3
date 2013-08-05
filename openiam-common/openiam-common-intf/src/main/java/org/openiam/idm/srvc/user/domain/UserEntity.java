@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import javax.persistence.*;
 
@@ -821,6 +822,41 @@ public class UserEntity {
     					break;
     				}
     			}
+    		}
+    	}
+    }
+    
+    public void addUserAttribute(final UserAttributeEntity entity) {
+    	if(entity != null) {
+    		if(this.userAttributes == null) {
+    			this.userAttributes = new HashMap<String, UserAttributeEntity>();
+    		}
+    		this.userAttributes.put(entity.getName(), entity);
+    	}
+    }
+    
+    public void removeUserAttribute(final String id) {
+    	if(id != null && this.userAttributes != null) {
+    		final Set<Entry<String, UserAttributeEntity>> entrySet = this.userAttributes.entrySet();
+    		if(entrySet != null) {
+    			for(final Iterator<Entry<String, UserAttributeEntity>> it = entrySet.iterator(); it.hasNext();) {
+    				final Entry<String, UserAttributeEntity> entry = it.next();
+    				final UserAttributeEntity value = entry.getValue();
+    				if(value != null && StringUtils.equals(value.getId(), id)) {
+    					it.remove();
+    					break;
+    				}
+    			}
+    		}
+    	}
+    }
+    
+    public void updateUserAttribute(final UserAttributeEntity entity) {
+    	if(entity != null && this.userAttributes != null) {
+    		final UserAttributeEntity attribute = this.userAttributes.get(entity.getName());
+    		if(attribute != null) {
+    			attribute.setElement(entity.getElement());
+    			attribute.setValue(entity.getValue());
     		}
     	}
     }

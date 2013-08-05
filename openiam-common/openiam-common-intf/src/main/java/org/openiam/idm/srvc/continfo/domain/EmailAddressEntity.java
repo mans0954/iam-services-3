@@ -70,7 +70,7 @@ public class EmailAddressEntity {
     protected Date createDate;
 
     @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
-    @JoinColumn(name = "TYPE_ID")
+    @JoinColumn(name = "TYPE_ID", insertable=true, updatable=true)
     private MetadataTypeEntity metadataType;
 
     public EmailAddressEntity() {

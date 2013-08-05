@@ -775,10 +775,12 @@ public class UserMgr implements UserDataService {
             throw new NullPointerException(
                     "userId for the address is not defined.");
 
-        AddressEntity entity = addressDao.findById(val.getAddressId());
-        UserEntity parent = userDao.findById(val.getParent().getUserId());
-
-        if (entity != null) {
+        final AddressEntity entity = addressDao.findById(val.getAddressId());
+        final UserEntity parent = userDao.findById(val.getParent().getUserId());
+        final MetadataTypeEntity metadataType = (val.getMetadataType() != null && StringUtils.isNotBlank(val.getMetadataType().getMetadataTypeId())) ?
+        		metadataTypeDAO.findById(val.getMetadataType().getMetadataTypeId()) : null;
+        
+        if (entity != null && metadataType != null) {
             entity.setIsActive(val.getIsActive());
             entity.setBldgNumber(val.getBldgNumber());
             entity.setAddress1(val.getAddress1());
@@ -788,12 +790,13 @@ public class UserMgr implements UserDataService {
             entity.setState(val.getState());
             entity.setName(val.getName());
             entity.setParent(parent);
+            entity.setMetadataType(metadataType);
 
             if (entity.getIsDefault() != val.getIsDefault()) {
                 updateDefaultFlagForAddress(entity, val.getIsDefault(), parent);
             }
+            addressDao.update(entity);
         }
-        addressDao.update(entity);
     }
 
     @Override
@@ -932,22 +935,25 @@ public class UserMgr implements UserDataService {
             throw new NullPointerException(
                     "parentId for the address is not defined.");
 
-        PhoneEntity entity = phoneDao.findById(val.getPhoneId());
-        UserEntity parent = userDao.findById(val.getParent().getUserId());
-
-        if (entity != null) {
+        final PhoneEntity entity = phoneDao.findById(val.getPhoneId());
+        final UserEntity parent = userDao.findById(val.getParent().getUserId());
+        final MetadataTypeEntity metadataType = (val.getMetadataType() != null && StringUtils.isNotBlank(val.getMetadataType().getMetadataTypeId())) ?
+        		metadataTypeDAO.findById(val.getMetadataType().getMetadataTypeId()) : null;
+        
+        if (entity != null && metadataType != null) {
             entity.setAreaCd(val.getAreaCd());
             entity.setName(val.getName());
             entity.setIsActive(val.getIsActive());
             entity.setParent(parent);
             entity.setPhoneExt(val.getPhoneExt());
             entity.setPhoneNbr(val.getPhoneNbr());
+            entity.setMetadataType(metadataType);
 
             if (entity.getIsDefault() != val.getIsDefault()) {
                 updateDefaultFlagForPhone(entity, val.getIsDefault(), parent);
             }
+            phoneDao.update(entity);
         }
-        phoneDao.update(entity);
     }
 
     @Override
@@ -1084,19 +1090,22 @@ public class UserMgr implements UserDataService {
 
         EmailAddressEntity entity = emailAddressDao.findById(val.getEmailId());
         UserEntity parent = userDao.findById(val.getParent().getUserId());
+        final MetadataTypeEntity metadataType = (entity.getMetadataType() != null && StringUtils.isNotBlank(entity.getMetadataType().getMetadataTypeId())) ?
+        		metadataTypeDAO.findById(entity.getMetadataType().getMetadataTypeId()) : null;
 
-        if (entity != null) {
+        if (entity != null && metadataType != null) {
             entity.setEmailAddress(val.getEmailAddress());
             entity.setName(val.getName());
             entity.setDescription(val.getDescription());
             entity.setParent(parent);
             entity.setIsActive(val.getIsActive());
-
+            entity.setMetadataType(metadataType);
+            
             if (entity.getIsDefault() != val.getIsDefault()) {
                 updateDefaultFlagForEmail(entity, val.getIsDefault(), parent);
             }
+            emailAddressDao.update(entity);
         }
-        emailAddressDao.update(entity);
     }
 
     @Override
