@@ -851,7 +851,7 @@ public class UserMgr implements UserDataService {
         AddressSearchBean searchBean = new AddressSearchBean();
         searchBean.setParentId(userId);
         /* searchBean.setParentType(ContactConstants.PARENT_TYPE_USER); */
-        return addressDao.getByExample(searchBean, size, from);
+        return addressDao.getByExample(addressSearchBeanConverter.convert(searchBean), size, from);
     }
     @Override
     @Transactional(readOnly = true)

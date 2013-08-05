@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.searchbean.converter;
 
+import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.searchbeans.AddressSearchBean;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
@@ -14,13 +15,13 @@ public class AddressSearchBeanConverter implements SearchBeanConverter<AddressEn
         final AddressEntity address = new AddressEntity();
         address.setAddressId(searchBean.getKey());
 
-        if(searchBean.getParentId() != null && searchBean.getParentId().trim().length() > 0) {
+        if(StringUtils.isNotBlank(searchBean.getParentId())) {
             final UserEntity parent = new UserEntity();
             parent.setUserId(searchBean.getParentId());
             address.setParent(parent);
         }
 
-        if(searchBean.getMetadataTypeId() != null && searchBean.getMetadataTypeId().trim().length() > 0) {
+        if(StringUtils.isNotBlank(searchBean.getMetadataTypeId())) {
             final MetadataTypeEntity type = new MetadataTypeEntity();
             type.setMetadataTypeId(searchBean.getMetadataTypeId());
             address.setMetadataType(type);
