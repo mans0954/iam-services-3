@@ -920,7 +920,7 @@ public class UserDataWebServiceImpl implements UserDataWebService, MuleContextAw
             searchBean.setParentId(val.getParentId());
             searchBean.setMetadataTypeId(val.getMetadataTypeId());
             List<AddressEntity> entityList =  userManager.getAddressList(searchBean, Integer.MAX_VALUE, 0);
-            if(CollectionUtils.isNotEmpty(entityList))
+            if(CollectionUtils.isNotEmpty(entityList) && !entityList.get(0).getAddressId().equals(val.getAddressId()))
                 throw new BasicDataServiceException(ResponseCode.ADDRESS_TYPE_DUPLICATED);
 
             final AddressEntity entity = addressDozerConverter.convertToEntity(val, false);
@@ -981,7 +981,7 @@ public class UserDataWebServiceImpl implements UserDataWebService, MuleContextAw
             searchBean.setMetadataTypeId(val.getMetadataTypeId());
             // searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
             List<EmailAddressEntity> entityList =  userManager.getEmailAddressList(searchBean, Integer.MAX_VALUE, 0);
-            if(CollectionUtils.isNotEmpty(entityList))
+            if(CollectionUtils.isNotEmpty(entityList) && !entityList.get(0).getEmailId().equals(val.getEmailId()))
                 throw new BasicDataServiceException(ResponseCode.EMAIL_ADDRESS_TYPE_DUPLICATED);
 
 
@@ -1038,7 +1038,7 @@ public class UserDataWebServiceImpl implements UserDataWebService, MuleContextAw
             searchBean.setMetadataTypeId(val.getMetadataTypeId());
             // searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
             List<PhoneEntity> entityList =  userManager.getPhoneList(searchBean, Integer.MAX_VALUE, 0);
-            if(CollectionUtils.isNotEmpty(entityList))
+            if(CollectionUtils.isNotEmpty(entityList) && !entityList.get(0).getPhoneId().equals(val.getPhoneId()))
                 throw new BasicDataServiceException(ResponseCode.PHONE_TYPE_DUPLICATED);
 
 
