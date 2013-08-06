@@ -810,6 +810,8 @@ public class ReconciliationServiceImpl implements ReconciliationService,
             return null;
         ReconciliationResultBean resultBean = (ReconciliationResultBean) Serializer
                 .deserializer(absolutePath + config.getResourceId() + ".rcndat");
+        if (resultBean == null)
+            return null;
         if (searchBean == null)
             return resultBean;
         else {
