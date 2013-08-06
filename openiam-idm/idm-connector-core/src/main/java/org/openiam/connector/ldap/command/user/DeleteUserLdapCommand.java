@@ -1,15 +1,15 @@
-package org.openiam.spml2.spi.ldap.command.user;
+package org.openiam.connector.ldap.command.user;
 
+import org.openiam.connector.ldap.command.base.AbstractCrudLdapCommand;
 import org.openiam.connector.type.ConnectorDataException;
+import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
-import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.spml2.spi.ldap.command.base.AbstractDeleteLdapCommand;
-import org.openiam.spml2.spi.ldap.dirtype.Directory;
-import org.openiam.spml2.spi.ldap.dirtype.DirectorySpecificImplFactory;
-import org.openiam.spml2.util.connect.ConnectionManagerConstant;
+import org.openiam.connector.ldap.dirtype.Directory;
+import org.openiam.connector.ldap.dirtype.DirectorySpecificImplFactory;
+import org.openiam.provision.type.ExtensibleUser;
 import org.springframework.stereotype.Service;
 
 import javax.naming.NamingException;
@@ -18,25 +18,14 @@ import java.util.List;
 import java.util.Set;
 
 @Service("deleteUserLdapCommand")
-public class DeleteUserLdapCommand extends AbstractDeleteLdapCommand<ProvisionUser> {
+public class DeleteUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUser> {
     @Override
-    protected void deleteObject(DeleteRequestType<ProvisionUser> deleteRequestType, ManagedSysEntity managedSys, LdapContext ldapctx) throws ConnectorDataException {
+    protected void performObjectOperation(ManagedSysEntity managedSys, CrudRequest<ExtensibleUser> deleteRequestType,  LdapContext ldapctx) throws ConnectorDataException {
         boolean groupMembershipEnabled = true;
         String delete = "DELETE";
-        ManagedSystemObjectMatch matchObj = null;
+        ManagedSystemObjectMatch matchObj = getMatchObject(deleteRequestType.getTargetID(), "USER");
         try {
-            PSOIdentifierType psoID = deleteRequestType.getPsoID();
-            /* targetID -  */
-            String targetID = psoID.getTargetID();
-
-            List<ManagedSystemObjectMatchEntity> matchObjList =  managedSysService.managedSysObjectParam(targetID, "USER");
-            if (matchObjList != null && matchObjList.size() > 0) {
-                matchObj = managedSystemObjectMatchDozerConverter.convertToDTO(matchObjList.get(0),false);
-            }
-
-
             Set<ResourceProp> rpSet = getResourceAttributes(managedSys.getResourceId());
-
             ResourceProp rpOnDelete = getResourceAttr(rpSet,"ON_DELETE");
             ResourceProp rpGroupMembership = getResourceAttr(rpSet,"GROUP_MEMBERSHIP_ENABLED");
 
@@ -60,7 +49,7 @@ public class DeleteUserLdapCommand extends AbstractDeleteLdapCommand<ProvisionUs
             }
 
             Directory dirSpecificImp  = DirectorySpecificImplFactory.create(managedSys.getHandler5());
-            String ldapName = psoID.getID();
+            String ldapName = deleteRequestType.getObjectIdentity();
 
 
             if (groupMembershipEnabled) {

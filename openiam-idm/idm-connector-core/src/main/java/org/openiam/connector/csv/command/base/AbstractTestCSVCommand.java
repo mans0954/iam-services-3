@@ -1,6 +1,6 @@
 package org.openiam.connector.csv.command.base;
 
-import org.openiam.connector.data.ConnectorConfiguration;
+import org.openiam.connector.common.data.ConnectorConfiguration;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.RequestType;
 import org.openiam.connector.type.response.ResponseType;

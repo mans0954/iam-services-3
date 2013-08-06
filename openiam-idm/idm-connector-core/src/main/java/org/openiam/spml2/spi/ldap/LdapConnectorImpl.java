@@ -55,6 +55,7 @@ import org.openiam.idm.srvc.auth.ws.AuthenticationResponse;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
+import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemObjectMatchDAO;
 import org.openiam.idm.srvc.policy.dto.Policy;
@@ -75,8 +76,8 @@ import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.spml2.base.AbstractSpml2Complete;
 import org.openiam.spml2.spi.common.LookupAttributeNamesCommand;
 import org.openiam.spml2.spi.ldap.command.*;
-import org.openiam.spml2.spi.ldap.dirtype.Directory;
-import org.openiam.spml2.spi.ldap.dirtype.DirectorySpecificImplFactory;
+import org.openiam.connector.ldap.dirtype.Directory;
+import org.openiam.connector.ldap.dirtype.DirectorySpecificImplFactory;
 import org.openiam.spml2.util.connect.ConnectionFactory;
 import org.openiam.connector.util.ConnectionManagerConstant;
 import org.openiam.connector.util.ConnectionMgr;
@@ -316,86 +317,6 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
         return null;
     }
 
-    @Deprecated
-    public ResponseType reconcileResource(@WebParam(name = "config", targetNamespace = "") ReconciliationConfig config) {
-        log.debug("reconcile resource called in LDAPConnector");
-
-        Resource res = resourceDataService.getResource(config.getResourceId());
-        String managedSysId = res.getManagedSysId();
-        ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
-
-        Map<String, ReconciliationCommand> situations = new HashMap<String, ReconciliationCommand>();
-        for (ReconciliationSituation situation : config.getSituationSet()) {
-            situations.put(situation.getSituation().trim(),
-                    ReconciliationCommandFactory.createCommand(
-                            situation.getSituationResp(), situation,
-                            managedSysId));
-            log.debug("Created Command for: " + situation.getSituation());
-        }
-
-        ResponseType response = new ResponseType();
-        response.setStatus(StatusCodeType.SUCCESS);
-
-        LookupRequest request = new LookupRequest();
-        ManagedSystemObjectMatch[] matchObjAry = managedSysService
-                .managedSysObjectParam(managedSysId, "USER");
-        if (matchObjAry.length == 0) {
-            log.error("No match object found for this managed sys");
-            response.setStatus(StatusCodeType.FAILURE);
-            return response;
-        }
-        String keyField = matchObjAry[0].getKeyField();
-        String searchString = keyField + "=*," + matchObjAry[0].getBaseDn();
-        request.setSearchQuery(searchString);
-        request.setSearchValue(searchString);
-
-        SearchResponse responseType = lookup(request);
-
-        if (responseType.getStatus() == StatusCodeType.FAILURE) {
-            response.setStatus(StatusCodeType.FAILURE);
-            return response;
-        }
-
-        for (ObjectValue obj : responseType.getUserList()) {
-
-            log.debug("Reconcile Found User");
-            String principal = null;
-            String searchPrincipal = null;
-            for (ExtensibleAttribute attr : obj.getAttributeList()) {
-                if (attr.getName().equalsIgnoreCase(keyField)) {
-                    principal = attr.getValue();
-                    searchPrincipal = keyField + "=" + principal + ","
-                            + matchObjAry[0].getBaseDn();
-                    break;
-                }
-            }
-            if (principal != null) {
-                log.debug("reconcile principle found");
-
-                LoginEntity login = loginManager.getLoginByManagedSys(
-                        mSys.getDomainId(), searchPrincipal, managedSysId);
-                if (login == null) {
-                    log.debug("Situation: IDM Not Found");
-                    CrudRequest delete = new CrudRequest();
-                    delete.setUserIdentity(searchPrincipal);
-                    delete(delete);
-                    Login l = new Login();
-                    l.setDomainId(mSys.getDomainId());
-                    l.setLogin(principal);
-                    l.setManagedSysId(managedSysId);
-                    ReconciliationCommand command = situations
-                            .get("IDM Not Found");
-                    if (command != null) {
-                        log.debug("Call command for IDM Not Found");
-                        command.execute(l, null, obj.getAttributeList());
-                    }
-                }
-            }
-        }
-
-        return response; // To change body of implemented methods use File |
-        // Settings | File Templates.
-    }
 
     /**
      * Used to test if the connectivity information to the larget system is
@@ -408,33 +329,33 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
         ResponseType response = new ResponseType();
         response.setStatus(StatusCodeType.SUCCESS);
 
-        ConnectionMgr conMgr = ConnectionFactory
-                .create(ConnectionManagerConstant.LDAP_CONNECTION);
-        conMgr.setApplicationContext(ac);
-
-        try {
-
-            LdapContext ldapctx = conMgr.connect(managedSys);
-        } catch (NamingException ne) {
-            log.error(ne);
-
-            // return a response object - even if it fails so that it can be
-            // logged.
-            response.setStatus(StatusCodeType.FAILURE);
-            response.setError(ErrorCode.DIRECTORY_ERROR);
-            response.addErrorMessage(ne.toString());
-
-        } finally {
-            /* close the connection to the directory */
-            try {
-                if (conMgr != null) {
-                    conMgr.close();
-                }
-            } catch (NamingException n) {
-                log.error(n);
-            }
-
-        }
+//        ConnectionMgr conMgr = ConnectionFactory
+//                .create(ConnectionManagerConstant.LDAP_CONNECTION);
+//        conMgr.setApplicationContext(ac);
+//
+//        try {
+//
+//            LdapContext ldapctx = conMgr.connect(managedSys);
+//        } catch (NamingException ne) {
+//            log.error(ne);
+//
+//            // return a response object - even if it fails so that it can be
+//            // logged.
+//            response.setStatus(StatusCodeType.FAILURE);
+//            response.setError(ErrorCode.DIRECTORY_ERROR);
+//            response.addErrorMessage(ne.toString());
+//
+//        } finally {
+//            /* close the connection to the directory */
+//            try {
+//                if (conMgr != null) {
+//                    conMgr.close();
+//                }
+//            } catch (NamingException n) {
+//                log.error(n);
+//            }
+//
+//        }
 
         log.debug("Test connection: Response object = " + response);
 
@@ -544,83 +465,83 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
          * A) Use the targetID to look up the connection information under
          * managed systems
          */
-        ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
-
-        try {
-            log.debug("managedSys found for targetID=" + targetID + " "
-                    + " Name=" + managedSys.getName());
-            conMgr = ConnectionFactory
-                    .create(ConnectionManagerConstant.LDAP_CONNECTION);
-            conMgr.setApplicationContext(ac);
-
-            LdapContext ldapctx = conMgr.connect(managedSys);
-
-            String ldapName = reqType.getUserIdentity();
-
-            // check if the identity exists before setting the password
-
-            ManagedSystemObjectMatch matchObj = null;
-            List<ManagedSystemObjectMatchEntity> matchObjList = managedSysObjectMatchDao
-                    .findBySystemId(targetID, "USER");
-            if (matchObjList != null && matchObjList.size() > 0) {
-                matchObj = managedSystemObjectMatchDozerConverter.convertToDTO(matchObjList.get(0),false);
-            }
-
-            if (matchObj != null) {
-
-                log.debug("setPassword:: Checking if identity exists before changing the password ");
-
-                if (!isInDirectory(ldapName, matchObj, ldapctx)) {
-
-                    ResponseType resp = new ResponseType();
-                    resp.setStatus(StatusCodeType.FAILURE);
-                    resp.setError(ErrorCode.NO_SUCH_OBJECT);
-                    return resp;
-
-                }
-            }
-
-            Directory dirSpecificImp = DirectorySpecificImplFactory
-                    .create(managedSys.getHandler5());
-            ModificationItem[] mods = dirSpecificImp.setPassword(reqType);
-
-            ldapctx.modifyAttributes(ldapName, mods);
-
-
-        } catch (NamingException ne) {
-            log.error(ne.toString());
-
-            log.debug("Returning response object from set password with Status of Failure...");
-
-            ResponseType resp = new ResponseType();
-            resp.setStatus(StatusCodeType.FAILURE);
-            if (ne instanceof OperationNotSupportedException) {
-                resp.setError(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION);
-            }
-
-            return resp;
-
-        } catch (Exception ne) {
-            log.error(ne.getMessage(), ne);
-
-            ResponseType resp = new ResponseType();
-            resp.setStatus(StatusCodeType.FAILURE);
-            resp.setError(ErrorCode.OTHER_ERROR);
-
-            return resp;
-
-        } finally {
-            /* close the connection to the directory */
-            try {
-                if (conMgr != null) {
-                    conMgr.close();
-                }
-
-            } catch (NamingException n) {
-                log.error(n);
-            }
-
-        }
+//        ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
+//
+//        try {
+//            log.debug("managedSys found for targetID=" + targetID + " "
+//                    + " Name=" + managedSys.getName());
+//            conMgr = ConnectionFactory
+//                    .create(ConnectionManagerConstant.LDAP_CONNECTION);
+//            conMgr.setApplicationContext(ac);
+//
+//            LdapContext ldapctx = conMgr.connect(managedSys);
+//
+//            String ldapName = reqType.getUserIdentity();
+//
+//            // check if the identity exists before setting the password
+//
+//            ManagedSystemObjectMatch matchObj = null;
+//            List<ManagedSystemObjectMatchEntity> matchObjList = managedSysObjectMatchDao
+//                    .findBySystemId(targetID, "USER");
+//            if (matchObjList != null && matchObjList.size() > 0) {
+//                matchObj = managedSystemObjectMatchDozerConverter.convertToDTO(matchObjList.get(0),false);
+//            }
+//
+//            if (matchObj != null) {
+//
+//                log.debug("setPassword:: Checking if identity exists before changing the password ");
+//
+//                if (!isInDirectory(ldapName, matchObj, ldapctx)) {
+//
+//                    ResponseType resp = new ResponseType();
+//                    resp.setStatus(StatusCodeType.FAILURE);
+//                    resp.setError(ErrorCode.NO_SUCH_OBJECT);
+//                    return resp;
+//
+//                }
+//            }
+//
+//            Directory dirSpecificImp = DirectorySpecificImplFactory
+//                    .create(managedSys.getHandler5());
+//            ModificationItem[] mods = dirSpecificImp.setPassword(reqType);
+//
+//            ldapctx.modifyAttributes(ldapName, mods);
+//
+//
+//        } catch (NamingException ne) {
+//            log.error(ne.toString());
+//
+//            log.debug("Returning response object from set password with Status of Failure...");
+//
+//            ResponseType resp = new ResponseType();
+//            resp.setStatus(StatusCodeType.FAILURE);
+//            if (ne instanceof OperationNotSupportedException) {
+//                resp.setError(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION);
+//            }
+//
+//            return resp;
+//
+//        } catch (Exception ne) {
+//            log.error(ne.getMessage(), ne);
+//
+//            ResponseType resp = new ResponseType();
+//            resp.setStatus(StatusCodeType.FAILURE);
+//            resp.setError(ErrorCode.OTHER_ERROR);
+//
+//            return resp;
+//
+//        } finally {
+//            /* close the connection to the directory */
+//            try {
+//                if (conMgr != null) {
+//                    conMgr.close();
+//                }
+//
+//            } catch (NamingException n) {
+//                log.error(n);
+//            }
+//
+//        }
 
         ResponseType respType = new ResponseType();
         respType.setStatus(StatusCodeType.SUCCESS);
@@ -641,7 +562,7 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
         return null;
     }
 
-    public ResponseType suspend(SuspendRequest request) {
+    public ResponseType suspend(SuspendResumeRequest request) {
         return ldapSuspend.suspend(request);
     }
 
@@ -658,13 +579,13 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
         this.managedSysObjectMatchDao = managedSysObjectMatchDao;
     }
 
-    public ManagedSystemWebService getManagedSysService() {
-        return managedSysService;
-    }
-
-    public void setManagedSysService(ManagedSystemWebService managedSysService) {
-        this.managedSysService = managedSysService;
-    }
+//    public ManagedSystemWebService getManagedSysService() {
+//        return managedSysService;
+//    }
+//
+//    public void setManagedSysService(ManagedSystemWebService managedSysService) {
+//        this.managedSysService = managedSysService;
+//    }
 
     public ResourceDataService getResourceDataService() {
         return resourceDataService;
@@ -863,86 +784,86 @@ public class LdapConnectorImpl extends AbstractSpml2Complete implements
         return ctx.search(objectBaseDN, searchFilter, searchCtls);
     }
 
-    @Override
+//    @Override
     @Transactional
     public SearchResponse search(@WebParam(name = "searchRequest", targetNamespace = "") SearchRequest searchRequest) {
         System.out.println("LDAP SEARCH EXECUTION ==============================================================");
         SearchResponse searchResponse = new SearchResponse();
-        ConnectionMgr conMgr = ConnectionFactory.create(ConnectionManagerConstant.LDAP_CONNECTION);
-        conMgr.setApplicationContext(ac);
-        if(StringUtils.isEmpty(searchRequest.getTargetID())) {
-            log.error("Search Target Managed System isn't set.");
-            searchResponse.setStatus(StatusCodeType.FAILURE);
-            return searchResponse;
-        }
-
-        ManagedSysDto mSys = managedSysService.getManagedSys(searchRequest.getTargetID());
-
-        ManagedSystemObjectMatchEntity matchObj = null;
-        List<ManagedSystemObjectMatchEntity> matchObjList = managedSysObjectMatchDao.findBySystemId(mSys.getManagedSysId(), "USER");
-        if (matchObjList != null && matchObjList.size() > 0) {
-            matchObj = matchObjList.get(0);
-        }
-        try {
-            LdapContext ldapContext = conMgr.connect(mSys);
-
-            log.debug("Search Filter=" + searchRequest.getSearchQuery());
-            log.debug("Searching BaseDN=" + searchRequest.getBaseDN());
-
-            SearchControls searchControls = new SearchControls();
-            NamingEnumeration results = ldapContext.search(searchRequest.getBaseDN(), searchRequest.getSearchQuery(), searchControls);
-
-            String identityAttrName = matchObj != null ? matchObj.getKeyField() : "cn";
-
-            List<ObjectValue> userValues = new LinkedList<ObjectValue>();
-
-            ObjectValue user = new ObjectValue();
-            user.setAttributeList(new LinkedList<ExtensibleAttribute>());
-            boolean found = false;
-            while (results != null && results.hasMoreElements()) {
-                SearchResult sr = (SearchResult) results.next();
-                Attributes attrs = sr.getAttributes();
-                if (attrs != null) {
-                    found = true;
-                    for (NamingEnumeration ae = attrs.getAll(); ae.hasMore();) {
-                        ExtensibleAttribute extAttr = new ExtensibleAttribute();
-                        Attribute attr = (Attribute) ae.next();
-
-                        boolean addToList = false;
-
-                        extAttr.setName(attr.getID());
-
-                        NamingEnumeration e = attr.getAll();
-
-                        while (e.hasMore()) {
-                            Object o = e.next();
-                            if (o instanceof String) {
-                                extAttr.setValue(o.toString());
-                                addToList = true;
-                            }
-                        }
-                        if(identityAttrName.equalsIgnoreCase(extAttr.getName())) {
-                            user.setUserIdentity(extAttr.getValue());
-                        }
-                        if (addToList) {
-                            user.getAttributeList().add(extAttr);
-                        }
-                    }
-                    userValues.add(user);
-                    user = new ObjectValue();
-                    user.setAttributeList(new LinkedList<ExtensibleAttribute>());
-                }
-            }
-            searchResponse.setUserList(userValues);
-            if (!found) {
-                searchResponse.setStatus(StatusCodeType.FAILURE);
-            } else {
-                searchResponse.setStatus(StatusCodeType.SUCCESS);
-            }
-        } catch (NamingException e) {
-            searchResponse.setStatus(StatusCodeType.FAILURE);
-            e.printStackTrace();
-        }
+//        ConnectionMgr conMgr = ConnectionFactory.create(ConnectionManagerConstant.LDAP_CONNECTION);
+//        conMgr.setApplicationContext(ac);
+//        if(StringUtils.isEmpty(searchRequest.getTargetID())) {
+//            log.error("Search Target Managed System isn't set.");
+//            searchResponse.setStatus(StatusCodeType.FAILURE);
+//            return searchResponse;
+//        }
+//
+//        ManagedSysDto mSys = managedSysService.getManagedSys(searchRequest.getTargetID());
+//
+//        ManagedSystemObjectMatchEntity matchObj = null;
+//        List<ManagedSystemObjectMatchEntity> matchObjList = managedSysObjectMatchDao.findBySystemId(mSys.getManagedSysId(), "USER");
+//        if (matchObjList != null && matchObjList.size() > 0) {
+//            matchObj = matchObjList.get(0);
+//        }
+//        try {
+//            LdapContext ldapContext = conMgr.connect(mSys);
+//
+//            log.debug("Search Filter=" + searchRequest.getSearchQuery());
+//            log.debug("Searching BaseDN=" + searchRequest.getBaseDN());
+//
+//            SearchControls searchControls = new SearchControls();
+//            NamingEnumeration results = ldapContext.search(searchRequest.getBaseDN(), searchRequest.getSearchQuery(), searchControls);
+//
+//            String identityAttrName = matchObj != null ? matchObj.getKeyField() : "cn";
+//
+//            List<ObjectValue> userValues = new LinkedList<ObjectValue>();
+//
+//            ObjectValue user = new ObjectValue();
+//            user.setAttributeList(new LinkedList<ExtensibleAttribute>());
+//            boolean found = false;
+//            while (results != null && results.hasMoreElements()) {
+//                SearchResult sr = (SearchResult) results.next();
+//                Attributes attrs = sr.getAttributes();
+//                if (attrs != null) {
+//                    found = true;
+//                    for (NamingEnumeration ae = attrs.getAll(); ae.hasMore();) {
+//                        ExtensibleAttribute extAttr = new ExtensibleAttribute();
+//                        Attribute attr = (Attribute) ae.next();
+//
+//                        boolean addToList = false;
+//
+//                        extAttr.setName(attr.getID());
+//
+//                        NamingEnumeration e = attr.getAll();
+//
+//                        while (e.hasMore()) {
+//                            Object o = e.next();
+//                            if (o instanceof String) {
+//                                extAttr.setValue(o.toString());
+//                                addToList = true;
+//                            }
+//                        }
+//                        if(identityAttrName.equalsIgnoreCase(extAttr.getName())) {
+//                            user.setUserIdentity(extAttr.getValue());
+//                        }
+//                        if (addToList) {
+//                            user.getAttributeList().add(extAttr);
+//                        }
+//                    }
+//                    userValues.add(user);
+//                    user = new ObjectValue();
+//                    user.setAttributeList(new LinkedList<ExtensibleAttribute>());
+//                }
+//            }
+//            searchResponse.setUserList(userValues);
+//            if (!found) {
+//                searchResponse.setStatus(StatusCodeType.FAILURE);
+//            } else {
+//                searchResponse.setStatus(StatusCodeType.SUCCESS);
+//            }
+//        } catch (NamingException e) {
+//            searchResponse.setStatus(StatusCodeType.FAILURE);
+//            e.printStackTrace();
+//        }
 
         return searchResponse;
     }

@@ -22,8 +22,8 @@ import javax.jws.WebService;
 @WebService(targetNamespace = "http://www.openiam.org/service/connector")
 public interface ConnectorService {
 
-//    @WebMethod
-//    public ResponseType reconcileResource(@WebParam(name = "config", targetNamespace = "") ReconciliationConfig config);
+    @WebMethod
+    public ResponseType reconcileResource(@WebParam(name = "config", targetNamespace = "") ReconciliationConfig config);
 
     /**
      * The add operation enables a requestor to create a new object on a target

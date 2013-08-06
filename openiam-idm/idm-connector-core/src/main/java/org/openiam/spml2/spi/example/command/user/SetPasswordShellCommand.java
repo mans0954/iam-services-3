@@ -2,7 +2,7 @@ package org.openiam.spml2.spi.example.command.user;
 
 import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.spml2.msg.password.SetPasswordRequestType;
-import org.openiam.connector.data.ConnectorConfiguration;
+import org.openiam.connector.common.data.ConnectorConfiguration;
 import org.openiam.spml2.spi.example.command.base.AbstractShellCommand;
 import org.springframework.stereotype.Service;
 

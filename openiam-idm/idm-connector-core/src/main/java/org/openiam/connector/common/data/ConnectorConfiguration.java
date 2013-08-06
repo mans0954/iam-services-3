@@ -1,4 +1,4 @@
-package org.openiam.connector.data;
+package org.openiam.connector.common.data;
 
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.res.dto.Resource;

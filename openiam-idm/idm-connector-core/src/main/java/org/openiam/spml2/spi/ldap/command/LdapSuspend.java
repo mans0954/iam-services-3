@@ -1,4 +1,4 @@
-package org.openiam.spml2.spi.ldap;
+package org.openiam.spml2.spi.ldap.command;
 
 
 import javax.naming.NamingException;
@@ -11,14 +11,14 @@ import org.openiam.base.SysConfiguration;
 import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.SuspendResumeRequest;
-import org.openiam.connector.type.request.SuspendRequest;
 import org.openiam.connector.type.response.ResponseType;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemObjectMatchDAO;
-import org.openiam.spml2.spi.ldap.dirtype.Directory;
-import org.openiam.spml2.spi.ldap.dirtype.DirectorySpecificImplFactory;
+import org.openiam.connector.ldap.dirtype.Directory;
+import org.openiam.connector.ldap.dirtype.DirectorySpecificImplFactory;
+import org.openiam.spml2.spi.ldap.command.LdapAbstractCommand;
 import org.openiam.spml2.util.connect.ConnectionFactory;
 import org.openiam.connector.util.ConnectionManagerConstant;
 import org.openiam.connector.util.ConnectionMgr;
@@ -30,7 +30,8 @@ import org.springframework.context.ApplicationContextAware;
  * @author suneet
  *
  */
-public class LdapSuspend extends  LdapAbstractCommand implements ApplicationContextAware {
+@Deprecated
+public class LdapSuspend extends LdapAbstractCommand implements ApplicationContextAware {
 	
 	private static final Log log = LogFactory.getLog(LdapSuspend.class);
 
@@ -42,68 +43,68 @@ public class LdapSuspend extends  LdapAbstractCommand implements ApplicationCont
     public static ApplicationContext ac;
 
 
-	public ResponseType suspend(SuspendRequest request) {
+	public ResponseType suspend(SuspendResumeRequest request) {
 		log.debug("suspend request called..");
 		// ldap does not have suspend/disable capability.
 		// work around is to scramble the password
         ConnectionMgr conMgr = null;
         ResponseType resp = new ResponseType();
 		
-		String requestID = request.getRequestID();
-
-		/* targetID -  */
-		String targetID = request.getTargetID();
-
-	
-		/* A) Use the targetID to look up the connection information under managed systems */
-		ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
-        try {
-		
-            log.debug("managedSys found for targetID=" + targetID + " " + " Name=" + managedSys.getName());
-            conMgr = ConnectionFactory.create(ConnectionManagerConstant.LDAP_CONNECTION);
-            conMgr.setApplicationContext(ac);
-
-            LdapContext ldapctx = conMgr.connect(managedSys);
-
-            if (ldapctx == null) {
-                resp.setStatus(StatusCodeType.FAILURE);
-                resp.setError(ErrorCode.DIRECTORY_ERROR);
-                resp.addErrorMessage("Unable to connect to directory.");
-                return resp;
-            }
-
-
-            String ldapName = request.getUserIdentity();
-
-            // check if this object exists in the target system
-            // dont try to disable and object that does not exist
-            if (identityExists(ldapName, ldapctx)) {
-
-                // Each directory
-                Directory dirSpecificImp  = DirectorySpecificImplFactory.create(managedSys.getHandler5());
-
-                log.debug("Directory specific object name = " + dirSpecificImp.getClass().getName());
-
-                ModificationItem[] mods = dirSpecificImp.suspend(request);
-
-                ldapctx.modifyAttributes(ldapName, mods);
-                }
-	
-	 	}catch(Exception ne) {
-	 		log.error(ne.getMessage(), ne);
-	 		
-
-	 		resp.setStatus(StatusCodeType.FAILURE);
-	 		resp.setError(ErrorCode.NO_SUCH_IDENTIFIER);
-	 		return resp;
-	 	}finally {
-	 		/* close the connection to the directory */
-	 		  try {
-                  conMgr.close();
-              } catch (NamingException n) {
-                  log.error(n);
-              }
-	 	}
+//		String requestID = request.getRequestID();
+//
+//		/* targetID -  */
+//		String targetID = request.getTargetID();
+//
+//
+//		/* A) Use the targetID to look up the connection information under managed systems */
+//		ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
+//        try {
+//
+//            log.debug("managedSys found for targetID=" + targetID + " " + " Name=" + managedSys.getName());
+//            conMgr = ConnectionFactory.create(ConnectionManagerConstant.LDAP_CONNECTION);
+//            conMgr.setApplicationContext(ac);
+//
+//            LdapContext ldapctx = conMgr.connect(managedSys);
+//
+//            if (ldapctx == null) {
+//                resp.setStatus(StatusCodeType.FAILURE);
+//                resp.setError(ErrorCode.DIRECTORY_ERROR);
+//                resp.addErrorMessage("Unable to connect to directory.");
+//                return resp;
+//            }
+//
+//
+//            String ldapName = request.getUserIdentity();
+//
+//            // check if this object exists in the target system
+//            // dont try to disable and object that does not exist
+//            if (identityExists(ldapName, ldapctx)) {
+//
+//                // Each directory
+//                Directory dirSpecificImp  = DirectorySpecificImplFactory.create(managedSys.getHandler5());
+//
+//                log.debug("Directory specific object name = " + dirSpecificImp.getClass().getName());
+//
+//                ModificationItem[] mods = dirSpecificImp.suspend(request);
+//
+//                ldapctx.modifyAttributes(ldapName, mods);
+//                }
+//
+//	 	}catch(Exception ne) {
+//	 		log.error(ne.getMessage(), ne);
+//
+//
+//	 		resp.setStatus(StatusCodeType.FAILURE);
+//	 		resp.setError(ErrorCode.NO_SUCH_IDENTIFIER);
+//	 		return resp;
+//	 	}finally {
+//	 		/* close the connection to the directory */
+//	 		  try {
+//                  conMgr.close();
+//              } catch (NamingException n) {
+//                  log.error(n);
+//              }
+//	 	}
 	 	
 	 	ResponseType respType = new ResponseType();
 	 	respType.setStatus(StatusCodeType.SUCCESS);
@@ -127,47 +128,47 @@ public class LdapSuspend extends  LdapAbstractCommand implements ApplicationCont
 			
 	
 		/* A) Use the targetID to look up the connection information under managed systems */
-		ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
-
-        try {
-            log.debug("managedSys found for targetID=" + targetID + " " + " Name=" + managedSys.getName());
-
-            conMgr = ConnectionFactory.create(ConnectionManagerConstant.LDAP_CONNECTION);
-            LdapContext ldapctx = conMgr.connect(managedSys);
-
-            log.debug("Ldapcontext = " + ldapctx);
-            String ldapName = request.getUserIdentity();
-
-            // check if this object exists in the target system
-            // dont try to enable and object that does not exist
-            if (identityExists(ldapName, ldapctx)) {
-
-                Directory dirSpecificImp  = DirectorySpecificImplFactory.create(managedSys.getHandler5());
-                dirSpecificImp.setAttributes("LDAP_NAME", ldapName);
-                dirSpecificImp.setAttributes("LOGIN_MANAGER", loginManager);
-                dirSpecificImp.setAttributes("CONFIGURATION", sysConfiguration);
-                dirSpecificImp.setAttributes("TARGET_ID",targetID);
-
-                ModificationItem[] mods = dirSpecificImp.resume(request);
-
-                ldapctx.modifyAttributes(ldapName, mods);
-                }
-	
-	 	}catch(Exception ne) {
-	 		log.error(ne.getMessage(), ne);
-	 		
-	 		ResponseType resp = new ResponseType();
-	 		resp.setStatus(StatusCodeType.FAILURE);
-	 		resp.setError(ErrorCode.NO_SUCH_IDENTIFIER);
-	 		return resp;
-	 	}finally {
-	 		/* close the connection to the directory */
-	 	    try {
-                  conMgr.close();
-              } catch (NamingException n) {
-                  log.error(n);
-              }
-	 	}
+//		ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
+//
+//        try {
+//            log.debug("managedSys found for targetID=" + targetID + " " + " Name=" + managedSys.getName());
+//
+//            conMgr = ConnectionFactory.create(ConnectionManagerConstant.LDAP_CONNECTION);
+//            LdapContext ldapctx = conMgr.connect(managedSys);
+//
+//            log.debug("Ldapcontext = " + ldapctx);
+//            String ldapName = request.getObjectIdentity();
+//
+//            // check if this object exists in the target system
+//            // dont try to enable and object that does not exist
+//            if (identityExists(ldapName, ldapctx)) {
+//
+//                Directory dirSpecificImp  = DirectorySpecificImplFactory.create(managedSys.getHandler5());
+//                dirSpecificImp.setAttributes("LDAP_NAME", ldapName);
+//                dirSpecificImp.setAttributes("LOGIN_MANAGER", loginManager);
+//                dirSpecificImp.setAttributes("CONFIGURATION", sysConfiguration);
+//                dirSpecificImp.setAttributes("TARGET_ID",targetID);
+//
+//                ModificationItem[] mods = dirSpecificImp.resume(request);
+//
+//                ldapctx.modifyAttributes(ldapName, mods);
+//                }
+//
+//	 	}catch(Exception ne) {
+//	 		log.error(ne.getMessage(), ne);
+//
+//	 		ResponseType resp = new ResponseType();
+//	 		resp.setStatus(StatusCodeType.FAILURE);
+//	 		resp.setError(ErrorCode.NO_SUCH_IDENTIFIER);
+//	 		return resp;
+//	 	}finally {
+//	 		/* close the connection to the directory */
+//	 	    try {
+//                  conMgr.close();
+//              } catch (NamingException n) {
+//                  log.error(n);
+//              }
+//	 	}
 	 	
 	 	ResponseType respType = new ResponseType();
 	 	respType.setStatus(StatusCodeType.SUCCESS);

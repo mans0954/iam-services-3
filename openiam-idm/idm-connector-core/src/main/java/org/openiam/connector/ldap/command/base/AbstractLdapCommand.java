@@ -1,7 +1,12 @@
-package org.openiam.spml2.spi.ldap.command.base;
+package org.openiam.connector.ldap.command.base;
 
 import org.openiam.base.BaseAttribute;
 import org.openiam.connector.type.ConnectorDataException;
+import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.request.RequestType;
+import org.openiam.connector.type.response.ResponseType;
+import org.openiam.connector.util.ConnectionManagerConstant;
+import org.openiam.connector.util.ConnectionMgr;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
@@ -12,8 +17,6 @@ import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.connector.common.command.AbstractCommand;
 import org.openiam.spml2.util.connect.ConnectionFactory;
-import org.openiam.spml2.util.connect.ConnectionManagerConstant;
-import org.openiam.spml2.util.connect.ConnectionMgr;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.naming.NamingEnumeration;
@@ -83,13 +86,11 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
 
     }
 
-    protected String getOU(List<ExtensibleObject> requestAttribute) {
-        for (ExtensibleObject obj : requestAttribute) {
-            List<ExtensibleAttribute> attrList = obj.getAttributes();
-            for (ExtensibleAttribute att : attrList) {
-                if (att.getName().equalsIgnoreCase("ou")) {
-                    return att.getValue();
-                }
+    protected String getOU(ExtensibleObject obj) {
+        List<ExtensibleAttribute> attrList = obj.getAttributes();
+        for (ExtensibleAttribute att : attrList) {
+            if (att.getName().equalsIgnoreCase("ou")) {
+                return att.getValue();
             }
         }
         return null;
@@ -137,7 +138,7 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
         }
     }
 
-    protected BasicAttributes getBasicAttributes(List<ExtensibleObject> requestAttribute, String idField,
+    protected BasicAttributes getBasicAttributes(ExtensibleObject obj, String idField,
                                                List<BaseAttribute> targetMembershipList, boolean groupMembershipEnabled) {
         BasicAttributes attrs = new BasicAttributes();
 
@@ -147,7 +148,7 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
 
         // add the ou for this record
         Attribute ouSet = new BasicAttribute("ou");
-        String ou = getOU(requestAttribute);
+        String ou = getOU(obj);
         log.debug("GetAttributes() - ou=" + ou);
         if (ou != null && ou.length() > 0) {
             ouSet.add(ou);
@@ -160,50 +161,48 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
         // add the identifier
 
         // add the attributes
-        for (ExtensibleObject obj : requestAttribute) {
-            List<ExtensibleAttribute> attrList = obj.getAttributes();
-            for (ExtensibleAttribute att : attrList) {
+        List<ExtensibleAttribute> attrList = obj.getAttributes();
+        for (ExtensibleAttribute att : attrList) {
 
-                log.debug("Attr Name=" + att.getName() + " " + att.getDataType() + " " + att.getValue());
+            log.debug("Attr Name=" + att.getName() + " " + att.getDataType() + " " + att.getValue());
 
 
-                if (att.getDataType() == null || !att.getDataType().equalsIgnoreCase("memberOf")) {
+            if (att.getDataType() == null || !att.getDataType().equalsIgnoreCase("memberOf")) {
 
-                    if (att.getName().equalsIgnoreCase(idField)) {
-                        log.debug("Attr Name=" + att.getName() + " Value=" + att.getValue() + " ignored");
-                        continue;
-                    }
+                if (att.getName().equalsIgnoreCase(idField)) {
+                    log.debug("Attr Name=" + att.getName() + " Value=" + att.getValue() + " ignored");
+                    continue;
+                }
 
-                    Attribute a = null;
-                    if (att.isMultivalued()) {
-                        List<String> valList = att.getValueList();
-                        if (valList != null && valList.size() > 0) {
-                            int ctr = 0;
-                            for (String s : valList) {
-                                if (ctr == 0) {
-                                    a = new BasicAttribute(att.getName(), valList.get(ctr));
-                                } else {
-                                    a.add(valList.get(ctr));
-                                }
-                                ctr++;
+                Attribute a = null;
+                if (att.isMultivalued()) {
+                    List<String> valList = att.getValueList();
+                    if (valList != null && valList.size() > 0) {
+                        int ctr = 0;
+                        for (String s : valList) {
+                            if (ctr == 0) {
+                                a = new BasicAttribute(att.getName(), valList.get(ctr));
+                            } else {
+                                a.add(valList.get(ctr));
                             }
-
+                            ctr++;
                         }
-                    } else if ("unicodePwd".equalsIgnoreCase(att.getName())) {
-                        a = generateActiveDirectoryPassword(att.getValue());
-                    } else {
-                        // add a password to a user separately. If OpenLDAP is not using PPolicy the password is not hashed
-                        a = new BasicAttribute(att.getName(), att.getValue());
-                    }
-                    if (a != null) {
-                        attrs.put(a);
-                    }
 
-                }else {
-                    if ( "memberOf".equalsIgnoreCase(att.getDataType())) {
-                        if (groupMembershipEnabled) {
-                            buildMembershipList(att,targetMembershipList);
-                        }
+                    }
+                } else if ("unicodePwd".equalsIgnoreCase(att.getName())) {
+                    a = generateActiveDirectoryPassword(att.getValue());
+                } else {
+                    // add a password to a user separately. If OpenLDAP is not using PPolicy the password is not hashed
+                    a = new BasicAttribute(att.getName(), att.getValue());
+                }
+                if (a != null) {
+                    attrs.put(a);
+                }
+
+            } else {
+                if ("memberOf".equalsIgnoreCase(att.getDataType())) {
+                    if (groupMembershipEnabled) {
+                        buildMembershipList(att, targetMembershipList);
                     }
                 }
             }

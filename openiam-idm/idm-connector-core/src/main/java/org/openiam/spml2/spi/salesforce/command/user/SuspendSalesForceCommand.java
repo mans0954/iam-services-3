@@ -6,7 +6,7 @@ import org.openiam.spml2.msg.ErrorCode;
 import org.openiam.spml2.msg.ResponseType;
 import org.openiam.spml2.msg.StatusCodeType;
 import org.openiam.spml2.msg.suspend.SuspendRequestType;
-import org.openiam.connector.data.ConnectorConfiguration;
+import org.openiam.connector.common.data.ConnectorConfiguration;
 import org.openiam.spml2.spi.salesforce.command.base.AbstractSalesforceCommand;
 import org.openiam.spml2.spi.salesforce.dao.CallerDependentSalesForceDao;
 import org.openiam.spml2.spi.salesforce.dao.SalesForceDao;

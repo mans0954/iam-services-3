@@ -1,11 +1,12 @@
-package org.openiam.spml2.spi.ldap.command.factory;
+package org.openiam.connector.ldap.command.factory;
 
-import org.openiam.provision.dto.ProvisionObjectType;
-import org.openiam.spml2.constants.CommandType;
-import org.openiam.connector.type.ConnectorDataException;
-import org.openiam.spml2.msg.ErrorCode;
 import org.openiam.connector.common.command.ConnectorCommand;
 import org.openiam.connector.common.factory.AbstractCommandFactory;
+import org.openiam.connector.type.ConnectorDataException;
+import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.provision.dto.ProvisionObjectType;
+import org.openiam.provision.type.ExtensibleObjectType;
+import org.openiam.spml2.constants.CommandType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -33,13 +34,16 @@ public class LdapCommandFactory extends AbstractCommandFactory {
     @Autowired
     @Qualifier("suspendLdapCommand")
     private ConnectorCommand suspendLdapCommand;
+    @Autowired
+    @Qualifier("searchUserLdapCommand")
+    private ConnectorCommand searchUserLdapCommand;
 
 
 
 
-    public ConnectorCommand getConnectorCommand(CommandType commandType, ProvisionObjectType provisionObjectType) throws ConnectorDataException {
-        String error = String.format(ERROR_PATTERN, commandType, provisionObjectType, "LDAP");
-        if(ProvisionObjectType.USER==provisionObjectType){
+    public ConnectorCommand getConnectorCommand(CommandType commandType, ExtensibleObjectType extensibleObjectType) throws ConnectorDataException {
+        String error = String.format(ERROR_PATTERN, commandType, extensibleObjectType, "LDAP");
+        if(ExtensibleObjectType.USER==extensibleObjectType){
             switch (commandType){
                 case ADD:
                     return addUserLdapCommand;
@@ -49,6 +53,8 @@ public class LdapCommandFactory extends AbstractCommandFactory {
 //                    return lookupCSVAttributeNamesCommand;
                 case LOOKUP:
                     return lookupUserLdapCommand;
+                case SEARCH:
+                    return  searchUserLdapCommand;
                 case MODIFY:
                     return modifyUserLdapCommand;
                 case RESUME:
@@ -60,10 +66,11 @@ public class LdapCommandFactory extends AbstractCommandFactory {
                 default:
                     throw new ConnectorDataException(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
             }
-        } else if(ProvisionObjectType.GROUP==provisionObjectType){
+        } else if(ExtensibleObjectType.GROUP==extensibleObjectType){
             throw new ConnectorDataException(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
         } else {
             throw new ConnectorDataException(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
         }
     }
+
 }

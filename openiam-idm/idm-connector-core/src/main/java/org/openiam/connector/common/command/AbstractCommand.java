@@ -8,6 +8,7 @@ import org.openiam.connector.type.request.RequestType;
 import org.openiam.connector.type.response.ResponseType;
 import org.openiam.dozer.converter.ManagedSysDozerConverter;
 import org.openiam.dozer.converter.ManagedSystemObjectMatchDozerConverter;
+import org.openiam.exception.ConfigurationException;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
@@ -18,7 +19,7 @@ import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.connector.type.ConnectorDataException;
-import org.openiam.connector.data.ConnectorConfiguration;
+import org.openiam.connector.common.data.ConnectorConfiguration;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -61,11 +62,16 @@ public abstract class AbstractCommand<Request extends RequestType, Response exte
     }
 
 
-    protected ManagedSystemObjectMatch getMatchObject(String targetID, String type){
+    protected ManagedSystemObjectMatch getMatchObject(String targetID, String type) throws ConfigurationException{
         ManagedSystemObjectMatch matchObj = null;
         List<ManagedSystemObjectMatchEntity> matchObjList = managedSysObjectMatchDao.findBySystemId(targetID, type);
         if (matchObjList != null && matchObjList.size() > 0) {
             matchObj = managedSystemObjectMatchDozerConverter.convertToDTO(matchObjList.get(0),false);
+        }
+        log.debug("matchObj = " + matchObj);
+
+        if (matchObj == null) {
+            throw new ConfigurationException("Configuration is missing Match Object information");
         }
         return matchObj;
     }

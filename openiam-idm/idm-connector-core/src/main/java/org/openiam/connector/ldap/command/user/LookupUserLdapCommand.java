@@ -1,6 +1,10 @@
-package org.openiam.spml2.spi.ldap.command.user;
+package org.openiam.connector.ldap.command.user;
 
 import org.openiam.connector.type.ConnectorDataException;
+import org.openiam.connector.type.ObjectValue;
+import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.request.LookupRequest;
+import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
@@ -8,7 +12,8 @@ import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.spml2.spi.ldap.command.base.AbstractLookupLdapCommand;
+import org.openiam.connector.ldap.command.base.AbstractLookupLdapCommand;
+import org.openiam.provision.type.ExtensibleUser;
 import org.springframework.stereotype.Service;
 
 import javax.naming.NamingEnumeration;
@@ -20,14 +25,14 @@ import javax.naming.ldap.LdapContext;
 import java.util.List;
 
 @Service("lookupUserLdapCommand")
-public class LookupUserLdapCommand extends AbstractLookupLdapCommand<ProvisionUser>  {
+public class LookupUserLdapCommand extends AbstractLookupLdapCommand<ExtensibleUser>  {
     @Override
-    protected boolean lookup(PSOIdentifierType psoId, ManagedSysEntity managedSys, LookupResponseType respType, LdapContext ldapctx) throws ConnectorDataException {
+    protected boolean lookup(ManagedSysEntity managedSys, LookupRequest<ExtensibleObject> lookupRequest, SearchResponse respType, LdapContext ldapctx) throws ConnectorDataException {
         boolean found=false;
-        ManagedSystemObjectMatch matchObj = null;
+        ManagedSystemObjectMatch matchObj = getMatchObject(lookupRequest.getTargetID(), "USER");
+        String identity = lookupRequest.getSearchValue();
         String rdn = null;
         String objectBaseDN = null;
-        String identity = psoId.getID();
         try {
             int indx = identity.indexOf(",");
             if (indx > 0) {
@@ -38,10 +43,6 @@ public class LookupUserLdapCommand extends AbstractLookupLdapCommand<ProvisionUs
             }
             log.debug("looking up identity: " + identity);
 
-            List<ManagedSystemObjectMatchEntity> matchObjList =  managedSysService.managedSysObjectParam(psoId.getTargetID(), "USER");
-            if (matchObjList != null && matchObjList.size() > 0) {
-                matchObj = managedSystemObjectMatchDozerConverter.convertToDTO(matchObjList.get(0),false);
-            }
 
             String resourceId = managedSys.getResourceId();
 
@@ -62,8 +63,8 @@ public class LookupUserLdapCommand extends AbstractLookupLdapCommand<ProvisionUs
                 log.debug("results=" + results);
                 log.debug(" results has more elements=" + results.hasMoreElements());
 
-                ExtensibleObject extObj = new ExtensibleObject();
-                extObj.setObjectId(identity);
+                ObjectValue userValue = new ObjectValue();
+                userValue.setObjectIdentity(identity);
 
                 while (results != null && results.hasMoreElements()) {
                     SearchResult sr = (SearchResult) results.next();
@@ -88,11 +89,10 @@ public class LookupUserLdapCommand extends AbstractLookupLdapCommand<ProvisionUs
                                 }
                             }
                             if (addToList) {
-                                extObj.getAttributes().add(extAttr);
+                                userValue.getAttributeList().add(extAttr);
                             }
                         }
-                        respType.addObject(extObj);
-                        extObj = new ExtensibleObject();
+                        respType.getObjectList().add(userValue);
                     }
                 }
             }

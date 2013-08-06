@@ -1,19 +1,16 @@
-package org.openiam.spml2.spi.ldap.command.user;
+package org.openiam.connector.ldap.command.user;
 
 import org.openiam.base.BaseAttribute;
-import org.openiam.exception.ConfigurationException;
+import org.openiam.connector.ldap.command.base.AbstractCrudLdapCommand;
+import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
-import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.connector.type.ConnectorDataException;
-import org.openiam.spml2.msg.ErrorCode;
-import org.openiam.spml2.msg.PSOIdentifierType;
-import org.openiam.spml2.spi.ldap.command.base.AbstractAddLdapCommand;
-import org.openiam.spml2.spi.ldap.dirtype.Directory;
-import org.openiam.spml2.spi.ldap.dirtype.DirectorySpecificImplFactory;
+import org.openiam.provision.type.ExtensibleUser;
+import org.openiam.connector.ldap.dirtype.Directory;
+import org.openiam.connector.ldap.dirtype.DirectorySpecificImplFactory;
 import org.springframework.stereotype.Service;
 
 import javax.naming.Context;
@@ -25,25 +22,17 @@ import java.util.List;
 import java.util.Set;
 
 @Service("addUserLdapCommand")
-public class AddUserLdapCommand extends AbstractAddLdapCommand<ProvisionUser> {
+public class AddUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUser> {
     @Override
-    protected void addObject(ManagedSysEntity managedSys, PSOIdentifierType psoID, String targetID, List<ExtensibleObject> anyObjectList, LdapContext ldapctx) throws ConnectorDataException {
+    protected void performObjectOperation(ManagedSysEntity managedSys, CrudRequest<ExtensibleUser> addRequestType, LdapContext ldapctx) throws ConnectorDataException {
         try {
-            ManagedSystemObjectMatch matchObj = null;
+            ManagedSystemObjectMatch matchObj = getMatchObject(addRequestType.getTargetID(), "USER");
+
+
             boolean groupMembershipEnabled = true;
             List<BaseAttribute> targetMembershipList = new ArrayList<BaseAttribute>();
 
 
-            List<ManagedSystemObjectMatchEntity> matchObjList = managedSysObjectMatchDao.findBySystemId(targetID, "USER");
-            if (matchObjList != null && matchObjList.size() > 0) {
-                matchObj = managedSystemObjectMatchDozerConverter.convertToDTO(matchObjList.get(0),false);
-            }
-
-            log.debug("matchObj = " + matchObj);
-
-            if (matchObj == null) {
-                throw new ConfigurationException("LDAP configuration is missing configuration information");
-            }
 
             Set<ResourceProp> rpSet = getResourceAttributes(managedSys.getResourceId());
             ResourceProp rpGroupMembership = getResourceAttr(rpSet,"GROUP_MEMBERSHIP_ENABLED");
@@ -72,7 +61,7 @@ public class AddUserLdapCommand extends AbstractAddLdapCommand<ProvisionUser> {
 
             // get the field that is to be used as the UniqueIdentifier
             //String ldapName = matchObj.getKeyField() +"=" + psoID.getID() + "," + baseDN;
-            String ldapName = psoID.getID();
+            String ldapName = addRequestType.getObjectIdentity();
 
             log.debug("Checking if the identity exists: " + ldapName);
 
@@ -80,25 +69,17 @@ public class AddUserLdapCommand extends AbstractAddLdapCommand<ProvisionUser> {
             if (identityExists(ldapName, ldapctx)) {
                 return;
             }
-            //
-
             log.debug(ldapName + " does not exist. building attribute list");
 
 
-            BasicAttributes basicAttr = getBasicAttributes(anyObjectList, matchObj.getKeyField(),
+            BasicAttributes basicAttr = getBasicAttributes(addRequestType.getExtensibleObject(), matchObj.getKeyField(),
                     targetMembershipList, groupMembershipEnabled);
 
-
             log.debug("Creating users in ldap.." + ldapName);
-
-
-                Context result = ldapctx.createSubcontext(ldapName, basicAttr);
-
+            Context result = ldapctx.createSubcontext(ldapName, basicAttr);
 
             if (groupMembershipEnabled) {
-
-
-                dirSpecificImp.updateAccountMembership(targetMembershipList,ldapName,  matchObj, ldapctx, anyObjectList);
+                dirSpecificImp.updateAccountMembership(targetMembershipList,ldapName,  matchObj, ldapctx, addRequestType.getExtensibleObject());
             }
         } catch (NamingException e) {
            log.error(e.getMessage(), e);

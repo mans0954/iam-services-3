@@ -7,7 +7,7 @@ import org.openiam.spml2.msg.ErrorCode;
 import org.openiam.spml2.msg.RequestType;
 import org.openiam.spml2.msg.ResponseType;
 import org.openiam.connector.common.command.AbstractCommand;
-import org.openiam.connector.data.ConnectorConfiguration;
+import org.openiam.connector.common.data.ConnectorConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 

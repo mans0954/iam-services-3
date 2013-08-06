@@ -1,4 +1,4 @@
-package org.openiam.spml2.spi.ldap.dirtype;
+package org.openiam.connector.ldap.dirtype;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -8,7 +8,6 @@ import org.openiam.base.SysConfiguration;
 import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.connector.type.request.PasswordRequest;
 import org.openiam.connector.type.request.SuspendResumeRequest;
-import org.openiam.connector.type.request.SuspendRequest;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
@@ -51,7 +50,7 @@ public class LdapV3 implements Directory{
         return mods;
     }
 
-    public ModificationItem[] suspend(SuspendRequest request)  {
+    public ModificationItem[] suspend(SuspendResumeRequest request)  {
 
         String scrambledPswd =	passwordGenerator.generatePassword(10);
         

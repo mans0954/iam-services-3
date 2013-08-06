@@ -1,10 +1,9 @@
-package org.openiam.spml2.spi.ldap.dirtype;
+package org.openiam.connector.ldap.dirtype;
 
 import org.openiam.base.BaseAttribute;
 import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.connector.type.request.PasswordRequest;
 import org.openiam.connector.type.request.SuspendResumeRequest;
-import org.openiam.connector.type.request.SuspendRequest;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.provision.type.ExtensibleObject;
 
@@ -30,7 +29,7 @@ public interface Directory {
     
     ModificationItem[] setPassword(PasswordRequest reqType) throws UnsupportedEncodingException;
 
-    ModificationItem[] suspend(SuspendRequest request);
+    ModificationItem[] suspend(SuspendResumeRequest request);
 
     ModificationItem[] resume(SuspendResumeRequest request);
 

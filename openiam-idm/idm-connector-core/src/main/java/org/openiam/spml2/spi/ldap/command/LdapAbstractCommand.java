@@ -1,4 +1,4 @@
-package org.openiam.spml2.spi.ldap.command.base;
+package org.openiam.spml2.spi.ldap.command;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

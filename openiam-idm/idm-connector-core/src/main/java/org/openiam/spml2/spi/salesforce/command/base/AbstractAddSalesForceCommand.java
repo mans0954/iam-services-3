@@ -3,7 +3,7 @@ package org.openiam.spml2.spi.salesforce.command.base;
 import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.provision.dto.GenericProvisionObject;
 import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.connector.data.ConnectorConfiguration;
+import org.openiam.connector.common.data.ConnectorConfiguration;
 import org.openiam.spml2.util.msg.ResponseBuilder;
 
 import java.util.List;

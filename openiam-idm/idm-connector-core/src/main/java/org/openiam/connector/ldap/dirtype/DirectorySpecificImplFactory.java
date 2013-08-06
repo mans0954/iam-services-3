@@ -1,4 +1,4 @@
-package org.openiam.spml2.spi.ldap.dirtype;
+package org.openiam.connector.ldap.dirtype;
 
 /**
  * Instantiate objects that directory/brand specific implementations.

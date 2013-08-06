@@ -1,17 +1,15 @@
 package org.openiam.connector.csv.command.base;
 
-import org.openiam.connector.data.ConnectorConfiguration;
+import org.openiam.connector.common.data.ConnectorConfiguration;
 import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.ObjectValue;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.LookupRequest;
 import org.openiam.connector.type.response.SearchResponse;
-import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.recon.dto.ReconciliationObject;
 import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultField;
-import org.openiam.provision.dto.GenericProvisionObject;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 import org.springframework.util.StringUtils;

@@ -1,4 +1,4 @@
-package org.openiam.spml2.spi.ldap.dirtype;
+package org.openiam.connector.ldap.dirtype;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -7,7 +7,6 @@ import org.openiam.base.BaseAttribute;
 import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.connector.type.request.PasswordRequest;
 import org.openiam.connector.type.request.SuspendResumeRequest;
-import org.openiam.connector.type.request.SuspendRequest;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
@@ -48,7 +47,7 @@ public class ActiveDirectoryImpl implements Directory {
 
     }
 
-    public ModificationItem[] suspend(SuspendRequest request) {
+    public ModificationItem[] suspend(SuspendResumeRequest request) {
 
         log.debug("suspending AD user.");
 
@@ -177,11 +176,6 @@ public class ActiveDirectoryImpl implements Directory {
 
             }
         }
-
-
-
-
-
     }
 
     private String getSamAccountName(ExtensibleObject obj) {
@@ -190,7 +184,6 @@ public class ActiveDirectoryImpl implements Directory {
             if ("sAMAccountName".equalsIgnoreCase(att.getName())) {
                 return att.getValue();
             }
-
         }
         return null;
     }

@@ -10,6 +10,7 @@ import org.openiam.connector.type.response.LookupAttributeResponse;
 import org.openiam.connector.type.response.ObjectResponse;
 import org.openiam.connector.type.response.ResponseType;
 import org.openiam.connector.type.response.SearchResponse;
+import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.spml2.ConnectorCommandFactory;
 import org.openiam.spml2.constants.CommandType;
@@ -105,6 +106,14 @@ public abstract class AbstractConnectorService implements ConnectorService,Appli
     @Override
     public ResponseType resume(@WebParam(name = "request", targetNamespace = "") SuspendResumeRequest request) {
         return manageRequest(CommandType.RESUME, request, ResponseType.class);
+    }
+    @Override
+    public ResponseType reconcileResource(@WebParam(name = "config", targetNamespace = "") ReconciliationConfig config) {
+        ResponseType response = new ResponseType();
+        response.setStatus(StatusCodeType.FAILURE);
+        response.setError(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION);
+        response.addErrorMessage(String.format("Unsupported Operation: 'Reconcile Resource' in %s connector", this.connectorType));
+        return response;
     }
 
     private  <Response extends ResponseType> Response manageRequest(CommandType commandType, RequestType requestType, Class<Response> responseClass){
