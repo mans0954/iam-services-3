@@ -99,7 +99,7 @@ public class GoogleAppsConnectorImpl  {
         log.debug("Google Apps: add request called..");
 
         String requestID = reqType.getRequestID();
-         userName = reqType.getUserIdentity();
+         userName = reqType.getObjectIdentity();
 
         /* targetID - */
         String targetID = reqType.getTargetID();
@@ -116,7 +116,7 @@ public class GoogleAppsConnectorImpl  {
             matchObj = managedSystemObjectMatchDozerConverter.convertToDTO(matchObjList.get(0),false);
         }
 
-        ExtensibleObject obj = reqType.getUser();
+        ExtensibleObject obj = reqType.getExtensibleObject();
 
 
         List<ExtensibleAttribute> attrList = obj.getAttributes();
@@ -216,7 +216,7 @@ public class GoogleAppsConnectorImpl  {
          * PSO ID immutable so that there is consistency across changes.
          */
 
-        userName = reqType.getUserIdentity();
+        userName = reqType.getObjectIdentity();
 
         /* targetID - */
         String targetID = reqType.getTargetID();
@@ -234,7 +234,7 @@ public class GoogleAppsConnectorImpl  {
         }
 
         // check if its a rename request
-        ExtensibleAttribute origIdentity = isRename(reqType.getUser());
+        ExtensibleAttribute origIdentity = isRename(reqType.getExtensibleObject());
         if (origIdentity != null) {
             log.debug("Renaming identity: " + origIdentity.getValue());
 
@@ -246,7 +246,7 @@ public class GoogleAppsConnectorImpl  {
         } else {
 
             // get the firstName and lastName values
-                ExtensibleObject obj = reqType.getUser();
+                ExtensibleObject obj = reqType.getExtensibleObject();
 
 
                     log.debug("Object:" + obj.getName() + " - operation="
@@ -420,7 +420,7 @@ public class GoogleAppsConnectorImpl  {
 
         String requestID = reqType.getRequestID();
 
-        userName = reqType.getUserIdentity();
+        userName = reqType.getObjectIdentity();
         /* targetID - */
         String targetID = reqType.getTargetID();
 
@@ -508,7 +508,7 @@ public class GoogleAppsConnectorImpl  {
 
         String requestID = request.getRequestID();
 
-        userName = request.getUserIdentity();
+        userName = request.getObjectIdentity();
 
         /* targetID - */
         String targetID = request.getTargetID();
@@ -657,7 +657,7 @@ public class GoogleAppsConnectorImpl  {
         this.userManager = userManager;
     }
 
-    public ResponseType suspend(SuspendRequest request) {
+    public ResponseType suspend(SuspendResumeRequest request) {
         String userName = null;
         String firstName = null;
         String lastName = null;
@@ -668,7 +668,7 @@ public class GoogleAppsConnectorImpl  {
 
         String requestID = request.getRequestID();
 
-        userName = request.getUserIdentity();
+        userName = request.getObjectIdentity();
 
         /* targetID - */
         String targetID = request.getTargetID();
@@ -744,7 +744,7 @@ public class GoogleAppsConnectorImpl  {
 
         String requestID = request.getRequestID();
 
-        userName = request.getUserIdentity();
+        userName = request.getObjectIdentity();
 
         /* targetID - */
         String targetID = request.getTargetID();
