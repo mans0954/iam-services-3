@@ -63,6 +63,12 @@ public class ReportDataServiceImpl implements ReportDataService {
     public List<ReportInfoEntity> getAllReports( final int from, final int size) {
         return reportDao.findAllReports(from, size);
     }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<ReportInfoEntity> getAllReports() {
+        return reportDao.findAll();
+    }
 
 
     @Override
@@ -137,6 +143,12 @@ public class ReportDataServiceImpl implements ReportDataService {
     @Transactional
     public List<ReportCriteriaParamEntity> getReportParametersByReportId(String reportId) {
         return criteriaParamDao.findByReportInfoId(reportId);
+    }
+    
+    @Override
+    @Transactional
+    public List<ReportCriteriaParamEntity> getAllReportParameters() {
+        return criteriaParamDao.findAll();
     }
     
     @Override
@@ -268,7 +280,7 @@ public class ReportDataServiceImpl implements ReportDataService {
 	@Override
 	public ReportSubCriteriaParamEntity createOrUpdateSubCriteriaParamReport(
 			ReportSubCriteriaParamEntity entity) {
-		if (StringUtils.isBlank(entity.getId()))
+		if (StringUtils.isBlank(entity.getRscpId()))
 			entity = subCriteriaParamDao.add(entity);
     	else
     		subCriteriaParamDao.update(entity);

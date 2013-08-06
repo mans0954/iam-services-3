@@ -14,14 +14,18 @@ public class ReportSubCriteriaParamEntity {
     @Id
     @GeneratedValue(generator = "system-uuid")
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    @Column(name = "RCP_ID")
+    @Column(name = "RSCP_ID")
+    private String rscpId;
+    
+    
+    @Column(name = "RCP_ID", updatable = false)
     private String id;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "REPORT_SUB_ID", referencedColumnName = "REPORT_SUB_ID", insertable = true, updatable = false) 
     private ReportSubscriptionEntity report;
 
-    @Column(name = "PARAM_NAME")
+    @Column(name = "PARAM_NAME", updatable = false)
     private String name;
 
     @Column(name = "PARAM_VALUE")
@@ -73,7 +77,7 @@ public class ReportSubCriteriaParamEntity {
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (report != null ? !report.equals(that.report) : that.report != null) return false;
         if (value != null ? !value.equals(that.value) : that.value != null) return false;
-
+        if (rscpId != null ? !rscpId.equals(that.rscpId) : that.rscpId != null) return false;
         return true;
     }
 
@@ -83,6 +87,7 @@ public class ReportSubCriteriaParamEntity {
         result = 31 * result + (report != null ? report.hashCode() : 0);
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (value != null ? value.hashCode() : 0);
+        result = 31 * result + (rscpId != null ? rscpId.hashCode() : 0);
         return result;
     }
 
@@ -92,7 +97,15 @@ public class ReportSubCriteriaParamEntity {
                 "id='" + id + '\'' +
                 ", report=" + report +
                 ", name='" + name + '\'' +
-                ", value='" + value + '\'' +
+                ", value='" + value + '\'' + ", rscpId='" + rscpId + '\'' +
                 '}';
     }
+
+	public String getRscpId() {
+		return rscpId;
+	}
+
+	public void setRscpId(String rscpId) {
+		this.rscpId = rscpId;
+	}
 }
