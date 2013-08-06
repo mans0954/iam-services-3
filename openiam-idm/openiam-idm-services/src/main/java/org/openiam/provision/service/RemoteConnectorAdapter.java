@@ -109,14 +109,14 @@ public class RemoteConnectorAdapter {
         return resp;
     }
 
-    private LookupResponse sendLookup(String eventName, LookupRequest request, ProvisionConnectorDto connector, MuleContext muleContext){
-        LookupResponse resp = new LookupResponse();
+    private SearchResponse sendLookup(String eventName, LookupRequest request, ProvisionConnectorDto connector, MuleContext muleContext){
+        SearchResponse resp = new SearchResponse();
         resp.setStatus(StatusCodeType.FAILURE);
         MuleMessage msg = getService(connector, request, connector.getServiceUrl(), eventName, muleContext);
         if (msg != null) {
             log.debug("***Payload=" + msg.getPayload());
-            if (msg.getPayload() != null && msg.getPayload() instanceof LookupResponse) {
-                return (LookupResponse) msg.getPayload();
+            if (msg.getPayload() != null && msg.getPayload() instanceof SearchResponse) {
+                return (SearchResponse) msg.getPayload();
             }
             resp.setStatus(StatusCodeType.SUCCESS);
             return resp;
@@ -159,9 +159,9 @@ public class RemoteConnectorAdapter {
 
     }
 
-    public LookupResponse lookupRequest(ManagedSysDto managedSys, LookupRequest req, ProvisionConnectorDto connector, MuleContext muleContext) {
+    public SearchResponse lookupRequest(ManagedSysDto managedSys, LookupRequest req, ProvisionConnectorDto connector, MuleContext muleContext) {
 
-        LookupResponse resp = new LookupResponse();
+        SearchResponse resp = new SearchResponse();
 
         if (managedSys == null) {
             resp.setStatus(StatusCodeType.FAILURE);
