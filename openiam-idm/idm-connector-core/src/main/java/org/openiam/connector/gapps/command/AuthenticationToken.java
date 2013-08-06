@@ -1,45 +1,17 @@
-package org.openiam.spml2.spi.gapps;
+package org.openiam.connector.gapps.command;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import com.google.gdata.client.authn.oauth.GoogleOAuthParameters;
-import com.google.gdata.client.authn.oauth.OAuthException;
-import com.google.gdata.client.authn.oauth.OAuthHmacSha1Signer;
-import com.google.gdata.client.authn.oauth.OAuthParameters.OAuthType;
 import com.google.gdata.client.appsforyourdomain.UserService;
 import com.google.gdata.data.appsforyourdomain.AppsForYourDomainException;
-import com.google.gdata.data.appsforyourdomain.provisioning.UserFeed;
 import com.google.gdata.util.AuthenticationException;
 import com.google.gdata.util.ServiceException;
 
-import com.google.gdata.client.appsforyourdomain.AppsForYourDomainQuery;
-import com.google.gdata.client.appsforyourdomain.AppsGroupsService;
-import com.google.gdata.client.appsforyourdomain.EmailListRecipientService;
-import com.google.gdata.client.appsforyourdomain.EmailListService;
-import com.google.gdata.client.appsforyourdomain.NicknameService;
-import com.google.gdata.client.appsforyourdomain.UserService;
-import com.google.gdata.data.Link;
-import com.google.gdata.data.appsforyourdomain.AppsForYourDomainErrorCode;
-import com.google.gdata.data.appsforyourdomain.AppsForYourDomainException;
-import com.google.gdata.data.appsforyourdomain.EmailList;
 import com.google.gdata.data.appsforyourdomain.Login;
 import com.google.gdata.data.appsforyourdomain.Name;
-import com.google.gdata.data.appsforyourdomain.Nickname;
-import com.google.gdata.data.appsforyourdomain.Quota;
-import com.google.gdata.data.appsforyourdomain.generic.GenericEntry;
-import com.google.gdata.data.appsforyourdomain.generic.GenericFeed;
-import com.google.gdata.data.appsforyourdomain.provisioning.EmailListEntry;
-import com.google.gdata.data.appsforyourdomain.provisioning.EmailListFeed;
-import com.google.gdata.data.appsforyourdomain.provisioning.EmailListRecipientEntry;
-import com.google.gdata.data.appsforyourdomain.provisioning.EmailListRecipientFeed;
-import com.google.gdata.data.appsforyourdomain.provisioning.NicknameEntry;
-import com.google.gdata.data.appsforyourdomain.provisioning.NicknameFeed;
 import com.google.gdata.data.appsforyourdomain.provisioning.UserEntry;
-import com.google.gdata.data.appsforyourdomain.provisioning.UserFeed;
-import com.google.gdata.data.extensions.Who;
-import com.google.gdata.util.ServiceException;
 
 /**
  * Generates an Authentication token that is used to when calling the google API for provisioning

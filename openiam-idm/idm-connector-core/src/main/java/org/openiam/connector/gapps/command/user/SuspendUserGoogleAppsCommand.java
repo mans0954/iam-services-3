@@ -1,52 +1,41 @@
-package org.openiam.spml2.spi.gapps.command.user;
+package org.openiam.connector.gapps.command.user;
 
 import com.google.gdata.client.appsforyourdomain.UserService;
 import com.google.gdata.data.appsforyourdomain.AppsForYourDomainException;
 import com.google.gdata.data.appsforyourdomain.provisioning.UserEntry;
 import com.google.gdata.util.AuthenticationException;
 import com.google.gdata.util.ServiceException;
+import org.openiam.connector.common.data.ConnectorConfiguration;
 import org.openiam.connector.type.ConnectorDataException;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
+import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.constant.StatusCodeType;
+import org.openiam.connector.type.request.SuspendResumeRequest;
+import org.openiam.connector.type.response.ResponseType;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
-import org.openiam.spml2.msg.suspend.ResumeRequestType;
-import org.openiam.spml2.spi.gapps.command.base.AbstractGoogleAppsCommand;
+import org.openiam.connector.gapps.command.base.AbstractGoogleAppsCommand;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-@Service("resumeUserGoogleAppsCommand")
-public class ResumeUserGoogleAppsCommand extends AbstractGoogleAppsCommand<ResumeRequestType, ResponseType> {
+@Service("suspendUserGoogleAppsCommand")
+public class SuspendUserGoogleAppsCommand extends AbstractGoogleAppsCommand<SuspendResumeRequest, ResponseType> {
+
     @Override
-    public ResponseType execute(ResumeRequestType resumeRequestType) throws ConnectorDataException {
+    public ResponseType execute(SuspendResumeRequest suspendRequest) throws ConnectorDataException {
         ResponseType respType = new ResponseType();
+        respType.setStatus(StatusCodeType.SUCCESS);
 
-        init();
-
-        /*
-         * PSO - Provisioning Service Object - - ID must uniquely specify an
-         * object on the target or in the target's namespace - Try to make the
-         * PSO ID immutable so that there is consistency across changes.
-         */
-        PSOIdentifierType psoID = resumeRequestType.getPsoID();
-        String userName = psoID.getID();
-
-        /* targetID - */
-        String targetID = psoID.getTargetID();
-
-        /*
-         * A) Use the targetID to look up the connection information under
-         * managed systems
-         */
-        ManagedSysEntity managedSys = managedSysService.getManagedSysById(targetID);
-        ManagedSystemObjectMatch matchObj = getMatchObject(targetID, "USER");
+        this.init();
+        String userName = suspendRequest.getObjectIdentity();
+        ConnectorConfiguration config =  getConfiguration(suspendRequest.getTargetID(), ConnectorConfiguration.class);
+        ManagedSystemObjectMatch matchObj = getMatchObject(suspendRequest.getTargetID(), "USER");
 
         UserService userService = new UserService(GOOGLE_APPS_USER_SERVICE);
 
         try {
-            userService.setUserCredentials(managedSys.getUserId(),
-                    this.getDecryptedPassword(managedSys.getUserId(), managedSys.getPswd()));
+            userService.setUserCredentials(config.getManagedSys().getUserId(), this.getDecryptedPassword(config.getManagedSys().getUserId(), config.getManagedSys().getPswd()));
             String domainUrlBase = APPS_FEEDS_URL_BASE + matchObj.getBaseDn()
                     + "/user/2.0";
             URL updateUrl = new URL(domainUrlBase + "/" + userName);
@@ -54,10 +43,10 @@ public class ResumeUserGoogleAppsCommand extends AbstractGoogleAppsCommand<Resum
 
             UserEntry userEntry = userService.getEntry(retrieveUrl,
                     UserEntry.class);
-            userEntry.getLogin().setSuspended(false);
+            userEntry.getLogin().setSuspended(true);
 
             userService.update(updateUrl, userEntry);
-
+            return respType;
         } catch (AuthenticationException e) {
             log.error(e.getMessage(), e);
             throw  new ConnectorDataException(ErrorCode.NO_SUCH_IDENTIFIER, e.getMessage());
@@ -76,8 +65,5 @@ public class ResumeUserGoogleAppsCommand extends AbstractGoogleAppsCommand<Resum
             log.error(e.getMessage(), e);
             throw  new ConnectorDataException(ErrorCode.CUSTOM_ERROR, e.getMessage());
         }
-
-        respType.setStatus(StatusCodeType.SUCCESS);
-        return respType;
     }
 }

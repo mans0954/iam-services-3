@@ -1,8 +1,7 @@
-package org.openiam.spml2.spi.gapps.command.base;
+package org.openiam.connector.gapps.command.base;
 
-import org.openiam.spml2.msg.ErrorCode;
-import org.openiam.spml2.msg.RequestType;
-import org.openiam.spml2.msg.ResponseType;
+import org.openiam.connector.type.request.RequestType;
+import org.openiam.connector.type.response.ResponseType;
 import org.openiam.connector.common.command.AbstractCommand;
 import org.springframework.beans.factory.annotation.Value;
 

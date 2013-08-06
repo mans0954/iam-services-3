@@ -1,20 +1,19 @@
-package org.openiam.spml2.spi.gapps.command.user;
+package org.openiam.connector.gapps.command.user;
 
 import com.google.gdata.client.appsforyourdomain.UserService;
 import com.google.gdata.data.appsforyourdomain.Login;
 import com.google.gdata.data.appsforyourdomain.Name;
 import com.google.gdata.data.appsforyourdomain.provisioning.UserEntry;
 import com.google.gdata.util.ServiceException;
+import org.openiam.connector.gapps.command.base.AbstractCrudGoogleAppsCommand;
+import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
-import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.spml2.msg.AddResponseType;
+import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.connector.type.ConnectorDataException;
-import org.openiam.spml2.msg.ErrorCode;
-import org.openiam.spml2.msg.StatusCodeType;
-import org.openiam.spml2.spi.gapps.command.base.AbstractAddGoogleAppsCommand;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -23,19 +22,20 @@ import java.net.URL;
 import java.util.List;
 
 @Service("addUserGoogleAppsCommand")
-public class AddUserGoogleAppsCommand extends AbstractAddGoogleAppsCommand<ProvisionUser> {
+public class AddUserGoogleAppsCommand extends AbstractCrudGoogleAppsCommand<ExtensibleUser> {
     @Override
-    protected void addObject(String targetID, ManagedSysEntity managedSys,  List<ExtensibleObject> requestAttributeList) throws ConnectorDataException {
+    protected void performObjectOperation(CrudRequest<ExtensibleUser> crudRequest, ManagedSysEntity managedSys) throws ConnectorDataException {
         String userName = null;
         String password = null;
         String givenName = null;
         String lastName = null;
 
-        ManagedSystemObjectMatch matchObj = getMatchObject(targetID, "USER");
+        ManagedSystemObjectMatch matchObj = getMatchObject(crudRequest.getTargetID(), "USER");
 
-        for (ExtensibleObject obj : requestAttributeList) {
-            List<ExtensibleAttribute> attrList = obj.getAttributes();
-            for (ExtensibleAttribute att : attrList) {
+        ExtensibleObject obj = crudRequest.getExtensibleObject();
+
+        List<ExtensibleAttribute> attrList = obj.getAttributes();
+        for (ExtensibleAttribute att : attrList) {
                 log.debug("Attr Name=" + att.getName() + " " + att.getValue());
 
                 String name = att.getName();
@@ -50,7 +50,6 @@ public class AddUserGoogleAppsCommand extends AbstractAddGoogleAppsCommand<Provi
                 if (name.equalsIgnoreCase("lastName")) {
                     lastName = value;
                 }
-            }
         }
 
         try {
