@@ -18,9 +18,4 @@ public class GenericMySQLConnector extends AbstractConnectorService {
     protected void initConnectorType(){
         this.connectorType= ConnectorType.MYSQL;
     }
-
-    @Override
-    public SearchResponse search(@WebParam(name = "searchRequest", targetNamespace = "") SearchRequest searchRequest) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
 }

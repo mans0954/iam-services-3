@@ -1,28 +1,26 @@
-package org.openiam.spml2.spi.salesforce;
+package org.openiam.spml2.spi.salesforce.command;
 
 import org.apache.commons.lang.StringUtils;
 import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.request.SuspendResumeRequest;
 import org.openiam.connector.type.response.ResponseType;
 import org.openiam.connector.type.constant.StatusCodeType;
-import org.openiam.connector.type.request.SuspendRequest;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.spml2.spi.common.SuspendCommand;
-import org.openiam.spml2.spi.salesforce.dao.CallerDependentSalesForceDao;
-import org.openiam.spml2.spi.salesforce.dao.SalesForceDao;
-import org.openiam.spml2.spi.salesforce.exception.SalesForceDataIntegrityException;
+import org.openiam.connector.salesforce.dao.CallerDependentSalesForceDao;
+import org.openiam.connector.salesforce.dao.SalesForceDao;
+import org.openiam.connector.salesforce.exception.SalesForceDataIntegrityException;
 import org.openiam.connector.util.ResponseBuilder;
 
 import com.sforce.ws.ConnectionException;
+@Deprecated
+public class SalesForceSuspendCommand extends AbstractSalesforceCommand {
 
-public class SalesForceSuspendCommand extends AbstractSalesforceCommand implements SuspendCommand {
-
-	@Override
-	public ResponseType suspend(SuspendRequest request) {
+	public ResponseType suspend(SuspendResumeRequest request) {
         final ResponseType response = new ResponseType();
         response.setStatus(StatusCodeType.SUCCESS);
         
-        final String principalName = request.getUserIdentity();
+        final String principalName = request.getObjectIdentity();
         final String targetID = request.getTargetID();
         
         final ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);

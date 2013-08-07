@@ -1,4 +1,4 @@
-package org.openiam.spml2.spi.salesforce;
+package org.openiam.spml2.spi.salesforce.command;
 
 import java.text.ParseException;
 
@@ -11,12 +11,13 @@ import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.spml2.spi.common.AddCommand;
-import org.openiam.spml2.spi.salesforce.exception.SalesForceDataIntegrityException;
-import org.openiam.spml2.spi.salesforce.exception.SalesForcePersistException;
+import org.openiam.connector.salesforce.exception.SalesForceDataIntegrityException;
+import org.openiam.connector.salesforce.exception.SalesForcePersistException;
 import org.openiam.connector.util.ResponseBuilder;
 
 import com.sforce.ws.ConnectionException;
 
+@Deprecated
 public class SalesforceAddCommand extends AbstractSalesForceInsertCommand implements AddCommand {
 
 	@Override
@@ -42,11 +43,11 @@ public class SalesforceAddCommand extends AbstractSalesForceInsertCommand implem
             return response;
         }
         
-        final String principalName = reqType.getUserIdentity();
+        final String principalName = reqType.getObjectIdentity();
 		
         try {
 			
-        	final ExtensibleObject user = reqType.getUser();
+        	final ExtensibleObject user = reqType.getExtensibleObject();
         	insertOrUpdate(principalName, user, managedSys);
 			//com.sforce.soap.partner.sobject.SObject
 			//partnerConnection.create(sObjects);

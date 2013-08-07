@@ -1,36 +1,14 @@
 package org.openiam.spml2.spi.salesforce.command;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import org.openiam.connector.type.constant.StatusCodeType;
+import org.openiam.connector.type.request.LookupRequest;
+import org.openiam.connector.type.response.SearchResponse;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
-import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.provision.type.ExtensibleAttribute;
-import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.spml2.msg.ErrorCode;
-import org.openiam.spml2.msg.LookupRequestType;
-import org.openiam.spml2.msg.LookupResponseType;
-import org.openiam.spml2.msg.StatusCodeType;
-import org.openiam.spml2.spi.common.LookupCommand;
-import org.openiam.spml2.spi.salesforce.dao.CallerDependentSalesForceDao;
-import org.openiam.spml2.spi.salesforce.dao.SalesForceDao;
-import org.openiam.spml2.spi.salesforce.exception.SalesForceDataIntegrityException;
-import org.openiam.spml2.spi.salesforce.exception.SalesForcePersistException;
-import org.openiam.spml2.spi.salesforce.model.User;
-import org.openiam.spml2.util.msg.ResponseBuilder;
-
-import com.sforce.ws.ConnectionException;
-import com.sforce.ws.bind.XmlObject;
 @Deprecated
-public class SalesForceLookupCommand extends AbstractSalesforceCommand implements LookupCommand {
+public class SalesForceLookupCommand extends AbstractSalesforceCommand {
 
-	@Override
-	public LookupResponseType lookup(LookupRequestType reqType) {
-		final LookupResponseType response = new LookupResponseType();
+	public SearchResponse lookup(LookupRequest reqType) {
+		final SearchResponse response = new SearchResponse();
         response.setStatus(StatusCodeType.SUCCESS);
 		
 //        final String targetID = reqType.getPsoID().getTargetID();

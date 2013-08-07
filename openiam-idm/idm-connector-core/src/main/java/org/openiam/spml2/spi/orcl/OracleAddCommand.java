@@ -25,6 +25,7 @@ import java.util.List;
  * Time: 10:45 AM
  * To change this template use File | Settings | File Templates.
  */
+@Deprecated
 public class OracleAddCommand extends  AbstractOracleCommand implements AddCommand {
 
     private static final String INSERT_SQL = "CREATE USER \"%s\" IDENTIFIED BY \"%s\"";
@@ -34,100 +35,100 @@ public class OracleAddCommand extends  AbstractOracleCommand implements AddComma
         final ObjectResponse response = new ObjectResponse();
         response.setStatus(StatusCodeType.SUCCESS);
 
-        final String targetID = reqType.getTargetID();
-        final ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
-        if(managedSys == null) {
-            ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, String.format("No Managed System with target id: %s", targetID));
-            return response;
-        }
-
-        if (StringUtils.isBlank(managedSys.getResourceId())) {
-        	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, "ResourceID is not defined in the ManagedSys Object");
-            return response;
-        }
-
-        final Resource res = resourceDataService.getResource(managedSys.getResourceId());
-        if(res == null) {
-        	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, "No resource for managed resource found");
-            return response;
-        }
-
-        final String principalName = reqType.getUserIdentity();
-        if(principalName == null) {
-        	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, "No principal sent");
-            return response;
-        }
-
-        final ExtensibleObject obj = reqType.getUser();
-
-        if(log.isDebugEnabled()) {
-            log.debug(String.format("ExtensibleObject in Add Request=%s", obj));
-        }
-
-        final List<AttributeMap> attributeMap = attributeMaps(res);
-
-        Connection con = null;
-        try {
-            con = connectionMgr.connect(managedSys);
-
-            if (identityExists(con, principalName)) {
-                if(log.isDebugEnabled()) {
-                    log.debug(String.format("%s exists. Returning success to the connector", principalName));
-                }
-                return response;
-            }
-
-            String identifiedBy = null;
-
-            final List<ExtensibleAttribute> attrList = obj.getAttributes();
-
-            if (log.isDebugEnabled()) {
-                log.debug(String.format("Number of attributes to persist in ADD = %s", attrList.size()));
-            }
-
-            if (CollectionUtils.isNotEmpty(attributeMap)) {
-                for (final ExtensibleAttribute att : attrList) {
-                    for (final AttributeMap attribute : attributeMap) {
-                        if (StringUtils.equalsIgnoreCase("password", attribute.getMapForObjectType())) {
-                            if (StringUtils.equalsIgnoreCase(att.getName(), attribute.getAttributeName())) {
-                                identifiedBy = att.getValue();
-                            }
-                        }
-                    }
-                }
-            }
-
-
-            if(StringUtils.isBlank(identifiedBy)) {
-            	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_ATTRIBUTE, "No password specified");
-                return response;
-            }
-
-            final String sql = String.format(INSERT_SQL, principalName, identifiedBy);
-            if(log.isDebugEnabled()) {
-                log.debug(String.format("SQL=%s", sql));
-            }
-
-            con.createStatement().execute(sql);
-        } catch (SQLException se) {
-            log.error(se);
-            ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.SQL_ERROR, se.toString());
-        } catch (ClassNotFoundException cnfe) {
-            log.error(cnfe);
-            ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, cnfe.toString());
-        } catch(Throwable e) {
-            log.error(e);
-            ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.OTHER_ERROR, e.toString());
-        } finally {
-            if (con != null) {
-                try {
-                    con.close();
-                } catch (SQLException s) {
-                    log.error(s.toString());
-                    ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.SQL_ERROR, s.toString());
-                }
-            }
-        }
+//        final String targetID = reqType.getTargetID();
+//        final ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
+//        if(managedSys == null) {
+//            ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, String.format("No Managed System with target id: %s", targetID));
+//            return response;
+//        }
+//
+//        if (StringUtils.isBlank(managedSys.getResourceId())) {
+//        	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, "ResourceID is not defined in the ManagedSys Object");
+//            return response;
+//        }
+//
+//        final Resource res = resourceDataService.getResource(managedSys.getResourceId());
+//        if(res == null) {
+//        	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, "No resource for managed resource found");
+//            return response;
+//        }
+//
+//        final String principalName = reqType.getUserIdentity();
+//        if(principalName == null) {
+//        	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, "No principal sent");
+//            return response;
+//        }
+//
+//        final ExtensibleObject obj = reqType.getUser();
+//
+//        if(log.isDebugEnabled()) {
+//            log.debug(String.format("ExtensibleObject in Add Request=%s", obj));
+//        }
+//
+//        final List<AttributeMap> attributeMap = attributeMaps(res);
+//
+//        Connection con = null;
+//        try {
+//            con = connectionMgr.connect(managedSys);
+//
+//            if (identityExists(con, principalName)) {
+//                if(log.isDebugEnabled()) {
+//                    log.debug(String.format("%s exists. Returning success to the connector", principalName));
+//                }
+//                return response;
+//            }
+//
+//            String identifiedBy = null;
+//
+//            final List<ExtensibleAttribute> attrList = obj.getAttributes();
+//
+//            if (log.isDebugEnabled()) {
+//                log.debug(String.format("Number of attributes to persist in ADD = %s", attrList.size()));
+//            }
+//
+//            if (CollectionUtils.isNotEmpty(attributeMap)) {
+//                for (final ExtensibleAttribute att : attrList) {
+//                    for (final AttributeMap attribute : attributeMap) {
+//                        if (StringUtils.equalsIgnoreCase("password", attribute.getMapForObjectType())) {
+//                            if (StringUtils.equalsIgnoreCase(att.getName(), attribute.getAttributeName())) {
+//                                identifiedBy = att.getValue();
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//
+//
+//            if(StringUtils.isBlank(identifiedBy)) {
+//            	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_ATTRIBUTE, "No password specified");
+//                return response;
+//            }
+//
+//            final String sql = String.format(INSERT_SQL, principalName, identifiedBy);
+//            if(log.isDebugEnabled()) {
+//                log.debug(String.format("SQL=%s", sql));
+//            }
+//
+//            con.createStatement().execute(sql);
+//        } catch (SQLException se) {
+//            log.error(se);
+//            ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.SQL_ERROR, se.toString());
+//        } catch (ClassNotFoundException cnfe) {
+//            log.error(cnfe);
+//            ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, cnfe.toString());
+//        } catch(Throwable e) {
+//            log.error(e);
+//            ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.OTHER_ERROR, e.toString());
+//        } finally {
+//            if (con != null) {
+//                try {
+//                    con.close();
+//                } catch (SQLException s) {
+//                    log.error(s.toString());
+//                    ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.SQL_ERROR, s.toString());
+//                }
+//            }
+//        }
 
 
         return response;

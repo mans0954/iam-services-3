@@ -9,6 +9,7 @@ import org.openiam.connector.type.request.*;
 import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
+import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.spml2.base.AbstractSpml2Complete;
 import org.openiam.connector.ConnectorService;
 
@@ -21,10 +22,11 @@ import javax.jws.WebService;
  * Date: 3/21/12
  * Time: 10:07 PM
  */
-@WebService(endpointInterface = "org.openiam.spml2.interf.ConnectorService",
-        targetNamespace = "http://www.openiam.org/service/connector",
-        portName = "MySQLConnectorPort",
-        serviceName = "MySQLConnector")
+//@WebService(endpointInterface = "org.openiam.spml2.interf.ConnectorService",
+//        targetNamespace = "http://www.openiam.org/service/connector",
+//        portName = "MySQLConnectorPort",
+//        serviceName = "MySQLConnector")
+@Deprecated
 public class MySQLConnectorImpl extends AbstractSpml2Complete implements ConnectorService {
 
     protected MySQLAddCommand addCommand;
@@ -40,6 +42,11 @@ public class MySQLConnectorImpl extends AbstractSpml2Complete implements Connect
         response.setStatus(StatusCodeType.FAILURE);
         response.setError(ErrorCode.UNSUPPORTED_OPERATION);
         return response;
+    }
+
+    @Override
+    public ResponseType testConnection(@WebParam(name = "reqType", targetNamespace = "") RequestType<? extends ExtensibleObject> reqType) {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     public ResponseType testConnection(@WebParam(name = "managedSys", targetNamespace = "") ManagedSysDto managedSys) {
@@ -92,7 +99,7 @@ public class MySQLConnectorImpl extends AbstractSpml2Complete implements Connect
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public ResponseType suspend(@WebParam(name = "request", targetNamespace = "") SuspendRequest request) {
+    public ResponseType suspend(@WebParam(name = "request", targetNamespace = "") SuspendResumeRequest request) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 

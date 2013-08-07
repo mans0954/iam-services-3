@@ -45,7 +45,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 //		portName = "OracleConnectorServicePort",
 //		serviceName="OracleConnectorService")
 @Deprecated
-public class OracleConnectorImpl extends AbstractJDBCConnectorImpl {
+public class OracleConnectorImpl {
     @Autowired
     @Qualifier("oracleLookupAttributeNamesCommand")
     protected LookupAttributeNamesCommand lookupAttributeNamesCommand;

@@ -7,6 +7,7 @@ import org.openiam.connector.type.response.ObjectResponse;
 /**
  * AppTableAddCommand implements the add operation for the AppTableConnector
  */
+@Deprecated
 public class MySQLAddCommand extends MySQLAbstractCommand {
 
 

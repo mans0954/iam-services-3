@@ -20,6 +20,7 @@ import java.sql.SQLException;
  * Time: 10:46 AM
  * To change this template use File | Settings | File Templates.
  */
+@Deprecated
 public class OracleDeleteCommand extends AbstractOracleCommand implements DeleteCommand {
 
     private static final String DROP_USER = "DROP USER \"%s\"";
@@ -30,52 +31,52 @@ public class OracleDeleteCommand extends AbstractOracleCommand implements Delete
         response.setStatus(StatusCodeType.SUCCESS);
 
 
-        final String principalName = reqType.getUserIdentity();
+        final String principalName = reqType.getObjectIdentity();
 
         final String targetID = reqType.getTargetID();
 
-        ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
-
-        if(managedSys == null) {
-        	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, String.format("No Managed System with target id: %s", targetID));
-            return response;
-        }
-
-        if (StringUtils.isBlank(managedSys.getResourceId())) {
-        	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE,  ErrorCode.INVALID_CONFIGURATION, "ResourceID is not defined in the ManagedSys Object");
-            return response;
-        }
-
-        final Resource res = resourceDataService.getResource(managedSys.getResourceId());
-        if(res == null) {
-        	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, "No resource for managed resource found");
-            return response;
-        }
-
-        Connection con = null;
-        try {
-            final String sql = String.format(DROP_USER, principalName);
-            con = connectionMgr.connect(managedSys);
-            con.createStatement().execute(sql);
-        } catch (SQLException se) {
-            log.error(se);
-            ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.SQL_ERROR,  se.toString());
-        } catch (ClassNotFoundException cnfe) {
-            log.error(cnfe);
-            ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION,  cnfe.toString());
-        } catch(Throwable e) {
-            log.error(e);
-            ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.OTHER_ERROR, e.toString());
-        } finally {
-            if (con != null) {
-                try {
-                    con.close();
-                } catch (SQLException s) {
-                    log.error(s);
-                    ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.SQL_ERROR,  s.toString());
-                }
-            }
-        }
+//        ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
+//
+//        if(managedSys == null) {
+//        	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, String.format("No Managed System with target id: %s", targetID));
+//            return response;
+//        }
+//
+//        if (StringUtils.isBlank(managedSys.getResourceId())) {
+//        	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE,  ErrorCode.INVALID_CONFIGURATION, "ResourceID is not defined in the ManagedSys Object");
+//            return response;
+//        }
+//
+//        final Resource res = resourceDataService.getResource(managedSys.getResourceId());
+//        if(res == null) {
+//        	ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION, "No resource for managed resource found");
+//            return response;
+//        }
+//
+//        Connection con = null;
+//        try {
+//            final String sql = String.format(DROP_USER, principalName);
+//            con = connectionMgr.connect(managedSys);
+//            con.createStatement().execute(sql);
+//        } catch (SQLException se) {
+//            log.error(se);
+//            ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.SQL_ERROR,  se.toString());
+//        } catch (ClassNotFoundException cnfe) {
+//            log.error(cnfe);
+//            ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.INVALID_CONFIGURATION,  cnfe.toString());
+//        } catch(Throwable e) {
+//            log.error(e);
+//            ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.OTHER_ERROR, e.toString());
+//        } finally {
+//            if (con != null) {
+//                try {
+//                    con.close();
+//                } catch (SQLException s) {
+//                    log.error(s);
+//                    ResponseBuilder.populateResponse(response, StatusCodeType.FAILURE, ErrorCode.SQL_ERROR,  s.toString());
+//                }
+//            }
+//        }
 
 
         return response;

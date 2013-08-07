@@ -1,4 +1,4 @@
-package org.openiam.spml2.spi.salesforce;
+package org.openiam.spml2.spi.salesforce.command;
 
 import org.apache.commons.lang.StringUtils;
 import org.openiam.connector.type.constant.ErrorCode;
@@ -8,13 +8,13 @@ import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.spml2.spi.common.PasswordCommand;
-import org.openiam.spml2.spi.salesforce.dao.CallerDependentSalesForceDao;
-import org.openiam.spml2.spi.salesforce.dao.SalesForceDao;
-import org.openiam.spml2.spi.salesforce.exception.SalesForceDataIntegrityException;
+import org.openiam.connector.salesforce.dao.CallerDependentSalesForceDao;
+import org.openiam.connector.salesforce.dao.SalesForceDao;
+import org.openiam.connector.salesforce.exception.SalesForceDataIntegrityException;
 import org.openiam.connector.util.ResponseBuilder;
 
 import com.sforce.ws.ConnectionException;
-
+@Deprecated
 public class SalesForceSetPasswordCommand extends AbstractSalesforceCommand implements PasswordCommand {
 
 	@Override
@@ -22,7 +22,7 @@ public class SalesForceSetPasswordCommand extends AbstractSalesforceCommand impl
         final ResponseType response = new ResponseType();
         response.setStatus(StatusCodeType.SUCCESS);
         
-        final String principalName = request.getUserIdentity();
+        final String principalName = request.getObjectIdentity();
         final String targetID = request.getTargetID();
         final String password = request.getPassword();
         

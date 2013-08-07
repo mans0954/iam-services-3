@@ -206,7 +206,7 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete {
         }
     }
 
-    public ResponseType suspend(SuspendRequest reqType) {
+    public ResponseType suspend(SuspendResumeRequest reqType) {
         String targetID = reqType.getTargetID();
         ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
 

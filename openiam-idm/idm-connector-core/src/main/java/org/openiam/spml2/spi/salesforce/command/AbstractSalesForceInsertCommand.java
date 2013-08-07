@@ -1,4 +1,4 @@
-package org.openiam.spml2.spi.salesforce;
+package org.openiam.spml2.spi.salesforce.command;
 
 import java.text.ParseException;
 import java.util.HashSet;
@@ -10,13 +10,15 @@ import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.spml2.spi.salesforce.dao.CallerDependentSalesForceDao;
-import org.openiam.spml2.spi.salesforce.dao.SalesForceDao;
-import org.openiam.spml2.spi.salesforce.exception.SalesForcePersistException;
-import org.openiam.spml2.spi.salesforce.model.User;
+import org.openiam.connector.salesforce.dao.CallerDependentSalesForceDao;
+import org.openiam.connector.salesforce.dao.SalesForceDao;
+import org.openiam.connector.salesforce.exception.SalesForcePersistException;
+import org.openiam.connector.salesforce.model.User;
 
 import com.sforce.ws.ConnectionException;
+import org.openiam.spml2.spi.salesforce.command.AbstractSalesforceCommand;
 
+@Deprecated
 public class AbstractSalesForceInsertCommand extends AbstractSalesforceCommand {
 
 	protected void insertOrUpdate(final String principalName, final ExtensibleObject obj, final ManagedSysDto managedSys) throws ParseException, ConnectionException, SalesForcePersistException {
