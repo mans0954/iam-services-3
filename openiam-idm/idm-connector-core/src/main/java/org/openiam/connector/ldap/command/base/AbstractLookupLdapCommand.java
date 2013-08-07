@@ -11,9 +11,9 @@ import org.openiam.provision.type.ExtensibleObject;
 
 import javax.naming.ldap.LdapContext;
 
-public abstract class AbstractLookupLdapCommand<ExtObject extends ExtensibleObject> extends AbstractLdapCommand<LookupRequest<ExtensibleObject>, SearchResponse> {
+public abstract class AbstractLookupLdapCommand<ExtObject extends ExtensibleObject> extends AbstractLdapCommand<LookupRequest<ExtObject>, SearchResponse> {
     @Override
-    public SearchResponse execute(LookupRequest<ExtensibleObject> lookupRequest) throws ConnectorDataException {
+    public SearchResponse execute(LookupRequest<ExtObject> lookupRequest) throws ConnectorDataException {
         log.debug("LOOKUP operation called.");
         boolean found = false;
         SearchResponse respType = new SearchResponse();
@@ -41,7 +41,7 @@ public abstract class AbstractLookupLdapCommand<ExtObject extends ExtensibleObje
     }
 
 
-    protected abstract boolean lookup(ManagedSysEntity managedSys, LookupRequest<ExtensibleObject> lookupRequest, SearchResponse respType, LdapContext ldapctx) throws ConnectorDataException;
+    protected abstract boolean lookup(ManagedSysEntity managedSys, LookupRequest<ExtObject> lookupRequest, SearchResponse respType, LdapContext ldapctx) throws ConnectorDataException;
 
 
 }

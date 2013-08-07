@@ -2,6 +2,8 @@ package org.openiam.spml2.spi.linux;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.connector.linux.data.LinuxGroups;
+import org.openiam.connector.linux.data.LinuxUser;
 import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.response.ObjectResponse;
@@ -18,9 +20,9 @@ import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.spml2.base.AbstractSpml2Complete;
 import org.openiam.connector.ConnectorService;
-import org.openiam.spml2.spi.linux.ssh.SSHAgent;
-import org.openiam.spml2.spi.linux.ssh.SSHConnectionFactory;
-import org.openiam.spml2.spi.linux.ssh.SSHException;
+import org.openiam.connector.linux.ssh.SSHAgent;
+import org.openiam.connector.linux.ssh.SSHConnectionFactory;
+import org.openiam.connector.linux.ssh.SSHException;
 
 import javax.jws.WebParam;
 import javax.jws.WebService;
@@ -31,10 +33,11 @@ import java.util.HashMap;
  * Date: 2/26/12
  * Time: 2:12 AM
  */
-@WebService(endpointInterface = "org.openiam.spml2.interf.ConnectorService",
-        targetNamespace = "http://www.openiam.org/service/connector",
-        portName = "LinuxConnectorServicePort",
-        serviceName = "LinuxConnectorService")
+//@WebService(endpointInterface = "org.openiam.spml2.interf.ConnectorService",
+//        targetNamespace = "http://www.openiam.org/service/connector",
+//        portName = "LinuxConnectorServicePort",
+//        serviceName = "LinuxConnectorService")
+@Deprecated
 public class LinuxConnectorImpl extends AbstractSpml2Complete implements ConnectorService {
     private static final Log log = LogFactory.getLog(LinuxConnectorImpl.class);
 
@@ -74,6 +77,11 @@ public class LinuxConnectorImpl extends AbstractSpml2Complete implements Connect
         response.setStatus(StatusCodeType.FAILURE);
         response.setError(ErrorCode.UNSUPPORTED_OPERATION);
         return response;
+    }
+
+    @Override
+    public ResponseType testConnection(@WebParam(name = "reqType", targetNamespace = "") RequestType<? extends ExtensibleObject> reqType) {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     // ---------- Interface
@@ -173,7 +181,7 @@ public class LinuxConnectorImpl extends AbstractSpml2Complete implements Connect
         responseType.setRequestID(reqType.getRequestID());
         responseType.setStatus(StatusCodeType.FAILURE);
 
-        LinuxUser user = objectToLinuxUser(reqType.getUserIdentity(), reqType.getUser());
+        LinuxUser user = objectToLinuxUser(reqType.getObjectIdentity(), reqType.getExtensibleObject());
         if (user != null) {
             SSHAgent ssh = getSSH(reqType.getTargetID());
             if (ssh != null) {
@@ -225,10 +233,10 @@ public class LinuxConnectorImpl extends AbstractSpml2Complete implements Connect
 
     //    PSOIdentifierType psoID = reqType.getPsoID();
 
-        String originalName = isRename(reqType.getUser());
-        String login = (originalName == null) ? reqType.getUserIdentity() : originalName;
+        String originalName = isRename(reqType.getExtensibleObject());
+        String login = (originalName == null) ? reqType.getObjectIdentity() : originalName;
 
-        LinuxUser user = objectToLinuxUser(reqType.getUserIdentity(), reqType.getUser());
+        LinuxUser user = objectToLinuxUser(reqType.getObjectIdentity(), reqType.getExtensibleObject());
 
         if (user != null) {
             SSHAgent ssh = getSSH(reqType.getTargetID());
@@ -262,7 +270,7 @@ public class LinuxConnectorImpl extends AbstractSpml2Complete implements Connect
         responseType.setRequestID(reqType.getRequestID());
         responseType.setStatus(StatusCodeType.FAILURE);
 
-        LinuxUser user = objectToLinuxUser(reqType.getUserIdentity(), null);
+        LinuxUser user = objectToLinuxUser(reqType.getObjectIdentity(), null);
         if (user != null) {
             SSHAgent ssh = getSSH(reqType.getTargetID());
             if (ssh != null) {
@@ -329,7 +337,7 @@ public class LinuxConnectorImpl extends AbstractSpml2Complete implements Connect
         responseType.setRequestID(request.getRequestID());
         responseType.setStatus(StatusCodeType.FAILURE);
 
-        String login = request.getUserIdentity();
+        String login = request.getObjectIdentity();
         String password = request.getPassword();
         SSHAgent ssh = getSSH(request.getTargetID());
         if (ssh != null) {
@@ -356,7 +364,7 @@ public class LinuxConnectorImpl extends AbstractSpml2Complete implements Connect
         responseType.setRequestID(request.getRequestID());
         responseType.setStatus(StatusCodeType.FAILURE);
 
-        String login = request.getUserIdentity();
+        String login = request.getObjectIdentity();
         SSHAgent ssh = getSSH(request.getTargetID());
         if (ssh != null) {
             try {
@@ -391,14 +399,14 @@ public class LinuxConnectorImpl extends AbstractSpml2Complete implements Connect
     }
 
 
-    public ResponseType suspend(@WebParam(name = "request", targetNamespace = "") SuspendRequest request) {
+    public ResponseType suspend(@WebParam(name = "request", targetNamespace = "") SuspendResumeRequest request) {
         log.debug("Suspend user called");
 
         ResponseType responseType = new ResponseType();
         responseType.setRequestID(request.getRequestID());
         responseType.setStatus(StatusCodeType.FAILURE);
 
-        String login = request.getUserIdentity();
+        String login = request.getObjectIdentity();
         SSHAgent ssh = getSSH(request.getTargetID());
         if (ssh != null) {
             try {
@@ -424,7 +432,7 @@ public class LinuxConnectorImpl extends AbstractSpml2Complete implements Connect
         responseType.setRequestID(request.getRequestID());
         responseType.setStatus(StatusCodeType.FAILURE);
 
-        String login = request.getUserIdentity();
+        String login = request.getObjectIdentity();
         SSHAgent ssh = getSSH(request.getTargetID());
         if (ssh != null) {
             try {
