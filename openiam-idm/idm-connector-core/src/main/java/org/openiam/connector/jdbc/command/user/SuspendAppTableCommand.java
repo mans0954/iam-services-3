@@ -1,10 +1,13 @@
-package org.openiam.spml2.spi.jdbc.command.user;
+package org.openiam.connector.jdbc.command.user;
 
 import org.openiam.connector.type.ConnectorDataException;
+import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.constant.StatusCodeType;
+import org.openiam.connector.type.request.SuspendResumeRequest;
+import org.openiam.connector.type.response.ResponseType;
 import org.openiam.idm.srvc.pswd.service.PasswordGenerator;
-import org.openiam.spml2.msg.suspend.SuspendRequestType;
-import org.openiam.spml2.spi.jdbc.command.base.AbstractAppTableCommand;
-import org.openiam.spml2.spi.jdbc.command.data.AppTableConfiguration;
+import org.openiam.connector.jdbc.command.base.AbstractAppTableCommand;
+import org.openiam.connector.jdbc.command.data.AppTableConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,29 +16,23 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 @Service("suspendAppTableCommand")
-public class SuspendAppTableCommand extends AbstractAppTableCommand<SuspendRequestType, ResponseType> {
+public class SuspendAppTableCommand extends AbstractAppTableCommand<SuspendResumeRequest, ResponseType>  {
     @Autowired
     private PasswordGenerator passwordGenerator;
 
     @Override
-    public ResponseType execute(SuspendRequestType suspendRequestType) throws ConnectorDataException {
+    public ResponseType execute(SuspendResumeRequest suspendRequest) throws ConnectorDataException {
         final ResponseType response = new ResponseType();
         response.setStatus(StatusCodeType.SUCCESS);
 
-        final String principalName = suspendRequestType.getPsoID().getID();
-
-        final PSOIdentifierType psoID = suspendRequestType.getPsoID();
-        /* targetID -  */
-        final String targetID = psoID.getTargetID();
+        AppTableConfiguration configuration = this.getConfiguration(suspendRequest.getTargetID());
+        Connection con = this.getConnection(configuration.getManagedSys());
 
         final String password = passwordGenerator.generatePassword(10);
 
-        AppTableConfiguration configuration = this.getConfiguration(targetID);
-        Connection con = this.getConnection(configuration.getManagedSys());
-
         PreparedStatement statement = null;
         try {
-            statement = createSetPasswordStatement(con, configuration.getResourceId(), configuration.getTableName(), principalName, password);
+            statement = createSetPasswordStatement(con, configuration.getResourceId(), configuration.getTableName(), suspendRequest.getObjectIdentity(), password);
             statement.executeUpdate();
 
             return response;

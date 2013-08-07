@@ -1,34 +1,33 @@
-package org.openiam.spml2.spi.jdbc.command.base;
+package org.openiam.connector.jdbc.command.base;
 
+import org.openiam.connector.csv.command.base.AbstractCSVCommand;
 import org.openiam.connector.type.ConnectorDataException;
+import org.openiam.connector.type.ObjectValue;
+import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.constant.StatusCodeType;
+import org.openiam.connector.type.request.LookupRequest;
+import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.provision.dto.GenericProvisionObject;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.spml2.spi.jdbc.command.data.AppTableConfiguration;
+import org.openiam.connector.jdbc.command.data.AppTableConfiguration;
 
 import java.sql.*;
 import java.util.List;
 
-public abstract class AbstractLookupAppTableCommand<ProvisionObject extends GenericProvisionObject> extends AbstractAppTableCommand<LookupRequestType<ProvisionObject>, LookupResponseType>  {
+public abstract class AbstractLookupAppTableCommand<ExtObject extends ExtensibleObject> extends AbstractAppTableCommand<LookupRequest<ExtObject>, SearchResponse> {
     @Override
-    public LookupResponseType execute(LookupRequestType<ProvisionObject> lookupRequestType) throws ConnectorDataException {
-        final LookupResponseType response = new LookupResponseType();
+    public SearchResponse execute(LookupRequest<ExtObject> lookupRequest) throws ConnectorDataException {
+        final SearchResponse response = new SearchResponse();
         response.setStatus(StatusCodeType.SUCCESS);
 
-        final String principalName = lookupRequestType.getPsoID().getID();
-
-        final PSOIdentifierType psoID = lookupRequestType.getPsoID();
-        /* targetID -  */
-        final String targetID = psoID.getTargetID();
-
-        AppTableConfiguration configuration = this.getConfiguration(targetID);
-
+        final String principalName = lookupRequest.getSearchValue();
+        AppTableConfiguration configuration = this.getConfiguration(lookupRequest.getTargetID());
         Connection con = this.getConnection(configuration.getManagedSys());
 
-        final ExtensibleObject resultObject = new ExtensibleObject();
-        resultObject.setObjectId(principalName);
-
+        final ObjectValue objectValue = new ObjectValue();
+        objectValue.setObjectIdentity(principalName);
 
         try {
 
@@ -53,10 +52,10 @@ public abstract class AbstractLookupAppTableCommand<ProvisionObject extends Gene
                     extAttr.setName(rsMetadata.getColumnName(colIndx));
 
                     setColumnValue(extAttr, colIndx, rsMetadata, rs);
-                    resultObject.getAttributes().add(extAttr);
+                    objectValue.getAttributeList().add(extAttr);
                 }
 
-                response.getAny().add(resultObject);
+                response.getObjectList().add(objectValue);
             } else {
                 throw new ConnectorDataException(ErrorCode.NO_SUCH_IDENTIFIER, "Principal not found");
             }

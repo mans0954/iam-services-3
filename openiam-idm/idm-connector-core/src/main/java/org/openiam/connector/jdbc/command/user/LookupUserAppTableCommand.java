@@ -1,8 +1,8 @@
-package org.openiam.spml2.spi.jdbc.command.user;
+package org.openiam.connector.jdbc.command.user;
 
 import org.apache.commons.lang.StringUtils;
 import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.spml2.spi.jdbc.command.base.AbstractLookupAppTableCommand;
+import org.openiam.connector.jdbc.command.base.AbstractLookupAppTableCommand;
 import org.springframework.stereotype.Service;
 
 @Service("lookupUserAppTableCommand")

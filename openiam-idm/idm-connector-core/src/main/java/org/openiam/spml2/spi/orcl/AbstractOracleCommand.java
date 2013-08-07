@@ -4,7 +4,7 @@ import org.mule.util.StringUtils;
 import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.spml2.msg.RequestType;
 import org.openiam.spml2.msg.ResponseType;
-import org.openiam.spml2.spi.common.jdbc.AbstractJDBCCommand;
+import org.openiam.connector.common.jdbc.AbstractJDBCCommand;
 
 import java.sql.*;
 

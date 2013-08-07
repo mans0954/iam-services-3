@@ -18,9 +18,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public abstract class AbstractLookupCSVCommand <T, ExtObject extends ExtensibleObject> extends AbstractCSVCommand<LookupRequest<ExtensibleObject>, SearchResponse> {
+public abstract class AbstractLookupCSVCommand<T, ExtObject extends ExtensibleObject> extends AbstractCSVCommand<LookupRequest<ExtObject>, SearchResponse> {
     @Override
-    public SearchResponse execute(LookupRequest<ExtensibleObject> lookupRequest) throws ConnectorDataException {
+    public SearchResponse execute(LookupRequest<ExtObject> lookupRequest) throws ConnectorDataException {
         SearchResponse response = new SearchResponse();
         response.setStatus(StatusCodeType.SUCCESS);
         String principal = lookupRequest.getObjectIdentity();

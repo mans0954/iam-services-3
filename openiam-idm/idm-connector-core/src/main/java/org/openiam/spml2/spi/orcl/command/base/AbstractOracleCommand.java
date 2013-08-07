@@ -4,7 +4,7 @@ import org.apache.commons.lang.StringUtils;
 import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.spml2.spi.common.jdbc.AbstractJDBCCommand;
+import org.openiam.connector.common.jdbc.AbstractJDBCCommand;
 import org.openiam.spml2.util.msg.ResponseBuilder;
 
 /**

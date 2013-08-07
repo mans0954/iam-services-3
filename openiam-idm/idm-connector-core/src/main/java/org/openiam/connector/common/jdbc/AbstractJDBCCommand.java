@@ -1,6 +1,9 @@
-package org.openiam.spml2.spi.common.jdbc;
+package org.openiam.connector.common.jdbc;
 
 import org.openiam.connector.type.ConnectorDataException;
+import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.request.RequestType;
+import org.openiam.connector.type.response.ResponseType;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;

@@ -1,4 +1,4 @@
-package org.openiam.spml2.spi.jdbc;
+package org.openiam.connector.jdbc;
 
 import org.openiam.connector.type.request.SearchRequest;
 import org.openiam.connector.type.response.SearchResponse;
@@ -10,17 +10,12 @@ import javax.jws.WebParam;
 import javax.jws.WebService;
 
 @Service("genericAppTableConnector")
-@WebService(endpointInterface = "org.openiam.spml2.interf.ConnectorService",
+@WebService(endpointInterface = "org.openiam.connector.ConnectorService",
         targetNamespace = "http://www.openiam.org/service/connector",
         portName = "ApplicationTablesConnectorPort",
         serviceName = "ApplicationTablesConnector")
 public class GenericAppTableConnector extends AbstractConnectorService {
     protected void initConnectorType(){
         this.connectorType= ConnectorType.AT;
-    }
-
-    @Override
-    public SearchResponse search(@WebParam(name = "searchRequest", targetNamespace = "") SearchRequest searchRequest) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 }

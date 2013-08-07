@@ -29,7 +29,6 @@ import org.openiam.connector.type.request.LookupRequest;
 import org.openiam.connector.type.request.SearchRequest;
 import org.openiam.connector.type.response.LookupAttributeResponse;
 import org.openiam.connector.type.response.SearchResponse;
-import org.openiam.spml2.spi.common.jdbc.AbstractJDBCConnectorImpl;
 
 import javax.jws.WebParam;
 
@@ -45,7 +44,7 @@ import javax.jws.WebParam;
 //        portName = "ApplicationTablesConnectorPort",
 //        serviceName = "ApplicationTablesConnector")
 @Deprecated
-public class AppTableConnectorImpl extends AbstractJDBCConnectorImpl {
+public class AppTableConnectorImpl {
 
     private static final Log log = LogFactory.getLog(AppTableConnectorImpl.class);
 

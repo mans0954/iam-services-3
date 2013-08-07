@@ -31,7 +31,7 @@ import org.openiam.connector.type.request.LookupRequest;
 import org.openiam.connector.type.request.SearchRequest;
 import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.spml2.spi.common.LookupAttributeNamesCommand;
-import org.openiam.spml2.spi.common.jdbc.*;
+import org.openiam.connector.common.jdbc.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 

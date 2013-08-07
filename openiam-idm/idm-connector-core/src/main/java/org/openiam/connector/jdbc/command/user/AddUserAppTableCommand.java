@@ -1,11 +1,10 @@
-package org.openiam.spml2.spi.jdbc.command.user;
+package org.openiam.connector.jdbc.command.user;
 
-import org.openiam.provision.dto.ProvisionUser;
+import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.provision.type.ExtensibleAttribute;
-import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.connector.type.ConnectorDataException;
-import org.openiam.spml2.msg.ErrorCode;
-import org.openiam.spml2.spi.jdbc.command.base.AbstractAddAppTableCommand;
+import org.openiam.provision.type.ExtensibleUser;
+import org.openiam.connector.jdbc.command.base.AbstractAddAppTableCommand;
 import org.springframework.stereotype.Service;
 
 import java.sql.Connection;
@@ -14,24 +13,23 @@ import java.sql.SQLException;
 import java.util.List;
 
 @Service("addUserAppTableCommand")
-public class AddUserAppTableCommand extends AbstractAddAppTableCommand<ProvisionUser> {
+public class AddUserAppTableCommand extends AbstractAddAppTableCommand<ExtensibleUser> {
     @Override
-    protected void addObject(Connection con, String principalName, List<ExtensibleObject> objectList, String tableName) throws ConnectorDataException {
+    protected void addObject(Connection con, String principalName, ExtensibleUser object, String tableName) throws ConnectorDataException {
         // build sql
         final StringBuilder columns = new StringBuilder("");
         final StringBuilder values = new StringBuilder("");
 
-        for (final ExtensibleObject obj : objectList) {
             PreparedStatement statement = null;
             try {
-                if (identityExists(con, tableName, principalName, obj)) {
+                if (identityExists(con, tableName, principalName, object)) {
                     if(log.isDebugEnabled()) {
                         log.debug(String.format("%s exists. Returning success to the connector", principalName));
                     }
                     return;
                 }
 
-                final List<ExtensibleAttribute> attrList = obj.getAttributes();
+                final List<ExtensibleAttribute> attrList = object.getAttributes();
 
                 if(log.isDebugEnabled()) {
                     log.debug(String.format("Number of attributes to persist in ADD = %s", attrList.size()));
@@ -50,14 +48,14 @@ public class AddUserAppTableCommand extends AbstractAddAppTableCommand<Provision
                 // add the primary key
 
                 if(log.isDebugEnabled()) {
-                    log.debug(String.format("Principal column name=%s", obj.getPrincipalFieldName()));
+                    log.debug(String.format("Principal column name=%s", principalName));
                 }
-                if (obj.getPrincipalFieldName() != null) {
+                if (object.getPrincipalFieldName() != null) {
                     if (ctr != 0) {
                         columns.append(",");
                         values.append(",");
                     }
-                    columns.append(obj.getPrincipalFieldName());
+                    columns.append(object.getPrincipalFieldName());
                     values.append("?");
                 }
 
@@ -71,21 +69,9 @@ public class AddUserAppTableCommand extends AbstractAddAppTableCommand<Provision
                 statement = con.prepareStatement(sql);
 
                 // set the parameters
-                for (final ExtensibleObject extObj : objectList) {
-                    final List<ExtensibleAttribute> extAttrList = extObj.getAttributes();
-                    ctr = 1;
-                    for (ExtensibleAttribute att : extAttrList) {
-                        setStatement(statement, ctr, att);
-                        ctr++;
-                        if(log.isDebugEnabled()) {
-                            log.debug(String.format("Binding parameter: %s -> %s", att.getName(), att.getValue()));
-                        }
 
-                    }
-                }
-                if (obj.getPrincipalFieldName() != null) {
-
-                    setStatement(statement, ctr, obj.getPrincipalFieldDataType(), principalName);
+                if (object.getPrincipalFieldName() != null) {
+                    setStatement(statement, ctr, object.getPrincipalFieldDataType(), principalName);
                 }
                 statement.executeUpdate();
             } catch (SQLException e) {
@@ -94,7 +80,6 @@ public class AddUserAppTableCommand extends AbstractAddAppTableCommand<Provision
             } finally {
                 this.closeStatement(statement);
             }
-        }
     }
 
 

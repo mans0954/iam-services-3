@@ -1,29 +1,29 @@
-package org.openiam.spml2.spi.jdbc.command.base;
+package org.openiam.connector.jdbc.command.base;
 
 import org.openiam.connector.type.ConnectorDataException;
+import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.constant.StatusCodeType;
+import org.openiam.connector.type.request.CrudRequest;
+import org.openiam.connector.type.response.ObjectResponse;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.provision.dto.GenericProvisionObject;
-import org.openiam.spml2.spi.jdbc.command.data.AppTableConfiguration;
+import org.openiam.connector.jdbc.command.data.AppTableConfiguration;
+import org.openiam.provision.type.ExtensibleObject;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 
-public abstract class AbstractDeleteAppTableCommand<ProvisionObject extends GenericProvisionObject> extends AbstractAppTableCommand<DeleteRequestType<ProvisionObject>, ResponseType>  {
+public abstract class AbstractDeleteAppTableCommand<ExtObject extends ExtensibleObject> extends AbstractAppTableCommand<CrudRequest<ExtObject>, ObjectResponse> {
     @Override
-    public ResponseType execute(DeleteRequestType<ProvisionObject> deleteRequestType) throws ConnectorDataException {
-        final ResponseType response = new ResponseType();
+    public ObjectResponse execute(CrudRequest<ExtObject> crudRequest) throws ConnectorDataException {
+        final ObjectResponse response = new ObjectResponse();
         response.setStatus(StatusCodeType.SUCCESS);
 
 
-        final String principalName = deleteRequestType.getPsoID().getID();
-
-        final PSOIdentifierType psoID = deleteRequestType.getPsoID();
-        final String targetID = psoID.getTargetID();
-
-        AppTableConfiguration configuration = this.getConfiguration(targetID);
-
+        final String principalName = crudRequest.getObjectIdentity();
+        AppTableConfiguration configuration = this.getConfiguration(crudRequest.getTargetID());
         Connection con = this.getConnection(configuration.getManagedSys());
 
         try {

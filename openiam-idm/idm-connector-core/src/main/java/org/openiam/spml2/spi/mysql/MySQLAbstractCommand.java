@@ -4,7 +4,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
-import org.openiam.spml2.spi.common.jdbc.JDBCConnectionMgr;
+import org.openiam.connector.common.jdbc.JDBCConnectionMgr;
 
 /**
  * Base class for commands that are used by the MySQL Connector

@@ -1,4 +1,4 @@
-package org.openiam.spml2.spi.jdbc.command.data;
+package org.openiam.connector.jdbc.command.data;
 
 import org.openiam.connector.common.data.ConnectorConfiguration;
 

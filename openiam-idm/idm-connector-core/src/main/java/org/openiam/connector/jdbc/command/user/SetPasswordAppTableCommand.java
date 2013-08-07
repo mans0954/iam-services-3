@@ -1,9 +1,12 @@
-package org.openiam.spml2.spi.jdbc.command.user;
+package org.openiam.connector.jdbc.command.user;
 
 import org.openiam.connector.type.ConnectorDataException;
-import org.openiam.spml2.msg.password.SetPasswordRequestType;
-import org.openiam.spml2.spi.jdbc.command.base.AbstractAppTableCommand;
-import org.openiam.spml2.spi.jdbc.command.data.AppTableConfiguration;
+import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.constant.StatusCodeType;
+import org.openiam.connector.type.request.PasswordRequest;
+import org.openiam.connector.type.response.ResponseType;
+import org.openiam.connector.jdbc.command.base.AbstractAppTableCommand;
+import org.openiam.connector.jdbc.command.data.AppTableConfiguration;
 import org.springframework.stereotype.Service;
 
 import java.sql.Connection;
@@ -11,26 +14,18 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 @Service("setPasswordAppTableCommand")
-public class SetPasswordAppTableCommand extends AbstractAppTableCommand<SetPasswordRequestType, ResponseType> {
+public class SetPasswordAppTableCommand extends AbstractAppTableCommand<PasswordRequest, ResponseType> {
     @Override
-    public ResponseType execute(SetPasswordRequestType setPasswordRequestType) throws ConnectorDataException {
+    public ResponseType execute(PasswordRequest passwordRequest) throws ConnectorDataException {
         final ResponseType response = new ResponseType();
         response.setStatus(StatusCodeType.SUCCESS);
 
-        final String principalName = setPasswordRequestType.getPsoID().getID();
-
-        final PSOIdentifierType psoID = setPasswordRequestType.getPsoID();
-        /* targetID -  */
-        final String targetID = psoID.getTargetID();
-
-        final String password = setPasswordRequestType.getPassword();
-
-        AppTableConfiguration configuration = this.getConfiguration(targetID);
+        AppTableConfiguration configuration = this.getConfiguration(passwordRequest.getTargetID());
         Connection con = this.getConnection(configuration.getManagedSys());
 
         PreparedStatement statement = null;
         try {
-            statement = createSetPasswordStatement(con, configuration.getResourceId(), configuration.getTableName(), principalName, password);
+            statement = createSetPasswordStatement(con, configuration.getResourceId(), configuration.getTableName(), passwordRequest.getObjectIdentity(), passwordRequest.getPassword());
             statement.executeUpdate();
             return response;
         } catch (SQLException se) {
