@@ -1976,6 +1976,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 bindingMap.remove(MATCH_PARAM);
 
                             }
+                            if (connectorSuccess) {
+                                    loginManager.addLogin(loginDozerConverter
+                                            .convertToEntity(mLg, true));
+                            }
                         } else {
 
                             // existing identity
