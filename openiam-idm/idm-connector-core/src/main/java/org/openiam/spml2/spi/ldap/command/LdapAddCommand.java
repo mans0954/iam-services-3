@@ -1,30 +1,13 @@
 package org.openiam.spml2.spi.ldap.command;
 
-import org.openiam.base.BaseAttribute;
-import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.connector.type.response.ObjectResponse;
-import org.openiam.exception.ConfigurationException;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
-import org.openiam.idm.srvc.res.dto.ResourceProp;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.connector.ldap.dirtype.Directory;
-import org.openiam.connector.ldap.dirtype.DirectorySpecificImplFactory;
-import org.openiam.spml2.util.connect.ConnectionFactory;
-import org.openiam.connector.util.ConnectionManagerConstant;
-import org.openiam.connector.util.ConnectionMgr;
 
-import javax.naming.Context;
-import javax.naming.NamingException;
 import javax.naming.directory.*;
-import javax.naming.ldap.LdapContext;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 /**
  * LdapAddCommand implements the add operation for the LdapConnector

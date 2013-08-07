@@ -1,26 +1,8 @@
 package org.openiam.spml2.spi.ldap.command;
 
-import org.openiam.connector.type.*;
-import org.openiam.connector.type.constant.ErrorCode;
-import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.LookupRequest;
 import org.openiam.connector.type.response.SearchResponse;
-import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
-import org.openiam.provision.type.ExtensibleAttribute;
-import org.openiam.spml2.spi.ldap.command.LdapAbstractCommand;
-import org.openiam.spml2.util.connect.ConnectionFactory;
-import org.openiam.connector.util.ConnectionManagerConstant;
 import org.openiam.connector.util.ConnectionMgr;
-
-import javax.naming.NamingEnumeration;
-import javax.naming.NamingException;
-import javax.naming.directory.Attribute;
-import javax.naming.directory.Attributes;
-import javax.naming.directory.SearchResult;
-import javax.naming.ldap.LdapContext;
-import java.util.List;
 
 /**
  * Implements lookup furnctionality for the ldapconnector.

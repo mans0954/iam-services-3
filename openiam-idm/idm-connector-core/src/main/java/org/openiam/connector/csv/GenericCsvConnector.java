@@ -1,7 +1,7 @@
 package org.openiam.connector.csv;
 
 import org.openiam.connector.AbstractConnectorService;
-import org.openiam.spml2.constants.ConnectorType;
+import org.openiam.connector.common.constants.ConnectorType;
 import org.springframework.stereotype.Service;
 
 import javax.jws.WebService;

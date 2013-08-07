@@ -63,7 +63,8 @@ import java.util.*;
         "skipPreprocessor",
         "skipPostProcessor"
 })
-public class ProvisionUser extends GenericProvisionObject<User> {
+
+public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
     /**
      *
      */
@@ -106,134 +107,123 @@ public class ProvisionUser extends GenericProvisionObject<User> {
     protected String password = null;
 
     public ProvisionUser() {
-        this(new User());
+
     }
 
     public ProvisionUser(User user) {
-        super(user);
-        this.provisionObjectType = ProvisionObjectType.USER;
-//        birthdate = user.getBirthdate();
-//        companyId = user.getCompanyId();
-//        companyOwnerId = user.getCompanyOwnerId();
-//        createDate = user.getCreateDate();
-//        createdBy = user.getCreatedBy();
-//        deptCd = user.getDeptCd();
-//        deptName = user.getDeptName();
-//        employeeId = user.getEmployeeId();
-//        employeeType = user.getEmployeeType();
-//
-//        firstName = user.getFirstName();
-//        jobCode = user.getJobCode();
-//        lastName = user.getLastName();
-//        lastUpdate = user.getLastUpdate();
-//        this.lastUpdatedBy = user.getLastUpdatedBy();
-//        this.locationCd = user.getLocationCd();
-//        this.locationName = user.getLocationName();
-//        this.managerId = user.getManagerId();
-//        this.metadataTypeId = user.getMetadataTypeId();
-//        this.classification = user.getClassification();
-//        this.middleInit = user.getMiddleInit();
-//        this.prefix = user.getPrefix();
-//        this.sex = user.getSex();
-//        this.status = user.getStatus();
-//        this.secondaryStatus = user.getSecondaryStatus();
-//        this.suffix = user.getSuffix();
-//        this.title = user.getTitle();
-//        this.userId = user.getUserId();
-//        this.userTypeInd = user.getUserTypeInd();
-//        this.division = user.getDivision();
-//        this.mailCode = user.getMailCode();
-//        this.costCenter = user.getCostCenter();
-//        this.startDate = user.getStartDate();
-//        this.lastDate = user.getLastDate();
-//        this.nickname = user.getNickname();
-//        this.maidenName = user.getMaidenName();
-//        this.passwordTheme = user.getPasswordTheme();
-//        this.email = user.getEmail();
-//        this.showInSearch = user.getShowInSearch();
-//        this.alternateContactId = user.getAlternateContactId();
-//
-//        this.createdBy = user.getCreatedBy();
-//        this.startDate = user.getStartDate();
-//        this.lastDate = user.getLastDate();
-//
-//        this.userOwnerId = user.getUserOwnerId();
-//        this.dateChallengeRespChanged = user.getDateChallengeRespChanged();
-//        this.datePasswordChanged = user.getDatePasswordChanged();
-//
-//        userNotes = user.getUserNotes();
-//        userAttributes = user.getUserAttributes();
-//        phones = user.getPhones();
-//        addresses = user.getAddresses();
+        birthdate = user.getBirthdate();
+        companyOwnerId = user.getCompanyOwnerId();
+        createDate = user.getCreateDate();
+        createdBy = user.getCreatedBy();
+        employeeId = user.getEmployeeId();
+        employeeType = user.getEmployeeType();
+
+        firstName = user.getFirstName();
+        jobCode = user.getJobCode();
+        lastName = user.getLastName();
+        lastUpdate = user.getLastUpdate();
+        this.lastUpdatedBy = user.getLastUpdatedBy();
+        this.locationCd = user.getLocationCd();
+        this.locationName = user.getLocationName();
+        this.metadataTypeId = user.getMetadataTypeId();
+        this.classification = user.getClassification();
+        this.middleInit = user.getMiddleInit();
+        this.prefix = user.getPrefix();
+        this.sex = user.getSex();
+        this.status = user.getStatus();
+        this.secondaryStatus = user.getSecondaryStatus();
+        this.suffix = user.getSuffix();
+        this.title = user.getTitle();
+        this.userId = user.getUserId();
+        this.userTypeInd = user.getUserTypeInd();
+        this.mailCode = user.getMailCode();
+        this.costCenter = user.getCostCenter();
+        this.startDate = user.getStartDate();
+        this.lastDate = user.getLastDate();
+        this.nickname = user.getNickname();
+        this.maidenName = user.getMaidenName();
+        this.passwordTheme = user.getPasswordTheme();
+        this.email = user.getEmail();
+        this.showInSearch = user.getShowInSearch();
+        this.alternateContactId = user.getAlternateContactId();
+
+        this.createdBy = user.getCreatedBy();
+        this.startDate = user.getStartDate();
+        this.lastDate = user.getLastDate();
+
+        this.userOwnerId = user.getUserOwnerId();
+        this.dateChallengeRespChanged = user.getDateChallengeRespChanged();
+        this.datePasswordChanged = user.getDatePasswordChanged();
+        this.dateITPolicyApproved = user.getDateITPolicyApproved();
+
+        userNotes = user.getUserNotes();
+        userAttributes = user.getUserAttributes();
+        phones = user.getPhones();
+        addresses = user.getAddresses();
         // set the email address in a hibernate friendly manner
 
 
     }
 
     public User getUser() {
-        return this.getObject();
-//        User user = new User();
-//
-//        user.setBirthdate(birthdate);
-//        user.setCompanyId(companyId);
-//        user.setCompanyOwnerId(companyOwnerId);
-//        user.setCreateDate(createDate);
-//        user.setCreatedBy(createdBy);
-//        user.setDeptCd(deptCd);
-//        user.setDeptName(deptName);
-//        user.setEmployeeId(employeeId);
-//        user.setEmployeeType(employeeType);
-//
-//        user.setFirstName(firstName);
-//        user.setJobCode(jobCode);
-//        user.setLastName(lastName);
-//        user.setLastUpdate(lastUpdate);
-//        user.setLastUpdatedBy(lastUpdatedBy);
-//        user.setLocationCd(locationCd);
-//        user.setLocationName(locationName);
-//        user.setManagerId(managerId);
-//        user.setMetadataTypeId(metadataTypeId);
-//        user.setClassification(classification);
-//        user.setMiddleInit(middleInit);
-//        user.setPrefix(prefix);
-//        user.setSex(sex);
-//        user.setStatus(status);
-//        user.setSecondaryStatus(secondaryStatus);
-//        user.setSuffix(suffix);
-//        user.setTitle(title);
-//        user.setUserId(userId);
-//        user.setUserTypeInd(userTypeInd);
-//        user.setDivision(division);
-//        user.setMailCode(mailCode);
-//        user.setCostCenter(costCenter);
-//        user.setStartDate(startDate);
-//        user.setLastDate(lastDate);
-//        user.setNickname(nickname);
-//        user.setMaidenName(maidenName);
-//        user.setPasswordTheme(passwordTheme);
-//        user.setEmail(email);
-//
-//        user.setUserNotes(userNotes);
-//        user.setUserAttributes(userAttributes);
-//        user.setPhones(phones);
-//        user.setAddresses(addresses);
-//        user.setEmailAddresses(emailAddresses);
-//        user.setAlternateContactId(alternateContactId);
-//        user.setShowInSearch(showInSearch);
-//
-//        user.setUserOwnerId(userOwnerId);
-//        user.setDateChallengeRespChanged(dateChallengeRespChanged);
-//        user.setDatePasswordChanged(datePasswordChanged);
-//
-//        return user;
+        User user = new User();
+
+        user.setBirthdate(birthdate);
+        user.setCompanyOwnerId(companyOwnerId);
+        user.setCreateDate(createDate);
+        user.setCreatedBy(createdBy);
+        user.setEmployeeId(employeeId);
+        user.setEmployeeType(employeeType);
+
+        user.setFirstName(firstName);
+        user.setJobCode(jobCode);
+        user.setLastName(lastName);
+        user.setLastUpdate(lastUpdate);
+        user.setLastUpdatedBy(lastUpdatedBy);
+        user.setLocationCd(locationCd);
+        user.setLocationName(locationName);
+        user.setMetadataTypeId(metadataTypeId);
+        user.setClassification(classification);
+        user.setMiddleInit(middleInit);
+        user.setPrefix(prefix);
+        user.setSex(sex);
+        user.setStatus(status);
+        user.setSecondaryStatus(secondaryStatus);
+        user.setSuffix(suffix);
+        user.setTitle(title);
+        user.setUserId(userId);
+        user.setUserTypeInd(userTypeInd);
+        user.setMailCode(mailCode);
+        user.setCostCenter(costCenter);
+        user.setStartDate(startDate);
+        user.setLastDate(lastDate);
+        user.setNickname(nickname);
+        user.setMaidenName(maidenName);
+        user.setPasswordTheme(passwordTheme);
+        user.setEmail(email);
+
+        user.setUserNotes(userNotes);
+        user.setUserAttributes(userAttributes);
+        user.setPhones(phones);
+        user.setAddresses(addresses);
+        user.setEmailAddresses(emailAddresses);
+        user.setAlternateContactId(alternateContactId);
+        user.setShowInSearch(showInSearch);
+
+        user.setUserOwnerId(userOwnerId);
+        user.setDateChallengeRespChanged(dateChallengeRespChanged);
+        user.setDatePasswordChanged(datePasswordChanged);
+        user.setDateITPolicyApproved(dateITPolicyApproved);
+
+        return user;
     }
 
 
     public Login getPrimaryPrincipal(String managedSysId) {
-        if (getObject().getPrincipalList() == null) {
+        if (principalList == null) {
             return null;
         }
-        for (Login l : getObject().getPrincipalList()) {
+        for (Login l : principalList) {
             if (l.getManagedSysId().equals(managedSysId)) {
                 return l;
             }
@@ -470,130 +460,129 @@ public class ProvisionUser extends GenericProvisionObject<User> {
      */
     public void updateMissingUserAttributes(User user) {
 
-        if (getObject().getBirthdate() == null) {
-            getObject().setBirthdate(user.getBirthdate());
+        if (birthdate == null) {
+            birthdate = user.getBirthdate();
         }
-        if (getObject().getCompanyOwnerId() == null) {
-            getObject().setCompanyOwnerId(user.getCompanyOwnerId());
+        if (companyOwnerId == null) {
+            companyOwnerId = user.getCompanyOwnerId();
         }
-        if (getObject().getCreateDate() == null) {
-            getObject().setCreateDate(user.getCreateDate());
+        if (createDate == null) {
+            createDate = user.getCreateDate();
         }
-        if (getObject().getCreatedBy() == null) {
-            getObject().setCreatedBy(user.getCreatedBy());
+        if (createdBy == null) {
+            createdBy = user.getCreatedBy();
         }
-        if (getObject().getEmployeeId() == null) {
-            getObject().setEmployeeId(user.getEmployeeId());
+        if (employeeId == null) {
+            employeeId = user.getEmployeeId();
         }
-        if (getObject().getEmployeeType() == null) {
-            getObject().setEmployeeType(user.getEmployeeType());
-        }
-
-        if (getObject().getFirstName() == null) {
-            getObject().setFirstName(user.getFirstName());
-        }
-        if (getObject().getJobCode() == null) {
-            getObject().setJobCode(user.getJobCode());
-        }
-        if (getObject().getLastName() == null) {
-            getObject().setLastName(user.getLastName());
-        }
-        if (getObject().getLastUpdate() == null) {
-            getObject().setLastUpdate(user.getLastUpdate());
-        }
-        if (getObject().getLastUpdatedBy() == null) {
-            getObject().setLastUpdatedBy(user.getLastUpdatedBy());
-        }
-        if (getObject().getLocationCd() == null) {
-            getObject().setLocationCd(user.getLocationCd());
-        }
-        if (getObject().getLocationName() == null) {
-            getObject().setLocationName(user.getLocationName());
+        if (employeeType == null) {
+            employeeType = user.getEmployeeType();
         }
 
-        if (getObject().getMetadataTypeId() == null) {
-            getObject().setMetadataTypeId(user.getMetadataTypeId());
+        if (firstName == null) {
+            firstName = user.getFirstName();
         }
-        if (getObject().getClassification() == null) {
-            getObject().setClassification(user.getClassification());
+        if (jobCode == null) {
+            jobCode = user.getJobCode();
         }
-        if (getObject().getMiddleInit() == null) {
-            getObject().setMiddleInit(user.getMiddleInit());
+        if (lastName == null) {
+            lastName = user.getLastName();
         }
-        if (getObject().getPrefix() == null) {
-            getObject().setPrefix(user.getPrefix());
+        if (lastUpdate == null) {
+            lastUpdate = user.getLastUpdate();
         }
-        if (getObject().getSex() == null) {
-            getObject().setSex(user.getSex());
+        if (lastUpdatedBy == null) {
+            lastUpdatedBy = user.getLastUpdatedBy();
         }
-        if (getObject().getStatus() == null) {
-            getObject().setStatus(user.getStatus());
+        if (locationCd == null) {
+            locationCd = user.getLocationCd();
         }
-        if (getObject().getSecondaryStatus() == null) {
-            getObject().setSecondaryStatus(user.getSecondaryStatus());
+        if (locationName == null) {
+            locationName = user.getLocationName();
         }
-        if (getObject().getSuffix() == null) {
-            getObject().setSuffix(user.getSuffix());
+        if (metadataTypeId == null) {
+            metadataTypeId = user.getMetadataTypeId();
         }
-        if (getObject().getTitle() == null) {
-            getObject().setTitle(user.getTitle());
+        if (classification == null) {
+            classification = user.getClassification();
         }
-        if (getObject().getUserTypeInd() == null) {
-            getObject().setUserTypeInd(user.getUserTypeInd());
+        if (middleInit == null) {
+            middleInit = user.getMiddleInit();
         }
-        if (getObject().getMailCode() == null) {
-            getObject().setMailCode(user.getMailCode());
+        if (prefix == null) {
+            prefix = user.getPrefix();
         }
-        if (getObject().getCostCenter() == null) {
-            getObject().setCostCenter(user.getCostCenter());
+        if (sex == null) {
+            sex = user.getSex();
         }
-        if (getObject().getStartDate() == null) {
-            getObject().setStartDate(user.getStartDate());
+        if (status == null) {
+            status = user.getStatus();
         }
-        if (getObject().getLastDate() == null) {
-            getObject().setLastDate(user.getLastDate());
+        if (secondaryStatus == null) {
+            secondaryStatus = user.getSecondaryStatus();
         }
-        if (getObject().getNickname() == null) {
-            getObject().setNickname(user.getNickname());
+        if (suffix == null) {
+            suffix = user.getSuffix();
         }
-        if (getObject().getMaidenName() == null) {
-            getObject().setMaidenName(user.getMaidenName());
+        if (title == null) {
+            title = user.getTitle();
         }
-        if (getObject().getPasswordTheme() == null) {
-            getObject().setPasswordTheme(user.getPasswordTheme());
+        if (userTypeInd == null) {
+            userTypeInd = user.getUserTypeInd();
         }
-        if (getObject().getEmail() == null) {
-            getObject().setEmail(user.getEmail());
+        if (mailCode == null) {
+            mailCode = user.getMailCode();
         }
-        if (getObject().getShowInSearch() == null) {
-            getObject().setShowInSearch(user.getShowInSearch());
+        if (costCenter == null) {
+            costCenter = user.getCostCenter();
+        }
+        if (startDate == null) {
+            startDate = user.getStartDate();
+        }
+        if (lastDate == null) {
+            lastDate = user.getLastDate();
+        }
+        if (nickname == null) {
+            nickname = user.getNickname();
+        }
+        if (maidenName == null) {
+            maidenName = user.getMaidenName();
+        }
+        if (passwordTheme == null) {
+            passwordTheme = user.getPasswordTheme();
+        }
+        if (email == null) {
+            email = user.getEmail();
+        }
+        if (showInSearch == null) {
+            showInSearch = user.getShowInSearch();
         }
 
-        if (getObject().getAlternateContactId() == null) {
-            getObject().setAlternateContactId(user.getAlternateContactId());
+        if (alternateContactId == null) {
+            alternateContactId = user.getAlternateContactId();
         }
 
-        if (getObject().getCreatedBy() == null) {
-            getObject().setCreatedBy(user.getCreatedBy());
+        if (createdBy == null) {
+            createdBy = user.getCreatedBy();
         }
-        if (getObject().getStartDate() == null) {
-            getObject().setStartDate(user.getStartDate());
+        if (startDate == null) {
+            startDate = user.getStartDate();
         }
-        if (getObject().getLastDate() == null) {
-            getObject().setLastDate(user.getLastDate());
+        if (lastDate == null) {
+            lastDate = user.getLastDate();
         }
 
-        if (getObject().getUserOwnerId() == null) {
-            getObject().setUserOwnerId(user.getUserOwnerId());
+        if (userOwnerId == null) {
+            userOwnerId = user.getUserOwnerId();
         }
-        if (getObject().getDateChallengeRespChanged() == null) {
-            getObject().setDateChallengeRespChanged(user.getDateChallengeRespChanged());
+        if (dateChallengeRespChanged == null) {
+            dateChallengeRespChanged = user.getDateChallengeRespChanged();
         }
-        if (getObject().getDatePasswordChanged() == null) {
-            getObject().setDatePasswordChanged(user.getDatePasswordChanged());
+        if (datePasswordChanged == null) {
+            datePasswordChanged = user.getDatePasswordChanged();
         }
-        if (getObject().getDateITPolicyApproved() == null) {
-            getObject().setDateITPolicyApproved(user.getDateITPolicyApproved());
+        if (dateITPolicyApproved == null) {
+            dateITPolicyApproved = user.getDateITPolicyApproved();
         }
     }
     

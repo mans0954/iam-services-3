@@ -7,7 +7,7 @@ import org.openiam.connector.type.request.RequestType;
 import org.openiam.connector.type.response.ResponseType;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.connector.common.command.AbstractCommand;
-import org.openiam.spml2.constants.CommandType;
+import org.openiam.connector.common.constants.CommandType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 

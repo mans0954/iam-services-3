@@ -1,24 +1,9 @@
 package org.openiam.spml2.spi.ldap.command;
 
-import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.connector.type.response.ObjectResponse;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
-import org.openiam.connector.ldap.dirtype.Directory;
-import org.openiam.connector.ldap.dirtype.DirectorySpecificImplFactory;
-import org.openiam.spml2.spi.ldap.command.LdapAbstractCommand;
-import org.openiam.spml2.util.connect.ConnectionFactory;
-import org.openiam.connector.util.ConnectionManagerConstant;
 import org.openiam.connector.util.ConnectionMgr;
-
-import javax.naming.NamingException;
-import javax.naming.ldap.LdapContext;
-
-import org.openiam.idm.srvc.res.dto.ResourceProp;
-
-import java.util.Set;
 
 
 @Deprecated

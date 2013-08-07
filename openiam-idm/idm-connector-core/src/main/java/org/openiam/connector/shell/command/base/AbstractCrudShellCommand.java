@@ -1,9 +1,13 @@
-package org.openiam.spml2.spi.example.command.base;
+package org.openiam.connector.shell.command.base;
 
-import org.openiam.connector.type.ConnectorDataException;
-import org.openiam.provision.dto.GenericProvisionObject;
-import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.connector.common.data.ConnectorConfiguration;
+import org.openiam.connector.orcl.command.base.AbstractOracleCommand;
+import org.openiam.connector.type.ConnectorDataException;
+import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.constant.StatusCodeType;
+import org.openiam.connector.type.request.CrudRequest;
+import org.openiam.connector.type.response.ObjectResponse;
+import org.openiam.provision.type.ExtensibleObject;
 
 import java.io.OutputStream;
 import java.util.List;
@@ -11,14 +15,14 @@ import java.util.List;
 /**
  * Created with IntelliJ IDEA.
  * User: alexander
- * Date: 7/19/13
- * Time: 7:28 PM
+ * Date: 8/8/13
+ * Time: 2:48 AM
  * To change this template use File | Settings | File Templates.
  */
-public abstract class AbstractAddShellCommand<ProvisionObject extends GenericProvisionObject> extends AbstractShellCommand<AddRequestType<ProvisionObject>, AddResponseType> {
+public abstract  class AbstractCrudShellCommand<ExtObject extends ExtensibleObject> extends AbstractShellCommand<CrudRequest<ExtObject>, ObjectResponse> {
     @Override
-    public AddResponseType execute(AddRequestType<ProvisionObject> addRequestType) throws ConnectorDataException {
-        AddResponseType response = new AddResponseType();
+    public ObjectResponse execute(CrudRequest<ExtObject> crudRequest) throws ConnectorDataException {
+        ObjectResponse response = new ObjectResponse();
         response.setStatus(StatusCodeType.SUCCESS);
 
 
@@ -30,21 +34,16 @@ public abstract class AbstractAddShellCommand<ProvisionObject extends GenericPro
          * ContainerID - May specify the container in which this object should
          * be created ie. ou=Development, org=Example
          */
-        PSOIdentifierType containerID = addRequestType.getContainerID();
-        System.out.println("ContainerId =" + containerID);
 
         /*
          * PSO - Provisioning Service Object - - ID must uniquely specify an
          * object on the target or in the target's namespace - Try to make the
          * PSO ID immutable so that there is consistency across changes.
          */
-        PSOIdentifierType psoID = addRequestType.getPsoID();
-        String objectId = psoID.getID();
-
-        System.out.println("PSOId=" + psoID.getID());
+        String objectId = crudRequest.getObjectIdentity();
 
         /* targetID - */
-        String targetID = addRequestType.getTargetID();
+        String targetID = crudRequest.getTargetID();
 
         ConnectorConfiguration configuration = this.getConfiguration(targetID, ConnectorConfiguration.class);
         /*
@@ -58,11 +57,11 @@ public abstract class AbstractAddShellCommand<ProvisionObject extends GenericPro
 
 
 
-        List<ExtensibleObject> requestAttributeList = addRequestType.getData().getAny();
+        ExtObject object = crudRequest.getExtensibleObject();
 
-        String cmd = getAddCommand(host, hostlogin, hostpassword, objectId, requestAttributeList);
+        String cmd = getCommand(host, hostlogin, hostpassword, objectId, object);
 
-                // System.out.println("Command line string= " + strBuf.toString());
+        // System.out.println("Command line string= " + strBuf.toString());
         try {
             // Runtime.getRuntime().exec(cmdarray); //exec(strBuf.toString());
             Process p = Runtime.getRuntime().exec(cmd);
@@ -76,5 +75,5 @@ public abstract class AbstractAddShellCommand<ProvisionObject extends GenericPro
         }
     }
 
-    protected abstract String getAddCommand(String host, String hostlogin, String hostpassword, String objectId, List<ExtensibleObject> requestAttributeList);
+    protected abstract String getCommand(String host, String hostlogin, String hostpassword, String objectId, ExtObject object);
 }

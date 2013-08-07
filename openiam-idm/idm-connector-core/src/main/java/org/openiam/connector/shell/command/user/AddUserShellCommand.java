@@ -1,9 +1,11 @@
-package org.openiam.spml2.spi.example.command.user;
+package org.openiam.connector.shell.command.user;
 
+import org.openiam.connector.shell.command.base.AbstractCrudShellCommand;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.spml2.spi.example.command.base.AbstractAddShellCommand;
+import org.openiam.connector.shell.command.base.AbstractAddShellCommand;
+import org.openiam.provision.type.ExtensibleUser;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,9 +18,9 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 @Service("addUserShellCommand")
-public class AddUserShellCommand extends AbstractAddShellCommand<ProvisionUser> {
+public class AddUserShellCommand extends AbstractCrudShellCommand<ExtensibleUser> {
     @Override
-    protected String getAddCommand(String host, String hostlogin, String hostpassword, String userName, List<ExtensibleObject> requestAttributeList) {
+    protected String getCommand(String host, String hostlogin, String hostpassword, String userName, ExtensibleUser object) {
         String password = null;
         String givenName = null;
         String lastName = null;
@@ -32,54 +34,48 @@ public class AddUserShellCommand extends AbstractAddShellCommand<ProvisionUser> 
         String getExchange = null;
         String userState = null;
 
+        List<ExtensibleAttribute> attrList = object.getAttributes();
+        for (ExtensibleAttribute att : attrList) {
+            String name = att.getName();
+            String value = att.getValue();
 
+            if (name.equalsIgnoreCase("password")) {
+                password = getAttributeValue("password", attrList);
+            }
+            if (name.equalsIgnoreCase("firstName")) {
+                givenName = value;
 
+            }
+            if (name.equalsIgnoreCase("lastName")) {
+                lastName = value;
+            }
+            if (name.equalsIgnoreCase("displayName")) {
+                displayName = value;
 
-        for (ExtensibleObject obj : requestAttributeList) {
-            List<ExtensibleAttribute> attrList = obj.getAttributes();
-
-            for (ExtensibleAttribute att : attrList) {
-                String name = att.getName();
-                String value = att.getValue();
-
-                if (name.equalsIgnoreCase("password")) {
-                    password = getAttributeValue("password", attrList);
-                }
-                if (name.equalsIgnoreCase("firstName")) {
-                    givenName = value;
-
-                }
-                if (name.equalsIgnoreCase("lastName")) {
-                    lastName = value;
-                }
-                if (name.equalsIgnoreCase("displayName")) {
-                    displayName = value;
-
-                }
-                if (name.equalsIgnoreCase("principalName")) {
-                    principalName = value;
-                }
-                if (name.equalsIgnoreCase("sAMAccountName")) {
-                    sAMAccountName = value;
-                }
-                if (name.equalsIgnoreCase("middleInit")) {
-                    middleInit = value;
-                }
-                if (name.equalsIgnoreCase("email")) {
-                    email = value;
-                }
-                if (name.equalsIgnoreCase("nickname")) {
-                    nickname = value;
-                }
-                if (name.equalsIgnoreCase("getExchange")) {
-                    getExchange = value;
-                }
-                if (name.equalsIgnoreCase("title")) {
-                    title = value;
-                }
-                if (name.equalsIgnoreCase("userState")) {
-                    userState = value;
-                }
+            }
+            if (name.equalsIgnoreCase("principalName")) {
+                principalName = value;
+            }
+            if (name.equalsIgnoreCase("sAMAccountName")) {
+                sAMAccountName = value;
+            }
+            if (name.equalsIgnoreCase("middleInit")) {
+                middleInit = value;
+            }
+            if (name.equalsIgnoreCase("email")) {
+                email = value;
+            }
+            if (name.equalsIgnoreCase("nickname")) {
+                nickname = value;
+            }
+            if (name.equalsIgnoreCase("getExchange")) {
+                getExchange = value;
+            }
+            if (name.equalsIgnoreCase("title")) {
+                title = value;
+            }
+            if (name.equalsIgnoreCase("userState")) {
+                userState = value;
             }
         }
 

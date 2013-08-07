@@ -72,8 +72,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 @Deprecated
 //@WebService(endpointInterface = "org.openiam.spml2.interf.ConnectorService", targetNamespace = "http://www.openiam.org/service/connector", portName = "ShellConnectorServicePort", serviceName = "ShellConnectorService")
-public class ShellConnectorImpl extends AbstractSpml2Complete implements
-        ConnectorService {
+public class ShellConnectorImpl extends AbstractSpml2Complete  {
 
     private static final Log log = LogFactory.getLog(ShellConnectorImpl.class);
     protected ManagedSystemWebService managedSysService;
@@ -106,7 +105,6 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
         return true;
     }
 
-    @Override
     public SearchResponse search(@WebParam(name = "searchRequest", targetNamespace = "") SearchRequest searchRequest) {
         throw new UnsupportedOperationException("Not implemented yet.");
     }
@@ -128,7 +126,7 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
 
         String requestID = reqType.getRequestID();
 
-        userName = reqType.getUserIdentity();
+        userName = reqType.getObjectIdentity();
 
 
         /* targetID - */
@@ -146,7 +144,7 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
             matchObj = managedSystemObjectMatchDozerConverter.convertToDTO(matchObjList.get(0),false);
         }
 
-        ExtensibleObject obj = reqType.getUser();
+        ExtensibleObject obj = reqType.getExtensibleObject();
 
         String password = null;
         String givenName = null;
@@ -293,7 +291,7 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
 
         String requestID = reqType.getRequestID();
 
-        userName = reqType.getUserIdentity();
+        userName = reqType.getObjectIdentity();
         /* targetID - */
         String targetID = reqType.getTargetID();
 
@@ -415,7 +413,7 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
          * object on the target or in the target's namespace - Try to make the
          * PSO ID immutable so that there is consistency across changes.
          */
-        userName = reqType.getUserIdentity();
+        userName = reqType.getObjectIdentity();
 
         /* targetID - */
         String targetID = reqType.getTargetID();
@@ -438,7 +436,7 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
 
         // get the firstName and lastName values
 
-        ExtensibleObject obj = reqType.getUser();
+        ExtensibleObject obj = reqType.getExtensibleObject();
         System.out.println("Object:" + obj.getName() + " - operation="
                 + obj.getOperation());
         List<ExtensibleAttribute> attrList = obj.getAttributes();
@@ -660,7 +658,7 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
     public ResponseType setPassword(PasswordRequest reqType) {
         log.debug("setPassword request called..");
 
-        String userName = reqType.getUserIdentity();
+        String userName = reqType.getObjectIdentity();
 
         String requestID = reqType.getRequestID();
 
@@ -798,7 +796,7 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
         this.userManager = userManager;
     }
 
-    public ResponseType suspend(SuspendRequest request) {
+    public ResponseType suspend(SuspendResumeRequest request) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -814,6 +812,10 @@ public class ShellConnectorImpl extends AbstractSpml2Complete implements
         response.setStatus(StatusCodeType.FAILURE);
         response.setError(ErrorCode.UNSUPPORTED_OPERATION);
         return response;
+    }
+
+    public ResponseType testConnection(@WebParam(name = "reqType", targetNamespace = "") RequestType<? extends ExtensibleObject> reqType) {
+        return null;
     }
 
     public ResponseType testConnection(

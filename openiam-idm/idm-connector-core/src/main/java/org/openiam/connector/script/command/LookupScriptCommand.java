@@ -4,7 +4,7 @@ import org.openiam.connector.script.command.base.AbstractScriptCommand;
 import org.openiam.connector.type.request.LookupRequest;
 import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.connector.script.command.base.BaseScriptCommand;
-import org.openiam.spml2.constants.CommandType;
+import org.openiam.connector.common.constants.CommandType;
 import org.springframework.stereotype.Service;
 
 /**

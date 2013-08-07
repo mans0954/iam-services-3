@@ -1,9 +1,12 @@
-package org.openiam.spml2.spi.example.command.user;
+package org.openiam.connector.shell.command.user;
 
 import org.openiam.connector.type.ConnectorDataException;
-import org.openiam.spml2.msg.password.SetPasswordRequestType;
+import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.constant.StatusCodeType;
+import org.openiam.connector.type.request.PasswordRequest;
+import org.openiam.connector.type.response.ResponseType;
 import org.openiam.connector.common.data.ConnectorConfiguration;
-import org.openiam.spml2.spi.example.command.base.AbstractShellCommand;
+import org.openiam.connector.shell.command.base.AbstractShellCommand;
 import org.springframework.stereotype.Service;
 
 import java.io.OutputStream;
@@ -16,9 +19,9 @@ import java.io.OutputStream;
  * To change this template use File | Settings | File Templates.
  */
 @Service("setPasswordShellCommand")
-public class SetPasswordShellCommand extends AbstractShellCommand<SetPasswordRequestType, ResponseType> {
+public class SetPasswordShellCommand extends AbstractShellCommand<PasswordRequest, ResponseType> {
     @Override
-    public ResponseType execute(SetPasswordRequestType setPasswordRequestType) throws ConnectorDataException {
+    public ResponseType execute(PasswordRequest passwordRequest) throws ConnectorDataException {
         ResponseType respType = new ResponseType();
         respType.setStatus(StatusCodeType.SUCCESS);
 
@@ -27,10 +30,9 @@ public class SetPasswordShellCommand extends AbstractShellCommand<SetPasswordReq
          * object on the target or in the target's namespace - Try to make the
          * PSO ID immutable so that there is consistency across changes.
          */
-        PSOIdentifierType psoID = setPasswordRequestType.getPsoID();
-        String userName = psoID.getID();
+        String userName = passwordRequest.getObjectIdentity();
         /* targetID - */
-        String targetID = psoID.getTargetID();
+        String targetID = passwordRequest.getTargetID();
 
         /*
          * A) Use the targetID to look up the connection information under
@@ -49,7 +51,7 @@ public class SetPasswordShellCommand extends AbstractShellCommand<SetPasswordReq
         strBuf.append("'" + hostlogin + "' ");
         strBuf.append("'" + hostpassword + "' ");
         strBuf.append("'" + userName + "' ");
-        strBuf.append("'" + setPasswordRequestType.getPassword() + "' \" ");
+        strBuf.append("'" + passwordRequest.getPassword() + "' \" ");
 
         log.debug("Command line string= " + strBuf.toString());
         String[] cmdarray = { "cmd", strBuf.toString() };

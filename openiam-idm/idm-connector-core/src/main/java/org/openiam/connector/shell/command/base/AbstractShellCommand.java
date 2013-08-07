@@ -1,8 +1,8 @@
-package org.openiam.spml2.spi.example.command.base;
+package org.openiam.connector.shell.command.base;
 
+import org.openiam.connector.type.request.RequestType;
+import org.openiam.connector.type.response.ResponseType;
 import org.openiam.provision.type.ExtensibleAttribute;
-import org.openiam.spml2.msg.RequestType;
-import org.openiam.spml2.msg.ResponseType;
 import org.openiam.connector.common.command.AbstractCommand;
 
 import java.util.List;

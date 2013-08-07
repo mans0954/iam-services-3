@@ -1,26 +1,15 @@
 package org.openiam.spml2.spi.ldap.command;
 
 
-import javax.naming.NamingException;
-import javax.naming.directory.ModificationItem;
-import javax.naming.ldap.LdapContext;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.base.SysConfiguration;
-import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.SuspendResumeRequest;
 import org.openiam.connector.type.response.ResponseType;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
-import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemObjectMatchDAO;
-import org.openiam.connector.ldap.dirtype.Directory;
-import org.openiam.connector.ldap.dirtype.DirectorySpecificImplFactory;
-import org.openiam.spml2.spi.ldap.command.LdapAbstractCommand;
-import org.openiam.spml2.util.connect.ConnectionFactory;
-import org.openiam.connector.util.ConnectionManagerConstant;
 import org.openiam.connector.util.ConnectionMgr;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;

@@ -16,7 +16,7 @@ import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.connector.common.command.AbstractCommand;
-import org.openiam.spml2.util.connect.ConnectionFactory;
+import org.openiam.connector.util.connect.ConnectionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.naming.NamingEnumeration;

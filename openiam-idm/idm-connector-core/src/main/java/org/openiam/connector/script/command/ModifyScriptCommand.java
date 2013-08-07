@@ -3,7 +3,7 @@ package org.openiam.connector.script.command;
 import org.openiam.connector.script.command.base.AbstractScriptCommand;
 import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.connector.type.response.ObjectResponse;
-import org.openiam.spml2.constants.CommandType;
+import org.openiam.connector.common.constants.CommandType;
 import org.springframework.stereotype.Service;
 
 /**

@@ -1,7 +1,7 @@
-package org.openiam.spml2.spi.example.command.user;
+package org.openiam.connector.shell.command.user;
 
-import org.openiam.provision.dto.ProvisionUser;
-import org.openiam.spml2.spi.example.command.base.AbstractDeleteShellCommand;
+import org.openiam.connector.shell.command.base.AbstractCrudShellCommand;
+import org.openiam.provision.type.ExtensibleUser;
 import org.springframework.stereotype.Service;
 
 /**
@@ -12,14 +12,14 @@ import org.springframework.stereotype.Service;
  * To change this template use File | Settings | File Templates.
  */
 @Service("deleteUserShellCommand")
-public class DeleteUserShellCommand extends AbstractDeleteShellCommand<ProvisionUser> {
+public class DeleteUserShellCommand extends AbstractCrudShellCommand<ExtensibleUser> {
     @Override
-    protected String getDeleteCommand(String host, String hostlogin, String hostpassword, String objectId) {
+    protected String getCommand(String host, String hostlogin, String hostpassword, String userName, ExtensibleUser object) {
         StringBuffer strBuf = new StringBuffer();
 
         strBuf.append("cmd /c powershell.exe -command \"& C:\\powershell\\ad\\Del-AdUser.ps1 ");
         strBuf.append("'" + host + "' ");
-        strBuf.append("'" + objectId + "' \" ");
+        strBuf.append("'" + userName + "' \" ");
         return  strBuf.toString();
     }
 }

@@ -1,7 +1,7 @@
-package org.openiam.spml2.spi.example.command.factory;
+package org.openiam.connector.shell.command.factory;
 
 import org.openiam.provision.dto.ProvisionObjectType;
-import org.openiam.spml2.constants.CommandType;
+import org.openiam.connector.common.constants.CommandType;
 import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.spml2.msg.ErrorCode;
 import org.openiam.connector.common.command.ConnectorCommand;

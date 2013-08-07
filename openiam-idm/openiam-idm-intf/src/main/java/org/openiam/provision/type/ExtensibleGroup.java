@@ -28,7 +28,6 @@ import javax.xml.bind.annotation.XmlType;
 
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.provision.dto.ProvisionObjectType;
 
 /**
  * Group object that is passed to the connector service when provisioning a group.

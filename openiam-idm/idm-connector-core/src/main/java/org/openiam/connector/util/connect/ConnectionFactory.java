@@ -1,4 +1,4 @@
-package org.openiam.spml2.util.connect;
+package org.openiam.connector.util.connect;
 
 import org.openiam.connector.util.ConnectionManagerConstant;
 import org.openiam.connector.util.ConnectionMgr;

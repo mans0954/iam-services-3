@@ -1,12 +1,9 @@
 package org.openiam.connector.mysql;
 
-import org.openiam.connector.type.request.SearchRequest;
-import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.connector.AbstractConnectorService;
-import org.openiam.spml2.constants.ConnectorType;
+import org.openiam.connector.common.constants.ConnectorType;
 import org.springframework.stereotype.Service;
 
-import javax.jws.WebParam;
 import javax.jws.WebService;
 
 @Service("genericMySQLConnector")
