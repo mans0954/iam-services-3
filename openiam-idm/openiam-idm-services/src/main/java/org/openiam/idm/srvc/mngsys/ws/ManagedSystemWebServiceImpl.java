@@ -279,8 +279,23 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
         if (resourceId == null) {
             throw new NullPointerException("resourceId is null");
         }
-        return managedSysDozerConverter.convertToDTO(managedSystemService
-                .getManagedSysByResource(resourceId, "ACTIVE"), true);
+        ManagedSysEntity sys = managedSystemService.getManagedSysByResource(
+                resourceId, "ACTIVE");
+        ManagedSysDto sysDto = null;
+        if (sys != null) {
+            sysDto = managedSysDozerConverter.convertToDTO(sys, true);
+            if (sysDto != null && sysDto.getPswd() != null) {
+                try {
+                    sysDto.setDecryptPassword(cryptor.decrypt(
+                            keyManagementService.getUserKey(sys.getUserId(),
+                                    KeyName.password.name()), sys.getPswd()));
+                } catch (Exception e) {
+                    log.error(e);
+                }
+            }
+        }
+
+        return sysDto;
     }
 
     /*
@@ -537,12 +552,15 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     }
 
     @Override
-    public List<AttributeMap> findResourceAttributeMaps(AttributeMapSearchBean searchBean) {
+    public List<AttributeMap> findResourceAttributeMaps(
+            AttributeMapSearchBean searchBean) {
         if (searchBean == null) {
             throw new IllegalArgumentException("searchBean is null");
         }
-        List<AttributeMapEntity> ameList = managedSystemService.getResourceAttributeMaps(searchBean);
-        return (ameList == null) ? null : attributeMapDozerConverter.convertToDTOList(ameList, true);
+        List<AttributeMapEntity> ameList = managedSystemService
+                .getResourceAttributeMaps(searchBean);
+        return (ameList == null) ? null : attributeMapDozerConverter
+                .convertToDTOList(ameList, true);
     }
 
     public List<AttributeMap> getAllAttributeMaps() {
