@@ -3,9 +3,12 @@ package org.openiam.idm.srvc.msg.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jms.core.JmsTemplate;
+import org.springframework.jms.core.MessageCreator;
 import org.springframework.stereotype.Component;
 
-import javax.jms.Destination;
+import javax.jms.JMSException;
+import javax.jms.Queue;
+import javax.jms.Session;
 
 @Component("mailSender")
 public class MailSender {
@@ -15,14 +18,15 @@ public class MailSender {
 
     @Autowired
     @Qualifier(value = "mailQueue")
-    private Destination queue;
+    private Queue queue;
 
-    @Autowired
-    MailSenderClient mailSenderClient;
-
-    public void send(Message msg) {
-
-        mailSenderClient.send(msg);
+    public void send(final Message mail) {
+        jmsTemplate.send(queue, new MessageCreator() {
+            public javax.jms.Message createMessage(Session session) throws JMSException {
+                javax.jms.Message message = session.createObjectMessage(mail);
+                return message;
+            }
+        });
     }
 
 }

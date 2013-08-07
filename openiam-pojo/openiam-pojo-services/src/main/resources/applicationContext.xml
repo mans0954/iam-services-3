@@ -14,6 +14,8 @@
        http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
        http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
 
+    <import resource="jmsContext.xml" />
+
 	<context:annotation-config />
 	<context:component-scan
 		base-package="org.openiam.idm.srvc.org.service,
@@ -169,7 +171,6 @@
 				<prop key="mail.smtp.starttls.enable">false</prop>
 			</props>
 		</property>
-
 	</bean>
 
 	<bean id="mailSenderClient" class=" org.openiam.idm.srvc.msg.service.MailSenderClient">
@@ -350,19 +351,6 @@
 	<bean id="hibernateTemplate" class="org.springframework.orm.hibernate3.HibernateTemplate">
 		<property name="sessionFactory" ref="sessionFactory" />
 	</bean>
-<!--
-<jee:jndi-lookup id="connection-factory" jndi-name="jms/ConnFactory"/>
-<jee:jndi-lookup id="myQueue" jndi-name="jms/MyQueue"/>
-<bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
-    <property name="connectionFactory" ref="connection-factory" />
-</bean>
-<bean id="jmsSender" class="org.openiam.idm.connector.jms.JmsQueueSender">
-<property name="jmsTemplate">
-<ref bean="jmsTemplate"/>
-</property>
-    <property name="queue" ref="myQueue" />
-</bean>
- -->
 
 	<jee:jndi-lookup jndi-name="${datasource.jndi.name}"
 		id="dataSource" />
