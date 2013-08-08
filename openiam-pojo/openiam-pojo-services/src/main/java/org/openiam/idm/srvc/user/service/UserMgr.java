@@ -455,17 +455,17 @@ public class UserMgr implements UserDataService {
                 entityList.add(entity);
             }
         } else {
-            List<String> finalizedIdList = getUserIds(searchBean);
+            List<UserEntity> finalizedIdList = userDao.findByIds(getUserIds(searchBean));
             if (from > -1 && size > -1) {
                 if (finalizedIdList != null && finalizedIdList.size() >= from) {
                     int to = from + size;
                     if (to > finalizedIdList.size()) {
                         to = finalizedIdList.size();
                     }
-                    finalizedIdList = new ArrayList<String>(finalizedIdList.subList(from, to));
+                    finalizedIdList = new ArrayList<UserEntity>(finalizedIdList.subList(from, to));
                 }
             }
-            entityList = userDao.findByIds(finalizedIdList);
+            entityList = finalizedIdList;
         }
         return entityList;
     }
@@ -473,7 +473,7 @@ public class UserMgr implements UserDataService {
     @Override
     @Transactional(readOnly = true)
     public int count(UserSearchBean searchBean) {
-        return getUserIds(searchBean).size();
+        return userDao.findByIds(getUserIds(searchBean)).size();
     }
 
     @Override
