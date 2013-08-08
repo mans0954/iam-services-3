@@ -28,6 +28,9 @@ public class SynchConfigEntity implements Serializable {
     private String status;
     @Column(name="SYNCH_SRC",length=20)
     private String synchAdapter;
+    @Column(name="USE_SYSTEM_PATH")
+    @Type(type = "yes_no")
+    private boolean useSystemPath;
     @Column(name="FILE_NAME",length=80)
     private String fileName;
     @Column(name="MANAGED_SYS_ID",length=32)
@@ -123,6 +126,14 @@ public class SynchConfigEntity implements Serializable {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public boolean getUseSystemPath() {
+        return useSystemPath;
+    }
+
+    public void setUseSystemPath(boolean useSystemPath) {
+        this.useSystemPath = useSystemPath;
     }
 
     public String getFileName() {
@@ -380,6 +391,7 @@ public class SynchConfigEntity implements Serializable {
                 ", name='" + name + '\'' +
                 ", status='" + status + '\'' +
                 ", synchAdapter='" + synchAdapter + '\'' +
+                ", useSystemPath='" + useSystemPath + '\'' +
                 ", fileName='" + fileName + '\'' +
                 ", managedSysId='" + managedSysId + '\'' +
                 ", loadMatchOnly=" + loadMatchOnly +
@@ -427,6 +439,7 @@ public class SynchConfigEntity implements Serializable {
         if (customMatchRule != null ? !customMatchRule.equals(that.customMatchRule) : that.customMatchRule != null)
             return false;
         if (driver != null ? !driver.equals(that.driver) : that.driver != null) return false;
+        if (useSystemPath != that.useSystemPath) return false;
         if (fileName != null ? !fileName.equals(that.fileName) : that.fileName != null) return false;
         if (lastExecTime != null ? !lastExecTime.equals(that.lastExecTime) : that.lastExecTime != null) return false;
         if (lastRecProcessed != null ? !lastRecProcessed.equals(that.lastRecProcessed) : that.lastRecProcessed != null)
@@ -471,6 +484,7 @@ public class SynchConfigEntity implements Serializable {
         int result = name.hashCode();
         result = 31 * result + (status != null ? status.hashCode() : 0);
         result = 31 * result + synchAdapter.hashCode();
+        result = 31 * result + (useSystemPath ? 1231 : 1237);
         result = 31 * result + (fileName != null ? fileName.hashCode() : 0);
         result = 31 * result + (managedSysId != null ? managedSysId.hashCode() : 0);
         result = 31 * result + (loadMatchOnly != null ? loadMatchOnly.hashCode() : 0);
