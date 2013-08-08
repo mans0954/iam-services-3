@@ -35,7 +35,6 @@ import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.connector.type.request.LookupRequest;
 import org.openiam.connector.type.request.SuspendResumeRequest;
-import org.openiam.connector.type.request.SuspendRequest;
 import org.openiam.connector.type.response.*;
 import org.openiam.exception.EncryptionException;
 import org.openiam.exception.ObjectNotFoundException;
@@ -623,8 +622,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                             "String"));
                                 }
 
-                                CrudRequest userReq = new CrudRequest();
-                                userReq.setUserIdentity(resLogin.getLogin());
+                                CrudRequest<ExtensibleUser> userReq = new CrudRequest<ExtensibleUser>();
+                                userReq.setObjectIdentity(resLogin.getLogin());
                                 userReq.setRequestID(requestId);
                                 userReq.setTargetID(resLogin.getManagedSysId());
                                 userReq.setHostLoginId(mSys.getUserId());
@@ -632,7 +631,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 userReq.setHostUrl(mSys.getHostUrl());
                                 userReq.setBaseDN(matchObj.getBaseDn());
                                 userReq.setOperation("EDIT");
-                                userReq.setUser(extUser);
+                                userReq.setExtensibleObject(extUser);
 
                                 userReq.setScriptHandler(mSys
                                         .getModifyHandler());
@@ -645,12 +644,12 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 }
 
                             } else {
-                                CrudRequest modReqType = new CrudRequest();
+                                CrudRequest<ExtensibleUser> modReqType = new CrudRequest<ExtensibleUser>();
 
                                 modReqType.setTargetID(resLogin.getManagedSysId());
-                                modReqType.setUserIdentity(resLogin.getLogin());
+                                modReqType.setObjectIdentity(resLogin.getLogin());
                                 modReqType.setRequestID(requestId);
-                                modReqType.setUser(extUser);
+                                modReqType.setExtensibleObject(extUser);
 
                                 // check if this request calls for the identity
                                 // being renamed
@@ -1484,15 +1483,15 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             .getManagedSys(managedSysId);
                     if (AccountLockEnum.LOCKED.equals(operation)
                             || AccountLockEnum.LOCKED_ADMIN.equals(operation)) {
-                        final SuspendRequest suspendCommand = new SuspendRequest();
-                        suspendCommand.setUserIdentity(userLogin.getLogin());
+                        final SuspendResumeRequest suspendCommand = new SuspendResumeRequest();
+                        suspendCommand.setObjectIdentity(userLogin.getLogin());
                         suspendCommand.setTargetID(managedSysId);
                         suspendCommand.setRequestID("R" + System.currentTimeMillis());
                         connectorAdapter.suspendRequest(managedSys,
                                 suspendCommand, muleContext);
                     } else {
                         final SuspendResumeRequest resumeRequest = new SuspendResumeRequest();
-                        resumeRequest.setUserIdentity(userLogin.getLogin());
+                        resumeRequest.setObjectIdentity(userLogin.getLogin());
                         resumeRequest.setTargetID(managedSysId);
                         resumeRequest.setRequestID("R"
                                 + System.currentTimeMillis());
@@ -1534,8 +1533,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         if (managedSys != null) {
                             ResponseType responsetype = null;
                             if(AccountLockEnum.LOCKED.equals(operation) || AccountLockEnum.LOCKED_ADMIN.equals(operation)) {
-                                final SuspendRequest suspendCommand = new SuspendRequest();
-                                suspendCommand.setUserIdentity(lg.getLogin());
+                                final SuspendResumeRequest suspendCommand = new SuspendResumeRequest();
+                                suspendCommand.setObjectIdentity(lg.getLogin());
                                 suspendCommand.setTargetID(managedSys.getManagedSysId());
                                 suspendCommand.setRequestID("R"
                                         + System.currentTimeMillis());
@@ -1543,7 +1542,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                         suspendCommand, muleContext);
                             } else {
                                 final SuspendResumeRequest resumeRequest = new SuspendResumeRequest();
-                                resumeRequest.setUserIdentity(lg.getLogin());
+                                resumeRequest.setObjectIdentity(lg.getLogin());
                                 resumeRequest.setTargetID(managedSys.getManagedSysId());
                                 resumeRequest.setRequestID("R"
                                         + System.currentTimeMillis());
@@ -1940,7 +1939,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         bindingMap.put(MATCH_PARAM, matchObj);
                     }
                     // build the request
-                    CrudRequest modReqType = new CrudRequest();
+                    CrudRequest<ExtensibleUser> modReqType = new CrudRequest<ExtensibleUser>();
 
                     // get the identity linked to this resource / managedsys
                     // determin if this identity exists in IDM or not
@@ -2089,11 +2088,11 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                             } else {
                                 // build the request
-                                CrudRequest addReqType = new CrudRequest();
-                                addReqType.setUserIdentity(mLg.getLogin());
+                                CrudRequest<ExtensibleUser> addReqType = new CrudRequest<ExtensibleUser>();
+                                addReqType.setObjectIdentity(mLg.getLogin());
                                 addReqType.setRequestID(requestId);
                                 addReqType.setTargetID(mLg.getManagedSysId());
-                                addReqType.setUser(extUser);
+                                addReqType.setExtensibleObject(extUser);
                                 log.debug("Creating identity in target system:"
                                         + mLg.getLoginId());
 
@@ -2211,8 +2210,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                             "String"));
                                 }
 
-                                CrudRequest userReq = new CrudRequest();
-                                userReq.setUserIdentity(mLg.getLogin());
+                                CrudRequest<ExtensibleUser> userReq = new CrudRequest<ExtensibleUser>();
+                                userReq.setObjectIdentity(mLg.getLogin());
                                 userReq.setRequestID(requestId);
                                 userReq.setTargetID(mLg.getManagedSysId());
                                 userReq.setHostLoginId(mSys.getUserId());
@@ -2220,7 +2219,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 userReq.setHostUrl(mSys.getHostUrl());
                                 userReq.setBaseDN(matchObj.getBaseDn());
                                 userReq.setOperation("EDIT");
-                                userReq.setUser(extUser);
+                                userReq.setExtensibleObject(extUser);
 
                                 userReq.setScriptHandler(mSys
                                         .getModifyHandler());
@@ -2234,7 +2233,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                             } else {
                                 modReqType.setTargetID(mLg.getManagedSysId());
-                                modReqType.setUserIdentity(mLg.getLogin());
+                                modReqType.setObjectIdentity(mLg.getLogin());
                                 modReqType.setRequestID(requestId);
 
                                 // check if this request calls for the identity
@@ -2258,7 +2257,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                     // }
 
                                 }
-                                modReqType.setUser(extUser);
+                                modReqType.setExtensibleObject(extUser);
 
                                 log.debug("Creating identity in target system:"
                                         + mLg.getLoginId());
@@ -2396,9 +2395,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             && connector.getConnectorInterface()
                                     .equalsIgnoreCase("REMOTE")) {
 
-                        CrudRequest request = new CrudRequest();
+                        CrudRequest<ExtensibleUser> request = new CrudRequest();
 
-                        request.setUserIdentity(mLg.getLogin());
+                        request.setObjectIdentity(mLg.getLogin());
                         request.setRequestID(requestId);
                         request.setTargetID(mLg.getManagedSysId());
                         request.setHostLoginId(mSys.getUserId());
@@ -2413,9 +2412,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 connector, muleContext);
 
                     } else {
-                        CrudRequest reqType = new CrudRequest();
+                        CrudRequest<ExtensibleUser> reqType = new CrudRequest<ExtensibleUser>();
                         reqType.setRequestID(requestId);
-                        reqType.setUserIdentity(mLg.getLogin());
+                        reqType.setObjectIdentity(mLg.getLogin());
                         reqType.setTargetID(managedSysId);
                         connectorAdapter.deleteRequest(
                                 mSys, reqType, muleContext);
@@ -2688,19 +2687,19 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
             reqType.setScriptHandler(mSys.getLookupHandler());
 
-            LookupResponse responseType = remoteConnectorAdapter.lookupRequest(
+            ObjectResponse responseType = remoteConnectorAdapter.lookupRequest(
                     mSys, reqType, connector, muleContext);
             if (responseType.getStatus() == StatusCodeType.FAILURE) {
                 response.setStatus(ResponseStatus.FAILURE);
                 return response;
             }
-            String targetPrincipalName = responseType.getUser()
-                    .getUserIdentity() != null ? responseType.getUser()
-                    .getUserIdentity() : parseUserPrincipal(responseType
-                    .getUser().getAttributeList());
+            String targetPrincipalName = responseType.getObjectValue()
+                    .getObjectIdentity() != null ? responseType.getObjectValue()
+                    .getObjectIdentity() : parseUserPrincipal(responseType
+                    .getObjectValue().getAttributeList());
             response.setPrincipalName(targetPrincipalName);
-            response.setAttrList(responseType.getUser().getAttributeList());
-            response.setResponseValue(responseType.getUser());
+            response.setAttrList(responseType.getObjectValue().getAttributeList());
+            response.setResponseValue(responseType.getObjectValue());
 
             return response;
 
@@ -2721,8 +2720,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             }
 
             List<ExtensibleAttribute> attributes = new LinkedList<ExtensibleAttribute>();
-            if(!CollectionUtils.isEmpty(responseType.getUserList())) {
-                attributes = responseType.getUserList().get(0).getAttributeList();
+            if(!CollectionUtils.isEmpty(responseType.getObjectList())) {
+                attributes = responseType.getObjectList().get(0).getAttributeList();
             }
             response.setPrincipalName(parseUserPrincipal(attributes));
             response.setAttrList(attributes);

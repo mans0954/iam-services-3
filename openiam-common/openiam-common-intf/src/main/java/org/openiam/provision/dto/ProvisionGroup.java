@@ -37,23 +37,26 @@ import javax.xml.bind.annotation.XmlType;
         "requestId",
         "srcSystemId"
 })
-public class ProvisionGroup extends GenericProvisionObject<Group> {
+public class ProvisionGroup extends org.openiam.idm.srvc.grp.dto.Group {
 	private static final long serialVersionUID = -33009889049229700L;
 	
-	String requestId;
+	private String requestId;
 	/* ID of the system where this request came from */
-	String srcSystemId;
+    private String srcSystemId;
 
-    public ProvisionGroup() {
-        this(new Group());
+    public String getRequestId() {
+        return requestId;
     }
 
-    public ProvisionGroup(Group object) {
-        super(object);
-        this.provisionObjectType = ProvisionObjectType.GROUP;
+    public void setRequestId(String requestId) {
+        this.requestId = requestId;
     }
 
-    public Group getGroup(){
-        return this.getObject();
+    public String getSrcSystemId() {
+        return srcSystemId;
+    }
+
+    public void setSrcSystemId(String srcSystemId) {
+        this.srcSystemId = srcSystemId;
     }
 }

@@ -6,8 +6,6 @@ import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.connector.type.response.ObjectResponse;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.provision.dto.GenericProvisionObject;
 import org.openiam.provision.type.ExtensibleObject;
 
 import java.sql.Connection;

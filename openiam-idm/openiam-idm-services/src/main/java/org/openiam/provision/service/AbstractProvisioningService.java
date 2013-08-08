@@ -20,7 +20,6 @@ import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.connector.type.request.LookupRequest;
 import org.openiam.connector.type.request.PasswordRequest;
 import org.openiam.connector.type.response.ObjectResponse;
-import org.openiam.connector.type.response.LookupResponse;
 import org.openiam.connector.type.response.ResponseType;
 import org.openiam.dozer.converter.*;
 import org.openiam.exception.EncryptionException;
@@ -264,7 +263,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
             reqType.setScriptHandler(mSys.getLookupHandler());
 
-            LookupResponse lookupRespType = remoteConnectorAdapter.lookupRequest(mSys, reqType, connector, muleContext);
+            ObjectResponse lookupRespType = remoteConnectorAdapter.lookupRequest(mSys, reqType, connector, muleContext);
 
             if (lookupRespType != null && lookupRespType.getStatus() == StatusCodeType.SUCCESS) {
                 return true;
@@ -2404,12 +2403,12 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                              ManagedSystemObjectMatch matchObj, ExtensibleUser extUser,
                              ProvisionUser user, IdmAuditLog idmAuditLog) {
 
-        CrudRequest addReqType = new CrudRequest();
+        CrudRequest<ExtensibleUser> addReqType = new CrudRequest<ExtensibleUser>();
 
-        addReqType.setUserIdentity(mLg.getLogin());
+        addReqType.setObjectIdentity(mLg.getLogin());
         addReqType.setRequestID(requestId);
         addReqType.setTargetID(mLg.getManagedSysId());
-        addReqType.setUser(extUser);
+        addReqType.setExtensibleObject(extUser);
         log.debug("Local connector - Creating identity in target system:" + mLg.getLoginId());
         ObjectResponse resp = connectorAdapter.addRequest(mSys, addReqType, muleContext);
 
@@ -2430,8 +2429,8 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
         log.debug("Calling remote connector " + connector.getName());
 
-        CrudRequest userReq = new CrudRequest();
-        userReq.setUserIdentity(mLg.getLogin());
+        CrudRequest<ExtensibleUser> userReq = new CrudRequest<ExtensibleUser>();
+        userReq.setObjectIdentity(mLg.getLogin());
         userReq.setRequestID(requestId);
         userReq.setTargetID(mLg.getManagedSysId());
         userReq.setHostLoginId(mSys.getUserId());
@@ -2441,7 +2440,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
             userReq.setBaseDN(matchObj.getBaseDn());
         }
         userReq.setOperation("ADD");
-        userReq.setUser(extUser);
+        userReq.setExtensibleObject(extUser);
 
         userReq.setScriptHandler(mSys.getAddHandler());
 
@@ -2464,9 +2463,9 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
             IdmAuditLog auditLog
     ) {
 
-        CrudRequest request = new CrudRequest();
+        CrudRequest<ExtensibleUser> request = new CrudRequest<ExtensibleUser>();
 
-        request.setUserIdentity(mLg.getLogin());
+        request.setObjectIdentity(mLg.getLogin());
         request.setRequestID(requestId);
         request.setTargetID(mLg.getManagedSysId());
         request.setHostLoginId(mSys.getUserId());
@@ -2498,9 +2497,9 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
         log.debug("Local delete for=" + l);
 
-        CrudRequest reqType = new CrudRequest();
+        CrudRequest<ExtensibleUser> reqType = new CrudRequest<ExtensibleUser>();
         reqType.setRequestID(requestId);
-        reqType.setUserIdentity(l.getLogin());
+        reqType.setObjectIdentity(l.getLogin());
 
         ResponseType resp = connectorAdapter.deleteRequest(mSys, reqType, muleContext);
 
@@ -2542,7 +2541,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
             String password, ManagedSysDto mSys, PasswordSync passwordSync) {
 
         PasswordRequest pswdReqType = new PasswordRequest();
-        pswdReqType.setUserIdentity(login.getLogin());
+        pswdReqType.setObjectIdentity(login.getLogin());
         pswdReqType.setTargetID(mSys.getManagedSysId());
         pswdReqType.setRequestID(requestId);
         pswdReqType.setPassword(password);
@@ -2577,7 +2576,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
             PasswordSync passwordSync) {
 
         PasswordRequest req = new PasswordRequest();
-        req.setUserIdentity(login.getLogin());
+        req.setObjectIdentity(login.getLogin());
         req.setRequestID(requestId);
         req.setTargetID(login.getManagedSysId());
         req.setHostLoginId(mSys.getUserId());
@@ -2618,7 +2617,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                                                                       ProvisionConnectorDto connector) {
 
         PasswordRequest req = new PasswordRequest();
-        req.setUserIdentity(login.getLogin());
+        req.setObjectIdentity(login.getLogin());
         req.setRequestID(requestId);
         req.setTargetID(login.getManagedSysId());
         req.setHostLoginId(mSys.getUserId());
@@ -2656,7 +2655,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                                           ManagedSysDto mSys) {
 
         PasswordRequest pswdReqType = new PasswordRequest();
-        pswdReqType.setUserIdentity(login.getLogin());
+        pswdReqType.setObjectIdentity(login.getLogin());
         pswdReqType.setTargetID(mSys.getManagedSysId());
         pswdReqType.setRequestID(requestId);
         pswdReqType.setPassword(passwordSync.getPassword());

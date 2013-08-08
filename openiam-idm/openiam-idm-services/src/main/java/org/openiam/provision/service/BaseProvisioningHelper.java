@@ -31,6 +31,7 @@ import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionUser;
+import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -212,9 +213,9 @@ public class BaseProvisioningHelper implements ApplicationContextAware {
             ManagedSystemObjectMatch matchObj, ProvisionUser user,
             IdmAuditLog auditLog) {
 
-        CrudRequest request = new CrudRequest();
+        CrudRequest<ExtensibleUser> request = new CrudRequest<ExtensibleUser>();
 
-        request.setUserIdentity(mLg.getLogin());
+        request.setObjectIdentity(mLg.getLogin());
         request.setRequestID(requestId);
         request.setTargetID(mLg.getManagedSysId());
         request.setHostLoginId(mSys.getUserId());

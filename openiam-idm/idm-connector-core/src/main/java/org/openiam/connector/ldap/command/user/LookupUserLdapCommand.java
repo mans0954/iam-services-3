@@ -7,9 +7,7 @@ import org.openiam.connector.type.request.LookupRequest;
 import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSystemObjectMatch;
-import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.connector.ldap.command.base.AbstractLookupLdapCommand;
@@ -27,7 +25,7 @@ import java.util.List;
 @Service("lookupUserLdapCommand")
 public class LookupUserLdapCommand extends AbstractLookupLdapCommand<ExtensibleUser>  {
     @Override
-    protected boolean lookup(ManagedSysEntity managedSys, LookupRequest<ExtensibleObject> lookupRequest, SearchResponse respType, LdapContext ldapctx) throws ConnectorDataException {
+    protected boolean lookup(ManagedSysEntity managedSys, LookupRequest<ExtensibleUser> lookupRequest, SearchResponse respType, LdapContext ldapctx) throws ConnectorDataException {
         boolean found=false;
         ManagedSystemObjectMatch matchObj = getMatchObject(lookupRequest.getTargetID(), "USER");
         String identity = lookupRequest.getSearchValue();

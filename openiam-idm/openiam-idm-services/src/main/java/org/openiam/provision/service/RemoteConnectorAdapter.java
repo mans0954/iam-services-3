@@ -28,10 +28,9 @@ import org.mule.api.MuleMessage;
 import org.mule.module.client.MuleClient;
 import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.type.constant.StatusCodeType;
-import org.openiam.connector.type.response.ObjectResponse;
-import org.openiam.connector.type.response.LookupResponse;
-import org.openiam.connector.type.response.ResponseType;
 import org.openiam.connector.type.request.*;
+import org.openiam.connector.type.response.ObjectResponse;
+import org.openiam.connector.type.response.ResponseType;
 import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
@@ -114,14 +113,14 @@ public class RemoteConnectorAdapter {
         return resp;
     }
 
-    private LookupResponse sendLookup(String eventName, LookupRequest request, ProvisionConnectorDto connector, MuleContext muleContext){
-        LookupResponse resp = new LookupResponse();
+    private ObjectResponse sendLookup(String eventName, LookupRequest request, ProvisionConnectorDto connector, MuleContext muleContext){
+        ObjectResponse resp = new ObjectResponse();
         resp.setStatus(StatusCodeType.FAILURE);
         MuleMessage msg = getService(connector, request, connector.getServiceUrl(), eventName, muleContext);
         if (msg != null) {
             log.debug("***Payload=" + msg.getPayload());
-            if (msg.getPayload() != null && msg.getPayload() instanceof LookupResponse) {
-                return (LookupResponse) msg.getPayload();
+            if (msg.getPayload() != null && msg.getPayload() instanceof ObjectResponse) {
+                return (ObjectResponse) msg.getPayload();
             }
             resp.setStatus(StatusCodeType.SUCCESS);
             return resp;
@@ -164,9 +163,9 @@ public class RemoteConnectorAdapter {
 
     }
 
-    public LookupResponse lookupRequest(ManagedSysDto managedSys, LookupRequest req, ProvisionConnectorDto connector, MuleContext muleContext) {
+    public ObjectResponse lookupRequest(ManagedSysDto managedSys, LookupRequest req, ProvisionConnectorDto connector, MuleContext muleContext) {
 
-        LookupResponse resp = new LookupResponse();
+        ObjectResponse resp = new ObjectResponse();
 
         if (managedSys == null) {
             resp.setStatus(StatusCodeType.FAILURE);
@@ -308,7 +307,7 @@ public class RemoteConnectorAdapter {
 
     }
 
-    public ResponseType suspend(ManagedSysDto managedSys, SuspendRequest request, ProvisionConnectorDto connector, MuleContext muleContext) {
+    public ResponseType suspend(ManagedSysDto managedSys, SuspendResumeRequest request, ProvisionConnectorDto connector, MuleContext muleContext) {
         ResponseType resp = new ResponseType();
 
         if (managedSys == null) {
@@ -441,7 +440,7 @@ public class RemoteConnectorAdapter {
                     log.debug("Search Payload=" + msg.getPayload());
                     if (msg.getPayload() != null && msg.getPayload() instanceof ResponseType) {
                         resp = (SearchResponse) msg.getPayload();
-                        if(resp.getStatus() == StatusCodeType.SUCCESS || resp.getUserList().size() > 0) {
+                        if(resp.getStatus() == StatusCodeType.SUCCESS || resp.getObjectList().size() > 0) {
                             if(resp.getErrorMessage().size() > 0 ) {
                                 log.debug("RemoteConnector Search: error message = " + resp.getErrorMsgAsStr());
                             }
@@ -540,7 +539,7 @@ public class RemoteConnectorAdapter {
             }
             if (operation.equalsIgnoreCase("suspend")) {
 
-                msg = client.send("vm://remoteConnectorMessageSuspend", (SuspendRequest) reqType, msgPropMap);
+                msg = client.send("vm://remoteConnectorMessageSuspend", (SuspendResumeRequest) reqType, msgPropMap);
             }
             if (operation.equalsIgnoreCase("resume")) {
 

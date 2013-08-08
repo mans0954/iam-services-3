@@ -12,7 +12,6 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.connector.type.request.SuspendResumeRequest;
-import org.openiam.connector.type.request.SuspendRequest;
 import org.openiam.idm.srvc.audit.service.AuditHelper;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
@@ -127,8 +126,8 @@ public class DisableUserDelegate {
                         // suspend
                         log.debug("preparing suspendRequest object");
 
-                        SuspendRequest suspendReq = new SuspendRequest();
-                        suspendReq.setUserIdentity(lg.getLogin());
+                        SuspendResumeRequest suspendReq = new SuspendResumeRequest();
+                        suspendReq.setObjectIdentity(lg.getLogin());
                         suspendReq.setTargetID(managedSysId);
                         suspendReq.setRequestID(requestId);
                         connectorAdapter.suspendRequest(mSys, suspendReq,
@@ -145,7 +144,7 @@ public class DisableUserDelegate {
                         loginManager.updateLogin(lg);
 
                         SuspendResumeRequest resumeReq = new SuspendResumeRequest();
-                        resumeReq.setUserIdentity(lg.getLogin());
+                        resumeReq.setObjectIdentity(lg.getLogin());
                         resumeReq.setTargetID(managedSysId);
                         resumeReq.setRequestID(requestId);
                         connectorAdapter.resumeRequest(mSys, resumeReq,

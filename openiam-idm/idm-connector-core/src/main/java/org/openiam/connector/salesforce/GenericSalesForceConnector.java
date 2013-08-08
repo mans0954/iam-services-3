@@ -11,16 +11,11 @@ import javax.jws.WebParam;
 import javax.jws.WebService;
 
 @Service("genericSalesForceConnector")
-@WebService(endpointInterface="org.openiam.spml2.interf.ConnectorService",
+@WebService(endpointInterface="org.openiam.connector.ConnectorService",
 	targetNamespace="http://www.openiam.org/service/connector",
 	portName = "SalesForceServicePort", serviceName="SalesForceConnectorService")
 public class GenericSalesForceConnector extends AbstractConnectorService {
     protected void initConnectorType(){
         this.connectorType= ConnectorType.SALES_FORCE;
-    }
-
-    @Override
-    public SearchResponse search(@WebParam(name = "searchRequest", targetNamespace = "") SearchRequest searchRequest) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 }

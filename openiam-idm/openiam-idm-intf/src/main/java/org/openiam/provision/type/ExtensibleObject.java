@@ -21,7 +21,6 @@
  */
 package org.openiam.provision.type;
 
-import org.openiam.provision.dto.ProvisionObjectType;
 
 import java.util.ArrayList;
 import java.util.List;

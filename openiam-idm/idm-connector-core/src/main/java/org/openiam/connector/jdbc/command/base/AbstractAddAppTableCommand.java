@@ -1,11 +1,9 @@
 package org.openiam.connector.jdbc.command.base;
 
-import org.openiam.connector.common.data.ConnectorConfiguration;
 import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.connector.type.response.ObjectResponse;
-import org.openiam.provision.dto.GenericProvisionObject;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.connector.jdbc.command.data.AppTableConfiguration;
 

@@ -6,7 +6,6 @@ import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.connector.type.response.ObjectResponse;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
-import org.openiam.provision.dto.GenericProvisionObject;
 import org.openiam.connector.jdbc.command.data.AppTableConfiguration;
 import org.openiam.provision.type.ExtensibleObject;
 

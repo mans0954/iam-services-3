@@ -35,7 +35,7 @@ public class LdapConnectionMgr implements ConnectionMgr {
     
 
 
-	public LdapContext connect(ManagedSysDto managedSys)  throws NamingException{
+	public LdapContext connect(ManagedSysEntity managedSys)  throws NamingException{
 
 		LdapContext ldapContext = null;
 		Hashtable<String, String> envDC = new Hashtable();
@@ -112,8 +112,7 @@ public class LdapConnectionMgr implements ConnectionMgr {
 	}
 
 
-
-	public void close() throws NamingException {
+    public void close() throws NamingException {
 
 		if (this.ctxLdap != null) { 
     		ctxLdap.close();

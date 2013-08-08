@@ -405,7 +405,7 @@ public class ReconciliationServiceImpl implements ReconciliationService,
         }
         if (searchResponse != null
                 && searchResponse.getStatus() == StatusCodeType.SUCCESS) {
-            List<ObjectValue> usersFromRemoteSys = searchResponse.getUserList();
+            List<ObjectValue> usersFromRemoteSys = searchResponse.getObjectList();
             if (usersFromRemoteSys != null) {
                 for (ObjectValue userValue : usersFromRemoteSys) {
                     List<ExtensibleAttribute> extensibleAttributes = userValue

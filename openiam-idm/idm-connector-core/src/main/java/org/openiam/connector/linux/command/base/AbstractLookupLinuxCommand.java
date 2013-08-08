@@ -5,7 +5,6 @@ import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.LookupRequest;
 import org.openiam.connector.type.response.SearchResponse;
-import org.openiam.provision.dto.GenericProvisionObject;
 import org.openiam.connector.linux.ssh.SSHAgent;
 import org.openiam.provision.type.ExtensibleObject;
 

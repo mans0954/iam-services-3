@@ -7,6 +7,8 @@ import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.recon.dto.ReconciliationObject;
+import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultField;
+import org.openiam.idm.srvc.user.dto.User;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
@@ -167,12 +169,12 @@ public class GroupCsvParser extends AbstractCSVParser<Group, GroupFields> implem
     }
 
     @Override
-    public Map<String, String> convertToMap(List<AttributeMapEntity> attrMap, ReconciliationObject<Group> obj) {
+    public Map<String, ReconciliationResultField> convertToMap(List<AttributeMapEntity> attrMap, ReconciliationObject<Group> obj) {
         return super.convertToMap(attrMap, obj, GroupFields.class);
     }
 
     @Override
-    public String objectToString(List<String> head, Map<String, String> obj) {
+    public String objectToString(List<String> head, Map<String, ReconciliationResultField> obj) {
         StringBuilder stb = new StringBuilder();
         for (String h : head) {
             stb.append(obj.get(h.trim()) == null ? "" : obj.get(h));
@@ -189,35 +191,59 @@ public class GroupCsvParser extends AbstractCSVParser<Group, GroupFields> implem
     }
 
     @Override
-    public Map<String, String> matchFields(List<AttributeMapEntity> attrMap,
-                                           ReconciliationObject<Group> u, ReconciliationObject<Group> o) {
-        Map<String, String> res = new HashMap<String, String>(0);
-        Map<String, String> one = this.convertToMap(attrMap, u);
-        Map<String, String> two = this.convertToMap(attrMap, o);
-        for (String field : one.keySet()) {
+    public Group getObjectByReconResltFields(List<ReconciliationResultField> header, List<ReconciliationResultField> objFieds, boolean onlyKeyField) throws InstantiationException, IllegalAccessException {
+        return this.reconRowToObject(Group.class, GroupFields.class, header,
+                objFieds, null, onlyKeyField);
+    }
 
+    @Override
+    public Map<String, ReconciliationResultField> matchFields(List<AttributeMapEntity> attrMap,
+                                           ReconciliationObject<Group> u, ReconciliationObject<Group> o) {
+        Map<String, ReconciliationResultField> res = new HashMap<String, ReconciliationResultField>(0);
+        Map<String, ReconciliationResultField> one = this.convertToMap(attrMap, u);
+        Map<String, ReconciliationResultField> two = this.convertToMap(attrMap, o);
+        for (String field : one.keySet()) {
+            ReconciliationResultField resultField = new ReconciliationResultField();
             if (one.get(field) == null && two.get(field) == null) {
                 res.put(field, null);
                 continue;
             }
             if (one.get(field) == null && two.get(field) != null) {
-                res.put(field, two.get(field));
+                resultField.setValues(two.get(field).getValues());
+                res.put(field, resultField);
                 continue;
             }
             if (one.get(field) != null && two.get(field) == null) {
-                res.put(field, one.get(field));
+                resultField.setValues(one.get(field).getValues());
+                res.put(field, resultField);
                 continue;
             }
             if (one.get(field) != null && two.get(field) != null) {
-                String firstVal = one.get(field).replaceFirst("^0*", "").trim();
-                String secondVal = two.get(field).replaceFirst("^0*", "")
-                        .trim();
-                res.put(field, firstVal.equalsIgnoreCase(secondVal) ? secondVal
-                        : ("[" + firstVal + "][" + secondVal + "]"));
+                ReconciliationResultField firstVal = one.get(field);
+                ReconciliationResultField secondVal = two.get(field);
+                if (firstVal.equals(secondVal)) {
+                    resultField.setValues(secondVal.getValues());
+                } else {
+                    resultField.setValues(new ArrayList<String>(firstVal
+                            .getValues()));
+                    resultField.getValues().addAll(secondVal.getValues());
+                }
+                res.put(field, resultField);
                 continue;
             }
         }
 
         return res;
+    }
+
+    @Override
+    public String getObjectSimlpeClass() {
+        return this.getObjectSimlpeClass(Group.class);
+    }
+
+    @Override
+    public Group addObjectByReconResltFields(List<ReconciliationResultField> header, List<ReconciliationResultField> objFieds, Group user) throws InstantiationException, IllegalAccessException {
+        return this.reconRowToObject(Group.class, GroupFields.class, header,
+                objFieds, user, false);
     }
 }

@@ -478,7 +478,7 @@ public class ConnectorAdapter {
     }
 
     public ResponseType suspendRequest(ManagedSysDto managedSys,
-                                       SuspendRequest request,
+                                       SuspendResumeRequest request,
                                        MuleContext muleContext) {
 
         ResponseType type = new ResponseType();

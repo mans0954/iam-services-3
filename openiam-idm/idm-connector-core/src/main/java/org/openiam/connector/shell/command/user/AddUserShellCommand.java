@@ -1,10 +1,7 @@
 package org.openiam.connector.shell.command.user;
 
 import org.openiam.connector.shell.command.base.AbstractCrudShellCommand;
-import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.type.ExtensibleAttribute;
-import org.openiam.provision.type.ExtensibleObject;
-import org.openiam.connector.shell.command.base.AbstractAddShellCommand;
 import org.openiam.provision.type.ExtensibleUser;
 import org.springframework.stereotype.Service;
 

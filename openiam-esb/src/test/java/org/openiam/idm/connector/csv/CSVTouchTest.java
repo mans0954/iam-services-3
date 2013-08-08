@@ -2,6 +2,7 @@ package org.openiam.idm.connector.csv;
 
 import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.connector.type.request.LookupRequest;
+import org.openiam.connector.type.request.RequestType;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.provision.dto.ProvisionUser;
@@ -40,8 +41,8 @@ public class CSVTouchTest extends AbstractTestNGSpringContextTests {
         pu.setEmployeeId("1");
         pu.setFirstName("firstName_test");
 
-        CrudRequest userReq = new CrudRequest();
-        userReq.setUserIdentity("sysadmin");
+        CrudRequest<ExtensibleUser> userReq = new CrudRequest<ExtensibleUser>();
+        userReq.setObjectIdentity("sysadmin");
         userReq.setRequestID("1");
         userReq.setTargetID(defaultManagedSysId);
         userReq.setHostLoginId("1");
@@ -58,14 +59,14 @@ public class CSVTouchTest extends AbstractTestNGSpringContextTests {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        userReq.setUser(extUser);
+        userReq.setExtensibleObject(extUser);
 		connectorService.add(userReq);
 	}
 
 	@Test
 	public void modifyTouchCSVTest() {
-        CrudRequest addRequest = new CrudRequest();
-		addRequest.setUserIdentity("sysadmin");
+        CrudRequest<ExtensibleUser> addRequest = new CrudRequest<ExtensibleUser>();
+		addRequest.setObjectIdentity("sysadmin");
         addRequest.setTargetID(defaultManagedSysId);
         ExtensibleUser ex = new ExtensibleUser();
         List<ExtensibleEmailAddress> emailAddresses = new LinkedList<ExtensibleEmailAddress>();
@@ -75,14 +76,14 @@ public class CSVTouchTest extends AbstractTestNGSpringContextTests {
         attributes.add(new ExtensibleAttribute("employeeId", "2"));
         attributes.add(new ExtensibleAttribute("firstName","firstName_test_2"));
         ex.setAttributes(attributes);
-        addRequest.setUser(ex);
+        addRequest.setExtensibleObject(ex);
 		connectorService.modify(addRequest);
 	}
 
 	@Test
 	public void deleteTouchCSVTest() {
-		CrudRequest addRequest = new CrudRequest();
-		addRequest.setUserIdentity("sysadmin2");
+		CrudRequest<ExtensibleUser> addRequest = new CrudRequest<ExtensibleUser>();
+		addRequest.setObjectIdentity("sysadmin2");
         addRequest.setTargetID(defaultManagedSysId);
 		ExtensibleUser eu = new ExtensibleUser();
         ExtensibleEmailAddress emailAddress = new ExtensibleEmailAddress();
@@ -92,14 +93,15 @@ public class CSVTouchTest extends AbstractTestNGSpringContextTests {
 
         eu.setObjectId("1");
         eu.setName("fn_2");
-		addRequest.setUser(eu);
+		addRequest.setExtensibleObject(eu);
 		connectorService.delete(addRequest);
 	}
 
 	@Test
 	public void testTouchCSVTest() {
-		connectorService.testConnection(managedSysServiceClient
-				.getManagedSys(defaultManagedSysId));
+        RequestType<ExtensibleUser> testRequest = new RequestType<ExtensibleUser>();
+        testRequest.setTargetID(defaultManagedSysId);
+		connectorService.testConnection(testRequest);
 	}
 
 	@Test

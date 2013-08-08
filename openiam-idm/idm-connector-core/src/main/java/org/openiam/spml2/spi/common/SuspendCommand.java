@@ -1,7 +1,7 @@
 package org.openiam.spml2.spi.common;
 
+import org.openiam.connector.type.request.SuspendResumeRequest;
 import org.openiam.connector.type.response.ResponseType;
-import org.openiam.connector.type.request.SuspendRequest;
 
 /**
  * Created with IntelliJ IDEA.
@@ -12,5 +12,5 @@ import org.openiam.connector.type.request.SuspendRequest;
  */
 @Deprecated
 public interface SuspendCommand  {
-    public ResponseType suspend(final SuspendRequest request);
+    public ResponseType suspend(final SuspendResumeRequest request);
 }

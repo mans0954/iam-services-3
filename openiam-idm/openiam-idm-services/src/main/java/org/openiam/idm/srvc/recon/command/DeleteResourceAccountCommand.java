@@ -17,6 +17,7 @@ import org.openiam.provision.service.ConnectorAdapter;
 import org.openiam.provision.service.ProvisionService;
 import org.openiam.provision.service.RemoteConnectorAdapter;
 import org.openiam.provision.type.ExtensibleAttribute;
+import org.openiam.provision.type.ExtensibleUser;
 
 import java.util.List;
 
@@ -63,8 +64,8 @@ public class DeleteResourceAccountCommand implements ReconciliationCommand {
                     connector.getConnectorInterface().equalsIgnoreCase("REMOTE")) {
 
                 log.debug("Calling delete with Remote connector");
-                CrudRequest request = new CrudRequest();
-                request.setUserIdentity(login.getLogin());
+                CrudRequest<ExtensibleUser> request = new CrudRequest<ExtensibleUser>();
+                request.setObjectIdentity(login.getLogin());
                 request.setTargetID(login.getManagedSysId());
                 request.setHostLoginId(mSys.getUserId());
                 request.setHostLoginPassword(mSys.getDecryptPassword());
@@ -72,8 +73,8 @@ public class DeleteResourceAccountCommand implements ReconciliationCommand {
                 request.setScriptHandler(mSys.getDeleteHandler());
                 remoteConnectorAdapter.deleteRequest(mSys, request, connector, muleContext);
             } else {
-                CrudRequest reqType = new CrudRequest();
-                reqType.setUserIdentity(login.getLogin());
+                CrudRequest<ExtensibleUser>  reqType = new CrudRequest<ExtensibleUser>();
+                reqType.setObjectIdentity(login.getLogin());
                 reqType.setTargetID(managedSysId);
                 log.debug("Calling delete local connector");
                 connectorAdapter.deleteRequest(mSys, reqType, muleContext);
