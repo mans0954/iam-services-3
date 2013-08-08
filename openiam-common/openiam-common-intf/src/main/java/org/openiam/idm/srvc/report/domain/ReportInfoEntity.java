@@ -46,7 +46,7 @@ public class ReportInfoEntity {
     private String reportUrl;
 
     @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
-    @JoinColumn(name="REPORT_INFO_ID", referencedColumnName="REPORT_INFO_ID")
+    @JoinColumn(name="REPORT_INFO_ID", referencedColumnName="REPORT_INFO_ID" ,insertable = false, updatable = false)
     @Fetch(FetchMode.SUBSELECT)
     private Set<ReportCriteriaParamEntity> reportParams = new HashSet<ReportCriteriaParamEntity>();
 
