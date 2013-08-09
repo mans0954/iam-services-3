@@ -37,6 +37,7 @@ import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
 import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.connector.ConnectorService;
+import org.openiam.provision.type.ExtensibleUser;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.xml.namespace.QName;
@@ -163,7 +164,7 @@ public class RemoteConnectorAdapter {
 
     }
 
-    public SearchResponse lookupRequest(ManagedSysDto managedSys, LookupRequest req, ProvisionConnectorDto connector, MuleContext muleContext) {
+    public SearchResponse lookupRequest(ManagedSysDto managedSys, LookupRequest<ExtensibleUser> req, ProvisionConnectorDto connector, MuleContext muleContext) {
 
         SearchResponse resp = new SearchResponse();
 
@@ -197,7 +198,7 @@ public class RemoteConnectorAdapter {
 
     }
 
-    public ObjectResponse deleteRequest(ManagedSysDto managedSys, CrudRequest request, ProvisionConnectorDto connector, MuleContext muleContext) {
+    public ObjectResponse deleteRequest(ManagedSysDto managedSys, CrudRequest<ExtensibleUser> request, ProvisionConnectorDto connector, MuleContext muleContext) {
         ObjectResponse resp = new ObjectResponse();
 
         if (managedSys == null) {
@@ -424,7 +425,7 @@ public class RemoteConnectorAdapter {
 
     }
 
-    public SearchResponse search(SearchRequest searchRequest, ProvisionConnectorDto connector, MuleContext muleContext) {
+    public SearchResponse search(SearchRequest<ExtensibleUser> searchRequest, ProvisionConnectorDto connector, MuleContext muleContext) {
         SearchResponse resp = new SearchResponse();
         if (searchRequest == null) {
             resp.setStatus(StatusCodeType.FAILURE);
@@ -510,15 +511,15 @@ public class RemoteConnectorAdapter {
 
             if (operation.equalsIgnoreCase("add")) {
 
-                msg = client.send("vm://remoteConnectorMessageAdd", (CrudRequest) reqType, msgPropMap);
+                msg = client.send("vm://remoteConnectorMessageAdd", (CrudRequest<ExtensibleUser>) reqType, msgPropMap);
             }
             if (operation.equalsIgnoreCase("modify")) {
 
-                msg = client.send("vm://remoteConnectorMessageModify", (CrudRequest) reqType, msgPropMap);
+                msg = client.send("vm://remoteConnectorMessageModify", (CrudRequest<ExtensibleUser>) reqType, msgPropMap);
             }
             if (operation.equalsIgnoreCase("lookup")) {
 
-                msg = client.send("vm://remoteConnectorMessageLookup", (LookupRequest) reqType, msgPropMap);
+                msg = client.send("vm://remoteConnectorMessageLookup", (LookupRequest<ExtensibleUser>) reqType, msgPropMap);
             }
             if (operation.equalsIgnoreCase("reconcile")) {
 
@@ -526,7 +527,7 @@ public class RemoteConnectorAdapter {
             }
             if (operation.equalsIgnoreCase("delete")) {
 
-                msg = client.send("vm://remoteConnectorMessageDelete", (CrudRequest) reqType, msgPropMap);
+                msg = client.send("vm://remoteConnectorMessageDelete", (CrudRequest<ExtensibleUser>) reqType, msgPropMap);
             }
             if (operation.equalsIgnoreCase("setPassword")) {
 

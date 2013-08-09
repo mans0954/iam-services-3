@@ -2525,18 +2525,18 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
             SearchResponse responseType = remoteConnectorAdapter.lookupRequest(
                     mSys, reqType, connector, muleContext);
-            if (responseType.getStatus() == StatusCodeType.FAILURE || responseType.getUserList().size() == 0) {
+            if (responseType.getStatus() == StatusCodeType.FAILURE || responseType.getObjectList().size() == 0) {
                 response.setStatus(ResponseStatus.FAILURE);
                 return response;
             }
 
-            String targetPrincipalName = responseType.getUserList().get(0)
-                    .getUserIdentity() != null ? responseType.getUserList().get(0)
-                    .getUserIdentity() : parseUserPrincipal(responseType
-                    .getUserList().get(0).getAttributeList());
+            String targetPrincipalName = responseType.getObjectList().get(0)
+                    .getObjectIdentity() != null ? responseType.getObjectList().get(0)
+                    .getObjectIdentity() : parseUserPrincipal(responseType
+                    .getObjectList().get(0).getAttributeList());
             response.setPrincipalName(targetPrincipalName);
-            response.setAttrList(responseType.getUserList().get(0).getAttributeList());
-            response.setResponseValue(responseType.getUserList().get(0));
+            response.setAttrList(responseType.getObjectList().get(0).getAttributeList());
+            response.setResponseValue(responseType.getObjectList().get(0));
 
             return response;
 

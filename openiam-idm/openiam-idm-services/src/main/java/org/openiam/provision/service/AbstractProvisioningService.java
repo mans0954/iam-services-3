@@ -16,6 +16,13 @@ import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.connector.type.*;
+import org.openiam.connector.type.constant.StatusCodeType;
+import org.openiam.connector.type.request.CrudRequest;
+import org.openiam.connector.type.request.LookupRequest;
+import org.openiam.connector.type.request.PasswordRequest;
+import org.openiam.connector.type.response.ObjectResponse;
+import org.openiam.connector.type.response.ResponseType;
+import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.dozer.converter.*;
 import org.openiam.exception.EncryptionException;
 import org.openiam.exception.ScriptEngineException;
@@ -247,7 +254,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
         if (connector.getConnectorInterface() != null &&
                 connector.getConnectorInterface().equalsIgnoreCase("REMOTE")) {
 
-            LookupRequest reqType = new LookupRequest();
+            LookupRequest<ExtensibleUser> reqType = new LookupRequest<ExtensibleUser>();
             String requestId = "R" + UUIDGen.getUUID();
             reqType.setRequestID(requestId);
             reqType.setSearchValue(identity);
