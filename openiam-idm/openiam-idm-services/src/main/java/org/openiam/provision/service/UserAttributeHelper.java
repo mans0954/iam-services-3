@@ -52,8 +52,8 @@ public class UserAttributeHelper {
 	
 	protected static final Log log = LogFactory.getLog(UserAttributeHelper.class);
 	protected static LoginDataService loginManager;
-	
-	public static ExtensibleUser newUser(ProvisionUser pUser) throws IllegalArgumentException, 
+
+  	public static ExtensibleUser newUser(ProvisionUser pUser) throws IllegalArgumentException,
 		IllegalAccessException, 
 		InvocationTargetException {
 		
@@ -105,7 +105,7 @@ public class UserAttributeHelper {
 		}
 
 		// get the user attributes
-		Map<String, UserAttribute> userAttr = (Map<String,UserAttribute>)pUser.getUser().getUserAttributes();
+		Map<String, UserAttribute> userAttr = (Map<String,UserAttribute>)pUser.getUserAttributes();
 		Collection<UserAttribute> attrCol =  userAttr.values();
 		for (UserAttribute attr : attrCol) {
 			String name = extUser.getName();
@@ -113,7 +113,7 @@ public class UserAttributeHelper {
 			extUser.getAttributes().add(new ExtensibleAttribute(name, attr.getValue(), attr.getMetadataElementId()));
 		}
 		// primary identity
-		List<Login> principalList = pUser.getUser().getPrincipalList();
+		List<Login> principalList = pUser.getPrincipalList();
 		if (principalList != null && principalList.size() > 0) {
 			for (Login lg  : principalList) {
 				try {
@@ -160,7 +160,7 @@ public class UserAttributeHelper {
 			}
 		}	
 		// address
-		Set<Address> addressList =  pUser.getUser().getAddresses();
+		Set<Address> addressList =  pUser.getAddresses();
 		if (addressList != null) {
 			Iterator<Address> adrIt =  addressList.iterator();
 			while (adrIt.hasNext()) {
@@ -171,7 +171,7 @@ public class UserAttributeHelper {
 		}
 		
 		// email
-		Set<EmailAddress> emailAddressList = pUser.getUser().getEmailAddresses();
+		Set<EmailAddress> emailAddressList = pUser.getEmailAddresses();
 		if (emailAddressList != null) {
 			Iterator<EmailAddress> emailIt = emailAddressList.iterator();
 			while (emailIt.hasNext()) {
@@ -182,7 +182,7 @@ public class UserAttributeHelper {
 		}
 		
 		// phone
-		Set<Phone> phoneList = pUser.getUser().getPhones();
+		Set<Phone> phoneList = pUser.getPhones();
 		if (phoneList != null) {
 			Iterator<Phone> phoneIt = phoneList.iterator();
 			while (phoneIt.hasNext()) {
@@ -234,7 +234,7 @@ public class UserAttributeHelper {
 
 
 	// get the user attributes
-	Map<String, UserAttribute> userAttr = (Map<String,UserAttribute>)pUser.getUser().getUserAttributes();
+	Map<String, UserAttribute> userAttr = (Map<String,UserAttribute>)pUser.getUserAttributes();
 	Collection<UserAttribute> attrCol =  userAttr.values();
 	for (UserAttribute attr : attrCol) {
 		String name = extUser.getName();
@@ -285,7 +285,7 @@ public class UserAttributeHelper {
 	}
 
 	// primary identity
-	List<Login> principalList = pUser.getUser().getPrincipalList();
+	List<Login> principalList = pUser.getPrincipalList();
 	if (principalList != null && principalList.size() > 0) {
 		for (Login lg  : principalList) {
 			try {
@@ -428,7 +428,7 @@ public class UserAttributeHelper {
 	
 	// address
 	log.info("Processing address list");
-	Set<Address> addressList = getFullAddressList(pUser.getUser().getAddresses(), origUser2.getAddresses() );
+	Set<Address> addressList = getFullAddressList(pUser.getAddresses(), origUser2.getAddresses() );
 	//Set<Address> addressList =  pUser.getAddresses();
 	if (addressList != null) {
 		Iterator<Address> adrIt =  addressList.iterator();
@@ -441,7 +441,7 @@ public class UserAttributeHelper {
 	
 	// email
 	log.info("Processing emailAddress list");
-	Set<EmailAddress> emailAddressList = getFullEmailList(pUser.getUser().getEmailAddresses(),
+	Set<EmailAddress> emailAddressList = getFullEmailList(pUser.getEmailAddresses(),
 			origUser2.getEmailAddresses() );
 	//Set<EmailAddress> emailAddressList = pUser.getEmailAddress();
 	if (emailAddressList != null) {
@@ -455,7 +455,7 @@ public class UserAttributeHelper {
 	
 	// phone
 	log.info("Processing phoneList");
-	Set<Phone> phoneList = getFullPhoneList(pUser.getUser().getPhones(),
+	Set<Phone> phoneList = getFullPhoneList(pUser.getPhones(),
 			origUser2.getPhones() );
 	//Set<Phone> phoneList = pUser.getPhone();
 	if (phoneList != null) {

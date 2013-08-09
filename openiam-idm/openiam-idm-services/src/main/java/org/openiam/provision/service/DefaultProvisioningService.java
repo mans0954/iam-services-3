@@ -256,7 +256,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             auditHelper.addLog("CREATE", user.getRequestorDomain(),
                     user.getRequestorLogin(), "IDM SERVICE",
                     user.getCreatedBy(), "0", "USER", user.getUserId(), null,
-                    "FAIL", null, "USER_STATUS", user.getUser().getStatus()
+                    "FAIL", null, "USER_STATUS", user.getStatus()
                             .toString(), requestId, "DUPLICATE PRINCIPAL",
                     user.getSessionId(), "Identity already exists:"
                             + primaryLogin.getManagedSysId() + " - "
@@ -317,7 +317,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             auditHelper.addLog("CREATE", user.getRequestorDomain(),
                     user.getRequestorLogin(), "IDM SERVICE",
                     user.getCreatedBy(), "0", "USER", user.getUserId(), null,
-                    "FAIL", null, "USER_STATUS", user.getUser().getStatus()
+                    "FAIL", null, "USER_STATUS", user.getStatus()
                             .toString(), requestId,
                     ResponseCode.FAIL_DECRYPTION.toString(),
                     user.getSessionId(), e.toString(),
@@ -1870,8 +1870,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 + " " + origUser.getLastName());
 
         String userStatus = null;
-        if (pUser.getUser().getStatus() != null) {
-            userStatus = pUser.getUser().getStatus().toString();
+        if (pUser.getStatus() != null) {
+            userStatus = pUser.getStatus().toString();
         }
 
         /*
@@ -2059,7 +2059,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             ExtensibleUser extUser = buildFromRules(pUser,
                                     attrMap, scriptRunner, managedSysId,
                                     primaryIdentity.getDomainId(), bindingMap,
-                                    pUser.getUser().getLastUpdatedBy());
+                                    pUser.getLastUpdatedBy());
 
                             // mLg.setPassword(primaryLogin.getPassword());
                             mLg.setUserId(primaryIdentity.getUserId());

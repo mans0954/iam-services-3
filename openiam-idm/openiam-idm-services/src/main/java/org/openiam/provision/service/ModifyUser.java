@@ -119,60 +119,60 @@ public class ModifyUser {
         log.debug("addMissingUserComponents() called.");
 
         // check addresses
-        Set<Address> addressSet = user.getUser().getAddresses();
+        Set<Address> addressSet = user.getAddresses();
 
         if (addressSet == null || addressSet.isEmpty()) {
 
             log.debug("- Adding original addressSet to the user object");
 
-            List<Address> addressList = addressDozerConverter.convertToDTOList(userMgr.getAddressList(user.getUser().getUserId()), true);
+            List<Address> addressList = addressDozerConverter.convertToDTOList(userMgr.getAddressList(user.getUserId()), true);
             if (addressList != null && !addressList.isEmpty()) {
 
-                user.getUser().setAddresses(new HashSet<Address>(addressList));
+                user.setAddresses(new HashSet<Address>(addressList));
 
             }
         }
 
         // check email addresses
 
-        Set<EmailAddress> emailAddressSet = user.getUser().getEmailAddresses();
+        Set<EmailAddress> emailAddressSet = user.getEmailAddresses();
         if (emailAddressSet == null || emailAddressSet.isEmpty()) {
 
             log.debug("- Adding original emailSet to the user object");
 
-            List<EmailAddress> emailList = emailAddressDozerConverter.convertToDTOList(userMgr.getEmailAddressList(user.getUser().getUserId()), true);
+            List<EmailAddress> emailList = emailAddressDozerConverter.convertToDTOList(userMgr.getEmailAddressList(user.getUserId()), true);
             if (emailList != null && !emailList.isEmpty()) {
 
-                user.getUser().setEmailAddresses(new HashSet<EmailAddress>(emailList));
+                user.setEmailAddresses(new HashSet<EmailAddress>(emailList));
 
             }
 
         }
 
         // check the phone objects
-        Set<Phone> phoneSet = user.getUser().getPhones();
+        Set<Phone> phoneSet = user.getPhones();
         if (phoneSet == null || phoneSet.isEmpty()) {
 
             log.debug("- Adding original phoneSet to the user object");
 
-            List<Phone> phoneList = phoneDozerConverter.convertToDTOList(userMgr.getPhoneList(user.getUser().getUserId()), true);
+            List<Phone> phoneList = phoneDozerConverter.convertToDTOList(userMgr.getPhoneList(user.getUserId()), true);
             if (phoneList != null && !phoneList.isEmpty()) {
 
-                user.getUser().setPhones(new HashSet<Phone>(phoneList));
+                user.setPhones(new HashSet<Phone>(phoneList));
 
             }
 
         }
 
         // check the user attributes
-        Map<String, UserAttribute> userAttrSet = user.getUser().getUserAttributes();
+        Map<String, UserAttribute> userAttrSet = user.getUserAttributes();
         if (userAttrSet == null || userAttrSet.isEmpty()) {
 
             log.debug("- Adding original user attributes to the user object");
 
-            User u = userDozerConverter.convertToDTO(userMgr.getUser(user.getUser().getUserId()), true);
+            User u = userDozerConverter.convertToDTO(userMgr.getUser(user.getUserId()), true);
             if (u.getUserAttributes() != null) {
-                user.getUser().setUserAttributes(u.getUserAttributes());
+                user.setUserAttributes(u.getUserAttributes());
             }
 
         }
@@ -184,7 +184,7 @@ public class ModifyUser {
             log.debug("- Adding original affiliationList to the user object");
 
             List<Organization> userAffiliations = orgManager
-                    .getOrganizationsForUser(user.getUser().getUserId(), null, 0,Integer.MAX_VALUE);
+                    .getOrganizationsForUser(user.getUserId(), null, 0,Integer.MAX_VALUE);
             if (userAffiliations != null && !userAffiliations.isEmpty()) {
 
                 user.setUserAffiliations(userAffiliations);
@@ -943,12 +943,12 @@ public class ModifyUser {
 
                 roleDataService.addUserToRole(rl.getRoleId(), userId);
 
-                logList.add(auditHelper.createLogObject("ADD ROLE", pUser.getUser()
-                        .getRequestorDomain(), pUser.getUser().getRequestorLogin(),
+                logList.add(auditHelper.createLogObject("ADD ROLE", pUser
+                        .getRequestorDomain(), pUser.getRequestorLogin(),
                         "IDM SERVICE", user.getCreatedBy(), "0", "USER", user
                                 .getUserId(), null, "SUCCESS", null,
                         "USER_STATUS", user.getStatus().toString(), "NA", null,
-                        null, null, rl.getRoleId(), pUser.getUser().getRequestClientIP(),
+                        null, null, rl.getRoleId(), pUser.getRequestClientIP(),
                         primaryIdentity.getLogin(), primaryIdentity
                                 .getDomainId()));
 
@@ -983,7 +983,7 @@ public class ModifyUser {
                     roleDataService.removeUserFromRole(rl.getRoleId(), userId);
 
                     logList.add(auditHelper.createLogObject("REMOVE ROLE",
-                            pUser.getUser().getRequestorDomain(), pUser.getUser()
+                            pUser.getRequestorDomain(), pUser.getUser()
                                     .getRequestorLogin(), "IDM SERVICE", user
                                     .getCreatedBy(), "0", "USER", user
                                     .getUserId(), null, "SUCCESS", null,
@@ -1017,7 +1017,7 @@ public class ModifyUser {
                     roleDataService.addUserToRole(r.getRoleId(), userId);
 
                     logList.add(auditHelper.createLogObject("ADD ROLE", pUser.getUser()
-                            .getRequestorDomain(), pUser.getUser().getRequestorLogin(),
+                            .getRequestorDomain(), pUser.getRequestorLogin(),
                             "IDM SERVICE", user.getCreatedBy(), "0", "USER",
                             user.getUserId(), null, "SUCCESS", null,
                             "USER_STATUS", user.getStatus().toString(), "NA",

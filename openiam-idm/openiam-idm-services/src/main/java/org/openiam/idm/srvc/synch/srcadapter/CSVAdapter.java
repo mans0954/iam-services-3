@@ -288,7 +288,7 @@ public class CSVAdapter extends AbstractSrcAdapter {
                         if (retval != TransformScript.DELETE) {
                             if (usr != null) {
                                 log.info(" - Updating existing user");
-                                pUser.getUser().setUserId(usr.getUserId());
+                                pUser.setUserId(usr.getUserId());
                                 try {
                                     provService.modifyUser(pUser);
                                 } catch (Exception e) {
@@ -297,7 +297,7 @@ public class CSVAdapter extends AbstractSrcAdapter {
 
                             } else {
                                 log.info(" - New user being provisioned");
-                                pUser.getUser().setUserId(null);
+                                pUser.setUserId(null);
                                 try {
                                     provService.addUser(pUser);
                                 } catch (Exception e) {

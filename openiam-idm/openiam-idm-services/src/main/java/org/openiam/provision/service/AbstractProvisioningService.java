@@ -65,6 +65,7 @@ import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.dto.Supervisor;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.service.UserDataService;
@@ -72,6 +73,7 @@ import org.openiam.provision.dto.PasswordSync;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
+import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.BeansException;
@@ -725,7 +727,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                         user.getRequestorDomain(), user.getRequestorLogin(),
                         "IDM SERVICE", user.getCreatedBy(), "0", "USER", user.getUserId(),
                         null, "SUCCESS", null, "USER_STATUS",
-                        user.getUser().getStatus().toString(),
+                        user.getStatus().toString(),
                         null, null, user.getSessionId(), null, g.getGrpName(),
                         user.getRequestClientIP(), null, null) );
 
@@ -761,7 +763,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                         user.getRequestorDomain(), user.getRequestorLogin(),
                         "IDM SERVICE", user.getCreatedBy(), "0", "USER", user.getUserId(),
                         null, "SUCCESS", null, "USER_STATUS",
-                        user.getUser().getStatus().toString(),
+                        user.getStatus().toString(),
                         "NA", null, user.getSessionId(), null, ur.getRoleId(),
                         user.getRequestClientIP(), null, null) );
 
@@ -785,7 +787,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                         user.getRequestorDomain(), user.getRequestorLogin(),
                         "IDM SERVICE", user.getCreatedBy(), "0", "USER", user.getUserId(),
                         null, "SUCCESS", null, "USER_STATUS",
-                        user.getUser().getStatus().toString(),
+                        user.getStatus().toString(),
                         "NA", null, user.getSessionId(), null, org.getOrganizationName(),
                         user.getRequestClientIP(), null, null) );
 

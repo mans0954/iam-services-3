@@ -368,7 +368,7 @@ public class AbstractCSVCommand {
 
                         ProvisionUser newUser = new ProvisionUser(u.getObject());
                         // ADD Target user principal
-                        newUser.getUser().getPrincipalList().add(l);
+                        newUser.getPrincipalList().add(l);
                         log.debug("Call command for Match Found");
                         command.execute(l, newUser.getUser(), null);
                     }

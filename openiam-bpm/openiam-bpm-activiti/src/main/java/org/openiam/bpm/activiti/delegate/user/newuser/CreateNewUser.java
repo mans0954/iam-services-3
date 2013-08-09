@@ -59,12 +59,12 @@ public class CreateNewUser implements JavaDelegate {
 		final NewUserProfileRequestModel request = (NewUserProfileRequestModel)new XStream().fromXML(provisionRequest.getRequestXML());
 		//final CreateUserToken token = userProfileService.createNewUserProfile(request);
 		final ProvisionUser user = converter.convertNewProfileModel(request);
-		user.getUser().setStatus(UserStatusEnum.PENDING_INITIAL_LOGIN);
-		user.getUser().setSecondaryStatus(null);
+		user.setStatus(UserStatusEnum.PENDING_INITIAL_LOGIN);
+		user.setSecondaryStatus(null);
 		
 		final ProvisionUserResponse response = provisionService.addUser(user);
 		if(ResponseStatus.SUCCESS.equals(response.getStatus()) && response.getUser() != null && StringUtils.isNotBlank(response.getUser().getUser().getUserId())) {
-			final String userId = response.getUser().getUser().getUserId();
+			final String userId = response.getUser().getUserId();
 			execution.setVariable(ActivitiConstants.NEW_USER_ID, userId);
 		} else {
 			throw new Exception("Could not save User Profile using Provisioning Service - can't continue");

@@ -210,7 +210,7 @@ public class AddUser {
                         user.getRequestorDomain(), user.getRequestorLogin(),
                         "IDM SERVICE", user.getCreatedBy(), "0", "USER",
                         user.getUserId(), null, "SUCCESS", null, "USER_STATUS",
-                        user.getUser().getStatus().toString(), null, null,
+                        user.getStatus().toString(), null, null,
                         user.getSessionId(), null, g.getGrpName(),
                         user.getRequestClientIP(), null, null));
 
@@ -238,7 +238,7 @@ public class AddUser {
                         user.getRequestorDomain(), user.getRequestorLogin(),
                         "IDM SERVICE", user.getCreatedBy(), "0", "USER",
                         user.getUserId(), null, "SUCCESS", null, "USER_STATUS",
-                        user.getUser().getStatus().toString(), "NA", null,
+                        user.getStatus().toString(), "NA", null,
                         user.getSessionId(), null, r.getRoleId(),
                         user.getRequestClientIP(), null, null));
 
@@ -263,7 +263,7 @@ public class AddUser {
                         user.getRequestorDomain(), user.getRequestorLogin(),
                         "IDM SERVICE", user.getCreatedBy(), "0", "USER",
                         user.getUserId(), null, "SUCCESS", null, "USER_STATUS",
-                        user.getUser().getStatus().toString(), "NA", null,
+                        user.getStatus().toString(), "NA", null,
                         user.getSessionId(), null, org.getOrganizationName(),
                         user.getRequestClientIP(), null, null));
 

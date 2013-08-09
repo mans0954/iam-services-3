@@ -822,18 +822,18 @@ public class ProvisionServiceImpl implements ProvisionService,
         log.info("logging primary modify user");
         String logId = auditHelper.addLog("MODIFY USER",
                 provUser.getSecurityDomain(), primaryId, "IDM SERVICE",
-                provUser.getUser().getLastUpdatedBy(), "0", "USER",
+                provUser.getLastUpdatedBy(), "0", "USER",
                 provUser.getUserId(), null, "SUCCESS", null, "USER_STATUS",
-                provUser.getUser().getStatus().toString(), requestId, null,
+                provUser.getStatus().toString(), requestId, null,
                 null, null).getLogId();
 
         updateGroupAssociation(origUser.getUserId(),
                 provUser.getMemberOfGroups(), logId, requestId, provUser
-                        .getUser().getLastUpdatedBy(), primaryId);
+                        .getLastUpdatedBy(), primaryId);
 
         updateRoleAssociation(origUser.getUserId(),
                 provUser.getMemberOfRoles(), logId, requestId, provUser
-                        .getUser().getLastUpdatedBy(), primaryId);
+                        .getLastUpdatedBy(), primaryId);
 
         updateSuperiors(newUser, provUser.getSuperiors());
 
@@ -1038,7 +1038,7 @@ public class ProvisionServiceImpl implements ProvisionService,
 
                     auditHelper.addLog("MODIFY USER", provUser
                             .getSecurityDomain(), primaryId, "IDM SERVICE",
-                            provUser.getUser().getLastUpdatedBy(), "0", "USER",
+                            provUser.getLastUpdatedBy(), "0", "USER",
                             provUser.getUserId(), null, "SUCCESS", logId,
                             "DISABLE IDENTITY", curLg.getLogin(),
                             requestId, null, null, null);

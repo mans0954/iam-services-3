@@ -263,15 +263,15 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
                         } else {
                             // call synch
                             if (retval != TransformScript.DELETE) {
-                                System.out.println("Provisioning user=" + pUser.getUser().getLastName());
+                                System.out.println("Provisioning user=" + pUser.getLastName());
                                 if (usr != null) {
-                                    log.debug("updating existing user...systemId=" + pUser.getUser().getUserId());
-                                    pUser.getUser().setUserId(usr.getUserId());
+                                    log.debug("updating existing user...systemId=" + pUser.getUserId());
+                                    pUser.setUserId(usr.getUserId());
                                     ProvisionUserResponse userResp = provService.modifyUser(pUser);
 
                                 } else {
                                     log.debug("adding new user...");
-                                    pUser.getUser().setUserId(null);
+                                    pUser.setUserId(null);
                                     ProvisionUserResponse userResp = provService.addUser(pUser);
                                 }
                             }

@@ -12,7 +12,7 @@
 
 	<context:annotation-config />
 	<context:component-scan
-		base-package="org.openiam.spml2,  org.openiam.idm.parser.csv" />
+		base-package="org.openiam.connector,  org.openiam.idm.parser.csv" />
     <!-- , org.openiam.spml2.spi.csv,org.openiam.spml2.spi.ldap, org.openiam.spml2.spi.orcl, org.openiam.connector.common.jdbc -->
 	<!-- Authentication Beans -->
 	<!--<bean id="exampleConnector" class="org.openiam.spml2.spi.example.ExampleComplete">-->
@@ -165,12 +165,12 @@
 		<property name="maxStatements" value="50"/> <property name="idleConnectionTestPeriod" 
 		value="3000"/> <property name="loginTimeout" value="300"/> </bean -->
 
-	<bean id="abstractApptableCommand" class="org.openiam.spml2.spi.jdbc.AbstractAppTableCommand"
-		abstract="true">
-		<property name="connectionMgr" ref="jdbcConnection" />
-		<property name="managedSysService" ref="managedSysService" />
-		<property name="resourceDataService" ref="resourceDataService" />
-	</bean>
+	<!--<bean id="abstractApptableCommand" class="org.openiam.spml2.spi.jdbc.AbstractAppTableCommand"-->
+		<!--abstract="true">-->
+		<!--<property name="connectionMgr" ref="jdbcConnection" />-->
+		<!--<property name="managedSysService" ref="managedSysService" />-->
+		<!--<property name="resourceDataService" ref="resourceDataService" />-->
+	<!--</bean>-->
 
 	<!-- Start AppTable Connector -->
 
