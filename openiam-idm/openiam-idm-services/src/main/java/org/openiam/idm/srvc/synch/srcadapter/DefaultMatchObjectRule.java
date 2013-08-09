@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.synch.srcadapter;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.synch.dto.Attribute;
@@ -26,42 +27,41 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
 	private String matchAttrName = null;
 	private String matchAttrValue = null;
 
-	public User lookup(SynchConfig config, Map<String, Attribute> rowAttr) {
+	public User lookup(SynchConfig config, Map<String, Attribute> rowAttr) throws IllegalArgumentException {
 		final UserSearchBean searchBean = new UserSearchBean();
 		//UserSearch search = new UserSearch();
 		//Map<String, UserAttribute> atMap = user.getUserAttributes();
-		String srcFieldValue = rowAttr.get(config.getCustomMatchAttr()).getValue();
-		matchAttrValue = srcFieldValue;
-		matchAttrName = config.getMatchFieldName();
-	
-		
-		if (config.getMatchFieldName().equalsIgnoreCase("USERID")) {
-			searchBean.setUserId(srcFieldValue);
-			//search.setUserId(srcFieldValue);
-		}
-		if (config.getMatchFieldName().equalsIgnoreCase("PRINCIPAL")) {
-			searchBean.setPrincipal(srcFieldValue);
-			//search.setPrincipal(srcFieldValue);
-		}
-		if (config.getMatchFieldName().equalsIgnoreCase("EMAIL")) {
-			searchBean.setEmailAddress(srcFieldValue);
-			//search.setEmailAddress(srcFieldValue);
-		}	
-		if (config.getMatchFieldName().equalsIgnoreCase("EMPLOYEE_ID")) {
-			searchBean.setEmployeeId(srcFieldValue);
-			//search.setEmployeeId(srcFieldValue);
-		}		
-		if (config.getMatchFieldName().equalsIgnoreCase("ATTRIBUTE")) {
+        matchAttrName = config.getMatchFieldName();
+		matchAttrValue = (StringUtils.isNotBlank(config.getCustomMatchAttr())) ? rowAttr.get(config.getCustomMatchAttr()).getValue() : null;
+
+        if (StringUtils.isBlank(matchAttrName) || StringUtils.isBlank(matchAttrValue)) {
+            throw new IllegalArgumentException("matchAttrName and matchAttrValue can not be blank");
+        }
+
+		if (matchAttrName.equalsIgnoreCase("USERID")) {
+			searchBean.setUserId(matchAttrValue);
+			//search.setUserId(matchAttrValue);
+
+		} else if (matchAttrName.equalsIgnoreCase("PRINCIPAL")) {
+			searchBean.setPrincipal(matchAttrValue);
+			//search.setPrincipal(matchAttrValue);
+
+		} else if (matchAttrName.equalsIgnoreCase("EMAIL")) {
+			searchBean.setEmailAddress(matchAttrValue);
+			//search.setEmailAddress(matchAttrValue);
+
+		} else if (matchAttrName.equalsIgnoreCase("EMPLOYEE_ID")) {
+			searchBean.setEmployeeId(matchAttrValue);
+			//search.setEmployeeId(matchAttrValue);
+
+		} else if (matchAttrName.equalsIgnoreCase("ATTRIBUTE")) {
 			System.out.println("- cofiguring search by attribute..");
 			System.out.println("- match attr=.." + config.getCustomMatchAttr());
 		
-				
 			// get the attribute value from the data_set
-			String valueToMatch = rowAttr.get(config.getCustomMatchAttr()).getValue();
-			System.out.println("- src field value=.." + valueToMatch);
+			System.out.println("- src field value=.." + matchAttrValue);
 			matchAttrName = config.getCustomMatchAttr();
-			matchAttrValue = valueToMatch;
-			
+
 			searchBean.setAttributeName(matchAttrName);
 			searchBean.setAttributeValue(matchAttrValue);
 			//search.setAttributeName(config.getCustomMatchAttr());
@@ -72,9 +72,8 @@ public class DefaultMatchObjectRule implements MatchObjectRule {
 
 		if (userList != null && !userList.isEmpty()) {
 			System.out.println("User matched with existing user...");
-			User u = userDozerConverter.convertToDTO(userList.get(0), true);
-			return u;
-		}		
+			return new User(userList.get(0).getUserId());
+		}
 		return null;
 	}
 

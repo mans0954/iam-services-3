@@ -26,6 +26,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import javax.jws.WebParam;
+import javax.jws.WebService;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
@@ -105,6 +106,7 @@ public class ShellConnectorImpl extends AbstractSpml2Complete  {
         return true;
     }
 
+    @Override
     public SearchResponse search(@WebParam(name = "searchRequest", targetNamespace = "") SearchRequest searchRequest) {
         throw new UnsupportedOperationException("Not implemented yet.");
     }

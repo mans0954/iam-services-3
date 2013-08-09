@@ -10,6 +10,6 @@ import org.openiam.idm.srvc.user.token.CreateUserToken;
 public interface UserProfileService {
 
 	public void saveUserProfile(final UserProfileRequestModel request) throws Exception;
-	public CreateUserToken createNewUserProfile(final NewUserProfileRequestModel request) throws Exception;
+	//public CreateUserToken createNewUserProfile(final NewUserProfileRequestModel request) throws Exception;
 	public void validate(final NewUserProfileRequestModel request) throws Exception;
 }

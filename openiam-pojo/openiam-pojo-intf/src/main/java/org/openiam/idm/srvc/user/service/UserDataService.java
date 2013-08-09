@@ -5,6 +5,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.openiam.idm.searchbeans.AddressSearchBean;
+import org.openiam.idm.searchbeans.EmailSearchBean;
+import org.openiam.idm.searchbeans.PhoneSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
@@ -110,6 +113,8 @@ public interface UserDataService {
 
     public List<AddressEntity> getAddressList(String userId, Integer size, Integer from);
 
+    public List<AddressEntity> getAddressList(AddressSearchBean searchBean, Integer size, Integer from);
+
     public void addPhone(PhoneEntity val);
 
     public void addPhoneSet(Collection<PhoneEntity> phoneList);
@@ -126,6 +131,8 @@ public interface UserDataService {
 
     public List<PhoneEntity> getPhoneList(String userId, Integer size, Integer from);
 
+    public List<PhoneEntity> getPhoneList(PhoneSearchBean searchBean, Integer size, Integer from);
+
     public void addEmailAddress(EmailAddressEntity val);
 
     public void addEmailAddressSet(Collection<EmailAddressEntity> adrList);
@@ -141,6 +148,8 @@ public interface UserDataService {
     public List<EmailAddressEntity> getEmailAddressList(String userId);
 
     public List<EmailAddressEntity> getEmailAddressList(String userId, Integer size, Integer from);
+
+    public List<EmailAddressEntity> getEmailAddressList(EmailSearchBean searchBean, Integer size, Integer from);
 
     public void addSupervisor(SupervisorEntity supervisor);
 

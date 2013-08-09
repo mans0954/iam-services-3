@@ -15,6 +15,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ReportSubscriptionDto", propOrder = {
         "reportId",
+        "reportInfoId",
         "reportName",
         "deliveryMethod",
         "deliveryFormat",
@@ -41,6 +42,7 @@ public class ReportSubscriptionDto {
 	}
 
 	private String reportId;
+	private String reportInfoId;
     private String reportName;
     private String deliveryMethod;
     private String deliveryFormat;
@@ -96,7 +98,7 @@ public class ReportSubscriptionDto {
         if (reportId != null ? !reportId.equals(reportDto.reportId) : reportDto.reportId != null) return false;
         if (reportName != null ? !reportName.equals(reportDto.reportName) : reportDto.reportName != null) return false;
         if (deliveryFormat != null ? !deliveryFormat.equals(reportDto.deliveryFormat) : reportDto.deliveryFormat != null) return false;
-
+        if (reportInfoId != null ? !reportInfoId.equals(reportDto.reportInfoId) : reportDto.reportInfoId != null) return false;
         return true;
     }
 
@@ -106,6 +108,7 @@ public class ReportSubscriptionDto {
         result = 31 * result + (reportName != null ? reportName.hashCode() : 0);
         result = 31 * result + (deliveryMethod != null ? deliveryMethod.hashCode() : 0);
         result = 31 * result + (deliveryFormat != null ? deliveryFormat.hashCode() : 0);
+        result = 31 * result + (reportInfoId != null ? reportInfoId.hashCode() : 0);
         return result;
     }
 
@@ -114,7 +117,7 @@ public class ReportSubscriptionDto {
 		return "ReportSubscriptionDto [reportId=" + reportId + ", reportName="
 				+ reportName + ", deliveryMethod=" + deliveryMethod
 				+ ", deliveryFormat=" + deliveryFormat + ", deliveryAudience="
-				+ deliveryAudience + ", status=" + status + "]";
+				+ deliveryAudience + ", status=" + status + " , reportInfoId="+reportInfoId+"]";
 	}
 
 	public String getUserId() {
@@ -123,6 +126,14 @@ public class ReportSubscriptionDto {
 
 	public void setUserId(String userId) {
 		this.userId = userId;
+	}
+
+	public String getReportInfoId() {
+		return reportInfoId;
+	}
+
+	public void setReportInfoId(String reportInfoId) {
+		this.reportInfoId = reportInfoId;
 	}
 }
 

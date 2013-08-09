@@ -1,15 +1,9 @@
 package org.openiam.spml2.spi.mysql;
 
-import org.openiam.connector.type.constant.ErrorCode;
-import org.openiam.connector.type.constant.StatusCodeType;
-import org.openiam.connector.type.response.ObjectResponse;
-import org.openiam.connector.type.response.LookupAttributeResponse;
-import org.openiam.connector.type.response.ResponseType;
-import org.openiam.connector.type.request.*;
-import org.openiam.connector.type.response.SearchResponse;
+import org.openiam.connector.type.*;
+import org.openiam.connector.type.ResponseType;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
-import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.spml2.base.AbstractSpml2Complete;
 import org.openiam.connector.ConnectorService;
 
@@ -22,16 +16,15 @@ import javax.jws.WebService;
  * Date: 3/21/12
  * Time: 10:07 PM
  */
-//@WebService(endpointInterface = "org.openiam.spml2.interf.ConnectorService",
-//        targetNamespace = "http://www.openiam.org/service/connector",
-//        portName = "MySQLConnectorPort",
-//        serviceName = "MySQLConnector")
-@Deprecated
+@WebService(endpointInterface = "org.openiam.spml2.interf.ConnectorService",
+        targetNamespace = "http://www.openiam.org/service/connector",
+        portName = "MySQLConnectorPort",
+        serviceName = "MySQLConnector")
 public class MySQLConnectorImpl extends AbstractSpml2Complete implements ConnectorService {
 
     protected MySQLAddCommand addCommand;
 
-    public ObjectResponse add(CrudRequest reqType) {
+    public UserResponse add(UserRequest reqType) {
 
         return addCommand.add(reqType);
 
@@ -44,20 +37,15 @@ public class MySQLConnectorImpl extends AbstractSpml2Complete implements Connect
         return response;
     }
 
-    @Override
-    public ResponseType testConnection(@WebParam(name = "reqType", targetNamespace = "") RequestType<? extends ExtensibleObject> reqType) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
     public ResponseType testConnection(@WebParam(name = "managedSys", targetNamespace = "") ManagedSysDto managedSys) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public ObjectResponse modify(@WebParam(name = "reqType", targetNamespace = "") CrudRequest reqType) {
+    public UserResponse modify(@WebParam(name = "reqType", targetNamespace = "") UserRequest reqType) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public ObjectResponse delete(@WebParam(name = "reqType", targetNamespace = "") CrudRequest reqType) {
+    public UserResponse delete(@WebParam(name = "reqType", targetNamespace = "") UserRequest reqType) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
@@ -99,11 +87,11 @@ public class MySQLConnectorImpl extends AbstractSpml2Complete implements Connect
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public ResponseType suspend(@WebParam(name = "request", targetNamespace = "") SuspendResumeRequest request) {
+    public ResponseType suspend(@WebParam(name = "request", targetNamespace = "") SuspendRequest request) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
-    public ResponseType resume(@WebParam(name = "request", targetNamespace = "") SuspendResumeRequest request) {
+    public ResponseType resume(@WebParam(name = "request", targetNamespace = "") ResumeRequest request) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 

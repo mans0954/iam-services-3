@@ -222,8 +222,8 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
         				if(approverType != null) {
         					switch(approverType) {
         						case SUPERVISOR:
-        							if(CollectionUtils.isNotEmpty(request.getSupervisorIdList())) {
-        								requestApproverIds.addAll(request.getSupervisorIdList());
+        							if(CollectionUtils.isNotEmpty(request.getSupervisorIds())) {
+        								requestApproverIds.addAll(request.getSupervisorIds());
         							}
                     				break;
         						case ROLE:

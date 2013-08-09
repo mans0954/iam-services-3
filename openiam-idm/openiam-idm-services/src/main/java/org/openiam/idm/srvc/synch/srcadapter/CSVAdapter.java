@@ -43,6 +43,7 @@ import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.service.ProvisionService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.*;
 import java.text.DateFormat;
@@ -261,8 +262,8 @@ public class CSVAdapter extends AbstractSrcAdapter {
                         // initialize the transform script
                         if (usr != null) {
                             transformScript.setNewUser(false);
-                            transformScript.setUser(userDozerConverter.convertToDTO(userManager.getUser(usr.getUserId()), true));
-                            transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getUserId()), true));
+                            transformScript.setUser(userDozerConverter.convertToDTO(userManager.getUser(usr.getUserId()), false));
+                            transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getUserId()), false));
                             transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getUserId()));
 
                         } else {

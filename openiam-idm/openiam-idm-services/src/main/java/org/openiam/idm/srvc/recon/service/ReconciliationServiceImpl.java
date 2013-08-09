@@ -62,7 +62,6 @@ import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemService;
 import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
 
-
 import org.openiam.idm.srvc.msg.service.MailService;
 import org.openiam.idm.srvc.recon.command.ReconciliationCommandFactory;
 import org.openiam.idm.srvc.recon.domain.ReconciliationConfigEntity;
@@ -811,6 +810,8 @@ public class ReconciliationServiceImpl implements ReconciliationService,
             return null;
         ReconciliationResultBean resultBean = (ReconciliationResultBean) Serializer
                 .deserializer(absolutePath + config.getResourceId() + ".rcndat");
+        if (resultBean == null)
+            return null;
         if (searchBean == null)
             return resultBean;
         else {
@@ -872,10 +873,14 @@ public class ReconciliationServiceImpl implements ReconciliationService,
                                     searchIndex, searchBean.getOrderBy()));
                 }
             }
+
+            int size = searchBean.getSize() < 10 ? 10 : searchBean.getSize();
+            int pages = (rows.size() + (size - 1)) / size;
             int page = searchBean.getPageNumber() < 1 ? 1 : searchBean
                     .getPageNumber();
-            int size = searchBean.getSize() < 10 ? 10 : searchBean.getSize();
-
+            if (page > pages)
+                page = pages;
+            resultBean.setPagesNumber(pages);
             int startPos = (page - 1) * size;
             int endPos = page * size;
             endPos = endPos > rows.size() ? rows.size() : endPos;

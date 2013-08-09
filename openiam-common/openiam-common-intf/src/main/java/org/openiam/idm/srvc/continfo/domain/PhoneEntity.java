@@ -2,15 +2,7 @@ package org.openiam.idm.srvc.continfo.domain;
 
 import java.util.Date;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import javax.persistence.*;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlTransient;
 import org.hibernate.annotations.GenericGenerator;
@@ -27,6 +19,7 @@ import org.openiam.core.dao.lucene.LuceneLastUpdate;
 import org.openiam.core.dao.lucene.bridge.UserBridge;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.continfo.dto.Phone;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 
 @Entity
@@ -82,8 +75,10 @@ public class PhoneEntity {
     @Column(name="NAME", length=40)
     private String name;
 
+    /*
     @Column(name="PHONE_TYPE", length=20)
     private String phoneType;
+    */
     
     @Column(name = "LAST_UPDATE", length = 19)
     @LuceneLastUpdate
@@ -92,6 +87,10 @@ public class PhoneEntity {
     @Column(name="CREATE_DATE",length=19)
     @Temporal(TemporalType.TIMESTAMP)
     protected Date createDate;
+
+    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
+    @JoinColumn(name = "TYPE_ID")
+    private MetadataTypeEntity metadataType;
 
     public PhoneEntity() {
     }
@@ -176,6 +175,7 @@ public class PhoneEntity {
         this.name = name;
     }
 
+    /*
     public String getPhoneType() {
         return phoneType;
     }
@@ -183,6 +183,7 @@ public class PhoneEntity {
     public void setPhoneType(String phoneType) {
         this.phoneType = phoneType;
     }
+    */
 
     public Date getLastUpdate() {
 		return lastUpdate;
@@ -199,6 +200,14 @@ public class PhoneEntity {
 	public void setCreateDate(Date createDate) {
 		this.createDate = createDate;
 	}
+
+    public MetadataTypeEntity getMetadataType() {
+        return metadataType;
+    }
+
+    public void setMetadataType(MetadataTypeEntity metadataType) {
+        this.metadataType = metadataType;
+    }
 
 	@Override
 	public int hashCode() {
@@ -222,8 +231,11 @@ public class PhoneEntity {
 		result = prime * result + ((phoneId == null) ? 0 : phoneId.hashCode());
 		result = prime * result
 				+ ((phoneNbr == null) ? 0 : phoneNbr.hashCode());
+		/*
 		result = prime * result
 				+ ((phoneType == null) ? 0 : phoneType.hashCode());
+		*/
+        result = prime * result + ((metadataType == null) ? 0 : metadataType.hashCode());
 		return result;
 	}
 
@@ -290,11 +302,18 @@ public class PhoneEntity {
 				return false;
 		} else if (!phoneNbr.equals(other.phoneNbr))
 			return false;
+		/*
 		if (phoneType == null) {
 			if (other.phoneType != null)
 				return false;
 		} else if (!phoneType.equals(other.phoneType))
 			return false;
+		*/
+        if (metadataType == null) {
+            if (other.metadataType != null)
+                return false;
+        } else if (!metadataType.equals(other.metadataType))
+            return false;
 		return true;
 	}
 

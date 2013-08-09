@@ -239,7 +239,7 @@ public class UserAttributeHelper {
 	for (UserAttribute attr : attrCol) {
 		String name = extUser.getName();
 		name = "USER_ATTRIBUTE." + attr.getName();
-		ExtensibleAttribute extAttr = new ExtensibleAttribute(name, attr.getValue(), attr.getMetadataElementId());
+		ExtensibleAttribute     extAttr = new ExtensibleAttribute(name, attr.getValue(), attr.getMetadataElementId());
 		if (attr.getOperation() == (AttributeOperationEnum.DELETE)) {
 			extAttr.setOperation(AttributeOperationEnum.DELETE.getValue());
 		}else {

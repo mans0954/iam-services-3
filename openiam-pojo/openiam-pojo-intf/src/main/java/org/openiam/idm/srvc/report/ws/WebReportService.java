@@ -8,6 +8,7 @@ import javax.jws.WebService;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.openiam.base.ws.PropertyMapAdapter;
 import org.openiam.base.ws.Response;
+import org.openiam.idm.srvc.report.domain.ReportInfoEntity;
 import org.openiam.idm.srvc.report.dto.ReportCriteriaParamDto;
 import org.openiam.idm.srvc.report.dto.ReportInfoDto;
 import org.openiam.idm.srvc.report.dto.ReportSubCriteriaParamDto;
@@ -87,6 +88,10 @@ public interface WebReportService {
     @WebMethod
     Response createOrUpdateSubCriteriaParam(
 			@WebParam(name = "subCriteriaParamReport", targetNamespace = "") final ReportSubCriteriaParamDto subCriteriaParamReport);
+    @WebMethod
+    public List<ReportInfoDto> getAllReportsInfo();
     
+    @WebMethod
+    public List<ReportCriteriaParamDto> getAllReportCriteriaParam();
 
 }

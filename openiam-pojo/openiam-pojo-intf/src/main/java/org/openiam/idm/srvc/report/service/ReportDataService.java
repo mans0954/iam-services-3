@@ -46,7 +46,8 @@ public interface ReportDataService {
     ReportSubscriptionEntity getSubscriptionReportById(String reportId);
     ReportSubCriteriaParamEntity getSubCriteriaParamReportById(String reportId);
     List<ReportSubCriteriaParamEntity> getAllSubCriteriaParamReport(String reportId);
-    
+    public List<ReportInfoEntity> getAllReports();
     ReportSubCriteriaParamEntity createOrUpdateSubCriteriaParamReport(ReportSubCriteriaParamEntity entity);
+    List<ReportCriteriaParamEntity> getAllReportParameters();
     
 }

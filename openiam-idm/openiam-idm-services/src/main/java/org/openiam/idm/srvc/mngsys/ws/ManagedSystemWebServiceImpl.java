@@ -19,6 +19,7 @@ import org.openiam.dozer.converter.DefaultReconciliationAttributeMapDozerConvert
 import org.openiam.dozer.converter.ManagedSysDozerConverter;
 import org.openiam.dozer.converter.ManagedSysRuleDozerConverter;
 import org.openiam.dozer.converter.ManagedSystemObjectMatchDozerConverter;
+import org.openiam.idm.searchbeans.AttributeMapSearchBean;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
@@ -278,8 +279,23 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
         if (resourceId == null) {
             throw new NullPointerException("resourceId is null");
         }
-        return managedSysDozerConverter.convertToDTO(managedSystemService
-                .getManagedSysByResource(resourceId, "ACTIVE"), true);
+        ManagedSysEntity sys = managedSystemService.getManagedSysByResource(
+                resourceId, "ACTIVE");
+        ManagedSysDto sysDto = null;
+        if (sys != null) {
+            sysDto = managedSysDozerConverter.convertToDTO(sys, true);
+            if (sysDto != null && sysDto.getPswd() != null) {
+                try {
+                    sysDto.setDecryptPassword(cryptor.decrypt(
+                            keyManagementService.getUserKey(sys.getUserId(),
+                                    KeyName.password.name()), sys.getPswd()));
+                } catch (Exception e) {
+                    log.error(e);
+                }
+            }
+        }
+
+        return sysDto;
     }
 
     /*
@@ -533,6 +549,18 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
                 .getResourceAttributeMaps(resourceId);
         return amEList == null ? null : attributeMapDozerConverter
                 .convertToDTOList(amEList, true);
+    }
+
+    @Override
+    public List<AttributeMap> findResourceAttributeMaps(
+            AttributeMapSearchBean searchBean) {
+        if (searchBean == null) {
+            throw new IllegalArgumentException("searchBean is null");
+        }
+        List<AttributeMapEntity> ameList = managedSystemService
+                .getResourceAttributeMaps(searchBean);
+        return (ameList == null) ? null : attributeMapDozerConverter
+                .convertToDTOList(ameList, true);
     }
 
     public List<AttributeMap> getAllAttributeMaps() {

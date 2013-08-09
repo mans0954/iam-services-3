@@ -20,6 +20,9 @@ public class ReportSubscriptionEntity {
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
     @Column(name = "REPORT_SUB_ID")
     private String reportId;
+    
+    @Column(name = "REPORT_INFO_ID")
+    private String reportInfoId;
 
     @Column(name = "REPORT_NAME")
     private String reportName;
@@ -55,7 +58,7 @@ public class ReportSubscriptionEntity {
 				+ reportName + ", deliveryMethod=" + deliveryMethod
 				+ ", deliveryFormat=" + deliveryFormat + ", deliveryAudience="
 				+ deliveryAudience + ", status=" + status + ", userId="
-				+ userId + "]";
+				+ userId + ",reportInfoId="+reportInfoId+"]";
 	}
 
 	public String getDeliveryMethod() {
@@ -104,5 +107,17 @@ public class ReportSubscriptionEntity {
 
 	public void setReportId(String reportId) {
 		this.reportId = reportId;
+	}
+
+
+
+	public String getReportInfoId() {
+		return reportInfoId;
+	}
+
+
+
+	public void setReportInfoId(String reportInfoId) {
+		this.reportInfoId = reportInfoId;
 	}
 }

@@ -323,6 +323,11 @@
 			<a>type.id</a>
 			<b>typeId</b>
 		</field>
+		
+		<field>
+			<a>type.name</a>
+			<b>typeName</b>
+		</field>
 	</mapping>
 	
 	<mapping>
@@ -416,6 +421,14 @@
 			<b>customRecords</b>
 		</field-exclude>
 	</mapping>
+    <mapping>
+        <class-a>org.openiam.idm.srvc.auth.domain.LoginEntity</class-a>
+        <class-b>org.openiam.idm.srvc.auth.dto.Login</class-b>
+        <field-exclude>
+            <a>loginAttributes</a>
+            <b>loginAttributes</b>
+        </field-exclude>
+    </mapping>
 	<mapping>
 		<class-a>org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity</class-a>
 		<class-b>org.openiam.idm.srvc.mngsys.dto.ManagedSysDto</class-b>

@@ -24,6 +24,7 @@ package org.openiam.idm.srvc.mngsys.service;
 import java.util.List;
 
 import org.openiam.core.dao.BaseDao;
+import org.openiam.idm.searchbeans.AttributeMapSearchBean;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 
 /**

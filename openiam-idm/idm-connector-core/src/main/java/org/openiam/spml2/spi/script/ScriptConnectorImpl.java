@@ -20,13 +20,8 @@ package org.openiam.spml2.spi.script;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.connector.type.constant.ErrorCode;
-import org.openiam.connector.type.constant.StatusCodeType;
-import org.openiam.connector.type.response.ObjectResponse;
-import org.openiam.connector.type.response.LookupAttributeResponse;
-import org.openiam.connector.type.response.ResponseType;
-import org.openiam.connector.type.request.*;
-import org.openiam.connector.type.response.SearchResponse;
+import org.openiam.connector.type.*;
+import org.openiam.connector.type.ResponseType;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.mngsys.service.ManagedSystemObjectMatchDAO;
@@ -40,6 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import javax.jws.WebParam;
+import javax.jws.WebService;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -50,12 +46,12 @@ import java.util.Map;
  * @author suneet
  */
 
-//@WebService(endpointInterface = "org.openiam.spml2.interf.ConnectorService",
-//        targetNamespace = "http://www.openiam.org/service/connector",
-//        portName = "ScriptConnectorServicePort",
-//        serviceName = "ScriptConnectorService")
-@Deprecated
-public class ScriptConnectorImpl extends AbstractSpml2Complete {
+@WebService(endpointInterface = "org.openiam.spml2.interf.ConnectorService",
+        targetNamespace = "http://www.openiam.org/service/connector",
+        portName = "ScriptConnectorServicePort",
+        serviceName = "ScriptConnectorService")
+
+public class ScriptConnectorImpl extends AbstractSpml2Complete implements ConnectorService {
 
     private static final Log log = LogFactory.getLog(LdapConnectorImpl.class);
     protected ManagedSystemWebService managedSysService;
@@ -66,7 +62,7 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete {
     @Qualifier("configurableGroovyScriptEngine")
     private ScriptIntegration scriptRunner;
 
-    public ObjectResponse add(CrudRequest reqType) {
+    public UserResponse add(UserRequest reqType) {
         String targetID = reqType.getTargetID();
         ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
 
@@ -75,14 +71,14 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete {
         } catch (Exception e) {
             log.error("Could not add: " + e.toString());
 
-            ObjectResponse resp = new ObjectResponse();
+            UserResponse resp = new UserResponse();
             resp.setStatus(StatusCodeType.FAILURE);
             return resp;
 
         }
     }
 
-    public ObjectResponse delete(CrudRequest reqType) {
+    public UserResponse delete(UserRequest reqType) {
         String targetID = reqType.getTargetID();
         ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
 
@@ -91,7 +87,7 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete {
         } catch (Exception e) {
             log.error("Could not delete: " + e.toString());
 
-            ObjectResponse resp = new ObjectResponse();
+            UserResponse resp = new UserResponse();
             resp.setStatus(StatusCodeType.FAILURE);
             return resp;
         }
@@ -126,7 +122,7 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete {
         return respType;
     }
 
-    public ObjectResponse modify(CrudRequest reqType) {
+    public UserResponse modify(UserRequest reqType) {
         String targetID = reqType.getTargetID();
         ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
 
@@ -135,7 +131,7 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete {
         } catch (Exception e) {
             log.error("Could not modify: " + e.toString());
 
-            ObjectResponse resp = new ObjectResponse();
+            UserResponse resp = new UserResponse();
             resp.setStatus(StatusCodeType.FAILURE);
             return resp;
         }
@@ -195,8 +191,7 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete {
 
     public ResponseType testConnection(ManagedSysDto managedSys) {
         try {
-            return null;
-          //  return createConnector(managedSys).testConnection(managedSys);
+            return createConnector(managedSys).testConnection(managedSys);
         } catch (Exception e) {
             log.error("Could not test connection: " + e.toString());
 
@@ -206,7 +201,7 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete {
         }
     }
 
-    public ResponseType suspend(SuspendResumeRequest reqType) {
+    public ResponseType suspend(SuspendRequest reqType) {
         String targetID = reqType.getTargetID();
         ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
 
@@ -221,7 +216,7 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete {
         }
     }
 
-    public ResponseType resume(SuspendResumeRequest reqType) {
+    public ResponseType resume(ResumeRequest reqType) {
         String targetID = reqType.getTargetID();
         ManagedSysDto managedSys = managedSysService.getManagedSys(targetID);
 
@@ -251,7 +246,7 @@ public class ScriptConnectorImpl extends AbstractSpml2Complete {
         }
     }
 
-//    @Override
+    @Override
     public SearchResponse search(@WebParam(name = "searchRequest", targetNamespace = "") SearchRequest searchRequest) {
         throw new UnsupportedOperationException("Not implemented yet.");
     }

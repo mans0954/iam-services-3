@@ -39,7 +39,7 @@ public class MetadataTypeEntity implements Serializable {
     @Id
     @GeneratedValue(generator = "system-uuid")
     @GenericGenerator(name = "system-uuid", strategy = "uuid")
-    @Column(name = "TYPE_ID", length = 20)
+    @Column(name = "TYPE_ID", length = 32)
     private String metadataTypeId;
 
     @Column(name = "DESCRIPTION", length = 40)

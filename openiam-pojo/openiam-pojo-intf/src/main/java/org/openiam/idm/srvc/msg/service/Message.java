@@ -21,6 +21,7 @@
  */
 package org.openiam.idm.srvc.msg.service;
 
+import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -34,7 +35,8 @@ import org.apache.commons.logging.LogFactory;
  * @author suneet
  *
  */
-public class Message {
+public class Message implements Serializable {
+
 	public enum BodyType {
         PLAIN_TEXT,
         HTML_TEXT

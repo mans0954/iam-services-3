@@ -22,16 +22,17 @@
 package org.openiam.spml2.spi.orcl;
 
 import javax.jws.WebParam;
+import javax.jws.WebService;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.openiam.connector.type.response.LookupAttributeResponse;
-import org.openiam.connector.type.request.LookupRequest;
-import org.openiam.connector.type.request.SearchRequest;
-import org.openiam.connector.type.response.SearchResponse;
+import org.openiam.connector.type.LookupAttributeResponse;
+import org.openiam.connector.type.LookupRequest;
+import org.openiam.connector.type.SearchRequest;
+import org.openiam.connector.type.SearchResponse;
 import org.openiam.spml2.spi.common.LookupAttributeNamesCommand;
-import org.openiam.connector.common.jdbc.*;
+import org.openiam.spml2.spi.common.jdbc.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -40,12 +41,11 @@ import org.springframework.beans.factory.annotation.Qualifier;
  * @author suneet
  *
  */
-//@WebService(endpointInterface="org.openiam.spml2.interf.ConnectorService",
-//		targetNamespace="http://www.openiam.org/service/connector",
-//		portName = "OracleConnectorServicePort",
-//		serviceName="OracleConnectorService")
-@Deprecated
-public class OracleConnectorImpl {
+@WebService(endpointInterface="org.openiam.spml2.interf.ConnectorService",
+		targetNamespace="http://www.openiam.org/service/connector",
+		portName = "OracleConnectorServicePort", 
+		serviceName="OracleConnectorService")
+public class OracleConnectorImpl extends AbstractJDBCConnectorImpl {
     @Autowired
     @Qualifier("oracleLookupAttributeNamesCommand")
     protected LookupAttributeNamesCommand lookupAttributeNamesCommand;
@@ -63,7 +63,7 @@ public class OracleConnectorImpl {
         return lookupAttributeNamesCommand.lookupAttributeNames(reqType);
     }
 
-//    @Override
+    @Override
     public SearchResponse search(@WebParam(name = "searchRequest", targetNamespace = "") SearchRequest searchRequest) {
         throw new UnsupportedOperationException("Not supportable.");
     }

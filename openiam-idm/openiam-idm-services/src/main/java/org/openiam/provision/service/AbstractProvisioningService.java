@@ -15,12 +15,7 @@ import org.openiam.base.SysConfiguration;
 import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.connector.type.constant.StatusCodeType;
-import org.openiam.connector.type.request.CrudRequest;
-import org.openiam.connector.type.request.LookupRequest;
-import org.openiam.connector.type.request.PasswordRequest;
-import org.openiam.connector.type.response.ObjectResponse;
-import org.openiam.connector.type.response.ResponseType;
+import org.openiam.connector.type.*;
 import org.openiam.dozer.converter.*;
 import org.openiam.exception.EncryptionException;
 import org.openiam.exception.ScriptEngineException;
@@ -265,7 +260,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
             reqType.setScriptHandler(mSys.getLookupHandler());
 
-            ObjectResponse lookupRespType = remoteConnectorAdapter.lookupRequest(mSys, reqType, connector, muleContext);
+            SearchResponse lookupRespType = remoteConnectorAdapter.lookupRequest(mSys, reqType, connector, muleContext);
 
             if (lookupRespType != null && lookupRespType.getStatus() == StatusCodeType.SUCCESS) {
                 return true;
@@ -547,6 +542,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
             	for(final UserAttributeEntity entity : userEntity.getUserAttributes().values()) {
             		if(entity != null) {
             			entity.setUser(userEntity);
+                        entity.getElement();
             		}
             	}
             }
@@ -554,7 +550,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                 userMgr.addUser(userEntity);
                 newUser.setUserId(userEntity.getUserId());
             } catch (Exception e) {
-                log.error(e);
+                log.error("Exception while creating user", e);
                 resp.setStatus(ResponseStatus.FAILURE);
                 resp.setErrorCode(ResponseCode.FAIL_OTHER);
                 return resp;
@@ -727,7 +723,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                         user.getRequestorDomain(), user.getRequestorLogin(),
                         "IDM SERVICE", user.getCreatedBy(), "0", "USER", user.getUserId(),
                         null, "SUCCESS", null, "USER_STATUS",
-                        user.getStatus().toString(),
+                        user.getUser().getStatus().toString(),
                         null, null, user.getSessionId(), null, g.getGrpName(),
                         user.getRequestClientIP(), null, null) );
 
@@ -763,7 +759,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                         user.getRequestorDomain(), user.getRequestorLogin(),
                         "IDM SERVICE", user.getCreatedBy(), "0", "USER", user.getUserId(),
                         null, "SUCCESS", null, "USER_STATUS",
-                        user.getStatus().toString(),
+                        user.getUser().getStatus().toString(),
                         "NA", null, user.getSessionId(), null, ur.getRoleId(),
                         user.getRequestClientIP(), null, null) );
 
@@ -787,7 +783,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                         user.getRequestorDomain(), user.getRequestorLogin(),
                         "IDM SERVICE", user.getCreatedBy(), "0", "USER", user.getUserId(),
                         null, "SUCCESS", null, "USER_STATUS",
-                        user.getStatus().toString(),
+                        user.getUser().getStatus().toString(),
                         "NA", null, user.getSessionId(), null, org.getOrganizationName(),
                         user.getRequestClientIP(), null, null) );
 

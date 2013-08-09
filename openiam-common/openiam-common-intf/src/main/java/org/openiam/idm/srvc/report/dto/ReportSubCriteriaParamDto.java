@@ -10,6 +10,7 @@ import javax.xml.bind.annotation.XmlType;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ReportSubCriteriaParamDto", propOrder = {
+		"rscpId",
         "id",
         "reportId",
         "name",
@@ -20,6 +21,7 @@ import javax.xml.bind.annotation.XmlType;
 @DozerDTOCorrespondence(ReportSubCriteriaParamEntity.class)
 public class ReportSubCriteriaParamDto {
 
+	private String rscpId;
     private String id;
     private String reportId;
     private String name;
@@ -30,7 +32,8 @@ public class ReportSubCriteriaParamDto {
     public ReportSubCriteriaParamDto() {
     }
 
-    public ReportSubCriteriaParamDto( String type,String reportId, String name, String value) {
+    public ReportSubCriteriaParamDto(String id, String type,String reportId, String name, String value) {
+    	this.id=id;
     	this.type=type;
         this.reportId = reportId;
         this.name = name;
@@ -94,6 +97,7 @@ public class ReportSubCriteriaParamDto {
         if (reportId != null ? !reportId.equals(that.reportId) : that.reportId != null) return false;
         if (type != null ? !type.equals(that.type) : that.type != null) return false;
         if (value != null ? !value.equals(that.value) : that.value != null) return false;
+        if (rscpId != null ? !rscpId.equals(that.rscpId) : that.rscpId != null) return false;
 
         return true;
     }
@@ -105,7 +109,7 @@ public class ReportSubCriteriaParamDto {
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (value != null ? value.hashCode() : 0);
         result = 31 * result + (type != null ? type.hashCode() : 0);
-        
+        result = 31 * result + (rscpId != null ? rscpId.hashCode() : 0);
         return result;
     }
 
@@ -115,9 +119,17 @@ public class ReportSubCriteriaParamDto {
                 "id='" + id + '\'' +
                 ", reportId='" + reportId + '\'' +
                 ", name='" + name + '\'' +
-                ", value='" + value + '\''  +  ", type='" + type + '\''  +
+                ", value='" + value + '\''  +  ", type='" + type + '\''  +  ", rscpId='" + rscpId + '\''  +
                 '}';
     }
+
+	public String getRscpId() {
+		return rscpId;
+	}
+
+	public void setRscpId(String rscpId) {
+		this.rscpId = rscpId;
+	}
 
 	
 }

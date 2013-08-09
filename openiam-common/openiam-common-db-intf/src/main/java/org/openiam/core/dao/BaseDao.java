@@ -39,7 +39,7 @@ public interface BaseDao<T, PrimaryKey extends Serializable> {
   void attachDirty(T t);
 
   void attachClean(T t);
-  
+
   List<T> getByExample(T t, int startAt, int size);
   List<T> getByExample(T t);
   List<T> getByExample(SearchBean searchBean);

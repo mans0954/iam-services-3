@@ -27,14 +27,11 @@ import org.springframework.stereotype.Repository;
 public class MetadataTypeDAOImpl extends
         BaseDaoImpl<MetadataTypeEntity, String> implements MetadataTypeDAO {
 
-    @Autowired
-    private CategoryDAO categoryDao;
-
     @Override
 	protected Criteria getExampleCriteria(final MetadataTypeEntity entity) {
     	final Criteria criteria = getCriteria();
     	if(StringUtils.isNotBlank(entity.getMetadataTypeId())) {
-    		criteria.add(Restrictions.eq("metadataTypeId", entity.getMetadataTypeId()));
+    		criteria.add(Restrictions.eq(getPKfieldName(), entity.getMetadataTypeId()));
     	} else {
     		criteria.add(Restrictions.eq("active", entity.isActive()));
     		criteria.add(Restrictions.eq("syncManagedSys", entity.isSyncManagedSys()));

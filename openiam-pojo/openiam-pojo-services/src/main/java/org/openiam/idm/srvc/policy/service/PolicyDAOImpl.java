@@ -5,11 +5,12 @@ package org.openiam.idm.srvc.policy.service;
 import java.util.List;
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
-import org.hibernate.Query;
-import org.hibernate.Session;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
+import org.mule.util.StringUtils;
 import org.openiam.core.dao.BaseDaoImpl;
+import org.openiam.idm.searchbeans.PolicySearchBean;
+import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 import org.springframework.stereotype.Repository;
 
@@ -60,6 +61,18 @@ public class PolicyDAOImpl extends BaseDaoImpl<PolicyEntity, String> implements
 		}
 
 	}
+
+    @Override
+    protected Criteria getExampleCriteria(final SearchBean searchBean) {
+        final Criteria criteria = getCriteria();
+        if (searchBean instanceof PolicySearchBean) {
+            PolicySearchBean sb = (PolicySearchBean)searchBean;
+            if(StringUtils.isNotBlank(sb.getPolicyDefId())) {
+                criteria.add(Restrictions.eq("policyDefId", sb.getPolicyDefId()));
+            }
+        }
+        return criteria;
+    }
 
 	@Override
 	protected String getPKfieldName() {

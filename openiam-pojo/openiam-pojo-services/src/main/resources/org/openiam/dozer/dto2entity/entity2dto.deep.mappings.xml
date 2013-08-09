@@ -247,6 +247,11 @@
 			<a>type.id</a>
 			<b>typeId</b>
 		</field>
+		
+		<field>
+			<a>type.name</a>
+			<b>typeName</b>
+		</field>
 	</mapping>
 	
 	<mapping>

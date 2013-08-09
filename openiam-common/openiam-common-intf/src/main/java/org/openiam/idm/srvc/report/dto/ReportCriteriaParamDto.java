@@ -23,7 +23,8 @@ import javax.xml.bind.annotation.XmlType;
         "reportId",
         "name",
         "value",
-        "typeId"
+        "typeId",
+        "typeName"
 })
 @DozerDTOCorrespondence(ReportCriteriaParamEntity.class)
 public class ReportCriteriaParamDto {
@@ -33,16 +34,18 @@ public class ReportCriteriaParamDto {
     private String name;
     private String value;
     private String typeId;
+    private String typeName;
 
 
     public ReportCriteriaParamDto() {
     }
 
-    public ReportCriteriaParamDto(String reportId, String name, String value, String typeId) {
+    public ReportCriteriaParamDto(String reportId, String name, String value, String typeId, String typeName) {
         this.reportId = reportId;
         this.name = name;
         this.value = value;
         this.typeId = typeId;
+        this.typeName=typeName;
     }
 
     public String getId() {
@@ -97,6 +100,7 @@ public class ReportCriteriaParamDto {
         if (reportId != null ? !reportId.equals(that.reportId) : that.reportId != null) return false;
         if (typeId != null ? !typeId.equals(that.typeId) : that.typeId != null) return false;
         if (value != null ? !value.equals(that.value) : that.value != null) return false;
+        if (typeName != null ? !typeName.equals(that.typeName) : that.typeName != null) return false;
 
         return true;
     }
@@ -108,6 +112,7 @@ public class ReportCriteriaParamDto {
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (value != null ? value.hashCode() : 0);
         result = 31 * result + (typeId != null ? typeId.hashCode() : 0);
+        result = 31 * result + (typeName != null ? typeName.hashCode() : 0);
         return result;
     }
 
@@ -116,5 +121,13 @@ public class ReportCriteriaParamDto {
 		return "ReportCriteriaParamDto [id=" + id + ", reportId=" + reportId
 				+ ", name=" + name + ", value=" + value + ", typeId=" + typeId
 				+ "]";
+	}
+
+	public String getTypeName() {
+		return typeName;
+	}
+
+	public void setTypeName(String typeName) {
+		this.typeName = typeName;
 	}
 }

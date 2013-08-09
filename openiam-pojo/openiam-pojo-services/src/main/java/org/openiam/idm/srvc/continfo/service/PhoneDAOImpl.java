@@ -41,6 +41,13 @@ public class PhoneDAOImpl extends BaseDaoImpl<PhoneEntity, String> implements Ph
                     criteria.add(Restrictions.eq("parent.userId", phone.getParent().getUserId()));
                 }
             }
+
+            if (phone.getMetadataType() != null) {
+                if (StringUtils.isNotBlank(phone.getMetadataType().getMetadataTypeId())) {
+                    criteria.add(Restrictions.eq("metadataType.metadataTypeId", phone.getMetadataType().getMetadataTypeId()));
+                }
+            }
+
         }
         return criteria;
     }

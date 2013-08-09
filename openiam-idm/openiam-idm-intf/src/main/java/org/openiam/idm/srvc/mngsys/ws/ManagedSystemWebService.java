@@ -7,6 +7,7 @@ import javax.jws.WebParam;
 import javax.jws.WebService;
 
 import org.openiam.base.ws.Response;
+import org.openiam.idm.searchbeans.AttributeMapSearchBean;
 import org.openiam.idm.srvc.mngsys.dto.*;
 
 /**
@@ -241,6 +242,10 @@ public interface ManagedSystemWebService {
     @WebMethod
     List<AttributeMap> getResourceAttributeMaps(
             @WebParam(name = "resourceId", targetNamespace = "") String resourceId);
+
+    @WebMethod
+    public List<AttributeMap> findResourceAttributeMaps(
+            @WebParam(name = "searchBean", targetNamespace = "") AttributeMapSearchBean searchBean);
 
     /**
      * Gets the all attribute maps.

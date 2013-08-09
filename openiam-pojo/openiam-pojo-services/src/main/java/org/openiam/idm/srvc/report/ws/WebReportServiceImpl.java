@@ -106,6 +106,14 @@ public class WebReportServiceImpl implements WebReportService {
 		return reportDataService.getReportCount();
 
 	}
+	
+	@Override
+	public List<ReportInfoDto> getAllReportsInfo() {
+		List<ReportInfoDto> reportInfo=reportInfoDozerConverter.convertToDTOList(reportDataService.getAllReports(),false);
+		return reportInfo;
+
+	}
+
 
 	@Override
 	public Response createOrUpdateReportInfo(
@@ -117,47 +125,60 @@ public class WebReportServiceImpl implements WebReportService {
 			try {
 
 				if (StringUtils.isBlank(report.getReportName())) {
-					throw new BasicDataServiceException(
+					response.setErrorCode(
 							ResponseCode.REPORT_NAME_NOT_SET);
+					response.setStatus(ResponseStatus.FAILURE);
+					response.setErrorText(ResponseCode.REPORT_NAME_NOT_SET.toString());
+					return response;
 				}
 				if (StringUtils.isBlank(report.getReportDataSource())) {
-					throw new BasicDataServiceException(
+					
+					response.setErrorCode(
 							ResponseCode.REPORT_DATASOURCE_NOT_SET);
+					response.setStatus(ResponseStatus.FAILURE);
+					response.setErrorText(ResponseCode.REPORT_DATASOURCE_NOT_SET.toString());
+					return response;
 				}
 				if (StringUtils.isBlank(report.getReportUrl())) {
-					throw new BasicDataServiceException(
+					
+					response.setErrorCode(
 							ResponseCode.REPORT_URL_NOT_SET);
+					response.setStatus(ResponseStatus.FAILURE);
+					response.setErrorText(ResponseCode.REPORT_URL_NOT_SET.toString());
+					return response;
 				}
 				final ReportInfoEntity found = reportDataService
 						.getReportByName(report.getReportName());
 				if (found != null) {
 					if (StringUtils.isBlank(report.getReportId())) {
-						throw new BasicDataServiceException(
+						System.out.println("Call=1");
+						response.setErrorCode(
 								ResponseCode.NAME_TAKEN);
+						response.setStatus(ResponseStatus.FAILURE);
+						response.setErrorText(ResponseCode.NAME_TAKEN.toString());
+						return response;
 					}
 
 					if (StringUtils.isNotBlank(report.getReportId())
 							&& !report.getReportId()
 									.equals(found.getReportId())) {
-						throw new BasicDataServiceException(
+						System.out.println("Call=2");
+						response.setErrorCode(
 								ResponseCode.NAME_TAKEN);
+						response.setStatus(ResponseStatus.FAILURE);
+						response.setErrorText(ResponseCode.NAME_TAKEN.toString());
+						return response;
 					}
 				}
-
+               
 				entity = reportInfoDozerConverter.convertToEntity(report, true);
-
+               
 				entity = reportDataService.createOrUpdateReportInfo(entity);
-				// TODO persist parameters
-				// reportDataService.updateReportParametersByReportName(reportName,
-				// criteriaParamDozerConverter.convertToEntityList(parameters,
-				// false));
-			} catch (Throwable t) {
-				log.error("error while saving:" + t);
-				response.setStatus(ResponseStatus.FAILURE);
-				response.setErrorCode(ResponseCode.SQL_EXCEPTION);
+			} catch (Throwable t) {			
 				response.setErrorText(t.getMessage());
 				return response;
 			}
+			
 			response.setResponseValue(entity.getReportId());
 			response.setStatus(ResponseStatus.SUCCESS);
 		} else {
@@ -209,15 +230,14 @@ public class WebReportServiceImpl implements WebReportService {
 
 				entity = reportDataService
 						.createOrUpdateReportParamInfo(entity);
-				// TODO persist parameters
-				// reportDataService.updateReportParametersByReportName(reportName,
-				// criteriaParamDozerConverter.convertToEntityList(parameters,
-				// false));
-			} catch (Throwable t) {
+			} catch (BasicDataServiceException t) {
+				return response;
+			}catch (Throwable t) {
 				log.error("error while saving:" + t);
 				response.setStatus(ResponseStatus.FAILURE);
 				response.setErrorCode(ResponseCode.SQL_EXCEPTION);
 				response.setErrorText(t.getMessage());
+				
 				return response;
 			}
 			response.setResponseValue(entity.getId());
@@ -398,6 +418,11 @@ public class WebReportServiceImpl implements WebReportService {
 		reportsResponse.setReports(reportDtos);
 		return reportsResponse;
 	}
+	
+	public List<ReportCriteriaParamDto> getAllReportCriteriaParam(){
+		List<ReportCriteriaParamDto> reportCriteriaParam = criteriaParamDozerConverter.convertToDTOList(reportDataService.getAllReportParameters(), false);
+		return reportCriteriaParam;
+	}
 
 	@Override
 	public Response createOrUpdateSubscribedReportInfo(
@@ -407,21 +432,50 @@ public class WebReportServiceImpl implements WebReportService {
 		ReportSubscriptionEntity entity = null;
 		if (reportSubscriptionDto != null) {
 			try {
+				
+				if(StringUtils.isBlank(reportSubscriptionDto.getReportName())){
+					response.setErrorCode(
+							ResponseCode.SUBSCRIBED_NAME_NOT_SET);
+					response.setStatus(ResponseStatus.FAILURE);
+					response.setErrorText(ResponseCode.SUBSCRIBED_NAME_NOT_SET.toString());
+					return response;
+				}
+				
+				if(StringUtils.isBlank(reportSubscriptionDto.getDeliveryMethod())){
+					
+					response.setErrorCode(
+							ResponseCode.SUBSCRIBED_DELIVERY_METHOD_NOT_SET);
+					response.setStatus(ResponseStatus.FAILURE);
+					response.setErrorText(ResponseCode.SUBSCRIBED_DELIVERY_METHOD_NOT_SET.toString());
+					return response;
+				}
+				
+				if(StringUtils.isBlank(reportSubscriptionDto.getDeliveryAudience())){
+					
+					response.setErrorCode(
+							ResponseCode.SUBSCRIBED_DELIVERY_AUDIENCE_NOT_SET);
+					response.setStatus(ResponseStatus.FAILURE);
+					response.setErrorText(ResponseCode.SUBSCRIBED_DELIVERY_AUDIENCE_NOT_SET.toString());
+					return response;
+				}
+				
+				if(StringUtils.isBlank(reportSubscriptionDto.getDeliveryFormat())){
+					
+					response.setErrorCode(
+							ResponseCode.SUBSCRIBED_DELIVERY_FORMAT_NOT_SET);
+					response.setStatus(ResponseStatus.FAILURE);
+					response.setErrorText(ResponseCode.SUBSCRIBED_DELIVERY_FORMAT_NOT_SET.toString());
+					return response;
+				}
+				
+				
 
 				entity = reportDataService
 						.createOrUpdateSubscribedReportInfo(reportSubscriptionDozerConverter
 								.convertToEntity(reportSubscriptionDto, true));
 
-				/*
-				 * reportDataService.updateSubReportParametersByReportName(
-				 * reportSubscriptionDto.getReportName(),
-				 * criteriaSubParamDozerConverter.convertToEntityList(
-				 * parameters, false));
-				 */
 
-			} catch (Throwable t) {
-				response.setStatus(ResponseStatus.FAILURE);
-				response.setErrorCode(ResponseCode.SQL_EXCEPTION);
+			} catch (Throwable t) {			
 				response.setErrorText(t.getMessage());
 				return response;
 			}
@@ -430,9 +484,6 @@ public class WebReportServiceImpl implements WebReportService {
 
 		} else {
 			response.setErrorCode(ResponseCode.INVALID_ARGUMENTS);
-			// TODO check
-			// response.setErrorText("Invalid parameter list: reportName="
-			// + reportSubscriptionDto.getReportName());
 			response.setStatus(ResponseStatus.FAILURE);
 		}
 		return response;
@@ -585,30 +636,32 @@ public class WebReportServiceImpl implements WebReportService {
 	@Override
 	public Response createOrUpdateSubCriteriaParam(
 			@WebParam(name = "subCriteriaParamReport", targetNamespace = "") final ReportSubCriteriaParamDto subCriteriaParamReport) {
-		log.debug("In createOrUpdateReportInfoParam:" + subCriteriaParamReport);
+		log.debug("In createOrUpdateSubCriteriaParam:" + subCriteriaParamReport);
 		Response response = new Response();
-		ReportSubCriteriaParamEntity entity = null;
+		ReportSubCriteriaParamEntity entity = new ReportSubCriteriaParamEntity() ;
 
 		if (subCriteriaParamReport != null) {
 			try {
-
-				/*
-				 * if (StringUtils.isBlank(subCriteriaParamReport.getName())) {
-				 * throw new BasicDataServiceException(
-				 * ResponseCode.REPORT_PARAM_NAME_NOT_SET); } if
-				 * (StringUtils.isBlank(reportParam.getTypeId())) { throw new
-				 * BasicDataServiceException(
-				 * ResponseCode.REPORT_PARAM_TYPE_NOT_SET); } final
-				 * ReportCriteriaParamEntity found = reportDataService
-				 * .getReportParameterByName(reportParam.getReportId(),
-				 * reportParam.getName()); if (found != null) { if
-				 * (StringUtils.isBlank(reportParam.getId())) { throw new
-				 * BasicDataServiceException( ResponseCode.NAME_TAKEN); }
-				 * 
-				 * if (StringUtils.isNotBlank(reportParam.getId()) &&
-				 * !reportParam.getId().equals(found.getId())) { throw new
-				 * BasicDataServiceException( ResponseCode.NAME_TAKEN); } }
-				 */
+				
+				
+				if(StringUtils.isBlank(subCriteriaParamReport.getName())){
+					
+					response.setErrorCode(
+							ResponseCode.SUBSCRIBED_NAME_NOT_SET);
+					response.setStatus(ResponseStatus.FAILURE);
+					response.setErrorText(ResponseCode.SUBSCRIBED_NAME_NOT_SET.toString());
+					return response;
+				}
+				
+				if(StringUtils.isBlank(subCriteriaParamReport.getValue())){
+					
+					response.setErrorCode(
+							ResponseCode.SUBSCRIBED_VALUE_NOT_SET);
+					response.setStatus(ResponseStatus.FAILURE);
+					response.setErrorText(ResponseCode.SUBSCRIBED_VALUE_NOT_SET.toString());
+					return response;
+				}
+				 
 
 				entity = criteriaSubParamDozerConverter.convertToEntity(
 						subCriteriaParamReport, true);
@@ -617,15 +670,10 @@ public class WebReportServiceImpl implements WebReportService {
 
 				entity = reportDataService
 						.createOrUpdateSubCriteriaParamReport(entity);
-				// TODO persist parameters
-				// reportDataService.updateReportParametersByReportName(reportName,
-				// criteriaParamDozerConverter.convertToEntityList(parameters,
-				// false));
-			} catch (Throwable t) {
-				log.error("error while saving:" + t);
-				response.setStatus(ResponseStatus.FAILURE);
-				response.setErrorCode(ResponseCode.SQL_EXCEPTION);
-				response.setErrorText(t.getMessage());
+			} 
+			catch (Throwable e) {
+				log.error("error while saving:" + e);							
+				response.setErrorText(e.getMessage());
 				return response;
 			}
 			response.setResponseValue(entity.getId());

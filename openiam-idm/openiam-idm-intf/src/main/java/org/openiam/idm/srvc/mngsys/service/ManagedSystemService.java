@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.mngsys.service;
 
 import java.util.List;
 
+import org.openiam.idm.searchbeans.AttributeMapSearchBean;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.DefaultReconciliationAttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
@@ -44,6 +45,8 @@ public interface ManagedSystemService {
     void removeResourceAttributeMaps(String resourceId);
 
     List<AttributeMapEntity> getResourceAttributeMaps(String resourceId);
+
+    List<AttributeMapEntity> getResourceAttributeMaps(AttributeMapSearchBean searchBean);
 
     List<AttributeMapEntity> getAllAttributeMaps();
 

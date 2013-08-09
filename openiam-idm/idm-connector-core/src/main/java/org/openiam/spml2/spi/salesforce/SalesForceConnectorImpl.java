@@ -6,13 +6,8 @@ import javax.jws.WebService;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openiam.connector.type.constant.ErrorCode;
-import org.openiam.connector.type.constant.StatusCodeType;
-import org.openiam.connector.type.response.ObjectResponse;
-import org.openiam.connector.type.response.LookupAttributeResponse;
-import org.openiam.connector.type.response.ResponseType;
-import org.openiam.connector.type.request.*;
-import org.openiam.connector.type.response.SearchResponse;
+import org.openiam.connector.type.*;
+import org.openiam.connector.type.ResponseType;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.connector.ConnectorService;
@@ -30,12 +25,11 @@ import com.sforce.soap.partner.PartnerConnection;
 import com.sforce.ws.ConnectionException;
 import com.sforce.ws.ConnectorConfig;
 
-//@WebService(endpointInterface="org.openiam.spml2.interf.ConnectorService",
-//	targetNamespace="http://www.openiam.org/service/connector",
-//	portName = "SalesForceServicePort",
-//	serviceName="SalesForceConnectorService")
-@Deprecated
-public class SalesForceConnectorImpl  {
+@WebService(endpointInterface="org.openiam.spml2.interf.ConnectorService",
+	targetNamespace="http://www.openiam.org/service/connector",
+	portName = "SalesForceServicePort", 
+	serviceName="SalesForceConnectorService")
+public class SalesForceConnectorImpl implements ConnectorService {
 	
 	private static final Log log = LogFactory.getLog(SalesForceConnectorImpl.class);
 	
@@ -47,6 +41,7 @@ public class SalesForceConnectorImpl  {
     private PasswordCommand setPasswordCommand;
     private SuspendCommand suspendCommand;
 
+	@Override
 	@WebMethod
 	public ResponseType reconcileResource(@WebParam(name = "config", targetNamespace = "") ReconciliationConfig config) {
         final ResponseType response = new ResponseType();
@@ -56,6 +51,7 @@ public class SalesForceConnectorImpl  {
         return response;
 	}
 
+	@Override
 	@WebMethod
 	public ResponseType testConnection(@WebParam(name = "managedSys", targetNamespace = "") ManagedSysDto managedSys) {
 		final ResponseType response = new ResponseType();
@@ -73,15 +69,15 @@ public class SalesForceConnectorImpl  {
 		return response;
 	}
 
-    public ObjectResponse add(CrudRequest reqType) {
+    public UserResponse add(UserRequest reqType) {
         return addCommand.add(reqType);
     }
 
-    public ObjectResponse modify(CrudRequest reqType) {
+    public UserResponse modify(UserRequest reqType) {
         return modifyCommand.modify(reqType);
     }
 
-    public ObjectResponse delete(CrudRequest reqType) {
+    public UserResponse delete(UserRequest reqType) {
         return deleteCommand.delete(reqType);
     }
 
@@ -119,16 +115,16 @@ public class SalesForceConnectorImpl  {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    @Override
     public SearchResponse search(@WebParam(name = "searchRequest", targetNamespace = "") SearchRequest searchRequest) {
         throw new UnsupportedOperationException("Not supportable.");
     }
 
-    public ResponseType suspend(final SuspendResumeRequest request) {
-       // return suspendCommand.suspend(request);
-        return null;
+    public ResponseType suspend(final SuspendRequest request) {
+        return suspendCommand.suspend(request);
     }
 
-    public ResponseType resume(final SuspendResumeRequest request) {
+    public ResponseType resume(final ResumeRequest request) {
         return resumeCommand.resume(request);
     }
 

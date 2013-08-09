@@ -256,7 +256,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             auditHelper.addLog("CREATE", user.getRequestorDomain(),
                     user.getRequestorLogin(), "IDM SERVICE",
                     user.getCreatedBy(), "0", "USER", user.getUserId(), null,
-                    "FAIL", null, "USER_STATUS", user.getStatus()
+                    "FAIL", null, "USER_STATUS", user.getUser().getStatus()
                             .toString(), requestId, "DUPLICATE PRINCIPAL",
                     user.getSessionId(), "Identity already exists:"
                             + primaryLogin.getManagedSysId() + " - "
@@ -317,7 +317,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             auditHelper.addLog("CREATE", user.getRequestorDomain(),
                     user.getRequestorLogin(), "IDM SERVICE",
                     user.getCreatedBy(), "0", "USER", user.getUserId(), null,
-                    "FAIL", null, "USER_STATUS", user.getStatus()
+                    "FAIL", null, "USER_STATUS", user.getUser().getStatus()
                             .toString(), requestId,
                     ResponseCode.FAIL_DECRYPTION.toString(),
                     user.getSessionId(), e.toString(),
@@ -858,181 +858,13 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         log.debug("----deleteByUserId called.------");
 
-        IdmAuditLog auditLog = null;
-        Map<String, Object> bindingMap = new HashMap<String, Object>();
+        List<LoginEntity> loginEntityList = loginManager.getLoginByUser(user.getUserId());
+        LoginEntity primaryIdentity = getPrimaryIdentity(
+                this.sysConfiguration.getDefaultManagedSysId(),
+                loginDozerConverter.convertToEntityList(loginDozerConverter.convertToDTOList(loginEntityList,false), false));
 
-        ProvisionUserResponse response = new ProvisionUserResponse(
-                ResponseStatus.SUCCESS);
-
-        if (status != UserStatusEnum.DELETED && status != UserStatusEnum.LEAVE
-                & status != UserStatusEnum.TERMINATE
-                && status != UserStatusEnum.RETIRED) {
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(ResponseCode.USER_STATUS);
-            return response;
-        }
-
-        String requestId = "R" + UUIDGen.getUUID();
-
-        UserEntity usrEntity = this.userMgr.getUser(user.getUserId());
-        User usr = userDozerConverter.convertToDTO(usrEntity, true);
-        if (usr == null) {
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(ResponseCode.USER_NOT_FOUND);
-            return response;
-        }
-        ProvisionUser pUser = new ProvisionUser(usr);
-
-        LoginEntity lRequestor = loginManager.getPrimaryIdentity(requestorId);
-        LoginEntity lTargetUser = loginManager.getPrimaryIdentity(usr
-                .getUserId());
-
-        bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, IDENTITY_EXIST);
-        bindingMap
-                .put(TARGET_SYS_MANAGED_SYS_ID, lTargetUser.getManagedSysId());
-        bindingMap.put(TARGET_SYSTEM_IDENTITY, lTargetUser.getLogin());
-        bindingMap.put(TARGET_SYS_RES_ID, null);
-        bindingMap.put(TARGET_SYS_SECURITY_DOMAIN, lTargetUser.getDomainId());
-        if (callPreProcessor("DELETE", pUser, bindingMap) != ProvisioningConstants.SUCCESS) {
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
-            return response;
-        }
-
-        if (usr.getStatus() == UserStatusEnum.DELETED
-                || usr.getStatus() == UserStatusEnum.TERMINATE) {
-            log.debug("User was already deleted. Nothing more to do.");
-            return response;
-        }
-
-        usr.updateUser(user.getUser());
-
-        // delete user and all its identities.
-        usr.setStatus(status);
-        usr.setSecondaryStatus(null);
-        usr.setLastUpdatedBy(requestorId);
-        usr.setLastUpdate(new Date(System.currentTimeMillis()));
-        userMgr.updateUserWithDependent(
-                userDozerConverter.convertToEntity(usr, true), false);
-
-        if (lRequestor != null && lTargetUser != null) {
-
-            auditLog = auditHelper.addLog("DELETE", lRequestor.getDomainId(),
-                    lRequestor.getLogin(), "IDM SERVICE", usr.getCreatedBy(),
-                    "0", "USER", usr.getUserId(), null, "SUCCESS", null,
-                    "USER_STATUS", usr.getStatus().toString(), requestId, null,
-                    null, null, null, lTargetUser.getLogin(),
-                    lTargetUser.getDomainId());
-
-        } else {
-            log.debug("Unable to log disable operation. One of the following is null:");
-            log.debug("Requestor identity=" + lRequestor);
-            log.debug("Target identity=" + lTargetUser);
-        }
-
-        // update the identities and set them to inactive
-        List<LoginEntity> principalList = loginManager.getLoginByUser(user
-                .getUserId());
-
-        if (principalList != null) {
-            for (LoginEntity l : principalList) {
-
-                // ignore inactive records
-                if (l.getStatus() == null
-                        || "ACTIVE".equalsIgnoreCase(l.getStatus())) {
-
-                    // if (l.getStatus() != null
-                    // && !l.getStatus().equalsIgnoreCase("INACTIVE")) {
-                    l.setStatus("INACTIVE");
-                    l.setAuthFailCount(0);
-                    l.setPasswordChangeCount(0);
-                    l.setIsLocked(0);
-                    loginManager.updateLogin(l);
-
-                    // check if we should update the target system
-
-                    if (user.isNotifyTargetSystems()) {
-
-                        // only add the connectors if its a secondary identity.
-                        if (!l.getManagedSysId().equalsIgnoreCase(
-                                this.sysConfiguration.getDefaultManagedSysId())) {
-
-                            // some connectors, such as the appTables connector,
-                            // need data
-                            // about other attributes during a delete - so
-                            // generate a list of attributes
-
-                            ManagedSysDto mSys = managedSysService
-                                    .getManagedSys(l.getManagedSysId());
-                            ProvisionConnectorDto connector = provisionConnectorWebService
-                                    .getProvisionConnector(mSys
-                                            .getConnectorId());
-
-                            ManagedSystemObjectMatch matchObj = null;
-                            ManagedSystemObjectMatch[] matchObjAry = managedSysService
-                                    .managedSysObjectParam(
-                                            mSys.getManagedSysId(), "USER");
-
-                            if (matchObjAry != null && matchObjAry.length > 0) {
-                                matchObj = matchObjAry[0];
-                            }
-
-                            log.debug("Deleting id=" + l.getLogin());
-                            log.debug("- delete using managed sys id="
-                                    + mSys.getManagedSysId());
-
-            // SET ATTRIBUTES PRE
-                            bindingMap.put(TARGET_SYSTEM_IDENTITY, l.getLogin());
-                            bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, IDENTITY_EXIST);
-                            bindingMap.put(TARGET_SYS_MANAGED_SYS_ID, mSys.getManagedSysId());
-                            bindingMap.put(TARGET_SYS_RES_ID, null);
-                            bindingMap.put(TARGET_SYS_SECURITY_DOMAIN,
-                                    l.getDomainId());
-
-                            if (callPreProcessor("DELETE", pUser, bindingMap) != ProvisioningConstants.SUCCESS) {
-                                response.setStatus(ResponseStatus.FAILURE);
-                                response.setErrorCode(ResponseCode.FAIL_PREPROCESSOR);
-                                return response;
-                            }
-
-                            if (connector.getConnectorInterface() != null
-                                    && connector.getConnectorInterface()
-                                            .equalsIgnoreCase("REMOTE")) {
-
-                                remoteDelete(loginDozerConverter.convertToDTO(
-                                        l, true), requestId, mSys, connector,
-                                        matchObj, user, auditLog);
-
-                            } else {
-                                localDelete(loginDozerConverter.convertToDTO(l, true),
-                                        requestId, mSys, auditLog);
-                            }
-
-                            // SET ATTRIBUTES POST
-                            bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
-                            if (callPostProcessor("DELETE", pUser, bindingMap) != ProvisioningConstants.SUCCESS) {
-                                response.setStatus(ResponseStatus.FAILURE);
-                                response.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR);
-                                return response;
-                            }
-                        }
-                    }
-                }
-
-            }
-        }
-        bindingMap.put(TARGET_SYSTEM_IDENTITY, lTargetUser.getLogin());
-        bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
-        bindingMap.put(TARGET_SYS_RES_ID, null);
-        bindingMap.put(TARGET_SYS_SECURITY_DOMAIN, lTargetUser.getDomainId());
-        if (callPostProcessor("DELETE", pUser, bindingMap) != ProvisioningConstants.SUCCESS) {
-            response.setStatus(ResponseStatus.FAILURE);
-            response.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR);
-            return response;
-        }
-
-        response.setStatus(ResponseStatus.SUCCESS);
-        return response;
+        return deleteUser(primaryIdentity.getDomainId(), sysConfiguration
+                .getDefaultManagedSysId(), primaryIdentity.getLogin(),status,requestorId);
 
     }
 
@@ -2059,7 +1891,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             ExtensibleUser extUser = buildFromRules(pUser,
                                     attrMap, scriptRunner, managedSysId,
                                     primaryIdentity.getDomainId(), bindingMap,
-                                    pUser.getLastUpdatedBy());
+                                    pUser.getUser().getLastUpdatedBy());
 
                             // mLg.setPassword(primaryLogin.getPassword());
                             mLg.setUserId(primaryIdentity.getUserId());
@@ -2147,6 +1979,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                  */
                                 bindingMap.remove(MATCH_PARAM);
 
+                            }
+                            if (connectorSuccess) {
+                                    loginManager.addLogin(loginDozerConverter
+                                            .convertToEntity(mLg, true));
                             }
                         } else {
 
@@ -2687,19 +2523,20 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
             reqType.setScriptHandler(mSys.getLookupHandler());
 
-            ObjectResponse responseType = remoteConnectorAdapter.lookupRequest(
+            SearchResponse responseType = remoteConnectorAdapter.lookupRequest(
                     mSys, reqType, connector, muleContext);
-            if (responseType.getStatus() == StatusCodeType.FAILURE) {
+            if (responseType.getStatus() == StatusCodeType.FAILURE || responseType.getUserList().size() == 0) {
                 response.setStatus(ResponseStatus.FAILURE);
                 return response;
             }
-            String targetPrincipalName = responseType.getObjectValue()
-                    .getObjectIdentity() != null ? responseType.getObjectValue()
-                    .getObjectIdentity() : parseUserPrincipal(responseType
-                    .getObjectValue().getAttributeList());
+
+            String targetPrincipalName = responseType.getUserList().get(0)
+                    .getUserIdentity() != null ? responseType.getUserList().get(0)
+                    .getUserIdentity() : parseUserPrincipal(responseType
+                    .getUserList().get(0).getAttributeList());
             response.setPrincipalName(targetPrincipalName);
-            response.setAttrList(responseType.getObjectValue().getAttributeList());
-            response.setResponseValue(responseType.getObjectValue());
+            response.setAttrList(responseType.getUserList().get(0).getAttributeList());
+            response.setResponseValue(responseType.getUserList().get(0));
 
             return response;
 
