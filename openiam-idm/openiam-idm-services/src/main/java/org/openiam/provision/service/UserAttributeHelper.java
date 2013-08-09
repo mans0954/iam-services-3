@@ -52,8 +52,8 @@ public class UserAttributeHelper {
 	
 	protected static final Log log = LogFactory.getLog(UserAttributeHelper.class);
 	protected static LoginDataService loginManager;
-	
-	public static ExtensibleUser newUser(ProvisionUser pUser) throws IllegalArgumentException, 
+
+  	public static ExtensibleUser newUser(ProvisionUser pUser) throws IllegalArgumentException,
 		IllegalAccessException, 
 		InvocationTargetException {
 		

@@ -46,7 +46,7 @@ public class ExtensibleRole extends ExtensibleObject {
 	protected Role role;
 	
 	public ExtensibleRole() {
-		
+        extensibleObjectType= ExtensibleObjectType.ROLE;
 	}
 	
 	public ExtensibleRole(Role rl) {
@@ -56,6 +56,7 @@ public class ExtensibleRole extends ExtensibleObject {
 		}else {
 			operation = 0;
 		}
+        extensibleObjectType= ExtensibleObjectType.ROLE;
 	}
 
 	public Role getRole() {

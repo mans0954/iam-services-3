@@ -454,7 +454,7 @@
 </xs:sequence>
 <xs:attribute name="status" type="tns:StatusCodeType" use="required"/>
 </xs:complexType>
-<xs:complexType name="UserValue">
+<xs:complexType name="ObjectValue">
 <xs:complexContent>
 <xs:extension base="tns:BaseResponseType">
 <xs:sequence>
@@ -488,7 +488,7 @@
 <xs:element minOccurs="0" name="request" type="tns:ResumeRequest"/>
 </xs:sequence>
 </xs:complexType>
-<xs:complexType name="ResumeRequest">
+<xs:complexType name="SuspendResumeRequest">
 <xs:complexContent>
 <xs:extension base="tns:BaseRequestType">
 <xs:sequence>

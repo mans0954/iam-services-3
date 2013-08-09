@@ -63,7 +63,7 @@ public class CreateNewUser implements JavaDelegate {
 		user.setSecondaryStatus(null);
 		
 		final ProvisionUserResponse response = provisionService.addUser(user);
-		if(ResponseStatus.SUCCESS.equals(response.getStatus()) && response.getUser() != null && StringUtils.isNotBlank(response.getUser().getUserId())) {
+		if(ResponseStatus.SUCCESS.equals(response.getStatus()) && response.getUser() != null && StringUtils.isNotBlank(response.getUser().getUser().getUserId())) {
 			final String userId = response.getUser().getUserId();
 			execution.setVariable(ActivitiConstants.NEW_USER_ID, userId);
 		} else {

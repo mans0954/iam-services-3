@@ -1,9 +1,13 @@
 package org.openiam.connector;
 
-import org.openiam.connector.type.*;
-import org.openiam.connector.type.ResponseType;
+import org.openiam.connector.type.response.ObjectResponse;
+import org.openiam.connector.type.response.LookupAttributeResponse;
+import org.openiam.connector.type.response.ResponseType;
+import org.openiam.connector.type.request.*;
+import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
+import org.openiam.provision.type.ExtensibleObject;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
@@ -19,9 +23,7 @@ import javax.jws.WebService;
 public interface ConnectorService {
 
     @WebMethod
-    public ResponseType reconcileResource(
-            @WebParam(name = "config", targetNamespace = "")
-            ReconciliationConfig config);
+    public ResponseType reconcileResource(@WebParam(name = "config", targetNamespace = "") ReconciliationConfig config);
 
     /**
      * The add operation enables a requestor to create a new object on a target
@@ -37,36 +39,25 @@ public interface ConnectorService {
      * @return
      */
     @WebMethod(action = "http://www.openiam.org/service/connector/ConnectorService/add")
-    UserResponse add(
-            @WebParam(name = "reqType", targetNamespace = "")
-            UserRequest reqType);
+    ObjectResponse add( @WebParam(name = "reqType", targetNamespace = "") CrudRequest<? extends ExtensibleObject> reqType);
 
     @WebMethod(action = "http://www.openiam.org/service/connector/ConnectorService/modify")
-    UserResponse modify(
-            @WebParam(name = "reqType", targetNamespace = "")
-            UserRequest reqType);
+    ObjectResponse modify(@WebParam(name = "reqType", targetNamespace = "") CrudRequest<? extends ExtensibleObject> reqType);
 
     @WebMethod
-    ResponseType testConnection(
-            @WebParam(name = "managedSys", targetNamespace = "") ManagedSysDto managedSys);
+    ResponseType testConnection( @WebParam(name = "reqType", targetNamespace = "") RequestType<? extends ExtensibleObject> reqType);
 
     @WebMethod(action = "http://www.openiam.org/service/connector/ConnectorService/delete")
-    UserResponse delete(
-            @WebParam(name = "reqType", targetNamespace = "")
-            UserRequest reqType);
+    ObjectResponse delete(@WebParam(name = "reqType", targetNamespace = "") CrudRequest<? extends ExtensibleObject> reqType);
 
     @WebMethod(action = "http://www.openiam.org/service/connector/ConnectorService/lookup")
-    SearchResponse lookup(
-            @WebParam(name = "reqType", targetNamespace = "")
-            LookupRequest reqType);
+    SearchResponse lookup(@WebParam(name = "reqType", targetNamespace = "") LookupRequest<? extends ExtensibleObject> reqType);
 
     @WebMethod(action = "http://www.openiam.org/service/connector/ConnectorService/lookupAttributeNames")
-    LookupAttributeResponse lookupAttributeNames(@WebParam(name = "reqType", targetNamespace = "") LookupRequest reqType);
+    LookupAttributeResponse lookupAttributeNames(@WebParam(name = "reqType", targetNamespace = "") LookupRequest<? extends ExtensibleObject> reqType);
     
     @WebMethod(action="http://www.openiam.org/service/connector/ConnectorService/search")
-    SearchResponse search(
-            @WebParam(name = "searchRequest", targetNamespace = "")
-            SearchRequest searchRequest);
+    SearchResponse search(@WebParam(name = "searchRequest", targetNamespace = "") SearchRequest<? extends ExtensibleObject> searchRequest);
 
     /**
      * The setPassword operation enables a requestor to specify a new password for an object
@@ -75,9 +66,7 @@ public interface ConnectorService {
      * @return
      */
     @WebMethod(action = "http://www.openiam.org/service/connector/ConnectorService/setPassword")
-    ResponseType setPassword(
-            @WebParam(name = "request", targetNamespace = "")
-            PasswordRequest request);
+    ResponseType setPassword(@WebParam(name = "request", targetNamespace = "") PasswordRequest request);
 
     /**
      * The expirePassword operation marks as invalid the current password for an object
@@ -86,9 +75,7 @@ public interface ConnectorService {
      * @return
      */
     @WebMethod(action = "http://www.openiam.org/service/connector/ConnectorService/expirePassword")
-    ResponseType expirePassword(
-            @WebParam(name = "request", targetNamespace = "")
-            PasswordRequest request);
+    ResponseType expirePassword(@WebParam(name = "request", targetNamespace = "") PasswordRequest request);
 
     /**
      * The resetPassword operation enables a requestor to change (to an unspecified value) the
@@ -98,9 +85,7 @@ public interface ConnectorService {
      * @return
      */
     @WebMethod(action = "http://www.openiam.org/service/connector/ConnectorService/resetPassword")
-    ResponseType resetPassword(
-            @WebParam(name = "request", targetNamespace = "")
-            PasswordRequest request);
+    ResponseType resetPassword(@WebParam(name = "request", targetNamespace = "") PasswordRequest request);
 
     /**
      * The validatePassword operation enables a requestor to determine whether a specified value would
@@ -110,9 +95,7 @@ public interface ConnectorService {
      * @return
      */
     @WebMethod(action = "http://www.openiam.org/service/connector/ConnectorService/validatePassword")
-    ResponseType validatePassword(
-            @WebParam(name = "request", targetNamespace = "")
-            PasswordRequest request);
+    ResponseType validatePassword(@WebParam(name = "request", targetNamespace = "") PasswordRequest request);
 
 
     /**
@@ -122,9 +105,7 @@ public interface ConnectorService {
      * @return
      */
     @WebMethod(action = "http://www.openiam.org/service/connector/ConnectorService/suspend")
-    ResponseType suspend(
-            @WebParam(name = "request", targetNamespace = "")
-            SuspendRequest request);
+    ResponseType suspend( @WebParam(name = "request", targetNamespace = "") SuspendResumeRequest request);
 
     /**
      * Restores a user that was previously disabled.
@@ -133,9 +114,6 @@ public interface ConnectorService {
      * @return
      */
     @WebMethod(action = "http://www.openiam.org/service/connector/ConnectorService/resume")
-    ResponseType resume(
-            @WebParam(name = "request", targetNamespace = "")
-            ResumeRequest request);
-
+    ResponseType resume(@WebParam(name = "request", targetNamespace = "") SuspendResumeRequest request);
 }
 

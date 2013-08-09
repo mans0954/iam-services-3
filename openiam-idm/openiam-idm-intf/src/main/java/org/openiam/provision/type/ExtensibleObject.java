@@ -21,6 +21,7 @@
  */
 package org.openiam.provision.type;
 
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,14 +41,13 @@ import javax.xml.bind.annotation.*;
     "operation",
     "attributes",
     "principalFieldName",
-    "principalFieldDataType"
+    "principalFieldDataType",
+    "extensibleObjectType"
 })
 @XmlSeeAlso({
     ArrayList.class
 })
 public class ExtensibleObject implements java.io.Serializable {
-
-
 	/**
 	 * 
 	 */
@@ -58,6 +58,8 @@ public class ExtensibleObject implements java.io.Serializable {
             // holds the name of the field or column to which the principalName will be assigned
     protected String principalFieldName;
     protected String principalFieldDataType;
+
+    protected ExtensibleObjectType extensibleObjectType;
 	
 	protected List<ExtensibleAttribute> attributes = new ArrayList<ExtensibleAttribute>();
 
@@ -113,6 +115,10 @@ public class ExtensibleObject implements java.io.Serializable {
         this.principalFieldDataType = principalFieldDataType;
     }
 
+    public ExtensibleObjectType getExtensibleObjectType() {
+        return extensibleObjectType;
+    }
+
     @Override
     public String toString() {
         return "ExtensibleObject{" +
@@ -121,7 +127,10 @@ public class ExtensibleObject implements java.io.Serializable {
                 ", operation=" + operation +
                 ", principalFieldName='" + principalFieldName + '\'' +
                 ", principalFieldDataType='" + principalFieldDataType + '\'' +
-                ", attributes=" + attributes +
+                ", attributes=" + attributes + '\'' +
+                ", extensibleObjectType=" + extensibleObjectType +
                 '}';
     }
+
+
 }

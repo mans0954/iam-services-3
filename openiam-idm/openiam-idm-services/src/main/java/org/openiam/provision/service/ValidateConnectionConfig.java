@@ -4,8 +4,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mule.api.MuleContext;
 import org.openiam.base.ws.Response;
-import org.openiam.connector.type.ResponseType;
-import org.openiam.connector.type.StatusCodeType;
+import org.openiam.connector.type.response.ResponseType;
+import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
@@ -42,7 +42,7 @@ public class ValidateConnectionConfig {
 
             log.debug("Testing connection with remoteConnector");
 
-            org.openiam.connector.type.ResponseType remoteResp = remoteTestConnection(mSys, connector, muleContext);
+            ResponseType remoteResp = remoteTestConnection(mSys, connector, muleContext);
             if (remoteResp.getStatus() == StatusCodeType.FAILURE) {
 
                 log.debug("Test connection failed.");
@@ -77,7 +77,7 @@ public class ValidateConnectionConfig {
 
     }
 
-    private org.openiam.connector.type.ResponseType remoteTestConnection(ManagedSysDto mSys, ProvisionConnectorDto connector,
+    private ResponseType remoteTestConnection(ManagedSysDto mSys, ProvisionConnectorDto connector,
                                                                          MuleContext muleContext) {
 
 

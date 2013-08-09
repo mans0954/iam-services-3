@@ -203,7 +203,6 @@ public class UserCSVParser extends AbstractCSVParser<User, UserFields>
             break;
 
         }
-
     }
 
     @Override

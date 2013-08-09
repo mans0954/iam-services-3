@@ -37,10 +37,10 @@ import org.mule.api.MuleContext;
 import org.mule.api.context.MuleContextAware;
 import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.connector.type.SearchRequest;
-import org.openiam.connector.type.SearchResponse;
-import org.openiam.connector.type.StatusCodeType;
-import org.openiam.connector.type.UserValue;
+import org.openiam.connector.type.ObjectValue;
+import org.openiam.connector.type.request.SearchRequest;
+import org.openiam.connector.type.response.SearchResponse;
+import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.dozer.converter.LoginDozerConverter;
 import org.openiam.dozer.converter.ManagedSysDozerConverter;
 import org.openiam.dozer.converter.ReconciliationConfigDozerConverter;
@@ -404,9 +404,9 @@ public class ReconciliationServiceImpl implements ReconciliationService,
         }
         if (searchResponse != null
                 && searchResponse.getStatus() == StatusCodeType.SUCCESS) {
-            List<UserValue> usersFromRemoteSys = searchResponse.getUserList();
+            List<ObjectValue> usersFromRemoteSys = searchResponse.getObjectList();
             if (usersFromRemoteSys != null) {
-                for (UserValue userValue : usersFromRemoteSys) {
+                for (ObjectValue userValue : usersFromRemoteSys) {
                     List<ExtensibleAttribute> extensibleAttributes = userValue
                             .getAttributeList() != null ? userValue
                             .getAttributeList()

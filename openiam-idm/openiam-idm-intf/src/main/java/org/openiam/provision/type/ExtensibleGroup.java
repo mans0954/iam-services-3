@@ -44,7 +44,7 @@ public class ExtensibleGroup extends ExtensibleObject {
 	protected Group group;
 	
 	public ExtensibleGroup() {
-		
+        extensibleObjectType= ExtensibleObjectType.GROUP;
 	}
 	
 	public ExtensibleGroup(Group grp) {
@@ -54,6 +54,7 @@ public class ExtensibleGroup extends ExtensibleObject {
 		}else {
 			operation = 0;
 		}
+        extensibleObjectType= ExtensibleObjectType.GROUP;
 	}
 	
 	public Group getGroup() {
