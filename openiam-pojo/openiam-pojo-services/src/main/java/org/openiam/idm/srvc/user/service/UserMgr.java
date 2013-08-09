@@ -193,6 +193,16 @@ public class UserMgr implements UserDataService {
             user.setLastUpdate(new Date(System.currentTimeMillis()));
         }
 
+        for(PhoneEntity pe : user.getPhones()) {
+            metadataTypeDAO.save(pe.getMetadataType());
+        }
+        for(AddressEntity ae : user.getAddresses()) {
+           metadataTypeDAO.save(ae.getMetadataType());
+        }
+        for(EmailAddressEntity ea : user.getEmailAddresses()) {
+            metadataTypeDAO.save(ea.getMetadataType());
+        }
+
         validateEmailAddress(user, user.getEmailAddresses());
         userDao.save(user);
 

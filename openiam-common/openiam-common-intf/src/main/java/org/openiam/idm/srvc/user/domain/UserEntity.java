@@ -71,6 +71,10 @@ public class UserEntity {
     private String createdBy;
 
     @Column(name = "EMPLOYEE_ID", length = 32)
+    @Fields ({
+            @Field(index = Index.TOKENIZED),
+            @Field(name = "employeeId", index = Index.TOKENIZED, store = Store.YES)
+    })
     private String employeeId;
 
     @Column(name = "EMPLOYEE_TYPE", length = 20)

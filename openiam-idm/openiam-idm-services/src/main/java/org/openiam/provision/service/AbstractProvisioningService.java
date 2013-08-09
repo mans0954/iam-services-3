@@ -542,6 +542,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
             	for(final UserAttributeEntity entity : userEntity.getUserAttributes().values()) {
             		if(entity != null) {
             			entity.setUser(userEntity);
+                        entity.getElement();
             		}
             	}
             }

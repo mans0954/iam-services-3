@@ -5,7 +5,6 @@ import java.util.Map;
 import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.openiam.idm.srvc.user.dto.User;
-import org.springframework.context.ApplicationContextAware;
 
 /**
  * Interface to define the rule that will be used for matching objects during the synchronization process.
