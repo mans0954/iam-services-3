@@ -1934,18 +1934,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 if (responseType.getStatus() == StatusCodeType.SUCCESS) {
                                     connectorSuccess = true;
                                 }
-                                // add identity if IDM needs
-                                if (connectorSuccess) {
-                                    if (!isMngSysIdentityExistsInOpeniam) {
-                                        loginManager
-                                                .addLogin(loginDozerConverter
-                                                        .convertToEntity(mLg,
-                                                                true));
-                                    } else {
-                                        log.debug("Skipping the creation of identity in openiam repository. Identity already exists"
-                                                + mLg.getLoginId());
-                                    }
-                                }
+
                                 // post processing
                                 String postProcessScript = getResProperty(
                                         res.getResourceProps(), "POST_PROCESS");
@@ -1985,7 +1974,12 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                             .convertToEntity(mLg, true));
                             }
                         } else {
-
+                            if(!isMngSysIdentityExistsInOpeniam){
+                                loginManager
+                                        .addLogin(loginDozerConverter
+                                                .convertToEntity(mLg,
+                                                        true));
+                            }
                             // existing identity
 
                             log.debug("Building attributes for managedSysId ="
@@ -2520,7 +2514,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             reqType.setHostLoginId(mSys.getUserId());
             reqType.setHostLoginPassword(mSys.getPswd());
             reqType.setHostUrl(mSys.getHostUrl());
-
+            reqType.setExtensibleObject(new ExtensibleUser());
             reqType.setScriptHandler(mSys.getLookupHandler());
 
             SearchResponse responseType = remoteConnectorAdapter.lookupRequest(
@@ -2545,7 +2539,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             log.debug("Calling lookupRequest local connector");
 
             LookupRequest request = new LookupRequest();
-
+            request.setExtensibleObject(new ExtensibleUser());
             request.setSearchValue(principalName);
             request.setTargetID(managedSysId);
             SearchResponse responseType = connectorAdapter.lookupRequest(

@@ -62,7 +62,7 @@ public interface RemoteConnectorService {
 
     @WebMethod(action="http://www.openiam.org/service/connector/RemoteConnectorService/lookup")
     ObjectResponse lookup(
-            @WebParam(name = "lookupRequest", targetNamespace = "")
+            @WebParam(name = "request", targetNamespace = "")
             LookupRequest lookupRequest);
 
     @WebMethod(action="http://www.openiam.org/service/connector/RemoteConnectorService/search")

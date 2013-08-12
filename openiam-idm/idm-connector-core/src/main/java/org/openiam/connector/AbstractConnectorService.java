@@ -63,7 +63,7 @@ public abstract class AbstractConnectorService implements ConnectorService,Appli
     }
 
     @Override
-    public SearchResponse lookup(@WebParam(name = "reqType", targetNamespace = "") LookupRequest<? extends ExtensibleObject> reqType) {
+    public SearchResponse lookup(@WebParam(name = "request", targetNamespace = "") LookupRequest<? extends ExtensibleObject> reqType) {
         return manageRequest(CommandType.LOOKUP, reqType, SearchResponse.class);
     }
 
