@@ -1,4 +1,9 @@
+import org.openiam.dozer.converter.OrganizationDozerConverter
+import org.openiam.dozer.converter.RoleDozerConverter
+import org.openiam.idm.searchbeans.OrganizationSearchBean
 import org.openiam.idm.srvc.continfo.dto.Address
+import org.openiam.idm.srvc.org.service.OrganizationService
+import org.openiam.idm.srvc.role.service.RoleDataService
 
 import java.text.SimpleDateFormat;
 
@@ -100,6 +105,41 @@ public class TransformCapsCSVRecord extends AbstractTransformScript {
         phone.phoneNbr = columnMap.get("EMPLOYEE_PHONE_NUMBER")?.value
         addPhone(pUser, phone)
 
+        // Processing organizations
+        //addOCOrganization(pUser, columnMap.get("HOME_DEPT_CD")?.value)
+
+        // Processing role
+        addRole(pUser, "End User")
+
+    }
+
+    def addOCOrganization(ProvisionUser pUser, String homeDeptCd) {
+        def organizationService = context?.getBean("organizationService") as OrganizationService
+        def organizationDozerConverter = context?.getBean("organizationDozerConverter") as OrganizationDozerConverter
+        def orgEntity = organizationService?.getOrganizationByName("County of Orange", null)
+        def organization = organizationDozerConverter?.convertToDTO(orgEntity, false)
+        if (organization) {
+            pUser.addUserAffiliation(organization)
+        }
+        if (homeDeptCd) {
+            def searchBean = new OrganizationSearchBean()
+            searchBean.internalOrgId = homeDeptCd
+            def list = organizationService.findBeans(searchBean, null, 0, 1)
+            if (list) {
+                def department = organizationDozerConverter?.convertToDTO(list.get(0), false)
+                pUser.addUserAffiliation(department)
+            }
+        }
+    }
+
+    def addRole(ProvisionUser pUser, String roleName) {
+        def foundRole = userRoleList.find { r-> r.roleName == roleName }
+        if (!foundRole) {
+            def roleDataService = context?.getBean("roleDataService") as RoleDataService
+            def roleDozerConverter = context?.getBean("roleDozerConverter") as RoleDozerConverter
+            def role = roleDozerConverter?.convertToDTO(roleDataService?.getRoleByName(roleName, null), false)
+            pUser.addMemberRole(role)
+        }
     }
 
     def addAddress(ProvisionUser pUser, Address address) {
