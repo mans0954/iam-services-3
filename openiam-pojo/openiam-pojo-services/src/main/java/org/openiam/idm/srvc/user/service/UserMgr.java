@@ -671,13 +671,16 @@ public class UserMgr implements UserDataService {
         }
 
         AddressEntity example = new AddressEntity();
-        example.setMetadataType(val.getMetadataType());
         example.setParent(val.getParent());
 
         List<AddressEntity> entityList = addressDao.getByExample(example);
         if (CollectionUtils.isNotEmpty(entityList))
-            throw new NullPointerException("Address with provided type exists");
-
+            for (AddressEntity a:entityList) {
+                if( (a.getAddressId()!=null && !a.getAddressId().equals(val.getAddressId()))
+                        && a.getMetadataType().getMetadataTypeId().equals(val.getMetadataType().getMetadataTypeId())){
+                    throw new NullPointerException("Address with provided type exists");
+                }
+            }
         UserEntity parent = userDao.findById(val.getParent().getUserId());
         val.setParent(parent);
 
@@ -827,12 +830,18 @@ public class UserMgr implements UserDataService {
         }
 
         PhoneEntity example = new PhoneEntity();
-        example.setMetadataType(val.getMetadataType());
         example.setParent(val.getParent());
 
         List<PhoneEntity> entityList = phoneDao.getByExample(example);
-        if (CollectionUtils.isNotEmpty(entityList))
-            throw new NullPointerException("Address with provided type exists");
+        if (CollectionUtils.isNotEmpty(entityList))  {
+            for (PhoneEntity ph:entityList) {
+                if( (ph.getPhoneId()!=null && !ph.getPhoneId().equals(val.getPhoneId()))
+                        && ph.getMetadataType().getMetadataTypeId().equals(val.getMetadataType().getMetadataTypeId())){
+                    throw new NullPointerException("Phone with provided type exists");
+                }
+            }
+        }
+
 
         MetadataTypeEntity type = metadataTypeDAO.findById(val.getMetadataType().getMetadataTypeId());
         val.setMetadataType(type);
@@ -976,12 +985,17 @@ public class UserMgr implements UserDataService {
         }
 
         EmailAddressEntity example = new EmailAddressEntity();
-        example.setMetadataType(val.getMetadataType());
         example.setParent(val.getParent());
 
         List<EmailAddressEntity> entityList = emailAddressDao.getByExample(example);
         if (CollectionUtils.isNotEmpty(entityList))
-            throw new NullPointerException("Address with provided type exists");
+            for (EmailAddressEntity ea:entityList) {
+                if( (ea.getEmailId()!=null && !ea.getEmailId().equals(val.getEmailId()))
+                        && ea.getMetadataType().getMetadataTypeId().equals(val.getMetadataType().getMetadataTypeId())){
+                    throw new NullPointerException("Email Address with provided type exists");
+                }
+            }
+
 
         MetadataTypeEntity type = metadataTypeDAO.findById(val.getMetadataType().getMetadataTypeId());
         val.setMetadataType(type);
