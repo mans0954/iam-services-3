@@ -200,26 +200,43 @@ public class WebReportServiceImpl implements WebReportService {
 			try {
 
 				if (StringUtils.isBlank(reportParam.getName())) {
-					throw new BasicDataServiceException(
+					
+					response.setErrorCode(
 							ResponseCode.REPORT_PARAM_NAME_NOT_SET);
+					response.setStatus(ResponseStatus.FAILURE);
+					response.setErrorText(ResponseCode.REPORT_PARAM_NAME_NOT_SET.toString());
+					return response;
 				}
 				if (StringUtils.isBlank(reportParam.getTypeId())) {
-					throw new BasicDataServiceException(
+					
+					response.setErrorCode(
 							ResponseCode.REPORT_PARAM_TYPE_NOT_SET);
+					response.setStatus(ResponseStatus.FAILURE);
+					response.setErrorText(ResponseCode.REPORT_PARAM_TYPE_NOT_SET.toString());
+					return response;
+					
 				}
 				final ReportCriteriaParamEntity found = reportDataService
 						.getReportParameterByName(reportParam.getReportId(),
 								reportParam.getName());
 				if (found != null) {
 					if (StringUtils.isBlank(reportParam.getId())) {
-						throw new BasicDataServiceException(
+						
+						
+						response.setErrorCode(
 								ResponseCode.NAME_TAKEN);
+						response.setStatus(ResponseStatus.FAILURE);
+						response.setErrorText(ResponseCode.NAME_TAKEN.toString());
+						return response;
 					}
 
 					if (StringUtils.isNotBlank(reportParam.getId())
-							&& !reportParam.getId().equals(found.getId())) {
-						throw new BasicDataServiceException(
+							&& !reportParam.getId().equals(found.getId())) {	
+						response.setErrorCode(
 								ResponseCode.NAME_TAKEN);
+						response.setStatus(ResponseStatus.FAILURE);
+						response.setErrorText(ResponseCode.NAME_TAKEN.toString());
+						return response;
 					}
 				}
 
@@ -230,12 +247,8 @@ public class WebReportServiceImpl implements WebReportService {
 
 				entity = reportDataService
 						.createOrUpdateReportParamInfo(entity);
-			} catch (BasicDataServiceException t) {
-				return response;
-			}catch (Throwable t) {
+			} catch (Throwable t) {
 				log.error("error while saving:" + t);
-				response.setStatus(ResponseStatus.FAILURE);
-				response.setErrorCode(ResponseCode.SQL_EXCEPTION);
 				response.setErrorText(t.getMessage());
 				
 				return response;
@@ -581,8 +594,9 @@ public class WebReportServiceImpl implements WebReportService {
 		// TODO Auto-generated method stub
 		return reportDataService.getSubCriteriaParamReportCount();
 	}
+	
 
-	@Override
+	/*@Override
 	public GetSubCriteriaParamReportResponse getSubCriteriaParamReportById(
 			@WebParam(name = "Id", targetNamespace = "") String reportId) {
 		GetSubCriteriaParamReportResponse response = new GetSubCriteriaParamReportResponse();
@@ -606,11 +620,13 @@ public class WebReportServiceImpl implements WebReportService {
 			response.setStatus(ResponseStatus.FAILURE);
 		}
 		return response;
-	}
+	}*/
+	
+	
 
 	@Override
 	public Response deleteSubCriteriaParamReport(
-			@WebParam(name = "Id", targetNamespace = "") String reportId) {
+			@WebParam(name = "rscpId", targetNamespace = "") String reportId) {
 		Response response = new Response();
 		if (!StringUtils.isEmpty(reportId)) {
 			try {
@@ -644,12 +660,12 @@ public class WebReportServiceImpl implements WebReportService {
 			try {
 				
 				
-				if(StringUtils.isBlank(subCriteriaParamReport.getName())){
+				if(StringUtils.isBlank(subCriteriaParamReport.getId())){
 					
 					response.setErrorCode(
-							ResponseCode.SUBSCRIBED_NAME_NOT_SET);
+							ResponseCode.SUBSCRIBED_ID_NOT_SET);
 					response.setStatus(ResponseStatus.FAILURE);
-					response.setErrorText(ResponseCode.SUBSCRIBED_NAME_NOT_SET.toString());
+					response.setErrorText(ResponseCode.SUBSCRIBED_ID_NOT_SET.toString());
 					return response;
 				}
 				
@@ -676,7 +692,7 @@ public class WebReportServiceImpl implements WebReportService {
 				response.setErrorText(e.getMessage());
 				return response;
 			}
-			response.setResponseValue(entity.getId());
+			response.setResponseValue(entity.getRscpId());
 			response.setStatus(ResponseStatus.SUCCESS);
 		} else {
 			response.setErrorCode(ResponseCode.INVALID_ARGUMENTS);

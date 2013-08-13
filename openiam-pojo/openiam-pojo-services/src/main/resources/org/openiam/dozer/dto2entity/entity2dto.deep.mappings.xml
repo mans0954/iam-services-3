@@ -263,6 +263,14 @@
 			<a>report.reportId</a>
 			<b>reportId</b>
 		</field>
+		<field>
+			<a>param.id</a>
+			<b>id</b>
+		</field>
+		<field>
+			<a>param.name</a>
+			<b>name</b>
+		</field>
 
 	
 	</mapping>

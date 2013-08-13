@@ -106,7 +106,7 @@ public class TransformCapsCSVRecord extends AbstractTransformScript {
         addPhone(pUser, phone)
 
         // Processing organizations
-        //addOCOrganization(pUser, columnMap.get("HOME_DEPT_CD")?.value)
+        addOCOrganization(pUser, columnMap.get("HOME_DEPT_CD")?.value)
 
         // Processing role
         addRole(pUser, "End User")

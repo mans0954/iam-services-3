@@ -76,9 +76,9 @@ public interface WebReportService {
     @WebMethod
     GetSubscribedReportResponse getSubscribedReportById(@WebParam(name = "reportId", targetNamespace = "") String reportId) ;
     
-    @WebMethod
+   /* @WebMethod
     GetSubCriteriaParamReportResponse getSubCriteriaParamReportById(@WebParam(name = "Id", targetNamespace = "") String reportId) ;
-    
+    */
     @WebMethod
     Response deleteSubCriteriaParamReport(@WebParam(name = "Id", targetNamespace = "") String reportId) ;
     
