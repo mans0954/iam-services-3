@@ -5,22 +5,22 @@ import org.openiam.idm.srvc.continfo.dto.Address
 import org.openiam.idm.srvc.org.service.OrganizationService
 import org.openiam.idm.srvc.role.service.RoleDataService
 
-import java.text.SimpleDateFormat;
+import java.text.SimpleDateFormat
 
-import org.openiam.idm.srvc.synch.dto.Attribute;
-import org.openiam.idm.srvc.synch.dto.LineObject;
-import org.openiam.idm.srvc.synch.service.AbstractTransformScript;
-import org.openiam.idm.srvc.synch.service.TransformScript;
-import org.openiam.idm.srvc.user.dto.UserAttribute;
-import org.openiam.provision.dto.ProvisionUser;
+import org.openiam.idm.srvc.synch.dto.Attribute
+import org.openiam.idm.srvc.synch.dto.LineObject
+import org.openiam.idm.srvc.synch.service.AbstractTransformScript
+import org.openiam.idm.srvc.synch.service.TransformScript
+import org.openiam.idm.srvc.user.dto.UserAttribute
+import org.openiam.provision.dto.ProvisionUser
 import org.openiam.idm.srvc.user.dto.UserStatusEnum
-import org.openiam.idm.srvc.continfo.dto.Phone;
-import org.openiam.idm.srvc.org.service.OrganizationDataService;
+import org.openiam.idm.srvc.continfo.dto.Phone
+import org.openiam.idm.srvc.org.service.OrganizationDataService
 
-import javax.xml.namespace.QName;
-import javax.xml.ws.Service;
-import javax.xml.ws.soap.SOAPBinding;
-import java.text.ParseException;
+import javax.xml.namespace.QName
+import javax.xml.ws.Service
+import javax.xml.ws.soap.SOAPBinding
+import java.text.ParseException
 
 public class TransformCapsCSVRecord extends AbstractTransformScript {
 

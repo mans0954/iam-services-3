@@ -86,6 +86,7 @@ public class PolicyMapTransformScript extends AbstractTransformScript {
                         bindingMap.put("objectType", am.getMapForObjectType());
                         bindingMap.put("policy", policy);
                         bindingMap.put("rowObj", rowObj);
+                        bindingMap.put("attributeName", am.getAttributeName());
                         bindingMap.put("attribute", attribute);
                         bindingMap.put("pUser", pUser);
                         bindingMap.put("user", user);
