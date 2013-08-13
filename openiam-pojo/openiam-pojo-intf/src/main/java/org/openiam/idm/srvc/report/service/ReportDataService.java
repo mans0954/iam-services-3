@@ -44,7 +44,7 @@ public interface ReportDataService {
     void deleteSubscribedReport(String reportId);
     void deleteSubCriteriaParamReport(String reportId);
     ReportSubscriptionEntity getSubscriptionReportById(String reportId);
-    ReportSubCriteriaParamEntity getSubCriteriaParamReportById(String reportId);
+    ReportCriteriaParamEntity getReportCriteriaParamById(String rcpId);
     List<ReportSubCriteriaParamEntity> getAllSubCriteriaParamReport(String reportId);
     public List<ReportInfoEntity> getAllReports();
     ReportSubCriteriaParamEntity createOrUpdateSubCriteriaParamReport(ReportSubCriteriaParamEntity entity);

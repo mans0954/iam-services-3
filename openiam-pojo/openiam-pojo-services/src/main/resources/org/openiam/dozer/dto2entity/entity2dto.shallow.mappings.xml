@@ -210,9 +210,10 @@
 			<b>organizationAttributes</b>
 		</field-exclude>
 	</mapping>
-	
+
 	<mapping>
-		<class-a>org.openiam.idm.srvc.meta.domain.MetadataTemplateTypeEntity</class-a>
+		<class-a>org.openiam.idm.srvc.meta.domain.MetadataTemplateTypeEntity
+		</class-a>
 		<class-b>org.openiam.idm.srvc.meta.dto.MetadataTemplateType</class-b>
 		<field>
 			<a>id</a>
@@ -235,10 +236,12 @@
 			<b>fields</b>
 		</field-exclude>
 	</mapping>
-	
+
 	<mapping>
-		<class-a>org.openiam.idm.srvc.meta.domain.MetadataTemplateTypeFieldEntity</class-a>
-		<class-b>org.openiam.idm.srvc.meta.dto.MetadataTemplateTypeField</class-b>
+		<class-a>org.openiam.idm.srvc.meta.domain.MetadataTemplateTypeFieldEntity
+		</class-a>
+		<class-b>org.openiam.idm.srvc.meta.dto.MetadataTemplateTypeField
+		</class-b>
 		<field>
 			<a>id</a>
 			<b>id</b>
@@ -323,13 +326,13 @@
 			<a>type.id</a>
 			<b>typeId</b>
 		</field>
-		
+
 		<field>
 			<a>type.name</a>
 			<b>typeName</b>
 		</field>
 	</mapping>
-	
+
 	<mapping>
 		<class-a>org.openiam.idm.srvc.report.domain.ReportSubCriteriaParamEntity
 		</class-a>
@@ -339,8 +342,15 @@
 			<a>report.reportId</a>
 			<b>reportId</b>
 		</field>
+		<field>
+			<a>param.id</a>
+			<b>id</b>
+		</field>
+		<field>
+			<a>param.name</a>
+			<b>name</b>
+		</field>
 
-		
 	</mapping>
 
 	<mapping>

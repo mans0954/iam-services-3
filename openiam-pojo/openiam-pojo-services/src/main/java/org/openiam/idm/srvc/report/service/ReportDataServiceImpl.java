@@ -256,10 +256,9 @@ public class ReportDataServiceImpl implements ReportDataService {
 	}
 
 	@Override
-	public ReportSubCriteriaParamEntity getSubCriteriaParamReportById(
-			String reportId) {
+	public ReportCriteriaParamEntity getReportCriteriaParamById(String rcpId) {
 		// TODO Auto-generated method stub
-		return subCriteriaParamDao.findById(reportId);
+		return criteriaParamDao.findById(rcpId);
 	}
 
 	@Override
