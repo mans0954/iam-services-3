@@ -76,7 +76,7 @@ public abstract class AbstractAddModifySalesForceCommand<ExtObject extends Exten
                 throw new ConnectorDataException(ErrorCode.PERSIST_EXCEPTION, "No ProfileId specified");
             }
 
-            final BaseSalesForceDao dao = getObjectDao(managedSys.getUserId(), this.getDecryptedPassword(managedSys.getUserId(), managedSys.getPswd()), managedSys.getConnectionString(), fieldNames);
+            final BaseSalesForceDao dao = getObjectDao(managedSys.getUserId(), this.getDecryptedPassword(managedSys.getPswd()), managedSys.getConnectionString(), fieldNames);
 
             /* The UI defines the attribute name as ProfileId.  However, the SOAP UI defines it as a Profile Name.  Up until this point, it is a name, and not an
              * ID.  Find the corresponding ID using SF API

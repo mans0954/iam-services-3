@@ -53,7 +53,7 @@ public class AddUserGoogleAppsCommand extends AbstractCrudGoogleAppsCommand<Exte
         }
 
         try {
-            String decryptedPassword = this.getDecryptedPassword(managedSys.getUserId(), managedSys.getPswd());
+            String decryptedPassword = this.getDecryptedPassword(managedSys.getPswd());
 
             UserService userService = new UserService(GOOGLE_APPS_USER_SERVICE);
 

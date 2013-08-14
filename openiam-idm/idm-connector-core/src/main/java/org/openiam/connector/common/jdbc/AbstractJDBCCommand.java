@@ -36,7 +36,7 @@ public abstract class AbstractJDBCCommand<Request extends RequestType, Response 
 
     protected Connection getConnection(ManagedSysEntity managedSys) throws ConnectorDataException {
         ManagedSysDto dto = managedSysDozerConverter.convertToDTO(managedSys, false);
-        dto.setDecryptPassword(this.getDecryptedPassword(managedSys.getUserId(), managedSys.getPswd()));
+        dto.setDecryptPassword(this.getDecryptedPassword(managedSys.getPswd()));
         Connection con = null;
 
         try {

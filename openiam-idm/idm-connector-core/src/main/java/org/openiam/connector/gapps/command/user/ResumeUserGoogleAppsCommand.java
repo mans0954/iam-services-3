@@ -35,7 +35,7 @@ public class ResumeUserGoogleAppsCommand extends AbstractGoogleAppsCommand<Suspe
 
         try {
             userService.setUserCredentials(config.getManagedSys().getUserId(),
-                    this.getDecryptedPassword(config.getManagedSys().getUserId(), config.getManagedSys().getPswd()));
+                    this.getDecryptedPassword(config.getManagedSys().getPswd()));
             String domainUrlBase = APPS_FEEDS_URL_BASE + matchObj.getBaseDn()
                     + "/user/2.0";
             URL updateUrl = new URL(domainUrlBase + "/" + userName);

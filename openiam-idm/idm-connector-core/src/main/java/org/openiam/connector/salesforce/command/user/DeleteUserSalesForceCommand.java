@@ -24,7 +24,7 @@ public class DeleteUserSalesForceCommand extends AbstractDeleteSalesForceCommand
     @Override
     protected void deleteObject(String principalName, ManagedSysEntity managedSys) throws ConnectorDataException {
         try {
-            final SalesForceDao dao = new CallerDependentSalesForceDao(managedSys.getUserId(), getDecryptedPassword(managedSys.getUserId(), managedSys.getPswd()),
+            final SalesForceDao dao = new CallerDependentSalesForceDao(managedSys.getUserId(), getDecryptedPassword(managedSys.getPswd()),
                                                                        managedSys.getConnectionString(), null);
             dao.deleteByUserName(principalName);
         } catch(SalesForcePersistException e) {

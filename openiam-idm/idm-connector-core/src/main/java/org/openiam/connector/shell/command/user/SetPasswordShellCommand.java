@@ -42,7 +42,7 @@ public class SetPasswordShellCommand extends AbstractShellCommand<PasswordReques
 
         String host = configuration.getManagedSys().getHostUrl();
         String hostlogin = configuration.getManagedSys().getUserId();
-        String hostpassword = getDecryptedPassword(configuration.getManagedSys().getUserId(), configuration.getManagedSys().getPswd());
+        String hostpassword = getDecryptedPassword(configuration.getManagedSys().getPswd());
 
         StringBuffer strBuf = new StringBuffer();
 

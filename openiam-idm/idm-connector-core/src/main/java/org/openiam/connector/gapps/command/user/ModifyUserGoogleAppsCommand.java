@@ -68,7 +68,7 @@ public class ModifyUserGoogleAppsCommand extends AbstractCrudGoogleAppsCommand<E
                 UserService userService = new UserService(GOOGLE_APPS_USER_SERVICE);
 
                 try {
-                    userService.setUserCredentials(managedSys.getUserId(), this.getDecryptedPassword(managedSys.getUserId(), managedSys.getPswd()));
+                    userService.setUserCredentials(managedSys.getUserId(), this.getDecryptedPassword(managedSys.getPswd()));
                     String domainUrlBase = APPS_FEEDS_URL_BASE + matchObj.getBaseDn() + "/user/2.0";
                     URL updateUrl = new URL(domainUrlBase + "/" + userName);
 
@@ -113,7 +113,7 @@ public class ModifyUserGoogleAppsCommand extends AbstractCrudGoogleAppsCommand<E
         UserService userService = new UserService("gdata-sample-AppsForYourDomain-UserService");
 
         try {
-            userService.setUserCredentials(managedSys.getUserId(), this.getDecryptedPassword(managedSys.getUserId(), managedSys.getPswd()));
+            userService.setUserCredentials(managedSys.getUserId(), this.getDecryptedPassword(managedSys.getPswd()));
             String domainUrlBase = APPS_FEEDS_URL_BASE + matchObj.getBaseDn() + "/user/2.0";
             URL updateUrl = new URL(domainUrlBase + "/" + origIdentity);
 
