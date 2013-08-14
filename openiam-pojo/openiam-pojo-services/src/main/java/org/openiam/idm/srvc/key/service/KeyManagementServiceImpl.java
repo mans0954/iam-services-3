@@ -50,7 +50,12 @@ public class KeyManagementServiceImpl implements KeyManagementService {
     private String             cookieKeyPassword;
     private Integer            iterationCount;
     private JksManager         jksManager;
-    
+
+
+    @Value("${org.openiam.idm.system.user.id}")
+    private String systemUserId;
+
+
     @Autowired
     private Cryptor            cryptor;
     @Autowired
@@ -503,10 +508,10 @@ public class KeyManagementServiceImpl implements KeyManagementService {
         List<ManagedSysEntity> mngSysList = managedSysDAO.findAllManagedSys();
         if(mngSysList != null && !mngSysList.isEmpty()) {
             for(ManagedSysEntity ms : mngSysList) {
-                if(!managedSysMap.containsKey(ms.getUserId())) {
-                    managedSysMap.put(ms.getUserId(), new ArrayList<ManagedSysEntity>());
+                if(!managedSysMap.containsKey(systemUserId)) {
+                    managedSysMap.put(systemUserId, new ArrayList<ManagedSysEntity>());
                 }
-                managedSysMap.get(ms.getUserId()).add(ms);
+                managedSysMap.get(systemUserId).add(ms);
             }
         }
         return managedSysMap;
