@@ -32,17 +32,8 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.base.ws.exception.BasicDataServiceException;
-import org.openiam.dozer.converter.AddressDozerConverter;
-import org.openiam.dozer.converter.EmailAddressDozerConverter;
-import org.openiam.dozer.converter.PhoneDozerConverter;
-import org.openiam.dozer.converter.SupervisorDozerConverter;
-import org.openiam.dozer.converter.UserAttributeDozerConverter;
-import org.openiam.dozer.converter.UserDozerConverter;
-import org.openiam.dozer.converter.UserNoteDozerConverter;
-import org.openiam.idm.searchbeans.AddressSearchBean;
-import org.openiam.idm.searchbeans.EmailSearchBean;
-import org.openiam.idm.searchbeans.PhoneSearchBean;
-import org.openiam.idm.searchbeans.UserSearchBean;
+import org.openiam.dozer.converter.*;
+import org.openiam.idm.searchbeans.*;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
@@ -50,8 +41,11 @@ import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
+import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
 import org.openiam.idm.srvc.meta.exception.PageTemplateException;
+import org.openiam.idm.srvc.meta.service.MetadataService;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.msg.service.MailService;
@@ -112,6 +106,12 @@ public class UserDataWebServiceImpl implements UserDataWebService, MuleContextAw
 
     @Autowired
     private PhoneDozerConverter phoneDozerConverter;
+
+    @Autowired
+    private MetadataService metadataService;
+
+    @Autowired
+    private MetaDataTypeDozerConverter metaDataTypeDozerConverter;
 
     @Autowired
     private MailService mailService;
@@ -1165,6 +1165,14 @@ public class UserDataWebServiceImpl implements UserDataWebService, MuleContextAw
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
             if (user.getUserId() == null) {
+
+                final MetadataTypeSearchBean typeSearchBean = new MetadataTypeSearchBean();
+                typeSearchBean.setGrouping("EMAIL");
+                typeSearchBean.setActive(true);
+
+                final List<MetadataTypeEntity> entityList = metadataService.findBeans(typeSearchBean, 0, Integer.MAX_VALUE);
+                List<MetadataType> typeList = (entityList != null) ? metaDataTypeDozerConverter.convertToDTOList(entityList, false) : null;
+
                 // create new user, need to merge user objects
                 List<Login> principalList = new ArrayList<Login>();
                 Login principal = new Login();
@@ -1173,14 +1181,17 @@ public class UserDataWebServiceImpl implements UserDataWebService, MuleContextAw
                 principalList.add(principal);
                 user.setPrincipalList(principalList);
 
-                Set<EmailAddress> emailAddressList = new HashSet<EmailAddress>();
 
-                EmailAddress ea = new EmailAddress();
-                ea.setEmailAddress(user.getEmail());
-                ea.setIsDefault(true);
-                ea.setMetadataTypeId("PRIMARY_EMAIL");
-                emailAddressList.add(ea);
-                user.setEmailAddresses(emailAddressList);
+                if(CollectionUtils.isNotEmpty(typeList)){
+                    Set<EmailAddress> emailAddressList = new HashSet<EmailAddress>();
+
+                    EmailAddress ea = new EmailAddress();
+                    ea.setEmailAddress(user.getEmail());
+                    ea.setIsDefault(true);
+                    ea.setMetadataTypeId(typeList.get(0).getMetadataTypeId());
+                    emailAddressList.add(ea);
+                    user.setEmailAddresses(emailAddressList);
+                }
             }
 
             final UserEntity userEntity = userDozerConverter.convertToEntity(user, true);
