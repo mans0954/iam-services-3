@@ -193,16 +193,6 @@ public class UserMgr implements UserDataService {
             user.setLastUpdate(new Date(System.currentTimeMillis()));
         }
 
-        for(PhoneEntity pe : user.getPhones()) {
-            metadataTypeDAO.save(pe.getMetadataType());
-        }
-        for(AddressEntity ae : user.getAddresses()) {
-           metadataTypeDAO.save(ae.getMetadataType());
-        }
-        for(EmailAddressEntity ea : user.getEmailAddresses()) {
-            metadataTypeDAO.save(ea.getMetadataType());
-        }
-
         validateEmailAddress(user, user.getEmailAddresses());
         userDao.save(user);
 
@@ -671,13 +661,16 @@ public class UserMgr implements UserDataService {
         }
 
         AddressEntity example = new AddressEntity();
-        example.setMetadataType(val.getMetadataType());
         example.setParent(val.getParent());
 
         List<AddressEntity> entityList = addressDao.getByExample(example);
         if (CollectionUtils.isNotEmpty(entityList))
-            throw new NullPointerException("Address with provided type exists");
-
+            for (AddressEntity a:entityList) {
+                if( (a.getAddressId()!=null && !a.getAddressId().equals(val.getAddressId()))
+                        && a.getMetadataType().getMetadataTypeId().equals(val.getMetadataType().getMetadataTypeId())){
+                    throw new NullPointerException("Address with provided type exists");
+                }
+            }
         UserEntity parent = userDao.findById(val.getParent().getUserId());
         val.setParent(parent);
 
@@ -827,12 +820,18 @@ public class UserMgr implements UserDataService {
         }
 
         PhoneEntity example = new PhoneEntity();
-        example.setMetadataType(val.getMetadataType());
         example.setParent(val.getParent());
 
         List<PhoneEntity> entityList = phoneDao.getByExample(example);
-        if (CollectionUtils.isNotEmpty(entityList))
-            throw new NullPointerException("Address with provided type exists");
+        if (CollectionUtils.isNotEmpty(entityList))  {
+            for (PhoneEntity ph:entityList) {
+                if( (ph.getPhoneId()!=null && !ph.getPhoneId().equals(val.getPhoneId()))
+                        && ph.getMetadataType().getMetadataTypeId().equals(val.getMetadataType().getMetadataTypeId())){
+                    throw new NullPointerException("Phone with provided type exists");
+                }
+            }
+        }
+
 
         MetadataTypeEntity type = metadataTypeDAO.findById(val.getMetadataType().getMetadataTypeId());
         val.setMetadataType(type);
@@ -976,12 +975,17 @@ public class UserMgr implements UserDataService {
         }
 
         EmailAddressEntity example = new EmailAddressEntity();
-        example.setMetadataType(val.getMetadataType());
         example.setParent(val.getParent());
 
         List<EmailAddressEntity> entityList = emailAddressDao.getByExample(example);
         if (CollectionUtils.isNotEmpty(entityList))
-            throw new NullPointerException("Address with provided type exists");
+            for (EmailAddressEntity ea:entityList) {
+                if( (ea.getEmailId()!=null && !ea.getEmailId().equals(val.getEmailId()))
+                        && ea.getMetadataType().getMetadataTypeId().equals(val.getMetadataType().getMetadataTypeId())){
+                    throw new NullPointerException("Email Address with provided type exists");
+                }
+            }
+
 
         MetadataTypeEntity type = metadataTypeDAO.findById(val.getMetadataType().getMetadataTypeId());
         val.setMetadataType(type);
@@ -1474,6 +1478,38 @@ public class UserMgr implements UserDataService {
             } else {
                 origUserEntity.setCostCenter(newUserEntity.getCostCenter());
             }
+        }
+        
+        if(newUserEntity.getLocationCd() != null) {
+        	if(newUserEntity.getLocationCd().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+        		origUserEntity.setLocationCd(null);
+        	} else {
+        		origUserEntity.setLocationCd(newUserEntity.getLocationCd());
+        	}
+        }
+        
+        if(newUserEntity.getLocationName() != null) {
+        	if(newUserEntity.getLocationName().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+        		origUserEntity.setLocationName(null);
+        	} else {
+        		origUserEntity.setLocationName(newUserEntity.getLocationName());
+        	}
+        }
+        
+        if(newUserEntity.getMailCode() != null) {
+        	if(newUserEntity.getMailCode().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+        		origUserEntity.setMailCode(null);
+        	} else {
+        		origUserEntity.setMailCode(newUserEntity.getMailCode());
+        	}
+        }
+        
+        if(newUserEntity.getPrefix() != null) {
+        	if(newUserEntity.getPrefix().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+        		origUserEntity.setPrefix(null);
+        	} else {
+        		origUserEntity.setPrefix(newUserEntity.getPrefix());
+        	}
         }
 
         if (newUserEntity.getEmployeeId() != null) {

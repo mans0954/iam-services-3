@@ -31,6 +31,9 @@ public interface ActivitiService {
 	public Response initiateWorkflow(final GenericWorkflowRequest request);
 	
 	@WebMethod
+	public SaveTemplateProfileResponse initiateEditUserWorkflow(final UserProfileRequestModel request);
+	
+	@WebMethod
 	public SaveTemplateProfileResponse initiateNewHireRequest(final NewUserProfileRequestModel newHireRequest);
 	
 	@WebMethod

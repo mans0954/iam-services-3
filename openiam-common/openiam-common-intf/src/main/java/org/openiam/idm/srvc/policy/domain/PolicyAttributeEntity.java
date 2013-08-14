@@ -28,9 +28,9 @@ public class PolicyAttributeEntity implements java.io.Serializable, Comparable<P
 	@Id
 	@GeneratedValue(generator = "system-uuid")
 	@GenericGenerator(name = "system-uuid", strategy = "uuid")
-	@Column(name = "POLICY_ATTR_ID", length = 32)
+	@Column(name = "POLICY_ATTR_ID", length = 32, nullable=false, updatable=false)
 	private String policyAttrId;
-	@Column(name = "POLICY_ID")
+	@Column(name = "POLICY_ID", nullable=false, updatable=false)
 	private String policyId;
 	@Column(name = "DEF_PARAM_ID")
 	private String defParamId;

@@ -398,6 +398,81 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 	
 	@Override
 	@Transactional
+	public SaveTemplateProfileResponse initiateEditUserWorkflow(final UserProfileRequestModel request) {
+		final SaveTemplateProfileResponse response = new SaveTemplateProfileResponse();
+		try {
+			if(request == null) {
+				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+			}
+			
+			final String description = String.format("Edit User %s", request.getUser().getDisplayName());
+			
+			final Set<String> requestApproverIds = new HashSet<String>();
+			final List<SupervisorEntity> supervisors = supervisorDAO.findSupervisors(request.getUser().getUserId());
+			if(CollectionUtils.isNotEmpty(supervisors)) {
+				for(final SupervisorEntity supervisor : supervisors) {
+					requestApproverIds.add(supervisor.getSupervisor().getUserId());
+				}
+			}
+			if(CollectionUtils.isEmpty(requestApproverIds)) {
+				log.warn("Could not found any approvers - using default user");
+        		requestApproverIds.add(defaultApproverUserId);
+			}
+			
+			final Date currentDate = new Date();
+			
+			final ProvisionRequestEntity provisionRequest = new ProvisionRequestEntity();
+			final String xml = new XStream().toXML(request);
+			provisionRequest.setRequestXML(xml);
+			provisionRequest.setStatus("PENDING");
+			provisionRequest.setStatusDate(currentDate);
+			provisionRequest.setRequestDate(currentDate);
+			provisionRequest.setRequestReason(description);
+			provisionRequest.setRequestorId(request.getRequestorUserId());
+			
+			/* save the request */
+			provRequestService.addRequest(provisionRequest);
+			
+			final Map<String, Object> variables = new HashMap<String, Object>();
+			//variables.put(ActivitiConstants.APPROVER_ASSOCIATION_IDS, approverAssociationIds);
+			variables.put(ActivitiConstants.PROVISION_REQUEST_ID, provisionRequest.getId());
+			variables.put(ActivitiConstants.CANDIDATE_USERS_IDS, requestApproverIds);
+			variables.put(ActivitiConstants.TASK_NAME, description);
+			variables.put(ActivitiConstants.TASK_DESCRIPTION, description);
+			variables.put(ActivitiConstants.TASK_OWNER, request.getRequestorUserId());
+			variables.put(ActivitiConstants.ASSOCIATION_ID, request.getUser().getUserId());
+			final ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(ActivitiRequestType.EDIT_USER.getKey(), variables);
+			
+			/* throws exception if invalid - caught in try/catch */
+			//userProfileService.validate(request);
+			
+			response.setStatus(ResponseStatus.SUCCESS);
+		/*
+		} catch (PageTemplateException e) {
+			response.setCurrentValue(e.getCurrentValue());
+			response.setElementName(e.getElementName());
+			response.setErrorCode(e.getCode());
+			response.setStatus(ResponseStatus.FAILURE);
+		*/
+		} catch(BasicDataServiceException e) {
+			response.setErrorCode(e.getCode());
+			response.setStatus(ResponseStatus.FAILURE);
+		} catch(ActivitiException e) {
+			log.info("Activiti Exception", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(ResponseCode.USER_STATUS);
+			response.setErrorText(e.getMessage());
+		} catch(Throwable e) {
+			log.error("Error while creating newhire request", e);
+			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorCode(ResponseCode.USER_STATUS);
+			response.setErrorText(e.getMessage());
+		}
+		return response;
+	}
+	
+	@Override
+	@Transactional
 	public Response initiateWorkflow(final GenericWorkflowRequest request) {
 		final Response response = new Response();
 		try {

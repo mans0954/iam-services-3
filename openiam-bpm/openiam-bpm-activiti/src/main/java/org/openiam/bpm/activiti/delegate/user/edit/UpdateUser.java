@@ -4,6 +4,7 @@ import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.delegate.JavaDelegate;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.dozer.converter.UserDozerConverter;
+import org.openiam.idm.srvc.prov.request.domain.ProvisionRequestEntity;
 import org.openiam.idm.srvc.prov.request.service.RequestDataService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
@@ -27,10 +28,15 @@ public class UpdateUser implements JavaDelegate {
 	private ProvisionService provisionService;
 	
 	@Autowired
+	@Qualifier("userWS")
 	private UserDataWebService userDataService;
 	
 	@Autowired
 	private UserDozerConverter dozerConverter;
+	
+	@Autowired
+	@Qualifier("provRequestService")
+	private RequestDataService provRequestService;
 	
 	public UpdateUser() {
 		SpringContextProvider.autowire(this);
@@ -38,12 +44,16 @@ public class UpdateUser implements JavaDelegate {
 
 	@Override
 	public void execute(DelegateExecution execution) throws Exception {
-		final UserProfileRequestModel profile = (UserProfileRequestModel)new XStream().fromXML((String)execution.getVariable(ActivitiConstants.USER_PROFILE));
-		final String userId = (String)execution.getVariable(ActivitiConstants.ASSOCIATION_ID);
+		final String provisionRequestId = (String)execution.getVariable(ActivitiConstants.PROVISION_REQUEST_ID);
+		final ProvisionRequestEntity provisionRequest = provRequestService.getRequest(provisionRequestId);
+		final UserProfileRequestModel profile = (UserProfileRequestModel)new XStream().fromXML(provisionRequest.getRequestXML());
+		//final String userId = (String)execution.getVariable(ActivitiConstants.ASSOCIATION_ID);
 		
 		User user = profile.getUser();
 		if(user != null) {
-			userDataService.saveUserInfo(user, null);
+			user.setNotifyUserViaEmail(false); /* edit user - don't send creds */
+			userDataService.saveUserProfile(profile);
+			//userDataService.saveUserInfo(user, null);
 			user = userDataService.getUserWithDependent(user.getUserId(), null, true);
 			
 			final ProvisionUser pUser = new ProvisionUser(user);

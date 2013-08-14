@@ -730,7 +730,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                         user.getRequestorDomain(), user.getRequestorLogin(),
                         "IDM SERVICE", user.getCreatedBy(), "0", "USER", user.getUserId(),
                         null, "SUCCESS", null, "USER_STATUS",
-                        user.getUser().getStatus().toString(),
+                        user.getStatus().toString(),
                         null, null, user.getSessionId(), null, g.getGrpName(),
                         user.getRequestClientIP(), null, null) );
 
@@ -766,7 +766,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                         user.getRequestorDomain(), user.getRequestorLogin(),
                         "IDM SERVICE", user.getCreatedBy(), "0", "USER", user.getUserId(),
                         null, "SUCCESS", null, "USER_STATUS",
-                        user.getUser().getStatus().toString(),
+                        user.getStatus().toString(),
                         "NA", null, user.getSessionId(), null, ur.getRoleId(),
                         user.getRequestClientIP(), null, null) );
 
@@ -790,7 +790,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                         user.getRequestorDomain(), user.getRequestorLogin(),
                         "IDM SERVICE", user.getCreatedBy(), "0", "USER", user.getUserId(),
                         null, "SUCCESS", null, "USER_STATUS",
-                        user.getUser().getStatus().toString(),
+                        user.getStatus().toString(),
                         "NA", null, user.getSessionId(), null, org.getOrganizationName(),
                         user.getRequestClientIP(), null, null) );
 

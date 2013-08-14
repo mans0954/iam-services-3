@@ -2,10 +2,12 @@ package org.openiam.idm.srvc.synch.service;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.dozer.converter.RoleDozerConverter;
 import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.policy.dto.Policy;
+import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.synch.dto.Attribute;
@@ -48,9 +50,9 @@ public class PolicyMapTransformScript extends AbstractTransformScript {
         if(userRoleList == null) {
             userRoleList = new LinkedList<Role>();
         }
-        String roleId = ((RoleDataService)context.getBean("roleDataService")).getRoleByName("End User", null).getRoleId();
-        Role r = new Role();
-        r.setRoleId(roleId);
+        RoleEntity role = ((RoleDataService)context.getBean("roleDataService")).getRoleByName("End User", null);
+        RoleDozerConverter roleDozerConverter = ((RoleDozerConverter)context.getBean("roleDozerConverter"));
+        Role r = roleDozerConverter.convertToDTO(role, false);
         userRoleList.add(r);
 
         pUser.setMemberOfRoles(userRoleList);
@@ -86,6 +88,7 @@ public class PolicyMapTransformScript extends AbstractTransformScript {
                         bindingMap.put("objectType", am.getMapForObjectType());
                         bindingMap.put("policy", policy);
                         bindingMap.put("rowObj", rowObj);
+                        bindingMap.put("attributeName", am.getAttributeName());
                         bindingMap.put("attribute", attribute);
                         bindingMap.put("pUser", pUser);
                         bindingMap.put("user", user);
