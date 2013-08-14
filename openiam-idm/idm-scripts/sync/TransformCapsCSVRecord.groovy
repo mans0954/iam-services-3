@@ -90,19 +90,21 @@ public class TransformCapsCSVRecord extends AbstractTransformScript {
 
         // Processing address
         def address = new Address()
-        address.name = "ADDRESS1"
+        address.name = "PRIMARY_LOCATION"
         address.address1 = columnMap.get("STR_1_NM")?.value
         address.address2 = columnMap.get("STR_2_NM")?.value
         address.city = columnMap.get("CITY_NM")?.value
         address.postalCd = columnMap.get("ZIP")?.value
         address.state = columnMap.get("ST_CD")?.value
         address.country = columnMap.get("CTRY_CD")?.value
+        address.metadataTypeId = "PRIMARY_LOCATION"
         addAddress(pUser, address)
 
         // Processing phone
         def phone = new Phone()
         phone.name = "DESK PHONE"
         phone.phoneNbr = columnMap.get("EMPLOYEE_PHONE_NUMBER")?.value
+        phone.metadataTypeId = "DESK_PHONE"
         addPhone(pUser, phone)
 
         // Processing organizations
@@ -147,7 +149,7 @@ public class TransformCapsCSVRecord extends AbstractTransformScript {
             pUser.addresses = user.addresses
         }
         for (Address a : pUser.addresses) {
-            if (address.name.equalsIgnoreCase(a.name)) {
+            if (address.metadataTypeId.equalsIgnoreCase(a.metadataTypeId)) {
                 a.updateAddress(address)
                 return
             }
@@ -160,7 +162,7 @@ public class TransformCapsCSVRecord extends AbstractTransformScript {
             pUser.phones = user?.phones
         }
         for (Phone p : pUser.phones) {
-            if (phone.name.equalsIgnoreCase(p.name)) {
+            if (phone.metadataTypeId.equalsIgnoreCase(p.metadataTypeId)) {
                 p.updatePhone(phone)
                 return
             }

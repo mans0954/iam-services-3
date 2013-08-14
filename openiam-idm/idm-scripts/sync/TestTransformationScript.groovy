@@ -22,11 +22,11 @@ class TestTransformationScript extends AbstractTransformScript {
     }
 
     def setAppContext(appContext) {
-	this.appContext = appContext
+	    this.appContext = appContext
     }
 
     def getAppContext() {
-	appContext
+	    return appContext
     }
 
 }
