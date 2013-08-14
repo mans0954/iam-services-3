@@ -1475,6 +1475,38 @@ public class UserMgr implements UserDataService {
                 origUserEntity.setCostCenter(newUserEntity.getCostCenter());
             }
         }
+        
+        if(newUserEntity.getLocationCd() != null) {
+        	if(newUserEntity.getLocationCd().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+        		origUserEntity.setLocationCd(null);
+        	} else {
+        		origUserEntity.setLocationCd(newUserEntity.getLocationCd());
+        	}
+        }
+        
+        if(newUserEntity.getLocationName() != null) {
+        	if(newUserEntity.getLocationName().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+        		origUserEntity.setLocationName(null);
+        	} else {
+        		origUserEntity.setLocationName(newUserEntity.getLocationName());
+        	}
+        }
+        
+        if(newUserEntity.getMailCode() != null) {
+        	if(newUserEntity.getMailCode().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+        		origUserEntity.setMailCode(null);
+        	} else {
+        		origUserEntity.setMailCode(newUserEntity.getMailCode());
+        	}
+        }
+        
+        if(newUserEntity.getPrefix() != null) {
+        	if(newUserEntity.getPrefix().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+        		origUserEntity.setPrefix(null);
+        	} else {
+        		origUserEntity.setPrefix(newUserEntity.getPrefix());
+        	}
+        }
 
         if (newUserEntity.getEmployeeId() != null) {
             if (newUserEntity.getEmployeeId().equalsIgnoreCase(BaseConstants.NULL_STRING)) {

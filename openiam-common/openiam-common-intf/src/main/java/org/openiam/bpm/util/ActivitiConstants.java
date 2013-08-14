@@ -13,7 +13,7 @@ public class ActivitiConstants {
 	public static final String APPROVER_ASSOCIATION_IDS = "ApproverAssociationIds";
 	public static final String ASSOCIATION_ID = "AssociationId";
 	public static final String MEMBER_ASSOCIATION_ID = "MemberAssociationId";
-	public static final String USER_PROFILE = "UserProfile";
+	//public static final String USER_PROFILE = "UserProfile";
 	public static final String REQUEST_METADATA_MAP = "RequestMetadataMap";
 	public static final String CUSTOM_APPROVER_IDS = "CustomApproverIds";
 	public static final String EMPLOYEE_ID = "EmployeeId";

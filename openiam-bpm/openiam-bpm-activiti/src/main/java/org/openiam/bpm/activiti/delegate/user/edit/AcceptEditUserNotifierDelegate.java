@@ -1,5 +1,6 @@
 package org.openiam.bpm.activiti.delegate.user.edit;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -38,13 +39,18 @@ public class AcceptEditUserNotifierDelegate extends AbstractEntitlementsDelegate
 		final UserEntity owner = userDAO.findById(taskOwner);
 		
 		userIds.add(taskOwner);
-		
+		final Collection<String> candidateUsersIds = getCandidateUserIds(execution);
+		if(CollectionUtils.isNotEmpty(candidateUsersIds)) {
+			userIds.addAll(candidateUsersIds);
+		}
+		/*
 		final List<ApproverAssociationEntity> approverAssociationEntities = getApproverAssociations(execution);
 		if(CollectionUtils.isNotEmpty(approverAssociationEntities)) {
 			for(final ApproverAssociationEntity association : approverAssociationEntities) {
 				userIds.addAll(getNotifyUserIds(association.getOnRejectEntityType(), association.getOnRejectEntityId(), targetUserId));
 			}
 		}
+		*/
 		
 		for(final String toNotifyUserId : userIds) {
 			final UserEntity toNotify = userDAO.findById(toNotifyUserId);
