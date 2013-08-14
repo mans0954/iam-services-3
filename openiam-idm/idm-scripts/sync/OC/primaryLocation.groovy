@@ -10,12 +10,13 @@ address.city = columnMap.get("CITY_NM")?.value
 address.postalCd = columnMap.get("ZIP")?.value
 address.state = columnMap.get("ST_CD")?.value
 address.country = columnMap.get("CTRY_CD")?.value
+address.metadataTypeId = attributeName
 
 if (user?.addresses) {
     pUser.addresses = user.addresses
 }
 for (Address a : pUser.addresses) {
-    if (address.name.equalsIgnoreCase(a.name)) {
+    if (address.metadataTypeId.equalsIgnoreCase(a.metadataTypeId)) {
         a.updateAddress(address)
         return
     }

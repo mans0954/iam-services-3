@@ -1,7 +1,7 @@
 
-attrVal = attribute.value
+def attrVal = attribute.value
 if (attrVal) {
-    def names = attrVal.value.split(', ')
+    def names = attrVal.split(', ')
     if (names.size() > 0) {
         pUser.lastName = names[0]
     }
