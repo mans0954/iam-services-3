@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.Criteria;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.LoginDozerConverter;
@@ -35,6 +36,8 @@ import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
+import org.openiam.idm.srvc.org.domain.OrganizationEntity;
+import org.openiam.idm.srvc.org.service.OrganizationDAO;
 import org.openiam.idm.srvc.policy.domain.PolicyEntity;
 import org.openiam.idm.srvc.policy.domain.PolicyObjectAssocEntity;
 import org.openiam.idm.srvc.policy.dto.Policy;
@@ -72,510 +75,550 @@ import org.springframework.util.CollectionUtils;
 public class PasswordServiceImpl implements PasswordService {
 
 	@Autowired
-    protected PasswordValidator passwordValidator;
+	protected PasswordValidator passwordValidator;
 
-    @Autowired
-    protected LoginDataService loginManager;
-    
-    @Autowired
-    protected UserDataService userManager;
+	@Autowired
+	protected LoginDataService loginManager;
 
-    @Autowired
-    private LoginDozerConverter loginDozerConverter;
-    
-    @Autowired
-    private PolicyDataService policyDataService;
-    
-    @Autowired
-    private PolicyObjectAssocDAO policyObjectAssocDao;
-    
-    @Autowired
-    private PolicyDAO policyDAO;
-    
-    @Autowired
-    @Qualifier("cryptor")
-    protected Cryptor cryptor;
-    
-    @Autowired
-    protected PasswordHistoryDAO passwordHistoryDao;
-    
-    @Autowired
-    @Qualifier("hash")
-    protected HashDigest hash;
-    
-    @Autowired
-    protected KeyManagementService keyManagementService;
-    
-    @Autowired
-    protected UserDozerConverter userDozerConverter;
+	@Autowired
+	protected UserDataService userManager;
 
-    private static final Log log = LogFactory.getLog(PasswordServiceImpl.class);
-    private static final long DAY_AS_MILLIS = 86400000l;
+	@Autowired
+	private LoginDozerConverter loginDozerConverter;
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.policy.pswd.PasswordService#isPasswordValid(org.
-     * openiam.idm.srvc.policy.dto.Password)
-     */
-    public PasswordValidationCode isPasswordValid(Password pswd)
-            throws ObjectNotFoundException {
+	@Autowired
+	private PolicyDataService policyDataService;
 
-        Policy pswdPolicy = getPasswordPolicy(pswd.getDomainId(),
-                pswd.getPrincipal(), pswd.getManagedSysId());
+	@Autowired
+	private PolicyObjectAssocDAO policyObjectAssocDao;
 
-        if (pswdPolicy == null) {
-            return PasswordValidationCode.PASSWORD_POLICY_NOT_FOUND;
-        }
-        log.info("Selected Password policy=" + pswdPolicy.getPolicyId());
+	@Autowired
+	private PolicyDAO policyDAO;
 
-        PasswordValidationCode retVal = null;
-        try {
-        	retVal = passwordValidator.validate(pswdPolicy, pswd);
-        } catch (IOException io) {
-            log.error(io);
-            retVal = PasswordValidationCode.FAIL_OTHER;
-        }
-        return retVal;
-    }
+	@Autowired
+	@Qualifier("cryptor")
+	protected Cryptor cryptor;
 
-    @Override
-    public PasswordValidationCode isPasswordValidForUser(Password pswd,
-            UserEntity user, LoginEntity lg) throws ObjectNotFoundException {
+	@Autowired
+	protected PasswordHistoryDAO passwordHistoryDao;
 
-        Policy pswdPolicy = getPasswordPolicyByUser(pswd.getDomainId(), user);
+	@Autowired
+	protected OrganizationDAO organizationDAO;
 
-        if (pswdPolicy == null) {
-            return PasswordValidationCode.PASSWORD_POLICY_NOT_FOUND;
-        }
-        log.info("Selected Password policy=" + pswdPolicy.getPolicyId());
+	@Autowired
+	@Qualifier("hash")
+	protected HashDigest hash;
 
-        PasswordValidationCode retVal = null;
-        try {
-        	retVal = passwordValidator.validateForUser(pswdPolicy, pswd, user, lg);
-        } catch (IOException io) {
-            log.error(io);
-            retVal = PasswordValidationCode.FAIL_OTHER;
-        }
-        return retVal;
-    }
+	@Autowired
+	protected KeyManagementService keyManagementService;
 
-    @Override
-    public PasswordValidationCode isPasswordValidForUserAndPolicy(
-            Password pswd, UserEntity user, LoginEntity lg, Policy policy)
-            throws ObjectNotFoundException {
+	@Autowired
+	protected UserDozerConverter userDozerConverter;
 
-        Policy pswdPolicy = policy;
-        if (pswdPolicy == null) {
-            pswdPolicy = getPasswordPolicyByUser(pswd.getDomainId(), user);
-        }
+	private static final Log log = LogFactory.getLog(PasswordServiceImpl.class);
+	private static final long DAY_AS_MILLIS = 86400000l;
 
-        if (pswdPolicy == null) {
-            return PasswordValidationCode.PASSWORD_POLICY_NOT_FOUND;
-        }
-        log.info("Selected Password policy=" + pswdPolicy.getPolicyId());
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.openiam.idm.srvc.policy.pswd.PasswordService#isPasswordValid(org.
+	 * openiam.idm.srvc.policy.dto.Password)
+	 */
+	public PasswordValidationCode isPasswordValid(Password pswd)
+			throws ObjectNotFoundException {
 
-        try {
+		Policy pswdPolicy = getPasswordPolicy(pswd.getDomainId(),
+				pswd.getPrincipal(), pswd.getManagedSysId());
 
-            return passwordValidator
-                    .validateForUser(pswdPolicy, pswd, user, lg);
+		if (pswdPolicy == null) {
+			return PasswordValidationCode.PASSWORD_POLICY_NOT_FOUND;
+		}
+		log.info("Selected Password policy=" + pswdPolicy.getPolicyId());
 
-        } catch (IOException io) {
-            log.error(io);
-            return PasswordValidationCode.FAIL_OTHER;
-        }
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.pswd.service.PasswordService#daysToPasswordExpiration
-     * (java.lang.String, java.lang.String, java.lang.String)
-     */
-    public int daysToPasswordExpiration(String domainId, String principal,
-            String managedSysId) {
-
-        long DAY = 86400000L;
-
-        long curTime = System.currentTimeMillis();
-
-        // Date curDate = new Date(System.currentTimeMillis());
-
-        LoginEntity lg = loginManager.getLoginByManagedSys(domainId, principal,
-                managedSysId);
-        if (lg == null) {
-            return -1;
-        }
-        if (lg.getPwdExp() == null) {
-            // no expiration date
-            return 9999;
-        }
-
-        long endTime = lg.getPwdExp().getTime();
-
-        long diffInMilliseconds = endTime - curTime;
-        long diffInDays = diffInMilliseconds / DAY;
-        if (diffInDays < 1) {
-            return 0;
-        }
-        return (int) diffInDays;
-
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.pswd.service.PasswordService#isPasswordChangeAllowed
-     * (java.lang.String, java.lang.String, java.lang.String)
-     */
-    public boolean isPasswordChangeAllowed(String domainId, String principal,
-            String managedSysId) {
-
-        boolean enabled = false;
-        // get the policy
-        Policy policy = getPasswordPolicy(domainId, principal, managedSysId);
-
-        log.info("Password policy=" + policy);
-
-        PolicyAttribute changeAttr = policy
-                .getAttribute("PASSWORD_CHANGE_ALLOWED");
-        if (changeAttr != null) {
-            if (changeAttr.getValue1() != null
-                    && changeAttr.getValue1().equalsIgnoreCase("0")) {
-                return false;
-            }
-        }
-
-        PolicyAttribute attribute = policy.getAttribute("RESET_PER_TIME");
-        if (attribute != null && attribute.getValue1() != null) {
-            enabled = true;
-
-        }
-        if (enabled) {
-            int changeCount = passwordChangeCount(domainId, principal,
-                    managedSysId);
-            int changesAllowed = Integer.parseInt(attribute.getValue1());
-
-            if (changeCount >= changesAllowed) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.pswd.service.PasswordService#passwordChangeCountByDate
-     * (java.lang.String, java.lang.String, java.lang.String)
-     */
-    public int passwordChangeCount(String domainId, String principal,
-            String managedSysId) {
-
-    	LoginEntity lg = loginManager.getLoginByManagedSys(domainId, principal,
-                managedSysId);
-        if (lg == null) {
-            return -1;
-        }
-        return lg.getPasswordChangeCount();
-
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.pswd.service.PasswordService#getPasswordPolicy(org
-     * .openiam.idm.srvc.user.dto.User)
-     */
-    public Policy getPasswordPolicy(String domainId, String principal,
-            String managedSysId) {
-        // Find a password policy for this user
-        // order of search, type, classification, domain, global
-
-        // get the user for this principal
-        final LoginEntity lg = loginManager.getLoginByManagedSys(domainId, principal,
-                managedSysId);
-        log.info("login=" + lg);
-        final UserEntity user = userManager.getUser(lg.getUserId());
-
-        return getPasswordPolicyByUser(domainId, user);
-    }
-    
-    @Override
-	public PolicyEntity getPasswordPolicyForUser(final String domainId, final UserEntity user) {
-    	// Find a password policy for this user
-        // order of search, type, classification, domain, global
-
-        PolicyObjectAssocEntity policyAssocEntity = null;
-
-        log.info("User type and classifcation=" + user.getUserId() + " "
-                + user.getUserTypeInd());
-
-        if (user.getClassification() != null) {
-            log.info("Looking for associate by classification.");
-            policyAssocEntity = policyObjectAssocDao.findAssociationByLevel(
-                    "CLASSIFICATION", user.getClassification());
-            if (policyAssocEntity != null) {
-                return getPolicyEntity(policyAssocEntity);
-            }
-        }
-
-        // look to see if a policy exists for the type of user
-        if (user.getUserTypeInd() != null) {
-            log.info("Looking for associate by type.");
-            policyAssocEntity = policyObjectAssocDao.findAssociationByLevel(
-                    "TYPE", user.getUserTypeInd());
-            log.info("PolicyAssoc found=" + policyAssocEntity);
-            if (policyAssocEntity != null) {
-                return getPolicyEntity(policyAssocEntity);
-            }
-        }
-
-        if (domainId != null) {
-            log.info("Looking for associate by domain.");
-            policyAssocEntity = policyObjectAssocDao.findAssociationByLevel(
-                    "DOMAIN", domainId);
-            if (policyAssocEntity != null) {
-                return getPolicyEntity(policyAssocEntity);
-            }
-        }
-        log.info("Using global association password policy.");
-        // did not find anything - get the global policy
-        policyAssocEntity = policyObjectAssocDao.findAssociationByLevel(
-                "GLOBAL", "GLOBAL");
-        if (policyAssocEntity == null) {
-            return null;
-        }
-        return getPolicyEntity(policyAssocEntity);
+		PasswordValidationCode retVal = null;
+		try {
+			retVal = passwordValidator.validate(pswdPolicy, pswd);
+		} catch (IOException io) {
+			log.error(io);
+			retVal = PasswordValidationCode.FAIL_OTHER;
+		}
+		return retVal;
 	}
 
-    @Override
-    public Policy getPasswordPolicyByUser(String domainId, UserEntity user) {
-        // Find a password policy for this user
-        // order of search, type, classification, domain, global
+	@Override
+	public PasswordValidationCode isPasswordValidForUser(Password pswd,
+			UserEntity user, LoginEntity lg) throws ObjectNotFoundException {
 
-        PolicyObjectAssocEntity policyAssocEntity = null;
+		Policy pswdPolicy = getPasswordPolicyByUser(pswd.getDomainId(), user);
 
-        log.info("User type and classifcation=" + user.getUserId() + " "
-                + user.getUserTypeInd());
+		if (pswdPolicy == null) {
+			return PasswordValidationCode.PASSWORD_POLICY_NOT_FOUND;
+		}
+		log.info("Selected Password policy=" + pswdPolicy.getPolicyId());
 
-        if (user.getClassification() != null) {
-            log.info("Looking for associate by classification.");
-            policyAssocEntity = policyObjectAssocDao.findAssociationByLevel(
-                    "CLASSIFICATION", user.getClassification());
-            if (policyAssocEntity != null) {
-                return getPolicy(policyAssocEntity);
-            }
-        }
+		PasswordValidationCode retVal = null;
+		try {
+			retVal = passwordValidator.validateForUser(pswdPolicy, pswd, user,
+					lg);
+		} catch (IOException io) {
+			log.error(io);
+			retVal = PasswordValidationCode.FAIL_OTHER;
+		}
+		return retVal;
+	}
 
-        // look to see if a policy exists for the type of user
-        if (user.getUserTypeInd() != null) {
-            log.info("Looking for associate by type.");
-            policyAssocEntity = policyObjectAssocDao.findAssociationByLevel(
-                    "TYPE", user.getUserTypeInd());
-            log.info("PolicyAssoc found=" + policyAssocEntity);
-            if (policyAssocEntity != null) {
-                return getPolicy(policyAssocEntity);
-            }
-        }
+	@Override
+	public PasswordValidationCode isPasswordValidForUserAndPolicy(
+			Password pswd, UserEntity user, LoginEntity lg, Policy policy)
+			throws ObjectNotFoundException {
 
-        if (domainId != null) {
-            log.info("Looking for associate by domain.");
-            policyAssocEntity = policyObjectAssocDao.findAssociationByLevel(
-                    "DOMAIN", domainId);
-            if (policyAssocEntity != null) {
-                return getPolicy(policyAssocEntity);
-            }
-        }
-        log.info("Using global association password policy.");
-        // did not find anything - get the global policy
-        return getGlobalPasswordPolicy();
-    }
-    
-    /**
-     * Returns the global password policy
-     *
-     * @return
-     */
-    public Policy getGlobalPasswordPolicy(){
-    	log.info("Fetching global association password policy.");
-    	PolicyObjectAssocEntity policyAssocEntity = policyObjectAssocDao.findAssociationByLevel(
-                "GLOBAL", "GLOBAL");
-        if (policyAssocEntity == null) {
-            return null;
-        }
-        return getPolicy(policyAssocEntity);
-    }
-    
-    private PolicyEntity getPolicyEntity(final PolicyObjectAssocEntity policyAssoc) {
-    	return policyDAO.findById(policyAssoc.getPolicyId());
-    }
+		Policy pswdPolicy = policy;
+		if (pswdPolicy == null) {
+			pswdPolicy = getPasswordPolicyByUser(pswd.getDomainId(), user);
+		}
 
-    private Policy getPolicy(PolicyObjectAssocEntity policyAssoc) {
-        log.info("Retreiving policyId=" + policyAssoc.getPolicyId());
-        return policyDataService.getPolicy(policyAssoc.getPolicyId());
-    }
+		if (pswdPolicy == null) {
+			return PasswordValidationCode.PASSWORD_POLICY_NOT_FOUND;
+		}
+		log.info("Selected Password policy=" + pswdPolicy.getPolicyId());
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.openiam.idm.srvc.pswd.service.PasswordService#passwordInHistory(org
-     * .openiam.idm.srvc.pswd.dto.Password,
-     * org.openiam.idm.srvc.policy.dto.Policy) 1 - In History, 0 - Not in
-     * history, -1 No policy defined
-     */
-    /*
-    public int passwordInHistory(Password pswd, Policy policy) {
-        // get the list of passwords for this user.
-        String decrypt = null;
+		try {
 
-        PolicyAttribute attr = policy.getAttribute("PWD_HIST_VER");
-        if (attr == null || attr.getValue1() == null) {
-            // no policy defined
-            return -1;
-        }
-        int version = Integer.parseInt(attr.getValue1());
-        
-        final LoginEntity loginEntity = loginManager.getLoginByManagedSys(pswd.getDomainId(), pswd.getPrincipal(), pswd.getManagedSysId());
-        
-        int retVal = 0;
-        if(loginEntity != null) {
-        	final List<PasswordHistoryEntity> historyList = passwordHistoryDao.getPasswordHistoryByLoginId(loginEntity.getLoginId(), 0, version);
-        	if (CollectionUtils.isEmpty(historyList)) {
-        		// no history
-        		retVal = 0;
-        	} else {
-        		log.info("Found " + historyList.size() + " passwords in the history");
-        		for (PasswordHistoryEntity hist : historyList) {
-        			String pwd = hist.getPassword();
-        			try {
-        				LoginEntity login = loginManager.getLoginDetails(hist.getLogin());
-        				decrypt = cryptor.decrypt(keyManagementService.getUserKey(
-        						login.getUserId(), KeyName.password.name()), pwd);
-        			} catch (Exception e) {
-        				log.error("Unable to decrypt password in history: " + pwd);
-        				throw new IllegalArgumentException(
-        						"Unable to decrypt password in password history list");
-        			}
-        			if (pswd.getPassword().equals(decrypt)) {
-        				log.info("matching password found.");
-        				retVal = 1;
-        			}
-        		}
-        	}
-        } else {
-        	retVal = 0;
-        }
-        return retVal;
-    }
-    */
+			return passwordValidator
+					.validateForUser(pswdPolicy, pswd, user, lg);
 
-    @Override
-    public PasswordResetTokenResponse generatePasswordResetToken(
-            PasswordResetTokenRequest request) {
+		} catch (IOException io) {
+			log.error(io);
+			return PasswordValidationCode.FAIL_OTHER;
+		}
+	}
 
-        PasswordResetTokenResponse resp = new PasswordResetTokenResponse(
-                ResponseStatus.SUCCESS);
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.openiam.idm.srvc.pswd.service.PasswordService#daysToPasswordExpiration
+	 * (java.lang.String, java.lang.String, java.lang.String)
+	 */
+	public int daysToPasswordExpiration(String domainId, String principal,
+			String managedSysId) {
 
-        // number of days in which the password token will expire
-        int expirationDays = 0;
+		long DAY = 86400000L;
 
-        if (request == null || request.getPrincipal() == null
-                || request.getDomainId() == null
-                || request.getManagedSysId() == null) {
+		long curTime = System.currentTimeMillis();
 
-            resp.setStatus(ResponseStatus.FAILURE);
-            return resp;
-        }
+		// Date curDate = new Date(System.currentTimeMillis());
 
-        Policy pl = getPasswordPolicy(request.getDomainId(),
-                request.getPrincipal(), request.getManagedSysId());
-        if (pl == null) {
-            resp.setStatus(ResponseStatus.FAILURE);
-            resp.setErrorCode(ResponseCode.PASSWORD_POLICY_NOT_FOUND);
-            return resp;
-        }
+		LoginEntity lg = loginManager.getLoginByManagedSys(domainId, principal,
+				managedSysId);
+		if (lg == null) {
+			return -1;
+		}
+		if (lg.getPwdExp() == null) {
+			// no expiration date
+			return 9999;
+		}
 
-        PolicyAttribute expirationTime = pl
-                .getAttribute("PWD_EXPIRATION_ON_RESET");
-        if (expirationTime != null) {
-            if (expirationTime.getValue1() != null) {
-                expirationDays = Integer.parseInt(expirationTime.getValue1());
-            } else {
-                // default to expiration time if the policy has not been
-                // defined.
-                expirationDays = 3;
-            }
-        }
+		long endTime = lg.getPwdExp().getTime();
 
-        LoginEntity l = loginManager.getLoginByManagedSys(request.getDomainId(),
-                request.getPrincipal(), request.getManagedSysId());
+		long diffInMilliseconds = endTime - curTime;
+		long diffInDays = diffInMilliseconds / DAY;
+		if (diffInDays < 1) {
+			return 0;
+		}
+		return (int) diffInDays;
 
-        long expireDate = getExpirationTime(expirationDays);
+	}
 
-        Date tokenExpDate = new Date(expireDate);
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.openiam.idm.srvc.pswd.service.PasswordService#isPasswordChangeAllowed
+	 * (java.lang.String, java.lang.String, java.lang.String)
+	 */
+	public boolean isPasswordChangeAllowed(String domainId, String principal,
+			String managedSysId) {
 
-        String str = request.getPrincipal() + "*" + expireDate;
+		boolean enabled = false;
+		// get the policy
+		Policy policy = getPasswordPolicy(domainId, principal, managedSysId);
 
-        String token = hash.HexEncodedHash(str);
+		log.info("Password policy=" + policy);
 
-        resp.setPasswordResetToken(token);
+		PolicyAttribute changeAttr = policy
+				.getAttribute("PASSWORD_CHANGE_ALLOWED");
+		if (changeAttr != null) {
+			if (changeAttr.getValue1() != null
+					&& changeAttr.getValue1().equalsIgnoreCase("0")) {
+				return false;
+			}
+		}
 
-        // update our database
-        l.setPswdResetToken(token);
-        l.setPswdResetTokenExp(tokenExpDate);
-        loginManager.updateLogin(l);
+		PolicyAttribute attribute = policy.getAttribute("RESET_PER_TIME");
+		if (attribute != null && attribute.getValue1() != null) {
+			enabled = true;
 
-        return resp;
-    }
+		}
+		if (enabled) {
+			int changeCount = passwordChangeCount(domainId, principal,
+					managedSysId);
+			int changesAllowed = Integer.parseInt(attribute.getValue1());
 
-    @Override
-    public ValidatePasswordResetTokenResponse validatePasswordResetToken(
-            String token) {
+			if (changeCount >= changesAllowed) {
+				return false;
+			}
+		}
 
-        ValidatePasswordResetTokenResponse resp = new ValidatePasswordResetTokenResponse(
-                ResponseStatus.SUCCESS);
+		return true;
+	}
 
-        // look up the token
-        LoginEntity l = loginManager.getPasswordResetToken(token);
-        if (l == null) {
-            resp.setStatus(ResponseStatus.FAILURE);
-            return resp;
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.openiam.idm.srvc.pswd.service.PasswordService#passwordChangeCountByDate
+	 * (java.lang.String, java.lang.String, java.lang.String)
+	 */
+	public int passwordChangeCount(String domainId, String principal,
+			String managedSysId) {
 
-        }
+		LoginEntity lg = loginManager.getLoginByManagedSys(domainId, principal,
+				managedSysId);
+		if (lg == null) {
+			return -1;
+		}
+		return lg.getPasswordChangeCount();
 
-        // check if the token is still valid
-        Date expToken = l.getPswdResetTokenExp();
-        long expTokenMillis = expToken.getTime();
+	}
 
-        long curTime = System.currentTimeMillis();
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.openiam.idm.srvc.pswd.service.PasswordService#getPasswordPolicy(org
+	 * .openiam.idm.srvc.user.dto.User)
+	 */
+	public Policy getPasswordPolicy(String domainId, String principal,
+			String managedSysId) {
+		// Find a password policy for this user
+		// order of search, type, classification, domain, global
 
-        if (curTime > expTokenMillis) {
+		// get the user for this principal
+		final LoginEntity lg = loginManager.getLoginByManagedSys(domainId,
+				principal, managedSysId);
+		log.info("login=" + lg);
+		final UserEntity user = userManager.getUser(lg.getUserId());
 
-            // token is old - fails validation
-            resp.setStatus(ResponseStatus.FAILURE);
-            return resp;
+		return getPasswordPolicyByUser(domainId, user);
+	}
 
-        }
+	@Override
+	public PolicyEntity getPasswordPolicyForUser(final String domainId,
+			final UserEntity user) {
+		// Find a password policy for this user
+		// order of search, type, classification, domain, global
 
-        resp.setPrincipal(loginDozerConverter.convertToDTO(l, false));
+		PolicyObjectAssocEntity policyAssocEntity = null;
 
-        return resp;
-    }
+		log.info("User type and classifcation=" + user.getUserId() + " "
+				+ user.getUserTypeInd());
 
-    protected long getExpirationTime(int numberOfDays) {
+		if (user.getClassification() != null) {
+			log.info("Looking for associate by classification.");
+			policyAssocEntity = policyObjectAssocDao.findAssociationByLevel(
+					"CLASSIFICATION", user.getClassification());
+			if (policyAssocEntity != null) {
+				return getPolicyEntity(policyAssocEntity);
+			}
+		}
 
-        long curTime = System.currentTimeMillis();
-        long tokenLife = numberOfDays * DAY_AS_MILLIS;
+		// look to see if a policy exists for the type of user
+		if (user.getUserTypeInd() != null) {
+			log.info("Looking for associate by type.");
+			policyAssocEntity = policyObjectAssocDao.findAssociationByLevel(
+					"TYPE", user.getUserTypeInd());
+			log.info("PolicyAssoc found=" + policyAssocEntity);
+			if (policyAssocEntity != null) {
+				return getPolicyEntity(policyAssocEntity);
+			}
+		}
 
-        return (curTime + tokenLife);
+		if (domainId != null) {
+			log.info("Looking for associate by domain.");
+			policyAssocEntity = policyObjectAssocDao.findAssociationByLevel(
+					"DOMAIN", domainId);
+			if (policyAssocEntity != null) {
+				return getPolicyEntity(policyAssocEntity);
+			}
+		}
+		//  set by ORGANIZATION
 
-    }
+		if (user.getUserId() != null) {
+
+			List<OrganizationEntity> orgEntity = organizationDAO
+					.getOrganizationsForUser(user.getUserId(), null, 0, 10);
+
+			for (OrganizationEntity organization : orgEntity) {
+
+				log.info("Looking for associate by organization.");
+				policyAssocEntity = policyObjectAssocDao
+						.findAssociationByLevel("ORGANIZATION",
+								organization.getId());
+				if (policyAssocEntity != null) {
+					log.info("PolicyAssoc found=" + policyAssocEntity);
+					break;
+				}
+			}
+
+			if (policyAssocEntity != null) {
+				return getPolicyEntity(policyAssocEntity);
+			}
+		}
+
+
+		log.info("Using global association password policy.");
+		// did not find anything - get the global policy
+		policyAssocEntity = policyObjectAssocDao.findAssociationByLevel(
+				"GLOBAL", "GLOBAL");
+		if (policyAssocEntity == null) {
+			return null;
+		}
+		return getPolicyEntity(policyAssocEntity);
+	}
+
+	@Override
+	public Policy getPasswordPolicyByUser(String domainId, UserEntity user) {
+		// Find a password policy for this user
+		// order of search, type, classification, domain, global
+
+		PolicyObjectAssocEntity policyAssocEntity = null;
+
+		log.info("User type and classifcation=" + user.getUserId() + " "
+				+ user.getUserTypeInd());
+
+		if (user.getClassification() != null) {
+			log.info("Looking for associate by classification.");
+			policyAssocEntity = policyObjectAssocDao.findAssociationByLevel(
+					"CLASSIFICATION", user.getClassification());
+			if (policyAssocEntity != null) {
+				return getPolicy(policyAssocEntity);
+			}
+		}
+
+		// look to see if a policy exists for the type of user
+		if (user.getUserTypeInd() != null) {
+			log.info("Looking for associate by type.");
+			policyAssocEntity = policyObjectAssocDao.findAssociationByLevel(
+					"TYPE", user.getUserTypeInd());
+			log.info("PolicyAssoc found=" + policyAssocEntity);
+			if (policyAssocEntity != null) {
+				return getPolicy(policyAssocEntity);
+			}
+		}
+
+		if (domainId != null) {
+			log.info("Looking for associate by domain.");
+			policyAssocEntity = policyObjectAssocDao.findAssociationByLevel(
+					"DOMAIN", domainId);
+			if (policyAssocEntity != null) {
+				return getPolicy(policyAssocEntity);
+			}
+		}
+		//  set by ORGANIZATION
+
+		if (user.getUserId() != null) {
+
+			List<OrganizationEntity> orgEntity = organizationDAO
+					.getOrganizationsForUser(user.getUserId(), null, 0, 10);
+
+			for (OrganizationEntity organization : orgEntity) {
+
+				log.info("Looking for associate by organization.");
+				policyAssocEntity = policyObjectAssocDao
+						.findAssociationByLevel("ORGANIZATION",
+								organization.getId());
+				if (policyAssocEntity != null) {
+					log.info("PolicyAssoc found=" + policyAssocEntity);
+					break;
+				}
+			}
+
+			if (policyAssocEntity != null) {
+				return getPolicy(policyAssocEntity);
+			}
+		}
+
+		log.info("Using global association password policy.");
+		// did not find anything - get the global policy
+		return getGlobalPasswordPolicy();
+	}
+
+	/**
+	 * Returns the global password policy
+	 * 
+	 * @return
+	 */
+	public Policy getGlobalPasswordPolicy() {
+		log.info("Fetching global association password policy.");
+		PolicyObjectAssocEntity policyAssocEntity = policyObjectAssocDao
+				.findAssociationByLevel("GLOBAL", "GLOBAL");
+		if (policyAssocEntity == null) {
+			return null;
+		}
+		return getPolicy(policyAssocEntity);
+	}
+
+	private PolicyEntity getPolicyEntity(
+			final PolicyObjectAssocEntity policyAssoc) {
+		return policyDAO.findById(policyAssoc.getPolicyId());
+	}
+
+	private Policy getPolicy(PolicyObjectAssocEntity policyAssoc) {
+		log.info("Retreiving policyId=" + policyAssoc.getPolicyId());
+		return policyDataService.getPolicy(policyAssoc.getPolicyId());
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.openiam.idm.srvc.pswd.service.PasswordService#passwordInHistory(org
+	 * .openiam.idm.srvc.pswd.dto.Password,
+	 * org.openiam.idm.srvc.policy.dto.Policy) 1 - In History, 0 - Not in
+	 * history, -1 No policy defined
+	 */
+	/*
+	 * public int passwordInHistory(Password pswd, Policy policy) { // get the
+	 * list of passwords for this user. String decrypt = null;
+	 * 
+	 * PolicyAttribute attr = policy.getAttribute("PWD_HIST_VER"); if (attr ==
+	 * null || attr.getValue1() == null) { // no policy defined return -1; } int
+	 * version = Integer.parseInt(attr.getValue1());
+	 * 
+	 * final LoginEntity loginEntity =
+	 * loginManager.getLoginByManagedSys(pswd.getDomainId(),
+	 * pswd.getPrincipal(), pswd.getManagedSysId());
+	 * 
+	 * int retVal = 0; if(loginEntity != null) { final
+	 * List<PasswordHistoryEntity> historyList =
+	 * passwordHistoryDao.getPasswordHistoryByLoginId(loginEntity.getLoginId(),
+	 * 0, version); if (CollectionUtils.isEmpty(historyList)) { // no history
+	 * retVal = 0; } else { log.info("Found " + historyList.size() +
+	 * " passwords in the history"); for (PasswordHistoryEntity hist :
+	 * historyList) { String pwd = hist.getPassword(); try { LoginEntity login =
+	 * loginManager.getLoginDetails(hist.getLogin()); decrypt =
+	 * cryptor.decrypt(keyManagementService.getUserKey( login.getUserId(),
+	 * KeyName.password.name()), pwd); } catch (Exception e) {
+	 * log.error("Unable to decrypt password in history: " + pwd); throw new
+	 * IllegalArgumentException(
+	 * "Unable to decrypt password in password history list"); } if
+	 * (pswd.getPassword().equals(decrypt)) {
+	 * log.info("matching password found."); retVal = 1; } } } } else { retVal =
+	 * 0; } return retVal; }
+	 */
+
+	@Override
+	public PasswordResetTokenResponse generatePasswordResetToken(
+			PasswordResetTokenRequest request) {
+
+		PasswordResetTokenResponse resp = new PasswordResetTokenResponse(
+				ResponseStatus.SUCCESS);
+
+		// number of days in which the password token will expire
+		int expirationDays = 0;
+
+		if (request == null || request.getPrincipal() == null
+				|| request.getDomainId() == null
+				|| request.getManagedSysId() == null) {
+
+			resp.setStatus(ResponseStatus.FAILURE);
+			return resp;
+		}
+
+		Policy pl = getPasswordPolicy(request.getDomainId(),
+				request.getPrincipal(), request.getManagedSysId());
+		if (pl == null) {
+			resp.setStatus(ResponseStatus.FAILURE);
+			resp.setErrorCode(ResponseCode.PASSWORD_POLICY_NOT_FOUND);
+			return resp;
+		}
+
+		PolicyAttribute expirationTime = pl
+				.getAttribute("PWD_EXPIRATION_ON_RESET");
+		if (expirationTime != null) {
+			if (expirationTime.getValue1() != null) {
+				expirationDays = Integer.parseInt(expirationTime.getValue1());
+			} else {
+				// default to expiration time if the policy has not been
+				// defined.
+				expirationDays = 3;
+			}
+		}
+
+		LoginEntity l = loginManager.getLoginByManagedSys(
+				request.getDomainId(), request.getPrincipal(),
+				request.getManagedSysId());
+
+		long expireDate = getExpirationTime(expirationDays);
+
+		Date tokenExpDate = new Date(expireDate);
+
+		String str = request.getPrincipal() + "*" + expireDate;
+
+		String token = hash.HexEncodedHash(str);
+
+		resp.setPasswordResetToken(token);
+
+		// update our database
+		l.setPswdResetToken(token);
+		l.setPswdResetTokenExp(tokenExpDate);
+		loginManager.updateLogin(l);
+
+		return resp;
+	}
+
+	@Override
+	public ValidatePasswordResetTokenResponse validatePasswordResetToken(
+			String token) {
+
+		ValidatePasswordResetTokenResponse resp = new ValidatePasswordResetTokenResponse(
+				ResponseStatus.SUCCESS);
+
+		// look up the token
+		LoginEntity l = loginManager.getPasswordResetToken(token);
+		if (l == null) {
+			resp.setStatus(ResponseStatus.FAILURE);
+			return resp;
+
+		}
+
+		// check if the token is still valid
+		Date expToken = l.getPswdResetTokenExp();
+		long expTokenMillis = expToken.getTime();
+
+		long curTime = System.currentTimeMillis();
+
+		if (curTime > expTokenMillis) {
+
+			// token is old - fails validation
+			resp.setStatus(ResponseStatus.FAILURE);
+			return resp;
+
+		}
+
+		resp.setPrincipal(loginDozerConverter.convertToDTO(l, false));
+
+		return resp;
+	}
+
+	protected long getExpirationTime(int numberOfDays) {
+
+		long curTime = System.currentTimeMillis();
+		long tokenLife = numberOfDays * DAY_AS_MILLIS;
+
+		return (curTime + tokenLife);
+
+	}
 }
