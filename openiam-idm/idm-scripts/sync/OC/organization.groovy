@@ -13,7 +13,7 @@ if (organization) {
 }
 if (homeDeptCd) {
     def searchBean = new OrganizationSearchBean()
-    searchBean.internalOrgId = homeDeptCd
+    searchBean.internalOrgId = homeDeptCd.substring(1)
     def list = organizationService.findBeans(searchBean, null, 0, 1)
     if (list) {
         def department = organizationDozerConverter?.convertToDTO(list.get(0), false)
