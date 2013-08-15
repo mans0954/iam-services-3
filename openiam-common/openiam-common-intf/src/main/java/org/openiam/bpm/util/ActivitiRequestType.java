@@ -16,7 +16,10 @@ public enum ActivitiRequestType {
 	ADD_USER_TO_ORG("addUserToOrganization", "Add User To Organization"),
 	REMOVE_USER_FROM_ORG("removeUserFromOrganization", "Remove User from Organization"),
 	
-	ATTESTATION("attestationWorkflow", "Attestation");
+	ATTESTATION("attestationWorkflow", "Attestation"),
+	
+	ADD_SUPERIOR("addSuperior", "Add Superior"),
+	REMOVE_SUPERIOR("removeSuperior", "Remove Superior");
 	
 	private String description;
 	private String key;
