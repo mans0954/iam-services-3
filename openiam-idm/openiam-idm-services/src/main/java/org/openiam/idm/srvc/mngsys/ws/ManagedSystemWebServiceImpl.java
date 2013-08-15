@@ -19,6 +19,7 @@ import org.openiam.dozer.converter.DefaultReconciliationAttributeMapDozerConvert
 import org.openiam.dozer.converter.ManagedSysDozerConverter;
 import org.openiam.dozer.converter.ManagedSysRuleDozerConverter;
 import org.openiam.dozer.converter.ManagedSystemObjectMatchDozerConverter;
+import org.openiam.idm.searchbeans.AttributeMapSearchBean;
 import org.openiam.idm.srvc.key.constant.KeyName;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
@@ -44,11 +45,16 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 @Service("managedSysService")
 @WebService(endpointInterface = "org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService", targetNamespace = "urn:idm.openiam.org/srvc/mngsys/service", portName = "ManagedSystemWebServicePort", serviceName = "ManagedSystemWebService")
 public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
+
+    @Value("${org.openiam.idm.system.user.id}")
+    private String systemUserId;
 
     @Autowired
     private ManagedSystemService managedSystemService;
@@ -129,7 +135,8 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
 
         if (encrypt && sys.getPswd() != null) {
             try {
-                sys.setPswd(cryptor.encrypt(null, sys.getPswd()));
+                sys.setPswd(cryptor.encrypt(keyManagementService.getUserKey(
+                        systemUserId, KeyName.password.name()), sys.getPswd()));
             } catch (Exception e) {
                 log.error(e);
             }
@@ -155,7 +162,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
             if (sysDto != null && sysDto.getPswd() != null) {
                 try {
                     sysDto.setDecryptPassword(cryptor.decrypt(
-                            keyManagementService.getUserKey(sys.getUserId(),
+                            keyManagementService.getUserKey(systemUserId,
                                     KeyName.password.name()), sys.getPswd()));
                 } catch (Exception e) {
                     log.error(e);
@@ -234,8 +241,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
         if (encrypt && sys.getPswd() != null) {
             try {
                 sys.setPswd(cryptor.encrypt(keyManagementService.getUserKey(
-                        sys.getUserId(), KeyName.password.name()), sys
-                        .getPswd()));
+                        systemUserId, KeyName.password.name()), sys.getPswd()));
             } catch (Exception e) {
                 log.error(e);
             }
@@ -261,7 +267,8 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
         if (objectType == null) {
             throw new NullPointerException("objectType is null");
         }
-        List<ManagedSystemObjectMatchEntity> objList = managedSystemService.managedSysObjectParam(managedSystemId, objectType);
+        List<ManagedSystemObjectMatchEntity> objList = managedSystemService
+                .managedSysObjectParam(managedSystemId, objectType);
         if (objList == null) {
             return null;
         }
@@ -276,8 +283,23 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
         if (resourceId == null) {
             throw new NullPointerException("resourceId is null");
         }
-        return managedSysDozerConverter.convertToDTO(managedSystemService
-                .getManagedSysByResource(resourceId, "ACTIVE"), true);
+        ManagedSysEntity sys = managedSystemService.getManagedSysByResource(
+                resourceId, "ACTIVE");
+        ManagedSysDto sysDto = null;
+        if (sys != null) {
+            sysDto = managedSysDozerConverter.convertToDTO(sys, true);
+            if (sysDto != null && sysDto.getPswd() != null) {
+                try {
+                    sysDto.setDecryptPassword(cryptor.decrypt(
+                            keyManagementService.getUserKey(systemUserId,
+                                    KeyName.password.name()), sys.getPswd()));
+                } catch (Exception e) {
+                    log.error(e);
+                }
+            }
+        }
+
+        return sysDto;
     }
 
     /*
@@ -369,9 +391,12 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
                 approverAssociation.setAssociationEntityId(null);
                 approverAssociation.setAssociationType(null);
             }
-            
-            if(approverAssociation.getApproverEntityType() == null || StringUtils.isBlank(approverAssociation.getApproverEntityId())) {
-            	throw new BasicDataServiceException(ResponseCode.REQUEST_APPROVERS_NOT_SET);
+
+            if (approverAssociation.getApproverEntityType() == null
+                    || StringUtils.isBlank(approverAssociation
+                            .getApproverEntityId())) {
+                throw new BasicDataServiceException(
+                        ResponseCode.REQUEST_APPROVERS_NOT_SET);
             }
 
             final ApproverAssociationEntity entity = approverAssociationDozerConverter
@@ -475,6 +500,27 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
                 managedSystemService.addAttributeMap(entity), true);
     }
 
+    @Override
+    public void deleteAttributesMapList(List<String> ids) throws Exception {
+        managedSystemService.deleteAttributesMapList(ids);
+    }
+
+    @Override
+    public List<AttributeMap> saveAttributesMap(List<AttributeMap> attrMap,
+            String mSysId, String resId, String synchConfigId) throws Exception {
+        if (CollectionUtils.isEmpty(attrMap)
+                && (StringUtils.isEmpty(resId) || StringUtils.isEmpty(mSysId))
+                && StringUtils.isEmpty(synchConfigId))
+            return null;
+        List<AttributeMapEntity> res = managedSystemService.saveAttributesMap(
+                attributeMapDozerConverter.convertToEntityList(attrMap, true),
+                mSysId, resId, synchConfigId);
+        if (res == null)
+            return null;
+        else
+            return attributeMapDozerConverter.convertToDTOList(res, true);
+    }
+
     public AttributeMap updateAttributeMap(AttributeMap attributeMap) {
         if (attributeMap == null) {
             throw new IllegalArgumentException("attributeMap object is null");
@@ -491,12 +537,12 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
         managedSystemService.removeAttributeMap(attributeMapId);
     }
 
-    public int removeResourceAttributeMaps(String resourceId) {
+    public void removeResourceAttributeMaps(String resourceId) {
         if (resourceId == null) {
             throw new IllegalArgumentException("resourceId is null");
         }
 
-        return managedSystemService.removeResourceAttributeMaps(resourceId);
+        managedSystemService.removeResourceAttributeMaps(resourceId);
     }
 
     public List<AttributeMap> getResourceAttributeMaps(String resourceId) {
@@ -507,6 +553,18 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
                 .getResourceAttributeMaps(resourceId);
         return amEList == null ? null : attributeMapDozerConverter
                 .convertToDTOList(amEList, true);
+    }
+
+    @Override
+    public List<AttributeMap> findResourceAttributeMaps(
+            AttributeMapSearchBean searchBean) {
+        if (searchBean == null) {
+            throw new IllegalArgumentException("searchBean is null");
+        }
+        List<AttributeMapEntity> ameList = managedSystemService
+                .getResourceAttributeMaps(searchBean);
+        return (ameList == null) ? null : attributeMapDozerConverter
+                .convertToDTOList(ameList, true);
     }
 
     public List<AttributeMap> getAllAttributeMaps() {

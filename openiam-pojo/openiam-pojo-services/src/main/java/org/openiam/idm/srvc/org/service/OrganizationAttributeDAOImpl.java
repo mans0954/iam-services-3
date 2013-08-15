@@ -22,7 +22,7 @@ import org.springframework.stereotype.Repository;
 @Repository("orgAttrDAO")
 public class OrganizationAttributeDAOImpl extends BaseDaoImpl<OrganizationAttributeEntity, String> implements OrganizationAttributeDAO {
 
-	private static String DELETE_BY_ORGANIZATION_ID = "DELETE FROM %s oa WHERE oa.organizationId = :organizationId";
+	private static String DELETE_BY_ORGANIZATION_ID = "DELETE FROM %s oa WHERE oa.organization.id = :organizationId";
 	
 	@PostConstruct
 	public void initSQL() {
@@ -31,7 +31,7 @@ public class OrganizationAttributeDAOImpl extends BaseDaoImpl<OrganizationAttrib
 	
 	@Override
 	protected String getPKfieldName() {
-		return "attrId";
+		return "id";
 	}
 
 	@Override

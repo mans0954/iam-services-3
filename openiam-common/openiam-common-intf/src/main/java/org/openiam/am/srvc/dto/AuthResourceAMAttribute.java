@@ -10,20 +10,30 @@ import java.io.Serializable;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AuthResourceAMAttribute", propOrder = {
-        "amAttributeId",
+        "id",
+        "reflectionKey",
         "attributeName"
 })
 @DozerDTOCorrespondence(AuthResourceAMAttributeEntity.class)
 public class AuthResourceAMAttribute implements Serializable {
-    private String amAttributeId;
+    private String id;
+    private String reflectionKey;
     private String attributeName;
 
-    public String getAmAttributeId() {
-        return amAttributeId;
+    public String getId() {
+        return id;
     }
 
-    public void setAmAttributeId(String amAttributeId) {
-        this.amAttributeId = amAttributeId;
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getReflectionKey() {
+        return reflectionKey;
+    }
+
+    public void setReflectionKey(String reflectionKey) {
+        this.reflectionKey = reflectionKey;
     }
 
     public String getAttributeName() {
@@ -34,45 +44,51 @@ public class AuthResourceAMAttribute implements Serializable {
         this.attributeName = attributeName;
     }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result
-				+ ((amAttributeId == null) ? 0 : amAttributeId.hashCode());
-		result = prime * result
-				+ ((attributeName == null) ? 0 : attributeName.hashCode());
-		return result;
-	}
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result
+                + ((id == null) ? 0 : id.hashCode());
+        result = prime * result
+                + ((reflectionKey == null) ? 0 : reflectionKey.hashCode());
+        result = prime * result
+                + ((attributeName == null) ? 0 : attributeName.hashCode());
+        return result;
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		AuthResourceAMAttribute other = (AuthResourceAMAttribute) obj;
-		if (amAttributeId == null) {
-			if (other.amAttributeId != null)
-				return false;
-		} else if (!amAttributeId.equals(other.amAttributeId))
-			return false;
-		if (attributeName == null) {
-			if (other.attributeName != null)
-				return false;
-		} else if (!attributeName.equals(other.attributeName))
-			return false;
-		return true;
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        AuthResourceAMAttribute other = (AuthResourceAMAttribute) obj;
+        if (id == null) {
+            if (other.id != null)
+                return false;
+        } else if (!id.equals(other.id))
+            return false;
+        if (reflectionKey == null) {
+            if (other.reflectionKey != null)
+                return false;
+        } else if (!reflectionKey.equals(other.reflectionKey))
+            return false;
+        if (attributeName == null) {
+            if (other.attributeName != null)
+                return false;
+        } else if (!attributeName.equals(other.attributeName))
+            return false;
+        return true;
+    }
 
-	@Override
-	public String toString() {
-		return String.format(
-				"AuthResourceAMAttribute [amAttributeId=%s, attributeName=%s]",
-				amAttributeId, attributeName);
-	}
+    @Override
+    public String toString() {
+        return String
+                .format("AuthResourceAMAttributeEntity [amAttributeId=%s, reflectionKey=%s, attributeName=%s]", id,reflectionKey, attributeName);
+    }
     
     
 }

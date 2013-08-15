@@ -21,12 +21,33 @@
  */
 package org.openiam.idm.srvc.batch.service;
 
+import java.lang.reflect.Method;
+import java.util.Date;
 import java.util.List;
 
 import javax.jws.WebService;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.dozer.util.ReflectionUtils;
+import org.mule.config.spring.SpringConfigurationBuilder;
+import org.openiam.base.ws.Response;
+import org.openiam.base.ws.ResponseCode;
+import org.openiam.base.ws.ResponseStatus;
+import org.openiam.base.ws.exception.BasicDataServiceException;
+import org.openiam.dozer.converter.BatchTaskDozerConverter;
+import org.openiam.idm.searchbeans.BatchTaskSearchBean;
+import org.openiam.idm.srvc.batch.domain.BatchTaskEntity;
 import org.openiam.idm.srvc.batch.dto.BatchTask;
+import org.openiam.idm.srvc.searchbean.converter.BatchTaskSearchBeanConverter;
+import org.openiam.script.ScriptIntegration;
+import org.openiam.util.SpringContextProvider;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,71 +62,143 @@ import org.springframework.transaction.annotation.Transactional;
 		portName = "BatchDataWebServicePort", 
 		serviceName = "BatchDataWebService")
 @Transactional
-public class BatchDataServiceImpl implements BatchDataService {
-
+public class BatchDataServiceImpl implements BatchDataService, ApplicationContextAware {
+	
+	private static Logger LOG = Logger.getLogger(BatchDataServiceImpl.class);
+	
+	private ApplicationContext ctx;
+	
 	@Autowired
-	private BatchConfigDAO  batchDao;
+    @Qualifier("configurableGroovyScriptEngine")
+    private ScriptIntegration scriptRunner;
 	
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.batch.service.BatchDataService#getAllTasks()
-	 */
-	public List<BatchTask> getAllTasks() {
-		return batchDao.findAllBatchTasks();
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.batch.service.BatchDataService#getAllTasksByFrequency(java.lang.String)
-	 */
-	public List<BatchTask> getAllTasksByFrequency(String frequency) {
-		if (frequency == null) {
-			throw new IllegalArgumentException("Frequency is null");
-		}
-		return batchDao.findBatchTasksByFrequency(frequency);
-	}
+	@Autowired
+	private BatchTaskDozerConverter converter;
 	
-	public void updateTask(BatchTask task) {
-		if (task == null) {
-			throw new IllegalArgumentException("task is null");
+	@Autowired
+	private BatchService batchService;
+	
+	@Autowired
+	private BatchTaskSearchBeanConverter searchBeanConverter;
+
+	@Override
+	public Response save(final BatchTask task) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(task == null) {
+				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+			}
+			
+			if(StringUtils.isBlank(task.getName())) {
+				throw new BasicDataServiceException(ResponseCode.NO_NAME);
+			}
+			
+			if(StringUtils.isBlank(task.getCronExpression()) && task.getRunOn() == null) {
+				throw new BasicDataServiceException(ResponseCode.NO_EXEUCUTION_TIME);
+			}
+			
+			if(StringUtils.isNotBlank(task.getCronExpression())) {
+				try {
+					new CronTrigger(task.getCronExpression());
+				} catch(Throwable e) {
+					throw new BasicDataServiceException(ResponseCode.INVALID_CRON_EXRPESSION);
+				}
+				task.setRunOn(null);
+			}
+			
+			if(task.getRunOn() != null) {
+				if(task.getRunOn().before(new Date())) {
+					throw new BasicDataServiceException(ResponseCode.DATE_INVALID);
+				}
+				task.setCronExpression(null);
+			}
+			
+			if(StringUtils.isBlank(task.getTaskUrl()) && 
+			  (StringUtils.isBlank(task.getSpringBean()) || StringUtils.isBlank(task.getSpringBeanMethod()))) {
+				throw new BasicDataServiceException(ResponseCode.SPRING_BEAN_OR_SCRIPT_REQUIRED);
+			}
+			
+			if(StringUtils.isNotBlank(task.getTaskUrl())) {
+				if(!scriptRunner.scriptExists(task.getTaskUrl())) {
+					throw new BasicDataServiceException(ResponseCode.FILE_DOES_NOT_EXIST);
+				}
+				task.setSpringBean(null);
+				task.setSpringBeanMethod(null);
+			} else {
+				boolean validBeanDefinition = false;
+				try {
+					if(ctx.containsBean(task.getSpringBean())) {
+						final Object bean = ctx.getBean(task.getSpringBean());
+						final Method method = ReflectionUtils.getMethod(bean, task.getSpringBeanMethod());
+						if(method != null && method.getParameterTypes().length == 0) {
+							validBeanDefinition = true;
+							task.setTaskUrl(null);
+						}
+					}
+				} catch(Throwable beanE) {
+					validBeanDefinition = false;
+				}
+				
+				if(!validBeanDefinition) {
+					throw new BasicDataServiceException(ResponseCode.INVALID_SPRING_BEAN);
+				}
+			}
+			
+			final BatchTaskEntity entity = converter.convertToEntity(task, true);
+			batchService.save(entity);
+			response.setResponseValue(entity.getId());
+		} catch (BasicDataServiceException e) {
+			response.setErrorCode(e.getCode());
+			response.setStatus(ResponseStatus.FAILURE);
+		} catch (Throwable e) {
+			LOG.error("Can't save", e);
+			response.setErrorText(e.getMessage());
+			response.setStatus(ResponseStatus.FAILURE);
 		}
-		batchDao.update(task);
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.batch.service.BatchDataService#addBatchTask(org.openiam.idm.srvc.batch.dto.BatchTask)
-	 */
-	public BatchTask addBatchTask(BatchTask task) {
-		batchDao.add(task);
-		
-		return task;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.batch.service.BatchDataService#getBatchTask(java.lang.String)
-	 */
+	@Override
 	public BatchTask getBatchTask(String taskId) {
-		
-		return batchDao.findById(taskId);
+		final BatchTaskEntity entity = batchService.findById(taskId);
+		return converter.convertToDTO(entity, true);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.batch.service.BatchDataService#removeBatchTask(java.lang.String)
-	 */
-	public void removeBatchTask(String taskId) {
-		BatchTask task = batchDao.findById(taskId);
-		batchDao.remove(task);
-		
+	@Override
+	public Response removeBatchTask(String taskId) {
+		final Response response = new Response(ResponseStatus.SUCCESS);
+		try {
+			if(taskId == null) {
+				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+			}
+			
+			batchService.delete(taskId);
+		} catch (BasicDataServiceException e) {
+			response.setErrorCode(e.getCode());
+			response.setStatus(ResponseStatus.FAILURE);
+		} catch (Throwable e) {
+			LOG.error("Can't save", e);
+			response.setErrorText(e.getMessage());
+			response.setStatus(ResponseStatus.FAILURE);
+		}
+		return response;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openiam.idm.srvc.batch.service.BatchDataService#upateBatchTask(org.openiam.idm.srvc.batch.dto.BatchTask)
-	 */
-	public BatchTask upateBatchTask(BatchTask task) {
-		batchDao.update(task);
-		return task;
+	@Override
+	public List<BatchTask> findBeans(final BatchTaskSearchBean searchBean, final int from, final int size) {
+		final BatchTaskEntity entity = searchBeanConverter.convert(searchBean);
+		final List<BatchTaskEntity> entityList = batchService.findBeans(entity, from, size);
+		return converter.convertToDTOList(entityList, searchBean.isDeepCopy());
 	}
 
-	public BatchTask getTaskByName(String taskName) {
-		return batchDao.findByName(taskName);
+	@Override
+	public void setApplicationContext(final ApplicationContext ctx) throws BeansException {
+		this.ctx = ctx;
 	}
 
+	@Override
+	public int count(BatchTaskSearchBean searchBean) {
+		final BatchTaskEntity entity = searchBeanConverter.convert(searchBean);
+		return batchService.count(entity);
+	}
 }

@@ -11,13 +11,13 @@ public class AuthResourceAMAttributeDaoImpl extends BaseDaoImpl<AuthResourceAMAt
 
     @Override
     protected String getPKfieldName() {
-        return "amAttributeId";
+        return "id";
     }
 
     @Override
     @Transactional
     public void deleteById(String attributeId) {
-        Query qry = getSession().createQuery("delete "+this.domainClass.getName()+ " o where o.amAttributeId =:attributeId ");
+        Query qry = getSession().createQuery("delete "+this.domainClass.getName()+ " o where o.id =:attributeId ");
         qry.setParameter("attributeId", attributeId);
         qry.executeUpdate();
     }

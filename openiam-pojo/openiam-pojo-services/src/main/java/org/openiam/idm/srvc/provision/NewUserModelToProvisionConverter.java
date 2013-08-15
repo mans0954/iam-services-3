@@ -8,20 +8,32 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.openiam.dozer.converter.GroupDozerConverter;
+import org.openiam.dozer.converter.OrganizationDozerConverter;
 import org.openiam.dozer.converter.RoleDozerConverter;
 import org.openiam.dozer.converter.UserAttributeDozerConverter;
+import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
+import org.openiam.idm.srvc.grp.domain.GroupEntity;
+import org.openiam.idm.srvc.grp.dto.Group;
+import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.meta.dto.PageTemplateAttributeToken;
 import org.openiam.idm.srvc.meta.service.MetadataElementTemplateService;
+import org.openiam.idm.srvc.org.domain.OrganizationEntity;
+import org.openiam.idm.srvc.org.dto.Organization;
+import org.openiam.idm.srvc.org.service.OrganizationDataService;
+import org.openiam.idm.srvc.org.service.OrganizationService;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.dto.UserRole;
 import org.openiam.idm.srvc.role.service.RoleDataService;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
+import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -38,10 +50,28 @@ public class NewUserModelToProvisionConverter {
 	private RoleDataService roleDataService;
 	
 	@Autowired
+	private GroupDataService groupDataService;
+	
+	@Autowired
+	private GroupDozerConverter groupDozerConverter;
+	
+	@Autowired
 	private RoleDozerConverter roleDozerConverter;
 	
 	@Autowired
 	private UserAttributeDozerConverter userAttributeDozerConverter;
+	
+	@Autowired
+	private UserDataService userDataService;
+	
+	@Autowired
+	private UserDozerConverter userDozerConverter;
+	
+	@Autowired
+	private OrganizationService organizationDataService;
+	
+	@Autowired
+	private OrganizationDozerConverter organizationDozerConverter;
 	
 	@Transactional
 	public ProvisionUser convertNewProfileModel(final NewUserProfileRequestModel request) {
@@ -76,6 +106,42 @@ public class NewUserModelToProvisionConverter {
 				}
 			}
 			user.setMemberOfRoles(userRoles);
+			
+			final List<Group> userGroups = new LinkedList<Group>();
+			if(CollectionUtils.isNotEmpty(request.getGroupIds())) {
+				for(final String groupId : request.getGroupIds()) {
+					final GroupEntity entity = groupDataService.getGroup(groupId);
+					if(entity != null) {
+						final Group group = groupDozerConverter.convertToDTO(entity, false);
+						userGroups.add(group);
+					}
+				}
+			}
+			user.setMemberOfGroups(userGroups);
+			
+			final List<Organization> userOrganizations = new LinkedList<Organization>();
+			if(CollectionUtils.isNotEmpty(request.getOrganizationIds())) {
+				for(final String organizationId : request.getOrganizationIds()) {
+					final OrganizationEntity entity = organizationDataService.getOrganization(organizationId);
+					if(entity != null) {
+						final Organization organization = organizationDozerConverter.convertToDTO(entity, false);
+						userOrganizations.add(organization);
+					}
+				}
+			}
+			user.setUserAffiliations(userOrganizations);
+			
+			final Set<User> userSupervisors = new HashSet<User>();
+			if(CollectionUtils.isNotEmpty(request.getSupervisorIds())) {
+				for(final String supervisorId : request.getSupervisorIds()) {
+					final UserEntity entity = userDataService.getUser(supervisorId);
+					if(entity != null) {
+						final User supervisor = userDozerConverter.convertToDTO(entity, false);
+						userSupervisors.add(supervisor);
+					}
+				}
+			}
+			user.setSuperiors(userSupervisors);
 			
 			final PageTemplateAttributeToken token = templateService.getAttributesFromTemplate(request);
 			if(token != null && CollectionUtils.isNotEmpty(token.getSaveList())) {

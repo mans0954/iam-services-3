@@ -44,15 +44,39 @@
 	<mapping>
 		<class-a>org.openiam.idm.srvc.continfo.domain.AddressEntity</class-a>
 		<class-b>org.openiam.idm.srvc.continfo.dto.Address</class-b>
+        <field>
+            <a>metadataType.metadataTypeId</a>
+            <b>metadataTypeId</b>
+        </field>
+        <field>
+            <a>metadataType.description</a>
+            <b>typeDescription</b>
+        </field>
 	</mapping>
 	<mapping>
 		<class-a>org.openiam.idm.srvc.continfo.domain.EmailAddressEntity
 		</class-a>
 		<class-b>org.openiam.idm.srvc.continfo.dto.EmailAddress</class-b>
+        <field>
+            <a>metadataType.metadataTypeId</a>
+            <b>metadataTypeId</b>
+        </field>
+        <field>
+            <a>metadataType.description</a>
+            <b>typeDescription</b>
+        </field>
 	</mapping>
 	<mapping>
 		<class-a>org.openiam.idm.srvc.continfo.domain.PhoneEntity</class-a>
 		<class-b>org.openiam.idm.srvc.continfo.dto.Phone</class-b>
+        <field>
+            <a>metadataType.metadataTypeId</a>
+            <b>metadataTypeId</b>
+        </field>
+        <field>
+            <a>metadataType.description</a>
+            <b>typeDescription</b>
+        </field>
 	</mapping>
 
 
@@ -89,22 +113,32 @@
 	</mapping>
 
 	<mapping>
-		<class-a>org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity
-		</class-a>
+		<class-a>org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity</class-a>
 		<class-b>org.openiam.idm.srvc.org.dto.OrganizationAttribute</class-b>
+		<field>
+			<a>element.id</a>
+			<b>metadataElementId</b>
+		</field>
+		<field>
+			<a>organization.id</a>
+			<b>organizationId</b>
+		</field>
 	</mapping>
 
 	<mapping>
-		<class-a>org.openiam.idm.srvc.org.domain.UserAffiliationEntity
-		</class-a>
+		<class-a>org.openiam.idm.srvc.org.domain.UserAffiliationEntity</class-a>
 		<class-b>org.openiam.idm.srvc.org.dto.UserAffiliation</class-b>
 		<field>
-			<a>organization.orgId</a>
+			<a>organization.id</a>
 			<b>organizationId</b>
 		</field>
 		<field>
 			<a>user.userId</a>
 			<b>userId</b>
+		</field>
+		<field>
+			<a>id</a>
+			<b>id</b>
 		</field>
 	</mapping>
 	<mapping>
@@ -196,5 +230,43 @@
 		<class-b>
 			org.openiam.idm.srvc.mngsys.dto.DefaultReconciliationAttributeMap
 		</class-b>
+	</mapping>
+	
+	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.batch.domain.BatchTaskEntity</class-a>
+		<class-b>org.openiam.idm.srvc.batch.dto.BatchTask</class-b>
+	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.meta.domain.MetadataFieldTemplateXrefEntity</class-a>
+		<class-b>org.openiam.idm.srvc.meta.dto.MetadataFieldTemplateXref</class-b>
+		<field
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter"
+			custom-converter-param="dto2entityShallowDozerMapper">
+			<a>field</a>
+			<b>field</b>
+		</field>
+		<field
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter"
+			custom-converter-param="dto2entityShallowDozerMapper">
+			<a>template</a>
+			<b>template</b>
+		</field>
+		<field
+			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter"
+			custom-converter-param="dto2entityShallowDozerMapper">
+			<a>id</a>
+			<b>id</b>
+		</field>
+		<field>
+			<a>required</a>
+			<b>required</b>
+		</field>
+	</mapping>
+	
+	<mapping>
+		<class-a>org.openiam.idm.srvc.meta.domain.MetadataFieldTemplateXrefIDEntity</class-a>
+		<class-b>org.openiam.idm.srvc.meta.dto.MetadataFieldTemplateXrefID</class-b>
 	</mapping>
 </mappings>

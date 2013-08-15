@@ -142,7 +142,7 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
             log.debug("Result set contains following number of columns : " + rowHeader.getColumnMap().size());
 
             final ValidationScript validationScript = StringUtils.isNotEmpty(config.getValidationRule()) ? SynchScriptFactory.createValidationScript(config.getValidationRule()) : null;
-            final TransformScript transformScript = StringUtils.isNotEmpty(config.getTransformationRule()) ? SynchScriptFactory.createTransformationScript(config.getTransformationRule()) : null;
+            final List<TransformScript> transformScripts = SynchScriptFactory.createTransformationScript(config);
 
             // Multithreading
             int allRowsCount = results.size();
@@ -170,7 +170,7 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
                         @Override
                         public void run() {
                             try {
-                                Timestamp mostRecentRecord = proccess(config, provService, synchStartLog, part, validationScript, transformScript, startIndex);
+                                Timestamp mostRecentRecord = proccess(config, provService, synchStartLog, part, validationScript, transformScripts, startIndex);
                                 recentRecordByThreadInx.put("Thread_" + threadIndx, mostRecentRecord);
                             } catch (ClassNotFoundException e) {
                                 log.error(e);
@@ -264,7 +264,7 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
         return new SyncResponse(ResponseStatus.SUCCESS);
     }
 
-    private Timestamp proccess(SynchConfig config, ProvisionService provService, IdmAuditLog synchStartLog, List<LineObject> part, final ValidationScript validationScript, final TransformScript transformScript, int ctr) throws ClassNotFoundException {
+    private Timestamp proccess(SynchConfig config, ProvisionService provService, IdmAuditLog synchStartLog, List<LineObject> part, final ValidationScript validationScript, final List<TransformScript> transformScripts, int ctr) throws ClassNotFoundException {
         Timestamp mostRecentRecord = null;
         for (LineObject rowObj : part) {
             log.debug("-RDBMS ADAPTER: SYNCHRONIZING  RECORD # ---" + ctr++);
@@ -315,32 +315,35 @@ public class RDBMSAdapter extends AbstractSrcAdapter {
 
             // transform
             int retval = -1;
-            if (transformScript != null) {
-                synchronized (mutex) {
-                    // initialize the transform script
-                    transformScript.init();
+            if (transformScripts != null && transformScripts.size() > 0) {
 
-                    if (usr != null) {
-                        transformScript.setNewUser(false);
-                        transformScript.setUser(userDozerConverter.convertToDTO(userManager.getUser(usr.getUserId()), true));
-                        transformScript.setPrincipalList(loginManager.getLoginByUser(usr.getUserId()));
-                        transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getUserId()));
+                for (TransformScript transformScript : transformScripts) {
+                    synchronized (mutex) {
+                        // initialize the transform script
+                        transformScript.init();
 
-                    } else {
-                        transformScript.setNewUser(true);
-                        transformScript.setUser(null);
-                        transformScript.setPrincipalList(null);
-                        transformScript.setUserRoleList(null);
+                        if (usr != null) {
+                            transformScript.setNewUser(false);
+                            transformScript.setUser(userDozerConverter.convertToDTO(userManager.getUser(usr.getUserId()), true));
+                            transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getUserId()), true));
+                            transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getUserId()));
+
+                        } else {
+                            transformScript.setNewUser(true);
+                            transformScript.setUser(null);
+                            transformScript.setPrincipalList(null);
+                            transformScript.setUserRoleList(null);
+                        }
+
+                        retval = transformScript.execute(rowObj, pUser);
+
+                        log.debug("- Transform result=" + retval);
+
+                        // show the user object
+                        log.debug("- User After Transformation =" + pUser);
+                        log.debug("- User = " + pUser.getUserId() + "-" + pUser.getFirstName() + " " + pUser.getLastName());
+                        log.debug("- User Attributes = " + pUser.getUserAttributes());
                     }
-
-                    retval = transformScript.execute(rowObj, pUser);
-
-                    log.debug("- Transform result=" + retval);
-
-                    // show the user object
-                    log.debug("- User After Transformation =" + pUser);
-                    log.debug("- User = " + pUser.getUserId() + "-" + pUser.getFirstName() + " " + pUser.getLastName());
-                    log.debug("- User Attributes = " + pUser.getUserAttributes());
                 }
                 pUser.setSessionId(synchStartLog.getSessionId());
 

@@ -27,19 +27,18 @@ import org.mule.api.MuleContext;
 import org.mule.api.MuleException;
 import org.mule.api.MuleMessage;
 import org.mule.module.client.MuleClient;
-import org.openiam.connector.type.SearchRequest;
-import org.openiam.connector.type.SearchResponse;
+import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.constant.StatusCodeType;
+import org.openiam.connector.type.request.*;
+import org.openiam.connector.type.response.ObjectResponse;
+import org.openiam.connector.type.response.LookupAttributeResponse;
+import org.openiam.connector.type.response.ResponseType;
+import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
 import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
-import org.openiam.spml2.interf.ConnectorService;
-import org.openiam.spml2.msg.*;
-import org.openiam.spml2.msg.password.ResetPasswordRequestType;
-import org.openiam.spml2.msg.password.ResetPasswordResponseType;
-import org.openiam.spml2.msg.password.SetPasswordRequestType;
-import org.openiam.spml2.msg.suspend.ResumeRequestType;
-import org.openiam.spml2.msg.suspend.SuspendRequestType;
+import org.openiam.connector.ConnectorService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.xml.namespace.QName;
@@ -61,9 +60,10 @@ public class ConnectorAdapter {
     @Autowired
     private ProvisionConnectorWebService connectorService;
 
-    public AddResponseType addRequest(ManagedSysDto managedSys,
-            AddRequestType addReqType, MuleContext muleContext) {
-        AddResponseType respType = new AddResponseType();
+    public ObjectResponse addRequest(ManagedSysDto managedSys,
+                                      CrudRequest addReqType,
+                                      MuleContext muleContext) {
+        ObjectResponse respType = new ObjectResponse();
         respType.setStatus(StatusCodeType.FAILURE);
 
         try {
@@ -89,7 +89,7 @@ public class ConnectorAdapter {
                     return respType;
 
                 } else {
-                    return (AddResponseType) msg.getPayload();
+                    return (ObjectResponse) msg.getPayload();
 
                 }
 
@@ -105,9 +105,10 @@ public class ConnectorAdapter {
 
     }
 
-    public ModifyResponseType modifyRequest(ManagedSysDto managedSys,
-            ModifyRequestType modReqType, MuleContext muleContext) {
-        ModifyResponseType respType = new ModifyResponseType();
+    public ObjectResponse modifyRequest(ManagedSysDto managedSys,
+                                      CrudRequest modReqType,
+                                      MuleContext muleContext) {
+        ObjectResponse respType = new ObjectResponse();
         respType.setStatus(StatusCodeType.FAILURE);
 
         try {
@@ -135,7 +136,7 @@ public class ConnectorAdapter {
                     return respType;
 
                 } else {
-                    return (ModifyResponseType) msg.getPayload();
+                    return (ObjectResponse) msg.getPayload();
 
                 }
 
@@ -152,9 +153,10 @@ public class ConnectorAdapter {
 
     }
 
-    public LookupResponseType lookupRequest(ManagedSysDto managedSys,
-            LookupRequestType req, MuleContext muleContext) {
-        LookupResponseType resp = new LookupResponseType();
+    public SearchResponse lookupRequest(ManagedSysDto managedSys,
+                                        LookupRequest req,
+                                        MuleContext muleContext) {
+        SearchResponse resp = new SearchResponse();
         resp.setStatus(StatusCodeType.FAILURE);
 
         if (managedSys == null) {
@@ -176,9 +178,9 @@ public class ConnectorAdapter {
                 if (msg != null) {
                     log.debug("LOOKUP Payload=" + msg.getPayload());
                     if (msg.getPayload() != null
-                            && msg.getPayload() instanceof LookupResponseType) {
+                            && msg.getPayload() instanceof SearchResponse) {
 
-                        return (LookupResponseType) msg.getPayload();
+                        return (SearchResponse) msg.getPayload();
                     } else {
                         log.debug("LOOKUP payload is not an instance of LookupResponseType");
                         return resp;
@@ -216,7 +218,7 @@ public class ConnectorAdapter {
                 MuleMessage msg = getService(connector, searchRequest, connector.getServiceUrl(), "search", muleContext);
                 if (msg != null) {
                     log.debug("Test connection Payload=" + msg.getPayload());
-                    if (msg.getPayload() != null && msg.getPayload() instanceof org.openiam.connector.type.ResponseType) {
+                    if (msg.getPayload() != null && msg.getPayload() instanceof ResponseType) {
                         resp = (SearchResponse) msg.getPayload();
                         if(resp.getStatus() == StatusCodeType.SUCCESS) {
                             resp.setStatus(StatusCodeType.SUCCESS);
@@ -282,10 +284,10 @@ public class ConnectorAdapter {
         }
     }
 
-    public LookupAttributeResponseType lookupAttributes(String connectorId,
-            LookupAttributeRequestType config, MuleContext muleContext) {
+    public LookupAttributeResponse lookupAttributes(String connectorId,
+                                                    LookupRequest config, MuleContext muleContext) {
 
-        LookupAttributeResponseType type = new LookupAttributeResponseType();
+        LookupAttributeResponse type = new LookupAttributeResponse();
         type.setStatus(StatusCodeType.FAILURE);
 
         if (config == null) {
@@ -311,7 +313,7 @@ public class ConnectorAdapter {
                 log.debug("MuleMessage payload=" + msg);
 
                 if (msg != null) {
-                    return (LookupAttributeResponseType) msg.getPayload();
+                    return (LookupAttributeResponse) msg.getPayload();
                 } else {
                     return type;
                 }
@@ -328,9 +330,10 @@ public class ConnectorAdapter {
         }
     }
 
-    public ResponseType deleteRequest(ManagedSysDto managedSys,
-            DeleteRequestType delReqType, MuleContext muleContext) {
-        ResponseType type = new ResponseType();
+    public ObjectResponse deleteRequest(ManagedSysDto managedSys,
+                                      CrudRequest delReqType,
+                                      MuleContext muleContext) {
+        ObjectResponse type = new ObjectResponse();
         type.setStatus(StatusCodeType.FAILURE);
 
         if (managedSys == null) {
@@ -351,7 +354,7 @@ public class ConnectorAdapter {
                 MuleMessage msg = getService(connector, delReqType,
                         connector.getServiceUrl(), "delete", muleContext);
                 if (msg != null) {
-                    return (ResponseType) msg.getPayload();
+                    return (ObjectResponse) msg.getPayload();
                 } else {
                     log.debug("MuleMessage is null..");
                     return type;
@@ -372,7 +375,8 @@ public class ConnectorAdapter {
     }
 
     public ResponseType setPasswordRequest(ManagedSysDto managedSys,
-            SetPasswordRequestType request, MuleContext muleContext) {
+                                           PasswordRequest request,
+                                           MuleContext muleContext) {
         ResponseType type = new ResponseType();
         type.setStatus(StatusCodeType.FAILURE);
 
@@ -421,11 +425,12 @@ public class ConnectorAdapter {
 
     }
 
-    public ResetPasswordResponseType resetPasswordRequest(
-            ManagedSysDto managedSys, ResetPasswordRequestType request,
+    public ResponseType resetPasswordRequest(
+            ManagedSysDto managedSys,
+            PasswordRequest request,
             MuleContext muleContext) {
 
-        ResetPasswordResponseType type = new ResetPasswordResponseType();
+        ResponseType type = new ResponseType();
         type.setStatus(StatusCodeType.FAILURE);
 
         if (managedSys == null) {
@@ -456,7 +461,7 @@ public class ConnectorAdapter {
                     log.debug("Message payload found on password reset: "
                             + msg.getPayload());
 
-                    return (ResetPasswordResponseType) msg.getPayload();
+                    return (ResponseType) msg.getPayload();
                 }
 
             }
@@ -473,7 +478,8 @@ public class ConnectorAdapter {
     }
 
     public ResponseType suspendRequest(ManagedSysDto managedSys,
-            SuspendRequestType request, MuleContext muleContext) {
+                                       SuspendResumeRequest request,
+                                       MuleContext muleContext) {
 
         ResponseType type = new ResponseType();
         type.setStatus(StatusCodeType.FAILURE);
@@ -516,7 +522,8 @@ public class ConnectorAdapter {
     }
 
     public ResponseType resumeRequest(ManagedSysDto managedSys,
-            ResumeRequestType request, MuleContext muleContext) {
+                                      SuspendResumeRequest request,
+                                      MuleContext muleContext) {
 
         ResponseType type = new ResponseType();
         type.setStatus(StatusCodeType.FAILURE);
@@ -627,17 +634,17 @@ public class ConnectorAdapter {
         if (operation.equalsIgnoreCase("add")) {
 
             msg = client.send("vm://dispatchConnectorMessageAdd",
-                    (AddRequestType) reqType, msgPropMap);
+                    (CrudRequest) reqType, msgPropMap);
         }
         if (operation.equalsIgnoreCase("modify")) {
 
             msg = client.send("vm://dispatchConnectorMessageModify",
-                    (ModifyRequestType) reqType, msgPropMap);
+                    (CrudRequest) reqType, msgPropMap);
         }
         if (operation.equalsIgnoreCase("lookup")) {
 
             msg = client.send("vm://dispatchConnectorMessageLookup",
-                    (LookupRequestType) reqType, msgPropMap);
+                    (LookupRequest) reqType, msgPropMap);
         }
         if (operation.equalsIgnoreCase("reconcile")) {
 
@@ -647,28 +654,28 @@ public class ConnectorAdapter {
         if (operation.equalsIgnoreCase("delete")) {
 
             msg = client.send("vm://dispatchConnectorMessageDelete",
-                    (DeleteRequestType) reqType, msgPropMap);
+                    (CrudRequest) reqType, msgPropMap);
         }
         if (operation.equalsIgnoreCase("setPassword")) {
 
             msg = client.send("vm://dispatchConnectorMessageSetPassword",
-                    (SetPasswordRequestType) reqType, msgPropMap);
+                    (PasswordRequest) reqType, msgPropMap);
         }
 
         if (operation.equalsIgnoreCase("resetPassword")) {
 
             msg = client.send("vm://dispatchConnectorMessageResetPassword",
-                    (ResetPasswordRequestType) reqType, msgPropMap);
+                    (PasswordRequest) reqType, msgPropMap);
 
         }
         if (operation.equalsIgnoreCase("suspend")) {
 
             msg = client.send("vm://dispatchConnectorMessageSuspend",
-                    (SuspendRequestType) reqType, msgPropMap);
+                    (PasswordRequest) reqType, msgPropMap);
         }
         if (operation.equalsIgnoreCase("resume")) {
             msg = client.send("vm://dispatchConnectorMessageResume",
-                    (ResumeRequestType) reqType, msgPropMap);
+                    (PasswordRequest) reqType, msgPropMap);
         }
 
         if (operation.equalsIgnoreCase("testConnection")) {
@@ -678,7 +685,7 @@ public class ConnectorAdapter {
 
         if (operation.equalsIgnoreCase("lookupAttributes")) {
             msg = client.send("vm://dispatchConnectorMsgLookupAttributes",
-                    (LookupAttributeRequestType) reqType, msgPropMap);
+                    (LookupRequest) reqType, msgPropMap);
         }
 
         if (operation.equalsIgnoreCase("search")) {

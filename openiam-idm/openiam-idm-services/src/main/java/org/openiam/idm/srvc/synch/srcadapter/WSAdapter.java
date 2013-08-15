@@ -166,26 +166,29 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
 					User usr = matchRule.lookup(config, rowAttr);
 
 					// transform
-					if (config.getTransformationRule() != null && config.getTransformationRule().length() > 0) {
-						TransformScript transformScript =  SynchScriptFactory.createTransformationScript(config.getTransformationRule());
-						
-						// initialize the transform script
-						if (usr != null) {
-							transformScript.setNewUser(false);
-							transformScript.setUser(userDozerConverter.convertToDTO(userManager.getUser(usr.getUserId()), true));
-							transformScript.setPrincipalList(loginManager.getLoginByUser(usr.getUserId()));
-							transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getUserId()));
-							
-						} else {
-							transformScript.setNewUser(true);
-                            transformScript.setUser(null);
-                            transformScript.setPrincipalList(null);
-                            transformScript.setUserRoleList(null);
-						}
-						
-						int retval = transformScript.execute(rowObj, pUser);
-						
-						log.debug("- Transform result=" + retval);
+                    int retval = -1;
+                    List<TransformScript> transformScripts =  SynchScriptFactory.createTransformationScript(config);
+                    if (transformScripts != null && transformScripts.size() > 0) {
+
+                        for (TransformScript transformScript : transformScripts) {
+                            // initialize the transform script
+                            if (usr != null) {
+                                transformScript.setNewUser(false);
+                                transformScript.setUser(userDozerConverter.convertToDTO(userManager.getUser(usr.getUserId()), true));
+                                transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getUserId()), true));
+                                transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getUserId()));
+
+                            } else {
+                                transformScript.setNewUser(true);
+                                transformScript.setUser(null);
+                                transformScript.setPrincipalList(null);
+                                transformScript.setUserRoleList(null);
+                            }
+
+                            retval = transformScript.execute(rowObj, pUser);
+
+                            log.debug("- Transform result=" + retval);
+                        }
 
                         // show the user object
                         log.debug("- User After Transformation =" + pUser);
@@ -232,6 +235,7 @@ public class WSAdapter extends AbstractSrcAdapter { // implements SourceAdapter
                     resp.setErrorText(cnfe.toString());
 
 					return resp;
+
 				} catch (IOException fe ) {
 
                     log.error(fe);

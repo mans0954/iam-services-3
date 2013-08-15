@@ -5,6 +5,7 @@ import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.dto.Supervisor;
 
 import java.util.List;
+import java.util.Set;
 
 public interface SupervisorDAO extends BaseDao<SupervisorEntity, String>{
 
@@ -31,4 +32,8 @@ public interface SupervisorDAO extends BaseDao<SupervisorEntity, String>{
      * @return
      */
     public SupervisorEntity findPrimarySupervisor(String employeeId);
+
+    public SupervisorEntity findSupervisor(String superiorId, String subordinateId);
+    
+    public Set<String> getUniqueEmployeeIds();
 }

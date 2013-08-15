@@ -103,6 +103,8 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
         if(managedSys == null) {
         	throw new NullPointerException("Cannot save content provider. Managed System is not found");
         }
+        
+        final String cpURL = provider.getResource().getURL();
 
         provider.setManagedSystem(managedSys);
         provider.setMinAuthLevel(authLevel);
@@ -120,6 +122,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
             resource.setResourceType(resourceType);
             resource.setResourceId(null);
             resource.setIsPublic(false);
+            resource.setURL(cpURL);
             resourceDao.save(resource);
 
             provider.setId(null);
@@ -136,6 +139,7 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
             entity.setMinAuthLevel(authLevel);
             entity.setIsPublic(provider.getIsPublic());
             entity.setIsSSL(provider.getIsSSL());
+            entity.getResource().setURL(cpURL);
             /*entity.setContextPath(provider.getContextPath());*/
             entity.setPatternSet(null);
             entity.setServerSet(null);
@@ -426,16 +430,16 @@ public class ContentProviderServiceImpl implements  ContentProviderService{
         if (StringUtils.isBlank(value.getName())) {
             throw new NullPointerException("Meta Data Attribute Name is not set");
         }
-        if ((value.getAmAttribute() == null || StringUtils.isBlank(value.getAmAttribute().getAmAttributeId())) &&
+        if ((value.getAmAttribute() == null || StringUtils.isBlank(value.getAmAttribute().getReflectionKey())) &&
         	(StringUtils.isBlank(value.getStaticValue())) && 
         	(StringUtils.isBlank(value.getGroovyScript()))) {
             throw new NullPointerException("Meta Data Attribute value not set");
         }
 
-        if(value.getAmAttribute() != null && StringUtils.isNotBlank(value.getAmAttribute().getAmAttributeId())) {
+        if(value.getAmAttribute() != null && StringUtils.isNotBlank(value.getAmAttribute().getReflectionKey())) {
             value.setStaticValue(null);
             value.setGroovyScript(null);
-            AuthResourceAMAttributeEntity amAttribute = authResourceAMAttributeDao.findById(value.getAmAttribute().getAmAttributeId());
+            AuthResourceAMAttributeEntity amAttribute = authResourceAMAttributeDao.findById(value.getAmAttribute().getReflectionKey());
             if(amAttribute==null) {
                 throw new  NullPointerException("Cannot save Meta data value for URI pattern. Attribute Map is not found");
             }

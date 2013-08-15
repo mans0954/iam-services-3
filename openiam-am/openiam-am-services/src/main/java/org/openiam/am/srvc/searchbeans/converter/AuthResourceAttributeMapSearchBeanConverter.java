@@ -14,7 +14,7 @@ public class AuthResourceAttributeMapSearchBeanConverter implements
         final AuthResourceAttributeMapEntity entity = new AuthResourceAttributeMapEntity();
         entity.setAttributeMapId(searchBean.getKey());
         entity.setTargetAttributeName(searchBean.getTargetAttributeName());
-        entity.setAmAttributeId(searchBean.getAmAttributeId());
+        entity.setAmResAttributeId(searchBean.getAmAttributeId());
         entity.setProviderId(searchBean.getProviderId());
         return entity;
     }

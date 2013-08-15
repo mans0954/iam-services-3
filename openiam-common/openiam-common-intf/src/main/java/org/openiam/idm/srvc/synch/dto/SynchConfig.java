@@ -19,6 +19,9 @@ import javax.xml.bind.annotation.XmlType;
 		"synchType",
 		"processRule",
 		"validationRule",
+        "usePolicyMap",
+        "useTransformationScript",
+        "policyMapBeforeTransformation",
 		"transformationRule",
 		"matchFieldName",
 		"matchManagedSysId",
@@ -57,6 +60,9 @@ public class SynchConfig implements java.io.Serializable {
 	//private String deleteRule;
 	private String processRule;
 	private String validationRule;
+    private Boolean usePolicyMap;
+    private Boolean useTransformationScript;
+    private Boolean policyMapBeforeTransformation;
 	private String transformationRule;
 	private String matchFieldName;
 	private String matchManagedSysId;
@@ -280,7 +286,31 @@ public class SynchConfig implements java.io.Serializable {
 		this.validationRule = validationRule;
 	}
 
-	public String getSynchType() {
+    public Boolean getUsePolicyMap() {
+        return usePolicyMap;
+    }
+
+    public void setUsePolicyMap(Boolean usePolicyMap) {
+        this.usePolicyMap = usePolicyMap;
+    }
+
+    public Boolean getUseTransformationScript() {
+        return useTransformationScript;
+    }
+
+    public void setUseTransformationScript(Boolean useTransformationScript) {
+        this.useTransformationScript = useTransformationScript;
+    }
+
+    public Boolean getPolicyMapBeforeTransformation() {
+        return policyMapBeforeTransformation;
+    }
+
+    public void setPolicyMapBeforeTransformation(Boolean policyMapBeforeTransformation) {
+        this.policyMapBeforeTransformation = policyMapBeforeTransformation;
+    }
+
+    public String getSynchType() {
 		return synchType;
 	}
 
@@ -327,6 +357,9 @@ public class SynchConfig implements java.io.Serializable {
                 ", synchType='" + synchType + '\'' +
                 ", processRule='" + processRule + '\'' +
                 ", validationRule='" + validationRule + '\'' +
+                ", usePolicyMap='" + usePolicyMap.toString() + '\'' +
+                ", useTransformationScript='" + useTransformationScript.toString() + '\'' +
+                ", policyMapBeforeTransformation='" + policyMapBeforeTransformation.toString() + '\'' +
                 ", transformationRule='" + transformationRule + '\'' +
                 ", matchFieldName='" + matchFieldName + '\'' +
                 ", matchManagedSysId='" + matchManagedSysId + '\'' +

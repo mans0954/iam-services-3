@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.meta.dto;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.lang.dto.LanguageMapping;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
+import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -38,6 +39,7 @@ import java.util.Set;
         "defaultValueLanguageMap",
         "resourceId",
         "userAttributes",
+        "organizationAttributes",
         "isPublic"
 })
 @DozerDTOCorrespondence(MetadataElementEntity.class)
@@ -60,6 +62,7 @@ public class MetadataElement implements Serializable {
     private Set<UserAttribute> userAttributes;
     private String resourceId;
     private boolean isPublic = true;
+    private Set<OrganizationAttribute> organizationAttributes;
 
     public MetadataElement() {
     }
@@ -221,6 +224,15 @@ public class MetadataElement implements Serializable {
 		this.userAttributes = userAttributes;
 	}
 	
+	public Set<OrganizationAttribute> getOrganizationAttributes() {
+		return organizationAttributes;
+	}
+
+	public void setOrganizationAttributes(
+			Set<OrganizationAttribute> organizationAttributes) {
+		this.organizationAttributes = organizationAttributes;
+	}
+
 	public boolean getIsPublic() {
 		return isPublic;
 	}

@@ -22,8 +22,13 @@ import groovy.lang.*;
 import groovy.util.GroovyScriptEngine;
 import groovy.util.ResourceException;
 import groovy.util.ScriptException;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import org.codehaus.groovy.runtime.InvokerHelper;
@@ -58,6 +63,17 @@ public class GroovyScriptEngineIntegration implements ScriptIntegration, Applica
     public void init() throws IOException {
     	gse = new GroovyScriptEngine(new String[]{scriptRoot});
     }
+    
+    @Override
+	public boolean scriptExists(String scriptName) {
+    	boolean retVal = false;
+    	if(StringUtils.isNotBlank(scriptName)) {
+    		final String fullPath = scriptRoot + scriptName;
+    		final File file = new File(fullPath);
+    		retVal = file.exists() && file.isFile() && file.canRead();
+    	}
+    	return retVal;
+	}
 
     @Override
     public Object execute(Map<String, Object> bindingMap, String scriptName) throws ScriptEngineException {

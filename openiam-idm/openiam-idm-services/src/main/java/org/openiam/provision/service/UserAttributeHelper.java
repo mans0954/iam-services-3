@@ -52,8 +52,8 @@ public class UserAttributeHelper {
 	
 	protected static final Log log = LogFactory.getLog(UserAttributeHelper.class);
 	protected static LoginDataService loginManager;
-	
-	public static ExtensibleUser newUser(ProvisionUser pUser) throws IllegalArgumentException, 
+
+  	public static ExtensibleUser newUser(ProvisionUser pUser) throws IllegalArgumentException,
 		IllegalAccessException, 
 		InvocationTargetException {
 		
@@ -239,7 +239,7 @@ public class UserAttributeHelper {
 	for (UserAttribute attr : attrCol) {
 		String name = extUser.getName();
 		name = "USER_ATTRIBUTE." + attr.getName();
-		ExtensibleAttribute extAttr = new ExtensibleAttribute(name, attr.getValue(), attr.getMetadataElementId());
+		ExtensibleAttribute     extAttr = new ExtensibleAttribute(name, attr.getValue(), attr.getMetadataElementId());
 		if (attr.getOperation() == (AttributeOperationEnum.DELETE)) {
 			extAttr.setOperation(AttributeOperationEnum.DELETE.getValue());
 		}else {
@@ -633,12 +633,9 @@ public class UserAttributeHelper {
 		User newUser = new User();
 	
 		newUser.setBirthdate(user.getBirthdate());
-		newUser.setCompanyId( user.getCompanyId() );
 		newUser.setCompanyOwnerId(user.getCompanyOwnerId());
 		newUser.setCreateDate(user.getCreateDate());
 		newUser.setCreatedBy(user.getCreatedBy());
-		newUser.setDeptCd( user.getDeptCd() );
-		newUser.setDeptName( user.getDeptName() );
 		newUser.setEmployeeId(user.getEmployeeId());
 		newUser.setEmployeeType(user.getEmployeeType());
 
@@ -649,7 +646,6 @@ public class UserAttributeHelper {
 	    newUser.setLastUpdatedBy( user.getLastUpdatedBy() );
 	    newUser.setLocationCd(user.getLocationCd());
 	    newUser.setLocationName(user.getLocationName());
-	    newUser.setManagerId( user.getManagerId() );
 	    newUser.setMetadataTypeId(user.getMetadataTypeId());
 	    newUser.setClassification(user.getClassification());
 	    newUser.setMiddleInit(user.getMiddleInit());
@@ -661,7 +657,6 @@ public class UserAttributeHelper {
 	    newUser.setTitle(user.getTitle());
 	    newUser.setUserId( user.getUserId() );
 	    newUser.setUserTypeInd(user.getUserTypeInd());
-	    newUser.setDivision( user.getDivision() );
 	    newUser.setMailCode(user.getMailCode()); 
 		newUser.setCostCenter(user.getCostCenter());
 		newUser.setStartDate(user.getStartDate());
@@ -700,8 +695,6 @@ public class UserAttributeHelper {
 		// set up the origUser object for reflection
 		Class origUserClass = origUser.getClass();
 		origUserClass.getDeclaredMethods();
-		
-		log.info("** c) Deptcd in Orig=" + origUser.getDeptCd());
 		
 		
 		Class newUserClass =  newUser.getClass();

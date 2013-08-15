@@ -15,6 +15,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 
@@ -46,11 +47,14 @@ public class ReconciliationConfigEntity implements java.io.Serializable {
     private String notificationEmailAddress;
     @Column(name = "TARGET_SYS_MATCH_SCRIPT", length = 120)
     private String targetSystemMatchScript;
-
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "RECON_CONFIG_ID", insertable = false, updatable = false)
     private List<ReconciliationSituationEntity> situationSet = new ArrayList<ReconciliationSituationEntity>(
             0);
+
+    @Column(name = "MANUAL_RECONCILIATION_FLAG")
+    @Type(type = "yes_no")
+    private boolean manualReconciliationFlag;
 
     public String getSeparator() {
         return separator;
@@ -154,5 +158,13 @@ public class ReconciliationConfigEntity implements java.io.Serializable {
 
     public void setSituationSet(List<ReconciliationSituationEntity> situationSet) {
         this.situationSet = situationSet;
+    }
+
+    public boolean getManualReconciliationFlag() {
+        return manualReconciliationFlag;
+    }
+
+    public void setManualReconciliationFlag(boolean manualReconciliationFlag) {
+        this.manualReconciliationFlag = manualReconciliationFlag;
     }
 }

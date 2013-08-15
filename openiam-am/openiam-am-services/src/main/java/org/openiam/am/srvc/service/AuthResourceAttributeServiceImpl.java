@@ -71,12 +71,14 @@ public class AuthResourceAttributeServiceImpl implements AuthResourceAttributeSe
     public AuthResourceAMAttributeEntity saveAmAttribute(AuthResourceAMAttributeEntity attribute) {
         if(attribute==null)
             throw new NullPointerException("AMAttribute not set");
-        if(attribute.getAmAttributeId()==null || attribute.getAmAttributeId().trim().isEmpty())
+        if(attribute.getId()==null || attribute.getId().trim().isEmpty())
             throw new NullPointerException("AMAttribute ID not set");
+        if(attribute.getReflectionKey()==null || attribute.getReflectionKey().trim().isEmpty())
+            throw new NullPointerException("AMAttribute ReflectionKey not set");
         if(attribute.getAttributeName()==null || attribute.getAttributeName().trim().isEmpty())
             throw new NullPointerException("AMAttribute NAME not set");
 
-        AuthResourceAMAttributeEntity entity = this.getAmAttribute(attribute.getAmAttributeId());
+        AuthResourceAMAttributeEntity entity = this.getAmAttribute(attribute.getId());
         if(entity==null)
             authResourceAMAttributeDao.save(attribute);
         else {
@@ -124,7 +126,7 @@ public class AuthResourceAttributeServiceImpl implements AuthResourceAttributeSe
             throw new NullPointerException("TargetAttributeName is not set");
         if (attribute.getAttributeType() == null)
             throw new NullPointerException("Attribute type is not defined");
-        if ((attribute.getAmAttributeId() == null || attribute.getAmAttributeId().trim().isEmpty())
+        if ((attribute.getAmResAttributeId() == null || attribute.getAmResAttributeId().trim().isEmpty())
             &&(attribute.getAttributeValue() == null || attribute.getAttributeValue().trim().isEmpty())
             &&(attribute.getAmPolicyUrl() == null || attribute.getAmPolicyUrl().trim().isEmpty()))
             throw new NullPointerException("Attribute map is not defined");
@@ -137,7 +139,7 @@ public class AuthResourceAttributeServiceImpl implements AuthResourceAttributeSe
         attribute.setAmAttribute(null);
         if(attr!=null && !attr.isEmpty()){
             AuthResourceAttributeMapEntity entity = attr.get(0);
-            entity.setAmAttributeId(attribute.getAmAttributeId());
+            entity.setAmResAttributeId(attribute.getAmResAttributeId());
             entity.setAmPolicyUrl(attribute.getAmPolicyUrl());
             entity.setAttributeValue(attribute.getAttributeValue());
             entity.setAttributeType(attribute.getAttributeType());
@@ -248,7 +250,9 @@ public class AuthResourceAttributeServiceImpl implements AuthResourceAttributeSe
             // TODO: run external groovy script
             attrValue = executeGroovyScript(user, userAttributeEntityMap,attr.getAmPolicyUrl());
         } else{
-            attrValue = authAttributeProcessor.process(attr.getAmAttributeId(), objectMap);
+            AuthResourceAMAttributeEntity amAttributeEntity = authResourceAMAttributeDao.findById(attr.getAmResAttributeId());
+            if(amAttributeEntity!=null)
+                attrValue = authAttributeProcessor.process(amAttributeEntity.getReflectionKey(), objectMap);
         }
         attribute.setAttributeType(attr.getAttributeType());
         attribute.setTargetAttributeName(attr.getTargetAttributeName());

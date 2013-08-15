@@ -4,8 +4,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.mule.api.MuleContext;
 import org.openiam.base.AttributeOperationEnum;
-import org.openiam.connector.type.RemoteUserRequest;
-import org.openiam.connector.type.UserRequest;
+import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.mngsys.dto.ManagedSysDto;
 import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
@@ -18,8 +17,7 @@ import org.openiam.provision.service.ConnectorAdapter;
 import org.openiam.provision.service.ProvisionService;
 import org.openiam.provision.service.RemoteConnectorAdapter;
 import org.openiam.provision.type.ExtensibleAttribute;
-import org.openiam.spml2.msg.DeleteRequestType;
-import org.openiam.spml2.msg.PSOIdentifierType;
+import org.openiam.provision.type.ExtensibleUser;
 
 import java.util.List;
 
@@ -66,8 +64,8 @@ public class DeleteResourceAccountCommand implements ReconciliationCommand {
                     connector.getConnectorInterface().equalsIgnoreCase("REMOTE")) {
 
                 log.debug("Calling delete with Remote connector");
-                RemoteUserRequest request = new RemoteUserRequest();
-                request.setUserIdentity(login.getLogin());
+                CrudRequest<ExtensibleUser> request = new CrudRequest<ExtensibleUser>();
+                request.setObjectIdentity(login.getLogin());
                 request.setTargetID(login.getManagedSysId());
                 request.setHostLoginId(mSys.getUserId());
                 request.setHostLoginPassword(mSys.getDecryptPassword());
@@ -75,9 +73,9 @@ public class DeleteResourceAccountCommand implements ReconciliationCommand {
                 request.setScriptHandler(mSys.getDeleteHandler());
                 remoteConnectorAdapter.deleteRequest(mSys, request, connector, muleContext);
             } else {
-                DeleteRequestType reqType = new DeleteRequestType();
-                PSOIdentifierType idType = new PSOIdentifierType(login.getLogin(), null, managedSysId);
-                reqType.setPsoID(idType);
+                CrudRequest<ExtensibleUser>  reqType = new CrudRequest<ExtensibleUser>();
+                reqType.setObjectIdentity(login.getLogin());
+                reqType.setTargetID(managedSysId);
                 log.debug("Calling delete local connector");
                 connectorAdapter.deleteRequest(mSys, reqType, muleContext);
             }

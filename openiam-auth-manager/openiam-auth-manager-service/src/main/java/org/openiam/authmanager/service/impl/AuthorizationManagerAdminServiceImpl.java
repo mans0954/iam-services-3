@@ -28,6 +28,7 @@ import org.openiam.authmanager.dao.RoleDAO;
 import org.openiam.authmanager.dao.RoleGroupXrefDAO;
 import org.openiam.authmanager.dao.RoleRoleXrefDAO;
 import org.openiam.authmanager.dao.UserDAO;
+import org.openiam.authmanager.model.UserEntitlementsMatrix;
 import org.openiam.authmanager.model.ResourceEntitlementToken;
 import org.openiam.authmanager.service.AuthorizationManagerAdminService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -484,5 +485,52 @@ public class AuthorizationManagerAdminServiceImpl implements AuthorizationManage
 			resourceMap.put(resource.getId(), resource);
 		}
 		return resourceMap;
+	}
+
+	@Override
+	public UserEntitlementsMatrix getUserEntitlementsMatrix(final String userId) {
+		
+		final UserEntitlementsMatrix matrix = new UserEntitlementsMatrix();
+		if(userId != null) {
+			final InternalAuthroizationUser user = userDAO.getFullUser(userId);
+			if(user != null) {
+				matrix.setUserId(userId);
+				
+				final Map<String, AuthorizationResource> resourceMap = getResourceMap();
+				final Map<String, AuthorizationGroup> groupMap = getGroupMap();
+				final Map<String, AuthorizationRole> roleMap = getRoleMap();
+				
+				final Map<String, Set<AuthorizationResource>> resource2ResourceMap = getResource2ResourceMap(resourceMap);
+				for(final String resourceId : resourceMap.keySet()) {
+					final AuthorizationResource resource = resourceMap.get(resourceId);
+					if(resource.isPublic()) {
+						matrix.addPublicResource(resource);
+					}
+				}
+				
+				final Map<String, Set<AuthorizationResource>> role2ResourceMap = getRole2ResourceMap(resourceMap);
+				final Map<String, Set<AuthorizationRole>> role2RoleMap = getRole2RoleMap(roleMap);
+				
+				final Map<String, Set<AuthorizationRole>> group2RoleMap = getGroup2RoleMap(roleMap);
+				final Map<String, Set<AuthorizationGroup>> group2GroupMap = getGroup2GroupMap(groupMap);
+				final Map<String, Set<AuthorizationResource>> group2ResourceMap = getGroup2ResourceMap(resourceMap);
+
+				matrix.setRoleToResourceMap(role2ResourceMap);
+				matrix.setRoleToRoleMap(role2RoleMap);
+				matrix.setGroupToGroupMap(group2GroupMap);
+				matrix.setGroupToResourceMap(group2ResourceMap);
+				matrix.setGroupToRoleMap(group2RoleMap);
+				matrix.setResourceToResourceMap(resource2ResourceMap);
+
+				matrix.setRoleIds(user.getRoleIds());
+				matrix.setGroupIds(user.getGroupIds());
+				matrix.setResourceIds(user.getResourceIds());
+				matrix.setResourceMap(resourceMap);
+				matrix.setGroupMap(groupMap);
+				matrix.setRoleMap(roleMap);
+			}
+		}
+		
+		return matrix;
 	}
 }

@@ -15,15 +15,23 @@ import java.util.List;
 public interface OrganizationDataService {
 
     @WebMethod
-    public List<Organization> getTopLevelOrganizations(@WebParam(name = "requesterId", targetNamespace = "") String requesterId);
-
-    @WebMethod
     public Organization getOrganization(@WebParam(name = "orgId", targetNamespace = "") String orgId,
                                         @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     @WebMethod
+    public int getNumOfOrganizationsForUser(@WebParam(name = "userId", targetNamespace = "") String userId,
+                                                      	   @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+    
+    @WebMethod
     public List<Organization> getOrganizationsForUser(@WebParam(name = "userId", targetNamespace = "") String userId,
-                                                      @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
+                                                      @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                                                      @WebParam(name = "from", targetNamespace = "") int from,
+                                                      @WebParam(name = "size", targetNamespace = "") int size);
+    
+    @WebMethod
+    public List<Organization> getOrganizationsForUserByType(@WebParam(name = "userId", targetNamespace = "") String userId,
+                                                      		@WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                                                      		@WebParam(name="organizationTypeId", targetNamespace = "") String organizationTypeId);
 
     @WebMethod
     public List<Organization> getAllOrganizations(@WebParam(name = "requesterId", targetNamespace = "") String requesterId);
@@ -36,14 +44,12 @@ public interface OrganizationDataService {
 
     @WebMethod
     public List<Organization> getParentOrganizations(@WebParam(name = "orgId", targetNamespace = "") String orgId,
-                                                     @WebParam(name = "parentClassification", targetNamespace = "") String parentClassification,
                                                      @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                                      @WebParam(name = "from", targetNamespace = "") int from,
                                                      @WebParam(name = "size", targetNamespace = "") int size);
 
     @WebMethod
     public List<Organization> getChildOrganizations(@WebParam(name = "orgId", targetNamespace = "") String orgId,
-                                                    @WebParam(name = "childClassification", targetNamespace = "") String childClassification,
                                                     @WebParam(name = "requesterId", targetNamespace = "") String requesterId,
                                                     @WebParam(name = "from", targetNamespace = "") int from,
                                                     @WebParam(name = "size", targetNamespace = "") int size);
@@ -54,12 +60,10 @@ public interface OrganizationDataService {
 
     @WebMethod
     public int getNumOfParentOrganizations(@WebParam(name = "orgId", targetNamespace = "") String orgId,
-                                           @WebParam(name = "parentClassification", targetNamespace = "") String parentClassification,
                                            @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
     @WebMethod
     public int getNumOfChildOrganizations(@WebParam(name = "orgId", targetNamespace = "") String orgId,
-                                          @WebParam(name = "childClassification", targetNamespace = "") String childClassification,
                                           @WebParam(name = "requesterId", targetNamespace = "") String requesterId);
 
 
@@ -92,5 +96,11 @@ public interface OrganizationDataService {
     public Response removeChildOrganization(@WebParam(name = "organizationId", targetNamespace = "") String organizationId,
                                             @WebParam(name = "childOrganizationId", targetNamespace = "") String childOrganizationId);
 
-
+    @WebMethod
+    public Response canAddUserToOrganization(@WebParam(name = "organizationId", targetNamespace = "") String organizationId,
+                                            @WebParam(name = "userId", targetNamespace = "") String userId);
+    
+    @WebMethod
+    public Response canRemoveUserToOrganization(@WebParam(name = "organizationId", targetNamespace = "") String organizationId,
+            									@WebParam(name = "userId", targetNamespace = "") String userId);
 }

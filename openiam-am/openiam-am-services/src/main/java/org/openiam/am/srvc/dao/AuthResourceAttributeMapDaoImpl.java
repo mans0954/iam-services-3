@@ -50,25 +50,26 @@ public class AuthResourceAttributeMapDaoImpl extends BaseDaoImpl<AuthResourceAtt
                 }
             }
 
-            if (StringUtils.isNotEmpty(attribute.getAmAttributeId())) {
-                String amAttributeName = attribute.getAmAttributeId();
-                MatchMode matchMode = null;
-                if (StringUtils.indexOf(amAttributeName, "*") == 0) {
-                    matchMode = MatchMode.END;
-                    amAttributeName = amAttributeName.substring(1);
-                }
-                if (StringUtils.isNotEmpty(amAttributeName) && StringUtils.indexOf(amAttributeName, "*") == amAttributeName.length() - 1) {
-                    amAttributeName = amAttributeName.substring(0, amAttributeName.length() - 1);
-                    matchMode = (matchMode == MatchMode.END) ? MatchMode.ANYWHERE : MatchMode.START;
-                }
-
-                if (StringUtils.isNotEmpty(amAttributeName)) {
-                    if (matchMode != null) {
-                        criteria.add(Restrictions.ilike("amAttributeId", amAttributeName, matchMode));
-                    } else {
-                        criteria.add(Restrictions.eq("amAttributeId", amAttributeName));
-                    }
-                }
+            if (StringUtils.isNotEmpty(attribute.getAmResAttributeId())) {
+                criteria.add(Restrictions.eq("amResAttributeId", attribute.getAmResAttributeId()));
+//                String amAttributeName = attribute.getAmResAttributeId();
+//                MatchMode matchMode = null;
+//                if (StringUtils.indexOf(amAttributeName, "*") == 0) {
+//                    matchMode = MatchMode.END;
+//                    amAttributeName = amAttributeName.substring(1);
+//                }
+//                if (StringUtils.isNotEmpty(amAttributeName) && StringUtils.indexOf(amAttributeName, "*") == amAttributeName.length() - 1) {
+//                    amAttributeName = amAttributeName.substring(0, amAttributeName.length() - 1);
+//                    matchMode = (matchMode == MatchMode.END) ? MatchMode.ANYWHERE : MatchMode.START;
+//                }
+//
+//                if (StringUtils.isNotEmpty(amAttributeName)) {
+//                    if (matchMode != null) {
+//                        criteria.add(Restrictions.ilike("amResAttributeId", amAttributeName, matchMode));
+//                    } else {
+//                        criteria.add(Restrictions.eq("amResAttributeId", amAttributeName));
+//                    }
+//                }
             }
 
         }

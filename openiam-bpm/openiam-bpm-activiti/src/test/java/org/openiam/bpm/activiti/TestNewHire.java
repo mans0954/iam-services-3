@@ -78,8 +78,6 @@ public class TestNewHire extends AbstractTestNGSpringContextTests {
 		  user.setBldgNum(rs());
 		  user.setCity(rs());
 		  user.setClassification(rs());
-		  user.setCompanyId(rs());
-		  user.setCompanyOwnerId(rs());
 		  user.setCostCenter(rs());
 		  user.setCountry(rs());
 		  user.setCountryCd(rs());

@@ -5,6 +5,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.openiam.idm.searchbeans.AddressSearchBean;
+import org.openiam.idm.searchbeans.EmailSearchBean;
+import org.openiam.idm.searchbeans.PhoneSearchBean;
 import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
@@ -110,6 +113,8 @@ public interface UserDataService {
 
     public List<AddressEntity> getAddressList(String userId, Integer size, Integer from);
 
+    public List<AddressEntity> getAddressList(AddressSearchBean searchBean, Integer size, Integer from);
+
     public void addPhone(PhoneEntity val);
 
     public void addPhoneSet(Collection<PhoneEntity> phoneList);
@@ -125,6 +130,8 @@ public interface UserDataService {
     public List<PhoneEntity> getPhoneList(String userId);
 
     public List<PhoneEntity> getPhoneList(String userId, Integer size, Integer from);
+
+    public List<PhoneEntity> getPhoneList(PhoneSearchBean searchBean, Integer size, Integer from);
 
     public void addEmailAddress(EmailAddressEntity val);
 
@@ -142,7 +149,11 @@ public interface UserDataService {
 
     public List<EmailAddressEntity> getEmailAddressList(String userId, Integer size, Integer from);
 
+    public List<EmailAddressEntity> getEmailAddressList(EmailSearchBean searchBean, Integer size, Integer from);
+
     public void addSupervisor(SupervisorEntity supervisor);
+
+    public void addSuperior(String supervisorId, String subordinateId);
 
     public void updateSupervisor(SupervisorEntity supervisor);
 
@@ -158,6 +169,20 @@ public interface UserDataService {
      * @return
      */
     public List<SupervisorEntity> getSupervisors(String employeeId);
+
+    public SupervisorEntity findSupervisor(String superiorId, String subordinateId);
+
+    public List<UserEntity> getSuperiors(String userId, Integer from, Integer size);
+
+    public int getSuperiorsCount(String userId);
+
+    public List<UserEntity> getSubordinates(String userId, Integer from, Integer size);
+
+    public int getSubordinatesCount(String userId);
+
+    public List<UserEntity> findPotentialSupSubs(UserSearchBean searchBean, Integer from, Integer size);
+
+    public int findPotentialSupSubsCount(UserSearchBean searchBean);
 
     /**
      * Returns a list of Supervisor objects that represents the employees or
@@ -218,4 +243,6 @@ public interface UserDataService {
     public Map<String, UserAttribute> getUserAttributesDto(String userId);
 
     public Map<String, UserAttributeEntity> getUserAttributes(String userId);
+
+    List<UserEntity> getByExample(UserSearchBean searchBean);
 }

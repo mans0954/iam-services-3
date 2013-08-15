@@ -38,7 +38,6 @@ public class IdentityQuestionSearchBean extends AbstractSearchBean<IdentityQuest
 		this.groupId = groupId;
 	}
 
-
 	public void setActive(Boolean active) {
 		this.active = active;
 	}

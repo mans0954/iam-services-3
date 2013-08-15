@@ -19,12 +19,18 @@ import org.openiam.idm.srvc.meta.dto.PageTempate;
 @XmlType(name = "NewUserProfileRequestModel", 
 	propOrder = { 
         "roleIds",
-        "loginList"
+        "groupIds",
+        "loginList",
+        "organizationIds",
+        "supervisorIds"
 })
 public class NewUserProfileRequestModel extends UserProfileRequestModel implements Serializable {
 
 	private List<Login> loginList;
 	private List<String> roleIds;
+	private List<String> groupIds;
+	private List<String> supervisorIds;
+	private List<String> organizationIds;
 
 	public List<String> getRoleIds() {
 		return roleIds;
@@ -50,4 +56,30 @@ public class NewUserProfileRequestModel extends UserProfileRequestModel implemen
 			this.loginList.add(login);
 		}
 	}
+
+	public List<String> getGroupIds() {
+		return groupIds;
+	}
+
+	public void setGroupIds(List<String> groupIds) {
+		this.groupIds = groupIds;
+	}
+
+	public List<String> getSupervisorIds() {
+		return supervisorIds;
+	}
+
+	public void setSupervisorIds(List<String> supervisorIds) {
+		this.supervisorIds = supervisorIds;
+	}
+
+	public List<String> getOrganizationIds() {
+		return organizationIds;
+	}
+
+	public void setOrganizationIds(List<String> organizationIds) {
+		this.organizationIds = organizationIds;
+	}
+
+	
 }

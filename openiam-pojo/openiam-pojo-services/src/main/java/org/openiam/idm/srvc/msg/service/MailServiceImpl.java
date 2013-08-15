@@ -6,7 +6,6 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.annotation.PostConstruct;
 import javax.jws.WebService;
 
 import org.apache.commons.lang.StringUtils;
@@ -15,17 +14,12 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.idm.srvc.audit.service.AuditHelper;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDataService;
-import org.openiam.idm.srvc.user.ws.UserDataWebService;
 import org.openiam.script.ScriptIntegration;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.factory.config.PropertiesFactoryBean;
-import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
@@ -184,7 +178,7 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 
 		message.setBodyType(isHtmlFormat ? Message.BodyType.HTML_TEXT
 				: Message.BodyType.PLAIN_TEXT);
-		if (attachmentPath != null && from.length() > 0) {
+		if (attachmentPath != null) {
 			for (String attachmentPathString : attachmentPath) {
 				message.addAttachments(attachmentPathString);
 			}
@@ -201,9 +195,7 @@ public class MailServiceImpl implements MailService, ApplicationContextAware {
 	 * @return
 	 */
 	private boolean isEmailValid(String email) {
-		String expression = "^[\\w\\.-]+@([\\w\\-]+\\.)+[A-Z]{2,4}$";
-
-		Pattern pattern = Pattern.compile(expression, Pattern.CASE_INSENSITIVE);
+		Pattern pattern = Pattern.compile(MAIL_REGEXP, Pattern.CASE_INSENSITIVE);
 		Matcher matcher = pattern.matcher(email);
 		return matcher.matches();
 	}

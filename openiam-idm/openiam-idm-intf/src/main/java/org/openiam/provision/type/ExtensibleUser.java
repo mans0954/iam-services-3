@@ -51,7 +51,9 @@ public class ExtensibleUser extends ExtensibleObject {
 	protected List<ExtensibleGroup> group = new ArrayList<ExtensibleGroup>();
 	protected List<ExtensibleRole> role = new ArrayList<ExtensibleRole>();
 
-
+    public ExtensibleUser(){
+        extensibleObjectType= ExtensibleObjectType.USER;
+    }
 	
 
 	public List<ExtensibleGroup> getGroup() {

@@ -62,6 +62,14 @@ public class MetadataElementPageTemplateEntity implements Serializable {
     @Fetch(FetchMode.SUBSELECT)
     private Set<URIPatternEntity> uriPatterns;
     
+    @ManyToOne(fetch=FetchType.EAGER)
+    @JoinColumn(name = "TEMPLATE_TYPE_ID", insertable=true, updatable=true, nullable=false)
+    @Fetch(FetchMode.JOIN)
+    private MetadataTemplateTypeEntity templateType;
+    
+    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "template", fetch = FetchType.LAZY)
+    private Set<MetadataFieldTemplateXrefEntity> fieldXrefs;
+    
 	@Column(name = "IS_PUBLIC", nullable = false)
 	@Type(type = "yes_no")
 	private boolean isPublic = true;
@@ -123,16 +131,36 @@ public class MetadataElementPageTemplateEntity implements Serializable {
 	public void setPublic(boolean isPublic) {
 		this.isPublic = isPublic;
 	}
+	
+	
+
+	public MetadataTemplateTypeEntity getTemplateType() {
+		return templateType;
+	}
+
+	public void setTemplateType(MetadataTemplateTypeEntity templateType) {
+		this.templateType = templateType;
+	}
+
+	public Set<MetadataFieldTemplateXrefEntity> getFieldXrefs() {
+		return fieldXrefs;
+	}
+
+	public void setFieldXrefs(Set<MetadataFieldTemplateXrefEntity> fieldXrefs) {
+		this.fieldXrefs = fieldXrefs;
+	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result + (isPublic ? 1231 : 1237);
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result
 				+ ((resource == null) ? 0 : resource.hashCode());
-		result = prime * result + (isPublic ? 1231 : 1237);
+		result = prime * result
+				+ ((templateType == null) ? 0 : templateType.hashCode());
 		return result;
 	}
 
@@ -150,6 +178,8 @@ public class MetadataElementPageTemplateEntity implements Serializable {
 				return false;
 		} else if (!id.equals(other.id))
 			return false;
+		if (isPublic != other.isPublic)
+			return false;
 		if (name == null) {
 			if (other.name != null)
 				return false;
@@ -160,11 +190,22 @@ public class MetadataElementPageTemplateEntity implements Serializable {
 				return false;
 		} else if (!resource.equals(other.resource))
 			return false;
-		if (isPublic != other.isPublic)
+		if (templateType == null) {
+			if (other.templateType != null)
+				return false;
+		} else if (!templateType.equals(other.templateType))
 			return false;
 		return true;
 	}
 
+	@Override
+	public String toString() {
+		return "MetadataElementPageTemplateEntity [id=" + id + ", name=" + name
+				+ ", resource=" + resource + ", templateType=" + templateType
+				+ ", isPublic=" + isPublic + "]";
+	}
+
+	
 	
 	
 }

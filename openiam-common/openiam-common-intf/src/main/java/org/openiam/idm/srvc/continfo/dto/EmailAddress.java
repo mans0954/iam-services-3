@@ -27,7 +27,9 @@ import javax.xml.bind.annotation.XmlType;
         "name",
         "operation",
         "lastUpdate",
-        "createDate"
+        "createDate",
+        "metadataTypeId",
+        "typeDescription"
 })
 @DozerDTOCorrespondence(EmailAddressEntity.class)
 public class EmailAddress implements Serializable {
@@ -53,6 +55,10 @@ public class EmailAddress implements Serializable {
     
     @XmlSchemaType(name = "dateTime")
     private Date createDate;
+
+    private String metadataTypeId;
+    private String typeDescription;
+
     // Constructors
 
     /**
@@ -85,6 +91,7 @@ public class EmailAddress implements Serializable {
         this.isActive = emailAdr.getIsActive();
         this.isDefault = emailAdr.getIsDefault();
         this.name = emailAdr.getName();
+        this.metadataTypeId=emailAdr.getMetadataTypeId();
     }
 
     public String getParentId() {
@@ -174,7 +181,24 @@ public class EmailAddress implements Serializable {
         this.createDate = createDate;
     }
 
-	@Override
+
+    public String getMetadataTypeId() {
+        return metadataTypeId;
+    }
+
+    public void setMetadataTypeId(String metadataTypeId) {
+        this.metadataTypeId = metadataTypeId;
+    }
+
+    public String getTypeDescription() {
+        return typeDescription;
+    }
+
+    public void setTypeDescription(String typeDescription) {
+        this.typeDescription = typeDescription;
+    }
+
+    @Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
@@ -194,6 +218,8 @@ public class EmailAddress implements Serializable {
 				+ ((operation == null) ? 0 : operation.hashCode());
 		result = prime * result
 				+ ((parentId == null) ? 0 : parentId.hashCode());
+        result = prime * result
+                + ((metadataTypeId == null) ? 0 : metadataTypeId.hashCode());
 		return result;
 	}
 
@@ -247,6 +273,12 @@ public class EmailAddress implements Serializable {
 				return false;
 		} else if (!parentId.equals(other.parentId))
 			return false;
+
+        if (metadataTypeId == null) {
+            if (other.metadataTypeId != null)
+                return false;
+        } else if (!metadataTypeId.equals(other.metadataTypeId))
+            return false;
 		return true;
 	}
 }

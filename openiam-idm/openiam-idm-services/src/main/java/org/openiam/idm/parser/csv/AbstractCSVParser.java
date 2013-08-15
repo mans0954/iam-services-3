@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,11 +15,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.am.srvc.constants.CSVSource;
 import org.openiam.am.srvc.constants.UserFields;
+import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
+import org.openiam.idm.srvc.mngsys.domain.AttributeMapUtil;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
-import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.recon.dto.ReconciliationObject;
+import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultField;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 public abstract class AbstractCSVParser<T, E extends Enum<E>> {
@@ -47,14 +51,11 @@ public abstract class AbstractCSVParser<T, E extends Enum<E>> {
         for (AttributeMapEntity a : attrMap) {
             String objValue = object.get(a.getAttributeName());
             if (StringUtils.hasText(objValue)) {
-                if (a.getReconResAttribute() != null
-                        && a.getReconResAttribute().getAttributePolicy()
-                                .getName() != null) {
+                String name = AttributeMapUtil.getAttributeIDMFieldName(a);
+                if (name != null) {
                     E fieldValue;
                     try {
-                        fieldValue = Enum.valueOf(clazz2, a
-                                .getReconResAttribute().getAttributePolicy()
-                                .getName());
+                        fieldValue = Enum.valueOf(clazz2, name);
                     } catch (IllegalArgumentException e) {
                         log.info(e.getMessage());
                         fieldValue = Enum.valueOf(clazz2, "DEFAULT");
@@ -68,6 +69,50 @@ public abstract class AbstractCSVParser<T, E extends Enum<E>> {
         }
         csvObject.setObject(obj);
         return csvObject;
+    }
+
+    protected T reconRowToObject(Class<T> clazz, Class<E> clazz2,
+            List<ReconciliationResultField> header,
+            List<ReconciliationResultField> fields, T baseEntity,
+            boolean onlyKeyField) throws InstantiationException,
+            IllegalAccessException {
+        if (header == null || fields == null)
+            return null;
+        T obj = null;
+        if (baseEntity == null) {
+            obj = clazz.newInstance();
+        } else {
+            obj = baseEntity;
+        }
+
+        for (int i = 0; i < header.size(); i++) {
+            if (CollectionUtils.isEmpty(header.get(i).getValues())
+                    || CollectionUtils.isEmpty(fields.get(i).getValues())) {
+                continue;
+            }
+            E fieldValue = null;
+            try {
+                if (onlyKeyField) {
+                    if (header.get(i).isKeyField()) {
+                        fieldValue = Enum.valueOf(clazz2, header.get(i)
+                                .getValues().get(1));
+                        this.putValueInDTO(obj, fieldValue, fields.get(i)
+                                .getValues().get(0));
+                        break;
+                    }
+                } else {
+                    fieldValue = Enum.valueOf(clazz2, header.get(i).getValues()
+                            .get(1));
+                    this.putValueInDTO(obj, fieldValue, fields.get(i)
+                            .getValues().get(0));
+                }
+            } catch (IllegalArgumentException e) {
+                log.info(e.getMessage());
+                fieldValue = Enum.valueOf(clazz2, "DEFAULT");
+            }
+        }
+
+        return obj;
     }
 
     protected abstract void putValueInDTO(T obj, E field, String value);
@@ -214,9 +259,9 @@ public abstract class AbstractCSVParser<T, E extends Enum<E>> {
                             am.getMapForObjectType())) {
                         E fields;
                         try {
-                            fields = Enum.valueOf(clazz, am
-                                    .getReconResAttribute()
-                                    .getAttributePolicy().getName());
+                            String name = AttributeMapUtil
+                                    .getAttributeIDMFieldName(am);
+                            fields = Enum.valueOf(clazz, name);
                         } catch (IllegalArgumentException illegalArgumentException) {
                             log.info(illegalArgumentException.getMessage());
                             fields = Enum.valueOf(clazz, "DEFAULT");
@@ -294,19 +339,23 @@ public abstract class AbstractCSVParser<T, E extends Enum<E>> {
         return objects;
     }
 
-    public Map<String, String> convertToMap(List<AttributeMapEntity> attrMap,
-            ReconciliationObject<T> obj, Class<E> clazz) {
+    public Map<String, ReconciliationResultField> convertToMap(
+            List<AttributeMapEntity> attrMap, ReconciliationObject<T> obj,
+            Class<E> clazz) {
         String[] values = this.objectToCSV(attrMap, obj, clazz);
         String[] header_ = this.generateHeader(attrMap)
                 .replace(String.valueOf(END_OF_LINE), "")
                 .split(String.valueOf(SEPARATOR));
-        Map<String, String> result = new HashMap<String, String>(0);
+        Map<String, ReconciliationResultField> result = new HashMap<String, ReconciliationResultField>(
+                0);
         if (values.length != header_.length) {
             log.error("CSV internal error");
             return null;
         }
         for (int i = 0; i < header_.length; i++) {
-            result.put(header_[i], values[i]);
+            ReconciliationResultField field = new ReconciliationResultField();
+            field.setValues(Arrays.asList(values[i]));
+            result.put(header_[i], field);
         }
         return result;
     }
@@ -316,22 +365,20 @@ public abstract class AbstractCSVParser<T, E extends Enum<E>> {
         ReconciliationObject<T> object = new ReconciliationObject<T>();
         object.setObject(pu);
         for (AttributeMapEntity a : attrMap) {
-            if (a.getReconResAttribute() != null
-                    && a.getReconResAttribute().getAttributePolicy().getName() != null) {
+            String name = AttributeMapUtil.getAttributeIDMFieldName(a);
+            if (name != null) {
                 if (PRINCIPAL_OBJECT.equals(a.getMapForObjectType())) {
                     E fieldValue;
                     try {
-                        fieldValue = Enum.valueOf(enumClass, a
-                                .getReconResAttribute().getAttributePolicy()
-                                .getName());
+                        fieldValue = Enum.valueOf(enumClass, name);
                     } catch (IllegalArgumentException e) {
                         log.info(e.getMessage());
                         fieldValue = Enum.valueOf(enumClass, "DEFAULT");
                     }
-                    object.setPrincipal(this.putValueIntoString(pu, fieldValue)
-                            .replaceFirst("^0*", ""));
+                    object.setPrincipal(this.putValueIntoString(pu, fieldValue));
                 }
             }
+
         }
         return object;
     }
@@ -382,5 +429,9 @@ public abstract class AbstractCSVParser<T, E extends Enum<E>> {
         } else {
             throw new Exception("Can't work with CSV");
         }
+    }
+
+    public String getObjectSimlpeClass(Class<T> clazz) {
+        return clazz.getSimpleName();
     }
 }

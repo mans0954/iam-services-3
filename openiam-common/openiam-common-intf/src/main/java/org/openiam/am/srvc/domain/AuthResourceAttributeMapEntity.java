@@ -24,8 +24,8 @@ public class AuthResourceAttributeMapEntity implements Serializable {
     private String providerId;
     @Column(name="TARGET_ATTRIBUTE_NAME", length=100, nullable = false)
     private String targetAttributeName;
-    @Column(name="AM_ATTRIBUTE_ID", length=100, nullable = true)
-    private String amAttributeId;
+    @Column(name="AM_RES_ATTRIBUTE_ID", length=32, nullable = true)
+    private String amResAttributeId;
     @Column(name="AM_POLICY_URL", length=100, nullable = true)
     private String amPolicyUrl;
 
@@ -41,7 +41,7 @@ public class AuthResourceAttributeMapEntity implements Serializable {
     private AuthProviderEntity provider;
 
     @ManyToOne(fetch = FetchType.LAZY,cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH}, optional = true)
-    @JoinColumn(name="AM_ATTRIBUTE_ID", referencedColumnName = "AM_ATTRIBUTE_ID", insertable = false, updatable = false)
+    @JoinColumn(name="AM_RES_ATTRIBUTE_ID", referencedColumnName = "AM_RES_ATTRIBUTE_ID", insertable = false, updatable = false)
     private AuthResourceAMAttributeEntity amAttribute;
 
     public String getAttributeMapId() {
@@ -76,12 +76,12 @@ public class AuthResourceAttributeMapEntity implements Serializable {
         this.provider = provider;
     }
 
-    public String getAmAttributeId() {
-        return amAttributeId;
+    public String getAmResAttributeId() {
+        return amResAttributeId;
     }
 
-    public void setAmAttributeId(String amAttributeId) {
-        this.amAttributeId = amAttributeId;
+    public void setAmResAttributeId(String amResAttributeId) {
+        this.amResAttributeId = amResAttributeId;
     }
 
     public String getAmPolicyUrl() {

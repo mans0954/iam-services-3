@@ -11,6 +11,7 @@ import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.connector.type.request.SuspendResumeRequest;
 import org.openiam.idm.srvc.audit.service.AuditHelper;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
@@ -19,9 +20,6 @@ import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
-import org.openiam.spml2.msg.PSOIdentifierType;
-import org.openiam.spml2.msg.suspend.ResumeRequestType;
-import org.openiam.spml2.msg.suspend.SuspendRequestType;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -128,10 +126,9 @@ public class DisableUserDelegate {
                         // suspend
                         log.debug("preparing suspendRequest object");
 
-                        SuspendRequestType suspendReq = new SuspendRequestType();
-                        PSOIdentifierType idType = new PSOIdentifierType(lg
-                                .getLogin(), null, managedSysId);
-                        suspendReq.setPsoID(idType);
+                        SuspendResumeRequest suspendReq = new SuspendResumeRequest();
+                        suspendReq.setObjectIdentity(lg.getLogin());
+                        suspendReq.setTargetID(managedSysId);
                         suspendReq.setRequestID(requestId);
                         connectorAdapter.suspendRequest(mSys, suspendReq,
                                 muleContext);
@@ -146,10 +143,9 @@ public class DisableUserDelegate {
                         lg.setPasswordChangeCount(0);
                         loginManager.updateLogin(lg);
 
-                        ResumeRequestType resumeReq = new ResumeRequestType();
-                        PSOIdentifierType idType = new PSOIdentifierType(lg
-                                .getLogin(), null, managedSysId);
-                        resumeReq.setPsoID(idType);
+                        SuspendResumeRequest resumeReq = new SuspendResumeRequest();
+                        resumeReq.setObjectIdentity(lg.getLogin());
+                        resumeReq.setTargetID(managedSysId);
                         resumeReq.setRequestID(requestId);
                         connectorAdapter.resumeRequest(mSys, resumeReq,
                                 muleContext);

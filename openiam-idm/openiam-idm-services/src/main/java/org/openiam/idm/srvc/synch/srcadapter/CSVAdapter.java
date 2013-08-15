@@ -31,7 +31,6 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
-import org.openiam.idm.srvc.audit.service.AuditHelper;
 import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.idm.srvc.synch.dto.LineObject;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
@@ -41,11 +40,10 @@ import org.openiam.idm.srvc.synch.service.TransformScript;
 import org.openiam.idm.srvc.synch.service.ValidationScript;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
-import org.openiam.idm.srvc.user.ws.UserResponse;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.service.ProvisionService;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.*;
 import java.text.DateFormat;
@@ -101,7 +99,7 @@ public class CSVAdapter extends AbstractSrcAdapter {
             //initialization if validation script config exists
             final ValidationScript validationScript = StringUtils.isNotEmpty(config.getValidationRule()) ? SynchScriptFactory.createValidationScript(config.getValidationRule()) : null;
             //initialization if transformation script config exists
-            final TransformScript transformScript = StringUtils.isNotEmpty(config.getTransformationRule()) ? SynchScriptFactory.createTransformationScript(config.getTransformationRule()) : null;
+            final List<TransformScript> transformScripts = SynchScriptFactory.createTransformationScript(config);
             //init match rules
             final MatchObjectRule matchRule = matchRuleFactory.create(config);
             //Get Header
@@ -128,7 +126,7 @@ public class CSVAdapter extends AbstractSrcAdapter {
                     results.add(service.submit(new Runnable() {
                         @Override
                         public void run() {
-                            proccess(config, provService, synchStartLog, part, validationScript, transformScript, matchRule, rowHeader, startIndex);
+                            proccess(config, provService, synchStartLog, part, validationScript, transformScripts, matchRule, rowHeader, startIndex);
                         }
                     }));
                     //Give 30sec time for thread to be UP (load all cache and begin the work)
@@ -210,7 +208,7 @@ public class CSVAdapter extends AbstractSrcAdapter {
         return new SyncResponse(ResponseStatus.SUCCESS);
     }
 
-    private void proccess(SynchConfig config, ProvisionService provService, IdmAuditLog synchStartLog, String[][] rows, final ValidationScript validationScript, final TransformScript transformScript, MatchObjectRule matchRule, LineObject rowHeader, int ctr) {
+    private void proccess(SynchConfig config, ProvisionService provService, IdmAuditLog synchStartLog, String[][] rows, final ValidationScript validationScript, final List<TransformScript> transformScripts, MatchObjectRule matchRule, LineObject rowHeader, int ctr) {
         for (String[] row : rows) {
             log.info("*** Record counter: " + ctr++);
 
@@ -255,29 +253,32 @@ public class CSVAdapter extends AbstractSrcAdapter {
 
             // transform
             int retval = -1;
-            if (transformScript != null) {
-                synchronized (mutex) {
-                    transformScript.init();
+            if (transformScripts != null && transformScripts.size() > 0) {
 
-                    // initialize the transform script
-                    if (usr != null) {
-                        transformScript.setNewUser(false);
-                        transformScript.setUser(userDozerConverter.convertToDTO(userManager.getUser(usr.getUserId()), true));
-                        transformScript.setPrincipalList(loginManager.getLoginByUser(usr.getUserId()));
-                        transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getUserId()));
+                for (TransformScript transformScript : transformScripts) {
+                    synchronized (mutex) {
+                        transformScript.init();
 
-                    } else {
-                        transformScript.setNewUser(true);
-                        transformScript.setUser(null);
-                        transformScript.setPrincipalList(null);
-                        transformScript.setUserRoleList(null);
+                        // initialize the transform script
+                        if (usr != null) {
+                            transformScript.setNewUser(false);
+                            transformScript.setUser(userDozerConverter.convertToDTO(userManager.getUser(usr.getUserId()), false));
+                            transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getUserId()), false));
+                            transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getUserId()));
+
+                        } else {
+                            transformScript.setNewUser(true);
+                            transformScript.setUser(null);
+                            transformScript.setPrincipalList(null);
+                            transformScript.setUserRoleList(null);
+                        }
+
+                        log.info(" - Execute transform script");
+
+                        retval = transformScript.execute(rowObj, pUser);
                     }
-
-                    log.info(" - Execute transform script");
-
-                    retval = transformScript.execute(rowObj, pUser);
+                    log.info(" - Execute complete transform script");
                 }
-                log.info(" - Execute complete transform script");
 
                 pUser.setSessionId(synchStartLog.getSessionId());
                 if (retval != -1) {

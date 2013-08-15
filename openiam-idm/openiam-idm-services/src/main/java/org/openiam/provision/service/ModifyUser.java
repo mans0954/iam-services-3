@@ -184,7 +184,7 @@ public class ModifyUser {
             log.debug("- Adding original affiliationList to the user object");
 
             List<Organization> userAffiliations = orgManager
-                    .getOrganizationsForUser(user.getUserId(), null);
+                    .getOrganizationsForUser(user.getUserId(), null, 0,Integer.MAX_VALUE);
             if (userAffiliations != null && !userAffiliations.isEmpty()) {
 
                 user.setUserAffiliations(userAffiliations);
@@ -862,7 +862,7 @@ public class ModifyUser {
     public void updateUserOrgAffiliation(String userId,
             List<Organization> newOrgList) {
         List<Organization> currentOrgList = orgManager
-                .getOrganizationsForUser(userId, null);
+                .getOrganizationsForUser(userId, null, 0, Integer.MAX_VALUE);
 
         if (newOrgList == null) {
             return;
@@ -877,12 +877,12 @@ public class ModifyUser {
                     || o.getOperation() == AttributeOperationEnum.NO_CHANGE) {
 
                 if (!inCurList) {
-                    orgManager.addUserToOrg(o.getOrgId(), userId);
+                    orgManager.addUserToOrg(o.getId(), userId);
                 }
 
             } else if (o.getOperation() == AttributeOperationEnum.DELETE) {
                 if (inCurList) {
-                    orgManager.removeUserFromOrg(o.getOrgId(), userId);
+                    orgManager.removeUserFromOrg(o.getId(), userId);
                 }
             }
 
@@ -894,7 +894,7 @@ public class ModifyUser {
             List<Organization> curOrgList) {
         if (curOrgList != null) {
             for (Organization o : curOrgList) {
-                if (o.getOrgId().equals(newOrg.getOrgId())) {
+                if (o.getId().equals(newOrg.getId())) {
 
                     return true;
                 }
@@ -983,12 +983,12 @@ public class ModifyUser {
                     roleDataService.removeUserFromRole(rl.getRoleId(), userId);
 
                     logList.add(auditHelper.createLogObject("REMOVE ROLE",
-                            pUser.getRequestorDomain(), pUser
+                            pUser.getRequestorDomain(), pUser.getUser()
                                     .getRequestorLogin(), "IDM SERVICE", user
                                     .getCreatedBy(), "0", "USER", user
                                     .getUserId(), null, "SUCCESS", null,
                             "USER_STATUS", user.getStatus().toString(), "NA",
-                            null, null, null, rl.getRoleId(), pUser
+                            null, null, null, rl.getRoleId(), pUser.getUser()
                                     .getRequestClientIP(), primaryIdentity
                                     .getLogin(), primaryIdentity
                                     .getDomainId()));
@@ -1016,12 +1016,12 @@ public class ModifyUser {
                     roleList.add(r);
                     roleDataService.addUserToRole(r.getRoleId(), userId);
 
-                    logList.add(auditHelper.createLogObject("ADD ROLE", pUser
+                    logList.add(auditHelper.createLogObject("ADD ROLE", pUser.getUser()
                             .getRequestorDomain(), pUser.getRequestorLogin(),
                             "IDM SERVICE", user.getCreatedBy(), "0", "USER",
                             user.getUserId(), null, "SUCCESS", null,
                             "USER_STATUS", user.getStatus().toString(), "NA",
-                            null, null, null, r.getRoleId(), pUser
+                            null, null, null, r.getRoleId(), pUser.getUser()
                                     .getRequestClientIP(), primaryIdentity
                                     .getLogin(), primaryIdentity
                                     .getDomainId()));

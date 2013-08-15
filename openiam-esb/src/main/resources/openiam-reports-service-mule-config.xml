@@ -9,9 +9,9 @@
 
 		<!-- Web Services  -->
    <model name="reportServiceModel">
-		<service name="reportService">
+		<service name="webReportService">
 			<inbound>
-				<inbound-endpoint address="${webservice.path}ReportService" exchange-pattern="request-response">
+				<inbound-endpoint address="${webservice.path}WebReportService" exchange-pattern="request-response">
 			        <cxf:jaxws-service />
 			    </inbound-endpoint>
 			</inbound>

@@ -11,6 +11,8 @@ import org.openiam.bpm.request.ActivitiRequestDecision;
 import org.openiam.bpm.request.GenericWorkflowRequest;
 import org.openiam.bpm.request.HistorySearchBean;
 import org.openiam.bpm.response.NewHireResponse;
+import org.openiam.bpm.response.ProcessWrapper;
+import org.openiam.bpm.response.TaskHistoryWrapper;
 import org.openiam.bpm.response.TaskListWrapper;
 import org.openiam.bpm.response.TaskWrapper;
 import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
@@ -29,6 +31,9 @@ public interface ActivitiService {
 	public Response initiateWorkflow(final GenericWorkflowRequest request);
 	
 	@WebMethod
+	public SaveTemplateProfileResponse initiateEditUserWorkflow(final UserProfileRequestModel request);
+	
+	@WebMethod
 	public SaveTemplateProfileResponse initiateNewHireRequest(final NewUserProfileRequestModel newHireRequest);
 	
 	@WebMethod
@@ -44,7 +49,13 @@ public interface ActivitiService {
 	public TaskWrapper getTask(final String taskId);
 	
 	@WebMethod
+	public TaskWrapper getTaskFromHistory(final String taskId);
+	
+	@WebMethod
 	public List<TaskWrapper> getHistory(final HistorySearchBean searchBean, final int from, final int size);
+	
+	@WebMethod
+	public List<TaskHistoryWrapper> getHistoryForInstance(final String instanceId);
 	
 	@WebMethod
 	public int count(final HistorySearchBean searchBean);

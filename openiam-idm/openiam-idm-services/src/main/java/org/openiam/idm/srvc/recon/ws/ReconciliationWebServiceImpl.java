@@ -21,22 +21,18 @@
  */
 package org.openiam.idm.srvc.recon.ws;
 
-import java.util.HashSet;
-import java.util.Set;
-
+import javax.jws.WebParam;
 import javax.jws.WebService;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.mule.api.MuleContext;
 import org.mule.api.context.MuleContextAware;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.dozer.converter.ReconciliationSituationDozerConverter;
+import org.openiam.idm.searchbeans.ManualReconciliationSearchBean;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.idm.srvc.recon.dto.ReconciliationResponse;
-import org.openiam.idm.srvc.recon.dto.ReconciliationSituation;
+import org.openiam.idm.srvc.recon.result.dto.ReconciliationResultBean;
 import org.openiam.idm.srvc.recon.service.ReconciliationService;
-import org.openiam.idm.srvc.recon.service.ReconciliationSituationDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -61,6 +57,12 @@ public class ReconciliationWebServiceImpl implements ReconciliationWebService,
         }
         return response;
 
+    }
+
+    @Override
+    public String manualReconciliation(ReconciliationResultBean reconciledBean,
+            String resourceId) throws Exception {
+        return reconService.manualReconciliation(reconciledBean, resourceId);
     }
 
     public ReconciliationConfigResponse updateConfig(ReconciliationConfig config) {
@@ -135,5 +137,19 @@ public class ReconciliationWebServiceImpl implements ReconciliationWebService,
         }
         return response;
 
+    }
+
+    @Override
+    public String getReconciliationReport(
+            @WebParam(name = "config", targetNamespace = "") ReconciliationConfig config,
+            @WebParam(name = "reportType", targetNamespace = "") String reportType) {
+        return reconService.getReconciliationReport(config, reportType);
+    }
+
+    @Override
+    public ReconciliationResultBean getReconciliationResult(
+            @WebParam(name = "config", targetNamespace = "") ReconciliationConfig config,
+            @WebParam(name = "searchBean", targetNamespace = "") ManualReconciliationSearchBean searchBean) {
+        return reconService.getReconciliationResult(config, searchBean);
     }
 }

@@ -21,12 +21,17 @@ import org.openiam.authmanager.common.model.AuthorizationResource;
 import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.idm.searchbeans.MetadataElementPageTemplateSearchBean;
+import org.openiam.idm.searchbeans.MetadataTemplateTypeFieldSearchBean;
 import org.openiam.idm.srvc.lang.domain.LanguageEntity;
 import org.openiam.idm.srvc.lang.domain.LanguageMappingEntity;
 import org.openiam.idm.srvc.lang.service.LanguageDAO;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataElementPageTemplateXrefEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataFieldTemplateXrefEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataFieldTemplateXrefIDEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataTemplateTypeEntity;
+import org.openiam.idm.srvc.meta.domain.MetadataTemplateTypeFieldEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataValidValueEntity;
 import org.openiam.idm.srvc.meta.domain.pk.MetadataElementPageTemplateXrefIdEntity;
 import org.openiam.idm.srvc.meta.dto.PageElement;
@@ -35,6 +40,7 @@ import org.openiam.idm.srvc.meta.dto.PageElementValue;
 import org.openiam.idm.srvc.meta.dto.PageTempate;
 import org.openiam.idm.srvc.meta.dto.PageTemplateAttributeToken;
 import org.openiam.idm.srvc.meta.dto.TemplateRequest;
+import org.openiam.idm.srvc.meta.dto.TemplateUIField;
 import org.openiam.idm.srvc.meta.exception.PageTemplateException;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
@@ -79,6 +85,15 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 	
 	@Autowired
 	private UserAttributeDAO attributeDAO;
+	
+	@Autowired
+	private MetadataTemplateTypeEntityDAO templateTypeDAO;
+	
+	@Autowired
+	private MetadataTemplateTypeFieldEntityDAO uiFieldDAO;
+	
+	@Autowired
+	private MetadataFieldTemplateXrefDAO uiFieldXrefDAO;
 	
 	@Autowired
 	private MetadataElementTemplateSearchBeanConverter templateSearchBeanConverter;
@@ -133,6 +148,9 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 	            entity.setResource(resource);
 			}
 			
+			final MetadataTemplateTypeEntity templateType = templateTypeDAO.findById(entity.getTemplateType().getId());
+			entity.setTemplateType(templateType);
+			
 			final Set<URIPatternEntity> transietSet = entity.getUriPatterns();
 			if(CollectionUtils.isNotEmpty(transietSet)) {
 				final Set<URIPatternEntity> persistentSet = new HashSet<URIPatternEntity>();
@@ -167,6 +185,32 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 					}
 				}
 			}
+			
+			final Set<MetadataFieldTemplateXrefEntity> fieldXrefs = new LinkedHashSet<MetadataFieldTemplateXrefEntity>();
+			if(CollectionUtils.isNotEmpty(entity.getFieldXrefs())) {
+				for(final MetadataFieldTemplateXrefEntity xref : entity.getFieldXrefs()) {
+					if(xref != null) {
+						final MetadataFieldTemplateXrefIDEntity id = xref.getId();
+						final String fieldId = id.getFieldId();
+						if(id != null && StringUtils.isNotBlank(fieldId) && templateType.getField(fieldId) != null) {
+							final MetadataFieldTemplateXrefEntity dbXref = uiFieldXrefDAO.findById(id);
+							boolean isRequired = templateType.getField(id.getFieldId()).isRequired() ? true : xref.isRequired();
+							if(dbXref != null) {
+								dbXref.setRequired(isRequired);
+								dbXref.setEditable(xref.isEditable());
+								dbXref.setDisplayOrder(xref.getDisplayOrder());
+								fieldXrefs.add(dbXref);
+							} else {
+								xref.setRequired(isRequired);
+								xref.setTemplate(entity);
+								xref.setField(uiFieldDAO.findById(fieldId));
+								fieldXrefs.add(xref);
+							}
+						}
+					}
+				}
+			}
+			entity.setFieldXrefs(fieldXrefs);
 			entity.setMetadataElements(renewedXrefs);
 			if(StringUtils.isBlank(entity.getId())) {
 				pageTemplateDAO.save(entity);
@@ -229,8 +273,9 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 			 * If the user is unknown (self registration), the template is public, it's an admin request, or if the user is entitled to the template, create one
 			 */
 			if(entity.isPublic() || isAdminRequest || isEntitled(userId, entity.getResource().getResourceId())) {
+				final String templateId = entity.getId();
 				template = new PageTempate();
-				template.setTemplateId(entity.getId());
+				template.setTemplateId(templateId);
 				if(CollectionUtils.isNotEmpty(entity.getMetadataElements())) {
 					for(final MetadataElementPageTemplateXrefEntity xref : entity.getMetadataElements()) {
 						final String elementId = xref.getId().getMetadataElementId();
@@ -272,6 +317,19 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 								}
 							}
 						}
+					}
+				}
+				
+				if(CollectionUtils.isNotEmpty(entity.getFieldXrefs())) {
+					for(final MetadataFieldTemplateXrefEntity xref : entity.getFieldXrefs()) {
+						final MetadataTemplateTypeFieldEntity field = xref.getField();
+						final TemplateUIField uiField = new TemplateUIField();
+						uiField.setId(field.getId());
+						uiField.setName(field.getName());
+						uiField.setRequired(xref.isRequired());
+						uiField.setEditable(xref.isEditable());
+						uiField.setDisplayOrder(xref.getDisplayOrder());
+						template.addUIField(uiField);
 					}
 				}
 			}
@@ -660,4 +718,24 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 		}
 		return elementMap;
 	}
+
+	@Override
+	public MetadataTemplateTypeEntity getTemplateType(String id) {
+		return templateTypeDAO.findById(id);
+	}
+
+	@Override
+	public List<MetadataTemplateTypeEntity> findTemplateTypes(
+			MetadataTemplateTypeEntity entity, int from, int size) {
+		return templateTypeDAO.getByExample(entity, from, size);
+	}
+
+	@Override
+	public List<MetadataTemplateTypeFieldEntity> findUIFields(final MetadataTemplateTypeFieldSearchBean searchBean, final int from, final int size) {
+		return uiFieldDAO.getByExample(searchBean, from, size);
+	}
+    @Override
+    public Integer countUIFields(final MetadataTemplateTypeFieldSearchBean searchBean){
+        return uiFieldDAO.count(searchBean);
+    }
 }

@@ -20,9 +20,7 @@
  */
 package org.openiam.idm.srvc.policy.service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -33,27 +31,16 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.base.ws.exception.BasicDataServiceException;
-import org.openiam.dozer.converter.PolicyAttributeDozerConverter;
-import org.openiam.dozer.converter.PolicyDefDozerConverter;
+import org.openiam.dozer.converter.ITPolicyDozerConverter;
 import org.openiam.dozer.converter.PolicyDefParamDozerConverter;
 import org.openiam.dozer.converter.PolicyDozerConverter;
 import org.openiam.dozer.converter.PolicyObjectAssocDozerConverter;
 import org.openiam.idm.searchbeans.PolicySearchBean;
-import org.openiam.idm.srvc.continfo.domain.AddressEntity;
-import org.openiam.idm.srvc.org.service.OrganizationDataServiceImpl;
-import org.openiam.idm.srvc.policy.domain.PolicyAttributeEntity;
-import org.openiam.idm.srvc.policy.domain.PolicyDefEntity;
-import org.openiam.idm.srvc.policy.domain.PolicyEntity;
-import org.openiam.idm.srvc.policy.domain.PolicyObjectAssocEntity;
+import org.openiam.idm.srvc.policy.domain.*;
+import org.openiam.idm.srvc.policy.dto.ITPolicy;
 import org.openiam.idm.srvc.policy.dto.Policy;
-import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
-import org.openiam.idm.srvc.policy.dto.PolicyDef;
 import org.openiam.idm.srvc.policy.dto.PolicyDefParam;
 import org.openiam.idm.srvc.policy.dto.PolicyObjectAssoc;
-import org.openiam.idm.srvc.res.domain.ResourceEntity;
-import org.openiam.idm.srvc.res.dto.Resource;
-import org.openiam.idm.srvc.searchbean.converter.PolicySearchBeanConverter;
-import org.openiam.idm.srvc.user.domain.UserEntity;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -80,9 +67,9 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 	/** The policy dao. */
 	@Autowired
 	private PolicyDAO policyDao;
-	
-	@Autowired
-	private PolicySearchBeanConverter policySearchBeanConverter;
+
+    @Autowired
+    private ITPolicyDAO itPolicyDao;
 
 	/** The policy def param dao. */
 	@Autowired
@@ -93,7 +80,10 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 
 	/** The policy dozer converter. */
 	@Autowired
-	private PolicyDozerConverter policyDozerConverter;
+    private PolicyDozerConverter policyDozerConverter;
+
+    @Autowired
+    private ITPolicyDozerConverter itPolicyDozerConverter;
 
 	@Autowired
 	private PolicyObjectAssocDozerConverter policyAssocObjectDozerConverter;
@@ -101,10 +91,6 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 	/** The policy def param dozer converter. */
 	@Autowired
 	private PolicyDefParamDozerConverter policyDefParamDozerConverter;
-
-	/** The policy attribute dao. */
-	@Autowired
-	private PolicyAttributeDAO policyAttributeDao;
 
 	/*
 	 * (non-Javadoc)
@@ -368,15 +354,62 @@ public class PolicyDataServiceImpl implements PolicyDataService {
 
 	@Override
 	public List<Policy> findBeans(final PolicySearchBean searchBean, int from, int size) {
-		final PolicyEntity entity = policySearchBeanConverter.convert(searchBean);
-		final List<PolicyEntity> entityList = policyDao.getByExample(entity, from, size);
-		return (entityList != null) ? policyDozerConverter.convertToDTOList(entityList, searchBean.isDeepCopy()) : null;
+        return policyDozerConverter.convertToDTOList(policyDao.getByExample(searchBean, from, size), true);
 	}
 
 	@Override
 	public int count(PolicySearchBean searchBean) {
-		final PolicyEntity entity = policySearchBeanConverter.convert(searchBean);
-		return policyDao.count(entity);
+		return policyDao.count(searchBean);
 	}
+
+    @Override
+    public ITPolicy findITPolicy() {
+        return itPolicyDozerConverter.convertToDTO(itPolicyDao.findITPolicy(), true);
+    }
+
+    @Override
+    public Response resetITPolicy() {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        final ITPolicyEntity itPolicy = itPolicyDao.findITPolicy();
+        if (itPolicy != null) {
+            itPolicyDao.delete(itPolicy);
+        }
+        return response;
+    }
+
+    @Override
+    public Response saveOrUpdateITPolicy(ITPolicy itPolicy) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+
+        try {
+            if (itPolicy == null) {
+                throw new BasicDataServiceException(
+                        ResponseCode.INVALID_ARGUMENTS);
+            }
+
+            final ITPolicy found = findITPolicy();
+            if (found != null && !found.getPolicyId().equals(itPolicy.getPolicyId())) {
+                throw new BasicDataServiceException(ResponseCode.IT_POLICY_EXISTS);
+            }
+            if (found != null) {
+                itPolicy.setCreateDate(found.getCreateDate());
+                itPolicy.setCreatedBy(found.getCreatedBy());
+            }
+            ITPolicyEntity pe = itPolicyDao.merge(
+                    itPolicyDozerConverter.convertToEntity(itPolicy, true));
+            response.setResponseValue(pe.getPolicyId());
+
+        } catch (BasicDataServiceException e) {
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+
+        } catch (Throwable e) {
+            log.error("Can't perform operation", e);
+            response.setErrorText(e.getMessage());
+            response.setStatus(ResponseStatus.FAILURE);
+        }
+
+        return response;
+    }
 
 }

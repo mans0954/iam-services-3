@@ -28,6 +28,7 @@
 		<param-value>classpath:applicationContext.xml,
 					 classpath:am-service-Context.xml,
 					 classpath:idmservice-Context.xml,
+					 classpath:idmservice-nonmule-Context.xml,
 					 classpath:connector-coreContext.xml,
 					 classpath:bpm-context.xml,
                      classpath:authorizationManagerContext.xml

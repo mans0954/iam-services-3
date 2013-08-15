@@ -11,7 +11,15 @@ public enum ActivitiRequestType {
 	REMOVE_USER_FROM_GROUP("removeUserFromGroup", "Remove User From Group"),
 	ENTITLE_USER_TO_RESOURCE("entitleUserToResource", "Entitle User To Resoruce"),
 	DISENTITLE_USR_FROM_RESOURCE("disentitleUserFromResource", "Disentitle User from Resource"),
-	EDIT_USER("editUser", "Edit User");
+	EDIT_USER("editUser", "Edit User"),
+	
+	ADD_USER_TO_ORG("addUserToOrganization", "Add User To Organization"),
+	REMOVE_USER_FROM_ORG("removeUserFromOrganization", "Remove User from Organization"),
+	
+	ATTESTATION("attestationWorkflow", "Attestation"),
+	
+	ADD_SUPERIOR("addSuperior", "Add Superior"),
+	REMOVE_SUPERIOR("removeSuperior", "Remove Superior");
 	
 	private String description;
 	private String key;

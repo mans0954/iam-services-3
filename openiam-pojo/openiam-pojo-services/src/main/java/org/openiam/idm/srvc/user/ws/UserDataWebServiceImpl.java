@@ -21,16 +21,10 @@
  */
 package org.openiam.idm.srvc.user.ws;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.jws.WebParam;
-import javax.jws.WebService;
+import java.util.*;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.mule.api.MuleContext;
 import org.mule.api.context.MuleContextAware;
@@ -38,14 +32,8 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.base.ws.exception.BasicDataServiceException;
-import org.openiam.dozer.converter.AddressDozerConverter;
-import org.openiam.dozer.converter.EmailAddressDozerConverter;
-import org.openiam.dozer.converter.PhoneDozerConverter;
-import org.openiam.dozer.converter.SupervisorDozerConverter;
-import org.openiam.dozer.converter.UserAttributeDozerConverter;
-import org.openiam.dozer.converter.UserDozerConverter;
-import org.openiam.dozer.converter.UserNoteDozerConverter;
-import org.openiam.idm.searchbeans.UserSearchBean;
+import org.openiam.dozer.converter.*;
+import org.openiam.idm.searchbeans.*;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
@@ -53,8 +41,11 @@ import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
+import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
+import org.openiam.idm.srvc.meta.dto.MetadataType;
 import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
 import org.openiam.idm.srvc.meta.exception.PageTemplateException;
+import org.openiam.idm.srvc.meta.service.MetadataService;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.msg.service.MailService;
@@ -63,7 +54,6 @@ import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.domain.UserNoteEntity;
 import org.openiam.idm.srvc.user.dto.DelegationFilterSearch;
-import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.Supervisor;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
@@ -72,11 +62,12 @@ import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.service.UserProfileService;
-import org.openiam.idm.srvc.user.token.CreateUserToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import javax.jws.WebService;
 
 /**
  * @author suneet
@@ -117,6 +108,12 @@ public class UserDataWebServiceImpl implements UserDataWebService, MuleContextAw
     private PhoneDozerConverter phoneDozerConverter;
 
     @Autowired
+    private MetadataService metadataService;
+
+    @Autowired
+    private MetaDataTypeDozerConverter metaDataTypeDozerConverter;
+
+    @Autowired
     private MailService mailService;
 
     private MuleContext muleContext;
@@ -140,6 +137,16 @@ public class UserDataWebServiceImpl implements UserDataWebService, MuleContextAw
             if (val == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
+            if(StringUtils.isBlank(val.getMetadataTypeId())){
+                throw new BasicDataServiceException(ResponseCode.ADDRESS_TYPE_REQUIRED);
+            }
+            AddressSearchBean searchBean = new AddressSearchBean();
+            searchBean.setParentId(val.getParentId());
+            searchBean.setMetadataTypeId(val.getMetadataTypeId());
+            List<AddressEntity> entityList =  userManager.getAddressList(searchBean, Integer.MAX_VALUE, 0);
+            if(CollectionUtils.isNotEmpty(entityList))
+                throw new BasicDataServiceException(ResponseCode.ADDRESS_TYPE_DUPLICATED);
+
             final AddressEntity entity = addressDozerConverter.convertToEntity(val, true);
             UserEntity user = new UserEntity();
             user.setUserId(val.getParentId());
@@ -163,6 +170,19 @@ public class UserDataWebServiceImpl implements UserDataWebService, MuleContextAw
             if (CollectionUtils.isEmpty(adrList)) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
+
+            HashSet<String> types = new HashSet<String>();
+            for(Address address: adrList){
+                if(StringUtils.isBlank(address.getMetadataTypeId())){
+                    throw new BasicDataServiceException(ResponseCode.ADDRESS_TYPE_REQUIRED);
+                }
+                if(types.contains(address.getMetadataTypeId()))
+                    throw new BasicDataServiceException(ResponseCode.ADDRESS_TYPE_DUPLICATED);
+                else
+                    types.add(address.getMetadataTypeId());
+            }
+
+
             String parentId = adrList.iterator().next().getParentId();
             final List<AddressEntity> entityList = addressDozerConverter.convertToEntityList(new ArrayList<Address>(adrList), true);
             for (AddressEntity entity : entityList) {
@@ -215,6 +235,15 @@ public class UserDataWebServiceImpl implements UserDataWebService, MuleContextAw
             if (val == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
+            if(StringUtils.isBlank(val.getMetadataTypeId())){
+                throw new BasicDataServiceException(ResponseCode.EMAIL_ADDRESS_TYPE_REQUIRED);
+            }
+            EmailSearchBean searchBean = new EmailSearchBean();
+            searchBean.setParentId(val.getParentId());
+            searchBean.setMetadataTypeId(val.getMetadataTypeId());
+            List<EmailAddressEntity> entityList =  userManager.getEmailAddressList(searchBean, Integer.MAX_VALUE, 0);
+            if(CollectionUtils.isNotEmpty(entityList))
+                throw new BasicDataServiceException(ResponseCode.EMAIL_ADDRESS_TYPE_DUPLICATED);
 
             final EmailAddressEntity entity = emailAddressDozerConverter.convertToEntity(val, true);
             UserEntity user = new UserEntity();
@@ -239,6 +268,17 @@ public class UserDataWebServiceImpl implements UserDataWebService, MuleContextAw
             if (CollectionUtils.isEmpty(adrList)) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
+            HashSet<String> types = new HashSet<String>();
+            for(EmailAddress email: adrList){
+                if(StringUtils.isBlank(email.getMetadataTypeId())){
+                    throw new BasicDataServiceException(ResponseCode.EMAIL_ADDRESS_TYPE_REQUIRED);
+                }
+                if(types.contains(email.getMetadataTypeId()))
+                    throw new BasicDataServiceException(ResponseCode.EMAIL_ADDRESS_TYPE_DUPLICATED);
+                else
+                    types.add(email.getMetadataTypeId());
+            }
+
             String parentId = adrList.iterator().next().getParentId();
             final List<EmailAddressEntity> entityList = emailAddressDozerConverter.convertToEntityList(new ArrayList<EmailAddress>(adrList), true);
             for (EmailAddressEntity e : entityList) {
@@ -286,6 +326,15 @@ public class UserDataWebServiceImpl implements UserDataWebService, MuleContextAw
             if (val == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
+            if(StringUtils.isBlank(val.getMetadataTypeId())){
+                throw new BasicDataServiceException(ResponseCode.PHONE_TYPE_REQUIRED);
+            }
+            PhoneSearchBean searchBean = new PhoneSearchBean();
+            searchBean.setParentId(val.getParentId());
+            searchBean.setMetadataTypeId(val.getMetadataTypeId());
+            List<PhoneEntity> entityList =  userManager.getPhoneList(searchBean, Integer.MAX_VALUE, 0);
+            if(CollectionUtils.isNotEmpty(entityList))
+                throw new BasicDataServiceException(ResponseCode.PHONE_TYPE_DUPLICATED);
 
             final PhoneEntity entity = phoneDozerConverter.convertToEntity(val, true);
             UserEntity user = new UserEntity();
@@ -310,6 +359,17 @@ public class UserDataWebServiceImpl implements UserDataWebService, MuleContextAw
             if (CollectionUtils.isEmpty(phoneList)) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
+            HashSet<String> types = new HashSet<String>();
+            for(Phone phone: phoneList){
+                if(StringUtils.isBlank(phone.getMetadataTypeId())){
+                    throw new BasicDataServiceException(ResponseCode.PHONE_TYPE_REQUIRED);
+                }
+                if(types.contains(phone.getMetadataTypeId()))
+                    throw new BasicDataServiceException(ResponseCode.PHONE_TYPE_DUPLICATED);
+                else
+                    types.add(phone.getMetadataTypeId());
+            }
+
             String parentId = phoneList.iterator().next().getParentId();
             final List<PhoneEntity> entityList = phoneDozerConverter.convertToEntityList(new ArrayList<Phone>(phoneList), true);
 
@@ -481,6 +541,100 @@ public class UserDataWebServiceImpl implements UserDataWebService, MuleContextAw
     public List<Supervisor> getSupervisors(String employeeId) {
         final List<SupervisorEntity> sup = userManager.getSupervisors(employeeId);
         return supervisorDozerConverter.convertToDTOList(sup, true);
+    }
+
+    @Override
+    public Supervisor findSupervisor(String superiorId, String subordinateId) {
+        return supervisorDozerConverter.convertToDTO(
+                userManager.findSupervisor(superiorId, subordinateId), true);
+    }
+
+    @Override
+    public List<User> getSuperiors(String userId, Integer from, Integer size) {
+        final List<UserEntity> superiors = userManager.getSuperiors(userId, from, size);
+        return userDozerConverter.convertToDTOList(superiors, true);
+    }
+
+    @Override
+    public int getSuperiorsCount(String userId) {
+        return userManager.getSuperiorsCount(userId);
+    }
+
+    @Override
+    public List<User> getSubordinates(String userId, Integer from, Integer size) {
+        final List<UserEntity> subordinates = userManager.getSubordinates(userId, from, size);
+        return userDozerConverter.convertToDTOList(subordinates, true);
+    }
+
+    @Override
+    public int getSubordinatesCount(String userId) {
+        return userManager.getSubordinatesCount(userId);
+    }
+
+    @Override
+    public List<User> findPotentialSupSubs(UserSearchBean userSearchBean, Integer from, Integer size) {
+        return userDozerConverter.convertToDTOList(userManager.findPotentialSupSubs(userSearchBean, from, size), true);
+    }
+
+    @Override
+    public int findPotentialSupSubsCount(UserSearchBean userSearchBean) {
+        return userManager.findPotentialSupSubsCount(userSearchBean);
+    }
+
+    @Override
+    public Response addSuperior(String requesterId, String userId) {
+
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            if (StringUtils.equals(requesterId, userId)) {
+                throw new BasicDataServiceException(ResponseCode.CANT_ADD_YOURSELF_AS_CHILD);
+            }
+            User superior = getUserWithDependent(userId, null, true);
+            User subordinate = getUserWithDependent(requesterId, userId, true);
+            if (superior == null || subordinate == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            }
+            SupervisorEntity found = userManager.findSupervisor(superior.getUserId(), subordinate.getUserId());
+            if (found != null) {
+                throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
+            }
+            SupervisorEntity contrary = userManager.findSupervisor(subordinate.getUserId(), superior.getUserId());
+            if (contrary != null) {
+                throw new BasicDataServiceException(ResponseCode.CIRCULAR_DEPENDENCY);
+            }
+            userManager.addSuperior(userId, requesterId);
+
+        } catch (BasicDataServiceException e) {
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+        } catch (Throwable e) {
+            log.error("Can't perform operation", e);
+            response.setErrorText(e.getMessage());
+            response.setStatus(ResponseStatus.FAILURE);
+        }
+        return response;
+    }
+
+    @Override
+    public Response removeSuperior(String requesterId, String userId) {
+
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            SupervisorEntity supervisor = userManager.findSupervisor(userId, requesterId);
+            if (supervisor == null) {
+                throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
+            }
+            userManager.removeSupervisor(supervisor.getOrgStructureId());
+
+        } catch (BasicDataServiceException e) {
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+        } catch (Throwable e) {
+            log.error("Can't perform operation", e);
+            response.setErrorText(e.getMessage());
+            response.setStatus(ResponseStatus.FAILURE);
+        }
+        return response;
     }
 
     @Override
@@ -741,8 +895,7 @@ public class UserDataWebServiceImpl implements UserDataWebService, MuleContextAw
     }
 
     @Override
-    public List<User> findBeans(@WebParam(name = "searchBean", targetNamespace = "") UserSearchBean userSearchBean,
-                                @WebParam(name = "from", targetNamespace = "") int from, @WebParam(name = "size", targetNamespace = "") int size) {
+    public List<User> findBeans(UserSearchBean userSearchBean, int from, int size) {
         final List<UserEntity> userList = userManager.findBeans(userSearchBean, from, size);
         return userDozerConverter.convertToDTOList(userList, userSearchBean.isDeepCopy());
     }
@@ -759,6 +912,16 @@ public class UserDataWebServiceImpl implements UserDataWebService, MuleContextAw
             if (val == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
+            if(StringUtils.isBlank(val.getMetadataTypeId())){
+                throw new BasicDataServiceException(ResponseCode.ADDRESS_TYPE_REQUIRED);
+            }
+
+            AddressSearchBean searchBean = new AddressSearchBean();
+            searchBean.setParentId(val.getParentId());
+            searchBean.setMetadataTypeId(val.getMetadataTypeId());
+            List<AddressEntity> entityList =  userManager.getAddressList(searchBean, Integer.MAX_VALUE, 0);
+            if(CollectionUtils.isNotEmpty(entityList) && !entityList.get(0).getAddressId().equals(val.getAddressId()))
+                throw new BasicDataServiceException(ResponseCode.ADDRESS_TYPE_DUPLICATED);
 
             final AddressEntity entity = addressDozerConverter.convertToEntity(val, false);
             UserEntity user = new UserEntity();
@@ -809,6 +972,19 @@ public class UserDataWebServiceImpl implements UserDataWebService, MuleContextAw
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
 
+            if(StringUtils.isBlank(val.getMetadataTypeId())){
+                throw new BasicDataServiceException(ResponseCode.EMAIL_ADDRESS_TYPE_REQUIRED);
+            }
+
+            EmailSearchBean searchBean = new EmailSearchBean();
+            searchBean.setParentId(val.getParentId());
+            searchBean.setMetadataTypeId(val.getMetadataTypeId());
+            // searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
+            List<EmailAddressEntity> entityList =  userManager.getEmailAddressList(searchBean, Integer.MAX_VALUE, 0);
+            if(CollectionUtils.isNotEmpty(entityList) && !entityList.get(0).getEmailId().equals(val.getEmailId()))
+                throw new BasicDataServiceException(ResponseCode.EMAIL_ADDRESS_TYPE_DUPLICATED);
+
+
             final EmailAddressEntity entity = emailAddressDozerConverter.convertToEntity(val, true);
             UserEntity user = new UserEntity();
             user.setUserId(val.getParentId());
@@ -853,6 +1029,18 @@ public class UserDataWebServiceImpl implements UserDataWebService, MuleContextAw
             if (val == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
+            if(StringUtils.isBlank(val.getMetadataTypeId())){
+                throw new BasicDataServiceException(ResponseCode.PHONE_TYPE_REQUIRED);
+            }
+
+            PhoneSearchBean searchBean = new PhoneSearchBean();
+            searchBean.setParentId(val.getParentId());
+            searchBean.setMetadataTypeId(val.getMetadataTypeId());
+            // searchBean.setParentType(ContactConstants.PARENT_TYPE_USER);
+            List<PhoneEntity> entityList =  userManager.getPhoneList(searchBean, Integer.MAX_VALUE, 0);
+            if(CollectionUtils.isNotEmpty(entityList) && !entityList.get(0).getPhoneId().equals(val.getPhoneId()))
+                throw new BasicDataServiceException(ResponseCode.PHONE_TYPE_DUPLICATED);
+
 
             final PhoneEntity entity = phoneDozerConverter.convertToEntity(val, true);
             UserEntity user = new UserEntity();
@@ -977,6 +1165,14 @@ public class UserDataWebServiceImpl implements UserDataWebService, MuleContextAw
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
             }
             if (user.getUserId() == null) {
+
+                final MetadataTypeSearchBean typeSearchBean = new MetadataTypeSearchBean();
+                typeSearchBean.setGrouping("EMAIL");
+                typeSearchBean.setActive(true);
+
+                final List<MetadataTypeEntity> entityList = metadataService.findBeans(typeSearchBean, 0, Integer.MAX_VALUE);
+                List<MetadataType> typeList = (entityList != null) ? metaDataTypeDozerConverter.convertToDTOList(entityList, false) : null;
+
                 // create new user, need to merge user objects
                 List<Login> principalList = new ArrayList<Login>();
                 Login principal = new Login();
@@ -985,13 +1181,17 @@ public class UserDataWebServiceImpl implements UserDataWebService, MuleContextAw
                 principalList.add(principal);
                 user.setPrincipalList(principalList);
 
-                Set<EmailAddress> emailAddressList = new HashSet<EmailAddress>();
 
-                EmailAddress ea = new EmailAddress();
-                ea.setEmailAddress(user.getEmail());
-                ea.setIsDefault(true);
-                emailAddressList.add(ea);
-                user.setEmailAddresses(emailAddressList);
+                if(CollectionUtils.isNotEmpty(typeList)){
+                    Set<EmailAddress> emailAddressList = new HashSet<EmailAddress>();
+
+                    EmailAddress ea = new EmailAddress();
+                    ea.setEmailAddress(user.getEmail());
+                    ea.setIsDefault(true);
+                    ea.setMetadataTypeId(typeList.get(0).getMetadataTypeId());
+                    emailAddressList.add(ea);
+                    user.setEmailAddresses(emailAddressList);
+                }
             }
 
             final UserEntity userEntity = userDozerConverter.convertToEntity(user, true);
@@ -1112,7 +1312,7 @@ public class UserDataWebServiceImpl implements UserDataWebService, MuleContextAw
     }
 
     @Override
-    public SaveTemplateProfileResponse saveUserProfile(UserProfileRequestModel request) {
+    public SaveTemplateProfileResponse saveUserProfile(final UserProfileRequestModel request) {
         final SaveTemplateProfileResponse response = new SaveTemplateProfileResponse(ResponseStatus.SUCCESS);
         try {
             if (request == null || request.getUser() == null) {
@@ -1198,5 +1398,27 @@ public class UserDataWebServiceImpl implements UserDataWebService, MuleContextAw
     public List<User> getByManagedSystem(String mSysId) {
         List<UserEntity> result = userManager.getUsersForMSys(mSysId);
         return result == null ? new ArrayList<User>() : userDozerConverter.convertToDTOList(result, true);
+    }
+
+    @Override
+    public Response acceptITPolicy(final String userId) {
+        final Response response = new Response(ResponseStatus.SUCCESS);
+        try {
+            final UserEntity user = userManager.getUser(userId, null);
+            if (user == null) {
+                throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+            }
+            user.setDateITPolicyApproved(new Date());
+            userManager.updateUser(user);
+
+        } catch (BasicDataServiceException e) {
+            response.setErrorCode(e.getCode());
+            response.setStatus(ResponseStatus.FAILURE);
+        } catch (Throwable e) {
+            log.error("Can't perform operation", e);
+            response.setErrorText(e.getMessage());
+            response.setStatus(ResponseStatus.FAILURE);
+        }
+        return response;
     }
 }

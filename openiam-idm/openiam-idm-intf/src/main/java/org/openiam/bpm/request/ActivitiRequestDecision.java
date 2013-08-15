@@ -1,20 +1,27 @@
 package org.openiam.bpm.request;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
+
+import com.thoughtworks.xstream.XStream;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ActivitiRequestDecision", propOrder = {
     "taskId",
     "comment",
-    "accepted"
+    "accepted",
+    "customVariables"
 })
 public class ActivitiRequestDecision extends RequestorInformation {
 
 	private String taskId;
 	private String comment;
 	private boolean accepted;
+	private Map<String, String> customVariables;
 	
 	public String getTaskId() {
 		return taskId;
@@ -35,5 +42,16 @@ public class ActivitiRequestDecision extends RequestorInformation {
 		this.accepted = accepted;
 	}
 	
+	public void addCustomVariable(final String key, final Object value) {
+		if(key != null && value != null) {
+			if(this.customVariables == null) {
+				this.customVariables = new HashMap<String, String>();
+			}
+			this.customVariables.put(key, new XStream().toXML(value));
+		}
+	}
 	
+	public Map<String, String> getCustomVariables() {
+		return this.customVariables;
+	}
 }

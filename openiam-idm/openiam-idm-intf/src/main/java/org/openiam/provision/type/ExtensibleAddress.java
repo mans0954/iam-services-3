@@ -45,12 +45,13 @@ public class ExtensibleAddress extends ExtensibleObject {
 	protected Address address;
 	
 	public ExtensibleAddress() {
-		
+        extensibleObjectType= ExtensibleObjectType.ADDRESS;
 	}
 	
 	public ExtensibleAddress(Address adr) {
 		address = adr;
 		this.operation = ModificationAttribute.add;
+        extensibleObjectType= ExtensibleObjectType.ADDRESS;
 	}
 
 	public Address getAddress() {

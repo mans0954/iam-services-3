@@ -1,0 +1,68 @@
+package org.openiam.connector.orcl.command.base;
+
+import org.openiam.connector.common.data.ConnectorConfiguration;
+import org.openiam.connector.type.ConnectorDataException;
+import org.openiam.connector.type.constant.ErrorCode;
+import org.openiam.connector.type.constant.StatusCodeType;
+import org.openiam.connector.type.request.SuspendResumeRequest;
+import org.openiam.connector.type.response.ResponseType;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+
+/**
+ * Created with IntelliJ IDEA.
+ * User: alexander
+ * Date: 7/12/13
+ * Time: 1:48 AM
+ * To change this template use File | Settings | File Templates.
+ */
+public abstract class AbstractOracleAccountStatusCommand extends AbstractOracleCommand<SuspendResumeRequest, ResponseType>  {
+
+    protected enum AccountStatus {
+        LOCKED("lock"),
+        UNLOCKED("unlock");
+
+        private String name;
+
+        AccountStatus(final String name) {
+            this.name = name;
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
+    }
+
+    private static final String SQL = "ALTER USER \"%s\" account %s";
+
+    @Override
+    public ResponseType execute(SuspendResumeRequest request) throws ConnectorDataException {
+        final ResponseType response = new ResponseType();
+        response.setStatus(StatusCodeType.SUCCESS);
+
+        final String principalName = request.getObjectIdentity();
+        ConnectorConfiguration config =  getConfiguration(request.getTargetID(), ConnectorConfiguration.class);
+        String resourceId = config.getResourceId();
+
+        Connection connection = this.getConnection(config.getManagedSys());
+
+        try {
+            final String sql = String.format(SQL, principalName, getNewAccountStatus());
+            connection.createStatement().execute(sql);
+            return response;
+        } catch (SQLException se) {
+            log.error(se.getMessage(), se);
+            throw new ConnectorDataException(ErrorCode.SQL_ERROR, se.getMessage());
+        }  catch(Throwable e) {
+            log.error(e.getMessage(),e);
+            throw new ConnectorDataException(ErrorCode.OTHER_ERROR, e.getMessage());
+        }finally {
+            this.closeConnection(connection);
+        }
+    }
+
+
+    protected abstract String getNewAccountStatus();
+}

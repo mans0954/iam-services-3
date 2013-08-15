@@ -16,9 +16,4 @@ public class UserAffiliationDAOTouchTest extends AbstractTransactionalTestNGSpri
     public void touchFindById() {
         userAffiliationDAO.findById("");
     }
-
-    @Test
-    public void touchFindOrgAffiliationsByUser() {
-        userAffiliationDAO.findOrgAffiliationsByUser("", null);
-    }
 }

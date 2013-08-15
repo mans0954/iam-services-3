@@ -21,6 +21,8 @@
  */
 package org.openiam.provision.dto;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.grp.dto.Group;
@@ -32,9 +34,7 @@ import org.openiam.idm.srvc.user.dto.User;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * ProvisionUser is the user object used by the provisioning service.
@@ -49,6 +49,7 @@ import java.util.List;
         "memberOfRoles",
         "userResourceList",
         "userAffiliations",
+        "superiors",
         "srcSystemId",
         "provisionModel",
         "securityDomain",
@@ -72,6 +73,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
     protected List<Group> memberOfGroups;
     protected List<Role> memberOfRoles;
     protected List<Organization> userAffiliations;
+    protected Set<User> superiors;
 
     protected List<UserResourceAssociation> userResourceList;
 
@@ -110,12 +112,9 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
 
     public ProvisionUser(User user) {
         birthdate = user.getBirthdate();
-        companyId = user.getCompanyId();
         companyOwnerId = user.getCompanyOwnerId();
         createDate = user.getCreateDate();
         createdBy = user.getCreatedBy();
-        deptCd = user.getDeptCd();
-        deptName = user.getDeptName();
         employeeId = user.getEmployeeId();
         employeeType = user.getEmployeeType();
 
@@ -126,7 +125,6 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         this.lastUpdatedBy = user.getLastUpdatedBy();
         this.locationCd = user.getLocationCd();
         this.locationName = user.getLocationName();
-        this.managerId = user.getManagerId();
         this.metadataTypeId = user.getMetadataTypeId();
         this.classification = user.getClassification();
         this.middleInit = user.getMiddleInit();
@@ -138,7 +136,6 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         this.title = user.getTitle();
         this.userId = user.getUserId();
         this.userTypeInd = user.getUserTypeInd();
-        this.division = user.getDivision();
         this.mailCode = user.getMailCode();
         this.costCenter = user.getCostCenter();
         this.startDate = user.getStartDate();
@@ -157,6 +154,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         this.userOwnerId = user.getUserOwnerId();
         this.dateChallengeRespChanged = user.getDateChallengeRespChanged();
         this.datePasswordChanged = user.getDatePasswordChanged();
+        this.dateITPolicyApproved = user.getDateITPolicyApproved();
 
         userNotes = user.getUserNotes();
         userAttributes = user.getUserAttributes();
@@ -171,12 +169,9 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         User user = new User();
 
         user.setBirthdate(birthdate);
-        user.setCompanyId(companyId);
         user.setCompanyOwnerId(companyOwnerId);
         user.setCreateDate(createDate);
         user.setCreatedBy(createdBy);
-        user.setDeptCd(deptCd);
-        user.setDeptName(deptName);
         user.setEmployeeId(employeeId);
         user.setEmployeeType(employeeType);
 
@@ -187,7 +182,6 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         user.setLastUpdatedBy(lastUpdatedBy);
         user.setLocationCd(locationCd);
         user.setLocationName(locationName);
-        user.setManagerId(managerId);
         user.setMetadataTypeId(metadataTypeId);
         user.setClassification(classification);
         user.setMiddleInit(middleInit);
@@ -199,7 +193,6 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         user.setTitle(title);
         user.setUserId(userId);
         user.setUserTypeInd(userTypeInd);
-        user.setDivision(division);
         user.setMailCode(mailCode);
         user.setCostCenter(costCenter);
         user.setStartDate(startDate);
@@ -220,6 +213,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         user.setUserOwnerId(userOwnerId);
         user.setDateChallengeRespChanged(dateChallengeRespChanged);
         user.setDatePasswordChanged(datePasswordChanged);
+        user.setDateITPolicyApproved(dateITPolicyApproved);
 
         return user;
     }
@@ -285,6 +279,32 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         this.memberOfRoles = memberOfRoles;
     }
 
+    public Set<User> getSuperiors() {
+        return superiors;
+    }
+
+    public void setSuperiors(Set<User> superiors) {
+        this.superiors = superiors;
+    }
+
+    public void addSuperior(final User superior) {
+        if(superior != null) {
+            if(superiors == null) {
+                superiors = new HashSet<User>();
+            }
+            superiors.add(superior);
+        }
+    }
+
+    public void addSuperiors(final Collection<User> superiors)  {
+        if(superiors != null) {
+            if(this.superiors == null) {
+                this.superiors = new HashSet<User>();
+            }
+            this.superiors.addAll(superiors);
+        }
+    }
+
     public ProvisionModelEnum getProvisionModel() {
         return provisionModel;
     }
@@ -324,6 +344,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
                 ", memberOfRoles=" + memberOfRoles +
                 ", userAffiliations=" + userAffiliations +
                 ", userResourceList=" + userResourceList +
+                ", superiors=" + superiors +
                 ", provisionModel=" + provisionModel +
                 ", securityDomain='" + securityDomain + '\'' +
                 ", emailCredentialsToNewUsers=" + emailCredentialsToNewUsers +
@@ -359,6 +380,15 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
 
     public List<Organization> getUserAffiliations() {
         return userAffiliations;
+    }
+    
+    public void addUserAffiliation(final Organization organization) {
+    	if(organization != null) {
+	    	if(this.userAffiliations == null) {
+	    		this.userAffiliations = new LinkedList<Organization>();
+	    	}
+	    	this.userAffiliations.add(organization);
+    	}
     }
 
     public void setUserAffiliations(List<Organization> userAffiliations) {
@@ -433,9 +463,6 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         if (birthdate == null) {
             birthdate = user.getBirthdate();
         }
-        if (companyId == null) {
-            companyId = user.getCompanyId();
-        }
         if (companyOwnerId == null) {
             companyOwnerId = user.getCompanyOwnerId();
         }
@@ -444,12 +471,6 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         }
         if (createdBy == null) {
             createdBy = user.getCreatedBy();
-        }
-        if (deptCd == null) {
-            deptCd = user.getDeptCd();
-        }
-        if (deptName == null) {
-            deptName = user.getDeptName();
         }
         if (employeeId == null) {
             employeeId = user.getEmployeeId();
@@ -478,9 +499,6 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         }
         if (locationName == null) {
             locationName = user.getLocationName();
-        }
-        if (managerId == null) {
-            managerId = user.getManagerId();
         }
         if (metadataTypeId == null) {
             metadataTypeId = user.getMetadataTypeId();
@@ -511,9 +529,6 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         }
         if (userTypeInd == null) {
             userTypeInd = user.getUserTypeInd();
-        }
-        if (division == null) {
-            division = user.getDivision();
         }
         if (mailCode == null) {
             mailCode = user.getMailCode();
@@ -566,7 +581,9 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         if (datePasswordChanged == null) {
             datePasswordChanged = user.getDatePasswordChanged();
         }
-
+        if (dateITPolicyApproved == null) {
+            dateITPolicyApproved = user.getDateITPolicyApproved();
+        }
     }
     
     public void addMemberGroup(final Group group) {
@@ -594,5 +611,36 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
     		}
     		this.userResourceList.add(association);
     	}
+    }
+    
+    //HACK
+    public Organization getPrimaryOrganization() {
+    	Organization retVal = null;
+    	if(CollectionUtils.isNotEmpty(userAffiliations)) {
+    		for(final Organization organization : userAffiliations) {
+    			if(!AttributeOperationEnum.DELETE.equals(organization.getOperation())) {
+    				if(organization.isOrganization()) {
+    					retVal = organization;
+    					break;
+    				}
+    			}
+    		}
+    	}
+    	return retVal;
+    }
+    
+    public boolean isOrganizationMarkedAsDeleted(final String organizationId) {
+    	boolean retVal = false;
+    	if(CollectionUtils.isNotEmpty(userAffiliations)) {
+    		for(final Organization organization : userAffiliations) {
+    			if(AttributeOperationEnum.DELETE.equals(organization.getOperation())) {
+    				if(StringUtils.equalsIgnoreCase(organizationId, organization.getId())) {
+    					retVal = true;
+    					break;
+    				}
+    			}
+    		}
+    	}
+    	return retVal;
     }
 }

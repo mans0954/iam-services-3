@@ -4,8 +4,6 @@ import java.util.Set;
 
 public class DelegationFilterSearchBean {
     private Set<String> organizationIdSet = null;
-    private Set<String> deptIdSet = null;
-    private Set<String> divisionIdSet = null;
     private Set<String> groupIdSet = null;
     private Set<String> roleIdSet = null;
     private Set<String> appIdSet = null;
@@ -16,22 +14,6 @@ public class DelegationFilterSearchBean {
 
     public void setOrganizationIdSet(Set<String> organizationIdSet) {
         this.organizationIdSet = organizationIdSet;
-    }
-
-    public Set<String> getDeptIdSet() {
-        return deptIdSet;
-    }
-
-    public void setDeptIdSet(Set<String> deptIdSet) {
-        this.deptIdSet = deptIdSet;
-    }
-
-    public Set<String> getDivisionIdSet() {
-        return divisionIdSet;
-    }
-
-    public void setDivisionIdSet(Set<String> divisionIdSet) {
-        this.divisionIdSet = divisionIdSet;
     }
 
     public Set<String> getGroupIdSet() {

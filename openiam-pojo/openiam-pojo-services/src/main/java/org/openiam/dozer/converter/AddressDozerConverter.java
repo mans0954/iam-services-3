@@ -13,8 +13,8 @@ import java.util.List;
 @Component("addressDozerConverter")
 public class AddressDozerConverter extends AbstractDozerEntityConverter<Address, AddressEntity> {
     @Override
-    public AddressEntity convertEntity(AddressEntity userEntity, boolean isDeep) {
-        return convert(userEntity, isDeep, AddressEntity.class);
+    public AddressEntity convertEntity(AddressEntity entity, boolean isDeep) {
+        return convert(entity, isDeep, AddressEntity.class);
     }
 
     @Override

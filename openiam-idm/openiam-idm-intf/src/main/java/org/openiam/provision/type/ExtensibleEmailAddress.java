@@ -46,12 +46,13 @@ public class ExtensibleEmailAddress extends ExtensibleObject {
 	protected EmailAddress emailAddress;
 	
 	public ExtensibleEmailAddress() {
-		
+        extensibleObjectType= ExtensibleObjectType.EMAIL;
 	}
 	
 	public ExtensibleEmailAddress(EmailAddress adr) {
 		emailAddress = adr;
 		this.operation = ModificationAttribute.add;
+        extensibleObjectType= ExtensibleObjectType.EMAIL;
 	}
 
 	public EmailAddress getEmailAddress() {

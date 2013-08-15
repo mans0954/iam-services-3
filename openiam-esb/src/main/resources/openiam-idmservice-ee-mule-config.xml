@@ -21,31 +21,6 @@
 		<!-- Reconciliation Object  -->
 	
 		<!-- Web Services  -->
-        <model name="ReconciliationWebServiceModel">
-			<service name="ReconciliationWebService">
-				<inbound>
-						<inbound-endpoint address="${webservice.path}ReconciliationWebService" 		exchange-pattern="request-response">
-						<cxf:jaxws-service />
-					</inbound-endpoint>
-				</inbound>
-				<component>
-					<spring-object bean="reconServiceWS" />
-				</component>
-			</service>
-		</model>
-
-    		<model name="AsyncReconciliationWebServiceModel">
-			<service name="AsyncReconciliationWebService">
-				<inbound>
-						<inbound-endpoint address="${webservice.path}AsynchReconciliationWebService" 		exchange-pattern="request-response">
-						<cxf:jaxws-service />
-					</inbound-endpoint>
-				</inbound>
-				<component>
-					<spring-object bean="asyncReconciliationServiceWS" />
-				</component>
-			</service>
-		</model>
-
+    
 	
 </mule>

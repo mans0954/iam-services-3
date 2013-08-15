@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.mngsys.service;
 
 import java.util.List;
 
+import org.openiam.idm.searchbeans.AttributeMapSearchBean;
 import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.DefaultReconciliationAttributeMapEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
@@ -41,9 +42,11 @@ public interface ManagedSystemService {
 
     void removeAttributeMap(String attributeMapId);
 
-    int removeResourceAttributeMaps(String resourceId);
+    void removeResourceAttributeMaps(String resourceId);
 
     List<AttributeMapEntity> getResourceAttributeMaps(String resourceId);
+
+    List<AttributeMapEntity> getResourceAttributeMaps(AttributeMapSearchBean searchBean);
 
     List<AttributeMapEntity> getAllAttributeMaps();
 
@@ -54,6 +57,13 @@ public interface ManagedSystemService {
     ManagedSysRuleEntity addRules(ManagedSysRuleEntity entity);
 
     void deleteRules(String ruleId);
-    
-    List<ManagedSystemObjectMatchEntity> managedSysObjectParam(String managedSystemId, String objectType);
+
+    List<ManagedSystemObjectMatchEntity> managedSysObjectParam(
+            String managedSystemId, String objectType);
+
+    List<AttributeMapEntity> saveAttributesMap(
+            List<AttributeMapEntity> attrMap, String mSysId, String resId,
+            String synchConfigId) throws Exception;
+
+    void deleteAttributesMapList(List<String> ids) throws Exception;
 }

@@ -31,7 +31,7 @@
 				</inbound-endpoint>
 			</inbound>
 			<component>
-				<spring-object bean="ldapConnector" />
+				<spring-object bean="genericLdapConnector" />
 			</component>
 		</service>
 	</model>
@@ -46,7 +46,7 @@
 				</inbound-endpoint>
 			</inbound>
 			<component>
-				<spring-object bean="googleAppsConnector" />
+				<spring-object bean="genericGoogleAppsConnector" />
 			</component>
 		</service>
 	</model>
@@ -60,7 +60,7 @@
 				</inbound-endpoint>
 			</inbound>
 			<component>
-				<spring-object bean="appTableConnector" />
+				<spring-object bean="genericAppTableConnector" />
 			</component>
 		</service>
 	</model>
@@ -74,7 +74,7 @@
 				</inbound-endpoint>
 			</inbound>
 			<component>
-				<spring-object bean="oracleConnector" />
+				<spring-object bean="genericOracleConnector" />
 			</component>
 		</service>
 	</model>
@@ -88,7 +88,7 @@
 				</inbound-endpoint>
 			</inbound>
 			<component>
-				<spring-object bean="salesForceConnector" />
+				<spring-object bean="genericSalesForceConnector" />
 			</component>
 		</service>
 	</model>
@@ -103,7 +103,7 @@
 				</inbound-endpoint>
 			</inbound>
 			<component>
-				<spring-object bean="scriptConnector" />
+				<spring-object bean="genericScriptConnector" />
 			</component>
 		</service>
 
@@ -118,7 +118,7 @@
 				</inbound-endpoint>
 			</inbound>
 			<component>
-				<spring-object bean="shellConnector" />
+				<spring-object bean="genericShellConnector" />
 			</component>
 		</service>
 	</model>
@@ -133,7 +133,7 @@
 				</inbound-endpoint>
 			</inbound>
 			<component>
-				<spring-object bean="linuxConnector" />
+				<spring-object bean="genericLinuxConnector" />
 			</component>
 		</service>
 	</model>
@@ -147,7 +147,7 @@
 				</inbound-endpoint>
 			</inbound>
 			<component>
-				<spring-object bean="mysqlConnector" />
+				<spring-object bean="genericMySQLConnector" />
 			</component>
 		</service>
 	</model>
@@ -161,7 +161,7 @@
 				</inbound-endpoint>
 			</inbound>
 			<component>
-				<spring-object bean="csvConnector" />
+				<spring-object bean="genericCsvConnector" />
 			</component>
 		</service>
 	</model>

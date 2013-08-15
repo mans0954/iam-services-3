@@ -534,6 +534,7 @@ public class LoginDataServiceImpl implements LoginDataService {
     @Override
     @Transactional(readOnly = true)
     public LoginEntity getByUserIdManagedSys(String userId, String managedSysId) {
+
         List<LoginEntity> loginList = getLoginByUser(userId);
         if (loginList != null) {
             for (LoginEntity lg : loginList) {

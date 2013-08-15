@@ -11,11 +11,13 @@ import org.openiam.idm.srvc.auth.login.LoginDataService;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
+import org.openiam.idm.srvc.meta.dto.PageTemplateAttributeToken;
 import org.openiam.idm.srvc.meta.service.MetadataElementTemplateService;
 import org.openiam.idm.srvc.msg.service.MailService;
 import org.openiam.idm.srvc.pswd.service.PasswordGenerator;
 import org.openiam.idm.srvc.role.domain.UserRoleEntity;
 import org.openiam.idm.srvc.role.service.UserRoleDAO;
+import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
@@ -148,9 +150,30 @@ public class UserProfileServiceImpl implements UserProfileService {
         	}
         }
         
-        pageTemplateService.saveTemplate(request);
+        final PageTemplateAttributeToken token = pageTemplateService.getAttributesFromTemplate(request);
+        if(token != null) {
+        	if(CollectionUtils.isNotEmpty(token.getSaveList())) {
+        		for(final UserAttributeEntity entity : token.getSaveList()) {
+        			dbEntity.addUserAttribute(entity);
+        		}
+        	}
+        	if(CollectionUtils.isNotEmpty(token.getUpdateList())) {
+        		for(final UserAttributeEntity entity : token.getUpdateList()) {
+        			dbEntity.updateUserAttribute(entity);
+        		}
+        	}
+        	
+        	if(CollectionUtils.isNotEmpty(token.getDeleteList())) {
+        		for(final UserAttributeEntity entity : token.getDeleteList()) {
+        			dbEntity.removeUserAttribute(entity.getId());
+        		}
+        	}
+        }
+        
+        //pageTemplateService.saveTemplate(request);
         userManager.mergeUserFields(dbEntity, userEntity);
         userManager.updateUser(dbEntity);
+        //pageTemplateService.saveTemplate(request);
 	}
 	
 	@Override
@@ -181,6 +204,7 @@ public class UserProfileServiceImpl implements UserProfileService {
 		pageTemplateService.validate(request);
 	}
 
+	/*
 	@Override
 	public CreateUserToken createNewUserProfile(NewUserProfileRequestModel request)
 			throws Exception {
@@ -244,24 +268,13 @@ public class UserProfileServiceImpl implements UserProfileService {
         saveEmails(userEntity, emailList);
         saveAddresses(userEntity, addressList);
         savePhones(userEntity, phoneList);
-        /*
-        if(CollectionUtils.isNotEmpty(emailList)) {
-        	userEntity.setEmailAddresses(new HashSet<EmailAddressEntity>(emailList));
-        }
-        if(CollectionUtils.isNotEmpty(phoneList)) {
-        	userEntity.setPhones(new HashSet<PhoneEntity>(phoneList));
-        }
-        if(CollectionUtils.isNotEmpty(addressList)) {
-        	userEntity.setAddresses(new HashSet<AddressEntity>(addressList));
-        }
-        userManager.updateUser(userEntity);
-        */
         final CreateUserToken token = new CreateUserToken();
         token.setUser(userEntity);
         token.setPassword(plaintextPassword);
         token.setLogin(login);
         return token;
 	}
+	*/
 
 	private void savePhones(final UserEntity userEntity, List<PhoneEntity> phoneList) {
         if(CollectionUtils.isNotEmpty(phoneList)) {

@@ -1,0 +1,12 @@
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
+    <s:Body xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+        <addResponse xmlns="http://www.openiam.org/service/connector">
+            <return status="failure" xmlns="">
+                <errorMessage>The name provided is not a properly formed account name</errorMessage>
+                <requestID>R35beaeee9fb5481281ed68adedc86c56</requestID>
+                <error>otherError</error>
+                <objectValue/>
+            </return>
+        </addResponse>
+    </s:Body>
+</s:Envelope>

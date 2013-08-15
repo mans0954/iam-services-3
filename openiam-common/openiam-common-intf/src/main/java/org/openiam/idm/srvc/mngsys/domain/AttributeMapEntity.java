@@ -2,18 +2,7 @@ package org.openiam.idm.srvc.mngsys.domain;
 
 import java.util.Date;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
-import javax.persistence.Transient;
+import javax.persistence.*;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
@@ -43,6 +32,9 @@ public class AttributeMapEntity implements java.io.Serializable {
     @Column(name = "RESOURCE_ID", length = 32)
     private String resourceId;
 
+    @Column(name = "SYNCH_CONFIG_ID", length = 32)
+    private String synchConfigId;
+
     @Column(name = "MAP_FOR_OBJECT_TYPE", length = 20)
     private String mapForObjectType;
 
@@ -55,8 +47,8 @@ public class AttributeMapEntity implements java.io.Serializable {
     @Column(name = "AUTHORITATIVE_SRC", length = 11)
     private Integer authoritativeSrc;
 
-    @OneToOne(optional = false)
-    @JoinColumn(name = "ATTRIBUTE_POLICY_ID", nullable = false, updatable = false)
+    @OneToOne(optional = false, cascade = CascadeType.ALL, orphanRemoval=true)
+    @JoinColumn(name = "ATTRIBUTE_POLICY_ID", nullable = false)
     private ReconciliationResourceAttributeMapEntity reconResAttribute;
 
     @Column(name = "RULE_TEXT")
@@ -92,12 +84,13 @@ public class AttributeMapEntity implements java.io.Serializable {
     }
 
     public AttributeMapEntity(String attributeMapId, String managedSysId,
-            String resourceId, String mapForObjectType, String attributeName,
+            String resourceId, String synchConfigId, String mapForObjectType, String attributeName,
             String targetAttributeName, Integer authoritativeSrc, String rule,
             String status, Date startDate, Date endDate, Integer storeInIamdb) {
         this.attributeMapId = attributeMapId;
         this.managedSysId = managedSysId;
         this.resourceId = resourceId;
+        this.synchConfigId = synchConfigId;
         this.mapForObjectType = mapForObjectType;
         this.attributeName = attributeName;
         this.targetAttributeName = targetAttributeName;
@@ -131,6 +124,14 @@ public class AttributeMapEntity implements java.io.Serializable {
 
     public void setResourceId(String resourceId) {
         this.resourceId = resourceId;
+    }
+
+    public String getSynchConfigId() {
+        return synchConfigId;
+    }
+
+    public void setSynchConfigId(String synchConfigId) {
+        this.synchConfigId = synchConfigId;
     }
 
     public String getMapForObjectType() {
@@ -242,7 +243,8 @@ public class AttributeMapEntity implements java.io.Serializable {
     public String toString() {
         return "AttributeMap{" + "attributeMapId='" + attributeMapId + '\''
                 + ", managedSysId='" + managedSysId + '\'' + ", resourceId='"
-                + resourceId + '\'' + ", mapForObjectType='" + mapForObjectType
+                + resourceId + '\''  + ", synchConfigId='"
+                + synchConfigId + '\'' + ", mapForObjectType='" + mapForObjectType
                 + '\'' + ", attributeName='" + attributeName + '\''
                 + ", targetAttributeName='" + targetAttributeName + '\''
                 + ", authoritativeSrc=" + authoritativeSrc

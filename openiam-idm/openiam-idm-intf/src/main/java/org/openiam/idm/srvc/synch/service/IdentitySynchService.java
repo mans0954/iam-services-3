@@ -1,6 +1,8 @@
 package org.openiam.idm.srvc.synch.service;
 
 import org.openiam.base.ws.Response;
+import org.openiam.idm.searchbeans.AttributeMapSearchBean;
+import org.openiam.idm.srvc.mngsys.domain.AttributeMapEntity;
 import org.openiam.idm.srvc.synch.domain.SynchConfigEntity;
 import org.openiam.idm.srvc.synch.dto.BulkMigrationConfig;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
@@ -52,8 +54,14 @@ public interface IdentitySynchService {
      */
     Response resynchRole(final String roleId);
 
-    public Integer getSynchConfigCountByExample(SynchConfigEntity example);
+    Integer getSynchConfigCountByExample(SynchConfigEntity example);
 
-    public List<SynchConfigEntity> getSynchConfigsByExample(SynchConfigEntity example, Integer from, Integer size);
+    List<SynchConfigEntity> getSynchConfigsByExample(SynchConfigEntity example, Integer from, Integer size);
+
+    List<AttributeMapEntity> getSynchConfigAttributeMaps(String synchConfigId);
+
+    List<AttributeMapEntity> getSynchConfigAttributeMaps(AttributeMapSearchBean searchBean);
+
+    public void deleteAttributesMapList(List<AttributeMapEntity> attrMap);
 
 }

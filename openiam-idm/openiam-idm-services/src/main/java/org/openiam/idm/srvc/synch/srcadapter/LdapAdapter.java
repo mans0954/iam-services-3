@@ -233,23 +233,26 @@ public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapte
                     User usr = matchRule.lookup(config, rowAttr);
 
                     // transform
-                    if (config.getTransformationRule() != null && config.getTransformationRule().length() > 0) {
-                        TransformScript transformScript = SynchScriptFactory.createTransformationScript(config.getTransformationRule());
+                    int retval = -1;
+                    List<TransformScript> transformScripts = SynchScriptFactory.createTransformationScript(config);
+                    if (transformScripts != null && transformScripts.size() > 0) {
 
-                        // initialize the transform script
-                        if (usr != null) {
-                            transformScript.setNewUser(false);
-                            transformScript.setUser(userDozerConverter.convertToDTO(userManager.getUser(usr.getUserId()), true));
-                            transformScript.setPrincipalList(loginManager.getLoginByUser(usr.getUserId()));
-                            transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getUserId()));
+                        for (TransformScript transformScript : transformScripts) {
+                            // initialize the transform script
+                            if (usr != null) {
+                                transformScript.setNewUser(false);
+                                transformScript.setUser(userDozerConverter.convertToDTO(userManager.getUser(usr.getUserId()), true));
+                                transformScript.setPrincipalList(loginDozerConverter.convertToDTOList(loginManager.getLoginByUser(usr.getUserId()), true));
+                                transformScript.setUserRoleList(roleDataService.getUserRolesAsFlatList(usr.getUserId()));
 
-                        } else {
-                            transformScript.setNewUser(true);
+                            } else {
+                                transformScript.setNewUser(true);
+                            }
+
+                            retval = transformScript.execute(rowObj, pUser);
+
+                            log.debug("Transform result=" + retval);
                         }
-
-                        int retval = transformScript.execute(rowObj, pUser);
-
-                        log.debug("Transform result=" + retval);
 
                         pUser.setSessionId(synchStartLog.getSessionId());
 

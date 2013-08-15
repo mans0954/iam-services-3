@@ -79,7 +79,7 @@
 		<class-a>org.openiam.idm.srvc.org.domain.UserAffiliationEntity</class-a>
 		<class-b>org.openiam.idm.srvc.org.dto.UserAffiliation</class-b>
 		<field>
-			<a>organization.orgId</a>
+			<a>organization.id</a>
 			<b>organizationId</b>
 		</field>
 		<field>

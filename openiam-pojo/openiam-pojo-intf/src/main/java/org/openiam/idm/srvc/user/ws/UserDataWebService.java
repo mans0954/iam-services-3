@@ -143,7 +143,7 @@ public interface UserDataWebService {
      * .String)
      */
     @WebMethod
-    public UserAttribute getAttribute(@WebParam(name = "attrId", targetNamespace = "") String attrId);
+    public UserAttribute getAttribute(@WebParam(name = "id", targetNamespace = "") String attrId);
 
     /*
      * (non-Javadoc)
@@ -455,6 +455,10 @@ public interface UserDataWebService {
     @WebMethod
     public List<Supervisor> getSupervisors(@WebParam(name = "employeeId", targetNamespace = "") String employeeId);
 
+    @WebMethod
+    public Supervisor findSupervisor(@WebParam(name = "superiorId", targetNamespace = "") String superiorId,
+                                     @WebParam(name = "subordinateId", targetNamespace = "") String subordinateId);
+
     /**
      * Returns a list of Supervisor objects that represents the employees or
      * users for this supervisor
@@ -474,6 +478,38 @@ public interface UserDataWebService {
      */
     @WebMethod
     public Supervisor getPrimarySupervisor(@WebParam(name = "employeeId", targetNamespace = "") String employeeId);
+
+    @WebMethod
+    public List<User> getSuperiors(@WebParam(name = "userId", targetNamespace = "") String userId,
+                                   @WebParam(name = "from", targetNamespace = "") Integer from,
+                                   @WebParam(name = "size", targetNamespace = "") Integer size);
+
+    @WebMethod
+    public int getSuperiorsCount(@WebParam(name = "userId", targetNamespace = "") String userId);
+
+    @WebMethod
+    public List<User> getSubordinates(@WebParam(name = "userId", targetNamespace = "") String userId,
+                                      @WebParam(name = "from", targetNamespace = "") Integer from,
+                                      @WebParam(name = "size", targetNamespace = "") Integer size);
+
+    @WebMethod
+    public int getSubordinatesCount(@WebParam(name = "userId", targetNamespace = "") String userId);
+
+    @WebMethod
+    public List<User> findPotentialSupSubs(@WebParam(name = "searchBean", targetNamespace = "") UserSearchBean userSearchBean,
+                                             @WebParam(name = "from", targetNamespace = "") Integer from,
+                                             @WebParam(name = "size", targetNamespace = "") Integer size);
+
+    @WebMethod
+    public int findPotentialSupSubsCount(@WebParam(name = "searchBean", targetNamespace = "") UserSearchBean userSearchBean);
+
+    @WebMethod
+    public Response addSuperior(@WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                           @WebParam(name = "userId", targetNamespace = "") String userId);
+
+    @WebMethod
+    public Response removeSuperior(@WebParam(name = "requesterId", targetNamespace = "") String requesterId,
+                              @WebParam(name = "userId", targetNamespace = "") String userId);
 
     @WebMethod
     public List<User> getUsersForResource(@WebParam(name = "resourceId", targetNamespace = "") final String resourceId,
@@ -543,4 +579,7 @@ public interface UserDataWebService {
 
     @WebMethod
     public List<User> getByManagedSystem(@WebParam(name = "mSysId", targetNamespace = "") final String mSysId);
+
+    @WebMethod
+    public Response acceptITPolicy(@WebParam(name = "userId", targetNamespace = "") final String userId);
 }

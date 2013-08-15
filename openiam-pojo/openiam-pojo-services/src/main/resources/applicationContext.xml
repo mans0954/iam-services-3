@@ -1,14 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:util="http://www.springframework.org/schema/util"
-	xmlns:jee="http://www.springframework.org/schema/jee" xmlns:context="http://www.springframework.org/schema/context"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
-    					http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.1.xsd
-    					http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd
-    					http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.1.xsd
-    					http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-3.1.xsd">
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:jee="http://www.springframework.org/schema/jee"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee.xsd
+       http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+       http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <import resource="jmsContext.xml" />
 
 	<context:annotation-config />
 	<context:component-scan
@@ -165,10 +171,9 @@
 				<prop key="mail.smtp.starttls.enable">false</prop>
 			</props>
 		</property>
-
 	</bean>
 
-	<bean id="mailSender" class=" org.openiam.idm.srvc.msg.service.MailSender">
+	<bean id="mailSenderClient" class=" org.openiam.idm.srvc.msg.service.MailSenderClient">
 		<property name="host" value="${mail.host}" />
 		<property name="port" value="${mail.port}" />
 		<property name="username" value="${mail.username}" />
@@ -192,9 +197,11 @@
 
 
 	<!-- Batch related beans -->
+	<!--
 	<bean id="batchConfigDAO" class="org.openiam.idm.srvc.batch.service.BatchConfigDAOImpl">
 		<property name="sessionFactory" ref="sessionFactory"></property>
 	</bean>
+	-->
 
 	<!-- Hibernate SessionFactory -->
 	<bean id="sessionFactory"
@@ -257,12 +264,12 @@
 
 <!-- 				<value>org/openiam/idm/srvc/recon/service/ReconciliationConfig.hbm.xml -->
 <!-- 				</value> -->
-				<value>org/openiam/idm/srvc/recon/service/ReconciliationResult.hbm.xml
-				</value>
+<!-- 				<value>org/openiam/idm/srvc/recon/service/ReconciliationResult.hbm.xml -->
+<!-- 				</value> -->
 <!-- 				<value>org/openiam/idm/srvc/recon/service/ReconciliationSituation.hbm.xml -->
 <!-- 				</value> -->
-				<value>org/openiam/idm/srvc/recon/service/ReconResultDetail.hbm.xml
-				</value>
+<!-- 				<value>org/openiam/idm/srvc/recon/service/ReconResultDetail.hbm.xml -->
+<!-- 				</value> -->
 				<!--<value>org/openiam/idm/srvc/synch/service/SynchConfig.hbm.xml</value>-->
 				<!--<value>org/openiam/idm/srvc/synch/service/SynchConfigDataMapping.hbm.xml</value>-->
 				<!--<value>org/openiam/idm/srvc/synch/service/SynchActivityLog.hbm.xml</value>-->
@@ -291,11 +298,12 @@
 				</value>
 				<value>org/openiam/idm/srvc/orgpolicy/service/OrgPolicyUserLog.hbm.xml
 				</value>
+				<!--
 				<value>org/openiam/idm/srvc/batch/service/BatchConfig.hbm.xml
 				</value>
 				<value>org/openiam/idm/srvc/rpt/qryobject/dto/UserLoginStatusReport.hbm.xml
 				</value>
-
+				-->
 
 				<!--<value>org/openiam/am/srvc/webres/WebResourceAttribute.hbm.xml</value> -->
 			</list>
@@ -321,7 +329,9 @@
                                                org.openiam.idm.srvc.pswd.domain*,
                                                org.openiam.idm.srvc.secdomain.domain*,
                                                org.openiam.idm.srvc.lang.domain*,
-                                               org.openiam.idm.srvc.prov*
+                                               org.openiam.idm.srvc.report.domain*,
+                                               org.openiam.idm.srvc.prov*,
+                                               org.openiam.idm.srvc.batch.domain*
                                                " />
 
 	</bean>
@@ -341,19 +351,6 @@
 	<bean id="hibernateTemplate" class="org.springframework.orm.hibernate3.HibernateTemplate">
 		<property name="sessionFactory" ref="sessionFactory" />
 	</bean>
-<!-- 
-<jee:jndi-lookup id="connection-factory" jndi-name="jms/ConnFactory"/>
-<jee:jndi-lookup id="myQueue" jndi-name="jms/MyQueue"/>
-<bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
-    <property name="connectionFactory" ref="connection-factory" />
-</bean>
-<bean id="jmsSender" class="org.openiam.idm.connector.jms.JmsQueueSender">
-<property name="jmsTemplate">
-<ref bean="jmsTemplate"/>
-</property>
-    <property name="queue" ref="myQueue" />
-</bean>
- -->
 
 	<jee:jndi-lookup jndi-name="${datasource.jndi.name}"
 		id="dataSource" />

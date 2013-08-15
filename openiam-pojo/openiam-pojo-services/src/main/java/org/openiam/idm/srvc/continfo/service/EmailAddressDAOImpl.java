@@ -66,6 +66,12 @@ public class EmailAddressDAOImpl extends BaseDaoImpl<EmailAddressEntity, String>
                     criteria.add(Restrictions.eq("parent.userId", email.getParent().getUserId()));
                 }
             }
+
+            if (email.getMetadataType() != null) {
+                if (StringUtils.isNotBlank(email.getMetadataType().getMetadataTypeId())) {
+                    criteria.add(Restrictions.eq("metadataType.metadataTypeId", email.getMetadataType().getMetadataTypeId()));
+                }
+            }
         }
         return criteria;
     }

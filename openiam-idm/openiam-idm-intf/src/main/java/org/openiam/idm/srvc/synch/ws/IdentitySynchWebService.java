@@ -5,6 +5,8 @@ import javax.jws.WebParam;
 import javax.jws.WebService;
 
 import org.openiam.base.ws.Response;
+import org.openiam.idm.searchbeans.AttributeMapSearchBean;
+import org.openiam.idm.srvc.mngsys.dto.AttributeMap;
 import org.openiam.idm.srvc.synch.dto.BulkMigrationConfig;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
@@ -83,4 +85,13 @@ public interface IdentitySynchWebService {
             @WebParam(name = "searchBean", targetNamespace = "") SynchConfigSearchBean searchBean,
             @WebParam(name = "size", targetNamespace = "") Integer size,
             @WebParam(name = "from", targetNamespace = "") Integer from);
+
+    @WebMethod
+    public List<AttributeMap> getSynchConfigAttributeMaps(
+            @WebParam(name = "synchConfigId", targetNamespace = "") String synchConfigId);
+
+    @WebMethod
+    public List<AttributeMap> findSynchConfigAttributeMaps(
+            @WebParam(name = "searchBean", targetNamespace = "") AttributeMapSearchBean searchBean);
+
 }

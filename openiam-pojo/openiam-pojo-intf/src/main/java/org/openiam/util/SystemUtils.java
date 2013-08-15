@@ -25,7 +25,6 @@ import java.util.jar.Manifest;
 import javax.servlet.ServletContext;
 
 public class SystemUtils {
-
     private static Runtime runtime = Runtime.getRuntime();
     private static DecimalFormat df = new DecimalFormat("#.#");
     private static SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy h:mm a");

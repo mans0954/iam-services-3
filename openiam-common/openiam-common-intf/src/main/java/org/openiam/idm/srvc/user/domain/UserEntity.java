@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import javax.persistence.*;
 
@@ -36,6 +37,7 @@ import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.grp.domain.UserGroupEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
+import org.openiam.idm.srvc.org.domain.UserAffiliationEntity;
 import org.openiam.idm.srvc.res.domain.ResourceUserEntity;
 import org.openiam.idm.srvc.role.domain.UserRoleEntity;
 import org.openiam.idm.srvc.user.dto.User;
@@ -59,9 +61,6 @@ public class UserEntity {
     @Column(name = "BIRTHDATE", length = 19)
     private Date birthdate;
 
-    @Column(name = "COMPANY_ID", length = 32)
-    private String companyId;
-
     @Column(name = "COMPANY_OWNER_ID", length = 32)
     private String companyOwnerId;
 
@@ -71,13 +70,11 @@ public class UserEntity {
     @Column(name = "CREATED_BY", length = 32)
     private String createdBy;
 
-    @Column(name = "DEPT_CD", length = 50)
-    private String deptCd;
-
-    @Column(name = "DEPT_NAME", length = 100)
-    private String deptName;
-
     @Column(name = "EMPLOYEE_ID", length = 32)
+    @Fields ({
+            @Field(index = Index.TOKENIZED),
+            @Field(name = "employeeId", index = Index.TOKENIZED, store = Store.YES)
+    })
     private String employeeId;
 
     @Column(name = "EMPLOYEE_TYPE", length = 20)
@@ -113,9 +110,6 @@ public class UserEntity {
     @Column(name = "LOCATION_NAME", length = 100)
     private String locationName;
 
-    @Column(name = "MANAGER_ID", length = 32)
-    private String managerId;
-
     @Column(name = "TYPE_ID", length = 20)
     private String metadataTypeId;
 
@@ -149,9 +143,6 @@ public class UserEntity {
 
     @Column(name = "USER_TYPE_IND", length = 20)
     private String userTypeInd;
-
-    @Column(name = "DIVISION", length = 50)
-    private String division;
 
     @Column(name = "MAIL_CODE", length = 10)
     private String mailCode;
@@ -188,6 +179,10 @@ public class UserEntity {
 
     @Column(name = "DATE_CHALLENGE_RESP_CHANGED", length = 10)
     private Date dateChallengeRespChanged;
+
+    @Column(name = "DATE_IT_POLICY_APPROVED")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date dateITPolicyApproved;
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.LAZY)
     private Set<UserNoteEntity> userNotes = new HashSet<UserNoteEntity>(0);
@@ -252,21 +247,9 @@ public class UserEntity {
     @JoinColumn(name="USER_ID", referencedColumnName="USER_ID")
     @Fetch(FetchMode.SUBSELECT)
     private Set<UserRoleEntity> userRoles = new HashSet<UserRoleEntity>(0);
-
-    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
-    @JoinColumn(name="COMPANY_ID", referencedColumnName="COMPANY_ID", insertable = false, updatable = false)
-    @Field(name="organization", bridge=@FieldBridge(impl=OrganizationBridge.class), store=Store.YES)
-    private OrganizationEntity organization;
-
-    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
-    @JoinColumn(name="DIVISION", referencedColumnName="COMPANY_ID", insertable = false, updatable = false)
-    @Field(name="divisionEntity", bridge=@FieldBridge(impl=OrganizationBridge.class), store=Store.YES)
-    private OrganizationEntity divisionEntity;
-
-    @ManyToOne(cascade={CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},fetch=FetchType.LAZY)
-    @JoinColumn(name="DEPT_CD", referencedColumnName="COMPANY_ID", insertable = false, updatable = false)
-    @Field(name="department", bridge=@FieldBridge(impl=OrganizationBridge.class), store=Store.YES)
-    private OrganizationEntity department;
+    
+	@OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "user")
+	private Set<UserAffiliationEntity> affiliations;
 
     public UserEntity() {
     }
@@ -285,14 +268,6 @@ public class UserEntity {
 
     public void setBirthdate(Date birthdate) {
         this.birthdate = birthdate;
-    }
-
-    public String getCompanyId() {
-        return companyId;
-    }
-
-    public void setCompanyId(String companyId) {
-        this.companyId = companyId;
     }
 
     public String getCompanyOwnerId() {
@@ -317,22 +292,6 @@ public class UserEntity {
 
     public void setCreatedBy(String createdBy) {
         this.createdBy = createdBy;
-    }
-
-    public String getDeptCd() {
-        return deptCd;
-    }
-
-    public void setDeptCd(String deptCd) {
-        this.deptCd = deptCd;
-    }
-
-    public String getDeptName() {
-        return deptName;
-    }
-
-    public void setDeptName(String deptName) {
-        this.deptName = deptName;
     }
 
     public String getEmployeeId() {
@@ -405,14 +364,6 @@ public class UserEntity {
 
     public void setLocationName(String locationName) {
         this.locationName = locationName;
-    }
-
-    public String getManagerId() {
-        return managerId;
-    }
-
-    public void setManagerId(String managerId) {
-        this.managerId = managerId;
     }
 
     public String getMetadataTypeId() {
@@ -495,14 +446,6 @@ public class UserEntity {
         this.userTypeInd = userTypeInd;
     }
 
-    public String getDivision() {
-        return division;
-    }
-
-    public void setDivision(String division) {
-        this.division = division;
-    }
-
     public String getMailCode() {
         return mailCode;
     }
@@ -557,6 +500,18 @@ public class UserEntity {
 
     public void setPasswordTheme(String passwordTheme) {
         this.passwordTheme = passwordTheme;
+    }
+    
+    public String getDisplayName() {
+    	String displayName = null;
+    	if(StringUtils.isNotBlank(firstName) && StringUtils.isNotBlank(lastName)) {
+    		displayName = String.format("%s %s", firstName, lastName);
+    	} else if(StringUtils.isNotBlank(firstName)) {
+    		displayName = firstName;
+    	} else if(StringUtils.isNotBlank(lastName)) {
+    		displayName = lastName;
+    	}
+    	return displayName;
     }
 
 //    public String getCountry() {
@@ -760,6 +715,14 @@ public class UserEntity {
         this.dateChallengeRespChanged = dateChallengeRespChanged;
     }
 
+    public Date getDateITPolicyApproved() {
+        return dateITPolicyApproved;
+    }
+
+    public void setDateITPolicyApproved(Date dateITPolicyApproved) {
+        this.dateITPolicyApproved = dateITPolicyApproved;
+    }
+
     public Set<UserNoteEntity> getUserNotes() {
         return userNotes;
     }
@@ -866,6 +829,41 @@ public class UserEntity {
     		}
     	}
     }
+    
+    public void addUserAttribute(final UserAttributeEntity entity) {
+    	if(entity != null) {
+    		if(this.userAttributes == null) {
+    			this.userAttributes = new HashMap<String, UserAttributeEntity>();
+    		}
+    		this.userAttributes.put(entity.getName(), entity);
+    	}
+    }
+    
+    public void removeUserAttribute(final String id) {
+    	if(id != null && this.userAttributes != null) {
+    		final Set<Entry<String, UserAttributeEntity>> entrySet = this.userAttributes.entrySet();
+    		if(entrySet != null) {
+    			for(final Iterator<Entry<String, UserAttributeEntity>> it = entrySet.iterator(); it.hasNext();) {
+    				final Entry<String, UserAttributeEntity> entry = it.next();
+    				final UserAttributeEntity value = entry.getValue();
+    				if(value != null && StringUtils.equals(value.getId(), id)) {
+    					it.remove();
+    					break;
+    				}
+    			}
+    		}
+    	}
+    }
+    
+    public void updateUserAttribute(final UserAttributeEntity entity) {
+    	if(entity != null && this.userAttributes != null) {
+    		final UserAttributeEntity attribute = this.userAttributes.get(entity.getName());
+    		if(attribute != null) {
+    			attribute.setElement(entity.getElement());
+    			attribute.setValue(entity.getValue());
+    		}
+    	}
+    }
 
     public void setUserGroups(Set<UserGroupEntity> userGroups) {
         this.userGroups = userGroups;
@@ -887,273 +885,222 @@ public class UserEntity {
 		this.resourceUsers = resourceUsers;
 	}
 
-//    public OrganizationEntity getOrganization() {
-//        return organization;
-//    }
-//
-//    public void setOrganization(OrganizationEntity organization) {
-//        this.organization = organization;
-//    }
-//
-//    public OrganizationEntity getDivisionEntity() {
-//        return divisionEntity;
-//    }
-//
-//    public void setDivisionEntity(OrganizationEntity divisionEntity) {
-//        this.divisionEntity = divisionEntity;
-//    }
-//
-//    public OrganizationEntity getDepartment() {
-//        return department;
-//    }
-//
-//    public void setDepartment(OrganizationEntity department) {
-//        this.department = department;
-//    }
+	public Set<UserAffiliationEntity> getAffiliations() {
+		return affiliations;
+	}
 
-public void updateUser(UserEntity newUser) {
-    if (newUser.getBirthdate() != null) {
-        if (newUser.getBirthdate().equals(BaseConstants.NULL_DATE)) {
-            this.birthdate = null;
-        } else {
-            this.birthdate = newUser.getBirthdate();
-        }
-    }
-    if (newUser.getClassification() != null) {
-        if (newUser.getClassification().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-            this.classification = null;
-        } else {
-            this.classification = newUser.getClassification();
-        }
-    }
-    if (newUser.getCompanyId() != null) {
-        if (newUser.getCompanyId().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-            this.companyId = null;
-        } else {
-            this.companyId = newUser.getCompanyId();
-        }
-    }
-    if (newUser.getCostCenter() != null) {
-        if (newUser.getCostCenter().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-            this.costCenter = null;
-        } else {
-            this.costCenter = newUser.getCostCenter();
-        }
-    }
-    if (newUser.getDeptCd() != null) {
-        if (newUser.getDeptCd().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-            this.deptCd = null;
-        } else {
-            this.deptCd = newUser.getDeptCd();
-        }
-    }
-    if (newUser.getDeptName() != null) {
-        if (newUser.getDeptName().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-            this.deptName = null;
-        } else {
-            this.deptName = newUser.getDeptName();
-        }
-    }
-    if (newUser.getDivision() != null) {
-        if (newUser.getDivision().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-            this.division = null;
-        } else {
-            this.division = newUser.getDivision();
-        }
-    }
+	public void setAffiliations(Set<UserAffiliationEntity> affiliations) {
+		this.affiliations = affiliations;
+	}
 
-    if (newUser.getEmployeeId() != null) {
-        if (newUser.getEmployeeId().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-            this.employeeId = null;
-        } else {
-            this.employeeId = newUser.getEmployeeId();
-        }
-    }
-    if (newUser.getEmployeeType() != null) {
-        if (newUser.getEmployeeType().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-            this.employeeType = null;
-        } else {
-            this.employeeType = newUser.getEmployeeType();
-        }
-    }
-    if (newUser.getFirstName() != null) {
-        if (newUser.getFirstName().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-            this.firstName = null;
-        } else {
-            this.firstName = newUser.getFirstName();
-        }
-    }
-    if (newUser.getJobCode() != null) {
-        if (newUser.getJobCode().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-            this.jobCode = null;
-        } else {
-            this.jobCode = newUser.getJobCode();
-        }
-    }
-    if (newUser.getLastName() != null) {
-        if (newUser.getLastName().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-            this.lastName = null;
-        } else {
-            this.lastName = newUser.getLastName();
-        }
-    }
-    if (newUser.getLastDate() != null) {
-        if (newUser.getLastDate().equals(BaseConstants.NULL_DATE)) {
-            this.lastDate = null;
-        } else {
-            this.lastDate = newUser.getLastDate();
-        }
-    }
-    if (newUser.getLocationCd() != null) {
-        if (newUser.getLocationCd().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-            this.locationCd = null;
-        } else {
-            this.locationCd = newUser.getLocationCd();
-        }
-    }
-    if (newUser.getLocationName() != null) {
-        if (newUser.getLocationName().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-            this.locationName = null;
-        } else {
-            this.locationName = newUser.getLocationName();
-        }
-    }
-    if (newUser.getMaidenName() != null) {
-        if (newUser.getMaidenName().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-            this.maidenName = null;
-        } else {
-            this.maidenName = newUser.getMaidenName();
-        }
-    }
-    if (newUser.getMailCode() != null) {
-        if (newUser.getMailCode().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-            this.mailCode = newUser.getMailCode();
-        } else {
-            this.mailCode = null;
-        }
-    }
-    if (newUser.getMetadataTypeId() != null) {
-        if (newUser.getMetadataTypeId().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-            this.metadataTypeId = null;
-        } else {
-            this.metadataTypeId = newUser.getMetadataTypeId();
-        }
-    }
-    if (newUser.getMiddleInit() != null) {
-        if (newUser.getMiddleInit().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-            this.middleInit = null;
-        } else {
-            this.middleInit = newUser.getMiddleInit();
-        }
-    }
-    if (newUser.getNickname() != null) {
-        if (newUser.getNickname().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-            this.nickname = null;
-        } else {
-            this.nickname = newUser.getNickname();
-        }
-    }
-    if (newUser.getPasswordTheme() != null) {
-        if (newUser.getPasswordTheme().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-            this.passwordTheme = null;
-        } else {
-            this.passwordTheme = newUser.getPasswordTheme();
-        }
-    }
-    if (newUser.getPrefix() != null) {
-        if (newUser.getPrefix().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-            this.prefix = null;
-        } else {
-            this.prefix = newUser.getPrefix();
-        }
-    }
-    if (newUser.getSecondaryStatus() != null) {
-        this.secondaryStatus = newUser.getSecondaryStatus();
-    }
-    if (newUser.getSex() != null) {
-        if (newUser.getSex().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-            this.sex = null;
-        } else {
-            this.sex = newUser.getSex();
-        }
-    }
-    if (newUser.getStartDate() != null) {
-        if (newUser.getStartDate().equals(BaseConstants.NULL_DATE)) {
-            this.startDate = null;
-        } else {
-            this.startDate = newUser.getStartDate();
-        }
-    }
-
-    if (newUser.getStatus() != null) {
-        this.status = newUser.getStatus();
-    }
-    if (newUser.getSuffix() != null) {
-        if (newUser.getSuffix().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-            this.suffix = null;
-        } else {
-            this.suffix = newUser.getSuffix();
-        }
-    }
-    if (newUser.getShowInSearch() != null) {
-        if (newUser.getShowInSearch().equals(BaseConstants.NULL_INTEGER)) {
-            this.showInSearch = 0;
-        } else {
-            this.showInSearch = newUser.getShowInSearch();
-        }
-    }
-    if (newUser.getTitle() != null) {
-        if (newUser.getTitle().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-            this.title = null;
-        } else {
-            this.title = newUser.getTitle();
-        }
-    }
-    if (newUser.getUserTypeInd() != null) {
-        if (newUser.getUserTypeInd().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-            this.userTypeInd = null;
-        } else {
-            this.userTypeInd = newUser.getUserTypeInd();
-        }
-    }
-    if (newUser.getManagerId() != null) {
-        if (newUser.getManagerId().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-            this.managerId = null;
-        } else {
-            this.managerId = newUser.getManagerId();
-        }
-    }
-    if (newUser.getAlternateContactId() != null) {
-        if (newUser.getAlternateContactId().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-            this.alternateContactId = null;
-        } else {
-            this.alternateContactId = newUser.getAlternateContactId();
-        }
-    }
-
-    if (newUser.getUserOwnerId() != null) {
-        if (newUser.getUserOwnerId().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
-            this.userOwnerId = null;
-        } else {
-            this.userOwnerId = newUser.getUserOwnerId();
-        }
-    }
-    if (newUser.getDateChallengeRespChanged() != null) {
-        if (newUser.getDateChallengeRespChanged().equals(BaseConstants.NULL_DATE)) {
-            this.dateChallengeRespChanged = null;
-        } else {
-            this.dateChallengeRespChanged = newUser.getDateChallengeRespChanged();
-        }
-    }
-    if (newUser.getDatePasswordChanged() != null) {
-        if (newUser.getDatePasswordChanged().equals(BaseConstants.NULL_DATE)) {
-            this.datePasswordChanged = null;
-        } else {
-            this.datePasswordChanged = newUser.getDatePasswordChanged();
-        }
-    }
-
-}
+	public void updateUser(UserEntity newUser) {
+	    if (newUser.getBirthdate() != null) {
+	        if (newUser.getBirthdate().equals(BaseConstants.NULL_DATE)) {
+	            this.birthdate = null;
+	        } else {
+	            this.birthdate = newUser.getBirthdate();
+	        }
+	    }
+	    if (newUser.getClassification() != null) {
+	        if (newUser.getClassification().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+	            this.classification = null;
+	        } else {
+	            this.classification = newUser.getClassification();
+	        }
+	    }
+	    if (newUser.getCostCenter() != null) {
+	        if (newUser.getCostCenter().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+	            this.costCenter = null;
+	        } else {
+	            this.costCenter = newUser.getCostCenter();
+	        }
+	    }
+	   
+	    if (newUser.getEmployeeId() != null) {
+	        if (newUser.getEmployeeId().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+	            this.employeeId = null;
+	        } else {
+	            this.employeeId = newUser.getEmployeeId();
+	        }
+	    }
+	    if (newUser.getEmployeeType() != null) {
+	        if (newUser.getEmployeeType().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+	            this.employeeType = null;
+	        } else {
+	            this.employeeType = newUser.getEmployeeType();
+	        }
+	    }
+	    if (newUser.getFirstName() != null) {
+	        if (newUser.getFirstName().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+	            this.firstName = null;
+	        } else {
+	            this.firstName = newUser.getFirstName();
+	        }
+	    }
+	    if (newUser.getJobCode() != null) {
+	        if (newUser.getJobCode().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+	            this.jobCode = null;
+	        } else {
+	            this.jobCode = newUser.getJobCode();
+	        }
+	    }
+	    if (newUser.getLastName() != null) {
+	        if (newUser.getLastName().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+	            this.lastName = null;
+	        } else {
+	            this.lastName = newUser.getLastName();
+	        }
+	    }
+	    if (newUser.getLastDate() != null) {
+	        if (newUser.getLastDate().equals(BaseConstants.NULL_DATE)) {
+	            this.lastDate = null;
+	        } else {
+	            this.lastDate = newUser.getLastDate();
+	        }
+	    }
+	    if (newUser.getLocationCd() != null) {
+	        if (newUser.getLocationCd().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+	            this.locationCd = null;
+	        } else {
+	            this.locationCd = newUser.getLocationCd();
+	        }
+	    }
+	    if (newUser.getLocationName() != null) {
+	        if (newUser.getLocationName().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+	            this.locationName = null;
+	        } else {
+	            this.locationName = newUser.getLocationName();
+	        }
+	    }
+	    if (newUser.getMaidenName() != null) {
+	        if (newUser.getMaidenName().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+	            this.maidenName = null;
+	        } else {
+	            this.maidenName = newUser.getMaidenName();
+	        }
+	    }
+	    if (newUser.getMailCode() != null) {
+	        if (newUser.getMailCode().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+	            this.mailCode = newUser.getMailCode();
+	        } else {
+	            this.mailCode = null;
+	        }
+	    }
+	    if (newUser.getMetadataTypeId() != null) {
+	        if (newUser.getMetadataTypeId().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+	            this.metadataTypeId = null;
+	        } else {
+	            this.metadataTypeId = newUser.getMetadataTypeId();
+	        }
+	    }
+	    if (newUser.getMiddleInit() != null) {
+	        if (newUser.getMiddleInit().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+	            this.middleInit = null;
+	        } else {
+	            this.middleInit = newUser.getMiddleInit();
+	        }
+	    }
+	    if (newUser.getNickname() != null) {
+	        if (newUser.getNickname().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+	            this.nickname = null;
+	        } else {
+	            this.nickname = newUser.getNickname();
+	        }
+	    }
+	    if (newUser.getPasswordTheme() != null) {
+	        if (newUser.getPasswordTheme().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+	            this.passwordTheme = null;
+	        } else {
+	            this.passwordTheme = newUser.getPasswordTheme();
+	        }
+	    }
+	    if (newUser.getPrefix() != null) {
+	        if (newUser.getPrefix().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+	            this.prefix = null;
+	        } else {
+	            this.prefix = newUser.getPrefix();
+	        }
+	    }
+	    if (newUser.getSecondaryStatus() != null) {
+	        this.secondaryStatus = newUser.getSecondaryStatus();
+	    }
+	    if (newUser.getSex() != null) {
+	        if (newUser.getSex().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+	            this.sex = null;
+	        } else {
+	            this.sex = newUser.getSex();
+	        }
+	    }
+	    if (newUser.getStartDate() != null) {
+	        if (newUser.getStartDate().equals(BaseConstants.NULL_DATE)) {
+	            this.startDate = null;
+	        } else {
+	            this.startDate = newUser.getStartDate();
+	        }
+	    }
+	
+	    if (newUser.getStatus() != null) {
+	        this.status = newUser.getStatus();
+	    }
+	    if (newUser.getSuffix() != null) {
+	        if (newUser.getSuffix().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+	            this.suffix = null;
+	        } else {
+	            this.suffix = newUser.getSuffix();
+	        }
+	    }
+	    if (newUser.getShowInSearch() != null) {
+	        if (newUser.getShowInSearch().equals(BaseConstants.NULL_INTEGER)) {
+	            this.showInSearch = 0;
+	        } else {
+	            this.showInSearch = newUser.getShowInSearch();
+	        }
+	    }
+	    if (newUser.getTitle() != null) {
+	        if (newUser.getTitle().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+	            this.title = null;
+	        } else {
+	            this.title = newUser.getTitle();
+	        }
+	    }
+	    if (newUser.getUserTypeInd() != null) {
+	        if (newUser.getUserTypeInd().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+	            this.userTypeInd = null;
+	        } else {
+	            this.userTypeInd = newUser.getUserTypeInd();
+	        }
+	    }
+	    if (newUser.getAlternateContactId() != null) {
+	        if (newUser.getAlternateContactId().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+	            this.alternateContactId = null;
+	        } else {
+	            this.alternateContactId = newUser.getAlternateContactId();
+	        }
+	    }
+	
+	    if (newUser.getUserOwnerId() != null) {
+	        if (newUser.getUserOwnerId().equalsIgnoreCase(BaseConstants.NULL_STRING)) {
+	            this.userOwnerId = null;
+	        } else {
+	            this.userOwnerId = newUser.getUserOwnerId();
+	        }
+	    }
+	    if (newUser.getDateChallengeRespChanged() != null) {
+	        if (newUser.getDateChallengeRespChanged().equals(BaseConstants.NULL_DATE)) {
+	            this.dateChallengeRespChanged = null;
+	        } else {
+	            this.dateChallengeRespChanged = newUser.getDateChallengeRespChanged();
+	        }
+	    }
+	    if (newUser.getDatePasswordChanged() != null) {
+	        if (newUser.getDatePasswordChanged().equals(BaseConstants.NULL_DATE)) {
+	            this.datePasswordChanged = null;
+	        } else {
+	            this.datePasswordChanged = newUser.getDatePasswordChanged();
+	        }
+	    }
+	
+	}
 
     @Override
 	public int hashCode() {
@@ -1168,8 +1115,6 @@ public void updateUser(UserEntity newUser) {
 		result = prime * result
 				+ ((classification == null) ? 0 : classification.hashCode());
 		result = prime * result
-				+ ((companyId == null) ? 0 : companyId.hashCode());
-		result = prime * result
 				+ ((companyOwnerId == null) ? 0 : companyOwnerId.hashCode());
 		result = prime * result
 				+ ((costCenter == null) ? 0 : costCenter.hashCode());
@@ -1181,15 +1126,14 @@ public void updateUser(UserEntity newUser) {
 				* result
 				+ ((dateChallengeRespChanged == null) ? 0
 						: dateChallengeRespChanged.hashCode());
+        result = prime
+                * result
+                + ((dateITPolicyApproved == null) ? 0
+                        : dateITPolicyApproved.hashCode());
 		result = prime
 				* result
 				+ ((datePasswordChanged == null) ? 0 : datePasswordChanged
 						.hashCode());
-		result = prime * result + ((deptCd == null) ? 0 : deptCd.hashCode());
-		result = prime * result
-				+ ((deptName == null) ? 0 : deptName.hashCode());
-		result = prime * result
-				+ ((division == null) ? 0 : division.hashCode());
 		result = prime * result
 				+ ((employeeId == null) ? 0 : employeeId.hashCode());
 		result = prime * result
@@ -1214,15 +1158,11 @@ public void updateUser(UserEntity newUser) {
 		result = prime * result
 				+ ((mailCode == null) ? 0 : mailCode.hashCode());
 		result = prime * result
-				+ ((managerId == null) ? 0 : managerId.hashCode());
-		result = prime * result
 				+ ((metadataTypeId == null) ? 0 : metadataTypeId.hashCode());
 		result = prime * result
 				+ ((middleInit == null) ? 0 : middleInit.hashCode());
 		result = prime * result
 				+ ((nickname == null) ? 0 : nickname.hashCode());
-		result = prime * result
-				+ ((organization == null) ? 0 : organization.hashCode());
 		result = prime * result
 				+ ((passwordTheme == null) ? 0 : passwordTheme.hashCode());
 		result = prime * result + ((prefix == null) ? 0 : prefix.hashCode());
@@ -1270,11 +1210,6 @@ public void updateUser(UserEntity newUser) {
 				return false;
 		} else if (!classification.equals(other.classification))
 			return false;
-		if (companyId == null) {
-			if (other.companyId != null)
-				return false;
-		} else if (!companyId.equals(other.companyId))
-			return false;
 		if (companyOwnerId == null) {
 			if (other.companyOwnerId != null)
 				return false;
@@ -1301,25 +1236,16 @@ public void updateUser(UserEntity newUser) {
 		} else if (!dateChallengeRespChanged
 				.equals(other.dateChallengeRespChanged))
 			return false;
+        if (dateITPolicyApproved == null) {
+            if (other.dateITPolicyApproved != null)
+                return false;
+        } else if (!dateITPolicyApproved
+                .equals(other.dateITPolicyApproved))
+            return false;
 		if (datePasswordChanged == null) {
 			if (other.datePasswordChanged != null)
 				return false;
 		} else if (!datePasswordChanged.equals(other.datePasswordChanged))
-			return false;
-		if (deptCd == null) {
-			if (other.deptCd != null)
-				return false;
-		} else if (!deptCd.equals(other.deptCd))
-			return false;
-		if (deptName == null) {
-			if (other.deptName != null)
-				return false;
-		} else if (!deptName.equals(other.deptName))
-			return false;
-		if (division == null) {
-			if (other.division != null)
-				return false;
-		} else if (!division.equals(other.division))
 			return false;
 		if (employeeId == null) {
 			if (other.employeeId != null)
@@ -1381,11 +1307,6 @@ public void updateUser(UserEntity newUser) {
 				return false;
 		} else if (!mailCode.equals(other.mailCode))
 			return false;
-		if (managerId == null) {
-			if (other.managerId != null)
-				return false;
-		} else if (!managerId.equals(other.managerId))
-			return false;
 		if (metadataTypeId == null) {
 			if (other.metadataTypeId != null)
 				return false;
@@ -1400,11 +1321,6 @@ public void updateUser(UserEntity newUser) {
 			if (other.nickname != null)
 				return false;
 		} else if (!nickname.equals(other.nickname))
-			return false;
-		if (organization == null) {
-			if (other.organization != null)
-				return false;
-		} else if (!organization.equals(other.organization))
 			return false;
 		if (passwordTheme == null) {
 			if (other.passwordTheme != null)
