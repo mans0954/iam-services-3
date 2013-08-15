@@ -106,7 +106,6 @@ public class RemoteConnectorAdapter {
                     if (msg.getPayload() != null && msg.getPayload() instanceof ObjectResponse) {
                         return (ObjectResponse) msg.getPayload();
                     }
-                    resp.setStatus(StatusCodeType.SUCCESS);
                     return resp;
                 } else {
                     log.debug("MuleMessage is null..");
@@ -123,7 +122,6 @@ public class RemoteConnectorAdapter {
             if (msg.getPayload() != null && msg.getPayload() instanceof SearchResponse) {
                 return (SearchResponse) msg.getPayload();
             }
-            resp.setStatus(StatusCodeType.SUCCESS);
             return resp;
         } else {
             log.debug("MuleMessage is null..");

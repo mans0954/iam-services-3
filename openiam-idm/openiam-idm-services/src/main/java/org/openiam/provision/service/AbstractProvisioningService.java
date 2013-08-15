@@ -2329,7 +2329,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                     continue;
                 }
 
-                if (output != null) {
+
                     String objectType = attr.getMapForObjectType();
                     if (objectType != null) {
 
@@ -2338,7 +2338,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                                 + " attribute name=" + attr.getAttributeName());
 
                         if (objectType.equalsIgnoreCase("USER") || objectType.equalsIgnoreCase("PASSWORD")) {
-
+                            if (output != null) {
                             ExtensibleAttribute newAttr;
                             if (output instanceof String) {
 
@@ -2378,14 +2378,13 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
                                 log.debug("buildModifyFromRules: added attribute to extUser:" + attr.getAttributeName());
                             }
-
+                            }
                         } else if (objectType.equalsIgnoreCase("PRINCIPAL")) {
 
                             extUser.setPrincipalFieldName(attr.getAttributeName());
                             extUser.setPrincipalFieldDataType(attr.getDataType());
 
                         }
-                    }
                 }
             }
 

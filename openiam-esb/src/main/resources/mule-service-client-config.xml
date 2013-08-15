@@ -231,7 +231,7 @@
 		<outbound-endpoint responseTimeout="18000000"
 			address="http://#[header:INBOUND:serviceName]" exchange-pattern="request-response">
 
-			<cxf:jaxws-client serviceClass="org.openiam.connector.RemoteConnectorService"
+			<cxf:jaxws-client serviceClass="org.openiam.connector.ConnectorService"
 				operation="testConnection">
 			</cxf:jaxws-client>
 		</outbound-endpoint>
@@ -246,7 +246,7 @@
 		<outbound-endpoint responseTimeout="18000000"
 			address="http://#[header:INBOUND:serviceName]" exchange-pattern="request-response">
 
-			<cxf:jaxws-client serviceClass="org.openiam.connector.RemoteConnectorService"
+			<cxf:jaxws-client serviceClass="org.openiam.connector.ConnectorService"
 				operation="add">
 			</cxf:jaxws-client>
 		</outbound-endpoint>
@@ -261,7 +261,7 @@
 		<outbound-endpoint responseTimeout="18000000"
 			address="http://#[header:INBOUND:serviceName]" exchange-pattern="request-response">
 
-			<cxf:jaxws-client serviceClass="org.openiam.connector.RemoteConnectorService"
+			<cxf:jaxws-client serviceClass="org.openiam.connector.ConnectorService"
 				operation="modify">
 			</cxf:jaxws-client>
 		</outbound-endpoint>
@@ -275,7 +275,7 @@
 		<outbound-endpoint responseTimeout="18000000"
 			address="http://#[header:INBOUND:serviceName]" exchange-pattern="request-response">
 
-			<cxf:jaxws-client serviceClass="org.openiam.connector.RemoteConnectorService"
+			<cxf:jaxws-client serviceClass="org.openiam.connector.ConnectorService"
 				operation="delete">
 			</cxf:jaxws-client>
 		</outbound-endpoint>
@@ -289,7 +289,7 @@
 		<outbound-endpoint responseTimeout="18000000"
 			address="http://#[header:INBOUND:serviceName]" exchange-pattern="request-response">
 
-			<cxf:jaxws-client serviceClass="org.openiam.connector.RemoteConnectorService"
+			<cxf:jaxws-client serviceClass="org.openiam.connector.ConnectorService"
 				operation="resetPassword">
 			</cxf:jaxws-client>
 		</outbound-endpoint>
@@ -303,7 +303,7 @@
 		<outbound-endpoint responseTimeout="18000000"
 			address="http://#[header:INBOUND:serviceName]" exchange-pattern="request-response">
 
-			<cxf:jaxws-client serviceClass="org.openiam.connector.RemoteConnectorService"
+			<cxf:jaxws-client serviceClass="org.openiam.connector.ConnectorService"
 				operation="setPassword">
 			</cxf:jaxws-client>
 		</outbound-endpoint>
@@ -317,7 +317,7 @@
 		<outbound-endpoint responseTimeout="18000000"
 			address="http://#[header:INBOUND:serviceName]" exchange-pattern="request-response">
 
-			<cxf:jaxws-client serviceClass="org.openiam.connector.RemoteConnectorService"
+			<cxf:jaxws-client serviceClass="org.openiam.connector.ConnectorService"
 				operation="resume">
 			</cxf:jaxws-client>
 		</outbound-endpoint>
@@ -331,7 +331,7 @@
 		<outbound-endpoint responseTimeout="18000000"
 			address="http://#[header:INBOUND:serviceName]" exchange-pattern="request-response">
 
-			<cxf:jaxws-client serviceClass="org.openiam.connector.RemoteConnectorService"
+			<cxf:jaxws-client serviceClass="org.openiam.connector.ConnectorService"
 				operation="suspend">
 			</cxf:jaxws-client>
 		</outbound-endpoint>
@@ -345,7 +345,7 @@
 		<outbound-endpoint responseTimeout="18000000"
 			address="http://#[header:INBOUND:serviceName]" exchange-pattern="request-response">
 
-			<cxf:jaxws-client serviceClass="org.openiam.connector.RemoteConnectorService"
+			<cxf:jaxws-client serviceClass="org.openiam.connector.ConnectorService"
 				operation="lookup">
 			</cxf:jaxws-client>
 		</outbound-endpoint>
@@ -359,7 +359,7 @@
 		<outbound-endpoint responseTimeout="18000000"
 			address="http://#[header:INBOUND:serviceName]" exchange-pattern="request-response">
 
-			<cxf:jaxws-client serviceClass="org.openiam.connector.RemoteConnectorService"
+			<cxf:jaxws-client serviceClass="org.openiam.connector.ConnectorService"
 				operation="reconcileResource">
 			</cxf:jaxws-client>
 		</outbound-endpoint>
@@ -373,7 +373,7 @@
                                address="http://#[header:INBOUND:serviceName]"
                                exchange-pattern="request-response" >
 
-                <cxf:jaxws-client serviceClass="org.openiam.connector.RemoteConnectorService" operation="search" >
+                <cxf:jaxws-client serviceClass="org.openiam.connector.ConnectorService" operation="search" >
                 </cxf:jaxws-client>
             </outbound-endpoint>
         </flow>
