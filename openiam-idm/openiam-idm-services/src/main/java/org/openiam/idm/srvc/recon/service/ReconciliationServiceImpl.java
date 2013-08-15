@@ -884,6 +884,10 @@ public class ReconciliationServiceImpl implements ReconciliationService,
             int startPos = (page - 1) * size;
             int endPos = page * size;
             endPos = endPos > rows.size() ? rows.size() : endPos;
+            if (CollectionUtils.isEmpty(rows)) {
+                endPos = 0;
+                return resultBean;
+            }
             {
                 List<ReconciliationResultRow> filteredRow = new ArrayList<ReconciliationResultRow>();
                 for (int i = startPos; i < endPos; i++) {

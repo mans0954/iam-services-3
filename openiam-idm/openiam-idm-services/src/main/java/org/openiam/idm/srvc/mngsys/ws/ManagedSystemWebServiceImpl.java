@@ -45,12 +45,16 @@ import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 @Service("managedSysService")
 @WebService(endpointInterface = "org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService", targetNamespace = "urn:idm.openiam.org/srvc/mngsys/service", portName = "ManagedSystemWebServicePort", serviceName = "ManagedSystemWebService")
 public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
+
+    @Value("${org.openiam.idm.system.user.id}")
+    private String systemUserId;
 
     @Autowired
     private ManagedSystemService managedSystemService;
@@ -131,7 +135,8 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
 
         if (encrypt && sys.getPswd() != null) {
             try {
-                sys.setPswd(cryptor.encrypt(null, sys.getPswd()));
+                sys.setPswd(cryptor.encrypt(keyManagementService.getUserKey(
+                        systemUserId, KeyName.password.name()), sys.getPswd()));
             } catch (Exception e) {
                 log.error(e);
             }
@@ -157,7 +162,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
             if (sysDto != null && sysDto.getPswd() != null) {
                 try {
                     sysDto.setDecryptPassword(cryptor.decrypt(
-                            keyManagementService.getUserKey(sys.getUserId(),
+                            keyManagementService.getUserKey(systemUserId,
                                     KeyName.password.name()), sys.getPswd()));
                 } catch (Exception e) {
                     log.error(e);
@@ -236,8 +241,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
         if (encrypt && sys.getPswd() != null) {
             try {
                 sys.setPswd(cryptor.encrypt(keyManagementService.getUserKey(
-                        sys.getUserId(), KeyName.password.name()), sys
-                        .getPswd()));
+                        systemUserId, KeyName.password.name()), sys.getPswd()));
             } catch (Exception e) {
                 log.error(e);
             }
@@ -287,7 +291,7 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
             if (sysDto != null && sysDto.getPswd() != null) {
                 try {
                     sysDto.setDecryptPassword(cryptor.decrypt(
-                            keyManagementService.getUserKey(sys.getUserId(),
+                            keyManagementService.getUserKey(systemUserId,
                                     KeyName.password.name()), sys.getPswd()));
                 } catch (Exception e) {
                     log.error(e);

@@ -53,7 +53,7 @@ public abstract  class AbstractCrudShellCommand<ExtObject extends ExtensibleObje
 
         String host = configuration.getManagedSys().getHostUrl();
         String hostlogin = configuration.getManagedSys().getUserId();
-        String hostpassword = getDecryptedPassword(configuration.getManagedSys().getUserId(), configuration.getManagedSys().getPswd());
+        String hostpassword = getDecryptedPassword(configuration.getManagedSys().getPswd());
 
 
 

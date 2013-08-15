@@ -34,7 +34,7 @@ public class ResumeSalesForceCommand  extends AbstractSalesforceCommand<SuspendR
 
         try {
             final SalesForceDao dao = new CallerDependentSalesForceDao(configuration.getManagedSys().getUserId(),
-                                                                       getDecryptedPassword(configuration.getManagedSys().getUserId(), configuration.getManagedSys().getPswd()),
+                                                                       getDecryptedPassword(configuration.getManagedSys().getPswd()),
                                                                        configuration.getManagedSys().getConnectionString(), null);
             dao.undeleteByUserName(principalName);
             return response;

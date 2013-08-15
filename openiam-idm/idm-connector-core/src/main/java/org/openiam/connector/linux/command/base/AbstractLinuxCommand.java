@@ -34,7 +34,7 @@ public abstract class AbstractLinuxCommand<Request extends RequestType, Response
                 if ((ssh = sshConnectionFactory.getSSH(managedSysId)) == null)
                     ssh = sshConnectionFactory.addSSH(managedSysId, managedSys.getHostUrl(),
                                                       managedSys.getPort(), managedSys.getUserId(),
-                                                      this.getDecryptedPassword(managedSys.getUserId(), managedSys.getPswd()));
+                                                      this.getDecryptedPassword(managedSys.getPswd()));
             }
         }
         if(ssh==null)

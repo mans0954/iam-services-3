@@ -35,7 +35,7 @@ public class SetPasswordSalesForceCommand extends AbstractSalesforceCommand<Pass
 
         try {
             final SalesForceDao dao = new CallerDependentSalesForceDao(configuration.getManagedSys().getUserId(),
-                                                                        getDecryptedPassword(configuration.getManagedSys().getUserId(), configuration.getManagedSys().getPswd()),
+                                                                        getDecryptedPassword(configuration.getManagedSys().getPswd()),
                                                                         configuration.getManagedSys().getConnectionString(), null);
             dao.setPasswordByUserName(principalName, password);
             return response;

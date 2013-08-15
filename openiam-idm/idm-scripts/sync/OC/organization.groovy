@@ -6,17 +6,23 @@ def homeDeptCd = attribute.value
 
 def organizationService = context?.getBean("organizationService") as OrganizationService
 def organizationDozerConverter = context?.getBean("organizationDozerConverter") as OrganizationDozerConverter
-def orgEntity = organizationService?.getOrganizationByName("County of Orange", null)
-def organization = organizationDozerConverter?.convertToDTO(orgEntity, false)
-if (organization) {
+
+def orgSearchBean = new OrganizationSearchBean()
+orgSearchBean.organizationName = "County of Orange"
+orgSearchBean.organizationTypeId = "ORGANIZATION"
+def orgList = organizationService.findBeans(orgSearchBean, null, 0, 1)
+if (orgList) {
+    def organization = organizationDozerConverter?.convertToDTO(orgList.get(0), false)
     pUser.addUserAffiliation(organization)
 }
+
 if (homeDeptCd) {
-    def searchBean = new OrganizationSearchBean()
-    searchBean.internalOrgId = homeDeptCd
-    def list = organizationService.findBeans(searchBean, null, 0, 1)
-    if (list) {
-        def department = organizationDozerConverter?.convertToDTO(list.get(0), false)
+    def deptSearchBean = new OrganizationSearchBean()
+    deptSearchBean.internalOrgId = homeDeptCd.substring(1)
+    deptSearchBean.organizationTypeId = "DEPARTMENT"
+    def deptList = organizationService.findBeans(deptSearchBean, null, 0, 1)
+    if (deptList) {
+        def department = organizationDozerConverter?.convertToDTO(deptList.get(0), false)
         pUser.addUserAffiliation(department)
     }
 }

@@ -54,6 +54,8 @@ public abstract class AbstractCommand<Request extends RequestType, Response exte
 
     @Value("${openiam.default_managed_sys}")
     protected String defaultManagedSysId;
+    @Value("${org.openiam.idm.system.user.id}")
+    private String systemUserId;
 
 
 
@@ -76,11 +78,11 @@ public abstract class AbstractCommand<Request extends RequestType, Response exte
         return matchObj;
     }
 
-    protected String getDecryptedPassword(String userId, String encPwd) throws ConnectorDataException {
+    protected String getDecryptedPassword(String encPwd) throws ConnectorDataException {
         String result = null;
         if(encPwd!=null){
             try {
-                result = cryptor.decrypt(keyManagementService.getUserKey(userId, KeyName.password.name()), encPwd);
+                result = cryptor.decrypt(keyManagementService.getUserKey(systemUserId, KeyName.password.name()), encPwd);
             } catch (Exception e) {
                 log.error(e);
                 throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, e.getMessage());

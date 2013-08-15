@@ -35,7 +35,7 @@ public class SuspendUserGoogleAppsCommand extends AbstractGoogleAppsCommand<Susp
         UserService userService = new UserService(GOOGLE_APPS_USER_SERVICE);
 
         try {
-            userService.setUserCredentials(config.getManagedSys().getUserId(), this.getDecryptedPassword(config.getManagedSys().getUserId(), config.getManagedSys().getPswd()));
+            userService.setUserCredentials(config.getManagedSys().getUserId(), this.getDecryptedPassword(config.getManagedSys().getPswd()));
             String domainUrlBase = APPS_FEEDS_URL_BASE + matchObj.getBaseDn()
                     + "/user/2.0";
             URL updateUrl = new URL(domainUrlBase + "/" + userName);

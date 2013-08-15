@@ -31,7 +31,7 @@ public class LookupUserSalesForceCommand extends AbstractLookupSalesForceCommand
     protected ObjectValue lookupObject(String principalName, ManagedSysEntity managedSys, Set<String> fieldNames) throws ConnectorDataException {
         ObjectValue resultObject=null;
         try {
-            final SalesForceDao dao = new CallerDependentSalesForceDao(managedSys.getUserId(), getDecryptedPassword(managedSys.getUserId(), managedSys.getPswd()),
+            final SalesForceDao dao = new CallerDependentSalesForceDao(managedSys.getUserId(), getDecryptedPassword(managedSys.getPswd()),
                     managedSys.getConnectionString(), fieldNames);
 
             final User user = dao.findByName(principalName);

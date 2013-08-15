@@ -27,7 +27,7 @@ public class DeleteUserGoogleAppsCommand extends AbstractCrudGoogleAppsCommand<E
         UserService userService = new UserService(GOOGLE_APPS_USER_SERVICE);
         try {
             userService.setUserCredentials(managedSys.getUserId(),
-                    this.getDecryptedPassword(managedSys.getUserId(), managedSys.getPswd()));
+                    this.getDecryptedPassword(managedSys.getPswd()));
             String domainUrlBase = APPS_FEEDS_URL_BASE + matchObj.getBaseDn() + "/user/2.0";
 
             URL deleteUrl = new URL(domainUrlBase + "/" + userName);
