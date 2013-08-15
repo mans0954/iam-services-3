@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.synch.srcadapter;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
@@ -27,15 +28,12 @@ public class MatchRuleFactory {
     private MatchObjectRule defaultMatchRule;
 
 	public MatchObjectRule create(SynchConfig config) throws ClassNotFoundException {
-
-		if (config.getCustomMatchRule() == null || config.getCustomMatchRule().length() == 0 ) {
+        String matchRule = config.getCustomMatchRule();
+		if (StringUtils.isBlank(matchRule)) {
 			return defaultMatchRule;
 		}
 		// instantiate a rule via script
-		String matchRule = config.getCustomMatchRule();
-		if (matchRule == null || matchRule.length() ==0) {
-			return null;
-		}
+
 		try {
 			return (MatchObjectRule)scriptRunner.instantiateClass(null, matchRule);
 		} catch(Exception e) {

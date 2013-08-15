@@ -74,7 +74,9 @@ public class TransformCapsCSVRecord extends AbstractTransformScript {
             }
         }
 
-        pUser.employeeId = columnMap.get("EMPLOYEE_ID")?.value
+        def customEmployeeId = columnMap.get("EMPLOYEE_ID")?.value as Integer
+        pUser.employeeId = customEmployeeId as String
+
         try {
             pUser.startDate = df.parse(columnMap.get("ORIG_HIRE_DT")?.value)
         } catch (ParseException parseException) {
