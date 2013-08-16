@@ -1,6 +1,7 @@
 package org.openiam.bpm.request;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -22,7 +23,8 @@ import org.openiam.idm.srvc.mngsys.domain.AssociationType;
     "description",
     "parameters",
     "customApproverAssociationIds",
-    "customApproverIds"
+    "customApproverIds",
+    "userCentricUserId"
 })
 public class GenericWorkflowRequest extends RequestorInformation {
 
@@ -34,6 +36,7 @@ public class GenericWorkflowRequest extends RequestorInformation {
 	private Map<String, Object> parameters;
 	private Set<String> customApproverAssociationIds;
 	private Set<String> customApproverIds;
+	private String userCentricUserId;
 
 	public String getActivitiRequestType() {
 		return activitiRequestType;
@@ -111,6 +114,19 @@ public class GenericWorkflowRequest extends RequestorInformation {
 	public void setCustomApproverIds(Set<String> customApproverIds) {
 		this.customApproverIds = customApproverIds;
 	}
-	
-	
+
+	public String getUserCentricUserId() {
+		return userCentricUserId;
+	}
+
+	public void setUserCentricUserId(String userCentricUserId) {
+		this.userCentricUserId = userCentricUserId;
+	}
+
+	public void addCustomApproverId(final String customApproverId) {
+		if(this.customApproverIds == null) {
+			this.customApproverIds = new HashSet<String>();
+		}
+		this.customApproverIds.add(customApproverId);
+	}
 }

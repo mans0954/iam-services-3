@@ -70,8 +70,8 @@ public abstract class AbstractDelegate implements JavaDelegate {
 						final List<SupervisorEntity> supervisors = userManager.getSupervisors(targetUserId);
 		                if(CollectionUtils.isNotEmpty(supervisors)) {
 		                	for(final SupervisorEntity supervisor : supervisors) {
-		                		if(supervisor.getEmployee() != null) {
-		                			userIds.add(supervisor.getEmployee().getUserId());
+		                		if(supervisor.getSupervisor() != null) {
+		                			userIds.add(supervisor.getSupervisor().getUserId());
 		                		}
 		                	}
 		                }

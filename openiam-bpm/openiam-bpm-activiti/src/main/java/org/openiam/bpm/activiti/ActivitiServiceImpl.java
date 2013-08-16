@@ -487,72 +487,69 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 				approverUserIds.addAll(request.getCustomApproverIds());
 			} else {
 				List<ApproverAssociationEntity> approverAssocationList = null;
-				if(CollectionUtils.isNotEmpty(request.getCustomApproverAssociationIds())) {
-					approverAssocationList = approverAssociationDao.findByIds(request.getCustomApproverAssociationIds());
-				} else {
-					/* for user target objects, use the groovy script */
-					if(AssociationType.USER.equals(request.getAssociationId())) {
-						try {
-							final UserCentricApproverAssociationIdentifier identifier = 
-									(UserCentricApproverAssociationIdentifier)scriptRunner.instantiateClass(null, approverAssociationScript);
-							final Map<String, Object> bindingMap = new HashMap<String, Object>();
-							bindingMap.put("USER", userDAO.findById(request.getAssociationId()));
-							identifier.init(bindingMap);
-							approverAssocationList = identifier.getApproverAssociations();
-						} catch(Throwable e) {
-							log.warn("Can't instantiate groovy class", e);
+				
+				/* for user target objects, use the supervisors - no approver association */
+				if(AssociationType.USER.equals(request.getAssociationType()) && StringUtils.isNotEmpty(request.getUserCentricUserId())) {
+					final List<SupervisorEntity> supervisors = supervisorDAO.findSupervisors(request.getUserCentricUserId());
+					if(CollectionUtils.isNotEmpty(supervisors)) {
+						for(final SupervisorEntity supervisor : supervisors) {
+							if(supervisor != null && supervisor.getSupervisor() != null) {
+								approverUserIds.add(supervisor.getSupervisor().getUserId());
+							}
 						}
+					}
+				} else {
+					if(CollectionUtils.isNotEmpty(request.getCustomApproverAssociationIds())) {
+						approverAssocationList = approverAssociationDao.findByIds(request.getCustomApproverAssociationIds());
 					} else {
 						approverAssocationList = approverAssociationDao.getByAssociation(request.getAssociationId(), request.getAssociationType());
 					}
-				}
-				
-				if(CollectionUtils.isEmpty(approverAssocationList)) {
-					log.warn(String.format("Can't find approver association for %s %s, using default approver association", request.getAssociationType(), request.getAssociationId()));
-					approverAssocationList = getDefaultApproverAssociations();
-				}
-				if(CollectionUtils.isNotEmpty(approverAssocationList)) {
-					for(final ApproverAssociationEntity entity : approverAssocationList) {
-						approverAssociationIds.add(entity.getId());
-						if(entity.getApproverEntityType() != null && StringUtils.isNotBlank(entity.getApproverEntityId())) {
-							final String approverId = entity.getApproverEntityId();
-							switch(entity.getApproverEntityType()) {
-								case GROUP:
-									final List<String> groupUsers = userGroupDAO.getUserIdsInGroup(approverId);
-									if(CollectionUtils.isNotEmpty(groupUsers)) {
-		    							approverUserIds.addAll(groupUsers);
-		    						}
-									break;
-								case ROLE:
-									final List<String> roleUsers = userRoleDAO.getUserIdsInRole(approverId);
-									if(CollectionUtils.isNotEmpty(roleUsers)) {
-										approverUserIds.addAll(roleUsers);
-									}
-									break;
-								case USER:
-									approverUserIds.add(approverId);
-									break;
-								case SUPERVISOR: /* assume association ID is a user */
-									final List<SupervisorEntity> supervisors = supervisorDAO.findSupervisors(request.getAssociationId());
-									if(CollectionUtils.isNotEmpty(supervisors)) {
-										for(final SupervisorEntity supervisor : supervisors) {
-											if(supervisor != null && supervisor.getEmployee() != null) {
-												approverUserIds.add(supervisor.getEmployee().getUserId());
+					if(CollectionUtils.isEmpty(approverAssocationList)) {
+						log.warn(String.format("Can't find approver association for %s %s, using default approver association", request.getAssociationType(), request.getAssociationId()));
+						approverAssocationList = getDefaultApproverAssociations();
+					}
+					if(CollectionUtils.isNotEmpty(approverAssocationList)) {
+						for(final ApproverAssociationEntity entity : approverAssocationList) {
+							approverAssociationIds.add(entity.getId());
+							if(entity.getApproverEntityType() != null && StringUtils.isNotBlank(entity.getApproverEntityId())) {
+								final String approverId = entity.getApproverEntityId();
+								switch(entity.getApproverEntityType()) {
+									case GROUP:
+										final List<String> groupUsers = userGroupDAO.getUserIdsInGroup(approverId);
+										if(CollectionUtils.isNotEmpty(groupUsers)) {
+			    							approverUserIds.addAll(groupUsers);
+			    						}
+										break;
+									case ROLE:
+										final List<String> roleUsers = userRoleDAO.getUserIdsInRole(approverId);
+										if(CollectionUtils.isNotEmpty(roleUsers)) {
+											approverUserIds.addAll(roleUsers);
+										}
+										break;
+									case USER:
+										approverUserIds.add(approverId);
+										break;
+									case SUPERVISOR: /* assume association ID is a user */
+										final List<SupervisorEntity> supervisors = supervisorDAO.findSupervisors(request.getAssociationId());
+										if(CollectionUtils.isNotEmpty(supervisors)) {
+											for(final SupervisorEntity supervisor : supervisors) {
+												if(supervisor != null && supervisor.getSupervisor() != null) {
+													approverUserIds.add(supervisor.getSupervisor().getUserId());
+												}
 											}
 										}
-									}
-									break;
-								default:
-									break;
+										break;
+									default:
+										break;
+								}
 							}
 						}
 					}
 				}
-				
-				if(CollectionUtils.isEmpty(approverUserIds)) {
-					log.warn("Could not found any approvers - using default user");
-	        		approverUserIds.add(defaultApproverUserId);
-	        	}
+			}
+			if(CollectionUtils.isEmpty(approverUserIds)) {
+				log.warn("Could not found any approvers - using default user");
+	        	approverUserIds.add(defaultApproverUserId);
 			}
 			
 			final Map<String, Object> variables = new HashMap<String, Object>();
