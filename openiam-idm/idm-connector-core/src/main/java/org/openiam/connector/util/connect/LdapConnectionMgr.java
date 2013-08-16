@@ -54,18 +54,19 @@ public class LdapConnectionMgr implements ConnectionMgr {
     	
     }
 
-    protected String getDecryptedPassword(String encPwd) throws ConnectorDataException {
+    protected String getDecryptedPassword(ManagedSysEntity managedSys) throws ConnectorDataException {
         String result = null;
-        if(encPwd!=null){
+        if( managedSys.getPswd()!=null){
             try {
-                result = cryptor.decrypt(keyManagementService.getUserKey(systemUserId, KeyName.password.name()), encPwd);
+                result = cryptor.decrypt(keyManagementService.getUserKey(systemUserId, KeyName.password.name()), managedSys.getPswd());
             } catch (Exception e) {
                 log.error(e);
                 throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, e.getMessage());
             }
         }
-        return null;
+        return result;
     }
+
 	public LdapContext connect(ManagedSysEntity managedSys)  throws NamingException{
 
 		LdapContext ldapContext = null;
@@ -87,7 +88,7 @@ public class LdapConnectionMgr implements ConnectionMgr {
 		}
         String decryptedPassword;
         try {
-            decryptedPassword = getDecryptedPassword(managedSys.getPswd());
+            decryptedPassword = getDecryptedPassword(managedSys);
         } catch (ConnectorDataException e) {
             decryptedPassword = managedSys.getPswd();
             e.printStackTrace();
