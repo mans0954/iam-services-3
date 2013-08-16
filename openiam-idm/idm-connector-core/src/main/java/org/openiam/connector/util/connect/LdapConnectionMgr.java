@@ -59,8 +59,10 @@ public class LdapConnectionMgr implements ConnectionMgr {
         log.debug("connect: Connecting to target system: " + managedSys.getManagedSysId() );
         log.debug("connect: Managed System object : " + managedSys);
 
-		//log.info(" directory login = " + managedSys.getUserId() );
-		//log.info(" directory login passowrd= " + managedSys.getDecryptPassword() );
+		log.info(" directory login = " + managedSys.getUserId() );
+		log.info(" directory login passwrd= " + managedSys.getPswd() );
+        log.info(" javax.net.ssl.trustStore= " + System.getProperty("javax.net.ssl.trustStore"));
+        log.info(" javax.net.ssl.keyStorePassword= " + System.getProperty("javax.net.ssl.keyStorePassword"));
 
 		envDC.put(Context.PROVIDER_URL,hostUrl);
 		envDC.put(Context.INITIAL_CONTEXT_FACTORY,"com.sun.jndi.ldap.LdapCtxFactory");		
@@ -75,9 +77,9 @@ public class LdapConnectionMgr implements ConnectionMgr {
 			envDC.put(Context.SECURITY_PROTOCOL, managedSys.getCommProtocol());
 		}
 		*/
-        if (managedSys.getCommProtocol() != null && managedSys.getCommProtocol().equalsIgnoreCase("SSL")) {
-            envDC.put(Context.SECURITY_PROTOCOL, "SSL");
-        }
+       // if (managedSys.getCommProtocol() != null && managedSys.getCommProtocol().equalsIgnoreCase("SSL")) {
+        //    envDC.put(Context.SECURITY_PROTOCOL, "SSL");
+        //}
 
         try {
 
