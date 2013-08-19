@@ -1869,8 +1869,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 TARGET_SYS_SECURITY_DOMAIN,
                                 isMngSysIdentityExistsInOpeniam ? mLg
                                         .getDomainId() : null);
-                        bindingMap.put(TARGET_SYS_SECURITY_DOMAIN,
-                                mLg.getDomainId());
+
                         // what the new object will look like
                         ExtensibleUser extUser = buildModifyFromRules(
                                 pUser, mLg, attrMap, scriptRunner,

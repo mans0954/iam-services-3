@@ -2367,6 +2367,9 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                                 newAttr.setObjectType(objectType);
 
                                 extUser.getAttributes().add(newAttr);
+                            }  else if (output instanceof byte[]) {
+                                extUser.getAttributes().add(new ExtensibleAttribute(attr.getAttributeName(), (byte[])output, 1, attr.getDataType()));
+
                             } else if (output instanceof BaseAttributeContainer) {
                                 // process a complex object which can be passed to the connector
                                 newAttr = new ExtensibleAttribute(attr.getAttributeName(),
