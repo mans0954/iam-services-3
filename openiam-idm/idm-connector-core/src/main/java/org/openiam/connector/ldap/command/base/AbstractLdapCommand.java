@@ -36,6 +36,8 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
     @Autowired
     private ResourceDataService resourceDataService;
 
+    protected static final String DN_IDENTITY_MATCH_REGEXP = "{0}=(.*?)(?:,.*)*$";
+
     protected LdapContext connect(ManagedSysEntity managedSys) throws ConnectorDataException {
         ConnectionMgr conMgr = ConnectionFactory.create(ConnectionManagerConstant.LDAP_CONNECTION);
         conMgr.setApplicationContext(this.applicationContext);
@@ -234,24 +236,12 @@ public abstract class AbstractLdapCommand<Request extends RequestType, Response 
         return ctx.search(objectBaseDN, searchFilter, searchCtls);
     }
 
-    protected boolean isInDirectory(String ldapName, ManagedSystemObjectMatch matchObj, LdapContext ldapctx) {
-        int indx = ldapName.indexOf(",");
-        String rdn = null;
-        String objectBaseDN = null;
-        if (indx > 0) {
-            rdn = ldapName.substring(0, ldapName.indexOf(","));
-            objectBaseDN = ldapName.substring(indx + 1);
-        } else {
-            rdn = ldapName;
-        }
-        log.debug("Lookup rdn = " + rdn);
-        log.debug("Search in: " + objectBaseDN);
-
+    protected boolean isInDirectory(String identity, String objectBaseDN, ManagedSystemObjectMatch matchObj, LdapContext ldapctx) {
         String[] attrAry = {"uid", "cn", "fn"};
         NamingEnumeration results = null;
         try {
             //results = search(matchObj, ldapctx, rdn, attrAry);
-            results = lookupSearch(matchObj, ldapctx, rdn, attrAry, objectBaseDN);
+            results = lookupSearch(matchObj, ldapctx, identity, attrAry, objectBaseDN);
             if (results != null && results.hasMoreElements()) {
                 return true;
             }

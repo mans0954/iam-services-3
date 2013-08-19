@@ -236,7 +236,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
         return localAdd(mLg, requestId, mSys, matchObj, extUser, user, idmAuditLog);
     }
 
-    protected boolean getCurrentObjectAtTargetSystem(Login mLg, ManagedSysDto mSys,
+    protected boolean getCurrentObjectAtTargetSystem(Login mLg, ExtensibleUser extUser, ManagedSysDto mSys,
                                                                  ProvisionConnectorDto connector,
                                                                  ManagedSystemObjectMatch matchObj,
                                                                  Map<String, String> curValueMap ) {
@@ -251,21 +251,23 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
             identity = mLg.getOrigPrincipalName();
         }
 
+        LookupRequest<ExtensibleUser> reqType = new LookupRequest<ExtensibleUser>();
+        String requestId = "R" + UUIDGen.getUUID();
+        reqType.setRequestID(requestId);
+        reqType.setSearchValue(identity);
+
+        reqType.setTargetID(mLg.getManagedSysId());
+        reqType.setHostLoginId(mSys.getUserId());
+        reqType.setHostLoginPassword(mSys.getPswd());
+        reqType.setHostUrl(mSys.getHostUrl());
+        reqType.setBaseDN(matchObj.getBaseDn());
+        reqType.setExtensibleObject(extUser);
+        reqType.setScriptHandler(mSys.getLookupHandler());
+
         if (connector.getConnectorInterface() != null &&
                 connector.getConnectorInterface().equalsIgnoreCase("REMOTE")) {
 
-            LookupRequest<ExtensibleUser> reqType = new LookupRequest<ExtensibleUser>();
-            String requestId = "R" + UUIDGen.getUUID();
-            reqType.setRequestID(requestId);
-            reqType.setSearchValue(identity);
 
-            reqType.setTargetID(mLg.getManagedSysId());
-            reqType.setHostLoginId(mSys.getUserId());
-            reqType.setHostLoginPassword(mSys.getPswd());
-            reqType.setHostUrl(mSys.getHostUrl());
-            reqType.setBaseDN(matchObj.getBaseDn());
-
-            reqType.setScriptHandler(mSys.getLookupHandler());
 
             SearchResponse lookupRespType = remoteConnectorAdapter.lookupRequest(mSys, reqType, connector, muleContext);
 
@@ -279,17 +281,20 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
         } else {
 
-            List<ExtensibleAttribute> extAttrList = getTargetSystemUser(identity, mSys.getManagedSysId()).getAttrList();
-            if (extAttrList != null) {
-                for (ExtensibleAttribute obj : extAttrList) {
-                    String name = obj.getName();
-                    String value = obj.getValue();
-                    curValueMap.put(name, value);
+            SearchResponse lookupSearchResponse = connectorAdapter.lookupRequest(mSys, reqType, muleContext);
+            if(lookupSearchResponse.getStatus() == StatusCodeType.SUCCESS) {
+                List<ExtensibleAttribute> extAttrList = lookupSearchResponse.getObjectList().get(0).getAttributeList();
+                //getTargetSystemUser(identity, mSys.getManagedSysId()).getAttrList();
+                if (extAttrList != null) {
+                    for (ExtensibleAttribute obj : extAttrList) {
+                        String name = obj.getName();
+                        String value = obj.getValue();
+                        curValueMap.put(name, value);
+                    }
+                } else {
+                    log.debug(" - NO attributes found in target system lookup ");
                 }
-            } else {
-                log.debug(" - NO attributes found in target system lookup ");
             }
-
         }
 
         if (curValueMap.size() == 0) {
@@ -413,6 +418,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
             }
 
         }
+
 
         // -------- Methods used by the Default Provisioning Service ------
 
