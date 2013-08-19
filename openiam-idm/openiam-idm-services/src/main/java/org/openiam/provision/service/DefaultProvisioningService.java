@@ -436,7 +436,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS,
                                     IDENTITY_NEW);
                             bindingMap.put(TARGET_SYS_SECURITY_DOMAIN,
-                                    primaryLogin.getDomainId());
+                                    mngSysIdentityExists ? primaryLogin.getDomainId() : null);
 
                             log.debug(" - Building principal Name for: "
                                     + managedSysId);
@@ -468,12 +468,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 TARGET_SYSTEM_IDENTITY,
                                 mngSysIdentityExists ? resLogin
                                         .getLogin() : null);
-                        bindingMap.put(
-                                TARGET_SYS_SECURITY_DOMAIN,
-                                mngSysIdentityExists ? resLogin
-                                        .getDomainId() : null);
-                        bindingMap.put(TARGET_SYS_SECURITY_DOMAIN,
-                                resLogin.getDomainId());
+
                         // what the new object will look like
                         ExtensibleUser extUser = buildModifyFromRules(user,
                                 resLogin, attrMap, scriptRunner,
