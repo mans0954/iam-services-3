@@ -472,8 +472,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         // what the new object will look like
                         ExtensibleUser extUser = buildModifyFromRules(user,
                                 resLogin, attrMap, scriptRunner,
-                                managedSysId, resLogin.getDomainId(),
-                                bindingMap, user.getCreatedBy());
+                                bindingMap);
 
 
                         boolean userExistedInTargetSystem = getCurrentObjectAtTargetSystem(
@@ -1873,9 +1872,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         // what the new object will look like
                         ExtensibleUser extUser = buildModifyFromRules(
                                 pUser, mLg, attrMap, scriptRunner,
-                                managedSysId, mLg.getDomainId(),
-                                bindingMap, pUser.getUser()
-                                .getLastUpdatedBy());
+                                bindingMap);
                         // get the attributes at the target system
                         // this lookup only for getting attributes from the
                         // system

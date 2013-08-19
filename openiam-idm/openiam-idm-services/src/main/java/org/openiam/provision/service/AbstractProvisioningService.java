@@ -2310,9 +2310,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
     public ExtensibleUser buildModifyFromRules(ProvisionUser pUser,
                                                Login currentIdentity,
                                                List<AttributeMap> attrMap, ScriptIntegration se,
-                                               String managedSysId, String domainId,
-                                               Map<String, Object> bindingMap,
-                                               String createdBy) {
+                                               Map<String, Object> bindingMap) {
 
         ExtensibleUser extUser = new ExtensibleUser();
 
