@@ -436,7 +436,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS,
                                     IDENTITY_NEW);
                             bindingMap.put(TARGET_SYS_SECURITY_DOMAIN,
-                                    primaryLogin.getDomainId());
+                                    mngSysIdentityExists ? primaryLogin.getDomainId() : null);
 
                             log.debug(" - Building principal Name for: "
                                     + managedSysId);
@@ -461,9 +461,22 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             resLogin.setPassword(primaryLogin.getPassword());
                             resLogin.setUserId(primaryLogin.getUserId());
                         }
+                        bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS,
+                                mngSysIdentityExists ? IDENTITY_NEW : IDENTITY_EXIST);
+                        bindingMap.put(TARGET_SYSTEM_ATTRIBUTES, null);
+                        bindingMap.put(
+                                TARGET_SYSTEM_IDENTITY,
+                                mngSysIdentityExists ? resLogin
+                                        .getLogin() : null);
+
+                        // what the new object will look like
+                        ExtensibleUser extUser = buildModifyFromRules(user,
+                                resLogin, attrMap, scriptRunner,
+                                bindingMap);
+
 
                         boolean userExistedInTargetSystem = getCurrentObjectAtTargetSystem(
-                                resLogin, mSys, connector, matchObj,
+                                resLogin, extUser, mSys, connector, matchObj,
                                 curValueMap);
 
                         if (!userExistedInTargetSystem) {
@@ -503,14 +516,14 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 }
                             }
 
-                            // attributes are built using groovy script rules
+/*                            // attributes are built using groovy script rules
                             ExtensibleUser extUser = buildFromRules(
                                     user,
                                     attrMap,
                                     scriptRunner,
                                     managedSysId,
                                     sysConfiguration.getDefaultSecurityDomain(),
-                                    bindingMap, user.getCreatedBy());
+                                    bindingMap, user.getCreatedBy());*/
 
                             List<Login> priList = user.getPrincipalList();
                             if (priList != null) {
@@ -569,15 +582,9 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             log.debug("identity for managedSys is not null "
                                     + resLogin.getLogin());
 
-                            bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS,
-                                    IDENTITY_EXIST);
-                            bindingMap.put(TARGET_SYSTEM_IDENTITY,
-                                    resLogin.getLogin());
+
                             bindingMap.put(TARGET_SYSTEM_ATTRIBUTES,
                                     curValueMap);
-
-                            bindingMap.put(TARGET_SYS_SECURITY_DOMAIN,
-                                    resLogin.getDomainId());
 
                             String preProcessScript = getResProperty(
                                     res.getResourceProps(), "PRE_PROCESS");
@@ -593,11 +600,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 }
                             }
 
-                            // what the new object will look like
-                            ExtensibleUser extUser = buildModifyFromRules(user,
-                                    resLogin, attrMap, scriptRunner,
-                                    managedSysId, resLogin.getDomainId(),
-                                    bindingMap, user.getCreatedBy());
 
                             // updates the attributes with the correct operation
                             // codes
@@ -1844,15 +1846,39 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 mLg.setManagedSysId(managedSysId);
                                 mLg.setPassword(primaryIdentity.getPassword());
                                 mLg.setUserId(primaryIdentity.getUserId());
+
+                                mLg.setAuthFailCount(0);
+                                mLg.setCreateDate(new Date(System.currentTimeMillis()));
+                                mLg.setCreatedBy(pUser.getUser().getLastUpdatedBy());
+                                mLg.setIsLocked(0);
+                                mLg.setFirstTimeLogin(1);
+                                mLg.setStatus("ACTIVE");
                             } catch (ScriptEngineException e) {
                                 e.printStackTrace();
                             }
                         }
+                        bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS,
+                                isMngSysIdentityExistsInOpeniam ? IDENTITY_NEW : IDENTITY_EXIST);
+                        bindingMap.put(TARGET_SYSTEM_ATTRIBUTES, null);
+                        bindingMap.put(
+                                TARGET_SYSTEM_IDENTITY,
+                                isMngSysIdentityExistsInOpeniam ? mLg
+                                        .getLogin() : null);
+                        bindingMap.put(
+                                TARGET_SYS_SECURITY_DOMAIN,
+                                isMngSysIdentityExistsInOpeniam ? mLg
+                                        .getDomainId() : null);
+
+                        // what the new object will look like
+                        ExtensibleUser extUser = buildModifyFromRules(
+                                pUser, mLg, attrMap, scriptRunner,
+                                bindingMap);
                         // get the attributes at the target system
                         // this lookup only for getting attributes from the
                         // system
+
                         boolean isExistedInTargetSystem = getCurrentObjectAtTargetSystem(
-                                mLg, mSys, connector, matchObj, currentValueMap);
+                                mLg, extUser, mSys, connector, matchObj, currentValueMap);
 
                         boolean connectorSuccess = false;
 
@@ -1860,19 +1886,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             // create the secondary identity for this resource
                             log.debug("Adding new identity to target system. Primary Identity is:"
                                     + primaryIdentity);
-
-                            bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS,
-                                    IDENTITY_NEW);
-                            bindingMap.put(TARGET_SYSTEM_ATTRIBUTES, null);
-                            bindingMap.put(
-                                    TARGET_SYSTEM_IDENTITY,
-                                    isMngSysIdentityExistsInOpeniam ? mLg
-                                            .getLogin() : null);
-                            bindingMap.put(
-                                    TARGET_SYS_SECURITY_DOMAIN,
-                                    isMngSysIdentityExistsInOpeniam ? mLg
-                                            .getDomainId() : null);
-
                             // pre-processing
                             String preProcessScript = getResProperty(
                                     res.getResourceProps(), "PRE_PROCESS");
@@ -1888,16 +1901,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 }
                             }
 
-                            ExtensibleUser extUser = buildFromRules(pUser,
-                                    attrMap, scriptRunner, managedSysId,
-                                    primaryIdentity.getDomainId(), bindingMap,
-                                    pUser.getUser().getLastUpdatedBy());
-
                             // mLg.setPassword(primaryLogin.getPassword());
                             mLg.setUserId(primaryIdentity.getUserId());
-
-                            bindingMap.put(TARGET_SYS_SECURITY_DOMAIN,
-                                    mLg.getDomainId());
 
                             log.debug("Creating identity in openiam repository:"
                                     + mLg.getLoginId());
@@ -1988,15 +1993,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             log.debug("identity for managedSys is not null "
                                     + mLg.getLogin());
 
-                            bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS,
-                                    IDENTITY_EXIST);
-                            bindingMap.put(TARGET_SYSTEM_IDENTITY,
-                                    mLg.getLogin());
                             bindingMap.put(TARGET_SYSTEM_ATTRIBUTES,
                                     currentValueMap);
-
-                            bindingMap.put(TARGET_SYS_SECURITY_DOMAIN,
-                                    mLg.getDomainId());
 
                             String preProcessScript = getResProperty(
                                     res.getResourceProps(), "PRE_PROCESS");
@@ -2011,12 +2009,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                     }
                                 }
                             }
-                            // what the new object will look like
-                            ExtensibleUser extUser = buildModifyFromRules(
-                                    pUser, mLg, attrMap, scriptRunner,
-                                    managedSysId, mLg.getDomainId(),
-                                    bindingMap, pUser.getUser()
-                                            .getLastUpdatedBy());
+
 
                             // updates the attributes with the correct operation
                             // codes
@@ -2539,6 +2532,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             log.debug("Calling lookupRequest local connector");
 
             LookupRequest request = new LookupRequest();
+            //TODO
             request.setExtensibleObject(new ExtensibleUser());
             request.setSearchValue(principalName);
             request.setTargetID(managedSysId);

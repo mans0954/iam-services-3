@@ -1,5 +1,6 @@
 package org.openiam.connector.ldap.command.user;
 
+import org.apache.commons.lang.StringUtils;
 import org.openiam.connector.ldap.command.base.AbstractCrudLdapCommand;
 import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.constant.ErrorCode;
@@ -14,8 +15,11 @@ import org.springframework.stereotype.Service;
 
 import javax.naming.NamingException;
 import javax.naming.ldap.LdapContext;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service("deleteUserLdapCommand")
 public class DeleteUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUser> {
@@ -49,13 +53,32 @@ public class DeleteUserLdapCommand extends AbstractCrudLdapCommand<ExtensibleUse
             }
 
             Directory dirSpecificImp  = DirectorySpecificImplFactory.create(managedSys.getHandler5());
-            String ldapName = deleteRequestType.getObjectIdentity();
-
-
-            if (groupMembershipEnabled) {
-                dirSpecificImp.removeAccountMemberships(ldapName, matchObj, ldapctx);
+            String identity = deleteRequestType.getObjectIdentity();
+            //Check identity on CN format or not
+            String identityPatternStr =  MessageFormat.format(DN_IDENTITY_MATCH_REGEXP, matchObj.getKeyField());
+            Pattern pattern = Pattern.compile(identityPatternStr);
+            Matcher matcher = pattern.matcher(identity);
+            String objectBaseDN;
+            if(matcher.matches()) {
+                identity = matcher.group(1);
+                String CN = matchObj.getKeyField()+"="+identity;
+                objectBaseDN =  deleteRequestType.getObjectIdentity().substring(CN.length()+1);
+            } else {
+                // if identity is not in DN format try to find OU info in attributes
+                String OU = getOU(deleteRequestType.getExtensibleObject());
+                if(StringUtils.isNotEmpty(OU)) {
+                    objectBaseDN = OU+","+matchObj.getBaseDn();
+                } else {
+                    objectBaseDN = matchObj.getBaseDn();
+                }
             }
-            dirSpecificImp.delete(deleteRequestType, ldapctx, ldapName, delete);
+            //Important!!! For delete operation need to create identity in DN format
+            String identityDN = matchObj.getKeyField() + "=" + identity+","+objectBaseDN;
+            log.debug("Deleting.. users in ldap.." + identityDN);
+            if (groupMembershipEnabled) {
+                dirSpecificImp.removeAccountMemberships(identityDN, matchObj, ldapctx);
+            }
+            dirSpecificImp.delete(deleteRequestType, ldapctx, identityDN, delete);
         } catch (NamingException e) {
             log.error(e.getMessage(), e);
             throw new ConnectorDataException(ErrorCode.DIRECTORY_ERROR, e.getMessage());
