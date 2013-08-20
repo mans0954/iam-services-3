@@ -16,6 +16,7 @@ import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.connector.type.*;
+import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.connector.type.request.LookupRequest;
@@ -39,6 +40,8 @@ import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
+import org.openiam.idm.srvc.key.constant.KeyName;
+import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.domain.ProvisionConnectorEntity;
@@ -78,6 +81,7 @@ import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleObject;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptIntegration;
+import org.openiam.util.encrypt.Cryptor;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -114,7 +118,15 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
     public static final String IDENTITY = "IDENTITY";
     public static final String IDENTITY_NEW = "NEW";
     public static final String IDENTITY_EXIST = "EXIST";
-    
+
+    @Value("${org.openiam.idm.system.user.id}")
+    private String systemUserId;
+    @Autowired
+    @Qualifier("cryptor")
+    private Cryptor cryptor;
+    @Autowired
+    private KeyManagementService keyManagementService;
+
     @Autowired
     protected ManagedSystemObjectMatchDozerConverter objectMatchDozerConverter;
 
@@ -236,6 +248,19 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
         return localAdd(mLg, requestId, mSys, matchObj, extUser, user, idmAuditLog);
     }
 
+    protected String getDecryptedPassword(ManagedSysDto managedSys) throws ConnectorDataException {
+        String result = null;
+        if( managedSys.getPswd()!=null){
+            try {
+                result = cryptor.decrypt(keyManagementService.getUserKey(systemUserId, KeyName.password.name()), managedSys.getPswd());
+            } catch (Exception e) {
+                log.error(e);
+                throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, e.getMessage());
+            }
+        }
+        return result;
+    }
+
     protected boolean getCurrentObjectAtTargetSystem(Login mLg, ExtensibleUser extUser, ManagedSysDto mSys,
                                                                  ProvisionConnectorDto connector,
                                                                  ManagedSystemObjectMatch matchObj,
@@ -258,7 +283,13 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
         reqType.setTargetID(mLg.getManagedSysId());
         reqType.setHostLoginId(mSys.getUserId());
-        reqType.setHostLoginPassword(mSys.getPswd());
+        String passwordDecoded = mSys.getPswd();
+        try {
+            passwordDecoded = getDecryptedPassword(mSys);
+        } catch (ConnectorDataException e) {
+            e.printStackTrace();
+        }
+        reqType.setHostLoginPassword(passwordDecoded);
         reqType.setHostUrl(mSys.getHostUrl());
         reqType.setBaseDN(matchObj.getBaseDn());
         reqType.setExtensibleObject(extUser);
@@ -2445,7 +2476,13 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
         userReq.setRequestID(requestId);
         userReq.setTargetID(mLg.getManagedSysId());
         userReq.setHostLoginId(mSys.getUserId());
-        userReq.setHostLoginPassword(mSys.getPswd());
+        String passwordDecoded = mSys.getPswd();
+        try {
+            passwordDecoded = getDecryptedPassword(mSys);
+        } catch (ConnectorDataException e) {
+            e.printStackTrace();
+        }
+        userReq.setHostLoginPassword(passwordDecoded);
         userReq.setHostUrl(mSys.getHostUrl());
         if (matchObj != null) {
             userReq.setBaseDN(matchObj.getBaseDn());
@@ -2480,7 +2517,13 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
         request.setRequestID(requestId);
         request.setTargetID(mLg.getManagedSysId());
         request.setHostLoginId(mSys.getUserId());
-        request.setHostLoginPassword(mSys.getPswd());
+        String passwordDecoded = mSys.getPswd();
+        try {
+            passwordDecoded = getDecryptedPassword(mSys);
+        } catch (ConnectorDataException e) {
+            e.printStackTrace();
+        }
+        request.setHostLoginPassword(passwordDecoded);
         request.setHostUrl(mSys.getHostUrl());
         if (matchObj != null) {
             request.setBaseDN(matchObj.getBaseDn());
@@ -2591,7 +2634,13 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
         req.setRequestID(requestId);
         req.setTargetID(login.getManagedSysId());
         req.setHostLoginId(mSys.getUserId());
-        req.setHostLoginPassword(mSys.getPswd());
+        String passwordDecoded = mSys.getPswd();
+        try {
+            passwordDecoded = getDecryptedPassword(mSys);
+        } catch (ConnectorDataException e) {
+            e.printStackTrace();
+        }
+        req.setHostLoginPassword(passwordDecoded);
         req.setHostUrl(mSys.getHostUrl());
         req.setBaseDN(matchObj.getBaseDn());
         req.setOperation("RESET_PASSWORD");
@@ -2632,7 +2681,13 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
         req.setRequestID(requestId);
         req.setTargetID(login.getManagedSysId());
         req.setHostLoginId(mSys.getUserId());
-        req.setHostLoginPassword(mSys.getPswd());
+        String passwordDecoded = mSys.getPswd();
+        try {
+            passwordDecoded = getDecryptedPassword(mSys);
+        } catch (ConnectorDataException e) {
+            e.printStackTrace();
+        }
+        req.setHostLoginPassword(passwordDecoded);
         req.setHostUrl(mSys.getHostUrl());
         req.setBaseDN(matchObj.getBaseDn());
         req.setOperation("SET_PASSWORD");

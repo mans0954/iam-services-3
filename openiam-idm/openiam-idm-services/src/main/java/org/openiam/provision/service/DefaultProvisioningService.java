@@ -31,6 +31,8 @@ import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.connector.type.ConnectorDataException;
+import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.connector.type.request.LookupRequest;
@@ -43,6 +45,8 @@ import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.grp.dto.Group;
+import org.openiam.idm.srvc.key.constant.KeyName;
+import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.domain.ProvisionConnectorEntity;
@@ -75,6 +79,10 @@ import org.openiam.provision.resp.PasswordResponse;
 import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
+import org.openiam.util.encrypt.Cryptor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.jws.WebService;
@@ -629,7 +637,13 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 userReq.setRequestID(requestId);
                                 userReq.setTargetID(resLogin.getManagedSysId());
                                 userReq.setHostLoginId(mSys.getUserId());
-                                userReq.setHostLoginPassword(mSys.getPswd());
+                                String passwordDecoded = mSys.getPswd();
+                                try {
+                                    passwordDecoded = getDecryptedPassword(mSys);
+                                } catch (ConnectorDataException e) {
+                                    e.printStackTrace();
+                                }
+                                userReq.setHostLoginPassword(passwordDecoded);
                                 userReq.setHostUrl(mSys.getHostUrl());
                                 userReq.setBaseDN(matchObj.getBaseDn());
                                 userReq.setOperation("EDIT");
@@ -2038,7 +2052,13 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 userReq.setRequestID(requestId);
                                 userReq.setTargetID(mLg.getManagedSysId());
                                 userReq.setHostLoginId(mSys.getUserId());
-                                userReq.setHostLoginPassword(mSys.getPswd());
+                                String passwordDecoded = mSys.getPswd();
+                                try {
+                                    passwordDecoded = getDecryptedPassword(mSys);
+                                } catch (ConnectorDataException e) {
+                                    e.printStackTrace();
+                                }
+                                userReq.setHostLoginPassword(passwordDecoded);
                                 userReq.setHostUrl(mSys.getHostUrl());
                                 userReq.setBaseDN(matchObj.getBaseDn());
                                 userReq.setOperation("EDIT");
@@ -2224,7 +2244,13 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         request.setRequestID(requestId);
                         request.setTargetID(mLg.getManagedSysId());
                         request.setHostLoginId(mSys.getUserId());
-                        request.setHostLoginPassword(mSys.getPswd());
+                        String passwordDecoded = mSys.getPswd();
+                        try {
+                            passwordDecoded = getDecryptedPassword(mSys);
+                        } catch (ConnectorDataException e) {
+                            e.printStackTrace();
+                        }
+                        request.setHostLoginPassword(passwordDecoded);
                         request.setHostUrl(mSys.getHostUrl());
 
                         request.setOperation("DELETE");
@@ -2505,7 +2531,13 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
             reqType.setTargetID(managedSysId);
             reqType.setHostLoginId(mSys.getUserId());
-            reqType.setHostLoginPassword(mSys.getPswd());
+            String passwordDecoded = mSys.getPswd();
+            try {
+                passwordDecoded = getDecryptedPassword(mSys);
+            } catch (ConnectorDataException e) {
+                e.printStackTrace();
+            }
+            reqType.setHostLoginPassword(passwordDecoded);
             reqType.setHostUrl(mSys.getHostUrl());
             reqType.setExtensibleObject(new ExtensibleUser());
             reqType.setScriptHandler(mSys.getLookupHandler());
