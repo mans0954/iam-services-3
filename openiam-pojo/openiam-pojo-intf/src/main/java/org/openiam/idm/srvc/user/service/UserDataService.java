@@ -12,6 +12,9 @@ import org.openiam.idm.searchbeans.UserSearchBean;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
+import org.openiam.idm.srvc.continfo.dto.Address;
+import org.openiam.idm.srvc.continfo.dto.EmailAddress;
+import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -111,6 +114,8 @@ public interface UserDataService {
 
     public List<AddressEntity> getAddressList(String userId);
 
+    public List<Address> getAddressDtoList(String userId, boolean isDeep);
+
     public List<AddressEntity> getAddressList(String userId, Integer size, Integer from);
 
     public List<AddressEntity> getAddressList(AddressSearchBean searchBean, Integer size, Integer from);
@@ -129,6 +134,8 @@ public interface UserDataService {
 
     public List<PhoneEntity> getPhoneList(String userId);
 
+    public List<Phone> getPhoneDtoList(String userId, boolean isDeep);
+
     public List<PhoneEntity> getPhoneList(String userId, Integer size, Integer from);
 
     public List<PhoneEntity> getPhoneList(PhoneSearchBean searchBean, Integer size, Integer from);
@@ -146,6 +153,8 @@ public interface UserDataService {
     public EmailAddressEntity getEmailAddressById(String addressId);
 
     public List<EmailAddressEntity> getEmailAddressList(String userId);
+
+    public List<EmailAddress> getEmailAddressDtoList(String userId, boolean isDeep);
 
     public List<EmailAddressEntity> getEmailAddressList(String userId, Integer size, Integer from);
 

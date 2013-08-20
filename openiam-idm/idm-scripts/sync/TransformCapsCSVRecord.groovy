@@ -2,8 +2,10 @@ import org.openiam.dozer.converter.OrganizationDozerConverter
 import org.openiam.dozer.converter.RoleDozerConverter
 import org.openiam.idm.searchbeans.OrganizationSearchBean
 import org.openiam.idm.srvc.continfo.dto.Address
+import org.openiam.idm.srvc.continfo.dto.EmailAddress
 import org.openiam.idm.srvc.org.service.OrganizationService
 import org.openiam.idm.srvc.role.service.RoleDataService
+import org.openiam.idm.srvc.user.service.UserDataService
 
 import java.text.SimpleDateFormat
 
@@ -113,8 +115,26 @@ public class TransformCapsCSVRecord extends AbstractTransformScript {
         addOCOrganization(pUser, columnMap.get("HOME_DEPT_CD")?.value)
 
         // Processing role
-        addRole(pUser, "End User")
+        addRole(pUser, "END_USER")
 
+    }
+
+    def addEmailAddress(ProvisionUser pUser, EmailAddress emailAddress)     {
+        def emailAddresses = []
+        if (!isNewUser) {
+            def userManager = context?.getBean("userManager") as UserDataService
+            emailAddresses = userManager.getEmailAddressDtoList(user.userId, false)
+        }
+        if (emailAddresses) {
+            pUser.emailAddresses = emailAddresses
+        }
+        for (EmailAddress e : pUser.emailAddresses) {
+            if (emailAddress.metadataTypeId.equalsIgnoreCase(e.metadataTypeId)) {
+                e.updateEmailAddress(emailAddress)
+                return
+            }
+        }
+        pUser.emailAddresses.add(emailAddress)
     }
 
     def addOCOrganization(ProvisionUser pUser, String homeDeptCd) {
@@ -133,7 +153,7 @@ public class TransformCapsCSVRecord extends AbstractTransformScript {
         if (homeDeptCd) {
             def deptSearchBean = new OrganizationSearchBean()
             deptSearchBean.internalOrgId = homeDeptCd.substring(1)
-            deptSearchBean.organizationTypeId = "DEPARTMENT"
+            deptSearchBean.organizationTypeId = "DIVISION"
             def deptList = organizationService.findBeans(deptSearchBean, null, 0, 1)
             if (deptList) {
                 def department = organizationDozerConverter?.convertToDTO(deptList.get(0), false)
@@ -153,8 +173,13 @@ public class TransformCapsCSVRecord extends AbstractTransformScript {
     }
 
     def addAddress(ProvisionUser pUser, Address address) {
-        if (user?.addresses) {
-            pUser.addresses = user.addresses
+        def addresses = []
+        if (!isNewUser) {
+            def userManager = context?.getBean("userManager") as UserDataService
+            addresses = userManager.getAddressDtoList(user.userId, false)
+        }
+        if (addresses) {
+            pUser.addresses = addresses
         }
         for (Address a : pUser.addresses) {
             if (address.metadataTypeId.equalsIgnoreCase(a.metadataTypeId)) {
@@ -166,8 +191,13 @@ public class TransformCapsCSVRecord extends AbstractTransformScript {
     }
 
     def addPhone(ProvisionUser pUser, Phone phone) {
-        if (user?.phones) {
-            pUser.phones = user?.phones
+        def phones = []
+        if (!isNewUser) {
+            def userManager = context?.getBean("userManager") as UserDataService
+            phones = userManager.getPhoneDtoList(user.userId, false)
+        }
+        if (phones) {
+            pUser.phones = phones
         }
         for (Phone p : pUser.phones) {
             if (phone.metadataTypeId.equalsIgnoreCase(p.metadataTypeId)) {
