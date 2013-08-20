@@ -21,4 +21,10 @@ public class ActivitiConstants {
 	public static final String DISASSOCIATED_GROUP_IDS = "DisassociatedGroupIds";
 	public static final String DISASSOCIATED_RESOURCE_IDS = "DisassociatedResourceIds";
 	public static final String CUSTOM_TASK_UI_URL = "CustomTaskUIUrl";
+	
+	public static final String LOGIN_ID = "LoginId";
+	public static final String USER_ID = "UserId";
+	public static final String MANAGED_SYS_ID = "ManagedSysId";
+	public static final String LOGIN = "Login";
+	public static final String SECURITY_DOMAIN_ID = "SecurityDomainId";
 }

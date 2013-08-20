@@ -28,6 +28,9 @@ public interface LoginDataWebService {
             Login principal);
     
     @WebMethod
+    public Response isValidLogin(@WebParam(name = "principal", targetNamespace = "") Login principal);
+    
+    @WebMethod
     public Response deleteLogin( @WebParam(name = "loginId", targetNamespace = "") String loginId);
 
     @WebMethod
