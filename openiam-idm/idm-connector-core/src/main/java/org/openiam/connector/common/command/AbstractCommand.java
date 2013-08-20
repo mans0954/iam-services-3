@@ -88,7 +88,7 @@ public abstract class AbstractCommand<Request extends RequestType, Response exte
                 throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, e.getMessage());
             }
         }
-        return null;
+        return result;
     }
 
     protected <T extends ConnectorConfiguration> T getConfiguration(String targetID, Class<T> clazz) throws ConnectorDataException{
