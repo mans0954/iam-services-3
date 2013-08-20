@@ -450,126 +450,6 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
         }
 
-
-        // -------- Methods used by the Default Provisioning Service ------
-
-        // - methods to build attributes
-
-        public ExtensibleUser buildFromRules(ProvisionUser pUser,
-                                             List<AttributeMap> attrMap, ScriptIntegration se,
-                                             String managedSysId, String domainId,
-                                             Map<String, Object> bindingMap,
-                                             String createdBy) {
-
-            final ExtensibleUser extUser = new ExtensibleUser();
-
-
-            if (attrMap != null) {
-
-                if (log.isDebugEnabled()) {
-                    log.debug("buildFromRules: attrMap IS NOT null");
-                }
-
-                final Login identity = new Login();
-
-                // init values
-                identity.setDomainId(domainId);
-                identity.setManagedSysId(managedSysId);
-
-                for (final AttributeMap attr : attrMap) {
-
-                    if (StringUtils.equalsIgnoreCase(attr.getStatus(), "INACTIVE")) {
-                        continue;
-                    }
-
-                    Object output = null;
-                    try {
-                        output = ProvisionServiceUtil.getOutputFromAttrMap(attr,
-                                bindingMap, se);
-                    } catch (ScriptEngineException e) {
-                        log.error("Error in script = '", e);
-                    }
-
-                    if (output != null) {
-                        final String objectType = attr.getMapForObjectType();
-                        if (objectType != null) {
-                            if (StringUtils.equalsIgnoreCase("PRINCIPAL", objectType)) {
-                                if (log.isDebugEnabled()) {
-                                    log.debug(String.format("buildFromRules: ManagedSysId=%s, login=%s", managedSysId, output));
-                                }
-
-                                identity.setLogin((String) output);
-                                extUser.setPrincipalFieldName(attr.getAttributeName());
-                                extUser.setPrincipalFieldDataType(attr.getDataType());
-
-                            }
-
-                            if (StringUtils.equalsIgnoreCase(objectType, "USER") ||
-                                    StringUtils.equalsIgnoreCase(objectType, "PASSWORD")) {
-
-                                if (log.isDebugEnabled()) {
-                                    log.debug(String.format("buildFromRules: attribute: %s->%s",
-                                            attr.getAttributeName(), output));
-                                }
-
-                                if (output instanceof String) {
-
-                                    output = (StringUtils.isBlank((String) output)) ? attr.getDefaultValue() : output;
-                                    extUser.getAttributes().add(new ExtensibleAttribute(attr.getAttributeName(),
-                                            (String) output, 1, attr.getDataType()));
-
-                                } else if (output instanceof Date) {
-                                    final Date d = (Date) output;
-                                    final String DATE_FORMAT = "MM/dd/yyyy";
-                                    final SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
-                                    extUser.getAttributes().add(new ExtensibleAttribute(attr.getAttributeName(),
-                                            sdf.format(d), 1, attr.getDataType()));
-
-                                } else if (output instanceof byte[]) {
-                                    extUser.getAttributes().add(new ExtensibleAttribute(attr.getAttributeName(), (byte[])output, 1, attr.getDataType()));
-
-                                } else if (output instanceof BaseAttributeContainer) {
-
-                                    // process a complex object which can be passed to the connector
-
-                                    ExtensibleAttribute newAttr = new ExtensibleAttribute(attr.getAttributeName(),
-                                            (BaseAttributeContainer) output, 1, attr.getDataType());
-                                    newAttr.setObjectType(objectType);
-                                    extUser.getAttributes().add(newAttr);
-
-                                } else {
-                                    extUser.getAttributes().add(new ExtensibleAttribute(attr.getAttributeName(),
-                                            (List) output, 1, attr.getDataType()));
-                                }
-                            }
-
-                        }
-                    }
-                }
-                identity.setAuthFailCount(0);
-                identity.setCreateDate(new Date(System.currentTimeMillis()));
-                identity.setCreatedBy(createdBy);
-                identity.setIsLocked(0);
-                identity.setFirstTimeLogin(1);
-                identity.setStatus("ACTIVE");
-                if (pUser.getPrincipalList() == null) {
-                    List<Login> idList = new ArrayList<Login>();
-                    idList.add(identity);
-                    pUser.setPrincipalList(idList);
-                } else {
-                    pUser.getPrincipalList().add(identity);
-                }
-
-            } else {
-                log.debug("- attMap IS null");
-            }
-
-            // show the identities in the pUser object
-
-            return extUser;
-
-        }
-
         public ProvisionUserResponse createUser(ProvisionUser user, List<IdmAuditLog> logList) {
 
             ProvisionUserResponse resp = new ProvisionUserResponse();
@@ -2338,16 +2218,16 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
         return extUser;
     }
 
-    public ExtensibleUser buildModifyFromRules(ProvisionUser pUser,
-                                               Login currentIdentity,
-                                               List<AttributeMap> attrMap, ScriptIntegration se,
-                                               Map<String, Object> bindingMap) {
+    public ExtensibleUser buildFromRules(ProvisionUser pUser,
+                                         Login currentIdentity,
+                                         List<AttributeMap> attrMap, ScriptIntegration se,
+                                         Map<String, Object> bindingMap) {
 
         ExtensibleUser extUser = new ExtensibleUser();
 
         if (attrMap != null) {
 
-            log.debug("buildModifyFromRules: attrMap IS NOT null");
+            log.debug("buildFromRules: attrMap IS NOT null");
 
             for (AttributeMap attr : attrMap) {
 
@@ -2368,7 +2248,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
                     String objectType = attr.getMapForObjectType();
                     if (objectType != null) {
 
-                        log.debug("buildModifyFromRules: OBJECTTYPE="
+                        log.debug("buildFromRules: OBJECTTYPE="
                                 + objectType + " SCRIPT OUTPUT=" + output
                                 + " attribute name=" + attr.getAttributeName());
 
@@ -2414,7 +2294,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
                                 extUser.getAttributes().add(newAttr);
 
-                                log.debug("buildModifyFromRules: added attribute to extUser:" + attr.getAttributeName());
+                                log.debug("buildFromRules: added attribute to extUser:" + attr.getAttributeName());
                             }
                             }
                         } else if (objectType.equalsIgnoreCase("PRINCIPAL")) {

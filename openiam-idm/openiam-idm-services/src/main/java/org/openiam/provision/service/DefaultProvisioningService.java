@@ -32,7 +32,6 @@ import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.connector.type.ConnectorDataException;
-import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.type.constant.StatusCodeType;
 import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.connector.type.request.LookupRequest;
@@ -45,8 +44,6 @@ import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.key.constant.KeyName;
-import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.domain.ProvisionConnectorEntity;
@@ -79,10 +76,6 @@ import org.openiam.provision.resp.PasswordResponse;
 import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
-import org.openiam.util.encrypt.Cryptor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.jws.WebService;
@@ -478,7 +471,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                         .getLogin() : null);
 
                         // what the new object will look like
-                        ExtensibleUser extUser = buildModifyFromRules(user,
+                        ExtensibleUser extUser = buildFromRules(user,
                                 resLogin, attrMap, scriptRunner,
                                 bindingMap);
 
@@ -523,15 +516,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                     }
                                 }
                             }
-
-/*                            // attributes are built using groovy script rules
-                            ExtensibleUser extUser = buildFromRules(
-                                    user,
-                                    attrMap,
-                                    scriptRunner,
-                                    managedSysId,
-                                    sysConfiguration.getDefaultSecurityDomain(),
-                                    bindingMap, user.getCreatedBy());*/
 
                             List<Login> priList = user.getPrincipalList();
                             if (priList != null) {
@@ -1884,7 +1868,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                         .getDomainId() : null);
 
                         // what the new object will look like
-                        ExtensibleUser extUser = buildModifyFromRules(
+                        ExtensibleUser extUser = buildFromRules(
                                 pUser, mLg, attrMap, scriptRunner,
                                 bindingMap);
                         // get the attributes at the target system
