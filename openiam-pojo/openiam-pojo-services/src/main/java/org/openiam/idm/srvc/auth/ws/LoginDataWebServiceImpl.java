@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.jws.WebParam;
 import javax.jws.WebService;
 import java.util.Date;
 import java.util.LinkedList;
@@ -48,6 +49,41 @@ public class LoginDataWebServiceImpl implements LoginDataWebService {
     private MailService mailService;
 	
 	private static final Log log = LogFactory.getLog(LoginDataWebServiceImpl.class);
+	
+	@Override
+	public Response isValidLogin(final Login principal) {
+		final LoginResponse resp = new LoginResponse(ResponseStatus.SUCCESS);
+		try {
+			if(principal == null) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			if(StringUtils.isBlank(principal.getManagedSysId()) ||
+			   StringUtils.isBlank(principal.getDomainId()) || 
+			   StringUtils.isBlank(principal.getLogin())) {
+				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
+			}
+			
+			final LoginEntity currentEntity = loginDS.getLoginByManagedSys(principal.getDomainId(), principal.getLogin(), principal.getManagedSysId());
+			if(currentEntity != null) {
+				if(StringUtils.isBlank(principal.getLoginId())) {
+					throw new BasicDataServiceException(ResponseCode.LOGIN_EXISTS);
+				} else if(!principal.getLoginId().equals(currentEntity.getLoginId())) {
+					throw new BasicDataServiceException(ResponseCode.LOGIN_EXISTS);
+				}
+			}
+			
+		} catch(BasicDataServiceException e) {
+			log.warn(String.format("Error while saving login: %s", e.getMessage()));
+			resp.setErrorCode(e.getCode());
+			resp.setStatus(ResponseStatus.FAILURE);
+		} catch(Throwable e) {
+			resp.setStatus(ResponseStatus.FAILURE);
+			resp.setErrorCode(ResponseCode.INTERNAL_ERROR);
+			log.error("Error while saving login", e);
+		}
+		return resp;
+	}
 	
 	@Override
 	public Response saveLogin(final Login principal) {
