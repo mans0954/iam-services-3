@@ -20,8 +20,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.base.BaseConstants;
 import org.openiam.base.SysConfiguration;
 import org.openiam.core.dao.UserKeyDao;
-import org.openiam.dozer.converter.UserAttributeDozerConverter;
-import org.openiam.dozer.converter.UserDozerConverter;
+import org.openiam.dozer.converter.*;
 import org.openiam.idm.searchbeans.AddressSearchBean;
 import org.openiam.idm.searchbeans.DelegationFilterSearchBean;
 import org.openiam.idm.searchbeans.EmailSearchBean;
@@ -35,6 +34,9 @@ import org.openiam.idm.srvc.auth.login.lucene.LoginSearchDAO;
 import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
+import org.openiam.idm.srvc.continfo.dto.Address;
+import org.openiam.idm.srvc.continfo.dto.EmailAddress;
+import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.continfo.service.AddressDAO;
 import org.openiam.idm.srvc.continfo.service.EmailAddressDAO;
 import org.openiam.idm.srvc.continfo.service.EmailSearchDAO;
@@ -142,6 +144,13 @@ public class UserMgr implements UserDataService {
     private UserAttributeDozerConverter userAttributeDozerConverter;
     @Autowired
     private UserDozerConverter userDozerConverter;
+    @Autowired
+    private AddressDozerConverter addressDozerConverter;
+    @Autowired
+    EmailAddressDozerConverter emailAddressDozerConverter;
+    @Autowired
+    PhoneDozerConverter phoneDozerConverter;
+
     @Autowired
     private MetadataElementDAO metadataElementDAO;
     @Autowired
@@ -787,6 +796,12 @@ public class UserMgr implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<Address> getAddressDtoList(String userId, boolean isDeep) {
+        return addressDozerConverter.convertToDTOList(getAddressList(userId), isDeep);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<AddressEntity> getAddressList(String userId, Integer size, Integer from) {
         if (userId == null)
             throw new NullPointerException("userId is null");
@@ -944,6 +959,12 @@ public class UserMgr implements UserDataService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<Phone> getPhoneDtoList(String userId, boolean isDeep) {
+        return phoneDozerConverter.convertToDTOList(getPhoneList(userId), isDeep);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<PhoneEntity> getPhoneList(String userId, Integer size, Integer from) {
         if (userId == null)
             throw new NullPointerException("userId is null");
@@ -1097,6 +1118,12 @@ public class UserMgr implements UserDataService {
     @Transactional(readOnly = true)
     public List<EmailAddressEntity> getEmailAddressList(String userId) {
         return this.getEmailAddressList(userId, Integer.MAX_VALUE, 0);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<EmailAddress> getEmailAddressDtoList(String userId, boolean isDeep) {
+        return emailAddressDozerConverter.convertToDTOList(getEmailAddressList(userId), isDeep);
     }
 
     @Override

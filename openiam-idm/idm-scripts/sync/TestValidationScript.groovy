@@ -2,7 +2,7 @@ import org.openiam.idm.srvc.synch.dto.LineObject
 import org.openiam.idm.srvc.synch.service.ValidationScript
 import org.springframework.context.ApplicationContext
 
-class TestValidationScript implements ValidationScript {
+class TestValidateScript implements ValidationScript {
 
     ApplicationContext context
 

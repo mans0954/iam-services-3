@@ -1099,6 +1099,13 @@ public class UserEntity {
 	            this.datePasswordChanged = newUser.getDatePasswordChanged();
 	        }
 	    }
+        if (newUser.getDateITPolicyApproved() != null) {
+            if (newUser.getDateITPolicyApproved().equals(BaseConstants.NULL_DATE)) {
+                this.dateITPolicyApproved = null;
+            } else {
+                this.dateITPolicyApproved = newUser.getDateITPolicyApproved();
+            }
+        }
 	
 	}
 

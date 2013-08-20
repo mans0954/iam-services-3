@@ -6,7 +6,7 @@ import org.springframework.context.ApplicationContext
 
 class TestTransformationScript extends AbstractTransformScript {
 
-    private ApplicationContext appContext
+    private ApplicationContext context
 
     @Override
     int execute(LineObject rowObj, ProvisionUser pUser) {
@@ -22,11 +22,11 @@ class TestTransformationScript extends AbstractTransformScript {
     }
 
     def setAppContext(appContext) {
-	    this.appContext = appContext
+	this.appContext = appContext
     }
 
     def getAppContext() {
-	    return appContext
+	appContext
     }
 
 }

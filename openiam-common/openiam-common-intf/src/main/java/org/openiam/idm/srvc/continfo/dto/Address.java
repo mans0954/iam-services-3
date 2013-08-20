@@ -124,7 +124,7 @@ public class Address implements java.io.Serializable {
         this.address5 = adr.getAddress5();
         this.address6 = adr.getAddress6();
         this.address7 = adr.getAddress7();
-        this.bldgNumber = this.getBldgNumber();
+        this.bldgNumber = adr.getBldgNumber();
         this.city = adr.getCity();
         this.country = adr.getCountry();
         this.description = adr.getDescription();

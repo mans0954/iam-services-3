@@ -565,6 +565,7 @@ public class AuthenticationServiceImpl implements AuthenticationService, Applica
                 authResp.setStatus(ResponseStatus.FAILURE);
                 authResp.setAuthErrorCode(AuthenticationConstants.INTERNAL_ERROR);
                 authResp.setAuthErrorMessage(e.getMessage());
+                return authResp;
             }
         } else {
 
