@@ -2288,6 +2288,7 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
                             } else {
                                 // process a list - multi-valued object
+
                                 newAttr = new ExtensibleAttribute(attr.getAttributeName(),
                                         (List) output, 1, attr.getDataType());
                                 newAttr.setObjectType(objectType);

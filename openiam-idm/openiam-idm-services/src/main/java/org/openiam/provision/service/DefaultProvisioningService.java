@@ -1717,15 +1717,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
          * auditHelper.persistLogList(pendingLogItems, requestId,
          * pUser.getSessionId());
          */
-        // deprovision the identities which are no longer needed.
-        if (deleteResourceList != null && !deleteResourceList.isEmpty()) {
-            // delete these resources which are not needed in the new role
-            // assignment
-
-            deProvisionResources(deleteResourceList, origUser.getUserId(),
-                    pUser.getLastUpdatedBy(), requestId, pUser, userStatus,
-                    origUser);
-        }
 
         if (resourceList != null) {
             log.debug("Resource list is not null.. ");
@@ -1799,16 +1790,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         List<Resource> delRes = new ArrayList<Resource>();
                         delRes.add(res);
 
-                        log.debug("DEPROVISIONING IDENTITY FOR RES ="
-                                + res.getName());
 
-                        deProvisionResources(delRes, origUser.getUserId(),
-                                pUser.getLastUpdatedBy(), requestId, pUser,
-                                userStatus, origUser);
-
-                        // deProvisionResources(List<Resource>
-                        // deleteResourceList, String userId, String
-                        // requestorId, String requestId)
 
                     } else {
 
