@@ -1,5 +1,6 @@
 package org.openiam.idm.srvc.grp.service;
 
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
@@ -45,7 +46,7 @@ public interface GroupDataService {
     public int countBeans(final GroupSearchBean searchBean, final String requesterId);
 
 
-	public void saveGroup(final GroupEntity group);
+	public void saveGroup(final GroupEntity group) throws BasicDataServiceException;
 	
 	public void deleteGroup(final String groupId);
 

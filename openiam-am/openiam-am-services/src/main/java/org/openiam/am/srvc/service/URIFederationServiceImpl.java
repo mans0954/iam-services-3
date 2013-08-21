@@ -2,17 +2,11 @@ package org.openiam.am.srvc.service;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-
-import javax.annotation.PreDestroy;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -38,13 +32,12 @@ import org.openiam.am.srvc.uriauth.dto.URIPatternRuleToken;
 import org.openiam.am.srvc.uriauth.model.ContentProviderNode;
 import org.openiam.am.srvc.uriauth.model.ContentProviderTree;
 import org.openiam.am.srvc.uriauth.model.URIPatternSearchResult;
-import org.openiam.am.srvc.uriauth.model.URIPatternTree;
 import org.openiam.am.srvc.uriauth.rule.URIPatternRule;
 import org.openiam.authmanager.common.model.AuthorizationResource;
 import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.base.ws.exception.BasicDataServiceException;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.thread.Sweepable;
 import org.springframework.beans.BeansException;
@@ -53,11 +46,9 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.jmx.export.annotation.ManagedOperation;
-import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

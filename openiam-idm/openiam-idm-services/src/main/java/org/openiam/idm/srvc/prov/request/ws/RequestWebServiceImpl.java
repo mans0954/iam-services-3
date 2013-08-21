@@ -28,13 +28,12 @@ import javax.jws.WebService;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.base.ws.exception.BasicDataServiceException;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.dozer.converter.ProvisionRequestDozerConverter;
 import org.openiam.idm.srvc.prov.request.domain.ProvisionRequestEntity;
 import org.openiam.idm.srvc.prov.request.dto.ProvisionRequest;
 import org.openiam.idm.srvc.prov.request.dto.SearchRequest;
 import org.openiam.idm.srvc.prov.request.service.RequestDataService;
-import org.openiam.idm.srvc.user.dto.Supervisor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

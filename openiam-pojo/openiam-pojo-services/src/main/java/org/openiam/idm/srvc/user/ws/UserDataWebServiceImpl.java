@@ -31,7 +31,7 @@ import org.mule.api.context.MuleContextAware;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.base.ws.exception.BasicDataServiceException;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.dozer.converter.*;
 import org.openiam.idm.searchbeans.*;
 import org.openiam.idm.srvc.auth.dto.Login;

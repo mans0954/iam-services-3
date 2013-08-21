@@ -20,14 +20,11 @@
  */
 package org.openiam.idm.srvc.pswd.service;
 
-import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import javax.jws.WebMethod;
-import javax.jws.WebParam;
 import javax.jws.WebService;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -38,31 +35,16 @@ import org.openiam.base.id.UUIDGen;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.base.ws.exception.BasicDataServiceException;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.dozer.converter.IdentityQuestionDozerConverter;
 import org.openiam.dozer.converter.UserIdentityAnswerDozerConverter;
 import org.openiam.idm.searchbeans.IdentityAnswerSearchBean;
 import org.openiam.idm.searchbeans.IdentityQuestionSearchBean;
-import org.openiam.idm.srvc.audit.service.AuditHelper;
-import org.openiam.idm.srvc.auth.login.LoginDAO;
-import org.openiam.idm.srvc.auth.login.LoginDataService;
-import org.openiam.idm.srvc.policy.domain.PolicyAttributeEntity;
-import org.openiam.idm.srvc.policy.domain.PolicyEntity;
-import org.openiam.idm.srvc.policy.dto.Policy;
-import org.openiam.idm.srvc.policy.dto.PolicyAttribute;
-import org.openiam.idm.srvc.policy.service.PolicyDAO;
 import org.openiam.idm.srvc.pswd.domain.IdentityQuestionEntity;
 import org.openiam.idm.srvc.pswd.domain.UserIdentityAnswerEntity;
-import org.openiam.idm.srvc.pswd.dto.ChallengeResponseUser;
 import org.openiam.idm.srvc.pswd.dto.IdentityQuestion;
 import org.openiam.idm.srvc.pswd.dto.UserIdentityAnswer;
-import org.openiam.idm.srvc.secdomain.domain.SecurityDomainEntity;
-import org.openiam.idm.srvc.secdomain.service.SecurityDomainDAO;
-import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.service.UserDAO;
-import org.openiam.idm.srvc.user.service.UserDataService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service("challengeResponse")

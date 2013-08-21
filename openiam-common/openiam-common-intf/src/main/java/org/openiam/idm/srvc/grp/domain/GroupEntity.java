@@ -20,6 +20,7 @@ import javax.persistence.MapKeyColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.validation.constraints.Max;
 
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.annotations.Cache;
@@ -51,6 +52,7 @@ public class GroupEntity {
     private String grpId;
     
     @Column(name="GRP_NAME",length=80)
+    @Max(value = 80, message = "group.name.too.long")
     private String grpName;
     
     @Column(name="CREATE_DATE",length=19)
@@ -72,6 +74,7 @@ public class GroupEntity {
     private String provisionObjName;
     
     @Column(name="GROUP_DESC",length=80)
+    @Max(value = 80, message = "group.description.too.long")
     private String description;
     
     @Column(name="STATUS",length=20)

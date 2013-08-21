@@ -3,7 +3,6 @@ package org.openiam.idm.srvc.res.service;
 import java.util.*;
 
 import javax.jws.WebMethod;
-import javax.jws.WebParam;
 import javax.jws.WebService;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -13,10 +12,9 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.base.ws.exception.BasicDataServiceException;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.dozer.converter.ResourceDozerConverter;
 import org.openiam.dozer.converter.ResourcePropDozerConverter;
-import org.openiam.dozer.converter.ResourceRoleDozerConverter;
 import org.openiam.dozer.converter.ResourceTypeDozerConverter;
 import org.openiam.dozer.converter.ResourceUserDozerConverter;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
@@ -31,16 +29,12 @@ import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
 import org.openiam.idm.srvc.res.domain.ResourceUserEntity;
 import org.openiam.idm.srvc.res.dto.*;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
-import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.service.RoleDAO;
 import org.openiam.idm.srvc.searchbean.converter.ResourceSearchBeanConverter;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDAO;
-import org.openiam.idm.srvc.user.service.UserMgr;
-import org.openiam.idm.srvc.user.ws.UserDataWebService;
 import org.openiam.util.DozerMappingType;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

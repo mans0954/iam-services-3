@@ -27,7 +27,7 @@ import org.apache.log4j.Logger;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.base.ws.exception.BasicDataServiceException;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.dozer.converter.RoleAttributeDozerConverter;
 import org.openiam.dozer.converter.RoleDozerConverter;
 import org.openiam.dozer.converter.RolePolicyDozerConverter;
@@ -42,8 +42,6 @@ import org.openiam.idm.srvc.role.dto.RoleAttribute;
 import org.openiam.idm.srvc.role.dto.RolePolicy;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.secdomain.service.SecurityDomainDAO;
-import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.service.UserMgr;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

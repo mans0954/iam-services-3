@@ -7,9 +7,10 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.base.ws.exception.BasicDataServiceException;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.dozer.converter.GroupAttributeDozerConverter;
 import org.openiam.dozer.converter.GroupDozerConverter;
+import org.openiam.exception.EsbErrorToken;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
@@ -18,9 +19,9 @@ import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupAttribute;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.searchbean.converter.GroupSearchBeanConverter;
-import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.service.UserMgr;
+import org.openiam.validator.EntityValidator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import javax.jws.WebMethod;
@@ -45,7 +46,6 @@ import java.util.Set;
 		serviceName = "GroupDataWebService")
 @Service("groupWS")
 public class GroupDataWebServiceImpl implements GroupDataWebService {
-	
 	@Autowired
 	private GroupDataService groupManager;
 	
@@ -93,9 +93,12 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
+            response.setErrorTokenList(e.getErrorTokenList());
 		} catch(Throwable e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorText(e.getMessage());
+            response.setErrorCode(ResponseCode.INTERNAL_ERROR);
+            response.addErrorToken(new EsbErrorToken(e.getMessage()));
 		}
 		return response;
 	}

@@ -2,8 +2,6 @@ package org.openiam.idm.srvc.meta.ws;
 
 import java.util.List;
 
-import javax.jws.WebMethod;
-import javax.jws.WebParam;
 import javax.jws.WebService;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -12,7 +10,7 @@ import org.apache.log4j.Logger;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.base.ws.exception.BasicDataServiceException;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.dozer.converter.MetadataElementTemplateDozerConverter;
 import org.openiam.dozer.converter.MetadataTemplateTypeDozerConverter;
 import org.openiam.dozer.converter.MetadataTemplateTypeFieldDozerConverter;

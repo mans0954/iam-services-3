@@ -5,6 +5,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.dozer.converter.GroupDozerConverter;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
@@ -13,7 +14,9 @@ import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.res.service.ResourceGroupDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
+import org.openiam.validator.EntityValidator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,6 +56,10 @@ public class GroupDataServiceImpl implements GroupDataService {
 
     @Autowired
     private ResourceGroupDAO resoruceGroupDAO;
+
+    @Autowired
+    @Qualifier("entityValidator")
+    private EntityValidator entityValidator;
 	
 	private static final Log log = LogFactory.getLog(GroupDataServiceImpl.class);
 
@@ -207,8 +214,9 @@ public class GroupDataServiceImpl implements GroupDataService {
 	}
 	
 	@Override
-	public void saveGroup(final GroupEntity group) {
-		if(group != null) {
+	public void saveGroup(final GroupEntity group) throws BasicDataServiceException {
+		if(group != null && entityValidator.isValid(group)) {
+
 			if(StringUtils.isNotBlank(group.getGrpId())) {
 				final GroupEntity dbGroup = groupDao.findById(group.getGrpId());
 				if(dbGroup != null) {

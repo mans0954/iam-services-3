@@ -6,7 +6,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
-import org.openiam.base.ws.exception.BasicDataServiceException;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.dozer.converter.LoginDozerConverter;
 import org.openiam.idm.searchbeans.LoginSearchBean;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
@@ -23,7 +23,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.jws.WebParam;
 import javax.jws.WebService;
 import java.util.Date;
 import java.util.LinkedList;
