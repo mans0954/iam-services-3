@@ -34,6 +34,10 @@ public class LanguageEntity implements Serializable {
     @Column(name = "IS_USED")
     @Type(type = "yes_no")
     private boolean isUsed=false;
+    
+    @Column(name = "IS_DEFAULT")
+    @Type(type = "yes_no")
+    private boolean isDefault=false;
 
     @Column(name="LANGUAGE_CODE", length = 2)
     private String languageCode;
@@ -81,7 +85,15 @@ public class LanguageEntity implements Serializable {
 		this.isUsed = isUsed;
 	}
 
-    public String getLanguageCode() {
+    public boolean isDefault() {
+		return isDefault;
+	}
+
+	public void setDefault(boolean isDefault) {
+		this.isDefault = isDefault;
+	}
+
+	public String getLanguageCode() {
         return languageCode;
     }
 
@@ -110,6 +122,8 @@ public class LanguageEntity implements Serializable {
 			return false;
 		LanguageEntity other = (LanguageEntity) obj;
 		if (isUsed != other.isUsed)
+			return false;
+		if (isDefault != other.isDefault)
 			return false;
 		if (languageId == null) {
 			if (other.languageId != null)

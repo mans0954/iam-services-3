@@ -263,6 +263,13 @@ public class UserMgr implements UserDataService {
     @Transactional
     public void updateUserFromDto(User user) {
 
+        if (user == null)
+            throw new NullPointerException("user object is null");
+        if (user.getUserId() == null)
+            throw new NullPointerException("user id is null");
+
+        user.setLastUpdate(new Date(System.currentTimeMillis()));
+
         UserEntity userEntity = userDao.findById(user.getUserId());
         userEntity.updateUser(userDozerConverter.convertToEntity(user, false));
 
