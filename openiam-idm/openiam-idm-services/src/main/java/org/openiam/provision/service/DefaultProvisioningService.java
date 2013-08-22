@@ -76,6 +76,7 @@ import org.openiam.provision.resp.PasswordResponse;
 import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
+import org.openiam.util.MuleContextProvider;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.jws.WebService;
@@ -95,7 +96,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
     public Response testConnectionConfig(String managedSysId) {
         return validateConnectionConfig.testConnection(managedSysId,
-                muleContext);
+                MuleContextProvider.getCtx());
     }
 
     /*
@@ -638,7 +639,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                                 ObjectResponse respType = remoteConnectorAdapter
                                         .modifyRequest(mSys, userReq,
-                                                connector, muleContext);
+                                                connector, MuleContextProvider.getCtx());
                                 if (respType.getStatus() == StatusCodeType.SUCCESS) {
                                     connectorSuccess = true;
                                 }
@@ -678,7 +679,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                         + resLogin.getLoginId());
                                 ObjectResponse respType = connectorAdapter
                                         .modifyRequest(mSys, modReqType,
-                                                muleContext);
+                                                MuleContextProvider.getCtx());
 
                                 if (respType.getStatus() == StatusCodeType.SUCCESS) {
                                     connectorSuccess = true;
@@ -1190,7 +1191,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     @Transactional
     public ProvisionUserResponse deprovisionSelectedResources(String userId,
             String requestorUserId, List<String> resourceList) {
-        deprovisionSelectedResource.setMuleContext(muleContext);
+        deprovisionSelectedResource.setMuleContext(MuleContextProvider.getCtx());
         return deprovisionSelectedResource.deprovisionSelectedResources(userId,
                 requestorUserId, resourceList);
     }
@@ -1211,7 +1212,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 .getBean("disableUser");
 
         return disableUser.disableUser(userId, operation, requestorId,
-                muleContext);
+                MuleContextProvider.getCtx());
 
     }
 
@@ -1320,7 +1321,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         suspendCommand.setTargetID(managedSysId);
                         suspendCommand.setRequestID("R" + System.currentTimeMillis());
                         connectorAdapter.suspendRequest(managedSys,
-                                suspendCommand, muleContext);
+                                suspendCommand, MuleContextProvider.getCtx());
                     } else {
                         final SuspendResumeRequest resumeRequest = new SuspendResumeRequest();
                         resumeRequest.setObjectIdentity(userLogin.getLogin());
@@ -1329,7 +1330,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 + System.currentTimeMillis());
                         // responsetype = client.resume(resumeRequest);
                         connectorAdapter.resumeRequest(managedSys,
-                                resumeRequest, muleContext);
+                                resumeRequest, MuleContextProvider.getCtx());
                     }
 
                     if (responsetype == null) {
@@ -1371,7 +1372,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                 suspendCommand.setRequestID("R"
                                         + System.currentTimeMillis());
                                 connectorAdapter.suspendRequest(managedSys,
-                                        suspendCommand, muleContext);
+                                        suspendCommand, MuleContextProvider.getCtx());
                             } else {
                                 final SuspendResumeRequest resumeRequest = new SuspendResumeRequest();
                                 resumeRequest.setObjectIdentity(lg.getLogin());
@@ -1380,7 +1381,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                         + System.currentTimeMillis());
                                 // responsetype = client.resume(resumeRequest);
                                 connectorAdapter.resumeRequest(managedSys,
-                                        resumeRequest, muleContext);
+                                        resumeRequest, MuleContextProvider.getCtx());
                             }
 
                             if (responsetype.getStatus() == null) {
@@ -1915,7 +1916,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                                 ObjectResponse responseType = connectorAdapter
                                         .addRequest(mSys, addReqType,
-                                                muleContext);
+                                                MuleContextProvider.getCtx());
                                 if (responseType.getStatus() == StatusCodeType.SUCCESS) {
                                     connectorSuccess = true;
                                 }
@@ -2035,7 +2036,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                                 ObjectResponse respType = remoteConnectorAdapter
                                         .modifyRequest(mSys, userReq,
-                                                connector, muleContext);
+                                                connector, MuleContextProvider.getCtx());
                                 if (respType.getStatus() == StatusCodeType.SUCCESS) {
                                     connectorSuccess = true;
                                 }
@@ -2072,7 +2073,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                         + mLg.getLoginId());
                                 ObjectResponse respType = connectorAdapter
                                         .modifyRequest(mSys, modReqType,
-                                                muleContext);
+                                                MuleContextProvider.getCtx());
 
                                 if (respType.getStatus() == StatusCodeType.SUCCESS) {
                                     connectorSuccess = true;
@@ -2224,7 +2225,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         request.setScriptHandler(mSys.getDeleteHandler());
 
                         remoteConnectorAdapter.deleteRequest(mSys, request,
-                                connector, muleContext);
+                                connector, MuleContextProvider.getCtx());
 
                     } else {
                         CrudRequest<ExtensibleUser> reqType = new CrudRequest<ExtensibleUser>();
@@ -2232,7 +2233,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                         reqType.setObjectIdentity(mLg.getLogin());
                         reqType.setTargetID(managedSysId);
                         connectorAdapter.deleteRequest(
-                                mSys, reqType, muleContext);
+                                mSys, reqType, MuleContextProvider.getCtx());
 
                     }
                 }
@@ -2509,7 +2510,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             reqType.setScriptHandler(mSys.getLookupHandler());
 
             SearchResponse responseType = remoteConnectorAdapter.lookupRequest(
-                    mSys, reqType, connector, muleContext);
+                    mSys, reqType, connector, MuleContextProvider.getCtx());
             if (responseType.getStatus() == StatusCodeType.FAILURE || responseType.getObjectList().size() == 0) {
                 response.setStatus(ResponseStatus.FAILURE);
                 return response;
@@ -2535,7 +2536,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             request.setSearchValue(principalName);
             request.setTargetID(managedSysId);
             SearchResponse responseType = connectorAdapter.lookupRequest(
-                    mSys, request, muleContext);
+                    mSys, request, MuleContextProvider.getCtx());
 
             if (responseType.getStatus() == StatusCodeType.FAILURE) {
                 response.setStatus(ResponseStatus.FAILURE);
@@ -3371,7 +3372,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         if (msys == null)
             return null;
         LookupAttributeResponse response = connectorAdapter
-                .lookupAttributes(msys.getConnectorId(), config, muleContext);
+                .lookupAttributes(msys.getConnectorId(), config, MuleContextProvider.getCtx());
         if (StatusCodeType.SUCCESS.equals(response.getStatus())) {
             List<String> attributeNames = new LinkedList<String>();
             for(ExtensibleAttribute attr : response.getAttributes()) {

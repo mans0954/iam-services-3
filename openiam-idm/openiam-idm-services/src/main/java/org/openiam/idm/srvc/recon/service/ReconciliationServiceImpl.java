@@ -91,6 +91,7 @@ import org.openiam.provision.service.ProvisionService;
 import org.openiam.provision.service.RemoteConnectorAdapter;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.script.ScriptIntegration;
+import org.openiam.util.MuleContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -102,15 +103,12 @@ import org.springframework.transaction.annotation.Transactional;
  * 
  */
 @Service
-public class ReconciliationServiceImpl implements ReconciliationService,
-        MuleContextAware {
+public class ReconciliationServiceImpl implements ReconciliationService {
     @Autowired
     protected ReconciliationSituationDAO reconSituationDAO;
 
     @Autowired
     protected ReconciliationConfigDAO reconConfigDao;
-
-    protected MuleContext muleContext;
 
     @Autowired
     protected LoginDataService loginManager;
@@ -156,10 +154,6 @@ public class ReconciliationServiceImpl implements ReconciliationService,
     private String absolutePath;
     private static final Log log = LogFactory
             .getLog(ReconciliationServiceImpl.class);
-
-    public MuleContext getMuleContext() {
-        return muleContext;
-    }
 
     public ReconciliationConfig addConfig(ReconciliationConfig config) {
         if (config == null) {
@@ -262,10 +256,6 @@ public class ReconciliationServiceImpl implements ReconciliationService,
             return reconConfigDozerMapper.convertToDTO(result, true);
     }
 
-    public void setMuleContext(MuleContext ctx) {
-        muleContext = ctx;
-    }
-
     public ReconciliationResponse startReconciliation(
             ReconciliationConfig config) {
         try {
@@ -303,7 +293,7 @@ public class ReconciliationServiceImpl implements ReconciliationService,
                 // Get user without fetches
                 log.debug("Start recon");
                 connectorAdapter.reconcileResource(managedSysDto, config,
-                        muleContext);
+                        MuleContextProvider.getCtx());
                 log.debug("end recon");
                 return new ReconciliationResponse(ResponseStatus.SUCCESS);
             }
@@ -395,12 +385,12 @@ public class ReconciliationServiceImpl implements ReconciliationService,
                 && connector.getConnectorInterface().equalsIgnoreCase("REMOTE")) {
             log.debug("Calling reconcileResource with Remote connector");
             searchResponse = remoteConnectorAdapter.search(searchRequest,
-                    connector, muleContext);
+                    connector, MuleContextProvider.getCtx());
 
         } else {
             log.debug("Calling reconcileResource with Local connector");
             searchResponse = connectorAdapter.search(searchRequest, connector,
-                    muleContext);
+                    MuleContextProvider.getCtx());
         }
         if (searchResponse != null
                 && searchResponse.getStatus() == StatusCodeType.SUCCESS) {

@@ -9,7 +9,7 @@ import org.springframework.context.ApplicationContextAware;
 public class SpringContextProvider implements ApplicationContextAware {
 
 	private static ApplicationContext ctx;
-	
+
 	@SuppressWarnings("static-access")
 	@Override
 	public void setApplicationContext(ApplicationContext ctx)

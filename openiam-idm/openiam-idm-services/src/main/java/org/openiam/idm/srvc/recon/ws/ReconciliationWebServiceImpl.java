@@ -25,7 +25,6 @@ import javax.jws.WebParam;
 import javax.jws.WebService;
 
 import org.mule.api.MuleContext;
-import org.mule.api.context.MuleContextAware;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.searchbeans.ManualReconciliationSearchBean;
@@ -40,8 +39,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  */
 @WebService(endpointInterface = "org.openiam.idm.srvc.recon.ws.ReconciliationWebService", targetNamespace = "http://www.openiam.org/service/recon", portName = "ReconciliationWebServicePort", serviceName = "ReconciliationWebService")
-public class ReconciliationWebServiceImpl implements ReconciliationWebService,
-        MuleContextAware {
+public class ReconciliationWebServiceImpl implements ReconciliationWebService {
     @Autowired
     protected ReconciliationService reconService;
     protected MuleContext muleContext;
@@ -113,15 +111,8 @@ public class ReconciliationWebServiceImpl implements ReconciliationWebService,
         this.reconService = reconService;
     }
 
-    public void setMuleContext(MuleContext ctx) {
-
-        muleContext = ctx;
-
-    }
-
     public ReconciliationResponse startReconciliation(
             ReconciliationConfig config) {
-        reconService.setMuleContext(muleContext);
         return reconService.startReconciliation(config);
 
     }

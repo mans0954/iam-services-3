@@ -26,8 +26,7 @@ import java.util.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.mule.api.MuleContext;
-import org.mule.api.context.MuleContextAware;
+
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
@@ -78,7 +77,7 @@ import javax.jws.WebService;
             targetNamespace = "urn:idm.openiam.org/srvc/user/service",
             serviceName = "UserDataWebService",
             portName = "UserDataWebServicePort")
-public class UserDataWebServiceImpl implements UserDataWebService, MuleContextAware {
+public class UserDataWebServiceImpl implements UserDataWebService{
 
     private static Logger log = Logger.getLogger(UserDataWebServiceImpl.class);
 
@@ -116,14 +115,9 @@ public class UserDataWebServiceImpl implements UserDataWebService, MuleContextAw
     @Autowired
     private MailService mailService;
 
-    private MuleContext muleContext;
-
     @Autowired
     private UserProfileService userProfileService;
 
-    public void setMuleContext(MuleContext ctx) {
-        muleContext = ctx;
-    }
 
     @Value("${openiam.service_base}")
     private String serviceHost;
