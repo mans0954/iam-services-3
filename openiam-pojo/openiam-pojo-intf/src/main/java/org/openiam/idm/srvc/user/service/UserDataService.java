@@ -52,6 +52,8 @@ public interface UserDataService {
 
     public void updateUserWithDependent(UserEntity user, boolean dependency);
 
+    public void updateUserFromDto(User user);
+
     /**
      * Deletes a user from the system. The developer is responsible for deleting
      * associated objects such as the User-Group and User-Role relationship.

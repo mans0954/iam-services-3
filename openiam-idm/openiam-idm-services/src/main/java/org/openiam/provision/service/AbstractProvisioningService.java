@@ -1041,14 +1041,14 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
 
         String requestId = UUIDGen.getUUID();
 
-        log.debug("ModifyUser: updateUser called." );
+        log.debug("ModifyUser: updateUser called.");
 
         User newUser = user.getUser();
         updateUserObject(origUser, newUser);
 
         log.debug("User object pending update:" + origUser);
 
-        userMgr.updateUserWithDependent(userDozerConverter.convertToEntity(origUser, true), true);
+        userMgr.updateUserFromDto(origUser);
 
         return requestId;
     }
@@ -1125,9 +1125,11 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
         }
         // if a value is in original list and not in the new list - then add it on
         for (EmailAddress e : origEmailSet) {
-            EmailAddress newEmail =  getEmailAddress(e.getEmailId(), newEmailSet);
-            if (newEmail == null) {
-                e.setOperation(AttributeOperationEnum.NO_CHANGE);
+            if (e.getEmailId() != null) {
+                EmailAddress newEmail =  getEmailAddress(e.getEmailId(), newEmailSet);
+                if (newEmail == null) {
+                    e.setOperation(AttributeOperationEnum.NO_CHANGE);
+                }
             }
         }
     }
@@ -1193,10 +1195,12 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
         }
         // if a value is in original list and not in the new list - then add it on
         for (Phone ph : origPhoneSet) {
-            Phone newPhone =  getPhone(ph.getPhoneId(), newPhoneSet);
-            if (newPhone == null) {
-                ph.setOperation(AttributeOperationEnum.NO_CHANGE);
+            if (ph.getPhoneId() != null) {
+                Phone newPhone =  getPhone(ph.getPhoneId(), newPhoneSet);
+                if (newPhone == null) {
+                    ph.setOperation(AttributeOperationEnum.NO_CHANGE);
 
+                }
             }
         }
     }
@@ -1264,11 +1268,13 @@ public abstract class AbstractProvisioningService implements MuleContextAware,
             }
         }
         // if a value is in original list and not in the new list - then add it on
-        for (Address ph : origAddressSet) {
-            Address newAddress =  getAddress(ph.getAddressId(), newAddressSet);
-            if (newAddress == null) {
-                ph.setOperation(AttributeOperationEnum.NO_CHANGE);
+        for (Address a : origAddressSet) {
+            if (a.getAddressId() != null) {
+                Address newAddress =  getAddress(a.getAddressId(), newAddressSet);
+                if (newAddress == null) {
+                    a.setOperation(AttributeOperationEnum.NO_CHANGE);
 
+                }
             }
         }
     }

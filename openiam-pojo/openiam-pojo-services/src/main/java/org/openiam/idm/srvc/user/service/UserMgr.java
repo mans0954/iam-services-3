@@ -17,6 +17,7 @@ import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseConstants;
 import org.openiam.base.SysConfiguration;
 import org.openiam.core.dao.UserKeyDao;
@@ -256,6 +257,108 @@ public class UserMgr implements UserDataService {
 
         userDao.update(userEntity);
         validateEmailAddress(userEntity, user.getEmailAddresses());
+
+    }
+
+    @Transactional
+    public void updateUserFromDto(User user) {
+
+        UserEntity userEntity = userDao.findById(user.getUserId());
+        userEntity.updateUser(userDozerConverter.convertToEntity(user, false));
+
+        // Processing emails
+        Set<EmailAddress> emailAddresses = user.getEmailAddresses();
+        if (CollectionUtils.isNotEmpty(emailAddresses)) {
+            for (EmailAddress e : emailAddresses) {
+                if (e.getOperation() == null) {
+                    continue;
+                }
+                if (e.getOperation().equals(AttributeOperationEnum.DELETE)) {
+                    EmailAddressEntity entity = emailAddressDao.findById(e.getEmailId());
+                    if (entity != null) {
+                        userEntity.getEmailAddresses().remove(entity);
+                    }
+                } else if (e.getOperation().equals(AttributeOperationEnum.ADD)) {
+                    EmailAddressEntity entity = emailAddressDozerConverter.convertToEntity(e, false);
+                    entity.setParent(userEntity);
+                    userEntity.getEmailAddresses().add(entity);
+                } else if (e.getOperation().equals(AttributeOperationEnum.REPLACE)) {
+                    EmailAddressEntity entity = emailAddressDao.findById(e.getEmailId());
+                    if (entity != null) {
+                        userEntity.getEmailAddresses().remove(entity);
+                        emailAddressDao.evict(entity);
+                        entity = emailAddressDozerConverter.convertToEntity(e, false);
+                        entity.setParent(userEntity);
+                        userEntity.getEmailAddresses().add(entity);
+                    }
+                }
+            }
+        }
+
+        // Processing addresses
+        Set<Address> addresses = user.getAddresses();
+        if (CollectionUtils.isNotEmpty(addresses)) {
+            for (Address e : addresses) {
+                if (e.getOperation() == null) {
+                    continue;
+                }
+                if (e.getOperation().equals(AttributeOperationEnum.DELETE)) {
+                    AddressEntity entity = addressDao.findById(e.getAddressId());
+                    if (entity != null) {
+                        userEntity.getAddresses().remove(entity);
+                    }
+                } else if (e.getOperation().equals(AttributeOperationEnum.ADD)) {
+                    AddressEntity entity = addressDozerConverter.convertToEntity(e, false);
+                    entity.setParent(userEntity);
+                    userEntity.getAddresses().add(entity);
+                } else if (e.getOperation().equals(AttributeOperationEnum.REPLACE)) {
+                    AddressEntity entity = addressDao.findById(e.getAddressId());
+                    if (entity != null) {
+                        userEntity.getAddresses().remove(entity);
+                        addressDao.evict(entity);
+                        entity = addressDozerConverter.convertToEntity(e, false);
+                        entity.setParent(userEntity);
+                        userEntity.getAddresses().add(entity);
+                    }
+                }
+            }
+        }
+
+        // Processing phones
+        Set<Phone> phones = user.getPhones();
+        if (CollectionUtils.isNotEmpty(phones)) {
+            for (Phone e : phones) {
+                if (e.getOperation() == null) {
+                    continue;
+                }
+                if (e.getOperation().equals(AttributeOperationEnum.DELETE)) {
+                    PhoneEntity entity = phoneDao.findById(e.getPhoneId());
+                    if (entity != null) {
+                        userEntity.getPhones().remove(entity);
+                    }
+                } else if (e.getOperation().equals(AttributeOperationEnum.ADD)) {
+                    PhoneEntity entity = phoneDozerConverter.convertToEntity(e, false);
+                    entity.setParent(userEntity);
+                    userEntity.getPhones().add(entity);
+                } else if (e.getOperation().equals(AttributeOperationEnum.REPLACE)) {
+                    PhoneEntity entity = phoneDao.findById(e.getPhoneId());
+                    if (entity != null) {
+                        userEntity.getPhones().remove(entity);
+                        phoneDao.evict(entity);
+                        entity = phoneDozerConverter.convertToEntity(e, false);
+                        entity.setParent(userEntity);
+                        userEntity.getPhones().add(entity);
+                    }
+                }
+            }
+        }
+
+        // Processing user attributes
+        updateUserAttributes(userDozerConverter.convertToEntity(user, false), userEntity);
+
+        //TODO: Check userRoles and affiliations
+
+        userDao.update(userEntity);
 
     }
 

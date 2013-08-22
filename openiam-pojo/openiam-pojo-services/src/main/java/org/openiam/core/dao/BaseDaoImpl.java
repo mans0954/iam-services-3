@@ -287,4 +287,15 @@ public abstract class BaseDaoImpl<T, PrimaryKey extends Serializable> extends Hi
             throw re;
         }
     }
+
+    public void evict(T t) {
+        log.debug("evicting instance");
+        try {
+            getSession().evict(t);
+            log.debug("evict successful");
+        } catch (RuntimeException re) {
+            log.error("evict failed", re);
+            throw re;
+        }
+    }
 }
