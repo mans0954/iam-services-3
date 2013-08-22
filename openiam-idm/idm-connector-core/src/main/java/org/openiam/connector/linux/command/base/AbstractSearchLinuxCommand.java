@@ -19,10 +19,6 @@ import org.openiam.provision.type.ExtensibleObject;
 
 public abstract class AbstractSearchLinuxCommand<ExtObject extends ExtensibleObject>
         extends AbstractLinuxCommand<SearchRequest<ExtObject>, SearchResponse> {
-    protected static final String searchUserQuery = "awk -F: \'$3 >= 500 {print $1}\' /etc/passwd";
-    protected static final String NOBODY_LINUX_USER = "nobody\n";
-    protected static final String searchGroupQuery = "awk -F: \'$3 >= 500 {print $1}\' /etc/group";
-    protected static final String NOGROUP_LINUX_GROUP = "nogroup\n";
     @Override
     public SearchResponse execute(SearchRequest<ExtObject> searchRequest)
             throws ConnectorDataException {

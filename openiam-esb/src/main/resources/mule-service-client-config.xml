@@ -80,7 +80,7 @@
 		</outbound-endpoint>
 	</flow>
 
-	<flow name="connectorClientExpireLookup">
+	<flow name="connectorClientLookup">
 		<vm:inbound-endpoint path="dispatchConnectorMessageLookup"
 			exchange-pattern="request-response">
 		</vm:inbound-endpoint>

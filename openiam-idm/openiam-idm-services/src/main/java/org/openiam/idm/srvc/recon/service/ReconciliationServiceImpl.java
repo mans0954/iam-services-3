@@ -564,7 +564,6 @@ public class ReconciliationServiceImpl implements ReconciliationService {
 
         String principal = identity.getLogin();
         log.debug("looking up identity in resource: " + principal);
-
         LookupUserResponse lookupResp = provisionService.getTargetSystemUser(
                 principal, mSys.getManagedSysId());
 

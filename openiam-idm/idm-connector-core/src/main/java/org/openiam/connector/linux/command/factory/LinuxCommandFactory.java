@@ -42,7 +42,7 @@ public class LinuxCommandFactory extends AbstractCommandFactory {
     private ConnectorCommand testLinuxCommand;
     @Autowired
     @Qualifier("searchUserLinuxCommand")
-    private SearchUserLinuxCommand searchUserLinuxCommand;
+    private ConnectorCommand searchUserLinuxCommand;
 
     @Autowired
     @Qualifier("addGroupLinuxCommand")
@@ -58,7 +58,7 @@ public class LinuxCommandFactory extends AbstractCommandFactory {
     private ConnectorCommand modifyGroupLinuxCommand;
     @Autowired
     @Qualifier("searchGroupLinuxCommand")
-    private SearchUserLinuxCommand searchGroupLinuxCommand;
+    private ConnectorCommand searchGroupLinuxCommand;
 
     public ConnectorCommand getConnectorCommand(CommandType commandType,
             ExtensibleObjectType extensibleObjectType)

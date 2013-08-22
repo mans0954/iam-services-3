@@ -27,6 +27,7 @@ import javax.jws.WebService;
 
 import java.util.List;
 
+import org.mule.api.MuleContext;
 import org.openiam.base.ws.Response;
 import org.openiam.connector.type.request.LookupRequest;
 

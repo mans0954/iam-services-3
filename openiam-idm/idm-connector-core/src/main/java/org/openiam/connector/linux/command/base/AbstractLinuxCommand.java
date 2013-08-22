@@ -22,6 +22,10 @@ import org.springframework.util.StringUtils;
 public abstract class AbstractLinuxCommand<Request extends RequestType, Response extends ResponseType>
         extends AbstractCommand<Request, Response> {
     private SSHConnectionFactory sshConnectionFactory = new SSHConnectionFactory();
+    protected static final String searchUserQuery = "awk -F: \'$3 >= 500 {print $1}\' /etc/passwd";
+    protected static final String NOBODY_LINUX_USER = "nobody\n";
+    protected static final String searchGroupQuery = "awk -F: \'$3 >= 500 {print $1}\' /etc/group";
+    protected static final String NOGROUP_LINUX_GROUP = "nogroup\n";
 
     protected SSHAgent getSSHAgent(String targetId)
             throws ConnectorDataException {
@@ -63,10 +67,10 @@ public abstract class AbstractLinuxCommand<Request extends RequestType, Response
      *            User with new password set
      * @throws org.openiam.connector.linux.ssh.SSHException
      */
-    protected void sendPassword(SSHAgent sshAgent, LinuxUser user)
-            throws SSHException {
+    protected void sendPassword(SSHAgent sshAgent, LinuxUser user,
+            String sudoPassword) throws SSHException {
         String pass = user.getPassword();
-        String doubledPass = pass + "\n" + pass + "\n";
+        String doubledPass = pass + "\n" + pass + "\n" + sudoPassword + "\n";
         sshAgent.executeCommand(user.getUserSetPasswordCommand(), doubledPass);
     }
 
@@ -86,16 +90,18 @@ public abstract class AbstractLinuxCommand<Request extends RequestType, Response
             // Extract attribues into a map. Also save groups
             HashMap<String, String> attributes = new HashMap<String, String>();
             attributes.put("login", login);
-
-            log.debug("Object:" + obj.getName() + " - operation="
-                    + obj.getOperation());
-            // Extract attributes
-            for (ExtensibleAttribute att : obj.getAttributes()) {
-                if (att != null) {
-                    attributes.put(att.getName(), att.getValue());
+            if (obj == null) {
+                log.debug("Object: not provided, just identity, seems it is delete operation");
+            } else {
+                log.debug("Object:" + obj.getName() + " - operation="
+                        + obj.getOperation());
+                // Extract attributes
+                for (ExtensibleAttribute att : obj.getAttributes()) {
+                    if (att != null) {
+                        attributes.put(att.getName(), att.getValue());
+                    }
                 }
             }
-
             try {
                 user = new LinuxUser(attributes);
             } catch (Exception ex) {
@@ -118,4 +124,12 @@ public abstract class AbstractLinuxCommand<Request extends RequestType, Response
         }
         return group;
     }
+
+    protected String getPassword(String managedSystemId)
+            throws ConnectorDataException {
+        ManagedSysEntity mSys = managedSysService
+                .getManagedSysById(managedSystemId);
+        return this.getDecryptedPassword(mSys.getPswd());
+    }
+
 }

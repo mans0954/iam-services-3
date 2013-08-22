@@ -9,20 +9,23 @@ import org.openiam.connector.linux.ssh.SSHAgent;
 import org.springframework.stereotype.Service;
 
 @Service("lookupUserLinuxCommand")
-public class LookupUserLinuxCommand extends AbstractLookupLinuxCommand<ExtensibleUser> {
+public class LookupUserLinuxCommand extends
+        AbstractLookupLinuxCommand<ExtensibleUser> {
 
     @Override
-    protected boolean lookupObject(String id, SSHAgent ssh) throws ConnectorDataException {
+    protected boolean lookupObject(String id, SSHAgent ssh)
+            throws ConnectorDataException {
         LinuxUser user = objectToLinuxUser(id, null);
         if (user != null) {
             try {
-               String result = ssh.executeCommand(user.getUserExistsCommand());
-               return  (result != null && result.trim().length() > 0);
+                String result = ssh.executeCommand(user.getUserExistsCommand());
+                return (result != null && result.trim().length() > 0);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
-                throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, e.getMessage());
+                throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR,
+                        e.getMessage());
             }
         }
-       return false;
+        return false;
     }
 }
