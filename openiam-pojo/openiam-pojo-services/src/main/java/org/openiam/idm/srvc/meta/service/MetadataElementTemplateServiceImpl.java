@@ -359,6 +359,9 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 			}
 				
 		}
+		if(entity == null) {
+			entity = languageDAO.getDefaultLanguage();
+		}
 		return entity;
 	}
 	
