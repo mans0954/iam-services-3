@@ -10,19 +10,29 @@ import org.openiam.idm.srvc.policy.dto.Policy;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "PolicySearchBean", propOrder = {
+        "name",
         "policyDefId"
 })
 public class PolicySearchBean extends AbstractSearchBean<Policy, String> implements SearchBean<Policy, String>, Serializable {
 
+    private String name;
+
 	private String policyDefId;
 
-	public String getPolicyDefId() {
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getPolicyDefId() {
 		return policyDefId;
 	}
 
 	public void setPolicyDefId(String policyDefId) {
 		this.policyDefId = policyDefId;
 	}
-	
 	
 }

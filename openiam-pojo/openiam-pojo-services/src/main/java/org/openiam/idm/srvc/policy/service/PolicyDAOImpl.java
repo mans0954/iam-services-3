@@ -5,6 +5,7 @@ package org.openiam.idm.srvc.policy.service;
 import java.util.List;
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
+import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.mule.util.StringUtils;
@@ -69,6 +70,19 @@ public class PolicyDAOImpl extends BaseDaoImpl<PolicyEntity, String> implements
             PolicySearchBean sb = (PolicySearchBean)searchBean;
             if(StringUtils.isNotBlank(sb.getPolicyDefId())) {
                 criteria.add(Restrictions.eq("policyDefId", sb.getPolicyDefId()));
+            }
+            if(StringUtils.isNotBlank(sb.getName())) {
+                String name = sb.getName();
+                MatchMode matchMode = null;
+                if (org.apache.commons.lang.StringUtils.indexOf(name, "*") == 0) {
+                    matchMode = MatchMode.END;
+                    name = name.substring(1);
+                }
+                if (StringUtils.isNotEmpty(name) && StringUtils.indexOf(name, "*") == name.length() - 1) {
+                    name = name.substring(0, name.length() - 1);
+                    matchMode = (matchMode == MatchMode.END) ? MatchMode.ANYWHERE : MatchMode.START;
+                }
+                criteria.add(Restrictions.ilike("name", name, matchMode));
             }
         }
         return criteria;
