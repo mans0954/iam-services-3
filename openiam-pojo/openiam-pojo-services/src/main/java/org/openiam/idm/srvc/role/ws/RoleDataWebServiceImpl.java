@@ -364,6 +364,7 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
+            response.setErrorTokenList(e.getErrorTokenList());
 		} catch(Throwable e) {
 			LOG.error("Exception", e);
 			response.setStatus(ResponseStatus.FAILURE);
