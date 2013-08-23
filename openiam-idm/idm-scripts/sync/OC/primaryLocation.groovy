@@ -1,4 +1,7 @@
 import org.openiam.idm.srvc.continfo.dto.Address
+import org.openiam.idm.srvc.user.service.UserDataService
+
+output = ""
 
 def columnMap =  rowObj.columnMap
 
@@ -12,8 +15,13 @@ address.state = columnMap.get("ST_CD")?.value
 address.country = columnMap.get("CTRY_CD")?.value
 address.metadataTypeId = attributeName
 
-if (user?.addresses) {
-    pUser.addresses = user.addresses
+def addresses = []
+if (!isNewUser) {
+    def userManager = context?.getBean("userManager") as UserDataService
+    addresses = userManager.getAddressDtoList(user.userId, false)
+}
+if (addresses) {
+    pUser.addresses = addresses
 }
 for (Address a : pUser.addresses) {
     if (address.metadataTypeId.equalsIgnoreCase(a.metadataTypeId)) {
@@ -22,4 +30,3 @@ for (Address a : pUser.addresses) {
     }
 }
 pUser.addresses.add(address)
-output = ""

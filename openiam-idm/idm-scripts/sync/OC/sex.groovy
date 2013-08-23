@@ -1,2 +1,3 @@
-pUser.sex = attribute.value
+
 output = ""
+pUser.sex = attribute.value

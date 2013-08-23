@@ -2,6 +2,8 @@ import org.openiam.dozer.converter.OrganizationDozerConverter
 import org.openiam.idm.searchbeans.OrganizationSearchBean
 import org.openiam.idm.srvc.org.service.OrganizationService
 
+output = ""
+
 def homeDeptCd = attribute.value
 
 def organizationService = context?.getBean("organizationService") as OrganizationService
@@ -26,4 +28,3 @@ if (homeDeptCd) {
         pUser.addUserAffiliation(department)
     }
 }
-output = ""
