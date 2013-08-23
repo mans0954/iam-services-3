@@ -2332,13 +2332,13 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
         log.debug("Local connector - Creating identity in target system:" + mLg.getLoginId());
         ObjectResponse resp = connectorAdapter.addRequest(mSys, addReqType, MuleContextProvider.getCtx());
 
-        auditHelper.addLog("ADD IDENTITY", user.getRequestorDomain(), user.getRequestorLogin(),
+        /*auditHelper.addLog("ADD IDENTITY", user.getRequestorDomain(), user.getRequestorLogin(),
                 "IDM SERVICE", user.getCreatedBy(), mLg.getManagedSysId(),
                 "USER", user.getUserId(),
                 idmAuditLog.getLogId(), resp.getStatus().toString(), idmAuditLog.getLogId(), "IDENTITY_STATUS",
                 "SUCCESS",
                 requestId, resp.getErrorCodeAsStr(), user.getSessionId(), resp.getErrorMsgAsStr(),
-                user.getRequestorLogin(), mLg.getLogin(), mLg.getDomainId());
+                user.getRequestorLogin(), mLg.getLogin(), mLg.getDomainId());*/
 
         return resp.getStatus() != StatusCodeType.FAILURE;
     }
