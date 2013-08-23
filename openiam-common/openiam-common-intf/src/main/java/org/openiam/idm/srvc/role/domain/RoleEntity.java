@@ -21,6 +21,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
 import javax.validation.constraints.Max;
+import javax.validation.constraints.Size;
 
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
@@ -46,11 +47,11 @@ public class RoleEntity implements Serializable {
 	private String roleId;
     
     @Column(name="ROLE_NAME",length=80)
-    @Max(value = 80, message = "role.name.too.long")
+    @Size(max = 80, message = "role.name.too.long")
     private String roleName;
     
     @Column(name="DESCRIPTION")
-    @Max(value = 255, message = "role.description.too.long")
+    @Size(max = 255, message = "role.description.too.long")
     private String description;
     
     @Column(name="STATUS",length=20)
