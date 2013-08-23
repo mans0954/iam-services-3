@@ -243,8 +243,6 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
                 sys.setPswd(cryptor.encrypt(keyManagementService.getUserKey(
                         systemUserId, KeyName.password.name()), sys.getPswd()));
             } catch (Exception e) {
-                //TODO remove when Nullpointer 2 string above will be fixed
-                sys.setPswd(sys.getPswd());
                 log.error(e);
             }
         }
