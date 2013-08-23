@@ -305,8 +305,8 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
 
             SearchResponse lookupSearchResponse = connectorAdapter.lookupRequest(mSys, reqType, muleContext);
             if(lookupSearchResponse.getStatus() == StatusCodeType.SUCCESS) {
-                List<ExtensibleAttribute> extAttrList = lookupSearchResponse.getObjectList().get(0).getAttributeList();
-                //getTargetSystemUser(identity, mSys.getManagedSysId()).getAttrList();
+                List<ExtensibleAttribute> extAttrList = lookupSearchResponse.getObjectList().size() > 0 ? lookupSearchResponse.getObjectList().get(0).getAttributeList() : new LinkedList<ExtensibleAttribute>();
+
                 if (extAttrList != null) {
                     for (ExtensibleAttribute obj : extAttrList) {
                         String name = obj.getName();
