@@ -5,6 +5,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openiam.dozer.converter.RoleDozerConverter;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
@@ -17,7 +18,9 @@ import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
+import org.openiam.validator.EntityValidator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,6 +59,10 @@ public class RoleDataServiceImpl implements RoleDataService {
 	
 	@Autowired
 	private UserRoleDAO userRoleDAO;
+
+    @Autowired
+    @Qualifier("entityValidator")
+    private EntityValidator entityValidator;
 	
 
 	private static final Log log = LogFactory.getLog(RoleDataServiceImpl.class);
@@ -202,8 +209,8 @@ public class RoleDataServiceImpl implements RoleDataService {
 	}	
 
 	@Override
-	public void saveRole(final RoleEntity role) {
-		if(role != null) {
+	public void saveRole(final RoleEntity role) throws BasicDataServiceException {
+		if(role != null && entityValidator.isValid(role)) {
 			if(StringUtils.isBlank(role.getRoleId())) {
 				roleDao.save(role);
 			} else {
