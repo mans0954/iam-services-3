@@ -407,6 +407,20 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
             if(uriPatternMeta.getMetaType()==null || StringUtils.isBlank(uriPatternMeta.getMetaType().getId())) {
                 throw new  BasicDataServiceException(ResponseCode.URI_PATTERN_META_TYPE_NOT_SET);
             }
+            
+            if(CollectionUtils.isNotEmpty(uriPatternMeta.getMetaValueSet())) {
+            	for(final URIPatternMetaValue value : uriPatternMeta.getMetaValueSet()) {
+            		if (StringUtils.isBlank(value.getName())) {
+            			 throw new  BasicDataServiceException(ResponseCode.META_NAME_MISSING);
+                    }
+            		
+            		if(StringUtils.isBlank(value.getGroovyScript()) &&
+            		   StringUtils.isBlank(value.getStaticValue()) &&
+            		   (value.getAmAttribute() == null || StringUtils.isBlank(value.getAmAttribute().getId()))) {
+            			 throw new  BasicDataServiceException(ResponseCode.META_VALUE_MISSING);
+            		}
+            	}
+            }
 
 //            // checjk if meta data already exists
 //            URIPatternMetaEntity example = uriPatternMetaDozerConverter.convertToEntity(uriPatternMeta,true);
@@ -441,7 +455,7 @@ public class ContentProviderWebServiceImpl implements ContentProviderWebService{
                 if (StringUtils.isBlank(value.getName())) {
                     throw new BasicDataServiceException(ResponseCode.URL_PATTERN_META_VALUE_NAME_NOT_SET);
                 }
-                if ((value.getAmAttribute() == null || StringUtils.isBlank(value.getAmAttribute().getReflectionKey())) &&
+                if ((value.getAmAttribute() == null || StringUtils.isBlank(value.getAmAttribute().getId())) &&
                 	(StringUtils.isBlank(value.getStaticValue())) &&
                 	(StringUtils.isBlank(value.getGroovyScript()))) {
                     throw new BasicDataServiceException(ResponseCode.URL_PATTERN_META_VALUE_MAP_NOT_SET);

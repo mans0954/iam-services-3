@@ -26,6 +26,10 @@
     <mapping>
         <class-a>org.openiam.am.srvc.domain.AuthResourceAMAttributeEntity</class-a>
         <class-b>org.openiam.am.srvc.dto.AuthResourceAMAttribute</class-b>
+        <field-exclude>
+        	<a>metaValues</a>
+        	<b>metaValues</b>
+        </field-exclude>
     </mapping>
 
     <mapping>
