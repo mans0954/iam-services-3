@@ -1320,6 +1320,7 @@ public class UserDataWebServiceImpl implements UserDataWebService{
             response.setErrorCode(e.getCode());
             response.setStatus(ResponseStatus.FAILURE);
         } catch (BasicDataServiceException e) {
+        	response.setErrorTokenList(e.getErrorTokenList());
             response.setErrorCode(e.getCode());
             response.setStatus(ResponseStatus.FAILURE);
         } catch (Throwable e) {

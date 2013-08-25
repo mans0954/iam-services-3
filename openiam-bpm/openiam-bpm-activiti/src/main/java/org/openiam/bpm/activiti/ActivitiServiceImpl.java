@@ -395,6 +395,10 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
 			}
 			
+			//userProfileService.validate(request);
+			final UserEntity provisionUserValidationObject = userDozerConverter.convertToEntity(request.getUser(), true);
+			entityValidator.isValid(provisionUserValidationObject);
+			
 			final String description = String.format("Edit User %s", request.getUser().getDisplayName());
 			
 			final Set<String> requestApproverIds = new HashSet<String>();
@@ -447,6 +451,7 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 		} catch(BasicDataServiceException e) {
 			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorTokenList(e.getErrorTokenList());
 		} catch(ActivitiException e) {
 			log.info("Activiti Exception", e);
 			response.setStatus(ResponseStatus.FAILURE);
