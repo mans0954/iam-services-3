@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import javax.persistence.*;
+import javax.validation.constraints.Size;
 
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.annotations.Fetch;
@@ -75,9 +76,11 @@ public class UserEntity {
             @Field(index = Index.TOKENIZED),
             @Field(name = "employeeId", index = Index.TOKENIZED, store = Store.YES)
     })
+    @Size(max = 32, message = "validator.user.employee.id.toolong")
     private String employeeId;
 
     @Column(name = "EMPLOYEE_TYPE", length = 20)
+    @Size(max = 20, message = "validator.user.employee.type.toolong")
     private String employeeType;
 
     @Column(name = "FIRST_NAME", length = 50)
@@ -85,9 +88,11 @@ public class UserEntity {
         @Field(index = Index.TOKENIZED),
         @Field(name = "firstName", index = Index.TOKENIZED, store = Store.YES)
     })
+    @Size(max = 50, message = "validator.user.first.name.toolong")
     private String firstName;
 
     @Column(name = "JOB_CODE", length = 50)
+    @Size(max = 50, message = "validator.user.job.code.toolong")
     private String jobCode;
 
     @Column(name = "LAST_NAME", length = 50)
@@ -95,6 +100,7 @@ public class UserEntity {
         @Field(index = Index.TOKENIZED),
         @Field(name = "lastName", index = Index.TOKENIZED, store = Store.YES)
     })
+    @Size(max = 50, message = "validator.user.last.name.toolong")
     private String lastName;
 
     @Column(name = "LAST_UPDATE", length = 19)
@@ -105,24 +111,31 @@ public class UserEntity {
     private String lastUpdatedBy;
 
     @Column(name = "LOCATION_CD", length = 50)
+    @Size(max = 50, message = "validator.user.location.code.toolong")
     private String locationCd;
 
     @Column(name = "LOCATION_NAME", length = 100)
+    @Size(max = 100, message = "validator.user.location.name.toolong")
     private String locationName;
 
     @Column(name = "TYPE_ID", length = 20)
+    @Size(max = 20, message = "validator.user.metadata.type.id.toolong")
     private String metadataTypeId;
 
     @Column(name = "CLASSIFICATION", length = 20)
+    @Size(max = 20, message = "validator.user.classification.toolong")
     private String classification;
 
     @Column(name = "MIDDLE_INIT", length = 50)
+    @Size(max = 50, message = "validator.user.middle.init.toolong")
     private String middleInit;
 
     @Column(name = "PREFIX", length = 4)
+    @Size(max = 4, message = "validator.user.prefix.toolong")
     private String prefix;
 
     @Column(name = "SEX", length = 1)
+    @Size(max = 1, message = "validator.user.sex.toolong")
     private String sex;
 
     @Column(name = "STATUS", length = 40)
@@ -136,18 +149,23 @@ public class UserEntity {
     private UserStatusEnum secondaryStatus;
 
     @Column(name = "SUFFIX", length = 20)
+    @Size(max = 20, message = "validator.user.suffix.toolong")
     private String suffix;
 
     @Column(name = "TITLE", length = 30)
+    @Size(max = 30, message = "validator.user.title.toolong")
     private String title;
 
     @Column(name = "USER_TYPE_IND", length = 20)
+    @Size(max = 20, message = "validator.user.type.identifier.toolong")
     private String userTypeInd;
 
     @Column(name = "MAIL_CODE", length = 10)
+    @Size(max = 10, message = "validator.user.mailcode.toolong")
     private String mailCode;
 
     @Column(name = "COST_CENTER", length = 20)
+    @Size(max = 20, message = "validator.user.cost.center.toolong")
     private String costCenter;
 
     @Column(name = "START_DATE", length = 10)
@@ -157,9 +175,11 @@ public class UserEntity {
     private Date lastDate;
 
     @Column(name = "NICKNAME", length = 40)
+    @Size(max = 40, message = "validator.user.nick.name.toolong")
     private String nickname;
 
     @Column(name = "MAIDEN_NAME", length = 40)
+    @Size(max = 40, message = "validator.user.maiden.name.toolong")
     private String maidenName;
 
     @Column(name = "PASSWORD_THEME", length = 20)

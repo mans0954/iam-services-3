@@ -31,8 +31,12 @@ public class EntityValidatorImpl extends AbstractEntityValidator {
 
                 Map<String, Object> attributes = constraintViolation.getConstraintDescriptor().getAttributes();
                 Object valueConstraint = attributes.get("max");
-                if (valueConstraint != null && valueConstraint instanceof Long) {
-                    token.setLengthConstraint((Long) valueConstraint);
+                if (valueConstraint != null) {
+                	if(valueConstraint instanceof Integer) {
+                		token.setLengthConstraint(Long.valueOf((Integer) valueConstraint).longValue());
+                	} else if(valueConstraint instanceof Long) {
+                		token.setLengthConstraint((Long)valueConstraint);
+                	}
                 }
 
                 token.setClassName(constraintViolation.getRootBeanClass().getSimpleName());
