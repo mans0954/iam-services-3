@@ -109,20 +109,16 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 	@Override
 	public List<Resource> findBeans(final ResourceSearchBean searchBean,
 			final int from, final int size) {
-		final ResourceEntity resource = resourceSearchBeanConverter
-				.convert(searchBean);
-		final DozerMappingType mappingType = (searchBean.isDeepCopy()) ? DozerMappingType.DEEP
-				: DozerMappingType.SHALLOW;
+		final ResourceEntity resource = resourceSearchBeanConverter.convert(searchBean);
+		final DozerMappingType mappingType = (searchBean.isDeepCopy()) ? DozerMappingType.DEEP : DozerMappingType.SHALLOW;
 		List<ResourceEntity> resultsEntities = null;
 		if (Boolean.TRUE.equals(searchBean.getRootsOnly())) {
-			resultsEntities = resourceDao
-					.getRootResources(resource, from, size);
+			resultsEntities = resourceDao.getRootResources(resource, from, size);
 		} else {
 			resultsEntities = resourceDao.getByExample(resource, from, size);
 		}
 
-		return resourceConverter.convertToDTOList(resultsEntities,
-				DozerMappingType.DEEP.equals(mappingType));
+		return resourceConverter.convertToDTOList(resultsEntities, DozerMappingType.DEEP.equals(mappingType));
 	}
 
 	public Response addResource(Resource resource) {
