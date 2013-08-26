@@ -90,6 +90,11 @@
 			<a>principalList</a>
 			<b>principalList</b>
 		</field>
+        <field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
+        custom-converter-param="dto2entityShallowDozerMapper">
+            <a>affiliations</a>
+            <b>affiliations</b>
+        </field>
 		<field-exclude>
 			<a>userGroups</a>
 			<b>userGroups</b>

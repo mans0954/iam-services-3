@@ -49,6 +49,8 @@ import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
+import org.openiam.idm.srvc.org.domain.UserAffiliationEntity;
+import org.openiam.idm.srvc.org.service.OrganizationService;
 import org.openiam.idm.srvc.org.service.UserAffiliationDAO;
 import org.openiam.idm.srvc.res.service.ResourceUserDAO;
 import org.openiam.idm.srvc.role.service.UserRoleDAO;
@@ -156,6 +158,8 @@ public class UserMgr implements UserDataService {
     private MetadataElementDAO metadataElementDAO;
     @Autowired
     private MetadataTypeDAO metadataTypeDAO;
+    @Autowired
+    private OrganizationService organizationService;
 
     @Value("${org.openiam.user.search.max.results}")
     private int MAX_USER_SEARCH_RESULTS;
@@ -1484,8 +1488,10 @@ public class UserMgr implements UserDataService {
     private String createNewUser(UserEntity newUserEntity) throws Exception {
         List<LoginEntity> principalList = newUserEntity.getPrincipalList();
         Set<EmailAddressEntity> emailAddressList = newUserEntity.getEmailAddresses();
+        Set<UserAffiliationEntity> userOrgs =newUserEntity.getAffiliations();
 
         newUserEntity.setPrincipalList(null);
+        newUserEntity.setAffiliations(null);
         // newUserEntity.setEmailAddresses(null);
 
         this.addUser(newUserEntity);
@@ -1512,6 +1518,11 @@ public class UserMgr implements UserDataService {
                 email.setParent(newUserEntity);
             }
             this.addEmailAddressSet(emailAddressList);
+        }
+        if(CollectionUtils.isNotEmpty(userOrgs)){
+            for (final UserAffiliationEntity userOrg : userOrgs) {
+                organizationService.addUserToOrg(userOrg.getOrganization().getId(), newUserEntity.getUserId());
+            }
         }
         return newUserEntity.getUserId();
     }
@@ -1775,7 +1786,6 @@ public class UserMgr implements UserDataService {
                 origUserEntity.setAlternateContactId(newUserEntity.getAlternateContactId());
             }
         }
-
     }
 
     @Transactional
