@@ -1164,8 +1164,8 @@ public class UserDataWebServiceImpl implements UserDataWebService{
                 typeSearchBean.setGrouping("EMAIL");
                 typeSearchBean.setActive(true);
 
-                final List<MetadataTypeEntity> entityList = metadataService.findBeans(typeSearchBean, 0, Integer.MAX_VALUE);
-                List<MetadataType> typeList = (entityList != null) ? metaDataTypeDozerConverter.convertToDTOList(entityList, false) : null;
+//                final List<MetadataTypeEntity> entityList = metadataService.findBeans(typeSearchBean, 0, Integer.MAX_VALUE);
+//                List<MetadataType> typeList = (entityList != null) ? metaDataTypeDozerConverter.convertToDTOList(entityList, false) : null;
 
                 // create new user, need to merge user objects
                 List<Login> principalList = new ArrayList<Login>();
@@ -1176,16 +1176,16 @@ public class UserDataWebServiceImpl implements UserDataWebService{
                 user.setPrincipalList(principalList);
 
 
-                if(CollectionUtils.isNotEmpty(typeList)){
-                    Set<EmailAddress> emailAddressList = new HashSet<EmailAddress>();
-
-                    EmailAddress ea = new EmailAddress();
-                    ea.setEmailAddress(user.getEmail());
-                    ea.setIsDefault(true);
-                    ea.setMetadataTypeId(typeList.get(0).getMetadataTypeId());
-                    emailAddressList.add(ea);
-                    user.setEmailAddresses(emailAddressList);
-                }
+//                if(CollectionUtils.isNotEmpty(typeList)){
+//                    Set<EmailAddress> emailAddressList = new HashSet<EmailAddress>();
+//
+//                    EmailAddress ea = new EmailAddress();
+//                    ea.setEmailAddress(user.getEmail());
+//                    ea.setIsDefault(true);
+//                    ea.setMetadataTypeId(typeList.get(0).getMetadataTypeId());
+//                    emailAddressList.add(ea);
+//                    user.setEmailAddresses(emailAddressList);
+//                }
             }
 
             final UserEntity userEntity = userDozerConverter.convertToEntity(user, true);

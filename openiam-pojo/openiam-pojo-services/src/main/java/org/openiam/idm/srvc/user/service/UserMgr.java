@@ -1488,9 +1488,13 @@ public class UserMgr implements UserDataService {
     private String createNewUser(UserEntity newUserEntity) throws Exception {
         List<LoginEntity> principalList = newUserEntity.getPrincipalList();
         Set<EmailAddressEntity> emailAddressList = newUserEntity.getEmailAddresses();
+        Set<AddressEntity> addressList = newUserEntity.getAddresses();
+        Set<PhoneEntity> phoneList = newUserEntity.getPhones();
         Set<UserAffiliationEntity> userOrgs =newUserEntity.getAffiliations();
 
         newUserEntity.setPrincipalList(null);
+        newUserEntity.setPhones(null);
+        newUserEntity.setAddresses(null);
         newUserEntity.setAffiliations(null);
         // newUserEntity.setEmailAddresses(null);
 
@@ -1513,12 +1517,25 @@ public class UserMgr implements UserDataService {
                 loginDao.save(lg);
             }
         }
-        if (emailAddressList != null && !emailAddressList.isEmpty()) {
+        if (CollectionUtils.isNotEmpty(emailAddressList)) {
             for (final EmailAddressEntity email : emailAddressList) {
                 email.setParent(newUserEntity);
             }
             this.addEmailAddressSet(emailAddressList);
         }
+        if (CollectionUtils.isNotEmpty(addressList)) {
+            for (final AddressEntity address : addressList) {
+                address.setParent(newUserEntity);
+            }
+            this.addAddressSet(addressList);
+        }
+        if (CollectionUtils.isNotEmpty(phoneList)) {
+            for (final PhoneEntity phone : phoneList) {
+                phone.setParent(newUserEntity);
+            }
+            this.addPhoneSet(phoneList);
+        }
+
         if(CollectionUtils.isNotEmpty(userOrgs)){
             for (final UserAffiliationEntity userOrg : userOrgs) {
                 organizationService.addUserToOrg(userOrg.getOrganization().getId(), newUserEntity.getUserId());
