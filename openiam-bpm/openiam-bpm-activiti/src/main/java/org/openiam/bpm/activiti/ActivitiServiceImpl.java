@@ -32,6 +32,9 @@ import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.dozer.converter.AddressDozerConverter;
+import org.openiam.dozer.converter.EmailAddressDozerConverter;
+import org.openiam.dozer.converter.PhoneDozerConverter;
 import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.bpm.request.ActivitiClaimRequest;
@@ -43,6 +46,12 @@ import org.openiam.bpm.response.TaskListWrapper;
 import org.openiam.bpm.response.TaskWrapper;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.bpm.util.ActivitiRequestType;
+import org.openiam.idm.srvc.continfo.domain.AddressEntity;
+import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
+import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
+import org.openiam.idm.srvc.continfo.dto.Address;
+import org.openiam.idm.srvc.continfo.dto.EmailAddress;
+import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.grp.service.UserGroupDAO;
 import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
 import org.openiam.idm.srvc.meta.exception.PageTemplateException;
@@ -155,6 +164,15 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
     
     @Autowired
     private UserDozerConverter userDozerConverter;
+    
+    @Autowired
+    private EmailAddressDozerConverter emailDozerConverter;
+    
+    @Autowired
+    private AddressDozerConverter addressDozerConverter;
+    
+    @Autowired
+    private PhoneDozerConverter phoneDozerConverter;
 
 	@Override
 	@WebMethod
@@ -181,8 +199,9 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 			final ProvisionRequestEntity provisionRequest = new ProvisionRequestEntity();
 			final User provisionUser = request.getUser();
 			
-			final UserEntity provisionUserValidationObject = userDozerConverter.convertToEntity(provisionUser, true);
-			entityValidator.isValid(provisionUserValidationObject);
+			validateUserRequest(request);
+			//final UserEntity provisionUserValidationObject = userDozerConverter.convertToEntity(provisionUser, true);
+			//entityValidator.isValid(provisionUserValidationObject);
 			
 			/* get a list of approvers for the new hire request, including information about their organization */
 	        
@@ -396,8 +415,9 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 			}
 			
 			//userProfileService.validate(request);
-			final UserEntity provisionUserValidationObject = userDozerConverter.convertToEntity(request.getUser(), true);
-			entityValidator.isValid(provisionUserValidationObject);
+			validateUserRequest(request);
+			//final UserEntity provisionUserValidationObject = userDozerConverter.convertToEntity(request.getUser(), true);
+			//entityValidator.isValid(provisionUserValidationObject);
 			
 			final String description = String.format("Edit User %s", request.getUser().getDisplayName());
 			
@@ -464,6 +484,30 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 			response.setErrorText(e.getMessage());
 		}
 		return response;
+	}
+	
+	private void validateUserRequest(final UserProfileRequestModel request) throws BasicDataServiceException {
+		final User user = request.getUser();
+		final UserEntity provisionUserValidationObject = userDozerConverter.convertToEntity(request.getUser(), true);
+		entityValidator.isValid(provisionUserValidationObject);
+		if(CollectionUtils.isNotEmpty(request.getEmails())) {
+			for(final EmailAddress bean : request.getEmails()) {
+				final EmailAddressEntity entity = emailDozerConverter.convertToEntity(bean, true);
+				entityValidator.isValid(entity);
+			}
+		}
+		if(CollectionUtils.isNotEmpty(request.getPhones())) {
+			for(final Phone bean : request.getPhones()) {
+				final PhoneEntity entity = phoneDozerConverter.convertToEntity(bean, true);
+				entityValidator.isValid(entity);
+			}
+		}
+		if(CollectionUtils.isNotEmpty(request.getAddresses())) {
+			for(final Address bean : request.getAddresses()) {
+				final AddressEntity entity = addressDozerConverter.convertToEntity(bean, true);
+				entityValidator.isValid(entity);
+			}
+		}
 	}
 	
 	@Override

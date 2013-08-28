@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.continfo.domain;
 import java.util.Date;
 
 import javax.persistence.*;
+import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlTransient;
 import org.hibernate.annotations.GenericGenerator;
@@ -44,12 +45,15 @@ public class PhoneEntity {
         @Field(name = "areaCd", index = Index.UN_TOKENIZED, store = Store.YES)
     })
     @Column(name="AREA_CD", length=10)
+    @Size(max = 10, message = "validator.phone.area.code.toolong")
     private String areaCd;
 
     @Column(name="COUNTRY_CD", length=3)
+    @Size(max = 3, message = "validator.phone.country.code.toolong")
     private String countryCd;
 
     @Column(name="DESCRIPTION", length=100)
+    @Size(max = 100, message = "validator.phone.description.toolong")
     private String description;
 
     @Column(name="IS_DEFAULT")
@@ -63,6 +67,7 @@ public class PhoneEntity {
     private UserEntity parent;
 
     @Column(name="PHONE_EXT", length=20)
+    @Size(max = 20, message = "validator.phone.extension.toolong")
     private String phoneExt;
 
     @Fields ({
@@ -70,9 +75,11 @@ public class PhoneEntity {
         @Field(name = "phoneNbr", index = Index.TOKENIZED, store = Store.YES)
     })
     @Column(name="PHONE_NBR", length=50)
+    @Size(max = 50, message = "validator.phone.number.toolong")
     private String phoneNbr;
 
     @Column(name="NAME", length=40)
+    @Size(max = 50, message = "validator.phone.label.toolong")
     private String name;
 
     /*

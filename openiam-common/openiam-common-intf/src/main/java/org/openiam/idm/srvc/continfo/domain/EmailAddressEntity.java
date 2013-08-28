@@ -21,6 +21,7 @@ import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 
 import javax.persistence.*;
+import javax.validation.constraints.Size;
 
 @Entity
 @Table(name = "EMAIL_ADDRESS")
@@ -40,6 +41,7 @@ public class EmailAddressEntity {
     private boolean isActive = true;
 
     @Column(name = "DESCRIPTION", length = 100)
+    @Size(max = 100, message = "validator.email.description.toolong")
     private String description;
 
     @Fields ({
@@ -47,6 +49,7 @@ public class EmailAddressEntity {
         @Field(name = "emailAddress", index = Index.TOKENIZED, store = Store.YES)
     })
     @Column(name = "EMAIL_ADDRESS", length = 320)
+    @Size(max = 320, message = "validator.email.toolong")
     private String emailAddress;
 
     @Column(name = "IS_DEFAULT")
@@ -59,6 +62,7 @@ public class EmailAddressEntity {
     private UserEntity parent;
 
     @Column(name = "NAME", length = 100)
+    @Size(max = 100, message = "validator.email.label.toolong")
     private String name;
     
     @Column(name = "LAST_UPDATE", length = 19)

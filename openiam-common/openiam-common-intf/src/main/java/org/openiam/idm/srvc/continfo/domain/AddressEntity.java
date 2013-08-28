@@ -3,6 +3,7 @@ package org.openiam.idm.srvc.continfo.domain;
 import java.util.Date;
 
 import javax.persistence.*;
+import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlTransient;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
@@ -41,42 +42,55 @@ public class AddressEntity {
     private boolean isDefault = false;
 
     @Column(name = "BLDG_NUM", length = 100)
+    @Size(max = 100, message = "validator.address.building.number.toolong")
     private String bldgNumber;
 
     @Column(name = "STREET_DIRECTION", length = 20)
+    @Size(max = 20, message = "validator.address.street.direction.toolong")
     private String streetDirection;
 
     @Column(name = "SUITE", length = 20)
+    @Size(max = 20, message = "validator.address.suite.toolong")
     private String suite;
 
     @Column(name = "ADDRESS1", length = 45)
+    @Size(max = 45, message = "validator.address.address1.toolong")
     private String address1;
 
     @Column(name = "ADDRESS2", length = 45)
+    @Size(max = 45, message = "validator.address.address2.toolong")
     private String address2;
 
     @Column(name = "ADDRESS3", length = 45)
+    @Size(max = 45, message = "validator.address.address3.toolong")
     private String address3;
 
     @Column(name = "ADDRESS4", length = 45)
+    @Size(max = 45, message = "validator.address.address4.toolong")
     private String address4;
 
     @Column(name = "ADDRESS5", length = 45)
+    @Size(max = 45, message = "validator.address.address5.toolong")
     private String address5;
 
     @Column(name = "ADDRESS6", length = 45)
+    @Size(max = 45, message = "validator.address.address6.toolong")
     private String address6;
 
     @Column(name = "ADDRESS7", length = 45)
+    @Size(max = 45, message = "validator.address.address7.toolong")
     private String address7;
 
     @Column(name = "CITY", length = 100)
+    @Size(max = 100, message = "validator.address.city.toolong")
     private String city;
 
     @Column(name = "COUNTRY", length = 100)
+    @Size(max = 100, message = "validator.address.country.toolong")
     private String country;
 
     @Column(name = "DESCRIPTION", length = 100)
+    @Size(max = 100, message = "validator.address.description.toolong")
     private String description;
 
     @ManyToOne
@@ -85,12 +99,15 @@ public class AddressEntity {
     private UserEntity parent;
 
     @Column(name = "POSTAL_CD", length = 100)
+    @Size(max = 100, message = "validator.address.postal.code.toolong")
     private String postalCd;
 
     @Column(name = "STATE", length = 100)
+    @Size(max = 100, message = "validator.address.state.toolong")
     private String state;
 
     @Column(name = "NAME", length = 100)
+    @Size(max = 100, message = "validator.address.label.toolong")
     private String name;
     
     @Column(name = "LAST_UPDATE", length = 19)
