@@ -190,6 +190,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             customPassword = true;
             primaryLogin.setPassword(user.getPassword());
         }
+        // check if there is a custom login provided in the request
+        if (StringUtils.isNotBlank(user.getLogin())) {
+            primaryLogin.setLogin(user.getLogin());
+        }
 
         Policy passwordPolicy = user.getPasswordPolicy();
         if (passwordPolicy == null) {

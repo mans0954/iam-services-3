@@ -519,20 +519,21 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
          * User object supports N Email addresses. make sure that there is a value
          * @param user
          */
+        @Deprecated
     private void associateEmail(ProvisionUser user) {
 
-        if (user.getEmail() == null || user.getEmail().isEmpty()) {
-            return;
-
-        }
-        Set<EmailAddress> emailSet = user.getEmailAddresses();
-
-        if (!containsEmail("EMAIL1", emailSet)) {
-
-            EmailAddress e = new EmailAddress(user.getEmail(), "EMAIL1", "", true);
-            user.getEmailAddresses().add(e);
-
-        }
+//        if (user.getEmail() == null || user.getEmail().isEmpty()) {
+//            return;
+//
+//        }
+//        Set<EmailAddress> emailSet = user.getEmailAddresses();
+//
+//        if (!containsEmail("EMAIL1", emailSet)) {
+//
+//            EmailAddress e = new EmailAddress(user.getEmail(), "EMAIL1", "", true);
+//            user.getEmailAddresses().add(e);
+//
+//        }
 
     }
 
