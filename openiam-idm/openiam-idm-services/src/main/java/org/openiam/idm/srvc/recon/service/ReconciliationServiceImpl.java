@@ -90,6 +90,7 @@ import org.openiam.provision.service.ConnectorAdapter;
 import org.openiam.provision.service.ProvisionService;
 import org.openiam.provision.service.RemoteConnectorAdapter;
 import org.openiam.provision.type.ExtensibleAttribute;
+import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.util.MuleContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -378,7 +379,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
         searchRequest.setHostPort(mSys.getPort().toString());
         searchRequest.setHostLoginId(mSys.getUserId());
         searchRequest.setHostLoginPassword(mSys.getPswd());
-
+        searchRequest.setExtensibleObject(new ExtensibleUser());
         SearchResponse searchResponse;
 
         if (connector.getConnectorInterface() != null
@@ -394,7 +395,8 @@ public class ReconciliationServiceImpl implements ReconciliationService {
         }
         if (searchResponse != null
                 && searchResponse.getStatus() == StatusCodeType.SUCCESS) {
-            List<ObjectValue> usersFromRemoteSys = searchResponse.getObjectList();
+            List<ObjectValue> usersFromRemoteSys = searchResponse
+                    .getObjectList();
             if (usersFromRemoteSys != null) {
                 for (ObjectValue userValue : usersFromRemoteSys) {
                     List<ExtensibleAttribute> extensibleAttributes = userValue
@@ -562,7 +564,6 @@ public class ReconciliationServiceImpl implements ReconciliationService {
 
         String principal = identity.getLogin();
         log.debug("looking up identity in resource: " + principal);
-
         LookupUserResponse lookupResp = provisionService.getTargetSystemUser(
                 principal, mSys.getManagedSysId());
 

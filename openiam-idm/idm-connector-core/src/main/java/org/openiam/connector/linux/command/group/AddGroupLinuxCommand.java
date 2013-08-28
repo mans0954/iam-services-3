@@ -1,29 +1,30 @@
-package org.openiam.connector.linux.command.user;
+package org.openiam.connector.linux.command.group;
 
 import org.openiam.connector.linux.command.base.AbstractCrudLinuxCommand;
+import org.openiam.connector.linux.data.LinuxGroup;
+import org.openiam.connector.linux.ssh.SSHAgent;
+import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.connector.type.constant.ErrorCode;
 import org.openiam.connector.type.request.CrudRequest;
-import org.openiam.connector.type.ConnectorDataException;
 import org.openiam.provision.type.ExtensibleUser;
-import org.openiam.connector.linux.data.LinuxUser;
-import org.openiam.connector.linux.ssh.SSHAgent;
 import org.springframework.stereotype.Service;
 
-@Service("deleteUserLinuxCommand")
-public class DeleteUserLinuxCommand extends
+@Service("addGroupLinuxCommand")
+public class AddGroupLinuxCommand extends
         AbstractCrudLinuxCommand<ExtensibleUser> {
+
     @Override
     protected void performObjectOperation(
             CrudRequest<ExtensibleUser> crudRequest, SSHAgent ssh)
             throws ConnectorDataException {
-        LinuxUser user = objectToLinuxUser(crudRequest.getObjectIdentity(),
-                null);
-        if (user != null) {
+        LinuxGroup group = this.objectToLinuxGroup(crudRequest
+                .getObjectIdentity());
+        if (group != null) {
             try {
-                ssh.executeCommand(user.getUserDeleteCommand(),
-                        this.getPassword(crudRequest.getTargetID()));
+                // add group
+                ssh.executeCommand(group.getAddGroupCommand());
             } catch (Exception e) {
-                log.error(e.getMessage());
+                log.error(e.getMessage(), e);
                 throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR,
                         e.getMessage());
             }

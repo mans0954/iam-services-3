@@ -20,12 +20,10 @@ import java.lang.ref.WeakReference;
         "staticValue",
         "amAttribute",
         "metaEntityId",
-        "operation",
         "groovyScript"
 })
 @DozerDTOCorrespondence(URIPatternMetaValueEntity.class)
 public class URIPatternMetaValue implements Serializable {
-    private AttributeOperationEnum operation;
 	private String id;
 	private String name;
 	private String staticValue;
@@ -73,14 +71,6 @@ public class URIPatternMetaValue implements Serializable {
 	public void setMetaEntityId(String metaEntityId) {
 		this.metaEntityId = metaEntityId;
 	}
-
-    public AttributeOperationEnum getOperation() {
-        return operation;
-    }
-
-    public void setOperation(AttributeOperationEnum operation) {
-        this.operation = operation;
-    }
     
     public String getGroovyScript() {
 		return groovyScript;

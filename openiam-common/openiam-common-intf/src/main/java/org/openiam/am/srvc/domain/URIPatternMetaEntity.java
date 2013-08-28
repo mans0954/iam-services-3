@@ -34,7 +34,7 @@ public class URIPatternMetaEntity implements Serializable {
     @JoinColumn(name="URI_PATTERN_META_TYPE_ID", referencedColumnName = "URI_PATTERN_META_TYPE_ID")
 	private URIPatternMetaTypeEntity metaType;
 	
-	@OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "metaEntity")
+	@OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "metaEntity", orphanRemoval=true)
 	private Set<URIPatternMetaValueEntity> metaValueSet;
 
     public String getName() {

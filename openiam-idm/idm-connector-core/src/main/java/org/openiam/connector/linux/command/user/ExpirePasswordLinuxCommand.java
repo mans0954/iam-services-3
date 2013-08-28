@@ -11,9 +11,11 @@ import org.openiam.connector.linux.ssh.SSHAgent;
 import org.springframework.stereotype.Service;
 
 @Service("expirePasswordLinuxCommand")
-public class ExpirePasswordLinuxCommand extends AbstractLinuxCommand<PasswordRequest,ResponseType> {
+public class ExpirePasswordLinuxCommand extends
+        AbstractLinuxCommand<PasswordRequest, ResponseType> {
     @Override
-    public ResponseType execute(PasswordRequest passwordRequest) throws ConnectorDataException {
+    public ResponseType execute(PasswordRequest passwordRequest)
+            throws ConnectorDataException {
         ResponseType responseType = new ResponseType();
         responseType.setRequestID(passwordRequest.getRequestID());
         responseType.setStatus(StatusCodeType.SUCCESS);
@@ -21,12 +23,15 @@ public class ExpirePasswordLinuxCommand extends AbstractLinuxCommand<PasswordReq
         String login = passwordRequest.getObjectIdentity();
         SSHAgent ssh = getSSHAgent(passwordRequest.getTargetID());
         try {
-            LinuxUser user = new LinuxUser(null, login, null, null, null, null, null, null, null, null);
-            ssh.executeCommand(user.getUserExpirePasswordCommand());
+            LinuxUser user = new LinuxUser(null, login, null, null, null, null,
+                    null, null, null, null);
+            ssh.executeCommand(user.getUserExpirePasswordCommand(),
+                    this.getPassword(passwordRequest.getTargetID()));
             return responseType;
         } catch (Exception e) {
-            log.error(e.getMessage(),e);
-            throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, e.getMessage());
+            log.error(e.getMessage(), e);
+            throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR,
+                    e.getMessage());
         } finally {
             ssh.logout();
         }

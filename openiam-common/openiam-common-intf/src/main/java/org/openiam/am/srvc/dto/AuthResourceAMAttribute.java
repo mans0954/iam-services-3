@@ -7,18 +7,21 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlType;
 import java.io.Serializable;
+import java.util.Set;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "AuthResourceAMAttribute", propOrder = {
         "id",
         "reflectionKey",
-        "attributeName"
+        "attributeName",
+        "metaValues"
 })
 @DozerDTOCorrespondence(AuthResourceAMAttributeEntity.class)
 public class AuthResourceAMAttribute implements Serializable {
     private String id;
     private String reflectionKey;
     private String attributeName;
+    private Set<URIPatternMetaValue> metaValues;
 
     public String getId() {
         return id;
@@ -44,7 +47,15 @@ public class AuthResourceAMAttribute implements Serializable {
         this.attributeName = attributeName;
     }
 
-    @Override
+    public Set<URIPatternMetaValue> getMetaValues() {
+		return metaValues;
+	}
+
+	public void setMetaValues(Set<URIPatternMetaValue> metaValues) {
+		this.metaValues = metaValues;
+	}
+
+	@Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;

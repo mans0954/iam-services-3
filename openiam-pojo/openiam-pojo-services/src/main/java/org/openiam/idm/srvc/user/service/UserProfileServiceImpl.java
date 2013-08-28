@@ -19,6 +19,7 @@ import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
+import org.openiam.validator.EntityValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -64,10 +65,16 @@ public class UserProfileServiceImpl implements UserProfileService {
     
     @Autowired
     private UserDozerConverter userDozerConverter;
+    
+    @Autowired
+    @Qualifier("entityValidator")
+    private EntityValidator entityValidator;
 	
 	@Override
 	public void saveUserProfile(UserProfileRequestModel request) throws Exception {
 		final UserEntity userEntity = userDozerConverter.convertToEntity(request.getUser(), true);
+		entityValidator.isValid(userEntity);
+		
         final UserEntity dbEntity = userManager.getUser(request.getUser().getUserId());
         
         final List<EmailAddressEntity> emailList = emailAddressDozerConverter.convertToEntityList(request.getEmails(), true);	 

@@ -40,7 +40,6 @@ import org.openiam.idm.srvc.org.domain.OrganizationEntity;
         "ldapStr",
         "lstUpdate",
         "lstUpdatedBy",
-        "metadataTypeId",
         "id",
         "organizationName",
         "organizationTypeId",
@@ -82,8 +81,6 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
     protected Date createDate;
 
     protected String lstUpdatedBy;
-
-    protected String metadataTypeId;
 
     protected String organizationName;
 
@@ -275,24 +272,7 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
         this.lstUpdatedBy = value;
     }
 
-    /**
-     * Gets the value of the metadataType property.
-     *
-     * @return possible object is {@link String }
-     */
-    public String getMetadataTypeId() {
-        return metadataTypeId;
-    }
 
-    /**
-     * Sets the value of the metadataType property.
-     *
-     * @param value allowed object is {@link String }
-     */
-    public void setMetadataTypeId(String value) {
-        this.metadataTypeId = value;
-    }
-   
     public String getId() {
 		return id;
 	}
@@ -454,8 +434,6 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
 		result = prime * result
 				+ ((lstUpdatedBy == null) ? 0 : lstUpdatedBy.hashCode());
 		result = prime * result
-				+ ((metadataTypeId == null) ? 0 : metadataTypeId.hashCode());
-		result = prime * result
 				+ ((operation == null) ? 0 : operation.hashCode());
 		result = prime
 				* result
@@ -535,11 +513,6 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
 			if (other.lstUpdatedBy != null)
 				return false;
 		} else if (!lstUpdatedBy.equals(other.lstUpdatedBy))
-			return false;
-		if (metadataTypeId == null) {
-			if (other.metadataTypeId != null)
-				return false;
-		} else if (!metadataTypeId.equals(other.metadataTypeId))
 			return false;
 		if (operation != other.operation)
 			return false;

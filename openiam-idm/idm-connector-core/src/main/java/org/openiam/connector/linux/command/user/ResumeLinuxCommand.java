@@ -11,9 +11,11 @@ import org.openiam.connector.linux.ssh.SSHAgent;
 import org.springframework.stereotype.Service;
 
 @Service("resumeLinuxCommand")
-public class ResumeLinuxCommand extends AbstractLinuxCommand<SuspendResumeRequest,ResponseType> {
+public class ResumeLinuxCommand extends
+        AbstractLinuxCommand<SuspendResumeRequest, ResponseType> {
     @Override
-    public ResponseType execute(SuspendResumeRequest resumeRequest) throws ConnectorDataException {
+    public ResponseType execute(SuspendResumeRequest resumeRequest)
+            throws ConnectorDataException {
         ResponseType responseType = new ResponseType();
         responseType.setRequestID(resumeRequest.getRequestID());
         responseType.setStatus(StatusCodeType.SUCCESS);
@@ -21,12 +23,15 @@ public class ResumeLinuxCommand extends AbstractLinuxCommand<SuspendResumeReques
         String login = resumeRequest.getObjectIdentity();
         SSHAgent ssh = getSSHAgent(resumeRequest.getTargetID());
         try {
-            LinuxUser user = new LinuxUser(null, login, null, null, null, null, null, null, null, null);
-            ssh.executeCommand(user.getUserUnlockCommand());
+            LinuxUser user = new LinuxUser(null, login, null, null, null, null,
+                    null, null, null, null);
+            ssh.executeCommand(user.getUserUnlockCommand(),
+                    this.getPassword(resumeRequest.getTargetID()));
             return responseType;
         } catch (Exception e) {
-            log.error(e.getMessage(),e);
-            throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR, e.getMessage());
+            log.error(e.getMessage(), e);
+            throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR,
+                    e.getMessage());
         } finally {
             ssh.logout();
         }

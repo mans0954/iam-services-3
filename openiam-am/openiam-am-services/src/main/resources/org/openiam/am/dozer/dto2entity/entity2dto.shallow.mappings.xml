@@ -198,10 +198,6 @@
         	<a>groovyScript</a>
         	<b>groovyScript</b>
         </field>
-        <field>
-            <a>operation</a>
-            <b>operation</b>
-        </field>
         <field-exclude>
             <a>amAttribute</a>
             <b>amAttribute</b>

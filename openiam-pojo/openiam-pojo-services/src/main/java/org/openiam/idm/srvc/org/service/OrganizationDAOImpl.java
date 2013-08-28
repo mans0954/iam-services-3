@@ -162,11 +162,6 @@ public class OrganizationDAOImpl extends
 				}
 			}
 
-			if (StringUtils.isNotBlank(organization.getMetadataTypeId())) {
-				criteria.add(Restrictions.eq("metadataTypeId",
-						organization.getMetadataTypeId()));
-			}
-
 			if (organization.getOrganizationType() != null
 					&& StringUtils.isNotBlank(organization
 							.getOrganizationType().getId())) {

@@ -46,40 +46,50 @@ import javax.xml.ws.soap.SOAPBinding;
 import java.util.HashMap;
 import java.util.Map;
 
-
 /**
- * Wraps around the connector interface and manages the calls to the varous operations for the
- * connectors for provisioning.
- *
+ * Wraps around the connector interface and manages the calls to the varous
+ * operations for the connectors for provisioning.
+ * 
  * @author suneet
  */
 public class RemoteConnectorAdapter {
 
-    protected static final Log log = LogFactory.getLog(RemoteConnectorAdapter.class);
+    protected static final Log log = LogFactory
+            .getLog(RemoteConnectorAdapter.class);
     public static final String AD_ERROR_THIS_IS_LIKELY_A_TRANSIENT_CONDITION = "This is likely a transient condition";
 
     @Autowired
     private ProvisionConnectorWebService connectorService;
     private final static int RESEND_COUNT = 3;
 
-    public ObjectResponse addRequest(ManagedSysDto managedSys, CrudRequest addReqType, ProvisionConnectorDto connector, MuleContext muleContext) {
+    public ObjectResponse addRequest(ManagedSysDto managedSys,
+            CrudRequest addReqType, ProvisionConnectorDto connector,
+            MuleContext muleContext) {
         ObjectResponse resp = new ObjectResponse();
         try {
-
 
             if (managedSys == null) {
                 resp.setStatus(StatusCodeType.FAILURE);
                 resp.setError(ErrorCode.INVALID_MANAGED_SYS_ID);
                 return resp;
             }
-            log.debug("ConnectorAdapter:addRequest called. Managed sys =" + managedSys.getManagedSysId());
+            log.debug("ConnectorAdapter:addRequest called. Managed sys ="
+                    + managedSys.getManagedSysId());
 
-            if (connector != null && (connector.getServiceUrl() != null && connector.getServiceUrl().length() > 0)) {
+            if (connector != null
+                    && (connector.getServiceUrl() != null && connector
+                            .getServiceUrl().length() > 0)) {
                 int i = 0;
                 resp = send("add", addReqType, connector, muleContext);
-                // Check if response has error = "A connection to the directory on which to process the request was unavailable. This is likely a transient condition."
+                // Check if response has error =
+                // "A connection to the directory on which to process the request was unavailable. This is likely a transient condition."
                 // we try to resend request RESEND_COUNT times
-                while((resp.getStatus() == StatusCodeType.FAILURE && resp.getErrorMsgAsStr().toLowerCase().contains(AD_ERROR_THIS_IS_LIKELY_A_TRANSIENT_CONDITION.toLowerCase()))
+                while ((resp.getStatus() == StatusCodeType.FAILURE && resp
+                        .getErrorMsgAsStr()
+                        .toLowerCase()
+                        .contains(
+                                AD_ERROR_THIS_IS_LIKELY_A_TRANSIENT_CONDITION
+                                        .toLowerCase()))
                         && i < RESEND_COUNT) {
                     Thread.sleep(200);
                     resp = send("add", addReqType, connector, muleContext);
@@ -94,32 +104,37 @@ public class RemoteConnectorAdapter {
         resp.setStatus(StatusCodeType.FAILURE);
         return resp;
 
-
     }
 
-    private ObjectResponse send(String eventName, CrudRequest request, ProvisionConnectorDto connector, MuleContext muleContext){
+    private ObjectResponse send(String eventName, CrudRequest request,
+            ProvisionConnectorDto connector, MuleContext muleContext) {
         ObjectResponse resp = new ObjectResponse();
         resp.setStatus(StatusCodeType.FAILURE);
-        MuleMessage msg = getService(connector, request, connector.getServiceUrl(), eventName, muleContext);
-                if (msg != null) {
-                    log.debug("***Payload=" + msg.getPayload());
-                    if (msg.getPayload() != null && msg.getPayload() instanceof ObjectResponse) {
-                        return (ObjectResponse) msg.getPayload();
-                    }
-                    return resp;
-                } else {
-                    log.debug("MuleMessage is null..");
-                }
+        MuleMessage msg = getService(connector, request,
+                connector.getServiceUrl(), eventName, muleContext);
+        if (msg != null) {
+            log.debug("***Payload=" + msg.getPayload());
+            if (msg.getPayload() != null
+                    && msg.getPayload() instanceof ObjectResponse) {
+                return (ObjectResponse) msg.getPayload();
+            }
+            return resp;
+        } else {
+            log.debug("MuleMessage is null..");
+        }
         return resp;
     }
 
-    private SearchResponse sendLookup(String eventName, LookupRequest request, ProvisionConnectorDto connector, MuleContext muleContext){
+    private SearchResponse sendLookup(String eventName, LookupRequest request,
+            ProvisionConnectorDto connector, MuleContext muleContext) {
         SearchResponse resp = new SearchResponse();
         resp.setStatus(StatusCodeType.FAILURE);
-        MuleMessage msg = getService(connector, request, connector.getServiceUrl(), eventName, muleContext);
+        MuleMessage msg = getService(connector, request,
+                connector.getServiceUrl(), eventName, muleContext);
         if (msg != null) {
             log.debug("***Payload=" + msg.getPayload());
-            if (msg.getPayload() != null && msg.getPayload() instanceof SearchResponse) {
+            if (msg.getPayload() != null
+                    && msg.getPayload() instanceof SearchResponse) {
                 return (SearchResponse) msg.getPayload();
             }
             return resp;
@@ -129,7 +144,9 @@ public class RemoteConnectorAdapter {
         return resp;
     }
 
-    public ObjectResponse modifyRequest(ManagedSysDto managedSys, CrudRequest request, ProvisionConnectorDto connector, MuleContext muleContext) {
+    public ObjectResponse modifyRequest(ManagedSysDto managedSys,
+            CrudRequest request, ProvisionConnectorDto connector,
+            MuleContext muleContext) {
         ObjectResponse resp = new ObjectResponse();
         try {
             if (managedSys == null) {
@@ -137,20 +154,29 @@ public class RemoteConnectorAdapter {
                 resp.setError(ErrorCode.INVALID_MANAGED_SYS_ID);
                 return resp;
             }
-            log.debug("ConnectorAdapter:modifyRequest called. Managed sys =" + managedSys.getManagedSysId());
+            log.debug("ConnectorAdapter:modifyRequest called. Managed sys ="
+                    + managedSys.getManagedSysId());
 
-            if (connector != null && (connector.getServiceUrl() != null && connector.getServiceUrl().length() > 0)) {
+            if (connector != null
+                    && (connector.getServiceUrl() != null && connector
+                            .getServiceUrl().length() > 0)) {
                 int i = 0;
                 resp = send("modify", request, connector, muleContext);
-                // Check if response has error = "A connection to the directory on which to process the request was unavailable. This is likely a transient condition."
+                // Check if response has error =
+                // "A connection to the directory on which to process the request was unavailable. This is likely a transient condition."
                 // we try to resend request RESEND_COUNT times
-                while((resp.getStatus() == StatusCodeType.FAILURE && resp.getErrorMsgAsStr().toLowerCase().contains(AD_ERROR_THIS_IS_LIKELY_A_TRANSIENT_CONDITION.toLowerCase()))
+                while ((resp.getStatus() == StatusCodeType.FAILURE && resp
+                        .getErrorMsgAsStr()
+                        .toLowerCase()
+                        .contains(
+                                AD_ERROR_THIS_IS_LIKELY_A_TRANSIENT_CONDITION
+                                        .toLowerCase()))
                         && i < RESEND_COUNT) {
                     Thread.sleep(200);
                     resp = send("modify", request, connector, muleContext);
                     i++;
-                    }
-                    return resp;
+                }
+                return resp;
             }
         } catch (Exception e) {
             log.error(e);
@@ -159,10 +185,11 @@ public class RemoteConnectorAdapter {
         resp.setStatus(StatusCodeType.FAILURE);
         return resp;
 
-
     }
 
-    public SearchResponse lookupRequest(ManagedSysDto managedSys, LookupRequest<ExtensibleUser> req, ProvisionConnectorDto connector, MuleContext muleContext) {
+    public SearchResponse lookupRequest(ManagedSysDto managedSys,
+            LookupRequest<ExtensibleUser> req, ProvisionConnectorDto connector,
+            MuleContext muleContext) {
 
         SearchResponse resp = new SearchResponse();
 
@@ -171,22 +198,31 @@ public class RemoteConnectorAdapter {
             resp.setError(ErrorCode.INVALID_MANAGED_SYS_ID);
             return resp;
         }
-        log.debug("ConnectorAdapter:lookupRequest called. Managed sys =" + managedSys.getManagedSysId());
+        log.debug("ConnectorAdapter:lookupRequest called. Managed sys ="
+                + managedSys.getManagedSysId());
 
         try {
 
-            if (connector != null && (connector.getServiceUrl() != null && connector.getServiceUrl().length() > 0)) {
+            if (connector != null
+                    && (connector.getServiceUrl() != null && connector
+                            .getServiceUrl().length() > 0)) {
                 int i = 0;
                 resp = sendLookup("lookup", req, connector, muleContext);
-                // Check if response has error = "A connection to the directory on which to process the request was unavailable. This is likely a transient condition."
+                // Check if response has error =
+                // "A connection to the directory on which to process the request was unavailable. This is likely a transient condition."
                 // we try to resend request RESEND_COUNT times
-                while((resp.getStatus() == StatusCodeType.FAILURE && resp.getErrorMsgAsStr().toLowerCase().contains(AD_ERROR_THIS_IS_LIKELY_A_TRANSIENT_CONDITION.toLowerCase()))
+                while ((resp.getStatus() == StatusCodeType.FAILURE && resp
+                        .getErrorMsgAsStr()
+                        .toLowerCase()
+                        .contains(
+                                AD_ERROR_THIS_IS_LIKELY_A_TRANSIENT_CONDITION
+                                        .toLowerCase()))
                         && i < RESEND_COUNT) {
                     Thread.sleep(200);
                     resp = sendLookup("lookup", req, connector, muleContext);
                     i++;
-                    }
-                    return resp;
+                }
+                return resp;
             }
         } catch (Exception e) {
             log.error(e);
@@ -196,7 +232,9 @@ public class RemoteConnectorAdapter {
 
     }
 
-    public ObjectResponse deleteRequest(ManagedSysDto managedSys, CrudRequest<ExtensibleUser> request, ProvisionConnectorDto connector, MuleContext muleContext) {
+    public ObjectResponse deleteRequest(ManagedSysDto managedSys,
+            CrudRequest<ExtensibleUser> request,
+            ProvisionConnectorDto connector, MuleContext muleContext) {
         ObjectResponse resp = new ObjectResponse();
 
         if (managedSys == null) {
@@ -205,22 +243,31 @@ public class RemoteConnectorAdapter {
             return resp;
         }
 
-        log.debug("ConnectorAdapter:deleteRequest called. Managed sys =" + managedSys.getManagedSysId());
+        log.debug("ConnectorAdapter:deleteRequest called. Managed sys ="
+                + managedSys.getManagedSysId());
 
         try {
 
-            if (connector != null && (connector.getServiceUrl() != null && connector.getServiceUrl().length() > 0)) {
+            if (connector != null
+                    && (connector.getServiceUrl() != null && connector
+                            .getServiceUrl().length() > 0)) {
                 int i = 0;
                 resp = send("delete", request, connector, muleContext);
-                // Check if response has error = "A connection to the directory on which to process the request was unavailable. This is likely a transient condition."
+                // Check if response has error =
+                // "A connection to the directory on which to process the request was unavailable. This is likely a transient condition."
                 // we try to resend request RESEND_COUNT times
-                while((resp.getStatus() == StatusCodeType.FAILURE && resp.getErrorMsgAsStr().toLowerCase().contains(AD_ERROR_THIS_IS_LIKELY_A_TRANSIENT_CONDITION.toLowerCase()))
+                while ((resp.getStatus() == StatusCodeType.FAILURE && resp
+                        .getErrorMsgAsStr()
+                        .toLowerCase()
+                        .contains(
+                                AD_ERROR_THIS_IS_LIKELY_A_TRANSIENT_CONDITION
+                                        .toLowerCase()))
                         && i < RESEND_COUNT) {
                     Thread.sleep(200);
                     resp = send("delete", request, connector, muleContext);
                     i++;
-                    }
-                    return resp;
+                }
+                return resp;
             }
         } catch (Exception e) {
             log.error(e);
@@ -230,7 +277,9 @@ public class RemoteConnectorAdapter {
 
     }
 
-    public ResponseType setPasswordRequest(ManagedSysDto managedSys, PasswordRequest request, ProvisionConnectorDto connector, MuleContext muleContext) {
+    public ResponseType setPasswordRequest(ManagedSysDto managedSys,
+            PasswordRequest request, ProvisionConnectorDto connector,
+            MuleContext muleContext) {
         ResponseType resp = new ResponseType();
 
         if (managedSys == null) {
@@ -239,15 +288,20 @@ public class RemoteConnectorAdapter {
             return resp;
         }
 
-        log.debug("ConnectorAdapter:setPasswordRequest called. Managed sys =" + managedSys.getManagedSysId());
+        log.debug("ConnectorAdapter:setPasswordRequest called. Managed sys ="
+                + managedSys.getManagedSysId());
         try {
 
-            if (connector != null && (connector.getServiceUrl() != null && connector.getServiceUrl().length() > 0)) {
+            if (connector != null
+                    && (connector.getServiceUrl() != null && connector
+                            .getServiceUrl().length() > 0)) {
 
-                MuleMessage msg = getService(connector, request, connector.getServiceUrl(), "setPassword", muleContext);
+                MuleMessage msg = getService(connector, request,
+                        connector.getServiceUrl(), "setPassword", muleContext);
                 if (msg != null) {
                     log.debug("***Payload=" + msg.getPayload());
-                    if (msg.getPayload() != null && msg.getPayload() instanceof ResponseType) {
+                    if (msg.getPayload() != null
+                            && msg.getPayload() instanceof ResponseType) {
                         return (ResponseType) msg.getPayload();
                     }
                     resp.setStatus(StatusCodeType.SUCCESS);
@@ -256,7 +310,6 @@ public class RemoteConnectorAdapter {
                     log.debug("MuleMessage is null..");
                 }
 
-
             }
         } catch (Exception e) {
             log.error(e);
@@ -264,10 +317,11 @@ public class RemoteConnectorAdapter {
         resp.setStatus(StatusCodeType.FAILURE);
         return resp;
 
-
     }
 
-    public ResponseType resetPasswordRequest(ManagedSysDto managedSys, PasswordRequest request, ProvisionConnectorDto connector, MuleContext muleContext) {
+    public ResponseType resetPasswordRequest(ManagedSysDto managedSys,
+            PasswordRequest request, ProvisionConnectorDto connector,
+            MuleContext muleContext) {
         ResponseType resp = new ResponseType();
 
         if (managedSys == null) {
@@ -275,15 +329,20 @@ public class RemoteConnectorAdapter {
             resp.setError(ErrorCode.INVALID_MANAGED_SYS_ID);
             return resp;
         }
-        log.debug("ConnectorAdapter:resetPasswordRequest called. Managed sys =" + managedSys.getManagedSysId());
+        log.debug("ConnectorAdapter:resetPasswordRequest called. Managed sys ="
+                + managedSys.getManagedSysId());
 
         try {
-            if (connector != null && (connector.getServiceUrl() != null && connector.getServiceUrl().length() > 0)) {
+            if (connector != null
+                    && (connector.getServiceUrl() != null && connector
+                            .getServiceUrl().length() > 0)) {
 
-                MuleMessage msg = getService(connector, request, connector.getServiceUrl(), "resetPassword", muleContext);
+                MuleMessage msg = getService(connector, request,
+                        connector.getServiceUrl(), "resetPassword", muleContext);
                 if (msg != null) {
                     log.debug("***Payload=" + msg.getPayload());
-                    if (msg.getPayload() != null && msg.getPayload() instanceof ResponseType) {
+                    if (msg.getPayload() != null
+                            && msg.getPayload() instanceof ResponseType) {
                         return (ResponseType) msg.getPayload();
                     }
                     resp.setStatus(StatusCodeType.SUCCESS);
@@ -292,9 +351,8 @@ public class RemoteConnectorAdapter {
                     log.debug("MuleMessage is null..");
                 }
 
-
-                //ConnectorService port = getService(connector);
-                //port.resetPassword(request);
+                // ConnectorService port = getService(connector);
+                // port.resetPassword(request);
 
             }
         } catch (Exception e) {
@@ -303,10 +361,11 @@ public class RemoteConnectorAdapter {
         resp.setStatus(StatusCodeType.FAILURE);
         return resp;
 
-
     }
 
-    public ResponseType suspend(ManagedSysDto managedSys, SuspendResumeRequest request, ProvisionConnectorDto connector, MuleContext muleContext) {
+    public ResponseType suspend(ManagedSysDto managedSys,
+            SuspendResumeRequest request, ProvisionConnectorDto connector,
+            MuleContext muleContext) {
         ResponseType resp = new ResponseType();
 
         if (managedSys == null) {
@@ -315,16 +374,21 @@ public class RemoteConnectorAdapter {
             return resp;
         }
 
-        log.debug("ConnectorAdapter:suspendRequest called. Managed sys =" + managedSys.getManagedSysId());
+        log.debug("ConnectorAdapter:suspendRequest called. Managed sys ="
+                + managedSys.getManagedSysId());
 
         try {
 
-            if (connector != null && (connector.getServiceUrl() != null && connector.getServiceUrl().length() > 0)) {
+            if (connector != null
+                    && (connector.getServiceUrl() != null && connector
+                            .getServiceUrl().length() > 0)) {
 
-                MuleMessage msg = getService(connector, request, connector.getServiceUrl(), "suspend", muleContext);
+                MuleMessage msg = getService(connector, request,
+                        connector.getServiceUrl(), "suspend", muleContext);
                 if (msg != null) {
                     log.debug("***Payload=" + msg.getPayload());
-                    if (msg.getPayload() != null && msg.getPayload() instanceof ResponseType) {
+                    if (msg.getPayload() != null
+                            && msg.getPayload() instanceof ResponseType) {
                         return (ResponseType) msg.getPayload();
                     }
                     resp.setStatus(StatusCodeType.SUCCESS);
@@ -333,8 +397,8 @@ public class RemoteConnectorAdapter {
                     log.debug("MuleMessage is null..");
                 }
 
-                //ConnectorService port = getService(connector);
-                //port.suspend(request);
+                // ConnectorService port = getService(connector);
+                // port.suspend(request);
 
             }
         } catch (Exception e) {
@@ -343,10 +407,11 @@ public class RemoteConnectorAdapter {
         resp.setStatus(StatusCodeType.FAILURE);
         return resp;
 
-
     }
 
-    public ResponseType resumeRequest(ManagedSysDto managedSys, SuspendResumeRequest request, ProvisionConnectorDto connector, MuleContext muleContext) {
+    public ResponseType resumeRequest(ManagedSysDto managedSys,
+            SuspendResumeRequest request, ProvisionConnectorDto connector,
+            MuleContext muleContext) {
         ResponseType resp = new ResponseType();
 
         if (managedSys == null) {
@@ -355,16 +420,20 @@ public class RemoteConnectorAdapter {
             return resp;
         }
 
-        log.debug("ConnectorAdapter:resumeRequest called. Managed sys =" + managedSys.getManagedSysId());
+        log.debug("ConnectorAdapter:resumeRequest called. Managed sys ="
+                + managedSys.getManagedSysId());
         try {
 
+            if (connector != null
+                    && (connector.getServiceUrl() != null && connector
+                            .getServiceUrl().length() > 0)) {
 
-            if (connector != null && (connector.getServiceUrl() != null && connector.getServiceUrl().length() > 0)) {
-
-                MuleMessage msg = getService(connector, request, connector.getServiceUrl(), "resume", muleContext);
+                MuleMessage msg = getService(connector, request,
+                        connector.getServiceUrl(), "resume", muleContext);
                 if (msg != null) {
                     log.debug("***Payload=" + msg.getPayload());
-                    if (msg.getPayload() != null && msg.getPayload() instanceof ResponseType) {
+                    if (msg.getPayload() != null
+                            && msg.getPayload() instanceof ResponseType) {
                         return (ResponseType) msg.getPayload();
                     }
                     resp.setStatus(StatusCodeType.SUCCESS);
@@ -373,9 +442,8 @@ public class RemoteConnectorAdapter {
                     log.debug("MuleMessage is null..");
                 }
 
-
-                //ConnectorService port = getService(connector);
-                //port.resume(request);
+                // ConnectorService port = getService(connector);
+                // port.resume(request);
 
             }
         } catch (Exception e) {
@@ -384,10 +452,10 @@ public class RemoteConnectorAdapter {
         resp.setStatus(StatusCodeType.FAILURE);
         return resp;
 
-
     }
 
-    public ResponseType testConnection(ManagedSysDto managedSys,ProvisionConnectorDto connector, MuleContext muleContext) {
+    public ResponseType testConnection(ManagedSysDto managedSys,
+            ProvisionConnectorDto connector, MuleContext muleContext) {
         ResponseType resp = new ResponseType();
 
         if (managedSys == null) {
@@ -396,16 +464,21 @@ public class RemoteConnectorAdapter {
             return resp;
         }
 
-        log.debug("ConnectorAdapter:resumeRequest called. Managed sys =" + managedSys.getManagedSysId());
+        log.debug("ConnectorAdapter:resumeRequest called. Managed sys ="
+                + managedSys.getManagedSysId());
         try {
 
+            if (connector != null
+                    && (connector.getServiceUrl() != null && connector
+                            .getServiceUrl().length() > 0)) {
 
-            if (connector != null && (connector.getServiceUrl() != null && connector.getServiceUrl().length() > 0)) {
-
-                MuleMessage msg = getService(connector, managedSys, connector.getServiceUrl(), "testConnection", muleContext);
+                MuleMessage msg = getService(connector, managedSys,
+                        connector.getServiceUrl(), "testConnection",
+                        muleContext);
                 if (msg != null) {
                     log.debug("Test connection Payload=" + msg.getPayload());
-                    if (msg.getPayload() != null && msg.getPayload() instanceof ResponseType) {
+                    if (msg.getPayload() != null
+                            && msg.getPayload() instanceof ResponseType) {
                         return (ResponseType) msg.getPayload();
                     }
                     resp.setStatus(StatusCodeType.SUCCESS);
@@ -423,27 +496,37 @@ public class RemoteConnectorAdapter {
 
     }
 
-    public SearchResponse search(SearchRequest<ExtensibleUser> searchRequest, ProvisionConnectorDto connector, MuleContext muleContext) {
+    public SearchResponse search(SearchRequest<ExtensibleUser> searchRequest,
+            ProvisionConnectorDto connector, MuleContext muleContext) {
         SearchResponse resp = new SearchResponse();
         if (searchRequest == null) {
             resp.setStatus(StatusCodeType.FAILURE);
             resp.setError(ErrorCode.INVALID_CONFIGURATION);
             return resp;
         }
-        log.debug("RemoteConnectorAdapter:searchRequest called. Search query =" + searchRequest.getSearchQuery());
+        log.debug("RemoteConnectorAdapter:searchRequest called. Search query ="
+                + searchRequest.getSearchQuery());
         try {
-            if (connector != null && (connector.getServiceUrl() != null && connector.getServiceUrl().length() > 0)) {
-                //Send search to Remote Connector to get data (e.g. Active Directory via PowershellConnector)
-                MuleMessage msg = getService(connector, searchRequest, connector.getServiceUrl(), "search", muleContext);
+            if (connector != null
+                    && (connector.getServiceUrl() != null && connector
+                            .getServiceUrl().length() > 0)) {
+                // Send search to Remote Connector to get data (e.g. Active
+                // Directory via PowershellConnector)
+                MuleMessage msg = getService(connector, searchRequest,
+                        connector.getServiceUrl(), "search", muleContext);
                 if (msg != null) {
                     log.debug("Search Payload=" + msg.getPayload());
-                    if (msg.getPayload() != null && msg.getPayload() instanceof ResponseType) {
+                    if (msg.getPayload() != null
+                            && msg.getPayload() instanceof ResponseType) {
                         resp = (SearchResponse) msg.getPayload();
-                        if(resp.getStatus() == StatusCodeType.SUCCESS || resp.getObjectList().size() > 0) {
-                            if(resp.getErrorMessage().size() > 0 ) {
-                                log.debug("RemoteConnector Search: error message = " + resp.getErrorMsgAsStr());
+                        if (resp.getStatus() == StatusCodeType.SUCCESS
+                                || resp.getObjectList().size() > 0) {
+                            if (resp.getErrorMessage().size() > 0) {
+                                log.debug("RemoteConnector Search: error message = "
+                                        + resp.getErrorMsgAsStr());
                             }
-                            log.debug("RemoteConnector Search:"+StatusCodeType.SUCCESS);
+                            log.debug("RemoteConnector Search:"
+                                    + StatusCodeType.SUCCESS);
                             resp.setStatus(StatusCodeType.SUCCESS);
                             return resp;
                         }
@@ -462,23 +545,28 @@ public class RemoteConnectorAdapter {
         return resp;
     }
 
-    public ResponseType reconcileResource(ReconciliationConfig config, ProvisionConnectorDto connector, MuleContext muleContext){
+    public ResponseType reconcileResource(ReconciliationConfig config,
+            ProvisionConnectorDto connector, MuleContext muleContext) {
         ResponseType resp = new ResponseType();
         if (config == null) {
             resp.setStatus(StatusCodeType.FAILURE);
             resp.setError(ErrorCode.INVALID_CONFIGURATION);
             return resp;
         }
-        log.debug("ConnectorAdapter:reconcileRequest called. Resource =" + config.getResourceId());
+        log.debug("ConnectorAdapter:reconcileRequest called. Resource ="
+                + config.getResourceId());
         try {
 
+            if (connector != null
+                    && (connector.getServiceUrl() != null && connector
+                            .getServiceUrl().length() > 0)) {
 
-            if (connector != null && (connector.getServiceUrl() != null && connector.getServiceUrl().length() > 0)) {
-
-                MuleMessage msg = getService(connector, config, connector.getServiceUrl(), "reconcile", muleContext);
+                MuleMessage msg = getService(connector, config,
+                        connector.getServiceUrl(), "reconcile", muleContext);
                 if (msg != null) {
                     log.debug("Test connection Payload=" + msg.getPayload());
-                    if (msg.getPayload() != null && msg.getPayload() instanceof ResponseType) {
+                    if (msg.getPayload() != null
+                            && msg.getPayload() instanceof ResponseType) {
                         return (ResponseType) msg.getPayload();
                     }
                     resp.setStatus(StatusCodeType.SUCCESS);
@@ -495,13 +583,15 @@ public class RemoteConnectorAdapter {
         return resp;
     }
 
-    private MuleMessage getService(ProvisionConnectorDto connector, Object reqType, String url, String operation, MuleContext muleContext) {
+    private MuleMessage getService(ProvisionConnectorDto connector,
+            Object reqType, String url, String operation,
+            MuleContext muleContext) {
         try {
-
 
             MuleClient client = new MuleClient(muleContext);
 
-            //Map<?,?> msgPropMap = Collections.singletonMap("serviceName","LDAPConnectorService");
+            // Map<?,?> msgPropMap =
+            // Collections.singletonMap("serviceName","LDAPConnectorService");
             Map<String, String> msgPropMap = new HashMap<String, String>();
             msgPropMap.put("serviceName", url);
 
@@ -509,82 +599,90 @@ public class RemoteConnectorAdapter {
 
             if (operation.equalsIgnoreCase("add")) {
 
-                msg = client.send("vm://remoteConnectorMessageAdd", (CrudRequest<ExtensibleUser>) reqType, msgPropMap);
+                msg = client.send("vm://remoteConnectorMessageAdd",
+                        (CrudRequest<ExtensibleUser>) reqType, msgPropMap);
             }
             if (operation.equalsIgnoreCase("modify")) {
 
-                msg = client.send("vm://remoteConnectorMessageModify", (CrudRequest<ExtensibleUser>) reqType, msgPropMap);
+                msg = client.send("vm://remoteConnectorMessageModify",
+                        (CrudRequest<ExtensibleUser>) reqType, msgPropMap);
             }
             if (operation.equalsIgnoreCase("lookup")) {
 
-                msg = client.send("vm://remoteConnectorMessageLookup", (LookupRequest<ExtensibleUser>) reqType, msgPropMap);
+                msg = client.send("vm://remoteConnectorMessageLookup",
+                        (LookupRequest<ExtensibleUser>) reqType, msgPropMap);
             }
             if (operation.equalsIgnoreCase("reconcile")) {
 
-                client.sendAsync("vm://remoteConnectorMessageReconcile", (ReconciliationConfig) reqType, msgPropMap);
+                client.sendAsync("vm://remoteConnectorMessageReconcile",
+                        (ReconciliationConfig) reqType, msgPropMap);
             }
             if (operation.equalsIgnoreCase("delete")) {
 
-                msg = client.send("vm://remoteConnectorMessageDelete", (CrudRequest<ExtensibleUser>) reqType, msgPropMap);
+                msg = client.send("vm://remoteConnectorMessageDelete",
+                        (CrudRequest<ExtensibleUser>) reqType, msgPropMap);
             }
             if (operation.equalsIgnoreCase("setPassword")) {
 
-                msg = client.send("vm://remoteConnectorMessageSetPassword", (PasswordRequest) reqType, msgPropMap);
+                msg = client.send("vm://remoteConnectorMessageSetPassword",
+                        (PasswordRequest) reqType, msgPropMap);
             }
 
             if (operation.equalsIgnoreCase("resetPassword")) {
 
-                msg = client.send("vm://remoteConnectorMessageResetPassword", (PasswordRequest) reqType, msgPropMap);
+                msg = client.send("vm://remoteConnectorMessageResetPassword",
+                        (PasswordRequest) reqType, msgPropMap);
             }
             if (operation.equalsIgnoreCase("suspend")) {
 
-                msg = client.send("vm://remoteConnectorMessageSuspend", (SuspendResumeRequest) reqType, msgPropMap);
+                msg = client.send("vm://remoteConnectorMessageSuspend",
+                        (SuspendResumeRequest) reqType, msgPropMap);
             }
             if (operation.equalsIgnoreCase("resume")) {
 
-                msg = client.send("vm://remoteConnectorMessageResume", (SuspendResumeRequest) reqType, msgPropMap);
+                msg = client.send("vm://remoteConnectorMessageResume",
+                        (SuspendResumeRequest) reqType, msgPropMap);
             }
             if (operation.equalsIgnoreCase("testConnection")) {
 
-                msg = client.send("vm://remoteConnectorMsgTestConnection", (ManagedSysDto) reqType, msgPropMap);
+                msg = client.send("vm://remoteConnectorMsgTestConnection",
+                        (ManagedSysDto) reqType, msgPropMap);
             }
             if (operation.equalsIgnoreCase("search")) {
 
-                msg = client.send("vm://remoteConnectorMessageSearch", (SearchRequest) reqType, msgPropMap);
+                msg = client.send("vm://remoteConnectorMessageSearch",
+                        (SearchRequest) reqType, msgPropMap);
             }
 
             return msg;
-
 
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
 
-
     }
-
 
     private ConnectorService getService(ProvisionConnectorDto connector) {
         try {
 
             QName SERVICE_NAME = new QName(connector.getServiceUrl());
-            QName PORT_NAME = new QName(connector.getServiceNameSpace(), connector.getServicePort());
+            QName PORT_NAME = new QName(connector.getServiceNameSpace(),
+                    connector.getServicePort());
 
             Service service = Service.create(SERVICE_NAME);
-            service.addPort(PORT_NAME, SOAPBinding.SOAP11HTTP_BINDING, connector.getServiceUrl());
+            service.addPort(PORT_NAME, SOAPBinding.SOAP11HTTP_BINDING,
+                    connector.getServiceUrl());
 
-            ConnectorService port = service.getPort(new QName(connector.getServiceNameSpace(),
-                    connector.getServicePort()),
-                    ConnectorService.class);
+            ConnectorService port = service.getPort(
+                    new QName(connector.getServiceNameSpace(), connector
+                            .getServicePort()), ConnectorService.class);
             return port;
-
 
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
-
 
     }
 
@@ -592,7 +690,8 @@ public class RemoteConnectorAdapter {
         return connectorService;
     }
 
-    public void setConnectorService(ProvisionConnectorWebService connectorService) {
+    public void setConnectorService(
+            ProvisionConnectorWebService connectorService) {
         this.connectorService = connectorService;
     }
 }

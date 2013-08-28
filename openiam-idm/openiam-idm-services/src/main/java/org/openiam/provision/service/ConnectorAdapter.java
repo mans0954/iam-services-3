@@ -154,7 +154,7 @@ public class ConnectorAdapter {
     }
 
     public SearchResponse lookupRequest(ManagedSysDto managedSys,
-                                        LookupRequest req,
+            LookupRequest req,
                                         MuleContext muleContext) {
         SearchResponse resp = new SearchResponse();
         resp.setStatus(StatusCodeType.FAILURE);
@@ -195,7 +195,7 @@ public class ConnectorAdapter {
         } catch (Exception e) {
             log.debug("Exception caught in ConnectorAdaptor:lookupRequest");
             log.error(e);
-
+            log.error(e.getStackTrace());
             resp.setError(ErrorCode.OTHER_ERROR);
             resp.addErrorMessage(e.toString());
             return resp;
@@ -644,7 +644,7 @@ public class ConnectorAdapter {
         if (operation.equalsIgnoreCase("lookup")) {
 
             msg = client.send("vm://dispatchConnectorMessageLookup",
-                    (LookupRequest) reqType, msgPropMap);
+                    (SearchRequest) reqType, msgPropMap);
         }
         if (operation.equalsIgnoreCase("reconcile")) {
 
@@ -685,7 +685,7 @@ public class ConnectorAdapter {
 
         if (operation.equalsIgnoreCase("lookupAttributes")) {
             msg = client.send("vm://dispatchConnectorMsgLookupAttributes",
-                    (LookupRequest) reqType, msgPropMap);
+                    (SearchRequest) reqType, msgPropMap);
         }
 
         if (operation.equalsIgnoreCase("search")) {

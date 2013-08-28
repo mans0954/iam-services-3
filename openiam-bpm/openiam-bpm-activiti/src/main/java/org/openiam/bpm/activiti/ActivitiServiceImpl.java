@@ -32,6 +32,7 @@ import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseCode;
 import org.openiam.base.ws.ResponseStatus;
+import org.openiam.dozer.converter.UserDozerConverter;
 import org.openiam.exception.BasicDataServiceException;
 import org.openiam.bpm.request.ActivitiClaimRequest;
 import org.openiam.bpm.request.ActivitiRequestDecision;
@@ -63,6 +64,7 @@ import org.openiam.idm.srvc.user.service.SupervisorDAO;
 import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserProfileService;
 import org.openiam.script.ScriptIntegration;
+import org.openiam.validator.EntityValidator;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -146,6 +148,13 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
     
     @Value("${org.openiam.bpm.user.approver.association.script}")
     private String approverAssociationScript;
+    
+    @Autowired
+    @Qualifier("entityValidator")
+    private EntityValidator entityValidator;
+    
+    @Autowired
+    private UserDozerConverter userDozerConverter;
 
 	@Override
 	@WebMethod
@@ -171,6 +180,9 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 			
 			final ProvisionRequestEntity provisionRequest = new ProvisionRequestEntity();
 			final User provisionUser = request.getUser();
+			
+			final UserEntity provisionUserValidationObject = userDozerConverter.convertToEntity(provisionUser, true);
+			entityValidator.isValid(provisionUserValidationObject);
 			
 			/* get a list of approvers for the new hire request, including information about their organization */
 	        
@@ -274,7 +286,7 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 			variables.put(ActivitiConstants.TASK_NAME, taskName);
 			variables.put(ActivitiConstants.TASK_DESCRIPTION, taskDescription);
 			variables.put(ActivitiConstants.TASK_OWNER, request.getRequestorUserId());
-			final ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(requestType.getKey(), variables);
+			runtimeService.startProcessInstanceByKey(requestType.getKey(), variables);
 
 			response.setStatus(ResponseStatus.SUCCESS);
 		} catch (PageTemplateException e) {
@@ -283,6 +295,7 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);
 		} catch(BasicDataServiceException e) {
+            response.setErrorTokenList(e.getErrorTokenList());
 			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);
 		} catch(ActivitiException e) {
@@ -382,6 +395,10 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
 			}
 			
+			//userProfileService.validate(request);
+			final UserEntity provisionUserValidationObject = userDozerConverter.convertToEntity(request.getUser(), true);
+			entityValidator.isValid(provisionUserValidationObject);
+			
 			final String description = String.format("Edit User %s", request.getUser().getDisplayName());
 			
 			final Set<String> requestApproverIds = new HashSet<String>();
@@ -434,6 +451,7 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 		} catch(BasicDataServiceException e) {
 			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);
+			response.setErrorTokenList(e.getErrorTokenList());
 		} catch(ActivitiException e) {
 			log.info("Activiti Exception", e);
 			response.setStatus(ResponseStatus.FAILURE);

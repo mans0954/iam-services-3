@@ -239,10 +239,6 @@
 			<a>groovyScript</a>
 			<b>groovyScript</b>
 		</field>
-		<field>
-			<a>operation</a>
-			<b>operation</b>
-		</field>
 		<field
 			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentObjectConverter"
 			custom-converter-param="amDto2entityShallowDozerMapper">

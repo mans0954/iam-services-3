@@ -1,10 +1,15 @@
 if("EXIST" == targetSystemIdentityStatus) {
-    output = null
+        output = null
     return output
 }
 def attr = user.getUserAttributes().get("sAMAccountName")
 if (attr?.value) {
-    output = attr.value
-}else {
-    output = user.employeeId
+    output = attr.value as String
+} else {
+    def value = user.employeeId as String
+    if (value) {
+       output = value
+    } else {
+       output = user.firstName + "." + user.lastName as String
+    }
 }
