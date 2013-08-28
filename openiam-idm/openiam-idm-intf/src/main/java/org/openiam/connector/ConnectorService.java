@@ -50,8 +50,8 @@ public interface ConnectorService {
     @WebMethod(action = "http://www.openiam.org/service/connector/ConnectorService/delete")
     ObjectResponse delete(@WebParam(name = "reqType", targetNamespace = "") CrudRequest<? extends ExtensibleObject> reqType);
 
-    @WebMethod(action = "http://www.openiam.org/service/connector/ConnectorService/lookup")
-    SearchResponse lookup(@WebParam(name = "reqType", targetNamespace = "") LookupRequest<? extends ExtensibleObject> reqType);
+    @WebMethod(action = "http://www.openiam.org/service/connector/ConnectorService/lookup"  )
+    SearchResponse lookup(@WebParam(name = "request", targetNamespace = "") LookupRequest<? extends ExtensibleObject> request);
 
     @WebMethod(action = "http://www.openiam.org/service/connector/ConnectorService/lookupAttributeNames")
     LookupAttributeResponse lookupAttributeNames(@WebParam(name = "reqType", targetNamespace = "") LookupRequest<? extends ExtensibleObject> reqType);
