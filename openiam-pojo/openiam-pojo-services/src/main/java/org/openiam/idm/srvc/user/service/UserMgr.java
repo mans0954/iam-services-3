@@ -285,8 +285,12 @@ public class UserMgr implements UserDataService {
                     if (entity != null) {
                         userEntity.getEmailAddresses().remove(entity);
                     }
-                } else if (e.getOperation().equals(AttributeOperationEnum.ADD)) {
-                    EmailAddressEntity entity = emailAddressDozerConverter.convertToEntity(e, false);
+                } else if (e.getOperation().equals(AttributeOperationEnum.ADD) || e.getOperation().equals(AttributeOperationEnum.REPLACE)) {
+                    EmailAddressEntity entity = emailAddressDao.findById(e.getEmailId());
+                    if(entity != null) {
+                        emailAddressDao.evict(entity);
+                    }
+                    entity = emailAddressDozerConverter.convertToEntity(e, false);
                     entity.setParent(userEntity);
                     userEntity.getEmailAddresses().add(entity);
                 } else if (e.getOperation().equals(AttributeOperationEnum.REPLACE)) {
