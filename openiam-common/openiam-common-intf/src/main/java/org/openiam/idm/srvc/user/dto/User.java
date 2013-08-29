@@ -30,6 +30,7 @@ import java.util.*;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "user", propOrder = {
+        "operation",
         "addresses",
         "birthdate",
         "companyOwnerId",
@@ -92,6 +93,7 @@ import java.util.*;
 @DozerDTOCorrespondence(UserEntity.class)
 public class User extends org.openiam.base.BaseObject {
 
+    private AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
 
     protected static final Log log = LogFactory.getLog(User.class);
     // Fields
@@ -202,7 +204,7 @@ public class User extends org.openiam.base.BaseObject {
     private Set<UserGroup> userGroups = new HashSet<UserGroup>(0);
     @XmlTransient
     private Set<UserRole> userRoles = new HashSet<UserRole>(0);
-    
+
     @XmlTransient
     private Set<ResourceUser> resourceUsers = new HashSet<ResourceUser>();
 
@@ -210,7 +212,7 @@ public class User extends org.openiam.base.BaseObject {
     private String login;
     private String password;
     private Boolean notifyUserViaEmail=true;
-    
+
     private Set<UserAffiliation> affiliations;
 
     // Constructors
@@ -238,7 +240,15 @@ public class User extends org.openiam.base.BaseObject {
 
         this.userId = userId;
     }
-    
+
+    public AttributeOperationEnum getOperation() {
+        return operation;
+    }
+
+    public void setOperation(AttributeOperationEnum operation) {
+        this.operation = operation;
+    }
+
     public String getDisplayName() {
     	String displayName = null;
     	if(StringUtils.isNotBlank(firstName) && StringUtils.isNotBlank(lastName)) {
@@ -646,7 +656,7 @@ public class User extends org.openiam.base.BaseObject {
     public Set<ResourceUser> getResourceUsers() {
 		return resourceUsers;
 	}
-    
+
     public void addResourceUser(final ResourceUser record) {
     	if(record != null) {
     		if(this.resourceUsers == null) {
@@ -1133,6 +1143,7 @@ public class User extends org.openiam.base.BaseObject {
 
         User user = (User) o;
 
+        if (operation != null ? !operation.equals(user.operation) : user.operation != null) return false;
         if (addresses != null ? !addresses.equals(user.addresses) : user.addresses != null) return false;
         if (alternateContactId != null ? !alternateContactId.equals(user.alternateContactId) : user.alternateContactId != null)
             return false;
@@ -1203,7 +1214,8 @@ public class User extends org.openiam.base.BaseObject {
     @Override
     public String toString() {
         return "User{" +
-                "birthdate=" + birthdate +
+                "operation='" + operation + '\'' +
+                ", birthdate='" + birthdate + '\'' +
                 ", companyOwnerId='" + companyOwnerId + '\'' +
                 ", createDate=" + createDate +
                 ", createdBy='" + createdBy + '\'' +
