@@ -1414,6 +1414,10 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
 
     public void updateSupervisors(User user, Set<User> superiors) {
 
+        if (superiors == null) {
+            return;
+        }
+
         List<SupervisorEntity> supervisorList = userMgr.getSupervisors(user.getUserId());
 
         if (CollectionUtils.isNotEmpty(superiors)) {
@@ -1453,8 +1457,10 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
             if (CollectionUtils.isNotEmpty(superiors)) {
                 for (User u : superiors) {
                     if (s.getSupervisor().getUserId().equals(u.getUserId())) {
-                        isToRemove = false;
-                        break;
+                        if (u.getOperation() != AttributeOperationEnum.DELETE ) {
+                            isToRemove = false;
+                            break;
+                        }
                     }
                 }
             }
