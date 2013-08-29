@@ -1036,6 +1036,7 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
         log.debug("ModifyUser: updateUser called.");
 
         User newUser = user.getUser();
+
         updateUserObject(origUser, newUser);
 
         log.debug("User object pending update:" + origUser);
@@ -1072,7 +1073,7 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
         if ( (origEmailSet != null && origEmailSet.size() > 0 ) && (newEmailSet == null || newEmailSet.size() == 0 )) {
             log.debug("orig email list is not null and nothing was passed in for the newEmailSet - ie no change");
             for (EmailAddress em  : origEmailSet) {
-                em.setOperation(AttributeOperationEnum.NO_CHANGE);
+                em.setOperation(AttributeOperationEnum.DELETE);
             }
             return;
         }
@@ -1120,7 +1121,7 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
             if (e.getEmailId() != null) {
                 EmailAddress newEmail =  getEmailAddress(e.getEmailId(), newEmailSet);
                 if (newEmail == null) {
-                    e.setOperation(AttributeOperationEnum.NO_CHANGE);
+                    e.setOperation(AttributeOperationEnum.DELETE);
                 }
             }
         }
@@ -1144,7 +1145,7 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
         if ( (origPhoneSet != null && origPhoneSet.size() > 0 ) && (newPhoneSet == null || newPhoneSet.size() == 0 )) {
             log.debug("orig phone list is not null and nothing was passed in for the newPhoneSet - ie no change");
             for (Phone ph  : origPhoneSet) {
-                ph.setOperation(AttributeOperationEnum.NO_CHANGE);
+                ph.setOperation(AttributeOperationEnum.DELETE);
             }
             return;
         }
@@ -1190,7 +1191,7 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
             if (ph.getPhoneId() != null) {
                 Phone newPhone =  getPhone(ph.getPhoneId(), newPhoneSet);
                 if (newPhone == null) {
-                    ph.setOperation(AttributeOperationEnum.NO_CHANGE);
+                    ph.setOperation(AttributeOperationEnum.DELETE);
 
                 }
             }
@@ -1217,7 +1218,7 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
                 (newAddressSet == null || newAddressSet.size() == 0 )) {
             log.debug("orig Address list is not null and nothing was passed in for the newAddressSet - ie no change");
             for (Address ph  : origAddressSet) {
-                ph.setOperation(AttributeOperationEnum.NO_CHANGE);
+                ph.setOperation(AttributeOperationEnum.DELETE);
 
             }
             return;
@@ -1264,7 +1265,7 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
             if (a.getAddressId() != null) {
                 Address newAddress =  getAddress(a.getAddressId(), newAddressSet);
                 if (newAddress == null) {
-                    a.setOperation(AttributeOperationEnum.NO_CHANGE);
+                    a.setOperation(AttributeOperationEnum.DELETE);
 
                 }
             }
@@ -1323,6 +1324,7 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
 
         user.updateMissingUserAttributes(origUser);
 
+        /*
         // check addresses
         Set<Address> addressSet = user.getAddresses();
 
@@ -1339,7 +1341,6 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
         }
 
         // check email addresses
-
         Set<EmailAddress> emailAddressSet =  user.getEmailAddresses();
         if (emailAddressSet == null || emailAddressSet.isEmpty()) {
 
@@ -1352,7 +1353,6 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
                         convertToDTOList(emailList, false)) );
 
             }
-
         }
 
         // check the phone objects
@@ -1367,9 +1367,8 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
                 user.setPhones(new HashSet<Phone>(phoneDozerConverter.convertToDTOList(phoneList, false)));
 
             }
-
         }
-
+        */
 
         // check the user attributes
         Map<String, UserAttribute> userAttrSet = user.getUserAttributes();
