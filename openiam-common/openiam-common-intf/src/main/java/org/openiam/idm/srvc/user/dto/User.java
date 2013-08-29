@@ -80,7 +80,8 @@ import java.util.*;
         "login",
         "password",
         "notifyUserViaEmail",
-        "affiliations"
+        "affiliations",
+        "userRoles"
 })
 @XmlSeeAlso({
         Login.class,
@@ -202,7 +203,6 @@ public class User extends org.openiam.base.BaseObject {
     protected Set<EmailAddress> emailAddresses = new HashSet<EmailAddress>(0);
     @XmlTransient
     private Set<UserGroup> userGroups = new HashSet<UserGroup>(0);
-    @XmlTransient
     private Set<UserRole> userRoles = new HashSet<UserRole>(0);
 
     @XmlTransient
