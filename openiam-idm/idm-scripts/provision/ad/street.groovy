@@ -1,5 +1,5 @@
-if (user.addresses != null &&  user.addresses.size()  > 0) {
-	output= user.addresses.address1
-}else {
-	ouput=null;
+output = null
+def it = user.addresses?.iterator()
+if (it?.hasNext()) {
+    output = it?.next()?.address1?: null
 }
