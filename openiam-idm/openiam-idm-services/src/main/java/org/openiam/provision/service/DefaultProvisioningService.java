@@ -1960,8 +1960,13 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                             }
                             if (connectorSuccess) {
+                                if (loginManager.getByUserIdManagedSys(mLg.getUserId(), mLg.getManagedSysId()) != null) {
+                                    loginManager.updateLogin(loginDozerConverter
+                                            .convertToEntity(mLg, true));
+                                } else {
                                     loginManager.addLogin(loginDozerConverter
                                             .convertToEntity(mLg, true));
+                                }
                             }
                         } else {
                             if(!isMngSysIdentityExistsInOpeniam){

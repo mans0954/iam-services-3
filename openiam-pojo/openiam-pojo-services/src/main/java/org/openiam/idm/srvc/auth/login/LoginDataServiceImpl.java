@@ -434,6 +434,7 @@ public class LoginDataServiceImpl implements LoginDataService {
         if (login == null) {
             throw new NullPointerException("Login is null");
         }
+        login.setLastUpdate(new Date(System.currentTimeMillis()));
 
         log.debug("Updating Identity" + login);
         loginDao.merge(login);

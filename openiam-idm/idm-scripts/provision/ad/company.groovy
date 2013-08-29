@@ -1,14 +1,14 @@
 import org.springframework.context.support.ClassPathXmlApplicationContext
 import org.openiam.idm.srvc.org.dto.Organization;
-
+import java.util.List;
 
 def orgManager = context.getBean("orgManager")
 
-
-			if (user.companyId != null && user.companyId.length() > 0) {
-				Organization orgObject = orgManager.getOrganization(user.companyId, null);
-				if (orgObject != null) {
-					output = orgObject.organizationName
-				}
-			}
-output = null;
+output = null
+def List<Organization> orgList = orgManager.getOrganizationsForUserByType(user.userId, null, "ORGANIZATION");
+if(orgList != null && orgList.size() > 0) {
+   	def org = orgList.get(0);
+	if (org) {
+		output = org.organizationName;
+	}
+}
