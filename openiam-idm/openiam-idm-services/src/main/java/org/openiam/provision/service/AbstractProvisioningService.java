@@ -447,10 +447,6 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
             resp.setStatus(ResponseStatus.SUCCESS);
             ResponseCode code;
 
-            // check that phone and email are added to the collections.
-            associateEmail(user);
-            associatePhone(user);
-
             User newUser = user.getUser();
             UserEntity userEntity = userDozerConverter.convertToEntity(newUser, true);
             if(MapUtils.isNotEmpty(userEntity.getUserAttributes())) {
@@ -515,28 +511,6 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
             return resp;
         }
 
-        /**
-         * User object supports N Email addresses. make sure that there is a value
-         * @param user
-         */
-        @Deprecated
-    private void associateEmail(ProvisionUser user) {
-
-//        if (user.getEmail() == null || user.getEmail().isEmpty()) {
-//            return;
-//
-//        }
-//        Set<EmailAddress> emailSet = user.getEmailAddresses();
-//
-//        if (!containsEmail("EMAIL1", emailSet)) {
-//
-//            EmailAddress e = new EmailAddress(user.getEmail(), "EMAIL1", "", true);
-//            user.getEmailAddresses().add(e);
-//
-//        }
-
-    }
-
     private boolean containsEmail(String name, Set<EmailAddress> emailAddressSet) {
 
         if (emailAddressSet == null || emailAddressSet.isEmpty()) {
@@ -551,20 +525,6 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
         }
         return false;
 
-    }
-
-    @Deprecated
-    private void associatePhone(ProvisionUser user) {
-//        if (user.getPhoneNbr() == null || user.getPhoneNbr().isEmpty()) {
-//            return;
-//
-//        }
-//        Set<Phone> phoneSet = user.getPhones();
-//
-//        if (!containsPhone("DESK PHONE", phoneSet)) {
-//            Phone p = new Phone("DESK PHONE",  user.getAreaCd(), user.getCountryCd(), "", user.getPhoneNbr(), user.getPhoneExt(), true, null);
-//            user.getPhones().add(p);
-//        }
     }
 
     private boolean containsPhone(String name, Set<Phone> phoneSet) {
