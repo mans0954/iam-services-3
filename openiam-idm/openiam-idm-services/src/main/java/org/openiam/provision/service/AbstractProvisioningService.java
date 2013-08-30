@@ -282,7 +282,8 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
         }
         reqType.setHostLoginPassword(passwordDecoded);
         reqType.setHostUrl(mSys.getHostUrl());
-        reqType.setBaseDN(matchObj.getBaseDn());
+        if (matchObj != null)
+        	reqType.setBaseDN(matchObj.getBaseDn());
         reqType.setExtensibleObject(extUser);
         reqType.setScriptHandler(mSys.getLookupHandler());
 
