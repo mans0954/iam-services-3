@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.openiam.base.AttributeOperationEnum;
 import org.openiam.dozer.converter.GroupDozerConverter;
 import org.openiam.dozer.converter.OrganizationDozerConverter;
 import org.openiam.dozer.converter.RoleDozerConverter;
@@ -73,7 +74,6 @@ public class NewUserModelToProvisionConverter {
 	@Autowired
 	private OrganizationDozerConverter organizationDozerConverter;
 	
-	@Transactional
 	public ProvisionUser convertNewProfileModel(final NewUserProfileRequestModel request) {
 		ProvisionUser user = null;
 		if(request.getUser() != null) {
@@ -82,7 +82,12 @@ public class NewUserModelToProvisionConverter {
 				user.setAddresses(new HashSet<Address>(request.getAddresses()));
 			}
 			if(CollectionUtils.isNotEmpty(request.getEmails())) {
-				user.setEmailAddresses(new HashSet<EmailAddress>(request.getEmails()));
+                Set<EmailAddress> emailAddresses = new HashSet<EmailAddress>();
+				for(EmailAddress ea : request.getEmails()) {
+                    emailAddresses.add(ea);
+                    ea.setOperation(AttributeOperationEnum.ADD);
+                }
+                user.setEmailAddresses(emailAddresses);
 			}
 			if(CollectionUtils.isNotEmpty(request.getLoginList())) {
 				user.setPrincipalList(request.getLoginList());

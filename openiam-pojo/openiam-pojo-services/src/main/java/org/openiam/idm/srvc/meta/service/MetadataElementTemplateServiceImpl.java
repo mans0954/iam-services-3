@@ -622,7 +622,7 @@ public class MetadataElementTemplateServiceImpl implements MetadataElementTempla
 	}
 	
 	@Override
-	@Transactional
+	@Transactional(readOnly = true)
 	public PageTemplateAttributeToken getAttributesFromTemplate(final UserProfileRequestModel request) {
 		PageTemplateAttributeToken token = null;
 		try {

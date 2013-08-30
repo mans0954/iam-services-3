@@ -624,7 +624,6 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 
 	@Override
 	@WebMethod
-	@Transactional
 	public Response makeDecision(final ActivitiRequestDecision request) {
 		final Response response = new Response();
 		try {
