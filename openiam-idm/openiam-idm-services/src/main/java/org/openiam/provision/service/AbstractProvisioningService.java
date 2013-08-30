@@ -1769,9 +1769,9 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
         return null;
     }
 
-    private Login getPrincipal(String managedSysId, List<Login> loginList) {
+    private Login getPrincipal(String logingId, List<Login> loginList) {
         for (Login lg : loginList ) {
-            if (lg.getManagedSysId().equals(managedSysId)) {
+            if (lg.getLoginId().equals(logingId)) {
                 return lg;
             }
         }
@@ -1878,26 +1878,7 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
         if ( (origLoginList != null && origLoginList.size() > 0 ) &&
                 (newLoginList == null || newLoginList.size() == 0 )) {
             log.debug("orig Principal list is not null and nothing was passed in for the newPrincipal list - ie no change");
-            for (Login l  : origLoginList) {
-                l.setOperation(AttributeOperationEnum.NO_CHANGE);
-                if (notInDeleteResourceList(l,deleteResourceList)) {
-                    l.setStatus("ACTIVE");
-                    l.setAuthFailCount(0);
-                    l.setIsLocked(0);
-                    l.setPasswordChangeCount(0);
-                    // reset the password from the primary identity
-                    // get the primary identity for this user
-                    LoginEntity primaryIdentity = loginManager.getPrimaryIdentity(l.getUserId());
-                    if (primaryIdentity != null) {
-                        log.debug("Identity password reset to: " + primaryIdentity.getPassword());
-                        l.setPassword( primaryIdentity.getPassword() );
-                    }
-
-                    loginManager.updateLogin(loginDozerConverter.convertToEntity(l, true));
-                }
-                principalList.add(l);
-            }
-            return principalList;
+            return origLoginList;
         }
 
         // if in new login, but not in old, then add it with operation 1
