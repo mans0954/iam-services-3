@@ -31,7 +31,7 @@ public class LookupUserOracleCommand extends AbstractLookupOracleCommand<Extensi
             log.error(e.getMessage(), e);
             throw new ConnectorDataException(ErrorCode.CONNECTOR_ERROR,e.getMessage());
         } finally {
-            this.closeStatement(statement);
+            //this.closeStatement(statement);
         }
     }
 }
