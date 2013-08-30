@@ -614,8 +614,11 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
         log.debug("Role list = " + roleList);
         if (roleList != null && roleList.size() > 0) {
             for (Role r: roleList) {
+                if (r.getServiceId() == null){
+                    r.setServiceId(sysConfiguration.getDefaultSecurityDomain());
+                }
                 // check if the roleId is valid
-                if (r.getServiceId() == null || r.getRoleId() == null) {
+                if (r.getRoleId() == null) {
                     return ResponseCode.ROLE_ID_NULL;
                 }
                 if (roleDataService.getRole(r.getRoleId()) == null ) {
