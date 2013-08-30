@@ -10,7 +10,7 @@
     <dependencies>
 <!--       <module name="openiam.conf" /> -->
       <module name="com.mysql" />
-      <module name="com.oracle.db" />
+      <module name="oracle.jdbc" />
       <module name="org.bouncycastle" slot="main" export="true" />
       </dependencies>
   </deployment>
