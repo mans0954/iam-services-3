@@ -101,9 +101,13 @@ public class ResourceDataServiceImpl implements ResourceDataService {
 
 	@WebMethod
 	public int count(final ResourceSearchBean searchBean) {
-		final ResourceEntity entity = resourceSearchBeanConverter
-				.convert(searchBean);
-		return resourceDao.count(entity);
+		final ResourceEntity entity = resourceSearchBeanConverter.convert(searchBean);
+		if (Boolean.TRUE.equals(searchBean.getRootsOnly())) {
+			final List<ResourceEntity> resultsEntities = resourceDao.getRootResources(entity, 0, Integer.MAX_VALUE);
+			return (resultsEntities != null) ? resultsEntities.size() : 0;
+		} else {
+			return resourceDao.count(entity);
+		}
 	}
 
 	@Override
