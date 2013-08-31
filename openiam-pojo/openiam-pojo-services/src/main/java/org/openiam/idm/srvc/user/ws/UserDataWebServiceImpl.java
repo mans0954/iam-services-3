@@ -1160,9 +1160,9 @@ public class UserDataWebServiceImpl implements UserDataWebService{
             }
             if (user.getUserId() == null) {
 
-                final MetadataTypeSearchBean typeSearchBean = new MetadataTypeSearchBean();
-                typeSearchBean.setGrouping("EMAIL");
-                typeSearchBean.setActive(true);
+//                final MetadataTypeSearchBean typeSearchBean = new MetadataTypeSearchBean();
+//                typeSearchBean.setGrouping("EMAIL");
+//                typeSearchBean.setActive(true);
 
 //                final List<MetadataTypeEntity> entityList = metadataService.findBeans(typeSearchBean, 0, Integer.MAX_VALUE);
 //                List<MetadataType> typeList = (entityList != null) ? metaDataTypeDozerConverter.convertToDTOList(entityList, false) : null;

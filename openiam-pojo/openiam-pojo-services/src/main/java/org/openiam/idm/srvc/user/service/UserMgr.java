@@ -53,6 +53,9 @@ import org.openiam.idm.srvc.org.domain.UserAffiliationEntity;
 import org.openiam.idm.srvc.org.service.OrganizationService;
 import org.openiam.idm.srvc.org.service.UserAffiliationDAO;
 import org.openiam.idm.srvc.res.service.ResourceUserDAO;
+import org.openiam.idm.srvc.role.domain.UserRoleEntity;
+import org.openiam.idm.srvc.role.dto.UserRole;
+import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.role.service.UserRoleDAO;
 import org.openiam.idm.srvc.searchbean.converter.AddressSearchBeanConverter;
 import org.openiam.idm.srvc.searchbean.converter.EmailAddressSearchBeanConverter;
@@ -160,6 +163,8 @@ public class UserMgr implements UserDataService {
     private MetadataTypeDAO metadataTypeDAO;
     @Autowired
     private OrganizationService organizationService;
+    @Autowired
+    private RoleDataService roleDataService;
 
     @Value("${org.openiam.user.search.max.results}")
     private int MAX_USER_SEARCH_RESULTS;
@@ -1494,12 +1499,14 @@ public class UserMgr implements UserDataService {
         Set<EmailAddressEntity> emailAddressList = newUserEntity.getEmailAddresses();
         Set<AddressEntity> addressList = newUserEntity.getAddresses();
         Set<PhoneEntity> phoneList = newUserEntity.getPhones();
-        Set<UserAffiliationEntity> userOrgs =newUserEntity.getAffiliations();
+        Set<UserAffiliationEntity> userOrgs = newUserEntity.getAffiliations();
+        Set<UserRoleEntity> userRoles =  newUserEntity.getUserRoles();
 
         newUserEntity.setPrincipalList(null);
         newUserEntity.setPhones(null);
         newUserEntity.setAddresses(null);
         newUserEntity.setAffiliations(null);
+        newUserEntity.setUserRoles(null);
         // newUserEntity.setEmailAddresses(null);
 
         this.addUser(newUserEntity);
@@ -1543,6 +1550,17 @@ public class UserMgr implements UserDataService {
         if(CollectionUtils.isNotEmpty(userOrgs)){
             for (final UserAffiliationEntity userOrg : userOrgs) {
                 organizationService.addUserToOrg(userOrg.getOrganization().getId(), newUserEntity.getUserId());
+            }
+        }
+        if(CollectionUtils.isNotEmpty(userOrgs)){
+            for (final UserAffiliationEntity userOrg : userOrgs) {
+                organizationService.addUserToOrg(userOrg.getOrganization().getId(), newUserEntity.getUserId());
+            }
+        }
+        if(CollectionUtils.isNotEmpty(userRoles)){
+            for (final UserRoleEntity userRole : userRoles) {
+                userRole.setUserId(newUserEntity.getUserId());
+                roleDataService.assocUserToRole(userRole);
             }
         }
         return newUserEntity.getUserId();
