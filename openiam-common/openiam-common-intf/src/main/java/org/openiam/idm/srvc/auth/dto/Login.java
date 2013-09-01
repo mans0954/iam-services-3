@@ -60,7 +60,7 @@ import java.util.Set;
 public class Login implements java.io.Serializable {
 
     private static final long serialVersionUID = -1972779170001619759L;
-    protected AttributeOperationEnum operation;
+    protected AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
     
     private String loginId;
     private String domainId;

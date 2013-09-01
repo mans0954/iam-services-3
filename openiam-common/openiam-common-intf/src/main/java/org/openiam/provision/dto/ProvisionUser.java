@@ -154,7 +154,7 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         addresses = user.getAddresses();
         emailAddresses = user.getEmailAddresses();
         // set the email address in a hibernate friendly manner
-
+        principalList = user.getPrincipalList();
         setPassword(user.getPassword());
         setLogin(user.getLogin());
         initMemberOfRoles(user.getUserRoles());

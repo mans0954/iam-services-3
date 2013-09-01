@@ -1506,8 +1506,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         log.debug("User passed in with the following Roles: "
                 + pUser.getMemberOfRoles());
 
-        List<LoginEntity> newPrincipalList = loginDozerConverter
-                .convertToEntityList(pUser.getPrincipalList(), true);
+        List<Login> newPrincipalList = pUser.getPrincipalList();
 
         if (pUser.getPrimaryOrganization() != null) {
             org = orgManager.getOrganization(pUser.getPrimaryOrganization()
@@ -1666,7 +1665,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         // update the principal list
         List<Login> principalList = updatePrincipalList(origUser.getUserId(),
                 loginDozerConverter.convertToDTOList(curPrincipalList, false),
-                loginDozerConverter.convertToDTOList(newPrincipalList, false),
+                newPrincipalList,
                 deleteResourceList);
 
         // get primary identity and bind it for the groovy scripts

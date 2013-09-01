@@ -105,7 +105,9 @@ public abstract class AbstractLookupOracleCommand<ExtObject extends ExtensibleOb
                     log.debug("type = Timestamp");
                 }
                 extAttr.setDataType("TIMESTAMP");
-                extAttr.setValue(String.valueOf(rs.getTimestamp(colIndx).getTime()));
+                if (rs.getTimestamp(colIndx) !=null){
+                    extAttr.setValue(String.valueOf(rs.getTimestamp(colIndx).getTime()));
+                 }
 
             }
             if (fieldType == Types.VARCHAR || fieldType == Types.CHAR) {
