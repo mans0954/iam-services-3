@@ -1970,6 +1970,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
                             }
                             if (connectorSuccess) {
+                                //Two roles can have one ManagedSys with login
                                 if (loginManager.getByUserIdManagedSys(mLg.getUserId(), mLg.getManagedSysId()) != null) {
                                     loginManager.updateLogin(loginDozerConverter
                                             .convertToEntity(mLg, true));
