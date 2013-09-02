@@ -714,11 +714,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             }
         }
 
-        // make sure that we have an identity for each domain that this user
-        // belongs to
-        validateIdentitiesExistforSecurityDomain(primaryLogin,
-                user.getMemberOfRoles());
-
         /* Response object */
         if (!connectorSuccess) {
             resp.setStatus(ResponseStatus.FAILURE);
@@ -1713,12 +1708,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         log.debug("-- " + origUser.getUserId() + " " + origUser.getFirstName()
                 + " " + origUser.getLastName());
 
-        String userStatus = null;
-        if (pUser.getStatus() != null) {
-            userStatus = pUser.getStatus().toString();
-        }
-
-        /*
+         /*
          * IdmAuditLog auditLog = auditHelper.addLog("MODIFY",
          * pUser.getRequestorDomain(), pUser.getRequestorLogin(), "IDM SERVICE",
          * origUser.getCreatedBy(), "0", "USER", origUser.getUserId(), null,
@@ -1736,204 +1726,369 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
             for (Resource res : resourceList) {
                 // this try-catch block for protection other operations and other resources if one resource was fall with error
-               try {
-                String managedSysId = res.getManagedSysId();
+                try {
+                    String managedSysId = res.getManagedSysId();
 
-                if (pUser.getSrcSystemId() != null) {
-                    if (res.getResourceId().equalsIgnoreCase(
-                            pUser.getSrcSystemId())) {
-                        continue;
-                    }
-                }
-
-                bindingMap.put(TARGET_SYS_RES_ID, res.getResourceId());
-                bindingMap
-                        .put(TARGET_SYS_MANAGED_SYS_ID, res.getManagedSysId());
-
-                if (managedSysId != null) {
-
-                    // object that will be sent to the connectors
-                    List<AttributeMap> attrMap = this.managedSysService
-                            .getResourceAttributeMaps(res.getResourceId());
-                    // List<AttributeMap> attrMap =
-                    // resourceDataService.getResourceAttributeMaps(res.getResourceId());
-
-                    ManagedSysDto mSys = managedSysService
-                            .getManagedSys(managedSysId);
-
-                    if (mSys == null || mSys.getConnectorId() == null) {
-                        continue;
+                    if (pUser.getSrcSystemId() != null) {
+                        if (res.getResourceId().equalsIgnoreCase(
+                                pUser.getSrcSystemId())) {
+                            continue;
+                        }
                     }
 
-                    ProvisionConnectorDto connector = provisionConnectorWebService
-                            .getProvisionConnector(mSys.getConnectorId());
+                    bindingMap.put(TARGET_SYS_RES_ID, res.getResourceId());
+                    bindingMap
+                            .put(TARGET_SYS_MANAGED_SYS_ID, res.getManagedSysId());
 
-                    ManagedSystemObjectMatch matchObj = null;
-                    ManagedSystemObjectMatch[] matchObjAry = managedSysService
-                            .managedSysObjectParam(managedSysId, "USER");
-                    if (matchObjAry != null && matchObjAry.length > 0) {
-                        matchObj = matchObjAry[0];
-                        bindingMap.put(MATCH_PARAM, matchObj);
-                    }
-                    // build the request
-                    CrudRequest<ExtensibleUser> modReqType = new CrudRequest<ExtensibleUser>();
+                    if (managedSysId != null) {
 
-                    // get the identity linked to this resource / managedsys
-                    // determin if this identity exists in IDM or not
-                    // if not, do an ADD otherwise, do an update
+                        // object that will be sent to the connectors
+                        List<AttributeMap> attrMap = this.managedSysService
+                                .getResourceAttributeMaps(res.getResourceId());
+                        // List<AttributeMap> attrMap =
+                        // resourceDataService.getResourceAttributeMaps(res.getResourceId());
 
-                    Login mLg = getPrincipalForManagedSys(managedSysId,
-                            principalList);
-                    // Login mLg = getPrincipalForManagedSys(managedSysId,
-                    // curPrincipalList);
+                        ManagedSysDto mSys = managedSysService
+                                .getManagedSys(managedSysId);
 
-                    if (mLg != null && mLg.getLoginId() != null) {
-                        bindingMap.put(TARGET_SYS_SECURITY_DOMAIN,
-                                mLg.getDomainId());
-                    } else {
-                        bindingMap.put(TARGET_SYS_SECURITY_DOMAIN,
-                                mSys.getDomainId());
-                    }
+                        if (mSys == null || mSys.getConnectorId() == null) {
+                            continue;
+                        }
 
-                    log.debug("PROCESSING IDENTITY =" + mLg);
+                        ProvisionConnectorDto connector = provisionConnectorWebService
+                                .getProvisionConnector(mSys.getConnectorId());
 
-                    if (mLg != null
-                            && mLg.getOperation() == AttributeOperationEnum.DELETE) {
+                        ManagedSystemObjectMatch matchObj = null;
+                        ManagedSystemObjectMatch[] matchObjAry = managedSysService
+                                .managedSysObjectParam(managedSysId, "USER");
+                        if (matchObjAry != null && matchObjAry.length > 0) {
+                            matchObj = matchObjAry[0];
+                            bindingMap.put(MATCH_PARAM, matchObj);
+                        }
+                        // build the request
+                        CrudRequest<ExtensibleUser> modReqType = new CrudRequest<ExtensibleUser>();
 
-                        // delete this identity
-                        List<Resource> delRes = new ArrayList<Resource>();
-                        delRes.add(res);
+                        // get the identity linked to this resource / managedsys
+                        // determin if this identity exists in IDM or not
+                        // if not, do an ADD otherwise, do an update
+
+                        Login mLg = getPrincipalForManagedSys(managedSysId,
+                                principalList);
+                        // Login mLg = getPrincipalForManagedSys(managedSysId,
+                        // curPrincipalList);
+
+                        if (mLg != null && mLg.getLoginId() != null) {
+                            bindingMap.put(TARGET_SYS_SECURITY_DOMAIN,
+                                    mLg.getDomainId());
+                        } else {
+                            bindingMap.put(TARGET_SYS_SECURITY_DOMAIN,
+                                    mSys.getDomainId());
+                        }
+
+                        log.debug("PROCESSING IDENTITY =" + mLg);
+
+                        if (mLg != null
+                                && mLg.getOperation() == AttributeOperationEnum.DELETE) {
+
+                            // delete this identity
+                            List<Resource> delRes = new ArrayList<Resource>();
+                            delRes.add(res);
 
 
 
-                    } else {
+                        } else {
 
-                        Map<String, String> currentValueMap = new HashMap<String, String>();
+                            Map<String, String> currentValueMap = new HashMap<String, String>();
 
-                        boolean isMngSysIdentityExistsInOpeniam = mLg != null;
+                            boolean isMngSysIdentityExistsInOpeniam = mLg != null;
 
-                        if (!isMngSysIdentityExistsInOpeniam) {
-                            if (CollectionUtils.isEmpty(pUser
-                                    .getPrincipalList())) {
-                                // build the list
-                                buildPrimaryPrincipal(pUser, bindingMap,
-                                        scriptRunner);
+                            if (!isMngSysIdentityExistsInOpeniam) {
+                                if (CollectionUtils.isEmpty(pUser
+                                        .getPrincipalList())) {
+                                    // build the list
+                                    buildPrimaryPrincipal(pUser, bindingMap,
+                                            scriptRunner);
+                                }
+
+                                log.debug(" - Building principal Name for: "
+                                        + managedSysId);
+                                try {
+                                    String newPrincipalName = ProvisionServiceUtil
+                                            .buildPrincipalName(attrMap,
+                                                    scriptRunner, bindingMap);
+                                    log.debug(" - New principalName = "
+                                            + newPrincipalName);
+                                    mLg = new Login();
+                                    // get the current object as it stands in the
+                                    // target
+                                    // system
+                                    log.debug(" - PrimaryIdentity for build new identity for target system = "
+                                            + primaryIdentity);
+
+                                    mLg.setLogin(newPrincipalName);
+                                    mLg.setDomainId(primaryIdentity.getDomainId());
+                                    mLg.setManagedSysId(managedSysId);
+                                    mLg.setPassword(primaryIdentity.getPassword());
+                                    mLg.setUserId(primaryIdentity.getUserId());
+
+                                    mLg.setAuthFailCount(0);
+                                    mLg.setCreateDate(new Date(System.currentTimeMillis()));
+                                    mLg.setCreatedBy(pUser.getUser().getLastUpdatedBy());
+                                    mLg.setIsLocked(0);
+                                    mLg.setFirstTimeLogin(1);
+                                    mLg.setStatus("ACTIVE");
+                                } catch (ScriptEngineException e) {
+                                    e.printStackTrace();
+                                }
                             }
+                            bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS,
+                                    isMngSysIdentityExistsInOpeniam ? IDENTITY_NEW : IDENTITY_EXIST);
+                            bindingMap.put(TARGET_SYSTEM_ATTRIBUTES, null);
+                            bindingMap.put(
+                                    TARGET_SYSTEM_IDENTITY,
+                                    isMngSysIdentityExistsInOpeniam ? mLg
+                                            .getLogin() : null);
+                            bindingMap.put(
+                                    TARGET_SYS_SECURITY_DOMAIN,
+                                    isMngSysIdentityExistsInOpeniam ? mLg
+                                            .getDomainId() : null);
 
-                            log.debug(" - Building principal Name for: "
-                                    + managedSysId);
-                            try {
-                                String newPrincipalName = ProvisionServiceUtil
-                                        .buildPrincipalName(attrMap,
-                                                scriptRunner, bindingMap);
-                                log.debug(" - New principalName = "
-                                        + newPrincipalName);
-                                mLg = new Login();
-                                // get the current object as it stands in the
-                                // target
-                                // system
-                                log.debug(" - PrimaryIdentity for build new identity for target system = "
+                            // what the new object will look like
+                            ExtensibleUser extUser = buildFromRules(
+                                    pUser, mLg, attrMap, scriptRunner,
+                                    bindingMap);
+                            // get the attributes at the target system
+                            // this lookup only for getting attributes from the
+                            // system
+
+                            boolean isExistedInTargetSystem = getCurrentObjectAtTargetSystem(
+                                    mLg, extUser, mSys, connector, matchObj, currentValueMap);
+
+                            boolean connectorSuccess = false;
+
+                            if (!isExistedInTargetSystem) {
+                                // create the secondary identity for this resource
+                                log.debug("Adding new identity to target system. Primary Identity is:"
                                         + primaryIdentity);
+                                // pre-processing
+                                String preProcessScript = getResProperty(
+                                        res.getResourceProps(), "PRE_PROCESS");
+                                if (preProcessScript != null
+                                        && !preProcessScript.isEmpty()) {
+                                    PreProcessor ppScript = createPreProcessScript(
+                                            preProcessScript, bindingMap);
+                                    if (ppScript != null) {
+                                        if (executePreProcess(ppScript, bindingMap,
+                                                pUser, "ADD") == ProvisioningConstants.FAIL) {
+                                            continue;
+                                        }
+                                    }
+                                }
 
-                                mLg.setLogin(newPrincipalName);
-                                mLg.setDomainId(primaryIdentity.getDomainId());
-                                mLg.setManagedSysId(managedSysId);
-                                mLg.setPassword(primaryIdentity.getPassword());
+                                // mLg.setPassword(primaryLogin.getPassword());
                                 mLg.setUserId(primaryIdentity.getUserId());
 
-                                mLg.setAuthFailCount(0);
-                                mLg.setCreateDate(new Date(System.currentTimeMillis()));
-                                mLg.setCreatedBy(pUser.getUser().getLastUpdatedBy());
-                                mLg.setIsLocked(0);
-                                mLg.setFirstTimeLogin(1);
-                                mLg.setStatus("ACTIVE");
-                            } catch (ScriptEngineException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS,
-                                isMngSysIdentityExistsInOpeniam ? IDENTITY_NEW : IDENTITY_EXIST);
-                        bindingMap.put(TARGET_SYSTEM_ATTRIBUTES, null);
-                        bindingMap.put(
-                                TARGET_SYSTEM_IDENTITY,
-                                isMngSysIdentityExistsInOpeniam ? mLg
-                                        .getLogin() : null);
-                        bindingMap.put(
-                                TARGET_SYS_SECURITY_DOMAIN,
-                                isMngSysIdentityExistsInOpeniam ? mLg
-                                        .getDomainId() : null);
+                                log.debug("Creating identity in openiam repository:"
+                                        + mLg.getLoginId());
+                                if (mLg.getPassword() == null) {
+                                    mLg.setPassword(primaryIdentity.getPassword());
+                                }
 
-                        // what the new object will look like
-                        ExtensibleUser extUser = buildFromRules(
-                                pUser, mLg, attrMap, scriptRunner,
-                                bindingMap);
-                        // get the attributes at the target system
-                        // this lookup only for getting attributes from the
-                        // system
+                                if (connector.getConnectorInterface() != null
+                                        && connector.getConnectorInterface()
+                                                .equalsIgnoreCase("REMOTE")) {
+                                    // update the group operation to ADD, because it
+                                    // is the new record for Target system
+                                    if (curGroupList != null) {
+                                        for (Group group : curGroupList) {
+                                            group.setOperation(AttributeOperationEnum.ADD);
+                                        }
+                                    }
+                                    connectorSuccess = remoteAdd(mLg, requestId,
+                                            mSys, matchObj, extUser, connector);
 
-                        boolean isExistedInTargetSystem = getCurrentObjectAtTargetSystem(
-                                mLg, extUser, mSys, connector, matchObj, currentValueMap);
+                                } else {
+                                    // build the request
+                                    CrudRequest<ExtensibleUser> addReqType = new CrudRequest<ExtensibleUser>();
+                                    addReqType.setObjectIdentity(mLg.getLogin());
+                                    addReqType.setRequestID(requestId);
+                                    addReqType.setTargetID(mLg.getManagedSysId());
+                                    addReqType.setExtensibleObject(extUser);
+                                    log.debug("Creating identity in target system:"
+                                            + mLg.getLoginId());
 
-                        boolean connectorSuccess = false;
+                                    ObjectResponse responseType = connectorAdapter
+                                            .addRequest(mSys, addReqType,
+                                                    MuleContextProvider.getCtx());
+                                    if (responseType.getStatus() == StatusCodeType.SUCCESS) {
+                                        connectorSuccess = true;
+                                    }
 
-                        if (!isExistedInTargetSystem) {
-                            // create the secondary identity for this resource
-                            log.debug("Adding new identity to target system. Primary Identity is:"
-                                    + primaryIdentity);
-                            // pre-processing
-                            String preProcessScript = getResProperty(
-                                    res.getResourceProps(), "PRE_PROCESS");
-                            if (preProcessScript != null
-                                    && !preProcessScript.isEmpty()) {
-                                PreProcessor ppScript = createPreProcessScript(
-                                        preProcessScript, bindingMap);
-                                if (ppScript != null) {
-                                    if (executePreProcess(ppScript, bindingMap,
-                                            pUser, "ADD") == ProvisioningConstants.FAIL) {
+                                    // post processing
+                                    String postProcessScript = getResProperty(
+                                            res.getResourceProps(), "POST_PROCESS");
+                                    if (postProcessScript != null
+                                            && !postProcessScript.isEmpty()) {
+                                        PostProcessor ppScript = createPostProcessScript(
+                                                postProcessScript, bindingMap);
+                                        if (ppScript != null) {
+                                            executePostProcess(ppScript,
+                                                    bindingMap, pUser, "ADD",
+                                                    connectorSuccess);
+                                        }
+                                    }
+                                    if (!connectorSuccess) {
+                                        resp.setStatus(ResponseStatus.FAILURE);
+                                        resp.setErrorCode(ResponseCode.FAIL_CONNECTOR);
                                         continue;
                                     }
+                                    /*
+                                     * auditHelper.addLog("ADD IDENTITY", pUser
+                                     * .getRequestorDomain(), pUser
+                                     * .getRequestorLogin(), "IDM SERVICE",
+                                     * origUser.getCreatedBy(),
+                                     * mLg.getManagedSysId(), "USER",
+                                     * origUser.getUserId(), null, "SUCCESS",
+                                     * auditLog.getLogId(), "USER_STATUS",
+                                     * userStatus, requestId, null, pUser
+                                     * .getSessionId(), null, pUser
+                                     * .getRequestClientIP(), mLg.getLogin(),
+                                     * mLg.getDomainId());
+                                     */
+                                    bindingMap.remove(MATCH_PARAM);
+
                                 }
-                            }
-
-                            // mLg.setPassword(primaryLogin.getPassword());
-                            mLg.setUserId(primaryIdentity.getUserId());
-
-                            log.debug("Creating identity in openiam repository:"
-                                    + mLg.getLoginId());
-                            if (mLg.getPassword() == null) {
-                                mLg.setPassword(primaryIdentity.getPassword());
-                            }
-
-                            if (connector.getConnectorInterface() != null
-                                    && connector.getConnectorInterface()
-                                            .equalsIgnoreCase("REMOTE")) {
-                                // update the group operation to ADD, because it
-                                // is the new record for Target system
-                                if (curGroupList != null) {
-                                    for (Group group : curGroupList) {
-                                        group.setOperation(AttributeOperationEnum.ADD);
+                                if (connectorSuccess) {
+                                    //Two roles can have one ManagedSys with login
+                                    if (loginManager.getByUserIdManagedSys(mLg.getUserId(), mLg.getManagedSysId()) != null) {
+                                        loginManager.updateLogin(loginDozerConverter
+                                                .convertToEntity(mLg, true));
+                                    } else {
+                                        loginManager.addLogin(loginDozerConverter
+                                                .convertToEntity(mLg, true));
                                     }
                                 }
-                                connectorSuccess = remoteAdd(mLg, requestId,
-                                        mSys, matchObj, extUser, connector);
-
                             } else {
-                                // build the request
-                                CrudRequest<ExtensibleUser> addReqType = new CrudRequest<ExtensibleUser>();
-                                addReqType.setObjectIdentity(mLg.getLogin());
-                                addReqType.setRequestID(requestId);
-                                addReqType.setTargetID(mLg.getManagedSysId());
-                                addReqType.setExtensibleObject(extUser);
-                                log.debug("Creating identity in target system:"
-                                        + mLg.getLoginId());
+                                if(!isMngSysIdentityExistsInOpeniam){
+                                    loginManager
+                                            .addLogin(loginDozerConverter
+                                                    .convertToEntity(mLg,
+                                                            true));
+                                }
+                                // existing identity
 
-                                ObjectResponse responseType = connectorAdapter
-                                        .addRequest(mSys, addReqType,
-                                                MuleContextProvider.getCtx());
-                                if (responseType.getStatus() == StatusCodeType.SUCCESS) {
-                                    connectorSuccess = true;
+                                log.debug("Building attributes for managedSysId ="
+                                        + managedSysId);
+
+                                log.debug("identity for managedSys is not null "
+                                        + mLg.getLogin());
+
+                                bindingMap.put(TARGET_SYSTEM_ATTRIBUTES,
+                                        currentValueMap);
+
+                                String preProcessScript = getResProperty(
+                                        res.getResourceProps(), "PRE_PROCESS");
+                                if (preProcessScript != null
+                                        && !preProcessScript.isEmpty()) {
+                                    PreProcessor ppScript = createPreProcessScript(
+                                            preProcessScript, bindingMap);
+                                    if (ppScript != null) {
+                                        if (executePreProcess(ppScript, bindingMap,
+                                                pUser, "MODIFY") == ProvisioningConstants.FAIL) {
+                                            continue;
+                                        }
+                                    }
                                 }
 
+
+                                // updates the attributes with the correct operation
+                                // codes
+                                extUser = updateAttributeList(extUser,
+                                        currentValueMap);
+
+                                // test to see if the updates were carried for
+                                // forward
+                                List<ExtensibleAttribute> extAttList = extUser
+                                        .getAttributes();
+                                //
+                                if (connector.getConnectorInterface() != null
+                                        && connector.getConnectorInterface()
+                                                .equalsIgnoreCase("REMOTE")) {
+
+                                    if (mLg.getOperation() == AttributeOperationEnum.REPLACE
+                                            && mLg.getOrigPrincipalName() != null) {
+                                        extAttList.add(new ExtensibleAttribute(
+                                                "ORIG_IDENTITY", mLg
+                                                        .getOrigPrincipalName(), 2,
+                                                "String"));
+                                    }
+
+                                    CrudRequest<ExtensibleUser> userReq = new CrudRequest<ExtensibleUser>();
+                                    userReq.setObjectIdentity(mLg.getLogin());
+                                    userReq.setRequestID(requestId);
+                                    userReq.setTargetID(mLg.getManagedSysId());
+                                    userReq.setHostLoginId(mSys.getUserId());
+                                    String passwordDecoded = mSys.getPswd();
+                                    try {
+                                        passwordDecoded = getDecryptedPassword(mSys);
+                                    } catch (ConnectorDataException e) {
+                                        e.printStackTrace();
+                                    }
+                                    userReq.setHostLoginPassword(passwordDecoded);
+                                    userReq.setHostUrl(mSys.getHostUrl());
+                                    userReq.setBaseDN(matchObj.getBaseDn());
+                                    userReq.setOperation("EDIT");
+                                    userReq.setExtensibleObject(extUser);
+
+                                    userReq.setScriptHandler(mSys
+                                            .getModifyHandler());
+
+                                    ObjectResponse respType = remoteConnectorAdapter
+                                            .modifyRequest(mSys, userReq,
+                                                    connector, MuleContextProvider.getCtx());
+                                    if (respType.getStatus() == StatusCodeType.SUCCESS) {
+                                        connectorSuccess = true;
+                                    }
+
+                                } else {
+                                    modReqType.setTargetID(mLg.getManagedSysId());
+                                    modReqType.setObjectIdentity(mLg.getLogin());
+                                    modReqType.setRequestID(requestId);
+
+                                    // check if this request calls for the identity
+                                    // being renamed
+                                    log.debug("Send request to connector - Original Principal Name = "
+                                            + mLg.getOrigPrincipalName());
+
+                                    if (mLg.getOrigPrincipalName() != null) {
+                                        extAttList.add(new ExtensibleAttribute(
+                                                "ORIG_IDENTITY", mLg
+                                                        .getOrigPrincipalName(), 2,
+                                                "String"));
+
+                                        // if
+                                        // (mLg.getOrigPrincipalName().equalsIgnoreCase(mLg.getId().getLogin()))
+                                        // {
+                                        // extAttList.add(new
+                                        // ExtensibleAttribute("ORIG_IDENTITY",
+                                        // mLg.getOrigPrincipalName(), 2,
+                                        // "String"));
+                                        // }
+
+                                    }
+                                    modReqType.setExtensibleObject(extUser);
+
+                                    log.debug("Creating identity in target system:"
+                                            + mLg.getLoginId());
+                                    ObjectResponse respType = connectorAdapter
+                                            .modifyRequest(mSys, modReqType,
+                                                    MuleContextProvider.getCtx());
+
+                                    if (respType.getStatus() == StatusCodeType.SUCCESS) {
+                                        connectorSuccess = true;
+                                    }
+
+                                }
                                 // post processing
                                 String postProcessScript = getResProperty(
                                         res.getResourceProps(), "POST_PROCESS");
@@ -1942,189 +2097,21 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                     PostProcessor ppScript = createPostProcessScript(
                                             postProcessScript, bindingMap);
                                     if (ppScript != null) {
-                                        executePostProcess(ppScript,
-                                                bindingMap, pUser, "ADD",
-                                                connectorSuccess);
+                                        executePostProcess(ppScript, bindingMap,
+                                                pUser, "MODIFY", connectorSuccess);
                                     }
                                 }
-                                if (!connectorSuccess) {
-                                    resp.setStatus(ResponseStatus.FAILURE);
-                                    resp.setErrorCode(ResponseCode.FAIL_CONNECTOR);
-                                    continue;
-                                }
-                                /*
-                                 * auditHelper.addLog("ADD IDENTITY", pUser
-                                 * .getRequestorDomain(), pUser
-                                 * .getRequestorLogin(), "IDM SERVICE",
-                                 * origUser.getCreatedBy(),
-                                 * mLg.getManagedSysId(), "USER",
-                                 * origUser.getUserId(), null, "SUCCESS",
-                                 * auditLog.getLogId(), "USER_STATUS",
-                                 * userStatus, requestId, null, pUser
-                                 * .getSessionId(), null, pUser
-                                 * .getRequestClientIP(), mLg.getLogin(),
-                                 * mLg.getDomainId());
-                                 */
-                                bindingMap.remove(MATCH_PARAM);
 
                             }
-                            if (connectorSuccess) {
-                                //Two roles can have one ManagedSys with login
-                                if (loginManager.getByUserIdManagedSys(mLg.getUserId(), mLg.getManagedSysId()) != null) {
-                                    loginManager.updateLogin(loginDozerConverter
-                                            .convertToEntity(mLg, true));
-                                } else {
-                                    loginManager.addLogin(loginDozerConverter
-                                            .convertToEntity(mLg, true));
-                                }
-                            }
-                        } else {
-                            if(!isMngSysIdentityExistsInOpeniam){
-                                loginManager
-                                        .addLogin(loginDozerConverter
-                                                .convertToEntity(mLg,
-                                                        true));
-                            }
-                            // existing identity
-
-                            log.debug("Building attributes for managedSysId ="
-                                    + managedSysId);
-
-                            log.debug("identity for managedSys is not null "
-                                    + mLg.getLogin());
-
-                            bindingMap.put(TARGET_SYSTEM_ATTRIBUTES,
-                                    currentValueMap);
-
-                            String preProcessScript = getResProperty(
-                                    res.getResourceProps(), "PRE_PROCESS");
-                            if (preProcessScript != null
-                                    && !preProcessScript.isEmpty()) {
-                                PreProcessor ppScript = createPreProcessScript(
-                                        preProcessScript, bindingMap);
-                                if (ppScript != null) {
-                                    if (executePreProcess(ppScript, bindingMap,
-                                            pUser, "MODIFY") == ProvisioningConstants.FAIL) {
-                                        continue;
-                                    }
-                                }
-                            }
-
-
-                            // updates the attributes with the correct operation
-                            // codes
-                            extUser = updateAttributeList(extUser,
-                                    currentValueMap);
-
-                            // test to see if the updates were carried for
-                            // forward
-                            List<ExtensibleAttribute> extAttList = extUser
-                                    .getAttributes();
-                            //
-                            if (connector.getConnectorInterface() != null
-                                    && connector.getConnectorInterface()
-                                            .equalsIgnoreCase("REMOTE")) {
-
-                                if (mLg.getOperation() == AttributeOperationEnum.REPLACE
-                                        && mLg.getOrigPrincipalName() != null) {
-                                    extAttList.add(new ExtensibleAttribute(
-                                            "ORIG_IDENTITY", mLg
-                                                    .getOrigPrincipalName(), 2,
-                                            "String"));
-                                }
-
-                                CrudRequest<ExtensibleUser> userReq = new CrudRequest<ExtensibleUser>();
-                                userReq.setObjectIdentity(mLg.getLogin());
-                                userReq.setRequestID(requestId);
-                                userReq.setTargetID(mLg.getManagedSysId());
-                                userReq.setHostLoginId(mSys.getUserId());
-                                String passwordDecoded = mSys.getPswd();
-                                try {
-                                    passwordDecoded = getDecryptedPassword(mSys);
-                                } catch (ConnectorDataException e) {
-                                    e.printStackTrace();
-                                }
-                                userReq.setHostLoginPassword(passwordDecoded);
-                                userReq.setHostUrl(mSys.getHostUrl());
-                                userReq.setBaseDN(matchObj.getBaseDn());
-                                userReq.setOperation("EDIT");
-                                userReq.setExtensibleObject(extUser);
-
-                                userReq.setScriptHandler(mSys
-                                        .getModifyHandler());
-
-                                ObjectResponse respType = remoteConnectorAdapter
-                                        .modifyRequest(mSys, userReq,
-                                                connector, MuleContextProvider.getCtx());
-                                if (respType.getStatus() == StatusCodeType.SUCCESS) {
-                                    connectorSuccess = true;
-                                }
-
-                            } else {
-                                modReqType.setTargetID(mLg.getManagedSysId());
-                                modReqType.setObjectIdentity(mLg.getLogin());
-                                modReqType.setRequestID(requestId);
-
-                                // check if this request calls for the identity
-                                // being renamed
-                                log.debug("Send request to connector - Original Principal Name = "
-                                        + mLg.getOrigPrincipalName());
-
-                                if (mLg.getOrigPrincipalName() != null) {
-                                    extAttList.add(new ExtensibleAttribute(
-                                            "ORIG_IDENTITY", mLg
-                                                    .getOrigPrincipalName(), 2,
-                                            "String"));
-
-                                    // if
-                                    // (mLg.getOrigPrincipalName().equalsIgnoreCase(mLg.getId().getLogin()))
-                                    // {
-                                    // extAttList.add(new
-                                    // ExtensibleAttribute("ORIG_IDENTITY",
-                                    // mLg.getOrigPrincipalName(), 2,
-                                    // "String"));
-                                    // }
-
-                                }
-                                modReqType.setExtensibleObject(extUser);
-
-                                log.debug("Creating identity in target system:"
-                                        + mLg.getLoginId());
-                                ObjectResponse respType = connectorAdapter
-                                        .modifyRequest(mSys, modReqType,
-                                                MuleContextProvider.getCtx());
-
-                                if (respType.getStatus() == StatusCodeType.SUCCESS) {
-                                    connectorSuccess = true;
-                                }
-
-                            }
-                            // post processing
-                            String postProcessScript = getResProperty(
-                                    res.getResourceProps(), "POST_PROCESS");
-                            if (postProcessScript != null
-                                    && !postProcessScript.isEmpty()) {
-                                PostProcessor ppScript = createPostProcessScript(
-                                        postProcessScript, bindingMap);
-                                if (ppScript != null) {
-                                    executePostProcess(ppScript, bindingMap,
-                                            pUser, "MODIFY", connectorSuccess);
-                                }
-                            }
-
                         }
+                        bindingMap.remove(MATCH_PARAM);
                     }
-                    bindingMap.remove(MATCH_PARAM);
+                }catch(Throwable tw){
+                  log.error(res,tw);
                 }
-            }catch(Throwable tw){
-              log.error(res,tw);
-            }
             }
         }
 
-        validateIdentitiesExistforSecurityDomain(
-                loginDozerConverter.convertToDTO(primaryIdentity, true),
-                activeRoleList);
 
         log.debug("DEFAULT PROVISIONING SERVICE: modifyUser complete");
 
