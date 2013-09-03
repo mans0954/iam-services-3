@@ -1,8 +1,9 @@
 package org.openiam.base;
 
 /**
- * Obtains configuration information for password change and reset from spring configuration files.
- *
+ * Obtains configuration information for password change and reset from spring
+ * configuration files.
+ * 
  * @author suneet
  * @version 2
  */
@@ -10,6 +11,7 @@ public class SysConfiguration {
     protected String defaultManagedSysId = null;
     protected String defaultSecurityDomain = null;
     protected Boolean developmentMode = false;
+    protected boolean provisionServiceFlag = true;
 
     public String getDefaultManagedSysId() {
         return defaultManagedSysId;
@@ -33,5 +35,13 @@ public class SysConfiguration {
 
     public void setDevelopmentMode(Boolean developmentMode) {
         this.developmentMode = developmentMode;
+    }
+
+    public Boolean isProvisionServiceFlag() {
+        return provisionServiceFlag;
+    }
+
+    public void setProvisionServiceFlag(boolean provisionServiceFlag) {
+        this.provisionServiceFlag = provisionServiceFlag;
     }
 }

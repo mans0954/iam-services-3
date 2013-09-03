@@ -96,6 +96,7 @@
 		<property name="defaultManagedSysId" value="${openiam.default_managed_sys}" />
 		<property name="defaultSecurityDomain" value="${openiam.default_sec_domain}" />
         <property name="developmentMode" value="${openiam.development_mode}" />
+        <property name="provisionServiceFlag" value="${org.openiam.provision.service.flag}" />
 	</bean>
 
 	<!-- HEARTBEAT Beans -->
