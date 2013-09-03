@@ -31,9 +31,15 @@ import java.util.Map;
 
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVStrategy;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openiam.base.ws.Response;
+import org.openiam.base.ws.ResponseStatus;
 import org.openiam.idm.srvc.audit.service.AuditHelper;
 import org.openiam.idm.srvc.synch.dto.Attribute;
 import org.openiam.idm.srvc.synch.dto.LineObject;
+import org.openiam.idm.srvc.synch.dto.SyncResponse;
+import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -42,18 +48,27 @@ import org.springframework.stereotype.Component;
  * @author suneet
  *
  */
-@Component("activeDirAdapter")
-public class ActiveDirectoryAdapter {
+@Component
+public class ActiveDirectoryAdapter extends AbstractSrcAdapter{
+    private static final Log log = LogFactory.getLog(ActiveDirectoryAdapter.class);
 
 	protected Map<String,LineObject> lineMap = new HashMap<String,LineObject>();
 	protected LineObject lineHeader = new LineObject();
     @Autowired
 	protected AuditHelper auditHelper;
-	
-	public void startSynch(String fileName) {
-		Reader reader = null;
 
-		File file = new File(fileName);
+    @Override
+    public Response testConnection(SynchConfig config) {
+        throw new UnsupportedOperationException("Not implemented yet..");
+    }
+
+    @Override
+    public SyncResponse startSynch(SynchConfig config) {
+
+        log.debug("CSV startSynch CALLED.^^^^^^^^");
+        Reader reader = null;
+
+		File file = new File(config.getFileName());
 		try {
 			reader = new FileReader(file);
 		}catch(FileNotFoundException fe) {
@@ -94,7 +109,9 @@ public class ActiveDirectoryAdapter {
 		}
 		
 		//while (parser.)
-		
+        log.debug("Active Directory SYNCHRONIZATION COMPLETE^^^^^^^^");
+
+        return new SyncResponse(ResponseStatus.SUCCESS);
 	}
 	
 	private void populateTemplate(String[] lineAry) {
@@ -115,9 +132,5 @@ public class ActiveDirectoryAdapter {
 			 rowObj.get(Integer.toString(ctr)).setValue(value);
 		}
 	}
-	public static void main(String[] args) {
-		System.out.println("CSVAdapter Test...");
-		ActiveDirectoryAdapter adapter = new ActiveDirectoryAdapter();
-		adapter.startSynch("C:/Doc/clients/exe.cl/previred/UserList.csv");
-	}
+
 }

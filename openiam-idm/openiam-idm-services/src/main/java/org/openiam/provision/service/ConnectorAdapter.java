@@ -40,6 +40,7 @@ import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.connector.ConnectorService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import javax.xml.namespace.QName;
 import javax.xml.ws.Service;
@@ -53,6 +54,7 @@ import java.util.Map;
  * 
  * @author suneet
  */
+@Component
 public class ConnectorAdapter {
 
     protected static final Log log = LogFactory.getLog(ConnectorAdapter.class);

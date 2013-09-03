@@ -2,13 +2,11 @@ package org.openiam.idm.srvc.audit.ws;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.mule.api.MuleContext;
-import org.mule.api.MuleException;
-import org.mule.api.context.MuleContextAware;
 import org.mule.module.client.MuleClient;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
-import org.openiam.idm.srvc.audit.export.ExportAuditEvent;
+import org.openiam.util.MuleContextProvider;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 
 import javax.jws.WebService;
@@ -20,9 +18,9 @@ import java.util.Map;
 		targetNamespace = "urn:idm.openiam.org/srvc/audit/service",
 		portName = "AsynchAuditDataServicePort",
 		serviceName = "AsynchAuditDataService")
-public class AsynchIdmAuditLogWebServiceImpl implements AsynchIdmAuditLogWebService, MuleContextAware {
+@Component("asyncAuditWS")
+public class AsynchIdmAuditLogWebServiceImpl implements AsynchIdmAuditLogWebService {
 
-    protected MuleContext muleContext;
     protected static final Log l = LogFactory.getLog(AsynchIdmAuditLogWebServiceImpl.class);
 
     @Value("${openiam.service_base}")
@@ -37,7 +35,7 @@ public class AsynchIdmAuditLogWebServiceImpl implements AsynchIdmAuditLogWebServ
          try {
 
 
-            l.debug("MuleContext = " + muleContext);
+            l.debug("MuleContext = " + MuleContextProvider.getCtx());
 
 
             Map<String, String> msgPropMap = new HashMap<String, String>();
@@ -46,11 +44,8 @@ public class AsynchIdmAuditLogWebServiceImpl implements AsynchIdmAuditLogWebServ
 
 
             //Create the client with the context
-            MuleClient client = new MuleClient(muleContext);
+            MuleClient client = new MuleClient(MuleContextProvider.getCtx());
             client.sendAsync("vm://logAuditEvent", (IdmAuditLog) log, msgPropMap);
-
-
-
 
         } catch (Exception e) {
             l.debug("EXCEPTION:AsynchIdmAuditLogWebServiceImpl");
@@ -65,12 +60,5 @@ public class AsynchIdmAuditLogWebServiceImpl implements AsynchIdmAuditLogWebServ
         //To change body of implemented methods use File | Settings | File Templates.
     }
 
-
-    public void setMuleContext(MuleContext ctx) {
-
-        l.debug("** setMuleContext called. **");
-
-        muleContext = ctx;
-    }
 
 }

@@ -29,8 +29,6 @@ import javax.jws.WebService;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.mule.api.MuleContext;
-import org.mule.api.context.MuleContextAware;
 import org.openiam.base.ws.Response;
 import org.openiam.base.ws.ResponseStatus;
 import org.openiam.dozer.converter.AttributeMapDozerConverter;
@@ -47,6 +45,7 @@ import org.openiam.idm.srvc.synch.dto.SynchConfigSearchBean;
 import org.openiam.idm.srvc.synch.searchbeans.converter.SynchConfigSearchBeanConverter;
 import org.openiam.idm.srvc.synch.service.IdentitySynchService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * @author suneet
@@ -56,7 +55,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 		targetNamespace = "http://www.openiam.org/service/synch", 
 		portName = "IdentitySynchWebServicePort", 
 		serviceName = "IdentitySynchWebService")
-public class IdentitySynchWebServiceImpl implements IdentitySynchWebService, MuleContextAware {
+@Component("synchServiceWS")
+public class IdentitySynchWebServiceImpl implements IdentitySynchWebService {
 
 	protected static final Log log = LogFactory.getLog(IdentitySynchWebServiceImpl.class);
     @Autowired
@@ -67,8 +67,7 @@ public class IdentitySynchWebServiceImpl implements IdentitySynchWebService, Mul
     private SynchConfigSearchBeanConverter synchConfigSearchBeanConverter;
     @Autowired
     private AttributeMapDozerConverter attributeMapDozerConverter;
-    protected MuleContext muleContext;
-	
+
 	/* (non-Javadoc)
 	 * @see org.openiam.idm.srvc.sync.ws.IdentitySynchWebService#getAllConfig()
 	 */
@@ -182,10 +181,5 @@ public class IdentitySynchWebServiceImpl implements IdentitySynchWebService, Mul
         }
         List<AttributeMapEntity> ameList = synchService.getSynchConfigAttributeMaps(searchBean);
         return (ameList == null) ? null : attributeMapDozerConverter.convertToDTOList(ameList, true);
-    }
-
-    @Override
-    public void setMuleContext(MuleContext muleContext) {
-        this.muleContext = muleContext;
     }
 }

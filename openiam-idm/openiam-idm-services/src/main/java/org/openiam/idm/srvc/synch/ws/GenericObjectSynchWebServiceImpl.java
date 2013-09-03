@@ -23,11 +23,11 @@ package org.openiam.idm.srvc.synch.ws;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.mule.api.MuleContext;
-import org.mule.api.context.MuleContextAware;
 import org.openiam.idm.srvc.synch.dto.SyncResponse;
 import org.openiam.idm.srvc.synch.dto.SynchConfig;
 import org.openiam.idm.srvc.synch.service.generic.GenericObjectSynchService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import javax.jws.WebService;
 
@@ -39,27 +39,15 @@ import javax.jws.WebService;
 		targetNamespace = "http://www.openiam.org/service/synch", 
 		portName = "GenericObjectSynchWebServicePort",
 		serviceName = "GenericObjectSynchWebService")
-public class GenericObjectSynchWebServiceImpl implements GenericObjectSynchWebService, MuleContextAware {
-
+@Component("genericObjSynchServiceWS")
+public class GenericObjectSynchWebServiceImpl implements GenericObjectSynchWebService{
+    @Autowired
 	protected GenericObjectSynchService synchService;
 	protected static final Log log = LogFactory.getLog(GenericObjectSynchWebServiceImpl.class);
-    protected MuleContext muleContext;
 
 
     public SyncResponse startSynchronization(SynchConfig config) {
-        synchService.setMuleContext(muleContext);
         return synchService.startSynchronization(config);
     }
 
-    public void setMuleContext(MuleContext ctx) {
-        muleContext = ctx;
-	}
-
-    public GenericObjectSynchService getSynchService() {
-        return synchService;
-    }
-
-    public void setSynchService(GenericObjectSynchService synchService) {
-        this.synchService = synchService;
-    }
 }

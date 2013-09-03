@@ -1,12 +1,11 @@
 package org.openiam.idm.util;
 
 import com.jcraft.jsch.*;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.InputStream;
+import java.io.*;
 
 import java.util.Vector;
 
@@ -58,18 +57,19 @@ public class RemoteFileStorageManager {
     }
 
     //Download Attachment from remote host
-    public InputStream downloadFile(final String destFilePath) throws JSchException, SftpException {
+    public InputStream downloadFile(final String destSubDirectory, final String destFile) throws JSchException, SftpException {
+        String destFilePath = remoteFilestorageDir + "/" + destSubDirectory + "/" + destFile;
+
         Session session = getSession();
 
         Channel channel = session.openChannel("sftp");
         channel.connect();
         ChannelSftp sftpChannel = (ChannelSftp) channel;
-        String fileDownloadName = FilenameUtils.getBaseName(destFilePath);
-        InputStream is = sftpChannel.get(fileDownloadName);
 
-        sftpChannel.quit();
+        InputStream is = sftpChannel.get(destFilePath);
 
         session.disconnect();
+
         return is;
     }
 

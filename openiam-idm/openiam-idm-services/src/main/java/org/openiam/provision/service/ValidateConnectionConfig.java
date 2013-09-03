@@ -11,6 +11,7 @@ import org.openiam.idm.srvc.mngsys.dto.ProvisionConnectorDto;
 import org.openiam.idm.srvc.mngsys.ws.ManagedSystemWebService;
 import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * Created by IntelliJ IDEA.
@@ -19,12 +20,15 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Time: 5:52 PM
  * To change this template use File | Settings | File Templates.
  */
+@Component
 public class ValidateConnectionConfig {
 
     protected static final Log log = LogFactory.getLog(ValidateConnectionConfig.class);
-
+    @Autowired
     protected ConnectorAdapter connectorAdapter;
+    @Autowired
     protected RemoteConnectorAdapter remoteConnectorAdapter;
+    @Autowired
     protected ManagedSystemWebService managedSysService;
 
     @Autowired
@@ -85,38 +89,6 @@ public class ValidateConnectionConfig {
 
     }
 
-
-    public ConnectorAdapter getConnectorAdapter() {
-        return connectorAdapter;
-    }
-
-    public void setConnectorAdapter(ConnectorAdapter connectorAdapter) {
-        this.connectorAdapter = connectorAdapter;
-    }
-
-    public RemoteConnectorAdapter getRemoteConnectorAdapter() {
-        return remoteConnectorAdapter;
-    }
-
-    public void setRemoteConnectorAdapter(RemoteConnectorAdapter remoteConnectorAdapter) {
-        this.remoteConnectorAdapter = remoteConnectorAdapter;
-    }
-
-    public ManagedSystemWebService getManagedSysService() {
-        return managedSysService;
-    }
-
-    public void setManagedSysService(ManagedSystemWebService managedSysService) {
-        this.managedSysService = managedSysService;
-    }
-
-    public ProvisionConnectorWebService getConnectorService() {
-        return connectorService;
-    }
-
-    public void setConnectorService(ProvisionConnectorWebService connectorService) {
-        this.connectorService = connectorService;
-    }
 }
 
 

@@ -21,8 +21,8 @@
 		base-package="org.openiam.idm.srvc.org.service,
 		                                  org.openiam.util,
     								      org.openiam.core,
-    								      org.openiam.idm.srvc.*,
-    								      org.openiam.idm.srvc.synch.ws,
+    								      org.openiam.idm.*,
+    								      org.openiam.provision.*,
     								      org.openiam.dozer.converter,
     								      org.openiam.validator" />
 

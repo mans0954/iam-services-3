@@ -95,7 +95,7 @@ import org.springframework.beans.factory.annotation.Value;
  * Base class for the provisioning service
  * User: suneetshah
  */
-public abstract class AbstractProvisioningService implements ProvisionService, ApplicationContextAware {
+public abstract class AbstractProvisioningService implements ProvisionService {
 
     protected static final Log log = LogFactory.getLog(AbstractProvisioningService.class);
 
@@ -167,8 +167,7 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
     protected ValidateConnectionConfig validateConnectionConfig;
     @Autowired
     protected PasswordHistoryDAO passwordHistoryDao;
-    @Autowired
-    protected DeprovisionSelectedResourceHelper deprovisionSelectedResource;
+
     @Autowired
     protected UserDozerConverter userDozerConverter;
     @Autowired
@@ -200,16 +199,10 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
     @Autowired
     @Qualifier("configurableGroovyScriptEngine")
     protected ScriptIntegration scriptRunner;
-
+    @Autowired
     protected String preProcessor;
+    @Autowired
     protected String postProcessor;
-
-    // used to inject the application context into the groovy scripts
-    protected static ApplicationContext ac;
-
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        ac = applicationContext;
-    }
 
     protected void checkAuditingAttributes(ProvisionUser pUser) {
         if ( pUser.getRequestClientIP() == null || pUser.getRequestClientIP().isEmpty() ) {
@@ -2506,11 +2499,4 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
         return respType;
     }
 
-    public void setPreProcessor(String preProcessor) {
-        this.preProcessor = preProcessor;
-    }
-
-    public void setPostProcessor(String postProcessor) {
-        this.postProcessor = postProcessor;
-    }
 }

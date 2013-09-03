@@ -24,12 +24,13 @@ package org.openiam.idm.srvc.recon.ws;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.mule.api.MuleContext;
-import org.mule.api.context.MuleContextAware;
 import org.mule.module.client.MuleClient;
 import org.openiam.idm.srvc.recon.dto.ReconciliationConfig;
 import org.openiam.idm.srvc.recon.service.ReconciliationService;
+import org.openiam.util.MuleContextProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import javax.jws.WebService;
 import java.util.HashMap;
@@ -44,11 +45,12 @@ import java.util.Map;
 		targetNamespace = "http://www.openiam.org/service/recon",
 		portName = "AsynchReconciliationWebServicePort",
 		serviceName = "AsynchReconciliationWebService")
-public class AsynchReconciliationServiceImpl implements AsynchReconciliationService, MuleContextAware  {
+@Component("asyncReconciliationServiceWS")
+public class AsynchReconciliationServiceImpl {
 
-	protected MuleContext muleContext;
-	
+	@Autowired
 	protected ReconciliationService reconService;
+
 	protected static final Log log = LogFactory.getLog(AsynchReconciliationServiceImpl.class);
 	
 	@Value("${openiam.service_base}")
@@ -68,7 +70,7 @@ public class AsynchReconciliationServiceImpl implements AsynchReconciliationServ
 
 
 
-            log.debug("MuleContext = " + muleContext);
+            log.debug("MuleContext = " + MuleContextProvider.getCtx());
 			
 
 			Map<String,String> msgPropMap =  new HashMap<String,String>(); 
@@ -77,7 +79,7 @@ public class AsynchReconciliationServiceImpl implements AsynchReconciliationServ
 
 			
 			//Create the client with the context
-			MuleClient client = new MuleClient(muleContext);
+			MuleClient client = new MuleClient(MuleContextProvider.getCtx());
 			client.sendAsync("vm://reconciliationMessage", (ReconciliationConfig)config, msgPropMap);
 
 
@@ -91,21 +93,4 @@ public class AsynchReconciliationServiceImpl implements AsynchReconciliationServ
 
 	}
 
-
-
-	public void setMuleContext(MuleContext ctx) {
-		
-		log.debug("** setMuleContext called. **");
-		
-		muleContext = ctx;
-		
-	}
-
-    public ReconciliationService getReconService() {
-        return reconService;
-    }
-
-    public void setReconService(ReconciliationService reconService) {
-        this.reconService = reconService;
-    }
 }

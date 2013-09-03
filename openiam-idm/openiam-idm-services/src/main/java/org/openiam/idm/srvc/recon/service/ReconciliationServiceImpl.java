@@ -153,6 +153,10 @@ public class ReconciliationServiceImpl implements ReconciliationService {
     protected ScriptIntegration scriptRunner;
     @Value("${iam.files.location}")
     private String absolutePath;
+
+    @Autowired
+    private ReconciliationCommandFactory commandFactory;
+
     private static final Log log = LogFactory
             .getLog(ReconciliationServiceImpl.class);
 
@@ -277,7 +281,7 @@ public class ReconciliationServiceImpl implements ReconciliationService {
             Map<String, ReconciliationCommand> situations = new HashMap<String, ReconciliationCommand>();
             for (ReconciliationSituation situation : config.getSituationSet()) {
                 situations.put(situation.getSituation().trim(),
-                        ReconciliationCommandFactory.createCommand(
+                        commandFactory.createCommand(
                                 situation.getSituationResp(), situation,
                                 managedSysId));
                 log.debug("Created Command for: " + situation.getSituation());

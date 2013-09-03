@@ -77,6 +77,10 @@ import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.util.MuleContextProvider;
+import org.openiam.util.SpringContextProvider;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.jws.WebService;
@@ -89,7 +93,14 @@ import java.util.*;
  * @author suneet
  */
 @WebService(endpointInterface = "org.openiam.provision.service.ProvisionService", targetNamespace = "http://www.openiam.org/service/provision", portName = "DefaultProvisionControllerServicePort", serviceName = "ProvisioningService")
+@Component("defaultProvision")
 public class DefaultProvisioningService extends AbstractProvisioningService {
+
+    @Autowired
+    private DeprovisionSelectedResourceHelper deprovisionSelectedResource;
+    @Autowired
+    @Qualifier("disableUser")
+    private DisableUserDelegate disableUser;
 
     private static final Log log = LogFactory
             .getLog(DefaultProvisioningService.class);
@@ -1198,7 +1209,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     @Transactional
     public ProvisionUserResponse deprovisionSelectedResources(String userId,
             String requestorUserId, List<String> resourceList) {
-        deprovisionSelectedResource.setMuleContext(MuleContextProvider.getCtx());
         return deprovisionSelectedResource.deprovisionSelectedResources(userId,
                 requestorUserId, resourceList);
     }
@@ -1214,9 +1224,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     @Transactional
     public Response disableUser(String userId, boolean operation,
             String requestorId) {
-        // get the user
-        DisableUserDelegate disableUser = (DisableUserDelegate) ac
-                .getBean("disableUser");
 
         return disableUser.disableUser(userId, operation, requestorId,
                 MuleContextProvider.getCtx());
@@ -1534,7 +1541,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
         // bindingMap.put("user", pUser.getUser());
         bindingMap.put("org", org);
-        bindingMap.put("context", ac);
+        bindingMap.put("context", SpringContextProvider.getApplicationContext());
         bindingMap.put("operation", "MODIFY");
         bindingMap.put(TARGET_SYSTEM_IDENTITY_STATUS, null);
         bindingMap.put(TARGET_SYSTEM_IDENTITY, null);

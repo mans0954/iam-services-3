@@ -159,21 +159,6 @@
 		</service>
 	</model>
 
-	<model name="authorizationModel">
-		<service name="authorizationService">
-			<inbound>
-				<inbound-endpoint address="${webservice.path}AuthorizationWebService"
-					exchange-pattern="request-response">
-					<cxf:jaxws-service />
-				</inbound-endpoint>
-			</inbound>
-			<component>
-				<spring-object bean="authzWS" />
-			</component>
-		</service>
-	</model>
-
-
 	<!-- Synchronization Objects -->
 
 	<model name="genericObjSynchServiceModel">

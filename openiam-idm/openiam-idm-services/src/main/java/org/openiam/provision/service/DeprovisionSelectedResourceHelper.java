@@ -17,6 +17,7 @@ import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.resp.ProvisionUserResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.List;
@@ -25,6 +26,7 @@ import java.util.Map;
 /**
  * Helper class that implements functionality required for provisioning a selected set of resources.
  */
+@Component
 public class DeprovisionSelectedResourceHelper extends BaseProvisioningHelper {
 
 	@Autowired

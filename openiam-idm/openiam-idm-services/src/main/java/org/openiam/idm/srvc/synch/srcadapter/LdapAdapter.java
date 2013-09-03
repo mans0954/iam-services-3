@@ -59,6 +59,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author suneet
  */
+@Component
 public class LdapAdapter extends AbstractSrcAdapter { // implements SourceAdapter
 
     /*
