@@ -849,6 +849,20 @@ public class UserEntity {
     		}
     	}
     }
+
+    public void removeUserFromRole(final String roleId) {
+        if(userRoles != null) {
+            for(final Iterator<UserRoleEntity> it = userRoles.iterator(); it.hasNext();) {
+                final UserRoleEntity entity = it.next();
+                if(entity != null) {
+                    if(StringUtils.equals(entity.getRoleId(), roleId)) {
+                        it.remove();
+                        break;
+                    }
+                }
+            }
+        }
+    }
     
     public void addUserAttribute(final UserAttributeEntity entity) {
     	if(entity != null) {

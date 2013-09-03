@@ -182,4 +182,6 @@ public interface LoginDataService {
     Integer count(LoginSearchBean searchBean);
 
     List<LoginEntity> findBeans(LoginSearchBean searchBean, Integer from, Integer size);
+
+    void evict(LoginEntity entity);
 }

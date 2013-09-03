@@ -586,4 +586,8 @@ public class LoginDataServiceImpl implements LoginDataService {
             loginDao.update(entity);
         }
     }
+
+    public void evict(LoginEntity entity) {
+        loginDao.evict(entity);
+    }
 }

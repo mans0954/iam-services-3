@@ -38,6 +38,11 @@ public class UserAffiliationEntity {
     public UserAffiliationEntity() {
     }
 
+    public UserAffiliationEntity(UserEntity user, OrganizationEntity org) {
+        this.user = user;
+        this.organization = org;
+    }
+
 	public String getId() {
 		return id;
 	}

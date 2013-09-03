@@ -157,7 +157,6 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         principalList = user.getPrincipalList();
         setPassword(user.getPassword());
         setLogin(user.getLogin());
-        initMemberOfRoles(user.getUserRoles());
     }
 
     public User getUser() {
@@ -611,20 +610,6 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
             }
         }
         return retVal;
-    }
-
-    private void initMemberOfRoles(Set<UserRole> userRoles) {
-        if(CollectionUtils.isNotEmpty(userRoles)){
-            if(CollectionUtils.isEmpty(memberOfRoles))
-                memberOfRoles = new ArrayList<Role>();
-
-            for(UserRole ur: userRoles){
-                Role role= new Role();
-                role.setRoleId(ur.getRoleId());
-
-                memberOfRoles.add(role);
-            }
-        }
     }
 
     private Set<UserRole> initUserRoles() {

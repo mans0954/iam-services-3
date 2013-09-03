@@ -276,7 +276,7 @@ public class UserMgr implements UserDataService {
             throw new NullPointerException("user object is null");
         if (user.getUserId() == null)
             throw new NullPointerException("user id is null");
-
+        // Processing emails
         user.setLastUpdate(new Date(System.currentTimeMillis()));
 
         UserEntity userEntity = userDao.findById(user.getUserId());
@@ -1306,6 +1306,21 @@ public class UserMgr implements UserDataService {
         if (supervisorObjId == null)
             throw new NullPointerException("supervisorObjId is null");
         return supervisorDao.findById(supervisorObjId);
+    }
+
+    @Override
+    public void evict(Object object) {
+        if (object instanceof EmailAddressEntity) {
+            emailAddressDao.evict((EmailAddressEntity)object);
+        } else if (object instanceof PhoneEntity) {
+            phoneDao.evict((PhoneEntity)object);
+        } else if (object instanceof AddressEntity) {
+            addressDao.evict((AddressEntity)object);
+        } else if (object instanceof UserAttributeEntity) {
+            userAttributeDao.evict((UserAttributeEntity)object);
+        } else {
+            throw new IllegalArgumentException("Unsupported type");
+        }
     }
 
     @Override

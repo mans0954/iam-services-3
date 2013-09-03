@@ -172,6 +172,8 @@ public interface UserDataService {
 
     public SupervisorEntity getSupervisor(String supervisorObjId);
 
+    public void evict(Object object);
+
     /**
      * Returns a List of supervisor objects that represents the supervisors for
      * this employee or user.

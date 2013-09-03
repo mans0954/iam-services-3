@@ -56,6 +56,7 @@ public class UserRoleEntity implements java.io.Serializable {
     }
 
     public UserRoleEntity(final String userId, final String roleId) {
+        this.createDate = new Date(System.currentTimeMillis());
         this.userId = userId;
         this.roleId = roleId;
         this.status = "ACTIVE";

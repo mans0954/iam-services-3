@@ -25,6 +25,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.classic.Session;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseObject;
 import org.openiam.base.id.UUIDGen;
@@ -77,6 +78,8 @@ import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.util.MuleContextProvider;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.jws.WebService;
@@ -90,6 +93,9 @@ import java.util.*;
  */
 @WebService(endpointInterface = "org.openiam.provision.service.ProvisionService", targetNamespace = "http://www.openiam.org/service/provision", portName = "DefaultProvisionControllerServicePort", serviceName = "ProvisioningService")
 public class DefaultProvisioningService extends AbstractProvisioningService {
+
+    @Autowired
+    HibernateTemplate hibernateTemplate;
 
     private static final Log log = LogFactory
             .getLog(DefaultProvisioningService.class);
@@ -379,8 +385,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         bindingMap.put("userRole", user.getMemberOfRoles());
 
         if (provInTargetSystemNow) {
-            List<Resource> resourceList = getResourcesForRole(user
-                    .getMemberOfRoles());
+            Set<Role> resourceSet = new HashSet<Role>(user.getMemberOfRoles());
+            List<Resource> resourceList = new LinkedList<Resource>(getResourcesForRoles(resourceSet));
 
             // update the resource list to include the resources that have been
             // added directly
@@ -1486,31 +1492,23 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
     @Override
     @Transactional
     public ProvisionUserResponse modifyUser(ProvisionUser pUser) {
+
+        Session session = hibernateTemplate.getSessionFactory().getCurrentSession(); // TODO: remove this!!!
+
+        UserEntity origUser = userMgr.getUser(pUser.getUserId());
+        if (origUser == null) {
+            throw new IllegalArgumentException("UserId='" + pUser.getUserId() + "' is not valid");
+        }
+
+        log.debug("---DEFAULT PROVISIONING SERVICE: modifyUser called ---");
+        log.debug("User passed in with the following Roles: " + pUser.getMemberOfRoles());
+
         ProvisionUserResponse resp = new ProvisionUserResponse();
         String requestId = "R" + UUIDGen.getUUID();
-        Map<String, Object> bindingMap = new HashMap<String, Object>();
+
         Organization org = null;
-        // String primaryLogin = null;
-        List<IdmAuditLog> pendingLogItems = new ArrayList<IdmAuditLog>();
-
-        List<Role> activeRoleList = new ArrayList<Role>();
-        List<Role> deleteRoleList = new ArrayList<Role>();
-
-        // ModifyUser modifyUser = (ModifyUser) ac.getBean("modifyUser");
-        // AttributeListBuilder attrListBuilder = (AttributeListBuilder)
-        // ac.getBean("attributeListBuilder");
-        // modifyUser.init();
-
-        log.debug("---DEFAULT PROVISIONING SERVICE: modifyUser called --");
-
-        log.debug("User passed in with the following Roles: "
-                + pUser.getMemberOfRoles());
-
-        List<Login> newPrincipalList = pUser.getPrincipalList();
-
         if (pUser.getPrimaryOrganization() != null) {
-            org = orgManager.getOrganization(pUser.getPrimaryOrganization()
-                    .getId(), null);
+            org = orgManager.getOrganization(pUser.getPrimaryOrganization().getId(), null);
         }
 
         if (org == null) {
@@ -1519,8 +1517,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                             "ORGANIZATION");
             if (CollectionUtils.isNotEmpty(organizationForCurrentUser)) {
                 for (final Organization organization : organizationForCurrentUser) {
-                    if (!pUser.isOrganizationMarkedAsDeleted(organization
-                            .getId())) {
+                    if (!pUser.isOrganizationMarkedAsDeleted(organization.getId())) {
                         org = organization;
                         break;
                     }
@@ -1528,14 +1525,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             }
         }
 
-        User origUser = userMgr.getUserDto(pUser.getUserId());
-        if (origUser == null || origUser.getUserId() == null) {
-            throw new IllegalArgumentException("UserId is not valid. UserId="
-                    + pUser.getUserId());
-        }
-
         // bind the objects to the scripting engine
-
+        Map<String, Object> bindingMap = new HashMap<String, Object>();
         bindingMap.put("sysId", sysConfiguration.getDefaultManagedSysId());
         // bindingMap.put("user", pUser.getUser());
         bindingMap.put("org", org);
@@ -1545,7 +1536,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         bindingMap.put(TARGET_SYSTEM_IDENTITY, null);
         // clone the user object so that we have it for comparison in the
         // scripts
-        bindingMap.put("userBeforeModify", new ProvisionUser(origUser));
+        bindingMap.put("userBeforeModify", new ProvisionUser(userDozerConverter.convertToDTO(origUser, true)));
 
         if (callPreProcessor("MODIFY", pUser, bindingMap) != ProvisioningConstants.SUCCESS) {
             resp.setStatus(ResponseStatus.FAILURE);
@@ -1555,28 +1546,20 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         // make sure that our object as the attribute set that will be used for
         // audit logging
-        checkAuditingAttributes(pUser);
+        checkAuditingAttributes(pUser); //TODO: Make a revision
 
-        // get the current values
-        List<Role> curRoleList = roleDataService.getUserRolesAsFlatList(pUser
-                .getUserId());
+        // get the current roles
+        List<Role> curRoleList = roleDataService.getUserRolesAsFlatList(pUser.getUserId()); //TODO: do we need children roles?
         // get all groups for user
         List<Group> curGroupList = groupDozerConverter.convertToDTOList(
                 groupManager.getGroupsForUser(pUser.getUserId(), null, 0,
                         Integer.MAX_VALUE), false);
 
-        List<LoginEntity> curPrincipalList = loginManager.getLoginByUser(pUser
-                .getUserId());
-
-        // get the current user object - update it with the new values and then
-        // save it
+        List<LoginEntity> curPrincipalList = origUser.getPrincipalList();
 
         // check that a primary identity exists some where
-        LoginEntity curPrimaryIdentity = getPrimaryIdentity("0",
-                curPrincipalList);
+        LoginEntity curPrimaryIdentity = getPrimaryIdentity(sysConfiguration.getDefaultManagedSysId(), curPrincipalList);
 
-        // Login curPrimaryIdentity =
-        // loginManager.getPrimaryIdentity(pUser.getUserId());
         if (curPrimaryIdentity == null && pUser.getPrincipalList() == null) {
             log.debug("Identity not found...");
             resp.setStatus(ResponseStatus.FAILURE);
@@ -1586,123 +1569,90 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         pUser.setObjectState(BaseObject.UPDATE);
 
-        // check if the user is missing components
-        addMissingUserComponents(pUser, origUser);
-
         // make the role and group list before these updates available to the
         // attribute policies
         bindingMap.put("currentRoleList", curRoleList);
         bindingMap.put("currentGroupList", curGroupList);
 
-        // update the openiam repository with the new user information
-        updateUser(pUser, origUser);
+        origUser.setLastUpdate(new Date(System.currentTimeMillis()));
 
-        // update the supervisor
-        updateSupervisors(origUser, pUser.getSuperiors());
+        // update originalUser from IDM with the new user information
+        updateUserProperties(origUser, pUser);
 
-        // update the group
-        updateGroupAssociation(origUser.getUserId(), curGroupList,
-                pUser.getMemberOfGroups());
+        // update attributes
+        updateUserAttributes(origUser, pUser);
 
-        log.debug("Pending call to Update Role Association.  Roles passed in equal: "
-                + pUser.getMemberOfRoles());
+        // update addresses
+        updateAddresses(origUser, pUser);
 
-        // update the role association
-        updateRoleAssociation(origUser.getUserId(), curRoleList,
-                pUser.getMemberOfRoles(), pendingLogItems, pUser,
-                loginDozerConverter.convertToDTO(curPrimaryIdentity, true),
-                activeRoleList, deleteRoleList);
+        // update phones
+        updatePhones(origUser, pUser);
 
-        updateUserOrgAffiliation(origUser.getUserId(),
-                pUser.getUserAffiliations());
+        // update emails
+        updateUserEmails(origUser, pUser);
 
-        // List<Role> activeRoleList = modifyUser.getActiveRoleList();
-        bindingMap.put("userRole", activeRoleList);
+        // update supervisors
+        updateSupervisors(pUser);
 
-        // determine the list of active resources
-        // log.debug("Active Role List=" + modifyUser.getActiveRoleList());
+        // update groups
+        updateGroups(origUser, pUser);
 
-        // list of resources that a person should have based on their active
-        // roles
-        List<Resource> resourceList = getResourcesForRole(getActiveRoleList(
-                activeRoleList, deleteRoleList));
-        // list of resources that are to be removed based on roles that are to
-        // be deleted
-        List<Resource> deleteResourceList = getResourcesForRole(deleteRoleList);
+        // update roles
+        Set<Role> roleSet = new HashSet<Role>();
+        Set<Role> deleteRoleSet = new HashSet<Role>();
+        updateRoles(origUser, pUser, roleSet, deleteRoleSet);
+        bindingMap.put("userRole", roleSet);
 
-        // update deleteResource list based on overlapping resource
-        deleteResourceList = adjustForOverlappingResource(resourceList,
-                deleteResourceList);
+        // update organization associations
+        updateUserOrgAffiliations(origUser, pUser);
 
-        // add or remove resources that are being associated directly
+        // Set of resources that a person should have based on their active roles
+        Set<Resource> resourceSet = getResourcesForRoles(roleSet);
+        // Set of resources that are to be removed based on roles that are to be deleted
+        Set<Resource> deleteResourceSet = getResourcesForRoles(deleteRoleSet);
 
-        if (deleteResourceList == null) {
-            deleteResourceList = new ArrayList<Resource>();
-        }
-        if (resourceList == null) {
-            resourceList = new ArrayList<Resource>();
-        }
+        // update resources, update resources sets
+        updateResources(origUser, pUser, resourceSet, deleteResourceSet);
 
-        applyResourceExceptions(pUser, resourceList, deleteResourceList);
+        log.debug("Resources to be added ->> " + resourceSet);
+        log.debug("Delete the following resources ->> " + deleteResourceSet);
 
-        // if there were changes in the role definition, the update the resource
-        // list
-        // SAS - Oct 2 - may be unnecessary
-        // updateResourceListByRoleChanges(resourceList, deleteResourceList,
-        // curPrincipalList);
-
-        log.debug("Resources to be added ->> " + resourceList);
-        log.debug("Delete the following resources ->> " + deleteResourceList);
-
-        // if (deleteResourceList != null && !deleteResourceList.isEmpty()) {
-        // if (resourceList != null && !resourceList.isEmpty()) {
-        // deleteResourceList.removeAll(resourceList);
-        // }
-        // }
         // determine which resources are new and which ones are existing
-        updateResourceState(resourceList, curPrincipalList);
+        updateResourceState(resourceSet, curPrincipalList); //TODO: Check do we really need this!
 
-        // update the principal list
-        List<Login> principalList = updatePrincipalList(origUser.getUserId(),
-                loginDozerConverter.convertToDTOList(curPrincipalList, false),
-                newPrincipalList,
-                deleteResourceList);
+        // update principals
+        updatePrincipals(origUser, pUser);
 
         // get primary identity and bind it for the groovy scripts
         String decPassword = null;
-        LoginEntity primaryIdentity = getPrimaryIdentity(
-                this.sysConfiguration.getDefaultManagedSysId(),
-                loginDozerConverter.convertToEntityList(principalList, false));
+        LoginEntity primaryIdentity = getPrimaryIdentity(sysConfiguration.getDefaultManagedSysId(),
+                origUser.getPrincipalList());
         if (primaryIdentity != null) {
             String password = primaryIdentity.getPassword();
             if (password != null) {
                 try {
-
-                    decPassword = loginManager.decryptPassword(
-                            primaryIdentity.getUserId(), password);
+                    decPassword = loginManager.decryptPassword(primaryIdentity.getUserId(), password);
                     bindingMap.put("password", decPassword);
 
                 } catch (EncryptionException e) {
-
-                    bindingMap.put("password", password);
-
+                    bindingMap.put("password", password);  //TODO: Do we really need to do this way?
                 }
             }
-            if (primaryIdentity.getUserId() == null
-                    || primaryIdentity.getUserId().isEmpty()) {
-                primaryIdentity.setUserId(pUser.getUserId());
+            if (primaryIdentity.getUserId() == null || primaryIdentity.getUserId().isEmpty()) {
+                throw new IllegalArgumentException("primaryIdentity userId can not be empty");
             }
             bindingMap.put("lg", primaryIdentity);
 
         } else {
-            log.debug("Primary identity not found for user="
-                    + origUser.getUserId());
+            log.debug("Primary identity not found for user=" + origUser.getUserId());
         }
 
         log.debug("Binding active roles to scripting");
-        log.debug("- role list -> " + activeRoleList);
+        log.debug("- role set -> " + roleSet);
         log.debug("- Primary Identity : " + primaryIdentity);
 
+        //TODO: Check what this code is for
+        /*
         // SAS - Do not change the list of roles
         pUser.setMemberOfRoles(activeRoleList);
         // bindingMap.put("user", origUser);
@@ -1717,6 +1667,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         if (pUser.getStatus() != null) {
             userStatus = pUser.getStatus().toString();
         }
+        */
 
         /*
          * IdmAuditLog auditLog = auditHelper.addLog("MODIFY",
@@ -1729,6 +1680,73 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
          * auditHelper.persistLogList(pendingLogItems, requestId,
          * pUser.getSessionId());
          */
+
+        if (CollectionUtils.isNotEmpty(deleteResourceSet)) {
+            log.debug("Delete resource set is not null.. ");
+            for (Resource res : deleteResourceSet) {
+                try {
+                    String managedSysId = res.getManagedSysId();
+                    /*
+                    if (pUser.getSrcSystemId() != null) {
+                        if (res.getResourceId().equalsIgnoreCase(
+                                pUser.getSrcSystemId())) {
+                            continue;
+                        }
+                    }
+                    */
+                    bindingMap.put(TARGET_SYS_RES_ID, res.getResourceId());
+                    bindingMap.put(TARGET_SYS_MANAGED_SYS_ID, managedSysId);
+                    if (managedSysId != null) {
+
+                        ManagedSysEntity mSys = managedSystemService.getManagedSysById(managedSysId);
+                        if (mSys == null || mSys.getConnectorId() == null) {
+                            log.info("Connector was not found");
+                            continue;
+                        }
+
+                        ProvisionConnectorEntity connectorEntity =
+                                connectorService.getProvisionConnectorsById(mSys.getConnectorId());
+
+                        ManagedSystemObjectMatch matchObj = null;
+                        ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(managedSysId, "USER");
+                        if (matchObjAry != null && matchObjAry.length > 0) {
+                            matchObj = matchObjAry[0];
+                            bindingMap.put(MATCH_PARAM, matchObj);
+                        }
+                        // build the request
+                        CrudRequest<ExtensibleUser> modReqType = new CrudRequest<ExtensibleUser>();
+
+                        // get the identity linked to this resource / managedsys
+                        // determin if this identity exists in IDM or not
+                        // if not, do an ADD otherwise, do an update
+
+                        Login mLg = getPrincipalForManagedSys(managedSysId,
+                                principalList);
+                        // Login mLg = getPrincipalForManagedSys(managedSysId,
+                        // curPrincipalList);
+
+                        if (mLg != null && mLg.getLoginId() != null) {
+                            bindingMap.put(TARGET_SYS_SECURITY_DOMAIN,
+                                    mLg.getDomainId());
+                        } else {
+                            bindingMap.put(TARGET_SYS_SECURITY_DOMAIN,
+                                    mSys.getDomainId());
+                        }
+
+                        log.debug("PROCESSING IDENTITY =" + mLg);
+
+                        // object that will be sent to the connectors
+                        List<AttributeMap> attrMap = managedSysService.getResourceAttributeMaps(res.getResourceId());
+
+                    }
+
+
+                } catch(Throwable tw) {
+                    log.error(res,tw); //TODO: Add log message
+                }
+            }
+        }
+
 
         if (resourceList != null) {
             log.debug("Resource list is not null.. ");
@@ -2143,17 +2161,17 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
     }
 
-    private void updateResourceState(List<Resource> resourceList,
+    private void updateResourceState(Set<Resource> resourceSet,
             List<LoginEntity> curPrincipalList) {
-        if (resourceList == null) {
-            return;
-        }
-        for (LoginEntity l : curPrincipalList) {
-            for (Resource r : resourceList) {
-                if (r.getManagedSysId() != null) {
-                    if (r.getManagedSysId().equalsIgnoreCase(
-                            l.getManagedSysId())) {
-                        r.setObjectState(BaseObject.UPDATE);
+        if (CollectionUtils.isNotEmpty(resourceSet)) {
+            for (Resource r : resourceSet) {
+                r.setObjectState(BaseObject.NEW);
+                for (LoginEntity l : curPrincipalList) {
+                    if (r.getManagedSysId() != null) {
+                        if (r.getManagedSysId().equalsIgnoreCase(l.getManagedSysId())) {
+                            r.setObjectState(BaseObject.UPDATE);
+                            break;
+                        }
                     }
                 }
             }
@@ -3176,47 +3194,21 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         return value;
     }
 
-    /**
-     * Returns a list of resources that are applicable for all the roles that a
-     * user belongs to.
-     * 
-     * @param roleList
-     * @return
-     */
-    private List<Resource> getResourcesForRole(List<Role> roleList) {
+    private Set<Resource> getResourcesForRoles(Set<Role> roleSet) {
 
         log.debug("GetResourcesForRole().....");
-        // get the list of ids
-        String domainId = null;
-        List<String> roleIdList = new ArrayList<String>();
-
-        if (roleList == null || roleList.isEmpty()) {
-            return null;
-        }
-        for (Role rl : roleList) {
-
-            if (rl != null) {
-                // handle the situation where an invalid role is passed in
-
-                if (domainId == null) {
-                    domainId = rl.getServiceId();
-                }
-                log.debug("-Adding role id to list of roles:" + rl.getRoleId());
-                roleIdList.add(rl.getRoleId());
-            }
-        }
-
-        if (domainId != null && roleIdList != null) {
-            final List<Resource> resourceList = new LinkedList<Resource>();
-            if (CollectionUtils.isNotEmpty(roleIdList)) {
-                for (final String roleId : roleIdList) {
-                    resourceList.addAll(resourceDataService
-                            .getResourcesForRole(roleId, 0, Integer.MAX_VALUE));
+        final Set<Resource> resourceList = new HashSet<Resource>();
+        if (CollectionUtils.isNotEmpty(roleSet)) {
+            for (Role rl : roleSet) {
+                if (rl.getRoleId() != null) {
+                    List<ResourceEntity> resources = resourceService.getResourcesForRole(rl.getRoleId(), -1, -1);
+                    if (CollectionUtils.isNotEmpty(resources)) {
+                        resourceList.addAll(resourceDozerConverter.convertToDTOList(resources, false));
+                    }
                 }
             }
-            return resourceList;
         }
-        return null;
+        return resourceList;
     }
 
     private List<Resource> adjustForOverlappingResource(

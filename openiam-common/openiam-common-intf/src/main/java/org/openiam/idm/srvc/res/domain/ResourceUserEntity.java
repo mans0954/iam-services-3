@@ -36,7 +36,7 @@ public class ResourceUserEntity {
     private Date endDate;
     
     public ResourceUserEntity() {
-    	
+
     }
 
 	public String getResourceUserId() {

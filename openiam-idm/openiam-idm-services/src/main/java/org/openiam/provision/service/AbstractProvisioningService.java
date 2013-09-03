@@ -37,6 +37,7 @@ import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
+import org.openiam.idm.srvc.grp.domain.UserGroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.key.constant.KeyName;
@@ -55,26 +56,32 @@ import org.openiam.idm.srvc.mngsys.ws.ProvisionConnectorWebService;
 import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.msg.service.MailTemplateParameters;
+import org.openiam.idm.srvc.org.domain.OrganizationEntity;
+import org.openiam.idm.srvc.org.domain.UserAffiliationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
+import org.openiam.idm.srvc.org.service.OrganizationService;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
 import org.openiam.idm.srvc.pswd.service.PasswordService;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.domain.ResourceUserEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.res.service.ResourceService;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
+import org.openiam.idm.srvc.role.domain.UserRoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.dto.UserRole;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.dto.Supervisor;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.PasswordSync;
 import org.openiam.provision.dto.ProvisionUser;
+import org.openiam.provision.dto.UserResourceAssociation;
 import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
@@ -154,6 +161,8 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
     @Autowired
     protected OrganizationDataService orgManager;
     @Autowired
+    protected OrganizationService organizationService;
+    @Autowired
     protected PasswordService passwordManager;
     @Autowired
     protected AuditHelper auditHelper;
@@ -171,6 +180,8 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
     protected DeprovisionSelectedResourceHelper deprovisionSelectedResource;
     @Autowired
     protected UserDozerConverter userDozerConverter;
+    @Autowired
+    ResourceDozerConverter resourceDozerConverter;
     @Autowired
     protected SupervisorDozerConverter supervisorDozerConverter;
     @Autowired
@@ -993,244 +1004,94 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
         return 0;
     }
 
-    protected String updateUser(ProvisionUser user, User origUser) {
-
-        String requestId = UUIDGen.getUUID();
-
-        log.debug("ModifyUser: updateUser called.");
-
-        User newUser = user.getUser();
-
-        updateUserObject(origUser, newUser);
-
-        log.debug("User object pending update:" + origUser);
-
-        userMgr.updateUserFromDto(origUser);
-
-        return requestId;
-    }
-
-    public void updateUserObject(User origUser, User newUser) {
-
-        origUser.updateUser(newUser);
-
-        updateUserEmail(origUser, newUser);
-        updatePhone(origUser, newUser);
-        updateAddress(origUser, newUser);
-    }
-
-    private void updateUserEmail(User origUser, User newUser) {
-        Set<EmailAddress> origEmailSet = origUser.getEmailAddresses();
-        Set<EmailAddress> newEmailSet = newUser.getEmailAddresses();
-
-        if (origEmailSet == null && newEmailSet != null) {
-            log.debug("New email list is not null");
-            origEmailSet = new HashSet<EmailAddress>();
-            origEmailSet.addAll(newEmailSet);
-            // update the instance variable so that it can passed to the connector with the right operation code
-            for (EmailAddress em  : newEmailSet) {
-                em.setOperation(AttributeOperationEnum.ADD);
-            }
-            return;
-        }
-
-        if ( (origEmailSet != null && origEmailSet.size() > 0 ) && (newEmailSet == null || newEmailSet.size() == 0 )) {
-            log.debug("orig email list is not null and nothing was passed in for the newEmailSet - ie no change");
-            for (EmailAddress em  : origEmailSet) {
-                em.setOperation(AttributeOperationEnum.DELETE);
-            }
-            return;
-        }
-
-        // if in new address, but not in old, then add it with operation 1
-        // else add with operation 2
-        if (newEmailSet != null) {
-            for (EmailAddress em : newEmailSet) {
-                if (em.getOperation() == AttributeOperationEnum.DELETE) {
-                    // get the email object from the original set of emails so that we can remove it
-                    EmailAddress e = getEmailAddress(em.getEmailId(), origEmailSet);
-                    if (e != null) {
-                        origEmailSet.remove(e);
-                    }
-
-                } else {
-                    // check if this address is in the current list
-                    // if it is - see if it has changed
-                    // if it is not - add it.
-                    EmailAddress origEmail =  getEmailAddress(em.getEmailId(), origEmailSet);
-                    if (origEmail == null) {
-                        em.setOperation(AttributeOperationEnum.ADD);
-                        origEmailSet.add(em);
-
-                        log.debug("EMAIL ADDRESS -> ADD NEW ADDRESS = " + em.getEmailAddress() );
-
-                    } else {
-                        if (em.equals(origEmail)) {
-                            // not changed
-                            em.setOperation(AttributeOperationEnum.NO_CHANGE);
-                            log.debug("EMAIL ADDRESS -> NO CHANGE = " + em.getEmailAddress() );
-                        } else {
-                            // object changed
-                            origEmail.updateEmailAddress(em);
-                            origEmailSet.add(origEmail);
-                            origEmail.setOperation(AttributeOperationEnum.REPLACE);
-                            log.debug("EMAIL ADDRESS -> REPLACE = " + em.getEmailAddress() );
-                        }
-                    }
+    public void updateUserEmails(UserEntity origUser, ProvisionUser pUser) {
+        // Processing emails
+        Set<EmailAddress> emailAddresses = pUser.getEmailAddresses();
+        if (CollectionUtils.isNotEmpty(emailAddresses)) {
+            for (EmailAddress e : emailAddresses) {
+                if (e.getOperation() == null) {
+                    continue;
                 }
-            }
-        }
-        // if a value is in original list and not in the new list - then add it on
-        for (EmailAddress e : origEmailSet) {
-            if (e.getEmailId() != null) {
-                EmailAddress newEmail =  getEmailAddress(e.getEmailId(), newEmailSet);
-                if (newEmail == null) {
-                    e.setOperation(AttributeOperationEnum.DELETE);
+                if (e.getOperation().equals(AttributeOperationEnum.DELETE)) {
+                    EmailAddressEntity entity = userMgr.getEmailAddressById(e.getEmailId());
+                    if (entity != null) {
+                        origUser.getEmailAddresses().remove(entity);
+                    }
+                } else if (e.getOperation().equals(AttributeOperationEnum.ADD)) {
+                    EmailAddressEntity entity = emailAddressDozerConverter.convertToEntity(e, false);
+                    entity.setParent(origUser);
+                    origUser.getEmailAddresses().add(entity);
+                } else if (e.getOperation().equals(AttributeOperationEnum.REPLACE)) {
+                    EmailAddressEntity entity = userMgr.getEmailAddressById(e.getEmailId());
+                    if (entity != null) {
+                        origUser.getEmailAddresses().remove(entity);
+                        userMgr.evict(entity);
+                        entity = emailAddressDozerConverter.convertToEntity(e, false);
+                        entity.setParent(origUser);
+                        origUser.getEmailAddresses().add(entity);
+                    }
                 }
             }
         }
     }
 
-    private void updatePhone(User origUser, User newUser) {
-        Set<Phone> origPhoneSet = origUser.getPhones();
-        Set<Phone> newPhoneSet = newUser.getPhones();
-
-        if (origPhoneSet == null && newPhoneSet != null) {
-            log.debug("New email list is not null");
-            origPhoneSet = new HashSet<Phone>();
-            origPhoneSet.addAll(newPhoneSet);
-            // update the instance variable so that it can passed to the connector with the right operation code
-            for (Phone ph : newPhoneSet) {
-                ph.setOperation(AttributeOperationEnum.ADD);
-            }
-            return;
-        }
-
-        if ( (origPhoneSet != null && origPhoneSet.size() > 0 ) && (newPhoneSet == null || newPhoneSet.size() == 0 )) {
-            log.debug("orig phone list is not null and nothing was passed in for the newPhoneSet - ie no change");
-            for (Phone ph  : origPhoneSet) {
-                ph.setOperation(AttributeOperationEnum.DELETE);
-            }
-            return;
-        }
-
-        // if in new address, but not in old, then add it with operation 1
-        // else add with operation 2
-        if ( newPhoneSet != null) {
-            for (Phone ph : newPhoneSet) {
-                if (ph.getOperation() == AttributeOperationEnum.DELETE) {
-
-                    // get the email object from the original set of emails so that we can remove it
-                    Phone e = getPhone(ph.getPhoneId(), origPhoneSet);
-                    if (e != null) {
-                        origPhoneSet.remove(e);
-                    }
-                } else {
-                    // check if this address is in the current list
-                    // if it is - see if it has changed
-                    // if it is not - add it.
-
-                    Phone origPhone =  getPhone(ph.getPhoneId(), origPhoneSet);
-                    if (origPhone == null) {
-                        ph.setOperation(AttributeOperationEnum.ADD);
-                        origPhoneSet.add(ph);
-                    } else {
-                        if (ph.equals(origPhone)) {
-                            // not changed
-                            ph.setOperation(AttributeOperationEnum.NO_CHANGE);
-
-                        } else {
-                            // object changed
-                            origPhone.updatePhone(ph);
-                            origPhoneSet.add(origPhone);
-                            origPhone.setOperation(AttributeOperationEnum.REPLACE);
-
-                        }
-                    }
+    public void updatePhones(UserEntity origUser, ProvisionUser pUser) {
+        // Processing phones
+        Set<Phone> phones = pUser.getPhones();
+        if (CollectionUtils.isNotEmpty(phones)) {
+            for (Phone e : phones) {
+                if (e.getOperation() == null) {
+                    continue;
                 }
-            }
-        }
-        // if a value is in original list and not in the new list - then add it on
-        for (Phone ph : origPhoneSet) {
-            if (ph.getPhoneId() != null) {
-                Phone newPhone =  getPhone(ph.getPhoneId(), newPhoneSet);
-                if (newPhone == null) {
-                    ph.setOperation(AttributeOperationEnum.DELETE);
-
+                if (e.getOperation().equals(AttributeOperationEnum.DELETE)) {
+                    PhoneEntity entity = userMgr.getPhoneById(e.getPhoneId());
+                    if (entity != null) {
+                        origUser.getPhones().remove(entity);
+                    }
+                } else if (e.getOperation().equals(AttributeOperationEnum.ADD)) {
+                    PhoneEntity entity = phoneDozerConverter.convertToEntity(e, false);
+                    entity.setParent(origUser);
+                    origUser.getPhones().add(entity);
+                } else if (e.getOperation().equals(AttributeOperationEnum.REPLACE)) {
+                    PhoneEntity entity = userMgr.getPhoneById(e.getPhoneId());
+                    if (entity != null) {
+                        origUser.getPhones().remove(entity);
+                        userMgr.evict(entity);
+                        entity = phoneDozerConverter.convertToEntity(e, false);
+                        entity.setParent(origUser);
+                        origUser.getPhones().add(entity);
+                    }
                 }
             }
         }
     }
 
-    private void updateAddress(User origUser, User newUser) {
-        Set<Address> origAddressSet = origUser.getAddresses();
-        Set<Address> newAddressSet = newUser.getAddresses();
-
-        if (origAddressSet == null && newAddressSet != null) {
-            log.debug("New email list is not null");
-            origAddressSet = new HashSet<Address>();
-            origAddressSet.addAll(newAddressSet);
-            // update the instance variable so that it can passed to the connector with the right operation code
-            for (Address ph : newAddressSet) {
-                ph.setOperation(AttributeOperationEnum.ADD);
-
-            }
-            return;
-        }
-
-        if ( (origAddressSet != null && origAddressSet.size() > 0 ) &&
-                (newAddressSet == null || newAddressSet.size() == 0 )) {
-            log.debug("orig Address list is not null and nothing was passed in for the newAddressSet - ie no change");
-            for (Address ph  : origAddressSet) {
-                ph.setOperation(AttributeOperationEnum.DELETE);
-
-            }
-            return;
-        }
-
-        // if in new address, but not in old, then add it with operation 1
-        // else add with operation 2
-        for (Address ph : newAddressSet) {
-            if (ph.getOperation() == AttributeOperationEnum.DELETE) {
-
-                // get the email object from the original set of emails so that we can remove it
-                Address e = getAddress(ph.getAddressId(), origAddressSet);
-                if (e != null) {
-                    origAddressSet.remove(e);
+    public void updateAddresses(UserEntity origUser, ProvisionUser pUser) {
+        // Processing addresses
+        Set<Address> addresses = pUser.getAddresses();
+        if (CollectionUtils.isNotEmpty(addresses)) {
+            for (Address e : addresses) {
+                if (e.getOperation() == null) {
+                    continue;
                 }
-
-            } else {
-                // check if this address is in the current list
-                // if it is - see if it has changed
-                // if it is not - add it.
-                log.debug("evaluate Address");
-                Address origAddress =  getAddress(ph.getAddressId(), origAddressSet);
-                if (origAddress == null) {
-                    ph.setOperation(AttributeOperationEnum.ADD);
-                    origAddressSet.add(ph);
-
-                } else {
-                    if (ph.equals(origAddress)) {
-                        // not changed
-                        ph.setOperation(AttributeOperationEnum.NO_CHANGE);
-
-                    } else {
-                        // object changed
-                        origAddress.updateAddress(ph);
-                        origAddressSet.add(origAddress);
-                        origAddress.setOperation(AttributeOperationEnum.REPLACE);
-
+                if (e.getOperation().equals(AttributeOperationEnum.DELETE)) {
+                    AddressEntity entity = userMgr.getAddressById(e.getAddressId());
+                    if (entity != null) {
+                        origUser.getAddresses().remove(entity);
                     }
-                }
-            }
-        }
-        // if a value is in original list and not in the new list - then add it on
-        for (Address a : origAddressSet) {
-            if (a.getAddressId() != null) {
-                Address newAddress =  getAddress(a.getAddressId(), newAddressSet);
-                if (newAddress == null) {
-                    a.setOperation(AttributeOperationEnum.DELETE);
-
+                } else if (e.getOperation().equals(AttributeOperationEnum.ADD)) {
+                    AddressEntity entity = addressDozerConverter.convertToEntity(e, false);
+                    entity.setParent(origUser);
+                    origUser.getAddresses().add(entity);
+                } else if (e.getOperation().equals(AttributeOperationEnum.REPLACE)) {
+                    AddressEntity entity = userMgr.getAddressById(e.getAddressId());
+                    if (entity != null) {
+                        origUser.getAddresses().remove(entity);
+                        userMgr.evict(entity);
+                        entity = addressDozerConverter.convertToEntity(e, false);
+                        entity.setParent(origUser);
+                        origUser.getAddresses().add(entity);
+                    }
                 }
             }
         }
@@ -1376,17 +1237,86 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
 
     }
 
-    public void updateSupervisors(User user, Set<User> superiors) {
+    public void updateUserProperties(UserEntity origUser, ProvisionUser pUser) {
+        origUser.updateUser(userDozerConverter.convertToEntity(pUser.getUser(), false));
+    }
+
+    public void updateUserAttributes(UserEntity origUser, ProvisionUser pUser) {
+        if (pUser.getUserAttributes() != null && !pUser.getUserAttributes().isEmpty()) {
+            for (Map.Entry<String, UserAttribute> entry : pUser.getUserAttributes().entrySet()) {
+                AttributeOperationEnum operation = entry.getValue().getOperation();
+                if (operation == null) {
+                    return;
+
+                } else if (operation == AttributeOperationEnum.DELETE) {
+                    origUser.getUserAttributes().remove(entry.getKey());
+
+                } else if (operation == AttributeOperationEnum.ADD) {
+                    origUser.getUserAttributes().put(entry.getKey(),
+                            userAttributeDozerConverter.convertToEntity(entry.getValue(), true));
+
+                } else if (operation == AttributeOperationEnum.REPLACE) {
+                    UserAttributeEntity entity = origUser.getUserAttributes().get(entry.getKey());
+                    if (entity != null) {
+                        origUser.getUserAttributes().remove(entry.getKey());
+                        userMgr.evict(entity);
+                        origUser.getUserAttributes().put(entry.getKey(),
+                                userAttributeDozerConverter.convertToEntity(entry.getValue(), true));
+                    }
+                }
+            }
+        }
+    }
+
+    public void updateSupervisors(ProvisionUser pUser) {
+        // Processing supervisors
+        String userId = pUser.getUserId();
+        Set<User> superiors = pUser.getSuperiors();
+
+        if (CollectionUtils.isNotEmpty(superiors)) {
+            for (User e : superiors) {
+                if (e.getOperation() == null) {
+                    continue;
+                }
+                if (e.getOperation().equals(AttributeOperationEnum.DELETE)) {
+                    List<SupervisorEntity> supervisorList = userMgr.getSupervisors(userId);
+                    if (CollectionUtils.isNotEmpty(supervisorList)) {
+                        for (SupervisorEntity se : supervisorList) {
+                            if (se.getSupervisor().getUserId().equals(e.getUserId())) {
+                                userMgr.removeSupervisor(se.getOrgStructureId());
+                                log.info(String.format("Removed a supervisor user %s from user %s",
+                                        e.getUserId(), userId));
+                            }
+                        }
+                    }
+
+                } else if (e.getOperation().equals(AttributeOperationEnum.ADD)) {
+                    userMgr.addSuperior(e.getUserId(), userId);
+                    log.info(String.format("Adding a supervisor user %s for user %s",
+                            e.getUserId(), userId));
+
+                } else if (e.getOperation().equals(AttributeOperationEnum.REPLACE)) {
+                    throw new UnsupportedOperationException("Operation 'REPLACE' is not supported for supervisors");
+                }
+            }
+        }
+    }
+
+    /*
+    public void updateSupervisors(ProvisionUser pUser) {
+
+        String userId = pUser.getUserId();
+        Set<User> superiors = pUser.getSuperiors();
 
         if (superiors == null) {
             return;
         }
 
-        List<SupervisorEntity> supervisorList = userMgr.getSupervisors(user.getUserId());
+        List<SupervisorEntity> supervisorList = userMgr.getSupervisors(userId);
 
         if (CollectionUtils.isNotEmpty(superiors)) {
             for (User u : superiors) {
-                if (user.getUserId().equals(u.getUserId())) {
+                if (userId.equals(u.getUserId())) {
                     log.info("User can't be a superior for himself");
                     continue;
                 }
@@ -1405,12 +1335,12 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
                 }
                 if (isToAdd) {
                     try {
-                        userMgr.addSuperior(u.getUserId(), user.getUserId());
+                        userMgr.addSuperior(u.getUserId(), userId);
                         log.info(String.format("Adding a supervisor user %s for user %s",
-                                u.getUserId(), user.getUserId()));
+                                u.getUserId(), userId));
                     } catch (Exception e) {
                         log.info(String.format("Can't add a supervisor user %s for user %s",
-                                u.getUserId(), user.getUserId()));
+                                u.getUserId(), userId));
                     }
                 }
             }
@@ -1431,76 +1361,75 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
             if (isToRemove) {
                 userMgr.removeSupervisor(s.getOrgStructureId());
                 log.info(String.format("Removed a supervisor user %s from user %s",
-                        s.getSupervisor().getUserId(), user.getUserId()));
+                        s.getSupervisor().getUserId(), userId));
+            }
+        }
+    }
+    */
+
+    public void updateGroups(UserEntity origUser, ProvisionUser pUser) {
+        if (CollectionUtils.isNotEmpty(pUser.getMemberOfGroups())) {
+            for (Group g: pUser.getMemberOfGroups()) {
+                AttributeOperationEnum operation = g.getOperation();
+                if (operation == null) {
+                    return;
+
+                } else if (operation == AttributeOperationEnum.ADD) {
+                    origUser.getUserGroups().add(new UserGroupEntity(g.getGrpId(), origUser.getUserId()));
+
+                } else if (operation == AttributeOperationEnum.DELETE) {
+                    Set<UserGroupEntity> groups = origUser.getUserGroups();
+                    for (UserGroupEntity ug : groups) {
+                        if (ug.getGrpId().equals(g.getGrpId())) {
+                            origUser.getUserGroups().remove(ug);
+                            break;
+                        }
+                    }
+
+                } else if (operation == AttributeOperationEnum.REPLACE) {
+                    throw new UnsupportedOperationException("Operation 'REPLACE' is not supported for groups");
+                }
             }
         }
     }
 
-    public void updateGroupAssociation(String userId, List<Group> origGroupList,  List<Group> newGroupList) {
+    public void updateRoles(UserEntity origUser, ProvisionUser pUser,
+            Set<Role> roleSet, Set<Role> deleteRoleSet) {
+        if (CollectionUtils.isNotEmpty(pUser.getMemberOfRoles())) {
+            for (Role r: pUser.getMemberOfRoles()) {
+                AttributeOperationEnum operation = r.getOperation();
+                if (operation == null) {
+                    return;
 
-        log.debug("updating group associations..");
-        log.debug("origGroupList =" + origGroupList);
-        log.debug("newGroupList=" + newGroupList);
-
-        if ( (origGroupList == null || origGroupList.size() == 0 )  &&
-                (newGroupList == null || newGroupList.size() == 0 )) {
-            return;
-        }
-
-        if ( (origGroupList == null || origGroupList.size() == 0 )  &&
-                (newGroupList != null || newGroupList.size() > 0 )) {
-
-            log.debug("New group list is not null");
-            origGroupList = new ArrayList<Group>();
-            origGroupList.addAll(newGroupList);
-            // update the instance variable so that it can passed to the connector with the right operation code
-            for (Group g : newGroupList) {
-                g.setOperation(AttributeOperationEnum.ADD);
-                groupManager.addUserToGroup(g.getGrpId(), userId);
-            }
-            return;
-        }
-
-        if ( (origGroupList != null && origGroupList.size() > 0 ) && (newGroupList == null || newGroupList.size() == 0 )) {
-            log.debug("orig group list is not null and nothing was passed in for the newGroupList - ie no change");
-            for (Group g  : origGroupList) {
-                g.setOperation(AttributeOperationEnum.NO_CHANGE);
-            }
-            return;
-        }
-
-        // if in new address, but not in old, then add it with operation 1
-        // else add with operation 2
-        for (Group g : newGroupList) {
-            if (g.getOperation() == AttributeOperationEnum.DELETE) {
-                log.debug("removing Group :" + g.getGrpId() );
-                // get the email object from the original set of emails so that we can remove it
-                Group grp = getGroup(g.getGrpId(), origGroupList);
-                if (grp != null) {
-                    this.groupManager.removeUserFromGroup(grp.getGrpId(), userId);
-                }
-            } else {
-                // check if this address is in the current list
-                // if it is - see if it has changed
-                // if it is not - add it.
-                log.debug("evaluate Group");
-                Group origGroup =  getGroup(g.getGrpId(), origGroupList);
-                if (origGroup == null) {
-                    g.setOperation(AttributeOperationEnum.ADD);
-                    groupManager.addUserToGroup(g.getGrpId(), userId);
-                } else {
-                    if (g.getGrpId().equals(origGroup.getGrpId())) {
-                        // not changed
-                        g.setOperation(AttributeOperationEnum.NO_CHANGE);
+                } else if (operation == AttributeOperationEnum.ADD) {
+                    UserRoleEntity ur = new UserRoleEntity(r.getRoleId(), origUser.getUserId());
+                    if ( r.getStartDate() != null) {
+                        ur.setStartDate(r.getStartDate());
                     }
+                    if ( r.getEndDate() != null ) {
+                        ur.setEndDate(r.getEndDate());
+                    }
+                    origUser.getUserRoles().add(ur);
+
+                } else if (operation == AttributeOperationEnum.DELETE) {
+                    Set<UserRoleEntity> roles = origUser.getUserRoles();
+                    for (UserRoleEntity ur : roles) {
+                        if (ur.getRoleId().equals(r.getRoleId())) {
+                            origUser.getUserRoles().remove(ur);
+                            deleteRoleSet.add(r);
+                            break;
+                        }
+                    }
+
+                } else if (operation == AttributeOperationEnum.REPLACE) {
+                    throw new UnsupportedOperationException("Operation 'REPLACE' is not supported for roles");
                 }
             }
         }
-        // if a value is in original list and not in the new list - then add it on
-        for (Group g : origGroupList) {
-            Group newGroup =  getGroup(g.getGrpId(), newGroupList);
-            if (newGroup == null) {
-                g.setOperation(AttributeOperationEnum.NO_CHANGE);
+        if (CollectionUtils.isNotEmpty(origUser.getUserRoles())) {
+            for (UserRoleEntity ure : origUser.getUserRoles()) {
+                roleSet.add(roleDozerConverter.convertToDTO(roleDataService.getRole(ure.getRoleId(),
+                        origUser.getUserId()), false));
             }
         }
     }
@@ -1516,7 +1445,6 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
 
         List<UserRole> currentUserRole = userRoleDozerConverter.convertToDTOList(
                 roleDataService.getUserRolesForUser(userId, 0, Integer.MAX_VALUE), false);
-        UserEntity user = userMgr.getUser(userId);
 
         if ( (origRoleList == null || origRoleList.size() == 0 )  &&
                 (newRoleList == null || newRoleList.size() == 0 )) {
@@ -1548,9 +1476,9 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
 
                 logList.add( auditHelper.createLogObject("ADD ROLE",
                         pUser.getRequestorDomain(),  pUser.getRequestorLogin(),
-                        "IDM SERVICE", user.getCreatedBy(), "0", "USER", user.getUserId(),
+                        "IDM SERVICE", pUser.getCreatedBy(), "0", "USER", pUser.getUserId(),
                         null, "SUCCESS", null, "USER_STATUS",
-                        user.getStatus().toString(),
+                        pUser.getStatus().toString(),
                         "NA", null, null, null, ur.getRoleId(),
                         pUser.getRequestClientIP(), primaryIdentity.getLogin(), primaryIdentity.getDomainId()));
 
@@ -1584,9 +1512,9 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
 
                     logList.add( auditHelper.createLogObject("REMOVE ROLE",
                             pUser.getRequestorDomain(), pUser.getRequestorLogin(),
-                            "IDM SERVICE", user.getCreatedBy(), "0", "USER", user.getUserId(),
+                            "IDM SERVICE", pUser.getCreatedBy(), "0", "USER", pUser.getUserId(),
                             null, "SUCCESS", null, "USER_STATUS",
-                            user.getStatus().toString(),
+                            pUser.getStatus().toString(),
                             "NA", null, null, null, rl.getRoleId(),
                             pUser.getRequestClientIP(), primaryIdentity.getLogin(), primaryIdentity.getDomainId()));
 
@@ -1624,9 +1552,9 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
                     roleDataService.assocUserToRole(userRoleDozerConverter.convertToEntity(ur, true));
 
                     logList.add( auditHelper.createLogObject("ADD ROLE", pUser.getRequestorDomain(), pUser.getRequestorLogin(),
-                            "IDM SERVICE", user.getCreatedBy(), "0", "USER", user.getUserId(),
+                            "IDM SERVICE", pUser.getCreatedBy(), "0", "USER", pUser.getUserId(),
                             null, "SUCCESS", null, "USER_STATUS",
-                            user.getStatus().toString(),
+                            pUser.getStatus().toString(),
                             "NA", null, null, null, ur.getRoleId(),
                             pUser.getRequestClientIP(), primaryIdentity.getLogin(), primaryIdentity.getDomainId()));
 
@@ -1662,7 +1590,7 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
                             }
                             roleDataService.updateUserRoleAssoc(userRoleDozerConverter.convertToEntity(ur, true));
                         } else {
-                            UserRole usrRl = new UserRole(user.getUserId(), r.getRoleId());
+                            UserRole usrRl = new UserRole(userId, r.getRoleId());
                             roleDataService.assocUserToRole(userRoleDozerConverter.convertToEntity(usrRl, true));
 
                         }
@@ -1715,7 +1643,35 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
 
     /* User Org Affiliation */
 
+    public void updateUserOrgAffiliations(UserEntity origUser, ProvisionUser pUser) {
+        if (CollectionUtils.isNotEmpty(pUser.getUserAffiliations())) {
+            for (Organization o : pUser.getUserAffiliations()) {
+                AttributeOperationEnum operation = o.getOperation();
+                if (operation == null) {
+                    return;
+
+                } else if (operation == AttributeOperationEnum.ADD) {
+                    OrganizationEntity org = organizationService.getOrganization(o.getId(), origUser.getUserId());
+                    origUser.getAffiliations().add(new UserAffiliationEntity(origUser, org));
+
+                } else if (operation == AttributeOperationEnum.DELETE) {
+                    Set<UserAffiliationEntity> affiliations = origUser.getAffiliations();
+                    for (UserAffiliationEntity a : affiliations) {
+                        if (o.getId().equals(a.getId())) {
+                            origUser.getAffiliations().remove(a);
+                            break;
+                        }
+                    }
+
+                } else if (operation == AttributeOperationEnum.REPLACE) {
+                    throw new UnsupportedOperationException("Operation 'REPLACE' is not supported for affiliations");
+                }
+            }
+        }
+    }
+
     public void updateUserOrgAffiliation(String userId, List<Organization> newOrgList) {
+
         List<Organization>  currentOrgList = orgManager.getOrganizationsForUser(userId, null, 0, Integer.MAX_VALUE);
 
         if (newOrgList == null) {
@@ -1739,6 +1695,43 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
                     orgManager.removeUserFromOrg(o.getId(),userId);
                 }
             }
+        }
+    }
+
+    public void updateResources(UserEntity origUser, ProvisionUser pUser, Set<Resource> resourceSet, Set<Resource> deleteResourceSet) {
+        if (CollectionUtils.isNotEmpty(pUser.getUserResourceList())) {
+            for (UserResourceAssociation ura : pUser.getUserResourceList()) {
+                AttributeOperationEnum operation = ura.getOperation();
+                if (operation == null) {
+                    return;
+
+                } else if (operation == AttributeOperationEnum.ADD) {
+                    ResourceUserEntity rue = new ResourceUserEntity();
+                    rue.setResourceId(ura.getResourceId());
+                    rue.setUserId(pUser.getUserId());
+                    //rue.setStartDate();
+                    //rue.setEndDate();
+                    origUser.getResourceUsers().add(rue);
+
+                } else if (operation == AttributeOperationEnum.DELETE) {
+                    Set<ResourceUserEntity> resources = origUser.getResourceUsers();
+                    for (ResourceUserEntity rue : resources) {
+                        if (rue.getResourceId().equals(ura.getResourceId())) {
+                            origUser.getResourceUsers().remove(rue);
+                            ResourceEntity e = resourceService.findResourceById(rue.getResourceId());
+                            deleteResourceSet.add(resourceDozerConverter.convertToDTO(e, false));
+                            break;
+                        }
+                    }
+
+                } else if (operation == AttributeOperationEnum.REPLACE) {
+                    throw new UnsupportedOperationException("Operation 'REPLACE' is not supported for resources");
+                }
+            }
+        }
+        for (ResourceUserEntity rue : origUser.getResourceUsers()) {
+            ResourceEntity e = resourceService.findResourceById(rue.getResourceId());
+            resourceSet.add(resourceDozerConverter.convertToDTO(e, false));
         }
     }
 
@@ -1844,6 +1837,43 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
             }
         }
         return true;
+    }
+
+    public void updatePrincipals(UserEntity origUser, ProvisionUser pUser) {
+        // Processing principals
+        List<Login> principals = pUser.getPrincipalList();
+        if (CollectionUtils.isNotEmpty(principals)) {
+            for (Login e : principals) {
+                if (e.getOperation() == null) {
+                    continue;
+                }
+                if (e.getOperation().equals(AttributeOperationEnum.DELETE)) {
+                    LoginEntity entity = loginManager.getLoginDetails(e.getLoginId());
+                    if (entity != null) {
+                        origUser.getPrincipalList().remove(entity);
+                    }
+
+                } else if (e.getOperation().equals(AttributeOperationEnum.ADD)) {
+                    LoginEntity entity = loginDozerConverter.convertToEntity(e, false);
+                    try {
+                        entity.setPassword(loginManager.encryptPassword(e.getUserId(), e.getPassword()));
+                        origUser.getPrincipalList().add(entity);
+                    } catch (EncryptionException ee) {
+                        log.error(ee);
+                        ee.printStackTrace();
+                    }
+
+                } else if (e.getOperation().equals(AttributeOperationEnum.REPLACE)) {
+                    LoginEntity entity = loginManager.getLoginDetails(e.getLoginId());
+                    if (entity != null) {
+                        origUser.getPrincipalList().remove(entity);
+                        loginManager.evict(entity);
+                        entity = loginDozerConverter.convertToEntity(e, false);
+                        origUser.getPrincipalList().add(entity);
+                    }
+                }
+            }
+        }
     }
 
 
@@ -2012,7 +2042,7 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
 
         log.debug("Getting identity for ManagedSysId");
 
-        if (	principalList == null ||
+        if (principalList == null ||
                 principalList.size() == 0) {
             return null;
         }
