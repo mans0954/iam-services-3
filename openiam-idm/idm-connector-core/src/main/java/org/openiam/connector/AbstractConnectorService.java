@@ -127,7 +127,6 @@ public abstract class AbstractConnectorService implements ConnectorService,Appli
             try {
                 ConnectorCommand cmd = connectorCommandFactory.getConnectorCommand(commandType, requestType.getExtensibleObject().getExtensibleObjectType(), this.connectorType);
                 response = (Response)cmd.execute(requestType);
-
             } catch (ConnectorDataException e) {
                 log.error(e.getMessage(), e);
                 response.setStatus(StatusCodeType.FAILURE);
