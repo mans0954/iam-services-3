@@ -12,48 +12,61 @@ import org.springframework.stereotype.Service;
 
 @Service("oracleCommandFactory")
 public class OracleCommandFactory extends AbstractCommandFactory {
-    @Autowired
-    @Qualifier("addUserOracleCommand")
-    private ConnectorCommand addUserOracleCommand;
-    @Autowired
-    @Qualifier("deleteUserOracleCommand")
-    private ConnectorCommand deleteUserOracleCommand;
-    @Autowired
-    @Qualifier("lookupUserOracleCommand")
-    private ConnectorCommand lookupUserOracleCommand;
-    @Autowired
-    @Qualifier("resumeOracleCommand")
-    private ConnectorCommand resumeOracleCommand;
-    @Autowired
-    @Qualifier("setPasswordOracleCommand")
-    private ConnectorCommand setPasswordOracleCommand;
-    @Autowired
-    @Qualifier("suspendOracleCommand")
-    private ConnectorCommand suspendOracleCommand;
+	@Autowired
+	@Qualifier("addUserOracleCommand")
+	private ConnectorCommand addUserOracleCommand;
+	@Autowired
+	@Qualifier("modifyUserOracleCommand")
+	private ConnectorCommand modifyUserOracleCommand;
+	@Autowired
+	@Qualifier("deleteUserOracleCommand")
+	private ConnectorCommand deleteUserOracleCommand;
+	@Autowired
+	@Qualifier("lookupUserOracleCommand")
+	private ConnectorCommand lookupUserOracleCommand;
+	@Autowired
+	@Qualifier("resumeOracleCommand")
+	private ConnectorCommand resumeOracleCommand;
+	@Autowired
+	@Qualifier("setPasswordOracleCommand")
+	private ConnectorCommand setPasswordOracleCommand;
+	@Autowired
+	@Qualifier("suspendOracleCommand")
+	private ConnectorCommand suspendOracleCommand;
 
-    public ConnectorCommand getConnectorCommand(CommandType commandType, ExtensibleObjectType extensibleObjectType) throws ConnectorDataException {
-        String error = String.format(ERROR_PATTERN, commandType, extensibleObjectType, "ORACLE");
-        if(ExtensibleObjectType.USER==extensibleObjectType){
-            switch (commandType){
-                case ADD:
-                    return addUserOracleCommand;
-                case DELETE:
-                    return deleteUserOracleCommand;
-                case RESUME:
-                    return resumeOracleCommand;
-                case SET_PASSWORD:
-                    return setPasswordOracleCommand;
-                case SUSPEND:
-                    return suspendOracleCommand;
-                case LOOKUP:
-                    return lookupUserOracleCommand;
-                default:
-                    throw new ConnectorDataException(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
-            }
-        } else if(ExtensibleObjectType.GROUP==extensibleObjectType){
-            throw new ConnectorDataException(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
-        } else {
-            throw new ConnectorDataException(ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
-        }
-    }
+	public ConnectorCommand getConnectorCommand(CommandType commandType,
+			ExtensibleObjectType extensibleObjectType)
+			throws ConnectorDataException {
+		String error = String.format(ERROR_PATTERN, commandType,
+				extensibleObjectType, "ORACLE");
+		if (ExtensibleObjectType.USER == extensibleObjectType) {
+			switch (commandType) {
+			case ADD:
+				return addUserOracleCommand;
+			case MODIFY:
+				return modifyUserOracleCommand;
+			case DELETE:
+				return deleteUserOracleCommand;
+			case RESUME:
+				return resumeOracleCommand;
+			case SET_PASSWORD:
+				return setPasswordOracleCommand;
+			case SUSPEND:
+				return suspendOracleCommand;
+			case SEARCH:
+				return lookupUserOracleCommand;
+			case LOOKUP:
+				return lookupUserOracleCommand;
+			default:
+				throw new ConnectorDataException(
+						ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
+			}
+		} else if (ExtensibleObjectType.GROUP == extensibleObjectType) {
+			throw new ConnectorDataException(
+					ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
+		} else {
+			throw new ConnectorDataException(
+					ErrorCode.OPERATION_NOT_SUPPORTED_EXCEPTION, error);
+		}
+	}
 }
