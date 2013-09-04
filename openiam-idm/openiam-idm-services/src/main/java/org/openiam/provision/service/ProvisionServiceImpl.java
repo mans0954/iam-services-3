@@ -683,7 +683,7 @@ public class ProvisionServiceImpl implements ProvisionService,
                                     + System.currentTimeMillis());
 
                             deleteRequest.setObjectIdentity(lg.getLogin());
-
+                            deleteRequest.setTargetID(lg.getManagedSysId());
                             ResponseType respType = client
                                     .delete(deleteRequest);
 
