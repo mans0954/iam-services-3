@@ -1676,8 +1676,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         pUser.setMemberOfRoles(activeRoleList);
         // bindingMap.put("user", origUser);
 
-        bindingMap.put("user", pUser);
-
         log.debug("**Updated orig user=" + origUser);
         log.debug("-- " + origUser.getUserId() + " " + origUser.getFirstName()
                 + " " + origUser.getLastName());
@@ -1762,8 +1760,14 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     return;
                 }
             }
+
+            // what the new object will look like
+            // Provision user that goes to the target system. Derived from origUser after all changes
+            ProvisionUser targetSysProvUser = new ProvisionUser(userDozerConverter.convertToDTO(origUser, true));
+
             bindingMap.put(TARGET_SYS_RES_ID, res.getResourceId());
             bindingMap.put(TARGET_SYS_MANAGED_SYS_ID, managedSysId);
+            bindingMap.put("user", targetSysProvUser);
 
             List<AttributeMap> attrMap = managedSysService.getResourceAttributeMaps(res.getResourceId());
             ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
@@ -1830,9 +1834,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             bindingMap.put(TARGET_SYSTEM_IDENTITY, isMngSysIdentityExistsInOpeniam ? mLg.getLogin() : null);
             bindingMap.put( TARGET_SYS_SECURITY_DOMAIN, isMngSysIdentityExistsInOpeniam ? mLg.getDomainId() : null);
 
-            // what the new object will look like
-            // Provision user that goes to the target system. Derived from origUser after all changes
-            ProvisionUser targetSysProvUser = new ProvisionUser(userDozerConverter.convertToDTO(origUser, true));
             // Identity of current target system
             Login targetSysLogin = loginDozerConverter.convertToDTO(mLg, false);
             for (Login l : pUser.getPrincipalList()) { // saving Login properties from pUser
