@@ -292,4 +292,15 @@ public class ResourceServiceImpl implements ResourceService {
 		return resourceDao.findByIds(resourceIdCollection);
 	}
 
+    @Override
+    public void evict(Object entity) {
+        if (entity instanceof ResourceUserEntity) {
+            resourceUserDao.evict((ResourceUserEntity)entity);
+        } else if (entity instanceof ResourceEntity) {
+            resourceDao.evict((ResourceEntity)entity);
+        } else {
+            throw new IllegalArgumentException("Operation is not supported for this type of object");
+        }
+    }
+
 }

@@ -74,7 +74,7 @@ public interface ProvisionService {
      * in appropriate target systems
      */
     @WebMethod
-    public ProvisionUserResponse modifyUser(
+    public ProvisionUserResponse modifyUser (
             @WebParam(name = "user", targetNamespace = "") ProvisionUser user);
 
     /**

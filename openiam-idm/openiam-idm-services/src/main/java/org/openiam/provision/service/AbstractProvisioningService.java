@@ -24,6 +24,7 @@ import org.openiam.connector.type.response.ObjectResponse;
 import org.openiam.connector.type.response.ResponseType;
 import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.dozer.converter.*;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.exception.EncryptionException;
 import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
@@ -1013,22 +1014,33 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
                     continue;
                 }
                 if (e.getOperation().equals(AttributeOperationEnum.DELETE)) {
-                    EmailAddressEntity entity = userMgr.getEmailAddressById(e.getEmailId());
-                    if (entity != null) {
-                        origUser.getEmailAddresses().remove(entity);
+                    Set<EmailAddressEntity> entities = origUser.getEmailAddresses();
+                    if (CollectionUtils.isNotEmpty(entities))  {
+                        for (EmailAddressEntity en : entities) {
+                            if (en.getEmailId().equals(e.getEmailId())) {
+                                origUser.getEmailAddresses().remove(en);
+                                break;
+                            }
+                        }
                     }
                 } else if (e.getOperation().equals(AttributeOperationEnum.ADD)) {
                     EmailAddressEntity entity = emailAddressDozerConverter.convertToEntity(e, false);
                     entity.setParent(origUser);
                     origUser.getEmailAddresses().add(entity);
+
                 } else if (e.getOperation().equals(AttributeOperationEnum.REPLACE)) {
-                    EmailAddressEntity entity = userMgr.getEmailAddressById(e.getEmailId());
-                    if (entity != null) {
-                        origUser.getEmailAddresses().remove(entity);
-                        userMgr.evict(entity);
-                        entity = emailAddressDozerConverter.convertToEntity(e, false);
-                        entity.setParent(origUser);
-                        origUser.getEmailAddresses().add(entity);
+                    Set<EmailAddressEntity> entities = origUser.getEmailAddresses();
+                    if (CollectionUtils.isNotEmpty(entities))  {
+                        for (EmailAddressEntity en : entities) {
+                            if (en.getEmailId().equals(e.getEmailId())) {
+                                origUser.getEmailAddresses().remove(en);
+                                userMgr.evict(en);
+                                EmailAddressEntity entity = emailAddressDozerConverter.convertToEntity(e, false);
+                                entity.setParent(origUser);
+                                origUser.getEmailAddresses().add(entity);
+                                break;
+                            }
+                        }
                     }
                 }
             }
@@ -1044,22 +1056,33 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
                     continue;
                 }
                 if (e.getOperation().equals(AttributeOperationEnum.DELETE)) {
-                    PhoneEntity entity = userMgr.getPhoneById(e.getPhoneId());
-                    if (entity != null) {
-                        origUser.getPhones().remove(entity);
+                    Set<PhoneEntity> entities = origUser.getPhones();
+                    if (CollectionUtils.isNotEmpty(entities))  {
+                        for (PhoneEntity en : entities) {
+                            if (en.getPhoneId().equals(e.getPhoneId())) {
+                                origUser.getPhones().remove(en);
+                                break;
+                            }
+                        }
                     }
                 } else if (e.getOperation().equals(AttributeOperationEnum.ADD)) {
                     PhoneEntity entity = phoneDozerConverter.convertToEntity(e, false);
                     entity.setParent(origUser);
                     origUser.getPhones().add(entity);
+
                 } else if (e.getOperation().equals(AttributeOperationEnum.REPLACE)) {
-                    PhoneEntity entity = userMgr.getPhoneById(e.getPhoneId());
-                    if (entity != null) {
-                        origUser.getPhones().remove(entity);
-                        userMgr.evict(entity);
-                        entity = phoneDozerConverter.convertToEntity(e, false);
-                        entity.setParent(origUser);
-                        origUser.getPhones().add(entity);
+                    Set<PhoneEntity> entities = origUser.getPhones();
+                    if (CollectionUtils.isNotEmpty(entities))  {
+                        for (PhoneEntity en : entities) {
+                            if (en.getPhoneId().equals(e.getPhoneId())) {
+                                origUser.getPhones().remove(en);
+                                userMgr.evict(en);
+                                PhoneEntity entity = phoneDozerConverter.convertToEntity(e, false);
+                                entity.setParent(origUser);
+                                origUser.getPhones().add(entity);
+                                break;
+                            }
+                        }
                     }
                 }
             }
@@ -1075,22 +1098,33 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
                     continue;
                 }
                 if (e.getOperation().equals(AttributeOperationEnum.DELETE)) {
-                    AddressEntity entity = userMgr.getAddressById(e.getAddressId());
-                    if (entity != null) {
-                        origUser.getAddresses().remove(entity);
+                    Set<AddressEntity> entities = origUser.getAddresses();
+                    if (CollectionUtils.isNotEmpty(entities))  {
+                        for (AddressEntity en : entities) {
+                            if (en.getAddressId().equals(e.getAddressId())) {
+                                origUser.getAddresses().remove(en);
+                                break;
+                            }
+                        }
                     }
                 } else if (e.getOperation().equals(AttributeOperationEnum.ADD)) {
                     AddressEntity entity = addressDozerConverter.convertToEntity(e, false);
                     entity.setParent(origUser);
                     origUser.getAddresses().add(entity);
+
                 } else if (e.getOperation().equals(AttributeOperationEnum.REPLACE)) {
-                    AddressEntity entity = userMgr.getAddressById(e.getAddressId());
-                    if (entity != null) {
-                        origUser.getAddresses().remove(entity);
-                        userMgr.evict(entity);
-                        entity = addressDozerConverter.convertToEntity(e, false);
-                        entity.setParent(origUser);
-                        origUser.getAddresses().add(entity);
+                    Set<AddressEntity> entities = origUser.getAddresses();
+                    if (CollectionUtils.isNotEmpty(entities))  {
+                        for (AddressEntity en : entities) {
+                            if (en.getAddressId().equals(e.getAddressId())) {
+                                origUser.getAddresses().remove(en);
+                                userMgr.evict(en);
+                                AddressEntity entity = addressDozerConverter.convertToEntity(e, false);
+                                entity.setParent(origUser);
+                                origUser.getAddresses().add(entity);
+                                break;
+                            }
+                        }
                     }
                 }
             }
@@ -1244,6 +1278,9 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
     public void updateUserAttributes(UserEntity origUser, ProvisionUser pUser) {
         if (pUser.getUserAttributes() != null && !pUser.getUserAttributes().isEmpty()) {
             for (Map.Entry<String, UserAttribute> entry : pUser.getUserAttributes().entrySet()) {
+                if (StringUtils.isBlank(entry.getValue().getName())) {
+                    throw new IllegalArgumentException("Name can not be empty");
+                }
                 AttributeOperationEnum operation = entry.getValue().getOperation();
                 if (operation == null) {
                     return;
@@ -1375,7 +1412,8 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
                     return;
 
                 } else if (operation == AttributeOperationEnum.ADD) {
-                    origUser.getUserGroups().add(new UserGroupEntity(g.getGrpId(), origUser.getUserId()));
+                    UserGroupEntity uge = new UserGroupEntity(g.getGrpId(), origUser.getUserId());
+                    origUser.getUserGroups().add(uge);
 
                 } else if (operation == AttributeOperationEnum.DELETE) {
                     Set<UserGroupEntity> groups = origUser.getUserGroups();
@@ -1402,7 +1440,7 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
                     return;
 
                 } else if (operation == AttributeOperationEnum.ADD) {
-                    UserRoleEntity ur = new UserRoleEntity(r.getRoleId(), origUser.getUserId());
+                    UserRoleEntity ur = new UserRoleEntity(origUser.getUserId(), r.getRoleId());
                     if ( r.getStartDate() != null) {
                         ur.setStartDate(r.getStartDate());
                     }
@@ -1657,7 +1695,7 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
                 } else if (operation == AttributeOperationEnum.DELETE) {
                     Set<UserAffiliationEntity> affiliations = origUser.getAffiliations();
                     for (UserAffiliationEntity a : affiliations) {
-                        if (o.getId().equals(a.getId())) {
+                        if (o.getId().equals(a.getOrganization().getId())) {
                             origUser.getAffiliations().remove(a);
                             break;
                         }
@@ -1848,11 +1886,14 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
                     continue;
                 }
                 if (e.getOperation().equals(AttributeOperationEnum.DELETE)) {
-                    LoginEntity entity = loginManager.getLoginDetails(e.getLoginId());
-                    if (entity != null) {
-                        origUser.getPrincipalList().remove(entity);
+                    List<LoginEntity> entities = origUser.getPrincipalList();
+                    if (CollectionUtils.isNotEmpty(entities))  {
+                        for (LoginEntity en : entities) {
+                            if (en.getLoginId().equals(e.getLoginId())) {
+                                origUser.getPrincipalList().remove(en);
+                            }
+                        }
                     }
-
                 } else if (e.getOperation().equals(AttributeOperationEnum.ADD)) {
                     LoginEntity entity = loginDozerConverter.convertToEntity(e, false);
                     try {
@@ -1864,12 +1905,16 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
                     }
 
                 } else if (e.getOperation().equals(AttributeOperationEnum.REPLACE)) {
-                    LoginEntity entity = loginManager.getLoginDetails(e.getLoginId());
-                    if (entity != null) {
-                        origUser.getPrincipalList().remove(entity);
-                        loginManager.evict(entity);
-                        entity = loginDozerConverter.convertToEntity(e, false);
-                        origUser.getPrincipalList().add(entity);
+                    List<LoginEntity> entities = origUser.getPrincipalList();
+                    if (CollectionUtils.isNotEmpty(entities)) {
+                        for (LoginEntity en : entities) {
+                            if (en.getLoginId().equals(e.getLoginId())) {
+                                origUser.getPrincipalList().remove(en);
+                                loginManager.evict(en);
+                                LoginEntity entity = loginDozerConverter.convertToEntity(e, false);
+                                origUser.getPrincipalList().add(entity);
+                            }
+                        }
                     }
                 }
             }

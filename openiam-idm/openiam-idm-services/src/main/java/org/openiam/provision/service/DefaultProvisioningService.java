@@ -38,6 +38,7 @@ import org.openiam.connector.type.request.CrudRequest;
 import org.openiam.connector.type.request.LookupRequest;
 import org.openiam.connector.type.request.SuspendResumeRequest;
 import org.openiam.connector.type.response.*;
+import org.openiam.exception.BasicDataServiceException;
 import org.openiam.exception.EncryptionException;
 import org.openiam.exception.ObjectNotFoundException;
 import org.openiam.exception.ScriptEngineException;
@@ -385,7 +386,8 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         bindingMap.put("userRole", user.getMemberOfRoles());
 
         if (provInTargetSystemNow) {
-            Set<Role> resourceSet = new HashSet<Role>(user.getMemberOfRoles());
+            Set<Role> resourceSet = (user.getMemberOfRoles() != null) ?
+                    new HashSet<Role>(user.getMemberOfRoles()) : new HashSet<Role>();
             List<Resource> resourceList = new LinkedList<Resource>(getResourcesForRoles(resourceSet));
 
             // update the resource list to include the resources that have been
@@ -1501,7 +1503,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         }
 
         log.debug("---DEFAULT PROVISIONING SERVICE: modifyUser called ---");
-        log.debug("User passed in with the following Roles: " + pUser.getMemberOfRoles());
 
         ProvisionUserResponse resp = new ProvisionUserResponse();
         String requestId = "R" + UUIDGen.getUUID();
@@ -1546,7 +1547,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
 
         // make sure that our object as the attribute set that will be used for
         // audit logging
-        checkAuditingAttributes(pUser); //TODO: Make a revision
+        checkAuditingAttributes(pUser); //TODO: Make a revision of this code
 
         // get the current roles
         List<Role> curRoleList = roleDataService.getUserRolesAsFlatList(pUser.getUserId()); //TODO: do we need children roles?
@@ -1618,7 +1619,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         log.debug("Delete the following resources ->> " + deleteResourceSet);
 
         // determine which resources are new and which ones are existing
-        updateResourceState(resourceSet, curPrincipalList); //TODO: Check do we really need this!
+        updateResourceState(resourceSet, curPrincipalList); //TODO: Check do we really need this at all?
 
         // update principals
         updatePrincipals(origUser, pUser);
@@ -1681,73 +1682,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
          * pUser.getSessionId());
          */
 
-        if (CollectionUtils.isNotEmpty(deleteResourceSet)) {
-            log.debug("Delete resource set is not null.. ");
-            for (Resource res : deleteResourceSet) {
-                try {
-                    String managedSysId = res.getManagedSysId();
-                    /*
-                    if (pUser.getSrcSystemId() != null) {
-                        if (res.getResourceId().equalsIgnoreCase(
-                                pUser.getSrcSystemId())) {
-                            continue;
-                        }
-                    }
-                    */
-                    bindingMap.put(TARGET_SYS_RES_ID, res.getResourceId());
-                    bindingMap.put(TARGET_SYS_MANAGED_SYS_ID, managedSysId);
-                    if (managedSysId != null) {
+        //TODO: delete by deleteResourceSet
+        //TODO: add/modify by resourceSet
 
-                        ManagedSysEntity mSys = managedSystemService.getManagedSysById(managedSysId);
-                        if (mSys == null || mSys.getConnectorId() == null) {
-                            log.info("Connector was not found");
-                            continue;
-                        }
-
-                        ProvisionConnectorEntity connectorEntity =
-                                connectorService.getProvisionConnectorsById(mSys.getConnectorId());
-
-                        ManagedSystemObjectMatch matchObj = null;
-                        ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(managedSysId, "USER");
-                        if (matchObjAry != null && matchObjAry.length > 0) {
-                            matchObj = matchObjAry[0];
-                            bindingMap.put(MATCH_PARAM, matchObj);
-                        }
-                        // build the request
-                        CrudRequest<ExtensibleUser> modReqType = new CrudRequest<ExtensibleUser>();
-
-                        // get the identity linked to this resource / managedsys
-                        // determin if this identity exists in IDM or not
-                        // if not, do an ADD otherwise, do an update
-
-                        Login mLg = getPrincipalForManagedSys(managedSysId,
-                                principalList);
-                        // Login mLg = getPrincipalForManagedSys(managedSysId,
-                        // curPrincipalList);
-
-                        if (mLg != null && mLg.getLoginId() != null) {
-                            bindingMap.put(TARGET_SYS_SECURITY_DOMAIN,
-                                    mLg.getDomainId());
-                        } else {
-                            bindingMap.put(TARGET_SYS_SECURITY_DOMAIN,
-                                    mSys.getDomainId());
-                        }
-
-                        log.debug("PROCESSING IDENTITY =" + mLg);
-
-                        // object that will be sent to the connectors
-                        List<AttributeMap> attrMap = managedSysService.getResourceAttributeMaps(res.getResourceId());
-
-                    }
-
-
-                } catch(Throwable tw) {
-                    log.error(res,tw); //TODO: Add log message
-                }
-            }
-        }
-
-
+        /*
         if (resourceList != null) {
             log.debug("Resource list is not null.. ");
             // int ctr = 1;
@@ -1970,19 +1908,19 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                                     resp.setErrorCode(ResponseCode.FAIL_CONNECTOR);
                                     continue;
                                 }
-                                /*
-                                 * auditHelper.addLog("ADD IDENTITY", pUser
-                                 * .getRequestorDomain(), pUser
-                                 * .getRequestorLogin(), "IDM SERVICE",
-                                 * origUser.getCreatedBy(),
-                                 * mLg.getManagedSysId(), "USER",
-                                 * origUser.getUserId(), null, "SUCCESS",
-                                 * auditLog.getLogId(), "USER_STATUS",
-                                 * userStatus, requestId, null, pUser
-                                 * .getSessionId(), null, pUser
-                                 * .getRequestClientIP(), mLg.getLogin(),
-                                 * mLg.getDomainId());
-                                 */
+
+//                                 auditHelper.addLog("ADD IDENTITY", pUser
+//                                 .getRequestorDomain(), pUser
+//                                 .getRequestorLogin(), "IDM SERVICE",
+//                                 origUser.getCreatedBy(),
+//                                 mLg.getManagedSysId(), "USER",
+//                                 origUser.getUserId(), null, "SUCCESS",
+//                                 auditLog.getLogId(), "USER_STATUS",
+//                                 userStatus, requestId, null, pUser
+//                                 .getSessionId(), null, pUser
+//                                 .getRequestClientIP(), mLg.getLogin(),
+//                                 mLg.getDomainId());
+
                                 bindingMap.remove(MATCH_PARAM);
 
                             }
@@ -2139,13 +2077,16 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             }
             }
         }
+        */
 
-        validateIdentitiesExistforSecurityDomain(
-                loginDozerConverter.convertToDTO(primaryIdentity, true),
-                activeRoleList);
+
+//        validateIdentitiesExistforSecurityDomain( //TODO: What is it???
+//                loginDozerConverter.convertToDTO(primaryIdentity, true),
+//                activeRoleList);
 
         log.debug("DEFAULT PROVISIONING SERVICE: modifyUser complete");
 
+        /*
         bindingMap.put("userAfterModify", pUser);
 
         if (callPostProcessor("MODIFY", pUser, bindingMap) != ProvisioningConstants.SUCCESS) {
@@ -2153,10 +2094,11 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             resp.setErrorCode(ResponseCode.FAIL_POSTPROCESSOR);
             return resp;
         }
+        */
 
         /* Response object */
         resp.setStatus(ResponseStatus.SUCCESS);
-        resp.setUser(pUser);
+        resp.setUser(pUser); //TODO: if this ProvUser must be created from modified origUser?
         return resp;
 
     }

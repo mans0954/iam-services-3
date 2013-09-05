@@ -74,7 +74,6 @@ public class UserAffiliationEntity {
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result
 				+ ((organization == null) ? 0 : organization.hashCode());
-		result = prime * result + ((user == null) ? 0 : user.hashCode());
 		return result;
 	}
 
@@ -96,11 +95,6 @@ public class UserAffiliationEntity {
 			if (other.organization != null)
 				return false;
 		} else if (!organization.equals(other.organization))
-			return false;
-		if (user == null) {
-			if (other.user != null)
-				return false;
-		} else if (!user.equals(other.user))
 			return false;
 		return true;
 	}

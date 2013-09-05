@@ -176,4 +176,5 @@ public interface RoleDataService {
     public int getNumOfParentRoles(final String roleId, final String requesterId);
     
     public UserRoleEntity getUserRole(final String userId, final String roleId, final String requesterId);
+    public void evict(UserRoleEntity role);
 }

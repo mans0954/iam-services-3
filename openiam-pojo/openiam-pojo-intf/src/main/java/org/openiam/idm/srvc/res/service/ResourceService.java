@@ -53,4 +53,5 @@ public interface ResourceService {
 	public void saveResourceRole(final String resourceId, final String roleId);
 	public void deleteResourceRole(final String resourceId, final String roleId);
 	public int getNumOfResourcesForRole(final String roleId);
+    public void evict(Object entity);
 }

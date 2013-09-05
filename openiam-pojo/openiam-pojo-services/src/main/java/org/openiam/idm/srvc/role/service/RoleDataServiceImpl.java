@@ -420,6 +420,11 @@ public class RoleDataServiceImpl implements RoleDataService {
 		return userRoleDAO.getRecord(userId, roleId);
 	}
 
+    @Override
+    public void evict(UserRoleEntity role) {
+        userRoleDAO.evict(role);
+    }
+
     private Set<String> getDelegationFilter(String requesterId){
         Set<String> filterData = null;
         if(StringUtils.isNotBlank(requesterId)){
