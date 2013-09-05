@@ -1912,7 +1912,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                     origUser.getPrincipalList().add(mLg); // add new identity to user
                 }
 
-            } else { // if user doesn't exist in target system
+            } else { // if user exists in target system
 
                 log.debug("Building attributes for managedSysId = " + managedSysId);
                 log.debug("identity for managedSys is " + targetSysLogin.getLogin());
