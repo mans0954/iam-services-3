@@ -684,6 +684,59 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
         return ResponseCode.SUCCESS;
     }
 
+    protected Login buildPrimaryPrincipal(Map<String, Object> bindingMap, ScriptIntegration se) {
+
+        List<AttributeMap> policyAttrMap = managedSysService.
+                getResourceAttributeMaps(sysConfiguration.getDefaultManagedSysId());
+
+        log.debug("Building primary identity. ");
+
+        if (policyAttrMap != null) {
+
+            log.debug("- policyAttrMap IS NOT null");
+
+            Login primaryIdentity = new Login();
+            EmailAddress primaryEmail = new EmailAddress();
+
+            // init values
+            primaryIdentity.setDomainId(sysConfiguration.getDefaultSecurityDomain());
+            primaryIdentity.setManagedSysId(sysConfiguration.getDefaultManagedSysId());
+
+            try {
+                for (AttributeMap attr : policyAttrMap) {
+                    String output = (String)ProvisionServiceUtil.getOutputFromAttrMap(
+                            attr, bindingMap, se);
+                    String objectType = attr.getMapForObjectType();
+                    if (objectType != null) {
+                        if (objectType.equalsIgnoreCase("PRINCIPAL")) {
+                            if (attr.getAttributeName().equalsIgnoreCase("PRINCIPAL")) {
+                                primaryIdentity.setLogin(output);
+                            }
+                            if (attr.getAttributeName().equalsIgnoreCase("PASSWORD")) {
+                                primaryIdentity.setPassword(output);
+                            }
+                            if (attr.getAttributeName().equalsIgnoreCase("DOMAIN")) {
+                                primaryIdentity.setDomainId(output);
+                            }
+                        }
+                        if (objectType.equals("EMAIL")) {
+                            primaryEmail.setEmailAddress(output);
+                            primaryEmail.setIsDefault(true);
+                        }
+                    }
+                }
+            } catch(Exception e) {
+                log.error(e);
+            }
+
+            return primaryIdentity;
+
+        } else {
+            log.debug("- policyAttrMap IS null");
+            return null;
+        }
+    }
+
     /**
      * Builds the list of principals from the policies that we have defined in the groovy scripts.
      * @param user
@@ -1289,8 +1342,11 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
                     origUser.getUserAttributes().remove(entry.getKey());
 
                 } else if (operation == AttributeOperationEnum.ADD) {
+                    if (origUser.getUserAttributes().containsKey(entry.getKey())) {
+                        throw new IllegalArgumentException("Attribute with this name alreday exists");
+                    }
                     origUser.getUserAttributes().put(entry.getKey(),
-                            userAttributeDozerConverter.convertToEntity(entry.getValue(), true));
+                            userAttributeDozerConverter.convertToEntity(entry.getValue(), false));
 
                 } else if (operation == AttributeOperationEnum.REPLACE) {
                     UserAttributeEntity entity = origUser.getUserAttributes().get(entry.getKey());
