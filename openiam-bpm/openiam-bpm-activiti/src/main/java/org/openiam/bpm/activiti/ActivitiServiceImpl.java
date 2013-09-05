@@ -55,6 +55,7 @@ import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.grp.service.UserGroupDAO;
 import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
 import org.openiam.idm.srvc.meta.exception.PageTemplateException;
+import org.openiam.idm.srvc.meta.service.MetadataElementTemplateService;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
@@ -148,6 +149,9 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 	
 	@Value("${org.openiam.idm.activiti.default.approver.user}")
 	private String defaultApproverUserId;
+	
+    @Autowired
+    private MetadataElementTemplateService pageTemplateService;
 	
 	private static final Comparator<Task> taskCreatedTimeComparator = new TaskCreateDateSorter();
 	
@@ -415,6 +419,7 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 			}
 			
 			//userProfileService.validate(request);
+			pageTemplateService.validate(request);
 			validateUserRequest(request);
 			//final UserEntity provisionUserValidationObject = userDozerConverter.convertToEntity(request.getUser(), true);
 			//entityValidator.isValid(provisionUserValidationObject);
@@ -461,13 +466,11 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 			//userProfileService.validate(request);
 			
 			response.setStatus(ResponseStatus.SUCCESS);
-		/*
 		} catch (PageTemplateException e) {
 			response.setCurrentValue(e.getCurrentValue());
 			response.setElementName(e.getElementName());
 			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);
-		*/
 		} catch(BasicDataServiceException e) {
 			response.setErrorCode(e.getCode());
 			response.setStatus(ResponseStatus.FAILURE);

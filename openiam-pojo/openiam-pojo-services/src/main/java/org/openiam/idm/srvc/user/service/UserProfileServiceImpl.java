@@ -86,6 +86,7 @@ public class UserProfileServiceImpl implements UserProfileService {
     public void saveUserProfile(UserProfileRequestModel request) throws Exception {
         final UserEntity userEntity = userDozerConverter.convertToEntity(request.getUser(), true);
         entityValidator.isValid(userEntity);
+        pageTemplateService.validate(request);
 
         final UserEntity dbEntity = userManager.getUser(request.getUser().getUserId());
 
