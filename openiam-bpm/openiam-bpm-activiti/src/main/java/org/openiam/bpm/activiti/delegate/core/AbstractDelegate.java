@@ -12,7 +12,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.openiam.bpm.util.ActivitiConstants;
-import org.openiam.idm.srvc.grp.service.UserGroupDAO;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
@@ -31,9 +30,6 @@ public abstract class AbstractDelegate implements JavaDelegate {
 
 	@Autowired
 	private ApproverAssociationDAO approverAssociationDao;
-	
-	@Autowired
-	private UserGroupDAO userGroupDAO;
 
 	@Autowired
 	private UserDataService userManager;
@@ -56,7 +52,7 @@ public abstract class AbstractDelegate implements JavaDelegate {
 		if(notifyType != null && StringUtils.isNotBlank(notifyId)) {
 			switch(notifyType) {
 				case GROUP:
-					final List<String> usersInGroup = userGroupDAO.getUserIdsInGroup(notifyId);
+					final List<String> usersInGroup = userManager.getUserIdsInGroup(notifyId, targetUserId);
 	        		if(CollectionUtils.isNotEmpty(usersInGroup)) {
 	        			userIds.addAll(usersInGroup);
 	        		}	

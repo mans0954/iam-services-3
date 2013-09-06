@@ -11,7 +11,6 @@ import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
-import org.openiam.idm.srvc.grp.dto.UserGroup;
 import org.openiam.idm.srvc.org.dto.UserAffiliation;
 import org.openiam.idm.srvc.res.dto.ResourceUser;
 import org.openiam.idm.srvc.role.dto.Role;
@@ -201,8 +200,7 @@ public class User extends org.openiam.base.BaseObject {
     protected Set<Phone> phones = new HashSet<Phone>(0);
 
     protected Set<EmailAddress> emailAddresses = new HashSet<EmailAddress>(0);
-    @XmlTransient
-    private Set<UserGroup> userGroups = new HashSet<UserGroup>(0);
+
     private Set<Role> userRoles = new HashSet<Role>(0);
 
     @XmlTransient
@@ -1094,14 +1092,6 @@ public class User extends org.openiam.base.BaseObject {
 
     public void setDateITPolicyApproved(Date dateITPolicyApproved) {
         this.dateITPolicyApproved = dateITPolicyApproved;
-    }
-
-    public Set<UserGroup> getUserGroups() {
-        return userGroups;
-    }
-
-    public void setUserGroups(Set<UserGroup> userGroups) {
-        this.userGroups = userGroups;
     }
 
     public Set<Role> getUserRoles() {

@@ -586,7 +586,7 @@ public class ModifyUser {
             for (Group g : newGroupList) {
                 g.setOperation(AttributeOperationEnum.ADD);
                 groupList.add(g);
-                this.groupManager.addUserToGroup(g.getGrpId(), userId);
+                this.userMgr.addUserToGroup(g.getGrpId(), userId);
             }
             return;
         }
@@ -610,7 +610,7 @@ public class ModifyUser {
                 // we can remove it
                 Group grp = getGroup(g.getGrpId(), origGroupList);
                 if (grp != null) {
-                    this.groupManager.removeUserFromGroup(grp.getGrpId(),
+                    this.userMgr.removeUserFromGroup(grp.getGrpId(),
                             userId);
                 }
                 groupList.add(grp);
@@ -623,7 +623,7 @@ public class ModifyUser {
                 if (origGroup == null) {
                     g.setOperation(AttributeOperationEnum.ADD);
                     groupList.add(g);
-                    groupManager.addUserToGroup(g.getGrpId(), userId);
+                    userMgr.addUserToGroup(g.getGrpId(), userId);
                 } else {
                     if (g.getGrpId().equals(origGroup.getGrpId())) {
                         // not changed

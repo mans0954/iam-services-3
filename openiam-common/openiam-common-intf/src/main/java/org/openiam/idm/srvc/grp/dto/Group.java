@@ -33,8 +33,7 @@ import java.util.*;
         "operation",
         "parentGroups",
         "childGroups",
-        "resourceGroups",
-        "userGroups"
+        "resourceGroups"
 })
 @XmlRootElement(name = "Group")
 @XmlSeeAlso({
@@ -70,8 +69,6 @@ public class Group implements java.io.Serializable {
     private Set<Group> childGroups;
     
     private Set<ResourceGroup> resourceGroups;
-
-    private Set<UserGroup> userGroups;
 
     @XmlJavaTypeAdapter(RoleSetAdapter.class)
     protected Set<Role> roles = new HashSet<Role>(0);
@@ -292,43 +289,32 @@ public class Group implements java.io.Serializable {
 		this.resourceGroups = resourceGroups;
 	}
 
-	public Set<UserGroup> getUserGroups() {
-		return userGroups;
-	}
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
 
-	public void setUserGroups(Set<UserGroup> userGroups) {
-		this.userGroups = userGroups;
-	}
+        Group group = (Group) o;
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((grpId == null) ? 0 : grpId.hashCode());
-		return result;
-	}
+        if (companyId != null ? !companyId.equals(group.companyId) : group.companyId != null) return false;
+        if (createDate != null ? !createDate.equals(group.createDate) : group.createDate != null) return false;
+        if (createdBy != null ? !createdBy.equals(group.createdBy) : group.createdBy != null) return false;
+        if (grpId != null ? !grpId.equals(group.grpId) : group.grpId != null) return false;
+        if (grpName != null ? !grpName.equals(group.grpName) : group.grpName != null) return false;
+        if (ownerId != null ? !ownerId.equals(group.ownerId) : group.ownerId != null) return false;
 
-	@Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (!(obj instanceof Group)) {
-            return false;
-        }
+        return true;
+    }
 
-        Group compareGroup = (Group) obj;
-
-        return this.companyId.equals(compareGroup.companyId) &&
-                this.description.equals(compareGroup.description) &&
-                this.grpId.equals(compareGroup.grpId) &&
-                this.grpName.equals(compareGroup.grpName) &&
-                this.internalGroupId.equals(compareGroup.internalGroupId) &&
-                this.metadataTypeId.equals(compareGroup.metadataTypeId);
-
+    @Override
+    public int hashCode() {
+        int result = grpId != null ? grpId.hashCode() : 0;
+        result = 31 * result + (grpName != null ? grpName.hashCode() : 0);
+        result = 31 * result + (createDate != null ? createDate.hashCode() : 0);
+        result = 31 * result + (createdBy != null ? createdBy.hashCode() : 0);
+        result = 31 * result + (companyId != null ? companyId.hashCode() : 0);
+        result = 31 * result + (ownerId != null ? ownerId.hashCode() : 0);
+        return result;
     }
 }
 

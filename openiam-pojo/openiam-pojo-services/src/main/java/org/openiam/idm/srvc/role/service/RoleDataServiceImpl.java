@@ -258,20 +258,6 @@ public class RoleDataServiceImpl implements RoleDataService {
 		return roleDao.getRolesForGroup(groupId, getDelegationFilter(requesterId), from, size);
 	}
 
-//	@Override
-//	public List<UserEntity> getUsersInRole(final String roleId, final String requesterId, int from, int size) {
-//		final UserRoleEntity example = new UserRoleEntity();
-//		example.setRoleId(roleId);
-//		final List<UserRoleEntity> userRoleEntityList = userRoleDao.getByExample(example, from, size);
-//		final Set<String> roleIds = new LinkedHashSet<String>();
-//		if(CollectionUtils.isNotEmpty(userRoleEntityList)) {
-//			for(final UserRoleEntity entity : userRoleEntityList) {
-//				roleIds.add(entity.getRoleId());
-//			}
-//		}
-//		return userDAO.findByIds(roleIds, from, size);
-//	}
-
 	@Override
     @Transactional(readOnly = true)
 	public List<RoleEntity> getUserRoles(String userId, final String requesterId, int from, int size) {

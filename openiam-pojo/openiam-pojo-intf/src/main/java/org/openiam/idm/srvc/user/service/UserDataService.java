@@ -262,4 +262,13 @@ public interface UserDataService {
     boolean isRoleInUser(String userId, String roleId);
 
     List<String> getUserIdsInRole(String roleId, String requestrId);
+
+    List<String> getUserIdsInGroup(String groupId, String requestrId);
+
+    void addUserToGroup(String userId, String groupId);
+
+    void removeUserFromGroup(String userId, String groupId);
+
+    boolean isHasGroup(String userId, String groupId);
+
 }

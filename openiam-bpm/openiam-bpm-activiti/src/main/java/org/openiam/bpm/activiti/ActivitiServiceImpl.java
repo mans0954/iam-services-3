@@ -52,7 +52,6 @@ import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
-import org.openiam.idm.srvc.grp.service.UserGroupDAO;
 import org.openiam.idm.srvc.meta.dto.SaveTemplateProfileResponse;
 import org.openiam.idm.srvc.meta.exception.PageTemplateException;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
@@ -69,7 +68,6 @@ import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.SupervisorDAO;
-import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.service.UserProfileService;
 import org.openiam.script.ScriptIntegration;
@@ -135,9 +133,6 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 	@Autowired
 	private AuthorizationManagerService authManagerService;
 
-	@Autowired
-	private UserGroupDAO userGroupDAO;
-	
 	@Value("${org.openiam.idm.activiti.default.approver.association.resource.name}")
 	private String defaultApproverAssociationResourceId;
 	
@@ -239,7 +234,7 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
         							break;
         						case GROUP:
         							if(StringUtils.isNotBlank(approverId)) {
-        								final List<String> authUsers = userGroupDAO.getUserIdsInGroup(approverId);
+        								final List<String> authUsers = userDataService.getUserIdsInGroup(approverId, null);
         								if(CollectionUtils.isNotEmpty(authUsers)) {
         									requestApproverIds.addAll(authUsers);
                 						}
@@ -549,7 +544,7 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 								final String approverId = entity.getApproverEntityId();
 								switch(entity.getApproverEntityType()) {
 									case GROUP:
-										final List<String> groupUsers = userGroupDAO.getUserIdsInGroup(approverId);
+										final List<String> groupUsers = userDataService.getUserIdsInGroup(approverId, null);
 										if(CollectionUtils.isNotEmpty(groupUsers)) {
 			    							approverUserIds.addAll(groupUsers);
 			    						}

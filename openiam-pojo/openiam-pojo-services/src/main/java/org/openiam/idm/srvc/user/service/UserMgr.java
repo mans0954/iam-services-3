@@ -43,7 +43,8 @@ import org.openiam.idm.srvc.continfo.service.EmailAddressDAO;
 import org.openiam.idm.srvc.continfo.service.EmailSearchDAO;
 import org.openiam.idm.srvc.continfo.service.PhoneDAO;
 import org.openiam.idm.srvc.continfo.service.PhoneSearchDAO;
-import org.openiam.idm.srvc.grp.service.UserGroupDAO;
+import org.openiam.idm.srvc.grp.domain.GroupEntity;
+import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.key.service.KeyManagementService;
 import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
@@ -108,9 +109,6 @@ public class UserMgr implements UserDataService {
     @Autowired
     protected SysConfiguration sysConfiguration;
 
-
-    @Autowired
-    private UserGroupDAO userGroupDAO;
     @Autowired
     private ResourceUserDAO resourceUserDAO;
 
@@ -119,6 +117,10 @@ public class UserMgr implements UserDataService {
 
     @Autowired
     private LoginSearchDAO loginSearchDAO;
+
+    @Autowired
+    @Qualifier("groupDAO")
+    private GroupDAO groupDAO;
 
     @Autowired
     private EmailSearchDAO emailSearchDAO;
@@ -422,8 +424,6 @@ public class UserMgr implements UserDataService {
         removeAllNotes(id);
         removeAllEmailAddresses(id);
 
-        userGroupDAO.deleteByUserId(id);
-
         resourceUserDAO.deleteAllByUserId(id);
         userKeyDao.deleteByUserId(id);
 
@@ -523,16 +523,9 @@ public class UserMgr implements UserDataService {
             nonEmptyListOfLists.add(loginSearchDAO.findUserIds(0, MAX_USER_SEARCH_RESULTS, loginSearchBean));
         }
 
-       /* if (CollectionUtils.isNotEmpty(searchBean.getRoleIdSet())) {
-            nonEmptyListOfLists.add(userRoleDAO.getUserIdsInRole(searchBean.getRoleIdSet(), 0, MAX_USER_SEARCH_RESULTS));
-        }*/
 
         if (CollectionUtils.isNotEmpty(searchBean.getOrganizationIdList())) {
             nonEmptyListOfLists.add(userAffiliationDAO.getUserIdsInOrganization(searchBean.getOrganizationIdList(), 0, MAX_USER_SEARCH_RESULTS));
-        }
-
-        if (CollectionUtils.isNotEmpty(searchBean.getGroupIdSet())) {
-            nonEmptyListOfLists.add(userGroupDAO.getUserIdsInGroup(searchBean.getGroupIdSet(), 0, MAX_USER_SEARCH_RESULTS));
         }
 
         if (StringUtils.isNotBlank(searchBean.getEmailAddress())) {
@@ -1940,6 +1933,20 @@ public class UserMgr implements UserDataService {
         return userIds;
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> getUserIdsInGroup(String groupId, String requesterId) {
+        LinkedList<String> userIds = new LinkedList<String>();
+        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(requesterId);
+        if (DelegationFilterHelper.isAllowed(groupId, delegationFilter.getRoleIdSet())) {
+            List<UserEntity> users = userDao.getUsersForGroup(groupId, delegationFilter, 0, Integer.MAX_VALUE);
+            for(UserEntity userEntity : users) {
+                userIds.add(userEntity.getUserId());
+            }
+        }
+        return userIds;
+    }
+
     @Transactional
     private void updateDefaultFlagForEmail(EmailAddressEntity targetEntity, boolean newDefaultValue, UserEntity parent) {
         // update default flag
@@ -2061,7 +2068,29 @@ public class UserMgr implements UserDataService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<UserEntity> getByExample(UserSearchBean searchBean) {
         return userDao.getByExample(searchBean);
+    }
+
+    @Override
+    @Transactional
+    public void addUserToGroup(String userId, String groupId) {
+        GroupEntity groupEntity = groupDAO.findById(groupId);
+        UserEntity userEntity = userDao.findById(userId);
+        userEntity.getUserGroups().add(groupEntity);
+    }
+
+    @Override
+    @Transactional
+    public void removeUserFromGroup(String userId, String groupId) {
+        GroupEntity groupEntity = groupDAO.findById(groupId);
+        UserEntity userEntity = userDao.findById(userId);
+        userEntity.getUserGroups().remove(groupEntity);
+    }
+
+    @Override
+    public boolean isHasGroup(String userId, String groupId) {
+        return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 }

@@ -78,10 +78,6 @@
 			<b>userKeys</b>
 		</field-exclude>
 		<field-exclude>
-			<a>userGroups</a>
-			<b>userGroups</b>
-		</field-exclude>
-		<field-exclude>
 			<a>resourceUsers</a>
 			<b>resourceUsers</b>
 		</field-exclude>

@@ -12,7 +12,6 @@ import org.apache.log4j.Logger;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.auth.domain.LoginEntity;
 import org.openiam.idm.srvc.auth.login.LoginDataService;
-import org.openiam.idm.srvc.grp.service.UserGroupDAO;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
@@ -45,10 +44,7 @@ public class AcceptProfileProvisionNotifierDelegate implements JavaDelegate {
 	
 	@Autowired
 	private LoginDataService loginDS;
-	
-	@Autowired
-	private UserGroupDAO userGroupDAO;
-	
+
 	@Autowired
 	@Qualifier("provRequestService")
 	private RequestDataService provRequestService;
@@ -87,7 +83,7 @@ public class AcceptProfileProvisionNotifierDelegate implements JavaDelegate {
 	            
 	            switch(typeOfUserToNotify) {
 	            	case GROUP:
-	            		final List<String> usersInGroup = userGroupDAO.getUserIdsInGroup(notifyId);
+	            		final List<String> usersInGroup = userManager.getUserIdsInGroup(notifyId, requestorId);
 						if(CollectionUtils.isNotEmpty(usersInGroup)) {
 							userIds.addAll(usersInGroup);
 						}
