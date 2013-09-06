@@ -12,6 +12,9 @@ import org.openiam.idm.srvc.mngsys.domain.ManagedSysRuleEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSystemObjectMatchEntity;
 import org.openiam.idm.srvc.mngsys.domain.ReconciliationResourceAttributeMapEntity;
 import org.openiam.idm.srvc.policy.service.PolicyDAO;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.service.ResourceDAO;
+import org.openiam.idm.srvc.res.service.ResourceTypeDAO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,6 +39,14 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
 
     @Autowired
     private ManagedSystemObjectMatchDAO matchDAO;
+    
+    @Autowired
+    private ResourceTypeDAO resourceTypeDAO;
+    
+    @Autowired
+    private ResourceDAO resourceDAO;
+    
+    private static final String resourceTypeId="MANAGED_SYS";
 
     @Override
     @Transactional(readOnly = true)
@@ -53,7 +64,17 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     @Override
     @Transactional
     public void addManagedSys(ManagedSysEntity entity) {
-        managedSysDAO.persist(entity);
+    	//if(org.apache.commons.lang.StringUtils.isBlank(entity.getResourceId())) {
+    	final ResourceEntity resource = new ResourceEntity();
+    	resource.setName(String.format("%s_%S", entity.getName(), System.currentTimeMillis()));
+    	resource.setResourceType(resourceTypeDAO.findById(resourceTypeId));
+    	resource.setIsPublic(false);
+    	resourceDAO.save(resource);
+    	entity.setResourceId(resource.getResourceId());
+    	//}
+        managedSysDAO.save(entity);
+        //resource.setManagedSysId(entity.getManagedSysId());
+        //resourceDAO.update(resource);
     }
 
     @Override
@@ -100,6 +121,16 @@ public class ManagedSystemServiceImpl implements ManagedSystemService {
     @Override
     @Transactional
     public void updateManagedSys(ManagedSysEntity entity) {
+    	ResourceEntity resource = null;
+    	if(org.apache.commons.lang.StringUtils.isEmpty(entity.getResourceId())) {
+    		resource = new ResourceEntity();
+    		resource.setName(String.format("%s_%S", entity.getName(), System.currentTimeMillis()));
+    		resource.setResourceType(resourceTypeDAO.findById(resourceTypeId));
+    		resource.setIsPublic(false);
+    		//resource.setManagedSysId(entity.getManagedSysId());
+    		resourceDAO.save(resource);
+    		entity.setResourceId(resource.getResourceId());
+    	}
         managedSysDAO.merge(entity);
     }
 

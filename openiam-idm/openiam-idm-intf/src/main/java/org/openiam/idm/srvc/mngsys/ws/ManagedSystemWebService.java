@@ -62,31 +62,8 @@ public interface ManagedSystemWebService {
     ManagedSysDto getManagedSysByName(
             @WebParam(name = "name", targetNamespace = "") String name);
 
-    /**
-     * Returns an array of ManagedSys object for a provider. The providerId is
-     * the same as the connectorId.
-     * 
-     * @param providerId
-     *            the provider id
-     * @return the managed sys by provider
-     */
     @WebMethod
-    ManagedSysDto[] getManagedSysByProvider(
-            @WebParam(name = "providerId", targetNamespace = "") String providerId);
-
-    /**
-     * Returns an array of ManagedSys object for a security domain.
-     * 
-     * @param domainId
-     *            the domain id
-     * @return the managed sys by domain
-     */
-    @WebMethod
-    ManagedSysDto[] getManagedSysByDomain(
-            @WebParam(name = "domainId", targetNamespace = "") String domainId);
-
-    @WebMethod
-    ManagedSysDto[] getAllManagedSys();
+    List<ManagedSysDto> getAllManagedSys();
 
     /**
      * Gets the managed sys by resource.
@@ -107,17 +84,7 @@ public interface ManagedSystemWebService {
      *            the sys
      */
     @WebMethod
-    ManagedSysDto addManagedSystem(
-            @WebParam(name = "sys", targetNamespace = "") ManagedSysDto sys);
-
-    /**
-     * Updates an existing managed system entry.
-     * 
-     * @param sys
-     *            the sys
-     */
-    @WebMethod
-    void updateManagedSystem(
+    Response saveManagedSystem(
             @WebParam(name = "sys", targetNamespace = "") ManagedSysDto sys);
 
     /**
@@ -127,7 +94,7 @@ public interface ManagedSystemWebService {
      *            the sys id
      */
     @WebMethod
-    void removeManagedSystem(
+    Response removeManagedSystem(
             @WebParam(name = "sysId", targetNamespace = "") String sysId);
 
     /**
@@ -146,11 +113,7 @@ public interface ManagedSystemWebService {
             @WebParam(name = "objectType", targetNamespace = "") String objectType);
 
     @WebMethod
-    public void addManagedSystemObjectMatch(
-            @WebParam(name = "obj", targetNamespace = "") ManagedSystemObjectMatch obj);
-
-    @WebMethod
-    public void updateManagedSystemObjectMatch(
+    public Response saveManagedSystemObjectMatch(
             @WebParam(name = "obj", targetNamespace = "") ManagedSystemObjectMatch obj);
 
     @WebMethod
