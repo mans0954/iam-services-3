@@ -1515,7 +1515,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             throw new IllegalArgumentException("UserId='" + pUser.getUserId() + "' is not valid");
         }
 
-        log.debug("---DEFAULT PROVISIONING SERVICE: modifyUser called ---");
+        log.debug("--- DEFAULT PROVISIONING SERVICE: modifyUser called ---");
 
         ProvisionUserResponse resp = new ProvisionUserResponse();
         String requestId = "R" + UUIDGen.getUUID();
@@ -1698,6 +1698,18 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
          * pUser.getSessionId());
          */
 
+        // deprovision resources
+        if (CollectionUtils.isNotEmpty(deleteResourceSet)) {
+            for (Resource res : deleteResourceSet) {
+                try { // Protects other resources if one resource failed
+                    deprovisionResource(res, origUser, requestId);
+                } catch (Throwable tw) {
+                    log.error(res, tw);
+                }
+            }
+        }
+
+        // provision resources
         if (CollectionUtils.isNotEmpty(resourceSet)) {
             for (Resource res : resourceSet) {
                 try { // Protects other resources if one resource failed
@@ -1707,8 +1719,6 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 }
             }
         }
-
-        //TODO: make deprovision of deleteResourceSet
 
 //        validateIdentitiesExistforSecurityDomain( //TODO: What is it???
 //                loginDozerConverter.convertToDTO(primaryIdentity, true),
@@ -1775,10 +1785,10 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
                 return;
             }
             ProvisionConnectorEntity connectorEntity = connectorService.getProvisionConnectorsById(mSys.getConnectorId());
-            ProvisionConnectorDto connector = provisionConnectorConverter.convertToDTO(connectorEntity, true);
-            if (connector == null) {
+            if (connectorEntity == null) {
                 return;
             }
+            ProvisionConnectorDto connector = provisionConnectorConverter.convertToDTO(connectorEntity, true);
 
             ManagedSystemObjectMatch matchObj = null;
             ManagedSystemObjectMatch[] matchObjAry = managedSysService.managedSysObjectParam(managedSysId, "USER");
@@ -2013,6 +2023,96 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
             bindingMap.remove(MATCH_PARAM);
 
         }
+    }
+
+    private void deprovisionResource(Resource res, UserEntity origUser, String requestId) {
+        String managedSysId = res.getManagedSysId();
+        log.debug("Deleting identity for managedSys=" + managedSysId);
+
+        ManagedSysDto mSys = managedSysService.getManagedSys(managedSysId);
+        if (mSys == null || mSys.getConnectorId() == null) {
+            return;
+        }
+
+        LoginEntity mLg = getPrincipalForManagedSys(managedSysId, origUser.getPrincipalList());
+
+        if (mLg != null) {
+
+            ProvisionConnectorEntity connectorEntity = connectorService.getProvisionConnectorsById(mSys.getConnectorId());
+            if (connectorEntity == null) {
+                return;
+            }
+            ProvisionConnectorDto connector = provisionConnectorConverter.convertToDTO(connectorEntity, true);
+
+            ObjectResponse respType = null;
+            if (connector.getConnectorInterface() != null &&
+                    connector.getConnectorInterface().equalsIgnoreCase("REMOTE")) {
+
+                CrudRequest<ExtensibleUser> request = new CrudRequest<ExtensibleUser>();
+                request.setObjectIdentity(mLg.getLogin());
+                request.setRequestID(requestId);
+                request.setTargetID(mLg.getManagedSysId());
+                request.setHostLoginId(mSys.getUserId());
+                String passwordDecoded = mSys.getPswd();
+                try {
+                    passwordDecoded = getDecryptedPassword(mSys);
+                } catch (ConnectorDataException e) {
+                    e.printStackTrace();
+                }
+                request.setHostLoginPassword(passwordDecoded);
+                request.setHostUrl(mSys.getHostUrl());
+                request.setOperation("DELETE");
+                request.setScriptHandler(mSys.getDeleteHandler());
+
+                respType = remoteConnectorAdapter.deleteRequest(mSys, request, connector, MuleContextProvider.getCtx());
+
+            } else {
+
+                CrudRequest<ExtensibleUser> reqType = new CrudRequest<ExtensibleUser>();
+                reqType.setRequestID(requestId);
+                reqType.setObjectIdentity(mLg.getLogin());
+                reqType.setTargetID(managedSysId);
+
+                respType = connectorAdapter.deleteRequest(mSys, reqType, MuleContextProvider.getCtx());
+
+            }
+            if (respType != null && respType.getStatus() == StatusCodeType.SUCCESS) {
+
+                for (LoginEntity e : origUser.getPrincipalList()) {
+                    if (e.getLoginId().equals(mLg.getLoginId())) {
+                        e.setStatus("INACTIVE");
+                        e.setAuthFailCount(0);
+                        e.setPasswordChangeCount(0);
+                        e.setIsLocked(0);
+
+                        // change the password to a random scrambled password
+                        String scrambledPassword = PasswordGenerator.generatePassword(10);
+                        try {
+                            e.setPassword(loginManager.encryptPassword(mLg.getUserId(), scrambledPassword));
+                        } catch (EncryptionException ee) {
+                            log.error(ee);
+                            // put the password in a clean state so that the
+                            // operation continues
+                            e.setPassword(null);
+                        }
+                        break;
+                    }
+                }
+
+                // LOG THIS EVENT
+                    /*
+                     * auditHelper.addLog("REMOVE IDENTITY", pUser
+                      * .getRequestorDomain(), pUser.getRequestorLogin(),
+                     * "IDM SERVICE", origUser.getCreatedBy(), mLg
+                     * .getManagedSysId(), "USER", origUser .getUserId(), null,
+                     * "SUCCESS", auditLogId, "USER_STATUS", status, requestId,
+                     * null, pUser .getSessionId(), null, pUser
+                     * .getRequestClientIP(), mLg .getLogin(),
+                     * mLg.getDomainId());
+                     */
+            }
+        }
+
     }
 
     private void deProvisionResources(List<Resource> deleteResourceList,

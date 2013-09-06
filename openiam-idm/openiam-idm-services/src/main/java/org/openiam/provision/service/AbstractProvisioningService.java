@@ -1969,6 +1969,7 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
                                 loginManager.evict(en);
                                 LoginEntity entity = loginDozerConverter.convertToEntity(e, false);
                                 origUser.getPrincipalList().add(entity);
+                                break;
                             }
                         }
                     }
