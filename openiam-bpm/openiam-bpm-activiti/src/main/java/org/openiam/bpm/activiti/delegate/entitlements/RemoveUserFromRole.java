@@ -5,10 +5,8 @@ import org.openiam.base.AttributeOperationEnum;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.dozer.converter.RoleDozerConverter;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
-import org.openiam.idm.srvc.role.domain.UserRoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.service.RoleDataService;
-import org.openiam.idm.srvc.role.service.UserRoleDAO;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionUser;
@@ -30,10 +28,7 @@ public class RemoveUserFromRole extends AbstractEntitlementsDelegate {
 	
 	@Autowired
 	private RoleDozerConverter roleDozerConverter;
-	
-	@Autowired
-	private UserRoleDAO userRoleDAO;
-	
+
 	public RemoveUserFromRole() {
 		super();
 	}
@@ -46,7 +41,7 @@ public class RemoveUserFromRole extends AbstractEntitlementsDelegate {
 		final RoleEntity roleEntity = roleDataService.getRole(roleId);
 		final User user = userDataService.getUserDto(userId);
 		
-		if(roleEntity != null && user != null && userRoleDAO.getRecord(userId, roleId) != null) {
+		if(roleEntity != null && user != null) {
 			final ProvisionUser pUser = new ProvisionUser(user);
 			final Role role = roleDozerConverter.convertToDTO(roleEntity, false);
 			role.setOperation(AttributeOperationEnum.DELETE);

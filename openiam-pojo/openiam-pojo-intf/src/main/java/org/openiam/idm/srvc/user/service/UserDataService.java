@@ -258,4 +258,8 @@ public interface UserDataService {
     public Map<String, UserAttributeEntity> getUserAttributes(String userId);
 
     List<UserEntity> getByExample(UserSearchBean searchBean);
+
+    boolean isRoleInUser(String userId, String roleId);
+
+    List<String> getUserIdsInRole(String roleId, String requestrId);
 }

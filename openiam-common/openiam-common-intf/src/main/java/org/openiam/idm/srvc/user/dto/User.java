@@ -14,7 +14,7 @@ import org.openiam.idm.srvc.continfo.dto.Phone;
 import org.openiam.idm.srvc.grp.dto.UserGroup;
 import org.openiam.idm.srvc.org.dto.UserAffiliation;
 import org.openiam.idm.srvc.res.dto.ResourceUser;
-import org.openiam.idm.srvc.role.dto.UserRole;
+import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 
 import javax.persistence.EnumType;
@@ -203,7 +203,7 @@ public class User extends org.openiam.base.BaseObject {
     protected Set<EmailAddress> emailAddresses = new HashSet<EmailAddress>(0);
     @XmlTransient
     private Set<UserGroup> userGroups = new HashSet<UserGroup>(0);
-    private Set<UserRole> userRoles = new HashSet<UserRole>(0);
+    private Set<Role> userRoles = new HashSet<Role>(0);
 
     @XmlTransient
     private Set<ResourceUser> resourceUsers = new HashSet<ResourceUser>();
@@ -1104,11 +1104,11 @@ public class User extends org.openiam.base.BaseObject {
         this.userGroups = userGroups;
     }
 
-    public Set<UserRole> getUserRoles() {
+    public Set<Role> getUserRoles() {
         return userRoles;
     }
 
-    public void setUserRoles(Set<UserRole> userRoles) {
+    public void setUserRoles(Set<Role> userRoles) {
         this.userRoles = userRoles;
     }
 
@@ -1136,132 +1136,54 @@ public class User extends org.openiam.base.BaseObject {
         this.notifyUserViaEmail = notifyUserViaEmail;
     }
 
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof User)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
 
         User user = (User) o;
 
-        if (operation != null ? !operation.equals(user.operation) : user.operation != null) return false;
-        if (addresses != null ? !addresses.equals(user.addresses) : user.addresses != null) return false;
-        if (alternateContactId != null ? !alternateContactId.equals(user.alternateContactId) : user.alternateContactId != null)
-            return false;
-        if (birthdate != null ? !birthdate.equals(user.birthdate) : user.birthdate != null) return false;
-        if (classification != null ? !classification.equals(user.classification) : user.classification != null)
-            return false;
         if (companyOwnerId != null ? !companyOwnerId.equals(user.companyOwnerId) : user.companyOwnerId != null)
             return false;
         if (costCenter != null ? !costCenter.equals(user.costCenter) : user.costCenter != null) return false;
         if (createDate != null ? !createDate.equals(user.createDate) : user.createDate != null) return false;
         if (createdBy != null ? !createdBy.equals(user.createdBy) : user.createdBy != null) return false;
-        if (dateChallengeRespChanged != null ? !dateChallengeRespChanged.equals(user.dateChallengeRespChanged) : user.dateChallengeRespChanged != null)
-            return false;
-        if (dateITPolicyApproved != null ? !dateITPolicyApproved.equals(user.dateITPolicyApproved) : user.dateITPolicyApproved != null)
-            return false;
-        if (datePasswordChanged != null ? !datePasswordChanged.equals(user.datePasswordChanged) : user.datePasswordChanged != null)
-            return false;
         if (email != null ? !email.equals(user.email) : user.email != null) return false;
-        if (emailAddresses != null ? !emailAddresses.equals(user.emailAddresses) : user.emailAddresses != null)
-            return false;
         if (employeeId != null ? !employeeId.equals(user.employeeId) : user.employeeId != null) return false;
         if (employeeType != null ? !employeeType.equals(user.employeeType) : user.employeeType != null) return false;
-        if (firstName != null ? !firstName.equals(user.firstName) : user.firstName != null) return false;
-        if (jobCode != null ? !jobCode.equals(user.jobCode) : user.jobCode != null) return false;
         if (lastDate != null ? !lastDate.equals(user.lastDate) : user.lastDate != null) return false;
-        if (lastName != null ? !lastName.equals(user.lastName) : user.lastName != null) return false;
-        if (lastUpdate != null ? !lastUpdate.equals(user.lastUpdate) : user.lastUpdate != null) return false;
-        if (lastUpdatedBy != null ? !lastUpdatedBy.equals(user.lastUpdatedBy) : user.lastUpdatedBy != null)
-            return false;
-        if (locationCd != null ? !locationCd.equals(user.locationCd) : user.locationCd != null) return false;
-        if (locationName != null ? !locationName.equals(user.locationName) : user.locationName != null) return false;
+        if (login != null ? !login.equals(user.login) : user.login != null) return false;
         if (maidenName != null ? !maidenName.equals(user.maidenName) : user.maidenName != null) return false;
-        if (mailCode != null ? !mailCode.equals(user.mailCode) : user.mailCode != null) return false;
-        if (metadataTypeId != null ? !metadataTypeId.equals(user.metadataTypeId) : user.metadataTypeId != null)
-            return false;
-        if (middleInit != null ? !middleInit.equals(user.middleInit) : user.middleInit != null) return false;
         if (nickname != null ? !nickname.equals(user.nickname) : user.nickname != null) return false;
-        if (passwordTheme != null ? !passwordTheme.equals(user.passwordTheme) : user.passwordTheme != null)
-            return false;
-        if (phones != null ? !phones.equals(user.phones) : user.phones != null) return false;
-        if (prefix != null ? !prefix.equals(user.prefix) : user.prefix != null) return false;
-        if (principalList != null ? !principalList.equals(user.principalList) : user.principalList != null)
-            return false;
-        if (secondaryStatus != user.secondaryStatus) return false;
         if (securityDomain != null ? !securityDomain.equals(user.securityDomain) : user.securityDomain != null)
             return false;
-        if (sex != null ? !sex.equals(user.sex) : user.sex != null) return false;
-        if (showInSearch != null ? !showInSearch.equals(user.showInSearch) : user.showInSearch != null) return false;
         if (startDate != null ? !startDate.equals(user.startDate) : user.startDate != null) return false;
-        if (status != user.status) return false;
-        if (suffix != null ? !suffix.equals(user.suffix) : user.suffix != null) return false;
         if (title != null ? !title.equals(user.title) : user.title != null) return false;
-        if (userAttributes != null ? !userAttributes.equals(user.userAttributes) : user.userAttributes != null)
-            return false;
         if (userId != null ? !userId.equals(user.userId) : user.userId != null) return false;
-        if (userNotes != null ? !userNotes.equals(user.userNotes) : user.userNotes != null) return false;
         if (userOwnerId != null ? !userOwnerId.equals(user.userOwnerId) : user.userOwnerId != null) return false;
-        if (userTypeInd != null ? !userTypeInd.equals(user.userTypeInd) : user.userTypeInd != null) return false;
 
         return true;
     }
 
     @Override
     public int hashCode() {
-        return userId != null ? userId.hashCode() : 0;
+        int result = userId != null ? userId.hashCode() : 0;
+        result = 31 * result + (companyOwnerId != null ? companyOwnerId.hashCode() : 0);
+        result = 31 * result + (createDate != null ? createDate.hashCode() : 0);
+        result = 31 * result + (createdBy != null ? createdBy.hashCode() : 0);
+        result = 31 * result + (employeeId != null ? employeeId.hashCode() : 0);
+        result = 31 * result + (employeeType != null ? employeeType.hashCode() : 0);
+        result = 31 * result + (title != null ? title.hashCode() : 0);
+        result = 31 * result + (costCenter != null ? costCenter.hashCode() : 0);
+        result = 31 * result + (startDate != null ? startDate.hashCode() : 0);
+        result = 31 * result + (lastDate != null ? lastDate.hashCode() : 0);
+        result = 31 * result + (nickname != null ? nickname.hashCode() : 0);
+        result = 31 * result + (maidenName != null ? maidenName.hashCode() : 0);
+        result = 31 * result + (email != null ? email.hashCode() : 0);
+        result = 31 * result + (securityDomain != null ? securityDomain.hashCode() : 0);
+        result = 31 * result + (userOwnerId != null ? userOwnerId.hashCode() : 0);
+        result = 31 * result + (login != null ? login.hashCode() : 0);
+        return result;
     }
-
-    @Override
-    public String toString() {
-        return "User{" +
-                "operation='" + operation + '\'' +
-                ", birthdate='" + birthdate + '\'' +
-                ", companyOwnerId='" + companyOwnerId + '\'' +
-                ", createDate=" + createDate +
-                ", createdBy='" + createdBy + '\'' +
-                ", employeeId='" + employeeId + '\'' +
-                ", employeeType='" + employeeType + '\'' +
-                ", firstName='" + firstName + '\'' +
-                ", jobCode='" + jobCode + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ", lastUpdate=" + lastUpdate +
-                ", lastUpdatedBy='" + lastUpdatedBy + '\'' +
-                ", locationCd='" + locationCd + '\'' +
-                ", locationName='" + locationName + '\'' +
-                ", metadataTypeId='" + metadataTypeId + '\'' +
-                ", classification='" + classification + '\'' +
-                ", middleInit='" + middleInit + '\'' +
-                ", prefix='" + prefix + '\'' +
-                ", sex='" + sex + '\'' +
-                ", status=" + status +
-                ", secondaryStatus=" + secondaryStatus +
-                ", suffix='" + suffix + '\'' +
-                ", title='" + title + '\'' +
-                ", userId='" + userId + '\'' +
-                ", userTypeInd='" + userTypeInd + '\'' +
-                ", mailCode='" + mailCode + '\'' +
-                ", costCenter='" + costCenter + '\'' +
-                ", startDate=" + startDate +
-                ", lastDate=" + lastDate +
-                ", nickname='" + nickname + '\'' +
-                ", maidenName='" + maidenName + '\'' +
-                ", passwordTheme='" + passwordTheme + '\'' +
-                ", email='" + email + '\'' +
-                ", showInSearch=" + showInSearch +
-                ", principalList=" + principalList +
-                ", alternateContactId='" + alternateContactId + '\'' +
-                ", securityDomain='" + securityDomain + '\'' +
-                ", userOwnerId='" + userOwnerId + '\'' +
-                ", datePasswordChanged=" + datePasswordChanged +
-                ", dateChallengeRespChanged=" + dateChallengeRespChanged +
-                ", dateITPolicyApproved=" + dateITPolicyApproved +
-                ", userNotes=" + userNotes +
-                ", userAttributes=" + userAttributes +
-                ", addresses=" + addresses +
-                ", phones=" + phones +
-                ", emailAddresses=" + emailAddresses +
-                '}';
-    }
-
-
 }

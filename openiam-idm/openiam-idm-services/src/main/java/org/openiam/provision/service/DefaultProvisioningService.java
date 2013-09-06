@@ -1613,6 +1613,7 @@ public class DefaultProvisioningService extends AbstractProvisioningService {
         // update roles
         Set<Role> roleSet = new HashSet<Role>();
         Set<Role> deleteRoleSet = new HashSet<Role>();
+
         updateRoles(origUser, pUser, roleSet, deleteRoleSet);
         bindingMap.put("userRole", roleSet);
 

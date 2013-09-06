@@ -90,11 +90,6 @@
 			<a>principalList</a>
 			<b>principalList</b>
 		</field>
-        <field  custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
-                custom-converter-param="dto2entityShallowDozerMapper">
-            <a>userRoles</a>
-            <b>userRoles</b>
-        </field>
         <field custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
                custom-converter-param="dto2entityShallowDozerMapper">
             <a>affiliations</a>
@@ -231,12 +226,6 @@
 			custom-converter-param="dto2entityShallowDozerMapper">
 			<a>resourceRoles</a>
 			<b>resourceRoles</b>
-		</field>
-		<field
-			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
-			custom-converter-param="dto2entityShallowDozerMapper">
-			<a>userRoles</a>
-			<b>userRoles</b>
 		</field>
 	</mapping>
 	<mapping>

@@ -14,7 +14,6 @@ import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.meta.dto.PageTemplateAttributeToken;
 import org.openiam.idm.srvc.meta.service.MetadataElementTemplateService;
 import org.openiam.idm.srvc.msg.service.MailService;
-import org.openiam.idm.srvc.role.service.UserRoleDAO;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
@@ -50,10 +49,7 @@ public class UserProfileServiceImpl implements UserProfileService {
     
     @Autowired
     private LoginDataService loginDataService;
-    
-    @Autowired
-    private UserRoleDAO userRoleDAO;
-    
+
     @Autowired
     private EmailAddressDozerConverter emailAddressDozerConverter;
     
