@@ -9,14 +9,6 @@ import java.util.Set;
 public interface RoleDAO extends BaseDao<RoleEntity, String> {
 
     /**
-     * Get the roles for a user
-     *
-     * @param userId
-     * @return
-     */
-    public List<RoleEntity> findUserRoles(final String userId, final Set<String> filter, final int from, final int size);
-
-    /**
      * Find all the roles associated with a Group
      *
      * @return
@@ -32,7 +24,7 @@ public interface RoleDAO extends BaseDao<RoleEntity, String> {
     
     public List<RoleEntity> getParentRoles(final  String roleId, final Set<String> filter, final int from, final int size);
     public int getNumOfParentRoles(final String roleId, final Set<String> filter);
-    
+
     public List<RoleEntity> getRolesForUser(final String userId, final Set<String> filter, final int from, final int size);
     public int getNumOfRolesForUser(final String userId, final Set<String> filter);
 

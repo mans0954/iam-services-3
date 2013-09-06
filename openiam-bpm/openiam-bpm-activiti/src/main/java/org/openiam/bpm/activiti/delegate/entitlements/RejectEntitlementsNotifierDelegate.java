@@ -8,21 +8,10 @@ import java.util.Set;
 
 import org.activiti.engine.delegate.DelegateExecution;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
 import org.openiam.bpm.util.ActivitiConstants;
-import org.openiam.idm.srvc.grp.service.UserGroupDAO;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
-import org.openiam.idm.srvc.mngsys.domain.AssociationType;
-import org.openiam.idm.srvc.msg.dto.NotificationParam;
-import org.openiam.idm.srvc.msg.dto.NotificationRequest;
-import org.openiam.idm.srvc.msg.service.MailService;
-import org.openiam.idm.srvc.role.service.UserRoleDAO;
-import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
-import org.openiam.idm.srvc.user.dto.Supervisor;
-import org.openiam.idm.srvc.user.service.SupervisorDAO;
 import org.openiam.idm.srvc.user.service.UserDAO;
-import org.openiam.idm.srvc.user.service.UserMgr;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class RejectEntitlementsNotifierDelegate extends AbstractEntitlementsDelegate {

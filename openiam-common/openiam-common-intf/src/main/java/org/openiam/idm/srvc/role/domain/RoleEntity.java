@@ -32,6 +32,7 @@ import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.res.domain.ResourceRoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 
 @Entity
 @Table(name="ROLE")
@@ -105,13 +106,11 @@ public class RoleEntity implements Serializable {
     @JoinColumn(name = "ROLE_ID")
     @Fetch(FetchMode.SUBSELECT)
     private Set<ResourceRoleEntity> resourceRoles;
-    
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.REMOVE, CascadeType.DETACH})
-    @JoinColumn(name = "ROLE_ID")
-    @Fetch(FetchMode.SUBSELECT)
-    private Set<UserRoleEntity> userRoles;
-    
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "USER_ROLE", joinColumns = { @JoinColumn(name = "ROLE_ID") }, inverseJoinColumns = { @JoinColumn(name = "USER_ID") })
+    private Set<UserEntity> users = new HashSet<UserEntity>(0);
+
     @Column(name="CREATE_DATE",length=19)
 	private Date createDate;
     
@@ -329,101 +328,46 @@ public class RoleEntity implements Serializable {
 		}
 	}
 
-	public Set<UserRoleEntity> getUserRoles() {
-		return userRoles;
-	}
+    public Set<UserEntity> getUsers() {
+        return users;
+    }
 
-	public void setUserRoles(Set<UserRoleEntity> userRoles) {
-		this.userRoles = userRoles;
-	}
+    public void setUsers(Set<UserEntity> users) {
+        this.users = users;
+    }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result
-				+ ((createDate == null) ? 0 : createDate.hashCode());
-		result = prime * result
-				+ ((createdBy == null) ? 0 : createdBy.hashCode());
-		result = prime * result
-				+ ((description == null) ? 0 : description.hashCode());
-		result = prime * result
-				+ ((internalRoleId == null) ? 0 : internalRoleId.hashCode());
-		result = prime * result
-				+ ((metadataTypeId == null) ? 0 : metadataTypeId.hashCode());
-		result = prime * result + ((ownerId == null) ? 0 : ownerId.hashCode());
-		result = prime * result + ((roleId == null) ? 0 : roleId.hashCode());
-		result = prime * result
-				+ ((roleName == null) ? 0 : roleName.hashCode());
-		result = prime * result
-				+ ((serviceId == null) ? 0 : serviceId.hashCode());
-		result = prime * result + ((status == null) ? 0 : status.hashCode());
-		return result;
-	}
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		RoleEntity other = (RoleEntity) obj;
-		if (createDate == null) {
-			if (other.createDate != null)
-				return false;
-		} else if (!createDate.equals(other.createDate))
-			return false;
-		if (createdBy == null) {
-			if (other.createdBy != null)
-				return false;
-		} else if (!createdBy.equals(other.createdBy))
-			return false;
-		if (description == null) {
-			if (other.description != null)
-				return false;
-		} else if (!description.equals(other.description))
-			return false;
-		if (internalRoleId == null) {
-			if (other.internalRoleId != null)
-				return false;
-		} else if (!internalRoleId.equals(other.internalRoleId))
-			return false;
-		if (metadataTypeId == null) {
-			if (other.metadataTypeId != null)
-				return false;
-		} else if (!metadataTypeId.equals(other.metadataTypeId))
-			return false;
-		if (ownerId == null) {
-			if (other.ownerId != null)
-				return false;
-		} else if (!ownerId.equals(other.ownerId))
-			return false;
-		if (roleId == null) {
-			if (other.roleId != null)
-				return false;
-		} else if (!roleId.equals(other.roleId))
-			return false;
-		if (roleName == null) {
-			if (other.roleName != null)
-				return false;
-		} else if (!roleName.equals(other.roleName))
-			return false;
-		if (serviceId == null) {
-			if (other.serviceId != null)
-				return false;
-		} else if (!serviceId.equals(other.serviceId))
-			return false;
-		if (status == null) {
-			if (other.status != null)
-				return false;
-		} else if (!status.equals(other.status))
-			return false;
-		return true;
-	}
+        RoleEntity that = (RoleEntity) o;
 
-	@Override
+        if (createDate != null ? !createDate.equals(that.createDate) : that.createDate != null) return false;
+        if (createdBy != null ? !createdBy.equals(that.createdBy) : that.createdBy != null) return false;
+        if (internalRoleId != null ? !internalRoleId.equals(that.internalRoleId) : that.internalRoleId != null)
+            return false;
+        if (roleId != null ? !roleId.equals(that.roleId) : that.roleId != null) return false;
+        if (roleName != null ? !roleName.equals(that.roleName) : that.roleName != null) return false;
+        if (serviceId != null ? !serviceId.equals(that.serviceId) : that.serviceId != null) return false;
+        if (status != null ? !status.equals(that.status) : that.status != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = roleId != null ? roleId.hashCode() : 0;
+        result = 31 * result + (roleName != null ? roleName.hashCode() : 0);
+        result = 31 * result + (status != null ? status.hashCode() : 0);
+        result = 31 * result + (internalRoleId != null ? internalRoleId.hashCode() : 0);
+        result = 31 * result + (serviceId != null ? serviceId.hashCode() : 0);
+        result = 31 * result + (createDate != null ? createDate.hashCode() : 0);
+        result = 31 * result + (createdBy != null ? createdBy.hashCode() : 0);
+        return result;
+    }
+
+    @Override
 	public String toString() {
 		return String
 				.format("RoleEntity [roleId=%s, roleName=%s, description=%s, status=%s, metadataTypeId=%s, ownerId=%s, internalRoleId=%s, serviceId=%s, createDate=%s, createdBy=%s]",

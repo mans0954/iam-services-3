@@ -16,6 +16,7 @@ import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.res.domain.ResourceRoleEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.searchbean.converter.RoleSearchBeanConverter;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -108,29 +109,6 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
 	}
 
 	@Override
-	public List<RoleEntity> findUserRoles(final String userId, final Set<String> filter, final int from, final int size) {
-		final Query qry = getSession().createQuery("select role from RoleEntity role, UserRoleEntity ur " +
-				" where ur.userId = :userId and  ur.roleId = role.roleId" +
-                ((filter!=null && !filter.isEmpty())? " and role.roleId in (:roleList)" :"") +
-				" order by role.roleName ");
-		
-	
-		qry.setString("userId", userId);
-        if(filter!=null && !filter.isEmpty()){
-            qry.setParameterList("roleList", filter);
-        }
-
-		if(from > -1) {
-			qry.setFirstResult(from);
-		}
-		
-		if(size > -1) {
-			qry.setMaxResults(size);
-		}
-		return qry.list();
-	}
-
-	@Override
 	public List<RoleEntity> getRolesForGroup(final String groupId, final Set<String> filter, final int from, final int size) {
 		final Criteria criteria = getEntitlementRolesCriteria(null, groupId, null, filter);
         return getList(criteria, from, size);
@@ -171,7 +149,7 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
         final Criteria criteria = super.getCriteria();
 
         if(StringUtils.isNotBlank(userId)){
-            criteria.createAlias("userRoles", "ur")
+            criteria.createAlias("users", "ur")
                     .add(Restrictions.eq("ur.userId", userId));
         }
 

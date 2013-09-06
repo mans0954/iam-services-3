@@ -40,7 +40,6 @@ import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.policy.dto.Policy;
 import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.role.dto.UserRole;
 import org.openiam.idm.srvc.user.dto.User;
 
 /**
@@ -612,19 +611,5 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         return retVal;
     }
 
-    private Set<UserRole> initUserRoles() {
-        Set<UserRole> userRoles = null;
-        if(CollectionUtils.isNotEmpty(memberOfRoles)){
-            userRoles = new HashSet<UserRole>();
 
-            for(Role role: memberOfRoles){
-                UserRole userRole= new UserRole();
-                userRole.setRoleId(role.getRoleId());
-                userRole.setUserId(userId);
-
-                userRoles.add(userRole);
-            }
-        }
-        return userRoles;
-    }
 }

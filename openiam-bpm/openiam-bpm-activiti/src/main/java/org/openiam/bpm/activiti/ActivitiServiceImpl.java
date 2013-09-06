@@ -62,7 +62,6 @@ import org.openiam.idm.srvc.prov.request.domain.ProvisionRequestEntity;
 import org.openiam.idm.srvc.prov.request.service.RequestDataService;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.res.service.ResourceDAO;
-import org.openiam.idm.srvc.role.service.UserRoleDAO;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.NewUserProfileRequestModel;
@@ -71,6 +70,7 @@ import org.openiam.idm.srvc.user.dto.UserProfileRequestModel;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 import org.openiam.idm.srvc.user.service.SupervisorDAO;
 import org.openiam.idm.srvc.user.service.UserDAO;
+import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.service.UserProfileService;
 import org.openiam.script.ScriptIntegration;
 import org.openiam.validator.EntityValidator;
@@ -124,22 +124,17 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 	@Autowired
 	@Qualifier("resourceDAO")
 	private ResourceDAO resourceDao;
-	
-	@Autowired
-	private UserDAO userDAO;
-	
+
 	@Autowired
 	private SupervisorDAO supervisorDAO;
 	
 	@Autowired
 	private UserProfileService userProfileService;
-	
+    @Autowired
+    private UserDataService userDataService;
 	@Autowired
 	private AuthorizationManagerService authManagerService;
-	
-	@Autowired
-	private UserRoleDAO userRoleDAO;
-	
+
 	@Autowired
 	private UserGroupDAO userGroupDAO;
 	
@@ -236,7 +231,7 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
                     				break;
         						case ROLE:
         							if(StringUtils.isNotBlank(approverId)) {
-        								final List<String> authUsers = userRoleDAO.getUserIdsInRole(approverId);
+        								final List<String> authUsers = userDataService.getUserIdsInRole(approverId, null);
         								if(CollectionUtils.isNotEmpty(authUsers)) {
         									requestApproverIds.addAll(authUsers);
         								}
@@ -560,7 +555,7 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 			    						}
 										break;
 									case ROLE:
-										final List<String> roleUsers = userRoleDAO.getUserIdsInRole(approverId);
+										final List<String> roleUsers = userDataService.getUserIdsInRole(approverId, null);
 										if(CollectionUtils.isNotEmpty(roleUsers)) {
 											approverUserIds.addAll(roleUsers);
 										}
@@ -739,7 +734,7 @@ public class ActivitiServiceImpl implements ActivitiService, ApplicationContextA
 						wrapper.setTask(new TaskWrapper(taskDefinitionMap.get(wrapper.getActivityId())));
 					}
 					if(StringUtils.isNotBlank(wrapper.getAssigneeId())) {
-						final UserEntity user =  userDAO.findById(wrapper.getAssigneeId());
+						final UserEntity user =  userDataService.getUser(wrapper.getAssigneeId());
 						wrapper.setUserInfo(user);
 					}
 					retVal.add(wrapper);

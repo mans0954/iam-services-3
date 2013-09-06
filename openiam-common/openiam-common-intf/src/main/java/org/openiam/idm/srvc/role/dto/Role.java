@@ -62,8 +62,7 @@ import java.util.*;
         "endDate",
         "rolePolicy",
         "parentRoles",
-        "resourceRoles",
-        "userRoles"
+        "resourceRoles"
 })
 @XmlRootElement(name = "Role")
 @XmlSeeAlso({
@@ -109,8 +108,6 @@ public class Role extends BaseObject implements Comparable<Role> {
     private Set<Role> childRoles;
     
     private Set<ResourceRole> resourceRoles;
-    
-    private Set<UserRole> userRoles;
 
 
     @XmlSchemaType(name = "dateTime")
@@ -342,82 +339,37 @@ public class Role extends BaseObject implements Comparable<Role> {
 		this.resourceRoles = resourceRoles;
 	}
 
-	public Set<UserRole> getUserRoles() {
-		return userRoles;
-	}
+	 @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
 
-	public void setUserRoles(Set<UserRole> userRoles) {
-		this.userRoles = userRoles;
-	}
+        Role role = (Role) o;
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((roleId == null) ? 0 : roleId.hashCode());
-		return result;
-	}
+        if (createDate != null ? !createDate.equals(role.createDate) : role.createDate != null) return false;
+        if (description != null ? !description.equals(role.description) : role.description != null) return false;
+        if (ownerId != null ? !ownerId.equals(role.ownerId) : role.ownerId != null) return false;
+        if (roleId != null ? !roleId.equals(role.roleId) : role.roleId != null) return false;
+        if (roleName != null ? !roleName.equals(role.roleName) : role.roleName != null) return false;
+        if (selected != null ? !selected.equals(role.selected) : role.selected != null) return false;
+        if (serviceId != null ? !serviceId.equals(role.serviceId) : role.serviceId != null) return false;
+        if (status != null ? !status.equals(role.status) : role.status != null) return false;
 
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (!(obj instanceof Role)) {
-            return false;
-        }
-
-        Role compareRole = (Role) obj;
-        // check for nulls
-
-        if ((this.createDate == null && compareRole.createDate != null) ||
-                this.createDate != null && compareRole.createDate == null) {
-            return false;
-        }
-
-        if ((this.endDate == null && compareRole.endDate != null) ||
-                this.endDate != null && compareRole.endDate == null) {
-            return false;
-        }
-
-        if ((this.description == null && compareRole.description != null) ||
-                this.description != null && compareRole.description == null) {
-            return false;
-        }
-
-        if ((this.internalRoleId == null && compareRole.internalRoleId != null) ||
-                this.internalRoleId != null && compareRole.internalRoleId == null) {
-            return false;
-        }
-
-        if ((this.metadataTypeId == null && compareRole.metadataTypeId != null) ||
-                this.metadataTypeId != null && compareRole.metadataTypeId == null) {
-            return false;
-        }
-
-        if ((this.ownerId == null && compareRole.ownerId != null) ||
-                this.ownerId != null && compareRole.ownerId == null) {
-            return false;
-        }
-        if ((this.status == null && compareRole.status != null) ||
-                this.status != null && compareRole.status == null) {
-            return false;
-        }
-
-        return (this.description == compareRole.description || this.description.equals(compareRole.description)) &&
-                (this.roleId.equals(compareRole.roleId)) &&
-                (this.internalRoleId == compareRole.internalRoleId || this.internalRoleId.equals(compareRole.internalRoleId)) &&
-                (this.metadataTypeId == compareRole.metadataTypeId || this.metadataTypeId.equals(compareRole.metadataTypeId)) &&
-                (this.ownerId == compareRole.ownerId || this.ownerId.equals(compareRole.ownerId)) &&
-                (this.status == compareRole.status || this.status.equals(compareRole.status)) &&
-                (this.startDate == compareRole.startDate || this.startDate.equals(compareRole.startDate)) &&
-                (this.endDate == compareRole.endDate || this.endDate.equals(compareRole.endDate));
+        return true;
     }
 
+    @Override
+    public int hashCode() {
+        int result = createDate != null ? createDate.hashCode() : 0;
+        result = 31 * result + (description != null ? description.hashCode() : 0);
+        result = 31 * result + (roleId != null ? roleId.hashCode() : 0);
+        result = 31 * result + (roleName != null ? roleName.hashCode() : 0);
+        result = 31 * result + (status != null ? status.hashCode() : 0);
+        result = 31 * result + (selected != null ? selected.hashCode() : 0);
+        result = 31 * result + (ownerId != null ? ownerId.hashCode() : 0);
+        result = 31 * result + (serviceId != null ? serviceId.hashCode() : 0);
+        return result;
+    }
 }
 
 

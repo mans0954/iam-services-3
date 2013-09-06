@@ -24,7 +24,6 @@ import org.openiam.connector.type.response.ObjectResponse;
 import org.openiam.connector.type.response.ResponseType;
 import org.openiam.connector.type.response.SearchResponse;
 import org.openiam.dozer.converter.*;
-import org.openiam.exception.BasicDataServiceException;
 import org.openiam.exception.EncryptionException;
 import org.openiam.exception.ScriptEngineException;
 import org.openiam.idm.srvc.audit.dto.IdmAuditLog;
@@ -70,9 +69,7 @@ import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.res.service.ResourceService;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
-import org.openiam.idm.srvc.role.domain.UserRoleEntity;
 import org.openiam.idm.srvc.role.dto.Role;
-import org.openiam.idm.srvc.role.dto.UserRole;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.user.domain.SupervisorEntity;
 import org.openiam.idm.srvc.user.domain.UserAttributeEntity;
@@ -199,8 +196,6 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
     protected EmailAddressDozerConverter emailAddressDozerConverter;
     @Autowired
     protected AddressDozerConverter addressDozerConverter;
-    @Autowired
-    protected UserRoleDozerConverter userRoleDozerConverter;
     @Autowired
     protected ManagedSysDozerConverter managedSysDozerConverter;
     @Autowired
@@ -508,7 +503,7 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
                 resp.setErrorCode(code);
                 return resp;
             }
-            code = addRoles(user, newUser.getUserId(), logList);
+            code = addRoles(user, userEntity, logList);
             if (code != ResponseCode.SUCCESS) {
                 resp.setStatus(ResponseStatus.FAILURE);
                 resp.setErrorCode(code);
@@ -621,7 +616,7 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
         return ResponseCode.SUCCESS;
     }
 
-    private ResponseCode addRoles(ProvisionUser user, String newUserId, List<IdmAuditLog> logList) {
+    private ResponseCode addRoles(ProvisionUser user, UserEntity userEntity, List<IdmAuditLog> logList) {
         List<Role> roleList = user.getMemberOfRoles();
         log.debug("Role list = " + roleList);
         if (roleList != null && roleList.size() > 0) {
@@ -636,23 +631,16 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
                 if (roleDataService.getRole(r.getRoleId()) == null ) {
                     return ResponseCode.ROLE_ID_INVALID;
                 }
+                RoleEntity re = roleDataService.getRole(r.getRoleId());
+                userEntity.getUserRoles().add(re);
 
-                UserRole ur = new UserRole(newUserId, r.getRoleId());
-
-                if ( r.getStartDate() != null) {
-                    ur.setStartDate(r.getStartDate());
-                }
-                if ( r.getEndDate() != null ) {
-                    ur.setEndDate(r.getEndDate());
-                }
-                roleDataService.assocUserToRole(userRoleDozerConverter.convertToEntity(ur, true));
 
                 logList.add( auditHelper.createLogObject("ADD ROLE",
                         user.getRequestorDomain(), user.getRequestorLogin(),
                         "IDM SERVICE", user.getCreatedBy(), "0", "USER", user.getUserId(),
                         null, "SUCCESS", null, "USER_STATUS",
                         user.getStatus().toString(),
-                        "NA", null, user.getSessionId(), null, ur.getRoleId(),
+                        "NA", null, user.getSessionId(), null, r.getRoleId(),
                         user.getRequestClientIP(), null, null) );
 
             }
@@ -1496,24 +1484,16 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
                     return;
 
                 } else if (operation == AttributeOperationEnum.ADD) {
-                    UserRoleEntity ur = new UserRoleEntity(origUser.getUserId(), r.getRoleId());
-                    if ( r.getStartDate() != null) {
-                        ur.setStartDate(r.getStartDate());
+                    RoleEntity roleEntity = roleDataService.getRole(r.getRoleId());
+                    if (origUser.getUserRoles().contains(roleEntity)) {
+                        throw new IllegalArgumentException("Role with this name alreday exists");
                     }
-                    if ( r.getEndDate() != null ) {
-                        ur.setEndDate(r.getEndDate());
-                    }
-                    origUser.getUserRoles().add(ur);
+                    origUser.getUserRoles().add(roleEntity);
 
                 } else if (operation == AttributeOperationEnum.DELETE) {
-                    Set<UserRoleEntity> roles = origUser.getUserRoles();
-                    for (UserRoleEntity ur : roles) {
-                        if (ur.getRoleId().equals(r.getRoleId())) {
-                            origUser.getUserRoles().remove(ur);
-                            deleteRoleSet.add(r);
-                            break;
-                        }
-                    }
+
+                    origUser.getUserRoles().remove(roleDataService.getRole(r.getRoleId()));
+
 
                 } else if (operation == AttributeOperationEnum.REPLACE) {
                     throw new UnsupportedOperationException("Operation 'REPLACE' is not supported for roles");
@@ -1521,14 +1501,14 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
             }
         }
         if (CollectionUtils.isNotEmpty(origUser.getUserRoles())) {
-            for (UserRoleEntity ure : origUser.getUserRoles()) {
+            for (RoleEntity ure : origUser.getUserRoles()) {
                 roleSet.add(roleDozerConverter.convertToDTO(roleDataService.getRole(ure.getRoleId(),
                         origUser.getUserId()), false));
             }
         }
     }
 
-    public void updateRoleAssociation(String userId, List<Role> origRoleList,
+   /* public void updateRoleAssociation(String userId, List<Role> origRoleList,
                                       List<Role> newRoleList, List<IdmAuditLog> logList,
                                       ProvisionUser pUser, Login primaryIdentity,
                                       List<Role> activeRoleList, List<Role> deleteRoleList) {
@@ -1537,8 +1517,6 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
         log.debug("-origRoleList =" + origRoleList);
         log.debug("-newRoleList=" + newRoleList);
 
-        List<UserRole> currentUserRole = userRoleDozerConverter.convertToDTOList(
-                roleDataService.getUserRolesForUser(userId, 0, Integer.MAX_VALUE), false);
 
         if ( (origRoleList == null || origRoleList.size() == 0 )  &&
                 (newRoleList == null || newRoleList.size() == 0 )) {
@@ -1557,23 +1535,14 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
                 rl.setOperation(AttributeOperationEnum.ADD);
                 activeRoleList.add(rl);
 
-                UserRole ur = new UserRole(userId,
-                        rl.getRoleId());
-
-                if ( rl.getStartDate() != null) {
-                    ur.setStartDate(rl.getStartDate());
-                }
-                if ( rl.getEndDate() != null ) {
-                    ur.setEndDate(rl.getEndDate());
-                }
-                roleDataService.assocUserToRole(userRoleDozerConverter.convertToEntity(ur, true));
+                // roleDataService.assocUserToRole(userRoleDozerConverter.convertToEntity(ur, true));
 
                 logList.add( auditHelper.createLogObject("ADD ROLE",
                         pUser.getRequestorDomain(),  pUser.getRequestorLogin(),
                         "IDM SERVICE", pUser.getCreatedBy(), "0", "USER", pUser.getUserId(),
                         null, "SUCCESS", null, "USER_STATUS",
                         pUser.getStatus().toString(),
-                        "NA", null, null, null, ur.getRoleId(),
+                        "NA", null, null, null, r.getRoleId(),
                         pUser.getRequestClientIP(), primaryIdentity.getLogin(), primaryIdentity.getDomainId()));
 
                 //roleDataService.addUserToRole(rl.getId().getServiceId(), rl.getId().getRoleId(), userId);
@@ -1700,7 +1669,7 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
                 activeRoleList.add(rl);
             }
         }
-    }
+    }*/
 
     public List<Role> getActiveRoleList(List<Role> activeRoleList, List<Role> deleteRoleList ) {
 
@@ -1881,52 +1850,26 @@ public abstract class AbstractProvisioningService implements ProvisionService, A
         return true;
     }
 
-    private UserRole getUserRole(Role r, List<UserRole> currentUserRole) {
+    private boolean userRoleAttrEq(Role r, Role origRole) {
         //boolean retval = true;
 
-        if (currentUserRole == null) {
-            return null;
-        }
-
-        // get the user role object
-        for (UserRole u : currentUserRole) {
-            if (r.getRoleId().equalsIgnoreCase(u.getRoleId())) {
-                return u;
-            }
-        }
-
-        return null;
-    }
-
-    private boolean userRoleAttrEq(Role r, List<UserRole> currentUserRole) {
-        //boolean retval = true;
-
-        if (currentUserRole == null) {
+        if (origRole == null || r ==null) {
             return false;
         }
 
-        UserRole ur = null;
-        // get the user role object
-        for (UserRole u : currentUserRole) {
-            if (r.getRoleId().equalsIgnoreCase(u.getRoleId())) {
-                ur = u;
-            }
-        }
-        if (ur == null) {
-            return false;
-        }
+
         if (r.getStatus() != null) {
-            if ( !r.getStatus().equalsIgnoreCase(ur.getStatus()) ) {
+            if ( !r.getStatus().equalsIgnoreCase(origRole.getStatus()) ) {
                 return false;
             }
         }
         if (r.getStartDate() != null) {
-            if ( !r.getStartDate().equals(ur.getStartDate()) ){
+            if ( !r.getStartDate().equals(origRole.getStartDate()) ){
                 return false;
             }
         }
         if (r.getEndDate() != null) {
-            if ( !r.getEndDate().equals(ur.getEndDate()) ){
+            if ( !r.getEndDate().equals(origRole.getEndDate()) ){
                 return false;
             }
         }

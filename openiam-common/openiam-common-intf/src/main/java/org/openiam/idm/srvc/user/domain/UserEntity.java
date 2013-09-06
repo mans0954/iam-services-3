@@ -37,12 +37,10 @@ import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.grp.domain.UserGroupEntity;
-import org.openiam.idm.srvc.org.domain.OrganizationEntity;
 import org.openiam.idm.srvc.org.domain.UserAffiliationEntity;
 import org.openiam.idm.srvc.res.domain.ResourceUserEntity;
-import org.openiam.idm.srvc.role.domain.UserRoleEntity;
+import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.user.dto.UserAttribute;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
 
 @Entity
@@ -262,11 +260,9 @@ public class UserEntity {
     @Fetch(FetchMode.SUBSELECT)
     private Set<ResourceUserEntity> resourceUsers = new HashSet<ResourceUserEntity>();
 
-    //@IndexedEmbedded(prefix="roles.")
-    @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
-    @JoinColumn(name="USER_ID", referencedColumnName="USER_ID")
-    @Fetch(FetchMode.SUBSELECT)
-    private Set<UserRoleEntity> userRoles = new HashSet<UserRoleEntity>(0);
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "USER_ROLE", joinColumns = { @JoinColumn(name = "USER_ID") }, inverseJoinColumns = { @JoinColumn(name = "ROLE_ID") })
+    private Set<RoleEntity> userRoles = new HashSet<RoleEntity>(0);
     
 	@OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "user")
 	private Set<UserAffiliationEntity> affiliations;
@@ -850,20 +846,6 @@ public class UserEntity {
     	}
     }
 
-    public void removeUserFromRole(final String roleId) {
-        if(userRoles != null) {
-            for(final Iterator<UserRoleEntity> it = userRoles.iterator(); it.hasNext();) {
-                final UserRoleEntity entity = it.next();
-                if(entity != null) {
-                    if(StringUtils.equals(entity.getRoleId(), roleId)) {
-                        it.remove();
-                        break;
-                    }
-                }
-            }
-        }
-    }
-    
     public void addUserAttribute(final UserAttributeEntity entity) {
     	if(entity != null) {
     		if(this.userAttributes == null) {
@@ -903,11 +885,11 @@ public class UserEntity {
         this.userGroups = userGroups;
     }
 
-    public Set<UserRoleEntity> getUserRoles() {
+    public Set<RoleEntity> getUserRoles() {
         return userRoles;
     }
 
-    public void setUserRoles(Set<UserRoleEntity> userRoles) {
+    public void setUserRoles(Set<RoleEntity> userRoles) {
         this.userRoles = userRoles;
     }
 

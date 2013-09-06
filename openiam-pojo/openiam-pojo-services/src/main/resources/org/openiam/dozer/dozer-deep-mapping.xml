@@ -116,10 +116,6 @@
 			<a>parentRoles</a>
 			<b>parentRoles</b>
 		</field>
-		<field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="shallowDozerMapper">
-			<a>userRoles</a>
-			<b>userRoles</b>
-		</field>
 	</mapping>
 	<mapping>
 		<class-a>org.openiam.idm.srvc.res.dto.Resource</class-a>
@@ -235,10 +231,6 @@
         <field-exclude>
             <a>resourceUsers</a>
             <b>resourceUsers</b>
-        </field-exclude>
-        <field-exclude>
-            <a>userRoles</a>
-            <b>userRoles</b>
         </field-exclude>
         <field-exclude>
             <a>organization</a>

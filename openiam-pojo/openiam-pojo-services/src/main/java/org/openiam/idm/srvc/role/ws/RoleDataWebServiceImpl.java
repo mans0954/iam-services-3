@@ -42,6 +42,8 @@ import org.openiam.idm.srvc.role.dto.RoleAttribute;
 import org.openiam.idm.srvc.role.dto.RolePolicy;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.secdomain.service.SecurityDomainDAO;
+import org.openiam.idm.srvc.user.domain.UserEntity;
+import org.openiam.idm.srvc.user.service.UserDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -65,7 +67,9 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 	private static Logger LOG = Logger.getLogger(RoleDataWebServiceImpl.class);
 	
 	@Autowired
-	private RoleDataService roleDataService;
+    private RoleDataService roleDataService;
+    @Autowired
+    private UserDataService userDataService;
     
     @Autowired
     private RoleDozerConverter roleDozerConverter;
@@ -149,10 +153,6 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 		try {
 			if(roleId == null || userId == null) {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-			}
-			
-			if(roleDataService.getUserRole(userId, roleId, null) != null) {
-				throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
 			}
 			
 			roleDataService.addUserToRole(roleId, userId);
@@ -596,8 +596,8 @@ public class RoleDataWebServiceImpl implements RoleDataWebService {
 			if(roleId == null || userId == null) {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
-			
-			if(roleDataService.getUserRole(userId, roleId, null) != null) {
+
+			if(userDataService.isRoleInUser(userId, roleId)) {
 				throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
 			}
 		} catch(BasicDataServiceException e) {
