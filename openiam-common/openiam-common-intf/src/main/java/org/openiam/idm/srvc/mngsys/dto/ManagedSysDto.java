@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.mngsys.dto;
 
 // Generated Nov 3, 2008 12:14:43 AM by Hibernate Tools 3.2.2.GA
 
+import org.apache.commons.lang.StringUtils;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysEntity;
 import org.openiam.idm.srvc.mngsys.domain.ManagedSysRuleEntity;
@@ -241,6 +242,26 @@ public class ManagedSysDto implements java.io.Serializable {
             }
         }
         return null;
+    }
+    
+    public void removeManagedSysObjectMatch(final ManagedSystemObjectMatch match) {
+    	if(match != null && this.mngSysObjectMatchs != null) {
+    		for(final Iterator<ManagedSystemObjectMatch> it = this.mngSysObjectMatchs.iterator(); it.hasNext();) {
+    			final ManagedSystemObjectMatch next = it.next();
+    			if(StringUtils.equals(next.getObjectSearchId(), match.getObjectSearchId())) {
+    				it.remove();
+    			}
+    		}
+    	}
+    }
+    
+    public void addManagedSysObjectMatch(final ManagedSystemObjectMatch match) {
+    	if(match != null) {
+    		if(this.mngSysObjectMatchs == null) {
+    			this.mngSysObjectMatchs = new HashSet<ManagedSystemObjectMatch>();
+    		}
+    		this.mngSysObjectMatchs.add(match);
+    	}
     }
 
     public Set<ManagedSystemObjectMatch> getMngSysObjectMatchs() {

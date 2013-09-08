@@ -127,6 +127,14 @@ public class ManagedSystemWebServiceImpl implements ManagedSystemWebService {
     			throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
     		}
     		
+    		if(StringUtils.isBlank(sys.getName())) {
+    			throw new BasicDataServiceException(ResponseCode.NO_NAME);
+    		}
+    		
+    		if(StringUtils.isBlank(sys.getConnectorId())) {
+    			throw new BasicDataServiceException(ResponseCode.CONNECTOR_REQUIRED);
+    		}
+    		
     		if (encrypt && sys.getPswd() != null) {
     			sys.setPswd(cryptor.encrypt(keyManagementService.getUserKey(systemUserId, KeyName.password.name()), sys.getPswd()));
     		}
