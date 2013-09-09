@@ -1477,10 +1477,7 @@ public abstract class AbstractProvisioningService implements ProvisionService {
                     origUser.getRoles().add(roleEntity);
 
                 } else if (operation == AttributeOperationEnum.DELETE) {
-
                     origUser.getRoles().remove(roleDataService.getRole(r.getRoleId()));
-
-
                 } else if (operation == AttributeOperationEnum.REPLACE) {
                     throw new UnsupportedOperationException("Operation 'REPLACE' is not supported for roles");
                 }
