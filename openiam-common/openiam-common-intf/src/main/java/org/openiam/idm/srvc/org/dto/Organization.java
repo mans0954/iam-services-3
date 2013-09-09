@@ -18,6 +18,7 @@ import java.util.Set;
 
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
+import org.openiam.idm.srvc.user.dto.User;
 
 /**
  * <p/>
@@ -52,7 +53,7 @@ import org.openiam.idm.srvc.org.domain.OrganizationEntity;
         "operation",
         "parentOrganizations",
         "childOrganizations",
-        "affiliations"
+        "users"
 })
 @DozerDTOCorrespondence(OrganizationEntity.class)
 public class Organization implements java.io.Serializable, Comparable<Organization> {
@@ -102,8 +103,7 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
 
     private Set<Organization> parentOrganizations;
     private Set<Organization> childOrganizations;
-    private Set<UserAffiliation> affiliations;
-
+    private Set<User> users;
     /**
      * default constructor
      */
@@ -388,14 +388,6 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
 		this.organizationTypeId = organizationTypeId;
 	}
 
-	public Set<UserAffiliation> getAffiliations() {
-		return affiliations;
-	}
-
-	public void setAffiliations(Set<UserAffiliation> affiliations) {
-		this.affiliations = affiliations;
-	}
-	
 	public boolean isOrganization() {
 		return StringUtils.equalsIgnoreCase("organization", organizationTypeId);
 	}
@@ -408,137 +400,40 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
 		this.organizationTypeName = organizationTypeName;
 	}
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result
-				+ ((abbreviation == null) ? 0 : abbreviation.hashCode());
-		result = prime * result + ((alias == null) ? 0 : alias.hashCode());
-		result = prime * result
-				+ ((organizationTypeId == null) ? 0 : organizationTypeId.hashCode());
-		result = prime * result
-				+ ((createDate == null) ? 0 : createDate.hashCode());
-		result = prime * result
-				+ ((createdBy == null) ? 0 : createdBy.hashCode());
-		result = prime * result
-				+ ((description == null) ? 0 : description.hashCode());
-		result = prime * result
-				+ ((domainName == null) ? 0 : domainName.hashCode());
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result = prime * result
-				+ ((internalOrgId == null) ? 0 : internalOrgId.hashCode());
-		result = prime * result + ((ldapStr == null) ? 0 : ldapStr.hashCode());
-		result = prime * result
-				+ ((lstUpdate == null) ? 0 : lstUpdate.hashCode());
-		result = prime * result
-				+ ((lstUpdatedBy == null) ? 0 : lstUpdatedBy.hashCode());
-		result = prime * result
-				+ ((operation == null) ? 0 : operation.hashCode());
-		result = prime
-				* result
-				+ ((organizationName == null) ? 0 : organizationName.hashCode());
-		result = prime * result
-				+ ((selected == null) ? 0 : selected.hashCode());
-		result = prime * result + ((status == null) ? 0 : status.hashCode());
-		result = prime * result + ((symbol == null) ? 0 : symbol.hashCode());
-		return result;
-	}
+    public Set<User> getUsers() {
+        return users;
+    }
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Organization other = (Organization) obj;
-		if (abbreviation == null) {
-			if (other.abbreviation != null)
-				return false;
-		} else if (!abbreviation.equals(other.abbreviation))
-			return false;
-		if (alias == null) {
-			if (other.alias != null)
-				return false;
-		} else if (!alias.equals(other.alias))
-			return false;
-		if (organizationTypeId == null) {
-			if (other.organizationTypeId != null)
-				return false;
-		} else if (!organizationTypeId.equals(other.organizationTypeId))
-			return false;
-		if (createDate == null) {
-			if (other.createDate != null)
-				return false;
-		} else if (!createDate.equals(other.createDate))
-			return false;
-		if (createdBy == null) {
-			if (other.createdBy != null)
-				return false;
-		} else if (!createdBy.equals(other.createdBy))
-			return false;
-		if (description == null) {
-			if (other.description != null)
-				return false;
-		} else if (!description.equals(other.description))
-			return false;
-		if (domainName == null) {
-			if (other.domainName != null)
-				return false;
-		} else if (!domainName.equals(other.domainName))
-			return false;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
-		if (internalOrgId == null) {
-			if (other.internalOrgId != null)
-				return false;
-		} else if (!internalOrgId.equals(other.internalOrgId))
-			return false;
-		if (ldapStr == null) {
-			if (other.ldapStr != null)
-				return false;
-		} else if (!ldapStr.equals(other.ldapStr))
-			return false;
-		if (lstUpdate == null) {
-			if (other.lstUpdate != null)
-				return false;
-		} else if (!lstUpdate.equals(other.lstUpdate))
-			return false;
-		if (lstUpdatedBy == null) {
-			if (other.lstUpdatedBy != null)
-				return false;
-		} else if (!lstUpdatedBy.equals(other.lstUpdatedBy))
-			return false;
-		if (operation != other.operation)
-			return false;
-		if (organizationName == null) {
-			if (other.organizationName != null)
-				return false;
-		} else if (!organizationName.equals(other.organizationName))
-			return false;
-		if (selected == null) {
-			if (other.selected != null)
-				return false;
-		} else if (!selected.equals(other.selected))
-			return false;
-		if (status == null) {
-			if (other.status != null)
-				return false;
-		} else if (!status.equals(other.status))
-			return false;
-		if (symbol == null) {
-			if (other.symbol != null)
-				return false;
-		} else if (!symbol.equals(other.symbol))
-			return false;
-		return true;
-	}
+    public void setUsers(Set<User> users) {
+        this.users = users;
+    }
 
-   
-  
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Organization that = (Organization) o;
+
+        if (alias != null ? !alias.equals(that.alias) : that.alias != null) return false;
+        if (createDate != null ? !createDate.equals(that.createDate) : that.createDate != null) return false;
+        if (createdBy != null ? !createdBy.equals(that.createdBy) : that.createdBy != null) return false;
+        if (domainName != null ? !domainName.equals(that.domainName) : that.domainName != null) return false;
+        if (id != null ? !id.equals(that.id) : that.id != null) return false;
+        if (organizationName != null ? !organizationName.equals(that.organizationName) : that.organizationName != null)
+            return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (alias != null ? alias.hashCode() : 0);
+        result = 31 * result + (createdBy != null ? createdBy.hashCode() : 0);
+        result = 31 * result + (domainName != null ? domainName.hashCode() : 0);
+        result = 31 * result + (createDate != null ? createDate.hashCode() : 0);
+        result = 31 * result + (organizationName != null ? organizationName.hashCode() : 0);
+        return result;
+    }
 }

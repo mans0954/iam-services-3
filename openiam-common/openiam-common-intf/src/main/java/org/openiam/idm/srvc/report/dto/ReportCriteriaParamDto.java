@@ -1,15 +1,10 @@
 package org.openiam.idm.srvc.report.dto;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.report.domain.ReportCriteriaParamEntity;
-import org.openiam.idm.srvc.res.dto.ResourceUser;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 /**

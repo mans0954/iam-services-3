@@ -30,14 +30,8 @@ import org.openiam.authmanager.service.AuthorizationManagerMenuService;
 import org.openiam.authmanager.service.AuthorizationManagerService;
 import org.openiam.authmanager.ws.request.MenuEntitlementsRequest;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
-import org.openiam.idm.srvc.res.domain.ResourceGroupEntity;
 import org.openiam.idm.srvc.res.domain.ResourceRoleEmbeddableId;
-import org.openiam.idm.srvc.res.domain.ResourceRoleEntity;
-import org.openiam.idm.srvc.res.domain.ResourceUserEntity;
 import org.openiam.idm.srvc.res.dto.ResourceProp;
-import org.openiam.idm.srvc.res.service.ResourceGroupDAO;
-import org.openiam.idm.srvc.res.service.ResourceRoleDAO;
-import org.openiam.idm.srvc.res.service.ResourceUserDAO;
 import org.openiam.thread.Sweepable;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
@@ -82,16 +76,7 @@ public class AuthorizationManagerMenuServiceImpl implements AuthorizationManager
 	
 	@Autowired
 	private org.openiam.idm.srvc.res.service.ResourceDAO hibernateResourceDAO;
-	
-	@Autowired
-	private ResourceRoleDAO resourceRoleDAO;
-	
-	@Autowired
-	private ResourceGroupDAO resourceGroupDAO;
-	
-	@Autowired
-	private ResourceUserDAO resourceUserDAO;
-	
+
 	/*
 	private boolean forceThreadShutdown = false;
 	
@@ -451,51 +436,20 @@ public class AuthorizationManagerMenuServiceImpl implements AuthorizationManager
 		
 		if(StringUtils.equalsIgnoreCase("user", principalType)) {
 			final String userId = principalId;
-			if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getDisentitled())) {
-				resourceUserDAO.deleteByUserId(userId, menuEntitlementsRequest.getDisentitled());
-			}
-			
-			if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getNewlyEntitled())) {
-				final List<ResourceUserEntity> entityList = new ArrayList<ResourceUserEntity>(menuEntitlementsRequest.getNewlyEntitled().size());
-				for(final String resourceId : menuEntitlementsRequest.getNewlyEntitled()) {
-					final ResourceUserEntity entity = new ResourceUserEntity();
-					entity.setUserId(userId);
-					entity.setResourceId(resourceId);
-					entityList.add(entity);
-				}
-				resourceUserDAO.save(entityList);
-			}
+
 		} else if(StringUtils.equalsIgnoreCase("group", principalType)) {
 			final String groupId = principalId;
-			if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getDisentitled())) {
-				resourceGroupDAO.deleteByGroupId(groupId, menuEntitlementsRequest.getDisentitled());
-			}
+
 			
 			if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getNewlyEntitled())) {
-				final List<ResourceGroupEntity> entityList = new ArrayList<ResourceGroupEntity>(menuEntitlementsRequest.getNewlyEntitled().size());
-				for(final String resourceId : menuEntitlementsRequest.getNewlyEntitled()) {
-					final ResourceGroupEntity entity = new ResourceGroupEntity();
-					entity.setGroupId(groupId);
-					entity.setResourceId(resourceId);
-					entityList.add(entity);
-				}
-				resourceGroupDAO.save(entityList);
+
 			}
 		} else if(StringUtils.equalsIgnoreCase("role", principalType)) {
 			final String roleId = principalId;
-			if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getDisentitled())) {
-				resourceRoleDAO.deleteByRoleId(roleId, menuEntitlementsRequest.getDisentitled());
-			}
+
 			
 			if(CollectionUtils.isNotEmpty(menuEntitlementsRequest.getNewlyEntitled())) {
-				final List<ResourceRoleEntity> entityList = new ArrayList<ResourceRoleEntity>(menuEntitlementsRequest.getNewlyEntitled().size());
-				for(final String resourceId : menuEntitlementsRequest.getNewlyEntitled()) {
-					final ResourceRoleEntity entity = new ResourceRoleEntity();
-					final ResourceRoleEmbeddableId id = new ResourceRoleEmbeddableId(roleId, resourceId);
-					entity.setId(id);
-					entityList.add(entity);
-				}
-				resourceRoleDAO.save(entityList);
+
 			}
 		}
 	}

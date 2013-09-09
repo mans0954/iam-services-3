@@ -34,6 +34,7 @@ import org.hibernate.search.annotations.DocumentId;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 
 @Entity
 @Table(name = "COMPANY")
@@ -107,9 +108,10 @@ public class OrganizationEntity {
         inverseJoinColumns={@JoinColumn(name="MEMBER_COMPANY_ID")})
     @Fetch(FetchMode.SUBSELECT)
     private Set<OrganizationEntity> childOrganizations;
-	
-	@OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "organization")
-	private Set<UserAffiliationEntity> affiliations;
+
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "USER_AFFILIATION", joinColumns = { @JoinColumn(name = "COMPANY_ID") }, inverseJoinColumns = { @JoinColumn(name = "USER_ID") })
+	private Set<UserEntity> users;
 
     public OrganizationEntity() {
     }
@@ -296,134 +298,38 @@ public class OrganizationEntity {
 		return retval;
 	}
 
-	public Set<UserAffiliationEntity> getAffiliations() {
-		return affiliations;
-	}
+    public Set<UserEntity> getUsers() {
+        return users;
+    }
 
-	public void setAffiliations(Set<UserAffiliationEntity> affiliations) {
-		this.affiliations = affiliations;
-	}
+    public void setUsers(Set<UserEntity> users) {
+        this.users = users;
+    }
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result
-				+ ((abbreviation == null) ? 0 : abbreviation.hashCode());
-		result = prime * result + ((alias == null) ? 0 : alias.hashCode());
-		result = prime * result
-				+ ((createDate == null) ? 0 : createDate.hashCode());
-		result = prime * result
-				+ ((createdBy == null) ? 0 : createdBy.hashCode());
-		result = prime * result
-				+ ((description == null) ? 0 : description.hashCode());
-		result = prime * result
-				+ ((domainName == null) ? 0 : domainName.hashCode());
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result = prime * result
-				+ ((internalOrgId == null) ? 0 : internalOrgId.hashCode());
-		result = prime * result + ((ldapStr == null) ? 0 : ldapStr.hashCode());
-		result = prime * result
-				+ ((lstUpdate == null) ? 0 : lstUpdate.hashCode());
-		result = prime * result
-				+ ((lstUpdatedBy == null) ? 0 : lstUpdatedBy.hashCode());
-		result = prime
-				* result
-				+ ((organizationName == null) ? 0 : organizationName.hashCode());
-		result = prime
-				* result
-				+ ((organizationType == null) ? 0 : organizationType.hashCode());
-		result = prime * result + ((status == null) ? 0 : status.hashCode());
-		result = prime * result + ((symbol == null) ? 0 : symbol.hashCode());
-		return result;
-	}
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		OrganizationEntity other = (OrganizationEntity) obj;
-		if (abbreviation == null) {
-			if (other.abbreviation != null)
-				return false;
-		} else if (!abbreviation.equals(other.abbreviation))
-			return false;
-		if (alias == null) {
-			if (other.alias != null)
-				return false;
-		} else if (!alias.equals(other.alias))
-			return false;
-		if (createDate == null) {
-			if (other.createDate != null)
-				return false;
-		} else if (!createDate.equals(other.createDate))
-			return false;
-		if (createdBy == null) {
-			if (other.createdBy != null)
-				return false;
-		} else if (!createdBy.equals(other.createdBy))
-			return false;
-		if (description == null) {
-			if (other.description != null)
-				return false;
-		} else if (!description.equals(other.description))
-			return false;
-		if (domainName == null) {
-			if (other.domainName != null)
-				return false;
-		} else if (!domainName.equals(other.domainName))
-			return false;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
-			return false;
-		if (internalOrgId == null) {
-			if (other.internalOrgId != null)
-				return false;
-		} else if (!internalOrgId.equals(other.internalOrgId))
-			return false;
-		if (ldapStr == null) {
-			if (other.ldapStr != null)
-				return false;
-		} else if (!ldapStr.equals(other.ldapStr))
-			return false;
-		if (lstUpdate == null) {
-			if (other.lstUpdate != null)
-				return false;
-		} else if (!lstUpdate.equals(other.lstUpdate))
-			return false;
-		if (lstUpdatedBy == null) {
-			if (other.lstUpdatedBy != null)
-				return false;
-		} else if (!lstUpdatedBy.equals(other.lstUpdatedBy))
-			return false;
-		if (organizationName == null) {
-			if (other.organizationName != null)
-				return false;
-		} else if (!organizationName.equals(other.organizationName))
-			return false;
-		if (organizationType == null) {
-			if (other.organizationType != null)
-				return false;
-		} else if (!organizationType.equals(other.organizationType))
-			return false;
-		if (status == null) {
-			if (other.status != null)
-				return false;
-		} else if (!status.equals(other.status))
-			return false;
-		if (symbol == null) {
-			if (other.symbol != null)
-				return false;
-		} else if (!symbol.equals(other.symbol))
-			return false;
-		return true;
-	}
+        OrganizationEntity that = (OrganizationEntity) o;
 
-	
+        if (createDate != null ? !createDate.equals(that.createDate) : that.createDate != null) return false;
+        if (createdBy != null ? !createdBy.equals(that.createdBy) : that.createdBy != null) return false;
+        if (domainName != null ? !domainName.equals(that.domainName) : that.domainName != null) return false;
+        if (id != null ? !id.equals(that.id) : that.id != null) return false;
+        if (organizationName != null ? !organizationName.equals(that.organizationName) : that.organizationName != null)
+            return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (createDate != null ? createDate.hashCode() : 0);
+        result = 31 * result + (createdBy != null ? createdBy.hashCode() : 0);
+        result = 31 * result + (domainName != null ? domainName.hashCode() : 0);
+        result = 31 * result + (organizationName != null ? organizationName.hashCode() : 0);
+        return result;
+    }
 }

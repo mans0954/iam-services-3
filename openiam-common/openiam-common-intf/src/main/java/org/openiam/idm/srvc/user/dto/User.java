@@ -11,8 +11,10 @@ import org.openiam.idm.srvc.auth.dto.Login;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
-import org.openiam.idm.srvc.org.dto.UserAffiliation;
-import org.openiam.idm.srvc.res.dto.ResourceUser;
+import org.openiam.idm.srvc.grp.dto.Group;
+import org.openiam.idm.srvc.org.domain.OrganizationEntity;
+import org.openiam.idm.srvc.org.dto.Organization;
+import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 
@@ -79,8 +81,10 @@ import java.util.*;
         "login",
         "password",
         "notifyUserViaEmail",
-        "affiliations",
-        "userRoles"
+        "roles",
+        "resources",
+        "groups",
+        "affiliations"
 })
 @XmlSeeAlso({
         Login.class,
@@ -88,7 +92,11 @@ import java.util.*;
         Phone.class,
         Address.class,
         EmailAddress.class,
-        UserAttribute.class
+        UserAttribute.class,
+        Role.class,
+        Resource.class,
+        Group.class,
+        Organization.class
 })
 @DozerDTOCorrespondence(UserEntity.class)
 public class User extends org.openiam.base.BaseObject {
@@ -201,18 +209,17 @@ public class User extends org.openiam.base.BaseObject {
 
     protected Set<EmailAddress> emailAddresses = new HashSet<EmailAddress>(0);
 
-    private Set<Role> userRoles = new HashSet<Role>(0);
-
-    @XmlTransient
-    private Set<ResourceUser> resourceUsers = new HashSet<ResourceUser>();
+    private Set<Role> roles = new HashSet<Role>(0);
 
     // these fields are used only when userWS is used directly without provision
     private String login;
     private String password;
     private Boolean notifyUserViaEmail=true;
 
-    private Set<UserAffiliation> affiliations;
+    private Set<Organization> affiliations;
 
+    private Set<Group> groups;
+    private Set<Resource> resources;
     // Constructors
 
     /**
@@ -281,6 +288,14 @@ public class User extends org.openiam.base.BaseObject {
 
     public void setMiddleInit(String middleInit) {
         this.middleInit = middleInit;
+    }
+
+    public Set<Organization> getAffiliations() {
+        return affiliations;
+    }
+
+    public void setAffiliations(Set<Organization> affiliations) {
+        this.affiliations = affiliations;
     }
 
     public String getTitle() {
@@ -651,24 +666,31 @@ public class User extends org.openiam.base.BaseObject {
         }
     */
 
-    public Set<ResourceUser> getResourceUsers() {
-		return resourceUsers;
-	}
-
-    public void addResourceUser(final ResourceUser record) {
-    	if(record != null) {
-    		if(this.resourceUsers == null) {
-    			this.resourceUsers = new HashSet<ResourceUser>();
-    		}
-    		this.resourceUsers.add(record);
-    	}
+    public Set<Role> getRoles() {
+        return roles;
     }
 
-	public void setResourceUsers(Set<ResourceUser> resourceUsers) {
-		this.resourceUsers = resourceUsers;
-	}
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
+    }
 
-	public String getEmail() {
+    public Set<Group> getGroups() {
+        return groups;
+    }
+
+    public void setGroups(Set<Group> groups) {
+        this.groups = groups;
+    }
+
+    public Set<Resource> getResources() {
+        return resources;
+    }
+
+    public void setResources(Set<Resource> resources) {
+        this.resources = resources;
+    }
+
+    public String getEmail() {
         return email;
     }
 
@@ -776,14 +798,6 @@ public class User extends org.openiam.base.BaseObject {
     public void setSecurityDomain(String securityDomain) {
         this.securityDomain = securityDomain;
     }
-
-	public Set<UserAffiliation> getAffiliations() {
-		return affiliations;
-	}
-
-	public void setAffiliations(Set<UserAffiliation> affiliations) {
-		this.affiliations = affiliations;
-	}
 
 	public void updateUser(User newUser) {
         if (newUser.getBirthdate() != null) {
@@ -1092,14 +1106,6 @@ public class User extends org.openiam.base.BaseObject {
 
     public void setDateITPolicyApproved(Date dateITPolicyApproved) {
         this.dateITPolicyApproved = dateITPolicyApproved;
-    }
-
-    public Set<Role> getUserRoles() {
-        return userRoles;
-    }
-
-    public void setUserRoles(Set<Role> userRoles) {
-        this.userRoles = userRoles;
     }
 
     public String getLogin() {

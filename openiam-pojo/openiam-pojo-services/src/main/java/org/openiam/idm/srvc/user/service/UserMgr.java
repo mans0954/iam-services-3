@@ -50,10 +50,9 @@ import org.openiam.idm.srvc.meta.domain.MetadataElementEntity;
 import org.openiam.idm.srvc.meta.domain.MetadataTypeEntity;
 import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
 import org.openiam.idm.srvc.meta.service.MetadataTypeDAO;
-import org.openiam.idm.srvc.org.domain.UserAffiliationEntity;
 import org.openiam.idm.srvc.org.service.OrganizationService;
-import org.openiam.idm.srvc.org.service.UserAffiliationDAO;
-import org.openiam.idm.srvc.res.service.ResourceUserDAO;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
+import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.service.RoleDataService;
 import org.openiam.idm.srvc.searchbean.converter.AddressSearchBeanConverter;
@@ -110,9 +109,6 @@ public class UserMgr implements UserDataService {
     protected SysConfiguration sysConfiguration;
 
     @Autowired
-    private ResourceUserDAO resourceUserDAO;
-
-    @Autowired
     private UserSearchDAO userSearchDAO;
 
     @Autowired
@@ -124,12 +120,10 @@ public class UserMgr implements UserDataService {
 
     @Autowired
     private EmailSearchDAO emailSearchDAO;
-
+    @Autowired
+    private ResourceDAO resourceDAO;
     @Autowired
     private PhoneSearchDAO phoneSearchDAO;
-
-    @Autowired
-    private UserAffiliationDAO userAffiliationDAO;
 
     @Autowired
     private UserKeyDao userKeyDao;
@@ -441,7 +435,6 @@ public class UserMgr implements UserDataService {
         removeAllNotes(id);
         removeAllEmailAddresses(id);
 
-        resourceUserDAO.deleteAllByUserId(id);
         userKeyDao.deleteByUserId(id);
 
         userDao.delete(userDao.findById(id));
@@ -538,11 +531,6 @@ public class UserMgr implements UserDataService {
             final LoginSearchBean loginSearchBean = new LoginSearchBean();
             loginSearchBean.setLogin(StringUtils.trimToNull(searchBean.getPrincipal()));
             nonEmptyListOfLists.add(loginSearchDAO.findUserIds(0, MAX_USER_SEARCH_RESULTS, loginSearchBean));
-        }
-
-
-        if (CollectionUtils.isNotEmpty(searchBean.getOrganizationIdList())) {
-            nonEmptyListOfLists.add(userAffiliationDAO.getUserIdsInOrganization(searchBean.getOrganizationIdList(), 0, MAX_USER_SEARCH_RESULTS));
         }
 
         if (StringUtils.isNotBlank(searchBean.getEmailAddress())) {
@@ -1521,14 +1509,13 @@ public class UserMgr implements UserDataService {
         Set<EmailAddressEntity> emailAddressList = newUserEntity.getEmailAddresses();
         Set<AddressEntity> addressList = newUserEntity.getAddresses();
         Set<PhoneEntity> phoneList = newUserEntity.getPhones();
-        Set<UserAffiliationEntity> userOrgs = newUserEntity.getAffiliations();
 
 
         newUserEntity.setPrincipalList(null);
         newUserEntity.setPhones(null);
         newUserEntity.setAddresses(null);
         newUserEntity.setAffiliations(null);
-        newUserEntity.setUserRoles(null);
+        newUserEntity.setRoles(null);
         // newUserEntity.setEmailAddresses(null);
 
         this.addUser(newUserEntity);
@@ -1569,16 +1556,7 @@ public class UserMgr implements UserDataService {
             this.addPhoneSet(phoneList);
         }
 
-        if(CollectionUtils.isNotEmpty(userOrgs)){
-            for (final UserAffiliationEntity userOrg : userOrgs) {
-                organizationService.addUserToOrg(userOrg.getOrganization().getId(), newUserEntity.getUserId());
-            }
-        }
-        if(CollectionUtils.isNotEmpty(userOrgs)){
-            for (final UserAffiliationEntity userOrg : userOrgs) {
-                organizationService.addUserToOrg(userOrg.getOrganization().getId(), newUserEntity.getUserId());
-            }
-        }
+
       /*  if(CollectionUtils.isNotEmpty(userRoles)){
             for (final UserRoleEntity userRole : userRoles) {
                 userRole.setUserId(newUserEntity.getUserId());
@@ -1646,7 +1624,7 @@ public class UserMgr implements UserDataService {
     public boolean isRoleInUser(String userId, String roleId) {
         boolean isExists = false;
         UserEntity userEntity = userDao.findById(userId);
-        for(RoleEntity r : userEntity.getUserRoles()) {
+        for(RoleEntity r : userEntity.getRoles()) {
             if(r.getRoleId().equals(roleId)) {
                return true;
             }
@@ -2095,7 +2073,7 @@ public class UserMgr implements UserDataService {
     public void addUserToGroup(String userId, String groupId) {
         GroupEntity groupEntity = groupDAO.findById(groupId);
         UserEntity userEntity = userDao.findById(userId);
-        userEntity.getUserGroups().add(groupEntity);
+        userEntity.getGroups().add(groupEntity);
     }
 
     @Override
@@ -2103,11 +2081,36 @@ public class UserMgr implements UserDataService {
     public void removeUserFromGroup(String userId, String groupId) {
         GroupEntity groupEntity = groupDAO.findById(groupId);
         UserEntity userEntity = userDao.findById(userId);
-        userEntity.getUserGroups().remove(groupEntity);
+        userEntity.getGroups().remove(groupEntity);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public boolean isHasGroup(String userId, String groupId) {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(null);
+        return userDao.getUsersForGroup(groupId,delegationFilter, 0, Integer.MAX_VALUE) != null;
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean isHasResource(String userId, String resourceId) {
+        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(null);
+        return userDao.getUsersForResource(resourceId, delegationFilter, 0, Integer.MAX_VALUE) != null;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean isHasOrganization(String userId, String organizationId) {
+        DelegationFilterSearchBean delegationFilter = this.getDelegationFilterForUserSearch(null);
+        return userDao.getUsersForOrganization(organizationId, delegationFilter, 0, Integer.MAX_VALUE) != null;
+    }
+
+    @Override
+    @Transactional
+    public void addUserToResource(String userId, String resourceId) {
+        ResourceEntity resourceEntity = resourceDAO.findById(resourceId);
+        UserEntity userEntity = userDao.findById(userId);
+        userEntity.getResources().add(resourceEntity);
+    }
+
 }

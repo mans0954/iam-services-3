@@ -10,7 +10,6 @@ import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.res.service.ResourceGroupDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.idm.srvc.user.util.DelegationFilterHelper;
 import org.openiam.validator.EntityValidator;
@@ -49,9 +48,6 @@ public class GroupDataServiceImpl implements GroupDataService {
     
     @Autowired
     private GroupDozerConverter groupDozerConverter;
-
-    @Autowired
-    private ResourceGroupDAO resoruceGroupDAO;
 
     @Autowired
     @Qualifier("entityValidator")
@@ -190,9 +186,9 @@ public class GroupDataServiceImpl implements GroupDataService {
 					group.setAttributes(dbGroup.getAttributes());
 					group.setChildGroups(dbGroup.getChildGroups());
 					group.setParentGroups(dbGroup.getParentGroups());
-					group.setResourceGroups(dbGroup.getResourceGroups());
+					group.setResources(dbGroup.getResources());
 					group.setRoles(dbGroup.getRoles());
-					group.setUserGroups(dbGroup.getUserGroups());
+					group.setUsers(dbGroup.getUsers());
 					groupDao.merge(group);
 				}
 			} else {
@@ -206,7 +202,6 @@ public class GroupDataServiceImpl implements GroupDataService {
 	public void deleteGroup(String groupId) {
 		final GroupEntity entity = groupDao.findById(groupId);
 		if(entity != null) {
-			resoruceGroupDAO.deleteByGroupId(groupId);
 			groupAttrDao.deleteByGroupId(groupId);
 			groupDao.delete(entity);
 		}

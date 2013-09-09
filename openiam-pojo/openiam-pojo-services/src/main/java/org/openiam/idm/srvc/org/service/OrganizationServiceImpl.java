@@ -13,7 +13,6 @@ import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.srvc.meta.service.MetadataElementDAO;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
-import org.openiam.idm.srvc.org.domain.UserAffiliationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.UserAttribute;
@@ -42,9 +41,6 @@ public class OrganizationServiceImpl implements OrganizationService {
 
     @Autowired
     private OrganizationAttributeDAO orgAttrDao;
-
-    @Autowired
-    private UserAffiliationDAO userAffiliationDAO;
 
     @Autowired
     private UserDataService userDataService;
@@ -133,23 +129,19 @@ public class OrganizationServiceImpl implements OrganizationService {
     }
 
     @Override
+    @Transactional
     public void addUserToOrg(String orgId, String userId) {
         final OrganizationEntity organization = orgDao.findById(orgId);
         final UserEntity user = userDAO.findById(userId);
-
-        final UserAffiliationEntity entity = new UserAffiliationEntity();
-        entity.setOrganization(organization);
-        entity.setUser(user);
-
-        userAffiliationDAO.save(entity);
+        user.getAffiliations().add(organization);
     }
 
     @Override
+    @Transactional
     public void removeUserFromOrg(String orgId, String userId) {
-        final UserAffiliationEntity entity = userAffiliationDAO.getRecord(userId, orgId);
-        if (entity != null) {
-            userAffiliationDAO.delete(entity);
-        }
+        final OrganizationEntity organization = orgDao.findById(orgId);
+        final UserEntity user = userDAO.findById(userId);
+        user.getAffiliations().remove(organization);
     }
 
     @Override
@@ -161,6 +153,7 @@ public class OrganizationServiceImpl implements OrganizationService {
     }
 
     @Override
+    @Transactional
     public void save(final OrganizationEntity entity) {
     	
     	if(entity.getOrganizationType() != null) {
@@ -173,7 +166,7 @@ public class OrganizationServiceImpl implements OrganizationService {
                 entity.setAttributes(dbOrg.getAttributes());
                 entity.setChildOrganizations(dbOrg.getChildOrganizations());
                 entity.setParentOrganizations(dbOrg.getParentOrganizations());
-                entity.setAffiliations(dbOrg.getAffiliations());
+                entity.setUsers(dbOrg.getUsers());
                 orgDao.merge(entity);
             }
         } else {
@@ -217,16 +210,8 @@ public class OrganizationServiceImpl implements OrganizationService {
     public void deleteOrganization(String orgId) {
         final OrganizationEntity entity = orgDao.findById(orgId);
         if (entity != null) {
-            //userDAO.disassociateUsersFromOrganization(orgId);
-            userAffiliationDAO.deleteByOrganizationId(orgId);
-            //orgAttrDao.deleteByOrganizationId(orgId);
             orgDao.delete(entity);
         }
-    }
-
-    @Override
-    public UserAffiliationEntity getAffiliation(String userId, String organizationId) {
-        return userAffiliationDAO.getRecord(userId, organizationId);
     }
 
     private Set<String> getDelegationFilter(String requesterId, String organizationTypeId) {

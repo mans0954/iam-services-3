@@ -57,14 +57,12 @@ import org.openiam.idm.srvc.msg.dto.NotificationParam;
 import org.openiam.idm.srvc.msg.dto.NotificationRequest;
 import org.openiam.idm.srvc.msg.service.MailTemplateParameters;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
-import org.openiam.idm.srvc.org.domain.UserAffiliationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.service.OrganizationDataService;
 import org.openiam.idm.srvc.org.service.OrganizationService;
 import org.openiam.idm.srvc.pswd.service.PasswordHistoryDAO;
 import org.openiam.idm.srvc.pswd.service.PasswordService;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
-import org.openiam.idm.srvc.res.domain.ResourceUserEntity;
 import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.res.service.ResourceDataService;
 import org.openiam.idm.srvc.res.service.ResourceService;
@@ -625,7 +623,7 @@ public abstract class AbstractProvisioningService implements ProvisionService {
                     return ResponseCode.ROLE_ID_INVALID;
                 }
                 RoleEntity re = roleDataService.getRole(r.getRoleId());
-                userEntity.getUserRoles().add(re);
+                userEntity.getRoles().add(re);
 
 
                 logList.add( auditHelper.createLogObject("ADD ROLE",
@@ -1450,11 +1448,11 @@ public abstract class AbstractProvisioningService implements ProvisionService {
 
                 } else if (operation == AttributeOperationEnum.ADD) {
                     GroupEntity groupEntity = groupManager.getGroup(g.getGrpId());
-                    origUser.getUserGroups().add(groupEntity);
+                    origUser.getGroups().add(groupEntity);
 
                 } else if (operation == AttributeOperationEnum.DELETE) {
                     GroupEntity groupEntity = groupManager.getGroup(g.getGrpId());
-                    origUser.getUserGroups().remove(groupEntity);
+                    origUser.getGroups().remove(groupEntity);
 
                 } else if (operation == AttributeOperationEnum.REPLACE) {
                     throw new UnsupportedOperationException("Operation 'REPLACE' is not supported for groups");
@@ -1473,14 +1471,14 @@ public abstract class AbstractProvisioningService implements ProvisionService {
 
                 } else if (operation == AttributeOperationEnum.ADD) {
                     RoleEntity roleEntity = roleDataService.getRole(r.getRoleId());
-                    if (origUser.getUserRoles().contains(roleEntity)) {
+                    if (origUser.getRoles().contains(roleEntity)) {
                         throw new IllegalArgumentException("Role with this name alreday exists");
                     }
-                    origUser.getUserRoles().add(roleEntity);
+                    origUser.getRoles().add(roleEntity);
 
                 } else if (operation == AttributeOperationEnum.DELETE) {
 
-                    origUser.getUserRoles().remove(roleDataService.getRole(r.getRoleId()));
+                    origUser.getRoles().remove(roleDataService.getRole(r.getRoleId()));
 
 
                 } else if (operation == AttributeOperationEnum.REPLACE) {
@@ -1488,8 +1486,8 @@ public abstract class AbstractProvisioningService implements ProvisionService {
                 }
             }
         }
-        if (CollectionUtils.isNotEmpty(origUser.getUserRoles())) {
-            for (RoleEntity ure : origUser.getUserRoles()) {
+        if (CollectionUtils.isNotEmpty(origUser.getRoles())) {
+            for (RoleEntity ure : origUser.getRoles()) {
                 roleSet.add(roleDozerConverter.convertToDTO(roleDataService.getRole(ure.getRoleId(),
                         origUser.getUserId()), false));
             }
@@ -1703,12 +1701,12 @@ public abstract class AbstractProvisioningService implements ProvisionService {
 
                 } else if (operation == AttributeOperationEnum.ADD) {
                     OrganizationEntity org = organizationService.getOrganization(o.getId(), origUser.getUserId());
-                    origUser.getAffiliations().add(new UserAffiliationEntity(origUser, org));
+                    origUser.getAffiliations().add(org);
 
                 } else if (operation == AttributeOperationEnum.DELETE) {
-                    Set<UserAffiliationEntity> affiliations = origUser.getAffiliations();
-                    for (UserAffiliationEntity a : affiliations) {
-                        if (o.getId().equals(a.getOrganization().getId())) {
+                    Set<OrganizationEntity> affiliations = origUser.getAffiliations();
+                    for (OrganizationEntity a : affiliations) {
+                        if (o.getId().equals(a.getId())) {
                             origUser.getAffiliations().remove(a);
                             break;
                         }
@@ -1755,32 +1753,18 @@ public abstract class AbstractProvisioningService implements ProvisionService {
                 AttributeOperationEnum operation = ura.getOperation();
                 if (operation == null) {
                     return;
-
                 } else if (operation == AttributeOperationEnum.ADD) {
-                    ResourceUserEntity rue = new ResourceUserEntity();
-                    rue.setResourceId(ura.getResourceId());
-                    rue.setUserId(pUser.getUserId());
-                    //rue.setStartDate();
-                    //rue.setEndDate();
-                    origUser.getResourceUsers().add(rue);
-
+                    ResourceEntity organizationEntity = resourceService.findResourceById(ura.getResourceId());
+                    origUser.getResources().add(organizationEntity);
                 } else if (operation == AttributeOperationEnum.DELETE) {
-                    Set<ResourceUserEntity> resources = origUser.getResourceUsers();
-                    for (ResourceUserEntity rue : resources) {
-                        if (rue.getResourceId().equals(ura.getResourceId())) {
-                            origUser.getResourceUsers().remove(rue);
-                            ResourceEntity e = resourceService.findResourceById(rue.getResourceId());
-                            deleteResourceSet.add(resourceDozerConverter.convertToDTO(e, false));
-                            break;
-                        }
-                    }
-
+                    ResourceEntity organizationEntity = resourceService.findResourceById(ura.getResourceId());
+                    origUser.getResources().remove(organizationEntity);
                 } else if (operation == AttributeOperationEnum.REPLACE) {
                     throw new UnsupportedOperationException("Operation 'REPLACE' is not supported for resources");
                 }
             }
         }
-        for (ResourceUserEntity rue : origUser.getResourceUsers()) {
+        for (ResourceEntity rue : origUser.getResources()) {
             ResourceEntity e = resourceService.findResourceById(rue.getResourceId());
             resourceSet.add(resourceDozerConverter.convertToDTO(e, false));
         }

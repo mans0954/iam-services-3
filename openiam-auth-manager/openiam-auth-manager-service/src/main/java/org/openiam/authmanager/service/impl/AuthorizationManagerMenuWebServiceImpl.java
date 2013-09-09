@@ -107,14 +107,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 				throw new AuthorizationMenuException(MenuError.HANGING_ENTITLEMENTS, resource.getName());
 			}
 			*/
-			
-			if(CollectionUtils.isNotEmpty(resource.getResourceGroups())) {
-				throw new AuthorizationMenuException(ResponseCode.HANGING_GROUPS, resource.getName());
-			}
-			
-			if(CollectionUtils.isNotEmpty(resource.getResourceRoles())) {
-				throw new AuthorizationMenuException(ResponseCode.HANGING_ROLES, resource.getName());
-			}
+
 			
 			resourceService.deleteResource(rootId);
 		} catch(AuthorizationMenuException e) {
@@ -222,14 +215,7 @@ public class AuthorizationManagerMenuWebServiceImpl implements AuthorizationMana
 							throw new AuthorizationMenuException(MenuError.HANGING_ENTITLEMENTS, resource.getName());
 						}
 						*/
-						
-						if(CollectionUtils.isNotEmpty(resource.getResourceGroups())) {
-							throw new AuthorizationMenuException(ResponseCode.HANGING_GROUPS, resource.getName());
-						}
-						
-						if(CollectionUtils.isNotEmpty(resource.getResourceRoles())) {
-							throw new AuthorizationMenuException(ResponseCode.HANGING_ROLES, resource.getName());
-						}
+
 					}
 				}
 				

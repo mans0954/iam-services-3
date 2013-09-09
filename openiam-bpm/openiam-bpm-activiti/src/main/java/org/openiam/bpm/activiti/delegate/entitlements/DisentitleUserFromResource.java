@@ -5,13 +5,8 @@ import org.openiam.base.AttributeOperationEnum;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.dozer.converter.ResourceDozerConverter;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
-import org.openiam.idm.srvc.res.domain.ResourceUserEntity;
-import org.openiam.idm.srvc.res.service.ResourceDAO;
 import org.openiam.idm.srvc.res.service.ResourceService;
-import org.openiam.idm.srvc.res.service.ResourceUserDAO;
-import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.dto.User;
-import org.openiam.idm.srvc.user.service.UserDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
 import org.openiam.provision.dto.ProvisionUser;
 import org.openiam.provision.dto.UserResourceAssociation;
@@ -46,8 +41,6 @@ public class DisentitleUserFromResource extends AbstractEntitlementsDelegate {
 		User user = userDataService.getUserDto(userId);
 		final ResourceEntity entity = resourceService.findResourceById(resourceId);
 		if(user != null && entity != null) {
-			resourceService.deleteResourceUser(userId, resourceId);
-			
 			user = userDataService.getUserDto(userId);
 			final ProvisionUser pUser = new ProvisionUser(user);
 			final UserResourceAssociation association = new UserResourceAssociation();

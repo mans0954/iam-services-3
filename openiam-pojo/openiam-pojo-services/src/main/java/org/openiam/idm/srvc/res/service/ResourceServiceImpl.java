@@ -5,67 +5,56 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.openiam.idm.searchbeans.ResourceSearchBean;
+import org.openiam.idm.srvc.grp.domain.GroupEntity;
+import org.openiam.idm.srvc.grp.service.GroupDAO;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
-import org.openiam.idm.srvc.res.domain.ResourceGroupEntity;
 import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
 import org.openiam.idm.srvc.res.domain.ResourceRoleEmbeddableId;
-import org.openiam.idm.srvc.res.domain.ResourceRoleEntity;
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
-import org.openiam.idm.srvc.res.domain.ResourceUserEntity;
+import org.openiam.idm.srvc.role.domain.RoleEntity;
+import org.openiam.idm.srvc.role.service.RoleDAO;
 import org.openiam.idm.srvc.searchbean.converter.ResourceSearchBeanConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Transactional
 public class ResourceServiceImpl implements ResourceService {
 	
 	@Autowired
     private ResourceDAO resourceDao;
-	
+    @Autowired
+    private RoleDAO roleDao;
+    @Autowired
+    private GroupDAO groupDao;
 	@Autowired
     private ResourceTypeDAO resourceTypeDao;
 	
 	@Autowired
     private ResourcePropDAO resourcePropDao;
-	
-	@Autowired
-    private ResourceRoleDAO resourceRoleDao;
-    
-    @Autowired
-    private ResourceUserDAO resourceUserDao;
-    
-    @Autowired
-    private ResourceGroupDAO resourceGroupDAO;
-    
+
     @Autowired
     private ResourceSearchBeanConverter resourceSearchBeanConverter;
 
 	@Override
+    @Transactional
 	public void deleteResource(String resourceId) {
 		if(StringUtils.isNotBlank(resourceId)) {
 			final ResourceEntity entity = resourceDao.findById(resourceId);
 			if(entity != null) {
-				resourceGroupDAO.deleteByResourceId(resourceId);
-				resourceRoleDao.deleteByResourceId(resourceId);
-				resourceUserDao.deleteByResourceId(resourceId);
-				resourceDao.delete(entity);
 				resourceDao.delete(entity);
 			}
 		}
 	}
 
 	@Override
+    @Transactional
 	public void save(ResourceEntity entity) {
 		if(StringUtils.isNotBlank(entity.getResourceId())) {
 			final ResourceEntity dbObject = resourceDao.findById(entity.getResourceId());
 			entity.setChildResources(dbObject.getChildResources());
 			entity.setParentResources(dbObject.getParentResources());
-			entity.setResourceGroups(dbObject.getResourceGroups());
 			entity.setResourceProps(dbObject.getResourceProps());
-			entity.setResourceUsers(dbObject.getResourceUsers());
-			entity.setResourceRoles(dbObject.getResourceRoles());
 			if(entity.getResourceType() != null) {
 				final ResourceTypeEntity resourceType = resourceTypeDao.findById(entity.getResourceType().getResourceTypeId());
 				entity.setResourceType(resourceType);
@@ -77,17 +66,20 @@ public class ResourceServiceImpl implements ResourceService {
 	}
 
 	@Override
+    @Transactional(readOnly = true)
 	public ResourceEntity findResourceById(String resourceId) {
 		return resourceDao.findById(resourceId);
 	}
 
 	@Override
+    @Transactional(readOnly = true)
 	public int count(ResourceSearchBean searchBean) {
 		final ResourceEntity entity = resourceSearchBeanConverter.convert(searchBean);
     	return resourceDao.count(entity);
 	}
 
 	@Override
+    @Transactional(readOnly = true)
 	public List<ResourceEntity> findBeans(final ResourceSearchBean searchBean, final int from, final int size) {
 		final ResourceEntity resource = resourceSearchBeanConverter.convert(searchBean);
 		List<ResourceEntity> resultsEntities = null;
@@ -100,12 +92,20 @@ public class ResourceServiceImpl implements ResourceService {
 	        
 	}
 
-	@Override
+    @Override
+    @Transactional(readOnly = true)
+    public ResourcePropEntity findResourcePropById(String id) {
+        return resourcePropDao.findById(id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
 	public ResourceEntity findResourceByName(String name) {
 		return resourceDao.findByName(name);
 	}
 
 	@Override
+    @Transactional
 	public void save(ResourceTypeEntity entity) {
 		if(StringUtils.isBlank(entity.getResourceTypeId())) {
 			resourceTypeDao.save(entity);
@@ -115,16 +115,19 @@ public class ResourceServiceImpl implements ResourceService {
 	}
 
 	@Override
+    @Transactional(readOnly = true)
 	public ResourceTypeEntity findResourceTypeById(String id) {
 		return resourceTypeDao.findById(id);
 	}
 
 	@Override
+    @Transactional(readOnly = true)
 	public List<ResourceTypeEntity> getAllResourceTypes() {
 		return resourceTypeDao.findAll();
 	}
 
 	@Override
+    @Transactional
 	public void save(ResourcePropEntity entity) {
 		if(StringUtils.isBlank(entity.getResourcePropId())) {
 			resourcePropDao.save(entity);
@@ -134,6 +137,7 @@ public class ResourceServiceImpl implements ResourceService {
 	}
 
 	@Override
+    @Transactional
 	public void deleteResourceProp(String id) {
 		final ResourcePropEntity entity = resourcePropDao.findById(id);
 		if(entity != null) {
@@ -142,24 +146,7 @@ public class ResourceServiceImpl implements ResourceService {
 	}
 
 	@Override
-	public void deleteResourceUser(String userId, String resourceId) {
-		final ResourceUserEntity entity = resourceUserDao.getRecord(resourceId, userId);
-		if(entity != null) {
-			resourceUserDao.delete(entity);
-		}
-	}
-
-	@Override
-	public ResourceUserEntity getResourceUser(String userId, String resourceId) {
-		return resourceUserDao.getRecord(resourceId, userId);
-	}
-
-	@Override
-	public void save(ResourceUserEntity entity) {
-		resourceUserDao.save(entity);
-	}
-
-	@Override
+    @Transactional(readOnly = true)
 	public List<ResourceEntity> getChildResources(String resourceId, int from, int size) {
 		final ResourceEntity example = new ResourceEntity();
 		final ResourceEntity parent = new ResourceEntity();
@@ -170,6 +157,7 @@ public class ResourceServiceImpl implements ResourceService {
 	}
 
 	@Override
+    @Transactional(readOnly = true)
 	public int getNumOfChildResources(String resourceId) {
 		final ResourceEntity example = new ResourceEntity();
 		final ResourceEntity parent = new ResourceEntity();
@@ -179,6 +167,7 @@ public class ResourceServiceImpl implements ResourceService {
 	}
 
 	@Override
+    @Transactional(readOnly = true)
 	public List<ResourceEntity> getParentResources(String resourceId, int from, int size) {
 		final ResourceEntity example = new ResourceEntity();
 		final ResourceEntity child = new ResourceEntity();
@@ -188,6 +177,7 @@ public class ResourceServiceImpl implements ResourceService {
 	}
 
 	@Override
+    @Transactional(readOnly = true)
 	public int getNumOfParentResources(String resourceId) {
 		final ResourceEntity example = new ResourceEntity();
 		final ResourceEntity child = new ResourceEntity();
@@ -197,6 +187,7 @@ public class ResourceServiceImpl implements ResourceService {
 	}
 
 	@Override
+    @Transactional
 	public void addChildResource(String parentResourceId, String childResourceId) {
 		final ResourceEntity parent = resourceDao.findById(parentResourceId);
 		final ResourceEntity child = resourceDao.findById(childResourceId);
@@ -205,6 +196,7 @@ public class ResourceServiceImpl implements ResourceService {
 	}
 
 	@Override
+    @Transactional
 	public void deleteChildResource(String resourceId, String childResourceId) {
 		final ResourceEntity parent = resourceDao.findById(resourceId);
 		final ResourceEntity child = resourceDao.findById(childResourceId);
@@ -213,94 +205,84 @@ public class ResourceServiceImpl implements ResourceService {
 	}
 
 	@Override
-	public ResourceGroupEntity getResourceGroup(String resourceId, String groupId) {
-		return resourceGroupDAO.getRecord(resourceId, groupId);
-	}
-
-	@Override
+    @Transactional
 	public void addResourceGroup(String resourceId, String groupId) {
-		final ResourceGroupEntity entity = new ResourceGroupEntity();
-		entity.setGroupId(groupId);
-		entity.setResourceId(resourceId);
-		resourceGroupDAO.save(entity);
+		ResourceEntity resourceEntity = resourceDao.findById(resourceId);
+        GroupEntity groupEntity = groupDao.findById(groupId);
+        resourceEntity.getGroups().add(groupEntity);
 	}
 
 	@Override
+    @Transactional
 	public void deleteResourceGroup(String resourceId, String groupId) {
-		final ResourceGroupEntity entity = getResourceGroup(resourceId, groupId);
-		if(entity != null) {
-			resourceGroupDAO.delete(entity);
-		}
+        ResourceEntity resourceEntity = resourceDao.findById(resourceId);
+        GroupEntity groupEntity = groupDao.findById(groupId);
+        resourceEntity.getGroups().remove(groupEntity);
 	}
 
-	@Override
-	public ResourceRoleEntity getResourceRole(String resourceId, String roleId) {
-		final ResourceRoleEmbeddableId id = new ResourceRoleEmbeddableId(roleId, resourceId);
-		return resourceRoleDao.findById(id);
-	}
+    @Override
+    @Transactional
+    public void addResourceToRole(String resourceId, String roleId) {
+        ResourceEntity resourceEntity = resourceDao.findById(resourceId);
+        RoleEntity roleEntity = roleDao.findById(roleId);
+        resourceEntity.getRoles().add(roleEntity);
+    }
+
 
 	@Override
-	public void saveResourceRole(String resourceId, String roleId) {
-		final ResourceRoleEmbeddableId id = new ResourceRoleEmbeddableId(roleId, resourceId);
-		final ResourceRoleEntity entity = new ResourceRoleEntity();
-		entity.setId(id);
-		resourceRoleDao.save(entity);
-	}
-
-	@Override
+    @Transactional
 	public void deleteResourceRole(String resourceId, String roleId) {
-		final ResourceRoleEmbeddableId id = new ResourceRoleEmbeddableId(roleId, resourceId);
-		final ResourceRoleEntity entity = resourceRoleDao.findById(id);
-		if(entity != null) {
-			resourceRoleDao.delete(entity);
-		}
+        ResourceEntity resourceEntity = resourceDao.findById(resourceId);
+        RoleEntity roleEntity = roleDao.findById(roleId);
+        resourceEntity.getRoles().remove(roleEntity);
 	}
 
 	@Override
+    @Transactional(readOnly = true)
 	public int getNumOfResourcesForRole(String roleId) {
 		return resourceDao.getNumOfResourcesForRole(roleId);
 	}
 
 	@Override
+    @Transactional(readOnly = true)
 	public List<ResourceEntity> getResourcesForRole(String roleId, int from, int size) {
 		return resourceDao.getResourcesForRole(roleId, from, size);
 	}
 
 	@Override
+    @Transactional(readOnly = true)
 	public int getNumOfResourceForGroup(String groupId) {
 		return resourceDao.getNumOfResourcesForGroup(groupId);
 	}
 
 	@Override
+    @Transactional(readOnly = true)
 	public List<ResourceEntity> getResourcesForGroup(String groupId, int from, int size) {
 		return resourceDao.getResourcesForGroup(groupId, from, size);
 	}
 
 	@Override
+    @Transactional(readOnly = true)
 	public int getNumOfResourceForUser(String userId) {
 		return resourceDao.getNumOfResourcesForUser(userId);
 	}
 
 	@Override
+    @Transactional(readOnly = true)
 	public List<ResourceEntity> getResourcesForUser(String userId, int from, int size) {
 		return resourceDao.getResourcesForUser(userId, from, size);
 	}
 
 	@Override
+    @Transactional(readOnly = true)
 	public List<ResourceEntity> findResourcesByIds(
 			Collection<String> resourceIdCollection) {
 		return resourceDao.findByIds(resourceIdCollection);
 	}
 
     @Override
-    public void evict(Object entity) {
-        if (entity instanceof ResourceUserEntity) {
-            resourceUserDao.evict((ResourceUserEntity)entity);
-        } else if (entity instanceof ResourceEntity) {
-            resourceDao.evict((ResourceEntity)entity);
-        } else {
-            throw new IllegalArgumentException("Operation is not supported for this type of object");
-        }
+    @Transactional(readOnly = true)
+    public List<ResourceEntity> getResourcesForManagedSys(String mngSysId, int from, int size) {
+        return resourceDao.getResourcesForManagedSys(mngSysId, from, size);
     }
-
 }

@@ -5,7 +5,6 @@ import java.util.Set;
 
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.report.domain.ReportInfoEntity;
-import org.openiam.idm.srvc.res.dto.ResourceUser;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;

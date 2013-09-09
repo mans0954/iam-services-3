@@ -44,8 +44,8 @@
 		<field
 			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
 			custom-converter-param="amDto2entityShallowDozerMapper">
-			<a>resourceRoles</a>
-			<b>resourceRoles</b>
+			<a>roles</a>
+			<b>roles</b>
 		</field>
 		<field
 			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
@@ -56,12 +56,12 @@
 		<field
 			custom-converter="org.openiam.dozer.crossentity.CrossEntityPersistentSetConverter"
 			custom-converter-param="amDto2entityShallowDozerMapper">
-			<a>resourceGroups</a>
-			<b>resourceGroups</b>
+			<a>groups</a>
+			<b>groups</b>
 		</field>
 		<field-exclude>
-			<a>resourceUsers</a>
-			<b>resourceUsers</b>
+			<a>users</a>
+			<b>users</b>
 		</field-exclude>
 	</mapping>
 

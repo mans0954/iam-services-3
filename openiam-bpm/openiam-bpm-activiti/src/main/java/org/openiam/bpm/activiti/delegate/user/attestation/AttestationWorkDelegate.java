@@ -120,7 +120,6 @@ public class AttestationWorkDelegate implements JavaDelegate {
 						final Resource resource = resourceDozerConverter.convertToDTO(resourceEntity, false);
 						final UserResourceAssociation association = new UserResourceAssociation(resource.getResourceId(), AttributeOperationEnum.DELETE);
 						association.setManagedSystemId(resource.getManagedSysId());
-						resourceService.deleteResourceUser(dto.getUserId(), resource.getResourceId());
 						provisionUser.addResourceUserAssociation(association);
 					}
 				}

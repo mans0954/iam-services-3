@@ -68,20 +68,20 @@
             <b>childResources</b>
         </field>
         <field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="amShallowDozerMapper">
-            <a>resourceRoles</a>
-            <b>resourceRoles</b>
+            <a>roles</a>
+            <b>roles</b>
         </field>
         <field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="amShallowDozerMapper">
             <a>resourceProps</a>
             <b>resourceProps</b>
         </field>
         <field custom-converter="org.openiam.dozer.PersistentSetConverter" custom-converter-param="amShallowDozerMapper">
-            <a>resourceGroups</a>
-            <b>resourceGroups</b>
+            <a>groups</a>
+            <b>groups</b>
         </field>
         <field-exclude>
-            <a>resourceUsers</a>
-            <b>resourceUsers</b>
+            <a>users</a>
+            <b>users</b>
         </field-exclude>
     </mapping>
 

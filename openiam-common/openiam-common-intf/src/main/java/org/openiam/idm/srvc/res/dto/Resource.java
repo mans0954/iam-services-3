@@ -7,15 +7,16 @@ import org.openiam.dozer.DozerDTOCorrespondence;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
+
+import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.res.domain.ResourceEntity;
-import org.openiam.idm.srvc.res.domain.ResourceGroupEntity;
-import org.openiam.idm.srvc.res.domain.ResourcePropEntity;
-import org.openiam.idm.srvc.res.domain.ResourceRoleEntity;
+import org.openiam.idm.srvc.role.dto.Role;
+import org.openiam.idm.srvc.user.dto.User;
 
 /**
  * Resources are items that need to be managed or protected. These can be both logic and physical in nature.
@@ -31,9 +32,10 @@ import org.openiam.idm.srvc.res.domain.ResourceRoleEntity;
         "displayOrder",
         "managedSysId",
         "URL",
-        "resourceRoles",
+        "roles",
         "resourceProps",
-        "resourceGroups",
+        "groups",
+        "users",
         "resOwnerUserId",
         "resOwnerGroupId",
         "childResources",
@@ -42,6 +44,10 @@ import org.openiam.idm.srvc.res.domain.ResourceRoleEntity;
         "domain",
         "isPublic",
         "isSSL"
+})
+@XmlSeeAlso({
+        Role.class,
+        User.class
 })
 @DozerDTOCorrespondence(ResourceEntity.class)
 public class Resource extends BaseObject {
@@ -62,15 +68,12 @@ public class Resource extends BaseObject {
     private Set<Resource> parentResources = new HashSet<Resource>(0);
     private Set<Resource> childResources = new HashSet<Resource>(0);
 
-    private Set<ResourceRole> resourceRoles = new HashSet<ResourceRole>(0);
+    private Set<Role> roles = new HashSet<Role>(0);
 
     private Set<ResourceProp> resourceProps = new HashSet<ResourceProp>(0); // defined as a Set in Hibernate map
 
-    private Set<ResourceGroup> resourceGroups = new HashSet<ResourceGroup>(0);
-
-    @XmlTransient
-    private Set<ResourceUser> resourceUsers = new HashSet<ResourceUser>();
-    
+    private Set<Group> groups = new HashSet<Group>(0);
+    private Set<User> users = new HashSet<User>(0);
     private String minAuthLevel;
     private String domain;
     private boolean isPublic = true;
@@ -144,14 +147,6 @@ public class Resource extends BaseObject {
         this.displayOrder = displayOrder;
     }
 
-    public Set<ResourceRole> getResourceRoles() {
-        return this.resourceRoles;
-    }
-
-    public void setResourceRoles(Set<ResourceRole> resourceRoles) {
-        this.resourceRoles = resourceRoles;
-    }
-
     public Set<ResourceProp> getResourceProps() {
         return resourceProps;
     }
@@ -211,14 +206,6 @@ public class Resource extends BaseObject {
 		this.isSSL = isSSL;
 	}
 
-	public Set<ResourceUser> getResourceUsers() {
-		return resourceUsers;
-	}
-
-	public void setResourceUsers(Set<ResourceUser> resourceUsers) {
-		this.resourceUsers = resourceUsers;
-	}
-
 	@Override
     public String toString() {
         return "Resource{" +
@@ -233,9 +220,6 @@ public class Resource extends BaseObject {
                 ", URL='" + URL + '\'' +
                 ", resOwnerUserId='" + resOwnerUserId + '\'' +
                 ", resOwnerGroupId='" + resOwnerGroupId + '\'' +
-                ", resourceRoles=" + resourceRoles +
-                ", resourceProps=" + resourceProps +
-                ", resourceGroups=" + resourceGroups +
                 /*", entitlements=" + entitlements +*/
                 '}';
     }
@@ -256,12 +240,28 @@ public class Resource extends BaseObject {
         URL = uRL;
     }
 
-    public Set<ResourceGroup> getResourceGroups() {
-        return resourceGroups;
+    public Set<Role> getRoles() {
+        return roles;
     }
 
-    public void setResourceGroups(Set<ResourceGroup> resourceGroups) {
-        this.resourceGroups = resourceGroups;
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
+    }
+
+    public Set<Group> getGroups() {
+        return groups;
+    }
+
+    public void setGroups(Set<Group> groups) {
+        this.groups = groups;
+    }
+
+    public Set<User> getUsers() {
+        return users;
+    }
+
+    public void setUsers(Set<User> users) {
+        this.users = users;
     }
 
     public String getResOwnerUserId() {

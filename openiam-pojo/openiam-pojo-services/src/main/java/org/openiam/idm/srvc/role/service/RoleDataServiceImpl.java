@@ -9,7 +9,6 @@ import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.service.GroupDAO;
-import org.openiam.idm.srvc.res.service.ResourceRoleDAO;
 import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.role.domain.RolePolicyEntity;
@@ -51,9 +50,6 @@ public class RoleDataServiceImpl implements RoleDataService {
 	private RoleDozerConverter roleDozerConverter;
 
 	@Autowired
-	private ResourceRoleDAO resourceRoleDAO;
-	
-	@Autowired
     @Qualifier("entityValidator")
     private EntityValidator entityValidator;
 	
@@ -79,7 +75,6 @@ public class RoleDataServiceImpl implements RoleDataService {
 		if(roleId != null) {
 			final RoleEntity roleEntity = roleDao.findById(roleId);
 			if(roleEntity != null) {
-				resourceRoleDAO.deleteByRoleId(roleId);
 				roleAttributeDAO.deleteByRoleId(roleId);
 				roleDao.delete(roleEntity);
 			}
@@ -124,7 +119,7 @@ public class RoleDataServiceImpl implements RoleDataService {
             throw new IllegalArgumentException("user object is null");
         UserEntity userEntity = userDAO.findById(userId);
         RoleEntity roleEntity = roleDao.findById(roleId);
-        userEntity.getUserRoles().add(roleEntity);
+        userEntity.getRoles().add(roleEntity);
     }
 
   	@Override
@@ -137,7 +132,7 @@ public class RoleDataServiceImpl implements RoleDataService {
 
             UserEntity userEntity = userDAO.findById(userId);
             RoleEntity roleEntity = roleDao.findById(roleId);
-            userEntity.getUserRoles().add(roleEntity);
+            userEntity.getRoles().add(roleEntity);
 	}
 	
 	@Override
@@ -149,7 +144,7 @@ public class RoleDataServiceImpl implements RoleDataService {
             throw new IllegalArgumentException("user object is null");
         UserEntity userEntity = userDAO.findById(userId);
         RoleEntity roleEntity = roleDao.findById(roleId);
-        userEntity.getUserRoles().remove(roleEntity);
+        userEntity.getRoles().remove(roleEntity);
     }
 
 	private void visitChildRoles(final String roleId, final Set<RoleEntity> visitedSet) {
@@ -268,7 +263,7 @@ public class RoleDataServiceImpl implements RoleDataService {
     @Transactional(readOnly = true)
 	public List<Role> getUserRolesAsFlatList(String userId) {
 		UserEntity userEntity = userDAO.findById(userId);
-		Set<RoleEntity> userRoles = userEntity.getUserRoles();
+		Set<RoleEntity> userRoles = userEntity.getRoles();
 
 		final Set<RoleEntity> visitedSet = new HashSet<RoleEntity>();
 

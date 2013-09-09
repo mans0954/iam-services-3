@@ -13,7 +13,7 @@ import org.hibernate.criterion.Restrictions;
 import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.searchbeans.RoleSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
-import org.openiam.idm.srvc.res.domain.ResourceRoleEntity;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.searchbean.converter.RoleSearchBeanConverter;
 import org.openiam.idm.srvc.user.domain.UserEntity;
@@ -91,16 +91,16 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
 					criteria.add(Restrictions.eq("serviceId", entity.getServiceId()));
 				}
 				
-				if(CollectionUtils.isNotEmpty(entity.getResourceRoles())) {
+				if(CollectionUtils.isNotEmpty(entity.getResources())) {
 					final Set<String> resourceIds = new HashSet<String>();
-	            	for(final ResourceRoleEntity resourceRole : entity.getResourceRoles()) {
-	            		if(resourceRole != null && StringUtils.isNotBlank(resourceRole.getId().getResourceId())) {
-	            			resourceIds.add(resourceRole.getId().getResourceId());
+	            	for(final ResourceEntity resourceRole : entity.getResources()) {
+	            		if(resourceRole != null && StringUtils.isNotBlank(resourceRole.getResourceId())) {
+	            			resourceIds.add(resourceRole.getResourceId());
 	            		}
 	            	}
 	            	
 	            	if(CollectionUtils.isNotEmpty(resourceIds)) {
-	            		criteria.createAlias("resourceRoles", "rr").add( Restrictions.in("rr.id.resourceId", resourceIds));
+	            		criteria.createAlias("resources", "rr").add( Restrictions.in("rr.resourceId", resourceIds));
 	            	}
 				}
 			}

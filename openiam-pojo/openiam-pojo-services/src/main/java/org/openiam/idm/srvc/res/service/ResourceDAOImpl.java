@@ -143,8 +143,8 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 	public List<ResourceEntity> getResourcesForRole(final String roleId,
 			final int from, final int size) {
 		final Criteria criteria = getCriteria()
-				.createAlias("resourceRoles", "rr")
-				.add(Restrictions.eq("rr.id.roleId", roleId))
+				.createAlias("roles", "rr")
+				.add(Restrictions.eq("rr.roleId", roleId))
 				.addOrder(Order.asc("managedSysId"))
 				.addOrder(Order.asc("name"));
 
@@ -184,8 +184,8 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 	@Override
 	public int getNumOfResourcesForRole(String roleId) {
 		final Criteria criteria = getCriteria()
-				.createAlias("resourceRoles", "rr")
-				.add(Restrictions.eq("rr.id.roleId", roleId))
+				.createAlias("roles", "rr")
+				.add(Restrictions.eq("rr.roleId", roleId))
 				.setProjection(rowCount());
 
 		return ((Number) criteria.uniqueResult()).intValue();
@@ -200,7 +200,7 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 	public List<ResourceEntity> getResourcesForGroup(final String groupId,
 			final int from, final int size) {
 		final Criteria criteria = getCriteria()
-				.createAlias("resourceGroups", "rg")
+				.createAlias("groups", "rg")
 				.add(Restrictions.eq("rg.groupId", groupId))
 				.addOrder(Order.asc("managedSysId"))
 				.addOrder(Order.asc("name"));
@@ -221,7 +221,7 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 	@Override
 	public int getNumOfResourcesForGroup(final String groupId) {
 		final Criteria criteria = getCriteria()
-				.createAlias("resourceGroups", "rg")
+				.createAlias("groups", "rg")
 				.add(Restrictions.eq("rg.groupId", groupId))
 				.setProjection(rowCount());
 
@@ -229,7 +229,7 @@ public class ResourceDAOImpl extends BaseDaoImpl<ResourceEntity, String>
 	}
 
 	private Criteria getResourceForUserCriteria(final String userId) {
-		return getCriteria().createAlias("resourceUsers", "ru").add(
+		return getCriteria().createAlias("users", "ru").add(
 				Restrictions.eq("ru.userId", userId));
 	}
 

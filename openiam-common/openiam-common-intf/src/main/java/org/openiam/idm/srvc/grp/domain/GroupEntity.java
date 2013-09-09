@@ -28,7 +28,7 @@ import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.dto.Group;
-import org.openiam.idm.srvc.res.domain.ResourceGroupEntity;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 
@@ -86,10 +86,9 @@ public class GroupEntity {
     @Column(name = "INTERNAL_GROUP_ID", length = 32)
     private String internalGroupId;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "GRP_ID")
-    @Fetch(FetchMode.SUBSELECT)
-    private Set<ResourceGroupEntity> resourceGroups;
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "RESOURCE_GROUP", joinColumns = { @JoinColumn(name = "GRP_ID") }, inverseJoinColumns = { @JoinColumn(name = "RESOURCE_ID") })
+    private Set<ResourceEntity> resources;
 
     @ManyToMany(cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH }, fetch = FetchType.LAZY)
     @JoinTable(name = "grp_to_grp_membership",
@@ -118,7 +117,7 @@ public class GroupEntity {
 
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "USER_GRP", joinColumns = { @JoinColumn(name = "GRP_ID") }, inverseJoinColumns = { @JoinColumn(name = "USER_ID") })
-    private Set<UserEntity> userGroups = new HashSet<UserEntity>(0);
+    private Set<UserEntity> users = new HashSet<UserEntity>(0);
 
     public String getGrpId() {
         return grpId;
@@ -294,21 +293,12 @@ public class GroupEntity {
         this.attributes = attributes;
     }
 
-    public Set<ResourceGroupEntity> getResourceGroups() {
-        return resourceGroups;
+    public Set<ResourceEntity> getResources() {
+        return resources;
     }
 
-    public void setResourceGroups(Set<ResourceGroupEntity> resourceGroups) {
-        this.resourceGroups = resourceGroups;
-    }
-
-    public void addResourceGroup(final ResourceGroupEntity resourceGroup) {
-        if (resourceGroup != null) {
-            if (resourceGroups == null) {
-                this.resourceGroups = new HashSet<ResourceGroupEntity>();
-            }
-            this.resourceGroups.add(resourceGroup);
-        }
+    public void setResources(Set<ResourceEntity> resources) {
+        this.resources = resources;
     }
 
     public Set<RoleEntity> getRoles() {
@@ -319,12 +309,12 @@ public class GroupEntity {
         this.roles = roles;
     }
 
-    public Set<UserEntity> getUserGroups() {
-        return userGroups;
+    public Set<UserEntity> getUsers() {
+        return users;
     }
 
-    public void setUserGroups(Set<UserEntity> userGroups) {
-        this.userGroups = userGroups;
+    public void setUsers(Set<UserEntity> users) {
+        this.users = users;
     }
 
     @Override

@@ -271,4 +271,10 @@ public interface UserDataService {
 
     boolean isHasGroup(String userId, String groupId);
 
+    void addUserToResource(String userId, String resourceId);
+
+    boolean isHasResource(String userId, String resourceId);
+
+    boolean isHasOrganization(String userId, String organizationId);
+
 }

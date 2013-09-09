@@ -3,9 +3,7 @@ package org.openiam.dozer.converter;
 import java.util.List;
 
 import org.openiam.idm.srvc.res.domain.ResourceTypeEntity;
-import org.openiam.idm.srvc.res.domain.ResourceUserEntity;
 import org.openiam.idm.srvc.res.dto.ResourceType;
-import org.openiam.idm.srvc.res.dto.ResourceUser;
 import org.springframework.stereotype.Component;
 
 @Component("resourceTypeDozerConverter")

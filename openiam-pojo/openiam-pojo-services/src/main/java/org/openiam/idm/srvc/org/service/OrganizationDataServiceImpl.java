@@ -19,12 +19,12 @@ import org.openiam.dozer.converter.OrganizationDozerConverter;
 import org.openiam.idm.searchbeans.OrganizationSearchBean;
 import org.openiam.idm.srvc.org.domain.OrganizationAttributeEntity;
 import org.openiam.idm.srvc.org.domain.OrganizationEntity;
-import org.openiam.idm.srvc.org.domain.UserAffiliationEntity;
 import org.openiam.idm.srvc.org.dto.Organization;
 import org.openiam.idm.srvc.org.dto.OrganizationAttribute;
 import org.openiam.idm.srvc.searchbean.converter.OrganizationSearchBeanConverter;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 import org.openiam.idm.srvc.user.service.UserDAO;
+import org.openiam.idm.srvc.user.service.UserDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,19 +47,15 @@ import org.springframework.transaction.annotation.Transactional;
             portName = "OrganizationDataWebServicePort",
             serviceName = "OrganizationDataWebService")
 @Service("orgManager")
-@Transactional
 public class OrganizationDataServiceImpl implements OrganizationDataService {
 
     private static final Log log = LogFactory.getLog(OrganizationDataServiceImpl.class);
 
     @Autowired
     private OrganizationService organizationService;
-    
+
     @Autowired
-    private UserAffiliationDAO userAffiliationDAO;
-    
-    @Autowired
-    private UserDAO userDAO;
+    private UserDataService userDataService;
 
     @Autowired
     private OrganizationSearchBeanConverter organizationSearchBeanConverter;
@@ -135,10 +131,6 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
         try {
             if (orgId == null || userId == null) {
                 throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
-            }
-
-            if (organizationService.getAffiliation(userId, orgId) != null) {
-                throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
             }
 
             organizationService.addUserToOrg(orgId, userId);
@@ -381,17 +373,11 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
 
-			final UserAffiliationEntity entity = userAffiliationDAO.getRecord(userId, organizationId);
 
-			if (entity != null) {
+			if (userDataService.isHasOrganization(userId, organizationId)) {
 				throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
 			}
 
-			final OrganizationEntity organization = organizationService.getOrganization(organizationId);
-			final UserEntity user = userDAO.findById(userId);
-			if (organization == null || user == null) {
-				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
-			}
 		} catch (BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
@@ -411,17 +397,11 @@ public class OrganizationDataServiceImpl implements OrganizationDataService {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
 
-			final UserAffiliationEntity entity = userAffiliationDAO.getRecord(userId, organizationId);
-
-			if (entity == null) {
+			if (!userDataService.isHasOrganization(userId, organizationId)) {
 				throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
 			}
 
-			final OrganizationEntity organization = organizationService.getOrganization(organizationId);
-			final UserEntity user = userDAO.findById(userId);
-			if (organization == null || user == null) {
-				throw new BasicDataServiceException(ResponseCode.OBJECT_NOT_FOUND);
-			}
+
 		} catch (BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());

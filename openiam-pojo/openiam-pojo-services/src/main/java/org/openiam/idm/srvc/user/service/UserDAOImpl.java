@@ -2,10 +2,7 @@ package org.openiam.idm.srvc.user.service;
 
 import static org.hibernate.criterion.Projections.rowCount;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -321,6 +318,25 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
     }
 
     @Override
+    public List<UserEntity> getUsersForOrganization(String organizationId, DelegationFilterSearchBean delegationFilter, final int from, final int size) {
+        Set<String> orgIds = new HashSet<String>();
+        orgIds.add(organizationId);
+
+        delegationFilter.setOrganizationIdSet(orgIds);
+        final Criteria criteria = getUsersEntitlementCriteria(null, null, null, delegationFilter);
+
+        if (from > -1) {
+            criteria.setFirstResult(from);
+        }
+
+        if (size > -1) {
+            criteria.setMaxResults(size);
+        }
+
+        return criteria.list();
+    }
+
+    @Override
     public int getNumOfUsersForResource(final String resourceId, DelegationFilterSearchBean delegationFilter) {
         final Criteria criteria = getUsersEntitlementCriteria(null, null, resourceId, delegationFilter).setProjection(rowCount());
         return ((Number) criteria.uniqueResult()).intValue();
@@ -385,29 +401,29 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         Criteria criteria = getCriteria();
 
         if (StringUtils.isNotEmpty(groupId)) {
-            criteria.createAlias("userGroups", "ug");
+            criteria.createAlias("groups", "ug");
             criteria.add(Restrictions.eq("ug.grpId", groupId));
         } else if (delegationFilter != null && CollectionUtils.isNotEmpty(delegationFilter.getGroupIdSet())) {
-            criteria.createAlias("userGroups", "ug");
+            criteria.createAlias("groups", "ug");
             criteria.add(Restrictions.in("ug.grpId", delegationFilter.getGroupIdSet()));
         }
 
         if (StringUtils.isNotEmpty(roleId)) {
-            criteria.createAlias("userRoles", "ur");
+            criteria.createAlias("roles", "ur");
             criteria.add(Restrictions.eq("ur.roleId", roleId));
         } else if (delegationFilter != null && CollectionUtils.isNotEmpty(delegationFilter.getRoleIdSet())) {
-            criteria.createAlias("userRoles", "ur");
+            criteria.createAlias("roles", "ur");
             criteria.add(Restrictions.in("ur.roleId", delegationFilter.getRoleIdSet()));
         }
 
         if (StringUtils.isNotEmpty(resourceId)) {
-            criteria.createAlias("resourceUsers", "ru").add(Restrictions.eq("ru.resourceId", resourceId));
+            criteria.createAlias("resources", "ru").add(Restrictions.eq("ru.resourceId", resourceId));
         }
 
         if (delegationFilter != null) {
             if (CollectionUtils.isNotEmpty(delegationFilter.getOrganizationIdSet())) {
                 criteria.createAlias("affiliations", "aff").add(
-                        Restrictions.in("aff.organization.id", delegationFilter.getOrganizationIdSet()));
+                        Restrictions.in("aff.id", delegationFilter.getOrganizationIdSet()));
             }
         }
         criteria.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);

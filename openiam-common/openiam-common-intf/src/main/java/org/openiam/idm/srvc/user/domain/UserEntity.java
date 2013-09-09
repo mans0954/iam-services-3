@@ -34,8 +34,8 @@ import org.openiam.idm.srvc.continfo.domain.AddressEntity;
 import org.openiam.idm.srvc.continfo.domain.EmailAddressEntity;
 import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
-import org.openiam.idm.srvc.org.domain.UserAffiliationEntity;
-import org.openiam.idm.srvc.res.domain.ResourceUserEntity;
+import org.openiam.idm.srvc.org.domain.OrganizationEntity;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
 import org.openiam.idm.srvc.user.dto.User;
 import org.openiam.idm.srvc.user.dto.UserStatusEnum;
@@ -249,19 +249,19 @@ public class UserEntity {
 
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "USER_GRP", joinColumns = { @JoinColumn(name = "USER_ID") }, inverseJoinColumns = { @JoinColumn(name = "GRP_ID") })
-    private Set<GroupEntity> userGroups = new HashSet<GroupEntity>(0);
-
-    @OneToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY)
-    @JoinColumn(name="USER_ID", referencedColumnName="USER_ID")
-    @Fetch(FetchMode.SUBSELECT)
-    private Set<ResourceUserEntity> resourceUsers = new HashSet<ResourceUserEntity>();
+    private Set<GroupEntity> groups = new HashSet<GroupEntity>(0);
 
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "USER_ROLE", joinColumns = { @JoinColumn(name = "USER_ID") }, inverseJoinColumns = { @JoinColumn(name = "ROLE_ID") })
-    private Set<RoleEntity> userRoles = new HashSet<RoleEntity>(0);
+    private Set<RoleEntity> roles = new HashSet<RoleEntity>(0);
     
-	@OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL, mappedBy = "user")
-	private Set<UserAffiliationEntity> affiliations;
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "USER_AFFILIATION", joinColumns = { @JoinColumn(name = "USER_ID") }, inverseJoinColumns = { @JoinColumn(name = "COMPANY_ID") })
+	private Set<OrganizationEntity> affiliations;
+
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "RESOURCE_USER", joinColumns = { @JoinColumn(name = "USER_ID") }, inverseJoinColumns = { @JoinColumn(name = "RESOURCE_ID") })
+    private Set<ResourceEntity> resources;
 
     public UserEntity() {
     }
@@ -844,36 +844,37 @@ public class UserEntity {
     	}
     }
 
-    public Set<RoleEntity> getUserRoles() {
-        return userRoles;
+    public Set<GroupEntity> getGroups() {
+        return groups;
     }
 
-    public void setUserRoles(Set<RoleEntity> userRoles) {
-        this.userRoles = userRoles;
+    public void setGroups(Set<GroupEntity> groups) {
+        this.groups = groups;
     }
 
-    public Set<ResourceUserEntity> getResourceUsers() {
-		return resourceUsers;
-	}
-
-	public void setResourceUsers(Set<ResourceUserEntity> resourceUsers) {
-		this.resourceUsers = resourceUsers;
-	}
-
-	public Set<UserAffiliationEntity> getAffiliations() {
-		return affiliations;
-	}
-
-	public void setAffiliations(Set<UserAffiliationEntity> affiliations) {
-		this.affiliations = affiliations;
-	}
-
-    public Set<GroupEntity> getUserGroups() {
-        return userGroups;
+    public Set<RoleEntity> getRoles() {
+        return roles;
     }
 
-    public void setUserGroups(Set<GroupEntity> userGroups) {
-        this.userGroups = userGroups;
+    public void setRoles(Set<RoleEntity> roles) {
+        this.roles = roles;
+    }
+
+    public Set<OrganizationEntity> getAffiliations() {
+        return affiliations;
+    }
+
+    public void setAffiliations(Set<OrganizationEntity> affiliations) {
+        this.affiliations = affiliations;
+    }
+
+
+    public Set<ResourceEntity> getResources() {
+        return resources;
+    }
+
+    public void setResources(Set<ResourceEntity> resources) {
+        this.resources = resources;
     }
 
     public void updateUser(UserEntity newUser) {

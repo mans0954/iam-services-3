@@ -55,4 +55,6 @@ public interface UserDAO extends BaseDao<UserEntity, String> {
 
     public List<String> getAllAttachedSupSubIds(String userId);
 
+    public List<UserEntity> getUsersForOrganization(final String organizationId, DelegationFilterSearchBean delegationFilter, final int from, final int size);
+
 }

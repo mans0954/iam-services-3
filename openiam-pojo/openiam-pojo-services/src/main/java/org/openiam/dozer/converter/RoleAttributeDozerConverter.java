@@ -2,8 +2,6 @@ package org.openiam.dozer.converter;
 
 import java.util.List;
 
-import org.openiam.idm.srvc.res.domain.ResourceUserEntity;
-import org.openiam.idm.srvc.res.dto.ResourceUser;
 import org.openiam.idm.srvc.role.domain.RoleAttributeEntity;
 import org.openiam.idm.srvc.role.dto.RoleAttribute;
 import org.springframework.stereotype.Component;

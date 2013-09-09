@@ -4,9 +4,11 @@ package org.openiam.idm.srvc.grp.dto;
 import org.openiam.base.AttributeOperationEnum;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
-import org.openiam.idm.srvc.res.dto.ResourceGroup;
+import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.role.dto.RoleSetAdapter;
+import org.openiam.idm.srvc.role.dto.UserSetAdapter;
+import org.openiam.idm.srvc.user.dto.User;
 
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -33,12 +35,15 @@ import java.util.*;
         "operation",
         "parentGroups",
         "childGroups",
-        "resourceGroups"
+        "resources",
+        "users"
 })
 @XmlRootElement(name = "Group")
 @XmlSeeAlso({
         Role.class,
-        GroupAttribute.class
+        GroupAttribute.class,
+        Resource.class,
+        User.class
 })
 @DozerDTOCorrespondence(GroupEntity.class)
 public class Group implements java.io.Serializable {
@@ -67,8 +72,10 @@ public class Group implements java.io.Serializable {
     
     private Set<Group> parentGroups;
     private Set<Group> childGroups;
-    
-    private Set<ResourceGroup> resourceGroups;
+
+    private Set<Resource> resources;
+    @XmlJavaTypeAdapter(UserSetAdapter.class)
+    private Set<User> users;
 
     @XmlJavaTypeAdapter(RoleSetAdapter.class)
     protected Set<Role> roles = new HashSet<Role>(0);
@@ -280,14 +287,22 @@ public class Group implements java.io.Serializable {
 			childGroups.add(group);
 		}
 	}
-	
-	public Set<ResourceGroup> getResourceGroups() {
-		return resourceGroups;
-	}
 
-	public void setResourceGroups(Set<ResourceGroup> resourceGroups) {
-		this.resourceGroups = resourceGroups;
-	}
+    public Set<Resource> getResources() {
+        return resources;
+    }
+
+    public void setResources(Set<Resource> resources) {
+        this.resources = resources;
+    }
+
+    public Set<User> getUsers() {
+        return users;
+    }
+
+    public void setUsers(Set<User> users) {
+        this.users = users;
+    }
 
     @Override
     public boolean equals(Object o) {

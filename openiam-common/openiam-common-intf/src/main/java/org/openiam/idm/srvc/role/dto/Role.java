@@ -5,8 +5,9 @@ import org.openiam.base.BaseObject;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupSetAdapter;
-import org.openiam.idm.srvc.res.dto.ResourceRole;
+import org.openiam.idm.srvc.res.dto.Resource;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
+import org.openiam.idm.srvc.user.dto.User;
 
 import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -62,13 +63,15 @@ import java.util.*;
         "endDate",
         "rolePolicy",
         "parentRoles",
-        "resourceRoles"
+        "resources"
+
 })
 @XmlRootElement(name = "Role")
 @XmlSeeAlso({
         Group.class,
         RoleAttribute.class,
-        RolePolicy.class
+        RolePolicy.class,
+        Resource.class
 })
 @DozerDTOCorrespondence(RoleEntity.class)
 public class Role extends BaseObject implements Comparable<Role> {
@@ -107,7 +110,7 @@ public class Role extends BaseObject implements Comparable<Role> {
     private Set<Role> parentRoles;
     private Set<Role> childRoles;
     
-    private Set<ResourceRole> resourceRoles;
+    private Set<Resource> resources;
 
 
     @XmlSchemaType(name = "dateTime")
@@ -331,15 +334,15 @@ public class Role extends BaseObject implements Comparable<Role> {
         return getRoleName().compareTo(o.getRoleName());
     }
 
-	public Set<ResourceRole> getResourceRoles() {
-		return resourceRoles;
-	}
+    public Set<Resource> getResources() {
+        return resources;
+    }
 
-	public void setResourceRoles(Set<ResourceRole> resourceRoles) {
-		this.resourceRoles = resourceRoles;
-	}
+    public void setResources(Set<Resource> resources) {
+        this.resources = resources;
+    }
 
-	 @Override
+    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;

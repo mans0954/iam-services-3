@@ -11,7 +11,7 @@ import org.openiam.core.dao.BaseDaoImpl;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.searchbeans.SearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
-import org.openiam.idm.srvc.res.domain.ResourceGroupEntity;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.searchbean.converter.GroupSearchBeanConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -86,11 +86,11 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
 				criteria.add(Restrictions.eq("internalGroupId", group.getInternalGroupId()));
 			}
             
-            if(CollectionUtils.isNotEmpty(group.getResourceGroups())) {
+            if(CollectionUtils.isNotEmpty(group.getResources())) {
             	final Set<String> resourceIds = new HashSet<String>();
-            	for(final ResourceGroupEntity resourceGroupEntity : group.getResourceGroups()) {
-            		if(resourceGroupEntity != null && StringUtils.isNotBlank(resourceGroupEntity.getResourceId())) {
-            			resourceIds.add(resourceGroupEntity.getResourceId());
+            	for(final ResourceEntity resourceEntity : group.getResources()) {
+            		if(resourceEntity != null && StringUtils.isNotBlank(resourceEntity.getResourceId())) {
+            			resourceIds.add(resourceEntity.getResourceId());
             		}
             	}
             	

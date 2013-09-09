@@ -20,7 +20,6 @@ import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 import javax.persistence.Table;
-import javax.validation.constraints.Max;
 import javax.validation.constraints.Size;
 
 import org.hibernate.annotations.Cache;
@@ -30,7 +29,7 @@ import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.GenericGenerator;
 import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
-import org.openiam.idm.srvc.res.domain.ResourceRoleEntity;
+import org.openiam.idm.srvc.res.domain.ResourceEntity;
 import org.openiam.idm.srvc.role.dto.Role;
 import org.openiam.idm.srvc.user.domain.UserEntity;
 
@@ -101,11 +100,10 @@ public class RoleEntity implements Serializable {
         inverseJoinColumns={@JoinColumn(name="MEMBER_ROLE_ID")})
     @Fetch(FetchMode.SUBSELECT)
     private Set<RoleEntity> childRoles;
-	
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "ROLE_ID")
-    @Fetch(FetchMode.SUBSELECT)
-    private Set<ResourceRoleEntity> resourceRoles;
+
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "RESOURCE_ROLE", joinColumns = { @JoinColumn(name = "ROLE_ID") }, inverseJoinColumns = { @JoinColumn(name = "RESOURCE_ID") })
+    private Set<ResourceEntity> resources;
 
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "USER_ROLE", joinColumns = { @JoinColumn(name = "ROLE_ID") }, inverseJoinColumns = { @JoinColumn(name = "USER_ID") })
@@ -311,22 +309,13 @@ public class RoleEntity implements Serializable {
 		this.createdBy = createdBy;
 	}
 
-	public Set<ResourceRoleEntity> getResourceRoles() {
-		return resourceRoles;
-	}
+    public Set<ResourceEntity> getResources() {
+        return resources;
+    }
 
-	public void setResourceRoles(Set<ResourceRoleEntity> resourceRoles) {
-		this.resourceRoles = resourceRoles;
-	}
-	
-	public void addResourceRole(final ResourceRoleEntity entity) {
-		if(entity != null) {
-			if(resourceRoles == null) {
-				resourceRoles = new LinkedHashSet<ResourceRoleEntity>();
-			}
-			resourceRoles.add(entity);
-		}
-	}
+    public void setResources(Set<ResourceEntity> resources) {
+        this.resources = resources;
+    }
 
     public Set<UserEntity> getUsers() {
         return users;
