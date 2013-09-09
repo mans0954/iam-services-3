@@ -81,7 +81,7 @@ public class Role extends BaseObject implements Comparable<Role> {
      */
     private static final long serialVersionUID = -3903402630611423082L;
 
-    protected AttributeOperationEnum operation;
+    protected AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
 
     @XmlSchemaType(name = "dateTime")
     protected Date createDate;

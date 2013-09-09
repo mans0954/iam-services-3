@@ -50,7 +50,7 @@ public class Group implements java.io.Serializable {
 
     private static final long serialVersionUID = 7657568959406790313L;
 
-    protected AttributeOperationEnum operation;
+    protected AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
 
     protected String grpId;
     protected String grpName;

@@ -154,6 +154,10 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         emailAddresses = user.getEmailAddresses();
         // set the email address in a hibernate friendly manner
         principalList = user.getPrincipalList();
+        roles = user.getRoles();
+        groups = user.getGroups();
+        affiliations = user.getAffiliations();
+        resources = user.getResources();
         setPassword(user.getPassword());
         setLogin(user.getLogin());
     }
@@ -194,7 +198,6 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         user.setMaidenName(maidenName);
         user.setPasswordTheme(passwordTheme);
         user.setEmail(email);
-
         user.setUserNotes(userNotes);
         user.setUserAttributes(userAttributes);
         user.setPhones(phones);
@@ -202,7 +205,11 @@ public class ProvisionUser extends org.openiam.idm.srvc.user.dto.User {
         user.setEmailAddresses(emailAddresses);
         user.setAlternateContactId(alternateContactId);
         user.setShowInSearch(showInSearch);
-
+        user.setPrincipalList(principalList);
+        user.setRoles(roles);
+        user.setGroups(groups);
+        user.setAffiliations(affiliations);
+        user.setResources(resources);
         user.setUserOwnerId(userOwnerId);
         user.setDateChallengeRespChanged(dateChallengeRespChanged);
         user.setDatePasswordChanged(datePasswordChanged);

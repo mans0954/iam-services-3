@@ -209,17 +209,19 @@ public class User extends org.openiam.base.BaseObject {
 
     protected Set<EmailAddress> emailAddresses = new HashSet<EmailAddress>(0);
 
-    private Set<Role> roles = new HashSet<Role>(0);
+    protected Set<Role> roles = new HashSet<Role>(0);
+
+    protected Set<Organization> affiliations = new HashSet<Organization>(0);
+
+    protected Set<Group> groups = new HashSet<Group>(0);
+
+    protected Set<Resource> resources = new HashSet<Resource>(0);
 
     // these fields are used only when userWS is used directly without provision
     private String login;
     private String password;
     private Boolean notifyUserViaEmail=true;
 
-    private Set<Organization> affiliations;
-
-    private Set<Group> groups;
-    private Set<Resource> resources;
     // Constructors
 
     /**

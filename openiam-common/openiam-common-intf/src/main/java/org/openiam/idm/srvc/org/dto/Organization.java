@@ -99,7 +99,7 @@ public class Organization implements java.io.Serializable, Comparable<Organizati
 
     protected Boolean selected = Boolean.FALSE;
 
-    protected AttributeOperationEnum operation;
+    protected AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
 
     private Set<Organization> parentOrganizations;
     private Set<Organization> childOrganizations;
