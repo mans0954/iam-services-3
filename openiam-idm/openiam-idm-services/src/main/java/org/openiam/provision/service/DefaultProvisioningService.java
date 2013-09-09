@@ -78,8 +78,11 @@ import org.openiam.provision.resp.ProvisionUserResponse;
 import org.openiam.provision.type.ExtensibleAttribute;
 import org.openiam.provision.type.ExtensibleUser;
 import org.openiam.util.MuleContextProvider;
+import org.openiam.util.SpringContextProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.orm.hibernate3.HibernateTemplate;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.jws.WebService;
@@ -94,6 +97,12 @@ import java.util.*;
 @WebService(endpointInterface = "org.openiam.provision.service.ProvisionService", targetNamespace = "http://www.openiam.org/service/provision", portName = "DefaultProvisionControllerServicePort", serviceName = "ProvisioningService")
 @Component("defaultProvision")
 public class DefaultProvisioningService extends AbstractProvisioningService {
+
+    @Autowired
+    private DeprovisionSelectedResourceHelper deprovisionSelectedResource;
+    @Autowired
+    @Qualifier("disableUser")
+    private DisableUserDelegate disableUser;
 
     @Autowired
     HibernateTemplate hibernateTemplate;
