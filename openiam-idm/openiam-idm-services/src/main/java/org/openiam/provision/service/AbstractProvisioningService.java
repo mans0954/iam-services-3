@@ -1491,7 +1491,7 @@ public abstract class AbstractProvisioningService implements ProvisionService {
         }
     }
 
-   /* public void updateRoleAssociation(String userId, List<Role> origRoleList,
+    /* public void updateRoleAssociation(String userId, List<Role> origRoleList,
                                       List<Role> newRoleList, List<IdmAuditLog> logList,
                                       ProvisionUser pUser, Login primaryIdentity,
                                       List<Role> activeRoleList, List<Role> deleteRoleList) {

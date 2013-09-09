@@ -2,6 +2,7 @@ package org.openiam.idm.srvc.res.dto;
 
 // Generated Mar 8, 2009 12:54:32 PM by Hibernate Tools 3.2.2.GA
 
+import org.openiam.base.AttributeOperationEnum;
 import org.openiam.base.BaseObject;
 import org.openiam.dozer.DozerDTOCorrespondence;
 
@@ -43,7 +44,8 @@ import org.openiam.idm.srvc.user.dto.User;
         "minAuthLevel",
         "domain",
         "isPublic",
-        "isSSL"
+        "isSSL",
+        "operation"
 })
 @XmlSeeAlso({
         Role.class,
@@ -78,6 +80,8 @@ public class Resource extends BaseObject {
     private String domain;
     private boolean isPublic = true;
     private boolean isSSL = false;
+
+    protected AttributeOperationEnum operation = AttributeOperationEnum.NO_CHANGE;
 
     public Resource() {
     }
@@ -205,6 +209,14 @@ public class Resource extends BaseObject {
 	public void setIsSSL(final boolean isSSL) {
 		this.isSSL = isSSL;
 	}
+
+    public AttributeOperationEnum getOperation() {
+        return operation;
+    }
+
+    public void setOperation(AttributeOperationEnum operation) {
+        this.operation = operation;
+    }
 
 	@Override
     public String toString() {

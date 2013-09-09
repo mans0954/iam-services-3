@@ -187,9 +187,9 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
     private Criteria getEntitlementGroupsCriteria(String userId, String roleId, String resourceId, Set<String> filter){
         final Criteria criteria = super.getCriteria();
 
-        if(StringUtils.isNotBlank(userId)){
-            criteria.createAlias("userGroups", "ug")
-                    .add(Restrictions.eq("ug.userId", userId));
+            if(StringUtils.isNotBlank(userId)){
+            criteria.createAlias("users", "u")
+                    .add(Restrictions.eq("u.userId", userId));
         }
 
         if(StringUtils.isNotBlank(roleId)){
@@ -197,7 +197,7 @@ public class GroupDAOImpl extends BaseDaoImpl<GroupEntity, String> implements Gr
         }
 
         if(StringUtils.isNotBlank(resourceId)){
-            criteria.createAlias("resourceGroups", "resourceGroup").add( Restrictions.eq("resourceGroup.resourceId", resourceId));
+            criteria.createAlias("resources", "resources").add( Restrictions.eq("resources.resourceId", resourceId));
         }
 
         if(filter!=null && !filter.isEmpty()){

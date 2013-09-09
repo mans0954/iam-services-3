@@ -257,11 +257,11 @@ public class UserEntity {
     
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "USER_AFFILIATION", joinColumns = { @JoinColumn(name = "USER_ID") }, inverseJoinColumns = { @JoinColumn(name = "COMPANY_ID") })
-	private Set<OrganizationEntity> affiliations;
+	private Set<OrganizationEntity> affiliations = new HashSet<OrganizationEntity>(0);
 
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "RESOURCE_USER", joinColumns = { @JoinColumn(name = "USER_ID") }, inverseJoinColumns = { @JoinColumn(name = "RESOURCE_ID") })
-    private Set<ResourceEntity> resources;
+    private Set<ResourceEntity> resources = new HashSet<ResourceEntity>(0);
 
     public UserEntity() {
     }
