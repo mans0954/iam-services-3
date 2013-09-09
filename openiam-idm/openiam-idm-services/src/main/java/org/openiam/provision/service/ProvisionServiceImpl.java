@@ -304,7 +304,7 @@ public class ProvisionServiceImpl implements ProvisionService,
                         return resp;
                     }
                 }
-                groupManager.addUserToGroup(g.getGrpId(), newUser.getUserId());
+                userMgr.addUserToGroup(g.getGrpId(), newUser.getUserId());
             }
         }
 
@@ -1609,7 +1609,7 @@ public class ProvisionServiceImpl implements ProvisionService,
         }
         for (Group g : newGroupList) {
             if (g.getOperation() == AttributeOperationEnum.DELETE) {
-                this.groupManager.removeUserFromGroup(g.getGrpId(), userId);
+                this.userMgr.removeUserFromGroup(g.getGrpId(), userId);
 
                 auditHelper.addLog("MODIFY USER", null, primaryId,
                         "IDM SERVICE", updatedBy, "0", "USER", userId, null,
@@ -1619,7 +1619,7 @@ public class ProvisionServiceImpl implements ProvisionService,
             } else {
                 if (!groupManager.isUserInCompiledGroupList(g.getGrpId(),
                         userId)) {
-                    groupManager.addUserToGroup(g.getGrpId(), userId);
+                    userMgr.addUserToGroup(g.getGrpId(), userId);
 
                     auditHelper.addLog("MODIFY USER", null, primaryId,
                             "IDM SERVICE", updatedBy, "0", "USER", userId,

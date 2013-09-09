@@ -11,7 +11,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.openiam.bpm.util.ActivitiConstants;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
-import org.openiam.idm.srvc.grp.service.UserGroupDAO;
 import org.openiam.idm.srvc.mngsys.domain.ApproverAssociationEntity;
 import org.openiam.idm.srvc.mngsys.domain.AssociationType;
 import org.openiam.idm.srvc.mngsys.service.ApproverAssociationDAO;
@@ -59,9 +58,6 @@ public class RejectProfileProvisionNotifierDelegate implements JavaDelegate {
 	@Qualifier("userDAO")
 	private UserDAO userDAO;
 
-	@Autowired
-	private UserGroupDAO userGroupDAO;
-	
 	public RejectProfileProvisionNotifierDelegate() {
 		SpringContextProvider.autowire(this);
 	}
@@ -94,7 +90,7 @@ public class RejectProfileProvisionNotifierDelegate implements JavaDelegate {
             }
             switch(typeOfUserToNotify) {
             	case GROUP:
-            		final List<String> usersInGroup = userGroupDAO.getUserIdsInGroup(notifyId);
+            		final List<String> usersInGroup = userManager.getUserIdsInGroup(notifyId, provisionRequestId);
             		if(CollectionUtils.isNotEmpty(usersInGroup)) {
             			userIds.addAll(usersInGroup);
             		}	

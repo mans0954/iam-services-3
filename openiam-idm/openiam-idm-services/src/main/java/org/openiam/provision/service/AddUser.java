@@ -210,7 +210,6 @@ public class AddUser {
                         return ResponseCode.GROUP_ID_NULL;
                     }
                 }
-                groupManager.addUserToGroup(g.getGrpId(), newUserId);
                 // add to audit log
                 logList.add(auditHelper.createLogObject("ADD GROUP",
                         user.getRequestorDomain(), user.getRequestorLogin(),

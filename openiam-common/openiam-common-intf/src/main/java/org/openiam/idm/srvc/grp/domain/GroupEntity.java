@@ -21,7 +21,6 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.Size;
 
-import org.apache.commons.lang.StringUtils;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.Fetch;
@@ -31,6 +30,7 @@ import org.openiam.dozer.DozerDTOCorrespondence;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.res.domain.ResourceGroupEntity;
 import org.openiam.idm.srvc.role.domain.RoleEntity;
+import org.openiam.idm.srvc.user.domain.UserEntity;
 
 @Entity
 @Table(name = "GRP")
@@ -116,10 +116,9 @@ public class GroupEntity {
     @Fetch(FetchMode.SUBSELECT)
     private Set<RoleEntity> roles;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinColumn(name = "GRP_ID", referencedColumnName = "GRP_ID")
-    @Fetch(FetchMode.SUBSELECT)
-    private Set<UserGroupEntity> userGroups = new HashSet<UserGroupEntity>(0);
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "USER_GRP", joinColumns = { @JoinColumn(name = "GRP_ID") }, inverseJoinColumns = { @JoinColumn(name = "USER_ID") })
+    private Set<UserEntity> userGroups = new HashSet<UserEntity>(0);
 
     public String getGrpId() {
         return grpId;
@@ -320,145 +319,40 @@ public class GroupEntity {
         this.roles = roles;
     }
 
-    public Set<UserGroupEntity> getUserGroups() {
+    public Set<UserEntity> getUserGroups() {
         return userGroups;
     }
 
-    public boolean isUserInGroup(final String userId) {
-        boolean retVal = false;
-        if (userGroups != null) {
-            for (final Iterator<UserGroupEntity> it = userGroups.iterator(); it.hasNext();) {
-                final UserGroupEntity entity = it.next();
-                if (entity != null) {
-                    if (StringUtils.equals(entity.getUserId(), userId)) {
-                        retVal = true;
-                        break;
-                    }
-                }
-            }
-        }
-        return retVal;
-    }
-
-    public void removeUserFromGroup(final String userId) {
-        if (userGroups != null) {
-            for (final Iterator<UserGroupEntity> it = userGroups.iterator(); it.hasNext();) {
-                final UserGroupEntity entity = it.next();
-                if (entity != null) {
-                    if (StringUtils.equals(entity.getUserId(), userId)) {
-                        it.remove();
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    public void setUserGroups(Set<UserGroupEntity> userGroups) {
+    public void setUserGroups(Set<UserEntity> userGroups) {
         this.userGroups = userGroups;
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((companyId == null) ? 0 : companyId.hashCode());
-        result = prime * result + ((createDate == null) ? 0 : createDate.hashCode());
-        result = prime * result + ((createdBy == null) ? 0 : createdBy.hashCode());
-        result = prime * result + ((description == null) ? 0 : description.hashCode());
-        result = prime * result + ((grpId == null) ? 0 : grpId.hashCode());
-        result = prime * result + ((internalGroupId == null) ? 0 : internalGroupId.hashCode());
-        result = prime * result + ((lastUpdate == null) ? 0 : lastUpdate.hashCode());
-        result = prime * result + ((lastUpdatedBy == null) ? 0 : lastUpdatedBy.hashCode());
-        result = prime * result + ((metadataTypeId == null) ? 0 : metadataTypeId.hashCode());
-        result = prime * result + ((grpName == null) ? 0 : grpName.hashCode());
-        result = prime * result + ((ownerId == null) ? 0 : ownerId.hashCode());
-        result = prime * result + ((provisionMethod == null) ? 0 : provisionMethod.hashCode());
-        result = prime * result + ((provisionObjName == null) ? 0 : provisionObjName.hashCode());
-        result = prime * result + ((status == null) ? 0 : status.hashCode());
-        return result;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        GroupEntity that = (GroupEntity) o;
+
+        if (companyId != null ? !companyId.equals(that.companyId) : that.companyId != null) return false;
+        if (createDate != null ? !createDate.equals(that.createDate) : that.createDate != null) return false;
+        if (createdBy != null ? !createdBy.equals(that.createdBy) : that.createdBy != null) return false;
+        if (grpId != null ? !grpId.equals(that.grpId) : that.grpId != null) return false;
+        if (grpName != null ? !grpName.equals(that.grpName) : that.grpName != null) return false;
+        if (ownerId != null ? !ownerId.equals(that.ownerId) : that.ownerId != null) return false;
+
+        return true;
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        GroupEntity other = (GroupEntity) obj;
-        if (companyId == null) {
-            if (other.companyId != null)
-                return false;
-        } else if (!companyId.equals(other.companyId))
-            return false;
-        if (createDate == null) {
-            if (other.createDate != null)
-                return false;
-        } else if (!createDate.equals(other.createDate))
-            return false;
-        if (createdBy == null) {
-            if (other.createdBy != null)
-                return false;
-        } else if (!createdBy.equals(other.createdBy))
-            return false;
-        if (description == null) {
-            if (other.description != null)
-                return false;
-        } else if (!description.equals(other.description))
-            return false;
-        if (grpId == null) {
-            if (other.grpId != null)
-                return false;
-        } else if (!grpId.equals(other.grpId))
-            return false;
-        if (internalGroupId == null) {
-            if (other.internalGroupId != null)
-                return false;
-        } else if (!internalGroupId.equals(other.internalGroupId))
-            return false;
-        if (lastUpdate == null) {
-            if (other.lastUpdate != null)
-                return false;
-        } else if (!lastUpdate.equals(other.lastUpdate))
-            return false;
-        if (lastUpdatedBy == null) {
-            if (other.lastUpdatedBy != null)
-                return false;
-        } else if (!lastUpdatedBy.equals(other.lastUpdatedBy))
-            return false;
-        if (metadataTypeId == null) {
-            if (other.metadataTypeId != null)
-                return false;
-        } else if (!metadataTypeId.equals(other.metadataTypeId))
-            return false;
-        if (grpName == null) {
-            if (other.grpName != null)
-                return false;
-        } else if (!grpName.equals(other.grpName))
-            return false;
-        if (ownerId == null) {
-            if (other.ownerId != null)
-                return false;
-        } else if (!ownerId.equals(other.ownerId))
-            return false;
-        if (provisionMethod == null) {
-            if (other.provisionMethod != null)
-                return false;
-        } else if (!provisionMethod.equals(other.provisionMethod))
-            return false;
-        if (provisionObjName == null) {
-            if (other.provisionObjName != null)
-                return false;
-        } else if (!provisionObjName.equals(other.provisionObjName))
-            return false;
-        if (status == null) {
-            if (other.status != null)
-                return false;
-        } else if (!status.equals(other.status))
-            return false;
-        return true;
+    public int hashCode() {
+        int result = grpId != null ? grpId.hashCode() : 0;
+        result = 31 * result + (grpName != null ? grpName.hashCode() : 0);
+        result = 31 * result + (createDate != null ? createDate.hashCode() : 0);
+        result = 31 * result + (createdBy != null ? createdBy.hashCode() : 0);
+        result = 31 * result + (companyId != null ? companyId.hashCode() : 0);
+        result = 31 * result + (ownerId != null ? ownerId.hashCode() : 0);
+        return result;
     }
 
     @Override

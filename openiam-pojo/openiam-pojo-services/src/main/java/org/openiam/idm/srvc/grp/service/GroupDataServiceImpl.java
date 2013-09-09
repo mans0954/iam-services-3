@@ -9,7 +9,6 @@ import org.openiam.exception.BasicDataServiceException;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
-import org.openiam.idm.srvc.grp.domain.UserGroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.res.service.ResourceGroupDAO;
 import org.openiam.idm.srvc.user.service.UserDataService;
@@ -44,9 +43,6 @@ public class GroupDataServiceImpl implements GroupDataService {
 	
 	@Autowired
 	private GroupAttributeDAO groupAttrDao;
-	
-	@Autowired
-	private UserGroupDAO userGroupDao;
 
     @Autowired
     private UserDataService userDataService;
@@ -84,14 +80,6 @@ public class GroupDataServiceImpl implements GroupDataService {
         searchBean.setName(groupName);
         final List<GroupEntity> foundList = this.findBeans(searchBean, requesterId, 0, 1);
         return (CollectionUtils.isNotEmpty(foundList)) ? foundList.get(0) : null;
-    }
-
-    @Override
-    public UserGroupEntity getRecord(final String userId, final String groupId, final String requesterId) {
-        if(DelegationFilterHelper.isAllowed(groupId, getDelegationFilter(requesterId))){
-            return userGroupDao.getRecord(groupId, userId);
-        }
-        return null;
     }
 
     @Override
@@ -193,27 +181,6 @@ public class GroupDataServiceImpl implements GroupDataService {
 	}
 
 	@Override
-	public void addUserToGroup(final String groupId, final String userId) {
-		if(groupId != null && userId != null) {
-			final UserGroupEntity entity = userGroupDao.getRecord(groupId, userId);
-			if(entity == null) {
-				final UserGroupEntity toSave = new UserGroupEntity(groupId, userId);
-				userGroupDao.save(toSave);
-			}
-		}
-	}
-	
-	@Override
-	public void removeUserFromGroup(String groupId, String userId) {
-		if(groupId != null && userId != null) {
-			final UserGroupEntity entity = userGroupDao.getRecord(groupId, userId);
-			if(entity != null) {
-				userGroupDao.delete(entity);
-			}
-		}
-	}
-	
-	@Override
 	public void saveGroup(final GroupEntity group) throws BasicDataServiceException {
 		if(group != null && entityValidator.isValid(group)) {
 
@@ -235,11 +202,10 @@ public class GroupDataServiceImpl implements GroupDataService {
 	}
 
 	@Override
-	//@Transactional
+	@Transactional
 	public void deleteGroup(String groupId) {
 		final GroupEntity entity = groupDao.findById(groupId);
 		if(entity != null) {
-			userGroupDao.deleteByGroupId(groupId);
 			resoruceGroupDAO.deleteByGroupId(groupId);
 			groupAttrDao.deleteByGroupId(groupId);
 			groupDao.delete(entity);

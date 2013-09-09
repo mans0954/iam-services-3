@@ -14,14 +14,12 @@ import org.openiam.exception.EsbErrorToken;
 import org.openiam.idm.searchbeans.GroupSearchBean;
 import org.openiam.idm.srvc.grp.domain.GroupAttributeEntity;
 import org.openiam.idm.srvc.grp.domain.GroupEntity;
-import org.openiam.idm.srvc.grp.domain.UserGroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.dto.GroupAttribute;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.searchbean.converter.GroupSearchBeanConverter;
-import org.openiam.validator.EntityValidator;
+import org.openiam.idm.srvc.user.service.UserDataService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import javax.jws.WebMethod;
@@ -48,6 +46,9 @@ import java.util.Set;
 public class GroupDataWebServiceImpl implements GroupDataWebService {
 	@Autowired
 	private GroupDataService groupManager;
+
+    @Autowired
+    private UserDataService userManager;
 	
     @Autowired
     private GroupDozerConverter groupDozerConverter;
@@ -180,14 +181,8 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 			if(groupId == null) {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
-			
-			final UserGroupEntity entity = groupManager.getRecord(userId, groupId,null);
-			
-			if(entity != null) {
-				throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
-			}
-			
-			groupManager.addUserToGroup(groupId, userId);
+
+			userManager.addUserToGroup(userId, groupId);
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
@@ -207,7 +202,7 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
 			
-			groupManager.removeUserFromGroup(groupId, userId);
+			userManager.removeUserFromGroup(groupId, userId);
 		} catch(BasicDataServiceException e) {
 			response.setStatus(ResponseStatus.FAILURE);
 			response.setErrorCode(e.getCode());
@@ -392,9 +387,9 @@ public class GroupDataWebServiceImpl implements GroupDataWebService {
 				throw new BasicDataServiceException(ResponseCode.INVALID_ARGUMENTS);
 			}
 			
-			final UserGroupEntity entity = groupManager.getRecord(userId, groupId,null);
+			boolean has = userManager.isHasGroup(userId, groupId);
 			
-			if(entity != null) {
+			if(has) {
 				throw new BasicDataServiceException(ResponseCode.RELATIONSHIP_EXISTS);
 			}
 			

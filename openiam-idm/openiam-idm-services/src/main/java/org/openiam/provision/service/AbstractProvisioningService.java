@@ -37,7 +37,7 @@ import org.openiam.idm.srvc.continfo.domain.PhoneEntity;
 import org.openiam.idm.srvc.continfo.dto.Address;
 import org.openiam.idm.srvc.continfo.dto.EmailAddress;
 import org.openiam.idm.srvc.continfo.dto.Phone;
-import org.openiam.idm.srvc.grp.domain.UserGroupEntity;
+import org.openiam.idm.srvc.grp.domain.GroupEntity;
 import org.openiam.idm.srvc.grp.dto.Group;
 import org.openiam.idm.srvc.grp.service.GroupDataService;
 import org.openiam.idm.srvc.key.constant.KeyName;
@@ -594,7 +594,7 @@ public abstract class AbstractProvisioningService implements ProvisionService {
                     }
                 }
                 g.setOperation(AttributeOperationEnum.ADD);
-                groupManager.addUserToGroup(g.getGrpId(), newUserId);
+                userMgr.addUserToGroup(g.getGrpId(), newUserId);
                 // add to audit log
                 logList.add( auditHelper.createLogObject("ADD GROUP",
                         user.getRequestorDomain(), user.getRequestorLogin(),
@@ -1449,17 +1449,12 @@ public abstract class AbstractProvisioningService implements ProvisionService {
                     return;
 
                 } else if (operation == AttributeOperationEnum.ADD) {
-                    UserGroupEntity uge = new UserGroupEntity(g.getGrpId(), origUser.getUserId());
-                    origUser.getUserGroups().add(uge);
+                    GroupEntity groupEntity = groupManager.getGroup(g.getGrpId());
+                    origUser.getUserGroups().add(groupEntity);
 
                 } else if (operation == AttributeOperationEnum.DELETE) {
-                    Set<UserGroupEntity> groups = origUser.getUserGroups();
-                    for (UserGroupEntity ug : groups) {
-                        if (ug.getGrpId().equals(g.getGrpId())) {
-                            origUser.getUserGroups().remove(ug);
-                            break;
-                        }
-                    }
+                    GroupEntity groupEntity = groupManager.getGroup(g.getGrpId());
+                    origUser.getUserGroups().remove(groupEntity);
 
                 } else if (operation == AttributeOperationEnum.REPLACE) {
                     throw new UnsupportedOperationException("Operation 'REPLACE' is not supported for groups");

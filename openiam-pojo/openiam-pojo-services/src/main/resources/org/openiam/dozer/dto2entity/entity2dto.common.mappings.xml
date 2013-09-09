@@ -87,11 +87,6 @@
 	</mapping>
 
 	<mapping>
-		<class-a>org.openiam.idm.srvc.grp.domain.UserGroupEntity</class-a>
-		<class-b>org.openiam.idm.srvc.grp.dto.UserGroup</class-b>
-	</mapping>
-
-	<mapping>
 		<class-a>org.openiam.idm.srvc.grp.domain.GroupAttributeEntity
 		</class-a>
 		<class-b>org.openiam.idm.srvc.grp.dto.GroupAttribute</class-b>
