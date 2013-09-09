@@ -47,17 +47,17 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         if(delegationFilter != null) {
             if (CollectionUtils.isNotEmpty(delegationFilter.getOrganizationIdSet())) {
                 criteria.createAlias("affiliations", "aff").add(
-                        Restrictions.in("aff.organization.id", delegationFilter.getOrganizationIdSet()));
+                        Restrictions.in("aff.id", delegationFilter.getOrganizationIdSet()));
             }
 
             if (CollectionUtils.isNotEmpty(delegationFilter.getGroupIdSet())) {
-                criteria.createAlias("userGroups", "ug");
-                criteria.add(Restrictions.in("ug.grpId", delegationFilter.getGroupIdSet()));
+                criteria.createAlias("groups", "g");
+                criteria.add(Restrictions.in("g.grpId", delegationFilter.getGroupIdSet()));
             }
 
             if (CollectionUtils.isNotEmpty(delegationFilter.getRoleIdSet())) {
-                criteria.createAlias("userRoles", "ur");
-                criteria.add(Restrictions.in("ur.roleId", delegationFilter.getRoleIdSet()));
+                criteria.createAlias("roles", "r");
+                criteria.add(Restrictions.in("r.roleId", delegationFilter.getRoleIdSet()));
             }
         }
 
@@ -84,8 +84,8 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         disjunction.add(Restrictions.isNotNull("systemFlag")).add(Restrictions.ne("systemFlag", "1"));
         criteria.add(disjunction);
         if (StringUtils.isNotEmpty(search.getRole())) {
-            criteria.createAlias("userRoles", "urv");
-            criteria.add(Restrictions.eq("urv.roleId", search.getRole()));
+            criteria.createAlias("roles", "r");
+            criteria.add(Restrictions.eq("r.roleId", search.getRole()));
         }
 
         if (search.isDelAdmin()) {
@@ -210,7 +210,7 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
             }
             if (CollectionUtils.isNotEmpty(searchBean.getOrganizationIdList())) {
                 criteria.createAlias("affiliations", "aff").add(
-                        Restrictions.in("aff.organization.id", searchBean.getOrganizationIdList()));
+                        Restrictions.in("aff.id", searchBean.getOrganizationIdList()));
             }
             if (StringUtils.isNotEmpty(searchBean.getPhoneAreaCd()) || StringUtils.isNotEmpty(searchBean.getPhoneNbr())) {
                 if (StringUtils.isNotEmpty(searchBean.getPhoneAreaCd())) {
@@ -229,15 +229,15 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
                 criteria.add(disjunction);
             }
             if (CollectionUtils.isNotEmpty(searchBean.getGroupIdSet())) {
-                criteria.createAlias("userGroups", "g");
+                criteria.createAlias("groups", "g");
                 criteria.add(Restrictions.in("g.grpId", searchBean.getGroupIdSet()));
             }
             if (StringUtils.isNotEmpty(searchBean.getEmployeeId())) {
                 criteria.add(Restrictions.eq("employeeId", searchBean.getEmployeeId()));
             }
             if (CollectionUtils.isNotEmpty(searchBean.getRoleIdSet())) {
-                criteria.createAlias("userRoles", "urv");
-                criteria.add(Restrictions.in("urv.roleId", searchBean.getRoleIdSet()));
+                criteria.createAlias("roles", "urv");
+                criteria.add(Restrictions.in("r.roleId", searchBean.getRoleIdSet()));
             }
 
             if (StringUtils.isNotEmpty(searchBean.getAttributeName()) || StringUtils.isNotEmpty(searchBean.getAttributeValue())
@@ -342,12 +342,6 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         return ((Number) criteria.uniqueResult()).intValue();
     }
 
-    // private Criteria getUsersForGroupCriteria(final String groupId,
-    // DelegationFilterSearchBean delegationFilter) {
-    // return getCriteria().createAlias("userGroups",
-    // "ug").add(Restrictions.eq("ug.grpId", groupId));
-    // }
-
     @Override
     public List<UserEntity> getUsersForGroup(final String groupId, DelegationFilterSearchBean delegationFilter, final int from, final int size) {
         final Criteria criteria = getUsersEntitlementCriteria(groupId, null, null, delegationFilter);
@@ -401,23 +395,23 @@ public class UserDAOImpl extends BaseDaoImpl<UserEntity, String> implements User
         Criteria criteria = getCriteria();
 
         if (StringUtils.isNotEmpty(groupId)) {
-            criteria.createAlias("groups", "ug");
-            criteria.add(Restrictions.eq("ug.grpId", groupId));
+            criteria.createAlias("groups", "g");
+            criteria.add(Restrictions.eq("g.grpId", groupId));
         } else if (delegationFilter != null && CollectionUtils.isNotEmpty(delegationFilter.getGroupIdSet())) {
-            criteria.createAlias("groups", "ug");
-            criteria.add(Restrictions.in("ug.grpId", delegationFilter.getGroupIdSet()));
+            criteria.createAlias("groups", "g");
+            criteria.add(Restrictions.in("g.grpId", delegationFilter.getGroupIdSet()));
         }
 
         if (StringUtils.isNotEmpty(roleId)) {
-            criteria.createAlias("roles", "ur");
-            criteria.add(Restrictions.eq("ur.roleId", roleId));
+            criteria.createAlias("roles", "r");
+            criteria.add(Restrictions.eq("r.roleId", roleId));
         } else if (delegationFilter != null && CollectionUtils.isNotEmpty(delegationFilter.getRoleIdSet())) {
-            criteria.createAlias("roles", "ur");
-            criteria.add(Restrictions.in("ur.roleId", delegationFilter.getRoleIdSet()));
+            criteria.createAlias("roles", "r");
+            criteria.add(Restrictions.in("r.roleId", delegationFilter.getRoleIdSet()));
         }
 
         if (StringUtils.isNotEmpty(resourceId)) {
-            criteria.createAlias("resources", "ru").add(Restrictions.eq("ru.resourceId", resourceId));
+            criteria.createAlias("resources", "r").add(Restrictions.eq("r.resourceId", resourceId));
         }
 
         if (delegationFilter != null) {

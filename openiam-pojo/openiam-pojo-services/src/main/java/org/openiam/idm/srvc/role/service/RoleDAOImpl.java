@@ -149,8 +149,8 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
         final Criteria criteria = super.getCriteria();
 
         if(StringUtils.isNotBlank(userId)){
-            criteria.createAlias("users", "ur")
-                    .add(Restrictions.eq("ur.userId", userId));
+            criteria.createAlias("users", "u")
+                    .add(Restrictions.eq("u.userId", userId));
         }
 
         if(StringUtils.isNotBlank(groupId)){
@@ -158,7 +158,7 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
         }
 
         if(StringUtils.isNotBlank(resourceId)){
-            criteria.createAlias("resourceRoles", "resourceRole").add( Restrictions.eq("resourceRole.id.resourceId", resourceId));
+            criteria.createAlias("resources", "resources").add( Restrictions.eq("resources.resourceId", resourceId));
         }
 
         if(filter!=null && !filter.isEmpty()){
@@ -213,8 +213,8 @@ public class RoleDAOImpl extends BaseDaoImpl<RoleEntity, String> implements Role
 	
 	private Criteria getRolesForUserCriteria(final String userId, final Set<String> filter) {
 		return getCriteria()
-	               .createAlias("userRoles", "ur")
-	               .add(Restrictions.eq("ur.userId", userId));
+	               .createAlias("users", "u")
+	               .add(Restrictions.eq("u.userId", userId));
 	}
 
     private List<RoleEntity> getList(Criteria criteria, int from, int size){
