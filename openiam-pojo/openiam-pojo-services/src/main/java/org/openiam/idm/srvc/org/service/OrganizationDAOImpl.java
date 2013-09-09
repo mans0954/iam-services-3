@@ -101,8 +101,8 @@ public class OrganizationDAOImpl extends
 			}
 
 			if (StringUtils.isNotBlank(organizationSearchBean.getUserId())) {
-				criteria.createAlias("affiliations", "aff").add(
-						Restrictions.eq("aff.user.userId",
+				criteria.createAlias("users", "u").add(
+						Restrictions.eq("u.userId",
 								organizationSearchBean.getUserId()));
 			}
 
